@@ -215,6 +215,11 @@ export const SET_UP_PARAMS = {
    * or an opening decides the colours.
    */
   colour: "colour",
+  /**
+   * How many games to make at once against a named opponent, the colours
+   * alternating — a match; see `liveMatch.ts`. Absent for one.
+   */
+  games: "games",
   /** A finished game to play again: its rules, its opponent, its colours swapped. */
   rematch: "rematch",
   /** A game to carry a position out of, with `move` saying how far. */

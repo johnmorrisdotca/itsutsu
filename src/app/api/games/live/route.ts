@@ -3,12 +3,16 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { activeLimitRefusal, memberOverActiveLimit } from "@/lib/history/activeGames";
+import { freeGameId } from "@/lib/history/gameId";
 import { resolveAgainst } from "@/lib/history/liveAgainst";
 import { settingsAsPlayed } from "@/lib/history/liveAsPlayed";
 import { createLiveGame } from "@/lib/history/liveGame";
+import { matchAsks, matchRefusal } from "@/lib/history/liveMatch";
 import { readCreation } from "@/lib/history/liveRequest";
 import { createdResponse, refusalResponse } from "@/lib/history/liveResponse";
 import { UnwinnableGame } from "@/lib/history/winnableGame";
+import { SEED_RANGE } from "@/lib/gomoku/gomoku.constants";
+import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import { awardCreatedGame, createdGameKind } from "@/lib/xp/xpSocial";
 
 /**
@@ -70,9 +74,22 @@ export async function POST(request: Request) {
     if ("refused" in read) return refusalResponse(read.refused);
     const asked = read.asked;
 
-    const settled = await resolveAgainst(asked);
-    if ("refused" in settled) return refusalResponse(settled.refused);
-    const against = settled.against;
+    /*
+     * A MATCH IS SEVERAL OF THESE, the colours alternating (`liveMatch.ts`).
+     * Each game's opponent is resolved from its own ask, so the seats swap
+     * with the colour; an ordinary game is a match of one and takes exactly
+     * the path it always did.
+     */
+    const notAMatch = matchRefusal(asked);
+    if (notAMatch !== null) return refusalResponse(notAMatch);
+    const asks = matchAsks(asked);
+    const resolved = [];
+    for (const each of asks) {
+      const settled = await resolveAgainst(each);
+      if ("refused" in settled) return refusalResponse(settled.refused);
+      resolved.push(settled.against);
+    }
+    const against = resolved[0];
 
     /*
      * Twenty boards is already more than anybody plays in a week here, so a
@@ -97,10 +114,10 @@ export async function POST(request: Request) {
      * no longer carries their id by the time this runs, so that falls out of the
      * shape rather than needing a condition.
      */
-    const atTheLimit = await memberOverActiveLimit([
-      against.seats.blackMemberId,
-      against.seats.whiteMemberId,
-    ]);
+    const atTheLimit = await memberOverActiveLimit(
+      [against.seats.blackMemberId, against.seats.whiteMemberId],
+      asks.length,
+    );
     if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
 
     /*
@@ -111,7 +128,15 @@ export async function POST(request: Request) {
      * fork's is overridden by the position it continues. See `liveResponse.ts`.
      */
     const played = settingsAsPlayed({ asked, against });
-    const created = await createLiveGame(played);
+    const matchId = asks.length > 1 ? await freeGameId() : null;
+    const seed = seedFromRoll(Math.random(), SEED_RANGE);
+    const made = [];
+    for (const [index, each] of asks.entries()) {
+      const settings = index === 0 ? played : settingsAsPlayed({ asked: each, against: resolved[index] });
+      const match = matchId === null ? undefined : { id: matchId, index: index + 1, size: asks.length, seed };
+      made.push(await createLiveGame({ ...settings, match }));
+    }
+    const created = made[0];
 
     /*
      * A computer holding the seat that opens plays its stone now, so the board
@@ -136,10 +161,17 @@ export async function POST(request: Request) {
      * move.
      */
     if (against.computerSeated && !browserWillOpen(body)) {
-      try {
-        await playBotTurns(created.id);
-      } catch (error) {
-        console.error(error);
+      /*
+       * Every game of a match, where the caller cannot answer for the
+       * computer. Where it can, the games it does not land on are answered by
+       * the games page like any other move the computer is owed (`BotCatchUp`).
+       */
+      for (const game of made) {
+        try {
+          await playBotTurns(game.id);
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
 
@@ -151,6 +183,7 @@ export async function POST(request: Request) {
      * `xpSocial.ts`, which explains why the order of those tests matters, and
      * why an offer that is declined leaves this award exactly where it is.
      */
+    // Once for a match, on its first game: one ask, however many boards it makes.
     await awardCreatedGame({ memberId: caller, gameId: created.id, kind: createdGameKind(asked.data) });
     return createdResponse({ created, asked, against, played, caller });
   } catch (error) {

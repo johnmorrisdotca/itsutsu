@@ -34,6 +34,7 @@ import { gameRatingRefusal } from "@/lib/rating/rateable";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
+import { MatchPanel } from "@/components/live/MatchPanel";
 import { GameName } from "@/components/games/GameName";
 import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
@@ -84,6 +85,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
         // names, and this row is the only place either page reads them.
         blackToken: true,
         whiteToken: true,
+        matchId: true,
       },
     }),
   ]);
@@ -218,6 +220,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
       refusal={refusal}
       appearance={appearance}
       card={card}
+      match={{ id: members?.matchId ?? null, memberId: myId }}
     />
   );
 }
@@ -236,6 +239,7 @@ function FiledMatch({
   refusal,
   appearance,
   card,
+  match,
 }: {
   game: GameDetail;
   move: number;
@@ -258,6 +262,8 @@ function FiledMatch({
   signedIn: boolean;
   /** An account — `Reader.hasAccount` — which leaving a mark needs. */
   hasAccount: boolean;
+  /** The match this game is one of, if any, and who is reading — see `MatchPanel`. */
+  match: { id: string | null; memberId: string | null };
 }) {
   const result = GAME_RESULT_DISPLAY[game.result];
   /*
@@ -336,6 +342,8 @@ function FiledMatch({
           </Link>
         </span>
       </div>
+      {/* The rest of the match, where this game is one of several; see `MatchPanel`. */}
+      <MatchPanel id={game.id} matchId={match.id} memberId={match.memberId} />
 
       {/*
         Where these two stand now, THIS GAME INCLUDED — "Dan leads 3–2", "your

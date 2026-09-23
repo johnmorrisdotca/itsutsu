@@ -114,6 +114,10 @@ const SAFE_BECAUSE = new Map([
     "IS the queue: it is the one reader that must see offers, and `fetchMyGames` sorts them into their own two groups rather than into the playing ones",
   ],
   [
+    "src/lib/history/matchGames.ts",
+    "is the panel beside each game of a match, which says of every game in it how it stands — a declined one is printed as declined, never as a finished game, and the match it was part of is the only place it is listed",
+  ],
+  [
     "src/lib/auth/members.ts",
     "counts and sweeps member rows against their games by id, never listing a game to anybody",
   ],

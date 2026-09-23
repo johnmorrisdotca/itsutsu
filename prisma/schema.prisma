@@ -174,6 +174,18 @@ model Game {
   /// result (played out), `active` (being played), and `finished` with
   /// `abandoned` (ended without a result) — the last of which had never once
   /// happened on production when this was written.
+  /// A MATCH: several games made at once between the same two players, colours
+  /// alternating, so the advantage of moving first cancels over the match
+  /// (GoldToken's and ItsYourTurn's Two-, Four- and Six-game options). All
+  /// three null for an ordinary game. `matchId` is the first game's id, so the
+  /// match needs no row of its own; `matchIndex` counts from 1; `matchSize` is
+  /// stored rather than counted so a game page names "2 of 4" without a query.
+  /// Each game is its own game in every other way: rated on its own, resigned
+  /// on its own, timed out on its own. Only the offer is answered as one.
+  matchId    String?
+  matchIndex Int?
+  matchSize  Int?
+
   result     GameResult
   /// Set for a decisive game, null for a draw or an abandoned one.
   winner     String?
@@ -229,6 +241,7 @@ model Game {
   /// was true while `lastMoveAt` was only a FILTER over a member's own rows and
   /// stopped being true the moment it became an ORDER.
   @@index([lastMoveAt])
+  @@index([matchId])
 }
 
 model Move {

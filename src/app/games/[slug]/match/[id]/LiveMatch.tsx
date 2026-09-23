@@ -1,3 +1,4 @@
+import { MatchPanel } from "@/components/live/MatchPanel";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
 
@@ -59,6 +60,7 @@ export async function LiveMatch({
   ignoring,
   seatFull,
   offer,
+  match,
 }: {
   game: GameDetail;
   token: string | null;
@@ -72,6 +74,8 @@ export async function LiveMatch({
   ignoring: readonly Stone[];
   /** An unanswered offer this reader is one of the two people in. */
   offer: { side: "to-me" | "from-me"; who: string } | null;
+  /** The match this game is one of, if any, and who is reading — see `MatchPanel`. */
+  match: { id: string | null; memberId: string | null };
 }) {
   /*
    * Seat links are only handed out to someone who already holds one. A reader
@@ -298,6 +302,7 @@ export async function LiveMatch({
           {offer !== null ? (
             <OfferPanel id={game.id} side={offer.side} who={offer.who} />
           ) : null}
+          <MatchPanel id={game.id} matchId={match.id} memberId={match.memberId} />
           <SharedRules game={game} refusal={refusal} />
           {/*
             And nothing to fork off a board nobody has agreed to play on yet.

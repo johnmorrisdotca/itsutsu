@@ -118,7 +118,7 @@ export async function MatchPage({
    */
   const tokens = await prisma.game.findUnique({
     where: { id },
-    select: { blackToken: true, whiteToken: true, blackMemberId: true, whiteMemberId: true },
+    select: { blackToken: true, whiteToken: true, blackMemberId: true, whiteMemberId: true, matchId: true },
   });
   if (tokens !== null && isHotSeat(tokens) && claim !== null) {
     // The member's own board, so a phone and a laptop set out the same one.
@@ -196,6 +196,7 @@ export async function MatchPage({
       ignoring={ignoring}
       seatFull={seatFull}
       offer={offer}
+      match={{ id: tokens?.matchId ?? null, memberId: mineId }}
     />
   );
 }

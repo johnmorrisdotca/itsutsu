@@ -40,7 +40,10 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
       findUnique: async () => row,
+      // No other game of a match: these rows are single games.
+      findMany: async () => [],
       update: ({ data }: { data: Record<string, unknown> }) => Promise.resolve(data),
+      updateMany: ({ data }: { data: Record<string, unknown> }) => Promise.resolve(data),
     },
     move: {
       create: ({ data }: { data: Record<string, unknown> }) => Promise.resolve(data),

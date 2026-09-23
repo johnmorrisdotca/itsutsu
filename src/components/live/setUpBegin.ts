@@ -6,7 +6,8 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { BeginAction } from "./beginGame";
 import { COLOUR_CHOICES, colourIsChosen, type ColourChoice } from "./colourChoice";
 import { describeSeating } from "./doorstepSays";
-import { DOORSTEP_COPY } from "./live.constants";
+import { DOORSTEP_COPY, SET_UP_COPY } from "./live.constants";
+import type { MatchSize } from "@/lib/history/liveMatch";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { creationFor, openerIn, seatsFor } from "./setUpStart";
@@ -30,6 +31,7 @@ export function setUpBegin({
   random,
   waiting,
   colour = COLOUR_CHOICES.black,
+  games = 1,
 }: {
   /** The form as it stands, with any posted seat's board already settled into it. */
   settled: RulesDraft;
@@ -37,6 +39,8 @@ export function setUpBegin({
   waiting?: { id: string; who: string };
   /** The seat the asker chose: black unless they said white, or asked for a lot. */
   colour?: ColourChoice;
+  /** How many games at once, where the colour is the asker's to choose; see `liveMatch.ts`. */
+  games?: MatchSize;
   /** The form as it arrived, for a rematch to notice it has been changed. */
   asPlayed: RulesDraft | null;
   /** Who the game is against NOW — null for a seat posted for anyone, and for a draw. */
@@ -104,12 +108,19 @@ export function setUpBegin({
   })
     ? colour
     : undefined;
+  /*
+   * A MATCH ONLY WHERE THE COLOUR IS CHOSEN: the same named opponent, no
+   * rematch or fork, no opening that settles colours in play. Everywhere else
+   * the control is not drawn and the request asks for one game.
+   */
+  const match = chosen !== undefined && games > 1 ? games : 1;
+  const body = match > 1 ? { ...creation.body, games: match } : creation.body;
   const begin: BeginAction =
     waiting !== undefined
       ? { kind: "sit", id: waiting.id, who: waiting.who, instead: creation.body }
       : random && pool.length > 0
-        ? { kind: "draw", body: creation.body, pool, colour: chosen }
-        : { kind: "create", body: creation.body, colour: chosen };
+        ? { kind: "draw", body, pool, colour: chosen }
+        : { kind: "create", body, colour: chosen };
 
   /*
    * WHO SITS WHERE, said before the board rather than worked out from it. This
@@ -139,5 +150,5 @@ export function setUpBegin({
       openerIn(carry),
     screen: seating.screen,
   });
-  return { begin, sitting };
+  return { begin, sitting: match > 1 ? `${sitting} ${SET_UP_COPY.games.said(match)}` : sitting };
 }

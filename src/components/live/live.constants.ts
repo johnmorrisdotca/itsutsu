@@ -211,6 +211,18 @@ export const SET_UP_COPY = {
     white: "White, and move second",
     lot: "Drawn by lot",
   },
+  /**
+   * How many games at once, as GoldToken asks it: No / Two-game / Four-game /
+   * Six-game. More than one is a match, the colours alternating, so the
+   * advantage of moving first evens out over it.
+   */
+  games: {
+    label: "Games",
+    one: "One",
+    many: (count: number) => `${count}, colours alternating`,
+    /** Added to the seating sentence, so the press says what it will make. */
+    said: (count: number) => `A match of ${count} games: you take each colour in turn.`,
+  },
   /** The headings over the screen's groups, in the order they are drawn. */
   sections: {
     opponent: { title: "Who you play", kanji: "対戦相手" },
@@ -391,6 +403,25 @@ export const DOORSTEP_COPY = {
  * and "ask again whenever you like" is the difference between a refusal and a
  * rebuff. John: "no penalties for refusing."
  */
+/** The panel beside a game that is one of a match; see `MatchPanel`. */
+export const MATCH_PANEL_COPY = {
+  title: "Match",
+  kanji: "番勝負",
+  lead: (size: number) => `One of ${size} games between the same two players, the colours alternating.`,
+  game: (index: number) => `Game ${index}`,
+  you: (colour: string) => `you play ${colour.toLowerCase()}`,
+  here: "this game",
+  state: {
+    offered: "waiting for an answer",
+    playing: "in play",
+    black: "Black won",
+    white: "White won",
+    drawn: "drawn",
+    declined: "declined",
+    withdrawn: "withdrawn",
+  },
+} as const;
+
 export const OFFER_PANEL_COPY = {
   toMe: {
     title: "This game is an offer",
