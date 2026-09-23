@@ -182,7 +182,7 @@ function paginate(total: number, query: { page: number; pageSize: number }): Pag
  * answer — a fresh database has no programs in it — so it is returned rather
  * than treated as "not looked up yet".
  */
-async function computerSeatIds(): Promise<string[]> {
+export async function computerSeatIds(): Promise<string[]> {
   const rows = await prisma.member.findMany({
     where: { botTier: { not: null } },
     select: { id: true },

@@ -4,8 +4,15 @@ import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { GameCount } from "@/components/games/GameCount";
 import { currentSession } from "@/lib/auth/currentSession";
+import { siteNumbers } from "@/lib/site/siteNumbers";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+
+/** "1 player", "3 players": a count said in words. */
+function plural(count: number, noun: string): string {
+  return `${count.toLocaleString("en-GB")} ${noun}${count === 1 ? "" : "s"}`;
+}
 
 /** What the site says about itself, in three lines. */
 const PITCH = [
@@ -44,6 +51,7 @@ export default async function Home() {
   // The header has already asked; the member row behind it is cached for the
   // request, so asking again here reads no more than the cookie.
   const session = await currentSession();
+  const numbers = await siteNumbers();
   return (
     <Page width="standard" gap="gap-10">
       <SiteHeader hero />
@@ -55,6 +63,22 @@ export default async function Home() {
         <p className="max-w-xl text-sm text-muted sm:text-base">
           A quiet board for two people. Play across the table or across the world, learn the
           shapes that win, and keep every game you finish.
+        </p>
+        {/*
+          THREE NUMBERS, the way Pente.org prints them (John, 2026-09-16) —
+          said as what they are: an early release, by invitation, so a small
+          count reads as a place not open yet rather than one people left.
+          People only, and the games number links to exactly those games; see
+          `siteNumbers.ts`.
+        */}
+        <p className="max-w-xl text-xs text-muted" data-testid="site-numbers">
+          Itsutsu is in early release, by invitation only — so far{" "}
+          <Link href="/players" className="underline underline-offset-4" data-testid="site-numbers-players">
+            {plural(numbers.players, "player")}
+          </Link>
+          ,{" "}
+          <GameCount count={plural(numbers.games, "game")} pool="people" testId="site-numbers-games" /> between people, and{" "}
+          {numbers.hereNow} here now.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           {/*
