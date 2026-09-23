@@ -81,7 +81,7 @@ export const SUMMARY_SELECT = {
 type SummaryRow = Prisma.GameGetPayload<{ select: typeof SUMMARY_SELECT }>;
 
 /** A move row, with the columns a slide or a twist fills in. */
-const MOVE_SELECT = {
+export const MOVE_SELECT = {
   number: true,
   row: true,
   col: true,

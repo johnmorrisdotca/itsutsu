@@ -230,6 +230,14 @@ export const RATE_LIMITS = {
    * so the suite's relief applies.
    */
   directMessage: { windowMs: 60 * 60_000, maxRequests: 60 },
+  /**
+   * A player's end positions, which brings back up to a hundred and twenty
+   * games with their moves in one answer — the heaviest read a member can ask
+   * for, and only ever asked for by a press. Twenty a minute is somebody
+   * trying every game and every outcome; past it is not a person. A cost
+   * limit, so the suite's relief applies.
+   */
+  endings: { windowMs: 60_000, maxRequests: 20 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
   /**

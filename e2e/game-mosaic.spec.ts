@@ -27,9 +27,16 @@ test("a finished game becomes one picture of every move, drawn in the browser an
   await page.goto(`/games/gomoku/match/${game.id}`);
   await ready(page, "game-mosaic");
 
+  /*
+   * Everything the site is asked for, less the dev server's code files (a chunk
+   * loaded the first time something is pressed is a file, not work done for the
+   * picture) — and less the picture itself, which is a blob in this browser.
+   */
   const asked: string[] = [];
   page.on("request", (sent) => {
-    if (!sent.url().startsWith("blob:") && !sent.url().startsWith("data:")) asked.push(sent.url());
+    if (!sent.url().startsWith("http")) return;
+    const path = new URL(sent.url()).pathname;
+    if (!path.startsWith("/_next/")) asked.push(path);
   });
 
   await page.getByTestId("make-mosaic").click();
