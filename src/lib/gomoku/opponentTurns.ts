@@ -18,7 +18,8 @@ import {
 import { GAME_STATUS, MOVE_KINDS, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { TURN_CAP, UNTRIMMED_POINTS } from "./opponent.constants";
 import { tengen } from "./obstacles";
-import type { GameState, Point, Stone } from "./gomoku.types";
+import { walledIn } from "./rules/go";
+import type { Cell, GameState, Point, Stone } from "./gomoku.types";
 import type { BotTurn } from "./opponent.types";
 
 /**
@@ -184,7 +185,20 @@ function placementTurns(state: GameState, limit: number): BotTurn[] {
  * the position forces.
  */
 function goTurns(state: GameState, limit: number): BotTurn[] {
-  return [...placementTurns(state, limit), { kind: MOVE_KINDS.pass }];
+  /*
+   * NOT INSIDE ITS OWN WALLS. A stone on ground already walled in gains its
+   * owner nothing under area scoring and fills the eyes the group lives by,
+   * and because it changes the count by nothing it tied with passing and was
+   * chosen half the time — so a won game went on until the board was nearly
+   * full, which to somebody new to Go reads as the board running out rather
+   * than the game being over (John, 2026-09-23). With those points gone, a
+   * player with nothing useful left has only the pass.
+   */
+  const own = walledIn(state.board as Cell[], state.settings.size, state.toPlay);
+  const places = placementTurns(state, limit).filter(
+    (turn) => turn.kind !== MOVE_KINDS.place || !own.has(turn.row * state.settings.size + turn.col),
+  );
+  return [...places, { kind: MOVE_KINDS.pass }];
 }
 
 /** Every quarter turn a twist game could finish a stone with. */

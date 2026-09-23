@@ -173,6 +173,50 @@ export function scoreArea(board: Cell[], size: number): { black: number; white: 
  * tie: komi is a half point. Handed the komi, because a handicap game is
  * counted with less — see `komiFor`.
  */
+/**
+ * The empty points `stone` has already walled in: every empty region whose
+ * border is that colour's stones and nothing else — the ground `scoreArea`
+ * counts as theirs.
+ *
+ * A stone played there gains its owner nothing under area scoring, and it
+ * fills the eyes the group lives by. So it is never a move worth making, and
+ * the computer players leave it out; a player who has nothing else left
+ * passes, which is how Go ends.
+ */
+export function walledIn(board: Cell[], size: number, stone: Stone): Set<number> {
+  const owned = new Set<number>();
+  const seen = new Set<number>();
+  for (let index = 0; index < board.length; index += 1) {
+    if (board[index] !== null || seen.has(index)) continue;
+    const region: number[] = [];
+    let foreign = false;
+    const queue = [index];
+    seen.add(index);
+    while (queue.length > 0) {
+      const at = queue.shift() as number;
+      region.push(at);
+      const point = pointOf(size, at);
+      for (const step of NEIGHBOURS) {
+        const next = { row: point.row + step.row, col: point.col + step.col };
+        if (!isOnBoard(size, next)) continue;
+        const nextIndex = indexOf(size, next);
+        const nextCell = board[nextIndex];
+        if (nextCell === null) {
+          if (!seen.has(nextIndex)) {
+            seen.add(nextIndex);
+            queue.push(nextIndex);
+          }
+        } else if (nextCell !== stone) {
+          foreign = true;
+        }
+      }
+    }
+    // An empty board, or a region touching nobody, is nobody's ground.
+    if (!foreign && region.length < board.length) for (const at of region) owned.add(at);
+  }
+  return owned;
+}
+
 export function areaWinner(board: Cell[], size: number, komi: number): Stone {
   const { black, white } = scoreArea(board, size);
   return black > white + komi ? "black" : "white";

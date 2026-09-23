@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createGame, passTurn, playMove } from "../engine";
 import { GAME_STATUS, STONES, WIN_REASONS } from "../gomoku.constants";
 import type { GameState } from "../gomoku.types";
-import { areaWinner, groupAt, KOMI, scoreArea } from "./go";
+import { areaWinner, groupAt, KOMI, scoreArea, walledIn } from "./go";
 
 const p = (row: number, col: number) => ({ row, col });
 
@@ -149,5 +149,34 @@ describe("go", () => {
     expect(group.stones).toHaveLength(3);
     // Liberties: (0,2), (1,1), (2,0) — three empty points touching the group, none double-counted.
     expect(group.liberties.size).toBe(3);
+  });
+});
+
+describe("walled-in ground", () => {
+  const size = 5;
+  const empty = (): (string | null)[] => Array.from({ length: size * size }, () => null);
+
+  it("is the empty region a colour's stones alone border", () => {
+    // Black walls off the top-left corner point (0,0) with stones on (0,1) and (1,0).
+    const board = empty();
+    board[1] = STONES.black;
+    board[5] = STONES.black;
+    board[24] = STONES.white;
+    const black = walledIn(board as never, size, STONES.black);
+    expect([...black]).toEqual([0]);
+    expect(walledIn(board as never, size, STONES.white).has(0)).toBe(false);
+  });
+
+  it("is nobody's while the other colour touches it", () => {
+    const board = empty();
+    board[1] = STONES.black;
+    board[5] = STONES.black;
+    board[6] = STONES.white;
+    // The big open region touches both; only the corner is Black's.
+    expect(walledIn(board as never, size, STONES.black).has(12)).toBe(false);
+  });
+
+  it("is nothing at all on an empty board", () => {
+    expect(walledIn(empty() as never, size, STONES.black).size).toBe(0);
   });
 });

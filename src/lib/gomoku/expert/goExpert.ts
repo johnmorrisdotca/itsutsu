@@ -1,6 +1,6 @@
 import { otherStone, pointOf } from "../engine";
 import { MOVE_KINDS, STONES } from "../gomoku.constants";
-import { goLegal, groupAt } from "../rules/go";
+import { goLegal, groupAt, walledIn } from "../rules/go";
 import { komiFor } from "../rules/headStart";
 import { EXPERT_KINDS, GO, GO_INFLUENCE, GO_WEIGHTS } from "./expert.constants";
 import type { Cell, GameState, Point, Stone, VariantSpec } from "../gomoku.types";
@@ -143,12 +143,14 @@ export function goTurns(state: GameState, limit: number): BotTurn[] {
   const foe = otherStone(me);
   const middle = (size - 1) / 2;
 
+  // Ground already walled in is never worth a stone: see `walledIn`.
+  const own = walledIn(state.board as Cell[], size, me);
   const ranked: { turn: BotTurn; worth: number }[] = [];
   for (let index = 0; index < state.board.length; index += 1) {
     if (state.board[index] !== null) continue;
     const point = pointOf(size, index);
     if (!goLegal(state.board as Cell[], size, point, me, state.koPoint)) continue;
-    if (ownEye(state, point, me)) continue;
+    if (ownEye(state, point, me) || own.has(index)) continue;
 
     let worth = 0;
     let touches = false;
