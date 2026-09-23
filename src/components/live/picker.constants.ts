@@ -87,6 +87,18 @@ export const PICK_CHIP =
 
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
 
+/**
+ * The first row of the set-up screen: the families, and — through the picker's
+ * `underFamilies` — the board and its sizes. A column below a laptop's width,
+ * where the families are a wrapping row of tiles over the board; one row from
+ * `lg`, families on the left, board in the middle, sizes on the right. See
+ * `GamePicker` for why the families are the part that can stand beside it.
+ */
+export const FAMILY_ROW = "flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-6";
+
+/** The family tiles: a wrapping row, then two columns beside the board from `lg`. */
+export const FAMILY_TILES = "flex flex-wrap gap-1.5 lg:grid lg:w-fit lg:shrink-0 lg:grid-cols-2";
+
 export const PICK_CHIP_SHUT =
   "border-rule bg-ivory/70 text-ink-soft hover:border-rule-strong hover:text-ink";
 
@@ -229,37 +241,39 @@ export const PICK_TILES = "grid grid-cols-1 gap-2 md:grid-cols-3";
  * from", "No clock · Rated" — drawn the width of the panel. At a desk that is a
  * line of text in a band of empty paper, three times over.
  *
- * A CLOSED FOLD IS ONE CELL AND AN OPEN ONE IS THE WHOLE ROW, and that is the
- * part John described and the part that needed care. A fold that opened inside
- * its own column would give a list of people a third of the page to sit in and
- * push its neighbours' words about as it grew. So `SetUpFold` spans every column
- * while it is open (`FOLD_OPEN_SPANS`), and `grid-flow-row-dense` lets the closed
- * ones behind it move UP into the row it left — the closed answers stay one row
- * of columns and the open one is a band under them. All in CSS: the fold already
- * says `data-open`, and nothing here needs to know which one it is.
+ * EACH ANSWER KEEPS ITS COLUMN, OPEN OR SHUT. The first version made an open
+ * fold span the row, and the answers beside it closed up — John opened the
+ * handicap and watched it jump to a line of its own: "Should keep that
+ * column!!! … I HATE the UI moving unnecessarily". Now every button stays where
+ * it is and an open answer's choices appear on a line under the row. How is in
+ * `answerRow.ts`; the classes here only turn the row into a grid and let each
+ * answer be laid over it.
  *
  * Below 768px everything stacks exactly as it did, because a phone's column is
  * already the width of one answer.
  */
-export const ANSWER_ROW = "flex flex-col gap-2 md:grid md:grid-flow-row-dense md:items-stretch md:gap-3";
+export const ANSWER_ROW = "flex flex-col gap-2 md:grid md:items-stretch md:gap-x-3 md:gap-y-0";
 
-/** Who you play: the posted seat and each list of people or programs. Three across once there is room for three. */
-export const ANSWER_ROW_OPPONENT = `${ANSWER_ROW} md:grid-cols-2 lg:grid-cols-3`;
+/** Who you play: the posted seat and each list of people or programs. */
+export const ANSWER_ROW_OPPONENT = ANSWER_ROW;
 
-/**
- * The rules and the handicap: two answers, and a row of two however wide the
- * desk. A lone one (a fork has no handicap to ask) takes the row rather than
- * half of it.
- */
-export const ANSWER_ROW_RULES = `${ANSWER_ROW} md:grid-cols-2 md:*:only:col-span-full`;
+/** The rules and the handicap. */
+export const ANSWER_ROW_RULES = ANSWER_ROW;
 
 /**
- * What an open fold does in one of those rows. On the fold itself so that every
- * fold in every row behaves alike, and harmless anywhere else: outside a grid a
- * column span means nothing, so the folds inside the rules — the opening, the
- * rating — are untouched by it.
+ * An answer laid over the whole row: a subgrid of it, so its button and its
+ * choices can each be put on the row's own lines. Transparent to the pointer,
+ * because it covers its neighbours' buttons; its own parts take the pointer
+ * back (`ANSWER_PART`).
  */
-export const FOLD_OPEN_SPANS = "md:data-[open=true]:col-span-full";
+export const ANSWER_SPREAD =
+  "md:grid md:grid-cols-subgrid md:grid-rows-subgrid md:pointer-events-none md:gap-x-3 md:gap-y-0";
+
+/** A button or a set of choices inside a spread answer: pressable again. */
+export const ANSWER_PART = "md:pointer-events-auto";
+
+/** The space above an open answer's choices, which in a row sit a line below the buttons. */
+export const ANSWER_BODY_GAP = "md:pt-3";
 
 /**
  * The posted seat's cell in that row. It holds one tile, so from a tablet up
@@ -271,8 +285,6 @@ export const FOLD_OPEN_SPANS = "md:data-[open=true]:col-span-full";
  */
 export const ANSWER_ROW_SEAT = "grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1";
 
-/** A line that belongs to the whole row rather than to one answer in it. */
-export const ANSWER_ROW_WIDE = "md:col-span-full";
 
 /** Rated and Friendly: two answers, side by side once there is room for both lines. */
 export const PICK_PAIR = "grid grid-cols-1 gap-2 sm:grid-cols-2";

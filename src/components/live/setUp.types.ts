@@ -1,3 +1,4 @@
+import type { AnswerPlace } from "./answerRow";
 import type { ReactNode } from "react";
 
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
@@ -45,6 +46,12 @@ export type SetUpFoldProps = {
   openInitially?: boolean;
   /** Which list this is, where several folds share a test id. Drawn as `data-group`. */
   group?: string;
+  /**
+   * Its place in a row of answers — its button's column, and the line under
+   * the row where its choices open. Absent for a fold standing on its own.
+   * See `answerRow.ts`.
+   */
+  place?: AnswerPlace;
   children: ReactNode;
 };
 

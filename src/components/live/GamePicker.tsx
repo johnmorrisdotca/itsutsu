@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameThumb } from "@/components/games/GameThumb";
@@ -12,7 +12,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 import { familyShown, gameForFamilyClick, type Family } from "./picker";
 import { PickMark } from "./PickMark";
-import { PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
+import { FAMILY_ROW, FAMILY_TILES, PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
 
 /** Which way an arrow key moves along the family row. Home and End are the ends. */
 const STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 1, ArrowUp: -1 };
@@ -72,6 +72,7 @@ export function GamePicker({
   onChange,
   disabled = false,
   label,
+  underFamilies,
 }: {
   /** The chosen game, as its variant key. */
   value: string;
@@ -79,6 +80,19 @@ export function GamePicker({
   disabled?: boolean;
   /** What the group is called — "Game" on the screen that is choosing one. */
   label: string;
+  /**
+   * Drawn straight under the row of families, above the games of the open one:
+   * the board and its sizes, on the set-up screen.
+   *
+   * THERE BECAUSE THE FAMILY ROW NEVER CHANGES HEIGHT AND THE GAMES DO. John,
+   * 2026-09-22: "put the board below the first row. The first row is always one
+   * row. Putting it below the 2nd row causes it to shift up and down, and the
+   * 2nd row has more than 1 row. which then possibly shifts the board out of
+   * view." Under the games, the board sat one line lower for Races than for
+   * Drops' three rows of eight — and moved as the reader clicked from family to
+   * family. Under the families it is always the same distance from the top.
+   */
+  underFamilies?: ReactNode;
 }) {
   /*
    * The open family is a READING of the chosen game.
@@ -146,8 +160,22 @@ export function GamePicker({
     <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-variant">
       <legend className="mb-0.5 text-sm text-ink-soft">{label}</legend>
 
-      {/* Row one: every family there is, wrapping rather than scrolling sideways. */}
-      <div role="tablist" aria-label="Families of games" className="flex flex-wrap gap-1.5">
+      {/*
+        ROW ONE, AND ON A DESK IT IS THE BOARD'S ROW TOO. John, 2026-09-22:
+        "In Desktop, the Top row can actually be the LHS of the board, in 2
+        columns… LHS is 2 columns of the Game, MIDDLE is the board, and RHS is
+        the Size boards. this can all be FIRST ROW now. since it won't change
+        size. 2nd row is the Game variants that can be chosen."
+
+        The families are the one part of this screen that never changes size —
+        eight tiles, whichever is open — so they can stand beside the board
+        without the board ever moving. From a laptop's width they are two
+        columns to the board's left and the sizes are to its right (both in
+        `underFamilies`); below that the families are a row of tiles and the
+        board sits under them, still above the games that DO change height.
+      */}
+      <div className={FAMILY_ROW}>
+      <div role="tablist" aria-label="Families of games" className={FAMILY_TILES}>
         {GAME_FAMILIES.map((entry, at) => {
           const showing = entry.title === family.title;
           return (
@@ -195,6 +223,9 @@ export function GamePicker({
             </button>
           );
         })}
+      </div>
+
+      {underFamilies}
       </div>
 
       {/*

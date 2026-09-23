@@ -12,7 +12,8 @@ import Link from "next/link";
 
 import { ASK_NEEDS_ACCOUNT, SET_UP_COPY } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
-import { ANSWER_ROW_OPPONENT, ANSWER_ROW_SEAT, ANSWER_ROW_WIDE, OPPONENT_GROUPS } from "./picker.constants";
+import { ANSWER_ROW_OPPONENT, ANSWER_ROW_SEAT, OPPONENT_GROUPS } from "./picker.constants";
+import { answerColumns, answerPlace, answerRowFoot, type AnswerPlace } from "./answerRow";
 import { PickMark } from "./PickMark";
 import {
   OPPONENT_GROUP_WORDS,
@@ -72,6 +73,8 @@ export function OpponentChoice({
    */
   const inert = disabled || !signedIn;
   const cannotName = disabled || !canAsk;
+  /** The posted seat and every list: the answers laid across the row, each keeping its column. */
+  const answers = 1 + groups.length;
 
   return (
     /*
@@ -80,7 +83,7 @@ export function OpponentChoice({
      * `ANSWER_ROW`: John asked for "1 row with 3 columns… and can open up when
      * clicking things that have more room needed".
      */
-    <fieldset className={`min-w-0 ${ANSWER_ROW_OPPONENT}`} data-testid="set-up-with">
+    <fieldset className={`min-w-0 ${ANSWER_ROW_OPPONENT}`} style={answerColumns(answers)} data-testid="set-up-with">
       {/* Named for a screen reader; the section heading above it says it to the eye. */}
       <legend className="sr-only">{say("setup.opponent")}</legend>
       {/*
@@ -88,7 +91,7 @@ export function OpponentChoice({
         fills it rather than sitting in a third of a grid of its own. Below a
         tablet it keeps the people grid it always had.
       */}
-      <div className={ANSWER_ROW_SEAT}>
+      <div className={ANSWER_ROW_SEAT} style={answerPlace(0, answers).head}>
         {/*
           THE WORDS FROM `setUpWords.ts`, WHICH IS WHERE THEY ARE DECIDED. The
           folded summary line stands in for this choice while the drawer is shut,
@@ -116,9 +119,10 @@ export function OpponentChoice({
           name=""
         />
       </div>
-      {groups.map((group) => (
+      {groups.map((group, index) => (
         <Run
           key={group.kind}
+          place={answerPlace(index + 1, answers)}
           group={group}
           variant={variant}
           shown={shown}
@@ -179,7 +183,7 @@ export function OpponentChoice({
         names above cannot be chosen — in words, not by tiles that simply refuse.
       */}
       {canAsk ? (
-        <p className={`text-xs text-muted ${ANSWER_ROW_WIDE}`} data-testid="set-up-opponent-elsewhere">
+        <p className="text-xs text-muted md:pt-3" style={answerRowFoot(answers)} data-testid="set-up-opponent-elsewhere">
           {SET_UP_COPY.elsewhere}{" "}
           <Link href="/players" className="underline underline-offset-4 hover:text-ink">
             {SET_UP_COPY.elsewhereLink}
@@ -187,7 +191,7 @@ export function OpponentChoice({
           {SET_UP_COPY.elsewhereAfter}
         </p>
       ) : signedIn ? (
-        <p className={`text-xs text-muted ${ANSWER_ROW_WIDE}`} data-testid="set-up-ask-needs-account">
+        <p className="text-xs text-muted md:pt-3" style={answerRowFoot(answers)} data-testid="set-up-ask-needs-account">
           {ASK_NEEDS_ACCOUNT}
         </p>
       ) : null}
@@ -204,7 +208,10 @@ function Run({
   openAnyway,
   disabled,
   onChange,
+  place,
 }: {
+  /** This list's column in the row of answers, and the line its choices open on. */
+  place: AnswerPlace;
   group: OpponentGroup;
   /** The game being set up: a measured strength is a claim about ONE game. */
   variant: string;
@@ -323,6 +330,7 @@ function Run({
       testId="set-up-opponent-fold"
       group={group.kind}
       openInitially={!answered || openAnyway}
+      place={place}
       summary={
         mine === undefined ? (
           /*
