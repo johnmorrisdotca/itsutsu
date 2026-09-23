@@ -318,7 +318,20 @@ export function threatScore(
  * grades are separated at it by how often they blunder rather than by depth.
  */
 export function readsPosition(spec: VariantSpec): boolean {
-  return spec.flips || spec.go || racesForCamp(spec) || spec.captures || spec.checkers;
+  return spec.flips || spec.go || racesForCamp(spec) || spec.captures || spec.checkers || readsWindows(spec);
+}
+
+/**
+ * The line games the incremental line search refuses — a turn lays several
+ * stones at once (the piece games) or turns a quarter of the board (the twist
+ * games) — and which `boardScore` reads anyway. It reads a still board of
+ * stones, every window of a line, whatever put the stones there; and each of
+ * these games ends every turn as a still board of stones. Until this, they were
+ * answered below with the capture difference, which is nought in a game with no
+ * captures, and so nothing searched them. See `lookable`.
+ */
+export function readsWindows(spec: VariantSpec): boolean {
+  return spec.queue !== null || spec.quadrantSize !== null;
 }
 
 /**
@@ -335,6 +348,7 @@ export function positionScore(state: GameState, stone: Stone): number {
   if (racesForCamp(spec)) return raceScore(state, stone);
   if (spec.connects) return connectScore(state, stone);
   if (spec.checkers) return checkersScore(state, stone);
+  if (readsWindows(spec)) return boardScore(state, stone, spec);
 
   const foe = otherStone(stone);
   const captured =

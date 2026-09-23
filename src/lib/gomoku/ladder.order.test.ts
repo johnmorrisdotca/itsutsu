@@ -158,14 +158,13 @@ const LEVEL_AT_THE_TOP: readonly RuleVariant[] = [
   // The maker wants a line of either colour and the breaker wants none: one
   // board, two objectives, and no single reading of a position.
   RULE_VARIANTS.makerBreaker,
-  // The next piece is drawn after the turn, so a search past this move is a
-  // search of a board that will not happen.
-  RULE_VARIANTS.dominoFive,
-  RULE_VARIANTS.blockFive,
-  // A quarter turn rotates the board under the reading, and a turn there is two
-  // decisions rather than one.
-  RULE_VARIANTS.twistFive,
-  RULE_VARIANTS.twistFour,
+  /*
+   * The piece games and the twist games were here until 2026-09-22, for "the
+   * next piece is drawn after the turn" and "a quarter turn rotates the board
+   * under the reading". The queue is fixed by the seed and public to both
+   * sides, and every turn in either game ends on a still board, which
+   * `boardScore` reads; see `lookable`. They search now.
+   */
   // Lines that clear, and holes that move a stone elsewhere: the window count
   // is not a true account of either.
   RULE_VARIANTS.clearDrop,
@@ -232,8 +231,11 @@ describe("every rung of the ladder is a different player", () => {
     // Nothing can read these, so nothing looks: see LEVEL_AT_THE_TOP.
     expect(readsPosition(VARIANT_SPECS[RULE_VARIANTS.misereFive])).toBe(false);
     expect(lookable(VARIANT_SPECS[RULE_VARIANTS.misereFive])).toBe(false);
-    expect(lookable(VARIANT_SPECS[RULE_VARIANTS.twistFive])).toBe(false);
-    expect(lookable(VARIANT_SPECS[RULE_VARIANTS.dominoFive])).toBe(false);
+
+    // A still board after every turn, read whole: the piece games and the twist games.
+    for (const variant of [RULE_VARIANTS.dominoFive, RULE_VARIANTS.blockFive, RULE_VARIANTS.twistFive, RULE_VARIANTS.twistFour]) {
+      expect(lookable(VARIANT_SPECS[variant]), variant).toBe(true);
+    }
   });
 
   it("hands back a turn the chooser actually weighed, in every family it reads", () => {

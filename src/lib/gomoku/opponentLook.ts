@@ -1,5 +1,5 @@
 import { racesForCamp } from "./rules/farCamp";
-import { GAME_STATUS, VARIANT_SPECS } from "./gomoku.constants";
+import { GAME_STATUS, PIECE_PREVIEW, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, DRAW_SCORE, LOOK, SEARCH } from "./opponent.constants";
 import { positionScore, readsPosition } from "./opponentEval";
 import { searchable } from "./opponentSearch";
@@ -71,18 +71,35 @@ function spent(budget: Budget): boolean {
  *   scores every position identically, and a minimax over a constant returns
  *   whichever move was enumerated first. That is the dangerous kind of
  *   nothing — it looks exactly like a judgement.
- * - Is the next piece known? In the queue games it is drawn after the turn, so
- *   a search past this move is a search of a board that will not happen.
- * - Does the board stay still? A twist game turns a quadrant under the reading
- *   and a turn there is two decisions, which multiplies the candidates by the
- *   quadrants and then asks the reading a question it has no answer for.
+ * THE PIECE GAMES AND THE TWIST GAMES USED TO BE REFUSED HERE, on two reasons
+ * that did not hold. "In the queue games the next piece is drawn after the
+ * turn, so a search past this move is a search of a board that will not
+ * happen" — but the queue is fixed by the game's seed and both sides can see
+ * what is coming (`pieceQueue`), so the board a search reaches is the board
+ * that will happen. And "a twist game asks the reading a question it has no
+ * answer for" — true of the reading there was, which scored these games on
+ * captures they do not have, nought everywhere. Refused, no grade searched
+ * them: 段 beat 名人 and разряд beat 級 at Domino Five, measured on
+ * 2026-09-22. They are read by `boardScore` now, which reads a still board
+ * whatever put the stones there, and `readsPosition` says so.
  */
 export function lookable(spec: VariantSpec): boolean {
   if (searchable(spec)) return false;
-  if (!readsPosition(spec)) return false;
-  if (spec.queue !== null) return false;
-  if (spec.quadrantSize !== null) return false;
-  return true;
+  return readsPosition(spec);
+}
+
+/**
+ * NO FURTHER THAN A PLAYER CAN SEE. In the piece games the queue is fixed by
+ * the seed, and the engine will happily hand a search the tenth piece — but the
+ * board shows a player the piece in hand and the next `PIECE_PREVIEW`, and a
+ * program reading pieces nobody has been shown is not playing the same game as
+ * the person across from it. Both sides draw from one sequence, so a search of
+ * `2 × PIECE_PREVIEW` plies lays at most that many pieces for each of them,
+ * every one of which the side to move can see. 名人 searches eight plies and
+ * 国手 twelve elsewhere; here both stop at six.
+ */
+function deepestFair(spec: VariantSpec, depth: number): number {
+  return spec.queue === null ? depth : Math.min(depth, 2 * PIECE_PREVIEW);
 }
 
 /**
@@ -219,7 +236,7 @@ export function lookAheadTurn(
   if (root.length === 1) return root[0].turn;
 
   let chosen: BotTurn | null = null;
-  for (let ply = 2; ply <= depth; ply += 2) {
+  for (let ply = 2; ply <= deepestFair(spec, depth); ply += 2) {
     let best = -Infinity;
     let equal: BotTurn[] = [];
     let finished = true;
