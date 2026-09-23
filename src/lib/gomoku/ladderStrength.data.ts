@@ -101,6 +101,702 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
       }
     ]
   },
+  "chineseCheckers": {
+    "variant": "chineseCheckers",
+    "size": 17,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-23",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 6,
+        "losses": 14,
+        "draws": 0
+      }
+    ]
+  },
+  "dominoFive": {
+    "variant": "dominoFive",
+    "size": 13,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-22",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 14,
+        "losses": 6,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 7,
+        "losses": 13,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 8,
+        "losses": 12,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 6,
+        "losses": 14,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 6,
+        "losses": 14,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 4,
+        "losses": 16,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 11,
+        "losses": 9,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 8,
+        "losses": 12,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 11,
+        "losses": 9,
+        "draws": 0
+      }
+    ]
+  },
+  "dropFour": {
+    "variant": "dropFour",
+    "size": 7,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-22",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 10,
+        "losses": 10,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 2,
+        "losses": 17,
+        "draws": 1
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 5,
+        "losses": 14,
+        "draws": 1
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 9,
+        "losses": 11,
+        "draws": 0
+      }
+    ]
+  },
+  "freestyle": {
+    "variant": "freestyle",
+    "size": 9,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-22",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 5,
+        "losses": 15,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 0,
+        "losses": 16,
+        "draws": 4
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 16,
+        "draws": 4
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 18,
+        "draws": 2
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 8,
+        "draws": 12
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 2,
+        "losses": 6,
+        "draws": 12
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 1,
+        "draws": 19
+      }
+    ]
+  },
+  "go": {
+    "variant": "go",
+    "size": 9,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-23",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 9,
+        "losses": 11,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 5,
+        "losses": 15,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 7,
+        "losses": 13,
+        "draws": 0
+      }
+    ]
+  },
+  "halma": {
+    "variant": "halma",
+    "size": 8,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-23",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 5,
+        "losses": 15,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 14,
+        "losses": 6,
+        "draws": 0
+      }
+    ]
+  },
+  "hex": {
+    "variant": "hex",
+    "size": 11,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-23",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 12,
+        "losses": 8,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 10,
+        "losses": 10,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 10,
+        "losses": 10,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 10,
+        "losses": 10,
+        "draws": 0
+      }
+    ]
+  },
+  "ninuki": {
+    "variant": "ninuki",
+    "size": 9,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-22",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 5,
+        "losses": 15,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 8,
+        "losses": 12,
+        "draws": 0
+      }
+    ]
+  },
   "reversi": {
     "variant": "reversi",
     "size": 8,
@@ -184,6 +880,180 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
         "second": "guoshou",
         "wins": 7,
         "losses": 13,
+        "draws": 0
+      }
+    ]
+  },
+  "tictactoe": {
+    "variant": "tictactoe",
+    "size": 3,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-23",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 4,
+        "losses": 11,
+        "draws": 5
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 3,
+        "losses": 11,
+        "draws": 6
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 8,
+        "draws": 12
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 8,
+        "draws": 12
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 4,
+        "losses": 10,
+        "draws": 6
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 5,
+        "draws": 15
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 5,
+        "draws": 15
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 2,
+        "draws": 18
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 2,
+        "draws": 18
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 0,
+        "draws": 20
+      }
+    ]
+  },
+  "toroidalFive": {
+    "variant": "toroidalFive",
+    "size": 9,
+    "gamesPerPairing": 20,
+    "nodesPerMove": 4000,
+    "measuredOn": "2026-09-23",
+    "fingerprint": "c156214e132c28db",
+    "tiers": [
+      "razryad",
+      "kyu",
+      "dan",
+      "meijin",
+      "guoshou"
+    ],
+    "pairings": [
+      {
+        "first": "razryad",
+        "second": "kyu",
+        "wins": 4,
+        "losses": 16,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "dan",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "razryad",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "dan",
+        "wins": 1,
+        "losses": 19,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "meijin",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "kyu",
+        "second": "guoshou",
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "meijin",
+        "wins": 3,
+        "losses": 17,
+        "draws": 0
+      },
+      {
+        "first": "dan",
+        "second": "guoshou",
+        "wins": 2,
+        "losses": 18,
+        "draws": 0
+      },
+      {
+        "first": "meijin",
+        "second": "guoshou",
+        "wins": 11,
+        "losses": 9,
         "draws": 0
       }
     ]

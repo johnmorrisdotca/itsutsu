@@ -25,11 +25,24 @@ const MAX_LINES = 500;
  *   *.test.ts        a suite of focused cases. Forty small tests in one file
  *                    is not complexity, and cutting it at forty invents a
  *                    seam that means nothing.
+ *   *.data.ts        a table somebody's MACHINE wrote. `ladderStrength.data.ts`
+ *                    is the graded players' record game by game, written by
+ *                    `ladder.match.test.ts` and never edited by hand, and it
+ *                    grows by about forty lines for every board measured. It
+ *                    passed five hundred at twelve boards and failed a release
+ *                    that had nothing to do with it. Splitting it would give
+ *                    two generated files to keep in step, and the generator
+ *                    would have to be taught where to cut — a seam invented to
+ *                    satisfy a gate, which is the move AGENTS.md calls
+ *                    "a gate trimmed rather than heard".
  *
  * So they are counted and reported, but they do not fail the build. Logic
- * files still do.
+ * files still do — and `.data.ts` earns its place here only because nobody
+ * writes it: a hand-written file with data in its name is still logic
+ * wearing a costume, and the honest way to keep this exemption narrow is to
+ * keep the generator as the only author.
  */
-const ADVISORY = /\.(constants|test)\.[cm]?[jt]sx?$/;
+const ADVISORY = /\.(constants|data|test)\.[cm]?[jt]sx?$/;
 const ROOT = "src";
 const EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".js", ".jsx", ".mjs"]);
 const SKIP_DIRS = new Set(["generated", "node_modules"]);
