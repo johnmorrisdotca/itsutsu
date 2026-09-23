@@ -60,3 +60,10 @@ export const MOSAIC_COPY = {
   fill: "Fill the space after the last move with the game's details",
   site: "itsutsu.com",
 } as const;
+
+/** The words on a live board's picture of its positions so far — see `VisualMoves`. */
+export const VISUAL_MOVES_COPY = {
+  summary: "Every position so far",
+  kanji: "局面",
+  soFar: "In play",
+} as const;
