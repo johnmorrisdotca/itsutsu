@@ -10,6 +10,7 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
+import { GameMosaic } from "./GameMosaic";
 import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
@@ -96,6 +97,7 @@ export function GameReplay({
   appearance = DEFAULT_APPEARANCE,
   seated = false,
   offerSgf = false,
+  offerMosaic = false,
   overlay = null,
 }: {
   game: GameDetail;
@@ -137,6 +139,8 @@ export function GameReplay({
    * played here. Defaults to false so no caller offers a file by omission.
    */
   offerSgf?: boolean;
+  /** Offer the game as one picture of every position, made in the browser — see `GameMosaic`. */
+  offerMosaic?: boolean;
 }) {
   const timeline = useMemo(() => replayTimeline(game), [game]);
   /*
@@ -207,6 +211,7 @@ export function GameReplay({
   const current = game.moves[moveNumber - 1];
 
   return (
+    <>
     <div
       className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch"
       data-testid="game-replay"
@@ -357,5 +362,7 @@ export function GameReplay({
         </div>
       </aside>
     </div>
+    {offerMosaic ? <GameMosaic game={game} timeline={timeline} /> : null}
+    </>
   );
 }
