@@ -181,6 +181,24 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
       </section>
 
       {/*
+        THE REMINDER, AFTER THE WELCOME HAS CLOSED. The welcome says it once;
+        a member who read past it and never came back lost the account with the
+        browser, and nothing on the site said so again. So for as long as the
+        account has no address, it says so here, on every visit, quietly and
+        under the name rather than above it.
+
+        Until Google is linked, not until four words are set. The words let a
+        member play as themselves on a device somebody else is signed in on;
+        they do not sign a browser in, so they do not keep the account — which
+        the control's own note already says.
+      */}
+      {!welcome && addressless ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="keep-reminder">
+          <KeepThisAccount days={PLAYER_SESSION_DAYS} googleReady={isGoogleAuthConfigured()} place="reminder" />
+        </section>
+      ) : null}
+
+      {/*
         Nothing else during the welcome. A new member is asked one question —
         what to call them — and a row of tabs under it is the rest of the site
         arriving before they have answered.

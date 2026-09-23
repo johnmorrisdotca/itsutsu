@@ -25,11 +25,16 @@ const AFTER_GOOGLE = `/api/session/google?next=${encodeURIComponent("/me")}`;
  * not yet showing. Google is a button that starts the sign-in from here; the
  * words are a link straight to the tab that sets them.
  */
-export function KeepThisAccount({ days, googleReady }: KeepThisAccountProps) {
+export function KeepThisAccount({ days, googleReady, place = "welcome" }: KeepThisAccountProps) {
   const hydrated = useHydrated();
+  /*
+   * The same control in two places, told apart by its test ids so a spec about
+   * the welcome never passes over the reminder or the other way round.
+   */
+  const id = (part: string) => `${place}-${part}`;
   return (
-    <div className="flex flex-col gap-3" data-testid="welcome-keep" {...readyMark(hydrated)}>
-      <p className="text-sm font-medium" data-testid="welcome-no-address">
+    <div className="flex flex-col gap-3" data-testid={id("keep")} {...readyMark(hydrated)}>
+      <p className={`text-sm ${place === "welcome" ? "font-medium" : ""}`} data-testid={id("no-address")}>
         {KEEP_ACCOUNT_COPY.lives(days)} {googleReady ? KEEP_ACCOUNT_COPY.unlessGoogle : KEEP_ACCOUNT_COPY.noGoogle}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -40,7 +45,7 @@ export function KeepThisAccount({ days, googleReady }: KeepThisAccountProps) {
               // NextAuth starts sign-in from a POST with its CSRF token; a plain link only bounces back.
               onClick={() => void signIn("google", { callbackUrl: AFTER_GOOGLE })}
               className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`}
-              data-testid="welcome-link-google"
+              data-testid={id("link-google")}
             >
               {KEEP_ACCOUNT_COPY.linkGoogle}
             </button>
@@ -51,7 +56,7 @@ export function KeepThisAccount({ days, googleReady }: KeepThisAccountProps) {
           <Link
             href="/me?view=words"
             className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2 text-center`}
-            data-testid="welcome-add-words"
+            data-testid={id("add-words")}
           >
             {KEEP_ACCOUNT_COPY.addWords}
           </Link>
