@@ -343,6 +343,7 @@ export function useGameSession(
     moveTotal: timeline.length - 1,
     pasted,
     record: timeline[timeline.length - 1].moves,
+    timeline,
     reviewing,
     boardReadOnly:
       reviewing && settings.historyMode !== HISTORY_MODES.branch,
