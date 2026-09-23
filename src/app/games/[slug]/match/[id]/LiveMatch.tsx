@@ -30,6 +30,7 @@ import { forkOffered } from "@/lib/history/fork";
 import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import { BoardColumn } from "@/components/live/BoardColumn";
 
 /*
  * THE LIVE MATCH: the board being played, and the panel beside it — the offer,
@@ -171,7 +172,8 @@ export async function LiveMatch({
    * the account followed them into a local game and stopped at the door of a
    * real one.
    */
-  const appearance = appearanceFrom(await appearanceFor(await currentMemberId()));
+  const reader = await currentMemberId();
+  const appearance = appearanceFrom(await appearanceFor(reader));
   /*
    * How this reader likes a turn to work — whether a click sends the move and
    * where submitting leaves them. Read here rather than on the board, which is
@@ -246,7 +248,12 @@ export async function LiveMatch({
   }
 
   return (
-    <Page width="wide" gap="gap-6">
+    /*
+     * `board` rather than `wide`: the same frame to 1536px, and wider past it,
+     * so a 27-inch screen has room for the board its reader asked for. See
+     * `PAGE_WIDTH.board` and `BoardColumn`.
+     */
+    <Page width="board" gap="gap-6">
       <SiteHeader />
       <SeatFullNotice shown={seatFull} />
       {/* Before the first stone: who these two are to each other. See RivalryPanel. */}
@@ -256,7 +263,13 @@ export async function LiveMatch({
 
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-[min(100%,36rem)]">
+          {/*
+            THE COLUMN THE BOARD IS PLAYED IN, at the size this reader keeps on
+            a desk — fit the screen, or small, medium or large. See
+            `BoardColumn`. It was a fixed 36rem, which on a 27-inch screen is a
+            board a quarter of the width of the page.
+          */}
+          <BoardColumn initial={preferences.boardSize} remember={reader !== null}>
             <SharedGame
               initial={game}
               token={token}
@@ -268,7 +281,7 @@ export async function LiveMatch({
               appearance={appearance}
               turnFlow={turnFlow}
             />
-          </div>
+          </BoardColumn>
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">

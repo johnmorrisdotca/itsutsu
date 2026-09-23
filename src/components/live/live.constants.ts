@@ -1,3 +1,5 @@
+import { BOARD_SIZES, type BoardSize } from "@/lib/preferences/boardSize";
+
 /**
  * The words the screens around a shared game use.
  *
@@ -450,3 +452,61 @@ export const LIVE_MOVE_COPY = {
     right: "Right one point",
   },
 } as const;
+
+/**
+ * THE BOARD'S COLUMN, AND HOW WIDE IT MAY GROW ON A DESK.
+ *
+ * Below a laptop's width the board fills its column up to 36rem, exactly as it
+ * always has: a phone's board is the phone, and there is nothing to choose. From
+ * `lg` the member's `boardSize` decides, and each is a CAP rather than a size —
+ * `min(100%, …)` — so a choice larger than the room there is fills the room and
+ * never overflows it. On a 1440px laptop the column is 800px, so Medium and
+ * Large come out nearly alike there; on a 27-inch screen, where the page itself
+ * widens (`PAGE_WIDTH.board`), they are far apart. That is the screen being
+ * honest about what it has, not a bug in the choice.
+ *
+ * FIT IS MEASURED AGAINST THE SCREEN'S HEIGHT, because on a desk the board runs
+ * off the bottom long before it runs out of width. What sits above the board is
+ * not a constant — whose turn it is, a paused notice, "Turn the board round" —
+ * so `BoardColumn` measures it once the page has arrived and hands the room
+ * over as `--board-room`. Until then, `100dvh - 19rem` stands in: the distance
+ * from the top of a 1440×900 match page to its board, measured.
+ *
+ * NEVER SMALLER THAN THE BOARD EVERYBODY HAD, which is 36rem. Fit is the
+ * default, so it is the size every member gets without asking, and on a
+ * 1440×900 laptop the screen's height alone would have made it 524px against
+ * the 546 it replaced — the default getting worse on the commonest desk there
+ * is. Floored at Small, it is today's board where the screen is short and a
+ * bigger one wherever there is room: 1,064px on a 2560×1440 screen.
+ *
+ * Whole class strings, never assembled: Tailwind finds a class by reading the
+ * source, and one built from pieces is a class it never generates.
+ */
+export const BOARD_COLUMN = "mx-auto flex w-full max-w-[min(100%,36rem)] flex-col gap-2";
+
+export const BOARD_COLUMN_SIZE: Record<BoardSize, string> = {
+  [BOARD_SIZES.fit]: "lg:max-w-[min(100%,72rem,max(36rem,var(--board-room,calc(100dvh-19rem))))]",
+  [BOARD_SIZES.small]: "lg:max-w-[min(100%,36rem)]",
+  [BOARD_SIZES.medium]: "lg:max-w-[min(100%,48rem)]",
+  [BOARD_SIZES.large]: "lg:max-w-[min(100%,72rem)]",
+};
+
+/** What the size chooser says, short on the button and whole to a screen reader. */
+export const BOARD_SIZE_WORDS: Record<BoardSize, { short: string; whole: string }> = {
+  [BOARD_SIZES.fit]: { short: "Fit", whole: "Fit the board to the screen" },
+  [BOARD_SIZES.small]: { short: "S", whole: "Small board" },
+  [BOARD_SIZES.medium]: { short: "M", whole: "Medium board" },
+  [BOARD_SIZES.large]: { short: "L", whole: "Large board" },
+};
+
+export const BOARD_SIZE_LEGEND = "Board size";
+
+/** The custom property `BoardColumn` sets for Fit, read by `BOARD_COLUMN_SIZE.fit`. */
+export const BOARD_FIT_ROOM = "--board-room";
+
+/**
+ * Kept free under a fitted board for the row a placed stone brings up — Submit,
+ * Take back — plus a little paper, so the press that sends the move is on the
+ * same screen as the board. Allowed for rather than measured: see `roomFor`.
+ */
+export const BOARD_FIT_BELOW_PX = 72;
