@@ -34,7 +34,8 @@ import type { RockRules } from "./rules/rocks.types";
  *
  *   ROCKS_PLAYTEST=1 pnpm exec vitest run src/lib/gomoku/obstacles.playtest.test.ts --disable-console-intercept
  *
- * ROCKS_GAMES (20), ROCKS_TIER (dan) and ROCKS_NODES (3000 positions a move)
+ * ROCKS_SET=confirm runs only the shortlist (see `confirming`). ROCKS_GAMES (20),
+ * ROCKS_TIER (dan) and ROCKS_NODES (3000 positions a move)
  * tune the run; counted positions rather than a clock, so a run on a busy
  * machine plays the same games as one on an idle one.
  */
@@ -58,6 +59,21 @@ function combinations(): RockRules[] {
     }
   }
   return [plain, today, ...grid];
+}
+
+/**
+ * The four that came out of the first playtest balanced AND unlike plain five
+ * in a row, beside plain for comparison — run with ROCKS_SET=confirm, over more
+ * games, before any of them is named. See the obstacle family's board row.
+ */
+function confirming(): RockRules[] {
+  return [
+    { rocks: 0, hot: 0, placement: ROCK_PLACEMENTS.scattered, arriveAfter: null },
+    { rocks: 8, hot: 0, placement: ROCK_PLACEMENTS.garden, arriveAfter: null },
+    { rocks: 4, hot: 2, placement: ROCK_PLACEMENTS.scattered, arriveAfter: null },
+    { rocks: 12, hot: 2, placement: ROCK_PLACEMENTS.scattered, arriveAfter: null },
+    { rocks: 20, hot: 2, placement: ROCK_PLACEMENTS.scattered, arriveAfter: 8 },
+  ];
 }
 
 function label(rules: RockRules): string {
@@ -110,7 +126,7 @@ describe.runIf(RUN)("the obstacle playtest", () => {
     () => {
       console.log(`obstacle playtest: ${SIZE}×${SIZE}, ${TIER} against ${TIER}, ${GAMES} games each, ${BUDGET.nodes} positions a move`);
       console.log("                                    black white drawn unfin  median shortest");
-      for (const rules of combinations()) {
+      for (const rules of process.env.ROCKS_SET === "confirm" ? confirming() : combinations()) {
         const started = Date.now();
         const outcomes = Array.from({ length: GAMES }, (_, game) => playOut(rules, 7_000 + game * 37));
         const count = (winner: Outcome["winner"]) => outcomes.filter((outcome) => outcome.winner === winner).length;
