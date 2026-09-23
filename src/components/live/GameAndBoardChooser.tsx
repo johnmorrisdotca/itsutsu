@@ -6,7 +6,7 @@ import { BoardPicker } from "./BoardPicker";
 import { GamePicker } from "./GamePicker";
 import type { RulesDraft } from "./rulesDraft";
 import { boardWords } from "@/lib/gomoku/boardWords";
-import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW } from "./picker.constants";
+import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } from "./picker.constants";
 import type { ReactNode } from "react";
 
 /**
@@ -63,8 +63,15 @@ export function GameAndBoardChooser({
    * and a stack below it — `PICK_BOARD_ROW` — with the picture on the left and
    * its sizes beside it.
    */
+  const boardUnderFamilies = showVariant && pictures;
   const boardRow = pictures ? (
-    <div className={preview === undefined ? undefined : `${PICK_BOARD_ROW} py-2 lg:min-w-0 lg:flex-1 lg:py-0`}>
+    <div
+      className={
+        preview === undefined
+          ? undefined
+          : `${PICK_BOARD_ROW} py-2 ${boardUnderFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`
+      }
+    >
       {preview === undefined ? null : <div className={PICK_BOARD_PREVIEW}>{preview}</div>}
       <BoardPicker
         value={value.size}
@@ -85,7 +92,6 @@ export function GameAndBoardChooser({
    * games moved up and down as families were clicked. Where the game is
    * already settled and no families are drawn, it simply comes first.
    */
-  const boardUnderFamilies = showVariant && pictures;
 
   return (
     <>

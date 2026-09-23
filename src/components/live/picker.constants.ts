@@ -94,10 +94,23 @@ export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
  * `lg`, families on the left, board in the middle, sizes on the right. See
  * `GamePicker` for why the families are the part that can stand beside it.
  */
-export const FAMILY_ROW = "flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-6";
+export const FAMILY_ROW = "flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start lg:gap-6";
 
-/** The family tiles: a wrapping row, then two columns beside the board from `lg`. */
-export const FAMILY_TILES = "flex flex-wrap gap-1.5 lg:grid lg:w-fit lg:shrink-0 lg:grid-cols-2";
+/*
+ * SYMMETRY. John, looking at the first version of that row: "Have better
+ * symmetry. LHS center and RHS". The families sat against the left edge, the
+ * board and its sizes were centred in whatever was left, and the right of the
+ * panel was empty. Now the row is three columns, the two outer ones equal: the
+ * board in the exact middle of the panel, the families against the left edge,
+ * the sizes against the right, and the sizes as wide as the families so the two
+ * sides weigh the same.
+ */
+
+/** The family tiles: a wrapping row, then two columns against the left edge from `lg`. */
+export const FAMILY_TILES = "flex flex-wrap gap-1.5 lg:grid lg:w-fit lg:grid-cols-2 lg:justify-self-start";
+
+/** How wide the families' two columns are: two 7rem tiles and the gap between them. */
+const FAMILY_TILES_WIDTH = "lg:w-[14.375rem]";
 
 export const PICK_CHIP_SHUT =
   "border-rule bg-ivory/70 text-ink-soft hover:border-rule-strong hover:text-ink";
@@ -206,7 +219,15 @@ export const PICK_BOARD_PREVIEW = "w-full min-w-0 md:w-[22rem] md:shrink-0";
  * width of its own picture is the banner a lone board was already kept from
  * becoming.
  */
-export const PICK_BOARD_ASIDE = "w-full md:w-[9.5rem] md:shrink-0";
+export const PICK_BOARD_ASIDE = `w-full md:w-[9.5rem] md:shrink-0 ${FAMILY_TILES_WIDTH} lg:justify-self-end`;
+
+/**
+ * The board and its sizes under the families (`GamePicker`'s `underFamilies`).
+ * Below a laptop's width the pair is its own row; from `lg` the wrapper steps
+ * aside (`contents`) so the board and the sizes become the middle and right
+ * columns of the families' row.
+ */
+export const PICK_BOARD_ROW_UNDER_FAMILIES = "lg:contents";
 
 /**
  * The blocks themselves in that column: the row everywhere else, one per line
