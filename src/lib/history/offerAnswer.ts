@@ -4,6 +4,8 @@ import { randomBytes } from "node:crypto";
 
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { prisma } from "@/lib/prisma";
+import { recordInbox } from "@/lib/inbox/inbox";
+import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { noticeGameOver } from "@/lib/notify/gameNotices";
 import { activeLimitRefusal, memberOverActiveLimit } from "./activeGames";
 import { nextDeadline } from "./deadline";
@@ -263,7 +265,19 @@ async function endOffer(
    * never a board at one screen, which `offerLiftedOff` never makes an offer of.
    */
   if (action === OFFER_ACTIONS.decline) {
-    await noticeGameOver({ ...row, hotSeat: false }, id, null);
+    await noticeGameOver({ ...row, hotSeat: false }, id, null, { inbox: false });
   }
+  /*
+   * The inbox says it in its own words: a decline to the one who asked, a
+   * withdrawal to the one who was asked. One line for a match, not one a game.
+   */
+  const asker = row.blackMemberId ?? row.whiteMemberId;
+  const askerName = row.blackMemberId !== null ? row.blackName : row.whiteName;
+  const askedName = row.blackMemberId !== null ? row.whiteName : row.blackName;
+  await recordInbox([
+    action === OFFER_ACTIONS.decline
+      ? { memberId: asker, kind: INBOX_KINDS.offerDeclined, gameId: id, variant: row.variant, fromName: askedName, fromMemberId: offeree }
+      : { memberId: offeree, kind: INBOX_KINDS.offerWithdrawn, gameId: id, variant: row.variant, fromName: askerName, fromMemberId: asker },
+  ]);
   return { ok: true, seat: seat ?? STONES.white, variant: row.variant };
 }

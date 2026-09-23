@@ -1,3 +1,4 @@
+import { inboxSeatTaken } from "@/lib/inbox/inbox";
 import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError, unprocessable } from "@/lib/api/apiResponse";
@@ -86,6 +87,8 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const session = await currentSession();
     const mine = mineFirst;
     if (mine !== null) await bindSeat(id, outcome.seat, mine, session?.name ?? "");
+    // The member who posted it hears that somebody sat down; see `inbox.ts`.
+    await inboxSeatTaken(id, outcome.seat, session?.name ?? "");
     /*
      * Sitting down opposite a computer that opens: it plays at once, so the
      * board is not showing you a game waiting on a player that never waits.
