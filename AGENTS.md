@@ -666,24 +666,29 @@ below before trusting it — these numbers move):
    new leg of the `verify` matrix — never another `&&` on the end of a chain.
    Two things run in sequence only when one reads what the other wrote (types
    and the build share `.next`, so they share a lane).
-2. **Keep the slowest shard short.** When it passes about eight minutes, add
+2. **Never run the same suite twice for one push.** A push to `main` started
+   the deploy's browser suite AND `ci.yml`'s copy of it until 2026-09-22:
+   thirty-one jobs against a cap of twenty, half the gate's shards queued, and
+   push-to-live 13.1 minutes over a slowest shard of 6.5. `ci.yml` runs on pull
+   requests only now. Before adding a workflow, count the jobs one push starts.
+3. **Keep the slowest shard short.** When it passes about eight minutes, add
    shards — they are free on this public repository — or rebalance the files.
    The one ceiling is GitHub's twenty concurrent jobs on a free account: five
    checks, twelve shards and the deploy is eighteen, so an overlapping
    pull-request run queues for a while and costs nothing.
-3. **Measure, don't guess.** Step timings of a run:
+4. **Measure, don't guess.** Step timings of a run:
    `gh api repos/johnmorrisdotca/itsutsu/actions/runs/<run>/jobs` and read each
    step's `started_at`/`completed_at` (the REST field is `id`, not
    `databaseId`). Per-file test time: the gap between consecutive `[n/N]` lines
    in a shard's log. Prove a shard split with `playwright test --shard=N/M
    --list` before pushing it — every test in exactly one shard.
-4. **A spec's wall time is paid on every release.** Wait on a condition, never
+5. **A spec's wall time is paid on every release.** Wait on a condition, never
    on a clock, unless the clock IS the subject (the invite form's three-second
    stamp is). A spec that adds a minute adds it to every deploy after it.
-5. **Follow the tools' own advice** rather than folklore: one Playwright worker
+6. **Follow the tools' own advice** rather than folklore: one Playwright worker
    per shard in CI and no caching of Playwright's browser download (both
    Playwright's CI guidance), package installs cached (`setup-node`'s `cache`).
-6. **The next known win** is running the suite against a production build
+7. **The next known win** is running the suite against a production build
    instead of the dev server, as Next.js recommends — every page answers
    faster. It is blocked by design, not by effort: the suite's relief (looser
    cost limits, faster polling) is refused in production mode on purpose, so it
