@@ -7,15 +7,15 @@ import { readyHere } from "./support";
  * game with its record's source named, and each one made into a picture of
  * every position in the browser — the site asked for nothing while it is made.
  */
-test("the famous games are reached from the games page, and a world final becomes a picture without asking the site", async ({ page }) => {
+test("the famous games are reached from the games page, and a title-match game becomes a picture without asking the site", async ({ page }) => {
   await page.goto("/games");
   await page.getByTestId("games-famous-link").click();
   await expect(page).toHaveURL(/\/famous$/);
 
-  const final = page.locator('[data-testid="famous-game"][data-id="woc-2025-kurita-takanashi-1"]');
-  await expect(final).toContainText("Kurita Seiya");
-  await expect(final).toContainText("World Othello Championship 2025");
-  await expect(final.getByRole("link", { name: /WTHOR/ })).toHaveAttribute("href", /ffothello\.org/);
+  const final = page.locator('[data-testid="famous-game"][data-id="alphago-leesedol-4"]');
+  await expect(final).toContainText("Lee Sedol");
+  await expect(final).toContainText("Google DeepMind Challenge Match");
+  await expect(final.getByRole("link", { name: /Brouwer/ })).toHaveAttribute("href", /cwi\.nl/);
   await readyHere(final.getByTestId("famous-mosaic"));
 
   const asked: string[] = [];
@@ -30,5 +30,5 @@ test("the famous games are reached from the games page, and a world final become
 
   const download = page.waitForEvent("download");
   await final.getByTestId("download-mosaic").click();
-  expect((await download).suggestedFilename()).toBe("itsutsu-famous-woc-2025-kurita-takanashi-1.png");
+  expect((await download).suggestedFilename()).toBe("itsutsu-famous-alphago-leesedol-4.png");
 });
