@@ -35,7 +35,7 @@ export default async function ReleasesPage() {
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
           What has shipped <span className="font-mincho text-sm font-normal opacity-70">更新履歴</span>
         </h1>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           Newest first, in a player&apos;s words. Read from the changelog itself, which is written in the same commit as
           the work, so this list cannot fall behind the site it describes. The edition you are being served is marked.
         </p>

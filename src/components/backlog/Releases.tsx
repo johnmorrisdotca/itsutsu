@@ -41,7 +41,7 @@ function ReleaseEntry({
       </span>
       <ul className="flex flex-col gap-0.5">
         {release.notes.map((note) => (
-          <li key={note} className="max-w-prose text-sm text-muted">
+          <li key={note} className="text-sm text-muted">
             {note}
           </li>
         ))}
