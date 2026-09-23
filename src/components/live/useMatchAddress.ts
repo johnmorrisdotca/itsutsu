@@ -80,8 +80,28 @@ export function useMatchAddress({
       return;
     }
 
-    if (position !== null && window.location.pathname !== position) {
-      window.history.replaceState(null, "", position);
+    /*
+     * ONLY ONCE THE ADDRESS IS ALREADY THIS MATCH'S. `replaceState` rewrites
+     * whichever history entry is current, and on arrival that is not always
+     * the board's: this effect can run before Next has pushed the board's own
+     * entry, while `window.location` still names the page the reader came
+     * from. The rewrite then landed on THAT entry — the set-up screen became
+     * `/match/<id>/0`, Next pushed `/match/<id>` on top, and Back from the
+     * board skipped the set-up screen and left the site.
+     *
+     * Found by `set-up-keeps-choices.spec.ts`, whose Back-and-Forward case
+     * failed now and then and was twice re-run as a flake. Given a helper that
+     * named where it walked, it walked `/match/<id>` → `/match/<id>/0` →
+     * `about:blank`: the set-up screen was not in the history at all. It
+     * happened under load, which is why CI saw it and a quiet laptop mostly
+     * did not.
+     *
+     * Skipping costs nothing. A board that has just opened is at the position
+     * its own address already names, and the next move writes the address
+     * again — by then the entry is certainly the board's.
+     */
+    if (position !== null && basePath !== undefined && window.location.pathname.startsWith(basePath)) {
+      if (window.location.pathname !== position) window.history.replaceState(null, "", position);
     }
   }, [basePath, played, settled, router]);
 }
