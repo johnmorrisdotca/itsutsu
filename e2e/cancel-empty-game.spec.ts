@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { playerPath } from "../src/lib/rating/playerKey";
+import { seedLadderRow } from "./members";
 import { namesPlayedUnder } from "./tidy";
 
 /**
@@ -21,7 +23,7 @@ let games = 0;
  * anything — not a resignation quietly corrected afterwards, but a path that
  * never rates the game at all. That is what these check.
  */
-async function emptyGameAgainstDan(request: import("@playwright/test").APIRequestContext) {
+async function emptyGameAgainstDan(request: import("@playwright/test").APIRequestContext, whiteName = "Dan") {
   games += 1;
   const stamp = `${Date.now().toString(36)}${games}`;
   const made = await request.post("/api/games/live", {
@@ -29,7 +31,7 @@ async function emptyGameAgainstDan(request: import("@playwright/test").APIReques
       variant: "freestyle",
       size: 9,
       blackName: under(`Someone ${stamp}`),
-      whiteName: "Dan",
+      whiteName,
       opener: "black",
       rated: true,
     },
@@ -62,21 +64,30 @@ test.describe("a game with nothing played in it", () => {
 
   test("moves nobody's rating, which is the whole point of it", async ({ page, request }) => {
     /*
-     * Read Dan's figures off Dan's own page either side of it. A resignation
-     * would move them; calling off must not touch them at all.
+     * Read the opponent's figures off their own page either side of it. A
+     * resignation would move them; calling off must not touch them at all.
      *
      * The page rather than an endpoint, because the page is where somebody
      * would notice. If a rating moved for a game nobody played, this is the
      * screen that would say so.
+     *
+     * An opponent of its own, with a standing it seeded. It read Dan's page,
+     * which exists only once some other spec has finished a rated game against
+     * Dan, so on a fresh database it passed or failed by which files shared its
+     * shard. Adding one spec file (0.270.0) moved it first in its shard, and
+     * the page answered "nothing here".
      */
+    // `under` takes the name and its rows away when the file is done.
+    const opponent = under(`Idle ${Date.now().toString(36)}`);
+    await seedLadderRow({ name: opponent, rating: 1500, games: 3, wins: 2, losses: 1 });
     const figures = async () => {
-      await page.goto("/players/dan");
+      await page.goto(playerPath(opponent));
       await expect(page.getByTestId("player-figures")).toBeVisible();
       return page.getByTestId("player-figures").innerText();
     };
 
     const before = await figures();
-    const game = await emptyGameAgainstDan(request);
+    const game = await emptyGameAgainstDan(request, opponent);
     const off = await request.post(`/api/games/${game.id}/cancel`, {
       data: { token: game.blackToken },
     });
