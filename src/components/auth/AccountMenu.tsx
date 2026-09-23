@@ -2,10 +2,14 @@
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { LanguagePicker } from "@/components/layout/LanguagePicker";
+
+import type { MenuLanguages, MenuVersion } from "./accountMenu.types";
 
 export type Who = { signedIn: boolean; admin: boolean; email: string | null; name: string | null; picture: string | null; member: boolean };
 
@@ -14,23 +18,85 @@ const fetcher = async (url: string): Promise<Who | null> => {
   return response.ok ? response.json() : null;
 };
 
-/**
- * Who is signed in, in the header. A stranger sees the way in; a member sees
- * their name — the Google picture when there is one — and the way out. An
- * invite-only visitor has no name to show, so they see only the way out.
+/*
+ * The operator's corners of the Admin page, one click nearer. Tabs of the one
+ * page rather than pages of their own, so they are its `?view=` addresses.
  */
-export function AccountMenu({ initial }: { initial: Who }) {
+const ADMIN_SHORTCUTS = [
+  { href: "/admin?view=work", label: "The work", testId: "admin-work-link" },
+  { href: "/admin?view=members", label: "The members", testId: "admin-members-link" },
+] as const;
+
+/** The popup's width, and what it needs to its left before it may open leftward. */
+const MENU_WIDTH_PX = 256;
+const MENU_EDGE_PX = 16;
+
+const ITEM = `flex items-center rounded-lg px-2 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`;
+const DIVIDER = "my-1.5 border-t border-rule";
+
+/**
+ * Who is signed in, in the header — one control that opens everything about
+ * the reader's own account.
+ *
+ * John, 2026-09-23: "The Profile (John Morris) Inbox and SIgnout can all be one
+ * menu item. Where you click on the Name to get a menu … that way the header is
+ * always the same regardless of role." So the bar holds the sections of the
+ * site and then this, and nothing else: the Admin link that used to sit in the
+ * bar for the operator alone lives in here, which is what keeps the bar the
+ * same for everybody.
+ *
+ * A stranger sees the way in. Anybody signed in sees their picture (or their
+ * initial) and name; the popup holds, between dividers, who they are, their
+ * inbox, the language, the operator's links, the edition the site is on, and
+ * the way out. An invite-only visitor has no name or page, so for them the
+ * first two sections are missing and the rest stays.
+ *
+ * It closes on a click outside, on Escape (handing focus back to the button),
+ * and on arriving at another address.
+ */
+export function AccountMenu({ initial, languages, version }: { initial: Who; languages: MenuLanguages; version: MenuVersion }) {
   const router = useRouter();
+  const pathname = usePathname();
   // The server already knows who is here; the first paint uses that, so nothing flashes in.
   const { data, mutate } = useSWR("/api/session", fetcher, { fallbackData: initial });
   const say = useSpeaker();
   /*
    * Read here rather than at the element, because there are early returns
-   * below it and a hook may not sit after one. Signing out is a button, so
-   * a press before React attaches does nothing; the mark is what a spec
+   * below it and a hook may not sit after one. The menu opens from a button,
+   * so a press before React attaches does nothing; the mark is what a spec
    * waits on instead of guessing.
    */
   const hydrated = useHydrated();
+  /*
+   * Open AT an address rather than open: a link inside is a client-side
+   * navigation, and the menu must not hang open over the next page. Keeping
+   * where it was opened makes arriving anywhere else close it, with no effect
+   * to reset it a render late.
+   */
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const open = openAt === pathname;
+  // Leftward from the button's right edge, unless the bar has wrapped the button too near the left.
+  const [alignLeft, setAlignLeft] = useState(false);
+  const box = useRef<HTMLSpanElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointer(event: PointerEvent) {
+      if (box.current && !box.current.contains(event.target as Node)) setOpenAt(null);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setOpenAt(null);
+      trigger.current?.focus();
+    }
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   if (data === undefined) return null;
   if (data === null || !data.signedIn) {
@@ -42,44 +108,117 @@ export function AccountMenu({ initial }: { initial: Who }) {
   }
 
   async function signOut() {
+    setOpenAt(null);
     await fetch("/api/session", { method: "DELETE" });
     await mutate();
     router.push("/");
     router.refresh();
   }
 
-  const label = data.name || data.email || "Guest";
+  function toggle() {
+    const right = trigger.current?.getBoundingClientRect().right ?? Infinity;
+    setAlignLeft(right < MENU_WIDTH_PX + MENU_EDGE_PX);
+    setOpenAt(open ? null : pathname);
+  }
+
+  const named = data.member || data.admin;
+  const label = data.name || data.email || "Account";
+
   return (
-    <span className="flex items-center gap-2 whitespace-nowrap" data-testid="account-menu" {...readyMark(hydrated)}>
-      {data.picture ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a Google avatar URL, not ours to optimise
-        <img src={data.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
-      ) : null}
-      {data.member || data.admin ? (
-        <Link href="/me" className="max-w-32 truncate text-ink-soft underline-offset-4 hover:underline" title={data.email ?? undefined} data-testid="me-link">
-          {label}
-        </Link>
-      ) : null}
-      {/* What happened while they were away: see /inbox. The count is on /play, not here on every page. */}
-      {data.member ? (
-        <Link href="/inbox" className="text-ink-soft underline-offset-4 hover:underline" data-testid="inbox-link">
-          Inbox
-        </Link>
-      ) : null}
-      {/*
-        A quiet word, and still something a thumb can hit: 20 pixels of text
-        with 24 more of padding around it below `sm`. The padding is negative
-        at the sides so the word keeps its place in the row — the target grows,
-        the layout does not. See `TAP_HEIGHT`.
-      */}
+    <span ref={box} className="relative" data-testid="account-menu" data-open={open} {...readyMark(hydrated)}>
       <button
+        ref={trigger}
         type="button"
-        onClick={signOut}
-        className={`-mx-2 inline-flex items-center px-2 text-muted underline-offset-4 hover:underline ${TAP_HEIGHT}`}
-        data-testid="sign-out"
+        onClick={toggle}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-controls="account-menu-panel"
+        title={data.email ?? undefined}
+        className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full py-0.5 pl-0.5 pr-2 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`}
+        data-testid="account-menu-button"
       >
-        {say.say("account.signOut")}
+        <Face picture={data.picture} label={label} />
+        <span className="max-w-32 truncate">{label}</span>
+        <svg aria-hidden viewBox="0 0 12 12" className={`size-3 text-muted transition-transform ${open ? "rotate-180" : ""}`}>
+          <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
+      {open ? (
+        <div
+          id="account-menu-panel"
+          className={`absolute top-full z-50 mt-2 rounded-2xl border border-rule-strong/70 bg-paper p-2 text-sm shadow-lg ${alignLeft ? "left-0" : "right-0"}`}
+          style={{ width: MENU_WIDTH_PX, maxWidth: `calc(100vw - ${MENU_EDGE_PX * 2}px)` }}
+          data-testid="account-menu-panel"
+          // Any link followed from here closes it — `/admin?view=work` from `/admin` keeps the path, so the address alone would not.
+          onClick={(event) => {
+            if ((event.target as HTMLElement).closest("a")) setOpenAt(null);
+          }}
+        >
+          {named ? (
+            <>
+              <Link href="/me" className="block rounded-lg px-2 py-1.5 hover:bg-rule/40" data-testid="me-link">
+                <span className="block truncate font-medium text-ink">{label}</span>
+                {/* The address under the name, unless the address is all the name there is. */}
+                {data.email && data.email !== label ? <span className="block truncate text-xs text-muted">{data.email}</span> : null}
+              </Link>
+              <hr className={DIVIDER} />
+            </>
+          ) : null}
+          {data.member ? (
+            <>
+              {/* What happened while they were away. The count is on /play, not here on every page. */}
+              <Link href="/inbox" className={ITEM} data-testid="inbox-link">
+                Inbox
+              </Link>
+              <hr className={DIVIDER} />
+            </>
+          ) : null}
+          <div className="px-2 py-1.5">
+            <p className="mb-1 text-xs text-muted">{languages.label}</p>
+            {/* The picker reads the query to carry it across, which needs a boundary of its own. */}
+            <Suspense fallback={null}>
+              <LanguagePicker {...languages} testId="menu-language-picker" />
+            </Suspense>
+          </div>
+          {data.admin ? (
+            <>
+              <hr className={DIVIDER} />
+              <Link href="/admin" className={ITEM} data-testid="admin-link">
+                {say.say("nav.admin")}
+              </Link>
+              {ADMIN_SHORTCUTS.map((shortcut) => (
+                <Link key={shortcut.href} href={shortcut.href} className={`${ITEM} pl-5 text-muted`} data-testid={shortcut.testId}>
+                  {shortcut.label}
+                </Link>
+              ))}
+            </>
+          ) : null}
+          <hr className={DIVIDER} />
+          <Link href="/releases" className="flex items-baseline justify-between rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-rule/40" data-testid="menu-version">
+            <span>
+              {version.stage} · v{version.semver}
+            </span>
+            <span>What&apos;s new →</span>
+          </Link>
+          <hr className={DIVIDER} />
+          <button type="button" onClick={signOut} className={`${ITEM} w-full text-left`} data-testid="sign-out">
+            {say.say("account.signOut")}
+          </button>
+        </div>
+      ) : null}
+    </span>
+  );
+}
+
+/** The Google picture when there is one; otherwise the first letter of the name in a circle. */
+function Face({ picture, label }: { picture: string | null; label: string }) {
+  if (picture) {
+    // eslint-disable-next-line @next/next/no-img-element -- a Google avatar URL, not ours to optimise
+    return <img src={picture} alt="" className="size-6 rounded-full" referrerPolicy="no-referrer" />;
+  }
+  return (
+    <span aria-hidden className="grid size-6 place-items-center rounded-full bg-moss/15 text-xs font-semibold text-moss">
+      {label.slice(0, 1).toUpperCase()}
     </span>
   );
 }

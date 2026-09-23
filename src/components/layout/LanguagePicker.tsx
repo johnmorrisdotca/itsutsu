@@ -51,6 +51,7 @@ export function LanguagePicker({
   current,
   param,
   label,
+  testId = "language-picker",
 }: {
   options: readonly LanguageOption[];
   /** The locale the page was rendered in. */
@@ -59,6 +60,8 @@ export function LanguagePicker({
   param: string;
   /** "Language", in the reader's own language. */
   label: string;
+  /** The footer's is `language-picker`; the account menu's copy says it is its own. */
+  testId?: string;
 }) {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -66,7 +69,7 @@ export function LanguagePicker({
   if (options.length < 2) return null;
 
   return (
-    <nav aria-label={label} className="flex flex-wrap items-baseline gap-x-2" data-testid="language-picker">
+    <nav aria-label={label} className="flex flex-wrap items-baseline gap-x-2" data-testid={testId}>
       <span className="sr-only">{label}</span>
       {options.map((option) => {
         const here = option.locale === current;

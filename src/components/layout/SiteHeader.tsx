@@ -1,9 +1,12 @@
 import Link from "next/link";
 
 import { AccountMenu, type Who } from "@/components/auth/AccountMenu";
-import { AdminLink } from "@/components/auth/AdminLink";
 import { currentSession } from "@/lib/auth/currentSession";
 import { memberKeyOf } from "@/lib/auth/memberKey";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { languageOptions } from "@/lib/i18n/dictionaries";
+import { LANG_PARAM } from "@/lib/i18n/i18n.constants";
+import { STAGE, versionStamps } from "@/lib/version";
 import { xpFlashFor, type XpToastHold } from "@/lib/xp/xpFlash";
 
 import { BetaMark } from "./BetaMark";
@@ -29,12 +32,17 @@ async function whoIsHere(): Promise<Who> {
 }
 
 async function Nav() {
-  const who = await whoIsHere();
+  const [who, say] = await Promise.all([whoIsHere(), currentSpeaker()]);
+  const { semver } = versionStamps();
   return (
     <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
       <NavLinks />
-      <AdminLink initial={who} />
-      <AccountMenu initial={who} />
+      {/* Everything about the reader's own account, the operator's links among it, so the bar is the same for everybody. */}
+      <AccountMenu
+        initial={who}
+        languages={{ options: languageOptions(), current: say.locale, param: LANG_PARAM, label: say.say("site.language") }}
+        version={{ stage: STAGE, semver }}
+      />
       {/*
         Draws nothing. Here rather than beside the two mastheads below because
         `Nav` is the one thing both of them render, so this is mounted exactly

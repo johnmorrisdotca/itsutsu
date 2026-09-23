@@ -203,8 +203,9 @@ test.describe("signing out", () => {
   test("clears the session and sends the visitor to the front page", async ({ page }) => {
     await page.goto("/games");
     await expect(page.getByTestId("account-menu")).toBeVisible();
-    // Signing out is a button in the masthead, not a link.
+    // Signing out is a button in the account menu, not a link.
     await ready(page, "account-menu");
+    await page.getByTestId("account-menu-button").click();
     await page.getByTestId("sign-out").click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId("sign-in")).toBeVisible();

@@ -114,7 +114,7 @@ test.describe("shutting an account", () => {
     const mine = await theirs.newPage();
     await mine.goto("/players");
     // Signed in: the site knows who they are, and says so in the corner.
-    await expect(mine.getByTestId("me-link")).toContainText(them.name);
+    await expect(mine.getByTestId("account-menu-button")).toContainText(them.name);
 
     const shut = await request.patch("/api/members", { data: { id: await memberIdFor(them.email), banned: true } });
     expect(shut.status()).toBe(200);
@@ -127,7 +127,7 @@ test.describe("shutting an account", () => {
      */
     const after = await theirs.newPage();
     await after.goto("/players");
-    await expect(after.getByTestId("me-link")).toHaveCount(0);
+    await expect(after.getByTestId("account-menu-button")).toHaveCount(0);
     await theirs.close();
   });
 });
