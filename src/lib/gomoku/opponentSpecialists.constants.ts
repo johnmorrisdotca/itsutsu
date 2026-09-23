@@ -25,6 +25,7 @@ export const SPECIALIST_TIERS = {
   monkton: "monkton",
   tinsdale: "tinsdale",
   hondo: "hondo",
+  wuyi: "wuyi",
 } as const satisfies Record<SpecialistTier, SpecialistTier>;
 
 /**
@@ -39,6 +40,7 @@ export const BOT_SPECIALIST_LIST: readonly SpecialistTier[] = [
   SPECIALIST_TIERS.monkton,
   SPECIALIST_TIERS.tinsdale,
   SPECIALIST_TIERS.hondo,
+  SPECIALIST_TIERS.wuyi,
 ];
 
 export const SPECIALIST_PROFILES: Record<SpecialistTier, BotProfile> = {
@@ -160,6 +162,23 @@ export const SPECIALIST_PROFILES: Record<SpecialistTier, BotProfile> = {
       "groups are short of breath. A group of yours in atari is one he means " +
       "to take, and one of his is one he means to save.",
   },
+  /*
+   * THE SIXTH SPECIALIST: Connect6, and an homage to the man who invented it
+   * in 2003 and did the work that solved its openings, I-Chen Wu of National
+   * Chiao Tung University. Changed a little, as the others are. His reading is
+   * `expert/sixExpert.ts`.
+   */
+  wuyi: {
+    tier: SPECIALIST_TIERS.wuyi,
+    name: "Ichen Wuyi",
+    native: "吳一辰",
+    strength: "Strongest at Connect6",
+    blurb:
+      "Connect6, and nothing else. Wuyi counts what a Connect6 player counts: " +
+      "not how many lines each side has, but how many stones it would take to " +
+      "block them all. Two a turn is all anybody has, so three threats at once " +
+      "is a won game — and he is building towards three from the first stone.",
+  },
 };
 
 export const SPECIALIST_SPECS: Record<SpecialistTier, TierSpec> = {
@@ -225,5 +244,16 @@ export const SPECIALIST_SPECS: Record<SpecialistTier, TierSpec> = {
     guardTop: 34,
     searchDepth: 8,
     expertise: [EXPERT_KINDS.go],
+  },
+  wuyi: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [EXPERT_KINDS.six],
   },
 };

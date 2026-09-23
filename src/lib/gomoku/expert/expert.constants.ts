@@ -19,6 +19,7 @@ export const EXPERT_KINDS = {
   race: "race",
   draughts: "draughts",
   go: "go",
+  six: "six",
 } as const;
 
 /**
@@ -380,4 +381,27 @@ export const GO = {
   rootBranch: 24,
   depth: 6,
   passWhenFewer: 6,
+} as const;
+
+/**
+ * What the Connect6 player counts. `stretch[n]` is an open stretch of six
+ * holding n of one side's stones and none of the other's; `block` is one stone
+ * the other side would need to block every threat; `overwhelm` is more threats
+ * than a turn's two stones can block; `won` is a threat the side to move can
+ * finish with the stones it has left.
+ */
+export const SIX_WEIGHTS = {
+  stretch: [0, 1, 6, 30, 160, 700, 3_000] as readonly number[],
+  defence: 1.1,
+  block: 4_000,
+  overwhelm: 60_000,
+  won: 400_000,
+} as const;
+
+/** How the Connect6 player reads: candidates within `radius` of a stone, narrow, two turns deep. */
+export const SIX = {
+  radius: 2,
+  branch: 10,
+  rootBranch: 24,
+  depth: 4,
 } as const;
