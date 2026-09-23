@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.248.0 — 2026-09-23
+- On a big screen a live game's board fits the screen by default, and S, M and L let you pick another size, remembered on your account for your other desks.
+
 ## 0.247.3 — 2026-09-23
 - On a desk, the set-up screen's first row is symmetrical: families on the left, the board in the middle, its sizes on the right.
 - After pressing Begin, Back returns to the set-up screen again, instead of sometimes skipping it and leaving the site.
