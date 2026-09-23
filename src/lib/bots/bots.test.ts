@@ -122,6 +122,10 @@ describe("the ladder as members", () => {
     expect(atHalma).not.toContain(BOT_TIERS.tinsdale);
     expect(atReversi).not.toContain(BOT_TIERS.tinsdale);
     expect(atFive).not.toContain(BOT_TIERS.tinsdale);
+    // And the Go specialist, at Go and nothing else.
+    expect(botsFor(RULE_VARIANTS.go).map((bot) => bot.tier)).toContain(BOT_TIERS.hondo);
+    expect(atReversi).not.toContain(BOT_TIERS.hondo);
+    expect(atFive).not.toContain(BOT_TIERS.hondo);
     /*
      * A character is still not offered here. Its whole difference from the
      * grade it is built on is a preference about SHAPE, and a race reads no

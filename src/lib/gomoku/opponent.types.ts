@@ -34,7 +34,7 @@ import type { ExpertKind } from "./expert/expert.types";
  * beside the top of it, at one game each.
  */
 /** The specialists: one game each, off the ladder. See `opponentSpecialists.constants.ts`. */
-export type SpecialistTier = "tamenoki" | "meritalu" | "monkton" | "tinsdale";
+export type SpecialistTier = "tamenoki" | "meritalu" | "monkton" | "tinsdale" | "hondo";
 
 export type BotTier =
   | "razryad"

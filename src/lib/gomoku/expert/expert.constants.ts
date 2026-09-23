@@ -18,6 +18,7 @@ export const EXPERT_KINDS = {
   line: "line",
   race: "race",
   draughts: "draughts",
+  go: "go",
 } as const;
 
 /**
@@ -347,4 +348,36 @@ export const DRAUGHTS = {
   branch: 12,
   rootBranch: 40,
   depth: 12,
+} as const;
+
+/**
+ * What the Go player counts. `point` is one point of the lead after komi; the
+ * rest are per stone of a group in danger: `taken` for a group in atari with
+ * the other side to move (it is theirs for the asking), `atari` for one in
+ * atari with its owner to move (it may yet run), `shortOfBreath` for two
+ * liberties.
+ */
+export const GO_WEIGHTS = {
+  point: 10,
+  taken: 18,
+  atari: 6,
+  shortOfBreath: 2,
+} as const;
+
+/**
+ * How the Go player reads: a point is owned past `owned` influence;
+ * the search is narrow and shallow, because every point on the board is a
+ * legal move and the ordering puts the urgent ones first; passing is offered
+ * once fewer than `passWhenFewer` sensible moves remain.
+ */
+/** A stone's influence by steps from it: on the stone, one step, two, three. */
+export const GO_INFLUENCE: readonly number[] = [0, 4, 2, 1];
+
+export const GO = {
+  /** How much more influence one side needs on an empty point for it to count as theirs. */
+  owned: 3,
+  branch: 10,
+  rootBranch: 24,
+  depth: 6,
+  passWhenFewer: 6,
 } as const;
