@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { SUMILABU_PROJECTS, SumilabuTargetError, sumilabuTarget, targetLine } from "./sumilabuProject";
+import { SUMILABU_PROJECTS, SumilabuTargetError, liveProject, sumilabuTarget, targetLine } from "./sumilabuProject";
 
 const TOKENS = {
   SUMILABU_BOARD_DEV_TOKEN: "dev-board-secret",
   SUMILABU_SETTINGS_DEV_TOKEN: "dev-settings-secret",
   SUMILABU_BOARD_TOKEN: "live-board-secret",
   SUMILABU_SETTINGS_TOKEN: "live-settings-secret",
+  SUMILABU_BOARD_UMAKUMA_TOKEN: "umakuma-board-secret",
+  SUMILABU_BOARD_UMAKUMA_DEV_TOKEN: "umakuma-dev-board-secret",
 };
 
 function env(over: Record<string, string | undefined> = {}) {
@@ -41,8 +43,40 @@ describe("which Sumilabu project", () => {
     expect(sumilabuTarget("board", env({ SUMILABU_PROJECT_KEY: "itsutsu", SUMILABU_LIVE_OPT_IN: "board:export:prod" })).token).toBe("live-board-secret");
   });
 
-  it("refuses a project Itsutsu does not have rather than guessing which was meant", () => {
-    expect(() => sumilabuTarget("board", env({ SUMILABU_PROJECT_KEY: "umakuma" }))).toThrow(/itsutsu-dev and itsutsu/);
+  it("refuses a project this checkout does not know rather than guessing which was meant", () => {
+    expect(() => sumilabuTarget("board", env({ SUMILABU_PROJECT_KEY: "ridemuseum" }))).toThrow(SumilabuTargetError);
+    expect(() => sumilabuTarget("board", env({ SUMILABU_PROJECT_KEY: "itsutsu-prod" }))).toThrow(/the projects here are/);
+  });
+
+  /*
+   * UmaKuma's board is reached from here too, and the guard is about LIVE
+   * rather than about the name `itsutsu`. This is the case that was open while
+   * UmaKuma was being added: `umakuma` is a real board with real rows on it,
+   * and comparing against one project name would have let a plain `pnpm task`
+   * write to it with nothing said.
+   */
+  it("guards UmaKuma's live board exactly as it guards Itsutsu's", () => {
+    expect(liveProject("umakuma")).toBe(true);
+    expect(liveProject("umakuma-dev")).toBe(false);
+    for (const NODE_ENV of ["development", "test", undefined]) {
+      expect(() => sumilabuTarget("board", env({ NODE_ENV, SUMILABU_PROJECT_KEY: "umakuma" }))).toThrow(/live site's project/);
+    }
+    expect(sumilabuTarget("board", env({ SUMILABU_PROJECT_KEY: "umakuma", SUMILABU_LIVE_OPT_IN: "task:umakuma:prod" }))).toMatchObject({
+      projectKey: SUMILABU_PROJECTS.umakuma,
+      token: "umakuma-board-secret",
+      tokenEnv: "SUMILABU_BOARD_UMAKUMA_TOKEN",
+    });
+    expect(sumilabuTarget("board", env({ SUMILABU_PROJECT_KEY: "umakuma-dev" })).token).toBe("umakuma-dev-board-secret");
+  });
+
+  /*
+   * The refusal a worktree actually meets. Nothing here holds UmaKuma's
+   * tokens, so asking for its board by name gets the variable's name back and
+   * no board — which is the property that makes adding it cost nothing.
+   */
+  it("names the token a checkout would need before it can reach another site's board", () => {
+    const bare = env({ SUMILABU_PROJECT_KEY: "umakuma-dev", SUMILABU_BOARD_UMAKUMA_DEV_TOKEN: undefined });
+    expect(() => sumilabuTarget("board", bare)).toThrow(/SUMILABU_BOARD_UMAKUMA_DEV_TOKEN/);
   });
 
   it("names the variable that is missing and never prints a token", () => {

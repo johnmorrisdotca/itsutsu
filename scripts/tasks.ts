@@ -38,7 +38,7 @@ import { keyFromTitle } from "../src/lib/backlog/backlogKey.ts";
 import type { BacklogEffort, BacklogItem, BacklogKind, BacklogPriority } from "../src/lib/backlog/backlog.types.ts";
 import { addTicket, listTickets, moveTicket, patchTicket, ticketByKey } from "../src/lib/sumilabu/boardClient.ts";
 import type { BoardChange, BoardMoveTarget, BoardOutcome } from "../src/lib/sumilabu/boardClient.types.ts";
-import { SUMILABU_PROJECTS, liveOptIn, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
+import { liveOptIn, liveProject, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
 import type { SumilabuTarget } from "../src/lib/sumilabu/sumilabuProject.types.ts";
 
 function flag(name: string, args: string[]): string | undefined {
@@ -70,7 +70,7 @@ function fail(message: string): never {
 
 /** The board this run reached, said on every line that reports a write. */
 function where(target: SumilabuTarget): string {
-  return target.projectKey === SUMILABU_PROJECTS.live ? `${targetLine(target)} (LIVE, opted in by ${liveOptIn()})` : targetLine(target);
+  return liveProject(target.projectKey) ? `${targetLine(target)} (LIVE, opted in by ${liveOptIn()})` : targetLine(target);
 }
 
 /** Who is writing: every move and every revision names somebody, or Sumilabu refuses it. */

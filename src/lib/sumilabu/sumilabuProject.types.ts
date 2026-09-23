@@ -1,8 +1,16 @@
 /** Which of Sumilabu's two token maps a call is asked of: the tickets board, or the settings store. */
 export type SumilabuScope = "board" | "settings";
 
-/** Itsutsu's two projects on Sumilabu: the live one, and the one tests and rehearsals write to. */
-export type SumilabuProjectKey = "itsutsu" | "itsutsu-dev";
+/**
+ * The projects on Sumilabu this checkout may address: each site's live board,
+ * and the rehearsal board beside it that tests and dry runs write to.
+ *
+ * Itsutsu's own pair came first; UmaKuma's is here because Sumilabu is the one
+ * board every site shares, so a tool run from this checkout can work UmaKuma's
+ * rows without a second copy of the client. Which of them counts as live is
+ * decided in `sumilabuProject.ts`, not by the shape of the name.
+ */
+export type SumilabuProjectKey = "itsutsu" | "itsutsu-dev" | "umakuma" | "umakuma-dev";
 
 /**
  * Everything a call to Sumilabu needs, decided once.

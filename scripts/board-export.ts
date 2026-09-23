@@ -10,7 +10,7 @@ import { diffTickets, freshen, inBatches, planExport, rehearsalSuffix, withoutKe
 import type { StoredBacklogRow } from "../src/lib/sumilabu/boardExport.types.ts";
 import { diffLines, planLines } from "../src/lib/sumilabu/boardExportReport.ts";
 import { boardTakesKeys, importTickets, listTicketViews } from "../src/lib/sumilabu/boardClient.ts";
-import { SUMILABU_PROJECTS, liveOptIn, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
+import { liveOptIn, liveProject, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
 
 /**
  * Itsutsu's backlog, exported and imported onto Sumilabu's board.
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
   } catch (error) {
     fail((error as Error).message);
   }
-  const live = target.projectKey === SUMILABU_PROJECTS.live;
+  const live = liveProject(target.projectKey);
   console.log(`source: ${production ? "PRODUCTION" : "local"} ${serverOf(url)}, read only`);
   console.log(`target: ${targetLine(target)}${live ? ` — the LIVE project, opted in by ${liveOptIn()}` : ""}\n`);
   if (live && !production) fail("The live project takes production's rows and nothing else.");
