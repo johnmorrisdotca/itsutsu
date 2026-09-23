@@ -84,7 +84,21 @@ function ColumnLabels({ size, theme, flipped, inset, lattice, shape }: LabelStri
 function RowLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripProps) {
   return (
     <div
-      className="grid text-right text-[0.65rem] font-medium select-none"
+      /*
+       * AS TALL AS THE BOARD, NEVER TALLER. `h-0 min-h-full`: the strip takes
+       * its height from the row the board sets, and contributes none of its
+       * own. Without it the row's height was the LARGER of the board's and the
+       * strip's, and the strip's is its numbers stacked at a full line each —
+       * about 16px apiece at 0.65rem. On a 240px phone preview that is taller
+       * than the board from 15 rows up: Halma 16 came out 240 wide and 294
+       * tall, and 4, 3, 2, 1 were printed on nothing below the board's edge.
+       *
+       * The numbers keep their size; only who decides the strip's height
+       * changes. Squeezed, a 10px numeral in an 11px row still reads, and the
+       * letters across the top were never affected — they are one line tall
+       * whatever the board.
+       */
+      className="grid h-0 min-h-full text-right text-[0.65rem] font-medium select-none"
       style={{
         gridTemplateRows: lattice ? latticeLabelTracks(size, "rows", shape) : labelTracks(size, inset),
         color: theme.coordinate,
