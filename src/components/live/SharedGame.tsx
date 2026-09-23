@@ -46,7 +46,6 @@ import { postTurn } from "./postTurn";
 import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
 import { GoHelp } from "./GoHelp";
 import { goRisk } from "./goReading";
-import { VisualMoves } from "./VisualMoves";
 import type { MoveNote } from "./MoveNoteField";
 import { nudgedMove, nudgesAvailable, OPPOSITE, type NudgeDirection } from "./nudgeMove";
 import { pointName } from "@/lib/gomoku/notation";
@@ -466,14 +465,6 @@ export function SharedGame({
         <GoHelp state={state} seat={seat} pending={pending} />
       </div>
 
-      {/*
-        The game's positions as one picture, drawn by itself after every move —
-        see `VisualMoves`. The move list is in the panel beside the board now
-        (`LiveMovesPanel`), where there was room for it.
-      */}
-      <div data-chrome className="contents">
-        <VisualMoves detail={detail} />
-      </div>
 
       {/* Resigning, a wave across the board, muting, and who is opposite — see `SharedGameFooter`. */}
       <div data-chrome className="contents">

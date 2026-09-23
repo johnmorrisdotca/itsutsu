@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { ready, winningSequence } from "./support";
+import { ready, readyHere, winningSequence } from "./support";
 
 /**
  * A finished game made into one picture of every position, in the reader's
@@ -12,7 +12,7 @@ import { ready, winningSequence } from "./support";
  * making features that… would waste server time" — so it is asserted, not
  * assumed.
  */
-test("a finished game is one picture of every move, drawn by itself in the browser and downloadable", async ({ page, request }) => {
+test("a finished game opens as one picture of every move, in a window, drawn in the browser and downloadable", async ({ page, request }) => {
   const made = await request.post("/api/games/live", { data: { size: 9 } });
   expect(made.status(), await made.text()).toBe(201);
   const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
@@ -25,18 +25,15 @@ test("a finished game is one picture of every move, drawn by itself in the brows
   }
 
   await page.goto(`/games/gomoku/match/${game.id}`);
-  await ready(page, "game-mosaic");
+  await ready(page, "game-replay");
 
-  // No button: the picture is there, drawn by itself.
-  await expect(page.getByTestId("make-mosaic")).toHaveCount(0);
-  const picture = page.getByTestId("mosaic-picture");
-  await expect(picture).toBeVisible();
-  // A real picture, decoded: wider than it is tall, as a screen is.
-  const shape = await picture.evaluate((image: HTMLImageElement) => ({ width: image.naturalWidth, height: image.naturalHeight }));
-  expect(shape.width).toBeGreaterThan(shape.height);
+  // A quiet button beside the move list, not a panel under the board: nothing is drawn until it is asked for.
+  await expect(page.getByTestId("mosaic-picture")).toHaveCount(0);
+  const open = page.getByTestId("open-mosaic");
+  await readyHere(open);
+
   /*
-   * And drawing it again asks the site for nothing: the switch below redraws
-   * the picture by itself, and every request made meanwhile is counted, less
+   * Everything the site is asked for while the window opens and draws, less
    * the dev server's code files.
    */
   const asked: string[] = [];
@@ -45,12 +42,17 @@ test("a finished game is one picture of every move, drawn by itself in the brows
     const path = new URL(sent.url()).pathname;
     if (!path.startsWith("/_next/")) asked.push(path);
   });
-  const before = await picture.getAttribute("src");
-  await page.getByTestId("mosaic-fill").uncheck();
-  await expect(picture).not.toHaveAttribute("src", before!);
+  await open.click();
+  const dialog = page.getByTestId("mosaic-dialog");
+  const picture = dialog.getByTestId("mosaic-picture");
+  await expect(picture).toBeVisible();
+  // A real picture, decoded: wider than it is tall, as a screen is.
+  const shape = await picture.evaluate((image: HTMLImageElement) => ({ width: image.naturalWidth, height: image.naturalHeight }));
+  expect(shape.width).toBeGreaterThan(shape.height);
   expect(asked, "drawing the picture asked the server for something").toEqual([]);
 
   const download = page.waitForEvent("download");
-  await page.getByTestId("download-mosaic").click();
+  await dialog.getByTestId("download-mosaic").click();
   expect((await download).suggestedFilename()).toBe(`itsutsu-gomoku-${game.id}.png`);
 });
+
