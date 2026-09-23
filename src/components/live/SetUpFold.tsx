@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Paired } from "@/components/i18n/Paired";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { SET_UP_COPY } from "./live.constants";
+import { FOLD_OPEN_SPANS } from "./picker.constants";
 import type { SetUpFoldProps } from "./setUp.types";
 
 /**
@@ -62,7 +63,12 @@ export function SetUpFold({
 
   return (
     <section
-      className="flex min-w-0 flex-col gap-2"
+      /*
+       * `FOLD_OPEN_SPANS`: in a row of answers, an open fold takes the whole
+       * row and the closed ones close up beside each other above it. Outside
+       * a row it does nothing. See `ANSWER_ROW`.
+       */
+      className={`flex min-w-0 flex-col gap-2 ${FOLD_OPEN_SPANS}`}
       data-testid={testId}
       data-group={group}
       data-open={open ? "true" : "false"}
@@ -71,7 +77,14 @@ export function SetUpFold({
         type="button"
         onClick={() => setOpen((was) => !was)}
         aria-expanded={open}
-        className="flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30"
+        /*
+         * `grow`: in a row of answers the cells are as tall as the tallest —
+         * the posted-seat tile, with its 70px mark — and a closed row that
+         * stopped at its own height would leave a strip of nothing under it.
+         * Grown, every closed answer is one card of one height with its words
+         * in the middle. In a column it has nothing to grow into.
+         */
+        className="flex w-full min-w-0 grow items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30"
         data-testid={`${testId}-change`}
       >
         <span className="flex min-w-0 flex-col gap-1">
