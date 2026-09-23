@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { openSetUpPage } from "./support";
 
 /**
@@ -7,7 +8,8 @@ import { openSetUpPage } from "./support";
  *
  * John, 2026-09-15: Small boards held Tic-tac-toe and no small Reversi, though
  * one would belong there just as much — "a family is a way of finding a game,
- * not a filing cabinet". So Mini Reversi lives under Flips and is listed under
+ * not a filing cabinet". So Mini Reversi lives under Turn and take — the family
+ * that was Flips until it took Captures in on 2026-09-22 — and is listed under
  * Small boards too (`ALSO_LISTED_IN`). Picked from either shelf it has to be the
  * same game: the same address on the page before it.
  *
@@ -21,6 +23,12 @@ import { openSetUpPage } from "./support";
 const GAME = "miniReversi";
 /** What the screen calls it, for the summary line that says which game it is about. */
 const NAME = "Mini Reversi";
+/**
+ * Its home shelf, read from the catalogue rather than written here. It was the
+ * literal "Flips", and the family was retitled Turn and take with every unit
+ * test green and this spec left expecting a name no screen printed any more.
+ */
+const HOME = GAME_FAMILIES.find((family) => family.games.includes(GAME))!.title;
 
 /** Opens a family, picks Mini Reversi from its shelf, and says which game the screen is then about. */
 async function pickFrom(page: Page, family: string, note: string | null): Promise<string | null> {
@@ -52,14 +60,14 @@ async function pickFrom(page: Page, family: string, note: string | null): Promis
 }
 
 test.describe("a game listed on two shelves", () => {
-  test("Mini Reversi picked from Small boards is the same game as Mini Reversi picked from Flips", async ({ page }) => {
+  test("Mini Reversi picked from Small boards is the same game as Mini Reversi picked from its home", async ({ page }) => {
     await openSetUpPage(page);
 
-    const fromSmallBoards = await pickFrom(page, "Small boards", "also under Flips");
+    const fromSmallBoards = await pickFrom(page, "Small boards", `also under ${HOME}`);
     expect(fromSmallBoards).toBe("mini-reversi");
 
     // And the same game from its home shelf, on the same screen: one address, one game.
-    const fromFlips = await pickFrom(page, "Flips", null);
-    expect(fromFlips).toBe(fromSmallBoards);
+    const fromHome = await pickFrom(page, HOME, null);
+    expect(fromHome).toBe(fromSmallBoards);
   });
 });
