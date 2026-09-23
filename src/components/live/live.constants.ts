@@ -541,3 +541,21 @@ export const BOARD_FIT_ROOM = "--board-room";
  * same screen as the board. Allowed for rather than measured: see `roomFor`.
  */
 export const BOARD_FIT_BELOW_PX = 72;
+
+/** What the Go help under the board says; see `GoHelp`. */
+export const GO_HELP_COPY = {
+  title: "Go help",
+  kanji: "手引",
+  passed: (them: string) =>
+    `${them} passed. If you pass too, the game ends and is counted — do that when there is nothing left worth playing. A stone inside your own ground gains nothing.`,
+  atariMine: (at: string, liberty: string, stones: number) =>
+    `Your group at ${at} (${stones} ${stones === 1 ? "stone" : "stones"}) has one liberty left, at ${liberty}. Give it room or it is taken.`,
+  atariTheirs: (them: string, at: string, liberty: string, stones: number) =>
+    `${them}'s group at ${at} (${stones} ${stones === 1 ? "stone" : "stones"}) has one liberty left: play ${liberty} to take it.`,
+  fillsOwnEye: (placed: string) =>
+    `${placed} fills one of your own eyes — the empty points a group lives by. A group with two eyes can never be taken; with one, it can. Start over unless you mean it.`,
+  selfAtari: (placed: string) =>
+    `After ${placed}, your group has one liberty left, and the other side takes it with the next stone. Start over unless you mean it.`,
+  howToWin:
+    "How Go is won: place stones to wall off more of the board than your opponent. A group with no empty point beside it is taken off. A group with two separate eyes can never be taken. When neither side has anything useful left, both pass, and each counts their stones plus the ground they walled in; White gets 6.5 for moving second.",
+} as const;

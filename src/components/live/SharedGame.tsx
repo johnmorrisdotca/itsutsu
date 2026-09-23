@@ -17,9 +17,8 @@ import {
 } from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { Button } from "@/components/ui/Controls";
 import { BOT_SEAT_COPY, LIVE_PAUSED_COPY } from "./live.constants";
-import { PlayedMoves } from "@/components/history/PlayedMoves";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MatchClock } from "./MatchClock";
@@ -48,6 +47,9 @@ import { NextCheck } from "./NextCheck";
 import { PendingMoveControls } from "./PendingMoveControls";
 import { postTurn } from "./postTurn";
 import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
+import { GoHelp } from "./GoHelp";
+import { goRisk } from "./goReading";
+import { LiveMoves } from "./LiveMoves";
 import { nudgedMove, nudgesAvailable, OPPOSITE, type NudgeDirection } from "./nudgeMove";
 import { pointName } from "@/lib/gomoku/notation";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
@@ -240,11 +242,13 @@ export function SharedGame({
    * board that did not change; see `pendingMove`.
    */
   async function chose(turn: BotTurn) {
-    if (!previewing) {
+    const held = pendingMove(state, turn);
+    // A Go stone that fills its own eye or leaves its group in atari is always shown first (`GoHelp`).
+    if (!previewing && (held === null || goRisk(state, turn, held.after) === null)) {
       await postTurn(turn, send);
       return;
     }
-    setPending(pendingMove(state, turn));
+    setPending(held);
   }
 
   /** Sends the move that has been sitting on the board, and clears it either way. */
@@ -457,23 +461,9 @@ export function SharedGame({
         <GoPassButton disabled={!playable} onPass={pass} />
       ) : null}
 
-      {/*
-        What has been played, in a game that is still being played.
-        
-        No scrubber here — this board is live and shows the position as it
-        stands — so the list is a record rather than a way to move about. It
-        was missing entirely: a match showed a board and a move count, and
-        John asked twice where the moves had gone.
-      */}
-      <div className="flex flex-col gap-2">
-        <SectionTitle kanji="棋譜">Moves</SectionTitle>
-        <PlayedMoves
-          size={detail.size}
-          moves={detail.moves}
-          emptyNote="Nothing played yet."
-          testId="live-moves"
-        />
-      </div>
+      <GoHelp state={state} seat={seat} pending={pending} />
+
+      <LiveMoves detail={detail} />
 
       {/* Resigning, a wave across the board, muting, and who is opposite — see `SharedGameFooter`. */}
       <SharedGameFooter
