@@ -84,11 +84,47 @@ describe("mosaicLayout", () => {
 describe("mosaicSvg", () => {
   it("is one SVG the picture's size with a board for every frame", () => {
     const frames = framesOf(replayTimeline(storedGame([[4, 0], [0, 0], [4, 1]])));
-    const svg = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080 });
+    const svg = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: false, details: [] });
     expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"')).toBe(true);
     // One wood board per frame, and one stone for every stone in every frame: 1 + 2 + 3.
     expect(svg.match(/fill="#e2ba7a"/g)).toHaveLength(3);
     expect(svg.match(/<circle/g)).toHaveLength(6);
+  });
+});
+
+describe("mosaicSvg's labels and spare spaces", () => {
+  const frames = framesOf(replayTimeline(storedGame([[4, 0], [0, 0], [4, 1]])));
+
+  it("names each move on its tile, the way the move list does", () => {
+    expect(frames.map((frame) => frame.name)).toEqual(["A5", "A9", "B5"]);
+    const svg = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: false, details: [] });
+    expect(svg).toContain(">1 · A5</text>");
+    expect(svg).toContain(">3 · B5</text>");
+  });
+
+  // Five tiles on a wide screen lay out three and two, so one space is left over.
+  const five = framesOf(replayTimeline(storedGame([[4, 0], [0, 0], [4, 1], [0, 1], [4, 2]])));
+
+  it("fills the spaces after the last move with empty boards, the last one carrying the game's lines", () => {
+    const frames = five;
+    const { columns, rows } = mosaicLayout(5, 1920, 1080);
+    const spare = columns * rows - 5;
+    expect(spare).toBeGreaterThan(0);
+    const svg = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: true, details: ["Ann vs Bo", "itsutsu.com"] });
+    // Every slot has its wood: the three moves, the empty boards and the card.
+    expect(svg.match(/fill="#e2ba7a"/g)).toHaveLength(columns * rows);
+    expect(svg).toContain(">Ann vs Bo</text>");
+    // Left unfilled, only the moves have wood.
+    const bare = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: false, details: ["Ann vs Bo"] });
+    expect(bare.match(/fill="#e2ba7a"/g)).toHaveLength(5);
+    expect(bare).not.toContain("Ann vs Bo");
+  });
+
+  it("never lets a typed name out of its text", () => {
+    const frames = five;
+    const svg = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: true, details: ['<b>"x"</b> & c'] });
+    expect(svg).not.toContain("<b>");
+    expect(svg).toContain("&lt;b&gt;&quot;x&quot;&lt;/b&gt; &amp; c");
   });
 });
 

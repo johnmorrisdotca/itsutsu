@@ -5,8 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
-import type { GameState } from "@/lib/gomoku/gomoku.types";
+import type { GameState, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { slugFor } from "@/lib/gomoku/slugs";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { framesOf, mosaicDraws, mosaicSvg, pickFrames } from "@/lib/record/mosaic";
 import {
@@ -36,6 +38,24 @@ function screenPixels(): { width: number; height: number } {
   width = Math.round(width * scale);
   height = Math.round(height * scale);
   return { width, height };
+}
+
+/**
+ * The game's own lines for the card after the last move: who played, what,
+ * how it ended, and the day in THIS reader's calendar — worked out in the
+ * handler, where there is only the browser (see `SgfDownload` for why).
+ */
+function detailsOf(game: GameDetail, variant: RuleVariant): string[] {
+  const at = new Date(game.lastMoveAt ?? game.playedAt);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const day = Number.isNaN(at.getTime()) ? null : `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`;
+  return [
+    `${game.blackName || "Black"} vs ${game.whiteName || "White"}`,
+    `${RULE_VARIANT_DISPLAY[variant].label} · ${game.size}×${game.size}`,
+    `${GAME_RESULT_DISPLAY[game.result].label} · ${game.moveCount} moves`,
+    ...(day === null ? [] : [day]),
+    MOSAIC_COPY.site,
+  ];
 }
 
 /** Rasterises an SVG string to a PNG blob, in the browser. */
@@ -76,6 +96,7 @@ export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: rea
   const hydrated = useHydrated();
   const frames = useMemo(() => framesOf(timeline), [timeline]);
   const [pick, setPick] = useState<MosaicPick>(MOSAIC_PICKS.spread);
+  const [fillSpare, setFillSpare] = useState(true);
   const [made, setMade] = useState<{ url: string; name: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -85,7 +106,8 @@ export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: rea
     if (made !== null) URL.revokeObjectURL(made.url);
   }, [made]);
 
-  if (!mosaicDraws(game.variant) || frames.length === 0) return null;
+  const variant = game.variant as RuleVariant;
+  if (!mosaicDraws(variant) || frames.length === 0) return null;
   const tooMany = frames.length > MOSAIC_MOST_TILES;
 
   async function make() {
@@ -97,12 +119,14 @@ export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: rea
       const svg = mosaicSvg({
         frames: pickFrames(frames, pick, MOSAIC_MOST_TILES),
         size: game.size,
-        grid: VARIANT_SPECS[game.variant].grid,
+        grid: VARIANT_SPECS[variant].grid,
         width,
         height,
+        fillSpare,
+        details: detailsOf(game, variant),
       });
       const blob = await pngOf(svg, width, height);
-      setMade({ url: URL.createObjectURL(blob), name: `itsutsu-${slugFor(game.variant)}-${game.id}.png` });
+      setMade({ url: URL.createObjectURL(blob), name: `itsutsu-${slugFor(variant)}-${game.id}.png` });
     } catch (error) {
       console.error("[mosaic] could not draw", error);
       setFailed(true);
@@ -136,6 +160,10 @@ export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: rea
           ))}
         </fieldset>
       ) : null}
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={fillSpare} onChange={(event) => setFillSpare(event.target.checked)} data-testid="mosaic-fill" />
+        {MOSAIC_COPY.fill}
+      </label>
       <span className="flex flex-wrap items-center gap-2">
         <Button onClick={make} disabled={busy} data-testid="make-mosaic">
           {busy ? MOSAIC_COPY.making : made === null ? MOSAIC_COPY.make : MOSAIC_COPY.again}
