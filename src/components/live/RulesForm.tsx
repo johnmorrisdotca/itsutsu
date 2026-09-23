@@ -72,6 +72,7 @@ export function RulesForm({
   sections,
   folded,
   onSizeChosen,
+  preview,
 }: {
   value: RulesDraft;
   onChange: (next: RulesDraft) => void;
@@ -178,6 +179,19 @@ export function RulesForm({
    * following a default can stop. A chosen board is not a default.
    */
   onSizeChosen?: (size: number) => void;
+  /**
+   * The picture of the board this form describes, placed between the games and
+   * the boards they are played on — see `GameAndBoardChooser`.
+   *
+   * Handed down rather than drawn there because it is the CALLER'S board: the
+   * set-up screen has already settled the rules, worked out whether the
+   * position was dealt, and knows the copy that names the game. This form
+   * decides where it goes and nothing about what it is.
+   *
+   * Absent on the panel beside a live game, which is a narrow column with the
+   * real board a few pixels to its left.
+   */
+  preview?: ReactNode;
 }) {
   const change = (next: Partial<RulesDraft>) => onChange(applyRulesChange(value, next));
   /*
@@ -192,6 +206,7 @@ export function RulesForm({
       showVariant={showVariant}
       variantLabel={variantLabel}
       pictures={chooser === RULES_CHOOSERS.pictures}
+      preview={preview}
       change={change}
       onSizeChosen={onSizeChosen}
     />
