@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
+import { LiveMovesPanel } from "@/components/live/LiveMovesPanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
 import { SitAsPanel } from "@/components/live/SitAsPanel";
@@ -303,6 +304,8 @@ export async function LiveMatch({
             <OfferPanel id={game.id} side={offer.side} who={offer.who} />
           ) : null}
           <MatchPanel id={game.id} matchId={match.id} memberId={match.memberId} />
+          {/* The moves, beside the board where there is room — see `LiveMovesPanel`. */}
+          <LiveMovesPanel initial={game} />
           <SharedRules game={game} refusal={refusal} />
           {/*
             And nothing to fork off a board nobody has agreed to play on yet.

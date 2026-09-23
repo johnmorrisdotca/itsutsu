@@ -61,11 +61,11 @@ test.describe("passing in a live game of Go", () => {
       await ready(black, "shared-game");
       const blackBoard = black.getByTestId("shared-game");
       // White's second stone, (6, 2), named as the board names it: rows count from the top.
-      await expect(blackBoard.getByTestId("live-moves")).toContainText("C3");
+      await expect(blackBoard.page().getByTestId("live-moves")).toContainText("C3");
       const blackPass = blackBoard.getByRole("button", { name: "Pass", exact: true });
       await expect(blackPass).toBeEnabled();
       await blackPass.click();
-      await expect(blackBoard.getByTestId("live-moves")).toContainText("pass");
+      await expect(blackBoard.page().getByTestId("live-moves")).toContainText("pass");
       await expect(blackBoard.getByTestId("turn-banner")).not.toContainText("wins");
       // The pass handed the turn over rather than being refused: nothing to press now.
       await expect(blackPass).toBeDisabled();
@@ -74,7 +74,7 @@ test.describe("passing in a live game of Go", () => {
       await white.goto(`/games/go/match/${game.id}/seat/${game.whiteToken}`);
       await ready(white, "shared-game");
       const whiteBoard = white.getByTestId("shared-game");
-      await expect(whiteBoard.getByTestId("live-moves")).toContainText("pass");
+      await expect(whiteBoard.page().getByTestId("live-moves")).toContainText("pass");
       const whitePass = whiteBoard.getByRole("button", { name: "Pass", exact: true });
       await expect(whitePass).toBeEnabled();
 

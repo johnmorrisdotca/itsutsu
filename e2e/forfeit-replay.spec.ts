@@ -76,9 +76,9 @@ test.describe("a turn lost on time in a live game of gomoku", () => {
       await board.getByTestId("claim-timeout-yes").click();
 
       // The lost turn is on the record as what it was, and the board has moved on past it.
-      await expect(board.getByTestId("live-moves")).toContainText("timed out");
+      await expect(board.page().getByTestId("live-moves")).toContainText("timed out");
       await expect(board.getByTestId("turn-banner")).toContainText("Your move — you are Black.");
-      await expect(board.getByTestId("live-moves")).not.toContainText("pass");
+      await expect(board.page().getByTestId("live-moves")).not.toContainText("pass");
 
       const stored = await prisma.move.findMany({ where: { gameId: game.id }, orderBy: { number: "asc" } });
       expect(stored.map((move) => [move.number, move.stone, move.kind])).toEqual([
