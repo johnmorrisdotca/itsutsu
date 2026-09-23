@@ -3,6 +3,12 @@ export type OutgoingMail = {
   to: string;
   subject: string;
   text: string;
+  /**
+   * Where a reply goes, when it should not be the site's own address. Only an
+   * invite request sets it — to the visitor who asked, so answering them is
+   * pressing Reply. Everything else replies to `CONTACT_ADDRESS`.
+   */
+  replyTo?: string;
 };
 
 /** What a transport reports: a provider's id when it accepted the mail, or why it did not. */
@@ -15,7 +21,14 @@ export type TransportResult = { ok: true; id: string | null } | { ok: false; det
 export type MailTransport = (mail: OutgoingMail) => Promise<TransportResult>;
 
 /** A cap that stopped a send. */
-export type CapRefusal = "member-day-cap" | "site-day-cap" | "site-month-cap";
+export type CapRefusal =
+  | "member-day-cap"
+  | "site-day-cap"
+  | "site-month-cap"
+  /** An invite request from an address, or for an address, that has already asked today. */
+  | "request-repeat-cap"
+  /** Every invite request the site will send in a day, from everybody together. */
+  | "request-day-cap";
 
 /** Every reason an email a person asked for was not sent. */
 export type MailRefusal =
@@ -71,7 +84,15 @@ export type MailCounter = {
 export type SendOutcome = { sent: true; id: string | null } | { sent: false; refusal: MailRefusal };
 
 /** The member whose own action this email is. Every send is somebody's; there is no system sender. */
-export type MailSender = { memberId: string };
+export type MailSender =
+  | { memberId: string }
+  /**
+   * A visitor with no account asking for an invitation. Counted under caps of
+   * its own before the site's, so strangers can never spend the site's day:
+   * see `inviteRequestLimits`. Both keys are keyed hashes — neither the
+   * address a request came from nor the email typed into it is written down.
+   */
+  | { inviteRequest: { from: string; address: string } };
 
 export type MailEnv = {
   NODE_ENV?: string;

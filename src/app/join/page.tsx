@@ -1,7 +1,9 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
+import { AskForInvite } from "@/components/auth/AskForInvite";
 import { JoinForm } from "@/components/auth/JoinForm";
+import { stampInviteRequestForm } from "@/lib/auth/inviteRequestStamp";
 import { STAGE, versionStamps } from "@/lib/version";
 import { BrandAvatar, BrandWordmark } from "@/components/layout/BrandMarks";
 import { isAdminEmail } from "@/lib/auth/admin";
@@ -64,6 +66,16 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         registration={site.registration}
         notice={site.joinNotice}
       />
+      {/*
+        THE WAY TO ASK, for somebody who arrived knowing nobody. Only while the
+        door is invite-only: open, nobody needs to ask; closed, the operator
+        shut it on purpose. Offered to somebody Google has just signed in and
+        who is being asked for a code as well — they are the likeliest to have
+        none. See `AskForInvite` for how a person is told apart from a script.
+      */}
+      {site.registration === "invite-only" ? (
+        <AskForInvite stamp={await stampInviteRequestForm()} open={params.ask === "1"} />
+      ) : null}
       <p className="flex items-baseline gap-3 font-mono text-xs text-muted tabular-nums" data-testid="join-version">
         <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>
         <span>{stamps.semver}</span>

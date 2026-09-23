@@ -44,6 +44,18 @@ export const MAIL_CAPS = {
    * the whole site's day for everybody else.
    */
   memberDay: 5,
+  /**
+   * Invite requests from one visitor address in one UTC day. Two, not one: a
+   * household shares an address, and a second person asking is not spam.
+   */
+  requestFromDay: 2,
+  /**
+   * Invite requests the whole site will send in one UTC day, from everybody.
+   * The ceiling on what a flood can cost: five of the site's fifty a day, and a
+   * hundred and fifty of its thousand a month at the very worst. A real
+   * visitor past it is told to write to `CONTACT_ADDRESS` themselves.
+   */
+  requestSiteDay: 5,
 } as const;
 
 /** The address the site sends from. Nothing is received there; replies go to `CONTACT_ADDRESS`. */
@@ -92,6 +104,8 @@ export const MAIL_REFUSAL_TEXT: Record<MailRefusal, string> = {
   "no-key": "Email is not switched on here yet, so nothing was sent.",
   "member-day-cap": `You have sent as many emails as one person may in a day (${MAIL_CAPS.memberDay}), so this one was not sent. Try again tomorrow.`,
   "site-day-cap": "The site has sent all the email it allows itself today, so this one was not sent. Try again tomorrow.",
+  "request-repeat-cap": "A request for this address, or from where you are, has already been sent today. Please wait for an answer.",
+  "request-day-cap": `Today's invite requests have all been sent. Please write to ${CONTACT_ADDRESS} instead, and say who you are.`,
   "site-month-cap": "The site has sent all the email it allows itself this month, so this one was not sent.",
   "count-unavailable": "The email could not be sent just now, so nothing was sent.",
   "transport-error": "The email could not be confirmed as sent. It may not arrive.",
