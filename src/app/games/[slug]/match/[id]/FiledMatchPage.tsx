@@ -389,6 +389,8 @@ function FiledMatch({
         seated={seated}
         // A game played here, so it may be taken away as a file — see `SgfDownload`.
         offerSgf
+        // And as one picture of every position, drawn in the browser — see `GameMosaic`.
+        offerMosaic
         overlay={card === null ? null : <ResultCard {...card} />}
       />
 
