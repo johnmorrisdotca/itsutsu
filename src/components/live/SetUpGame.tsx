@@ -32,7 +32,8 @@ import { foldedWords } from "./setUpFolded";
 import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { useRematchHeading } from "./useRematchHeading";
 import { useKeptAddress } from "./useKeptAddress";
-import { COLOUR_CHOICES, colourFromAddress, colourIsChosen, type ColourChoice } from "./colourChoice";
+import { COLOUR_CHOICES, colourFromAddress, colourIsChosen, gamesFromAddress, type ColourChoice } from "./colourChoice";
+import type { MatchSize } from "@/lib/history/liveMatch";
 import { SET_UP_PARAMS } from "@/lib/gomoku/slugs";
 import type { SetUpParam } from "./setUp.types";
 
@@ -178,6 +179,8 @@ export function SetUpGame({
    * question is asked at all.
    */
   const [colour, setColour] = useState<ColourChoice>(colourFromAddress(query.get(SET_UP_PARAMS.colour)));
+  /* How many games at once — a match, offered wherever the colour is; see `liveMatch.ts`. */
+  const [games, setGames] = useState<MatchSize>(gamesFromAddress(query.get(SET_UP_PARAMS.games)));
   /*
    * Pressed, and on the way. There is nothing here that can fail — the request
    * that could lives on the doorstep — so this screen has no error to show, only
@@ -236,6 +239,7 @@ export function SetUpGame({
     ...keptParams(base, { rules, boardChosen, against: random ? RANDOM_COMPUTER : chosenId, chooseGame }),
     // The seat chosen, only when it is not the default — black says nothing, as the route's own rule.
     ...(colour === COLOUR_CHOICES.black ? [] : [[SET_UP_PARAMS.colour, colour] as SetUpParam]),
+    ...(games === 1 ? [] : [[SET_UP_PARAMS.games, String(games)] as SetUpParam]),
   ]);
 
   /*
@@ -288,6 +292,7 @@ export function SetUpGame({
     random,
     waiting: waiting === undefined ? undefined : { id: waiting.id, who: waiting.who },
     colour,
+    games,
   });
   /* Whether the colour is the asker's to choose in THIS game — the control shows only where it is. */
   const colourChosen = colourIsChosen({
@@ -427,6 +432,7 @@ export function SetUpGame({
       <BeginBar
         sitting={sitting}
         colour={colourChosen ? { value: colour, onChange: setColour } : null}
+        games={colourChosen ? { value: games, onChange: setGames } : null}
         made={made}
         trouble={trouble}
         press={press}

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Controls";
 import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { COLOUR_CHOICES, type ColourChoice } from "./colourChoice";
+import { MATCH_SIZES, type MatchSize } from "@/lib/history/liveMatch";
 import { START_COPY } from "@/components/mine/mine.constants";
 
 import { DOORSTEP_COPY, SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
@@ -30,6 +31,7 @@ export function BeginBar({
   named,
   waiting,
   colour,
+  games,
 }: {
   /** Who sits where, in a sentence: the fact people most want before a board. */
   sitting: string;
@@ -52,6 +54,8 @@ export function BeginBar({
    * and then nothing is drawn. See `colourChoice.ts`.
    */
   colour: { value: ColourChoice; onChange: (choice: ColourChoice) => void } | null;
+  /** How many games at once, offered wherever the colour is: see `liveMatch.ts`. */
+  games: { value: MatchSize; onChange: (count: MatchSize) => void } | null;
 }) {
   return (
     <div className="flex flex-col gap-2 border-t border-rule pt-3" data-testid="set-up-continue">
@@ -87,6 +91,32 @@ export function BeginBar({
               data-testid={`set-up-colour-${choice}`}
             >
               {SET_UP_COPY.colour[choice]}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {/*
+        HOW MANY GAMES, where the colour is yours to say. More than one is a
+        match with the colours alternating, so the better seat evens out over
+        it rather than resting on one choice — GoldToken's No / Two-game /
+        Four-game / Six-game.
+      */}
+      {games !== null ? (
+        <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="set-up-games" role="radiogroup" aria-label={SET_UP_COPY.games.label}>
+          <span className="text-muted">{SET_UP_COPY.games.label}</span>
+          {MATCH_SIZES.map((count) => (
+            <button
+              key={count}
+              type="button"
+              role="radio"
+              aria-checked={games.value === count}
+              onClick={() => games.onChange(count)}
+              className={`rounded-full border px-2.5 py-1 ${TAP_HEIGHT} ${
+                games.value === count ? "border-ink bg-ink text-paper" : "border-rule text-ink-soft hover:border-ink-soft"
+              }`}
+              data-testid={`set-up-games-${count}`}
+            >
+              {count === 1 ? SET_UP_COPY.games.one : SET_UP_COPY.games.many(count)}
             </button>
           ))}
         </div>

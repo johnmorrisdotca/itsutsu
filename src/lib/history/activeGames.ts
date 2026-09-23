@@ -141,13 +141,15 @@ export type OverTheLimit = {
  */
 export async function memberOverActiveLimit(
   memberIds: readonly (string | null | undefined)[],
+  /** How many games this would add: more than one for a match, which must fit whole. */
+  adding = 1,
 ): Promise<OverTheLimit | null> {
   const candidates = [...new Set(memberIds.filter((id): id is string => !!id && !isBotId(id)))];
   const letPast = await operatorsLetPast(candidates);
   for (const memberId of candidates) {
     if (letPast.has(memberId)) continue;
     const count = await activeGameCount(memberId);
-    if (count >= ACTIVE_GAME_LIMIT) return { memberId, count, limit: ACTIVE_GAME_LIMIT };
+    if (count + adding > ACTIVE_GAME_LIMIT) return { memberId, count, limit: ACTIVE_GAME_LIMIT };
   }
   return null;
 }

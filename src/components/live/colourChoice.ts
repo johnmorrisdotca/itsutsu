@@ -2,6 +2,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { openingDecidesColours } from "@/lib/gomoku/rules/opening";
 import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
+import { MATCH_SIZES, type MatchSize } from "@/lib/history/liveMatch";
 
 /**
  * WHICH SEAT THE ASKER TAKES, chosen on the set-up screen.
@@ -54,4 +55,13 @@ export function colourToTake(choice: ColourChoice, roll: number): Stone {
   if (choice === COLOUR_CHOICES.white) return STONES.white;
   if (choice === COLOUR_CHOICES.lot) return roll < 0.5 ? STONES.black : STONES.white;
   return STONES.black;
+}
+
+/**
+ * The match size an address asked for, or one: anything but a size the route
+ * accepts is an ordinary game, the way a colour it does not know is black.
+ */
+export function gamesFromAddress(value: string | null | undefined): MatchSize {
+  const asked = Number(value);
+  return (MATCH_SIZES as readonly number[]).includes(asked) ? (asked as MatchSize) : 1;
 }

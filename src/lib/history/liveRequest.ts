@@ -107,6 +107,12 @@ export const liveGameSchema = z.object({
    * play: swap and swap2 make the choice a move, and the form hides this there.
    */
   asColour: z.enum([STONES.black, STONES.white]).optional(),
+  /**
+   * How many games to make at once, the colours alternating: a MATCH, so the
+   * advantage of moving first cancels over it. One is an ordinary game. The
+   * sizes and who may ask for more than one are in `liveMatch.ts`.
+   */
+  games: z.union([z.literal(1), z.literal(2), z.literal(4), z.literal(6)]).default(1),
 });
 
 /** The request as the schema made it: every default filled in. */

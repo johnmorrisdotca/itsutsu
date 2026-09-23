@@ -8,7 +8,7 @@ import { noticeGameOver } from "@/lib/notify/gameNotices";
 import { activeLimitRefusal, memberOverActiveLimit } from "./activeGames";
 import { nextDeadline } from "./deadline";
 import { OFFER_ACTIONS, type OfferOutcome } from "./offers.types";
-import { OFFER_SELECT, offerRefusal, offeredSeat } from "./offers";
+import { NOT_A_REFUSED_OFFER, OFFER_SELECT, offerRefusal, offeredSeat } from "./offers";
 
 /**
  * ANSWERING AN OFFER: accept it, decline it, or take it back.
@@ -62,8 +62,31 @@ const OFFER_ROW = {
   blackName: true,
   whiteName: true,
   opener: true,
+  matchId: true,
   ...OFFER_SELECT,
 } as const;
+
+/**
+ * The rest of a match this offer belongs to, still offered to the same member.
+ *
+ * A MATCH IS ANSWERED AS ONE. Its fairness is that each player takes each
+ * colour equally often, so accepting one game of it and leaving the others
+ * would be the single unfair game the match exists to avoid, and declining one
+ * would leave the rest asking a question already answered. Only the siblings
+ * still offered to this same member are touched: one already ended is left as
+ * it is.
+ */
+async function matchSiblings(
+  row: { id: string; matchId: string | null },
+  memberId: string,
+) {
+  if (row.matchId === null) return [];
+  return prisma.game.findMany({
+    // Still standing: an active game, offered to them, never refused.
+    where: { matchId: row.matchId, id: { not: row.id }, offeredToMemberId: memberId, status: "active", ...NOT_A_REFUSED_OFFER },
+    select: OFFER_ROW,
+  });
+}
 
 /**
  * Takes the offered seat. The game becomes an ordinary game from this moment:
@@ -107,7 +130,8 @@ export async function acceptOffer(
    * Here it is exactly right: they are the one acquiring a board, they are the
    * one being told, and the number in the sentence is their own.
    */
-  const atTheLimit = await memberOverActiveLimit([memberId]);
+  const siblings = await matchSiblings(row, memberId);
+  const atTheLimit = await memberOverActiveLimit([memberId], 1 + siblings.length);
   if (atTheLimit !== null) {
     // Refused, and the offer is LEFT STANDING — nothing above has written
     // anything yet. They finish a game and accept this one an hour later, the
@@ -115,33 +139,46 @@ export async function acceptOffer(
     return { ok: false, reason: "over-limit", said: activeLimitRefusal(atTheLimit) };
   }
 
+  await prisma.$transaction(
+    [row, ...siblings].flatMap((game) => {
+      const taken = offeredSeat(game);
+      return taken === null ? [] : [prisma.game.update({ where: { id: game.id }, data: acceptedData(game, taken, memberId, name, now) })];
+    }),
+  );
+  return { ok: true, seat, variant: row.variant };
+}
+
+/** The write that takes an offered seat; one per game, so a match's games are each taken the same way. */
+function acceptedData(
+  row: { blackName: string; whiteName: string; opener: string; moveTimeMs: number | null; clockMode: string; blackTimeMs: number | null; whiteTimeMs: number | null },
+  seat: typeof STONES.black | typeof STONES.white,
+  memberId: string,
+  name: string,
+  now: Date,
+) {
   const held = seat === STONES.black ? row.blackName : row.whiteName;
   const opener = row.opener === STONES.black ? STONES.black : STONES.white;
-  await prisma.game.update({
-    where: { id },
-    data: {
-      [`${seat}MemberId`]: memberId,
-      // A seat with no name typed on it takes the name of whoever sat down.
-      ...(held.trim() === "" && name.trim() !== "" ? { [`${seat}Name`]: name.trim() } : {}),
-      // Arriving at your own seat by accepting is arriving; nobody follows a link here.
-      [`${seat}ClaimedAt`]: now,
-      // See the head of this function: the token that existed while this was a
-      // question is discarded, so it cannot play the seat now it is an answer.
-      [`${seat}Token`]: freshToken(),
-      /*
-       * THE OFFER IS CLEARED, WHICH IS THE WHOLE MECHANISM. From here the row
-       * is the bound game it would have been before any of this existed, and
-       * every query on the site reads it as one without being told about
-       * offers. See the schema's note on `offeredAt`.
-       */
-      offeredToMemberId: null,
-      offeredAt: null,
-      lastMoveAt: now,
-      deadlineAt: nextDeadline(row, opener, now),
-      extraMs: 0,
-    },
-  });
-  return { ok: true, seat, variant: row.variant };
+  return {
+    [`${seat}MemberId`]: memberId,
+    // A seat with no name typed on it takes the name of whoever sat down.
+    ...(held.trim() === "" && name.trim() !== "" ? { [`${seat}Name`]: name.trim() } : {}),
+    // Arriving at your own seat by accepting is arriving; nobody follows a link here.
+    [`${seat}ClaimedAt`]: now,
+    // See the head of this module: the token that existed while this was a
+    // question is discarded, so it cannot play the seat now it is an answer.
+    [`${seat}Token`]: freshToken(),
+    /*
+     * THE OFFER IS CLEARED, WHICH IS THE WHOLE MECHANISM. From here the row
+     * is the bound game it would have been before any of this existed, and
+     * every query on the site reads it as one without being told about
+     * offers. See the schema's note on `offeredAt`.
+     */
+    offeredToMemberId: null,
+    offeredAt: null,
+    lastMoveAt: now,
+    deadlineAt: nextDeadline(row, opener, now),
+    extraMs: 0,
+  };
 }
 
 /**
@@ -194,8 +231,15 @@ async function endOffer(
   if (row === null) return { ok: false, reason: "not-found" };
   const seat = offeredSeat(row);
 
-  await prisma.game.update({
-    where: { id },
+  /*
+   * The rest of a match goes with it (see `matchSiblings`): a match declined
+   * is declined whole, and one taken back is taken back whole. Found by the
+   * member it was offered to, which a withdrawal reads off this row.
+   */
+  const offeree = row.offeredToMemberId;
+  const siblings = offeree === null ? [] : await matchSiblings(row, offeree);
+  await prisma.game.updateMany({
+    where: { id: { in: [id, ...siblings.map((game) => game.id)] } },
     data: {
       status: "finished",
       result: "abandoned",

@@ -47,9 +47,15 @@ export async function createLiveGame(
     offeredAt?: Date;
     /** A position to start from: the first `moves` moves of another game are copied in. */
     from?: { id: string; moves: number };
+    /**
+     * This game's place in a match (`liveMatch.ts`). The seed is the match's:
+     * a board dealt at random must be the SAME board in every game, or the
+     * colours would even out over boards that were never alike.
+     */
+    match?: { id: string; index: number; size: number; seed: number };
   },
 ): Promise<CreatedGame> {
-  const { handicap, headStart, open, hotSeat = false, seed, from, clockMode = "move", rated, ...rest } = input;
+  const { handicap, headStart, open, hotSeat = false, seed, from, match, clockMode = "move", rated, ...rest } = input;
   const token = randomBytes(18).toString("base64url");
   const startedAt = new Date();
   const budget = clockMode === "game" ? rest.moveTimeMs : null;
@@ -74,8 +80,9 @@ export async function createLiveGame(
 
   const game = await prisma.game.create({
     data: {
-      id: await freeGameId(),
+      id: match !== undefined && match.index === 1 ? match.id : await freeGameId(),
       ...rest,
+      ...(match !== undefined ? { matchId: match.id, matchIndex: match.index, matchSize: match.size } : {}),
       // The opener the engine will replay, where the rules or a head start's stones fix it — see `fixedOpener`.
       opener: fixedOpener(rest.variant, rest.opening, { headStart, size: board }) ?? rest.opener,
       // A game with a board of its own is created on it, whatever was asked for.
@@ -106,7 +113,7 @@ export async function createLiveGame(
       openSeat: open && !hotSeat ? STONES.white : null,
       openedAt: open && !hotSeat ? new Date() : null,
       // The server draws the seed: the two players must see the same board.
-      seed: hotSeat && seed !== undefined ? seed : seedFromRoll(Math.random(), SEED_RANGE),
+      seed: match !== undefined ? match.seed : hotSeat && seed !== undefined ? seed : seedFromRoll(Math.random(), SEED_RANGE),
       // The first deadline runs from the moment the game exists.
       lastMoveAt: startedAt,
       status: "active",
