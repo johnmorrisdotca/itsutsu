@@ -3,6 +3,7 @@ import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
+import { BOARD_SIZES, BOARD_SIZE_LIST } from "./boardSize";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
@@ -141,6 +142,14 @@ export const PREFERENCE_SPECS = {
    * in one sitting.
    */
   afterMove: { options: AFTER_MOVE_LIST, fallback: AFTER_MOVE.nextWaiting },
+
+  /*
+   * How big the board is drawn on a desk: fit the screen, or small, medium,
+   * large. See `boardSize.ts`. On the account for the reason this registry is:
+   * the size chosen at one desk is the size at the next, and a phone, which
+   * never applies it, is left alone.
+   */
+  boardSize: { options: BOARD_SIZE_LIST, fallback: BOARD_SIZES.fit },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

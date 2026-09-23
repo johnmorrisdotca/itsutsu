@@ -8,6 +8,9 @@ import { SiteFooter } from "./SiteFooter";
  *
  *   wide      a board or a table with a sidebar beside it: play, a match,
  *             a replay, the record
+ *   board     a live game, where the board is the page: the same frame as
+ *             `wide` up to 1536px and wider past it, so a big screen has
+ *             room for the board its reader chose (see `BoardColumn`)
  *   standard  a page of cards, a form, a list: the front, the games, rules,
  *             learning, players
  *
@@ -17,6 +20,7 @@ import { SiteFooter } from "./SiteFooter";
  */
 export const PAGE_WIDTH = {
   wide: "max-w-6xl",
+  board: "max-w-6xl 2xl:max-w-[100rem]",
   standard: "max-w-5xl",
 } as const;
 
@@ -26,7 +30,7 @@ export type PageWidth = keyof typeof PAGE_WIDTH;
 export function Page({
   width = "standard",
   gap = "gap-8",
-  board = width === "wide",
+  board = width !== "standard",
   children,
 }: {
   width?: PageWidth;
@@ -48,6 +52,8 @@ export function Page({
    * "wide"`, which keeps every board page exactly as it was WITHOUT touching a
    * single caller — the safe way round, since a caller silently losing the
    * switch would also silently stop being strippable and nothing would say so.
+   * The `board` frame is a board page by the same default, which is what it is
+   * named for.
    * A wide page with no board says `board={false}` where it says the width.
    */
   board?: boolean;
