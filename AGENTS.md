@@ -633,6 +633,61 @@ under the claim condition — and `pnpm task`'s list prints it as STALE, because
 somebody started it, and a reader should know that before starting again.
 
 
+### Deploys Are Fast By Design
+
+**A standing goal, not a one-off tuning.** John, 2026-09-22: "we should have
+goal to have the fastest deploy times possible with means shards and testing
+and making sure things happen in parallel. Make that happen and make that part
+of our documentation and instructions for the agents so that it's always
+thinking about better performance." So every change to how this project is
+checked, built or released is judged by one number as well as by whether it
+works: **how long from `git push` to the site reading the new version.**
+
+**Where the time goes, measured 2026-09-22** (read it again with the recipe
+below before trusting it — these numbers move):
+
+- The browser suite is the critical path. About 45 minutes of tests over 181
+  spec files, no one file over two minutes, so the time is spread thin and the
+  lever is SHARDS. Four shards made the slowest fourteen minutes; there are
+  eight now (`e2e.yml`). Inside a shard, setup — the database container and the
+  browser download — is about a minute; everything else is tests.
+- The checks (`verify`) were one job running lint, sizes, types, unit tests,
+  audit and build in a line: 5.3 minutes. They are five parallel jobs now, and
+  the unit tests are the longest of them.
+- The deploy itself is under two minutes of small steps, and is not worth
+  restructuring.
+- The local gate before a push (`pnpm preflight:prod`) ran its checks in a line
+  too, 151 seconds; `scripts/preflight.mjs` runs them side by side, 103.
+
+**The rules that fall out, for anybody touching a workflow, a gate or a spec:**
+
+1. **Parallel by default.** A new check is a new lane in `preflight.mjs` and a
+   new leg of the `verify` matrix — never another `&&` on the end of a chain.
+   Two things run in sequence only when one reads what the other wrote (types
+   and the build share `.next`, so they share a lane).
+2. **Keep the slowest shard short.** When it passes about eight minutes, add
+   shards — they are free on this public repository — or rebalance the files.
+   The one ceiling is GitHub's twenty concurrent jobs on a free account: five
+   checks, eight shards and the deploy is fourteen, so an overlapping
+   pull-request run queues for a while and costs nothing.
+3. **Measure, don't guess.** Step timings of a run:
+   `gh api repos/johnmorrisdotca/itsutsu/actions/runs/<run>/jobs` and read each
+   step's `started_at`/`completed_at` (the REST field is `id`, not
+   `databaseId`). Per-file test time: the gap between consecutive `[n/N]` lines
+   in a shard's log. Prove a shard split with `playwright test --shard=N/M
+   --list` before pushing it — every test in exactly one shard.
+4. **A spec's wall time is paid on every release.** Wait on a condition, never
+   on a clock, unless the clock IS the subject (the invite form's three-second
+   stamp is). A spec that adds a minute adds it to every deploy after it.
+5. **Follow the tools' own advice** rather than folklore: one Playwright worker
+   per shard in CI and no caching of Playwright's browser download (both
+   Playwright's CI guidance), package installs cached (`setup-node`'s `cache`).
+6. **The next known win** is running the suite against a production build
+   instead of the dev server, as Next.js recommends — every page answers
+   faster. It is blocked by design, not by effort: the suite's relief (looser
+   cost limits, faster polling) is refused in production mode on purpose, so it
+   needs its own ticket and its own thinking, not a flag flipped.
+
 ### Every Landed Commit Bumps The Version
 
 **`pnpm release:take` takes the number and commits it, immediately before
