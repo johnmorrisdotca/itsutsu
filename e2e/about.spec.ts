@@ -121,8 +121,16 @@ test.describe("about", () => {
     const games = await graph.locator("text").filter({ hasText: /^(Checkers|Reversi|Hex|Go|Halma)$/ }).count();
     expect(games, "no game is named above its bars").toBeGreaterThan(0);
 
-    // A percentage on every bar, and the half line it is read against.
-    await expect(graph.getByText("50%", { exact: true })).toBeVisible();
+    /*
+     * A percentage on every bar, and the half line it is read against.
+     *
+     * The half line found as the AXIS'S mark, not as the text "50%". It was the
+     * text, and that stopped naming one thing on 2026-09-22 when the ladder was
+     * measured across twelve boards: three pairings came out level, each bar
+     * labelled "50%", and the spec failed in strict mode over four matches on a
+     * page that was drawing exactly what it should.
+     */
+    await expect(graph.locator('text[data-axis-mark="0.5"]')).toHaveText("50%");
     await expect(graph).toContainText("%");
 
     /*
