@@ -34,6 +34,8 @@ test.describe("a visitor with no invite", () => {
     await expect(page).not.toHaveURL(/\/join/);
     await expect(page.getByTestId("front-door")).toBeVisible();
     await expect(page.getByTestId("to-play")).toHaveCount(0);
+    // And it is told where the door is.
+    await expect(page.getByTestId("invite-line")).toContainText("by invitation");
   });
 
   test("is sent back to where they were heading, after joining", async ({ page }) => {

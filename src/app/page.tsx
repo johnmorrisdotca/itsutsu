@@ -4,6 +4,7 @@ import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { currentSession } from "@/lib/auth/currentSession";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 
 /** What the site says about itself, in three lines. */
@@ -39,7 +40,10 @@ const PITCH = [
  * one page that shows the whole hero, and it says what the site is and
  * where the door is — the board itself is reached through the games.
  */
-export default function Home() {
+export default async function Home() {
+  // The header has already asked; the member row behind it is cached for the
+  // request, so asking again here reads no more than the cookie.
+  const session = await currentSession();
   return (
     <Page width="standard" gap="gap-10">
       <SiteHeader hero />
@@ -141,13 +145,20 @@ export default function Home() {
         </p>
       </section>
 
-      <footer className="border-t border-rule pt-5 text-xs text-muted">
-        Itsutsu <span className="font-mincho">五つ</span> is by invitation. If you have a code,{" "}
-        <Link href="/join" className="underline underline-offset-4">
-          come in
-        </Link>
-        .
-      </footer>
+      {/*
+        The door, for somebody standing outside it. A member already in was
+        being told the site is by invitation and asked for a code they had
+        already used.
+      */}
+      {session === null && (
+        <footer className="border-t border-rule pt-5 text-xs text-muted" data-testid="invite-line">
+          Itsutsu <span className="font-mincho">五つ</span> is by invitation. If you have a code,{" "}
+          <Link href="/join" className="underline underline-offset-4">
+            come in
+          </Link>
+          .
+        </footer>
+      )}
   </Page>
   );
 }
