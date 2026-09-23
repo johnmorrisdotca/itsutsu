@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Paired } from "@/components/i18n/Paired";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { SET_UP_COPY } from "./live.constants";
-import { FOLD_OPEN_SPANS } from "./picker.constants";
+import { ANSWER_BODY_GAP, ANSWER_PART, ANSWER_SPREAD } from "./picker.constants";
 import type { SetUpFoldProps } from "./setUp.types";
 
 /**
@@ -57,6 +57,7 @@ export function SetUpFold({
   testId,
   openInitially = false,
   group,
+  place,
   children,
 }: SetUpFoldProps) {
   const [open, setOpen] = useState(openInitially);
@@ -64,11 +65,12 @@ export function SetUpFold({
   return (
     <section
       /*
-       * `FOLD_OPEN_SPANS`: in a row of answers, an open fold takes the whole
-       * row and the closed ones close up beside each other above it. Outside
-       * a row it does nothing. See `ANSWER_ROW`.
+       * In a row of answers (`place`), laid over the whole row so that its
+       * button keeps its own column and its choices open on a line under the
+       * row — see `answerRow.ts`. Standing alone, the column it always was.
        */
-      className={`flex min-w-0 flex-col gap-2 ${FOLD_OPEN_SPANS}`}
+      className={`flex min-w-0 flex-col gap-2 ${place === undefined ? "" : ANSWER_SPREAD}`}
+      style={place?.section}
       data-testid={testId}
       data-group={group}
       data-open={open ? "true" : "false"}
@@ -84,7 +86,10 @@ export function SetUpFold({
          * Grown, every closed answer is one card of one height with its words
          * in the middle. In a column it has nothing to grow into.
          */
-        className="flex w-full min-w-0 grow items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30"
+        className={`flex w-full min-w-0 grow items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30 ${
+          place === undefined ? "" : ANSWER_PART
+        }`}
+        style={place?.head}
         data-testid={`${testId}-change`}
       >
         <span className="flex min-w-0 flex-col gap-1">
@@ -113,7 +118,11 @@ export function SetUpFold({
         reader sees and the right thing a screen reader hears, and the state of
         the group is kept by the inputs themselves the whole time.
       */}
-      <div className="flex min-w-0 flex-col gap-2 pt-1" hidden={!open}>
+      <div
+        className={`flex min-w-0 flex-col gap-2 pt-1 ${place === undefined ? "" : `${ANSWER_PART} ${ANSWER_BODY_GAP}`}`}
+        style={place?.body}
+        hidden={!open}
+      >
         {children}
       </div>
     </section>

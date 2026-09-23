@@ -58,6 +58,35 @@ export function GameAndBoardChooser({
   const variant = value.variant as RuleVariant;
   const sizes = boardSizesFor(variant);
 
+  /*
+   * The board and the boards it could be, as one thing. A row from a tablet up
+   * and a stack below it — `PICK_BOARD_ROW` — with the picture on the left and
+   * its sizes beside it.
+   */
+  const boardRow = pictures ? (
+    <div className={preview === undefined ? undefined : `${PICK_BOARD_ROW} py-2 lg:min-w-0 lg:flex-1 lg:py-0`}>
+      {preview === undefined ? null : <div className={PICK_BOARD_PREVIEW}>{preview}</div>}
+      <BoardPicker
+        value={value.size}
+        sizes={sizes}
+        disabled={disabled}
+        beside={preview !== undefined}
+        onChange={(next) => {
+          onSizeChosen?.(next);
+          change({ size: next });
+        }}
+      />
+    </div>
+  ) : null;
+  /*
+   * WHERE IT GOES. With the games offered as pictures, straight under the row
+   * of families — see `GamePicker`'s `underFamilies`: that row is always one
+   * line, and the games under it are one to three, so a board drawn below the
+   * games moved up and down as families were clicked. Where the game is
+   * already settled and no families are drawn, it simply comes first.
+   */
+  const boardUnderFamilies = showVariant && pictures;
+
   return (
     <>
       {showVariant ? (
@@ -67,6 +96,7 @@ export function GameAndBoardChooser({
             disabled={disabled}
             onChange={(next) => change({ variant: next })}
             label={variantLabel}
+            underFamilies={boardRow}
           />
         ) : (
           <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
@@ -109,25 +139,7 @@ export function GameAndBoardChooser({
         option in a narrow column beside a live game is furniture.
       */}
       {pictures ? (
-        /*
-         * The board and the boards it could be, as one thing. A row from a
-         * tablet up and a stack below it — `PICK_BOARD_ROW` — so the same
-         * order reads on a phone and at a desk: the games, then what the game
-         * looks like, then which of its boards.
-         */
-        <div className={preview === undefined ? undefined : PICK_BOARD_ROW}>
-          {preview === undefined ? null : <div className={PICK_BOARD_PREVIEW}>{preview}</div>}
-          <BoardPicker
-            value={value.size}
-            sizes={sizes}
-            disabled={disabled}
-            beside={preview !== undefined}
-            onChange={(next) => {
-              onSizeChosen?.(next);
-              change({ size: next });
-            }}
-          />
-        </div>
+        boardUnderFamilies ? null : boardRow
       ) : sizes.length > 1 ? (
         <Field label="Board">
           <Select
