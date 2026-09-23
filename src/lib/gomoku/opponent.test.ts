@@ -123,7 +123,7 @@ describe("the graded players", () => {
      * weaker than each other at anything, because they do not play the same
      * game.
      */
-    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu, BOT_TIERS.monkton]);
+    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu, BOT_TIERS.monkton, BOT_TIERS.tinsdale]);
     for (const tier of BOT_SPECIALIST_LIST) {
       expect(BOT_TIER_LIST).not.toContain(tier);
       const profile = BOT_PROFILES[tier];
@@ -142,6 +142,7 @@ describe("the graded players", () => {
     expect(BOT_PROFILES.tamenoki.native).toBe("為乃木秀正");
     expect(BOT_PROFILES.meritalu.native).toBeNull();
     expect(BOT_PROFILES.monkton.native).toBeNull();
+    expect(BOT_PROFILES.tinsdale.native).toBeNull();
     /*
      * Three kinds of computer player, and everybody is exactly one of them:
      * the ladder's five rungs, the specialists at their own game, and the
