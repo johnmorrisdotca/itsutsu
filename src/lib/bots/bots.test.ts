@@ -126,6 +126,10 @@ describe("the ladder as members", () => {
     expect(botsFor(RULE_VARIANTS.go).map((bot) => bot.tier)).toContain(BOT_TIERS.hondo);
     expect(atReversi).not.toContain(BOT_TIERS.hondo);
     expect(atFive).not.toContain(BOT_TIERS.hondo);
+    // And the Connect6 specialist, at Connect6 and nothing else.
+    expect(botsFor(RULE_VARIANTS.connect6).map((bot) => bot.tier)).toContain(BOT_TIERS.wuyi);
+    expect(atReversi).not.toContain(BOT_TIERS.wuyi);
+    expect(atFive).not.toContain(BOT_TIERS.wuyi);
     /*
      * A character is still not offered here. Its whole difference from the
      * grade it is built on is a preference about SHAPE, and a race reads no

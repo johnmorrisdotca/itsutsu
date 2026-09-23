@@ -51,7 +51,7 @@ export type LineReading = {
 };
 
 /** Which family of board a specialist has actually studied. */
-export type ExpertKind = "flip" | "line" | "race" | "draughts" | "go";
+export type ExpertKind = "flip" | "line" | "race" | "draughts" | "go" | "six";
 
 /**
  * One specialist's knowledge of one family: which games it applies to, what a

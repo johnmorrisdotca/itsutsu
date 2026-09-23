@@ -123,7 +123,7 @@ describe("the graded players", () => {
      * weaker than each other at anything, because they do not play the same
      * game.
      */
-    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu, BOT_TIERS.monkton, BOT_TIERS.tinsdale, BOT_TIERS.hondo]);
+    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu, BOT_TIERS.monkton, BOT_TIERS.tinsdale, BOT_TIERS.hondo, BOT_TIERS.wuyi]);
     for (const tier of BOT_SPECIALIST_LIST) {
       expect(BOT_TIER_LIST).not.toContain(tier);
       const profile = BOT_PROFILES[tier];

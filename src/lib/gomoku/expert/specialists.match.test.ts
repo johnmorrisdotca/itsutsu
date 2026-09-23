@@ -294,3 +294,19 @@ describe.runIf(LONG)("the Go specialist against the ladder", () => {
     3_600_000,
   );
 });
+
+/*
+ * THE CONNECT6 SPECIALIST, on the game's own nineteen-point board. Nine points
+ * is too small for two stones a turn: every threat is blocked before it
+ * forms, and thirty games against 国手 there were thirty draws — a series that
+ * measures nothing about either player.
+ */
+describe.runIf(LONG)("the Connect6 specialist against the ladder", () => {
+  it.each([...BOT_TIER_LIST])(
+    "beats %s over a series of Connect6",
+    (against) => {
+      claim(BOT_TIERS.wuyi, against, series(RULE_VARIANTS.connect6, BOT_TIERS.wuyi, against, { size: 19 }));
+    },
+    3_600_000,
+  );
+});

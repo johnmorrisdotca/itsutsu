@@ -294,6 +294,20 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
       "Japanese student of the game is taught to revere. " +
       "Games against him are rated, and so is his own record.",
   },
+  wuyi: {
+    tier: BOT_TIERS.wuyi,
+    id: "wuyi",
+    name: BOT_PROFILES.wuyi.name,
+    country: "Taiwan",
+    bio:
+      "吳一辰 — a computer player, and the only one here that plays Connect6 " +
+      "and nothing else. Wuyi reads it as the game's own theory does: a threat " +
+      "is six with two stones missing, one stone blocks it, and a turn is two " +
+      "stones — so what matters is how many stones it would take to block every " +
+      "threat on the board, and three is a win. The name is an homage to I-Chen " +
+      "Wu, who invented Connect6 in 2003 and led the work that solved its " +
+      "openings. Games against him are rated, and so is his own record.",
+  },
 };
 
 /**
