@@ -1,5 +1,5 @@
 import { botTierFor } from "@/lib/bots/bots";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
 import { playedSides, type PlayedSide } from "@/lib/rating/playedRun";
 import { STREAK_KINDS, extendStreak } from "@/lib/rating/streak";
 
@@ -15,7 +15,7 @@ import {
   variantOf,
   type Opponent,
 } from "./xpGame";
-import { heldCount, heldKey, predict, seedStates, stateIn, type MemberState } from "./backfillPay";
+import { heldCount, heldDistinct, heldKey, predict, seedStates, stateIn, type MemberState } from "./backfillPay";
 import type { XpEventType } from "./xp.types";
 import type {
   BackfillBuddy,
@@ -113,9 +113,15 @@ const rivalryKey = (loser: string, winner: string, variant: string): string =>
  * The sizes are imported from the modules that own them, so a game added to the
  * site or a grade retired moves them here too.
  */
-const COLLECTED: readonly { each: XpEventType; all: XpEventType; size: number }[] = [
+const COLLECTED: readonly {
+  each: XpEventType;
+  all: XpEventType;
+  size: number;
+  /** What a stored subject means today, where two things have become one. `awardCollected`'s own. */
+  fold?: (subject: string) => string;
+}[] = [
   { each: XP_EVENTS.firstOfVariant, all: XP_EVENTS.everyVariantPlayed, size: XP_VARIANTS_TO_PLAY },
-  { each: XP_EVENTS.firstOfFamily, all: XP_EVENTS.everyFamilyPlayed, size: GAME_FAMILIES.length },
+  { each: XP_EVENTS.firstOfFamily, all: XP_EVENTS.everyFamilyPlayed, size: GAME_FAMILIES.length, fold: familyKeyNow },
   { each: XP_EVENTS.gradeBeaten, all: XP_EVENTS.everyGradeBeaten, size: XP_GRADES_TO_BEAT },
 ];
 
@@ -242,8 +248,12 @@ function playedBy({
     if (!batch.paying.some((award) => award.type === set.each)) continue;
     /* `>=` and not `===`, for `awardCollected`'s reason: a game retired from the
        list leaves a member holding more rows than there are things, and somebody
-       who has genuinely played everything must not be refused. */
-    if (heldCount(state, set.each) < set.size) continue;
+       who has genuinely played everything must not be refused. And where two
+       things have MERGED, the rows are read forward and counted distinct, for
+       `heldDistinct`'s reason — which is the opposite case and needs the
+       opposite answer. */
+    const held = set.fold === undefined ? heldCount(state, set.each) : heldDistinct(state, set.each, set.fold);
+    if (held < set.size) continue;
     const bonus = predict({
       member,
       at: game.playedAt,

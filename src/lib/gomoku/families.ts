@@ -31,13 +31,6 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["freestyle", "standard", "renju", "omok", "caro", "connect6", "misereFive"],
   },
   {
-    key: "captures",
-    title: "Captures",
-    kanji: "取り",
-    blurb: "Five in a row, or take enough of the other side's stones.",
-    games: ["ninuki", "sannuki"],
-  },
-  {
     key: "drops",
     title: "Drops",
     kanji: "落とし",
@@ -45,18 +38,37 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["dropFour", "ringDrop", "holeDrop", "hotDrop", "clearDrop", "giveawayDrop", "edgeDrop", "wormDrop"],
   },
   {
-    key: "pieces-and-twists",
-    title: "Pieces and twists",
-    kanji: "駒と回し",
-    blurb: "Our own games: lay dominoes or blocks from a shared queue, or turn the board after every stone.",
-    games: ["dominoFive", "blockFive", "twistFive", "twistFour"],
-  },
-  {
     key: "flips",
-    title: "Flips",
-    kanji: "反転",
-    blurb: "Nothing is yours until the end. Bracket a run of the other colour and it turns.",
-    games: ["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi", "honeycomb"],
+    /*
+     * FLIPS AND CAPTURES, WHICH WERE TWO SHELVES. John, 2026-09-22: "Flips and
+     * Captures are kind of the same concept - so same family might be best."
+     * They are: in both, a stone you have already played stops being yours
+     * because of what the other side does next — bracketed and turned in
+     * Reversi, bracketed and lifted in Ninuki. A reader who liked one wants
+     * the other, and two shelves of two and six was the catalogue filing
+     * rather than helping.
+     *
+     * THE KEY STAYS `flips`, and that is the whole of the care this merge
+     * needed. The key is what the XP ledger writes for `firstOfFamily`, so a
+     * merge under a NEW key would pay everybody again for a family they had
+     * already met. `flips` is kept because it is the busier of the two on the
+     * live ledger — seven members against three — and every one of those three
+     * already holds `flips` as well, so this re-pays nobody at all. See
+     * `FAMILY_ABSORBED` below for what happens to the rows under the old key.
+     */
+    title: "Turn and take",
+    kanji: "反転と取り",
+    blurb: "Nothing is yours until the end. Bracket a run of the other colour and it turns, or take a pair off the board.",
+    games: [
+      "reversi",
+      "classicReversi",
+      "antiReversi",
+      "miniReversi",
+      "grandReversi",
+      "honeycomb",
+      "ninuki",
+      "sannuki",
+    ],
   },
   {
     key: "strange-boards",
@@ -71,9 +83,17 @@ export const GAME_FAMILIES: GameFamily[] = [
      * board, and the three on the hexagon lattice are the strangest here —
      * they were reachable only through the family each one is scored by,
      * which is not how anybody looks for them.
+     *
+     * AND THE QUEUE AND TWIST GAMES CAME HERE TOO. John, 2026-09-22: "We can
+     * probably merge Pieces/Twists with Strange Boards as one family." They
+     * belong: a board you may only fill two squares of at a time, and a board
+     * that rotates a quarter of itself after every stone, are boards that do
+     * not behave in exactly the sense this shelf means. `strange-boards` keeps
+     * the key — `pieces-and-twists` has no rows at all on the live XP ledger,
+     * so nothing is paid twice either way and the busier key is the safer one.
      */
-    blurb: "Boards that do not behave: edges that join, squares you cannot use, and three drawn on hexagons rather than squares.",
-    games: ["toroidalFive", "obstacleFive"],
+    blurb: "Boards that do not behave: edges that join, squares you cannot use, pieces laid from a queue, quarters that turn, and three boards drawn on hexagons rather than squares.",
+    games: ["toroidalFive", "obstacleFive", "dominoFive", "blockFive", "twistFive", "twistFour"],
   },
   {
     key: "races",
@@ -81,13 +101,6 @@ export const GAME_FAMILIES: GameFamily[] = [
     kanji: "競走",
     blurb: "No lines and nothing captured. Get every piece across the board before the other side does.",
     games: ["halma", "chineseCheckers"],
-  },
-  {
-    key: "connections",
-    title: "Connections",
-    kanji: "連結",
-    blurb: "No lines and nothing taken. Join your own two sides of the board before the other side joins theirs.",
-    games: ["hex"],
   },
   {
     key: "checkers",
@@ -98,10 +111,22 @@ export const GAME_FAMILIES: GameFamily[] = [
   },
   {
     key: "territory",
+    /*
+     * GO AND HEX, WHICH WERE A SHELF EACH HOLDING ONE GAME. John, 2026-09-22:
+     * "Territory/Connections (for Go and Hex) could be same family as well."
+     * Both ask the same question and neither asks for a line: put stones down
+     * and never move them, and win by what you have CLAIMED when nobody can
+     * usefully add another — more of the board in Go, a path across it in Hex.
+     * A family of one game is also a shelf nobody browses, and two of them
+     * sitting next to each other was the clearest case on the page.
+     *
+     * `territory` keeps the key. Neither old key has a single row on the live
+     * ledger, so this one was free either way.
+     */
     title: "Territory",
     kanji: "陣地",
-    blurb: "No lines, nothing moves, and stones are captured whole. Surround more of the board than the other side.",
-    games: ["go"],
+    blurb: "No lines, and nothing moves once it is down. Claim the board: surround more of it than the other side, or join your own two edges before they join theirs.",
+    games: ["go", "hex"],
   },
   {
     key: "small-boards",
@@ -111,6 +136,47 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker"],
   },
 ];
+
+/**
+ * THE FAMILIES THAT WERE FOLDED INTO OTHERS, and the one they went to.
+ *
+ * Three shelves became one each on 2026-09-22, on John's reading of the set-up
+ * screen: "Less categories… merge Pieces/Twists with Strange Boards as one
+ * family… Territory/Connections (for Go and Hex) could be same family as
+ * well… Flips and Captures are kind of the same concept."
+ *
+ * THIS TABLE EXISTS BECAUSE A KEY IS A THING SOMEBODY HAS BEEN PAID UNDER.
+ * `firstOfFamily` writes the family's key into the XP ledger and is paid once
+ * per `(member, type, subject)`, so a retired key does not stop meaning
+ * anything the moment it leaves `GAME_FAMILIES` — there are rows holding it.
+ * Read forward through here, a row written under `captures` is a row for the
+ * family that absorbed it, which is what stops a member being counted as
+ * having met eight families when three of their rows are two.
+ *
+ * It is not a redirect table for addresses: a family has no address of its own
+ * (a family page is `/games/<slug>/family`, keyed by the GAME), so nothing a
+ * reader could have bookmarked breaks. Only the ledger remembers these.
+ *
+ * Nothing is removed from here once it is in it. A key retired today has rows
+ * against it for as long as the ledger exists.
+ */
+export const FAMILY_ABSORBED: Record<string, string> = {
+  captures: "flips",
+  "pieces-and-twists": "strange-boards",
+  connections: "territory",
+};
+
+/**
+ * The family a key means TODAY: itself, or the family that absorbed it.
+ *
+ * Anything counting families over stored rows reads this first. A key that is
+ * neither current nor retired comes back unchanged rather than null: this
+ * answers "what is this called now", and a key from a future nobody here knows
+ * about is not a question this can refuse usefully.
+ */
+export function familyKeyNow(key: string): string {
+  return FAMILY_ABSORBED[key] ?? key;
+}
 
 /**
  * THE OTHER SHELVES A GAME IS FOUND ON, declared by the game.
@@ -152,9 +218,9 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
   /*
    * THE THREE BOARDS DRAWN ON HEXAGONS, on the shelf somebody would look for
    * a strange board on. Each keeps its home, because a home is the family a
-   * game is SCORED by: Hex is a connection game, Hexversi is a flipping one,
-   * Chinese Checkers is a race. None of those shelves is where a reader goes
-   * when what caught their eye was the shape of the board.
+   * game is SCORED by: Hex claims ground, Hexversi turns stones, Chinese
+   * Checkers is a race. None of those shelves is where a reader goes when what
+   * caught their eye was the shape of the board.
    */
   hex: [
     {

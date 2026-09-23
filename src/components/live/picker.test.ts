@@ -70,14 +70,16 @@ describe("what a click on a family chooses", () => {
      */
     const expected: Record<string, string> = {
       "Five in a row": "freestyle",
-      Captures: "ninuki",
       Drops: "dropFour",
-      "Pieces and twists": "dominoFive",
-      Flips: "reversi",
+      // Flips absorbed Captures on 2026-09-22 and took this title; Reversi is
+      // still what the shelf is named after, with Ninuki behind it.
+      "Turn and take": "reversi",
+      // And Strange boards absorbed Pieces and twists, so the queue and twist
+      // games sit behind the toroid rather than in front of it.
       "Strange boards": "toroidalFive",
       Races: "halma",
-      Connections: "hex",
       Checkers: "checkers",
+      // Territory absorbed Connections. Go leads it, Hex is beside it.
       Territory: "go",
       "Small boards": "tictactoe",
     };
@@ -95,7 +97,7 @@ describe("what a click on a family chooses", () => {
      */
     const drops = GAME_FAMILIES.find((family) => family.title === "Drops");
     expect(gameForFamilyClick(drops!, "hex")).toBe("dropFour");
-    const flips = GAME_FAMILIES.find((family) => family.title === "Flips");
+    const flips = GAME_FAMILIES.find((family) => family.title === "Turn and take");
     expect(gameForFamilyClick(flips!, "hex")).toBe("reversi");
   });
 

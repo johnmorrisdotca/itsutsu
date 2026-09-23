@@ -356,17 +356,29 @@ describe("the families a win can complete", () => {
         else expect(answer, variant).toBeNull();
       }
     }
-    expect(familyToWin(RULE_VARIANTS.hex)).toBeNull();
-    expect(familyToWin(RULE_VARIANTS.ninuki)?.key).toBe("captures");
+    /*
+     * Hex used to be the clearest family of one and answered null. It sits with
+     * Go under Territory now, so it can complete a family like anything else —
+     * the case this asserts has moved rather than gone.
+     */
+    expect(familyToWin(RULE_VARIANTS.hex)?.key).toBe("territory");
+    // Ninuki came with Captures when it was folded into Flips, retitled Turn and take.
+    expect(familyToWin(RULE_VARIANTS.ninuki)?.key).toBe("flips");
   });
 
   it("answers nothing for a variant this deploy cannot name", () => {
     expect(familyToWin("somethingRetired")).toBeNull();
   });
 
-  it("counts nine families that can be won today", () => {
-    // Nine since Checkers gained International, Brazilian and Canadian draughts beside it.
-    expect(GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null)).toHaveLength(9);
+  it("counts every family as winnable today, there being no family of one left", () => {
+    // Nine of eleven when Checkers gained International, Brazilian and Canadian
+    // draughts beside it; Territory and Connections were the two that could not
+    // be won, each holding one game. They became one family of two on
+    // 2026-09-22, so every family on the site can now be won — and the number
+    // is read from the table rather than written down, because the next family
+    // of one game would have to move it.
+    const winnable = GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null);
+    expect(winnable).toHaveLength(GAME_FAMILIES.length);
   });
 });
 
@@ -383,7 +395,7 @@ describe("the tour covers the site", () => {
     // a set that is complete and unpaid.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length);
     expect(XP_VARIANTS_TO_PLAY).toBe(45);
-    expect(GAME_FAMILIES.length).toBe(11);
+    expect(GAME_FAMILIES.length).toBe(8);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {

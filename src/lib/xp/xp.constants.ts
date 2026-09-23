@@ -318,7 +318,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
   },
 
   /* ── The tour ───────────────────────────────────────────────────────────
-     Thirty-nine games and eleven families, most of them barely played. A first
+     Forty-five games and eight families, most of them barely played. A first
      of anything is cheap and the SETS are dear: every game played is 5,000, a
      family won is 300, and a single first win is John's 10. The six came to
      13,390 XP of the 23,440 available once-only — 2.3% of the ladder, a
@@ -344,14 +344,14 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 150,
     label: "A family you had not met",
     kanji: "初族",
-    blurb: "For your first game from one of the eleven families.",
+    blurb: "For your first game from one of the eight families.",
     sentence: "A whole family you had not met.",
   },
   everyFamilyPlayed: {
     points: 2000,
     label: "Every family played",
     kanji: "全族",
-    blurb: "For playing a game from all eleven families.",
+    blurb: "For playing a game from all eight families.",
     sentence: "All eleven families played.",
   },
   everyVariantPlayed: {

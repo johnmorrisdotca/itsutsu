@@ -145,6 +145,16 @@ const prismaFake = {
           row.type === where.type &&
           (where.subject === undefined || where.subject.in.includes(row.subject)),
       ).length,
+    /*
+     * The subjects a member holds of one kind. `awardCollected` reads these
+     * rather than counting rows wherever two of the things can have MERGED —
+     * the families did on 2026-09-22 — so that eight rows standing for seven
+     * families are counted as seven.
+     */
+    findMany: async ({ where }: { where: { memberId: string; type: string } }) =>
+      events
+        .filter((row) => row.memberId === where.memberId && row.type === where.type)
+        .map((row) => ({ subject: row.subject })),
   },
   $transaction: async (input: unknown) =>
     typeof input === "function"
@@ -340,7 +350,7 @@ describe("a different subject is a different award", () => {
 
     expect(paid("tourist", "firstOfVariant")).toBe(2);
     expect(paid("tourist", "firstGameEver")).toBe(1);
-    // Hex is a family of one and Halma is in Races, so two families were met.
+    // Hex is in Territory and Halma is in Races, so two families were met.
     expect(paid("tourist", "firstOfFamily")).toBe(2);
   });
 
@@ -650,21 +660,33 @@ describe("the tour's two bonuses", () => {
     // nothing at all. Three on this member's first game, because it was a WIN:
     // a first game of a variant, of a family, and a first win at a variant —
     // the one that can complete a family won.
+    //
+    // BOTH READS ARE COUNTED, not just `count`. The families' collection is
+    // read with `findMany` since they were merged, because rows and things
+    // stopped being the same number; watching only `count` would have let the
+    // family's ask move to the other method and read as one ask fewer, which is
+    // this test passing while the site does more work rather than less.
     member("regular");
-    const before = prismaFake.xpEvent.count;
-    let counts = 0;
+    const beforeCount = prismaFake.xpEvent.count;
+    const beforeMany = prismaFake.xpEvent.findMany;
+    let asks = 0;
     prismaFake.xpEvent.count = async (args: { where: { memberId: string; type: string; subject?: { in: string[] } } }) => {
-      counts += 1;
-      return before(args);
+      asks += 1;
+      return beforeCount(args);
+    };
+    prismaFake.xpEvent.findMany = async (args: { where: { memberId: string; type: string } }) => {
+      asks += 1;
+      return beforeMany(args);
     };
 
     await recordPlayed(finished({ black: "regular", white: null, winner: "black" }));
-    const afterFirst = counts;
+    const afterFirst = asks;
     await recordPlayed(finished({ black: "regular", white: null, winner: "black" }));
 
-    prismaFake.xpEvent.count = before;
+    prismaFake.xpEvent.count = beforeCount;
+    prismaFake.xpEvent.findMany = beforeMany;
     expect(afterFirst).toBe(3);
-    expect(counts).toBe(afterFirst);
+    expect(asks).toBe(afterFirst);
   });
 });
 
@@ -797,9 +819,15 @@ describe("beating somebody better than you, through the writer", () => {
 describe("a family won, through the writer", () => {
   it("pays on the win that completes a family, once, keyed on the family", async () => {
     member("me");
-    const captures = GAME_FAMILIES.find((family) => family.key === "captures");
-    expect(captures).toBeDefined();
-    const games = captures?.games ?? [];
+    /*
+     * Races: two games, which is the shortest family that can be completed.
+     * It was Captures until 2026-09-22, when Captures was folded into Turn and
+     * take and its six Reversi variants came with it — a family of eight is a
+     * long way round for a test about the completing win.
+     */
+    const races = GAME_FAMILIES.find((family) => family.key === "races");
+    expect(races).toBeDefined();
+    const games = races?.games ?? [];
 
     for (const variant of games) {
       await recordPlayed(finished({ black: "me", white: null, winner: "black", variant }));
@@ -807,13 +835,13 @@ describe("a family won, through the writer", () => {
     await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: games[0] }));
 
     expect(paid("me", "everyVariantWonInFamily")).toBe(1);
-    expect(ledger("me")).toContain("everyVariantWonInFamily captures");
+    expect(ledger("me")).toContain("everyVariantWonInFamily races");
     expect(events.find((row) => row.type === "everyVariantWonInFamily")?.points).toBe(300);
   });
 
   it("pays nothing for a family played through but not won through", async () => {
     member("me");
-    const games = GAME_FAMILIES.find((family) => family.key === "captures")?.games ?? [];
+    const games = GAME_FAMILIES.find((family) => family.key === "races")?.games ?? [];
 
     await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: games[0] }));
     await recordPlayed(finished({ black: "me", white: null, winner: "white", variant: games[1] }));
@@ -822,9 +850,12 @@ describe("a family won, through the writer", () => {
     expect(paid("me", "everyVariantWonInFamily")).toBe(0);
   });
 
-  it("pays no family award for the win at a family of one game", async () => {
-    // Hex is the whole of Connections. Its one win is paid by the first win and
-    // the family met; it completes nothing, and 300 more would make it ~510 XP.
+  it("pays no family award for one win at a family with more games in it", async () => {
+    // Hex WAS the whole of Connections, and a family of one completes itself on
+    // its first win — already paid twice over, and 300 more would make that one
+    // win about 510 XP. It sits with Go under Territory since 2026-09-22, so
+    // there is no family of one left to test against and the same game now
+    // holds the rule beside it: one win of two completes nothing.
     member("me");
 
     await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: RULE_VARIANTS.hex }));

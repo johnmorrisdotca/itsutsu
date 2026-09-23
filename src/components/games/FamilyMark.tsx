@@ -17,9 +17,20 @@ type Mark = {
 /**
  * One mark per family, drawn the way the About page draws its figures: a
  * little board with the family's defining shape on it. They are keyed by the
- * family's title so a new family gets the plain mark until it is given one.
+ * family's title so a new family gets the plain mark until it is given one —
+ * and `familyMark.coverage.test.ts` fails the build while one is, because
+ * PLAIN is the same picture for everybody and a row of identical icons is a
+ * promise the row makes and does not keep.
+ *
+ * THREE TITLES HERE BELONG TO NO FAMILY ANY MORE. Captures, Pieces and twists
+ * and Connections were folded into Turn and take, Strange boards and Territory
+ * on 2026-09-22 (see `FAMILY_ABSORBED`). Their marks are kept rather than
+ * deleted: each is a drawing of a mechanism the merged family still contains,
+ * and the next time one of these shelves is split or a mark is redrawn they
+ * are the work already done. Nothing reads them, and the coverage test allows
+ * a mark with no family but never a family with no mark.
  */
-const MARKS: Record<string, Mark> = {
+export const FAMILY_MARKS: Record<string, Mark> = {
   "Five in a row": {
     n: 5,
     stones: [0, 1, 2, 3, 4].map((i) => ({ r: 4 - i, c: i })),
@@ -55,7 +66,7 @@ const MARKS: Record<string, Mark> = {
     ],
     path: "M 3.6 0.6 A 1.6 1.6 0 0 1 4.4 2.2 M 4.4 2.2 l -0.5 -0.4 M 4.4 2.2 l 0.5 -0.4",
   },
-  Flips: {
+  "Turn and take": {
     n: 4,
     cells: true,
     stones: [
@@ -170,7 +181,7 @@ const PLAIN: Mark = { n: 5, stones: [{ r: 2, c: 2 }] };
  * `className` is left for placement only.
  */
 export function FamilyMark({ family, size, className = "" }: { family: string; size: PictureSize; className?: string }) {
-  const mark = MARKS[family] ?? PLAIN;
+  const mark = FAMILY_MARKS[family] ?? PLAIN;
   const { n } = mark;
   const cells = mark.cells === true;
   const at = (i: number) => (cells ? i + 0.5 : i);

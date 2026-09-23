@@ -123,6 +123,29 @@ export function heldCount(state: MemberState, type: XpEventType): number {
 }
 
 /**
+ * The same count, over subjects read FORWARD: how many distinct things the
+ * rows come to today, where two of them can have become one.
+ *
+ * `heldCount` counts rows, which is right while each row is its own thing. It
+ * stops being right the moment two things merge: three families were folded
+ * into others on 2026-09-22, so a member holding eight `firstOfFamily` rows had
+ * met seven families, and a replay counting rows would have paid them the
+ * 2,000 for meeting all of them. This is `awardCollected`'s `fold` on the
+ * replay's side of the fence, kept identical on purpose — the backfill's whole
+ * claim is that it predicts what the live writer would have done.
+ */
+export function heldDistinct(
+  state: MemberState,
+  type: XpEventType,
+  fold: (subject: string) => string,
+): number {
+  const mark = `${type}\0`;
+  const now = new Set<string>();
+  for (const key of state.held) if (key.startsWith(mark)) now.add(fold(key.slice(mark.length)));
+  return now.size;
+}
+
+/**
  * One batch with the writer's two verdicts predicted — or null when the writer
  * would pay nothing.
  *
