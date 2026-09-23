@@ -12,7 +12,7 @@ import Link from "next/link";
 
 import { ASK_NEEDS_ACCOUNT, SET_UP_COPY } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
-import { OPPONENT_GROUPS } from "./picker.constants";
+import { ANSWER_ROW_OPPONENT, ANSWER_ROW_SEAT, ANSWER_ROW_WIDE, OPPONENT_GROUPS } from "./picker.constants";
 import { PickMark } from "./PickMark";
 import {
   OPPONENT_GROUP_WORDS,
@@ -74,10 +74,21 @@ export function OpponentChoice({
   const cannotName = disabled || !canAsk;
 
   return (
-    <fieldset className="flex min-w-0 flex-col gap-2" data-testid="set-up-with">
+    /*
+     * ONE ROW OF ANSWERS FROM A TABLET UP — the posted seat, then each list,
+     * side by side, and whichever list is open as a band under them. See
+     * `ANSWER_ROW`: John asked for "1 row with 3 columns… and can open up when
+     * clicking things that have more room needed".
+     */
+    <fieldset className={`min-w-0 ${ANSWER_ROW_OPPONENT}`} data-testid="set-up-with">
       {/* Named for a screen reader; the section heading above it says it to the eye. */}
       <legend className="sr-only">{say("setup.opponent")}</legend>
-      <div className={PICK_PEOPLE}>
+      {/*
+        The posted seat is one tile, and in the row it is one cell: the tile
+        fills it rather than sitting in a third of a grid of its own. Below a
+        tablet it keeps the people grid it always had.
+      */}
+      <div className={ANSWER_ROW_SEAT}>
         {/*
           THE WORDS FROM `setUpWords.ts`, WHICH IS WHERE THEY ARE DECIDED. The
           folded summary line stands in for this choice while the drawer is shut,
@@ -168,7 +179,7 @@ export function OpponentChoice({
         names above cannot be chosen — in words, not by tiles that simply refuse.
       */}
       {canAsk ? (
-        <p className="text-xs text-muted" data-testid="set-up-opponent-elsewhere">
+        <p className={`text-xs text-muted ${ANSWER_ROW_WIDE}`} data-testid="set-up-opponent-elsewhere">
           {SET_UP_COPY.elsewhere}{" "}
           <Link href="/players" className="underline underline-offset-4 hover:text-ink">
             {SET_UP_COPY.elsewhereLink}
@@ -176,7 +187,7 @@ export function OpponentChoice({
           {SET_UP_COPY.elsewhereAfter}
         </p>
       ) : signedIn ? (
-        <p className="text-xs text-muted" data-testid="set-up-ask-needs-account">
+        <p className={`text-xs text-muted ${ANSWER_ROW_WIDE}`} data-testid="set-up-ask-needs-account">
           {ASK_NEEDS_ACCOUNT}
         </p>
       ) : null}

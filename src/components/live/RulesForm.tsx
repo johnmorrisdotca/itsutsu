@@ -18,6 +18,7 @@ import { RatedPicker } from "./RatedPicker";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 import { SetUpFold } from "./SetUpFold";
+import { ANSWER_ROW_RULES } from "./picker.constants";
 import { SetUpSection } from "./SetUpSection";
 
 /**
@@ -379,18 +380,19 @@ export function RulesForm({
         {body}
       </SetUpSection>
     ) : (
-      <div className="border-t border-rule pt-3">
-        <SetUpFold
-          title={words[which].title}
-          kanji={words[which].kanji}
-          testId={testId}
-          group={which}
-          summary={folded[which]}
-        >
-          {body}
-        </SetUpFold>
-      </div>
+      <SetUpFold
+        title={words[which].title}
+        kanji={words[which].kanji}
+        testId={testId}
+        group={which}
+        summary={folded[which]}
+      >
+        {body}
+      </SetUpFold>
     );
+
+  const rules = group("rules", "set-up-rules", rest);
+  const handicap = sections.handicap !== null ? group("handicap", "set-up-handicap-group", sections.handicap) : null;
 
   return (
     <>
@@ -400,8 +402,29 @@ export function RulesForm({
           {sections.opponent}
         </SetUpSection>
       ) : null}
-      {group("rules", "set-up-rules", rest)}
-      {sections.handicap !== null ? group("handicap", "set-up-handicap-group", sections.handicap) : null}
+      {folded === undefined ? (
+        <>
+          {rules}
+          {handicap}
+        </>
+      ) : (
+        /*
+         * THE RULES AND THE HANDICAP, ONE ROW OF TWO. John, 2026-09-22: "Same
+         * with Rules and Handicap - can probably be 1 row with 2 columns." Each
+         * is a folded answer — "Free opening · No clock · Rated", "No head
+         * start, no handicap" — and at a desk each was a band of the whole
+         * panel holding one line. Side by side from a tablet up, and whichever
+         * is opened becomes a band under both: see `ANSWER_ROW`.
+         *
+         * One rule above the pair rather than one above each, since they are
+         * one row now; open as headings (`folded` undefined) they stack as
+         * they always did.
+         */
+        <div className={`border-t border-rule pt-3 ${ANSWER_ROW_RULES}`} data-testid="set-up-rules-row">
+          {rules}
+          {handicap}
+        </div>
+      )}
     </>
   );
 }
