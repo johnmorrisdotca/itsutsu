@@ -1,5 +1,7 @@
 import { BOARD_GRIDS, HOT, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { pointName } from "@/lib/gomoku/notation";
+import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 
 import { MOSAIC_ART, MOSAIC_PICKS, type MosaicPick } from "./mosaic.constants";
 import type { MosaicFrame, MosaicPicture } from "./mosaic.types";
@@ -39,7 +41,19 @@ export function frameOf(state: GameState): MosaicFrame {
       return cell === null ? "." : "x";
     })
     .join("");
-  return { board, move: state.moves.length };
+  const last = state.moves[state.moves.length - 1];
+  const name = last === undefined ? "" : (stonelessWord(last.kind) ?? pointName(size, last));
+  return { board, move: state.moves.length, name };
+}
+
+/** Text a person typed, made safe to stand inside SVG. */
+function escaped(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** A line cut to what a tile can carry, so a long name does not run off the card. */
+function fitted(text: string, most: number): string {
+  return text.length <= most ? text : `${text.slice(0, most - 1)}…`;
 }
 
 /**
@@ -134,14 +148,37 @@ function tileSvg(frame: MosaicFrame, size: number, cells: boolean, x: number, y:
     }
   });
 
-  // The move number in the tile's corner, when the tile is big enough to carry one.
-  if (side >= art.labelFrom) {
-    const font = Math.max(9, side * 0.09);
+  /*
+   * The move in the tile's corner — its number and its name on the board,
+   * "12 · H8", the way the move list reads — when the tile is big enough to
+   * carry it. A spare board has neither.
+   */
+  if (side >= art.labelFrom && frame.move > 0) {
+    const font = Math.max(9, side * 0.075);
+    const words = frame.name === "" ? `${frame.move}` : `${frame.move} · ${escaped(frame.name)}`;
     parts.push(
-      `<text x="${x + side - pad * 1.5}" y="${y + side - pad * 1.5}" font-family="system-ui, sans-serif" font-size="${font}" text-anchor="end" fill="${art.label}">${frame.move}</text>`,
+      `<text x="${x + side - pad * 1.5}" y="${y + side - pad * 1.5}" font-family="system-ui, sans-serif" font-size="${font}" text-anchor="end" fill="${art.label}">${words}</text>`,
     );
   }
   return parts.join("");
+}
+
+/** The card in the last spare space: the game's own lines on a board's wood, centred. */
+function detailsSvg(lines: readonly string[], x: number, y: number, side: number): string {
+  const art = MOSAIC_ART;
+  const pad = side * art.gap;
+  const inner = side - pad * 2;
+  const font = Math.max(9, inner * 0.075);
+  const gap = font * 1.45;
+  const top = y + side / 2 - ((lines.length - 1) * gap) / 2;
+  const most = Math.max(8, Math.floor(inner / (font * 0.55)));
+  const text = lines
+    .map(
+      (line, i) =>
+        `<text x="${x + side / 2}" y="${top + i * gap}" font-family="system-ui, sans-serif" font-size="${font}" font-weight="${i === 0 ? 600 : 400}" text-anchor="middle" dominant-baseline="middle" fill="${art.line}">${escaped(fitted(line, most))}</text>`,
+    )
+    .join("");
+  return `<rect x="${x + pad}" y="${y + pad}" width="${inner}" height="${inner}" rx="${inner * 0.03}" fill="${art.wood}"/>${text}`;
 }
 
 /**
@@ -154,9 +191,18 @@ export function mosaicSvg(picture: MosaicPicture): string {
   const { columns, rows, side } = mosaicLayout(frames.length, width, height);
   const left = (width - columns * side) / 2;
   const top = (height - rows * side) / 2;
-  const tiles = frames.map((frame, i) =>
-    tileSvg(frame, size, cells, left + (i % columns) * side, top + Math.floor(i / columns) * side, side),
-  );
+  const place = (i: number) => ({ x: left + (i % columns) * side, y: top + Math.floor(i / columns) * side });
+  const tiles = frames.map((frame, i) => tileSvg(frame, size, cells, place(i).x, place(i).y, side));
+  // The spaces the last row leaves over: empty boards, the last of them carrying the game's own lines.
+  const slots = columns * rows;
+  if (picture.fillSpare && slots > frames.length) {
+    const empty: MosaicFrame = { board: ".".repeat(size * size), move: 0, name: "" };
+    for (let i = frames.length; i < slots; i += 1) {
+      const { x, y } = place(i);
+      const last = i === slots - 1 && picture.details.length > 0;
+      tiles.push(last ? detailsSvg(picture.details, x, y, side) : tileSvg(empty, size, cells, x, y, side));
+    }
+  }
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     `<rect width="${width}" height="${height}" fill="${MOSAIC_ART.ground}"/>` +

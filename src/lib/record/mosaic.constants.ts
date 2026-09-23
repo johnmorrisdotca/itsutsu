@@ -57,4 +57,6 @@ export const MOSAIC_COPY = {
     ending: "the ending, counted back from the last move",
   },
   failed: "The picture could not be drawn in this browser.",
+  fill: "Fill the space after the last move with empty boards and the game's details",
+  site: "itsutsu.com",
 } as const;
