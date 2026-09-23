@@ -1,3 +1,4 @@
+import { openingTurn } from "./opponentOpening";
 import { racesForCamp } from "./rules/farCamp";
 import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
@@ -299,6 +300,10 @@ export function chooseTurn(
 
   // Otherwise a weak player throws the occasional turn away, which is the truth about weak players.
   if (random() < spec.blunder) return pick(scored, random).turn;
+
+  // The second and third stones of a line game come from a book, so no two games start alike.
+  const opened = openingTurn(state, scored, random);
+  if (opened !== null) return opened;
 
   /*
    * A forced win, where the grade reads ahead at all — by fours, or by the open
