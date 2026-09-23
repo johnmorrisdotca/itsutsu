@@ -36,6 +36,14 @@ export function serverError(message = "Something went wrong."): NextResponse<Api
 /** History changes every time a game is recorded, so nothing here is cached. */
 export const NO_STORE = { "Cache-Control": "no-store" } as const;
 
+/**
+ * Kept by the browser, never used without asking first, and never by anything
+ * between: for an answer that carries an `ETag`, so the next ask can be
+ * answered 304 rather than sent again. `private` keeps it out of Vercel's
+ * cache, where one reader's copy could be served to another.
+ */
+export const REVALIDATE = { "Cache-Control": "private, no-cache" } as const;
+
 /** Reads a JSON body without letting malformed input throw past the route. */
 export async function readJson(request: Request): Promise<unknown | undefined> {
   try {

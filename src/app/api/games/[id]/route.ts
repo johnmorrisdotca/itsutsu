@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, notFound, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, REVALIDATE, notFound, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { deleteGame, fetchGameDetail } from "@/lib/history/gameHistory";
+import { gameVersion, holdsVersion } from "@/lib/history/gameVersion";
 
 /**
  * One game, with every stone in the order it was played.
  *
  * This is the route a live board polls, so it is the one route on the site
- * that a single open tab calls on a timer. It answers `no-store` — a board
- * two moves out of date is worse than no board — which means every call
- * reaches the database, and a page left open in a loop would otherwise have
- * no ceiling at all.
+ * that a single open tab calls on a timer. Every call reaches the database —
+ * a board two moves out of date is worse than no board — but a call from a
+ * board already holding the current version reads one row and answers 304,
+ * and a page left open in a loop would otherwise have no ceiling at all.
  */
 export async function GET(request: Request, ctx: RouteContext<"/api/games/[id]">) {
   try {
@@ -19,10 +20,25 @@ export async function GET(request: Request, ctx: RouteContext<"/api/games/[id]">
     if (tooMany !== null) return tooMany;
 
     const { id } = await ctx.params;
+    /*
+     * The version first, and the game only when the board does not already
+     * hold it — see `gameVersion`. Read in that order, a write landing between
+     * the two reads leaves the tag OLDER than the body, so the next ask
+     * mismatches and fetches again: the safe way round. The browser does the
+     * rest itself, because `no-cache` with a tag means "keep it, but ask
+     * first": it sends the tag back, takes a 304 as the copy it already has,
+     * and `useLiveGame` never learns the difference.
+     */
+    const version = await gameVersion(id);
+    if (version === null) return notFound("No such game.");
+    const headers = { ...REVALIDATE, ETag: version };
+    if (holdsVersion(request.headers.get("if-none-match"), version)) {
+      return new NextResponse(null, { status: 304, headers });
+    }
+
     const game = await fetchGameDetail(id);
     if (game === null) return notFound("No such game.");
-
-    return NextResponse.json(game, { status: 200, headers: NO_STORE });
+    return NextResponse.json(game, { status: 200, headers });
   } catch (error) {
     console.error(error);
     return serverError("Could not load that game.");
