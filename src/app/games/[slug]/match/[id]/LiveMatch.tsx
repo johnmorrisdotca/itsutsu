@@ -180,7 +180,11 @@ export async function LiveMatch({
    * a client component and cannot see an account.
    */
   const preferences = await preferencesFor();
-  const turnFlow = { moveConfirm: preferences.moveConfirm, afterMove: preferences.afterMove };
+  const turnFlow = {
+    moveConfirm: preferences.moveConfirm,
+    moveConfirmComputer: preferences.moveConfirmComputer,
+    afterMove: preferences.afterMove,
+  };
 
   /*
    * A seat holder opening the game is that seat's holder arriving, and until

@@ -144,6 +144,22 @@ export const PREFERENCE_SPECS = {
   afterMove: { options: AFTER_MOVE_LIST, fallback: AFTER_MOVE.nextWaiting },
 
   /*
+   * The same question as `moveConfirm`, asked only of games against a program.
+   *
+   * John, 2026-09-22, playing the computer: "some users might want a real time
+   * experience." Preview earns its place against a person — a game played over
+   * days, where a misclick is final and the person opposite waits a day for the
+   * next chance. Against the computer the answer comes back in a second and a
+   * whole game is an evening; a confident player wants the stone to go down on
+   * the touch. So it is its own setting, switched from the board itself in
+   * those games, and a game against a person keeps whatever `moveConfirm` says.
+   *
+   * PREVIEW STAYS THE DEFAULT, so nobody's play changes without their asking;
+   * the switch is one press away on every board where it applies.
+   */
+  moveConfirmComputer: { options: MOVE_CONFIRM_LIST, fallback: MOVE_CONFIRM.preview },
+
+  /*
    * How big the board is drawn on a desk: fit the screen, or small, medium,
    * large. See `boardSize.ts`. On the account for the reason this registry is:
    * the size chosen at one desk is the size at the next, and a phone, which

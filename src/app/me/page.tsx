@@ -269,7 +269,11 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               */}
               <p className="text-sm text-muted">How a turn works, on every board you play.</p>
               <TurnFlowForm
-                initial={{ moveConfirm: preferences.moveConfirm, afterMove: preferences.afterMove }}
+                initial={{
+                  moveConfirm: preferences.moveConfirm,
+                  moveConfirmComputer: preferences.moveConfirmComputer,
+                  afterMove: preferences.afterMove,
+                }}
               />
             </div>
           ) : null}
