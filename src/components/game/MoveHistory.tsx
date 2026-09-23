@@ -1,7 +1,12 @@
 "use client";
 
 import { pointName } from "@/lib/gomoku/notation";
-import { MOVE_KINDS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { MOVE_KINDS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { slugFor } from "@/lib/gomoku/slugs";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { MosaicDialog } from "@/components/history/MosaicDialog";
+import { framesOf, mosaicDraws } from "@/lib/record/mosaic";
+import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
 import { FATAL_MOVE_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { SectionTitle, Select } from "@/components/ui/Controls";
 import {
@@ -134,6 +139,43 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
         </ol>
         </details>
       )}
+      {/*
+        THE SCRUBBER, from the empty board to the last move. John, on a game
+        played on one screen: "Where is the scrubber to move from 1 to last
+        move, for looking at a Match?" The record above steps a move at a time;
+        this sweeps. It goes through the same door as clicking a move, so the
+        record's own rule — read only, or play from here — decides what it does.
+      */}
+      {session.moveTotal > 0 ? (
+        <input
+          type="range"
+          min={0}
+          max={session.moveTotal}
+          value={moveIndex}
+          onChange={(event) => actions.jumpTo(Number(event.target.value))}
+          className="w-full accent-ink"
+          aria-label="Move"
+          data-testid="history-scrubber"
+        />
+      ) : null}
+      {/* And the whole line as one picture, in a window on demand — see `MosaicDialog`. */}
+      {mosaicDraws(state.settings.variant) ? (
+        <MosaicDialog
+          id={`practice-${state.settings.variant}`}
+          count={record.length}
+          frames={() => framesOf(session.timeline)}
+          size={state.settings.size}
+          grid={VARIANT_SPECS[state.settings.variant].grid}
+          details={() => [
+            `${session.names.one || "Player 1"} vs ${session.names.two || "Player 2"}`,
+            `${RULE_VARIANT_DISPLAY[state.settings.variant].label} · ${state.settings.size}×${state.settings.size}`,
+            `${record.length} ${record.length === 1 ? "move" : "moves"}`,
+            MOSAIC_COPY.site,
+          ]}
+          fileName={`itsutsu-${slugFor(state.settings.variant)}-${record.length}-moves.png`}
+          alt={`Every position of this game, ${record.length} moves`}
+        />
+      ) : null}
     </section>
   );
 }

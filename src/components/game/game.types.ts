@@ -124,6 +124,8 @@ export type GameSession = {
   moveTotal: number;
   /** Every move on the current line, including those after the position on show. */
   record: Move[];
+  /** Every position on the current line, the empty board first — for the scrubber and the picture of them all. */
+  timeline: readonly GameState[];
   /** True while an earlier position is being looked at. */
   reviewing: boolean;
   /**
