@@ -211,7 +211,6 @@ export function GameReplay({
   const current = game.moves[moveNumber - 1];
 
   return (
-    <>
     <div
       className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch"
       data-testid="game-replay"
@@ -351,6 +350,8 @@ export function GameReplay({
         <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers}>
           {showNumbers ? "Hide" : "Show"} move numbers
         </Button>
+        {/* The whole game as one picture, in a window on demand — see `GameMosaic`. */}
+        {offerMosaic ? <GameMosaic game={game} timeline={timeline} /> : null}
 
         <div className="lg:mt-auto">
           <MoveList
@@ -362,7 +363,5 @@ export function GameReplay({
         </div>
       </aside>
     </div>
-    {offerMosaic ? <GameMosaic game={game} timeline={timeline} /> : null}
-    </>
   );
 }

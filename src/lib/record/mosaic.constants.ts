@@ -45,6 +45,8 @@ export const MOSAIC_ART = {
 /** The words on the panel that makes one. */
 export const MOSAIC_COPY = {
   heading: "The game as one picture",
+  /** The quiet button beside a move list that opens the picture in a window. */
+  openLabel: "Every position",
   kanji: "棋譜絵",
   blurb: "Every position of this game, in order, on one image the size of your screen. Made in your browser; nothing is sent anywhere.",
   make: "Make the picture",

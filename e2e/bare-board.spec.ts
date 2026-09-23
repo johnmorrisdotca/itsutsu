@@ -78,7 +78,7 @@ test.describe("just the board", () => {
 
     // Gone: the moves, the picture, the waves and the resigning.
     await expect(page.getByTestId("live-moves")).toBeHidden();
-    await expect(page.getByTestId("visual-moves")).toBeHidden();
+    await expect(page.getByTestId("open-mosaic")).toBeHidden();
     await expect(page.getByTestId("resign")).toBeHidden();
     // Still there: whose turn it is, and the board, in the middle of the screen and all of it in view.
     await expect(page.getByTestId("turn-banner")).toBeVisible();

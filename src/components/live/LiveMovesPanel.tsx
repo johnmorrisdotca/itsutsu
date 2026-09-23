@@ -6,6 +6,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 import { LiveMoves } from "./LiveMoves";
+import { VisualMoves } from "./VisualMoves";
 
 /**
  * The live game's moves, in the panel beside the board. John, 2026-09-23:
@@ -19,8 +20,10 @@ import { LiveMoves } from "./LiveMoves";
 export function LiveMovesPanel({ initial }: { initial: GameDetail }) {
   const { data } = useSWR<GameDetail>(`/api/games/${initial.id}`, null, { fallbackData: initial });
   return (
-    <div className={PANEL_CLASS} data-testid="live-moves-panel">
+    <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="live-moves-panel">
       <LiveMoves detail={data ?? initial} />
+      {/* And every position so far as one picture, in a window on demand — see `VisualMoves`. */}
+      <VisualMoves detail={data ?? initial} />
     </div>
   );
 }
