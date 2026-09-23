@@ -51,7 +51,10 @@ import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
 import { nudgedMove, nudgesAvailable, OPPOSITE, type NudgeDirection } from "./nudgeMove";
 import { pointName } from "@/lib/gomoku/notation";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
-import { AFTER_MOVE, MOVE_CONFIRM } from "@/lib/preferences/turnFlow";
+import { AFTER_MOVE, MOVE_CONFIRM, type MoveConfirm } from "@/lib/preferences/turnFlow";
+import { botInSeat } from "@/lib/bots/bots";
+import { otherStone } from "@/lib/gomoku/rules/board";
+import { ConfirmMovesSwitch } from "./ConfirmMovesSwitch";
 import { MOVE_KINDS } from "@/lib/gomoku/gomoku.constants";
 
 /**
@@ -63,7 +66,11 @@ import { MOVE_KINDS } from "@/lib/gomoku/gomoku.constants";
  * socket would need, and it survives a phone locking and waking up.
  */
 /** The site's own answers, for a reader whose account has not been asked. */
-const DEFAULT_TURN_FLOW = { moveConfirm: MOVE_CONFIRM.preview, afterMove: AFTER_MOVE.nextWaiting } as const;
+const DEFAULT_TURN_FLOW = {
+  moveConfirm: MOVE_CONFIRM.preview,
+  moveConfirmComputer: MOVE_CONFIRM.preview,
+  afterMove: AFTER_MOVE.nextWaiting,
+} as const;
 
 export function SharedGame({
   initial,
@@ -174,7 +181,24 @@ export function SharedGame({
     pending !== null && pending.turn.kind === "place"
       ? pointName(state.settings.size, { row: pending.turn.row, col: pending.turn.col })
       : null;
-  const previewing = turnFlow.moveConfirm === MOVE_CONFIRM.preview;
+  /*
+   * AGAINST THE COMPUTER, ITS OWN SETTING — and one the board can change.
+   * Whether the seat opposite holds a program is `botInSeat`, the same answer
+   * `useBotSeat` acts on, so the switch and the computer answering can never
+   * disagree about which game this is.
+   */
+  const againstComputer = seat !== null && botInSeat(detail, otherStone(seat)) !== null;
+  const [computerConfirm, setComputerConfirm] = useState<MoveConfirm>(turnFlow.moveConfirmComputer);
+  const previewing = (againstComputer ? computerConfirm : turnFlow.moveConfirm) === MOVE_CONFIRM.preview;
+  /** The board's switch: obeyed at once, then kept on the account with one request. */
+  function chooseComputerConfirm(next: MoveConfirm) {
+    setComputerConfirm(next);
+    void fetch("/api/me", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ preferences: { moveConfirmComputer: next } }),
+    }).catch(() => {});
+  }
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
   async function send(body: Record<string, unknown>) {
@@ -409,6 +433,8 @@ export function SharedGame({
           onPass={pass}
         />
       ) : null}
+
+      {againstComputer ? <ConfirmMovesSwitch value={computerConfirm} onChange={chooseComputerConfirm} /> : null}
 
       {/*
         The move placed and not yet sent, with the two things left to do about

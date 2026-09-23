@@ -208,3 +208,60 @@ test.describe("a move is shown before it is sent", () => {
     await context.close();
   });
 });
+
+/*
+ * AGAINST THE COMPUTER, THE PLAYER MAY HAVE THE STONE GO DOWN ON THE TOUCH.
+ * John, 2026-09-22: "some users might want a real time experience." Switched on
+ * the board, kept on the account, and taken back the same way.
+ */
+test.describe("against the computer, confirming is a switch on the board", () => {
+  test("switched off, a click is the move; the next game remembers; switched on, it asks again", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(browser, baseURL!, {
+      email: `straight-${stamp}@example.test`,
+      name: `Straight ${stamp}`,
+    });
+    const page = await context.newPage();
+
+    async function newGameAgainstTheComputer(): Promise<string> {
+      await openSetUpPage(page, "gomoku");
+      await chooseOpponent(page, await aComputerOpponent(page, 0));
+      await startAndBegin(page);
+      await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+      const id = page.url().split("/").pop()!;
+      tidyAway(id);
+      await page.getByRole("button", { name: /, empty$/ }).first().waitFor({ state: "visible" });
+      return id;
+    }
+    async function movesOnTheServer(id: string): Promise<number> {
+      const held = await context.request.get(`/api/games/${id}`);
+      return (((await held.json()) as { moves?: unknown[] }).moves ?? []).length;
+    }
+
+    const first = await newGameAgainstTheComputer();
+    const confirm = page.getByTestId("confirm-moves");
+    await expect(confirm, "a new player confirms by default").toBeChecked();
+
+    const kept = page.waitForResponse((response) => response.url().endsWith("/api/me") && response.request().method() === "PATCH", { timeout: 10_000 });
+    await confirm.uncheck();
+    expect((await kept).status()).toBe(200);
+
+    // The click is the move: no Submit offered, and the server holds it.
+    const empties = page.getByRole("button", { name: /, empty$/ });
+    await empties.nth(Math.floor((await empties.count()) / 2)).click();
+    await expect.poll(() => movesOnTheServer(first), { message: "the click was not sent as the move" }).toBeGreaterThanOrEqual(1);
+    await expect(page.getByTestId("pending-move")).toHaveCount(0);
+
+    // The next game against the computer starts the way it was left.
+    await newGameAgainstTheComputer();
+    await expect(page.getByTestId("confirm-moves")).not.toBeChecked();
+
+    // And back: switched on, a click waits for Submit again.
+    await page.getByTestId("confirm-moves").check();
+    const again = page.getByRole("button", { name: /, empty$/ });
+    await again.nth(Math.floor((await again.count()) / 2)).click();
+    await expect(page.getByTestId("pending-move")).toBeVisible();
+
+    await context.close();
+  });
+});

@@ -95,4 +95,4 @@ export type SharedGameFooterProps = {
 };
 
 /** The two answers that decide how a turn feels; see `lib/preferences/turnFlow.ts`. */
-export type TurnFlow = { moveConfirm: MoveConfirm; afterMove: AfterMove };
+export type TurnFlow = { moveConfirm: MoveConfirm; moveConfirmComputer: MoveConfirm; afterMove: AfterMove };

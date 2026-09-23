@@ -19,9 +19,14 @@ import { AFTER_MOVE, MOVE_CONFIRM, type AfterMove, type MoveConfirm } from "@/li
  * finds it off on their phone. A misclick is a property of the person's hands
  * and the medium, not of the browser they happen to be holding.
  */
-export function TurnFlowForm({ initial }: { initial: { moveConfirm: MoveConfirm; afterMove: AfterMove } }) {
+export function TurnFlowForm({
+  initial,
+}: {
+  initial: { moveConfirm: MoveConfirm; moveConfirmComputer: MoveConfirm; afterMove: AfterMove };
+}) {
   const confirmHint = useId();
   const afterHint = useId();
+  const computerHint = useId();
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +79,24 @@ export function TurnFlowForm({ initial }: { initial: { moveConfirm: MoveConfirm;
         <span id={confirmHint} className="text-xs text-muted">
           A game here is played over days and its record is final, so a move cannot be taken back. Showing it first is
           what stops a misclick on a phone from being a move.
+        </span>
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium">Playing a move against the computer</span>
+        <Select
+          value={fields.moveConfirmComputer}
+          aria-describedby={computerHint}
+          disabled={busy}
+          onChange={(event) => void save({ moveConfirmComputer: event.target.value as MoveConfirm })}
+          data-testid="turn-flow-confirm-computer"
+        >
+          <option value={MOVE_CONFIRM.preview}>Show me the move, then I press Submit</option>
+          <option value={MOVE_CONFIRM.straightAway}>Play it as soon as I touch the board</option>
+        </Select>
+        <span id={computerHint} className="text-xs text-muted">
+          A computer answers in a second, so a game against one can be played as fast as you like. The same switch is on
+          the board in those games.
         </span>
       </label>
 
