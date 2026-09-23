@@ -332,16 +332,23 @@ export function SetUpGame({
       </p>
 
       {/*
-        The board itself, above the rules that shape it. IYT has shown a sample
-        board on its new-game screen since 1998 and this site showed only a name
-        and a small mark — which on a site where forty-four games share one
-        engine and look nothing like each other is the thing worth seeing first.
-        It redraws as the choices below it change.
-      */}
-      <div className="mt-1 border-t border-rule pt-3">
-        <BoardPreview rules={settled} />
-      </div>
+        The board itself is drawn INSIDE the chooser now, between the games and
+        the boards they are played on — see `GameAndBoardChooser`, which is
+        handed it as `preview` below.
 
+        It used to sit here, above everything, because IYT has shown a sample
+        board on its new-game screen since 1998 and this site showed only a name
+        and a small mark. That put the picture first and the sizes a screen
+        below it, so choosing a board meant scrolling away from the board. John,
+        2026-09-22: "you can see the board and sizes side by side, rather than
+        like now, where the board sizes are lower and almost off screen… I also
+        think the Game list might be top row with the Board below it."
+
+        The board is still the first thing on the screen that is a board; what
+        comes above it is the row of games, which is what changes it. You choose
+        the game, then look at what you chose. It redraws as the choices around
+        it change, exactly as before.
+      */}
       <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
         <RulesForm
           value={settled}
@@ -351,6 +358,7 @@ export function SetUpGame({
           showVariant={chooseGame}
           variantLabel="Game"
           chooser={RULES_CHOOSERS.pictures}
+          preview={<BoardPreview rules={settled} />}
           refused={refused}
           sections={{
             /*
