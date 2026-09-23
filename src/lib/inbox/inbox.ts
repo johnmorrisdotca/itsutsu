@@ -2,6 +2,7 @@ import "server-only";
 
 import { isBotId } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 
 import { INBOX_KEEP_DAYS, INBOX_KINDS, INBOX_SHOWN, type InboxKind } from "./inbox.constants";
 
@@ -71,8 +72,13 @@ export type InboxItemShown = {
 export async function openInbox(memberId: string, now = new Date()): Promise<InboxItemShown[]> {
   const cutoff = new Date(now.getTime() - INBOX_KEEP_DAYS * 24 * 60 * 60 * 1000);
   await prisma.inboxItem.deleteMany({ where: { memberId, createdAt: { lt: cutoff } } });
+  // Nothing from somebody the reader has ignored is shown, however it arrived.
+  const ignored = [...(await ignoredMemberIds(memberId))];
   const rows = await prisma.inboxItem.findMany({
-    where: { memberId },
+    where: {
+      memberId,
+      ...(ignored.length > 0 ? { OR: [{ fromMemberId: null }, { fromMemberId: { notIn: ignored } }] } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: INBOX_SHOWN,
   });

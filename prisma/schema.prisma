@@ -702,6 +702,9 @@ model Member {
   ignoring  Ignore[]   @relation("IgnoreOwner")
   /// What happened while they were away; see `InboxItem`.
   inbox     InboxItem[]
+  /// Direct messages sent and received; see `DirectMessage`.
+  messagesSent     DirectMessage[] @relation("MessageFrom")
+  messagesReceived DirectMessage[] @relation("MessageTo")
   ignoredBy Ignore[]   @relation("IgnoreTarget")
   applause  Applause[]
 
@@ -863,6 +866,24 @@ model AutoMatchRequest {
 /// only members who came in by Google could have or be on — a member who joined
 /// with an invite code has no address, so could neither ignore anybody nor be
 /// ignored. An id is who somebody is; an address is only how some of them sign in.
+/// A MESSAGE FROM ONE MEMBER TO ANOTHER, off the board (John, 2026-09-08).
+/// The ignore list applies in full: a member who is ignored cannot send, and
+/// nothing from a member the reader has ignored is shown — both decided in
+/// `messages.ts`, the one place these rows are written or read.
+model DirectMessage {
+  id        String    @id @default(cuid())
+  fromId    String
+  from      Member    @relation("MessageFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toId      String
+  to        Member    @relation("MessageTo", fields: [toId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([toId, createdAt])
+  @@index([fromId, createdAt])
+}
+
 /// WHAT HAPPENED WHILE A MEMBER WAS AWAY (John, 2026-09-16, after
 /// ItsYourTurn's messages inbox): a game finished, a challenge arrived or was
 /// answered, somebody took a posted seat, a note came in. Written at the moment

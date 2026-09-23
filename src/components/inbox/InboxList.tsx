@@ -7,6 +7,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
+import { messagesPath } from "@/lib/messages/messages.constants";
 import type { InboxItemShown } from "@/lib/inbox/inbox";
 
 import { INBOX_COPY } from "./inbox.constants";
@@ -43,7 +44,11 @@ export function InboxList({ items }: { items: readonly InboxItemShown[] }) {
             </p>
             <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
               <LocalTime at={item.createdAt} />
-              {item.gameId !== null && item.variant !== null ? (
+              {item.kind === INBOX_KINDS.message && item.fromMemberId !== null ? (
+                <Link href={messagesPath(item.fromMemberId)} className="underline underline-offset-4" data-testid="inbox-open">
+                  {INBOX_COPY.reply}
+                </Link>
+              ) : item.gameId !== null && item.variant !== null ? (
                 <Link href={matchPath(item.variant, item.gameId)} className="underline underline-offset-4" data-testid="inbox-open">
                   {item.kind === INBOX_KINDS.offer ? INBOX_COPY.answer : INBOX_COPY.open}
                 </Link>
@@ -90,6 +95,12 @@ function Said({ item }: { item: InboxItemShown }) {
       return (
         <>
           {who} {INBOX_COPY.seatTaken} {game}. {INBOX_COPY.begun}
+        </>
+      );
+    case INBOX_KINDS.message:
+      return (
+        <>
+          {who} {INBOX_COPY.message}: “{item.detail}”
         </>
       );
     case INBOX_KINDS.note:

@@ -224,6 +224,12 @@ export const RATE_LIMITS = {
    * relieved at all; this is the cheap first no.
    */
   inviteRequest: { windowMs: 60 * 60_000, maxRequests: 3 },
+  /**
+   * Writing to another member. Sixty an hour is a conversation at a brisk
+   * pace; past it is somebody filling another person's inbox. A cost limit,
+   * so the suite's relief applies.
+   */
+  directMessage: { windowMs: 60 * 60_000, maxRequests: 60 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
   /**

@@ -6,6 +6,7 @@ export const INBOX_KINDS = {
   offerWithdrawn: "offer-withdrawn",
   seatTaken: "seat-taken",
   note: "note",
+  message: "message",
 } as const;
 
 export type InboxKind = (typeof INBOX_KINDS)[keyof typeof INBOX_KINDS];
