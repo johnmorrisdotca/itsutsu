@@ -1,3 +1,4 @@
+import { RealGamesMosaic } from "@/components/games/RealGamesMosaic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -193,6 +194,11 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           */}
           <Suspense fallback={null}>
             <GameLadder variant={variant} title={page.title} />
+          </Suspense>
+
+          {/* The game made of its own games: see `RealGamesMosaic`. A panel of its own, holding its own `connection()`. */}
+          <Suspense fallback={null}>
+            <RealGamesMosaic variant={variant} />
           </Suspense>
 
           {/*

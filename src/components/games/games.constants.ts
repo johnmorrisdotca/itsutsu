@@ -75,3 +75,15 @@ export const GAME_CARD_KINDS: { kind: GameCardKind; label: string; kanji: string
 
 /** A quiet text link in a row of them, as the plain list uses. */
 export const CATALOGUE_LINK_CLASS = "text-muted underline-offset-2 hover:text-ink hover:underline";
+
+/** The real-games mosaic on a game's page; see `RealGamesMosaic`. */
+export const MOSAIC_COPY = {
+  title: "From real games",
+  kanji: "実戦",
+  lead: (count: number) => `How the last ${count} games played out here ended — each one leads to its game.`,
+  empty: "Nobody has finished a game of this here yet, so there is nothing to draw.",
+  first: "Be the first to play →",
+  shut: "The boards of games members have played here are for members.",
+  join: "No invite? Ask for one →",
+  open: "Open this game",
+} as const;
