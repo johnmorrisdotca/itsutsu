@@ -115,6 +115,13 @@ describe("the ladder as members", () => {
     expect(atFive).not.toContain(BOT_TIERS.monkton);
     // And the star, which is the same game on a different lattice.
     expect(botsFor(RULE_VARIANTS.chineseCheckers).map((bot) => bot.tier)).toContain(BOT_TIERS.monkton);
+    // The draughts specialist is offered at every game of the draughts family, and at nothing else.
+    for (const variant of [RULE_VARIANTS.checkers, RULE_VARIANTS.internationalDraughts, RULE_VARIANTS.poolCheckers]) {
+      expect(botsFor(variant).map((bot) => bot.tier), variant).toContain(BOT_TIERS.tinsdale);
+    }
+    expect(atHalma).not.toContain(BOT_TIERS.tinsdale);
+    expect(atReversi).not.toContain(BOT_TIERS.tinsdale);
+    expect(atFive).not.toContain(BOT_TIERS.tinsdale);
     /*
      * A character is still not offered here. Its whole difference from the
      * grade it is built on is a preference about SHAPE, and a race reads no

@@ -263,6 +263,22 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
       "had a champion to name a player after. " +
       "Games against him are rated, and so is his own record.",
   },
+  tinsdale: {
+    tier: BOT_TIERS.tinsdale,
+    id: "tinsdale",
+    name: BOT_PROFILES.tinsdale.name,
+    country: "United States",
+    bio:
+      "A computer player, and the only one here that plays checkers and " +
+      "draughts. Tinsdale plays English checkers and the international, " +
+      "Brazilian, Canadian, Russian and pool games, and reads them as a " +
+      "draughts player does: material first, then the back row he keeps " +
+      "while there is a man that could crown, the middle of the board, and a " +
+      "reason to trade when he is ahead. The name is an homage to Marion " +
+      "Tinsley, world champion at checkers, who lost seven games in " +
+      "forty-five years and is generally reckoned the finest ever to play it. " +
+      "Games against him are rated, and so is his own record.",
+  },
 };
 
 /**
