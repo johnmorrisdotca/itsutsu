@@ -5,7 +5,7 @@ import { OneName } from "@/components/i18n/OneName";
 import { BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 import { PickMark } from "./PickMark";
-import { PICK_BLOCKS, PICK_CARD } from "./picker.constants";
+import { PICK_BLOCKS, PICK_BLOCKS_ASIDE, PICK_BOARD_ASIDE, PICK_CARD } from "./picker.constants";
 
 /**
  * The board, as big blocks in a row. John: "for the board sizes, make it more
@@ -23,12 +23,18 @@ import { PICK_BLOCKS, PICK_CARD } from "./picker.constants";
  *
  * The blocks sit in a row and wrap only if they must — there are at most four
  * of them — because a stack of four is a list and John asked for a row.
+ *
+ * `beside` is the one exception, and it is not a second design: from a tablet
+ * up, where the preview of the board stands next to them, the same blocks go
+ * one per line so the pair can be looked at together. Below that width they are
+ * the row they are everywhere else.
  */
 export function BoardPicker({
   value,
   sizes,
   onChange,
   disabled = false,
+  beside = false,
 }: {
   /** The chosen board, as the length of one side. */
   value: number;
@@ -40,6 +46,8 @@ export function BoardPicker({
   sizes: readonly number[];
   onChange: (size: number) => void;
   disabled?: boolean;
+  /** Standing in a column next to the board's picture, rather than in a row under it. */
+  beside?: boolean;
 }) {
   /*
    * A GAME WITH ONE BOARD IS DRAWN AS A CHOSEN BOARD, because that is what it
@@ -66,9 +74,13 @@ export function BoardPicker({
    */
   const only = sizes.length === 1;
   return (
-    <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-size">
+    <fieldset
+      className={`flex min-w-0 flex-col gap-1.5 ${beside ? PICK_BOARD_ASIDE : ""}`}
+      data-testid="shared-rules-size"
+      data-beside={beside ? "true" : "false"}
+    >
       <legend className="mb-0.5 text-sm text-ink-soft">Board</legend>
-      <div className={PICK_BLOCKS}>
+      <div className={beside ? PICK_BLOCKS_ASIDE : PICK_BLOCKS}>
         {sizes.map((size) => {
           const copy = BOARD_SIZE_DISPLAY[size];
           return (
@@ -82,9 +94,14 @@ export function BoardPicker({
                * the sizes it might have had, and a block four times the width
                * of everybody else's looks like an announcement. A fixed width
                * in its one column keeps it the size of a block.
+               *
+               * THAT FIXED WIDTH GIVES WAY IN THE COLUMN beside the preview,
+               * which is 152px — narrower than the 160px meant to hold a lone
+               * board in. There the column is itself the thing stopping a
+               * banner, so the block fills it rather than overflowing it.
                */
               className={`${PICK_CARD} min-w-24 cursor-pointer flex-col justify-center gap-1.5 p-2 ${
-                only ? "w-40" : ""
+                only ? (beside ? "w-40 md:w-auto" : "w-40") : ""
               }`}
               data-testid="set-up-size"
               data-size={size}

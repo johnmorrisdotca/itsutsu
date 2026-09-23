@@ -6,6 +6,8 @@ import { BoardPicker } from "./BoardPicker";
 import { GamePicker } from "./GamePicker";
 import type { RulesDraft } from "./rulesDraft";
 import { boardWords } from "@/lib/gomoku/boardWords";
+import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW } from "./picker.constants";
+import type { ReactNode } from "react";
 
 /**
  * THE TWO QUESTIONS THE SET-UP SCREEN EXISTS TO ASK: which game, and what board.
@@ -16,6 +18,18 @@ import { boardWords } from "@/lib/gomoku/boardWords";
  * narrow panel beside a board — `pictures` is `RulesForm`'s `chooser`, read
  * once there. Every change still goes through the form's `applyRulesChange`,
  * handed in as `change`, so the two screens cannot drift.
+ *
+ * AND THE PICTURE OF THE BOARD SITS BETWEEN THE TWO ANSWERS, where the screen
+ * that chooses hands one down. The set-up screen drew it above everything, and
+ * the sizes a screen below, so choosing a board meant scrolling away from the
+ * board. John, 2026-09-22: "you can see the board and sizes side by side,
+ * rather than like now, where the board sizes are lower and almost off screen…
+ * I also think the Game list might be top row with the Board below it."
+ *
+ * It arrives as a node rather than being drawn here, the way `RulesForm`'s
+ * `sections` and `folded` do: the preview needs the settled rules, the
+ * `dealt` reading and the copy that names the game, and none of that belongs
+ * to the control that picks a size. This decides only WHERE it goes.
  */
 export function GameAndBoardChooser({
   value,
@@ -23,6 +37,7 @@ export function GameAndBoardChooser({
   showVariant,
   variantLabel,
   pictures,
+  preview,
   change,
   onSizeChosen,
 }: {
@@ -31,6 +46,12 @@ export function GameAndBoardChooser({
   showVariant: boolean;
   variantLabel: string;
   pictures: boolean;
+  /**
+   * The board as it will be played, drawn between the games and the sizes.
+   * Absent in the narrow panel beside a live game, which has the real board
+   * a few pixels away and no room for a second one.
+   */
+  preview?: ReactNode;
   change: (next: Partial<RulesDraft>) => void;
   onSizeChosen?: (size: number) => void;
 }) {
@@ -88,15 +109,25 @@ export function GameAndBoardChooser({
         option in a narrow column beside a live game is furniture.
       */}
       {pictures ? (
-        <BoardPicker
-          value={value.size}
-          sizes={sizes}
-          disabled={disabled}
-          onChange={(next) => {
-            onSizeChosen?.(next);
-            change({ size: next });
-          }}
-        />
+        /*
+         * The board and the boards it could be, as one thing. A row from a
+         * tablet up and a stack below it — `PICK_BOARD_ROW` — so the same
+         * order reads on a phone and at a desk: the games, then what the game
+         * looks like, then which of its boards.
+         */
+        <div className={preview === undefined ? undefined : PICK_BOARD_ROW}>
+          {preview === undefined ? null : <div className={PICK_BOARD_PREVIEW}>{preview}</div>}
+          <BoardPicker
+            value={value.size}
+            sizes={sizes}
+            disabled={disabled}
+            beside={preview !== undefined}
+            onChange={(next) => {
+              onSizeChosen?.(next);
+              change({ size: next });
+            }}
+          />
+        </div>
       ) : sizes.length > 1 ? (
         <Field label="Board">
           <Select
