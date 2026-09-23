@@ -468,6 +468,22 @@ is the intended path, not a bug — but it must read as an invitation and not a
 bait-and-switch. Word it so that somebody who follows it feels they were told
 what the site wants from them. Do not reuse the signed-in label.
 
+**And "reading is open" means the GAMES, not the people.** John decided it on
+2026-09-22, asked in so many words what a visitor with no invite may see of
+the people who play here: games only, as it stands. So a stranger reads the
+catalogue, every game's page, its rules, family and background, `/about` and
+`/learn`; the players, the ladders, the champions, XP, the record and anything
+naming a member need an invite. The reason is that a member's page carries
+their whole name in its address and some members are children — see the
+`OPEN_PATTERNS` note in `src/proxy.ts`, which is where the line is enforced.
+
+What this means for a builder: an empty table on a page a stranger can reach
+invites them to `/join`, as above; a panel that would show a stranger members
+shows the shut state instead (`GameLadder`'s "who is winning … needs an
+invite", with its "No invite? Ask for one" beside it), never a table with the
+names left out. A page that is open to strangers must be checked with no
+session, because the member's view of it proves nothing about theirs.
+
 ### Back It Up Before You Migrate It
 
 **As it stood on 2026-09-15** — worth re-reading with `neonctl` rather than
