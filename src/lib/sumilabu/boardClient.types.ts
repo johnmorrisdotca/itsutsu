@@ -56,5 +56,10 @@ export type BoardOutcome =
   | { ok: true; item: BacklogItem }
   | { ok: false; reason: BoardRefusal; problems: string[]; heldBy: string | null };
 
+/** Why `stampTicket` was refused. Never `held`: a `done` row's `claimedBy` is already null. */
+export type StampRefusal = "missing" | "notDone" | "alreadyStamped" | "refused";
+
+export type StampOutcome = { ok: true; item: BacklogItem } | { ok: false; reason: StampRefusal; problems: string[] };
+
 /** What one import batch came to: how many rows the service took, or its problems by row. */
 export type BoardImportOutcome = { ok: true; imported: number } | { ok: false; status: number; problems: string[] };

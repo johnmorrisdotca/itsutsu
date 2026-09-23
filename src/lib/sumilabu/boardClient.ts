@@ -3,7 +3,7 @@ import { neighbourKey } from "../backlog/backlogKey.ts";
 import type { BacklogItem, BoardQuery } from "../backlog/backlog.types.ts";
 
 import type { SumilabuImportRow } from "./boardExport.types.ts";
-import type { BoardChange, BoardDraft, BoardImportOutcome, BoardMoveTarget, BoardOutcome, BoardTicketView } from "./boardClient.types.ts";
+import type { BoardChange, BoardDraft, BoardImportOutcome, BoardMoveTarget, BoardOutcome, BoardTicketView, StampOutcome } from "./boardClient.types.ts";
 import type { SumilabuTarget } from "./sumilabuProject.types.ts";
 
 /**
@@ -237,6 +237,32 @@ export async function shipTicket(
 ): Promise<BoardOutcome> {
   const { status, body } = await call(target, `${one(id)}/ship`, { method: "POST", actor, body: ship });
   return outcome(status, body);
+}
+
+/**
+ * The backfill for a row that reached `done` before release stamps existed:
+ * writes `releasedIn`/`releasedEntry`/`releasedAt` without moving the row.
+ * See invariant 13 in `docs/plans/board-convergence/BOARD_RULES.md`. Refuses
+ * `notDone` off a row that is not `done`, and `alreadyStamped` rather than
+ * overwrite a version already recorded - a stamp is written once, since a
+ * wrong version recorded twice cannot be told apart from a right one after.
+ * `releasedAt` is required, unlike `ship`'s: a backfill with no real date
+ * would write today's onto a row that shipped months ago.
+ */
+export async function stampTicket(
+  target: SumilabuTarget,
+  id: string,
+  stamp: { version: string; releasedAt: string; entryId?: string | null },
+  actor: string,
+): Promise<StampOutcome> {
+  const { status, body } = await call(target, `${one(id)}/stamp`, { method: "POST", actor, body: stamp });
+  const item = ticketIn(body);
+  if (status === 200 && item !== null) return { ok: true, item };
+  if (status === 404) return { ok: false, reason: "missing", problems: ["No such row on the board."] };
+  if (body.error === "notDone") return { ok: false, reason: "notDone", problems: ["That row is not done yet, so there is nothing to stamp."] };
+  if (body.error === "alreadyStamped") return { ok: false, reason: "alreadyStamped", problems: ["That row already carries a release stamp; it is written once."] };
+  const problems = Array.isArray(body.problems) && body.problems.length > 0 ? body.problems.map(String) : [String(body.error ?? `Sumilabu answered ${status}.`)];
+  return { ok: false, reason: "refused", problems };
 }
 
 /**
