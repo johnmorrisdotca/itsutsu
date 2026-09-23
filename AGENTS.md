@@ -694,6 +694,32 @@ below before trusting it — these numbers move):
    cost limits, faster polling) is refused in production mode on purpose, so it
    needs its own ticket and its own thinking, not a flag flipped.
 
+### Fewer Pushes
+
+John, 2026-09-23, to every project: "let's make sure UK, ITS, SumiLabu, WazaDB
+all think about less pushes and even though some are public, really try to
+crack down on this metric." Itsutsu used **20,813 Actions minutes** in
+September 2026. A push to `main` is about eighteen runner-minutes (five checks,
+twelve browser shards, the deploy) and one of Vercel's hundred deployments a
+day, so the count of pushes is the cost, whatever the repository's billing says.
+
+- **Batch finished work into one push**: at most about one an hour while
+  features are flowing. Several releases go out in one push (one feature, one
+  version still holds, see the next section); a fix for something broken on the
+  live site may go sooner.
+- **Retry a flaky run with `gh run rerun <id> --failed`**, never with a new
+  commit. A rerun repeats only the failed jobs; a push repeats everything.
+- **Prose alone deploys nothing.** `vercel-deploy.yml` and `ci.yml` filter on
+  `paths`: a push whose every file is Markdown or under `docs/` starts no run.
+  `CHANGELOG.md` is the exception, because the site reads it at runtime. So an
+  edit to this file can go in the next code push, or on its own at no cost.
+- **One suite per push.** `ci.yml` runs on pull requests only, because the
+  deploy already runs the whole gate on `main`. Before adding a workflow or a
+  trigger, count the jobs one push starts.
+- **Open a pull request only when you need its run**: a branch touching many
+  routes, judged on a fresh database (see "Running the end-to-end suite"). Each
+  push to an open PR is another full run.
+
 ### Every Landed Commit Bumps The Version
 
 **`pnpm release:take` takes the number and commits it, immediately before
