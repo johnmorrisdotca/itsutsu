@@ -60,6 +60,12 @@ export function AccountMenu({ initial }: { initial: Who }) {
           {label}
         </Link>
       ) : null}
+      {/* What happened while they were away: see /inbox. The count is on /play, not here on every page. */}
+      {data.member ? (
+        <Link href="/inbox" className="text-ink-soft underline-offset-4 hover:underline" data-testid="inbox-link">
+          Inbox
+        </Link>
+      ) : null}
       {/*
         A quiet word, and still something a thumb can hit: 20 pixels of text
         with 24 more of padding around it below `sm`. The padding is negative

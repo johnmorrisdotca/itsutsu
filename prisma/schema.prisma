@@ -700,6 +700,8 @@ model Member {
   buddies   Buddy[]    @relation("BuddyOwner")
   buddyOf   Buddy[]    @relation("BuddyTarget")
   ignoring  Ignore[]   @relation("IgnoreOwner")
+  /// What happened while they were away; see `InboxItem`.
+  inbox     InboxItem[]
   ignoredBy Ignore[]   @relation("IgnoreTarget")
   applause  Applause[]
 
@@ -861,6 +863,30 @@ model AutoMatchRequest {
 /// only members who came in by Google could have or be on — a member who joined
 /// with an invite code has no address, so could neither ignore anybody nor be
 /// ignored. An id is who somebody is; an address is only how some of them sign in.
+/// WHAT HAPPENED WHILE A MEMBER WAS AWAY (John, 2026-09-16, after
+/// ItsYourTurn's messages inbox): a game finished, a challenge arrived or was
+/// answered, somebody took a posted seat, a note came in. Written at the moment
+/// each happens, read only when the member opens /inbox — never polled — and
+/// cleared after thirty days when they do. Not every move: whose turn it is
+/// lives on /play already. `fromName` and `variant` are copied at writing time,
+/// so an item still reads after the game or the name has gone.
+model InboxItem {
+  id        String    @id @default(cuid())
+  memberId  String
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  kind      String
+  gameId    String?
+  variant   String?
+  fromName  String    @default("")
+  /// Who it is from, where they have an account, so their name leads to their page.
+  fromMemberId String?
+  detail    String    @default("")
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([memberId, createdAt])
+}
+
 model Ignore {
   ownerId   String
   owner     Member   @relation("IgnoreOwner", fields: [ownerId], references: [id], onDelete: Cascade)

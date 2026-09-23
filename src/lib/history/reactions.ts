@@ -1,6 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { recordInbox } from "@/lib/inbox/inbox";
+import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
@@ -31,7 +33,16 @@ export async function addReaction(
 ): Promise<ReactionOutcome> {
   const row = await prisma.game.findUnique({
     where: { id },
-    select: { blackToken: true, whiteToken: true, moveCount: true },
+    select: {
+      blackToken: true,
+      whiteToken: true,
+      moveCount: true,
+      blackMemberId: true,
+      whiteMemberId: true,
+      blackName: true,
+      whiteName: true,
+      variant: true,
+    },
   });
   if (row === null) return { ok: false, reason: "not-found" };
 
@@ -47,6 +58,25 @@ export async function addReaction(
   }
 
   await prisma.reaction.create({ data: { gameId: id, stone, emoji, moveNumber, text } });
+  /*
+   * A note with WORDS reaches the other player's inbox; a bare emoji does not —
+   * a wave a move would bury everything else there. Never at one screen, where
+   * both players are the same browser.
+   */
+  if (text !== null && row.blackToken !== row.whiteToken) {
+    const toBlack = stone === STONES.white;
+    await recordInbox([
+      {
+        memberId: toBlack ? row.blackMemberId : row.whiteMemberId,
+        kind: INBOX_KINDS.note,
+        gameId: id,
+        variant: row.variant,
+        fromName: toBlack ? row.whiteName : row.blackName,
+        fromMemberId: toBlack ? row.whiteMemberId : row.blackMemberId,
+        detail: `${emoji} ${text}`,
+      },
+    ]);
+  }
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };

@@ -275,6 +275,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/learn/[slug]/page.tsx": { GameThumb: "small" },
   "src/components/games/GameList.tsx": { GameThumb: "small" },
   "src/components/history/HistoryTable.tsx": { GameThumb: "small" },
+  "src/components/inbox/InboxList.tsx": { GameThumb: "small" },
   "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },
   "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },
   // A row per game of how this grade measured: a list, so a small picture.

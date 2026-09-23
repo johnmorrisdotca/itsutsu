@@ -1,3 +1,6 @@
+import { INBOX_COPY } from "@/components/inbox/inbox.constants";
+import { unreadInbox } from "@/lib/inbox/inbox";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
@@ -48,6 +51,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
   const asked = await searchParams;
   // The other member the address narrows to, by id, with a name to print — or null.
   const withMember = typeof asked.with === "string" ? await memberNamed(asked.with) : null;
+  // The one page that says how much is new in the inbox: one count, here, not on every page's header.
+  const unread = await unreadInbox(await currentMemberId());
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
@@ -69,9 +74,19 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           the navigation and in the empty list, where a reader who has nothing to
           move will meet it.
         */}
-        <Link href="/games" className="text-sm font-semibold underline underline-offset-4" data-testid="to-new-game">
-          All the games 遊び方 →
-        </Link>
+        <span className="flex flex-col items-start gap-1 sm:items-end">
+          <Link href="/games" className="text-sm font-semibold underline underline-offset-4" data-testid="to-new-game">
+            All the games 遊び方 →
+          </Link>
+          <Link
+            href="/inbox"
+            className={`text-sm underline underline-offset-4 ${unread > 0 ? "font-semibold text-shu" : "text-ink-soft"}`}
+            data-testid="play-inbox"
+            data-unread={unread}
+          >
+            {unread > 0 ? INBOX_COPY.unread(unread) : INBOX_COPY.title} {INBOX_COPY.kanji} →
+          </Link>
+        </span>
       </div>
 
       {/*

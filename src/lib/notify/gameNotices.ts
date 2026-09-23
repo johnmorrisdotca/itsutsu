@@ -3,6 +3,8 @@ import "server-only";
 import { isBotId, seatMemberId } from "@/lib/bots/bots";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
+import { recordInbox } from "@/lib/inbox/inbox";
+import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { sendNotice } from "@/lib/mail/sendNotice";
 
 /**
@@ -29,6 +31,10 @@ type NoticeSeats = {
   hotSeat: boolean;
   blackMemberId?: string | null;
   whiteMemberId?: string | null;
+  /** For the inbox's line: who was across the board, and at what. */
+  blackName?: string;
+  whiteName?: string;
+  variant?: string;
 };
 
 /**
@@ -55,9 +61,28 @@ export async function noticeYourTurn(game: NoticeSeats, gameId: string, stone: S
 }
 
 /** Tells each person seated in a game that it is over; a program's seat is told nothing. */
-export async function noticeGameOver(game: NoticeSeats, gameId: string, winner: Stone | null): Promise<void> {
+export async function noticeGameOver(
+  game: NoticeSeats,
+  gameId: string,
+  winner: Stone | null,
+  /** False where this "ending" is a refused offer, which the inbox says in its own words. */
+  { inbox = true }: { inbox?: boolean } = {},
+): Promise<void> {
   for (const stone of [STONES.black, STONES.white]) {
     const memberId = noticeRecipient(game, stone);
     if (memberId !== null) await sendNotice({ kind: "game-over", gameId, winner, stone, memberId });
   }
+  if (!inbox) return;
+  // The same people, told in the inbox how it went for them — see `inbox.ts`.
+  await recordInbox(
+    [STONES.black, STONES.white].map((stone) => ({
+      memberId: noticeRecipient(game, stone),
+      kind: INBOX_KINDS.gameOver,
+      gameId,
+      variant: game.variant,
+      fromName: stone === STONES.black ? game.whiteName : game.blackName,
+      fromMemberId: stone === STONES.black ? game.whiteMemberId : game.blackMemberId,
+      detail: winner === null ? "drawn" : winner === stone ? "won" : "lost",
+    })),
+  );
 }

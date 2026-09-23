@@ -11,7 +11,9 @@ import { matchAsks, matchRefusal } from "@/lib/history/liveMatch";
 import { readCreation } from "@/lib/history/liveRequest";
 import { createdResponse, refusalResponse } from "@/lib/history/liveResponse";
 import { UnwinnableGame } from "@/lib/history/winnableGame";
-import { SEED_RANGE } from "@/lib/gomoku/gomoku.constants";
+import { SEED_RANGE, STONES } from "@/lib/gomoku/gomoku.constants";
+import { recordInbox } from "@/lib/inbox/inbox";
+import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import { awardCreatedGame, createdGameKind } from "@/lib/xp/xpSocial";
 
@@ -173,6 +175,25 @@ export async function POST(request: Request) {
           console.error(error);
         }
       }
+    }
+
+    /*
+     * A challenge reaches the inbox of the person asked — one line for a match,
+     * which is one question however many boards it makes. See `inbox.ts`.
+     */
+    if ("offeredToMemberId" in against.offer && against.offeredSeat !== null) {
+      const askerName = against.offeredSeat === STONES.black ? played.whiteName : played.blackName;
+      await recordInbox([
+        {
+          memberId: against.offer.offeredToMemberId,
+          kind: INBOX_KINDS.offer,
+          gameId: created.id,
+          variant: played.variant,
+          fromName: askerName,
+          fromMemberId: against.offeredSeat === STONES.black ? against.seats.whiteMemberId : against.seats.blackMemberId,
+          detail: made.length > 1 ? `a match of ${made.length} games` : "",
+        },
+      ]);
     }
 
     const caller = await currentMemberId();
