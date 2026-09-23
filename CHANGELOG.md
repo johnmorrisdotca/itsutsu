@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.254.0 — 2026-09-23
+- Go marks the board for a beginner: a cross where a stone may not go, and a ring on the point that captures or saves a group in atari.
+
 ## 0.253.0 — 2026-09-23
 - Go helps a beginner: the board says when your opponent has passed and the game can end, names any group about to be captured, and warns before a stone fills your own eye or leaves your group in atari.
 
