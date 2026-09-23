@@ -350,7 +350,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
             <Paired en="Famous games" kanji="名局" kanjiClassName="text-sm font-normal opacity-70" />
           </span>
           <span className="max-w-prose text-sm text-muted">
-            World championship finals and title matches, from the published records — each one a picture of every move.
+            Title matches and historic games from public-domain records — each one a picture of every move.
           </span>
         </span>
         <Link href="/famous" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`} data-testid="games-famous-link">

@@ -7,18 +7,17 @@ export const FAMOUS_NOTATIONS = {
 } as const;
 
 /**
- * Where the records came from, and the credit each one is shown with. The moves
- * are facts; the collections are other people's work, so every game says whose.
- * See the research report that chose them for each source's terms.
+ * Where the records came from, the credit each game is shown with, and the
+ * words in the source's own terms that allow it — quoted, so the reason a game
+ * may be shown is in the code beside it. `openBecause` is required: a source
+ * whose terms do not grant use has no place here, however freely it can be
+ * downloaded (see `famousGames.data.ts` for the one that was taken out).
  */
 export const FAMOUS_SOURCES = {
-  wthor: {
-    name: "WTHOR database, Fédération Française d'Othello",
-    url: "https://www.ffothello.org/informatique/la-base-wthor/",
-  },
   brouwer: {
     name: "Andries Brouwer's database of Go games, CWI (public domain)",
     url: "https://homepages.cwi.nl/~aeb/go/games/",
+    openBecause: "I do not claim any rights on this collection. The games here are in the public domain.",
   },
 } as const;
 
