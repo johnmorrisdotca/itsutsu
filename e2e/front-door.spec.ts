@@ -23,6 +23,13 @@ test.describe("the front door", () => {
     await expect(page.getByTestId("enter-games")).toHaveAttribute("href", "/games");
   });
 
+  test("does not ask a member who is already in for an invitation", async ({ page }) => {
+    await page.goto("/");
+    // The page has answered before its absence is read.
+    await expect(page.getByTestId("front-story")).toBeVisible();
+    await expect(page.getByTestId("invite-line")).toHaveCount(0);
+  });
+
   test("the navigation reads in one language", async ({ page }) => {
     /*
      * Only the bar. A kanji paired with a heading elsewhere — a game's name, a
