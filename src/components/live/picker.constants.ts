@@ -150,6 +150,59 @@ export const PICK_GRID = "grid grid-cols-1 auto-rows-[5rem] gap-2 sm:grid-cols-2
 export const PICK_BLOCKS = "grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-2";
 
 /**
+ * THE BOARD AND THE BOARDS IT COULD BE, SIDE BY SIDE FROM A TABLET UP.
+ *
+ * John, 2026-09-22, with Halma 16×16 open on a laptop: "rightnow we have extra
+ * height since we have Board size row... that row could just be a side panel
+ * next to the large Board… and it's also better since you can see the board
+ * and sizes side by side, rather than like now, where the board sizes are
+ * lower and almost off screen."
+ *
+ * Both halves of that matter and only one of them is about height. The sizes
+ * were a full-width row a screen below the preview, so choosing a board meant
+ * scrolling away from the picture of the board — the one thing the choice is
+ * about. Beside it, pressing 8, 10 and 16 in turn redraws a board you are
+ * looking at.
+ *
+ * CENTRED AS A PAIR, not spread across the panel. The preview is 22rem and the
+ * column of sizes is 9.5rem, so together they are about 530px of a 990px panel.
+ * Letting the preview take the slack would have left the board in the middle of
+ * the page and the sizes against the right edge — further apart than the row
+ * they replaced, which is the opposite of what was asked for.
+ *
+ * FROM 768px, WHICH IS AN IPAD IN PORTRAIT, not from a laptop. The pair needs
+ * 528px and that screen's panel gives about 688, so the width where it fits is
+ * the width where it is offered. This page is used on an iPad — two of the
+ * measurements in this file were taken for one — and holding the change back
+ * to 1024 would have left the screen John was describing out of it.
+ *
+ * One column below that width, in the same order: the games, then the board,
+ * then its sizes.
+ */
+export const PICK_BOARD_ROW = "flex flex-col items-center gap-3 md:flex-row md:items-start md:justify-center md:gap-6";
+
+/**
+ * The preview's place in that row. `w-full` under a laptop so `BoardPreview`'s
+ * own caps decide — 15rem on a phone, 22rem from a tablet — and a fixed 22rem
+ * at a desk so the sizes sit against the board rather than against the panel.
+ */
+export const PICK_BOARD_PREVIEW = "w-full min-w-0 md:w-[22rem] md:shrink-0";
+
+/**
+ * The column the sizes stand in. Wide enough for the regular 70px mark, its
+ * padding and the board's name under it, and no wider: a block four times the
+ * width of its own picture is the banner a lone board was already kept from
+ * becoming.
+ */
+export const PICK_BOARD_ASIDE = "w-full md:w-[9.5rem] md:shrink-0";
+
+/**
+ * The blocks themselves in that column: the row everywhere else, one per line
+ * once there is a board beside them to line up against.
+ */
+export const PICK_BLOCKS_ASIDE = `${PICK_BLOCKS} md:grid-cols-1`;
+
+/**
  * A setting stated rather than offered — the one opening a game has, or a
  * rating the game could never move. The card's frame without anything that
  * says "press me": no pointer, no hover, no check, no ring.
