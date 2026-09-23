@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { BuddyButton } from "@/components/mine/BuddyButton";
+import { messagesPath } from "@/lib/messages/messages.constants";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { shownName } from "@/lib/rating/shownName";
@@ -109,6 +112,16 @@ export function PlayerActions({
     <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
       {/* A game is offered by member id, and so is everything beside it. */}
       <ChallengeButton memberId={memberId} label="Ask for a game 対局を申し込む" strong />
+      {/* Off the board: a conversation, the ignore list applied in full — see `messages.ts`. */}
+      {!ignoring ? (
+        <Link
+          href={messagesPath(memberId)}
+          className="inline-flex min-h-11 items-center rounded-lg border border-rule-strong/80 bg-ivory/80 px-3 py-1.5 text-sm font-medium text-ink hover:bg-rule/60 sm:min-h-0"
+          data-testid="message-link"
+        >
+          Write 手紙
+        </Link>
+      ) : null}
       <BuddyButton memberId={memberId} isBuddy={isBuddy} />
       <IgnoreButton memberId={memberId} ignoring={ignoring} />
     </div>

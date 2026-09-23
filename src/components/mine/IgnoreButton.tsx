@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * Ignores a member, or stops. They cannot challenge you, and their messages in a
@@ -13,6 +14,7 @@ export function IgnoreButton({ memberId, ignoring }: { memberId: string; ignorin
   const router = useRouter();
   const [state, setState] = useState(ignoring);
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
 
   async function toggle() {
     setBusy(true);
@@ -36,6 +38,8 @@ export function IgnoreButton({ memberId, ignoring }: { memberId: string; ignorin
       className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs ${state ? "text-shu" : "text-muted"}`}
       title={state ? "Stop ignoring" : "Ignore: they cannot challenge you, and their messages are hidden"}
       data-testid="ignore-toggle"
+      aria-pressed={state}
+      {...readyMark(hydrated)}
     >
       {state ? "Ignored" : "Ignore"}
     </button>
