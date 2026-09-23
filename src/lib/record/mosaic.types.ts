@@ -12,9 +12,10 @@ export type MosaicPicture = {
   width: number;
   height: number;
   /**
-   * What goes in the spaces the last row leaves over. Filled, each is an empty
-   * board and the last one carries `details`; left, they are the dark ground.
-   * John: "visually possibly disturbing to see all black and part of the screen."
+   * What goes in the spaces the last row leaves over. Filled, they are one
+   * card as wide as all of them carrying `details` — or, with no details, an
+   * empty board each; left, they are the dark ground. John: "visually possibly
+   * disturbing to see all black and part of the screen."
    */
   fillSpare: boolean;
   /** The game's own lines — who, what, how it ended, when — for the last spare space. */

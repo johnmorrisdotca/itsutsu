@@ -108,20 +108,30 @@ export function mosaicLayout(count: number, width: number, height: number): { co
   return best;
 }
 
-/** One tile's board, as SVG drawn into the square at (x, y) with sides `side`. */
+/**
+ * One tile's board, as SVG drawn into the square at (x, y) with sides `side`.
+ *
+ * When the tiles are big enough to carry a label, a strip under the board is
+ * kept for it and the board is drawn smaller above it, the same for every tile
+ * so a row of boards lines up. The label used to sit in the board's corner,
+ * where a full board's last row of pieces covered it.
+ */
 function tileSvg(frame: MosaicFrame, size: number, cells: boolean, x: number, y: number, side: number): string {
   const art = MOSAIC_ART;
   const pad = side * art.gap;
   const inner = side - pad * 2;
-  const step = cells ? inner / size : inner / (size + 1);
+  const labelled = side >= art.labelFrom;
+  const font = Math.max(9, side * 0.075);
+  const board = labelled ? inner - font * 1.6 : inner;
+  const step = cells ? board / size : board / (size + 1);
   const at = (i: number) => (cells ? step * (i + 0.5) : step * (i + 1));
-  const ox = x + pad;
+  const ox = x + pad + (inner - board) / 2;
   const oy = y + pad;
-  const parts: string[] = [`<rect x="${ox}" y="${oy}" width="${inner}" height="${inner}" rx="${inner * 0.03}" fill="${art.wood}"/>`];
+  const parts: string[] = [`<rect x="${x + pad}" y="${oy}" width="${inner}" height="${inner}" rx="${inner * 0.03}" fill="${art.wood}"/>`];
 
   const lines = cells ? Array.from({ length: size + 1 }, (_, i) => i * step) : Array.from({ length: size }, (_, i) => at(i));
   const from = cells ? 0 : at(0);
-  const to = cells ? inner : at(size - 1);
+  const to = cells ? board : at(size - 1);
   const stroke = Math.max(0.5, step * 0.04);
   const path = lines.map((p) => `M${ox + from} ${oy + p}H${ox + to}M${ox + p} ${oy + from}V${oy + to}`).join("");
   parts.push(`<path d="${path}" stroke="${art.line}" stroke-width="${stroke}" opacity="0.7" fill="none"/>`);
@@ -148,37 +158,37 @@ function tileSvg(frame: MosaicFrame, size: number, cells: boolean, x: number, y:
     }
   });
 
-  /*
-   * The move in the tile's corner — its number and its name on the board,
-   * "12 · H8", the way the move list reads — when the tile is big enough to
-   * carry it. A spare board has neither.
-   */
-  if (side >= art.labelFrom && frame.move > 0) {
-    const font = Math.max(9, side * 0.075);
+  // The move under the board — its number and its name, "12 · H8", the way the move list reads.
+  if (labelled && frame.move > 0) {
     const words = frame.name === "" ? `${frame.move}` : `${frame.move} · ${escaped(frame.name)}`;
     parts.push(
-      `<text x="${x + side - pad * 1.5}" y="${y + side - pad * 1.5}" font-family="system-ui, sans-serif" font-size="${font}" text-anchor="end" fill="${art.label}">${words}</text>`,
+      `<text x="${x + side / 2}" y="${oy + board + font * 1.15}" font-family="system-ui, sans-serif" font-size="${font}" text-anchor="middle" fill="${art.label}">${words}</text>`,
     );
   }
   return parts.join("");
 }
 
-/** The card in the last spare space: the game's own lines on a board's wood, centred. */
-function detailsSvg(lines: readonly string[], x: number, y: number, side: number): string {
+/**
+ * The card after the last move: the game's own lines on a board's wood,
+ * centred, as wide as every space the last row leaves over — so the lines have
+ * room, and the picture ends on the game's name rather than a row of dark.
+ */
+function detailsSvg(lines: readonly string[], x: number, y: number, width: number, side: number): string {
   const art = MOSAIC_ART;
   const pad = side * art.gap;
-  const inner = side - pad * 2;
-  const font = Math.max(9, inner * 0.075);
+  const tall = side - pad * 2;
+  const wide = width - pad * 2;
+  const font = Math.max(9, Math.min(tall * 0.1, (tall * 0.8) / (lines.length * 1.45)));
   const gap = font * 1.45;
   const top = y + side / 2 - ((lines.length - 1) * gap) / 2;
-  const most = Math.max(8, Math.floor(inner / (font * 0.55)));
+  const most = Math.max(8, Math.floor(wide / (font * 0.55)));
   const text = lines
     .map(
       (line, i) =>
-        `<text x="${x + side / 2}" y="${top + i * gap}" font-family="system-ui, sans-serif" font-size="${font}" font-weight="${i === 0 ? 600 : 400}" text-anchor="middle" dominant-baseline="middle" fill="${art.line}">${escaped(fitted(line, most))}</text>`,
+        `<text x="${x + width / 2}" y="${top + i * gap}" font-family="system-ui, sans-serif" font-size="${font}" font-weight="${i === 0 ? 600 : 400}" text-anchor="middle" dominant-baseline="middle" fill="${art.line}">${escaped(fitted(line, most))}</text>`,
     )
     .join("");
-  return `<rect x="${x + pad}" y="${y + pad}" width="${inner}" height="${inner}" rx="${inner * 0.03}" fill="${art.wood}"/>${text}`;
+  return `<rect x="${x + pad}" y="${y + pad}" width="${wide}" height="${tall}" rx="${tall * 0.03}" fill="${art.wood}"/>${text}`;
 }
 
 /**
@@ -193,14 +203,19 @@ export function mosaicSvg(picture: MosaicPicture): string {
   const top = (height - rows * side) / 2;
   const place = (i: number) => ({ x: left + (i % columns) * side, y: top + Math.floor(i / columns) * side });
   const tiles = frames.map((frame, i) => tileSvg(frame, size, cells, place(i).x, place(i).y, side));
-  // The spaces the last row leaves over: empty boards, the last of them carrying the game's own lines.
-  const slots = columns * rows;
-  if (picture.fillSpare && slots > frames.length) {
-    const empty: MosaicFrame = { board: ".".repeat(size * size), move: 0, name: "" };
-    for (let i = frames.length; i < slots; i += 1) {
-      const { x, y } = place(i);
-      const last = i === slots - 1 && picture.details.length > 0;
-      tiles.push(last ? detailsSvg(picture.details, x, y, side) : tileSvg(empty, size, cells, x, y, side));
+  /*
+   * The spaces the last row leaves over. With the game's details, one card as
+   * wide as all of them; with none, an empty board in each. Left unfilled,
+   * the dark ground.
+   */
+  const spare = columns * rows - frames.length;
+  if (picture.fillSpare && spare > 0) {
+    const { x, y } = place(frames.length);
+    if (picture.details.length > 0) {
+      tiles.push(detailsSvg(picture.details, x, y, spare * side, side));
+    } else {
+      const empty: MosaicFrame = { board: ".".repeat(size * size), move: 0, name: "" };
+      for (let i = frames.length; i < frames.length + spare; i += 1) tiles.push(tileSvg(empty, size, cells, place(i).x, place(i).y, side));
     }
   }
   return (
