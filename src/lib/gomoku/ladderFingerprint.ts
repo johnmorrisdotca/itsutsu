@@ -10,7 +10,10 @@ import { join } from "node:path";
  *
  * `expert/` is not here, with one exception: every grade's `expertise` is
  * empty, so a specialist's reading never decides a graded move — but the race
- * reading counts its distances with `expert/raceBoard.ts`, so that file is. The engine and the rules are not here
+ * reading counts its distances with `expert/raceBoard.ts`, so that file is.
+ * The specialists' own rows are left out for the same reason, in
+ * `opponentSpecialists.constants.ts`; `ladderStrength.test.ts` holds that file
+ * to rows with an expertise, so nothing a grade reads can hide there. The engine and the rules are not here
  * either — they decide what a move IS, not which one a player picks.
  *
  * Deliberately the whole text of each file, comments included. A comment edit
@@ -31,6 +34,8 @@ export const LADDER_FINGERPRINT_FILES: readonly string[] = [
   "src/lib/gomoku/threats.ts",
   // The graded players' race reading counts its distances here.
   "src/lib/gomoku/expert/raceBoard.ts",
+  // The opening book decides a grade's second and third stones.
+  "src/lib/gomoku/opponentOpening.ts",
 ];
 
 /** A short, stable hash over the files' paths and text, in the order given. */

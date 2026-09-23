@@ -1,5 +1,16 @@
-import { EXPERT_KINDS } from "./expert/expert.constants";
 import type { BotProfile, BotTier, TierSpec } from "./opponent.types";
+/*
+ * The specialists' rows live in a module of their own, which the ladder's
+ * fingerprint does not hash: a specialist never decides a graded move, so
+ * adding or tuning one must not silence the graded players' measured tables.
+ * See `opponentSpecialists.constants.ts`.
+ */
+import {
+  BOT_SPECIALIST_LIST,
+  SPECIALIST_PROFILES,
+  SPECIALIST_SPECS,
+  SPECIALIST_TIERS,
+} from "./opponentSpecialists.constants";
 
 /**
  * The graded players, and how hard each one tries.
@@ -35,9 +46,7 @@ export const BOT_TIERS = {
   minaPark: "minaPark",
   kenjiArakawa: "kenjiArakawa",
   liWenjing: "liWenjing",
-  tamenoki: "tamenoki",
-  meritalu: "meritalu",
-  monkton: "monkton",
+  ...SPECIALIST_TIERS,
 } as const satisfies Record<BotTier, BotTier>;
 
 /**
@@ -97,11 +106,7 @@ export const BOT_TIER_LIST: readonly BotTier[] = [
  * misunderstands the game is not a smaller error than a shallow one, it is a
  * better-executed one.
  */
-export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
-  BOT_TIERS.tamenoki,
-  BOT_TIERS.meritalu,
-  BOT_TIERS.monkton,
-];
+export { BOT_SPECIALIST_LIST };
 
 /**
  * THE CHARACTERS: a grade's knobs, a style of its own, and a face.
@@ -262,86 +267,7 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
       "time at the same depth and play much alike. Beating either is worth " +
       "telling somebody about.",
   },
-  /*
-   * The specialists, named after the players who defined their games rather
-   * than after a rank — because a specialist is a person and not a rung.
-   *
-   * Each name is an homage: near enough to say plainly who is meant, and
-   * altered so that it is not them. Hidemasa Tamenoki is for Hideshi Tamenori,
-   * seven times champion of the world at Othello and generally reckoned the
-   * finest ever to play it. Andrus Meritalu is for Ando Meritee, four times
-   * world champion at renju and the first European to hold the title. The
-   * flags follow the names, as they do for the grades.
-   */
-  tamenoki: {
-    tier: BOT_TIERS.tamenoki,
-    name: "Hidemasa Tamenoki",
-    native: "為乃木秀正",
-    strength: "Strongest at Reversi",
-    blurb:
-      "Reversi, and almost nothing else. Tamenoki counts what a Reversi " +
-      "player counts — corners, the squares that give a corner away, how many " +
-      "replies you have left — and plays the last dozen squares out exactly " +
-      "rather than guessing at them. The disc lead you build in the middle of " +
-      "the game is the thing he is playing to take off you.",
-  },
-  meritalu: {
-    tier: BOT_TIERS.meritalu,
-    name: "Andrus Meritalu",
-    /*
-     * No other script. An Estonian name written in Estonian is the name, and
-     * a field repeating it would mean both "here is the other script" and
-     * "there isn't one". See `BotProfile.native`.
-     */
-    native: null,
-    strength: "Strongest at five in a row",
-    blurb:
-      "Five in a row, and almost nothing else. Meritalu counts threats rather " +
-      "than shape: the four you have to answer, the open four nobody can, and " +
-      "the two threats made by one stone that end the game. He will not be " +
-      "drawn with, which is the difference between him and the grades.",
-  },
-  /*
-   * THE THIRD SPECIALIST IS NAMED AFTER AN INVENTOR RATHER THAN A CHAMPION,
-   * and that is the honest thing rather than a shortcut.
-   *
-   * The other two are homages to the finest player of their game. These games
-   * have no such person to point at: there is no tournament scene for Halma or
-   * Chinese Checkers anywhere, no published engine above hobby grade, and no
-   * record of a champion at either — which is the same fact that makes a
-   * specialist here worth building at all. Inventing a plausible-sounding
-   * champion to keep the pattern tidy would be putting a person on the site who
-   * never existed, so the homage goes to the man who made the game instead:
-   * George Howard Monks, a Boston surgeon, who devised Halma at Harvard in the
-   * 1880s. Chinese Checkers is his game on a star. The flag follows the name,
-   * as it does for the others.
-   */
-  monkton: {
-    tier: BOT_TIERS.monkton,
-    name: "Howard Monkton",
-    /* No other script: an American name written in English is the name. See `native`. */
-    native: null,
-    /*
-     * "Chinese Checkers", not "the race games", and the difference is measured
-     * rather than modest. He takes eighteen games in eighteen off the graded
-     * ladder on the star, and six in eight on Halma's small board. On Halma's
-     * own sixteen-point board he is level with 名人 at best — that board is
-     * sparse enough to be nearly a pure race, where a reading that can see the
-     * camp has little to see, and it is the one place his ideas do not pay.
-     * Saying "strongest at Halma" would be a claim the series does not support,
-     * so it is not made. See `RACE` for the widths this was measured at.
-     */
-    strength: "Strongest at Chinese Checkers",
-    blurb:
-      "The race games, and almost nothing else. Monkton counts what a race " +
-      "player counts \u2014 how many steps each piece has left, on the lattice the " +
-      "board is actually drawn on, with a square of the far camp set aside for " +
-      "every piece and the back of the camp filled first. What he is really " +
-      "playing for is the piece you leave behind: the game is not over until " +
-      "your last one is in, and he will let you build a pretty middlegame and " +
-      "finish first. He plays Halma too, and is at his best on the crowded " +
-      "boards where getting in each other's way is the game.",
-  },
+  ...SPECIALIST_PROFILES,
 };
 
 /**
@@ -582,48 +508,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     expertise: [],
     defence: 2.2,
   },
-
-  /*
-   * The specialists carry 国手's knobs and one thing more: a game they have
-   * actually studied. At that game the knobs hardly matter — the specialist
-   * reading decides the move, and everything here is what happens when the
-   * reading declines, which is what it does at the other thirty-odd games on
-   * the site. A specialist away from its own board is 国手 and no better,
-   * which is the honest thing for it to be.
-   */
-  tamenoki: {
-    depth: 2,
-    guard: 1,
-    blunder: 0,
-    noise: 0,
-    reads: true,
-    width: 180,
-    guardTop: 34,
-    searchDepth: 8,
-    expertise: [EXPERT_KINDS.flip],
-  },
-  meritalu: {
-    depth: 2,
-    guard: 1,
-    blunder: 0,
-    noise: 0,
-    reads: true,
-    width: 180,
-    guardTop: 34,
-    searchDepth: 8,
-    expertise: [EXPERT_KINDS.line],
-  },
-  monkton: {
-    depth: 2,
-    guard: 1,
-    blunder: 0,
-    noise: 0,
-    reads: true,
-    width: 180,
-    guardTop: 34,
-    searchDepth: 8,
-    expertise: [EXPERT_KINDS.race],
-  },
+  ...SPECIALIST_SPECS,
 };
 
 /**

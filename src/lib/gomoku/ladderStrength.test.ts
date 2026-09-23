@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { LADDER_FINGERPRINT_FILES, fingerprintOf, readLadderFingerprint } from "./ladderFingerprint";
+import { BOT_TIER_LIST, TIER_SPECS } from "./opponent.constants";
+import { SPECIALIST_SPECS } from "./opponentSpecialists.constants";
 import { measuredLadder } from "./ladderStrength";
 import { LADDER_STRENGTH } from "./ladderStrength.data";
 import { LADDER_STRENGTH_COMMAND, ladderStrengthSource } from "./ladderStrengthSource";
@@ -70,6 +72,22 @@ describe("the fingerprint", () => {
 
   it("is nothing, rather than a partial hash, where the files cannot be read", () => {
     expect(readLadderFingerprint("/nowhere/that/holds/this/source")).toBeNull();
+  });
+
+  /*
+   * The specialists' rows are NOT hashed (`opponentSpecialists.constants.ts`),
+   * which is safe only while nothing in that file can decide a graded move. So
+   * every row there must be a specialist — an expertise of its own — and every
+   * grade must have none, or the unhashed file would be a way round the gate.
+   */
+  it("leaves out only what never decides a graded move", () => {
+    expect(LADDER_FINGERPRINT_FILES).not.toContain("src/lib/gomoku/opponentSpecialists.constants.ts");
+    for (const [tier, spec] of Object.entries(SPECIALIST_SPECS)) {
+      expect(spec.expertise.length, `${tier} is in the specialists' file without a game of its own`).toBeGreaterThan(0);
+    }
+    for (const tier of BOT_TIER_LIST) {
+      expect(TIER_SPECS[tier].expertise, `${tier} is a grade and must read no specialty`).toEqual([]);
+    }
   });
 });
 

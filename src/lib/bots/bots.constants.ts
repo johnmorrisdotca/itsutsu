@@ -263,6 +263,37 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
       "had a champion to name a player after. " +
       "Games against him are rated, and so is his own record.",
   },
+  tinsdale: {
+    tier: BOT_TIERS.tinsdale,
+    id: "tinsdale",
+    name: BOT_PROFILES.tinsdale.name,
+    country: "United States",
+    bio:
+      "A computer player, and the only one here that plays checkers and " +
+      "draughts. Tinsdale plays English checkers and the international, " +
+      "Brazilian, Canadian, Russian and pool games, and reads them as a " +
+      "draughts player does: material first, then the back row he keeps " +
+      "while there is a man that could crown, the middle of the board, and a " +
+      "reason to trade when he is ahead. The name is an homage to Marion " +
+      "Tinsley, world champion at checkers, who lost seven games in " +
+      "forty-five years and is generally reckoned the finest ever to play it. " +
+      "Games against him are rated, and so is his own record.",
+  },
+  hondo: {
+    tier: BOT_TIERS.hondo,
+    id: "hondo",
+    name: BOT_PROFILES.hondo.name,
+    country: "Japan",
+    bio:
+      "本堂秀策 — a computer player, and the only one here that plays Go and " +
+      "nothing else. Hondō reads the board as a club player does: whose ground " +
+      "each empty point is, by whose stones are nearer to it, and which groups " +
+      "are short of liberties — the one in atari is taken or saved before " +
+      "anything else is thought about. The name is an homage to Hon'inbō " +
+      "Shūsaku, unbeaten in nineteen years of castle games and the player every " +
+      "Japanese student of the game is taught to revere. " +
+      "Games against him are rated, and so is his own record.",
+  },
 };
 
 /**
@@ -379,13 +410,13 @@ export const MIX_SIZE_CAPS: readonly MixSizeCap[] = [
    *
    * So 19×19 is closed to a game with Meijin, Guoshou or any specialist in it,
    * and left open to Razryad, Kyu and Dan, who finish it in under a minute.
-   * The specialists are named because at Go not one of them has studied
-   * anything — no expert applies to Go's spec — so each plays it with
-   * Guoshou's settings, and Guoshou's numbers are theirs. That is why a
+   * The specialists are named because away from their own games each plays
+   * Go with Guoshou's settings, and Guoshou's numbers are theirs. That is why a
    * specialist added later belongs on this list the day it is added, whatever
    * game it was built for: the cap is about what it costs AWAY from its own
-   * board, where it is 国手 under another name. They all still play Go at
-   * 13×13 and 9×9.
+   * board, where it is 国手 under another name. Hondō, who does study Go, is on
+   * it for the plainer reason that his search over 361 points is at least as
+   * slow as Guoshou's. They all still play Go at 13×13 and 9×9.
    */
   {
     variant: "go",

@@ -4,6 +4,8 @@ import { BOT_ALL_TIERS, BOT_TIER_LIST, TIER_SPECS } from "../opponent.constants"
 import { FLIP_EXPERT } from "./flipExpert";
 import { LINE_EXPERT } from "./lineExpert";
 import { RACE_EXPERT } from "./raceExpert";
+import { DRAUGHTS_EXPERT } from "./draughtsExpert";
+import { GO_EXPERT } from "./goExpert";
 import { expertTurn } from "./expertSearch";
 import { EXPERT_SEARCH } from "./expert.constants";
 import type { GameState, RuleVariant, VariantSpec } from "../gomoku.types";
@@ -27,7 +29,7 @@ import type { Expert, ExpertKind } from "./expert.types";
  */
 
 /** Every specialist there is, in no particular order. */
-export const EXPERTS: readonly Expert[] = [FLIP_EXPERT, LINE_EXPERT, RACE_EXPERT];
+export const EXPERTS: readonly Expert[] = [FLIP_EXPERT, LINE_EXPERT, RACE_EXPERT, DRAUGHTS_EXPERT, GO_EXPERT];
 
 /**
  * The specialist a player with this training has for a game with this spec,

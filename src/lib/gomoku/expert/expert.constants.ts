@@ -17,6 +17,8 @@ export const EXPERT_KINDS = {
   flip: "flip",
   line: "line",
   race: "race",
+  draughts: "draughts",
+  go: "go",
 } as const;
 
 /**
@@ -298,4 +300,84 @@ export const RACE = {
   branch: 20,
   rootBranch: 32,
   depth: 6,
+} as const;
+
+/**
+ * What the draughts player counts, in the units its reading adds up.
+ *
+ * Material first and by a distance, as every draughts player counts it: a man
+ * is a hundred, a king about two and a half men, and a flying king — which
+ * crosses the board in one move and takes from any distance — worth more
+ * again. Everything below material is a tiebreak between positions of the same
+ * count, which is what positional play in draughts is.
+ *
+ * - `backRank`: a man still on its own first row, while the other side has men
+ *   that could crown. The first row is the one defence against a king being
+ *   made, and a player who strips it early is giving kings away.
+ * - `centre`: a man or king in the middle of the board, where it has both
+ *   diagonals and can go either way. A man on the side square has one.
+ * - `advance`: per row a man has come forward. Small on purpose: rushing men up
+ *   the board is how they get left behind and taken.
+ * - `trade`: when ahead, how much each exchange is worth. Five against four is
+ *   a close game and two against one is won, so a player ahead wants pieces
+ *   off; the bonus is the lead divided by what is left on the board.
+ * - `kingCentre`: a king near the middle in the ending, where it reaches most.
+ */
+export const DRAUGHTS_WEIGHTS = {
+  man: 100,
+  king: 250,
+  flyingKing: 420,
+  backRank: 14,
+  centre: 6,
+  advance: 3,
+  trade: 900,
+  kingCentre: 4,
+} as const;
+
+/**
+ * How wide and how deep the draughts player reads.
+ *
+ * Narrow is fine and deep is the point. A draughts position has rarely more
+ * than ten moves to choose from, and a capture is compulsory, so most of the
+ * game is short forced sequences — and those are what the forced-move
+ * extension in `expertSearch.ts` already follows past the nominal depth. The
+ * depth is a ceiling the iterative deepening climbs towards on the node
+ * budget, not a promise it reaches.
+ */
+export const DRAUGHTS = {
+  branch: 12,
+  rootBranch: 40,
+  depth: 12,
+} as const;
+
+/**
+ * What the Go player counts. `point` is one point of the lead after komi; the
+ * rest are per stone of a group in danger: `taken` for a group in atari with
+ * the other side to move (it is theirs for the asking), `atari` for one in
+ * atari with its owner to move (it may yet run), `shortOfBreath` for two
+ * liberties.
+ */
+export const GO_WEIGHTS = {
+  point: 10,
+  taken: 18,
+  atari: 6,
+  shortOfBreath: 2,
+} as const;
+
+/**
+ * How the Go player reads: a point is owned past `owned` influence;
+ * the search is narrow and shallow, because every point on the board is a
+ * legal move and the ordering puts the urgent ones first; passing is offered
+ * once fewer than `passWhenFewer` sensible moves remain.
+ */
+/** A stone's influence by steps from it: on the stone, one step, two, three. */
+export const GO_INFLUENCE: readonly number[] = [0, 4, 2, 1];
+
+export const GO = {
+  /** How much more influence one side needs on an empty point for it to count as theirs. */
+  owned: 3,
+  branch: 10,
+  rootBranch: 24,
+  depth: 6,
+  passWhenFewer: 6,
 } as const;
