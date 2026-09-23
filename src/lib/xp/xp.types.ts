@@ -47,7 +47,7 @@ export type XpEventType =
   | "upsetWin"
   | "bigUpsetWin"
   | "giantKilled"
-  // The tour: thirty-nine games and eleven families.
+  // The tour: forty-five games and eight families.
   | "firstOfVariant"
   | "firstWinAtVariant"
   | "firstOfFamily"

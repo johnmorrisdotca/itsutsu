@@ -134,7 +134,7 @@ describe("the economy holds its shape", () => {
   });
 
   it("pays the tour enough to be worth taking", () => {
-    // Thirty-nine games and eleven families, most of them barely played. The
+    // Forty-five games and eight families, most of them barely played. The
     // tour is the problem this ladder exists to solve, so a first game of
     // something new must beat finishing another game of the usual.
     expect(XP_EVENT_SPECS.firstOfVariant.points).toBeGreaterThan(XP_EVENT_SPECS.gameFinished.points);
@@ -156,11 +156,23 @@ describe("the economy holds its shape", () => {
     // XP_DESIGN.md's climb table has NOT been redone for that — it is the XP
     // owner's to redo, and it is said so here rather than the old figure being
     // left to pass.
+    //
+    // 23,290 since eleven families became eight on 2026-09-22 (John: "Less
+    // categories"). THE CEILING WENT DOWN, which is the direction worth saying
+    // out loud: three fewer first-games-of-a-family at 150 each (−450), and one
+    // fewer family that can be won, because Territory and Connections were two
+    // families of one game each and are now one family of two (−300). Nobody
+    // loses anything they have been paid — the ledger records what was paid —
+    // but somebody starting today can reach 750 less than somebody who started
+    // yesterday. The climb table is the XP owner's to redo either way.
     const perVariant = 44;
-    const perFamily = 11;
+    // Read from the table rather than written down, so a merge or a new family
+    // moves this figure instead of quietly leaving it true of nothing.
+    const perFamily = GAME_FAMILIES.length;
+    expect(perFamily).toBe(8);
     // A family won is only for a family of more than one game.
     const familiesToWin = GAME_FAMILIES.filter((family) => family.games.length > 1).length;
-    expect(familiesToWin).toBe(9);
+    expect(familiesToWin).toBe(8);
     const grades = 5;
     const specialists = 2;
     const total =
@@ -180,7 +192,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(24_040);
+    expect(total).toBe(23_290);
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

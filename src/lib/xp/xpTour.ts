@@ -1,6 +1,6 @@
 import "server-only";
 
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
 import { prisma } from "@/lib/prisma";
 
 import { awardXp } from "./awardXp";
@@ -51,7 +51,7 @@ export function justPaid(result: XpAwardResult, type: XpEventType): boolean {
  *
  * `each` is the once-per-thing award whose rows ARE the collection; `all` is what
  * completing it pays; `size` is how many things there are. Generic because the
- * site has three of these — thirty-nine games, eleven families, five computer
+ * site has three of these — forty-five games, eight families, five computer
  * grades — and three copies of the same count would be three places for the
  * comparison to be got wrong by one.
  *
@@ -59,23 +59,64 @@ export function justPaid(result: XpAwardResult, type: XpEventType): boolean {
  * list leaves a member holding more rows than there are things, and a member who
  * has genuinely played everything must not be refused the award because the site
  * has since dropped a game.
+ *
+ * `fold` IS FOR THE OTHER SHAPE OF CHANGE, and it is not the same shape at all.
+ * Retiring a thing leaves rows that mean nothing; MERGING two things leaves
+ * rows that mean the same thing. Counting those raw is how a member who has
+ * met seven families is paid for meeting eight — which is exactly what the
+ * live ledger held on 2026-09-22, when eleven families became eight and one
+ * member's eight rows were seven families under the new table. So a caller
+ * whose things can merge hands in the map, and what is counted is how many
+ * DISTINCT things the rows come to now, not how many rows there are.
+ *
+ * Still `>=`, for the same reason as before: folding cannot make the count
+ * bigger, only smaller, so the retired-thing case is untouched by it.
  */
 export async function awardCollected({
   memberId,
   each,
   all,
   size,
+  fold,
   now,
 }: {
   memberId: string;
   each: XpEventType;
   all: XpEventType;
   size: number;
+  /**
+   * What a stored subject means TODAY, where two of them can have become one.
+   * Given, the rows are read and counted distinct; absent, they are counted,
+   * which is one query rather than one read.
+   */
+  fold?: (subject: string) => string;
   now?: Date;
 }): Promise<void> {
-  const held = await prisma.xpEvent.count({ where: { memberId, type: each } });
+  const held =
+    fold === undefined
+      ? await prisma.xpEvent.count({ where: { memberId, type: each } })
+      : await distinctHeld({ memberId, each, fold });
   if (held < size) return;
   await awardXp({ memberId, awards: [{ type: all }], now });
+}
+
+/** How many distinct things a member's rows come to, once each subject is read forward. */
+async function distinctHeld({
+  memberId,
+  each,
+  fold,
+}: {
+  memberId: string;
+  each: XpEventType;
+  fold: (subject: string) => string;
+}): Promise<number> {
+  const rows = await prisma.xpEvent.findMany({
+    where: { memberId, type: each },
+    select: { subject: true },
+  });
+  const now = new Set<string>();
+  for (const row of rows) if (row.subject !== null) now.add(fold(row.subject));
+  return now.size;
 }
 
 /**
@@ -113,6 +154,9 @@ export async function awardTourBonuses({
         each: XP_EVENTS.firstOfFamily,
         all: XP_EVENTS.everyFamilyPlayed,
         size: GAME_FAMILIES.length,
+        /* Three families were folded into others; a row under a retired key is
+           a row for the family that absorbed it, never a family of its own. */
+        fold: familyKeyNow,
         now,
       });
     }

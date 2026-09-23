@@ -368,9 +368,16 @@ describe("the replay completes a set on the game that completed it", () => {
   });
 
   it("pays a family won on the win that completes it, and on that game", () => {
-    const captures = GAME_FAMILIES.find((family) => family.key === "captures");
-    expect(captures).toBeDefined();
-    const [first, second] = captures?.games ?? ["", ""];
+    /*
+     * Races, because a family of exactly two games is the shortest thing that
+     * can be completed and this is about the completing rather than about the
+     * family. It was Captures until 2026-09-22, when Captures was folded into
+     * Turn and take and stopped being a family at all.
+     */
+    const races = GAME_FAMILIES.find((family) => family.key === "races");
+    expect(races).toBeDefined();
+    expect(races?.games).toHaveLength(2);
+    const [first, second] = races?.games ?? ["", ""];
     const wins = [
       game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-01T12:00:00Z") }),
       game({ blackMemberId: "a", winner: "black", variant: second, playedAt: AT("2026-03-02T12:00:00Z") }),
@@ -380,11 +387,20 @@ describe("the replay completes a set on the game that completed it", () => {
     expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(1);
     expect(paidOn(made, "a", XP_EVENTS.everyVariantWonInFamily)).toEqual([wins[1].id]);
     const award = awardsFor(made, "a").find((one) => one.type === XP_EVENTS.everyVariantWonInFamily);
-    expect(award?.subject).toBe("captures");
+    expect(award?.subject).toBe("races");
     expect(award?.points).toBe(300);
   });
 
-  it("pays no family won for the win at a family of one game", () => {
+  it("pays no family won for one win at a family that has more games in it", () => {
+    /*
+     * IT USED TO SAY "a family of one game", AND THERE IS NO LONGER ONE. Hex
+     * was its own family until 2026-09-22 and answered null because a family of
+     * one is completed by its own first win, which is already paid twice over.
+     * Hex sits with Go under Territory now, so the same game tests the
+     * neighbouring rule instead: one win of two completes nothing. The
+     * family-of-one rule itself is held by `xpGame.test.ts`, against
+     * `XP_FAMILY_WON_MIN_GAMES` rather than against a family that exists.
+     */
     const made = plan({
       members: [member("a")],
       games: [game({ blackMemberId: "a", winner: "black", variant: "hex", playedAt: AT(WED) })],
@@ -394,7 +410,7 @@ describe("the replay completes a set on the game that completed it", () => {
   });
 
   it("does not pay a family won where one of its games was lost rather than won", () => {
-    const [first, second] = GAME_FAMILIES.find((family) => family.key === "captures")?.games ?? ["", ""];
+    const [first, second] = GAME_FAMILIES.find((family) => family.key === "races")?.games ?? ["", ""];
     const made = plan({
       members: [member("a")],
       games: [
@@ -406,7 +422,7 @@ describe("the replay completes a set on the game that completed it", () => {
   });
 
   it("counts first wins already in the ledger towards a family won", () => {
-    const [first, second] = GAME_FAMILIES.find((family) => family.key === "captures")?.games ?? ["", ""];
+    const [first, second] = GAME_FAMILIES.find((family) => family.key === "races")?.games ?? ["", ""];
     const made = plan({
       members: [member("a")],
       games: [game({ blackMemberId: "a", winner: "black", variant: second, playedAt: AT(WED) })],

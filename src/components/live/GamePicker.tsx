@@ -28,9 +28,12 @@ const STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown:
  *
  * So: MASTER AND DETAIL, in two rows.
  *
- *   Row one   all eleven families, always, each with the mark /games draws
- *             for it. It never scrolls and never collapses, because seeing
- *             the whole of the choice is the point of it.
+ *   Row one   every family, always, each with the mark /games draws for it.
+ *             It never scrolls and never collapses, because seeing the whole
+ *             of the choice is the point of it. Eleven of them wrapped onto a
+ *             second line at a desk; eight fit on one since the merge of
+ *             2026-09-22, which is what John was after in asking for "less
+ *             categories".
  *   Row two   the games of the open family, each with the board it is
  *             actually played on, its name and what it is.
  *
