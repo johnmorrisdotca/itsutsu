@@ -11,7 +11,9 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 
 /** "1 player", "3 players": a count said in words. */
 function plural(count: number, noun: string): string {
-  return `${count.toLocaleString("en-GB")} ${noun}${count === 1 ? "" : "s"}`;
+  // Commas by hand: a locale's formatter can differ between the server and the browser.
+  const grouped = String(count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${grouped} ${noun}${count === 1 ? "" : "s"}`;
 }
 
 /** What the site says about itself, in three lines. */
