@@ -40,8 +40,17 @@ test.describe("the games that had no browser test", () => {
     const name = (await hole.getAttribute("aria-label"))!.split(",")[0]!;
     const col = "ABCDEFGHJKLMNOPQRSTUVWXYZ".indexOf(name[0]!);
     const row = 7 - Number(name.slice(1));
-    // Drop into that column from the top: the stone lands somewhere in the column that is not the hole.
-    await page.getByRole("button", { name: new RegExp(`^${name[0]}7, empty$`) }).click();
+    /*
+     * Drop into that column: the stone lands somewhere in it that is not the hole.
+     *
+     * ANY EMPTY SQUARE OF THE COLUMN, not its top one. It pressed `<column>7`,
+     * and the hole is placed by the game's seed — so about one game in seven
+     * put the hole itself at the top, there was no empty top square to press,
+     * and the click waited out the whole two minutes. It failed a deploy run of
+     * 0.248.1 that way, twice over with its retry. In a drop game every square
+     * of a column is the same press.
+     */
+    await page.getByRole("button", { name: new RegExp(`^${name[0]}\\d, empty$`) }).first().click();
     const landed = page.getByRole("button", { name: new RegExp(`^${name[0]}\\d, Black stone$`) });
     await expect(landed).toHaveCount(1);
     await expect(landed).not.toHaveAttribute("aria-label", new RegExp(`^${name},`));

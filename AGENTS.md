@@ -900,10 +900,17 @@ sweeping the shared one under four other sessions. Push the merge to a branch,
 open a PR, read the run, and push to `main` only once you can tell a real
 regression from the noise. That is how 0.156.0 shipped: three PR runs
 separated one genuine bug this branch introduced from twelve standing
-environment failures and four that were already red on `main`. The e2e gate
-being advisory (deploy needs only `verify`) is what lets the PR run be the
-judgement rather than an automatic block — so somebody has to READ it, which
-is the whole point of running it there.
+environment failures and four that were already red on `main`.
+
+**Since 2026-09-22 the browser suite GATES THE DEPLOY** (`vercel-deploy.yml`:
+`needs: [verify, e2e]`), on John's word. A push to `main` is about eighteen
+minutes from the site, not six, and a red suite stops it — whether the page is
+broken or the spec is. So a change that renames or re-measures something a
+spec asserts is not finished until `e2e/` has been grepped for the old value
+(0.245.0 renamed Flips and 0.245.1 re-measured the ladder; both left a spec
+red over a correct site, and under this gate neither would have deployed). The
+PR run is still where a big branch is judged before it reaches `main`; the
+gate is what stops one that was not.
 
 **To run ONE spec without taking the database out from under every other
 session**, there is a route, found by the Checkers agent and used twice since:
