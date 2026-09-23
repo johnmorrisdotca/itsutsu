@@ -2,7 +2,7 @@
 
 # 五つ · Itsutsu
 
-**Forty-four board games on one engine.** Gomoku and renju, Othello and Go,
+**Forty-five board games on one engine.** Gomoku and renju, Othello and Go,
 checkers and draughts, Hex and Halma — two players in one browser, or two
 devices a QR code apart.
 
@@ -43,11 +43,13 @@ and rebuilds it from the migrations.
 
 ## What it does
 
-### Forty-four games, in eleven families
+### Forty-five games, in eight families
 
-The site began as one game and is now forty-four, grouped into families on
-`/games`: five in a row, captures, drops, pieces and twists, flips, strange
-boards, races, connections, checkers, territory and small boards. The
+The site began as one game and is now forty-five, grouped into families on
+`/games`: five in a row, drops, turn and take, strange boards, races, checkers,
+territory and small boards. No family shows more than eight games — a gate in
+`variants.coverage.test.ts` holds that — and a game may also be listed on a
+second family's shelf for discovery, while it belongs to one. The
 **Games** button opens a browser over the board with each rule set spelled
 out, and picking one starts a new game with those rules.
 
@@ -154,9 +156,10 @@ replay reproduces it:
 
 #### Games where no line is ever read
 
-Five families that keep the board and the record and nothing else. Every one
-of them still returns a new `GameState` from the same engine — what changes is
-what the engine is asked at the end of a move.
+The flipping games, the races, Hex, checkers and Go: they keep the board and
+the record and nothing else. Every one of them still returns a new `GameState`
+from the same engine — what changes is what the engine is asked at the end of a
+move.
 
 | Game | What it is | Board |
 | --- | --- | --- |
@@ -165,6 +168,7 @@ what the engine is asked at the end of a move.
 | **Anti-Reversi** 逆リバーシ | Everything turns as usual, and the *fewer* discs wins. You may not decline a move that is there. | 8×8 |
 | **Mini Reversi** 小リバーシ | The flipping game small, and it may grow mid-game if both agree: the position moves to the centre of the next size up. | 4×4, 6×6, 8×8 |
 | **Grand Reversi** 大リバーシ | More middle to fight over before anyone reaches an edge. | 10×10 |
+| **Honeycomb** 蜂の巣 | Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn. | hexagon of hexagons |
 | **Halma** ハルマ | A race: step, or jump chains over any piece, and fill the far corner first. Nothing is ever captured. | 16×16, 10×10, 8×8 |
 | **Chinese Checkers** ダイヤモンドゲーム | Ten pieces, a six-pointed star, and the point opposite yours to fill. Jumps chain and turn corners. | 17×17 star |
 | **Hex** ヘックス | Join your own two sides with an unbroken chain. A full board always has exactly one winner, so there are no draws — which is why the swap opening is offered. | 11, 13, 19 |
@@ -246,13 +250,21 @@ Ladders and tournaments are not built; they are the next thing on the list.
 
 ### The computer players
 
-Seven of them, and they are members rather than a setting on a game: they hold
+Eight of them, and they are members rather than a setting on a game: they hold
 seats, appear in the record, and carry a rating that moves when you beat them.
 Five are graded — **разряд**, **級**, **段**, **名人** and **国手**, gentlest
-to strongest — and will play anything on the site. Two are specialists who
-play one game well and nothing else: **為乃木秀正** at Reversi and
-**Meritalu** at five in a row, each named in homage to a real champion of that
-game.
+to strongest — and will play anything on the site. Three are specialists who
+play one game well and nothing else: **為乃木秀正** at Reversi, **Meritalu**
+at five in a row and **Howard Monkton** at Halma and Chinese Checkers, each
+named in homage to a real champion of that game.
+
+**They think in your browser, not on the server.** A computer's move is worked
+out by a web worker on the device of whoever is waiting on it, with two seconds
+to think (`BROWSER_MOVE_MILLIS`), where a paid server function would have had a
+quarter of one. Measured, that is most of a grade of strength, and nobody is
+billed for it. How strong each grade really is, game by game, is measured by
+the grades playing each other (`ladder.match.test.ts`) and shown on the About
+page and each game's page.
 
 A computer answers a seat that has been sitting on the noticeboard longer than
 a day, so a posted game gets played whether or not anybody else is about. It
@@ -481,7 +493,7 @@ game, and validates moves on the server. There is no second implementation of
 "who has won".
 
 A variant is a row in `VARIANT_SPECS` plus its copy, and the engine reads the
-spec rather than switching on a variant's name. That is what lets forty-four
+spec rather than switching on a variant's name. That is what lets forty-five
 games share one engine — and `variants.coverage.test.ts` fails the build for a
 game that is missing its tests, its copy, its family or its screenshot, so a
 new game cannot ship half-finished.
@@ -538,10 +550,14 @@ curl 'localhost:6600/api/games?search=aki&result=black&sortBy=moveCount&sortDir=
 
 ## Getting in
 
-The site is closed. Every page and every API route needs a signed session
-cookie, enforced in `src/proxy.ts` before a route is reached — so a new
-endpoint is private by default rather than private only if someone remembers
-to guard it.
+Reading is open and playing is gated. A visitor with no invite can read the
+games: `/games`, every game's page, its rules, family and background, `/about`
+and `/learn`. Everything else — playing, the players, the ladders, the record —
+needs a signed session cookie, enforced in `src/proxy.ts` before a route is
+reached, so a new endpoint is private by default rather than private only if
+someone remembers to guard it. A visitor who knows nobody here can ask for an
+invite from `/join`; the request is emailed to the site's owner, behind caps
+of its own so a script cannot spend the site's email (`inviteRequest.ts`).
 
 There are two ways through the door at `/join`:
 
@@ -772,10 +788,13 @@ directly.
 ## Deploying
 
 Production runs on Vercel with a Neon Postgres, the same shape as umakuma. A
-push to `main` runs `.github/workflows/vercel-deploy.yml`: quality checks, the
-dependency audit, a build, then `prisma migrate deploy` against the production
-database, then the deploy. Migrations run before the new code goes live and
-are all additive, so the old code keeps working during the switch.
+push to `main` runs `.github/workflows/vercel-deploy.yml`: the checks (lint,
+types, unit tests, audit and build, as five jobs side by side) and the browser
+suite (eight shards, side by side with them) — and only when BOTH pass,
+`prisma migrate deploy` against the production database, then the deploy.
+Migrations run before the new code goes live and are all additive, so the old
+code keeps working during the switch. How fast that is, and how to keep it
+fast, is in AGENTS.md, "Deploys Are Fast By Design".
 
 One-time setup:
 
@@ -789,7 +808,14 @@ One-time setup:
    Actions secrets. The two IDs are in `.vercel/project.json` after linking.
 4. Push to `main`.
 
-`pnpm preflight:prod` runs the same checks the workflow does, locally.
+`pnpm preflight:prod` runs the same checks the workflow does, locally and side
+by side, and is the gate before every push.
+
+Every landed commit takes a version, and ONE FEATURE IS ONE VERSION:
+`pnpm release:take:prod --summary "…"` takes the number, dates the changelog,
+commits both and closes the board row it ships, immediately before the push.
+Several features are several runs of it and then one push. See AGENTS.md,
+"Every Landed Commit Bumps The Version".
 `pnpm db:drift:check` compares the committed schema with whatever
 `DATABASE_URL` points at and prints the SQL it is missing.
 
@@ -812,8 +838,9 @@ One-time setup:
 | Prisma client / browser | `pnpm db:generate` / `pnpm db:studio` |
 | Mint an invite code | `pnpm invite` |
 | Dependency audit | `pnpm security:check` |
-| Take a release (bumps the version, dates the changelog) | `pnpm release:take --summary "…"` |
-| Write to the features board from a terminal | `pnpm task` |
+| The release gate, checks side by side | `pnpm preflight:prod` |
+| Take a release (bumps the version, dates the changelog, closes a live board row) | `pnpm release:take:prod --summary "…" --done <row>` |
+| Write to the features board from a terminal | `pnpm task` (dev board) / `pnpm task:prod` (live board) |
 
 `pnpm quality:check` runs lint, the 500-line file size gate, typecheck and the
 unit tests. See `AGENTS.md` for the conventions those gates enforce, and for
