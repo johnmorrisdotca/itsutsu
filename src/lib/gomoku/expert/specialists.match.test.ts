@@ -280,3 +280,17 @@ describe.runIf(LONG)("the draughts specialist against the ladder", () => {
     3_600_000,
   );
 });
+
+/*
+ * THE GO SPECIALIST, on the nine-point board: the one every grade plays and the
+ * size a game between two programs finishes in reasonable time.
+ */
+describe.runIf(LONG)("the Go specialist against the ladder", () => {
+  it.each([...BOT_TIER_LIST])(
+    "beats %s over a series of Go on nine points",
+    (against) => {
+      claim(BOT_TIERS.hondo, against, series(RULE_VARIANTS.go, BOT_TIERS.hondo, against, { size: 9 }));
+    },
+    3_600_000,
+  );
+});

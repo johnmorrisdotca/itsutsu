@@ -279,6 +279,21 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
       "forty-five years and is generally reckoned the finest ever to play it. " +
       "Games against him are rated, and so is his own record.",
   },
+  hondo: {
+    tier: BOT_TIERS.hondo,
+    id: "hondo",
+    name: BOT_PROFILES.hondo.name,
+    country: "Japan",
+    bio:
+      "本堂秀策 — a computer player, and the only one here that plays Go and " +
+      "nothing else. Hondō reads the board as a club player does: whose ground " +
+      "each empty point is, by whose stones are nearer to it, and which groups " +
+      "are short of liberties — the one in atari is taken or saved before " +
+      "anything else is thought about. The name is an homage to Hon'inbō " +
+      "Shūsaku, unbeaten in nineteen years of castle games and the player every " +
+      "Japanese student of the game is taught to revere. " +
+      "Games against him are rated, and so is his own record.",
+  },
 };
 
 /**
@@ -395,13 +410,13 @@ export const MIX_SIZE_CAPS: readonly MixSizeCap[] = [
    *
    * So 19×19 is closed to a game with Meijin, Guoshou or any specialist in it,
    * and left open to Razryad, Kyu and Dan, who finish it in under a minute.
-   * The specialists are named because at Go not one of them has studied
-   * anything — no expert applies to Go's spec — so each plays it with
-   * Guoshou's settings, and Guoshou's numbers are theirs. That is why a
+   * The specialists are named because away from their own games each plays
+   * Go with Guoshou's settings, and Guoshou's numbers are theirs. That is why a
    * specialist added later belongs on this list the day it is added, whatever
    * game it was built for: the cap is about what it costs AWAY from its own
-   * board, where it is 国手 under another name. They all still play Go at
-   * 13×13 and 9×9.
+   * board, where it is 国手 under another name. Hondō, who does study Go, is on
+   * it for the plainer reason that his search over 361 points is at least as
+   * slow as Guoshou's. They all still play Go at 13×13 and 9×9.
    */
   {
     variant: "go",
