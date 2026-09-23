@@ -64,6 +64,10 @@ const PASS_AND_ONLY_A_PASS = new Map([
   ["src/lib/history/gameRecord.ts", "a filed game's move schema has no forfeit in its enum, so no move reaching that check can be one"],
   ["src/lib/gomoku/simulation.checks.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
   ["src/lib/gomoku/simulation.go.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
+  [
+    "src/components/live/goReading.ts",
+    "tells a Go player the other side has just PASSED, so a pass now ends the game; a turn lost on time is not the first of two passes, so it is rightly not told that",
+  ],
 ]);
 
 /**
