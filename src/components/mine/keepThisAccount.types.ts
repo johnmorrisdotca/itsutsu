@@ -10,4 +10,10 @@ export type KeepThisAccountProps = {
    * no button to press, and the sentence does not offer one.
    */
   googleReady: boolean;
+  /**
+   * Where it is drawn: in the welcome, the first time; or on the member's own
+   * page every visit after, for as long as the account still lives in one
+   * cookie. It is the prefix of every test id it draws.
+   */
+  place?: "welcome" | "reminder";
 };

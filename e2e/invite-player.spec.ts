@@ -201,7 +201,25 @@ test.describe("a player who came in with an invite code", () => {
     expect(form.get("callbackUrl")).toBe("/api/session/google?next=%2Fme");
     await expect(page).toHaveURL(/\/me$/);
 
+    /*
+     * AND SAID AGAIN AFTER THE WELCOME HAS CLOSED. The stand-in above linked
+     * nothing, so this is an account that still lives in one cookie, on its own
+     * page, with no welcome — the member who read past it once. Four words were
+     * offered on the way here and do not change it: they do not sign a browser in.
+     */
+    await ready(page, "reminder-keep");
+    await expect(page.getByTestId("reminder-no-address")).toContainText("unless you link Google");
+    await expect(page.getByTestId("welcome")).toHaveCount(0);
+
     await guest.close();
+  });
+
+  test("a member with an address is never reminded to keep the account", async ({ page }) => {
+    // The suite's operator signs in with an address, so it has nothing to keep.
+    await page.goto("/me");
+    // The page has answered before its absence is asked about.
+    await expect(page.getByTestId("me-name")).toBeVisible();
+    await expect(page.getByTestId("keep-reminder")).toHaveCount(0);
   });
 
   test("is made a member on the next visit when their invite cookie is from before accounts", async ({ browser, baseURL }) => {
