@@ -18,19 +18,40 @@ import {
 } from "./support";
 import { gamesMade } from "./tidy";
 
+/** The set-up screen's address, with or without a game in its path. */
+const SET_UP_AT = /\/games\/(new|[^/]+\/new)/;
+
 /**
- * Walks back until the set-up screen is the page again, at most a few steps.
+ * THE MOST BACK PRESSES THIS WILL SPEND. A board leaves one entry of its own
+ * (its address is then rewritten in place as moves land), so four is room to
+ * spare; a Back that never arrives fails in seconds and says where it went.
  *
- * Bounded and then asserted, so "I went back four times and never got there"
- * fails as itself rather than as whatever the next line finds.
+ * It was blamed, once, for a failure that was not its fault. The case below
+ * failed now and then and was re-run as a flake twice; given the walk in its
+ * message, the history read `/match/<id>` → `/match/<id>/0` → `about:blank` —
+ * the set-up screen was not there at all, because the board's arrival had
+ * rewritten the set-up screen's own entry. That was a bug in the site
+ * (`useMatchAddress`), and no number of steps would have found the screen.
+ */
+const MOST_STEPS_BACK = 4;
+
+/**
+ * Walks back until the set-up screen is the page again.
+ *
+ * Bounded and then asserted, so "I went back and never got there" fails as
+ * ITSELF, naming every address it walked through — and the address is asserted
+ * BEFORE the screen is waited for. It was the other way round, so running out
+ * of steps on the board read as "set-up-game: element not found", which is a
+ * message about a missing panel on a page that was never the set-up screen.
  */
 async function backToSetUp(page: Page) {
-  for (let step = 0; step < 4; step += 1) {
+  const walked = [page.url()];
+  for (let step = 0; step < MOST_STEPS_BACK && !SET_UP_AT.test(page.url()); step += 1) {
     await page.goBack();
-    if (/\/games\/(new|[^/]+\/new)/.test(page.url())) break;
+    walked.push(page.url());
   }
+  await expect(page, `never got back to the set-up screen; walked ${walked.join(" -> ")}`).toHaveURL(SET_UP_AT);
   await ready(page, "set-up-game");
-  await expect(page, "never got back to the set-up screen").toHaveURL(/\/games\/(new|[^/]+\/new)/);
 }
 
 /** The one game this file begins, taken away when it finishes. */
