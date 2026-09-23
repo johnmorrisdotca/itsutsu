@@ -216,6 +216,64 @@ export const PICK_FACT = "relative flex items-center rounded-xl border border-ru
  */
 export const PICK_TILES = "grid grid-cols-1 gap-2 md:grid-cols-3";
 
+/**
+ * THE ANSWERED ROWS, SIDE BY SIDE FROM A TABLET UP.
+ *
+ * John, 2026-09-22, with the set-up screen open on a laptop: "seems like WHo
+ * You Play 3 rows can just be 1 row with 3 columns. or at least condensed to
+ * the 1 row and can open up when clicking things that have more room needed.
+ * like a 2nd row for changing the Player (human) or Bot (bot). Same with Rules
+ * and Handicap - can probably be 1 row with 2 columns."
+ *
+ * Every band here was already a one-line answer — a chosen tile, "6 to choose
+ * from", "No clock · Rated" — drawn the width of the panel. At a desk that is a
+ * line of text in a band of empty paper, three times over.
+ *
+ * A CLOSED FOLD IS ONE CELL AND AN OPEN ONE IS THE WHOLE ROW, and that is the
+ * part John described and the part that needed care. A fold that opened inside
+ * its own column would give a list of people a third of the page to sit in and
+ * push its neighbours' words about as it grew. So `SetUpFold` spans every column
+ * while it is open (`FOLD_OPEN_SPANS`), and `grid-flow-row-dense` lets the closed
+ * ones behind it move UP into the row it left — the closed answers stay one row
+ * of columns and the open one is a band under them. All in CSS: the fold already
+ * says `data-open`, and nothing here needs to know which one it is.
+ *
+ * Below 768px everything stacks exactly as it did, because a phone's column is
+ * already the width of one answer.
+ */
+export const ANSWER_ROW = "flex flex-col gap-2 md:grid md:grid-flow-row-dense md:items-stretch md:gap-3";
+
+/** Who you play: the posted seat and each list of people or programs. Three across once there is room for three. */
+export const ANSWER_ROW_OPPONENT = `${ANSWER_ROW} md:grid-cols-2 lg:grid-cols-3`;
+
+/**
+ * The rules and the handicap: two answers, and a row of two however wide the
+ * desk. A lone one (a fork has no handicap to ask) takes the row rather than
+ * half of it.
+ */
+export const ANSWER_ROW_RULES = `${ANSWER_ROW} md:grid-cols-2 md:*:only:col-span-full`;
+
+/**
+ * What an open fold does in one of those rows. On the fold itself so that every
+ * fold in every row behaves alike, and harmless anywhere else: outside a grid a
+ * column span means nothing, so the folds inside the rules — the opening, the
+ * rating — are untouched by it.
+ */
+export const FOLD_OPEN_SPANS = "md:data-[open=true]:col-span-full";
+
+/**
+ * The posted seat's cell in that row. It holds one tile, so from a tablet up
+ * the tile fills the cell; below that it is the two-across of `PICK_PEOPLE`
+ * that it always was. A constant of its own rather than `PICK_PEOPLE` with a
+ * column count laid over it: two `lg:grid-cols-*` on one element are decided
+ * by whichever Tailwind happens to emit last, the same trap `PICK_BASE`'s
+ * cursor fell into.
+ */
+export const ANSWER_ROW_SEAT = "grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1";
+
+/** A line that belongs to the whole row rather than to one answer in it. */
+export const ANSWER_ROW_WIDE = "md:col-span-full";
+
 /** Rated and Friendly: two answers, side by side once there is room for both lines. */
 export const PICK_PAIR = "grid grid-cols-1 gap-2 sm:grid-cols-2";
 
