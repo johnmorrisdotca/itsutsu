@@ -3,6 +3,8 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 import { PlayedMoves } from "@/components/history/PlayedMoves";
 
+import { VisualMoves } from "./VisualMoves";
+
 /**
  * What has been played, in a game that is still being played.
  *
@@ -17,6 +19,8 @@ export function LiveMoves({ detail }: { detail: GameDetail }) {
     <div className="flex flex-col gap-2">
       <SectionTitle kanji="棋譜">Moves</SectionTitle>
       <PlayedMoves size={detail.size} moves={detail.moves} emptyNote="Nothing played yet." testId="live-moves" />
+      {/* The same moves as pictures, folded until asked for — see `VisualMoves`. */}
+      <VisualMoves detail={detail} />
     </div>
   );
 }
