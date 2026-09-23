@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { canTwist, forbiddenPoints, inMovePhase, indexOf, legalPoints, pieceMoves, pointOf, resolvePlacement, campOf } from "@/lib/gomoku/engine";
+import { goBoardMarks } from "./goMarks";
 import { lastMove } from "@/lib/gomoku/rules/record";
 import { turnChoices } from "@/lib/gomoku/rules/choices";
 import {
@@ -224,7 +225,10 @@ export function Board({
    */
   const guide = useMemo(() => (live ? turnGuide(state, turnChoices(state)) : null), [live, state]);
   const guideColours = theme.dark ? GUIDE_COLOURS.dark : GUIDE_COLOURS.light;
+  // Go: the points the rules forbid, and the last liberty of a group in atari — see `goMarks.ts`.
+  const goMarks = useMemo(() => (live && spec.go && legal !== null ? goBoardMarks(state, legal) : []), [legal, live, spec.go, state]);
   const overlays = markByIndex(size, [
+    ...goMarks,
     ...Array.from(forbidden, (index) => ({ ...pointOf(size, index), kind: "forbidden" as const })),
     ...Array.from(destinations, (index) => ({ ...pointOf(size, index), kind: "target" as const })),
     ...(sliding && selected !== null ? [{ ...selected, kind: "selected" as const }] : []),

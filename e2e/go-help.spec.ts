@@ -79,4 +79,57 @@ test.describe("the Go help under the board", () => {
       await removeMember(shiro.email);
     }
   });
+
+  test("marks the point a stone may not go, and rings the last liberty of a group in atari", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const kuro = { email: `go-marks-black-${stamp}@example.test`, name: under(`Kuro${stamp} Marks`) };
+    const shiro = { email: `go-marks-white-${stamp}@example.test`, name: under(`Shiro${stamp} Marks`) };
+    const blackContext = await memberContext(browser, baseURL!, kuro);
+    const whiteContext = await memberContext(browser, baseURL!, shiro);
+
+    try {
+      const black = await blackContext.newPage();
+      const white = await whiteContext.newPage();
+      const started = await black.request.post("/api/games/live", {
+        data: { variant: "go", size: 9, moveTimeMs: null, rated: false, blackName: kuro.name, whiteName: shiro.name },
+      });
+      expect(started.status(), await started.text()).toBe(201);
+      const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+      mine(game.id);
+
+      /*
+       * White walls off the top-right corner point J9 (0,8) — a black stone
+       * there would have no liberty and take nothing — and then puts a stone
+       * on E4 (5,4) that Black has surrounded on three sides, leaving it one
+       * liberty at E5 (4,4).
+       */
+      const opening: ["black" | "white", number, number][] = [
+        ["black", 6, 4],
+        ["white", 0, 7],
+        ["black", 5, 3],
+        ["white", 1, 8],
+        ["black", 5, 5],
+        ["white", 5, 4],
+      ];
+      for (const [seat, row, col] of opening) {
+        const request = seat === "black" ? black.request : white.request;
+        const token = seat === "black" ? game.blackToken : game.whiteToken;
+        const played = await request.post(`/api/games/${game.id}/moves`, { data: { token, row, col } });
+        expect(played.status(), await played.text()).toBe(201);
+      }
+
+      await black.goto(`/games/go/match/${game.id}/seat/${game.blackToken}`);
+      await ready(black, "shared-game");
+      const board = black.getByTestId("shared-game");
+      await expect(board.getByTestId("go-help-atari")).toContainText("E5");
+      // The ring on E5, where White's stone is taken; the cross on J9, where Black may not go.
+      await expect(board.getByRole("button", { name: /^E5, empty/ }).locator('[data-mark="forced"]')).toHaveCount(1);
+      await expect(board.getByRole("button", { name: /^J9/ }).locator('[data-mark="forbidden"]')).toHaveCount(1);
+    } finally {
+      await blackContext.close();
+      await whiteContext.close();
+      await removeMember(kuro.email);
+      await removeMember(shiro.email);
+    }
+  });
 });

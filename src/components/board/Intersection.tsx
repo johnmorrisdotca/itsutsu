@@ -57,6 +57,7 @@ function Mark({ mark }: { mark: BoardMark }) {
     return (
       <span
         className="pointer-events-none absolute inset-[22%] opacity-80"
+        data-mark={mark.kind}
         style={{
           background: `linear-gradient(45deg, transparent 44%, ${colour} 44%, ${colour} 56%, transparent 56%),
                        linear-gradient(-45deg, transparent 44%, ${colour} 44%, ${colour} 56%, transparent 56%)`,
@@ -68,6 +69,7 @@ function Mark({ mark }: { mark: BoardMark }) {
 
   return (
     <span
+      data-mark={mark.kind}
       className={[
         "pointer-events-none absolute rounded-full",
         shape === "dot" ? "inset-[30%]" : "inset-[8%]",
