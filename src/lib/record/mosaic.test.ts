@@ -105,15 +105,18 @@ describe("mosaicSvg's labels and spare spaces", () => {
   // Five tiles on a wide screen lay out three and two, so one space is left over.
   const five = framesOf(replayTimeline(storedGame([[4, 0], [0, 0], [4, 1], [0, 1], [4, 2]])));
 
-  it("fills the spaces after the last move with empty boards, the last one carrying the game's lines", () => {
+  it("fills the spaces after the last move with one card carrying the game's lines", () => {
     const frames = five;
     const { columns, rows } = mosaicLayout(5, 1920, 1080);
     const spare = columns * rows - 5;
     expect(spare).toBeGreaterThan(0);
     const svg = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: true, details: ["Ann vs Bo", "itsutsu.com"] });
-    // Every slot has its wood: the three moves, the empty boards and the card.
-    expect(svg.match(/fill="#e2ba7a"/g)).toHaveLength(columns * rows);
+    // The five boards and one card beside them.
+    expect(svg.match(/fill="#e2ba7a"/g)).toHaveLength(6);
     expect(svg).toContain(">Ann vs Bo</text>");
+    // With nothing to say, an empty board in each space instead.
+    const plain = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: true, details: [] });
+    expect(plain.match(/fill="#e2ba7a"/g)).toHaveLength(5 + spare);
     // Left unfilled, only the moves have wood.
     const bare = mosaicSvg({ frames, size: 9, grid: BOARD_GRIDS.lines, width: 1920, height: 1080, fillSpare: false, details: ["Ann vs Bo"] });
     expect(bare.match(/fill="#e2ba7a"/g)).toHaveLength(5);

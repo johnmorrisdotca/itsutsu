@@ -339,6 +339,25 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         </Link>
       </section>
 
+      {/*
+        The famous games, beside the learning shelf and shaped like it: games
+        worth studying, from world championships and title matches, each one
+        replayed by this site's rules and made into a picture on a press.
+      */}
+      <section className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`} data-testid="games-famous">
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="flex items-baseline gap-2 text-base font-semibold">
+            <Paired en="Famous games" kanji="名局" kanjiClassName="text-sm font-normal opacity-70" />
+          </span>
+          <span className="max-w-prose text-sm text-muted">
+            World championship finals and title matches, from the published records — each one a picture of every move.
+          </span>
+        </span>
+        <Link href="/famous" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`} data-testid="games-famous-link">
+          The famous games →
+        </Link>
+      </section>
+
       <section className="flex flex-col gap-4">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           {/*
