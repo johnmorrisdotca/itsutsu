@@ -2,6 +2,12 @@ name: CI
 
 on:
   pull_request:
+    # A pull request of prose only runs nothing, for the reason vercel-deploy.yml gives.
+    paths:
+      - "**"
+      - "!**/*.md"
+      - "!docs/**"
+      - "CHANGELOG.md"
 
 # PULL REQUESTS ONLY, since 2026-09-22.
 #

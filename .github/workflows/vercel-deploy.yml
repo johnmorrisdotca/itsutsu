@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - main
+    # NOTHING TO DEPLOY IN PROSE. A push whose every file is Markdown or under
+    # docs/ changes no page, so it starts no checks, no browser suite and no
+    # deploy: about eighteen runner-minutes and a Vercel deployment saved each
+    # time. Itsutsu used 20,813 Actions minutes in September 2026, and John
+    # asked every project to cut them (see AGENTS.md, "Fewer Pushes").
+    # CHANGELOG.md is the one Markdown file the site reads at runtime (/releases,
+    # /backlog, /admin), so it is put back in last. It always travels with
+    # package.json anyway. A push with any other file in it deploys as before,
+    # prose included.
+    paths:
+      - "**"
+      - "!**/*.md"
+      - "!docs/**"
+      - "CHANGELOG.md"
   workflow_dispatch:
 
 concurrency:
