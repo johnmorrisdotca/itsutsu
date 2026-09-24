@@ -153,7 +153,7 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tabs")).toHaveCount(0);
   });
 
-  test("the operator's page is six tabs, one part at a time", async ({ page }) => {
+  test("the operator's page is seven tabs, one part at a time", async ({ page }) => {
     /*
      * The door, the members, the bots, the work and the log. It was three
      * headings on one page with the whole features board inside the third, which
@@ -162,8 +162,8 @@ test.describe("a page of many sections is tabs", () => {
      * anybody who runs a site.
      */
     await page.goto("/admin");
-    // Named rather than counted: the door, the site, the members, the bots, the work, and the operator log.
-    await expectTabs(page, ["door", "site", "members", "bots", "work", "log"]);
+    // Named rather than counted: the door, the site, the members, the bots, the work, the reports, and the operator log.
+    await expectTabs(page, ["door", "site", "members", "bots", "work", "reports", "log"]);
     await expect(page.getByTestId("admin-door")).toBeVisible();
     // One at a time: the board is not also on screen behind the invites.
     await expect(page.getByTestId("admin-backlog")).toHaveCount(0);

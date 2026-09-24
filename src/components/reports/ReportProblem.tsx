@@ -81,7 +81,14 @@ export function ReportProblem() {
   const length = text.trim().length;
   return (
     <>
-      <button type="button" onClick={open} className="underline-offset-4 hover:underline" data-testid="report-problem" {...readyMark(hydrated)}>
+      {/* A word in the colophon's row, and still a fingertip tall on a phone: see `TAP_HEIGHT`. */}
+      <button
+        type="button"
+        onClick={open}
+        className={`inline-flex items-center underline-offset-4 hover:underline ${TAP_HEIGHT}`}
+        data-testid="report-problem"
+        {...readyMark(hydrated)}
+      >
         Report a problem
       </button>
       <dialog
