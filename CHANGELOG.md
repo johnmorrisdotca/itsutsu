@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.287.0 — 2026-09-24
+- A finished game's replay, and a game played on one screen, have Start, Back, Play, Forward and End beside the scrubber. Play steps through the game on its own and stops at the last move.
+
 ## 0.286.2 — 2026-09-24
 - A browser test expects the Numbers family on the set-up screen, where the last release put it; that test had stopped the release going live.
 
