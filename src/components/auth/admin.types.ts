@@ -70,3 +70,10 @@ export type MemberAgeControlProps = {
   /** The row's own PATCH, so one place reports errors and refreshes the list. */
   onSet: (body: Record<string, unknown>) => Promise<void>;
 };
+
+export type MemberRemoveModalProps = {
+  member: ClaimSubject;
+  onClose: () => void;
+  /** Told once the account is gone, so the list behind the modal reads again. */
+  onRemoved: () => void;
+};

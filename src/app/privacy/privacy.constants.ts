@@ -97,7 +97,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
         "Members: your name and the level beside it, your record, your ratings and where you stand, and the games you have played, because every game here is a page any member can open, while it is played and after, with its moves and the reactions on it. If you filled them in, your city, country, time zone and the words about yourself, and, if you allow it, whether you are here now. Your email address is shown to nobody: not your opponent, not on your page, nowhere.",
         "The person you write to: a direct message is shown to them and to you. Nothing on the site shows it to anyone else, and the operator does not read messages except when one is reported.",
         "Another site, if the operator gives it a token: an embedded view shows a game or a player's summary, read-only, as a member would see it, and nothing more.",
-        "The operator, who runs the site: your email address, your invite code, when you were here, and the problems you report. The operator can shut an account, restore it, rename it, set new words for a member who has lost theirs or open the picker so they can choose, attach a record kept under a name nobody had an account for to the member it belongs to, and set a member's age band and record a parent's consent for a family by hand. Every such act is logged with who did it, to whom, when and what changed, never the words themselves and never a parent's name. Nobody at the site can sign in as you: there is no such door.",
+        "The operator, who runs the site: your email address, your invite code, when you were here, and the problems you report. The operator can shut an account, restore it, rename it, set new words for a member who has lost theirs or open the picker so they can choose, attach a record kept under a name nobody had an account for to the member it belongs to, set a member's age band and record a parent's consent for a family by hand, and remove an account when it is asked for. Every such act is logged with who did it, to whom, when and what changed, never the words themselves and never a parent's name. Nobody at the site can sign in as you: there is no such door.",
       ],
     },
     {
@@ -145,7 +145,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
       paragraphs: [
         "Some of the people who play here are children, in families that play together, and the site is built with that in mind: nothing about a member reaches a stranger, a member's page is behind the invite, and there is no advertising.",
         "The site asks your age band when you join, before anything else: under 13, 13 to 17, or 18 or over. Nothing more exact is asked or kept. A member under 13 needs a parent's or guardian's consent to keep an account here: on the same page, the parent or guardian gives their name and says whether they are the parent or a guardian, and we keep that with the date. Without it, the account cannot go on. Members who joined before the question existed are asked on their next visit to their own page, and the operator can record the answer for a family by hand.",
-        `A parent or guardian who wants to know what we hold about their child, or to have the child's account removed, writes to ${CONTACT} and we do it by hand.`,
+        `A parent or guardian can read what we hold about their child, and remove the child's account, from the child's own page (Profile), or write to ${CONTACT} and the operator does it for them.`,
       ],
     },
     {
@@ -154,8 +154,8 @@ export function privacySections(days: number): readonly PrivacySection[] {
       kanji: "保存と削除",
       paragraphs: [
         "We keep your account and everything in it for as long as the account exists, and finished games for as long as the site does, because a game belongs to both people who played it.",
-        `To have your account removed, write to ${CONTACT} from the address you sign in with, and we do it by hand. Your profile, your messages and your lists go. Your finished games stay in the record with the name you played them under; ask, and we take the name off them as well.`,
-        "To ask what we hold about you, write to the same address. There is nothing we hold that this page does not describe.",
+        "To remove your account, open your own page, choose Profile, and use Remove this account at the bottom; or write to " + CONTACT + " and the operator removes it for you. Your profile, your messages, your lists, your experience points and your puzzle solves go, and so does any game still waiting for you, which is resigned or called off first. Your finished games stay in the record, because each belongs to the other player too, with your account taken off them: you choose whether your name stays on them or is taken off as well.",
+        "What we hold about you is listed on the same page, under What Itsutsu holds about you, in plain words and in counts. There is nothing we hold that this page does not describe.",
       ],
     },
     {

@@ -422,3 +422,19 @@ export const AGE_COPY = {
   unsaid: "Not said yet",
   why: "Asked once, so that a child here is looked after and an adult is not treated as one. Nothing more exact than the band is asked or kept.",
 } as const;
+
+/** Removing one's own account, at the foot of the Profile tab (PRIV-04). */
+export const REMOVE_COPY = {
+  heading: "Remove this account",
+  kanji: "退会",
+  lead: "This cannot be taken back. Your profile, your messages, your buddies and ignores, your experience points and your puzzle solves go. Any game still waiting for you is resigned, or called off if nobody has moved yet. Your finished games stay, because each belongs to the other player too, with your account taken off them.",
+  open: "Remove this account…",
+  keepName: "Leave my name on my old games",
+  blankName: "Take my name off my old games as well",
+  blankNote: "With your name taken off, your old games show an empty seat, and your place on every ladder goes too.",
+  type: (phrase: string) => `Type ${phrase} to confirm`,
+  signInAgain: "Sign in with Google again to confirm it is you",
+  signInNote: "A Google account signs in again first, so a phone left signed in cannot remove it.",
+  press: "Remove my account",
+  cancel: "Keep my account",
+} as const;

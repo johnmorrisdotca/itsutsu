@@ -17,6 +17,9 @@ import { Page } from "@/components/layout/Page";
 import { PhraseSetup } from "@/components/mine/PhraseSetup";
 import { DayZoneNote } from "@/components/mine/DayZoneNote";
 import { ProfileForm } from "@/components/mine/ProfileForm";
+import { RemoveAccount } from "@/components/mine/RemoveAccount";
+import { WhatWeHold } from "@/components/mine/WhatWeHold";
+import { signedInRecently } from "@/lib/auth/removeAccountRules";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { currentMemberRow, currentSession } from "@/lib/auth/currentSession";
@@ -277,6 +280,9 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   countries={allCountries()}
                   timeZones={supportedTimeZones()}
                 />
+                {/* What we keep, then the way to have none of it kept: the privacy page's promise, as two panels (PRIV-04). */}
+                {member !== null ? <WhatWeHold member={member} band={band} consented={age.consented} /> : null}
+                <RemoveAccount name={name} google={Boolean(member?.email)} fresh={signedInRecently(me)} />
               </div>
             ) : null}
 

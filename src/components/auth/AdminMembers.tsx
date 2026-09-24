@@ -11,11 +11,12 @@ import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { ageBandLabel } from "@/lib/social/ageBand";
 import { PlayerName } from "@/components/players/PlayerName";
-import { ADMIN_AGE_COPY, ADMIN_CLAIM_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
+import { ADMIN_AGE_COPY, ADMIN_CLAIM_COPY, ADMIN_REMOVE_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
 import { MemberAgeControl } from "./MemberAgeControl";
 import { MemberKindBadge } from "./MemberKindBadge";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MemberClaimModal } from "./MemberClaimModal";
+import { MemberRemoveModal } from "./MemberRemoveModal";
 import { MemberWordsModal } from "./MemberWordsModal";
 import type { ClaimSubject, WordsSubject } from "./admin.types";
 
@@ -69,6 +70,8 @@ export function AdminMembers() {
   const [words, setWords] = useState<WordsSubject | null>(null);
   /** The member whose Attach-a-record modal is open, or null. One at a time. */
   const [claim, setClaim] = useState<ClaimSubject | null>(null);
+  /** The member whose Remove modal is open, or null. One at a time. */
+  const [removing, setRemoving] = useState<ClaimSubject | null>(null);
 
   async function change(body: Record<string, unknown>, email: string) {
     setBusy(email);
@@ -244,6 +247,21 @@ export function AdminMembers() {
                 />
               </Button>
             )}
+            {/*
+              REMOVE 削除. On request, for somebody who wrote in or a parent —
+              the member can do it themselves from their Profile tab. Offered
+              wherever there is an account, named or not; the modal asks the
+              name typed back (or the word, for an account with none).
+            */}
+            {account === null ? null : (
+              <Button
+                onClick={() => setRemoving({ id: account, name: member.name })}
+                title={ADMIN_REMOVE_COPY.linkTitle}
+                data-testid="member-remove"
+              >
+                <Paired en={ADMIN_REMOVE_COPY.link} kanji={ADMIN_REMOVE_COPY.linkKanji} kanjiClassName="font-mincho text-xs opacity-70" />
+              </Button>
+            )}
             {account === null || member.name.trim() === "" ? null : (
               <ConfirmButton
                 label="Take the name off"
@@ -314,6 +332,9 @@ export function AdminMembers() {
           */
           onSaved={() => void mutate()}
         />
+      )}
+      {removing === null ? null : (
+        <MemberRemoveModal member={removing} onClose={() => setRemoving(null)} onRemoved={() => void mutate()} />
       )}
       {claim === null ? null : (
         <MemberClaimModal member={claim} onClose={() => setClaim(null)} onAttached={() => void mutate()} />

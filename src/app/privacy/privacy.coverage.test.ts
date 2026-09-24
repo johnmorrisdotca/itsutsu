@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -121,6 +121,7 @@ describe("the privacy page", () => {
       wordsPickOpened: "open the picker",
       recordClaimed: "attach a record",
       ageBand: "set a member's age band",
+      remove: "remove an account",
     };
     for (const action of Object.values(OPERATOR_ACTIONS)) {
       expect(who, `the operator can "${action}" and the page does not say so`).toContain(said[action]);
@@ -207,5 +208,23 @@ describe("the privacy page", () => {
       expect(section("children")).toContain("does not ask your age yet");
     }
     expect(text).not.toMatch(/\bwill\b/);
+  });
+});
+
+/*
+ * THE PROMISE TO REMOVE IS A DOOR NOW, NOT A CHORE (PRIV-04). While nothing in
+ * the code removed a member the page said "we do it by hand"; with
+ * `removeMember` in the tree it must name the control instead, and must not
+ * go on saying removal waits on somebody being awake.
+ */
+describe("removal is described as the control it is", () => {
+  it("names Remove this account and What Itsutsu holds about you, and not removal by hand", () => {
+    expect(existsSync("src/lib/auth/removeMember.ts")).toBe(true);
+    const keeping = section("keeping");
+    expect(keeping).toContain("Remove this account");
+    expect(keeping).toContain("What Itsutsu holds about you");
+    expect(keeping).not.toContain("by hand");
+    expect(read("src/components/mine/RemoveAccount.tsx")).toContain("Remove this account");
+    expect(read("src/components/mine/WhatWeHold.tsx")).toContain("What Itsutsu holds about you");
   });
 });

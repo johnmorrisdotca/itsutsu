@@ -27,6 +27,12 @@ export const OPERATOR_ACTIONS = {
    * and whether a consent was written — never the parent's name.
    */
   ageBand: "ageBand",
+  /**
+   * An account removed (`removeMember`): the row says, in counts, what
+   * happened to its games and whether the names on them were taken off —
+   * never a name, since the point of the act is that the name is gone.
+   */
+  remove: "remove",
 } as const satisfies Record<string, OperatorActionName>;
 
 /** What the Admin tab says for each act, in the site's paired English and kanji. */
@@ -38,6 +44,7 @@ export const OPERATOR_ACTION_DISPLAY: Record<OperatorActionName, { label: string
   rename: { label: "Changed the name", kanji: "改名" },
   recordClaimed: { label: "Attached a record", kanji: "引継" },
   ageBand: { label: "Set the age band", kanji: "年齢" },
+  remove: { label: "Removed the account", kanji: "削除" },
 };
 
 /**

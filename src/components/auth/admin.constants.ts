@@ -156,3 +156,19 @@ export const ADMIN_AGE_COPY = {
   record: "Record",
   cancel: "Cancel",
 } as const;
+
+/** Removing an account on request, from the member's row (PRIV-04). */
+export const ADMIN_REMOVE_COPY = {
+  link: "Remove",
+  linkKanji: "削除",
+  linkTitle: "Remove this account, as the member or their parent asked",
+  title: "Remove",
+  lead: "Their profile, messages, lists, experience points and puzzle solves go, and any game still waiting for them is resigned or called off. Their finished games stay for the other players, with the account taken off them.",
+  keepName: "Leave their name on their old games",
+  blankName: "Take their name off their old games and the ladders",
+  reason: "Why (kept in the log)",
+  type: (phrase: string) => `Type ${phrase} to confirm`,
+  press: "Remove the account",
+  done: (name: string) => `${name === "" ? "The account" : name} is removed.`,
+  failed: "The account was not removed.",
+} as const;
