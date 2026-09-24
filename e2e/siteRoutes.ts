@@ -16,7 +16,8 @@ import { ensureMember, memberIdFor, removeMember } from "./members";
  * fails both specs rather than going unmeasured.
  *
  * A dynamic segment is filled with a game, a member or a lesson that exists
- * on any database — the catalogue is code, and the two games and the member
+ * on any database — and a game's facets are measured for a puzzle too, since
+ * a puzzle has the same addresses and its own pages under them — the catalogue is code, and the two games and the member
  * are made by `seedRouteRows` below.
  */
 
@@ -39,17 +40,17 @@ export const ROUTES: Record<string, Route> = {
   "/embed": { skip: "a widget drawn inside another site's frame, not a page of this one" },
   "/famous": { url: () => "/famous" },
   "/games": { url: () => "/games", also: ["/games?view=list"] },
-  "/games/[slug]": { url: () => "/games/gomoku" },
-  "/games/[slug]/background": { url: () => "/games/gomoku/background" },
+  "/games/[slug]": { url: () => "/games/gomoku", also: ["/games/number-place"] },
+  "/games/[slug]/background": { url: () => "/games/gomoku/background", also: ["/games/number-place/background"] },
   "/games/[slug]/begin": { url: () => "/games/gomoku/begin" },
-  "/games/[slug]/family": { url: () => "/games/hex/family" },
+  "/games/[slug]/family": { url: () => "/games/hex/family", also: ["/games/number-place/family"] },
   "/games/[slug]/history": { url: () => "/games/gomoku/history" },
   "/games/[slug]/match/[id]": { url: (made) => `/games/gomoku/match/${made.live}` },
   "/games/[slug]/match/[id]/[move]": { url: (made) => `/games/gomoku/match/${made.filed}/5` },
   "/games/[slug]/me": { url: () => "/games/gomoku/me" },
-  "/games/[slug]/new": { url: () => "/games/gomoku/new" },
-  "/games/[slug]/play": { url: () => "/games/gomoku/play" },
-  "/games/[slug]/rules": { url: () => "/games/gomoku/rules" },
+  "/games/[slug]/new": { url: () => "/games/gomoku/new", also: ["/games/number-place/new"] },
+  "/games/[slug]/play": { url: () => "/games/gomoku/play", also: ["/games/number-place/play"] },
+  "/games/[slug]/rules": { url: () => "/games/gomoku/rules", also: ["/games/number-place/rules"] },
   "/games/[slug]/standings": { url: () => "/games/gomoku/standings" },
   "/games/new": { url: () => "/games/new" },
   "/history": { url: () => "/history" },
