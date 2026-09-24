@@ -10,6 +10,11 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.282.1 — 2026-09-24
+- The line under the header sits the same distance from it on every page, and the home page no longer shows it.
+- The account menu's items have room between them.
+- My games no longer repeats the Games link, and offers the inbox only when something in it is unread.
+
 ## 0.282.0 — 2026-09-24
 - Halma and Chinese Checkers join Go and Hex in one family, Territory and races.
 
