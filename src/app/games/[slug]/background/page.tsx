@@ -44,7 +44,7 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
   const art = backgroundFor(variant);
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <header className="flex flex-col gap-1">
         <p className="text-xs text-muted">
@@ -60,10 +60,10 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
 
       {art === null ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="background-none">
-          <p className="max-w-prose text-sm">
+          <p className="text-sm">
             There is no background art for {copy.label} yet.
           </p>
-          <p className="max-w-prose text-sm text-muted">
+          <p className="text-sm text-muted">
             This is where it will go when there is. The page exists ahead of the pictures on
             purpose: the address is part of how a game is laid out here, so it is kept whether or
             not anything has been drawn — and saying plainly that nothing has been is better than

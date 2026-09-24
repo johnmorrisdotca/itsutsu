@@ -122,10 +122,7 @@ export function PlayerChapters({
                 at when he asked for it a third time.
               */}
               {member === undefined || member === null ? null : (
-                <ChallengeButton
-                  memberId={member.id}
-                  label={member.botTier ? "Play 対局" : "Ask for a game 対局を申し込む"}
-                />
+                <ChallengeButton memberId={member.id} />
               )}
             </p>
           ) : null}

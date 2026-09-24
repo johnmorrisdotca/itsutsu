@@ -58,7 +58,7 @@ export async function AdminBoardCard({ board }: AdminBoardCardProps) {
         {latest === null ? (
           <p className="text-sm text-muted">The release history could not be read.</p>
         ) : (
-          <p className="max-w-prose text-sm text-muted" data-testid="admin-latest-release">
+          <p className="text-sm text-muted" data-testid="admin-latest-release">
             <span className="font-mono font-semibold text-ink">{latest.version}</span> — {latest.notes[0]}
           </p>
         )}

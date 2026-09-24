@@ -316,7 +316,7 @@ async function askingSomebody(
    * computer player — every one of those answered 401.
    */
   const me = await currentMemberRow();
-  const signIn: CreationRefusal = { status: 401, error: "Sign in to challenge someone." };
+  const signIn: CreationRefusal = { status: 401, error: "Sign in to play someone." };
   if (me === null) return { refused: signIn };
   const mineId = me.id;
   const other =

@@ -78,7 +78,7 @@ export function GameCatalogue({
         about the index; it is a note about the catalogue, and this component
         IS the catalogue, in all three of its arrangements.
       */}
-      <section className="flex max-w-prose flex-col gap-2 text-xs text-muted" data-testid="rules-attribution">
+      <section className="flex flex-col gap-2 text-xs text-muted" data-testid="rules-attribution">
         {RULES_ATTRIBUTION.map((paragraph) => (
           <p key={paragraph.slice(0, 24)}>{paragraph}</p>
         ))}

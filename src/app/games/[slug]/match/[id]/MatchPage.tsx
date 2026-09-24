@@ -126,7 +126,7 @@ export async function MatchPage({
     const board = await appearanceFor(reader.memberId);
     const defaults = await gameDefaultsFor(reader.memberId);
     return (
-      <Page width="wide">
+      <Page board>
         <SiteHeader />
         <SeatFullNotice shown={seatFull} />
         <GameViewClient

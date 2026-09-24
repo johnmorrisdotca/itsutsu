@@ -82,7 +82,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
   );
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
@@ -100,7 +100,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
           </div>
         </div>
 
-        <p className="max-w-3xl text-sm text-muted">
+        <p className="text-sm text-muted">
           Who went up a level lately, newest first. A level is read from the total, so a promotion
           is the moment an award carried somebody over a rung. An award that carried them over
           more than one is a single line, from where they stood to where they arrived. Games

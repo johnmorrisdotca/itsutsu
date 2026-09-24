@@ -143,7 +143,7 @@ export function RowMore({ memberId, name, isBuddy, ignoring }: RowMoreProps) {
           NO `display` ON THIS ELEMENT. The browser hides a closed popover with
           `display: none`, and a `flex` class here overrode it: every row's closed
           menu was drawn in the page as a fixed box, over the rows and past the
-          edge of a narrow screen, where it took the press meant for Challenge and
+          edge of a narrow screen, where it took the press meant for Play and
           made the whole page scroll sideways. The layout lives on the div inside.
         */
         className="inset-auto m-0 rounded-xl border border-rule-strong/80 bg-ivory p-1.5 text-ink shadow-lg"

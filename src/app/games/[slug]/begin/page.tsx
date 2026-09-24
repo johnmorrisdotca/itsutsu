@@ -199,7 +199,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const problem = from.problem ?? (gone === null ? null : DOORSTEP_COPY.gone[gone]);
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <div className="flex flex-col gap-1">
         {/*
@@ -212,7 +212,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
           <GameName variant={variant} kanji className="no-underline hover:underline" />
         </h1>
         {/* And what the game IS, in its own words, above what this one will be. */}
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           {copy.tagline}{" "}
           <Link href={rulesPath(variant)} className="underline underline-offset-4">
             How it is played

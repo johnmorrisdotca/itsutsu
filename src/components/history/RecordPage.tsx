@@ -157,7 +157,7 @@ export async function RecordPage({
   const liveFrom = impliedPlayer === undefined ? page.next : null;
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <div className="flex flex-col gap-1">

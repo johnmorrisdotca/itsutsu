@@ -48,7 +48,7 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
       <h2 className="flex items-baseline gap-2 text-base font-semibold">
         <Paired en="How the XP was earned" kanji="経験の記録" kanjiClassName="text-xs font-normal opacity-70" />
       </h2>
-      <p className="max-w-prose text-xs text-muted">
+      <p className="text-xs text-muted">
         Every award, newest first, under the day it was earned — counted in{" "}
         {isYou ? "your" : "their"} own time zone. Total is where the whole stood once that award was
         counted, credit from other sites included.

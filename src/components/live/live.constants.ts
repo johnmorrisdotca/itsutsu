@@ -265,7 +265,7 @@ export const SET_UP_COPY = {
   /** The way to anybody the lists here do not hold. */
   elsewhere: "Somebody not listed here? Find them on the",
   elsewhereLink: "Players page",
-  elsewhereAfter: "and press Challenge: they arrive here already chosen.",
+  elsewhereAfter: "and press Play: they arrive here already chosen.",
 } as const;
 
 /**
@@ -323,7 +323,7 @@ export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
  * link there from here would be a press that lands on this same page.
  */
 export const ASK_NEEDS_ACCOUNT =
-  "Naming a member or a computer player sends a challenge, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are.";
+  "Naming a member or a computer player offers them a game, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are.";
 
 /**
  * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
@@ -492,9 +492,10 @@ export const LIVE_MOVE_COPY = {
  * `lg` the member's `boardSize` decides, and each is a CAP rather than a size —
  * `min(100%, …)` — so a choice larger than the room there is fills the room and
  * never overflows it. On a 1440px laptop the column is 800px, so Medium and
- * Large come out nearly alike there; on a 27-inch screen, where the page itself
- * widens (`PAGE_WIDTH.board`), they are far apart. That is the screen being
- * honest about what it has, not a bug in the choice.
+ * Large come out nearly alike there. The page no longer widens on a 27-inch
+ * screen (one width everywhere, see `PAGE_WIDTH`), so they stay close there
+ * too; that is the column being honest about what it has, not a bug in the
+ * choice.
  *
  * FIT IS MEASURED AGAINST THE SCREEN'S HEIGHT, because on a desk the board runs
  * off the bottom long before it runs out of width. What sits above the board is
@@ -512,8 +513,14 @@ export const LIVE_MOVE_COPY = {
  *
  * Whole class strings, never assembled: Tailwind finds a class by reading the
  * source, and one built from pieces is a class it never generates.
+ *
+ * ON A DESK, AGAINST THE PAGE'S LEFT EDGE, not centred in its half. Every page
+ * is one width and starts where the masthead does; a board centred in the room
+ * beside the side matter started 48px in at 1440×900, so a match page's left
+ * edge was not any other page's (e2e/page-width.spec.ts). Just the board, with
+ * no side matter, still centres it: see `[data-board-column]` in globals.css.
  */
-export const BOARD_COLUMN = "mx-auto flex w-full max-w-[min(100%,36rem)] flex-col gap-2";
+export const BOARD_COLUMN = "mx-auto flex w-full max-w-[min(100%,36rem)] flex-col gap-2 lg:mx-0";
 
 export const BOARD_COLUMN_SIZE: Record<BoardSize, string> = {
   [BOARD_SIZES.fit]: "lg:max-w-[min(100%,72rem,max(36rem,var(--board-room,calc(100dvh-19rem))))]",

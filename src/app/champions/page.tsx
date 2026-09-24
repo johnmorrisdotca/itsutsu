@@ -107,13 +107,13 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
 export default async function ChampionsPage() {
   const champions = await fetchChampions();
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="champions">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
           <Paired en="Champions" kanji="名人" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           The best-rated player at each game, as the standings are today. Every game keeps its own Elo,
           so being good at <GameName variant="notakto" /> is a different claim from being good at{" "}
           <GameName variant="renju" />; the ladder on the{" "}

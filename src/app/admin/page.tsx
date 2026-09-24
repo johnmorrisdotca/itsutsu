@@ -77,7 +77,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const status = statusFromAddress(asked.show);
   const board = open === "work" ? await readBoard(scopeOf(status)) : null;
   return (
-    <Page width="standard">
+    <Page>
       <SiteHeader />
       <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
         Admin <span className="font-mincho text-lg font-normal opacity-70">管理</span>

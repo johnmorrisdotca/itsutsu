@@ -88,7 +88,7 @@ export function PlayerActions({
   if (isComputer) {
     return (
       <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
-        <ChallengeButton memberId={memberId} label="Play 対局" strong={!compact} />
+        <ChallengeButton memberId={memberId} strong={!compact} />
       </div>
     );
   }
@@ -102,7 +102,7 @@ export function PlayerActions({
   if (compact) {
     return (
       <div className="flex items-center justify-end gap-1" data-testid={testId}>
-        <ChallengeButton memberId={memberId} label="Play 対局" />
+        <ChallengeButton memberId={memberId} />
         <RowMore memberId={memberId} name={shownName(name ?? "")} isBuddy={isBuddy} ignoring={ignoring} />
       </div>
     );
@@ -111,7 +111,7 @@ export function PlayerActions({
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
       {/* A game is offered by member id, and so is everything beside it. */}
-      <ChallengeButton memberId={memberId} label="Ask for a game 対局を申し込む" strong />
+      <ChallengeButton memberId={memberId} strong />
       {/* Off the board: a conversation, the ignore list applied in full — see `messages.ts`. */}
       {!ignoring ? (
         <Link

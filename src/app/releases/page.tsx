@@ -29,7 +29,7 @@ export default async function ReleasesPage() {
   const releases = await readReleases();
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="release-history">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">

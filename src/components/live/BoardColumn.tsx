@@ -122,6 +122,12 @@ export function BoardColumn({
       className={`${BOARD_COLUMN} ${BOARD_COLUMN_SIZE[size]}`}
       style={room === null ? undefined : ({ [BOARD_FIT_ROOM]: `${room}px` } as CSSProperties)}
       data-testid="board-column"
+      data-board-column
+      /*
+        Its width is the board's, square and sized to the screen, and the text
+        in it (whose turn it is, the size chooser) is the board's furniture.
+      */
+      data-width-reason="the column is as wide as the board, which is square and fitted to the screen"
       data-board-size={size}
       /*
        * The chooser is a real radio group before React attaches, and a press

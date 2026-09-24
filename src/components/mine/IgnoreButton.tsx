@@ -36,7 +36,7 @@ export function IgnoreButton({ memberId, ignoring }: { memberId: string; ignorin
       onClick={toggle}
       disabled={busy}
       className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs ${state ? "text-shu" : "text-muted"}`}
-      title={state ? "Stop ignoring" : "Ignore: they cannot challenge you, and their messages are hidden"}
+      title={state ? "Stop ignoring" : "Ignore: they cannot ask you to play, and their messages are hidden"}
       data-testid="ignore-toggle"
       aria-pressed={state}
       {...readyMark(hydrated)}

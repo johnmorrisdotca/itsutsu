@@ -157,7 +157,7 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
             decide on its own is WHICH game — and until now it decided
             freestyle, silently, on every press.
           */}
-          <ChallengeButton memberId={entry.id} label="Play" />
+          <ChallengeButton memberId={entry.id} />
         </RowActions>
       ),
     };
@@ -180,7 +180,7 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
         what these players are and why their rating is kept apart, and a table
         cannot say either.
       */}
-      <p className="max-w-prose text-xs text-muted">
+      <p className="text-xs text-muted">
         {graded.length} opponents that will play any game on this board, from the gentlest to the strongest
         {experts.length > 0 ? (
           <>

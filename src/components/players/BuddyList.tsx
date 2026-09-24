@@ -102,7 +102,7 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               <span className="ml-auto">
                 <RowActions>
                   {/* One press to the set-up screen against them; one more begins it. */}
-                  <ChallengeButton memberId={buddy.id} label="Play" strong />
+                  <ChallengeButton memberId={buddy.id} strong />
                   <BuddyButton memberId={buddy.id} isBuddy />
                 </RowActions>
               </span>

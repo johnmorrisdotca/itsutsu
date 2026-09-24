@@ -32,7 +32,7 @@ export async function AdminOperatorLog() {
       <h2 className="flex items-baseline gap-2 text-lg font-semibold">
         <Paired en={ADMIN_LOG_COPY.heading.label} kanji={ADMIN_LOG_COPY.heading.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
-      <p className="max-w-prose text-sm text-muted">{ADMIN_LOG_COPY.lead}</p>
+      <p className="text-sm text-muted">{ADMIN_LOG_COPY.lead}</p>
       <div className={TABLE_SCROLL}>
         <table className="w-full text-left text-sm" data-testid="operator-log-table">
           <thead>

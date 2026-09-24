@@ -27,13 +27,13 @@ export const metadata: Metadata = { title: `${FAMOUS_COPY.title} ${FAMOUS_COPY.k
  */
 export default function FamousGamesPage() {
   return (
-    <Page width="wide" gap="gap-6">
+    <Page board gap="gap-6">
       <SiteHeader />
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold">
           {FAMOUS_COPY.title} <span className="font-mincho text-base font-normal opacity-70">{FAMOUS_COPY.kanji}</span>
         </h1>
-        <p className="max-w-2xl text-sm text-ink-soft">{FAMOUS_COPY.blurb}</p>
+        <p className="text-sm text-ink-soft">{FAMOUS_COPY.blurb}</p>
       </header>
       <div className="grid gap-4 md:grid-cols-2" data-testid="famous-games">
         {FAMOUS_GAMES.map((game) => {

@@ -101,10 +101,13 @@ function directoryRow(
     subject: (
       <span className="flex items-center gap-2">
         <RecencyMark recency={actions.recency(entry)} />
-        {entry.picture ? (
-          // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
-          <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
-        ) : null}
+        {/*
+          No picture before the name. It was drawn on this tab alone, and only
+          for members who had signed in with one, so the names did not line up
+          with each other or with any other tab. John: "no point in showing the
+          icon before the name, as you don't do it anywhere else in the entire
+          Players section tabs. so be consistent."
+        */}
         {entry.name.trim() !== "" ? (
           <Link
             href={playerPath(entry.name, entry.id)}
@@ -116,6 +119,22 @@ function directoryRow(
         ) : (
           entry.email
         )}
+        {/*
+          New for two weeks, as a mark on the name rather than a word in the
+          Joined column: the word made that column 138 pixels for a date that
+          needs 75, and the table had to fit the site's one width. John: "New
+          can go next to a name or be an icon on the name."
+        */}
+        {entry.isNew ? (
+          <span
+            className="text-[0.7rem] font-semibold text-moss"
+            title="New here, joined in the last two weeks"
+            aria-label="new member"
+            data-testid="record-new"
+          >
+            新
+          </span>
+        ) : null}
         {/* Where they are, which is most of why they answer at four in the morning. */}
         <CountryMark country={entry.country} className="text-sm" />
         {/*
@@ -173,7 +192,7 @@ function directoryRow(
      */
     level: levelShown(entry),
     xp: xpShown(entry),
-    joined: { at: entry.joinedAt, isNew: entry.isNew },
+    joined: { at: entry.joinedAt },
     note: kept ? (
       /*
        * Marked, because part of this number does not move.
@@ -314,7 +333,7 @@ export async function Directory({
         <Link href="/xp" className="underline underline-offset-4" data-testid="directory-xp-board">
           board
         </Link>{" "}
-        that ranks everybody by it. New members are marked for two weeks; challenge one, and the game
+        that ranks everybody by it. New members are marked for two weeks; press Play beside one, and the game
         is in their list the moment you start it.
       </p>
       {/*

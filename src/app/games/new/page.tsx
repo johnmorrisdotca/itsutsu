@@ -55,7 +55,7 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
   const from = await setUpFrom({ variant: null, asked, defaults });
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <SetUpHeading from={from} variant={null} />
       <SetUpGame

@@ -19,7 +19,7 @@ export default async function InboxPage() {
   const memberId = await currentMemberId();
   const items = memberId === null ? [] : await openInbox(memberId);
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className="flex flex-col gap-4" data-testid="inbox">
         <h1 className="flex items-baseline gap-2 text-2xl font-semibold">

@@ -138,7 +138,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   };
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       {welcome ? (

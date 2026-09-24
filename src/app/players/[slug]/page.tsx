@@ -205,7 +205,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const counted = offered && scope === RECORD_SCOPES.everywhere ? whole.figures : figures;
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
         {/*
@@ -291,7 +291,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           actually does and were readable only in the source.
         */}
         {(member?.bio ?? "").trim() !== "" ? (
-          <p className="max-w-prose text-sm whitespace-pre-line text-ink-soft" data-testid="player-bio">
+          <p className="text-sm whitespace-pre-line text-ink-soft" data-testid="player-bio">
             {member?.bio}
           </p>
         ) : null}

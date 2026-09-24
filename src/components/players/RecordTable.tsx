@@ -252,6 +252,13 @@ import { TABLE_SCROLL } from "@/components/ui/ui.constants";
  *    character inside a heading whose column is already wider than its label,
  *    which is the same room the level badge rides in the subject cell. A
  *    seventh heading is not a column and neither is a sort.
+ *
+ *    AND BACK TO THE ONE WIDTH, 2026-09-24. Every page is `PAGE_WIDTH` now
+ *    (John: "I want consistency"), so /players is not wide any more and the box
+ *    is 990 at 1440. The table was made to fit it rather than the page to fit
+ *    the table: Joined is a date only, the avatar left the name (no other tab
+ *    drew one), New is a mark beside the name, a program's badge is BOT, and
+ *    the actions are Play and "⋯". At 1440 it fits the 990 with no scroll.
  * 3. **A badge added to the subject cell needs a flex row, or it is a second
  *    LINE.** The XP level went in as a plain sibling of `row.subject` and made
  *    36 of the 209 rows on /players 53 pixels against the other 45 — this

@@ -32,7 +32,7 @@ export default async function AboutPage({ searchParams }: PageProps<"/about">) {
   const open = activeTab(ABOUT_TABS, asked.view);
   const shown = ABOUT_SECTIONS.filter((section) => section.chapter === open);
   return (
-    <Page width="standard" gap="gap-10">
+    <Page gap="gap-10">
       <SiteHeader />
 
       <header className="flex flex-col gap-2">
