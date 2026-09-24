@@ -57,6 +57,10 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "プライバシー",
     back: "Privacy — the loanword every Japanese site uses for the page that says what it keeps about you.",
   },
+  "nav.terms": {
+    text: "利用規約",
+    back: "Terms of use — the usual Japanese name for a site's terms page.",
+  },
 
   "account.signIn": {
     text: "サインイン",

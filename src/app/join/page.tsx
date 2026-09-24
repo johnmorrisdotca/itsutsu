@@ -83,10 +83,15 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <span className="opacity-70">{stamps.roman}</span>
         <span className="font-mincho opacity-70">{stamps.kanji}</span>
       </p>
-      {/* The doorstep has no footer, so the one policy a stranger should read before asking is here. */}
-      <Link href="/privacy" className="text-xs text-muted underline underline-offset-4" data-testid="join-privacy">
-        Privacy
-      </Link>
+      {/* The doorstep has no footer, so the two pages a stranger should read before asking are here. */}
+      <span className="flex gap-3">
+        <Link href="/privacy" className="text-xs text-muted underline underline-offset-4" data-testid="join-privacy">
+          Privacy
+        </Link>
+        <Link href="/terms" className="text-xs text-muted underline underline-offset-4" data-testid="join-terms">
+          Terms of play
+        </Link>
+      </span>
     </div>
   );
 }

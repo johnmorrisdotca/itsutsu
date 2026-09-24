@@ -194,6 +194,12 @@ const OPEN_EXACTLY = [
    * is held to the code by privacy.coverage.test.ts.
    */
   "/privacy",
+  /*
+   * /terms — the terms of play (PRIV-05), open for the same reader as
+   * /privacy: somebody deciding whether to ask for an invite should be able to
+   * read what is asked of them first. Names no member, reads no row.
+   */
+  "/terms",
 ];
 
 /**

@@ -29,6 +29,8 @@
  * drift from the cookie.
  */
 
+import type { DocumentSection } from "@/components/layout/SectionedDocument";
+
 export const PRIVACY_TITLE = { en: "Privacy", kanji: "プライバシー" } as const;
 
 export const PRIVACY_SUBTITLE = "What Itsutsu keeps about you, who can see it, and how to have it removed.";
@@ -38,13 +40,8 @@ export const PRIVACY_CHANGED = "2026-09-24";
 
 export const CONTACT = "hello@itsutsu.com";
 
-export type PrivacySection = {
-  id: string;
-  heading: string;
-  kanji: string;
-  paragraphs: readonly string[];
-  points?: readonly string[];
-};
+/** A section of this page, in the shape every site document takes — see `SectionedDocument`. */
+export type PrivacySection = DocumentSection;
 
 /** The sentence about a words-only account, with the number the cookie really has. */
 export function wordsAccountSentence(days: number): string {

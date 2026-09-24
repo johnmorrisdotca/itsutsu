@@ -116,6 +116,7 @@ export const PHRASES = {
   "nav.learn": "Learn",
   "nav.admin": "Admin",
   "nav.privacy": "Privacy",
+  "nav.terms": "Terms",
 
   "account.signIn": "Sign in",
   "account.signOut": "Sign out",

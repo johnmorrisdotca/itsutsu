@@ -63,6 +63,8 @@ const LINKS: readonly { href: string; phrase: PhraseKey }[] = [
   { href: "/about", phrase: "nav.about" },
   // What the site keeps and who sees it, on every page, for a stranger as much as a member.
   { href: "/privacy", phrase: "nav.privacy" },
+  // And what is asked of everybody here, beside it.
+  { href: "/terms", phrase: "nav.terms" },
 ];
 
 /**

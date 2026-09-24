@@ -89,6 +89,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | home page | `src/app/page.tsx` | the same, plus any change to invites or beta testing | `homePitch.coverage.test.ts` |
 | `/thanks` | `src/app/thanks/page.tsx`, `src/lib/thanks/testers.ts` | a tester asks to be listed or taken off, or the gate's open list changes | `testers.test.ts`, `proxy.test.ts` |
 | `/privacy` | `src/app/privacy/privacy.constants.ts` | `prisma/schema.prisma` gains or loses a column about a member, a cookie is added, `src/lib/mail/**` sends something new, the gate's open list or `OPERATOR_ACTIONS` change, a service is added; move `PRIVACY_CHANGED` with the sentence | `privacy.coverage.test.ts`, `proxy.test.ts`, `e2e/privacy.spec.ts` |
+| `/terms` | `src/app/terms/terms.constants.ts` | the ban, the ignore list, what ignoring stops, Report a problem, account removal or a game's clock rules change, or the gate's open list does; move `TERMS_CHANGED` with the sentence | `terms.coverage.test.ts`, `proxy.test.ts`, `e2e/terms.spec.ts` |
 | rules pages, a game's background and history | `src/lib/gomoku/variants.constants.ts`, `src/app/games/[slug]/**` | a game is added or its rules change | `variants.coverage.test.ts`, `gameLinks.coverage.test.ts`, `gamePictures.coverage.test.ts` |
 | `/learn` | `src/lib/learn/**` | the strategy advice depends on a rule that changed | nothing yet |
 | `/games` | `src/app/games/PublicCatalogue.tsx` | a game or family is added | `publicCatalogue.coverage.test.ts` |

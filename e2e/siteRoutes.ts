@@ -68,6 +68,7 @@ export const ROUTES: Record<string, Route> = {
   "/players/[slug]": { url: (made) => `/players/${made.member}` },
   "/privacy": { url: () => "/privacy" },
   "/releases": { url: () => "/releases" },
+  "/terms": { url: () => "/terms" },
   "/thanks": { url: () => "/thanks" },
   "/xp": { url: () => "/xp" },
   "/xp/levels": { url: () => "/xp/levels" },

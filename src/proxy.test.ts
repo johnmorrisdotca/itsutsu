@@ -107,6 +107,8 @@ describe("the paths that stay open", () => {
       "/thanks",
       // What the site keeps and who sees it, for the reader with no invite yet.
       "/privacy",
+      // The terms of play, for the same reader.
+      "/terms",
     ]) {
       expect(wouldBeOpen(path), `${path} should be readable without an invite`).toBe(true);
     }
@@ -197,7 +199,7 @@ describe("the paths that stay open", () => {
   });
 
   it("is not opened by a name that merely starts with an open one", () => {
-    for (const path of ["/joinery", "/gamesy", "/aboutus", "/learners", "/thanksgiving", "/thanks/anything", "/privacyx", "/privacy/anything"]) {
+    for (const path of ["/joinery", "/gamesy", "/aboutus", "/learners", "/thanksgiving", "/thanks/anything", "/privacyx", "/privacy/anything", "/termsx", "/terms/anything"]) {
       expect(wouldBeOpen(path), `${path} must not ride in on a prefix`).toBe(false);
     }
   });
