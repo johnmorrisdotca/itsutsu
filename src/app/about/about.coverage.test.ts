@@ -7,6 +7,8 @@ import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { ABOUT_TABS } from "./about.chapters";
 import { ABOUT_SECTIONS } from "./about.constants";
+import { SITE_PAGES } from "./about.pages";
+import { wouldBeOpen } from "@/proxy";
 
 /**
  * THE ABOUT PAGE MAY NOT COUNT THE GAMES BY HAND.
@@ -123,5 +125,27 @@ describe("the page reads a chapter at a time", () => {
   it("keeps every section somewhere, so tabbing the page lost nothing", () => {
     const shown = ABOUT_TABS.flatMap((tab) => ABOUT_SECTIONS.filter((section) => section.chapter === tab.key));
     expect(shown).toHaveLength(ABOUT_SECTIONS.length);
+  });
+});
+
+/**
+ * THE MAP OF THE SITE TELLS A STRANGER THE TRUTH ABOUT WHICH DOORS ARE OPEN.
+ *
+ * Getting started prints a table of pages with "open to read" or "members"
+ * beside each. The gate in `src/proxy.ts` decides that, not this page, so the
+ * table is checked against the gate: a page moved behind the invite, or opened
+ * to everyone, fails here until the table says so too.
+ */
+describe("the site map on the About page", () => {
+  it("says a page is open exactly when the gate lets a stranger in", () => {
+    const wrong = SITE_PAGES.filter((page) => page.open !== wouldBeOpen(page.path)).map(
+      (page) => `${page.path}: the table says ${page.open ? "open" : "members"}, the gate says ${wouldBeOpen(page.path) ? "open" : "members"}`,
+    );
+    expect(wrong).toEqual([]);
+  });
+
+  it("lists every address once", () => {
+    const paths = SITE_PAGES.map((page) => page.path);
+    expect(new Set(paths).size).toBe(paths.length);
   });
 });

@@ -20,6 +20,7 @@ import type { Tab } from "@/lib/ui/tabs";
  */
 export const ABOUT_CHAPTERS = {
   story: "story",
+  start: "start",
   games: "games",
   roots: "roots",
   japan: "japan",
@@ -30,8 +31,8 @@ export const ABOUT_CHAPTERS = {
 export type AboutChapter = (typeof ABOUT_CHAPTERS)[keyof typeof ABOUT_CHAPTERS];
 
 /**
- * The chapters, in the order a reader meets them: why the site exists, what is
- * on it, where those games came from, the thread through all of them, how it
+ * The chapters, in the order a reader meets them: why the site exists, how to
+ * start playing and get in, what is on it, where those games came from, the thread through all of them, how it
  * counts, and who else plays.
  *
  * SIX AND NOT FIVE. The games chapter held the catalogue AND four histories
@@ -44,6 +45,7 @@ export type AboutChapter = (typeof ABOUT_CHAPTERS)[keyof typeof ABOUT_CHAPTERS];
  */
 export const ABOUT_TABS: Tab[] = [
   { key: ABOUT_CHAPTERS.story, label: "The story", kanji: "由来" },
+  { key: ABOUT_CHAPTERS.start, label: "Getting started", kanji: "入門" },
   { key: ABOUT_CHAPTERS.games, label: "The games", kanji: "種目" },
   { key: ABOUT_CHAPTERS.roots, label: "Where they came from", kanji: "来歴" },
   { key: ABOUT_CHAPTERS.japan, label: "Japan", kanji: "和" },

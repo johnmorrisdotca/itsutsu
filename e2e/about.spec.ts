@@ -8,11 +8,17 @@ import { ready } from "./support";
  */
 const CHAPTERS: Record<string, readonly string[]> = {
   story: ["Where this comes from", "Sites worth knowing"],
-  games: ["What is on the board here"],
+  start: ["How a game goes here", "In beta, free, and by invitation"],
+  games: ["What is on the board here", "The catalogue in charts"],
   roots: ["Five stones, and where they came from", "Othello", "Famous openings"],
-  japan: ["The Japanese thread", "Go, the board underneath"],
-  numbers: ["Ladders, ratings and tournaments", "Ratings, in numbers", "How a move is written down"],
-  programs: ["The players that are not people"],
+  japan: ["The Japanese thread", "Go, the board underneath", "The words on the labels"],
+  numbers: [
+    "Ladders, ratings and tournaments",
+    "Ratings, in numbers",
+    "Experience and levels",
+    "How a move is written down",
+  ],
+  programs: ["The players that are not people", "One engine, every game"],
 };
 
 /**
@@ -176,8 +182,52 @@ test.describe("about", () => {
     // The size of the game, beside the games this site does play.
     await expect(go.getByTestId("about-table")).toHaveCount(1);
     await expect(go).toContainText("2.08 × 10¹⁷⁰");
-    // It does not pretend go is playable here.
-    await expect(go).toContainText("cannot play go here yet");
+    // Go is played here now, and the section says where rather than that it is missing.
+    await expect(go).not.toContainText("cannot play go here yet");
+    await expect(go.getByRole("link", { name: "play it", exact: true })).toHaveAttribute("href", "/games/go");
+  });
+
+  /*
+   * GETTING STARTED is the chapter a stranger reads to decide whether to ask
+   * for a code, so it is checked with no session, as they would read it: the
+   * six steps, the way to ask for an invite, and the call for testers.
+   */
+  test.describe("getting started", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("a signed-out reader sees how a game goes and how to get in", async ({ page }) => {
+      const response = await page.goto("/about?view=start");
+      expect(response?.status()).toBe(200);
+
+      await expect(page.getByTestId("about-flow").locator("li")).toHaveCount(6);
+
+      const beta = page.getByTestId("about-section").filter({ hasText: "In beta, free, and by invitation" });
+      await expect(beta).toHaveCount(1);
+      await expect(beta.getByRole("link", { name: "ask for one on the join page" })).toHaveAttribute("href", "/join?ask=1");
+      await expect(beta.getByRole("link", { name: "hello@itsutsu.com", exact: true })).toHaveAttribute(
+        "href",
+        "mailto:hello@itsutsu.com",
+      );
+      await expect(beta).toContainText("looking for beta testers");
+    });
+
+    test("the way to ask for an invite really opens the request form", async ({ page }) => {
+      await page.goto("/about?view=start");
+      await page.getByRole("link", { name: "ask for one on the join page" }).click();
+      await expect(page).toHaveURL(/\/join\?ask=1$/);
+    });
+  });
+
+  test("draws the catalogue as charts, one bar per country the games come from", async ({ page }) => {
+    const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
+    const { RULE_VARIANT_DISPLAY } = await import("../src/lib/gomoku/variants.constants");
+    const countries = new Set(RULE_VARIANT_LIST.map((variant) => RULE_VARIANT_DISPLAY[variant].country).filter(Boolean));
+
+    await page.goto("/about?view=games");
+    const charts = page.getByTestId("about-bars");
+    await expect(charts).toHaveCount(3);
+    // Every country once, and one more bar for the games that belong to none.
+    await expect(charts.nth(1).locator("li")).toHaveCount(countries.size + 1);
   });
 
   test("the ratings section keeps our rules and another site's apart", async ({ page }) => {

@@ -17,11 +17,11 @@ export const UNRATED_BELOW = 4;
 export const PROVISIONAL_BELOW = 20;
 
 /** How far one game can move a rating, by tier. */
-const K_PROVISIONAL = 40;
-const K_ESTABLISHED = 20;
+export const K_PROVISIONAL = 40;
+export const K_ESTABLISHED = 20;
 
 /** Beyond this gap the favourite has nothing to gain from a win. */
-const FARMING_GAP = 400;
+export const FARMING_GAP = 400;
 
 export type Rated = {
   rating: number;

@@ -1,18 +1,20 @@
 import { Diagram } from "@/components/about/Diagram";
 import { FigureTable } from "@/components/about/FigureTable";
+import { KOMI } from "@/lib/gomoku/rules/go";
 import { Game, Inside } from "./about.links";
 import type { AboutSection } from "./about.constants";
 import { ABOUT_CHAPTERS } from "./about.chapters";
 
 /**
- * Go, which is not played here.
+ * Go, the board underneath everything here — and, since it was added to the
+ * catalogue, one of the games on it.
  *
  * The board is a go board, the stones are go stones, the display face is the
- * one a go book sets its diagrams in, and the page had never once said what
- * go is. This section says it. It is history and furniture — whether go
- * becomes a game you can play here is a much larger question and a ticket of
- * its own, and the last paragraph says so rather than letting a reader think
- * a link is missing.
+ * one a go book sets its diagrams in, and for a long time the page never said
+ * what go is. This section says it. It was written while go could not be
+ * played here and said so; it now says where to play it instead, because a
+ * page that tells a reader a game is missing when it is one click away is the
+ * dead end this site's rules exist to prevent.
  */
 
 /** A white stone with its last liberty filled: four black stones around it, and it comes off. */
@@ -80,7 +82,7 @@ const SIZES = (
       [<Game key="c" variant="dropFour">Connect Four</Game>, "7×6", "4,531,985,219,092"],
       ["Chess", "8×8", "about 4.8 × 10⁴⁴"],
       [<Game key="f" variant="freestyle">Gomoku</Game>, "15×15", "under 3²²⁵ ≈ 10¹⁰⁷"],
-      ["Go", "19×19", "2.08 × 10¹⁷⁰"],
+      [<Game key="g" variant="go">Go</Game>, "19×19", "2.08 × 10¹⁷⁰"],
     ]}
     caption={
       <>
@@ -100,8 +102,8 @@ export const GO_SECTION: AboutSection = {
   paragraphs: [
     <>
       Everything here is drawn on a go board — the grid, the star points, the clamshell-and-slate colours, the
-      mincho face the Japanese names are set in — all borrowed from a game this site does not yet let you play, so
-      it is worth saying what that game is. Go was invented in China more than two and a half thousand years ago
+      mincho face the Japanese names are set in — all borrowed from go, which is now one of the games here as well,
+      so it is worth saying what that game is. Go was invented in China more than two and a half thousand years ago
       and is the oldest board game still played with its rules essentially intact: a Chinese player of the fourth
       century BC and one of today would need a few minutes to agree the scoring and could then simply sit down. It
       is <span className="font-mincho">围棋</span> <em>weiqi</em> in China, <span className="font-mincho">바둑</span>{" "}
@@ -131,9 +133,11 @@ export const GO_SECTION: AboutSection = {
       have played and that commentators first called a mistake; it won the game, and the word they reached for
       afterwards was <em>beautiful</em>. Lee took the fourth game with move 78 of his own — the last game a human
       has won against a top program in an even match, though in 2023 a researcher beat one again by playing a
-      weakness another program had been set to go looking for, which is a different kind of win. You cannot play go
-      here yet: territory, capture, ko and passing are a family of their own and a long piece of work rather than a
-      row in a table, and the honest thing is to say so rather than leave you hunting for a link that is not there.
+      weakness another program had been set to go looking for, which is a different kind of win.
+      Go is on the board here now: <Game variant="go">play it</Game> on the small boards to learn, or the full
+      one when you are ready, with the whole board counted at the end and{" "}
+      {KOMI} points of komi for white. It sits in the territory family beside{" "}
+      <Game variant="hex">Hex</Game>, the other game here that is won by what you enclose or join rather than by a line.
     </>,
   ],
   // Two paragraphs, so only two slots: the diagrams share the first, the numbers sit under the second.

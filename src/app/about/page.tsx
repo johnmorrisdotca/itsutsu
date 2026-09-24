@@ -12,7 +12,7 @@ import { ABOUT_SECTIONS } from "./about.constants";
 export const metadata = {
   title: "About",
   description:
-    "Where Itsutsu comes from: the turn-based sites a family played on for years, a thousand years of five in a row, and the Japanese thread through all of it.",
+    "Where Itsutsu comes from, how a game here goes and how to get an invite, its games in charts, and the Japanese thread through all of it.",
 };
 
 /**
