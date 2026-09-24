@@ -91,6 +91,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `/learn` | `src/lib/learn/**` | the strategy advice depends on a rule that changed | nothing yet |
 | `/games` | `src/app/games/PublicCatalogue.tsx` | a game or family is added | `publicCatalogue.coverage.test.ts` |
 | game pictures | `public/art/games/*`, from `pnpm screenshots:games` | the board drawing changes | `boardArt.coverage.test.ts` |
+| About screenshots | `public/art/about/*`, listed in `src/app/about/about.shots.ts` | a page one of them shows changes shape: the board, the replay panel, the picture window, the set-up screen, a player's page | `about.coverage.test.ts` (each file exists, at the size the page reserves) |
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |
 
@@ -108,7 +109,10 @@ One step before `pnpm release:take`, for every release:
    either has changes of its own, so a doc fix cannot ride in the release
    commit.
 4. If the release adds something a visitor would notice, ask whether `/about`
-   or the home page should say so. That is a judgement, not a rule.
+   or the home page should say so. That is a judgement, not a rule. The
+   About page's Playing here chapter is where a feature used during a game
+   belongs; the move slider and the picture of every position shipped on
+   2026-09-23 and were on no page until John asked where they were.
 5. If the release renames or removes something a doc might name (a route, a
    status, a script, a family), grep `README.md` and `docs/` for the old name.
 

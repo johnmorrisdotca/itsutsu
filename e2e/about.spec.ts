@@ -9,6 +9,7 @@ import { ready } from "./support";
 const CHAPTERS: Record<string, readonly string[]> = {
   story: ["Where this comes from", "Sites worth knowing"],
   start: ["How a game goes here", "In beta, free, and by invitation"],
+  play: ["At the board", "Every move, forwards and back", "The game as one picture", "Playing with people"],
   games: ["What is on the board here", "The catalogue in charts"],
   roots: ["Five stones, and where they came from", "Othello", "Famous openings"],
   japan: ["The Japanese thread", "Go, the board underneath", "The words on the labels"],
@@ -215,6 +216,33 @@ test.describe("about", () => {
       await page.goto("/about?view=start");
       await page.getByRole("link", { name: "ask for one on the join page" }).click();
       await expect(page).toHaveURL(/\/join\?ask=1$/);
+    });
+  });
+
+  test.describe("playing here", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("a signed-out reader sees the site in pictures, and every picture loads", async ({ page }) => {
+      const { SHOTS } = await import("../src/app/about/about.shots");
+      const response = await page.goto("/about?view=play");
+      expect(response?.status()).toBe(200);
+
+      const shots = page.getByTestId("about-shot").locator("img");
+      await expect(shots).toHaveCount(Object.keys(SHOTS).length);
+      for (const img of await shots.all()) {
+        await img.scrollIntoViewIfNeeded();
+        await expect(img).toHaveJSProperty("complete", true);
+        expect(await img.evaluate((el) => (el as HTMLImageElement).naturalWidth), (await img.getAttribute("src")) ?? "").toBeGreaterThan(0);
+      }
+    });
+
+    test("names the move slider and the picture of every position", async ({ page }) => {
+      await page.goto("/about?view=play");
+      const replay = page.getByTestId("about-section").filter({ hasText: "Every move, forwards and back" });
+      await expect(replay).toContainText("slider");
+      const picture = page.getByTestId("about-section").filter({ hasText: "The game as one picture" });
+      await expect(picture).toContainText("wallpaper");
+      await expect(picture.getByRole("link", { name: "Famous games" }).first()).toHaveAttribute("href", "/famous");
     });
   });
 

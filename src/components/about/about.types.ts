@@ -80,3 +80,14 @@ export type FlowProps = {
   caption: ReactNode;
   label: string;
 };
+
+/** A screenshot of the site, from `public/art/about/`. */
+export type ShotProps = {
+  src: string;
+  alt: string;
+  /** The file's own size in pixels, so the page keeps the space before it loads. */
+  width: number;
+  height: number;
+  /** Taken at a phone's width: drawn narrow rather than stretched to the column. */
+  phone?: boolean;
+};

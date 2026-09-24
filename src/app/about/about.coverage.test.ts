@@ -8,6 +8,7 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { ABOUT_TABS } from "./about.chapters";
 import { ABOUT_SECTIONS } from "./about.constants";
 import { SITE_PAGES } from "./about.pages";
+import { SHOTS } from "./about.shots";
 import { wouldBeOpen } from "@/proxy";
 
 /**
@@ -147,5 +148,47 @@ describe("the site map on the About page", () => {
   it("lists every address once", () => {
     const paths = SITE_PAGES.map((page) => page.path);
     expect(new Set(paths).size).toBe(paths.length);
+  });
+});
+
+/**
+ * A JPEG's size, read from its frame header, so the width and height the page
+ * reserves for a screenshot are the file's own and not a guess.
+ */
+function jpegSize(file: Buffer): { width: number; height: number } | null {
+  let at = 2;
+  while (at < file.length) {
+    if (file[at] !== 0xff) return null;
+    const marker = file[at + 1];
+    const length = file.readUInt16BE(at + 2);
+    if (marker >= 0xc0 && marker <= 0xc3) return { height: file.readUInt16BE(at + 5), width: file.readUInt16BE(at + 7) };
+    at += 2 + length;
+  }
+  return null;
+}
+
+/**
+ * EVERY SCREENSHOT NAMED IS A FILE, AT THE SIZE THE PAGE SAYS IT IS.
+ *
+ * A missing file is a broken picture on the page a stranger reads first, and
+ * a wrong size makes the page jump as it loads. Retaking a screenshot at a new
+ * size means changing its row in `about.shots.ts` too.
+ */
+describe("the screenshots on the About page", () => {
+  it("are all in public/, at the size the page reserves for them", () => {
+    const wrong = Object.values(SHOTS).flatMap((shot) => {
+      let file: Buffer;
+      try {
+        file = readFileSync(join(process.cwd(), "public/art/about", shot.src.replace("/art/about/", "")));
+      } catch {
+        return [`${shot.src}: no such file`];
+      }
+      const size = jpegSize(file);
+      if (size === null) return [`${shot.src}: not a JPEG`];
+      return size.width === shot.width && size.height === shot.height
+        ? []
+        : [`${shot.src}: the file is ${size.width}×${size.height}, the page says ${shot.width}×${shot.height}`];
+    });
+    expect(wrong).toEqual([]);
   });
 });
