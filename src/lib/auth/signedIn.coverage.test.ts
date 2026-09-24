@@ -180,7 +180,13 @@ describe("what only an account can do is decided by the account", () => {
   it("takes each switch from reader.hasAccount, or hands on one that was", () => {
     const wrong = SWITCHES.flatMap((name) =>
       valuesGiven(name)
-        .filter((one) => ![...HANDED_ON(name), "reader.hasAccount"].includes(one.expression))
+        /*
+         * Handed on under any of the three names: each is an account switch
+         * held to this same rule where it was set, so a set-up screen's
+         * `canAsk` handed to a puzzle's `hasAccount` is still the reader's
+         * account, decided once.
+         */
+        .filter((one) => ![...SWITCHES.flatMap(HANDED_ON), "reader.hasAccount"].includes(one.expression))
         .filter((one) => !(one.path === "src/lib/auth/reader.ts" && name === "hasAccount"))
         .map((one) => `${one.path}:${one.line} ${name} = ${one.expression}`),
     );
