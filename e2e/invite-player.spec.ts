@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, expiryInDays, signSession } from "../src/lib/auth/session";
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { ADMIN_STATE, ready, startAndBegin } from "./support";
+import { ADMIN_STATE, answerAgeBand, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /**
@@ -102,8 +102,9 @@ test.describe("a player who came in with an invite code", () => {
     await expect(page.getByTestId("invite-code")).toHaveValue(code);
     await page.getByTestId("join-submit").click();
 
-    // THE WELCOME: an account with a placeholder name, and the one thing it lacks said out loud.
+    // THE WELCOME: the age question first, then an account with a placeholder name, and the one thing it lacks said out loud.
     await expect(page).toHaveURL(/\/me\?welcome=1/);
+    await answerAgeBand(page);
     await expect(page.getByTestId("welcome")).toBeVisible();
     await expect(page.getByTestId("welcome-no-address")).toBeVisible();
     await expect(page.getByTestId("me-name")).toContainText("Guest");
@@ -173,6 +174,7 @@ test.describe("a player who came in with an invite code", () => {
     await ready(page, "join-form");
     await page.getByTestId("join-submit").click();
     await expect(page).toHaveURL(/\/me\?welcome=1/);
+    await answerAgeBand(page);
     const guestName = ((await page.getByTestId("me-name").textContent()) ?? "").trim();
     expect(guestName).toContain("Guest");
     madeMembers.push((await memberNamed(guestName)).id);

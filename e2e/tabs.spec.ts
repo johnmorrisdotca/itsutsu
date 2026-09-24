@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-import { expectTabs } from "./support";
+import { memberContext, removeMember } from "./members";
+import { answerAgeBand, expectTabs } from "./support";
 
 /**
  * A page with several sections shows one at a time, and the address says
@@ -141,16 +142,31 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tab").filter({ hasText: "New games" })).toHaveAttribute("data-open", "true");
   });
 
-  test("a new member is asked one question, with no tabs under it", async ({ page }) => {
+  test("a new member is asked one question at a time, with no tabs under it", async ({ browser, baseURL }) => {
     /*
-     * The welcome exists to ask for a name and nothing else. A row of tabs
-     * beneath it is the rest of the site arriving before that is answered,
-     * which is what the page was already avoiding by hiding those panels.
+     * The welcome exists to ask what the site needs and nothing else. A row of
+     * tabs beneath it is the rest of the site arriving before that is
+     * answered, which is what the page was already avoiding by hiding those
+     * panels. A member of its own, because answering writes to the row and a
+     * retry on the operator's would find the question already answered.
      */
-    await page.goto("/me?welcome=1");
-    await expect(page.getByTestId("welcome")).toBeVisible();
-    await expect(page.getByTestId("name-form")).toBeVisible();
-    await expect(page.getByTestId("tabs")).toHaveCount(0);
+    const stamp = Date.now().toString(36);
+    const me = { email: `welcome-${stamp}@example.test`, name: `Welcome ${stamp}` };
+    const context = await memberContext(browser, baseURL!, me);
+    try {
+      const page = await context.newPage();
+      await page.goto("/me?welcome=1");
+      await expect(page.getByTestId("welcome")).toBeVisible();
+      // The age band first (PRIV-02), then the name, and no tabs under either.
+      await expect(page.getByTestId("age-band-form")).toBeVisible();
+      await expect(page.getByTestId("tabs")).toHaveCount(0);
+      await answerAgeBand(page);
+      await expect(page.getByTestId("name-form")).toBeVisible();
+      await expect(page.getByTestId("tabs")).toHaveCount(0);
+    } finally {
+      await context.close();
+      await removeMember(me.email);
+    }
   });
 
   test("the operator's page is seven tabs, one part at a time", async ({ page }) => {

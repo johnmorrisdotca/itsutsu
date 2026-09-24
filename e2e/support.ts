@@ -468,6 +468,19 @@ export async function ready(page: Page, testId: string) {
 }
 
 /**
+ * A NEW MEMBER IS ASKED THEIR AGE BAND BEFORE ANYTHING ELSE, on the welcome,
+ * with the name question behind it. A spec about what comes after answers it
+ * the way a reader does — a tile and Save — as 18 or over, and waits for the
+ * question to go. `age-band.spec.ts` is where the question itself is tested.
+ */
+export async function answerAgeBand(page: Page) {
+  await ready(page, "age-band-form");
+  await page.locator('[data-testid="age-band-option"][data-band="18_plus"]').click();
+  await page.getByTestId("age-band-save").click();
+  await expect(page.getByTestId("age-band-form")).toHaveCount(0);
+}
+
+/**
  * The same wait, against a control a spec has already narrowed down.
  *
  * `ready` asks the whole page for a test id, which is exactly right for a
