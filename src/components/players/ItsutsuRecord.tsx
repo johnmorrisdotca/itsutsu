@@ -228,6 +228,7 @@ function OpponentActions({
       isComputer={Boolean(them.botTier)}
       isYou={them.id !== undefined && them.id === opponents.me}
       canAsk={opponents.canAsk}
+      reachable={them.id === undefined || !opponents.closed.has(them.id)}
     />
   );
 }

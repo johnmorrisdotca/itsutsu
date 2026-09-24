@@ -16,6 +16,8 @@ export type RecordOpponents = {
   buddies: Set<string>;
   /** Member ids the reader has ignored. */
   ignored: Set<string>;
+  /** Members under 13 who have not made the reader a buddy (`closedToReader`). */
+  closed: Set<string>;
   /** The reader's own member id. */
   me: string | null;
   /** `Reader.hasAccount`: whether the reader can ask anybody anything. */

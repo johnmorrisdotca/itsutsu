@@ -20,6 +20,7 @@ import { playerKey } from "@/lib/rating/playerKey";
 import { buddyMemberIds } from "@/lib/social/buddies";
 import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
+import { closedToReader } from "@/lib/social/childReach";
 
 export const metadata = { title: "Standings 名人" };
 
@@ -77,6 +78,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
           buddyMemberIds(reader.memberId),
           ignoredMemberIds(reader.memberId),
         ]);
+  const closed = await closedToReader(reader.memberId, [...members.values()].flatMap((member) => (member.id ? [member.id] : [])));
   const actionsFor = (standing: VariantStanding) => {
     const member = members.get(playerKey(standing.name));
     const id = member?.id;
@@ -89,6 +91,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
         isComputer={Boolean(member?.botTier)}
         isYou={id !== undefined && id === reader.memberId}
         canAsk={reader.hasAccount}
+        reachable={id === undefined || !closed.has(id)}
         compact
         testId="ladder-actions"
         name={standing.name}

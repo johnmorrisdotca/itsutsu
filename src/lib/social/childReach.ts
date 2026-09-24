@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
+import { AGE_BANDS } from "./ageBand.constants";
 import { mayReach } from "./childRules";
 
 /**
@@ -19,4 +20,26 @@ export async function mayReachMember(toId: string, fromId: string): Promise<bool
     select: { ownerId: true },
   });
   return mayReach(to.ageBand, buddy !== null);
+}
+
+/**
+ * Of these members, the ones the reader may not reach: members under 13 whose
+ * own buddy list does not hold the reader. For a page of rows — the directory,
+ * a ladder, a record's opponents — in two queries for the whole page, never
+ * one per row. Empty for a reader with no account, who is offered nothing
+ * anyway.
+ */
+export async function closedToReader(readerId: string | null, memberIds: readonly string[]): Promise<Set<string>> {
+  if (readerId === null || memberIds.length === 0) return new Set();
+  const children = await prisma.member.findMany({
+    where: { id: { in: [...memberIds] }, ageBand: AGE_BANDS.under13 },
+    select: { id: true },
+  });
+  if (children.length === 0) return new Set();
+  const opened = await prisma.buddy.findMany({
+    where: { ownerId: { in: children.map((child) => child.id) }, buddyId: readerId },
+    select: { ownerId: true },
+  });
+  const open = new Set(opened.map((row) => row.ownerId));
+  return new Set(children.map((child) => child.id).filter((id) => !open.has(id)));
 }

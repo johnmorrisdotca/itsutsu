@@ -18,6 +18,7 @@ import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
 import { countText } from "@/lib/rating/figures";
+import { closedToReader } from "@/lib/social/childReach";
 
 /**
  * The games people have actually played of one game, beside its rules.
@@ -113,6 +114,8 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
   const people = names
     .map((name) => ({ name, member: members.get(playerKey(name)) }))
     .filter((one): one is { name: string; member: NamedMember } => one.member !== undefined);
+  // Members under 13 who have not made the reader a buddy: no game is offered on their line (childReach.ts).
+  const closed = await closedToReader(mine, people.flatMap(({ member }) => (member.id ? [member.id] : [])));
   /*
    * NOT HIDDEN WHEN EMPTY. This used to `return null` here, which is the thing
    * John objected to: "empty tables are fine! show the table. Show nothing has
@@ -209,6 +212,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
                   isComputer={Boolean(member.botTier)}
                   isYou={member.id !== undefined && member.id === reader.memberId}
                   canAsk={reader.hasAccount}
+                  reachable={member.id === undefined || !closed.has(member.id)}
                 />
               </li>
             ))}

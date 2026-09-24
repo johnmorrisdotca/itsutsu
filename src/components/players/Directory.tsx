@@ -29,6 +29,7 @@ import { ignoredMemberIds } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import { directoryActions } from "./directoryActions";
+import { closedToReader } from "@/lib/social/childReach";
 
 /**
  * One member's row, worked out from their profile and what they played
@@ -283,8 +284,9 @@ export async function Directory({
     mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
     mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
-  const actions = directoryActions(reader, buddies, ignored, now);
   const people = page.items;
+  const closed = await closedToReader(mine, people.map((entry) => entry.id));
+  const actions = directoryActions(reader, buddies, ignored, now, closed);
   const anyKept = people.some(
     (entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0,
   );

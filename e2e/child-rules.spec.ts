@@ -67,12 +67,21 @@ test("a child keeps nothing that says where they are, and only their own buddies
     expect(written.status()).toBe(403);
     expect(((await written.json()) as { reason?: string }).reason).toBe("child-buddies-only");
 
+    // And in the players directory, where the child is seen most recently: their row offers no game.
+    await page.goto("/players");
+    // Found by the link to their page: the directory shortens a name to its first word and an initial.
+    const listed = page.locator("tr", { has: page.locator(`a[href="${playerPath(child.name, childId)}"]`) });
+    await expect(listed).toHaveCount(1);
+    await expect(listed.getByTestId("challenge")).toHaveCount(0);
+
     // The child adds the stranger as a buddy, and both open.
     const operatorId = await memberIdFor(suiteOperator().email);
     await prisma.buddy.create({ data: { ownerId: childId, buddyId: operatorId } });
     await page.goto(playerPath(child.name, childId));
     await expect(actions.getByTestId("challenge")).toBeVisible();
     await expect(actions.getByTestId("child-closed")).toHaveCount(0);
+    await page.goto("/players");
+    await expect(listed.getByTestId("challenge")).toHaveCount(1);
     const now = await page.request.post("/api/messages", { data: { to: childId, text: "hello" } });
     expect(now.ok(), await now.text()).toBe(true);
   } finally {

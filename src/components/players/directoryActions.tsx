@@ -31,6 +31,8 @@ export function directoryActions(
   buddies: Set<string>,
   ignored: Set<string>,
   now: Date,
+  /** Members under 13 who have not made the reader a buddy: no game is offered on their row (`closedToReader`). */
+  closed: Set<string> = new Set(),
 ) {
   return {
     // Shown only where the member lets it be, and never for a member under 13 (`presence`).
@@ -52,7 +54,7 @@ export function directoryActions(
             site — the button sits at the end of every line of a long list — and
             it used to create a game of Gomoku on the spot.
           */}
-          <ChallengeButton memberId={entry.id} />
+          {closed.has(entry.id) ? null : <ChallengeButton memberId={entry.id} />}
           <RowMore
             memberId={entry.id}
             name={shownName(entry.name)}

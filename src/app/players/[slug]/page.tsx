@@ -46,6 +46,7 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { mayReachMember } from "@/lib/social/childReach";
 import { showsLocalTime } from "@/lib/social/childRules";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
+import { closedToReader } from "@/lib/social/childReach";
 
 export const metadata = { title: "Player" };
 
@@ -153,15 +154,18 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * checklist, and this list named ten people and offered nothing about any
    * of them.
    */
-  const opponents = reader.hasAccount
-    ? {
-        members: await findMembersByNames(record.recent.map((one) => one.opponent)),
-        buddies: myBuddies,
-        ignored: myIgnored,
-        me: reader.memberId,
-        canAsk: reader.hasAccount,
-      }
-    : undefined;
+  const opponentRows = reader.hasAccount ? await findMembersByNames(record.recent.map((one) => one.opponent)) : null;
+  const opponents =
+    opponentRows !== null
+      ? {
+          members: opponentRows,
+          buddies: myBuddies,
+          ignored: myIgnored,
+          closed: await closedToReader(reader.memberId, [...opponentRows.values()].flatMap((member) => (member.id ? [member.id] : []))),
+          me: reader.memberId,
+          canAsk: reader.hasAccount,
+        }
+      : undefined;
   /*
    * THE SAME RULE `Directory.tsx` APPLIES TO THE SAME PROFILE. `player.rating`
    * is the people-pool column alone, and it defaults to the untouched schema
