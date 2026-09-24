@@ -2,7 +2,7 @@
 
 # 五つ · Itsutsu
 
-**Forty-five board games on one engine, and a puzzle beside them.** Gomoku and renju, Othello and Go,
+**Forty-five board games on one engine, and two puzzles beside them.** Gomoku and renju, Othello and Go,
 checkers and draughts, Hex and Halma — two players in one browser, or two
 devices a QR code apart.
 
@@ -73,9 +73,9 @@ The variables that matter first, all described in `.env.example`:
 
 ## What it does
 
-### Forty-five games and a puzzle, in eight families
+### Forty-five games and two puzzles, in eight families
 
-The site began as one game and is now forty-five board games and one puzzle,
+The site began as one game and is now forty-five board games and two puzzles,
 grouped into eight families on `/games` (`GAME_FAMILIES` in
 `src/lib/gomoku/families.ts`):
 
@@ -88,7 +88,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Checkers | 6 |
 | Territory and races | 4 |
 | Small boards | 6 |
-| Numbers | 1 |
+| Numbers | 2 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -113,9 +113,11 @@ is not a variant — the engine cannot play it, nobody is rated at it and no
 same gates: `puzzles.coverage.test.ts` asks a puzzle what
 `variants.coverage.test.ts` asks a game.
 
-Everything that thinks runs in the browser. The generator, the uniqueness
-check and the difficulty rating are ours (`numberPlace/generate.ts`,
-`solve.ts`), seeded so the same number makes the same grid in every browser,
+Everything that thinks runs in the browser. The generators, the uniqueness
+checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`;
+Hidden Stones grows its regions out from a placed answer and then tightens
+the grid until the solver counts one), seeded so the same number makes the
+same grid in every browser,
 and the solve page makes its puzzle after it has loaded (`ssr: false`). The
 one thing the server does is `POST /api/puzzles/solved`: an O(cells) check
 that a member's finished grid is a solution (`puzzleCheck.ts`), and the XP
@@ -126,6 +128,7 @@ met. Nothing polls and nothing is timed on a server.
 | Puzzle | Our version of | Sizes | Levels |
 | --- | --- | --- | --- |
 | **Number Place** ナンプレ | Sudoku (Nikoli's name for it, a trademark in Japan; Number Place is the puzzle's original name) | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
+| **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5 to 10×10 | easy (reasoning alone finishes it), hard (a stone has to be tried) |
 
 A solve is not kept yet: the puzzle's page has no record and no fastest
 times until the tables in `docs/plans/numbers/NUM-05-race-a-friend.md` land,

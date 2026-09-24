@@ -176,6 +176,7 @@ describe("the economy holds its shape", () => {
     // 23,040 since the Numbers family opened with Number Place the same day:
     // a family met (+150) and a first solve of one puzzle (+50). A puzzle has
     // no first WIN and its family cannot be won, so nothing else moves.
+    // 23,090 with Hidden Stones beside it: a first solve of a second puzzle.
     const perVariant = 44;
     const perPuzzle = PUZZLE_KIND_LIST.length;
     // Read from the table rather than written down, so a merge or a new family
@@ -204,7 +205,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_040);
+    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

@@ -12,8 +12,10 @@ import { fingerprintOf } from "../gomoku/ladderFingerprint.ts";
  */
 export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/PuzzleGrid.tsx",
+  "src/components/puzzles/HiddenStonesGrid.tsx",
   "src/components/puzzles/puzzles.constants.ts",
   "src/lib/puzzles/numberPlace/generate.ts",
+  "src/lib/puzzles/hiddenStones/generate.ts",
   "e2e/puzzle-screenshots.spec.ts",
 ];
 

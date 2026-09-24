@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
+import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 import { NO_HANDICAP, NO_HEAD_START, RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 
@@ -628,9 +629,9 @@ function smallestFamily(): (typeof GAME_FAMILIES)[number] {
   )[0];
 }
 
-/** A puzzle solved: the one game on the tour no finished game can meet. */
+/** Every puzzle solved: the games on the tour no finished game can meet. */
 async function solvedAPuzzle(memberId: string): Promise<void> {
-  await awardXp({ memberId, awards: puzzleAwards("numberPlace", 4, "1..4.3..2.1..4.3") });
+  for (const kind of PUZZLE_KIND_LIST) await awardXp({ memberId, awards: puzzleAwards(kind, 4, "1..4.3..2.1..4.3") });
 }
 
 describe("the tour's two bonuses", () => {
@@ -644,7 +645,7 @@ describe("the tour's two bonuses", () => {
 
     expect(paid("completer", "everyVariantPlayed")).toBe(1);
     expect(paid("completer", "everyFamilyPlayed")).toBe(1);
-    expect(paid("completer", "firstOfVariant")).toBe(RULE_VARIANT_LIST.length + 1);
+    expect(paid("completer", "firstOfVariant")).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
   });
 
   it("pays them even though the day's allowance stopped the finishes", async () => {

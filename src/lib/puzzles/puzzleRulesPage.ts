@@ -31,8 +31,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
   ];
   const house = [
-    "A finished puzzle is checked by the site — every row, column and box, and every given left where it was — and a member is paid XP for a grid that is right, once per grid.",
-    "A puzzle you did not finish is not kept. Come back to the same address and the same givens are there; the clock starts again.",
+    "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
+    "A puzzle you did not finish is not kept. Come back to the same address and the same puzzle is there; the clock starts again.",
     "Nothing is rated, nobody is beaten and no ladder counts a solve. A puzzle is a game in the catalogue and not a game between two players.",
   ];
 

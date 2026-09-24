@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     const kind = parsed.data.kind as (typeof PUZZLE_KIND_LIST)[number];
     const spec = PUZZLE_SPECS[kind];
     if (!spec.sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
-    if (givens.length !== answer.length || givens.length > spec.mostCells) return unprocessable("Not a grid of that size.");
+    if (givens.length > spec.mostCells || answer.length > spec.mostCells) return unprocessable("Not a grid of that size.");
 
     const verdict = checkSolution(kind, size, givens, answer);
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);

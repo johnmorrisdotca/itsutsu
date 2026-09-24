@@ -123,8 +123,9 @@ test.describe("the first puzzle", () => {
     await expect(family.locator('[data-testid="family-game"][data-variant="numberPlace"]')).toHaveCount(1);
     // Folded shut like every family but the first: open it, then its line is there to read.
     await family.locator("summary").click();
-    await expect(family.getByTestId("puzzle-line")).toBeVisible();
-    await expect(family.getByTestId("puzzle-line-solve")).toHaveAttribute("href", `${AT}/new`);
+    const card = family.locator(`[data-testid="family-game"][data-variant="${KIND}"]`);
+    await expect(card.getByTestId("puzzle-line")).toBeVisible();
+    await expect(card.getByTestId("puzzle-line-solve")).toHaveAttribute("href", `${AT}/new`);
 
     await page.goto("/games/new");
     await expect(page.getByRole("tab", { name: /Numbers/ })).toHaveCount(0);

@@ -8,7 +8,7 @@ import { gameArtPath, gameThumbPath } from "@/lib/gomoku/artwork";
 import { GAME_FAMILIES, boardGamesOf, familyOf } from "@/lib/gomoku/families";
 import { PUZZLE_SLUGS, slugFor } from "@/lib/gomoku/slugs";
 
-import { generateNumberPlace } from "./numberPlace/generate";
+import { generatePuzzle } from "./generate";
 import { checkSolution } from "./puzzleCheck";
 import { puzzleRulesPage } from "./puzzleRulesPage";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
@@ -31,12 +31,12 @@ import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /** The generator for a kind, or null while a kind is declared and not yet made. */
 function makerFor(kind: PuzzleKind): ((size: number, level: PuzzleLevel, seed: number) => Puzzle) | null {
-  switch (kind) {
-    case "numberPlace":
-      return generateNumberPlace;
-    default:
-      return null;
+  try {
+    generatePuzzle(kind, PUZZLE_SPECS[kind].sizes[0], PUZZLE_SPECS[kind].levels[0], 1);
+  } catch {
+    return null;
   }
+  return (size, level, seed) => generatePuzzle(kind, size, level, seed);
 }
 
 function sourcesUnder(dir: string, suffix: string): string {

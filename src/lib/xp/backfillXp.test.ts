@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
+import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 
 import { ledgerDisagreements } from "./backfillPay";
@@ -37,9 +38,9 @@ function smallestFamily(): (typeof GAME_FAMILIES)[number] {
   )[0];
 }
 
-/** A puzzle already solved, so a tour of the board games can complete the set that now counts the puzzles. */
+/** Every puzzle already solved, so a tour of the board games can complete the set that now counts the puzzles. */
 const PUZZLE_SOLVED: HeldEvent[] = [
-  { memberId: "a", type: XP_EVENTS.firstOfVariant, subject: "numberPlace", dayKey: "2026-01-01" },
+  ...PUZZLE_KIND_LIST.map((kind) => ({ memberId: "a", type: XP_EVENTS.firstOfVariant, subject: kind, dayKey: "2026-01-01" })),
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "numbers", dayKey: "2026-01-01" },
 ];
 /* A Wednesday and the Saturday after it, for the weekend award. */

@@ -1,3 +1,4 @@
+import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { boxOf } from "./numberPlace/boxes";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -22,6 +23,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
   switch (kind) {
     case "numberPlace":
       return checkNumberPlace(size, givens, answer);
+    case "hiddenStones":
+      return checkHiddenStones(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -51,6 +54,26 @@ function checkNumberPlace(size: number, givens: string, answer: string): PuzzleC
     rows[row] |= bit;
     cols[col] |= bit;
     boxes[box] |= bit;
+  }
+  return { ok: true };
+}
+
+/** One stone per row (the answer's shape), every column and region once, and no two stones touching. */
+function checkHiddenStones(size: number, givens: string, answer: string): PuzzleCheck {
+  const regions = decodeRegions(givens, size);
+  const stones = decodeStones(answer, size);
+  if (regions === null) return { ok: false, reason: "the regions are not a grid" };
+  if (stones === null) return { ok: false, reason: "the answer is not a stone in every row" };
+  const columns = new Set<number>();
+  const used = new Set<number>();
+  for (let row = 0; row < size; row += 1) {
+    const col = stones[row];
+    if (columns.has(col)) return { ok: false, reason: `column ${col + 1} has two stones` };
+    columns.add(col);
+    const region = regions[row * size + col];
+    if (used.has(region)) return { ok: false, reason: "a region has two stones" };
+    used.add(region);
+    if (row > 0 && Math.abs(col - stones[row - 1]) < 2) return { ok: false, reason: `the stones in rows ${row} and ${row + 1} touch` };
   }
   return { ok: true };
 }

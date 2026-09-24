@@ -22,16 +22,16 @@ export const PUZZLE_KINDS = {
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
-export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [PUZZLE_KINDS.numberPlace];
+export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [PUZZLE_KINDS.numberPlace, PUZZLE_KINDS.hiddenStones];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
 
 export const PUZZLE_LEVEL_LIST: readonly PuzzleLevel[] = ["easy", "medium", "hard"];
 
 export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: string; blurb: string }> = {
-  easy: { label: "Easy", kanji: "初級", blurb: "Every cell can be found by looking; nothing has to be tried." },
+  easy: { label: "Easy", kanji: "初級", blurb: "Every step can be found by looking; nothing has to be tried." },
   medium: { label: "Medium", kanji: "中級", blurb: "Looking gets you most of the way; somewhere you have to try one thing and see." },
-  hard: { label: "Hard", kanji: "上級", blurb: "Fewer givens, and more than one place you have to try something." },
+  hard: { label: "Hard", kanji: "上級", blurb: "More than one place where you have to try something and see." },
 };
 
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
@@ -71,7 +71,8 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     rules: [
       "Place a black stone in every row, every column and every region, one each.",
       "No two stones may touch, not even at a corner.",
-      "Every puzzle has exactly one answer. A cross marks a cell you have ruled out; the puzzle is done when every row has its stone.",
+      "Every puzzle has exactly one answer. Tap a cell once for a stone, again for a cross to mark a cell you have ruled out, and again to clear it; the puzzle is done when every row's stone is right.",
+      "Easy puzzles yield to looking alone; hard ones ask you to try a stone somewhere and see.",
     ],
     board: "7×7 is the everyday size. 5×5 is a first puzzle; 10×10 is an evening.",
   },

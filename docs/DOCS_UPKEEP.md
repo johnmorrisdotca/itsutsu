@@ -24,7 +24,7 @@ this careful:
 | Doc | What it says | What is true |
 |---|---|---|
 | `README.md`, "The backlog" | five statuses: proposed 提案, planned 予定, building 作業中, done 完了, dropped 見送り | four since the board moved to Sumilabu: open, inProgress, done, dropped (`src/lib/backlog/backlog.constants.ts`, which records why `proposed` and `planned` were merged) |
-| `README.md`, headline and "Forty-five games and a puzzle, in eight families" | 45 board games and 1 puzzle in 8 families | true today (checked 2026-09-24, after the races joined Territory and Numbers opened), but typed by hand. It goes stale with the next game, and the tests that stop the About and home pages doing this do not read the README |
+| `README.md`, headline and "Forty-five games and two puzzles, in eight families" | 45 board games and 2 puzzles in 8 families | true today (checked 2026-09-24, after the races joined Territory and Numbers opened), but typed by hand. It goes stale with the next game, and the tests that stop the About and home pages doing this do not read the README |
 
 So the plan does two things. It moves as much as it can into the tested group.
 For what cannot be tested, it names who changes the doc and when, and it adds a
@@ -130,7 +130,7 @@ None of these is built yet. Each is one test file or one script.
 1. **The README counts from the catalogue.** Extend the About page's
    no-counts-in-prose rule to `README.md`. The README is Markdown and cannot
    interpolate, so the test takes a different shape: it reads the number the
-   README states ("Forty-five games and a puzzle, in eight families") and fails when it is
+   README states ("Forty-five games and two puzzles, in eight families") and fails when it is
    not `RULE_VARIANT_LIST.length` and `GAME_FAMILIES.length`. When game 46
    lands, the build says which sentence to change.
 2. **Retired words.** One test that reads `README.md` and `docs/**/*.md` (not
