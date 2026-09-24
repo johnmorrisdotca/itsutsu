@@ -1,6 +1,7 @@
 import { CAPTURE_CHOICES, CROWN_MID_CAPTURE, ENDGAME_COUNT_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { CheckersRules, EndgameCount, PieceTally, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { NO_PROGRESS_RULES, PROGRESS_MEASURES } from "@/lib/gomoku/rules/noProgress";
+import { inWords } from "@/lib/text/inWords";
 
 /**
  * The rules page's sentences for a game of the checkers family, written from
@@ -9,20 +10,6 @@ import { NO_PROGRESS_RULES, PROGRESS_MEASURES } from "@/lib/gomoku/rules/noProgr
  * differently, and English checkers reads exactly as it did before the family
  * had other games in it.
  */
-
-const SMALL = [
-  "no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
-];
-const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
-
-/** A count under two hundred in words, as a sentence on this page uses one: "sixty-four", "hundred and forty-four". */
-export function inWords(count: number): string {
-  if (count >= 100) return count === 100 ? "hundred" : `hundred and ${inWords(count - 100)}`;
-  if (count < 20) return SMALL[count];
-  const unit = count % 10;
-  return unit === 0 ? TENS[Math.floor(count / 10)] : `${TENS[Math.floor(count / 10)]}-${SMALL[unit]}`;
-}
 
 /** A short list in words: "a", "a or b", "a, b or c". */
 function either(items: string[]): string {

@@ -1,6 +1,15 @@
+import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { StreakOutcome } from "@/lib/rating/streak";
+import { inWords } from "@/lib/text/inWords";
 
 import type { XpEventSpec, XpEventType } from "./xp.types";
+
+/*
+ * How many games there are, in words, read from the catalogue. The awards said
+ * "forty-four" after the forty-fifth game arrived; a count written into a
+ * sentence is wrong the day a game is added, so these sentences count instead.
+ */
+const GAMES = inWords(RULE_VARIANT_LIST.length);
 
 /**
  * Everything that earns XP on this site, priced, named and explained.
@@ -330,14 +339,14 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 50,
     label: "A game you had not played",
     kanji: "初手合",
-    blurb: "For your first game of a game. There are forty-four of them.",
+    blurb: `For your first game of a game. There are ${GAMES} of them.`,
     sentence: "A game you had never played.",
   },
   firstWinAtVariant: {
     points: 10,
     label: "First win at a game",
     kanji: "初勝",
-    blurb: "For your first win at one of the forty-four.",
+    blurb: `For your first win at one of the ${GAMES}.`,
     sentence: "Your first win at this one.",
   },
   firstOfFamily: {
@@ -358,8 +367,8 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 5000,
     label: "Every game played",
     kanji: "全種",
-    blurb: "For playing all forty-four games on the site.",
-    sentence: "All forty-four games played.",
+    blurb: `For playing all ${GAMES} games on the site.`,
+    sentence: `All ${GAMES} games played.`,
   },
   /* A family won is 300 — twice `firstOfFamily` — and the balance John left to us
      ("winning a while famly? i dunno, look at balance and determine"). Winning
