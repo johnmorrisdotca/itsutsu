@@ -100,8 +100,11 @@ test.describe("the games index", () => {
     await ready(page, "set-up-game");
 
     const tabs = page.getByTestId("set-up-family");
-    // The set-up screen offers the families with a game two people can play: the puzzles are not on it.
-    const offered = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0);
+    // Every family, the ones with a game two people can play first and then the puzzles (0.285.2: John wanted Numbers on this screen too).
+    const offered = [
+      ...GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0),
+      ...GAME_FAMILIES.filter((family) => boardGamesOf(family).length === 0),
+    ];
     await expect(tabs).toHaveCount(offered.length);
     for (let index = 0; index < offered.length; index += 1) {
       const tab = tabs.nth(index);
