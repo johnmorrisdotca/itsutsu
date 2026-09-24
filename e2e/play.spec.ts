@@ -52,7 +52,8 @@ test.describe("awareness", () => {
       [7, 5],
     ]);
 
-    const banner = page.getByRole("status").first();
+    // The game's own status, by what makes it one: the page carries another status, the XP toast's announcer.
+    const banner = page.locator('[role="status"][data-outlook]').first();
     await expect(banner).toHaveAttribute("data-outlook", /danger|critical/);
   });
 
