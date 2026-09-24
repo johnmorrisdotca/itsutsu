@@ -15,6 +15,17 @@ Postgres
 
 ---
 
+- **New to the code?** Read this page, then
+  [`docs/CORE_CONCEPTS.md`](docs/CORE_CONCEPTS.md) for the ideas it rests on,
+  [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how it fits together and
+  [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) for the database.
+- **Changing the code?** [`AGENTS.md`](AGENTS.md) is the rulebook. It is long
+  because every rule in it was learned the hard way, and the gates enforce most
+  of it.
+
+The site is in beta, free, and joining is by invitation. Anybody can read the
+games and their rules without one.
+
 ## Contents
 
 - [Getting started](#getting-started)
@@ -27,34 +38,68 @@ Postgres
 - [Embedding the board](#embedding-the-board)
 - [Deploying](#deploying)
 - [Scripts](#scripts)
+- [Documentation](#documentation)
 
 ## Getting started
 
+You need Node.js 24 (`.nvmrc`), pnpm 10 (never npm or yarn) and Docker for the
+local database.
+
 ```bash
+cp .env.example .env      # before installing: the Prisma client records it
 pnpm install
-cp .env.example .env      # points at the local database below
-pnpm local:db:up          # disposable Postgres in Docker
+pnpm local:db:up          # disposable Postgres in Docker, port 55434
 pnpm db:deploy            # apply migrations
 pnpm dev                  # http://localhost:6600
 ```
 
 `WEB_PORT` overrides the port. `pnpm local:db:reset` throws the database away
-and rebuilds it from the migrations.
+and rebuilds it from the migrations. In a git worktree especially, copy `.env`
+in before `pnpm install`: the install generates the Prisma client, and a client
+generated before `.env` existed may never load it (`pnpm db:generate` fixes it
+afterwards).
+
+The variables that matter first, all described in `.env.example`:
+
+| Variable | What it is |
+| --- | --- |
+| `DATABASE_URL`, `DIRECT_URL` | Postgres: pooled for the app, direct for migrations. The example points both at the local container |
+| `AUTH_SECRET` | Signs sessions and embed tokens, at least 16 characters. Without it the gate stays open in development and refuses everything in production |
+| `ADMIN_EMAILS` | The operator's addresses. Locally, end the list with `operator@example.test`, which the browser suite signs in as |
+| `ADMIN_TOKEN` | Lets local tooling and the browser suite act as the operator without Google |
+| `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `NEXTAUTH_URL` | Google sign-in |
+| `RATE_LIMIT_RELIEF` | `20` for the browser suite, which drives the site from one address. Ignored in production |
+| `SUMILABU_BOARD_URL` and the `*_DEV_TOKEN`s | The shared features board and settings store, on the development project |
 
 ## What it does
 
 ### Forty-five games, in eight families
 
-The site began as one game and is now forty-five, grouped into families on
-`/games`: five in a row, drops, turn and take, strange boards, races, checkers,
-territory and small boards. No family shows more than eight games — a gate in
-`variants.coverage.test.ts` holds that — and a game may also be listed on a
-second family's shelf for discovery, while it belongs to one. The
-**Games** button opens a browser over the board with each rule set spelled
-out, and picking one starts a new game with those rules.
+The site began as one game and is now forty-five, grouped into eight families
+on `/games` (`GAME_FAMILIES` in `src/lib/gomoku/families.ts`):
+
+| Family | Games |
+| --- | --- |
+| Five in a row | 7 |
+| Drops | 8 |
+| Turn and take | 8 |
+| Strange boards | 6 |
+| Races | 2 |
+| Checkers | 6 |
+| Territory | 2 |
+| Small boards | 6 |
+
+No family shows more than eight games — a gate in `variants.coverage.test.ts`
+holds that — and a game may also be listed on a second family's shelf for
+discovery (`ALSO_LISTED_IN`), while it belongs to one. The **Games** button
+opens a browser over the board with each rule set spelled out, and picking one
+starts a new game with those rules.
 
 Every one of them is a row in `VARIANT_SPECS` that the same engine plays; none
-of them is a special case in the code. What follows is family by family.
+of them is a special case in the code. The tables below group them by how they
+play, which is not quite how the families group them: the capture games sit
+with the flips, and the toroidal, obstacle, twist and piece games sit on the
+strange boards.
 
 #### Lines of stones
 
@@ -108,11 +153,10 @@ rest on black offering several candidate fifth moves for white to prune. That
 mechanism is not built yet; the strategy guide for renju describes each of them.
 
 A swap opening pauses the game for a decision, and the decision is a timeline
-entry like a move, so it can be taken back. Stored games keep the moves and
-the decisions, not the seating, so a record replays under the free opening —
-the stones are the same wherever the rules said they had to go. Shared games
-between two devices start with the free opening, because a seat token is a
-colour and a swap would move the colour between devices.
+entry like a move, so it can be taken back. A game's opening is stored with it
+(`Game.opening`). Shared games between two devices may use the free, Pro or
+Long Pro opening but not the swaps, because a seat token is a colour and a swap
+would move the colour between devices.
 
 #### Small boards, drops and twists
 
@@ -140,7 +184,7 @@ both players share:
 | **Domino Five** 二連五目 | Gomoku where every piece is a domino of two stones, black-black, white-white or one of each. Both players draw the same random run and see the next three. Five wins for its colour whoever laid it, so a white-white domino in black's hand is a gift to the other side. Nothing fits, and the turn passes, on the record. |  |
 | **Block Five** 積み五目 | The same with the seven four-square shapes, two black and two white each, rotated and flipped as you like, and six single stones of your own colour per player to fill gaps. As in a two-player falling-block match, both sides get the same sequence. | the seven tetromino shapes |
 
-**The drop family** grows six ways, each a row in the table with one flag
+**The drop family** grows seven ways, each a row in the table with one flag
 set, and each with a random element fixed by a seed stored with the game so a
 replay reproduces it:
 
@@ -200,7 +244,7 @@ because a line-by-line reading of a board whose stones move says nothing true.
 
 ### Rules pages and the learning shelf
 
-Every game has a rules page at `/rules/<game>` in one template — Object,
+Every game has a rules page at `/games/<game>/rules` in one template — Object,
 Board, Play, House rules — generated from the same spec the engine plays by,
 so the page cannot drift from the rules. Each carries a screenshot of the
 game in progress when one has been taken (`pnpm screenshots:games` writes
@@ -214,12 +258,11 @@ literature uses them. Both sections are linked from the header.
 
 ### Players, ratings and records
 
-A name is a player. Members sign in — see [Getting in](#getting-in) — but a
-rating is still earned by a NAME rather than by an account, so whoever enters
-a name plays for its record and the site says so. That is the honest limit of
-letting two people share one screen, and it is why an anonymous seat is never
-rated. Every finished game between two named players updates both records and
-exchanges rating points:
+Ratings began as a record kept for a NAME, when a name was the only identity
+the site had. They now hang off the member who claims the name
+(`Player.memberId`), and an anonymous seat is never rated. Every finished rated
+game between two named players updates both records and exchanges rating
+points:
 
 | Tier | When | K |
 | --- | --- | --- |
@@ -228,9 +271,11 @@ exchanges rating points:
 | Established 確定 | twenty or more | 20 |
 
 Elo, starting at 1600, with a favourite by more than 400 points gaining
-nothing for a win. `/players` has four tabs — the members, the ladder, the
-computer players and the kept records — and `/players/<name>` is one page per
-person, whoever they are.
+nothing for a win. Each game also keeps a ladder of its own
+(`PlayerVariantRating`), shown at `/games/<game>/standings`, and `/champions`
+names who leads each one. `/players` has five tabs — members, buddies, the
+ladder, the computer players and the remembered records — and
+`/players/<name>` is one page per person, whoever they are.
 
 **Two rating pools, kept apart on purpose.** A game against a computer player
 is rated in a pool of its own, so beating a program never moves where you
@@ -246,17 +291,21 @@ rating and the page says why rather than leaving a blank. Figures copied from
 another site are marked as the snapshots they are, in a list as well as on a
 page: they were written down once and do not move.
 
-Ladders and tournaments are not built; they are the next thing on the list.
+Tournaments are not built yet.
 
 ### The computer players
 
-Eight of them, and they are members rather than a setting on a game: they hold
-seats, appear in the record, and carry a rating that moves when you beat them.
-Five are graded — **разряд**, **級**, **段**, **名人** and **国手**, gentlest
-to strongest — and will play anything on the site. Three are specialists who
-play one game well and nothing else: **為乃木秀正** at Reversi, **Meritalu**
-at five in a row and **Howard Monkton** at Halma and Chinese Checkers, each
-named in homage to a real champion of that game.
+Seventeen of them, and they are members rather than a setting on a game: they
+hold seats, appear in the record, and carry a rating that moves when you beat
+them. Five are graded — **разряд**, **級**, **段**, **名人** and **国手**,
+gentlest to strongest — and will play anything on the site. Six are
+specialists who play one game or family well, each named in homage to a real
+champion of it: **為乃木秀正** at Reversi, **Andrus Meritalu** at five in a
+row, **Howard Monkton** at Halma and Chinese Checkers, **Marion Tinsdale** at
+checkers and draughts, **本堂秀策** at Go and **吳一辰** at Connect6. And six are
+characters with faces and home towns, each playing at an existing grade in a
+style of their own: Mina Park, Kenji Arakawa, Li Wenjing, Amara Okafor, Ingrid
+Solheim and Rafa Duarte.
 
 **They think in your browser, not on the server.** A computer's move is worked
 out by a web worker on the device of whoever is waiting on it, with two seconds
@@ -275,10 +324,11 @@ noticeboard, it is a button with extra steps.
 
 `/backlog` is where a request lives once the conversation that raised it is
 over. Every feature asked for and every fault reported is a row: a title, the
-longer telling, who asked, and where it stands — **proposed** 提案 (asked for),
-**planned** 予定 (agreed), **building** 作業中, **done** 完了, or **dropped**
-見送り (considered and passed over, kept so the answer need not be given
-twice). Anyone signed in can add to it and move an item along.
+longer telling, who asked, its kind (feature, fix or chore), a priority and an
+effort once somebody has graded it, and where it stands — **open**,
+**in progress** (a claim with a six-hour lease), **done**, or **dropped**
+(considered and passed over, kept so the answer need not be given twice). The
+operator writes to it from the page; agents write to it with `pnpm task`.
 
 Which moves are allowed is a table, not a convention: a proposal cannot reach
 done without having been built, and a dropped item comes back as a proposal
@@ -288,9 +338,9 @@ themselves live on Sumilabu's board, which refuses anything the table rejects
 whatever calls it. `backlog.coverage.test.ts` is the gate — see AGENTS.md,
 "Board Gate".
 
-Beneath the board on the same page is the other half: **every release so far**,
-parsed from `CHANGELOG.md` at request time rather than kept a second time, with
-the edition being served marked. The operator's page carries a card with both
+The other half is `/releases`: **every release so far**, parsed from
+`CHANGELOG.md` at request time rather than kept a second time, with the edition
+being served marked. The operator's page carries a card with both
 counts — what is still wanted, and the latest release — and a link into it.
 
 ### Notes, messages and deadlines
@@ -311,10 +361,13 @@ The server owns the clock: it stamps every move and refuses a claim made
 early. Both settings are chosen when the game is started and can be changed
 until the first stone.
 
-**Email** is a placeholder. `src/lib/notify/email.ts` receives every event
-that would be mailed — your turn, game over, invitations, a deadline near —
-and records that nothing was sent. There is no provider and no address list;
-wiring one is a decision for later, and this is the seam it plugs into.
+**Email** goes through Resend, in production only. It sends two things today:
+a request for an invite from `/join`, which reaches the site's owner, and a
+member's invitation to a friend. Game notices (your move, game over) are
+written and switched off (`NOTICES` in `src/lib/mail/mail.constants.ts`).
+Every send passes one sender and caps counted in the database
+(`EmailSendCount`): fifty a day and a thousand a month for the site, five a
+day per member. See [`docs/email.md`](docs/email.md).
 
 ### Are you still there?
 
@@ -513,6 +566,11 @@ disagree; a move list replayed through the engine cannot.
 | `src/lib/legacy/` | Records kept from the sites people played on before this one. |
 | `src/lib/auth/` | Members, invite codes, sessions, and the operator's roster. |
 | `src/lib/social/` | Buddies, ignores, who is here, countries and days off. |
+| `src/lib/phrase/` | The four-word credential: picking, hashing, taking a seat with it. |
+| `src/lib/xp/` | Experience points: awards, the ledger, levels, the boards. |
+| `src/lib/mail/` | Email through Resend, behind caps kept in the database. |
+| `src/lib/i18n/` | The phrase catalogue, in English and Japanese. |
+| `src/lib/sumilabu/`, `src/lib/site/` | The shared features board and the site settings, both on Sumilabu. |
 | `src/components/board/` | The board and its themes. |
 | `src/components/game/` | The local game, its session, settings and record. |
 | `src/components/live/` | Games played from two devices. |
@@ -521,31 +579,41 @@ disagree; a move list replayed through the engine cannot.
 
 ## The API
 
-Listing endpoints answer `{ pagination, items }`, with `pagination` carrying
-`page`, `pageSize`, `total` and `totalPages`. `page` is clamped against the real
-total rather than rejected, so narrowing a filter never strands you on an empty
-page. Ordering always ends with `id`, so paging cannot hide a row.
+Every route validates its input with Zod at the boundary, is rate limited, and
+answers typed JSON. Sorting and paging follow one convention
+(`src/lib/api/paging.ts`): `sort=<column>[:asc|desc]`, `limit`, and an opaque
+`cursor` from the previous page. An unknown sort column is a `400` that names
+what is accepted, and an unrecordable game is a `422` listing what was wrong.
 
 | Method | Path | What it does |
 | --- | --- | --- |
-| `GET` | `/api/games` | List games. Paging, sorting, search, filters, facets. |
-| `POST` | `/api/games` | Record a finished game with its moves. |
-| `POST` | `/api/games/live` | Start a game for two devices. Returns a token per seat. |
+| `GET` | `/api/games` | List games: filters, sorting, facets. Answers `{ pagination, next, items, facets }`. |
+| `POST` | `/api/games` | Record a finished game from one screen, with its moves. |
+| `POST` | `/api/games/live` | Start a shared game. Returns a token per seat. |
+| `GET` | `/api/games/mine` | The games this browser and this member hold a seat in. |
 | `GET` | `/api/games/:id` | One game with every move. |
-| `DELETE` | `/api/games/:id` | Remove a game and its moves. Operator only: `Authorization: Bearer $ADMIN_TOKEN`. Disabled when `ADMIN_TOKEN` is unset. |
-| `GET` | `/api/games/:id/moves` | That game's moves, paged. |
-| `POST` | `/api/games/:id/moves` | Play a stone in a shared game. |
-| `PUT` | `/api/games/:id/settings` | Change a shared game's rules before its first stone. Needs a seat token. |
-| `GET` | `/api/players?q=` | Player-name autocomplete. |
+| `DELETE` | `/api/games/:id` | Remove a game. Operator only: `Authorization: Bearer $ADMIN_TOKEN`. |
+| `GET` `POST` `DELETE` | `/api/games/:id/moves` | Read the moves, play one, or take one back (hot-seat games only). |
+| `PUT` | `/api/games/:id/settings` | Change a shared game's rules before its first stone. |
+| `POST` | `/api/games/:id/sit`, `.../sit-as` | Take the open seat; take your own seat on somebody else's device with your four words. |
+| `POST` | `/api/games/:id/resign`, `.../cancel`, `.../timeout`, `.../time` | End a game, call it off, claim a missed deadline, or give the other side time. |
+| `POST` | `/api/games/:id/offer/accept`, `.../decline`, `.../withdraw` | Answer or take back a game offered to a person. |
+| `POST` | `/api/games/:id/reactions`, `.../applause`, `.../verdict`, `.../hide` | An emoji during play; appreciation, a private verdict or hiding it afterwards. |
+| `GET` | `/api/players`, `/api/members`, `/api/ladder` | Name autocomplete, the members directory, a game's ladder. |
+| `PATCH` | `/api/me` | Your profile and preferences. |
+| `GET` `PUT` `DELETE` | `/api/me/phrase` | Your four words: whether you have them, set them, remove them. |
+| `GET` `POST` `DELETE` | `/api/buddies`, `/api/ignores` | Your buddy and ignore lists. |
+| `POST` | `/api/messages` | A direct message to another member. |
+| `GET` `POST` `DELETE` | `/api/session` | Sign in with an invite code or as the operator; sign out. |
+| `POST` | `/api/invites/mine` | Invite a friend: one use, thirty days. |
+| `GET` `POST` | `/api/invites` | The operator's invite codes. |
 
-`GET /api/games` accepts `page`, `pageSize`, `sortBy`
-(`playedAt`/`moveCount`/`size`/`duration`), `sortDir`, `search`, `player`,
-`result`, `variant`, `size`, `from` and `to`. Everything is validated with Zod
-at the route boundary; an unknown sort column is a `400`, an unrecordable game
-is a `422` listing what was wrong.
+`GET /api/games` filters by `search`, `player`, `member`, `against`, `result`,
+`outcome`, `pool`, `rated`, `verdict`, `variant` (a game's slug), `size`,
+`from` and `to`.
 
 ```bash
-curl 'localhost:6600/api/games?search=aki&result=black&sortBy=moveCount&sortDir=asc&pageSize=5'
+curl 'localhost:6600/api/games?search=aki&result=black&sort=moves:asc&limit=5'
 ```
 
 ## Getting in
@@ -567,19 +635,28 @@ There are two ways through the door at `/join`:
 | **Operator** | An address in `ADMIN_EMAILS`, plus `ADMIN_TOKEN` | 1 day |
 
 Both exchange what was typed for an HMAC-signed cookie, so neither the phrase
-nor the token is presented again or stored by the client. Set `AUTH_SECRET` to
-turn the gate on; without one it cannot verify anything and stays open, which
-is what makes local development bearable and what a deployment must not do.
+nor the token is presented again or stored by the client. An operator address
+signing in with Google gets the operator's cookie with no token at all; the
+token is for local tooling and the browser suite. Set `AUTH_SECRET` to turn the
+gate on. Without one it cannot verify anything: in development it stays open,
+which is what makes local work bearable, and in production it answers 503
+rather than open the site.
+
+Two switches sit in front of all of that. Who may sign up (invite only, open,
+or closed) and a notice on the join page are site settings, kept on Sumilabu
+and changed from `/admin`. `SITE_MAINTENANCE=on` shows everybody but the
+operator a 503 from the gate itself.
 
 ### Invite codes
 
-The operator mints codes from the game page. They are three ordinary Japanese
-words — `natsu-yagura-fune` — chosen so a code can be read down a phone and
+The operator mints codes from `/admin` or `pnpm invite`, and a member can
+invite a friend with a one-use code of their own. They are three ordinary
+Japanese words — `natsu-yagura-fune` — chosen so a code can be read down a phone and
 typed back correctly: no long vowels, no doubled consonants, no `n` before a
 labial, all screened by a test. Capitals, spaces and hyphens all normalise to
 the same code.
 
-Three words from 259 is about 24 bits, far less than a random id, so the safety
+Three words from 260 is about 24 bits, far less than a random id, so the safety
 is not in the phrase alone:
 
 - the redeem endpoint allows five tries a minute per address;
@@ -608,28 +685,34 @@ member's cookie (name and picture included), and anyone else is sent back to
 while a Google identity is waiting creates the `Member` row: the first sign-in
 is the registration, and from then on Google alone lets them in on any device.
 
-A code redeemed with no account behind it still lets that browser in, as
-before. Sessions are one signed cookie either way (`src/lib/auth/session.ts`);
-signing out clears it and Google's own cookies, so a shared phone asks again.
+A code redeemed with no Google identity waiting still makes a member, one with
+no address. That member can add **four words** later (`src/lib/phrase/`): a
+second credential, hashed like a password, picked by tapping words rather than
+typing. It lets somebody sign in on a borrowed device, or take their own seat
+at a game on somebody else's, by tapping their name and then their words.
+Either credential may be added at any time; the last one may not be removed.
+Sessions are one signed cookie either way (`src/lib/auth/session.ts`); signing
+out clears it and Google's own cookies, so a shared phone asks again.
 
-A member's seats are bound to their address (`Game.blackMember` /
-`whiteMember`) when they start, scan or sit at a game, so their games follow
-the account; a phone with no account holds its seats by cookie.
+A member's seats are bound to their member id (`Game.blackMemberId` /
+`whiteMemberId`) when they start, scan or sit at a game, so their games follow
+the account; a phone with no session holds its seats by cookie.
 
 ## Games played from two devices
 
-`POST /api/games/live` returns `blackToken` and `whiteToken`. There is no
-sign-in, so **a seat token is the seat**: whoever opens
-`/games/:slug/:id/seat/<token>` plays that colour. That address claims the seat
-into a cookie and sends the visitor on to the match at `/games/:slug/:id`, so
-the credential is used once and never sits in the address bar. The match without
-a claim is a spectator view, and it is never shown the seat links.
+`POST /api/games/live` returns `blackToken` and `whiteToken`. **A seat token is
+the seat**, whether or not anybody is signed in: whoever opens
+`/games/:slug/match/:id/seat/<token>` plays that colour. That address claims
+the seat into a cookie and sends the visitor on to the match at
+`/games/:slug/match/:id`, so the credential is used once and never sits in the
+address bar. The match without a claim is a spectator view, and it is never
+shown the seat links.
 
-`/games/:slug/:id/:move` is the position after that many moves, kept current in
-the bar as play goes on. Once the game is over it belongs to the record, which has the same shape:
-`/history/:slug` is one game's record, `/history/:slug/:id` replays a filed game
-and `/history/:slug/:id/:move` is the position after that move — the address to
-send someone who should see that moment.
+`/games/:slug/match/:id/:move` is the position after that many moves, kept
+current in the bar as play goes on, and the same address serves the game once
+it is over — the address to send someone who should see that moment.
+`/games/:slug/history` is that game's record, and `/games/:slug/me` is your
+own games of it.
 
 <img src="docs/images/shared-game.jpg" alt="A shared game showing a QR code for each seat" width="820">
 
@@ -645,12 +728,12 @@ Seat pages carry `robots: noindex`, because a seat link is a credential.
 
 ### Your games
 
-Nobody is stopped from clicking away from a game; instead the games page
-lists the seats this browser holds, in the queue the turn-based sites taught:
+Nobody is stopped from clicking away from a game; instead `/play` lists the
+seats this browser and this member hold, in the queue the turn-based sites taught:
 **your move**, **their move**, **not started**, **lately finished**. A count of
 games waiting on you sits beside "Play" in the header. "Yours" is decided by
-the seat cookies on the request (`GET /api/games/mine`) — there are no
-accounts, so the cookies are the only thing that knows which seats are yours.
+the seat cookies on the request and the signed-in member's own seats and offers
+(`GET /api/games/mine`).
 
 A game may be posted **open**: its white seat goes on a noticeboard on the
 games page (`openSeat`), and whoever answers first sits down
@@ -676,10 +759,10 @@ emoji, and is limited per seat.
 
 ### Inside a site that has its own sign-in
 
-Seat tokens exist because this app has no accounts. A host that does have them
-should map its own identities to seats and stop passing tokens in the query
-string — `seatForToken` in `src/lib/history/liveGame.ts` is the single place
-that decides which seat a request holds.
+Seat tokens exist so a seat can be handed to somebody with no account. A host
+that has its own should map its identities to seats and stop passing tokens in
+the query string — `seatForToken` in `src/lib/history/liveGameRow.ts` is the
+single place that decides which seat a request holds.
 
 ## Embedding the board
 
@@ -694,9 +777,11 @@ rules.
         style="border:0;width:100%;height:640px" title="Gomoku"></iframe>
 ```
 
-Parameters: `size` (9/13/15/19), `variant` (`freestyle`, `standard`, `renju`,
-`omok`, `caro`, `ninuki`, `connect6`), `opening` (`free`, `pro`, `longPro`,
-`swap`, `swap2`, `rif`), `obstacles`, `theme`, `stones`, `coords=0`. Unknown values fall back rather than erroring — a host should not
+Parameters: `size` (9/13/15/19), `variant` (any game's key, such as `renju`,
+`dropFour`, `go` or `chineseCheckers`), `opening` (`free`, `pro`, `longPro`,
+`swap`, `swap2`, `rif`, `sakata`, `tarannikov`), `obstacles` (`none` or
+`hoshi`), `theme` (`kaya`, `shinkaya`, `washi`, `sumi`, `matcha`), `stones`
+(`classic`, `jade`, `sakura`, `indigo`, `neon`), `coords=0`. Unknown values fall back rather than erroring — a host should not
 be able to break the board by mistyping a parameter.
 
 The board posts messages outward — `itsutsu:ready`, `itsutsu:resize`,
@@ -717,8 +802,8 @@ both**, or you will count every event twice. New hosts should use `itsutsu:`.
 ### Embed tokens
 
 The site is closed, so `/embed` needs a token of its own. The operator mints
-one per host — from the game page, or `pnpm embed-token <label>` — and gets
-back the whole iframe snippet to paste.
+one per host — from `/admin`, or `pnpm embed-token <label>` — and gets back
+the whole iframe snippet to paste.
 
 ```html
 <iframe src="https://your-host/embed?token=eyJraW5kIjoiZW1iZWQi…&size=9"
@@ -771,7 +856,7 @@ API route, which `e2e/embed-data.spec.ts` asserts rather than assumes.
 
 The summary is deliberately thin: finished games only, with no ids that grant
 anything and no games still in progress, since a live game's id is half of a
-seat link. Mint one with the checkbox on the game page, or
+seat link. Mint one with the checkbox on `/admin`, or
 `pnpm embed-token <label> <days> <site> data`.
 
 Framing is refused unless the host origin is listed in `EMBED_ALLOWED_ORIGINS`
@@ -790,10 +875,12 @@ directly.
 Production runs on Vercel with a Neon Postgres, the same shape as umakuma. A
 push to `main` runs `.github/workflows/vercel-deploy.yml`: the checks (lint,
 types, unit tests, audit and build, as five jobs side by side) and the browser
-suite (eight shards, side by side with them) — and only when BOTH pass,
-`prisma migrate deploy` against the production database, then the deploy.
-Migrations run before the new code goes live and are all additive, so the old
-code keeps working during the switch. How fast that is, and how to keep it
+suite (twelve shards, side by side with them) — and only when BOTH pass,
+`prisma migrate deploy` against the production database, the build, a check
+that no server function has grown past its limit, the deploy, and the removal
+of superseded deployments. Migrations run before the new code goes live and
+are all additive, so the old code keeps working during the switch. A push of
+only Markdown or `docs/` runs nothing. How fast that is, and how to keep it
 fast, is in AGENTS.md, "Deploys Are Fast By Design".
 
 One-time setup:
@@ -801,11 +888,17 @@ One-time setup:
 1. Create a Neon project and copy both connection strings: the pooled one is
    `DATABASE_URL`, the direct one is `DIRECT_URL`.
 2. Create the Vercel project (`npx vercel link` from the repo, or the
-   dashboard) and set `DATABASE_URL`, `DIRECT_URL`, an `ADMIN_TOKEN` for the
-   delete endpoint and, if the board is to be embedded anywhere,
-   `EMBED_ALLOWED_ORIGINS` in its production environment.
+   dashboard) and set in its production environment: `DATABASE_URL`,
+   `DIRECT_URL`, `AUTH_SECRET`, `ADMIN_EMAILS`, `ADMIN_TOKEN`,
+   `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `NEXTAUTH_URL`, `RESEND_API_KEY`,
+   the production Sumilabu tokens (`SUMILABU_BOARD_TOKEN`,
+   `SUMILABU_SETTINGS_TOKEN`) and, if the board is to be embedded anywhere,
+   `EMBED_ALLOWED_ORIGINS`.
 3. Add `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` as GitHub
-   Actions secrets. The two IDs are in `.vercel/project.json` after linking.
+   Actions secrets (the two IDs are in `.vercel/project.json` after linking),
+   and `MIGRATE_DATABASE_URL` and `MIGRATE_DIRECT_URL` for the migration step.
+   Take those two from Neon: Vercel's sensitive variables pull as a
+   placeholder.
 4. Push to `main`.
 
 `pnpm preflight:prod` runs the same checks the workflow does, locally and side
@@ -848,10 +941,18 @@ the four things that make an end-to-end run fail for reasons that are not in
 the code — a stale dev server, two runs against one database, database litter,
 and a test that races hydration.
 
-### What the record does not keep
+## Documentation
 
-The database stores a game's variant, size, obstacles and moves. It does not
-store the opening protocol or a handicap, so a stored game replays under the
-free opening with no handicap. For openings that changes nothing on the board.
-For a handicap it can: a game one colour had to win with six replays as a game
-it won with five. Keeping those needs two columns and a migration.
+| Document | For | Update it when |
+| --- | --- | --- |
+| This README | a first look, running it, the API, embedding, deploying | a feature, route, parameter or setup step changes |
+| [`docs/CORE_CONCEPTS.md`](docs/CORE_CONCEPTS.md) | the ideas the code rests on | how games, seats, members, ratings, the computer players or XP work changes |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | how the pieces fit, and how a change ships | a service, a layer, the gate, the pipeline or a cost rule changes |
+| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | every table and enum | any migration |
+| [`docs/email.md`](docs/email.md) | what the site sends and its caps | anything about email |
+| [`AGENTS.md`](AGENTS.md) | the rules and the gates | a rule is learned |
+| `CHANGELOG.md` | what shipped, and when | every release, through `pnpm release:take` |
+
+A change that makes one of these wrong updates it in the same pull request.
+Each guide names the file that holds each fact, so a claim can be checked
+against the code rather than trusted.
