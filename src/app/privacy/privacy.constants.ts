@@ -112,6 +112,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
       kanji: "クッキー",
       paragraphs: [
         "The site sets cookies only to run: one that keeps you signed in, one that remembers your language and a short-lived one that notes you just changed it, and one for each game you took a seat at from a link without signing in, so the browser holding the link keeps its seat. While you sign in with Google, the sign-in library sets its own short-lived cookies for that step. There are no advertising or analytics cookies, and nothing from a third party.",
+        "Your browser also keeps a few things for this site in its own storage, which stay on your device: a practice game you left part way through, your private notes on a game, which way round you turned a board, whether you chose Just the board, the result cards you have closed, and the choices on a set-up screen while you make them. One of them leaves your device: if you report a problem, the browser keeps a random id for itself and sends it with each report, so several reports from one browser can be told apart from many people. It is not your name, your address or your account. Clearing this site's data in your browser removes all of them.",
       ],
     },
     {

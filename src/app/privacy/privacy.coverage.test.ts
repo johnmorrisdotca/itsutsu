@@ -102,6 +102,9 @@ describe("the privacy page", () => {
     // And the seat cookie, which has a prefix rather than a name.
     expect(read("src/lib/history/seatCookie.ts")).toContain("export function seatCookieName");
     expect(cookies).toContain("one for each game you took a seat at");
+    // And what the browser keeps in its own storage, the one piece of which that is sent anywhere included.
+    expect(cookies).toContain("in its own storage");
+    expect(cookies).toContain("a random id");
   });
 
   /*
