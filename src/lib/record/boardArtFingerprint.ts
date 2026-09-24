@@ -38,6 +38,8 @@ import { join } from "node:path";
  */
 export const BOARD_ART_FILES: readonly string[] = [
   "src/components/board/Board.tsx",
+  // The wood, the rim and the coordinates, which Board draws inside since 2026-09-24.
+  "src/components/board/BoardFrame.tsx",
   "src/components/board/Board.constants.ts",
   "src/components/board/BoardLines.tsx",
   "src/components/board/Intersection.tsx",
