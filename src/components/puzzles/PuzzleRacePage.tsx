@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import QRCode from "qrcode";
 
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -7,6 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentReader } from "@/lib/auth/currentReader";
+import { requestOrigin } from "@/lib/requestOrigin";
 import { gamePath, seatPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -41,6 +43,14 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
     guest: { name: race.guestName, memberId: race.guestMemberId },
   };
   const mine = seat === null ? null : read[seat];
+  // The guest's seat, to send, while only the host has sat down: the address and its QR code, made here as a match page makes them.
+  const invite =
+    seat === "host" && race.guestMemberId === null
+      ? await (async () => {
+          const url = `${await requestOrigin()}${seatPath(kind, id, race.guestToken)}`;
+          return { url, qr: await QRCode.toDataURL(url, { width: 320, margin: 1 }) };
+        })()
+      : null;
 
   return (
     <Page>
@@ -86,7 +96,8 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
           id={id}
           seat={seat}
           canStart={mine !== null && mine.state === "waiting"}
-          seatLink={seat === "host" && race.guestMemberId === null ? seatPath(kind, id, race.guestToken) : null}
+          invite={invite}
+          label={copy.label}
         />
       </section>
 

@@ -1,11 +1,9 @@
 "use client";
 
-import { Paired } from "@/components/i18n/Paired";
-import { useState } from "react";
-
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { SectionTitle } from "@/components/ui/Controls";
+import { SeatCard } from "./SeatCard";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 
 export type SeatInvite = {
@@ -42,8 +40,13 @@ export function InvitePanel({
         {invites.map((invite) => (
           <SeatCard
             key={invite.stone}
-            invite={invite}
+            url={invite.url}
+            qr={invite.qr}
+            name={{ en: STONE_DISPLAY[invite.stone].label, kanji: STONE_DISPLAY[invite.stone].kanji }}
+            mark={<StoneDot stone={invite.stone} />}
+            message={`Your seat in our gomoku game (${STONE_DISPLAY[invite.stone].label}): ${invite.url}`}
             isYours={invite.stone === yourStone}
+            stone={invite.stone}
           />
         ))}
       </div>
@@ -51,81 +54,12 @@ export function InvitePanel({
   );
 }
 
-function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean }) {
-  const [copied, setCopied] = useState(false);
-  const display = STONE_DISPLAY[invite.stone];
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(invite.url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard access can be refused; the link is on screen either way.
-    }
-  }
-
-  /*
-   * `sms:` opens the phone's own messaging app with the link already written.
-   * It needs no account, no gateway and no phone number stored anywhere, which
-   * is the whole reason to prefer it over sending a message ourselves.
-   */
-  const smsHref = `sms:?&body=${encodeURIComponent(
-    `Your seat in our gomoku game (${display.label}): ${invite.url}`,
-  )}`;
-
+/** The seat's colour, as the small stone beside its name. */
+function StoneDot({ stone }: { stone: Stone }) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-rule p-3" data-testid="seat-invite" data-stone={invite.stone}>
-      <p className="flex items-center gap-2 text-sm font-semibold">
-        <span
-          aria-hidden="true"
-          className={`size-3 rounded-full ${
-            invite.stone === "black"
-              ? "bg-ink"
-              : "border border-rule-strong bg-ivory"
-          }`}
-        />
-        <Paired en={display.label} kanji={display.kanji} kanjiClassName="text-muted" />
-        {isYours ? (
-          <span className="ml-auto rounded-full border border-rule px-2 py-0.5 text-[0.65rem] font-medium">
-            You
-          </span>
-        ) : null}
-      </p>
-
-      {/* eslint-disable-next-line @next/next/no-img-element -- a data URL has no origin for next/image to optimise */}
-      <img
-        src={invite.qr}
-        alt={`QR code for the ${display.label} seat`}
-        // A QR code is scanned, not themed: it stays white on every background.
-        className="w-full max-w-[9rem] self-center rounded-lg bg-white p-1.5"
-        width={160}
-        height={160}
-      />
-
-      <input
-        readOnly
-        value={invite.url}
-        onFocus={(event) => event.target.select()}
-        className="w-full rounded-lg border border-rule bg-transparent px-2 py-1 font-mono text-[0.7rem] text-muted"
-        aria-label={`${display.label} seat link`}
-      />
-
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={copy}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-shade"
-        >
-          {copied ? "Copied" : "Copy link"}
-        </button>
-        <a
-          href={smsHref}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-shade"
-        >
-          Text it
-        </a>
-      </div>
-    </div>
+    <span
+      aria-hidden="true"
+      className={`size-3 rounded-full ${stone === "black" ? "bg-ink" : "border border-rule-strong bg-ivory"}`}
+    />
   );
 }

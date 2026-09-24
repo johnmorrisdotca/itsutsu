@@ -48,17 +48,19 @@ test.describe("a race at a puzzle", () => {
     // The host makes the race at the smallest size, so both solves are short.
     await host.goto(`${AT}/new`);
     await ready(host, "puzzle-set-up");
-    await host.getByTestId("puzzle-size-4").click();
+    await host.locator('[data-testid="set-up-size"][data-size="4"]').click();
     await host.getByTestId("puzzle-level-easy").click();
     await host.getByTestId("puzzle-race").click();
     await expect(host).toHaveURL(new RegExp(`${AT}/match/[a-z0-9]{4}-[a-z0-9]{4}$`));
     await ready(host, "race-controls");
     await expect(host.getByTestId("race-seat-guest")).toContainText("still open");
-    const seatLink = (await host.getByTestId("race-seat-link-address").textContent())?.trim();
+    // The seat card every seat link is handed over in: a QR code, the whole address, Copy and Text.
+    await expect(host.getByTestId("race-seat-link").getByRole("img")).toBeVisible();
+    const seatLink = new URL(await host.getByTestId("race-seat-link-address").inputValue()).pathname;
     expect(seatLink).toMatch(new RegExp(`^${AT}/match/[a-z0-9-]+/seat/`));
 
     // The guest takes the seat by the link, and the host's page shows it after a refresh.
-    await guest.goto(seatLink!);
+    await guest.goto(seatLink);
     await expect(guest).toHaveURL(new RegExp(`${AT}/match/[a-z0-9-]+$`));
     await ready(guest, "race-controls");
     await expect(guest.getByTestId("race-seat-guest")).toContainText("(you)");
@@ -95,17 +97,19 @@ test.describe("a race at a puzzle", () => {
     const host = await asIdentity(browser, ADMIN_STATE);
     await host.goto(`${AT}/new`);
     await ready(host, "puzzle-set-up");
-    await host.getByTestId("puzzle-size-4").click();
+    await host.locator('[data-testid="set-up-size"][data-size="4"]').click();
     await host.getByTestId("puzzle-race").click();
     await expect(host).toHaveURL(new RegExp(`${AT}/match/[a-z0-9-]+$`));
     const id = host.url().split("/match/")[1];
-    const seatLink = (await host.getByTestId("race-seat-link-address").textContent())?.trim();
+    // The seat card every seat link is handed over in: a QR code, the whole address, Copy and Text.
+    await expect(host.getByTestId("race-seat-link").getByRole("img")).toBeVisible();
+    const seatLink = new URL(await host.getByTestId("race-seat-link-address").inputValue()).pathname;
 
     // A browser with no session — said outright, because `newContext()` inherits the
     // suite's sign-in otherwise: the seat link leads to the door, with the way back in its pocket.
     const stranger = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await stranger.newPage();
-    const answered = await page.goto(seatLink!);
+    const answered = await page.goto(seatLink);
     expect(answered?.url()).toContain("/join");
     await stranger.close();
 

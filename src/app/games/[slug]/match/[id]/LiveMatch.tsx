@@ -1,6 +1,7 @@
 import { MatchPanel } from "@/components/live/MatchPanel";
-import { headers } from "next/headers";
 import QRCode from "qrcode";
+
+import { requestOrigin } from "@/lib/requestOrigin";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -43,14 +44,6 @@ import { BoardColumn } from "@/components/live/BoardColumn";
  * match's presentations a reader gets; this is the one it hands a match that is
  * still being played.
  */
-
-/** The site's own origin, taken from the request so links work behind any host. */
-async function origin(): Promise<string> {
-  const list = await headers();
-  const host = list.get("x-forwarded-host") ?? list.get("host") ?? "localhost:6600";
-  const protocol = list.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${protocol}://${host}`;
-}
 
 export async function LiveMatch({
   game,
@@ -235,7 +228,7 @@ export async function LiveMatch({
   let invites: SeatInvite[] = [];
   if (seat !== null) {
     if (tokens !== null) {
-      const base = await origin();
+      const base = await requestOrigin();
       const pairs: [Stone, string][] = [
         [STONES.black, tokens.blackToken],
         [STONES.white, tokens.whiteToken],
