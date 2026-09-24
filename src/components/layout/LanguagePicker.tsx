@@ -52,6 +52,7 @@ export function LanguagePicker({
   param,
   label,
   testId = "language-picker",
+  onChoose,
 }: {
   options: readonly LanguageOption[];
   /** The locale the page was rendered in. */
@@ -62,6 +63,16 @@ export function LanguagePicker({
   label: string;
   /** The footer's is `language-picker`; the account menu's copy says it is its own. */
   testId?: string;
+  /**
+   * How to take the choice without leaving the page, where the picker sits
+   * inside something that must survive it: the account menu. The anchor keeps
+   * its address either way, so a middle click, a copied link and a browser
+   * with no script still go through the gate as before. The caller is
+   * responsible for what the full navigation used to give for free — see
+   * `chooseLanguage` in `AccountMenu.tsx`, which refreshes the router and so
+   * empties the client cache this comment is about.
+   */
+  onChoose?: (href: string) => void;
 }) {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -90,10 +101,21 @@ export function LanguagePicker({
         }
         const next = new URLSearchParams(params);
         next.set(param, option.locale);
+        const href = `${pathname}?${next.toString()}`;
         return (
           <a
             key={option.locale}
-            href={`${pathname}?${next.toString()}`}
+            href={href}
+            onClick={
+              onChoose
+                ? (event) => {
+                    // A modified click asks for a new tab; leave it to the browser.
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                    event.preventDefault();
+                    onChoose(href);
+                  }
+                : undefined
+            }
             hrefLang={option.tag}
             lang={option.tag}
             title={option.english}

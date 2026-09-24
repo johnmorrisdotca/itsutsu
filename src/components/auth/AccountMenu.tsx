@@ -115,6 +115,33 @@ export function AccountMenu({ initial, languages, version }: { initial: Who; lan
     router.refresh();
   }
 
+  /*
+   * A language is chosen INSIDE the menu, so the menu stays. The gate reads
+   * `?lang=` off any GET, sets the cookie and redirects to the clean address
+   * (`rememberLanguage` in proxy.ts); a fetch collects that cookie without the
+   * page going anywhere, and `router.refresh()` empties the client router
+   * cache and redraws every server-rendered word in the new language, this
+   * panel included, since `languages` arrives as a prop. The panel is client
+   * state keyed to the path, and the path has not changed, so it is still
+   * open when the words come back. John, 2026-09-24: "Clicking on the
+   * languages in the menu should NOT close the menu."
+   *
+   * The refresh is the part that matters, and `LanguagePicker.tsx` says why:
+   * a language change that leaves the client cache full of the old language
+   * is the 0.126.0 bug. If the fetch cannot be made at all, the anchor's own
+   * address is followed instead, and the language changes the way it always
+   * did, with a page load.
+   */
+  async function chooseLanguage(href: string) {
+    try {
+      await fetch(href, { redirect: "manual", cache: "no-store", credentials: "same-origin" });
+    } catch {
+      window.location.assign(href);
+      return;
+    }
+    router.refresh();
+  }
+
   function toggle() {
     const right = trigger.current?.getBoundingClientRect().right ?? Infinity;
     setAlignLeft(right < MENU_WIDTH_PX + MENU_EDGE_PX);
@@ -151,9 +178,17 @@ export function AccountMenu({ initial, languages, version }: { initial: Who; lan
           data-testid="account-menu-panel"
           // Any link followed from here closes it — `/admin?view=work` from `/admin` keeps the path, so the address alone would not.
           onClick={(event) => {
-            if ((event.target as HTMLElement).closest("a")) setOpenAt(null);
+            const target = event.target as HTMLElement;
+            // A link is a departure and shuts the menu; a language is not, and does not.
+            if (target.closest("a") && !target.closest("[data-testid=menu-language-picker]")) setOpenAt(null);
           }}
         >
+          {/* The pointer at the trigger, as UmaKuma's panel has: the menu is this button's, and says so. */}
+          <span
+            aria-hidden
+            data-testid="account-menu-caret"
+            className={`absolute -top-1.5 size-3 rotate-45 border-l border-t border-rule-strong/70 bg-paper ${alignLeft ? "left-5" : "right-5"}`}
+          />
           {named ? (
             <>
               <Link href="/me" className="block rounded-lg px-2 py-1.5 hover:bg-rule/40" data-testid="me-link">
@@ -165,19 +200,27 @@ export function AccountMenu({ initial, languages, version }: { initial: Who; lan
             </>
           ) : null}
           {data.member ? (
-            <>
-              {/* What happened while they were away. The count is on /play, not here on every page. */}
-              <Link href="/inbox" className={ITEM} data-testid="inbox-link">
-                Inbox
-              </Link>
-              <hr className={DIVIDER} />
-            </>
+            // What happened while they were away. The count is on /play, not here on every page.
+            <Link href="/inbox" className={ITEM} data-testid="inbox-link">
+              Inbox
+            </Link>
           ) : null}
+          {named ? (
+            // Who you are and the switches beside it: the Profile tab. The name above opens the whole page.
+            <Link href="/me?view=profile" className={ITEM} data-testid="profile-link">
+              Profile
+            </Link>
+          ) : null}
+          {/* Every page the masthead has, here too, for when the masthead is folded on a phone. */}
+          <Link href="/about" className={ITEM} data-testid="about-link">
+            {say.say("nav.about")}
+          </Link>
+          <hr className={DIVIDER} />
           <div className="px-2 py-1.5">
             <p className="mb-1 text-xs text-muted">{languages.label}</p>
             {/* The picker reads the query to carry it across, which needs a boundary of its own. */}
             <Suspense fallback={null}>
-              <LanguagePicker {...languages} testId="menu-language-picker" />
+              <LanguagePicker {...languages} testId="menu-language-picker" onChoose={chooseLanguage} />
             </Suspense>
           </div>
           {data.admin ? (

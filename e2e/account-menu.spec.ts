@@ -82,6 +82,54 @@ test.describe("the account menu", () => {
     }
   });
 
+  /*
+   * A language chosen in the menu leaves the menu where it is, in the new
+   * language, and choosing back leaves it there too. Both directions, because
+   * "I can't get out of it" is its own fault (LanguagePicker.tsx, 0.126.0).
+   * The words asserted are ones the panel itself draws through the dictionary,
+   * so the change is seen where it was made; then a real link is followed, to
+   * prove the next page is in the new language too and not served from a
+   * cache full of the old one.
+   */
+  test("keeps the menu open when a language is chosen, and when it is chosen back", async ({ page }) => {
+    await page.goto("/games");
+    await ready(page, "account-menu");
+    await page.getByTestId("account-menu-button").click();
+    const panel = page.getByTestId("account-menu-panel");
+    const picker = panel.getByTestId("menu-language-picker");
+    await expect(picker.locator("[data-current=true]")).toHaveAttribute("data-locale", "en");
+    await picker.locator("[data-locale=ja]").click();
+    await expect(picker.locator("[data-current=true]")).toHaveAttribute("data-locale", "ja");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByTestId("admin-link")).toHaveText("管理");
+    await expect(page).toHaveURL(/\/games$/);
+    await panel.getByTestId("about-link").click();
+    await expect(page).toHaveURL(/\/about$/);
+    await ready(page, "account-menu");
+    await page.getByTestId("account-menu-button").click();
+    // The page reached by a real link was rendered in the chosen language, not from a cache of the old one.
+    await expect(page.getByTestId("account-menu-panel").getByTestId("admin-link")).toHaveText("管理");
+    const again = page.getByTestId("account-menu-panel").getByTestId("menu-language-picker");
+    await again.locator("[data-locale=en]").click();
+    await expect(again.locator("[data-current=true]")).toHaveAttribute("data-locale", "en");
+    await expect(page.getByTestId("account-menu-panel")).toBeVisible();
+    await expect(page.getByTestId("account-menu-panel").getByTestId("admin-link")).toHaveText("Admin");
+  });
+
+  test("offers About and the Profile tab, and points at its trigger", async ({ page }) => {
+    await page.goto("/games");
+    await ready(page, "account-menu");
+    await page.getByTestId("account-menu-button").click();
+    const panel = page.getByTestId("account-menu-panel");
+    await expect(panel.getByTestId("account-menu-caret")).toBeVisible();
+    await expect(panel.getByTestId("profile-link")).toHaveAttribute("href", "/me?view=profile");
+    await expect(panel.getByTestId("about-link")).toHaveAttribute("href", "/about");
+    await panel.getByTestId("about-link").click();
+    await expect(page).toHaveURL(/\/about$/);
+    await ready(page, "account-menu");
+    await expect(page.getByTestId("account-menu-panel")).toHaveCount(0);
+  });
+
   test("fits a phone", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/games");
