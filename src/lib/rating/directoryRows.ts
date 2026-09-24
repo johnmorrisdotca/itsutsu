@@ -38,6 +38,11 @@ export type DirectoryEntry = {
   name: string;
   picture: string;
   lastSeenAt: string;
+  /**
+   * Whether when they were last here may be shown: their own switch, and never
+   * for a member under 13 (`showsPresence`, PRIV-03).
+   */
+  presence: boolean;
   joinedAt: string;
   /** Joined within the last two weeks: someone to welcome. */
   isNew: boolean;
@@ -169,6 +174,7 @@ export async function fetchComputerPlayers(): Promise<DirectoryEntry[]> {
 type MemberRow = Awaited<ReturnType<typeof prisma.member.findMany>>[number];
 
 import { xpForBadge } from "@/lib/xp/xpScope";
+import { showsPresence } from "@/lib/social/childRules";
 
 /**
  * Whole `Member` rows turned into directory rows, with the rating each name has
@@ -210,6 +216,7 @@ export async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[
     name: member.name,
     picture: member.picture,
     lastSeenAt: member.lastSeenAt.toISOString(),
+    presence: showsPresence(member),
     joinedAt: member.createdAt.toISOString(),
     isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
     country: member.country,

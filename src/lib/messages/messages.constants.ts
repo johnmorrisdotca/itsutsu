@@ -16,6 +16,8 @@ export const MESSAGE_REFUSALS = {
   "to-yourself": "That is you.",
   "not-taking-messages": "They are not taking messages from you.",
   "you-ignore-them": "You have ignored them. Take that off to write to them.",
+  // A member under 13 hears only from their own buddies (childRules.ts, PRIV-03).
+  "child-buddies-only": "This player is under 13, so only the people on their own buddy list can write to them.",
   "empty": "Say something first.",
   "too-long": "That is too long for a message.",
 } as const;

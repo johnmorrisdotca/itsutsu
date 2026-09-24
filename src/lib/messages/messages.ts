@@ -4,6 +4,7 @@ import { recordInbox } from "@/lib/inbox/inbox";
 import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { prisma } from "@/lib/prisma";
 import { listable } from "@/lib/social/listable";
+import { mayReachMember } from "@/lib/social/childReach";
 import { isIgnoring } from "@/lib/social/ignores";
 
 import { MESSAGE_TEXT_MAX, THREAD_SHOWN, type MessageRefusal } from "./messages.constants";
@@ -42,6 +43,7 @@ export async function sendMessage(fromId: string, toId: string, text: string): P
   if (!listable(to)) return { ok: false, reason: "not-a-person" };
   if (await isIgnoring(toId, fromId)) return { ok: false, reason: "not-taking-messages" };
   if (await isIgnoring(fromId, toId)) return { ok: false, reason: "you-ignore-them" };
+  if (!(await mayReachMember(toId, fromId))) return { ok: false, reason: "child-buddies-only" };
 
   await prisma.directMessage.create({ data: { fromId, toId, text: said } });
   await recordInbox([{ memberId: toId, kind: INBOX_KINDS.message, fromName: from.name, fromMemberId: fromId, detail: said }]);

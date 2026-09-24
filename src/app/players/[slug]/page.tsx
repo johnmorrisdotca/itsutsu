@@ -43,6 +43,9 @@ import { LadderStrength } from "@/components/players/LadderStrength";
 import { builtLadderFingerprint } from "@/lib/gomoku/ladderFingerprint.built";
 import { measuredLadderAll } from "@/lib/gomoku/ladderStrength";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
+import { mayReachMember } from "@/lib/social/childReach";
+import { showsLocalTime } from "@/lib/social/childRules";
+import { ageBandOf } from "@/lib/auth/ageBandStore";
 
 export const metadata = { title: "Player" };
 
@@ -217,6 +220,14 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const offered = scopeWorthAsking(whole.sources.length);
   const counted = offered && scope === RECORD_SCOPES.everywhere ? whole.figures : figures;
 
+  /*
+   * A MEMBER UNDER 13 (childRules.ts, PRIV-03): their local time is not shown,
+   * and a reader not on the child's own buddy list is offered no game and no
+   * message box — the routes refuse the same.
+   */
+  const theirBand = member?.id !== undefined ? (await ageBandOf(member.id)).band : null;
+  const reachable = member?.id !== undefined && reader.memberId !== null ? await mayReachMember(member.id, reader.memberId) : true;
+
   return (
     <Page>
       <SiteHeader />
@@ -282,7 +293,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             {keptRecordTail(keptRecord.kind, record.games)}
           </p>
         )}
-        <Whereabouts city={member?.city} timeZone={member?.timeZone} />
+        {/* A child's local time is never shown, and their city is never kept (childRules.ts, PRIV-03). */}
+        <Whereabouts city={member?.city} timeZone={showsLocalTime(theirBand) ? member?.timeZone : undefined} />
         <PlayerActions
           person={person}
           memberId={member?.id}
@@ -291,6 +303,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           isComputer={Boolean(member?.botTier)}
           isYou={member?.id !== undefined && member.id === reader.memberId}
           canAsk={reader.hasAccount}
+          reachable={reachable}
         />
         {/*
           WHAT THIS GRADE ACTUALLY DOES, game by game, where the grade is a

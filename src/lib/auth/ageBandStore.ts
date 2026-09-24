@@ -7,6 +7,7 @@ import type { AgeBand } from "@/lib/social/ageBand.constants";
 import { OPERATOR_ACTIONS } from "./operatorLog.constants";
 import { operatorActionWrite } from "./operatorLog";
 import type { OperatorActor } from "./operatorLog.types";
+import { CHILD_CLEARED, isChild } from "@/lib/social/childRules";
 
 /**
  * The age band and its consent, written together.
@@ -54,7 +55,14 @@ export async function recordAgeBand(
   consent: Consent | null,
   by?: { actor: OperatorActor; before: string | null },
 ): Promise<void> {
-  const writes = [prisma.member.update({ where: { id: memberId }, data: { ageBand: band } })];
+  /*
+   * A CHILD KEEPS NOTHING THAT SAYS WHERE THEY ARE: the city, country and bio
+   * go in the same write as the band (childRules.ts, PRIV-03), so no page
+   * can show what an earlier answer left behind.
+   */
+  const writes = [
+    prisma.member.update({ where: { id: memberId }, data: isChild(band) ? { ageBand: band, ...CHILD_CLEARED } : { ageBand: band } }),
+  ];
   if (consent !== null) {
     writes.push(
       prisma.parentalConsent.upsert({

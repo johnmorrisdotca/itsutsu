@@ -144,6 +144,13 @@ export function privacySections(days: number): readonly PrivacySection[] {
         "The site asks your age band when you join, before anything else: under 13, 13 to 17, or 18 or over. Nothing more exact is asked or kept. A member under 13 needs a parent's or guardian's consent to keep an account here: on the same page, the parent or guardian gives their name and says whether they are the parent or a guardian, and we keep that with the date. Without it, the account cannot go on. Members who joined before the question existed are asked on their next visit to their own page, and the operator can record the answer for a family by hand.",
         `A parent or guardian can read what we hold about their child, and remove the child's account, from the child's own page (Profile), or write to ${CONTACT} and the operator does it for them.`,
       ],
+      points: [
+        "A member under 13 keeps no city, country or line about themselves: anything already written is cleared when the band is set, and none can be added. Their local time is never shown to anybody.",
+        "Only the people on the child's own buddy list, people the child chose, can write to them or offer them a game. Everybody else is told why and is not offered the box.",
+        "A member under 13 is never listed as here now, and when they were last on the site is not shown, whatever the switch says.",
+        "The site never sends an email to a member under 13, and does not send an invitation by email on their behalf.",
+        "Otherwise a child plays like anybody else: their games, record, rating, experience and level are shown as everyone's are, because their games are games.",
+      ],
     },
     {
       id: "keeping",

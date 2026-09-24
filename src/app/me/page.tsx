@@ -11,6 +11,7 @@ import { AgeBandForm } from "@/components/mine/AgeBandForm";
 import { AGE_COPY } from "@/components/mine/mine.constants";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { isAgeBand } from "@/lib/social/ageBand";
+import { isChild } from "@/lib/social/childRules";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -287,6 +288,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                 />
                 <ProfileForm
                   initial={profileFields}
+                  child={isChild(band)}
                   countries={allCountries()}
                   timeZones={supportedTimeZones()}
                 />
@@ -300,7 +302,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
 
             {open === "settings" ? (
               <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
-                <SettingsForm initial={profileFields} />
+                <SettingsForm initial={profileFields} child={isChild(band)} />
                 <p className="border-t border-rule pt-4 text-sm text-muted">
                   What a new board is set out with, here and on every device you sign in on.
                 </p>

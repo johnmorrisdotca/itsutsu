@@ -35,6 +35,7 @@ export function PlayerActions({
   isComputer,
   isYou,
   canAsk,
+  reachable = true,
   compact = false,
   testId = "player-actions",
   name,
@@ -64,6 +65,13 @@ export function PlayerActions({
    * there is one, and nowhere a session has no member behind it.
    */
   canAsk: boolean;
+  /**
+   * False for a member under 13 whose own buddy list does not hold the reader:
+   * no game is offered and no message box, and a line says why. The routes
+   * refuse the same (`mayReachMember`, PRIV-03); this only stops offering what
+   * would be refused.
+   */
+  reachable?: boolean;
   /**
    * For a row rather than a page heading.
    *
@@ -102,7 +110,7 @@ export function PlayerActions({
   if (compact) {
     return (
       <div className="flex items-center justify-end gap-1" data-testid={testId}>
-        <ChallengeButton memberId={memberId} />
+        {reachable ? <ChallengeButton memberId={memberId} /> : null}
         <RowMore memberId={memberId} name={shownName(name ?? "")} isBuddy={isBuddy} ignoring={ignoring} />
       </div>
     );
@@ -111,9 +119,14 @@ export function PlayerActions({
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
       {/* A game is offered by member id, and so is everything beside it. */}
-      <ChallengeButton memberId={memberId} strong />
+      {reachable ? <ChallengeButton memberId={memberId} strong /> : null}
+      {!reachable ? (
+        <span className="text-xs text-muted" data-testid="child-closed">
+          Under 13: only the people on their own buddy list can offer them a game or write to them.
+        </span>
+      ) : null}
       {/* Off the board: a conversation, the ignore list applied in full — see `messages.ts`. */}
-      {!ignoring ? (
+      {!ignoring && reachable ? (
         <Link
           href={messagesPath(memberId)}
           className="inline-flex min-h-11 items-center rounded-lg border border-rule-strong/80 bg-ivory/80 px-3 py-1.5 text-sm font-medium text-ink hover:bg-rule/60 sm:min-h-0"

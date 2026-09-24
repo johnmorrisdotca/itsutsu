@@ -35,6 +35,8 @@ vi.mock("@/lib/auth/currentSession", () => ({
   currentSession: async () => null,
 }));
 vi.mock("@/lib/social/ignores", () => ({ isIgnoring: async () => false }));
+// A member under 13 is reached only by their own buddies; these cases are about adults, so everybody may.
+vi.mock("@/lib/social/childReach", () => ({ mayReachMember: async () => true }));
 vi.mock("@/lib/bots/botMembers", () => ({ ensureBotMembers: async () => {} }));
 vi.mock("@/lib/bots/bots", () => ({ isBotId: () => false }));
 vi.mock("@/lib/bots/botPlay", () => ({ playBotTurns: async () => {} }));

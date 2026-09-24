@@ -5,6 +5,15 @@ import { prismaMailCounter } from "./mailCounter";
 import { limitsFor } from "./mailLimits";
 import { mailRefusalFor } from "./mailSwitch";
 import { resendTransport } from "./resendTransport";
+import { foldEmail } from "@/lib/auth/foldEmail";
+import { prisma } from "@/lib/prisma";
+import { mayBeEmailed } from "@/lib/social/childRules";
+
+/** Whether an address belongs to a member under 13. An address with no member behind it is nobody's child. */
+async function childAddress(address: string): Promise<boolean> {
+  const member = await prisma.member.findUnique({ where: { email: foldEmail(address) }, select: { ageBand: true } });
+  return member !== null && !mayBeEmailed(member.ageBand);
+}
 
 /**
  * THE ONE WAY THE SITE SENDS AN EMAIL.
@@ -33,6 +42,19 @@ import { resendTransport } from "./resendTransport";
  * said so. Every refusal is logged with its reason, and never with the address.
  */
 export async function sendMail(mail: OutgoingMail, sender: MailSender, deps: SendDeps = {}): Promise<SendOutcome> {
+  /*
+   * 0. NEVER TO A CHILD, before anything else and in every environment: the
+   *    site sends no email to a member under 13 (childRules.ts, PRIV-03). If
+   *    the question cannot be answered, nothing is sent — a rule that cannot
+   *    measure must not wave a send through.
+   */
+  try {
+    if (await (deps.isChildAddress ?? childAddress)(mail.to)) return notSent("to-a-child");
+  } catch (error) {
+    console.error("[mail] could not tell whether the address is a child's", error);
+    return notSent("count-unavailable");
+  }
+
   let transport = deps.transport;
   if (transport === undefined) {
     const env = deps.env ?? process.env;

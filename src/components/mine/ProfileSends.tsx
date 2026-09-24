@@ -15,7 +15,7 @@ import type { ProfileSectionProps } from "./profileForm.types";
  * file for why the form reads as three groups. The fields are the form's, and
  * this section changes them only through `set`, exactly as it did inline.
  */
-export function ProfileSends({ fields, set }: ProfileSectionProps) {
+export function ProfileSends({ fields, set, child = false }: ProfileSectionProps) {
   /** The id the retention select is described by — see where it is used. */
   const keepHint = useId();
 
@@ -30,18 +30,26 @@ export function ProfileSends({ fields, set }: ProfileSectionProps) {
         with the game defaults, and this form is not the place to restyle it.
       */}
       <div className="flex flex-col gap-3">
-        <Toggle
-          label="Show when I am here"
-          checked={fields.showOnline}
-          onChange={(next) => set({ showOnline: next })}
-          hint="Listed on the players page while you are on the site. Off, and nobody sees you come and go."
-        />
-        <Toggle
-          label="Email me when it is my move"
-          checked={fields.emailNotify}
-          onChange={(next) => set({ emailNotify: next })}
-          hint="One mail per turn, once mail is set up. Off, and the site never writes to you."
-        />
+        {child ? (
+          <p className="text-sm text-muted" data-testid="child-settings-note">
+            You are under 13, so nobody is shown when you are here, and the site never sends you an email.
+          </p>
+        ) : (
+          <>
+            <Toggle
+              label="Show when I am here"
+              checked={fields.showOnline}
+              onChange={(next) => set({ showOnline: next })}
+              hint="Listed on the players page while you are on the site. Off, and nobody sees you come and go."
+            />
+            <Toggle
+              label="Email me when it is my move"
+              checked={fields.emailNotify}
+              onChange={(next) => set({ emailNotify: next })}
+              hint="One mail per turn, once mail is set up. Off, and the site never writes to you."
+            />
+          </>
+        )}
         {/*
           Your own list is a working list: the games waiting on you, and the
           ones just over. This says how long "just over" lasts. It hides them

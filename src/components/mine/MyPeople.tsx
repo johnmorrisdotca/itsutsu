@@ -11,6 +11,8 @@ import { fetchIgnored } from "@/lib/social/ignores";
 import { mailRefusalFor } from "@/lib/mail/mailSwitch";
 import { shownName } from "@/lib/rating/shownName";
 import { SECTION_HEADING } from "@/components/ui/ui.constants";
+import { ageBandOf } from "@/lib/auth/ageBandStore";
+import { mayEmailInvites } from "@/lib/social/childRules";
 
 /**
  * The people a member has said something about: the ones they play, the ones
@@ -31,7 +33,7 @@ import { SECTION_HEADING } from "@/components/ui/ui.constants";
  * offers its actions, whether or not that person came in by Google.
  */
 export async function MyPeople({ memberId }: { memberId: string }) {
-  const [buddies, ignored] = await Promise.all([fetchBuddies(memberId), fetchIgnored(memberId)]);
+  const [buddies, ignored, age] = await Promise.all([fetchBuddies(memberId), fetchIgnored(memberId), ageBandOf(memberId)]);
 
   return (
     <div className="flex flex-col gap-4" data-testid="my-people">
@@ -89,7 +91,8 @@ export async function MyPeople({ memberId }: { memberId: string }) {
       ) : null}
 
       <div className="border-t border-rule pt-4">
-        <InviteFriends canEmail={mailRefusalFor(process.env) === null} />
+        {/* A member under 13 is not offered the email half: the site sends nothing on a child's behalf (childRules.ts). */}
+        <InviteFriends canEmail={mailRefusalFor(process.env) === null && mayEmailInvites(age.band)} />
       </div>
     </div>
   );

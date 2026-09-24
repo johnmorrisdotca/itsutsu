@@ -28,6 +28,8 @@ export type ProfileFields = {
 
 export type ProfileFormProps = {
   initial: ProfileFields;
+  /** A member under 13, who keeps no city, country or bio (childRules.ts, PRIV-03). */
+  child?: boolean;
   countries: MemberCountry[];
   timeZones: string[];
 };
@@ -36,4 +38,6 @@ export type ProfileFormProps = {
 export type ProfileSectionProps = {
   fields: ProfileFields;
   set: (patch: Partial<ProfileFields>) => void;
+  /** A member under 13: never listed as here and never emailed, so neither switch is offered. */
+  child?: boolean;
 };

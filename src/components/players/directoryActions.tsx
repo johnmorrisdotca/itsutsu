@@ -33,7 +33,8 @@ export function directoryActions(
   now: Date,
 ) {
   return {
-    recency: (entry: DirectoryEntry) => recencyOf(new Date(entry.lastSeenAt), now),
+    // Shown only where the member lets it be, and never for a member under 13 (`presence`).
+    recency: (entry: DirectoryEntry) => (entry.presence ? recencyOf(new Date(entry.lastSeenAt), now) : null),
     forEntry: (entry: DirectoryEntry) => {
       /*
        * AN ACCOUNT TO ASK WITH, a PERSON on the row — not a program, not a kept

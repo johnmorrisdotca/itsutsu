@@ -9,6 +9,7 @@ import { LocalTime } from "@/components/ui/LocalTime";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { readThread } from "@/lib/messages/messages";
 import { prisma } from "@/lib/prisma";
+import { mayReachMember } from "@/lib/social/childReach";
 import { isIgnoring } from "@/lib/social/ignores";
 import { listable } from "@/lib/social/listable";
 
@@ -32,6 +33,8 @@ export default async function MessagesPage({ params }: PageProps<"/messages/[mem
   });
   const reachable = me !== null && other !== null && listable(other) && other.id !== me;
   const ignored = reachable ? await isIgnoring(me, otherId) : false;
+  // A child hears only from their own buddies: the box is not offered to anybody else (childRules.ts).
+  const childClosed = reachable && !(await mayReachMember(otherId, me));
   const thread = reachable ? await readThread(me, otherId) : [];
 
   return (
@@ -76,7 +79,12 @@ export default async function MessagesPage({ params }: PageProps<"/messages/[mem
                 ))}
               </ol>
             )}
-            {!ignored ? <MessageForm to={other.id} /> : null}
+            {childClosed ? (
+              <p className={`${PANEL_CLASS} text-sm text-muted`} data-testid="messages-child-closed">
+                {MESSAGE_COPY.childClosed}
+              </p>
+            ) : null}
+            {!ignored && !childClosed ? <MessageForm to={other.id} /> : null}
           </>
         )}
       </section>

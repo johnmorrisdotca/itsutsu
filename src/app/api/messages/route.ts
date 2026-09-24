@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     const sent = await sendMessage(me, parsed.data.to, parsed.data.text);
     if (!sent.ok) {
-      const status = sent.reason === "no-such-member" ? 404 : sent.reason === "not-taking-messages" ? 403 : 422;
+      const status = sent.reason === "no-such-member" ? 404 : sent.reason === "not-taking-messages" || sent.reason === "child-buddies-only" ? 403 : 422;
       return NextResponse.json({ error: MESSAGE_REFUSALS[sent.reason], reason: sent.reason }, { status, headers: NO_STORE });
     }
     return NextResponse.json({ ok: true }, { status: 201, headers: NO_STORE });

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { AGE_BANDS } from "./ageBand.constants";
 
 /** How recently a member was seen, in the three bands the list marks. */
 export type Recency = "now" | "recent" | "today" | null;
@@ -59,7 +60,16 @@ export function localTimeIn(timeZone: string, now = new Date()): string | null {
 export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
   const since = new Date(now.getTime() - RECENCY_MINUTES.today * 60_000);
   const rows = await prisma.member.findMany({
-    where: { showOnline: true, lastSeenAt: { gte: since } },
+    /*
+     * Never a member under 13, whatever their switch says (childRules.ts,
+     * PRIV-03). Spelled with the null case, because `NOT` on a nullable column
+     * is SQL's NOT, which also drops every member never asked their band.
+     */
+    where: {
+      showOnline: true,
+      lastSeenAt: { gte: since },
+      OR: [{ ageBand: null }, { ageBand: { not: AGE_BANDS.under13 } }],
+    },
     orderBy: { lastSeenAt: "desc" },
     take: HERE_MAX,
     select: { id: true, email: true, name: true, picture: true, lastSeenAt: true, timeZone: true },

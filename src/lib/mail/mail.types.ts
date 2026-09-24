@@ -40,7 +40,9 @@ export type MailRefusal =
   /** Game notices are switched off at `NOTICES.sending`; see the reasoning there. */
   | "notices-off"
   /** Nobody to write to: no member row, no address on it, or the member asked not to hear. */
-  | "no-address";
+  | "no-address"
+  /** The address is a member under 13's, and the site never emails a child (childRules.ts, PRIV-03). */
+  | "to-a-child";
 
 /**
  * SOMETHING THAT HAPPENED IN A GAME, worth telling one member about.
@@ -103,6 +105,8 @@ export type MailEnv = {
 export type SendDeps = {
   /** A fake, in tests. When given, the environment is not consulted. */
   transport?: MailTransport;
+  /** Whether an address is a member under 13's; the database by default, a fake in tests. */
+  isChildAddress?: (address: string) => Promise<boolean>;
   counter?: MailCounter;
   now?: Date;
   env?: MailEnv;

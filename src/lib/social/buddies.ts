@@ -4,6 +4,7 @@ import { listable } from "./listable";
 import { prisma } from "@/lib/prisma";
 import { awardBuddyKept } from "@/lib/xp/xpSocial";
 import { localTimeIn, recencyOf, type Recency } from "./presence";
+import { showsLocalTime, showsPresence } from "./childRules";
 
 export type BuddyEntry = {
   /**
@@ -47,8 +48,9 @@ export async function fetchBuddies(ownerId: string, now = new Date()): Promise<B
     name: member.name,
     picture: member.picture,
     lastSeenAt: member.lastSeenAt.toISOString(),
-    recency: member.showOnline ? recencyOf(member.lastSeenAt, now) : null,
-    localTime: localTimeIn(member.timeZone, now),
+    // Their switch, and never for a member under 13; nor a child's local time (childRules.ts).
+    recency: showsPresence(member) ? recencyOf(member.lastSeenAt, now) : null,
+    localTime: showsLocalTime(member.ageBand) ? localTimeIn(member.timeZone, now) : null,
     city: member.city,
     country: member.country,
   }));

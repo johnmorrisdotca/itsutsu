@@ -75,6 +75,8 @@ vi.mock("@/lib/auth/currentSession", () => ({
   currentMemberRow: async () => (mine === null ? null : { id: mine, name: session?.name ?? "" }),
 }));
 vi.mock("@/lib/social/ignores", () => ({ isIgnoring: async () => ignoring }));
+// A member under 13 is reached only by their own buddies; these cases are about adults, so everybody may.
+vi.mock("@/lib/social/childReach", () => ({ mayReachMember: async () => true }));
 vi.mock("@/lib/bots/botMembers", () => ({ ensureBotMembers: async () => {} }));
 
 const { resolveAgainst } = await import("./liveAgainst");

@@ -20,7 +20,7 @@ import { useSaveMe } from "./useSaveMe";
  * behaves for you. These were the bottom half of the Profile form; they are
  * the same sections (`ProfileAway`, `ProfileSends`), saved on their own.
  */
-export function SettingsForm({ initial }: { initial: ProfileFields }) {
+export function SettingsForm({ initial, child = false }: { initial: ProfileFields; child?: boolean }) {
   const [fields, setFields] = useState(initial);
   const { busy, saved, error, save, changed } = useSaveMe();
   const set = (patch: Partial<ProfileFields>) => {
@@ -43,7 +43,7 @@ export function SettingsForm({ initial }: { initial: ProfileFields }) {
   return (
     <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="settings-form" {...readyMark(useHydrated())}>
       <ProfileAway fields={fields} set={set} />
-      <ProfileSends fields={fields} set={set} />
+      <ProfileSends fields={fields} set={set} child={child} />
       <div className="flex items-center gap-3">
         <button type="submit" disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}>
           Save settings

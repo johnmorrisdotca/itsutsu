@@ -8,6 +8,8 @@ import { mintInviteCode } from "@/lib/invite/inviteStore";
 import { inviteMail } from "@/lib/mail/inviteMail";
 import { MAIL_REFUSAL_TEXT, SITE_ORIGIN } from "@/lib/mail/mail.constants";
 import { sendMail } from "@/lib/mail/sendMail";
+import { ageBandOf } from "@/lib/auth/ageBandStore";
+import { mayEmailInvites } from "@/lib/social/childRules";
 
 /** How long a friend has to use an invitation, and how many may. */
 const INVITE_DAYS = 30;
@@ -53,6 +55,13 @@ export async function POST(request: Request) {
     const parsed = inviteSchema.safeParse(body ?? {});
     if (!parsed.success) return badRequest("That does not look like an email address.");
     const sendTo = parsed.data.sendTo;
+    // A member under 13 may hand a link over in person, but the site sends no email on their behalf (childRules.ts, PRIV-03).
+    if (sendTo !== undefined && !mayEmailInvites((await ageBandOf(row.id)).band)) {
+      return NextResponse.json(
+        { error: "Members under 13 can share the link themselves, but the site does not send invitations by email for them.", reason: "child" },
+        { status: 403, headers: NO_STORE },
+      );
+    }
 
     const invite = await mintInviteCode(email ?? `member:${row.id}`, {
       note: `from ${row.name || email || row.id}`,

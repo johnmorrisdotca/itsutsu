@@ -7,6 +7,7 @@ import { isBotId } from "@/lib/bots/bots";
 import { MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
+import { mayReachMember } from "@/lib/social/childReach";
 import { isIgnoring } from "@/lib/social/ignores";
 import { SHARED_OPENINGS } from "./gameSettingsSchema";
 import type { CreationAsked, CreationRefusal } from "./liveRequest";
@@ -162,6 +163,12 @@ const NOT_TAKING_GAMES: CreationRefusal = {
   error: "That member is not taking games from you.",
 };
 
+/** A member under 13 is offered games only by their own buddies (`childRules.ts`, PRIV-03). */
+const CHILD_BUDDIES_ONLY: CreationRefusal = {
+  status: 403,
+  error: "This player is under 13, so only the people on their own buddy list can offer them a game.",
+};
+
 /**
  * Playing that game again: the same board, the same rules, the colours swapped.
  *
@@ -200,6 +207,7 @@ async function playingAgain(
   if (!isBotId(them.id) && (await isIgnoring(them.id, mineId))) {
     return { refused: NOT_TAKING_GAMES };
   }
+  if (!isBotId(them.id) && !(await mayReachMember(them.id, mineId))) return { refused: CHILD_BUDDIES_ONLY };
   if (isBotId(them.id)) await ensureBotMembers();
 
   const seats = seatsForRematch(origin, { id: mineId, name: me.name }, { id: them.id, name: them.name });
@@ -331,6 +339,7 @@ async function askingSomebody(
   if (!computer && (await isIgnoring(other.id, mineId))) {
     return { refused: NOT_TAKING_GAMES };
   }
+  if (!computer && !(await mayReachMember(other.id, mineId))) return { refused: CHILD_BUDDIES_ONLY };
 
   /*
    * WHOEVER ASKS TAKES BLACK, unless a position says which colour they had.

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { ageBandGate, recordAgeBand } from "@/lib/auth/ageBandStore";
+import { ageBandGate, ageBandOf, recordAgeBand } from "@/lib/auth/ageBandStore";
+import { asksWithheld, CHILD_PROFILE_REFUSAL, isChild } from "@/lib/social/childRules";
 import { AGE_BAND_LIST, AGE_BAND_PROBLEMS, CONSENT_LIMITS } from "@/lib/social/ageBand.constants";
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
@@ -149,6 +150,16 @@ export async function PATCH(request: Request) {
       ...(appearance === undefined ? {} : { appearance: cleanAppearance(appearance) }),
       ...(gameDefaults === undefined ? {} : { gameDefaults: cleanGameDefaults(gameDefaults) }),
     };
+    /*
+     * A MEMBER UNDER 13 KEEPS NO CITY, COUNTRY OR BIO (childRules.ts, PRIV-03):
+     * refused whole, before anything below is written. The band is the one this
+     * request leaves, so setting under 13 and a city in one request is refused
+     * too. An empty value is a clearing, and allowed.
+     */
+    const bandNow = ageBand ?? (await ageBandOf(mine)).band;
+    if (isChild(bandNow) && asksWithheld(profile)) {
+      return NextResponse.json({ error: CHILD_PROFILE_REFUSAL, reason: "child-withheld" }, { status: 422, headers: NO_STORE });
+    }
     /*
      * The zone, and where it came from, both decided before anything is written:
      * a device writing over a zone the member chose is refused here, whole.

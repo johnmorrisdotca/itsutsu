@@ -58,7 +58,7 @@ describe("sendMail", () => {
     const { counter, counts } = memoryCounter();
     const transport = fakeTransport();
 
-    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW });
+    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW, isChildAddress: async () => false });
 
     expect(outcome).toEqual({ sent: true, id: "email-1" });
     expect(transport).toHaveBeenCalledTimes(1);
@@ -87,7 +87,7 @@ describe("sendMail", () => {
         const { counter, counts } = memoryCounter(start);
         const transport = fakeTransport();
 
-        const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW });
+        const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW, isChildAddress: async () => false });
 
         expect(outcome).toEqual({ sent: false, refusal });
         expect(transport).not.toHaveBeenCalled();
@@ -106,8 +106,8 @@ describe("sendMail", () => {
     const transport = fakeTransport();
 
     const outcomes = await Promise.all([
-      sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW }),
-      sendMail(MAIL, { memberId: "m-somebody-else" }, { transport, counter, now: NOW }),
+      sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW, isChildAddress: async () => false }),
+      sendMail(MAIL, { memberId: "m-somebody-else" }, { transport, counter, now: NOW, isChildAddress: async () => false }),
     ]);
 
     expect(outcomes.filter((outcome) => outcome.sent)).toHaveLength(1);
@@ -129,7 +129,7 @@ describe("sendMail", () => {
       return { ok: true, id: null };
     });
 
-    await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW });
+    await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW, isChildAddress: async () => false });
     expect(order).toEqual(["counted", "sent"]);
   });
 
@@ -138,7 +138,7 @@ describe("sendMail", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
 
-    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { counter, env: { NODE_ENV: "production" } });
+    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { isChildAddress: async () => false, counter, env: { NODE_ENV: "production" } });
 
     expect(outcome).toEqual({ sent: false, refusal: "no-key" });
     expect(counter.reserve).not.toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe("sendMail", () => {
       { NODE_ENV: "development", RESEND_API_KEY: "re_not_real" },
       { NODE_ENV: "production", VERCEL_ENV: "preview", RESEND_API_KEY: "re_not_real" },
     ]) {
-      expect(await sendMail(MAIL, { memberId: MEMBER }, { counter, env })).toEqual({ sent: false, refusal: "not-production" });
+      expect(await sendMail(MAIL, { memberId: MEMBER }, { isChildAddress: async () => false, counter, env })).toEqual({ sent: false, refusal: "not-production" });
     }
     expect(counter.reserve).not.toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -169,12 +169,12 @@ describe("sendMail", () => {
   it("reports a transport error as not sent, and keeps the count", async () => {
     const { counter, counts } = memoryCounter();
 
-    const refused = await sendMail(MAIL, { memberId: MEMBER }, {
+    const refused = await sendMail(MAIL, { memberId: MEMBER }, { isChildAddress: async () => false,
       transport: fakeTransport({ ok: false, detail: "Resend answered 500" }),
       counter,
       now: NOW,
     });
-    const threw = await sendMail(MAIL, { memberId: MEMBER }, {
+    const threw = await sendMail(MAIL, { memberId: MEMBER }, { isChildAddress: async () => false,
       transport: vi.fn<MailTransport>(async () => {
         throw new TypeError("network down");
       }),
@@ -196,7 +196,7 @@ describe("sendMail", () => {
       },
     };
 
-    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW });
+    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW, isChildAddress: async () => false });
 
     expect(outcome).toEqual({ sent: false, refusal: "count-unavailable" });
     expect(transport).not.toHaveBeenCalled();
@@ -205,7 +205,7 @@ describe("sendMail", () => {
 
   it("never logs the address it was sending to", async () => {
     const { counter } = memoryCounter({ [siteDayKey]: MAIL_CAPS.siteDay });
-    await sendMail(MAIL, { memberId: MEMBER }, { transport: fakeTransport(), counter, now: NOW });
+    await sendMail(MAIL, { memberId: MEMBER }, { isChildAddress: async () => false, transport: fakeTransport(), counter, now: NOW });
     for (const call of warn.mock.calls) expect(String(call[0])).not.toContain(MAIL.to);
   });
 });
@@ -224,5 +224,30 @@ describe("the caps stay inside Resend's free plan", () => {
 
   it("have words for every refusal", () => {
     for (const text of Object.values(MAIL_REFUSAL_TEXT)) expect(text.trim()).not.toBe("");
+  });
+});
+
+describe("never to a child (PRIV-03)", () => {
+  it("refuses an address that belongs to a member under 13, before anything is counted or sent", async () => {
+    const transport = fakeTransport();
+    const { counter } = memoryCounter();
+    const outcome = await sendMail(MAIL, { memberId: MEMBER }, { transport, counter, now: NOW, isChildAddress: async () => true });
+    expect(outcome).toEqual({ sent: false, refusal: "to-a-child" });
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("sends nothing when it cannot tell whether the address is a child's", async () => {
+    const transport = fakeTransport();
+    const { counter } = memoryCounter();
+    const outcome = await sendMail(MAIL, { memberId: MEMBER }, {
+      transport,
+      counter,
+      now: NOW,
+      isChildAddress: async () => {
+        throw new Error("database down");
+      },
+    });
+    expect(outcome.sent).toBe(false);
+    expect(transport).not.toHaveBeenCalled();
   });
 });

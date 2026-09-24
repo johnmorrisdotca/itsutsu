@@ -48,6 +48,7 @@ export function ProfileForm({
   initial,
   countries,
   timeZones,
+  child = false,
 }: ProfileFormProps) {
   const [fields, setFields] = useState(initial);
   const { busy, saved, error, save, changed } = useSaveMe();
@@ -92,9 +93,8 @@ export function ProfileForm({
     // Who you are and what others see; the rest is the Settings tab's (`SettingsForm`).
     // An untouched zone is left out — `undefined` is dropped by JSON — so it is not sent as a choice.
     await save({
-      city: fields.city,
-      country: fields.country,
-      bio: fields.bio,
+      // A child keeps none of the three, so none is sent (childRules.ts); the route refuses them anyway.
+      ...(child ? {} : { city: fields.city, country: fields.country, bio: fields.bio }),
       timeZone: zoneTouched ? fields.timeZone : undefined,
     });
   }
@@ -128,6 +128,12 @@ export function ProfileForm({
           row on a phone, where there is room for neither beside the other.
           Country is the wider of the two because a country name is.
         */}
+        {child ? (
+          <p className="text-sm text-muted" data-testid="child-profile-note">
+            You are under 13, so the site keeps no city, country or line about you: nothing here says where you are.
+            Your time zone only sets your own clock, and nobody else sees it.
+          </p>
+        ) : (
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <label className={`flex flex-1 flex-col gap-1 text-sm ${PROFILE_WIDTH.city}`}>
             City <span className="sr-only">optional</span>
@@ -163,6 +169,7 @@ export function ProfileForm({
             </select>
           </label>
         </div>
+        )}
         {/*
           The label names the field and the shortcut is a button, so the button
           is a sibling of the box rather than something inside its label — and
@@ -202,10 +209,12 @@ export function ProfileForm({
           </div>
         </div>
         {/* The one field that is a paragraph, and the only one that keeps the width. */}
-        <label className="flex flex-col gap-1 text-sm">
-          About you
-          <textarea value={fields.bio} onChange={(e) => set({ bio: e.target.value })} maxLength={500} rows={3} className={INPUT_CLASS} />
-        </label>
+        {child ? null : (
+          <label className="flex flex-col gap-1 text-sm">
+            About you
+            <textarea value={fields.bio} onChange={(e) => set({ bio: e.target.value })} maxLength={500} rows={3} className={INPUT_CLASS} />
+          </label>
+        )}
       </div>
 
       {/* When your games wait, what the site sends you and how long it keeps a finished game: the Settings tab (`SettingsForm`). */}

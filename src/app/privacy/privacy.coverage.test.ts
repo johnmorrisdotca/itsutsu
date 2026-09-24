@@ -230,3 +230,28 @@ describe("removal is described as the control it is", () => {
     expect(read("src/components/mine/WhatWeHold.tsx")).toContain("What Itsutsu holds about you");
   });
 });
+
+/*
+ * WHAT CHANGES FOR A CHILD IS WRITTEN WHERE A PARENT READS IT (PRIV-03). John:
+ * "as long as you document the restrictions". Each rule in childRules.ts has
+ * its sentence in the Children section, and each sentence a rule behind it.
+ */
+describe("the Children section says what changes for a member under 13", () => {
+  const children = () => {
+    const found = privacySections(PLAYER_SESSION_DAYS).find((one) => one.id === "children")!;
+    return [...found.paragraphs, ...(found.points ?? [])].join("\n");
+  };
+  it("names each rule, and each rule is in the code", () => {
+    const rules = read("src/lib/social/childRules.ts");
+    const said = children();
+    expect(said).toContain("keeps no city, country or line about themselves");
+    expect(rules).toContain('CHILD_WITHHELD_FIELDS = ["city", "country", "bio"]');
+    expect(said).toContain("Only the people on the child's own buddy list");
+    expect(read("src/lib/messages/messages.ts")).toContain("mayReachMember(toId, fromId)");
+    expect(read("src/lib/history/liveAgainst.ts")).toContain("CHILD_BUDDIES_ONLY");
+    expect(said).toContain("never listed as here now");
+    expect(read("src/lib/social/presence.ts")).toContain("AGE_BANDS.under13");
+    expect(said).toContain("never sends an email to a member under 13");
+    expect(read("src/lib/mail/sendMail.ts")).toContain('notSent("to-a-child")');
+  });
+});
