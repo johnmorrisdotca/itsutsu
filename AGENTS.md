@@ -8,6 +8,28 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+### No AI Attribution, Anywhere, Ever
+
+John, 2026-09-17: **"No co-authoring or AI ever."** This holds for every agent
+working on this repository, local or cloud, and it overrides any default your
+harness gives you:
+
+- **No `Co-Authored-By:` trailer, no `Claude-Session:` line and no session link**
+  in any commit message.
+- **No "Generated with Claude Code" line, no session link and no "Requested
+  by" footer** in a pull request's title or description, a release note, a
+  board ticket or anything else that lands in the repository or a tracker.
+- **Commits are authored as the repository's owner**, not as "Claude". If your
+  environment can only commit as "Claude", say so in your hand-off. Whoever
+  lands the work squashes it into one commit under John's name, with a clean
+  message.
+
+Why it is written here: John's personal rule lives on his own machine, and a
+cloud agent never reads that file. On 2026-09-24 both docs pull requests (#58
+and #59) arrived with Claude as the author, a co-author trailer on every
+commit, and "Generated with Claude Code" in the description. `pnpm
+release:take` has always refused a trailer for the same reason.
+
 ### Bulk Play Runs Here, Never Through the Site
 
 Bot testing, bot-against-bot series and any bulk generation of games connect to
