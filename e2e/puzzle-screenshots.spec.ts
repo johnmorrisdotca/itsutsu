@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
+import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { ready } from "./support";
@@ -26,6 +27,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "numberPlace", size: 9, level: "medium", seed: 20260924, fill: 3 },
   // A 7×7 with every other row's stone placed and a cross or two: the regions, a stone, a ruled-out cell.
   { kind: "hiddenStones", size: 7, level: "easy", seed: 20260924, fill: 2 },
+  // A 5×5 with a third of its blanks filled, its marks showing between the cells.
+  { kind: "moreOrLess", size: 5, level: "medium", seed: 20260924, fill: 3 },
 ];
 
 test.describe("puzzle screenshots", () => {
@@ -53,7 +56,7 @@ test.describe("puzzle screenshots", () => {
           await cells.nth(row * scene.size + col).click();
         }
       } else {
-        const givens = decodeCells(puzzle.givens, scene.size)!;
+        const givens = scene.kind === "moreOrLess" ? decodeMoreOrLess(puzzle.givens, scene.size)!.cells : decodeCells(puzzle.givens, scene.size)!;
         const solution = decodeCells(puzzle.solution, scene.size)!;
         for (const [index, given] of givens.entries()) {
           if (given !== 0 || index % scene.fill !== 0) continue;

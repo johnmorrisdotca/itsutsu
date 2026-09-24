@@ -20,6 +20,15 @@ export const PUZZLE_CELL =
 /** A given: printed, and not for changing. */
 export const PUZZLE_CELL_GIVEN = "font-semibold text-ink";
 
+/**
+ * A More or Less mark, drawn over the edge it belongs to: on the cell's right
+ * edge for a horizontal one, its bottom edge for a vertical one, on a small
+ * disc of the grid's paper so it never reads as part of a number.
+ */
+const PUZZLE_MARK = "pointer-events-none absolute z-10 flex size-5 items-center justify-center rounded-full bg-ivory text-base font-bold leading-none text-shu sm:size-6 sm:text-lg";
+export const PUZZLE_MARK_RIGHT = `${PUZZLE_MARK} top-1/2 right-0 -translate-y-1/2 translate-x-1/2`;
+export const PUZZLE_MARK_BELOW = `${PUZZLE_MARK} bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2`;
+
 /** The cell the next key will fill. */
 export const PUZZLE_CELL_SELECTED = "bg-moss-soft ring-2 ring-inset ring-moss";
 

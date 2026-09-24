@@ -1,4 +1,5 @@
 import { generateHiddenStones } from "./hiddenStones/generate";
+import { generateMoreOrLess } from "./moreOrLess/generate";
 import { generateNumberPlace } from "./numberPlace/generate";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
@@ -15,6 +16,6 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "hiddenStones":
       return generateHiddenStones(size, level, seed);
     case "moreOrLess":
-      throw new Error("More or Less is not made yet: see docs/plans/numbers/NUM-04");
+      return generateMoreOrLess(size, level, seed);
   }
 }

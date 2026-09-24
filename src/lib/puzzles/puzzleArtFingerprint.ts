@@ -16,6 +16,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/puzzles.constants.ts",
   "src/lib/puzzles/numberPlace/generate.ts",
   "src/lib/puzzles/hiddenStones/generate.ts",
+  "src/lib/puzzles/moreOrLess/generate.ts",
   "e2e/puzzle-screenshots.spec.ts",
 ];
 

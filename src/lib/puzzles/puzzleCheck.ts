@@ -1,4 +1,5 @@
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
+import { decodeMoreOrLess } from "./moreOrLess/code";
 import { boxOf } from "./numberPlace/boxes";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -25,6 +26,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkNumberPlace(size, givens, answer);
     case "hiddenStones":
       return checkHiddenStones(size, givens, answer);
+    case "moreOrLess":
+      return checkMoreOrLess(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -54,6 +57,33 @@ function checkNumberPlace(size: number, givens: string, answer: string): PuzzleC
     rows[row] |= bit;
     cols[col] |= bit;
     boxes[box] |= bit;
+  }
+  return { ok: true };
+}
+
+/** Every row and column a permutation of 1..size, every given where it was, and every mark true. */
+function checkMoreOrLess(size: number, givens: string, answer: string): PuzzleCheck {
+  const asked = decodeMoreOrLess(givens, size);
+  const filled = decodeCells(answer, size);
+  if (asked === null) return { ok: false, reason: "the givens are not a grid with marks" };
+  if (filled === null) return { ok: false, reason: "the answer is not a grid" };
+  if (filled.some((value) => value === 0)) return { ok: false, reason: "the answer has empty cells" };
+  for (let index = 0; index < asked.cells.length; index += 1) {
+    if (asked.cells[index] !== 0 && asked.cells[index] !== filled[index]) return { ok: false, reason: "a given was changed" };
+  }
+  const rows = Array.from({ length: size }, () => 0);
+  const cols = Array.from({ length: size }, () => 0);
+  for (let index = 0; index < filled.length; index += 1) {
+    const bit = 1 << filled[index];
+    const row = Math.floor(index / size);
+    const col = index % size;
+    if (rows[row] & bit) return { ok: false, reason: `row ${row + 1} repeats a number` };
+    if (cols[col] & bit) return { ok: false, reason: `column ${col + 1} repeats a number` };
+    rows[row] |= bit;
+    cols[col] |= bit;
+  }
+  for (const mark of asked.marks) {
+    if (!(filled[mark.less] < filled[mark.more])) return { ok: false, reason: "a mark is not true" };
   }
   return { ok: true };
 }
