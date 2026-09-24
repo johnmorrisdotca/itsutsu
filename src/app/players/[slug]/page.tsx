@@ -14,6 +14,9 @@ import { PlayedEverywhere, keptRecordTail } from "@/components/players/LegacyRec
 import { PlayerFigures } from "@/components/players/PlayerFigures";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMembersByNames } from "@/lib/auth/members";
+import { ensureBotMembers } from "@/lib/bots/botMembers";
+import { playerSlug } from "@/lib/rating/playerKey";
+import { BOT_MEMBER_LIST } from "@/lib/bots/bots.constants";
 import { currentReader } from "@/lib/auth/currentReader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { buddyMemberIds } from "@/lib/social/buddies";
@@ -64,6 +67,15 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * name — with their rating row and their record. `lookUpPlayer` holds the
    * argument for that order.
    */
+  /*
+   * A COMPUTER PLAYER HAS A PAGE BEFORE ANYBODY HAS LISTED IT. Its member row
+   * is written by `ensureBotMembers`, which only the directory used to call,
+   * so a link straight to /players/kyu on a fresh database answered "nothing
+   * here" until somebody had opened /players, or a new grade's page did the
+   * same on the live site the day it shipped. Asked only for an address that
+   * names one of them, and the call is remembered for five minutes.
+   */
+  if (namesComputerPlayer(slug)) await ensureBotMembers();
   const { key: decoded, player, record, member } = await lookUpPlayer(slug);
   const gifts = await fetchTimeGiftRecord(decoded);
   /*
@@ -407,4 +419,10 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       />
     </Page>
   );
+}
+
+/** Whether an address is one of the computer players', by its id or by the slug of its name. */
+function namesComputerPlayer(slug: string): boolean {
+  const asked = decodeURIComponent(slug).toLowerCase();
+  return BOT_MEMBER_LIST.some((bot) => bot.id === asked || playerSlug(bot.name) === asked);
 }
