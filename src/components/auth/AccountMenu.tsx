@@ -31,7 +31,8 @@ const ADMIN_SHORTCUTS = [
 const MENU_WIDTH_PX = 256;
 const MENU_EDGE_PX = 16;
 
-const ITEM = `flex items-center rounded-lg px-2 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`;
+// `py-1.5` for the desk, where `TAP_HEIGHT` gives no height and the items sat touching (John, 2026-09-24: "compressed").
+const ITEM = `flex items-center rounded-lg px-2 py-1.5 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`;
 const DIVIDER = "my-1.5 border-t border-rule";
 
 /**

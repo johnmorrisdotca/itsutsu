@@ -68,25 +68,22 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           </p>
         </div>
         {/*
-          The CATALOGUE, which is a different errand from starting a game and
-          reads as one now that the bar carries New game: this is "show me what
-          there is to play", not "play something". The offer to start one is in
-          the navigation and in the empty list, where a reader who has nothing to
-          move will meet it.
+          John, 2026-09-24: the two links beside this heading were "probably
+          noise". All the games went: the header's Games is the same place. The
+          inbox stays only when something in it is unread, because this is the
+          one page that counts it (the count is kept off every other page for
+          what it costs); a link saying there is nothing new said nothing.
         */}
-        <span className="flex flex-col items-start gap-1 sm:items-end">
-          <Link href="/games" className="text-sm font-semibold underline underline-offset-4" data-testid="to-new-game">
-            All the games 遊び方 →
-          </Link>
+        {unread > 0 ? (
           <Link
             href="/inbox"
-            className={`text-sm underline underline-offset-4 ${unread > 0 ? "font-semibold text-shu" : "text-ink-soft"}`}
+            className="text-sm font-semibold text-shu underline underline-offset-4"
             data-testid="play-inbox"
             data-unread={unread}
           >
-            {unread > 0 ? INBOX_COPY.unread(unread) : INBOX_COPY.title} {INBOX_COPY.kanji} →
+            {INBOX_COPY.unread(unread)} {INBOX_COPY.kanji} →
           </Link>
-        </span>
+        ) : null}
       </div>
 
       {/*

@@ -54,9 +54,10 @@ test.describe("the inbox", () => {
     await expect(item).toContainText(ASKER.name.split(" ")[0]);
     await expect(item.getByTestId("inbox-open")).toContainText("Answer it");
 
-    // Read now: /play no longer counts it.
+    // Read now: /play no longer offers it, since nothing in it is new. Waited for the page first.
     await theirs.goto("/play");
-    await expect(theirs.getByTestId("play-inbox")).toHaveAttribute("data-unread", "0");
+    await expect(theirs.getByTestId("my-games")).toBeVisible();
+    await expect(theirs.getByTestId("play-inbox")).toHaveCount(0);
 
     // They decline it by clicking, and the asker hears.
     const row = theirs.getByTestId("my-games-offered").locator(`[data-id="${id}"]`);

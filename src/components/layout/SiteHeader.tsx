@@ -87,7 +87,7 @@ export async function SiteHeader({
           </p>
           <Nav />
         </header>
-        <MemberStrip />
+        {/* No member line under the hero: John, 2026-09-24, "don't bother showing it in the Home page". */}
         <XpFlashToasts heldBy={xpHeldBy} />
       </>
     );
@@ -95,23 +95,32 @@ export async function SiteHeader({
 
   return (
     <>
-      <header data-chrome className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
-        {/*
-          The Beta mark on the wordmark's own row, beside it — John: "should be
-          same row inline". It widens the masthead's first row by the pill, so
-          where the bar was already a tight fit it wraps a line sooner; the
-          header spec measures that it never lands on the bar.
-        */}
-        <span className="flex items-center gap-2">
-          <Link href="/" aria-label="Itsutsu home" className="block">
-            <BrandWordmark className="h-9 w-auto sm:h-10" />
-          </Link>
-          <BetaMark />
-        </span>
-        <Nav />
-      </header>
-      {/* The member's own figures, one quiet line: see `MemberStrip`. */}
-      <MemberStrip />
+      {/*
+        The masthead and the member line under it, as one block, so the line is
+        the same distance from the rule on every page. Apart, the page's own gap
+        came between them, and that gap is not the same on every page (John,
+        2026-09-24: "some pages there is more space between the bar and the
+        subheader").
+      */}
+      <div className="flex flex-col gap-2.5">
+        <header data-chrome className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
+          {/*
+            The Beta mark on the wordmark's own row, beside it — John: "should be
+            same row inline". It widens the masthead's first row by the pill, so
+            where the bar was already a tight fit it wraps a line sooner; the
+            header spec measures that it never lands on the bar.
+          */}
+          <span className="flex items-center gap-2">
+            <Link href="/" aria-label="Itsutsu home" className="block">
+              <BrandWordmark className="h-9 w-auto sm:h-10" />
+            </Link>
+            <BetaMark />
+          </span>
+          <Nav />
+        </header>
+        {/* The member's own figures, one quiet line: see `MemberStrip`. */}
+        <MemberStrip />
+      </div>
       <XpFlashToasts heldBy={xpHeldBy} />
     </>
   );

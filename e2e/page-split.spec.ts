@@ -45,6 +45,7 @@ test.describe("my games and new game are separate places", () => {
 
   test("each page offers the other, so neither is a dead end", async ({ page }) => {
     await page.goto("/play");
-    await expect(page.getByTestId("to-new-game")).toHaveAttribute("href", "/games");
+    // Through the header's Games, since the link beside My games went as noise (John, 2026-09-24).
+    await expect(page.locator("header[data-chrome]").getByRole("link", { name: /^Games$/ })).toHaveAttribute("href", "/games");
   });
 });

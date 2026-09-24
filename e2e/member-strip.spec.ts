@@ -46,6 +46,23 @@ test.describe("the member's line under the masthead", () => {
     }
   });
 
+  test("sits the same distance under the header on every page, and not under the home page's hero", async ({ page }) => {
+    // John, 2026-09-24: "some pages there is more space between the bar and the subheader", and none on the home page.
+    const gaps: Record<string, number> = {};
+    for (const path of ["/games", "/players", "/about", "/play", "/xp"]) {
+      await page.goto(path);
+      await ready(page, "strip-games");
+      const header = await page.locator("header[data-chrome]").boundingBox();
+      const strip = await page.getByTestId("member-strip").boundingBox();
+      gaps[path] = Math.round(strip!.y - (header!.y + header!.height));
+    }
+    expect(new Set(Object.values(gaps)).size, `gaps between header and line: ${JSON.stringify(gaps)}`).toBe(1);
+
+    await page.goto("/");
+    await ready(page, "account-menu");
+    await expect(page.getByTestId("member-strip")).toHaveCount(0);
+  });
+
   test("is not drawn for a visitor with no invite", async ({ browser }) => {
     const stranger = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await stranger.newPage();

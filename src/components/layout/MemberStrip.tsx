@@ -30,7 +30,7 @@ export async function MemberStrip() {
     <nav
       aria-label="Your games and standing"
       data-chrome
-      className="-mt-2 flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-[0.7rem] font-semibold tracking-[0.12em] text-muted uppercase"
+      className="flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-[0.7rem] font-semibold tracking-[0.12em] text-muted uppercase"
       data-testid="member-strip"
     >
       <StripGames memberId={member.id} />
