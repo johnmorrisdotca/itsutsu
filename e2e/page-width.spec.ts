@@ -55,7 +55,14 @@ const FRAME_PX = MAX_W_PX[PAGE_WIDTH] ?? Number.NaN;
 /** Ids this file makes before the run, filled in `beforeAll` — in place, since the route closures hold this object. */
 const made: MadeRows = { filed: "", live: "", member: "" };
 
-const WIDTH_MEMBER = { email: "page-width@example.test", name: "Width Check" };
+/*
+ * A member of this run's own, by a stamp: two runs on one database (another
+ * session's, or the page-shape spec beside this one) used to share a fixed
+ * address, and one run's afterAll took the other's member away mid-run, so
+ * /players/<id> answered 404 in the one still measuring.
+ */
+const STAMP = Date.now().toString(36);
+const WIDTH_MEMBER = { email: `page-width-${STAMP}@example.test`, name: `Width Check ${STAMP}` };
 
 test.describe("page width", () => {
   test.use({ viewport: VIEWPORT });
