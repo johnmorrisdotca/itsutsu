@@ -76,7 +76,8 @@ export function XpToasts({
   const held = useToastsHeldForCard(holdFor);
 
   useEffect(() => {
-    if (cleared.current === at) return;
+    // Nothing new on this render, so nothing to clear.
+    if (at === "" || cleared.current === at) return;
     cleared.current = at;
     void clearXpFlash(at);
   }, [at]);

@@ -144,7 +144,19 @@ export async function SiteHeader({
  */
 async function XpFlashToasts({ heldBy }: { heldBy?: XpToastHold }) {
   const flash = await xpFlashFor();
-  if (flash === null) return null;
+  /*
+   * THE HOST STAYS WHEN THERE IS NOTHING NEW, AND THAT IS THE FIX. It used to
+   * be left out whenever no flash was waiting. But the toast clears the flash
+   * the moment it shows, so ANY re-render of the page in the next few seconds
+   * drew the header with no flash and unmounted the host with the toast still
+   * in it, mid-read. The deploy runner caught exactly that on 2026-09-24: the
+   * XP toast spec's toast and its announcer both gone from /players 0.7
+   * seconds after arriving, with no request of the page's own. What re-rendered
+   * it there was not found; this makes any re-render harmless. Mounted with
+   * nothing, the host keeps the toasts it is already showing: an empty list
+   * admits nothing and removes nothing.
+   */
+  if (flash === null) return <XpToasts at="" items={[]} holdFor={null} />;
   // Held only for the exact batch the page's result card read, by its stamp.
   const holdFor = heldBy !== undefined && heldBy.at === flash.at ? heldBy : null;
   return <XpToasts at={flash.at} items={flash.toasts} holdFor={holdFor} />;
