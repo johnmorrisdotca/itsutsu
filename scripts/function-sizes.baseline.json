@@ -1,0 +1,62 @@
+{
+  "functions": [
+    {
+      "name": "_not-found",
+      "mb": 44.4,
+      "sample": [
+        "_not-found",
+        "about",
+        "admin",
+        "backlog",
+        "champions",
+        "embed",
+        "famous",
+        "games",
+        "games/[slug]",
+        "games/[slug]/background"
+      ]
+    },
+    {
+      "name": "api/admin/members/[id]/claim",
+      "mb": 38.4,
+      "sample": [
+        "api/admin/members/[id]/claim",
+        "api/admin/members/[id]/phrase",
+        "api/admin/members/[id]/phrase/draw",
+        "api/auth/[...nextauth]",
+        "api/buddies",
+        "api/embed-tokens",
+        "api/embed/summary",
+        "api/games",
+        "api/games/[id]",
+        "api/games/[id]/applause"
+      ]
+    },
+    {
+      "name": "apple-icon.png.rsc",
+      "mb": 21.9,
+      "sample": [
+        "apple-icon.png",
+        "favicon.ico",
+        "icon.svg",
+        "manifest.webmanifest",
+        "opengraph-image.png",
+        "robots.txt"
+      ]
+    },
+    {
+      "name": "_global-error.rsc",
+      "mb": 21.3,
+      "sample": [
+        "_global-error"
+      ]
+    },
+    {
+      "name": "_middleware",
+      "mb": 1.7,
+      "sample": [
+        "_middleware"
+      ]
+    }
+  ]
+}
