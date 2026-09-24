@@ -879,7 +879,10 @@ A rename or a removal (a route, a status, a script, a family) means grepping
 backlog's five old statuses after the board moved to four. A new doc gets a row
 in the map in the same commit, or nothing will ever prompt anybody to re-read
 it. Pages on the site are code and are held by their coverage tests; a count of
-the site is read from the site, never typed into a sentence.
+the site is read from the site, never typed into a sentence. No doc, commit or
+pull request mentions Claude, AI or any assistant: no trailers, footers or
+session links (John, 2026-09-24). Outside data (the famous games' sources, the
+records kept from other sites) carries the date it was last checked.
 
 ### Nothing Answers What It Cannot Answer
 
