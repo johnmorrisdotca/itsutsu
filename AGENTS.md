@@ -720,6 +720,38 @@ day, so the count of pushes is the cost, whatever the repository's billing says.
   routes, judged on a fresh database (see "Running the end-to-end suite"). Each
   push to an open PR is another full run.
 
+### Function Size
+
+John, 2026-09-23, after UmaKuma's server functions reached 278 MB and failed to
+deploy: "is this something that will never grow like that again? ... should be
+part of our tests for all our sites." Every function Vercel runs counts
+against the Functions Storage the whole account shares, and each kept
+deployment carries a copy.
+
+- **The deploy job measures before it uploads.** `scripts/check-function-sizes.mjs`
+  (`pnpm functions:size`) reads `.vercel/output/functions` after `vercel build`
+  and fails any function over **60 MB**, or more than 20% and more than 5 MB
+  over its size in `scripts/function-sizes.baseline.json`. The rules are in
+  `src/lib/functionSizeGate.mjs`, tested beside it. The ceiling only ever comes
+  down.
+- **A deliberate change in size is recorded in the same commit**, with
+  `pnpm functions:size --record` after a local `vercel build` (give it
+  `.vercel/project.json` of `{"projectId":"local","orgId":"local","settings":{"framework":"nextjs","nodeVersion":"24.x","installCommand":"true"}}`;
+  `pnpm dlx vercel@latest build --yes`). A Mac's build measures the same as the
+  runner's once the other engines are excluded.
+- **Only the engine the site runs on.** Prisma's library engine on Vercel is
+  `rhel-openssl-3.0.x`. `next.config.ts` includes that one file, never the
+  client folder, and excludes the WebAssembly engines and the build machine's
+  own. On 2026-09-23 that took the largest function from 127 MB to 44. **In this
+  build an include beats an exclude**, and an include is matched against every
+  folder, not just the root: an include naming `CHANGELOG.md` also packs all
+  808 changelogs under `node_modules` (13.9 MB in two functions). Name one file
+  by its full path, and measure after any change to either list.
+- **A disk read names its folder.** `src/lib/serverFileTracing.test.ts` fails on
+  `join(process.cwd(), variable)` and on a read rooted at the whole of `public`
+  or `src`: the tracer cannot follow them, and packs everything that might
+  match. Spell the folder out and join the variable part after it.
+
 ### Every Landed Commit Bumps The Version
 
 **`pnpm release:take` takes the number and commits it, immediately before

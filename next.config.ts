@@ -68,8 +68,43 @@ const nextConfig: NextConfig = {
      * Prisma's query engine is a native binary loaded by a runtime path
      * lookup, not a static import, so Next's tracing misses it and a
      * deployed function silently has no database engine at all.
+     *
+     * The ONE engine Vercel runs, and not the folder: the whole folder took every
+     * engine in it, the build machine's own among them, and an include wins
+     * over `outputFileTracingExcludes` below, so the excludes could not take
+     * them back out.
      */
-    "/*": ["./node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/**/*"],
+    "/*": [
+      "./node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/libquery_engine-rhel-openssl-3.0.x.so.node",
+      "./node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/schema.prisma",
+    ],
+  },
+  /*
+   * ONLY THE ENGINE THE SITE RUNS ON. The site is Postgres through Prisma's
+   * native library engine (`library.js` loading `libquery_engine-*.so.node`),
+   * and on Vercel that engine is `rhel-openssl-3.0.x`. The include above took
+   * the whole client folder, and the tracer took the runtime folder too: the
+   * WebAssembly engines and compilers for five databases, twice over in two
+   * module formats, plus the engine for whichever machine did the build
+   * (darwin on a Mac, debian on the CI runner). That was 101 MB of every
+   * function, all 104 to 127 MB of them, against Vercel's 250 MB limit and the
+   * account-wide Functions Storage every project shares. John's rule for every
+   * site on the account: include only the runtime's engine. The patterns are
+   * UmaKuma's, which made the same cut in 1.547.0.
+   *
+   * `rhel-openssl-3.0.x` is never excluded: without it every database route
+   * answers 500 with an empty body (see `binaryTargets` in schema.prisma).
+   * `scripts/check-function-sizes.mjs` in the deploy job holds the result.
+   */
+  outputFileTracingExcludes: {
+    "/**": [
+      "node_modules/.pnpm/**/@prisma/client/runtime/*.wasm-base64.*",
+      "node_modules/.pnpm/**/@prisma/client/runtime/query_{engine,compiler}_bg.*",
+      "node_modules/.pnpm/**/@prisma/client/runtime/{wasm,edge,react-native,index-browser,binary,client}*",
+      "node_modules/.pnpm/**/@prisma/client/runtime/*.{map,d.ts,d.mts}",
+      "node_modules/.pnpm/**/.prisma/client/libquery_engine-{darwin,debian,linux-musl,windows}*",
+      "node_modules/.pnpm/**/.prisma/client/{query_engine_bg.wasm,wasm*,edge.js,index-browser.js,*.d.ts}",
+    ],
   },
   async headers() {
     return [

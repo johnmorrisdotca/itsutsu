@@ -11,6 +11,7 @@
     "lint:fix": "eslint --fix",
     "typecheck": "next typegen && tsc --noEmit",
     "loc:check": "node scripts/check-max-loc.mjs",
+    "functions:size": "node scripts/check-function-sizes.mjs",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "quality:check": "pnpm lint && pnpm loc:check && pnpm typecheck && pnpm test:unit",
