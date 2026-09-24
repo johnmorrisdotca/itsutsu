@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
 import { decodeCells, encodeCells } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -23,7 +24,12 @@ import { SolveDone, SolveHeader, useSolve } from "./solveShared";
 export function NumberSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasAccount: boolean }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
-  const givens = useMemo(() => decodeCells(puzzle.givens, size) ?? [], [puzzle.givens, size]);
+  // A More or Less code is the cells and then the marks; a Number Place code is the cells alone.
+  const asked = useMemo<{ cells: number[]; marks: Mark[] }>(
+    () => (kind === "moreOrLess" ? decodeMoreOrLess(puzzle.givens, size) : { cells: decodeCells(puzzle.givens, size) ?? [], marks: [] }) ?? { cells: [], marks: [] },
+    [kind, puzzle.givens, size],
+  );
+  const givens = asked.cells;
   const solution = useMemo(() => decodeCells(puzzle.solution, size) ?? [], [puzzle.solution, size]);
   const [entries, setEntries] = useState<number[]>(() => new Array<number>(size * size).fill(0));
   const [selected, setSelected] = useState<number | null>(null);
@@ -79,7 +85,7 @@ export function NumberSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasAccount
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} />
-      <PuzzleGrid size={size} givens={givens} entries={entries} selected={selected} done={done !== null} onSelect={setSelected} />
+      <PuzzleGrid kind={kind} size={size} givens={givens} entries={entries} marks={asked.marks} selected={selected} done={done !== null} onSelect={setSelected} />
       {done === null ? (
         <>
           <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${size + 1}, minmax(0, 1fr))` }} data-testid="puzzle-keys">

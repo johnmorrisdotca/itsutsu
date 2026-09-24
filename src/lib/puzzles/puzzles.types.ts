@@ -22,7 +22,7 @@ export type PuzzleSpec = {
   levels: readonly PuzzleLevel[];
   /** The level the set-up opens on. */
   defaultLevel: PuzzleLevel;
-  /** The most cells a solve may hold, for the address and the route to refuse anything larger. */
+  /** The most characters a puzzle's code or answer may hold, for the route to refuse anything larger. */
   mostCells: number;
 };
 

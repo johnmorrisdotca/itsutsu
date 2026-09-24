@@ -2,7 +2,7 @@
 
 # 五つ · Itsutsu
 
-**Forty-five board games on one engine, and two puzzles beside them.** Gomoku and renju, Othello and Go,
+**Forty-five board games on one engine, and three puzzles beside them.** Gomoku and renju, Othello and Go,
 checkers and draughts, Hex and Halma — two players in one browser, or two
 devices a QR code apart.
 
@@ -73,9 +73,9 @@ The variables that matter first, all described in `.env.example`:
 
 ## What it does
 
-### Forty-five games and two puzzles, in eight families
+### Forty-five games and three puzzles, in eight families
 
-The site began as one game and is now forty-five board games and two puzzles,
+The site began as one game and is now forty-five board games and three puzzles,
 grouped into eight families on `/games` (`GAME_FAMILIES` in
 `src/lib/gomoku/families.ts`):
 
@@ -88,7 +88,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Checkers | 6 |
 | Territory and races | 4 |
 | Small boards | 6 |
-| Numbers | 2 |
+| Numbers | 3 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -114,10 +114,11 @@ same gates: `puzzles.coverage.test.ts` asks a puzzle what
 `variants.coverage.test.ts` asks a game.
 
 Everything that thinks runs in the browser. The generators, the uniqueness
-checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`;
-Hidden Stones grows its regions out from a placed answer and then tightens
-the grid until the solver counts one), seeded so the same number makes the
-same grid in every browser,
+checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`,
+`moreOrLess/`; Hidden Stones grows its regions out from a placed answer and
+then tightens the grid until the solver counts one; More or Less adds givens
+until it is a puzzle and then takes away every one it does not need), seeded
+so the same number makes the same grid in every browser,
 and the solve page makes its puzzle after it has loaded (`ssr: false`). The
 one thing the server does is `POST /api/puzzles/solved`: an O(cells) check
 that a member's finished grid is a solution (`puzzleCheck.ts`), and the XP
@@ -129,6 +130,7 @@ met. Nothing polls and nothing is timed on a server.
 | --- | --- | --- | --- |
 | **Number Place** ナンプレ | Sudoku (Nikoli's name for it, a trademark in Japan; Number Place is the puzzle's original name) | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
 | **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5 to 10×10 | easy (reasoning alone finishes it), hard (a stone has to be tried) |
+| **More or Less** 大小 | Futoshiki: a Latin square with more-than marks between cells; every given and mark is needed | 4×4 to 7×7 | easy, medium, hard, as Number Place |
 
 A solve is not kept yet: the puzzle's page has no record and no fastest
 times until the tables in `docs/plans/numbers/NUM-05-race-a-friend.md` land,

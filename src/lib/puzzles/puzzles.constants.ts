@@ -22,7 +22,7 @@ export const PUZZLE_KINDS = {
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
-export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [PUZZLE_KINDS.numberPlace, PUZZLE_KINDS.hiddenStones];
+export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [PUZZLE_KINDS.numberPlace, PUZZLE_KINDS.hiddenStones, PUZZLE_KINDS.moreOrLess];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
 
@@ -37,7 +37,8 @@ export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: s
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   numberPlace: { sizes: [4, 6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
   hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
-  moreOrLess: { sizes: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 49 },
+  // 133: the 49 cells of a 7×7 and the 84 edges between them, which its code writes after the cells.
+  moreOrLess: { sizes: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
 };
 
 export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
@@ -87,7 +88,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     wikipedia: "Futoshiki",
     rules: [
       "Fill every cell with a number from 1 up to the side of the square, so that each row and each column holds every number exactly once.",
-      "A mark between two cells says which is the bigger: the open end faces the larger number.",
+      "A mark between two cells says which is the bigger: the open end faces the larger number, the point the smaller.",
       "Every puzzle has exactly one answer, and every mark and given is needed to reach it.",
     ],
     board: "5×5 is the usual size. 4×4 is quick; 7×7 is the long one.",

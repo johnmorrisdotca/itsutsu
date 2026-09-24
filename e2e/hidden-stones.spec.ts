@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
-import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST } from "../src/lib/puzzles/puzzles.constants";
 import { ready } from "./support";
 
 /**
@@ -25,8 +25,8 @@ test.describe("the stone puzzle", () => {
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Star Battle");
     await expect(page.getByTestId("game-family")).toContainText("Numbers");
-    // Two puzzles in the family now: the other one is a sibling with its picture.
-    await expect(page.getByTestId("game-family").getByTestId("game-thumb")).toHaveCount(1);
+    // Every other puzzle in the family is a sibling here, with its picture.
+    await expect(page.getByTestId("game-family").getByTestId("game-thumb")).toHaveCount(PUZZLE_KIND_LIST.length - 1);
   });
 
   test("a tap is a stone, another a cross, another nothing, and the right stones finish it", async ({ page }) => {
