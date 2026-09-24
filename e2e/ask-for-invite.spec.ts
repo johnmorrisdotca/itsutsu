@@ -41,6 +41,9 @@ test.describe("asking for an invite", () => {
     // The line under the hero leads down to the panel, which says what testing asks of somebody.
     await expect(page.getByTestId("site-numbers-beta")).toHaveAttribute("href", "#beta");
     await expect(page.getByTestId("front-beta")).toContainText("beta testers");
+    // Told that testers are thanked, without a link to a page that names members.
+    await expect(page.getByTestId("front-thanks")).toContainText("thanked by name");
+    await expect(page.getByTestId("front-thanks-link")).toHaveCount(0);
     await page.getByTestId("front-beta-ask").click();
     await page.waitForURL(/\/join\?ask=1/);
     await expect(page.getByTestId("ask-for-invite-form")).toBeVisible();
