@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { matchGames } from "@/lib/history/matchGames";
@@ -33,7 +33,7 @@ export async function MatchPanel({
   const copy = MATCH_PANEL_COPY;
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="match-panel">
-      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={SECTION_TITLE}>
         {copy.title} <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
       </h2>
       <p className="text-xs text-muted">{copy.lead(games.length)}</p>

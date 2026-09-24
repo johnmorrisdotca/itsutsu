@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 
-import { Paired } from "@/components/i18n/Paired";
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PLAYER_SESSION_DAYS } from "@/lib/auth/session";
@@ -28,25 +28,19 @@ export const metadata = {
 export default function PrivacyPage() {
   const sections = privacySections(PLAYER_SESSION_DAYS);
   return (
-    <Page gap="gap-8">
+    <Page>
       <SiteHeader />
 
-      <header className="flex flex-col gap-2">
-        <h1 className="flex items-baseline gap-3 text-2xl font-semibold">
-          <Paired en={PRIVACY_TITLE.en} kanji={PRIVACY_TITLE.kanji} kanjiClassName="text-lg font-normal opacity-70" />
-        </h1>
-        <p className="text-sm text-muted">{PRIVACY_SUBTITLE}</p>
+      <PageTitle title={PRIVACY_TITLE.en} kanji={PRIVACY_TITLE.kanji} lead={PRIVACY_SUBTITLE}>
         <p className="text-xs text-muted" data-testid="privacy-changed">
           Last changed {longDate(PRIVACY_CHANGED)}
         </p>
-      </header>
+      </PageTitle>
 
       {sections.map((section, index) => (
         <section key={section.id} id={section.id} className="flex flex-col gap-3" data-testid="privacy-section">
           {index > 0 ? <BrandStones className="mb-2 opacity-70" /> : null}
-          <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-            <Paired en={section.heading} kanji={section.kanji} kanjiClassName="text-sm font-normal opacity-70" />
-          </h2>
+          <SectionHeading title={section.heading} kanji={section.kanji} />
           {section.paragraphs.map((paragraph) => (
             <p key={paragraph} className="text-[0.95rem] leading-relaxed text-ink-soft">
               {withContactLink(paragraph)}

@@ -1,4 +1,5 @@
 import { BetaAsk } from "@/components/home/BetaAsk";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -41,26 +42,16 @@ export default async function ThanksPage() {
   const reader = await currentReader();
   const members = reader.signedIn ? await findMembersByNames(BETA_TESTERS.map((tester) => tester.name)) : null;
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <section className="flex flex-col gap-3">
-        <h1 className="flex flex-wrap items-baseline gap-x-2 text-lg font-semibold">
-          Thank you
-          <span className="whitespace-nowrap font-mincho text-sm font-normal opacity-70">感謝</span>
-        </h1>
-        <p className="text-sm leading-relaxed text-ink-soft">
-          Itsutsu is free and in beta. The people below have given their own time to play it before it was finished:
-          finding the rule that was wrong, the button that did nothing, the page that made no sense on a phone, and
-          telling us. Every fix they lead to is theirs as much as ours. We are very grateful, and this page is where we
-          say so.
-        </p>
-      </section>
+      <PageTitle
+        title="Thank you"
+        kanji="感謝"
+        lead="Itsutsu is free and in beta. The people below have given their own time to play it before it was finished: finding the rule that was wrong, the button that did nothing, the page that made no sense on a phone, and telling us. Every fix they lead to is theirs as much as ours. We are very grateful, and this page is where we say so."
+      />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-testers">
-        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
-          Our beta testers
-          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">試験協力者</span>
-        </h2>
+        <SectionHeading title="Our beta testers" kanji="試験協力者" />
         {BETA_TESTERS.length === 0 ? (
           <p className="text-sm text-muted" data-testid="thanks-empty">
             The first names will go here. If you have been testing and would like to be thanked by the name you play
@@ -97,18 +88,12 @@ export default async function ThanksPage() {
         more beta testers."
       */}
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-join" id="join">
-        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
-          Become a beta tester
-          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">協力募集</span>
-        </h2>
+        <SectionHeading title="Become a beta tester" kanji="協力募集" />
         <BetaAsk signedIn={reader.signedIn} testId="thanks-join" />
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-communities">
-        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
-          If you played on the older sites
-          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">先達</span>
-        </h2>
+        <SectionHeading title="If you played on the older sites" kanji="先達" />
         <p className="text-sm leading-relaxed text-ink-soft">
           People have played these games for years on {communitiesSaid()}. If you are one of them, we would be
           especially glad of your help. You already know how a game between people should
@@ -119,10 +104,7 @@ export default async function ThanksPage() {
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-how">
-        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
-          To be listed, or to stop being
-          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">掲載</span>
-        </h2>
+        <SectionHeading title="To be listed, or to stop being" kanji="掲載" />
         <p className="text-sm leading-relaxed text-ink-soft">
           Write to{" "}
           <a href={`mailto:${CONTACT_ADDRESS}`} className="underline underline-offset-4" data-testid="thanks-mail">

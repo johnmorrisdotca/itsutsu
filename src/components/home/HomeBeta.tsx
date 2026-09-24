@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PANEL_CLASS, TONE_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_HEADING, TONE_CLASS } from "@/components/ui/ui.constants";
 import { BETA_TESTERS } from "@/lib/thanks/testers";
 
 import { BetaAsk } from "./BetaAsk";
@@ -22,7 +22,7 @@ import { BetaAsk } from "./BetaAsk";
 export function HomeBeta({ signedIn }: { signedIn: boolean }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="front-beta" id="beta">
-      <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
+      <h2 className={SECTION_HEADING}>
         In beta, free, and looking for testers
         <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">試験公開</span>
       </h2>

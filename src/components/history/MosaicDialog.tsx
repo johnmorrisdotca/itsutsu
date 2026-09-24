@@ -7,6 +7,7 @@ import type { MosaicFrame } from "@/lib/record/mosaic.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MosaicMaker } from "./MosaicMaker";
+import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
  * A GAME'S PICTURE OF EVERY POSITION, IN A WINDOW OF ITS OWN. John,
@@ -72,7 +73,7 @@ export function MosaicDialog({
         >
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 id={`mosaic-title-${id}`} className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              <h2 id={`mosaic-title-${id}`} className={SECTION_TITLE}>
                 {MOSAIC_COPY.heading} <span className="font-mincho normal-case tracking-normal">{MOSAIC_COPY.kanji}</span>
               </h2>
               <button

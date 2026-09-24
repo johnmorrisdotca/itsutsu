@@ -11,7 +11,7 @@ import {
 } from "@/components/mine/phraseArrangement";
 import { WordCandidates } from "@/components/mine/WordCandidates";
 import { WordTiles } from "@/components/mine/WordTiles";
-import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP } from "@/components/ui/ui.constants";
+import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 
 import { LocalTime } from "@/components/ui/LocalTime";
@@ -219,7 +219,7 @@ export function MemberWordsModal({ member, onClose, onSaved }: MemberWordsModalP
       data-testid="member-words-modal"
     >
       <div className="flex flex-col gap-4">
-        <h2 id="member-words-title" className="flex flex-wrap items-baseline gap-2 text-lg font-semibold">
+        <h2 id="member-words-title" className={SECTION_HEADING}>
           {ADMIN_WORDS_COPY.title} {name}
           <span className="font-mincho text-base font-normal opacity-70">{ADMIN_WORDS_COPY.linkKanji}</span>
         </h2>

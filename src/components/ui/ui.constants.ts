@@ -169,6 +169,52 @@ export const STRETCHED_ROW = `${STRETCHED_HOST} card-hover:bg-shade`;
 export const CARD_ARROW_CLASS =
   "pointer-events-none inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-rule-strong text-ink-soft opacity-50 transition group-card-hover/card:border-ink group-card-hover/card:bg-ink group-card-hover/card:text-paper group-card-hover/card:opacity-100 group-card-focus/card:border-ink group-card-focus/card:bg-ink group-card-focus/card:text-paper group-card-focus/card:opacity-100";
 
+/*
+ * ONE PAGE SHAPE, ONE HEADING SCALE. John, 2026-09-24, with /players, /about,
+ * /, /play and /games side by side: "each page has a different page... some
+ * pages are in a box, others are not. Some headers are different sizes for
+ * pages next to each other. This is HIGHLY INCONSISTENT." Measured that day,
+ * the page title was 18px on eleven pages, 24px on twenty, 20px on one and a
+ * bold mincho 24px on the record — and on fourteen pages it sat inside a
+ * panel while on the rest it stood on the paper.
+ *
+ * The shape, and every page has it:
+ *
+ *   masthead
+ *   PAGE TITLE — an h1 in PAGE_TITLE, its kanji in PAGE_TITLE_KANJI, with at
+ *                most one line of lead under it. BARE on the paper, never in
+ *                a panel: a panel is a box of content, and a title is what the
+ *                box is about, so a title inside one is a page inside a page.
+ *   tabs, if the page has them — bare too, they belong to the title
+ *   CONTENT   — in panels (PANEL_CLASS): a table, a list, a form, a card.
+ *
+ * Three sizes of heading and no fourth:
+ *
+ *   PAGE_TITLE       the page's one h1, 24px semibold. The home page's hero
+ *                    is the one exception, and it is a hero rather than a
+ *                    title.
+ *   SECTION_HEADING  an h2 that heads a section of the page, 18px semibold:
+ *                    a chapter of /about, "Every game" on /games, a group of
+ *                    games on /play.
+ *   SECTION_TITLE    an h2 that LABELS a panel from inside it, the small
+ *                    tracked capitals: OPEN SEATS, HERE NOW, the standings.
+ *                    It says what the box holds, so it is quiet by design.
+ *
+ * `Headings.tsx` (PageTitle, SectionHeading) draws the first two, so a page
+ * cannot choose its own size; `pageShape.coverage.test.ts` refuses a raw
+ * <h1> or an h2 with a size of its own, and `e2e/page-shape.spec.ts`
+ * measures every page in a browser.
+ */
+export const PAGE_TITLE = "flex flex-wrap items-baseline gap-2 text-2xl font-semibold";
+
+/** The kanji half of a page title: smaller, lighter, in the mincho face. */
+export const PAGE_TITLE_KANJI = "font-mincho text-base font-normal opacity-70";
+
+export const SECTION_HEADING = "flex flex-wrap items-baseline gap-2 text-lg font-semibold";
+
+/** The kanji half of a section heading. */
+export const SECTION_HEADING_KANJI = "font-mincho text-sm font-normal opacity-70";
+
 export const SECTION_TITLE =
   "text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted";
 

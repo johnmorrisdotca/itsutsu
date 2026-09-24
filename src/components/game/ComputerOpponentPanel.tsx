@@ -9,6 +9,7 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
 import type { GamePanelProps } from "./game.types";
 import { useComputerOpponent } from "./useComputerOpponent";
+import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
  * Sit a computer player at the practice board.
@@ -33,7 +34,7 @@ export function ComputerOpponentPanel({ session, actions }: GamePanelProps) {
   return (
     <div className="flex flex-col gap-3" data-testid="computer-opponent" {...readyMark(hydrated)}>
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold">Computer opponent</h2>
+        <h2 className={SECTION_TITLE}>Computer opponent</h2>
         {thinking ? (
           <span className="text-xs text-muted" data-testid="computer-thinking">
             thinking…

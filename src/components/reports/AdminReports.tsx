@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { LocalTime } from "@/components/ui/LocalTime";
-import { TONE_CLASS } from "@/components/ui/ui.constants";
+import { SECTION_HEADING, TONE_CLASS } from "@/components/ui/ui.constants";
 import { REPORT_STATUS_LABEL } from "@/lib/reports/reports.constants";
 import { listReports } from "@/lib/sumilabu/reportsClient";
 import type { Report } from "@/lib/sumilabu/reportsClient.types";
@@ -36,7 +36,7 @@ export async function AdminReports() {
   const read = await readReports();
   return (
     <section className="flex flex-col gap-4" data-testid="admin-reports">
-      <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+      <h2 className={SECTION_HEADING}>
         Reports <span className="font-mincho text-sm font-normal opacity-70">報告</span>
       </h2>
       {!read.ok ? (

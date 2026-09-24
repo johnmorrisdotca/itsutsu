@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Applause } from "@/components/history/Applause";
 import { GameReplay } from "@/components/history/GameReplay";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -274,20 +275,22 @@ function FiledMatch({
   const named = game.result !== "abandoned";
 
   return (
-    <Page board gap="gap-6">
+    <Page board>
       {/* The game-end toasts are said by the result card, where it opens — see `XpToasts`. */}
       <SiteHeader
         xpHeldBy={card?.xp?.heldFlashAt ? { gameId: card.gameId, at: card.xp.heldFlashAt } : undefined}
       />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold">
+      <PageTitle
+        title={
+          <>
             <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} />
             <span className="px-1 text-muted">vs</span>
             <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} />
-          </h1>
-          <p className="text-sm text-muted">
+          </>
+        }
+        lead={
+          <>
             {/*
               In the reader's own zone, which the server cannot know — see
               LocalTime. This page is a server component, so it never
@@ -305,43 +308,45 @@ function FiledMatch({
             <GameName variant={game.variant} />{" "}
             · <Paired en={result.label} kanji={result.kanji} kanjiClassName="" />
             {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}
-          </p>
-        </div>
-        <span className="flex items-center gap-3">
-          {/*
-            Offered by the game rather than by an address, which is what makes
-            it work against a computer player — those have no address, and a
-            game against one is the case where wanting another straight away is
-            the normal thing rather than the rare one.
+          </>
+        }
+        aside={
+          <span className="flex items-center gap-3">
+            {/*
+              Offered by the game rather than by an address, which is what makes
+              it work against a computer player — those have no address, and a
+              game against one is the case where wanting another straight away is
+              the normal thing rather than the rare one.
 
-            The colour is on the button because it changes. Black moves first
-            and that is worth something, so a rematch swaps; a swap nobody
-            mentions is the kind of thing somebody notices three moves in.
+              The colour is on the button because it changes. Black moves first
+              and that is worth something, so a rematch swaps; a swap nobody
+              mentions is the kind of thing somebody notices three moves in.
 
-            IT NOW LEADS TO THE SETUP SCREEN, filled in with this game's board,
-            clock and rules and reading as a confirmation — one press accepts
-            it. The colour on the label is still the colour it will be, said
-            here and said again there. The reason for the extra screen is
-            John's, and it is the whole point of it: "Perhaps you want to switch
-            over to a variant — you need this page so that you can say, I want
-            to definitely play Bob at Reversi, but I want to try that variant,
-            and change some rules." A rematch that could only be accepted
-            whole was the one place on this site where a person had a decision
-            to make and nowhere to make it.
-          */}
-          {againIn !== null ? (
-            <ChallengeButton
-              rematch={game.id}
-              label={`Play again as ${againIn === "black" ? "Black 黒" : "White 白"}`}
-              strong
-            />
-          ) : null}
-          {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
-          <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
-            Back to the record
-          </Link>
-        </span>
-      </div>
+              IT NOW LEADS TO THE SETUP SCREEN, filled in with this game's board,
+              clock and rules and reading as a confirmation — one press accepts
+              it. The colour on the label is still the colour it will be, said
+              here and said again there. The reason for the extra screen is
+              John's, and it is the whole point of it: "Perhaps you want to switch
+              over to a variant — you need this page so that you can say, I want
+              to definitely play Bob at Reversi, but I want to try that variant,
+              and change some rules." A rematch that could only be accepted
+              whole was the one place on this site where a person had a decision
+              to make and nowhere to make it.
+            */}
+            {againIn !== null ? (
+              <ChallengeButton
+                rematch={game.id}
+                label={`Play again as ${againIn === "black" ? "Black 黒" : "White 白"}`}
+                strong
+              />
+            ) : null}
+            {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
+            <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
+              Back to the record
+            </Link>
+          </span>
+        }
+      />
       {/* The rest of the match, where this game is one of several; see `MatchPanel`. */}
       <MatchPanel id={game.id} matchId={match.id} memberId={match.memberId} />
 

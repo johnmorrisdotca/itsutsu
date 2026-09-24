@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { GameCount } from "@/components/games/GameCount";
 import { HomeBeta } from "@/components/home/HomeBeta";
 import { HomeFamilies } from "@/components/home/HomeFamilies";
@@ -81,7 +81,7 @@ export default async function Home() {
   const reader = await currentReader();
   const numbers = await siteNumbers();
   return (
-    <Page gap="gap-10">
+    <Page>
       <SiteHeader hero />
 
       <section className="flex flex-col items-center gap-5 text-center" data-testid="front-door">
@@ -171,7 +171,7 @@ export default async function Home() {
       <section className="grid gap-4 md:grid-cols-2">
         {PITCH.map((item) => (
           <div key={item.title} className={`${PANEL_CLASS} flex flex-col gap-2`}>
-            <h2 className="flex items-baseline gap-2 font-semibold">
+            <h2 className={SECTION_HEADING}>
               {item.title}
               <span className="font-mincho text-xs font-normal opacity-70">{item.kanji}</span>
             </h2>
@@ -187,7 +187,7 @@ export default async function Home() {
       <HomeStart signedIn={reader.signedIn} />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="front-story">
-        <h2 className="flex items-baseline gap-2 font-semibold">
+        <h2 className={SECTION_HEADING}>
           Where this comes from
           <span className="font-mincho text-xs font-normal opacity-70">由来</span>
         </h2>

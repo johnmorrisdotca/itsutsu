@@ -1,9 +1,11 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
+
+import { Paired } from "@/components/i18n/Paired";
 
 import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
@@ -107,19 +109,22 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
 export default async function ChampionsPage() {
   const champions = await fetchChampions();
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
+      <PageTitle
+        title="Champions"
+        kanji="名人"
+        lead={
+          <>
+            The best-rated player at each game, as the standings are today. Every game keeps its own Elo,
+            so being good at <GameName variant="notakto" /> is a different claim from being good at{" "}
+            <GameName variant="renju" />; the ladder on the{" "}
+            <Link href="/players?view=ladder" className="underline underline-offset-4">players</Link> page counts everything
+            together. Only games between two named members count. A game at one screen is filed and never rated.
+          </>
+        }
+      />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="champions">
-        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en="Champions" kanji="名人" kanjiClassName="text-sm font-normal opacity-70" />
-        </h1>
-        <p className="text-sm text-muted">
-          The best-rated player at each game, as the standings are today. Every game keeps its own Elo,
-          so being good at <GameName variant="notakto" /> is a different claim from being good at{" "}
-          <GameName variant="renju" />; the ladder on the{" "}
-          <Link href="/players?view=ladder" className="underline underline-offset-4">players</Link> page counts everything
-          together. Only games between two named members count. A game at one screen is filed and never rated.
-        </p>
         {/* Six columns of record. Unwrapped, this made /champions 570 pixels wide on a 390-pixel phone. */}
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">

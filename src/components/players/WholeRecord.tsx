@@ -4,6 +4,7 @@ import { PlayedFigure, RecordFigure } from "./PlayerRecord";
 import { RecordTable } from "./RecordTable";
 import { winRateText } from "@/lib/rating/figures";
 import type { WholeRecord as Whole } from "@/lib/legacy/wholeRecord";
+import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
  * Everything somebody has played, across every site they played it on.
@@ -60,7 +61,7 @@ export function WholeRecordPanel({
 
   return (
     <section className="flex flex-col gap-3" data-testid="whole-record">
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
         <Paired en="Everything played" kanji="通算" kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
       </h2>
 

@@ -4,6 +4,7 @@ import { rulesPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";
 
 import { GameThumb } from "@/components/games/GameThumb";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -23,21 +24,21 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
   if (guide === null) notFound();
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <article className={`${PANEL_CLASS} flex flex-col gap-6`} data-testid="guide-page">
-        <header className="flex flex-col gap-1">
-          <p className="text-xs text-muted">
+      <PageTitle
+        title={guide.title}
+        kanji={guide.kanji}
+        lead={guide.summary}
+        crumb={
+          <>
             <Link href="/learn" className="underline-offset-2 hover:underline">
               Learn
             </Link>{" "}
             / {guide.title}
-          </p>
-          <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-            {guide.title}
-            <span className="font-mincho text-base font-normal opacity-70">{guide.kanji}</span>
-          </h1>
-          <p className="text-sm text-muted">{guide.summary}</p>
+          </>
+        }
+      >
           <p className="flex flex-wrap gap-2 pt-1 text-xs">
             {/*
               Each game the guide is about, with its board at the small size
@@ -54,10 +55,11 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
               </Link>
             ))}
           </p>
-        </header>
+      </PageTitle>
+      <article className={`${PANEL_CLASS} flex flex-col gap-6`} data-testid="guide-page">
         {guide.sections.map((section) => (
           <section key={section.heading} className="flex flex-col gap-2">
-            <h2 className="text-base font-semibold">{section.heading}</h2>
+            <SectionHeading title={section.heading} />
             {section.paragraphs?.map((paragraph) => (
               <p key={paragraph} className="text-sm leading-relaxed">
                 {paragraph}

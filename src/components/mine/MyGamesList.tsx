@@ -2,7 +2,7 @@ import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { catchUpSeats } from "@/lib/bots/catchUpSeats";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
@@ -196,7 +196,7 @@ export async function MyGamesList({
     if (memberId === null) return null;
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+        <h2 className={SECTION_HEADING}>
           <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         {/*
@@ -226,7 +226,7 @@ export async function MyGamesList({
         the queue is read, and the games it is given come out of that same read.
       */}
       <BotCatchUp games={stuck} />
-      <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+      <h2 className={SECTION_HEADING}>
         <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
       {seated ? <SeatedNarrowing total={shown} /> : null}

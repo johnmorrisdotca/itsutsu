@@ -3,7 +3,7 @@
 import QRCode from "qrcode";
 import { useState, type FormEvent } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import type { InviteFriendsProps, InviteReply } from "./inviteFriends.types";
 
 /**
@@ -77,7 +77,7 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="invite-friends">
-      <h2 className="flex items-baseline gap-2 font-semibold">
+      <h2 className={SECTION_HEADING}>
         Invite a friend <span className="font-mincho text-xs font-normal opacity-70">招待</span>
       </h2>
       <p className="text-sm text-muted">

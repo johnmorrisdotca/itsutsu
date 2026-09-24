@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { GameName } from "@/components/games/GameName";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -42,33 +43,34 @@ export async function RefusedOfferPage({ game }: { game: GameDetail }) {
   return (
     <Page>
       <SiteHeader />
-      <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="refused-offer">
-        <h1 className="text-lg font-semibold">
-          {declined ? "This offer was declined" : "This offer was withdrawn"}{" "}
-          <span className="font-mincho text-sm font-normal opacity-70">
-            {declined ? "辞退" : "取消"}
-          </span>
-        </h1>
-        <p className="text-sm text-ink-soft">
-          A game of <GameName variant={game.variant} /> on {boardPhrase(game.variant, game.size)} was
-          offered here and{" "}
-          {declined
-            ? "the other player chose not to play it"
-            : "the offer was taken back before it was answered"}
-          . It was never started, so there is no result: nobody won, nobody lost, and no rating
-          moved for either of them.
-        </p>
-        <p className="text-xs text-muted">
-          Offers cost nothing to refuse, which is the point of them — ask again whenever you like.
-        </p>
-        <p className="flex flex-wrap gap-4 text-sm">
-          <Link href="/play" className="font-medium underline underline-offset-4">
-            Your games
-          </Link>
-          <Link href="/games/new" className="font-medium underline underline-offset-4">
-            Set up a game 対局設定
-          </Link>
-        </p>
+      {/* The title and the notice together carry `refused-offer`: what happened is said in the title. */}
+      <section className="flex flex-col gap-6" data-testid="refused-offer">
+        <PageTitle
+          title={declined ? "This offer was declined" : "This offer was withdrawn"}
+          kanji={declined ? "辞退" : "取消"}
+        />
+        <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
+          <p className="text-sm text-ink-soft">
+            A game of <GameName variant={game.variant} /> on {boardPhrase(game.variant, game.size)} was
+            offered here and{" "}
+            {declined
+              ? "the other player chose not to play it"
+              : "the offer was taken back before it was answered"}
+            . It was never started, so there is no result: nobody won, nobody lost, and no rating
+            moved for either of them.
+          </p>
+          <p className="text-xs text-muted">
+            Offers cost nothing to refuse, which is the point of them — ask again whenever you like.
+          </p>
+          <p className="flex flex-wrap gap-4 text-sm">
+            <Link href="/play" className="font-medium underline underline-offset-4">
+              Your games
+            </Link>
+            <Link href="/games/new" className="font-medium underline underline-offset-4">
+              Set up a game 対局設定
+            </Link>
+          </p>
+        </div>
       </section>
     </Page>
   );

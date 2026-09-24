@@ -19,6 +19,7 @@ import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 
 import { CATALOGUE_LINK_CLASS } from "./games.constants";
+import { SECTION_HEADING } from "@/components/ui/ui.constants";
 
 /**
  * Every game on the site, as plain text: the name, its name in its own script,
@@ -47,7 +48,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
       </p>
       {GAME_FAMILIES.map((family) => (
         <section key={family.title} className="flex flex-col gap-3" data-testid="every-game-family">
-          <h2 className="flex items-baseline gap-2 border-b border-rule pb-1 text-base font-semibold">
+          <h2 className={`${SECTION_HEADING} border-b border-rule pb-1`}>
             {family.title} <span className="font-mincho text-sm font-normal opacity-70">{family.kanji}</span>
             <span className="ml-auto text-xs font-normal text-muted">
               {family.games.length} {family.games.length === 1 ? "game" : "games"}

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_HEADING, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { familyPath } from "@/lib/gomoku/slugs";
 
@@ -23,7 +23,7 @@ export function HomeFamilies() {
   return (
     <section className="flex flex-col gap-4" data-testid="front-families">
       <div className="flex flex-col gap-1">
-        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
+        <h2 className={SECTION_HEADING}>
           {GAME_FAMILIES.length} families of games
           <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">種目</span>
         </h2>

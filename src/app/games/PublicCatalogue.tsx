@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { GameCatalogue } from "@/components/games/GameCatalogue";
@@ -86,6 +87,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
   return (
     <Page>
       <SiteHeader />
+      <PageTitle title={say.say("nav.games")} kanji="種目" />
 
       {/*
         What a stranger gets where a member gets the lobby: the one sentence
@@ -137,9 +139,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en={say.say("nav.everyGame")} kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
-        </h2>
+        <SectionHeading title={say.say("nav.everyGame")} kanji="全種目" />
         <p className="text-sm text-muted">
           Almost every game here is five in a row with one idea changed. Every name below leads to
           that game, and the three ways of looking at the list are the same games arranged

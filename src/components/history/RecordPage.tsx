@@ -1,5 +1,7 @@
 import { isRefusal } from "@/lib/api/paging";
 import { GameName } from "@/components/games/GameName";
+import { PageTitle } from "@/components/layout/Headings";
+import { PAGE_TITLE_KANJI } from "@/components/ui/ui.constants";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { HistoryFilters } from "./HistoryFilters";
@@ -157,24 +159,33 @@ export async function RecordPage({
   const liveFrom = impliedPlayer === undefined ? page.next : null;
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
-      <div className="flex flex-col gap-1">
-        <h1 className="flex items-baseline gap-3 font-mincho text-2xl font-bold">
-          棋譜
-          {variant !== undefined && copy !== null ? (
-            <span className="font-sans text-lg font-semibold" data-testid="record-game">
-              <GameName variant={variant} kanji />
-            </span>
-          ) : null}
-        </h1>
-        <p className="text-sm text-muted">
-          {copy === null
+      {/*
+        The game this record is of, named in the title and leading to the game,
+        as a name always does here. `record-game` is what the specs read it from.
+      */}
+      <PageTitle
+        title={
+          variant !== undefined && copy !== null ? (
+            <>
+              Record<span className={PAGE_TITLE_KANJI}>棋譜</span>
+              <span className="text-lg font-normal" data-testid="record-game">
+                <GameName variant={variant} kanji />
+              </span>
+            </>
+          ) : (
+            "Record"
+          )
+        }
+        kanji={variant !== undefined && copy !== null ? "" : "棋譜"}
+        lead={
+          copy === null
             ? "Every finished game, newest first. Open one to replay it stone by stone."
-            : `Every finished game of ${copy.label}, newest first. Open one to replay it stone by stone.`}
-        </p>
-      </div>
+            : `Every finished game of ${copy.label}, newest first. Open one to replay it stone by stone.`
+        }
+      />
 
       {/*
         THE SCORE BEFORE THE GAMES, when this record is about two people: a pair

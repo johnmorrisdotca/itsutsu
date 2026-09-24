@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";
 import { BoardUnreadable } from "@/components/backlog/BoardUnreadable";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -51,13 +52,13 @@ export default async function BacklogPage({ searchParams }: PageProps<"/backlog"
   const total = board.ok ? countFor(board.items, board.scope, BOARD_SCOPES.all) : null;
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="backlog">
-        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
-        </h1>
-        <p className="text-sm text-muted">
+      <PageTitle
+        title="Backlog"
+        kanji="積み残し"
+        lead={
+          <>
           Every feature asked for, every fault reported, and what has become of each.{" "}
           {wanted === null ? null : (
             <>
@@ -74,7 +75,10 @@ export default async function BacklogPage({ searchParams }: PageProps<"/backlog"
             a page of its own
           </Link>
           , open to everybody — this one is only what has not.
-        </p>
+          </>
+        }
+      />
+      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="backlog">
         {board.ok ? (
           // Keyed by what was read, so moving to another view starts the board afresh on it.
           <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/backlog" who={me.name ?? ""} />

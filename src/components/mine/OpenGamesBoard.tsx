@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CountryMark } from "@/components/players/CountryMark";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { XpCell } from "@/components/players/recordTrailing";
-import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { LevelName } from "@/components/xp/LevelName";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { rulesPath } from "@/lib/gomoku/slugs";
@@ -69,7 +69,7 @@ export function OpenGamesBoard({
 
   return (
     <section id="open-seats" className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="open-games">
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
         <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         {games.length > 0 ? <span className="font-normal tracking-normal">{games.length}</span> : null}
       </h2>

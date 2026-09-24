@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { Paired } from "@/components/i18n/Paired";
+import { PageTitle } from "@/components/layout/Headings";
+import { PAGE_TITLE_KANJI } from "@/components/ui/ui.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { rulesPath, setUpLink } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -75,29 +77,33 @@ export function SetUpHeading({
         : "Everything the game will be played under, settled here before it exists. Nothing is started until you say so.";
 
   return (
-    <div className="flex flex-col gap-1">
-      <h1 className="text-2xl font-semibold" data-testid="set-up-title">
-        {from.again !== null && rematch !== null ? (
+    <PageTitle
+      testId="set-up-title"
+      title={
+        from.again !== null && rematch !== null ? (
           <RematchTitle id={from.again.id} againName={from.again.opponent.name} plain={plain} initial={rematch} />
         ) : (
-          <Paired en={title.en} kanji={title.kanji} kanjiClassName="text-lg font-normal opacity-70" />
-        )}
-      </h1>
-      {lead !== null ? (
-        <p className="text-sm text-muted">
-          {lead}{" "}
-          {variant !== null ? (
-            <Link href={rulesPath(variant)} className="underline underline-offset-4">
-              How it is played
-            </Link>
-          ) : (
-            <Link href="/games" className="underline underline-offset-4">
-              Every game there is
-            </Link>
-          )}
-          .
-        </p>
-      ) : null}
+          <Paired en={title.en} kanji={title.kanji} kanjiClassName={PAGE_TITLE_KANJI} />
+        )
+      }
+      lead={
+        lead === null ? undefined : (
+          <>
+            {lead}{" "}
+            {variant !== null ? (
+              <Link href={rulesPath(variant)} className="underline underline-offset-4">
+                How it is played
+              </Link>
+            ) : (
+              <Link href="/games" className="underline underline-offset-4">
+                Every game there is
+              </Link>
+            )}
+            .
+          </>
+        )
+      }
+    >
       {/*
         THE WAY BACK OUT OF A PRE-FILLED SCREEN. Anything that arrives knowing
         something has to offer the version that knows nothing, or a reader who
@@ -115,6 +121,6 @@ export function SetUpHeading({
           ) : null}
         </p>
       ) : null}
-    </div>
+    </PageTitle>
   );
 }

@@ -13,7 +13,7 @@ import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PlayerLink } from "@/components/players/Standings";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, RAISED_LINK, STRETCHED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, RAISED_LINK, SECTION_TITLE, STRETCHED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
@@ -125,7 +125,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-played-here">
-      <h2 className="flex items-baseline justify-between gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={`flex items-baseline justify-between gap-2 ${SECTION_TITLE}`}>
         <span>
           Played here <span className="font-mincho normal-case tracking-normal">棋譜</span>
         </span>

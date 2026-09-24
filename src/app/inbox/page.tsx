@@ -1,3 +1,4 @@
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InboxList } from "@/components/inbox/InboxList";
@@ -19,14 +20,10 @@ export default async function InboxPage() {
   const memberId = await currentMemberId();
   const items = memberId === null ? [] : await openInbox(memberId);
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
+      <PageTitle title={INBOX_COPY.title} kanji={INBOX_COPY.kanji} lead={INBOX_COPY.lead} />
       <section className="flex flex-col gap-4" data-testid="inbox">
-        <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-          {INBOX_COPY.title}
-          <span className="font-mincho text-base font-normal opacity-70">{INBOX_COPY.kanji}</span>
-        </h1>
-        <p className="text-sm text-muted">{INBOX_COPY.lead}</p>
         <InboxList items={items} />
       </section>
     </Page>

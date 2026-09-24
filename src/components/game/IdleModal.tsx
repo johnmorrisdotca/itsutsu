@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/Controls";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { GAME_COPY } from "./game.constants";
 
 /**
@@ -47,7 +47,7 @@ export function IdleModal({ open, onConfirm }: { open: boolean; onConfirm: () =>
         <p aria-hidden="true" className="font-mincho text-4xl leading-none">
           {GAME_COPY.idle.kanji}
         </p>
-        <h2 id="idle-title" className="text-lg font-semibold">
+        <h2 id="idle-title" className={SECTION_HEADING}>
           {GAME_COPY.idle.label}
         </h2>
         <p className="text-sm text-muted">{GAME_COPY.idleDetail}</p>

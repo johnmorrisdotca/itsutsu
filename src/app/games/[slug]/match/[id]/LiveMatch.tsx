@@ -11,7 +11,7 @@ import { SharedRules } from "@/components/live/SharedRules";
 import { SitAsPanel } from "@/components/live/SitAsPanel";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { NotesPanel } from "@/components/game/NotesPanel";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { isOffered } from "@/lib/history/offers";
 import type { Across } from "@/lib/history/acrossTheBoard";
@@ -261,7 +261,7 @@ export async function LiveMatch({
      * The same frame as every other page, a big screen included: see
      * `PAGE_WIDTH`. The board fits that column; see `BoardColumn`.
      */
-    <Page board gap="gap-6">
+    <Page board>
       <SiteHeader />
       <SeatFullNotice shown={seatFull} />
       {/* Before the first stone: who these two are to each other. See RivalryPanel. */}
@@ -322,7 +322,7 @@ export async function LiveMatch({
           */}
           {offer === null && forkOffered({ move, last: game.moveCount, seated: seat !== null }) ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
-              <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              <h2 className={SECTION_TITLE}>
                 Fork <span className="font-mincho normal-case tracking-normal">分岐</span>
               </h2>
               <p className="text-xs text-muted">

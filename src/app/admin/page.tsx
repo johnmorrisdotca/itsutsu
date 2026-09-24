@@ -11,6 +11,7 @@ import { AdminBots } from "@/components/auth/AdminBots";
 import { AdminMembers } from "@/components/auth/AdminMembers";
 import { AdminOperatorLog } from "@/components/auth/AdminOperatorLog";
 import { AdminSite } from "@/components/auth/AdminSite";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
@@ -85,9 +86,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   return (
     <Page>
       <SiteHeader />
-      <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-        Admin <span className="font-mincho text-lg font-normal opacity-70">管理</span>
-      </h1>
+      <PageTitle title="Admin" kanji="管理" />
 
       <Tabs tabs={TABS} active={open} base="/admin" label="What the operator does here" />
 
@@ -144,12 +143,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
            * work.
            */}
           <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="admin-backlog">
-            <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-              Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
+            <SectionHeading title="Backlog" kanji="積み残し">
               <Link href="/backlog" className="ml-auto text-xs font-normal text-muted underline underline-offset-4">
                 On its own page
               </Link>
-            </h2>
+            </SectionHeading>
             {board.ok ? (
               <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/admin?view=work" who={who} />
             ) : (

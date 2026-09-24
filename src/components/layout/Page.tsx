@@ -24,14 +24,23 @@ import { SiteFooter } from "./SiteFooter";
  */
 export const PAGE_WIDTH = "max-w-5xl";
 
+/**
+ * THE ONE RHYTHM BETWEEN A PAGE'S BLOCKS, and there is no other.
+ *
+ * Same day, same complaint (see `PAGE_TITLE` in ui.constants.ts): a page
+ * used to choose 24, 32 or 40 pixels between its title and its first panel,
+ * so two pages side by side in the navigation opened at different heights.
+ * Twenty-four is what most of them chose, and it is the gap inside a panel
+ * too, so a page reads as one column of blocks at one spacing. The home
+ * page's hero spaces its own inside, which is what a hero is for.
+ */
+export const PAGE_GAP = "gap-6";
+
 /** The frame every page sits in: the paper, the margins, the column. */
 export function Page({
-  gap = "gap-8",
   board = false,
   children,
 }: {
-  /** Vertical rhythm between the page's sections. */
-  gap?: "gap-6" | "gap-8" | "gap-10";
   /**
    * Whether this page is a BOARD: whether "Just the board" is offered and the
    * masthead may be stripped. It used to follow from the page being wide,
@@ -69,7 +78,7 @@ export function Page({
       */}
       <main
         data-strippable={board ? "" : undefined}
-        className={`flex w-full flex-col ${PAGE_WIDTH} ${gap}`}
+        className={`flex w-full flex-col ${PAGE_WIDTH} ${PAGE_GAP}`}
       >
         {children}
         {/*

@@ -4,6 +4,7 @@ import { FamousMosaic } from "@/components/famous/FamousMosaic";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { MosaicTile } from "@/components/games/MosaicTile";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -27,14 +28,9 @@ export const metadata: Metadata = { title: `${FAMOUS_COPY.title} ${FAMOUS_COPY.k
  */
 export default function FamousGamesPage() {
   return (
-    <Page board gap="gap-6">
+    <Page board>
       <SiteHeader />
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">
-          {FAMOUS_COPY.title} <span className="font-mincho text-base font-normal opacity-70">{FAMOUS_COPY.kanji}</span>
-        </h1>
-        <p className="text-sm text-ink-soft">{FAMOUS_COPY.blurb}</p>
-      </header>
+      <PageTitle title={FAMOUS_COPY.title} kanji={FAMOUS_COPY.kanji} lead={FAMOUS_COPY.blurb} />
       <div className="grid gap-4 md:grid-cols-2" data-testid="famous-games">
         {FAMOUS_GAMES.map((game) => {
           const last = famousTimeline(game).at(-1)!;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { RecordPage } from "@/components/history/RecordPage";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -50,15 +51,17 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
 
   if (me === null) {
     return (
-      <Page gap="gap-6">
+      <Page>
         <SiteHeader />
-        <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-unknown">
-          <h1 className="text-lg font-semibold">Your games of {copy.label}</h1>
-          <p className="text-sm text-muted">
-            {myId === null
+        <PageTitle
+          title={`Your games of ${copy.label}`}
+          lead={
+            myId === null
               ? "This page counts your own games, and it does not know who you are yet."
-              : "This page counts your own games, and there is no player on this account yet — finish one and it will have something to show."}
-          </p>
+              : "This page counts your own games, and there is no player on this account yet — finish one and it will have something to show."
+          }
+        />
+        <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-unknown">
           <p className="text-sm">
             <Link href={historyPath(variant)} className="underline underline-offset-4">
               Every game of {copy.label} played here

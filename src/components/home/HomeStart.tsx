@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
 import { START_NEW, START_RETURNING, type StartLink } from "./home.constants";
 
@@ -51,7 +51,7 @@ function StartList({
 }) {
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
-      <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
+      <h2 className={SECTION_HEADING}>
         {title}
         <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{kanji}</span>
       </h2>

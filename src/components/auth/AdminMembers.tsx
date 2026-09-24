@@ -6,7 +6,7 @@ import useSWR from "swr";
 
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button, RowActions } from "@/components/ui/Controls";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -106,7 +106,7 @@ export function AdminMembers() {
 
   return (
     <section className="flex flex-col gap-3" data-testid="admin-members" {...readyMark(useHydrated())}>
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
         <Paired en="Members" kanji="会員" kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         <span className="font-normal tracking-normal" data-testid="member-total">
           {total}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Paired } from "@/components/i18n/Paired";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -93,39 +94,34 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   );
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
+      <nav className="flex items-center justify-between gap-3 text-sm" aria-label="The rungs either side">
+        {level > 1 ? (
+          <Link href={levelPath(level - 1)} className="underline underline-offset-4" data-testid="level-below">
+            ← {level - 1}. {xpLevelName(level - 1)}
+          </Link>
+        ) : (
+          <span className="text-muted">The bottom of the ladder</span>
+        )}
+        {level < XP_LEVELS ? (
+          <Link href={levelPath(level + 1)} className="underline underline-offset-4" data-testid="level-above">
+            {level + 1}. {xpLevelName(level + 1)} →
+          </Link>
+        ) : (
+          <span className="text-muted">The top of the ladder</span>
+        )}
+      </nav>
+
+      <PageTitle
+        title={rung.name}
+        kanji={rung.kanji}
+        lead={rung.note}
+        crumb={<span className="font-mono tracking-[0.14em] uppercase">Level {level}</span>}
+        testId="level-name-heading"
+      />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <nav className="flex items-center justify-between gap-3 text-sm" aria-label="The rungs either side">
-          {level > 1 ? (
-            <Link href={levelPath(level - 1)} className="underline underline-offset-4" data-testid="level-below">
-              ← {level - 1}. {xpLevelName(level - 1)}
-            </Link>
-          ) : (
-            <span className="text-muted">The bottom of the ladder</span>
-          )}
-          {level < XP_LEVELS ? (
-            <Link href={levelPath(level + 1)} className="underline underline-offset-4" data-testid="level-above">
-              {level + 1}. {xpLevelName(level + 1)} →
-            </Link>
-          ) : (
-            <span className="text-muted">The top of the ladder</span>
-          )}
-        </nav>
-
-        <div className="flex flex-col gap-1">
-          <p className="font-mono text-xs tracking-[0.14em] text-muted uppercase">Level {level}</p>
-          <h1 className="text-2xl font-semibold" data-testid="level-name-heading">
-            {rung.kanji === "" ? (
-              rung.name
-            ) : (
-              <Paired en={rung.name} kanji={rung.kanji} kanjiClassName="text-lg font-normal opacity-70" />
-            )}
-          </h1>
-          <p className="text-sm text-ink-soft">{rung.note}</p>
-        </div>
-
         <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm" data-testid="level-costs">
           <div>
             <dt className="text-xs text-muted uppercase">To reach it</dt>
@@ -171,9 +167,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-        <h2 className="flex items-baseline gap-2 text-base font-semibold">
-          <Paired en="Standing here" kanji="居る" kanjiClassName="text-sm font-normal opacity-70" />
-        </h2>
+        <SectionHeading title="Standing here" kanji="居る" />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label="Which players the rung lists" />
           <RecordScopeBar
