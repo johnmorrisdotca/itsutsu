@@ -88,7 +88,7 @@ export async function SiteFooter() {
           </Link>
         ))}
         {/* On every page, for anybody reading it: the page they are on is the one reported. */}
-        <ReportProblem />
+        <ReportProblem version={stamps.semver} />
         {/*
           The colophon is where a book says what edition and what language it
           is, so it is where this site does too. Suspended because the picker

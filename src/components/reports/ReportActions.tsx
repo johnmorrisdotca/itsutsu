@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { fileReportAsTicket, markReport } from "@/lib/reports/reports.actions";
 import { REPORT_MOVES, REPORT_STATUSES } from "@/lib/reports/reports.constants";
 import type { ReportChanged, ReportStatus } from "@/lib/sumilabu/reportsClient.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-const BUTTON = `rounded-full border border-rule-strong/70 px-3 text-xs hover:bg-rule/40 disabled:opacity-50 ${TAP_HEIGHT}`;
+/** The site's own button, as every other operator control is. */
+const BUTTON = `${BUTTON_BASE} ${BUTTON_QUIET}`;
 
 /**
  * What the operator can do with one report: the moves the contract allows from

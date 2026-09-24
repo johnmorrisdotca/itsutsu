@@ -33,6 +33,9 @@ test.describe("reporting a problem", () => {
     } else {
       await expect(dialog.getByTestId("report-body")).toBeVisible();
       await expect(dialog.getByTestId("report-send")).toBeDisabled();
+      // What goes with it is said before it is sent: the page, without its query, and the date.
+      await expect(dialog.getByTestId("report-page")).toHaveText("/games");
+      await expect(dialog.getByTestId("report-date")).not.toBeEmpty();
     }
     // And the way back out.
     await dialog.getByTestId("report-close").click();
