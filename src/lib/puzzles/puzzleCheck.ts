@@ -1,6 +1,7 @@
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
-import { boxOf } from "./numberPlace/boxes";
+import { decodeJigsaw } from "./jigsaw/code";
+import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleCheck, PuzzleKind } from "./puzzles.types";
@@ -28,6 +29,10 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkHiddenStones(size, givens, answer);
     case "moreOrLess":
       return checkMoreOrLess(size, givens, answer);
+    case "jigsaw":
+      return checkJigsaw(size, givens, answer);
+    case "diagonal":
+      return checkDiagonal(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -35,7 +40,29 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
 
 /** Every unit a permutation of 1..size, and every given where it was. */
 function checkNumberPlace(size: number, givens: string, answer: string): PuzzleCheck {
-  const asked = decodeCells(givens, size);
+  return checkOnLayout(boxedLayout(size), decodeCells(givens, size), answer);
+}
+
+function checkDiagonal(size: number, givens: string, answer: string): PuzzleCheck {
+  return checkOnLayout(boxedLayout(size, true), decodeCells(givens, size), answer);
+}
+
+/**
+ * A Jigsaw is checked against the regions it was handed, in its givens. They
+ * must be sound — `size` joined regions of `size` cells — or the grid is
+ * refused before it is read: regions of one cell each would make any grid
+ * whose rows and columns are right look like an answer.
+ */
+function checkJigsaw(size: number, givens: string, answer: string): PuzzleCheck {
+  const asked = decodeJigsaw(givens, size);
+  if (asked === null) return { ok: false, reason: "the givens are not a grid with regions" };
+  if (!regionsAreSound(size, asked.regions)) return { ok: false, reason: "the regions do not divide the grid" };
+  return checkOnLayout(regionLayout(size, asked.regions), asked.cells, answer);
+}
+
+/** Every group of the layout holds every number once, and no given was changed. One pass over the cells. */
+function checkOnLayout(layout: Layout, asked: number[] | null, answer: string): PuzzleCheck {
+  const { size } = layout;
   const filled = decodeCells(answer, size);
   if (asked === null) return { ok: false, reason: "the givens are not a grid" };
   if (filled === null) return { ok: false, reason: "the answer is not a grid" };
@@ -43,25 +70,26 @@ function checkNumberPlace(size: number, givens: string, answer: string): PuzzleC
   for (let index = 0; index < asked.length; index += 1) {
     if (asked[index] !== 0 && asked[index] !== filled[index]) return { ok: false, reason: "a given was changed" };
   }
-  const rows = Array.from({ length: size }, () => 0);
-  const cols = Array.from({ length: size }, () => 0);
-  const boxes = Array.from({ length: size }, () => 0);
+  const seen = new Array<number>(layout.groups.length).fill(0);
   for (let index = 0; index < filled.length; index += 1) {
-    const bit = 1 << filled[index];
-    const row = Math.floor(index / size);
-    const col = index % size;
-    const box = boxOf(size, index);
-    if (rows[row] & bit) return { ok: false, reason: `row ${row + 1} repeats a number` };
-    if (cols[col] & bit) return { ok: false, reason: `column ${col + 1} repeats a number` };
-    if (boxes[box] & bit) return { ok: false, reason: `box ${box + 1} repeats a number` };
-    rows[row] |= bit;
-    cols[col] |= bit;
-    boxes[box] |= bit;
+    const bit = 1 << filled[index]!;
+    for (const group of layout.groupsOf[index]!) {
+      if (seen[group]! & bit) return { ok: false, reason: `${groupName(layout, group)} repeats a number` };
+      seen[group]! |= bit;
+    }
   }
   return { ok: true };
 }
 
-/** Every row and column a permutation of 1..size, every given where it was, and every mark true. */
+/** "row 3", "column 5", "box 2", "region 4", "a diagonal": the groups in `build`'s order. */
+function groupName(layout: Layout, group: number): string {
+  const { size } = layout;
+  if (group < size) return `row ${group + 1}`;
+  if (group < 2 * size) return `column ${group - size + 1}`;
+  if (group < 3 * size) return `${layout.regionWord} ${group - 2 * size + 1}`;
+  return "a diagonal";
+}
+
 function checkMoreOrLess(size: number, givens: string, answer: string): PuzzleCheck {
   const asked = decodeMoreOrLess(givens, size);
   const filled = decodeCells(answer, size);

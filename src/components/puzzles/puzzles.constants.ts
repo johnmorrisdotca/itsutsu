@@ -20,6 +20,9 @@ export const PUZZLE_CELL =
 /** A given: printed, and not for changing. */
 export const PUZZLE_CELL_GIVEN = "font-semibold text-ink";
 
+/** A Diagonal's two long diagonals, in a neutral tint unlike the chosen cell's, so the extra groups can be seen at a glance. */
+export const PUZZLE_CELL_DIAGONAL = "bg-rule/40";
+
 /**
  * A More or Less mark, drawn over the edge it belongs to: on the cell's right
  * edge for a horizontal one, its bottom edge for a vertical one, on a small

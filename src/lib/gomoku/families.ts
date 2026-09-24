@@ -162,7 +162,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Numbers",
     kanji: "数",
     blurb: "Puzzles for one: a grid, a few givens, and exactly one answer. Solve it on your own, against the clock.",
-    games: ["numberPlace", "hiddenStones", "moreOrLess"],
+    games: ["numberPlace", "jigsaw", "diagonal", "hiddenStones", "moreOrLess"],
   },
 ];
 

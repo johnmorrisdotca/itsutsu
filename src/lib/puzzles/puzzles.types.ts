@@ -8,7 +8,7 @@
  * rather than by stretching either.
  */
 
-export type PuzzleKind = "numberPlace" | "hiddenStones" | "moreOrLess";
+export type PuzzleKind = "numberPlace" | "hiddenStones" | "moreOrLess" | "jigsaw" | "diagonal";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";

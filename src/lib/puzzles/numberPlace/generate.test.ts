@@ -4,6 +4,7 @@ import { checkSolution } from "../puzzleCheck";
 import { decodeCells } from "../puzzleCode";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import { generateNumberPlace } from "./generate";
+import { boxedLayout } from "./layout";
 import { applySingles, countSolutions, guessDepth } from "./solve";
 
 /**
@@ -20,7 +21,7 @@ describe("generating Number Place", () => {
           const puzzle = generateNumberPlace(size, level, seed);
           const givens = decodeCells(puzzle.givens, size);
           expect(givens).not.toBeNull();
-          expect(countSolutions(givens!, size, 2)).toBe(1);
+          expect(countSolutions(givens!, boxedLayout(size), 2)).toBe(1);
           expect(checkSolution("numberPlace", size, puzzle.givens, puzzle.solution)).toEqual({ ok: true });
           expect(puzzle.givens.length).toBe(size * size);
           expect(puzzle.solution).not.toContain(".");
@@ -31,8 +32,8 @@ describe("generating Number Place", () => {
     it(`${size}×${size} easy yields to singles alone, and hard has fewer givens than easy`, () => {
       const easy = generateNumberPlace(size, "easy", 7);
       const hard = generateNumberPlace(size, "hard", 7);
-      expect(guessDepth(decodeCells(easy.givens, size)!, size)).toBe(0);
-      expect(applySingles(decodeCells(easy.givens, size)!, size).solved).toBe(true);
+      expect(guessDepth(decodeCells(easy.givens, size)!, boxedLayout(size))).toBe(0);
+      expect(applySingles(decodeCells(easy.givens, size)!, boxedLayout(size)).solved).toBe(true);
       const count = (code: string) => [...code].filter((c) => c !== ".").length;
       expect(count(hard.givens)).toBeLessThan(count(easy.givens));
     });

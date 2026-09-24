@@ -1,10 +1,18 @@
 "use client";
 
 import type { Mark } from "@/lib/puzzles/moreOrLess/code";
-import { NUMBER_PLACE_BOXES } from "@/lib/puzzles/numberPlace/boxes";
+import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
-import { PUZZLE_CELL, PUZZLE_CELL_GIVEN, PUZZLE_CELL_SELECTED, PUZZLE_GRID, PUZZLE_MARK_BELOW, PUZZLE_MARK_RIGHT } from "./puzzles.constants";
+import {
+  PUZZLE_CELL,
+  PUZZLE_CELL_DIAGONAL,
+  PUZZLE_CELL_GIVEN,
+  PUZZLE_CELL_SELECTED,
+  PUZZLE_GRID,
+  PUZZLE_MARK_BELOW,
+  PUZZLE_MARK_RIGHT,
+} from "./puzzles.constants";
 
 /**
  * The Number Place grid: a square of cells, the boxes drawn in heavier rules.
@@ -26,6 +34,7 @@ export function PuzzleGrid({
   givens,
   entries,
   marks = [],
+  regions = null,
   selected,
   done,
   onSelect,
@@ -36,12 +45,21 @@ export function PuzzleGrid({
   entries: readonly number[];
   /** More or Less: which of two neighbouring cells is bigger, drawn between them. */
   marks?: readonly Mark[];
+  /** Jigsaw: the region of every cell, which the heavy rules are drawn around. */
+  regions?: readonly number[] | null;
   selected: number | null;
   done: boolean;
   onSelect: (index: number) => void;
 }) {
-  // Boxes are Number Place's; More or Less is a plain square with marks between its cells.
-  const boxes = kind === "numberPlace" ? NUMBER_PLACE_BOXES[size] : null;
+  /*
+   * Where the heavy rules go: between two cells of different regions — a
+   * Number Place or Diagonal box, or a Jigsaw's own shapes. One rule draws
+   * both, so a box and an irregular region look alike. More or Less is a
+   * plain square with marks between its cells, and Diagonal shades its two
+   * diagonals.
+   */
+  const region = regions ?? (kind === "numberPlace" || kind === "diagonal" ? boxedLayout(size).region : null);
+  const shadeDiagonals = kind === "diagonal";
   /* A mark sits on the edge after its lower-indexed cell: to the right for a
      horizontal one, below for a vertical one, pointing at the smaller number. */
   const rightOf = new Map<number, string>();
@@ -60,17 +78,18 @@ export function PuzzleGrid({
           const value = given !== 0 ? given : entries[index];
           const isGiven = given !== 0;
           const edges =
-            boxes === null
+            region === null
               ? ""
               : [
-                  col % boxes.cols === 0 && col !== 0 ? "border-l-2 border-l-ink" : "",
-                  row % boxes.rows === 0 && row !== 0 ? "border-t-2 border-t-ink" : "",
+                  col !== 0 && region[index] !== region[index - 1] ? "border-l-2 border-l-ink" : "",
+                  row !== 0 && region[index] !== region[index - size] ? "border-t-2 border-t-ink" : "",
                 ].join(" ");
+          const onDiagonal = shadeDiagonals && (row === col || row + col === size - 1);
           return (
             <button
               key={index}
               type="button"
-              className={`relative ${PUZZLE_CELL} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${edges}`}
+              className={`relative ${PUZZLE_CELL} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${onDiagonal ? PUZZLE_CELL_DIAGONAL : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${edges}`}
               onClick={() => onSelect(index)}
               disabled={done}
               aria-label={`row ${row + 1}, column ${col + 1}, ${value === 0 ? "empty" : value}${isGiven ? ", given" : ""}`}

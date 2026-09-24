@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { decodeJigsaw } from "@/lib/puzzles/jigsaw/code";
 import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
 import { decodeCells, encodeCells } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -24,11 +25,18 @@ import { SolveDone, SolveHeader, type SolveRace, useSolve } from "./solveShared"
 export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzle; hasAccount: boolean; race?: SolveRace | null }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
-  // A More or Less code is the cells and then the marks; a Number Place code is the cells alone.
-  const asked = useMemo<{ cells: number[]; marks: Mark[] }>(
-    () => (kind === "moreOrLess" ? decodeMoreOrLess(puzzle.givens, size) : { cells: decodeCells(puzzle.givens, size) ?? [], marks: [] }) ?? { cells: [], marks: [] },
-    [kind, puzzle.givens, size],
-  );
+  // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions; the rest are the cells alone.
+  const asked = useMemo<{ cells: number[]; marks: Mark[]; regions: number[] | null }>(() => {
+    if (kind === "moreOrLess") {
+      const read = decodeMoreOrLess(puzzle.givens, size);
+      return { cells: read?.cells ?? [], marks: read?.marks ?? [], regions: null };
+    }
+    if (kind === "jigsaw") {
+      const read = decodeJigsaw(puzzle.givens, size);
+      return { cells: read?.cells ?? [], marks: [], regions: read?.regions ?? null };
+    }
+    return { cells: decodeCells(puzzle.givens, size) ?? [], marks: [], regions: null };
+  }, [kind, puzzle.givens, size]);
   const givens = asked.cells;
   const solution = useMemo(() => decodeCells(puzzle.solution, size) ?? [], [puzzle.solution, size]);
   const [entries, setEntries] = useState<number[]>(() => new Array<number>(size * size).fill(0));
@@ -85,7 +93,17 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} />
-      <PuzzleGrid kind={kind} size={size} givens={givens} entries={entries} marks={asked.marks} selected={selected} done={done !== null} onSelect={setSelected} />
+      <PuzzleGrid
+        kind={kind}
+        size={size}
+        givens={givens}
+        entries={entries}
+        marks={asked.marks}
+        regions={asked.regions}
+        selected={selected}
+        done={done !== null}
+        onSelect={setSelected}
+      />
       {done === null ? (
         <>
           <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${size + 1}, minmax(0, 1fr))` }} data-testid="puzzle-keys">

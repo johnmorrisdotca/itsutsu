@@ -19,10 +19,18 @@ export const PUZZLE_KINDS = {
   numberPlace: "numberPlace",
   hiddenStones: "hiddenStones",
   moreOrLess: "moreOrLess",
+  jigsaw: "jigsaw",
+  diagonal: "diagonal",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
-export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [PUZZLE_KINDS.numberPlace, PUZZLE_KINDS.hiddenStones, PUZZLE_KINDS.moreOrLess];
+export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
+  PUZZLE_KINDS.numberPlace,
+  PUZZLE_KINDS.jigsaw,
+  PUZZLE_KINDS.diagonal,
+  PUZZLE_KINDS.hiddenStones,
+  PUZZLE_KINDS.moreOrLess,
+];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
 
@@ -39,6 +47,9 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
   // 133: the 49 cells of a 7×7 and the 84 edges between them, which its code writes after the cells.
   moreOrLess: { sizes: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
+  // 162: a 9×9's 81 cells and then its 81 region letters, which its code writes after the cells.
+  jigsaw: { sizes: [5, 6, 7, 9], defaultSize: 7, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 162 },
+  diagonal: { sizes: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
 };
 
 /**
@@ -67,6 +78,16 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     5: { label: "Usual", kanji: "定番" },
     6: { label: "Longer", kanji: "長め" },
     7: { label: "Long", kanji: "長" },
+  },
+  jigsaw: {
+    5: { label: "Quick", kanji: "速" },
+    6: { label: "Short", kanji: "短" },
+    7: { label: "Usual", kanji: "定番" },
+    9: { label: "Classic", kanji: "本格" },
+  },
+  diagonal: {
+    6: { label: "Short", kanji: "短" },
+    9: { label: "Classic", kanji: "定番" },
   },
 };
 
@@ -121,5 +142,39 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Every puzzle has exactly one answer, and every mark and given is needed to reach it.",
     ],
     board: "5×5 is the usual size. 4×4 is quick; 7×7 is the long one.",
+  },
+  jigsaw: {
+    label: "Jigsaw",
+    kanji: "変形ナンプレ",
+    tagline: "Number Place with the boxes cut into irregular regions: every row, column and region holds each number once.",
+    inspiredBy: "Jigsaw Sudoku",
+    origin:
+      "Number Place with its boxes traded for irregular shapes, printed under names such as Nonomino and Jigsaw Sudoku. Without boxes it is not tied to sides that divide evenly, so it comes at five and seven as well.",
+    alsoKnownAs: ["Jigsaw Sudoku", "Nonomino", "Irregular Sudoku"],
+    wikipedia: "Sudoku",
+    rules: [
+      "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each outlined region holds every number exactly once.",
+      "The regions are drawn in heavier lines, and each has as many cells as the grid is wide, in a shape of its own.",
+      "Every puzzle has exactly one answer. Easy yields to reasoning alone; medium and hard ask you to try something and see.",
+      "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
+    ],
+    board: "7×7 is the usual size. 5×5 is quick; 9×9 is the classic grid with the boxes cut up.",
+  },
+  diagonal: {
+    label: "Diagonal",
+    kanji: "対角ナンプレ",
+    tagline: "Number Place where the two long diagonals must hold each number once too.",
+    inspiredBy: "Sudoku X",
+    origin:
+      "The most common extra rule laid on Number Place: the two diagonals count as groups as well. Newspapers print it as Sudoku X, The Daily Mail at six by six.",
+    alsoKnownAs: ["Sudoku X", "Diagonal Sudoku"],
+    wikipedia: "Sudoku",
+    rules: [
+      "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
+      "The two long diagonals, shaded corner to corner, must each hold every number exactly once as well.",
+      "Every puzzle has exactly one answer, and the diagonals are part of reaching it: fewer numbers are printed than a plain grid would need.",
+      "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
+    ],
+    board: "9×9 is the usual size; 6×6, with boxes two rows tall and three wide, is the short one.",
   },
 };

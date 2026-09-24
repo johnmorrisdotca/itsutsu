@@ -1,6 +1,7 @@
 import { generateHiddenStones } from "./hiddenStones/generate";
 import { generateMoreOrLess } from "./moreOrLess/generate";
-import { generateNumberPlace } from "./numberPlace/generate";
+import { generateJigsaw } from "./jigsaw/generate";
+import { generateDiagonal, generateNumberPlace } from "./numberPlace/generate";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -17,5 +18,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateHiddenStones(size, level, seed);
     case "moreOrLess":
       return generateMoreOrLess(size, level, seed);
+    case "jigsaw":
+      return generateJigsaw(size, level, seed);
+    case "diagonal":
+      return generateDiagonal(size, level, seed);
   }
 }
