@@ -12,14 +12,10 @@ import {
   PLACEMENTS,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
-import { columnLetter, rowNumber } from "@/lib/gomoku/notation";
 import type { GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import {
   BOARD_THEMES,
   GUIDE_COLOURS,
-  LABEL_GUTTER,
-  BOARD_FRAME,
-  COORDINATE_GAP,
   latticeFitFor,
   SQUARE_GUIDES,
   STONE_SETS,
@@ -31,89 +27,13 @@ import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
 import { LatticeCoordinates } from "./LatticeCoordinates";
 import { LatticeGround } from "./LatticeGround";
-import { labelTracks, latticeLabelTracks, playingAreaInset, type LatticeShape } from "./margin";
+import { BoardFrame } from "./BoardFrame";
+import { playingAreaInset, type LatticeShape } from "./margin";
 import { squareLabel } from "./squareLabel";
 import { squareGuide, turnGuide } from "./turnGuide";
 import { TurnGuideNote } from "./TurnGuideNote";
 import { TwistControls } from "./TwistControls";
-import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
-
-/**
- * The coordinate strips sit outside the board's own box, so the rim that
- * insets the playing area cannot inset them too — they carry it themselves,
- * as an empty track at each end, and each label is placed on the track its
- * row or column landed on rather than left to fall into the first one.
- */
-type LabelStripProps = {
-  size: number;
-  theme: BoardThemeTokens;
-  flipped: boolean;
-  /** The board's rim, as a fraction of its width; zero on a board drawn on the lines. */
-  inset: number;
-  /** A board on the hexagon lattice, whose rows and columns do not span the box. */
-  lattice: boolean;
-  /** And which shape is cut out of that lattice: the whole rhombus, a hexagon, or a star. */
-  shape: LatticeShape;
-};
-
-function ColumnLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripProps) {
-  /*
-   * A star is given no letters at all: no row of it holds the columns a strip
-   * would have to follow. See `starColumnsSayNothing` in margin.ts — an empty
-   * strip is the honest answer, and seventeen letters over sealed cells was
-   * what it printed before.
-   */
-  if (lattice && shape === "star") return <div />;
-  return (
-    <div
-      className="grid text-center text-[0.65rem] font-medium select-none"
-      style={{
-        gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns", shape) : labelTracks(size, inset),
-        color: theme.coordinate,
-      }}
-      aria-hidden="true"
-    >
-      {layoutOrder(size, flipped).map((col, slot) => (
-        <span key={col} className="self-end leading-none" style={{ gridColumnStart: slot + 2, paddingBottom: COORDINATE_GAP }}>
-          {columnLetter(col)}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function RowLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripProps) {
-  return (
-    <div
-      /*
-       * AS TALL AS THE BOARD, NEVER TALLER. `h-0 min-h-full`: the strip takes
-       * its height from the row the board sets, and contributes none of its
-       * own. Without it the row's height was the LARGER of the board's and the
-       * strip's, and the strip's is its numbers stacked at a full line each —
-       * about 16px apiece at 0.65rem. On a 240px phone preview that is taller
-       * than the board from 15 rows up: Halma 16 came out 240 wide and 294
-       * tall, and 4, 3, 2, 1 were printed on nothing below the board's edge.
-       *
-       * The numbers keep their size; only who decides the strip's height
-       * changes. Squeezed, a 10px numeral in an 11px row still reads, and the
-       * letters across the top were never affected — they are one line tall
-       * whatever the board.
-       */
-      className="grid h-0 min-h-full text-right text-[0.65rem] font-medium select-none"
-      style={{
-        gridTemplateRows: lattice ? latticeLabelTracks(size, "rows", shape) : labelTracks(size, inset),
-        color: theme.coordinate,
-      }}
-      aria-hidden="true"
-    >
-      {layoutOrder(size, flipped).map((row, slot) => (
-        <span key={row} className="flex items-center justify-end" style={{ gridRowStart: slot + 2, paddingRight: COORDINATE_GAP }}>
-          {rowNumber(size, row)}
-        </span>
-      ))}
-    </div>
-  );
-}
+import type { BoardMark, BoardProps } from "./board.types";
 
 /** Move number for each occupied intersection, when numbers are being shown. */
 function numberByIndex(state: GameState, show: boolean): Map<number, number> {
@@ -273,13 +193,6 @@ export function Board({
   const piecing = live && footprintFor !== undefined && spec.queue !== null;
 
   /*
-   * A LATTICE BOARD'S COORDINATES ARE ON ITS BORDER TILES (`LatticeCoordinates`),
-   * so it gets no strips and no gutter for them: the letters and numbers are
-   * on the board, where John asked for them. The square boards keep theirs.
-   */
-  const stripsOutside = appearance.showCoordinates && !hexSkew;
-  const gutter = stripsOutside ? LABEL_GUTTER : "0px";
-  /*
    * The reader's own view of the board and nothing else: the same cells in the
    * opposite order, with the gutters turned to match. No move, coordinate or
    * piece of game state knows about it.
@@ -287,179 +200,115 @@ export function Board({
   const flipped = appearance.flipped ?? boardStartsFlipped(state.settings, viewer);
 
   return (
-    <div
-      /*
-       * ROOM FOR THE FRAME ON THE RIGHT AND BELOW. The frame is a box-shadow,
-       * drawn OUTSIDE the board's box, and the grid reserved nothing for it on
-       * those two sides — the labels' gutter sat on the left and above, and on
-       * a 390-pixel phone the frame's right edge ended two pixels from the
-       * glass while the left had twenty-six. John: "all these boards have
-       * proper padding on the left, but seemed to overflow and do not have the
-       * correct padding on the right". The padding is the frame's own width,
-       * so the board keeps every pixel the labels leave it and the frame stays
-       * on the page.
-       */
-      className="grid w-full"
-      style={{
-        gridTemplateColumns: `${gutter} minmax(0, 1fr)`,
-        gridTemplateRows: `${gutter} auto`,
-        paddingRight: BOARD_FRAME,
-        paddingBottom: BOARD_FRAME,
-        // And on the two sides the gutter would otherwise cover: with no strips there is no gutter.
-        ...(stripsOutside ? {} : { paddingLeft: BOARD_FRAME, paddingTop: BOARD_FRAME }),
-      }}
+    <BoardFrame
+      size={size}
+      theme={theme}
+      flipped={flipped}
+      inset={inset}
+      lattice={hexSkew}
+      shape={shape}
+      coordinates={appearance.showCoordinates}
+      footer={live ? <TurnGuideNote guide={guide} size={size} /> : null}
     >
-      <div />
-      {stripsOutside ? (
-        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} shape={shape} />
-      ) : (
-        <div />
-      )}
-      {stripsOutside ? (
-        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} shape={shape} />
-      ) : (
-        <div />
-      )}
+      {/*
+        * The connection game is played on a rhombus ruled as a triangular
+        * lattice, with the stones on the crossings. A hexagon lattice is a
+        * square grid with every row slid half a cell along and the rows
+        * packed closer, so that is exactly what this does — shear the
+        * grid, fit it back into the square the board already occupies,
+        * and undo the shear on each cell so the stones stay round. The
+        * lines take the same transform in BoardLines, which is what keeps
+        * a stone on its crossing.
+        */}
+      {/*
+        * THE WOOD IS MARKED ALL THE WAY ACROSS on a lattice board, under
+        * whatever the game draws: the star's holes, the honeycomb's
+        * cells, Hex's lines. Two kinds of board on this site and no more —
+        * the go-style square and this — which is what John asked for.
+        */}
+      {hexSkew ? (
+        <LatticeGround size={size} theme={theme} fit={latticeFitFor(shape, size)} />
+      ) : null}
+      <BoardLines
+        size={size}
+        theme={theme}
+        quadrantSize={spec.quadrantSize}
+        cells={cells}
+        checkered={spec.checkers}
+        lattice={hexSkew ? { shape, board: state.board, transform: latticeTransform(size, shape) } : null}
+      />
       <div
-        className="relative aspect-square rounded-md"
+        className="absolute inset-0 grid"
         style={{
-          background: theme.surface,
+          gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
           /*
-           * EVERY BOARD IS A SQUARE OF WOOD IN A FRAME, since 2026-09-22 — the
-           * rhombus included. Hex's paper used to be cut to the rhombus, so
-           * it was the one board on the site with no frame and no wood around
-           * its shape; John: "that other strange board that looks like a
-           * diamond shape that also is weird." It is a square board now with
-           * the rhombus drawn on it, the way the star and the honeycomb are,
-           * over the same faint lattice — see `LatticeGround`.
-           */
-          boxShadow: `0 0 0 ${BOARD_FRAME} ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
+            THE SHAPE'S OWN FIT. A hexagon is the middle two thirds of the
+            rhombus the whole array shears into, so fitting the array would
+            leave it floating in its own frame — see `latticeFit`.
+          */
+          ...(hexSkew
+            ? { transform: latticeTransform(size, shape), transformOrigin: "top left" }
+            : {}),
         }}
       >
-        {/*
-          * The playing area, inset from the board's edge by its rim.
-          *
-          * The grid is drawn in an SVG and the stones are laid out in a CSS
-          * grid, in two separate boxes that are kept exactly over each other.
-          * So the rim goes HERE, on the one box they both fill, and never on
-          * either of them: inset the lines alone and every stone would sit
-          * off its square. Anything that has to line up with a cell — the
-          * twist arrows included — belongs inside this.
-          *
-          * AND IT CLIPS, because a sheared lattice is WIDER THAN ITS BOARD.
-          * `HEXAGON_TRANSFORM` fits the hexagon rather than the array holding
-          * it, so the array's unused corners — blocked cells, drawn by nobody
-          * — hang about a fifth of a board width past each edge. A transform
-          * moves no layout but it does move the SCROLL area, so on a 390px
-          * phone the honeycomb made the whole document 455px wide: every page
-          * it appeared on scrolled sideways and was shrunk to fit. Nothing
-          * visible is lost here — the shape itself is fitted inside the box by
-          * the transform, which `hexagonFit.test.ts` measures — so this clips
-          * only the empty overhang. `e2e/boards-fit-a-phone.spec.ts` holds it.
-          */}
-          <div className="absolute overflow-hidden" style={{ inset: `${inset * 100}%` }}>
-          {/*
-            * The connection game is played on a rhombus ruled as a triangular
-            * lattice, with the stones on the crossings. A hexagon lattice is a
-            * square grid with every row slid half a cell along and the rows
-            * packed closer, so that is exactly what this does — shear the
-            * grid, fit it back into the square the board already occupies,
-            * and undo the shear on each cell so the stones stay round. The
-            * lines take the same transform in BoardLines, which is what keeps
-            * a stone on its crossing.
-            */}
-          {/*
-            * THE WOOD IS MARKED ALL THE WAY ACROSS on a lattice board, under
-            * whatever the game draws: the star's holes, the honeycomb's
-            * cells, Hex's lines. Two kinds of board on this site and no more —
-            * the go-style square and this — which is what John asked for.
-            */}
-          {hexSkew ? (
-            <LatticeGround size={size} theme={theme} fit={latticeFitFor(shape, size)} />
-          ) : null}
-          <BoardLines
-            size={size}
-            theme={theme}
-            quadrantSize={spec.quadrantSize}
-            cells={cells}
-            checkered={spec.checkers}
-            lattice={hexSkew ? { shape, board: state.board, transform: latticeTransform(size, shape) } : null}
-          />
-          <div
-            className="absolute inset-0 grid"
-            style={{
-              gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+        {layoutOrder(state.board.length, flipped).map((index) => {
+          const cell = state.board[index];
+          const point = pointOf(size, index);
+          const landing = dropping && live ? resolvePlacement(state, point) : point;
+          const landingIndex = indexOf(size, landing);
+          const playable = legal === null || legal.has(index);
+          // In a drop game any empty cell of a column with room plays that column.
+          const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
+          const guided = squareGuide(guide, index, cell);
+          // A piece the guide holds back is not offered: it cannot be picked up at all this turn.
+          const ownPiece = sliding && cell === state.toPlay && guided !== SQUARE_GUIDES.unavailable;
+          const target = destinations.has(index);
+          const inFootprint = footprint.has(index);
+          // In a piece game a corner can be laid wherever the piece fits.
+          const cornerFits = piecing && cell === null && footprintFor?.(point) !== null && !legal?.has(index);
+          return (
+            <Intersection
+              key={index}
+              point={point}
+              cell={cell}
+              label={squareLabel(size, point, cell, {
+                forbidden: forbidden.has(index),
+                king: spec.checkers && kings.has(index),
+              })}
+              isLast={index === lastIndex}
+              isWinning={winningIndices.has(index)}
+              ghost={(playable || target) && !piecing ? ghost : null}
+              ghostStone={inFootprint ? (footprint.get(index) ?? null) : null}
+              clickable={routed || ownPiece || target || (piecing && (cornerFits || playable))}
+              onHover={piecing ? setHovered : undefined}
+              moveNumber={numbers.get(index) ?? null}
+              mark={overlays.get(index) ?? null}
+              unslant={hexSkew}
               /*
-                THE SHAPE'S OWN FIT. A hexagon is the middle two thirds of the
-                rhombus the whole array shears into, so fitting the array would
-                leave it floating in its own frame — see `latticeFit`.
+                A camp is tinted on the CELL: a square on a square board,
+                and on the lattice the hexagon tile itself (`BoardLines`),
+                because a square painted over a hexagon spills onto its
+                neighbours — the "painting issue" John saw on the star.
               */
-              ...(hexSkew
-                ? { transform: latticeTransform(size, shape), transformOrigin: "top left" }
-                : {}),
-            }}
-          >
-            {layoutOrder(state.board.length, flipped).map((index) => {
-              const cell = state.board[index];
-              const point = pointOf(size, index);
-              const landing = dropping && live ? resolvePlacement(state, point) : point;
-              const landingIndex = indexOf(size, landing);
-              const playable = legal === null || legal.has(index);
-              // In a drop game any empty cell of a column with room plays that column.
-              const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
-              const guided = squareGuide(guide, index, cell);
-              // A piece the guide holds back is not offered: it cannot be picked up at all this turn.
-              const ownPiece = sliding && cell === state.toPlay && guided !== SQUARE_GUIDES.unavailable;
-              const target = destinations.has(index);
-              const inFootprint = footprint.has(index);
-              // In a piece game a corner can be laid wherever the piece fits.
-              const cornerFits = piecing && cell === null && footprintFor?.(point) !== null && !legal?.has(index);
-              return (
-                <Intersection
-                  key={index}
-                  point={point}
-                  cell={cell}
-                  label={squareLabel(size, point, cell, {
-                    forbidden: forbidden.has(index),
-                    king: spec.checkers && kings.has(index),
-                  })}
-                  isLast={index === lastIndex}
-                  isWinning={winningIndices.has(index)}
-                  ghost={(playable || target) && !piecing ? ghost : null}
-                  ghostStone={inFootprint ? (footprint.get(index) ?? null) : null}
-                  clickable={routed || ownPiece || target || (piecing && (cornerFits || playable))}
-                  onHover={piecing ? setHovered : undefined}
-                  moveNumber={numbers.get(index) ?? null}
-                  mark={overlays.get(index) ?? null}
-                  unslant={hexSkew}
-                  /*
-                    A camp is tinted on the CELL: a square on a square board,
-                    and on the lattice the hexagon tile itself (`BoardLines`),
-                    because a square painted over a hexagon spills onto its
-                    neighbours — the "painting issue" John saw on the star.
-                  */
-                  camp={spec.camps ? campOf(size, point) : null}
-                  isKing={spec.checkers ? kings.has(index) : false}
-                  hideBlocked={spec.chineseCheckers || spec.hexagon}
-                  guide={guided}
-                  guideColours={guideColours}
-                  stones={stones}
-                  winningColour={theme.winning}
-                  readOnly={readOnly}
-                  onPlay={onPlay}
-                />
-              );
-            })}
-          </div>
-          {hexSkew && appearance.showCoordinates ? (
-            <LatticeCoordinates shape={shape} size={size} fit={latticeFitFor(shape, size)} theme={theme} flipped={flipped} />
-          ) : null}
-          {twisting && spec.quadrantSize !== null ? (
-            <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} flipped={flipped} />
-          ) : null}
-        </div>
+              camp={spec.camps ? campOf(size, point) : null}
+              isKing={spec.checkers ? kings.has(index) : false}
+              hideBlocked={spec.chineseCheckers || spec.hexagon}
+              guide={guided}
+              guideColours={guideColours}
+              stones={stones}
+              winningColour={theme.winning}
+              readOnly={readOnly}
+              onPlay={onPlay}
+            />
+          );
+        })}
       </div>
-      {live ? <TurnGuideNote guide={guide} size={size} /> : null}
-    </div>
+      {hexSkew && appearance.showCoordinates ? (
+        <LatticeCoordinates shape={shape} size={size} fit={latticeFitFor(shape, size)} theme={theme} flipped={flipped} />
+      ) : null}
+      {twisting && spec.quadrantSize !== null ? (
+        <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} flipped={flipped} />
+      ) : null}
+    </BoardFrame>
   );
 }

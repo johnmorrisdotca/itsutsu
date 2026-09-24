@@ -1,5 +1,6 @@
 "use client";
 
+import { PuzzleBoard } from "./PuzzleBoard";
 import { PUZZLE_GRID, REGION_FILLS } from "./puzzles.constants";
 
 /** What a cell holds while solving: nothing, a stone, or a cross marking it ruled out. */
@@ -29,7 +30,8 @@ export function HiddenStonesGrid({
   onPress: (index: number) => void;
 }) {
   return (
-    <div className="aspect-square w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
+    <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
+      <PuzzleBoard size={size}>
       <div className={PUZZLE_GRID} style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}>
         {regions.map((region, index) => {
           const row = Math.floor(index / size);
@@ -65,6 +67,7 @@ export function HiddenStonesGrid({
           );
         })}
       </div>
+      </PuzzleBoard>
     </div>
   );
 }

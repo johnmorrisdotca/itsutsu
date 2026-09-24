@@ -1,5 +1,6 @@
 "use client";
 
+import { PuzzleBoard } from "./PuzzleBoard";
 import type { Mark } from "@/lib/puzzles/moreOrLess/code";
 import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -70,7 +71,8 @@ export function PuzzleGrid({
     else below.set(low, mark.less === low ? "∧" : "∨");
   }
   return (
-    <div className="aspect-square w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
+    <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
+      <PuzzleBoard size={size}>
       <div className={PUZZLE_GRID} style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}>
         {givens.map((given, index) => {
           const row = Math.floor(index / size);
@@ -98,6 +100,8 @@ export function PuzzleGrid({
               data-index={index}
               data-given={isGiven ? "true" : "false"}
               data-value={value === 0 ? "" : String(value)}
+              data-region={region === null ? undefined : region[index]}
+              data-diagonal={onDiagonal ? "true" : undefined}
             >
               {value === 0 ? "" : value}
               {rightOf.has(index) ? (
@@ -114,6 +118,7 @@ export function PuzzleGrid({
           );
         })}
       </div>
+      </PuzzleBoard>
     </div>
   );
 }

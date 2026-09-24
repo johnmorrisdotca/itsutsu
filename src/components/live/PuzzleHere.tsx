@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 
-import { GameThumb } from "@/components/games/GameThumb";
 import { PuzzleSetUp, PuzzleSizes } from "@/components/puzzles/PuzzleSetUp";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { GamePicker } from "./GamePicker";
+import { PuzzleBoardPreview } from "./PuzzleBoardPreview";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } from "./picker.constants";
 
 /**
  * THE SET-UP SCREEN WITH A PUZZLE CHOSEN: the puzzle's name where the game's
- * would be, its picture where the board's would be, and its size, level and
- * Solve where the opponent, the rules and Begin would be.
+ * would be, its grid in the board's own frame where the board's would be
+ * (`PuzzleBoardPreview`), and its size, level and Solve where the opponent,
+ * the rules and Begin would be.
  *
  * John, 2026-09-24, with Numbers open on this screen: "There's an error
  * because we don't have a Preview board for the new games." The tile had
@@ -63,12 +64,9 @@ export function PuzzleHere({
           underFamilies={
             // The picture and its sizes side by side, in the very row a game's board and its boards stand in.
             <div className={`${PICK_BOARD_ROW} py-2 ${PICK_BOARD_ROW_UNDER_FAMILIES}`}>
-              <figure className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`} data-testid="set-up-puzzle-preview">
-                <GameThumb variant={puzzle} size="large" />
-                <figcaption className="text-center text-xs text-muted">
-                  A preview of {copy.label}. The puzzle itself is made in your browser when you press Solve.
-                </figcaption>
-              </figure>
+              <div className={PICK_BOARD_PREVIEW}>
+                <PuzzleBoardPreview kind={puzzle} size={size} />
+              </div>
               <PuzzleSizes kind={puzzle} size={size} onSize={onSize} beside />
             </div>
           }

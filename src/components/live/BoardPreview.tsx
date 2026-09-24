@@ -7,7 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { createGame } from "@/lib/gomoku/engine";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameSettings, RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { SET_UP_COPY } from "./live.constants";
+import { SET_UP_COPY, SET_UP_PREVIEW_BOX } from "./live.constants";
 
 /** What the set-up form holds, narrowed to the parts that change the picture. */
 export type PreviewRules = { variant: string; size: number; obstacles: string };
@@ -107,7 +107,7 @@ export function BoardPreview({ rules }: { rules: PreviewRules }) {
         still the real board, drawn from the real settings — just at a size
         that leaves room for the rest of the screen it is on.
       */}
-      <div className="pointer-events-none w-full max-w-[15rem] sm:max-w-[22rem]" aria-hidden="true">
+      <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
         <Board
           state={state}
           appearance={DEFAULT_APPEARANCE}

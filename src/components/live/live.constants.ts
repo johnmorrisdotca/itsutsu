@@ -102,6 +102,8 @@ export const SET_UP_UNREAD = (names: readonly string[]) =>
 export const SET_UP_COPY = {
   /** Under the sample board on the set-up screen, so nobody takes it for a game in progress. */
   previewIs: (game: string) => `A preview of the ${game} board. Nothing here is a move.`,
+  // A puzzle's, in the same shape and length, so the line under the board is the same height whichever is chosen.
+  previewPuzzle: (puzzle: string) => `A preview of the ${puzzle} grid. Nothing is written yet.`,
   /** Added where the board is dealt from a seed, so this arrangement is one of many. */
   previewDealt: "This game scatters its board, so the one you play will be different.",
   /** The heading and lead, where nothing but the opponent is known. */
@@ -574,3 +576,12 @@ export const MOVE_NOTE_COPY = {
   placeholder: "Say something with the move (optional)",
   close: "No note",
 } as const;
+
+/**
+ * The box a set-up preview is drawn in: the board of a game (`BoardPreview`)
+ * and the grid of a puzzle (`PuzzleBoardPreview`) alike, so choosing Numbers
+ * after a board game leaves the page where it was. John, 2026-09-24: "The
+ * effect of having the same size and look is that when the user clicks at
+ * anything the board and page doesn't shift and move up."
+ */
+export const SET_UP_PREVIEW_BOX = "pointer-events-none w-full max-w-[15rem] sm:max-w-[22rem]";

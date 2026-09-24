@@ -8,7 +8,8 @@
  */
 
 /** The grid itself: a bordered square, cells edge to edge. */
-export const PUZZLE_GRID = "grid h-full w-full select-none rounded-md border-2 border-ink bg-ivory";
+// White paper inside the wood (`PuzzleBoard`): the frame is the board's, so the grid carries no border of its own.
+export const PUZZLE_GRID = "grid h-full w-full select-none bg-white";
 
 /**
  * A cell: a square button with a thin rule on its left and top, so the grid

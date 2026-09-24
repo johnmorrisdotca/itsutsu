@@ -254,6 +254,20 @@ time, and that `checkSolution` refuses a wrong grid. Everything that thinks abou
 a puzzle runs in the browser; the server checks a finished grid in O(cells) and
 pays. The reasoning is in `docs/plans/numbers/README.md`.
 
+**Every board is the same board, and a preview is always a live one.** John,
+2026-09-24, finding a screenshot where every game draws its wooden board:
+"Why did it not follow the rules of every single other board. This must not
+have been written down somewhere." It was not; this is where it is. The wood,
+the rim, the coordinates and the shadow are `BoardFrame`, and `Board` and every
+puzzle grid (`PuzzleBoard`: white paper inside the same wood) are drawn inside
+it. A size picture is `BoardSizeMark` in `BoardPicker`, nothing else. The
+set-up screen's preview is the live board at the chosen size, for a puzzle
+(`PuzzleBoardPreview`) as for a game (`BoardPreview`), in the one box
+`SET_UP_PREVIEW_BOX`, so choosing another family never moves the page.
+Held by `boardFrame.coverage.test.ts` and `boardSizeMark.coverage.test.ts`.
+Before a new kind of thing that draws a board, a size or a preview ships, find
+the component that already draws it and use that.
+
 ### Nothing Is A Dead End
 
 Two rules, in John's words, and one principle underneath them.

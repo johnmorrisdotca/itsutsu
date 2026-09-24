@@ -22,6 +22,9 @@ test("the set-up screen turns to a puzzle chosen from Numbers, and back to the g
   const summary = page.getByTestId("set-up-summary");
   const game = (await summary.textContent()) ?? "";
   expect(game.length).toBeGreaterThan(0);
+  // The game's own preview, measured, so the puzzle's can be held to the same box.
+  const boardBox = await page.getByTestId("board-preview").boundingBox();
+  expect(boardBox).not.toBeNull();
 
   const numbers = page.getByTestId("set-up-family").filter({ hasText: /Numbers|数/ });
   await numbers.click();
@@ -33,7 +36,20 @@ test("the set-up screen turns to a puzzle chosen from Numbers, and back to the g
   await expect(puzzles).toHaveCount(PUZZLE_KIND_LIST.length);
   await expect(puzzles.first()).toHaveAttribute("data-chosen", "true");
   await expect(summary).toContainText(PUZZLE_DISPLAY[first!].label);
-  await expect(page.getByTestId("set-up-puzzle-preview").getByTestId("game-thumb")).toBeVisible();
+  /*
+   * THE PREVIEW IS A LIVE BOARD, like a game's: this puzzle, at the size
+   * chosen, in the same box — so choosing Numbers moves nothing on the page.
+   * John: "Each image is supposed to change based on size and type."
+   */
+  const preview = page.getByTestId("set-up-puzzle-preview");
+  await expect(preview).toHaveAttribute("data-kind", first!);
+  await expect(preview).toHaveAttribute("data-size", String(PUZZLE_SPECS[first!].defaultSize));
+  const puzzleBox = await preview.boundingBox();
+  expect(Math.round(puzzleBox!.width)).toBe(Math.round(boardBox!.width));
+  expect(Math.round(puzzleBox!.height)).toBe(Math.round(boardBox!.height));
+  const smallest = PUZZLE_SPECS[first!].sizes[0]!;
+  await page.locator(`[data-testid="set-up-size"][data-size="${smallest}"]`).click();
+  await expect(preview).toHaveAttribute("data-size", String(smallest));
   // Its sizes are the board games' tiles, one chosen, each the big number in the board's own lattice.
   const sizes = page.getByTestId("set-up-size");
   await expect(sizes).toHaveCount(PUZZLE_SPECS[first!].sizes.length);
