@@ -116,7 +116,7 @@ test.describe("the first puzzle", () => {
     expect(nonsense.status()).toBe(400);
   });
 
-  test("the catalogue lists the Numbers family with the puzzle in it, and the two-player set-up does not", async ({ page }) => {
+  test("the catalogue lists the Numbers family with the puzzle in it, and the set-up screen offers it too", async ({ page }) => {
     await page.goto("/games");
     const family = page.getByTestId("lobby-family").filter({ hasText: "Numbers" });
     await expect(family).toHaveCount(1);
@@ -127,7 +127,9 @@ test.describe("the first puzzle", () => {
     await expect(card.getByTestId("puzzle-line")).toBeVisible();
     await expect(card.getByTestId("puzzle-line-solve")).toHaveAttribute("href", `${AT}/new`);
 
+    // Since 0.285.2 the set-up screen has the family too, and its puzzles lead to their own set-up: see set-up-puzzles.spec.ts.
     await page.goto("/games/new");
-    await expect(page.getByRole("tab", { name: /Numbers/ })).toHaveCount(0);
+    await ready(page, "set-up-game");
+    await expect(page.getByTestId("set-up-family").filter({ hasText: /Numbers|数/ })).toHaveCount(1);
   });
 });
