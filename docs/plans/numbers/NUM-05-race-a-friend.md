@@ -1,5 +1,18 @@
 # NUM-05. Race a friend: the same puzzle, two clocks
 
+> **As built (2026-09-24).** The schema below is what was planned; what
+> landed differs in three ways, each said here so the plan does not
+> contradict the code. `PuzzleRace` carries `seed` (the guest's browser
+> makes the same grid from it, and the kept `givens` are what a finish is
+> checked against, with the browser refusing a race whose seed makes a
+> different grid) and `hostName`/`guestName`, and neither table has a
+> Prisma relation to `Member` — plain ids, as a `Game`'s seats are. There is
+> no `offeredToMemberId`: a race is by seat link only in this release, so
+> nothing is written to the inbox and the queue on `/play` does not show
+> races; a chosen opponent from the site's lists is a follow-up. The
+> migration is `prisma/migrations/20260924145706_puzzle_solves_and_races`,
+> additive only.
+
 Part of `numbers-a-new-family-of-puzzles-starting-with-sudoku`, released on
 its own because it **needs a migration**: two tables, `PuzzleRace` and
 `PuzzleSolve`. Needs NUM-02 on `main`, John's word, a Neon branch and a

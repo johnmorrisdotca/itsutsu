@@ -157,6 +157,43 @@ the tally counts people. There is deliberately no opposite.
 Courtesy time one seat gave the other, kept so sportsmanship can be read
 later.
 
+### PuzzleSolve
+
+A puzzle finished by a member (Number Place and its family; see
+`src/lib/puzzles/`). Kept so a puzzle's page can show the fastest solves at
+each size and level and a member their own, and so a race has a row per seat.
+No relation to `Member`, like a game's seats: `memberId` is a plain id. The
+answer is never kept.
+
+| Column | Meaning |
+| --- | --- |
+| `kind`, `size`, `level` | Which puzzle, as it was asked for |
+| `givens` | The puzzle's code (`puzzleCode.ts`), so two solves of one grid are told apart from two grids |
+| `elapsedMs` | The browser's clock for a solve on one's own; the server's two stamps in a race |
+| `finishedAt` | When the site checked it |
+| `raceId` | The `PuzzleRace` this was one seat of, or null |
+
+Indexed by member and date (a member's own), and by kind, size, level and
+time (the fastest board).
+
+### PuzzleRace
+
+Two members, one puzzle, two clocks. The host's browser made the puzzle and
+posted it whole; the guest comes in by the seat link, as for a game, and
+must be a member (a solve is kept and paid by member id). Each seat's start
+and finish are the server's own stamps; a seat started and not finished
+inside a sitting (`RACE_SITTING_MS`, two hours) reads as given up, decided
+whenever the race is read and never by a timer.
+
+| Group | Columns | Notes |
+| --- | --- | --- |
+| The puzzle | `kind`, `size`, `level`, `seed`, `givens`, `solution` | The seed lets the guest's browser make the same grid; `solution` is kept to check a finish in O(cells) and never sent out |
+| Seats | `hostMemberId`, `hostName`, `guestToken`, `guestMemberId`, `guestName` | The token is the guest's seat, shown to the host only while the seat is empty |
+| Clocks | `hostStartedAt`, `hostFinishedAt`, `guestStartedAt`, `guestFinishedAt` | Written once each, by the server |
+
+The id is a game's shape (`makeGameId`), so a race sits at
+`/games/<slug>/match/<id>` like a match.
+
 ## People
 
 ### Member

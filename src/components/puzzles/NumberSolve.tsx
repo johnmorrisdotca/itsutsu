@@ -10,7 +10,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
-import { SolveDone, SolveHeader, useSolve } from "./solveShared";
+import { SolveDone, SolveHeader, type SolveRace, useSolve } from "./solveShared";
 
 /**
  * Solving a grid of numbers — Number Place, and More or Less after it.
@@ -21,7 +21,7 @@ import { SolveDone, SolveHeader, useSolve } from "./solveShared";
  * done and the whole grid — the givens where they were printed, the entries
  * everywhere else — is handed in through `useSolve`.
  */
-export function NumberSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasAccount: boolean }) {
+export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzle; hasAccount: boolean; race?: SolveRace | null }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
   // A More or Less code is the cells and then the marks; a Number Place code is the cells alone.
@@ -34,7 +34,7 @@ export function NumberSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasAccount
   const [entries, setEntries] = useState<number[]>(() => new Array<number>(size * size).fill(0));
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState<{ wrong: number; empty: number } | null>(null);
-  const { startedAt, elapsedMs, done, begin, finish } = useSolve(puzzle, hasAccount);
+  const { startedAt, elapsedMs, done, begin, finish } = useSolve(puzzle, hasAccount, race);
 
   const enter = useCallback(
     (value: number) => {
@@ -112,7 +112,7 @@ export function NumberSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasAccount
           </div>
         </>
       ) : (
-        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} />
+        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
       )}
     </section>
   );

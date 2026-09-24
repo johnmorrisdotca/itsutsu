@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
+import { matchPath, puzzleFor, seatPath, slugFor } from "@/lib/gomoku/slugs";
+import { claimGuestSeat } from "@/lib/puzzles/server/puzzleRaces";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { seatForToken } from "@/lib/history/liveGame";
@@ -25,6 +26,27 @@ export async function GET(
   ctx: RouteContext<"/games/[slug]/match/[id]/seat/[token]">,
 ) {
   const { slug, id, token } = await ctx.params;
+  /*
+   * A puzzle race's seat: the guest's, by its link, for a member. There is
+   * no cookie to hold it in, because a solve is a member's — it is kept and
+   * paid by member id — so a reader with no account is sent to join, and
+   * comes back to the same link.
+   */
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) {
+    const session = await currentSession();
+    const me = await currentMemberId();
+    if (me === null) {
+      const join = new URL("/join", request.url);
+      join.searchParams.set("next", seatPath(puzzle, id, token));
+      return NextResponse.redirect(join, 303);
+    }
+    const sat = await claimGuestSeat(id, token, me, session?.name ?? "");
+    if (sat === "none") return new NextResponse(null, { status: 404 });
+    const said = new URL(matchPath(puzzle, id), request.url);
+    if (sat === "taken") said.searchParams.set("seat", "full");
+    return NextResponse.redirect(said, 303);
+  }
   const game = await fetchGameDetail(id);
   if (game === null) return new NextResponse(null, { status: 404 });
   /*

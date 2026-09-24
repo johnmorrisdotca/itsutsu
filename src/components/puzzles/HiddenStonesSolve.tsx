@@ -8,7 +8,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
-import { SolveDone, SolveHeader, useSolve } from "./solveShared";
+import { SolveDone, SolveHeader, type SolveRace, useSolve } from "./solveShared";
 
 /**
  * Solving Hidden Stones: tap a cell for a stone, again for a cross, again to
@@ -18,14 +18,14 @@ import { SolveDone, SolveHeader, useSolve } from "./solveShared";
  * Check says the same on demand. The answer handed in is the column of each
  * row's stone (`encodeStones`).
  */
-export function HiddenStonesSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasAccount: boolean }) {
+export function HiddenStonesSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzle; hasAccount: boolean; race?: SolveRace | null }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
   const regions = useMemo(() => decodeRegions(puzzle.givens, size) ?? [], [puzzle.givens, size]);
   const answer = useMemo(() => decodeStones(puzzle.solution, size) ?? [], [puzzle.solution, size]);
   const [marks, setMarks] = useState<StoneMark[]>(() => new Array<StoneMark>(size * size).fill(""));
   const [checked, setChecked] = useState<{ wrong: number; missing: number } | null>(null);
-  const { startedAt, elapsedMs, done, begin, finish } = useSolve(puzzle, hasAccount);
+  const { startedAt, elapsedMs, done, begin, finish } = useSolve(puzzle, hasAccount, race);
 
   /** The column of each row's stone, or -1 for a row with none or more than one. */
   const stonesOf = useCallback(
@@ -80,7 +80,7 @@ export function HiddenStonesSolve({ puzzle, hasAccount }: { puzzle: Puzzle; hasA
           )}
         </div>
       ) : (
-        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} />
+        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
       )}
     </section>
   );

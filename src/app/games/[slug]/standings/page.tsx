@@ -9,7 +9,8 @@ import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
-import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, playPath, puzzleFor, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
+import { PuzzleStandingsPage } from "@/components/puzzles/PuzzleStandingsPage";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
 import { RATING_POOLS } from "@/lib/rating/pools";
@@ -38,7 +39,11 @@ const LEADERS = 50;
  * front door leads here for the whole of it.
  */
 export default async function GameChampionsPage({ params }: PageProps<"/games/[slug]/standings">) {
-  const variant = variantFor((await params).slug);
+  const { slug } = await params;
+  // A puzzle's standings are its fastest solves, not a ladder: see `PuzzleStandingsPage`.
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) return <PuzzleStandingsPage kind={puzzle} />;
+  const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
   const siblings = siblingsOf(variant);

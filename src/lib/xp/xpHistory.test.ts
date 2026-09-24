@@ -34,7 +34,7 @@ describe("what each kind of subject refers to", () => {
     for (const type of TYPES) {
       expect(XP_SUBJECT_KIND_OF[type], type).toBeTruthy();
     }
-    expect(TYPES.length).toBe(71);
+    expect(TYPES.length).toBe(72);
   });
 
   /*
@@ -57,6 +57,8 @@ describe("what each kind of subject refers to", () => {
             ? XP_SUBJECT_KINDS.rivalry
             : /puzzle's kind/.test(said)
               ? XP_SUBJECT_KINDS.puzzle
+              : /race's id/.test(said)
+                ? XP_SUBJECT_KINDS.race
             : /game id/.test(said)
               ? XP_SUBJECT_KINDS.match
               : /RuleVariant key/.test(said)

@@ -38,6 +38,8 @@ export const XP_SUBJECT_KINDS = {
   family: "family",
   /** A puzzle solved: `<kind>:<side>:<hash>`. The kind is a game here; the hash names one grid. */
   puzzle: "puzzle",
+  /** A race at a puzzle, by its id. */
+  race: "race",
   /** A person, by their member id. A buddy, or a computer player. */
   person: "person",
   /** A person at one game: `<memberId>:<variant>`. */

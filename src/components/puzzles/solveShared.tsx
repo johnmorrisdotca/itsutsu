@@ -9,6 +9,7 @@ import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
+import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
 
 import { PUZZLE_CLOCK, PUZZLE_CLOCK_TICK_MS, sizeWord } from "./puzzles.constants";
@@ -25,8 +26,13 @@ import { PUZZLE_CLOCK, PUZZLE_CLOCK_TICK_MS, sizeWord } from "./puzzles.constant
  */
 export type Done = { elapsedMs: number; paid: { points: number; awards: string[] } | null; problem: string | null };
 
-export function useSolve(puzzle: Puzzle, hasAccount: boolean) {
-  const [startedAt, setStartedAt] = useState<number | null>(null);
+/** A race this solve is one seat of: its id, and when the server started this seat's clock. */
+export type SolveRace = { id: string; since: number };
+
+export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | null = null) {
+  const router = useRouter();
+  /* In a race the clock is the server's, started at Start; here it is read from then rather than from the first entry. */
+  const [startedAt, setStartedAt] = useState<number | null>(race === null ? null : race.since);
   const [now, setNow] = useState(0);
   const [done, setDone] = useState<Done | null>(null);
 
@@ -52,22 +58,30 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean) {
       setDone({ elapsedMs, paid: null, problem: null });
       if (!hasAccount) return;
       try {
-        const answered = await fetch("/api/puzzles/solved", {
+        /* One's own solve goes to the solved route with the browser's time; a
+           race's goes to the race, which stamps its own and says it back. */
+        const answered = await fetch(race === null ? "/api/puzzles/solved" : `/api/puzzles/races/${race.id}/finish`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, givens: puzzle.givens, answer, elapsedMs }),
+          body: JSON.stringify(
+            race === null
+              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, givens: puzzle.givens, answer, elapsedMs }
+              : { answer },
+          ),
         });
-        const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; error?: string } | null;
+        const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string } | null;
         if (!answered.ok) {
           setDone({ elapsedMs, paid: null, problem: body?.error ?? "The site could not record that solve." });
           return;
         }
-        setDone({ elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null });
+        setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null });
+        // The race page above the solve reads the stamps again, so the result shows without a reload.
+        if (race !== null) router.refresh();
       } catch {
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, hasAccount],
+    [puzzle, startedAt, hasAccount, race, router],
   );
 
   const elapsedMs = done !== null ? done.elapsedMs : startedAt === null ? 0 : Math.max(0, now - startedAt);
@@ -91,7 +105,7 @@ export function SolveHeader({ puzzle, elapsedMs }: { puzzle: Puzzle; elapsedMs: 
 }
 
 /** The card at the end: the time, what was paid, another puzzle, or a different size. */
-export function SolveDone({ puzzle, done, hasAccount }: { puzzle: Puzzle; done: Done; hasAccount: boolean }) {
+export function SolveDone({ puzzle, done, hasAccount, race = null }: { puzzle: Puzzle; done: Done; hasAccount: boolean; race?: SolveRace | null }) {
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
@@ -111,26 +125,20 @@ export function SolveDone({ puzzle, done, hasAccount }: { puzzle: Puzzle; done: 
               : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
             : (done.problem ?? "Recording your solve…")}
       </p>
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
-          Another {copy.label} →
-        </button>
-        <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-          Change the size or level
-        </Link>
-      </div>
+      {race === null ? (
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
+            Another {copy.label} →
+          </button>
+          <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
+            Change the size or level
+          </Link>
+        </div>
+      ) : (
+        <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>
+      )}
     </div>
   );
-}
-
-/** `m:ss`, and `h:mm:ss` past an hour. */
-export function clockText(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const s = seconds % 60;
-  const m = Math.floor(seconds / 60) % 60;
-  const h = Math.floor(seconds / 3600);
-  const two = (n: number) => String(n).padStart(2, "0");
-  return h > 0 ? `${h}:${two(m)}:${two(s)}` : `${m}:${two(s)}`;
 }
 
 const AWARD_WORDS: Record<string, string> = {
@@ -139,6 +147,7 @@ const AWARD_WORDS: Record<string, string> = {
   firstOfFamily: "your first puzzle at all",
   everyVariantPlayed: "every game on the site played",
   everyFamilyPlayed: "every family met",
+  raceWon: "winning the race",
 };
 
 function awardWords(awards: readonly string[]): string {

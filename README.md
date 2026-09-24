@@ -132,9 +132,17 @@ met. Nothing polls and nothing is timed on a server.
 | **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5 to 10×10 | easy (reasoning alone finishes it), hard (a stone has to be tried) |
 | **More or Less** 大小 | Futoshiki: a Latin square with more-than marks between cells; every given and mark is needed | 4×4 to 7×7 | easy, medium, hard, as Number Place |
 
-A solve is not kept yet: the puzzle's page has no record and no fastest
-times until the tables in `docs/plans/numbers/NUM-05-race-a-friend.md` land,
-which is also where two people race one grid.
+Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's
+page shows the fastest solves at each size and level (`/standings`) and a
+member their own (`/me`). Two members can race one grid (`PuzzleRace`, at
+`/games/<slug>/match/<id>`): the host's browser makes the puzzle and posts it
+whole, the guest takes the other seat by a link, each presses Start and the
+site keeps both clocks from its own stamps, and the faster correct solve wins
+`raceWon` (50 XP) on top of the solve. A seat started and not finished within
+two hours reads as given up, decided when the race is read; nothing polls,
+and the race page reads again when a browser comes back to it or presses
+Refresh. See `docs/plans/numbers/NUM-05-race-a-friend.md` and
+`docs/DATA_MODEL.md`.
 
 #### Lines of stones
 

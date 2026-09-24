@@ -14,7 +14,8 @@ import { SeatFullNotice } from "./SeatFullNotice";
 import { shownName } from "@/lib/rating/shownName";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
-import { matchPath, slugFor } from "@/lib/gomoku/slugs";
+import { matchPath, puzzleFor, slugFor } from "@/lib/gomoku/slugs";
+import { PuzzleRacePage } from "@/components/puzzles/PuzzleRacePage";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
@@ -64,6 +65,9 @@ export async function MatchPage({
    */
   seatFull?: boolean;
 }) {
+  // A puzzle's match is a race: two people, one grid, two clocks. See `PuzzleRacePage`.
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) return <PuzzleRacePage kind={puzzle} id={id} />;
   const game = await fetchGameDetail(id);
   if (game === null) notFound();
   /*

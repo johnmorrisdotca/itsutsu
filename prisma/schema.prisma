@@ -1173,3 +1173,60 @@ model EmailSendCount {
   count     Int      @default(0)
   updatedAt DateTime @updatedAt
 }
+
+/// A puzzle finished by a member: kept so a puzzle's page can show the
+/// fastest solves and a member their own, and so a race has a row per seat.
+/// No relation to Member, like a Game's seats: a plain id, read by id.
+/// Nothing of the answer is kept — the givens name the puzzle and the time
+/// is what was measured.
+model PuzzleSolve {
+  id         String   @id @default(cuid())
+  memberId   String
+  /// A PuzzleKind, its side and its level, as the puzzle was asked for.
+  kind       String
+  size       Int
+  level      String
+  /// The puzzle's code (`puzzleCode.ts`): what was solved, so two solves of one grid can be told apart from two grids.
+  givens     String
+  /// From the browser's clock for a solve on one's own; from the server's two stamps in a race.
+  elapsedMs  Int
+  finishedAt DateTime @default(now())
+  /// The race this solve was one seat of, or null for a solve on one's own.
+  raceId     String?
+
+  @@index([memberId, finishedAt])
+  @@index([kind, size, level, elapsedMs])
+}
+
+/// Two people, one puzzle, two clocks. The host's browser made the puzzle
+/// and posted it whole; the guest comes in by the seat link, as for a game.
+/// Each seat's start and finish are the server's own stamps, so the time is
+/// nobody's browser's word. A seat started and not finished inside
+/// RACE_SITTING_MS is read as given up — decided when the race is read,
+/// never by a timer.
+model PuzzleRace {
+  /// Eight characters in two blocks, made by makeGameId and checked free, like a game's.
+  id            String    @id
+  createdAt     DateTime  @default(now())
+  kind          String
+  size          Int
+  level         String
+  /// The seed the puzzle was made from, so the guest's browser makes the same grid; the givens are what is checked against.
+  seed          Int
+  givens        String
+  /// Kept to check a finish in O(cells); never sent to a browser.
+  solution      String
+  hostMemberId  String
+  hostName      String    @default("")
+  /// The guest's seat is the link: whoever holds it may sit down, once.
+  guestToken    String    @unique @default(cuid())
+  guestMemberId String?
+  guestName     String    @default("")
+  hostStartedAt   DateTime?
+  hostFinishedAt  DateTime?
+  guestStartedAt  DateTime?
+  guestFinishedAt DateTime?
+
+  @@index([hostMemberId, createdAt])
+  @@index([guestMemberId, createdAt])
+}
