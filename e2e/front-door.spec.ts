@@ -30,6 +30,22 @@ test.describe("the front door", () => {
     await expect(page.getByTestId("invite-line")).toHaveCount(0);
   });
 
+  test("tells a member they are already a tester, rather than asking them for an invite", async ({ page }) => {
+    await page.goto("/");
+    // The panel has answered before the absence of the ask is read.
+    await expect(page.getByTestId("front-beta-member")).toBeVisible();
+    await expect(page.getByTestId("front-beta-ask")).toHaveCount(0);
+    await expect(page.getByTestId("site-numbers-beta")).toHaveCount(0);
+  });
+
+  test("shows every family of games, each leading to its own page", async ({ page }) => {
+    await page.goto("/");
+    const families = page.getByTestId("front-family");
+    await expect(families.first()).toBeVisible();
+    expect(await families.count()).toBeGreaterThan(1);
+    await expect(families.first()).toHaveAttribute("href", /^\/games\/[^/]+\/family$/);
+  });
+
   test("says how many players and games there are, as an early release, people only", async ({ page }) => {
     await page.goto("/");
     const line = page.getByTestId("site-numbers");

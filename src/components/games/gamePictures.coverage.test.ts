@@ -301,6 +301,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/games/[slug]/family/page.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   "src/components/games/GameCards.tsx": { GameThumb: "regular" },
+  // The front page's families: a card each, like the catalogue's.
+  "src/components/home/HomeFamilies.tsx": { FamilyMark: "regular" },
   "src/components/game/GameBrowser.tsx": { GameThumb: "regular" },
 
   // The set-up page's tiles and chips.
