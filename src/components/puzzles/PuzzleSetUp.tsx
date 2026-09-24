@@ -3,20 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN } from "@/components/live/picker.constants";
-import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { PICK_CHIP, PICK_CHIP_OPEN } from "@/components/live/picker.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { BoardPicker } from "@/components/live/BoardPicker";
 
-import { PuzzleSizeMark } from "./PuzzleSizeMark";
 import { sizeWord } from "./puzzles.constants";
-
-/** The chosen size, marked as a chosen card is everywhere else on the set-up screens. */
-const SIZE_CHOSEN =
-  "data-[chosen=true]:border-ink data-[chosen=true]:bg-moss-soft data-[chosen=true]:shadow-[inset_0_0_0_1px_var(--ink)]";
 
 /**
  * Setting a puzzle up, at /games/<slug>/new: a size, a level, and Solve.
@@ -28,47 +24,35 @@ const SIZE_CHOSEN =
  * it leads to holds the whole of the choice, and the browser makes the
  * puzzle when it gets there.
  */
-export function PuzzleSetUp({ kind, framed = true }: { kind: PuzzleKind; framed?: boolean }) {
+export function PuzzleSetUp({
+  kind,
+  framed = true,
+  sized,
+}: {
+  kind: PuzzleKind;
+  framed?: boolean;
+  /**
+   * The size, when the caller holds it and draws the size tiles itself — the
+   * set-up screen puts them beside the puzzle's picture, the way it puts a
+   * game's boards beside the board (`PuzzleHere`). Left out, this draws them.
+   */
+  sized?: { size: number; onSize: (size: number) => void };
+}) {
   const hydrated = useHydrated();
   const spec = PUZZLE_SPECS[kind];
   const copy = PUZZLE_DISPLAY[kind];
-  const [size, setSize] = useState(spec.defaultSize);
+  const [ownSize, setOwnSize] = useState(spec.defaultSize);
+  const size = sized?.size ?? ownSize;
   const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
 
   return (
     // Unframed inside the set-up screen's own panel, which already is one: a box in a box is what the page-shape rules forbid.
     <section className={`${framed ? PANEL_CLASS : ""} flex flex-col gap-5`} data-testid="puzzle-set-up" {...readyMark(hydrated)}>
-      <fieldset className="flex flex-col gap-2">
-        <legend className={SECTION_TITLE}>
-          Size <span className="font-mincho normal-case tracking-normal">大きさ</span>
-        </legend>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(6rem,8rem))]" role="radiogroup" aria-label="Size">
-          {spec.sizes.map((side) => (
-            <button
-              key={side}
-              type="button"
-              role="radio"
-              aria-checked={size === side}
-              data-chosen={size === side ? "true" : "false"}
-              // A button, not a radio, so the card's own has-[:checked] mark never lit: the chosen size is marked by its data-chosen.
-              className={`${PICK_CARD} ${SIZE_CHOSEN} min-h-11 flex-col gap-1.5 p-2`}
-              onClick={() => setSize(side)}
-              data-testid={`puzzle-size-${side}`}
-            >
-              <PuzzleSizeMark kind={kind} size={side} picture="regular" />
-              <span className="text-sm font-semibold" data-testid="puzzle-size-name">
-                {sizeWord(side)}
-              </span>
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-muted">{copy.board}</p>
-      </fieldset>
+      {sized === undefined ? <PuzzleSizes kind={kind} size={size} onSize={setOwnSize} /> : null}
 
       <fieldset className="flex flex-col gap-2">
-        <legend className={SECTION_TITLE}>
-          Level <span className="font-mincho normal-case tracking-normal">難易度</span>
-        </legend>
+        {/* Headed the way the board tiles above it are ("Board"), so the two read as one form. */}
+        <legend className="mb-0.5 text-sm text-ink-soft">Level</legend>
         <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Level">
           {spec.levels.map((each) => (
             <button
@@ -96,5 +80,25 @@ export function PuzzleSetUp({ kind, framed = true }: { kind: PuzzleKind; framed?
         <span className="text-xs text-muted">Made in your browser, one answer, timed from your first entry.</span>
       </div>
     </section>
+  );
+}
+
+/**
+ * A puzzle's sizes, as the tiles every board size on this site is chosen
+ * from: `BoardPicker`, with the big number in the board's own lattice
+ * (`BoardSizeMark`), the chosen mark, and a name for what the size is for.
+ *
+ * John, 2026-09-24, on these tiles as they first shipped — a picture of their
+ * own with "4×4" printed under it: "Why does those size boards look different
+ * than every other single size board we have ever created." They were drawn by
+ * a second component the puzzles brought with them; `boardSizeMark.coverage`
+ * now refuses a size picture that is not `BoardSizeMark`.
+ */
+export function PuzzleSizes({ kind, size, onSize, beside = false }: { kind: PuzzleKind; size: number; onSize: (size: number) => void; beside?: boolean }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <BoardPicker value={size} sizes={PUZZLE_SPECS[kind].sizes} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} />
+      <p className="text-xs text-muted">{PUZZLE_DISPLAY[kind].board}</p>
+    </div>
   );
 }

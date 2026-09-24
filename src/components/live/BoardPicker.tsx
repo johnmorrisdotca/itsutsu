@@ -35,6 +35,7 @@ export function BoardPicker({
   onChange,
   disabled = false,
   beside = false,
+  names = BOARD_SIZE_DISPLAY,
 }: {
   /** The chosen board, as the length of one side. */
   value: number;
@@ -48,6 +49,12 @@ export function BoardPicker({
   disabled?: boolean;
   /** Standing in a column next to the board's picture, rather than in a row under it. */
   beside?: boolean;
+  /**
+   * What each size is called under its picture. A board game's by default;
+   * a puzzle's grid has its own (`PUZZLE_SIZE_NAMES`), since a 9×9 Sudoku is
+   * the classic one and not the "Mini" a 9×9 board is.
+   */
+  names?: Record<number, { label: string; kanji: string }>;
 }) {
   /*
    * A GAME WITH ONE BOARD IS DRAWN AS A CHOSEN BOARD, because that is what it
@@ -82,7 +89,7 @@ export function BoardPicker({
       <legend className="mb-0.5 text-sm text-ink-soft">Board</legend>
       <div className={beside ? PICK_BLOCKS_ASIDE : PICK_BLOCKS}>
         {sizes.map((size) => {
-          const copy = BOARD_SIZE_DISPLAY[size];
+          const copy = names[size];
           return (
             <label
               key={size}

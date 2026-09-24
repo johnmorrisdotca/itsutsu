@@ -41,6 +41,35 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   moreOrLess: { sizes: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
 };
 
+/**
+ * WHAT EACH SIZE IS FOR, under its picture on the size tiles — the board
+ * games' tiles, drawn by `BoardPicker`, whose own names ("Mini" for 9×9) are
+ * a board game's and would call the classic Sudoku grid the small one. The big
+ * number in the picture already says the size, so the name says what the size
+ * is for: the quick one, the usual one, the long one.
+ */
+export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: string; kanji: string }>> = {
+  numberPlace: {
+    4: { label: "Quick", kanji: "速" },
+    6: { label: "Short", kanji: "短" },
+    9: { label: "Classic", kanji: "定番" },
+  },
+  hiddenStones: {
+    5: { label: "Quick", kanji: "速" },
+    6: { label: "Short", kanji: "短" },
+    7: { label: "Usual", kanji: "定番" },
+    8: { label: "Longer", kanji: "長め" },
+    9: { label: "Long", kanji: "長" },
+    10: { label: "Longest", kanji: "最長" },
+  },
+  moreOrLess: {
+    4: { label: "Quick", kanji: "速" },
+    5: { label: "Usual", kanji: "定番" },
+    6: { label: "Longer", kanji: "長め" },
+    7: { label: "Long", kanji: "長" },
+  },
+};
+
 export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   numberPlace: {
     label: "Number Place",

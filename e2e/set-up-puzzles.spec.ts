@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { playPath } from "../src/lib/gomoku/slugs";
-import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST } from "../src/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
 import { ready } from "./support";
 
 /**
@@ -34,6 +34,11 @@ test("the set-up screen turns to a puzzle chosen from Numbers, and back to the g
   await expect(puzzles.first()).toHaveAttribute("data-chosen", "true");
   await expect(summary).toContainText(PUZZLE_DISPLAY[first!].label);
   await expect(page.getByTestId("set-up-puzzle-preview").getByTestId("game-thumb")).toBeVisible();
+  // Its sizes are the board games' tiles, one chosen, each the big number in the board's own lattice.
+  const sizes = page.getByTestId("set-up-size");
+  await expect(sizes).toHaveCount(PUZZLE_SPECS[first!].sizes.length);
+  await expect(sizes.getByTestId("board-size-mark")).toHaveCount(PUZZLE_SPECS[first!].sizes.length);
+  await expect(page.locator('[data-testid="set-up-size"][data-chosen="true"]')).toHaveCount(1);
   await ready(page, "puzzle-set-up");
   // Asked only once the puzzle's own controls are there: no seats, no Begin.
   await expect(page.getByTestId("set-up-continue")).toHaveCount(0);

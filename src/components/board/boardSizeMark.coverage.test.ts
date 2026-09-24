@@ -191,3 +191,35 @@ describe("every board has a name to print under its number", () => {
     expect(copy?.kanji.length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * AND NO SECOND DRAWING OF A SIZE, UNDER ANY NAME.
+ *
+ * Everything above held the callers of `BoardSizeMark` to the rule, and so
+ * could not see a size drawn by something else. The puzzles (0.285.0) shipped
+ * one: a `PuzzleSizeMark` of their own, a hand-drawn grid with "4×4" printed
+ * under it. John, 2026-09-24: "Why does those size boards look different than
+ * every other single size board we have ever created." So the rule is held on
+ * the drawing as well: `BoardSizeMark` is the one component whose name ends in
+ * SizeMark and the one that marks itself a size picture, and a set of size
+ * tiles is `BoardPicker` wherever it appears.
+ */
+describe("a size is drawn by BoardSizeMark and chosen from BoardPicker, and nothing else", () => {
+  const MARK = "src/components/board/BoardSizeMark.tsx";
+
+  it("has no other component drawing a size", () => {
+    const others = SOURCES.filter(({ path, source }) => path !== MARK && /function\s+\w*SizeMark\b/.test(source)).map(({ path }) => path);
+    expect(others, "a second size picture: draw BoardSizeMark instead").toEqual([]);
+  });
+
+  it("has no other picture calling itself a size mark", () => {
+    const others = SOURCES.filter(({ path, source }) => path !== MARK && /data-testid=["{`][^"}`]*size-mark/.test(source)).map(({ path }) => path);
+    expect(others, "a picture that says it is a size mark but is not BoardSizeMark").toEqual([]);
+  });
+
+  it("chooses a puzzle's size from the board games' own tiles", () => {
+    const setUp = SOURCES.find(({ path }) => path === "src/components/puzzles/PuzzleSetUp.tsx");
+    expect(setUp, "the puzzle set-up").toBeDefined();
+    expect(setUp!.source).toContain("<BoardPicker");
+  });
+});

@@ -1,10 +1,14 @@
+"use client";
+
+import { useState } from "react";
+
 import { GameThumb } from "@/components/games/GameThumb";
-import { PuzzleSetUp } from "@/components/puzzles/PuzzleSetUp";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PuzzleSetUp, PuzzleSizes } from "@/components/puzzles/PuzzleSetUp";
+import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { GamePicker } from "./GamePicker";
-import { PICK_BOARD_PREVIEW } from "./picker.constants";
+import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } from "./picker.constants";
 
 /**
  * THE SET-UP SCREEN WITH A PUZZLE CHOSEN: the puzzle's name where the game's
@@ -33,6 +37,10 @@ export function PuzzleHere({
   disabled: boolean;
 }) {
   const copy = PUZZLE_DISPLAY[puzzle];
+  // The size belongs to the puzzle it was chosen for: another puzzle starts at its own usual size.
+  const [chosen, setChosen] = useState<{ kind: PuzzleKind; size: number } | null>(null);
+  const size = chosen !== null && chosen.kind === puzzle ? chosen.size : PUZZLE_SPECS[puzzle].defaultSize;
+  const onSize = (next: number) => setChosen({ kind: puzzle, size: next });
   return (
     <>
       <p className="text-sm font-semibold" data-testid="set-up-summary">
@@ -50,15 +58,19 @@ export function PuzzleHere({
           puzzle={puzzle}
           onPuzzle={onPuzzle}
           underFamilies={
-            <figure className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2 py-2`} data-testid="set-up-puzzle-preview">
-              <GameThumb variant={puzzle} size="large" />
-              <figcaption className="text-center text-xs text-muted">
-                A preview of {copy.label}. The puzzle itself is made in your browser when you press Solve.
-              </figcaption>
-            </figure>
+            // The picture and its sizes side by side, in the very row a game's board and its boards stand in.
+            <div className={`${PICK_BOARD_ROW} py-2 ${PICK_BOARD_ROW_UNDER_FAMILIES}`}>
+              <figure className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`} data-testid="set-up-puzzle-preview">
+                <GameThumb variant={puzzle} size="large" />
+                <figcaption className="text-center text-xs text-muted">
+                  A preview of {copy.label}. The puzzle itself is made in your browser when you press Solve.
+                </figcaption>
+              </figure>
+              <PuzzleSizes kind={puzzle} size={size} onSize={onSize} beside />
+            </div>
           }
         />
-        <PuzzleSetUp kind={puzzle} framed={false} />
+        <PuzzleSetUp key={puzzle} kind={puzzle} framed={false} sized={{ size, onSize }} />
       </div>
     </>
   );

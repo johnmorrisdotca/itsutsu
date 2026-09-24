@@ -52,7 +52,11 @@ test.describe("the first puzzle", () => {
   test("the set-up chooses a size and a level, and the address carries both", async ({ page }) => {
     await page.goto(`${AT}/new`);
     await ready(page, "puzzle-set-up");
-    await page.getByTestId(`puzzle-size-${SIZE}`).click();
+    // The board games' own size tiles: the big number in the board's lattice (BoardSizeMark), pressed like any board.
+    const tile = page.locator(`[data-testid="set-up-size"][data-size="${SIZE}"]`);
+    await expect(tile.getByTestId("board-size-mark")).toBeVisible();
+    await tile.click();
+    await expect(tile).toHaveAttribute("data-chosen", "true");
     await page.getByTestId(`puzzle-level-${LEVEL}`).click();
     await expect(page.getByTestId("puzzle-level-blurb")).toContainText("nothing has to be tried");
     await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", `${AT}/play?size=${SIZE}&level=${LEVEL}`);
