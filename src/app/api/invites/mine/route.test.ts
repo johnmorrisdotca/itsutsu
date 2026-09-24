@@ -26,6 +26,8 @@ vi.mock("@/lib/auth/currentSession", () => ({
   currentEmail: async () => null,
 }));
 vi.mock("@/lib/invite/inviteStore", () => ({ mintInviteCode: () => mintInviteCode() }));
+// The member inviting is an adult here; the under-13 refusal is childRules.test.ts and child-rules.spec.ts.
+vi.mock("@/lib/auth/ageBandStore", () => ({ ageBandOf: async () => ({ band: null, consented: false }) }));
 vi.mock("@/lib/mail/sendMail", () => ({
   sendMail: (mail: OutgoingMail, sender: { memberId: string }) => sendMail(mail, sender),
 }));

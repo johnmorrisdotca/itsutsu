@@ -103,7 +103,7 @@ describe("a flood cannot spend the site's email", () => {
   it("sends one request for an address a day, however many times it is pressed", async () => {
     const { counter } = memoryCounter();
     const sent: OutgoingMail[] = [];
-    const deps = { counter, transport: transportInto(sent), now: NOW, secret: SECRET };
+    const deps = { counter, transport: transportInto(sent), now: NOW, secret: SECRET, isChildAddress: async () => false };
     expect((await sendInviteRequest(request, "203.0.113.9", deps)).sent).toBe(true);
     expect(await sendInviteRequest(request, "203.0.113.9", deps)).toEqual({ sent: false, refusal: "request-repeat-cap" });
     expect(sent).toHaveLength(1);
@@ -112,7 +112,7 @@ describe("a flood cannot spend the site's email", () => {
   it("stops the whole site at five a day, from however many places a flood comes", async () => {
     const { counter } = memoryCounter();
     const sent: OutgoingMail[] = [];
-    const deps = { counter, transport: transportInto(sent), now: NOW, secret: SECRET };
+    const deps = { counter, transport: transportInto(sent), now: NOW, secret: SECRET, isChildAddress: async () => false };
     const outcomes = [];
     for (let at = 0; at < 20; at += 1) {
       outcomes.push(await sendInviteRequest({ ...request, email: `bot${at}@example.com` }, `198.51.100.${at}`, deps));
@@ -124,7 +124,7 @@ describe("a flood cannot spend the site's email", () => {
 
   it("writes neither the visitor's address nor their email into the counter", async () => {
     const { counter, counts } = memoryCounter();
-    await sendInviteRequest(request, "203.0.113.9", { counter, transport: transportInto([]), now: NOW, secret: SECRET });
+    await sendInviteRequest(request, "203.0.113.9", { counter, transport: transportInto([]), now: NOW, secret: SECRET, isChildAddress: async () => false });
     const keys = [...counts.keys()].join(" ");
     expect(keys).not.toContain("203.0.113.9");
     expect(keys).not.toContain("ana@example.com");
