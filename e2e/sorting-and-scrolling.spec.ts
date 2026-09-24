@@ -148,7 +148,15 @@ async function enoughRows(request: APIRequestContext): Promise<void> {
 
   for (let game = 0; game < TO_SEED; game += 1) {
     const started = await request.post("/api/games/live", {
-      data: { blackName: `Sorter ${run}b${game}`, whiteName: `Sorter ${run}w${game}`, size: 9, variant: "freestyle" },
+      /*
+       * Black is one of four names, so the players have played different
+       * numbers of games and won different amounts. With a name each, every
+       * seeded player had played one game at one rating, and on a database
+       * holding only these rows every sort tied and came out alphabetical,
+       * so sorting by Played and by Rating gave the same list (the deploy
+       * runner, 2026-09-24).
+       */
+      data: { blackName: `Sorter ${run}b${game % 4}`, whiteName: `Sorter ${run}w${game}`, size: 9, variant: "freestyle" },
     });
     expect(started.status(), `seed game ${game + 1} of ${TO_SEED} was not created`).toBe(201);
     const made = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
@@ -185,12 +193,16 @@ function enoughToPage(count: number, what: string) {
 }
 
 test.describe("the record sorts and scrolls", () => {
-  test("the sort control changes the address and the order on the page", async ({ page }) => {
+  test("the sort control changes the address and the order on the page", async ({ page, request }) => {
     const crashes = watchForCrashes(page);
+    // Its own rows, like the tests below it: it read whatever other files on its shard had left, and a reshard left none.
+    await enoughRows(request);
     await page.goto("/history");
     // The filter bar is a client component; its select is only live once attached.
     await ready(page, "history-filters");
     await ready(page, "live-record");
+    // The rows themselves, before they are read: ready says the page is live, not that its rows have arrived.
+    await expect(page.getByTestId("history-row").first()).toBeVisible();
 
     const before = await recordIds(page);
     expect(before.length).toBeGreaterThan(0);
