@@ -25,6 +25,15 @@ test("a game on one screen sweeps from its first position to its last, and opens
   await scrubber.fill("2");
   await expect(page).toHaveURL(/\/2$/);
 
+  // Back to the first position, and Play walks the rest of the way on its own, stopping at the last move.
+  await page.getByTestId("history-start").click();
+  await expect(page).toHaveURL(/\/0$/);
+  await page.getByTestId("history-play").click();
+  await expect(page.getByTestId("history-play")).toHaveText("Pause");
+  await expect(page).toHaveURL(/\/3$/);
+  await expect(page.getByTestId("history-play")).toHaveText("Play");
+  await expect(page.getByTestId("history-end")).toBeDisabled();
+
   // The whole line as a picture, in a window: three moves, three tiles.
   const open = page.getByTestId("open-mosaic");
   await readyHere(open);

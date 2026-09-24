@@ -10,6 +10,7 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
+import { ReplayButtons } from "./ReplayButtons";
 import { GameMosaic } from "./GameMosaic";
 import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
@@ -276,27 +277,7 @@ export function GameReplay({
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setIndex(0)} disabled={index === 0}>
-            Start
-          </Button>
-          <Button onClick={() => setIndex(index - 1)} disabled={index === 0}>
-            Back
-          </Button>
-          <Button
-            onClick={() => setIndex(index + 1)}
-            disabled={index >= timeline.length - 1}
-            data-testid="replay-forward"
-          >
-            Forward
-          </Button>
-          <Button
-            onClick={() => setIndex(timeline.length - 1)}
-            disabled={index >= timeline.length - 1}
-          >
-            End
-          </Button>
-        </div>
+        <ReplayButtons index={index} last={timeline.length - 1} onGo={setIndex} testId="replay" />
 
         {/*
           A fork replays a position that could have gone differently — by

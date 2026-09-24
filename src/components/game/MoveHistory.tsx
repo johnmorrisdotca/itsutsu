@@ -5,6 +5,7 @@ import { MOVE_KINDS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.co
 import { slugFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { MosaicDialog } from "@/components/history/MosaicDialog";
+import { ReplayButtons } from "@/components/history/ReplayButtons";
 import { framesOf, mosaicDraws } from "@/lib/record/mosaic";
 import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
 import { FATAL_MOVE_DISPLAY } from "@/lib/gomoku/analysis.constants";
@@ -157,6 +158,9 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
           aria-label="Move"
           data-testid="history-scrubber"
         />
+      ) : null}
+      {session.moveTotal > 0 ? (
+        <ReplayButtons index={moveIndex} last={session.moveTotal} onGo={actions.jumpTo} testId="history" />
       ) : null}
       {/* And the whole line as one picture, in a window on demand — see `MosaicDialog`. */}
       {mosaicDraws(state.settings.variant) ? (

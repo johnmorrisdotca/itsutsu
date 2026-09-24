@@ -73,6 +73,12 @@ test.describe("the game record", () => {
     await expect(page.getByRole("button", { name: /^A15, empty$/ })).toBeVisible();
     await page.keyboard.press("End");
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
+    // Play at the last move starts again from the empty board and plays the game through to its end.
+    await page.getByTestId("replay-play").click();
+    await expect(page.getByTestId("replay-play")).toHaveText("Pause");
+    await expect(page.getByTestId("replay-play")).toHaveText("Play", { timeout: 20_000 });
+    await expect(page.getByTestId("replay-end")).toBeDisabled();
+    await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
   });
 
   test("filters narrow the record and survive a reload", async ({ page }) => {
