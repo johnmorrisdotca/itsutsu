@@ -5,8 +5,8 @@ describes which code, when a change must touch a doc, what is checked by
 machine, and what a person or an agent reviews on a schedule. The same plan,
 with its own map, is in UmaKuma at `docs/DOCS_UPKEEP.md`.
 
-**Status: proposed, 2026-09-24.** The decisions at the end are John's. Until
-they are made, the map and the release checklist below are the part to follow.
+**Status: adopted, 2026-09-24.** John's decisions are recorded at the end.
+The checks listed below are still to be built.
 
 ## Why this exists
 
@@ -38,6 +38,16 @@ review on a schedule to catch what slipped.
 | **B. Generated docs** | `CHANGELOG.md` (written by `pnpm release:take`, read by `/releases`), `docs/japanese-review.md`, the game pictures and thumbnails | yes (`CHANGELOG.md` is the one Markdown file that deploys) | the generator plus a test that fails on drift; never edited by hand |
 | **C. Hand-written docs** | `README.md`, `AGENTS.md`, `docs/email.md`, `docs/brand/*`, `docs/plans/*` | no (the `paths` filters skip `*.md` and `docs/**`) | the map below, the release checklist, and the scheduled review |
 
+## Standing conventions
+
+- **No attributions, anywhere.** John, 2026-09-24: no mention of Claude, AI or
+  any assistant in commits, pull request titles or bodies, code, docs or site
+  copy. That means no `Co-Authored-By` trailers, no "Generated with" footers
+  and no session links. The scheduled review checks its own pull request for
+  them before opening it.
+- A number about the site is read from the site, never typed into a sentence.
+- Outside data carries the date it was last checked (see "Outside data" below).
+
 ## The map: which doc describes which code
 
 When a commit changes a path in the right-hand column, re-read the doc on the
@@ -62,13 +72,13 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, "Embedding the board", "Embed tokens" | integrators | `src/app/embed/**`, `src/app/api/embed/**`, `src/lib/embed/**` |
 | `README.md`, "The API" | integrators | `src/app/api/**` (new or removed routes) |
 | `README.md`, "Deploying", "Scripts", "Getting started" | engineers | `.github/workflows/**`, `package.json` scripts, `.env.example`, `next.config.ts` |
+| `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
+| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
+| `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
-
-The technical docs being written in this project's "Write Itsutsu technical
-docs" thread get their rows here when they merge.
 
 ### On the site (kinds A and B)
 
@@ -139,7 +149,7 @@ None of these is built yet. Each is one test file or one script.
 A test can say a doc names something that is gone. It cannot say a doc is
 missing what is new. That needs reading, on a schedule.
 
-**Weekly, Monday morning Vancouver time.** A Claude routine, one per repository:
+**Weekly, Monday morning Vancouver time.** A scheduled routine, one per repository:
 
 - reads the releases since the last review (`CHANGELOG.md` headings newer than
   the version recorded under "Last review" below);
@@ -161,6 +171,30 @@ request runs no Actions minutes, because prose-only pull requests skip CI here.
 - lists docs with no row in the map, and docs whose rows have had no trigger in
   ninety days, as candidates to retire.
 
+## Outside data
+
+Some of what the site shows was copied from somewhere else, and that somewhere
+can change or vanish. John, 2026-09-24: outside data is re-checked on a
+schedule, and each source shows the date it was last checked, so anybody can
+see how fresh or stale it is.
+
+| Source | Where it lives | What re-checking means |
+|---|---|---|
+| Famous games (Andries Brouwer's Go database, and any source added to `FAMOUS_SOURCES`) | `src/lib/famous/famous.constants.ts`, `famousGames.data.ts` | the source is still up, still says the games are free to republish, and still records the same moves and results |
+| Records copied from other sites (ItsYourTurn and the rest) | `src/lib/legacy/legacyPlayers.data.ts`, `legacyGames.data.ts` | the site is still up and each kept figure still matches what it shows; a site that has gone is noted, and its record stays |
+
+**How it is shown.** Each entry in `FAMOUS_SOURCES` and each `LegacySource`
+gets a `checkedOn` date (`YYYY-MM-DD`). Wherever the site credits a source
+(the famous games' "Record:" line, a player's record from another site), it
+prints "checked <date>" beside it. A test fails when a source has no date.
+It does not fail when a date is old, because a build must not go red just
+because time passed. Staleness is the scheduled review's job.
+
+**How often.** The monthly review lists every source whose `checkedOn` is more
+than ninety days old, re-checks them, and moves the date forward in its pull
+request. A source that no longer matches is reported in the project and never
+quietly rewritten.
+
 ## Who owns what
 
 | Doc | Owner |
@@ -178,13 +212,15 @@ requests and hand them to that session. They never push to `main`.
 
 - Plan written at 0.270.2 (2026-09-24). No scheduled review has run yet.
 
-## Decisions for John
+## Decisions
 
-1. **Adopt the checklist as a rule in `AGENTS.md`?** This pull request adds a
-   short "Documentation Upkeep" section pointing here. Recommended: yes.
-2. **Which checks to build, and how strict.** Recommended: checks 1, 2, 3 and 5
-   as failing tests, and check 4 as an advisory line printed by `release:take`.
-3. **The scheduled review: weekly plus monthly, as above?** Or monthly only.
-   Recommended: weekly while the docs are being rewritten, monthly after.
-4. **Fix the README's backlog section now?** A one-paragraph change to the four
-   statuses. Recommended: yes, in this pull request or the technical docs one.
+John, 2026-09-24:
+
+1. The re-read step is a rule in `AGENTS.md`: adopted.
+2. Checks 1, 2, 3 and 5 are to be built as failing tests, and check 4 as an
+   advisory line printed by `release:take`.
+3. The scheduled review runs weekly while the docs are being rewritten, then
+   monthly once they settle.
+4. The README's backlog section was fixed in 4aa56f2e.
+5. Outside data is re-checked on a schedule and shows its last-checked date
+   (see "Outside data").
