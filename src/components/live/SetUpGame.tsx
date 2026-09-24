@@ -26,6 +26,8 @@ import { useSetUpPress } from "./useSetUpPress";
 import { readSetUpAsked } from "./setUpAsked";
 import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
 import { SetUpNotices } from "./SetUpNotices";
+import { PuzzleHere } from "./PuzzleHere";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { seatsFor, stillARematch } from "./setUpStart";
 import { setUpBegin } from "./setUpBegin";
 import { foldedWords } from "./setUpFolded";
@@ -187,6 +189,8 @@ export function SetUpGame({
    * a button that stops being pressable while the next page arrives.
    */
   const [busy, setBusy] = useState(false);
+  // A puzzle chosen from the row of families turns the whole screen to it — see `PuzzleHere`.
+  const [puzzle, setPuzzle] = useState<PuzzleKind | null>(null);
   /*
    * Says when the browser has taken this over. These controls are server-rendered,
    * so they are real controls before React has attached anything to them, and a
@@ -332,6 +336,16 @@ export function SetUpGame({
         What it will be, in the same words the rules panel uses once it is a
         game — so what somebody agreed to and what they are playing read the same.
       */}
+      {puzzle !== null ? (
+        <PuzzleHere
+          puzzle={puzzle}
+          onPuzzle={setPuzzle}
+          variant={settled.variant}
+          onGame={(variant) => setRules(applyRulesChange(settled, { variant }))}
+          disabled={busy}
+        />
+      ) : (
+      <>
       <p className="text-sm font-semibold" data-testid="set-up-summary">
         {describeRules(settled)}
       </p>
@@ -426,6 +440,7 @@ export function SetUpGame({
            */
           folded={foldedWords({ settled, refused, opponent: fork !== null ? opponent : chosen, fork, random })}
           onSizeChosen={setBoardChosen}
+          onPuzzle={chooseGame ? setPuzzle : undefined}
         />
       </div>
 
@@ -443,6 +458,8 @@ export function SetUpGame({
         named={against !== ANYONE}
         waiting={waiting}
       />
+      </>
+      )}
     </section>
   );
 }

@@ -308,6 +308,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/live/GamePicker.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   // The puzzles a Numbers tile opens on the set-up screen: the same cards as the games beside them.
   "src/components/live/PuzzleShelf.tsx": { GameThumb: "regular" },
+  // The chosen puzzle, where the set-up screen draws the board it is previewing: the one picture on the page, so large.
+  "src/components/live/PuzzleHere.tsx": { GameThumb: "large" },
   "src/components/live/BoardPicker.tsx": { BoardSizeMark: "regular" },
   "src/components/live/OpeningPicker.tsx": { OpeningMark: "regular" },
   "src/components/live/OpponentChoice.tsx": { SeatMark: "regular" },

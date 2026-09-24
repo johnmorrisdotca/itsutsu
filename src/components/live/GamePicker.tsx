@@ -10,7 +10,9 @@ import { boardGamesShownIn } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import { PUZZLE_SHELVES, ROW_FAMILIES, familyShown, gameForFamilyClick, type Family } from "./picker";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+
+import { PUZZLE_SHELVES, ROW_FAMILIES, SET_UP_FAMILIES, familyShown, gameForFamilyClick, type Family } from "./picker";
 import { PuzzleShelf } from "./PuzzleShelf";
 import { PickMark } from "./PickMark";
 import { FAMILY_ROW, FAMILY_TILES, PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
@@ -74,6 +76,8 @@ export function GamePicker({
   disabled = false,
   label,
   underFamilies,
+  puzzle = null,
+  onPuzzle,
 }: {
   /** The chosen game, as its variant key. */
   value: string;
@@ -94,6 +98,14 @@ export function GamePicker({
    * family. Under the families it is always the same distance from the top.
    */
   underFamilies?: ReactNode;
+  /**
+   * The puzzle chosen instead of a game, or null while a game is. The screen
+   * that holds the whole choice (`SetUpGame`) owns it, because a puzzle turns
+   * the whole screen and not just this control — see `PuzzleShelf`.
+   */
+  puzzle?: PuzzleKind | null;
+  /** Choosing a puzzle, or null to go back to a game. Without it the row offers no puzzles. */
+  onPuzzle?: (kind: PuzzleKind | null) => void;
 }) {
   /*
    * The open family is a READING of the chosen game.
@@ -114,8 +126,15 @@ export function GamePicker({
   const speaker = useSpeaker();
   const [browsing, setBrowsing] = useState<string | null>(null);
   const family = familyShown(value, browsing);
-  // A family of puzzles, when that is the tile open: it leaves the chosen game alone, since a puzzle is not one.
-  const [puzzles, setPuzzles] = useState<Family | null>(null);
+  /*
+   * A family of puzzles is open exactly when a puzzle is chosen: a READING of
+   * the screen's own answer, like the family above, and never a second state
+   * beside it. A second state was this file's first bug, and the puzzles
+   * brought it back once (0.285.2): the Numbers tile lit while the heading,
+   * the board and Begin went on describing the last game.
+   */
+  const shelves = onPuzzle === undefined ? SET_UP_FAMILIES : ROW_FAMILIES;
+  const puzzles = puzzle === null ? null : (PUZZLE_SHELVES.find((shelf) => (shelf.games as string[]).includes(puzzle)) ?? null);
   const opened = puzzles ?? family;
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
 
@@ -125,10 +144,10 @@ export function GamePicker({
    */
   const openFamily = (entry: Family) => {
     if (PUZZLE_SHELVES.includes(entry)) {
-      setPuzzles(entry);
+      if (entry !== puzzles) onPuzzle?.(entry.games[0] as PuzzleKind);
       return;
     }
-    setPuzzles(null);
+    onPuzzle?.(null);
     setBrowsing(entry.key);
     const next = gameForFamilyClick(entry, value);
     if (next !== null) onChange(next);
@@ -147,11 +166,11 @@ export function GamePicker({
     const step = STEPS[event.key];
     const to =
       step !== undefined
-        ? (at + step + ROW_FAMILIES.length) % ROW_FAMILIES.length
+        ? (at + step + shelves.length) % shelves.length
         : event.key === "Home"
           ? 0
           : event.key === "End"
-            ? ROW_FAMILIES.length - 1
+            ? shelves.length - 1
             : -1;
     if (to === -1) return;
     event.preventDefault();
@@ -161,7 +180,7 @@ export function GamePicker({
      * to draw — and it has to be the same act as a click, or the keyboard
      * would have the browse-without-choosing behaviour that was the bug.
      */
-    openFamily(ROW_FAMILIES[to]);
+    openFamily(shelves[to]);
     chips.current[to]?.focus();
   }
 
@@ -185,7 +204,7 @@ export function GamePicker({
       */}
       <div className={FAMILY_ROW}>
       <div role="tablist" aria-label="Families of games" className={FAMILY_TILES}>
-        {ROW_FAMILIES.map((entry, at) => {
+        {shelves.map((entry, at) => {
           const showing = entry.title === opened.title;
           return (
             <button
@@ -234,8 +253,8 @@ export function GamePicker({
         })}
       </div>
 
-      {/* The board and its sizes belong to a two-seat game, so a family of puzzles has none. */}
-      {puzzles === null ? underFamilies : null}
+      {/* The board and its sizes, or the chosen puzzle's picture: whichever the screen is setting up. */}
+      {underFamilies}
       </div>
 
       {/*
@@ -256,7 +275,7 @@ export function GamePicker({
       <div
         role="tabpanel"
         id="family-games"
-        aria-labelledby={`family-tab-${ROW_FAMILIES.indexOf(opened)}`}
+        aria-labelledby={`family-tab-${shelves.indexOf(opened)}`}
         className="mt-1 flex min-w-0 flex-col gap-1 border-l-2 border-rule-strong pl-2.5"
         data-testid="set-up-family-games"
       >
@@ -270,8 +289,8 @@ export function GamePicker({
           Two lines on this control and no more: what the family is, here,
           and what the chosen game is, under the grid.
         */}
-        {puzzles !== null ? (
-          <PuzzleShelf family={puzzles} />
+        {puzzles !== null && puzzle !== null ? (
+          <PuzzleShelf family={puzzles} chosen={puzzle} onChoose={(kind) => onPuzzle?.(kind)} disabled={disabled} />
         ) : (
         <>
         <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">

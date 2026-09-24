@@ -14,6 +14,10 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { PuzzleSizeMark } from "./PuzzleSizeMark";
 import { sizeWord } from "./puzzles.constants";
 
+/** The chosen size, marked as a chosen card is everywhere else on the set-up screens. */
+const SIZE_CHOSEN =
+  "data-[chosen=true]:border-ink data-[chosen=true]:bg-moss-soft data-[chosen=true]:shadow-[inset_0_0_0_1px_var(--ink)]";
+
 /**
  * Setting a puzzle up, at /games/<slug>/new: a size, a level, and Solve.
  *
@@ -24,7 +28,7 @@ import { sizeWord } from "./puzzles.constants";
  * it leads to holds the whole of the choice, and the browser makes the
  * puzzle when it gets there.
  */
-export function PuzzleSetUp({ kind }: { kind: PuzzleKind }) {
+export function PuzzleSetUp({ kind, framed = true }: { kind: PuzzleKind; framed?: boolean }) {
   const hydrated = useHydrated();
   const spec = PUZZLE_SPECS[kind];
   const copy = PUZZLE_DISPLAY[kind];
@@ -32,7 +36,8 @@ export function PuzzleSetUp({ kind }: { kind: PuzzleKind }) {
   const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
 
   return (
-    <section className={`${PANEL_CLASS} flex flex-col gap-5`} data-testid="puzzle-set-up" {...readyMark(hydrated)}>
+    // Unframed inside the set-up screen's own panel, which already is one: a box in a box is what the page-shape rules forbid.
+    <section className={`${framed ? PANEL_CLASS : ""} flex flex-col gap-5`} data-testid="puzzle-set-up" {...readyMark(hydrated)}>
       <fieldset className="flex flex-col gap-2">
         <legend className={SECTION_TITLE}>
           Size <span className="font-mincho normal-case tracking-normal">大きさ</span>
@@ -45,7 +50,8 @@ export function PuzzleSetUp({ kind }: { kind: PuzzleKind }) {
               role="radio"
               aria-checked={size === side}
               data-chosen={size === side ? "true" : "false"}
-              className={`${PICK_CARD} min-h-11 flex-col gap-1.5 p-2`}
+              // A button, not a radio, so the card's own has-[:checked] mark never lit: the chosen size is marked by its data-chosen.
+              className={`${PICK_CARD} ${SIZE_CHOSEN} min-h-11 flex-col gap-1.5 p-2`}
               onClick={() => setSize(side)}
               data-testid={`puzzle-size-${side}`}
             >

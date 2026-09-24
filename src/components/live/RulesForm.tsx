@@ -21,6 +21,7 @@ import { SetUpFold } from "./SetUpFold";
 import { ANSWER_ROW_RULES } from "./picker.constants";
 import { answerColumns, answerPlace, type AnswerPlace } from "./answerRow";
 import { SetUpSection } from "./SetUpSection";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /**
  * How the two biggest choices are drawn. NOT which rules are offered — that
@@ -75,6 +76,7 @@ export function RulesForm({
   folded,
   onSizeChosen,
   preview,
+  onPuzzle,
 }: {
   value: RulesDraft;
   onChange: (next: RulesDraft) => void;
@@ -194,6 +196,8 @@ export function RulesForm({
    * real board a few pixels to its left.
    */
   preview?: ReactNode;
+  /** Choosing a puzzle from the row of families — see `GamePicker`. The set-up screen's own. */
+  onPuzzle?: (kind: PuzzleKind | null) => void;
 }) {
   const change = (next: Partial<RulesDraft>) => onChange(applyRulesChange(value, next));
   /*
@@ -211,6 +215,7 @@ export function RulesForm({
       preview={preview}
       change={change}
       onSizeChosen={onSizeChosen}
+      onPuzzle={onPuzzle}
     />
   );
 

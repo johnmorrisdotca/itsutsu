@@ -8,6 +8,7 @@ import type { RulesDraft } from "./rulesDraft";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } from "./picker.constants";
 import type { ReactNode } from "react";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /**
  * THE TWO QUESTIONS THE SET-UP SCREEN EXISTS TO ASK: which game, and what board.
@@ -40,6 +41,7 @@ export function GameAndBoardChooser({
   preview,
   change,
   onSizeChosen,
+  onPuzzle,
 }: {
   value: RulesDraft;
   disabled: boolean;
@@ -54,6 +56,8 @@ export function GameAndBoardChooser({
   preview?: ReactNode;
   change: (next: Partial<RulesDraft>) => void;
   onSizeChosen?: (size: number) => void;
+  /** Choosing a puzzle from the row of families, which hands the whole screen to it — see `GamePicker`. */
+  onPuzzle?: (kind: PuzzleKind | null) => void;
 }) {
   const variant = value.variant as RuleVariant;
   const sizes = boardSizesFor(variant);
@@ -103,6 +107,7 @@ export function GameAndBoardChooser({
             onChange={(next) => change({ variant: next })}
             label={variantLabel}
             underFamilies={boardRow}
+            onPuzzle={onPuzzle}
           />
         ) : (
           <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>

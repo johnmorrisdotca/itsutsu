@@ -127,7 +127,7 @@ test.describe("the first puzzle", () => {
     await expect(card.getByTestId("puzzle-line")).toBeVisible();
     await expect(card.getByTestId("puzzle-line-solve")).toHaveAttribute("href", `${AT}/new`);
 
-    // Since 0.285.2 the set-up screen has the family too, and its puzzles lead to their own set-up: see set-up-puzzles.spec.ts.
+    // Since 0.285.2 the set-up screen has the family too, and turns to a puzzle chosen there: see set-up-puzzles.spec.ts.
     await page.goto("/games/new");
     await ready(page, "set-up-game");
     await expect(page.getByTestId("set-up-family").filter({ hasText: /Numbers|数/ })).toHaveCount(1);

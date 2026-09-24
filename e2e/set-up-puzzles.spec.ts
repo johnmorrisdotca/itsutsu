@@ -1,38 +1,59 @@
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_KIND_LIST } from "../src/lib/puzzles/puzzles.constants";
-import { setUpPath } from "../src/lib/gomoku/slugs";
+import { playPath } from "../src/lib/gomoku/slugs";
+import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST } from "../src/lib/puzzles/puzzles.constants";
 import { ready } from "./support";
 
 /**
- * THE NUMBERS FAMILY IS ON THE SET-UP SCREEN, AND LEADS TO ITS PUZZLES.
+ * THE NUMBERS FAMILY IS ON THE SET-UP SCREEN, AND THE SCREEN TURNS TO IT.
  *
  * John, 2026-09-24, on /games/new with seven family tiles and no Numbers:
- * "where tf is numbers games??? I didn't see them". The tile opens the family's
- * puzzles as links, each to its own set-up, and leaves the two-seat game the
- * screen had chosen alone. Pressed, as a reader does, and the way back is a
- * press on a board family.
+ * "where tf is numbers games??? I didn't see them". The first answer opened
+ * the puzzles as links and left the rest of the screen on the last board game,
+ * with no picture: "There's an error because we don't have a Preview board for
+ * the new games." So a puzzle is chosen here like a game — the heading names
+ * it, its picture stands where the board did, its size and level replace the
+ * opponent and Begin — and a board family takes the screen back to the game.
+ * Every step is a press, as a reader makes it.
  */
-test("the set-up screen offers Numbers, and a puzzle there leads to its own set-up", async ({ page }) => {
+test("the set-up screen turns to a puzzle chosen from Numbers, and back to the game", async ({ page }) => {
   await page.goto("/games/new");
   await ready(page, "set-up-game");
+  const summary = page.getByTestId("set-up-summary");
+  const game = (await summary.textContent()) ?? "";
+  expect(game.length).toBeGreaterThan(0);
+
   const numbers = page.getByTestId("set-up-family").filter({ hasText: /Numbers|数/ });
-  await expect(numbers).toBeVisible();
   await numbers.click();
   await expect(numbers).toHaveAttribute("data-open", "true");
 
+  // The first puzzle is chosen, and the whole screen is about it.
+  const [first, second] = PUZZLE_KIND_LIST;
   const puzzles = page.getByTestId("set-up-puzzle");
   await expect(puzzles).toHaveCount(PUZZLE_KIND_LIST.length);
-  const first = PUZZLE_KIND_LIST[0]!;
-  await expect(puzzles.first()).toHaveAttribute("href", setUpPath(first));
+  await expect(puzzles.first()).toHaveAttribute("data-chosen", "true");
+  await expect(summary).toContainText(PUZZLE_DISPLAY[first!].label);
+  await expect(page.getByTestId("set-up-puzzle-preview").getByTestId("game-thumb")).toBeVisible();
+  await ready(page, "puzzle-set-up");
+  // Asked only once the puzzle's own controls are there: no seats, no Begin.
+  await expect(page.getByTestId("set-up-continue")).toHaveCount(0);
 
-  // The way back: a board family opens its games again.
+  // Another puzzle, chosen the way a game is.
+  await puzzles.nth(1).click();
+  await expect(puzzles.nth(1)).toHaveAttribute("data-chosen", "true");
+  await expect(summary).toContainText(PUZZLE_DISPLAY[second!].label);
+  await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", new RegExp(`^${playPath(second!)}\\?`));
+
+  // The way back: a board family returns the screen to the game it held.
   await page.getByTestId("set-up-family").first().click();
+  await expect(summary).toHaveText(game);
   await expect(page.getByTestId("set-up-variant").first()).toBeVisible();
-  await expect(page.getByTestId("set-up-puzzle")).toHaveCount(0);
+  await expect(page.getByTestId("set-up-continue")).toBeVisible();
+  await expect(puzzles).toHaveCount(0);
 
-  // And a puzzle, pressed, is its own set-up page.
+  // And Solve, pressed, goes to the puzzle with the choice in its address.
   await numbers.click();
-  await page.getByTestId("set-up-puzzle").first().click();
-  await expect(page).toHaveURL(new RegExp(`${setUpPath(first)}$`));
+  await ready(page, "puzzle-set-up");
+  await page.getByTestId("puzzle-solve").click();
+  await expect(page).toHaveURL(new RegExp(`${playPath(first!)}\\?`));
 });
