@@ -10,6 +10,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.285.2 — 2026-09-24
+- The set-up screen shows Numbers as its eighth family, and each puzzle there leads to its own set-up.
+- Two browser tests bring their own games, so a fresh test database no longer fails them.
+
 ## 0.285.1 — 2026-09-24
 - Two browser tests make a member of their own, so two runs at once no longer take each other's away.
 
