@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.283.1 — 2026-09-24
+- A browser test chooses its family among the games the set-up screen offers, now that the Numbers family holds a puzzle.
+
 ## 0.283.0 — 2026-09-24
 - A new family, Numbers, opens with Number Place, our Sudoku: 4×4, 6×6 and 9×9 at three levels, made and timed in your browser, and paid in XP when the site checks it.
 
