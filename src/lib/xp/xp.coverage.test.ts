@@ -134,7 +134,7 @@ describe("the economy holds its shape", () => {
   });
 
   it("pays the tour enough to be worth taking", () => {
-    // Forty-five games and eight families, most of them barely played. The
+    // Forty-five games and seven families, most of them barely played. The
     // tour is the problem this ladder exists to solve, so a first game of
     // something new must beat finishing another game of the usual.
     expect(XP_EVENT_SPECS.firstOfVariant.points).toBeGreaterThan(XP_EVENT_SPECS.gameFinished.points);
@@ -165,14 +165,20 @@ describe("the economy holds its shape", () => {
     // loses anything they have been paid — the ledger records what was paid —
     // but somebody starting today can reach 750 less than somebody who started
     // yesterday. The climb table is the XP owner's to redo either way.
+    //
+    // 22,840 since the races joined Territory on 2026-09-24 (John: "merge
+    // Races + Territory", to make room under the cap of eight for a family
+    // of number puzzles): one fewer family to meet (−150) and one fewer to
+    // win (−300). The same direction as the last merge, and the same note:
+    // the ledger keeps what was paid, and the climb table is still to redo.
     const perVariant = 44;
     // Read from the table rather than written down, so a merge or a new family
     // moves this figure instead of quietly leaving it true of nothing.
     const perFamily = GAME_FAMILIES.length;
-    expect(perFamily).toBe(8);
+    expect(perFamily).toBe(7);
     // A family won is only for a family of more than one game.
     const familiesToWin = GAME_FAMILIES.filter((family) => family.games.length > 1).length;
-    expect(familiesToWin).toBe(8);
+    expect(familiesToWin).toBe(7);
     const grades = 5;
     const specialists = 2;
     const total =
@@ -192,7 +198,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_290);
+    expect(total).toBe(22_840);
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

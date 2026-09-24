@@ -345,12 +345,14 @@ describe("a different subject is a different award", () => {
     member("tourist");
 
     await recordPlayed(finished({ black: "tourist", white: null, winner: "black", variant: RULE_VARIANTS.hex }));
-    await recordPlayed(finished({ black: "tourist", white: null, winner: "black", variant: RULE_VARIANTS.halma }));
+    await recordPlayed(finished({ black: "tourist", white: null, winner: "black", variant: RULE_VARIANTS.reversi }));
     await recordPlayed(finished({ black: "tourist", white: null, winner: "black", variant: RULE_VARIANTS.hex }));
 
     expect(paid("tourist", "firstOfVariant")).toBe(2);
     expect(paid("tourist", "firstGameEver")).toBe(1);
-    // Hex is in Territory and Halma is in Races, so two families were met.
+    // Hex is in Territory and races and Reversi in Turn and take, so two
+    // families were met. (It was Halma beside Hex until the races joined
+    // Territory on 2026-09-24, which made the pair one family.)
     expect(paid("tourist", "firstOfFamily")).toBe(2);
   });
 
@@ -820,14 +822,16 @@ describe("a family won, through the writer", () => {
   it("pays on the win that completes a family, once, keyed on the family", async () => {
     member("me");
     /*
-     * Races: two games, which is the shortest family that can be completed.
-     * It was Captures until 2026-09-22, when Captures was folded into Turn and
-     * take and its six Reversi variants came with it — a family of eight is a
-     * long way round for a test about the completing win.
+     * The smallest family on the table, which is the shortest thing that can
+     * be completed. It was Captures until 2026-09-22, when Captures was folded
+     * into Turn and take and its six Reversi variants came with it, and Races
+     * (two games) until 2026-09-24, when the races joined Territory — a family
+     * of eight is a long way round for a test about the completing win, so
+     * the family is read from the table rather than named.
      */
-    const races = GAME_FAMILIES.find((family) => family.key === "races");
-    expect(races).toBeDefined();
-    const games = races?.games ?? [];
+    const smallest = [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0];
+    const games = smallest.games;
+    expect(games.length).toBeGreaterThanOrEqual(2);
 
     for (const variant of games) {
       await recordPlayed(finished({ black: "me", white: null, winner: "black", variant }));
@@ -835,16 +839,18 @@ describe("a family won, through the writer", () => {
     await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: games[0] }));
 
     expect(paid("me", "everyVariantWonInFamily")).toBe(1);
-    expect(ledger("me")).toContain("everyVariantWonInFamily races");
+    expect(ledger("me")).toContain(`everyVariantWonInFamily ${smallest.key}`);
     expect(events.find((row) => row.type === "everyVariantWonInFamily")?.points).toBe(300);
   });
 
   it("pays nothing for a family played through but not won through", async () => {
     member("me");
-    const games = GAME_FAMILIES.find((family) => family.key === "races")?.games ?? [];
+    const games = [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0].games;
 
-    await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: games[0] }));
-    await recordPlayed(finished({ black: "me", white: null, winner: "white", variant: games[1] }));
+    await recordPlayed(finished({ black: "me", white: null, winner: "white", variant: games[0] }));
+    for (const variant of games.slice(1)) {
+      await recordPlayed(finished({ black: "me", white: null, winner: "black", variant }));
+    }
 
     expect(paid("me", "firstOfFamily")).toBe(1);
     expect(paid("me", "everyVariantWonInFamily")).toBe(0);

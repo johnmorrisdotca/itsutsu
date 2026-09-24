@@ -51,7 +51,7 @@ export function justPaid(result: XpAwardResult, type: XpEventType): boolean {
  *
  * `each` is the once-per-thing award whose rows ARE the collection; `all` is what
  * completing it pays; `size` is how many things there are. Generic because the
- * site has three of these — forty-five games, eight families, five computer
+ * site has three of these — every game, every family, five computer
  * grades — and three copies of the same count would be three places for the
  * comparison to be got wrong by one.
  *

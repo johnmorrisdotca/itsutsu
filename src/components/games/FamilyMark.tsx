@@ -22,9 +22,10 @@ type Mark = {
  * PLAIN is the same picture for everybody and a row of identical icons is a
  * promise the row makes and does not keep.
  *
- * THREE TITLES HERE BELONG TO NO FAMILY ANY MORE. Captures, Pieces and twists
+ * FIVE TITLES HERE BELONG TO NO FAMILY ANY MORE. Captures, Pieces and twists
  * and Connections were folded into Turn and take, Strange boards and Territory
- * on 2026-09-22 (see `FAMILY_ABSORBED`). Their marks are kept rather than
+ * on 2026-09-22 (see `FAMILY_ABSORBED`), and on 2026-09-24 Races and Territory
+ * became Territory and races. Their marks are kept rather than
  * deleted: each is a drawing of a mechanism the merged family still contains,
  * and the next time one of these shelves is split or a mark is redrawn they
  * are the work already done. Nothing reads them, and the coverage test allows
@@ -164,6 +165,27 @@ export const FAMILY_MARKS: Record<string, Mark> = {
       { r: 2, c: 1 },
       { r: 2, c: 3 },
     ],
+  },
+  /*
+   * TERRITORY AND RACES, one picture for the family that took the races in
+   * on 2026-09-24: the surrounded stone of Territory on the left, and on the
+   * right a black piece hopping over a white one towards the far end of the
+   * board, which is the Races mark's own move. "Territory" and "Races" above
+   * are kept, like the three retired before them.
+   */
+  "Territory and races": {
+    n: 5,
+    stones: [
+      { r: 2, c: 1, white: true, faded: true },
+      { r: 1, c: 1 },
+      { r: 3, c: 1 },
+      { r: 2, c: 0 },
+      { r: 2, c: 2 },
+      { r: 4, c: 4 },
+      { r: 3, c: 4, white: true },
+      { r: 2, c: 4, faded: true },
+    ],
+    path: "M 4 4 Q 4.9 3 4 2",
   },
 };
 

@@ -1,3 +1,4 @@
+import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { StreakOutcome } from "@/lib/rating/streak";
 import { inWords } from "@/lib/text/inWords";
@@ -5,11 +6,14 @@ import { inWords } from "@/lib/text/inWords";
 import type { XpEventSpec, XpEventType } from "./xp.types";
 
 /*
- * How many games there are, in words, read from the catalogue. The awards said
- * "forty-four" after the forty-fifth game arrived; a count written into a
- * sentence is wrong the day a game is added, so these sentences count instead.
+ * How many games and families there are, in words, read from the catalogue.
+ * The awards said "forty-four" after the forty-fifth game arrived, and "all
+ * eleven families" for months after eleven became eight; a count written into
+ * a sentence is wrong the day a game or a family is added, so these sentences
+ * count instead.
  */
 const GAMES = inWords(RULE_VARIANT_LIST.length);
+const FAMILIES = inWords(GAME_FAMILIES.length);
 
 /**
  * Everything that earns XP on this site, priced, named and explained.
@@ -327,7 +331,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
   },
 
   /* ── The tour ───────────────────────────────────────────────────────────
-     Forty-five games and eight families, most of them barely played. A first
+     Every game and every family, most of them barely played. A first
      of anything is cheap and the SETS are dear: every game played is 5,000, a
      family won is 300, and a single first win is John's 10. The six came to
      13,390 XP of the 23,440 available once-only — 2.3% of the ladder, a
@@ -353,15 +357,15 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 150,
     label: "A family you had not met",
     kanji: "初族",
-    blurb: "For your first game from one of the eight families.",
+    blurb: `For your first game from one of the ${FAMILIES} families.`,
     sentence: "A whole family you had not met.",
   },
   everyFamilyPlayed: {
     points: 2000,
     label: "Every family played",
     kanji: "全族",
-    blurb: "For playing a game from all eight families.",
-    sentence: "All eleven families played.",
+    blurb: `For playing a game from all ${FAMILIES} families.`,
+    sentence: `All ${FAMILIES} families played.`,
   },
   everyVariantPlayed: {
     points: 5000,
@@ -379,8 +383,8 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      no completion, its one win is already paid by `firstWinAtVariant` and
      `firstOfFamily`, and 300 more would make a single win worth about 510 XP.
      `familyToWin` in `xpGame.ts` is that rule, live and in the replay alike.
-     Nine families can be won, 2,700 XP between them — Checkers joined them
-     when the draughts games did. */
+     Every family on the table today can be won; `xp.coverage.test.ts` adds
+     the ceiling up from the table. */
   everyVariantWonInFamily: {
     points: 300,
     label: "A family won",

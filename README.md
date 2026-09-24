@@ -73,9 +73,9 @@ The variables that matter first, all described in `.env.example`:
 
 ## What it does
 
-### Forty-five games, in eight families
+### Forty-five games, in seven families
 
-The site began as one game and is now forty-five, grouped into eight families
+The site began as one game and is now forty-five, grouped into seven families
 on `/games` (`GAME_FAMILIES` in `src/lib/gomoku/families.ts`):
 
 | Family | Games |
@@ -84,9 +84,8 @@ on `/games` (`GAME_FAMILIES` in `src/lib/gomoku/families.ts`):
 | Drops | 8 |
 | Turn and take | 8 |
 | Strange boards | 6 |
-| Races | 2 |
 | Checkers | 6 |
-| Territory | 2 |
+| Territory and races | 4 |
 | Small boards | 6 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`

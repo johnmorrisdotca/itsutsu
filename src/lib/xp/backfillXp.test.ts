@@ -29,6 +29,11 @@ import type { XpEventType } from "./xp.types";
  */
 
 const AT = (iso: string): Date => new Date(iso);
+
+/** The family with the fewest games: the shortest thing a member can win right through. */
+function smallestFamily(): (typeof GAME_FAMILIES)[number] {
+  return [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0];
+}
 /* A Wednesday and the Saturday after it, for the weekend award. */
 const WED = "2026-02-04T12:00:00Z";
 const SAT = "2026-02-07T12:00:00Z";
@@ -369,25 +374,23 @@ describe("the replay completes a set on the game that completed it", () => {
 
   it("pays a family won on the win that completes it, and on that game", () => {
     /*
-     * Races, because a family of exactly two games is the shortest thing that
-     * can be completed and this is about the completing rather than about the
-     * family. It was Captures until 2026-09-22, when Captures was folded into
-     * Turn and take and stopped being a family at all.
+     * The smallest family on the table, because the shortest thing that can
+     * be completed is what this is about — the completing rather than the
+     * family. It was Captures until 2026-09-22 and Races (two games) until
+     * 2026-09-24, when the races joined Territory; read from the table now,
+     * so the next merge moves the test rather than breaking it.
      */
-    const races = GAME_FAMILIES.find((family) => family.key === "races");
-    expect(races).toBeDefined();
-    expect(races?.games).toHaveLength(2);
-    const [first, second] = races?.games ?? ["", ""];
-    const wins = [
-      game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-01T12:00:00Z") }),
-      game({ blackMemberId: "a", winner: "black", variant: second, playedAt: AT("2026-03-02T12:00:00Z") }),
-      game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-03T12:00:00Z") }),
-    ];
-    const made = plan({ members: [member("a")], games: wins });
+    const games = smallestFamily().games;
+    expect(games.length).toBeGreaterThanOrEqual(2);
+    const wins = games.map((variant, index) =>
+      game({ blackMemberId: "a", winner: "black", variant, playedAt: AT(`2026-03-0${index + 1}T12:00:00Z`) }),
+    );
+    const again = game({ blackMemberId: "a", winner: "black", variant: games[0], playedAt: AT("2026-03-09T12:00:00Z") });
+    const made = plan({ members: [member("a")], games: [...wins, again] });
     expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(1);
-    expect(paidOn(made, "a", XP_EVENTS.everyVariantWonInFamily)).toEqual([wins[1].id]);
+    expect(paidOn(made, "a", XP_EVENTS.everyVariantWonInFamily)).toEqual([wins[wins.length - 1].id]);
     const award = awardsFor(made, "a").find((one) => one.type === XP_EVENTS.everyVariantWonInFamily);
-    expect(award?.subject).toBe("races");
+    expect(award?.subject).toBe(smallestFamily().key);
     expect(award?.points).toBe(300);
   });
 
@@ -410,23 +413,30 @@ describe("the replay completes a set on the game that completed it", () => {
   });
 
   it("does not pay a family won where one of its games was lost rather than won", () => {
-    const [first, second] = GAME_FAMILIES.find((family) => family.key === "races")?.games ?? ["", ""];
+    const [lost, ...won] = smallestFamily().games;
     const made = plan({
       members: [member("a")],
       games: [
-        game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-01T12:00:00Z") }),
-        game({ blackMemberId: "a", winner: "white", variant: second, playedAt: AT("2026-03-02T12:00:00Z") }),
+        game({ blackMemberId: "a", winner: "white", variant: lost, playedAt: AT("2026-03-01T12:00:00Z") }),
+        ...won.map((variant, index) =>
+          game({ blackMemberId: "a", winner: "black", variant, playedAt: AT(`2026-03-0${index + 2}T12:00:00Z`) }),
+        ),
       ],
     });
     expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(0);
   });
 
   it("counts first wins already in the ledger towards a family won", () => {
-    const [first, second] = GAME_FAMILIES.find((family) => family.key === "races")?.games ?? ["", ""];
+    const [last, ...alreadyWon] = smallestFamily().games;
     const made = plan({
       members: [member("a")],
-      games: [game({ blackMemberId: "a", winner: "black", variant: second, playedAt: AT(WED) })],
-      held: [{ memberId: "a", type: XP_EVENTS.firstWinAtVariant, subject: first, dayKey: "2026-01-01" }],
+      games: [game({ blackMemberId: "a", winner: "black", variant: last, playedAt: AT(WED) })],
+      held: alreadyWon.map((variant) => ({
+        memberId: "a",
+        type: XP_EVENTS.firstWinAtVariant,
+        subject: variant,
+        dayKey: "2026-01-01",
+      })),
     });
     expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(1);
   });

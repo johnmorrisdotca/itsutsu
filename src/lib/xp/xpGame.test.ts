@@ -395,7 +395,7 @@ describe("the tour covers the site", () => {
     // a set that is complete and unpaid.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length);
     expect(XP_VARIANTS_TO_PLAY).toBe(45);
-    expect(GAME_FAMILIES.length).toBe(8);
+    expect(GAME_FAMILIES.length).toBe(7);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {

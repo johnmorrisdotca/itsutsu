@@ -147,7 +147,7 @@ export function gameAwards(game: FinishedGame, side: PlayedSideFacts): XpAward[]
   awards.push({ type: XP_EVENTS.firstGameEver });
 
   /* ── THE TOUR ─────────────────────────────────────────────────────────────
-     Forty-five games and eight families, most of them barely played. Keyed on
+     Every game and every family, most of them barely played. Keyed on
      the variant and on the family rather than on the game, which is what makes
      the second game of Reversi pay nothing extra and a first game of Hex pay 75
      on top of the finish. */

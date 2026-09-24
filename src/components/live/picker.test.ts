@@ -77,10 +77,10 @@ describe("what a click on a family chooses", () => {
       // And Strange boards absorbed Pieces and twists, so the queue and twist
       // games sit behind the toroid rather than in front of it.
       "Strange boards": "toroidalFive",
-      Races: "halma",
       Checkers: "checkers",
-      // Territory absorbed Connections. Go leads it, Hex is beside it.
-      Territory: "go",
+      // Territory absorbed Connections, then the Races: Go leads it, with
+      // Hex, Halma and Chinese Checkers behind it.
+      "Territory and races": "go",
       "Small boards": "tictactoe",
     };
     // Every family is named, so a new one cannot slip past with no opinion.

@@ -8,7 +8,9 @@ import { XP_EVENTS } from "@/lib/xp/xp.constants";
 /**
  * THE FAMILIES THAT WERE MERGED, AND THE ONE THING A MERGE CAN BREAK.
  *
- * Eleven families became eight on 2026-09-22 (John: "Less categories"). The
+ * Eleven families became eight on 2026-09-22 (John: "Less categories"), and
+ * eight became seven on 2026-09-24 when the races joined Territory to make
+ * room for a family of number puzzles. The
  * table itself is easy and nothing here guards the taste of it — which games
  * belong together is the site owner's call, and the titles are display and
  * free to be reworded.
@@ -88,12 +90,27 @@ describe("counting families over rows written before the merge", () => {
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);
   });
 
-  it("does not let a member with rows for seven families complete a tour of eight", () => {
-    // The exact member on the live ledger: eight rows, one of them retired.
-    const eight = ["flips", "five-in-a-row", "small-boards", "races", "checkers", "captures", "strange-boards", "drops"];
-    const state = held(eight);
-    expect(state.counts.get(XP_EVENTS.firstOfFamily)).toBe(GAME_FAMILIES.length);
-    expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(GAME_FAMILIES.length - 1);
+  it("counts a member's rows as the families they are today, never as the rows", () => {
+    /*
+     * The exact member on the live ledger on 2026-09-22: eight rows, one of
+     * them retired (`captures`, now `flips`). Counted raw against the eight
+     * families of that day, they completed the tour; read forward, they had
+     * met seven. The rows are the same today and `races` has since been
+     * folded into `territory` as well, so the honest count is whatever the
+     * fold table makes of them — which is why it is computed here rather than
+     * written down as eight and seven.
+     */
+    const rows = ["flips", "five-in-a-row", "small-boards", "races", "checkers", "captures", "strange-boards", "drops"];
+    const state = held(rows);
+    const today = new Set(rows.map(familyKeyNow));
+    expect(state.counts.get(XP_EVENTS.firstOfFamily)).toBe(rows.length);
+    expect(today.size).toBeLessThan(rows.length);
+    expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(today.size);
+  });
+
+  it("counts the races and the territory games as one family since they merged", () => {
+    const state = held(["races", "territory"]);
+    expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);
   });
 
   it("reads rows of another kind past, rather than folding everything it sees", () => {

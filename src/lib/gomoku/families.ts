@@ -96,13 +96,6 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["toroidalFive", "obstacleFive", "dominoFive", "blockFive", "twistFive", "twistFour"],
   },
   {
-    key: "races",
-    title: "Races",
-    kanji: "競走",
-    blurb: "No lines and nothing captured. Get every piece across the board before the other side does.",
-    games: ["halma", "chineseCheckers"],
-  },
-  {
     key: "checkers",
     title: "Checkers",
     kanji: "チェッカー",
@@ -122,11 +115,28 @@ export const GAME_FAMILIES: GameFamily[] = [
      *
      * `territory` keeps the key. Neither old key has a single row on the live
      * ledger, so this one was free either way.
+     *
+     * AND THE RACES CAME HERE TOO. John, 2026-09-24, making room for an eighth
+     * family of number puzzles under the cap of eight: "merge Races +
+     * Territory to mix Go, Halma, etc.. find a good merged name, if possible.
+     * Could still be territory or Races & territory, you can decide." What
+     * the four share is that none of them is about making a line or taking a
+     * piece: each is won by WHERE YOU STAND ON THE BOARD at the end — the
+     * ground you have surrounded, the two edges you have joined, the far camp
+     * you have filled. "Territory and races" says both halves plainly, in
+     * the shape "Turn and take" already has; a cleverer single word would
+     * have to be explained on every shelf that shows it.
+     *
+     * `territory` keeps the key again, and `races` goes into
+     * `FAMILY_ABSORBED`. Races is the busier of the two on the live ledger —
+     * it was one of the eight keys the member counted in
+     * `familiesMerged.test.ts` held — and a member holding `races` today
+     * simply holds `territory` under the fold, paid once either way.
      */
-    title: "Territory",
-    kanji: "陣地",
-    blurb: "No lines, and nothing moves once it is down. Claim the board: surround more of it than the other side, or join your own two edges before they join theirs.",
-    games: ["go", "hex"],
+    title: "Territory and races",
+    kanji: "陣地と競走",
+    blurb: "No lines to make. Win by where you stand when it ends: surround more of the board than the other side, join your own two edges, or get every piece into the far camp before they do.",
+    games: ["go", "hex", "halma", "chineseCheckers"],
   },
   {
     key: "small-boards",
@@ -175,6 +185,9 @@ export const FAMILY_ABSORBED: Record<string, string> = {
   captures: "flips",
   "pieces-and-twists": "strange-boards",
   connections: "territory",
+  /* 2026-09-24: Halma and Chinese Checkers joined Go and Hex, making room
+     under the cap of eight for a family of number puzzles. */
+  races: "territory",
 };
 
 /**
@@ -251,14 +264,15 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
      * NOT ON STRANGE BOARDS ANY MORE, though its star is the strangest board
      * here. John, 2026-09-22: "I want to have MAX 8 items per family... so
      * strange boards has 9 items. what could be merged or taken out? Chinese
-     * checkers?" It was the one game on three shelves — its home in Races,
-     * and shown under Checkers for its name and here for its board — so it
-     * is the one that could leave a shelf and still be found twice.
+     * checkers?" It was the one game on three shelves — its home in Races
+     * (Territory and races since 2026-09-24), and shown under Checkers for
+     * its name and here for its board — so it is the one that could leave a
+     * shelf and still be found twice.
      */
     /*
      * BY THE NAME, not by the rules. Nothing is captured in Chinese Checkers
      * and no piece is crowned, so it is not a game of draughts and its home
-     * is the races. But it is called Chinese Checkers, and the shelf marked
+     * is with the races. But it is called Chinese Checkers, and the shelf marked
      * Checkers is the first place anybody looking for it will open. John,
      * 2026-09-22: "Checkers board should have Chinese checkers as well, since
      * the name." A shelf is for finding a game, and the name is how people
