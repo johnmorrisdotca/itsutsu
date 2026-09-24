@@ -33,6 +33,18 @@ export type Family = (typeof GAME_FAMILIES)[number];
 export const SET_UP_FAMILIES: Family[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0);
 
 /**
+ * THE FAMILIES OF PUZZLES, still on the row. John, 2026-09-24, on this screen
+ * with Numbers missing: "where tf is numbers games???" A family nobody can see
+ * where games are started is a family nobody finds. It opens on its puzzles
+ * as links to their own set-up (`PuzzleShelf`), never as choices this screen
+ * would try to make into a two-seat game.
+ */
+export const PUZZLE_SHELVES: Family[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length === 0);
+
+/** Every tile on the family row, in the site's order: the board families, then the puzzles. */
+export const ROW_FAMILIES: Family[] = [...SET_UP_FAMILIES, ...PUZZLE_SHELVES];
+
+/**
  * Which family the picker's second row is showing: the one holding the game
  * that is chosen, and nothing else.
  *

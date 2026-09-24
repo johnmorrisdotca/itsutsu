@@ -306,6 +306,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
 
   // The set-up page's tiles and chips.
   "src/components/live/GamePicker.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  // The puzzles a Numbers tile opens on the set-up screen: the same cards as the games beside them.
+  "src/components/live/PuzzleShelf.tsx": { GameThumb: "regular" },
   "src/components/live/BoardPicker.tsx": { BoardSizeMark: "regular" },
   "src/components/live/OpeningPicker.tsx": { OpeningMark: "regular" },
   "src/components/live/OpponentChoice.tsx": { SeatMark: "regular" },

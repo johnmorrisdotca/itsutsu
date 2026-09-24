@@ -10,7 +10,8 @@ import { boardGamesShownIn } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import { SET_UP_FAMILIES, familyShown, gameForFamilyClick, type Family } from "./picker";
+import { PUZZLE_SHELVES, ROW_FAMILIES, familyShown, gameForFamilyClick, type Family } from "./picker";
+import { PuzzleShelf } from "./PuzzleShelf";
 import { PickMark } from "./PickMark";
 import { FAMILY_ROW, FAMILY_TILES, PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
 
@@ -113,6 +114,9 @@ export function GamePicker({
   const speaker = useSpeaker();
   const [browsing, setBrowsing] = useState<string | null>(null);
   const family = familyShown(value, browsing);
+  // A family of puzzles, when that is the tile open: it leaves the chosen game alone, since a puzzle is not one.
+  const [puzzles, setPuzzles] = useState<Family | null>(null);
+  const opened = puzzles ?? family;
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
 
   /*
@@ -120,6 +124,11 @@ export function GamePicker({
    * does nothing. Both halves are `gameForFamilyClick`, tested in picker.ts.
    */
   const openFamily = (entry: Family) => {
+    if (PUZZLE_SHELVES.includes(entry)) {
+      setPuzzles(entry);
+      return;
+    }
+    setPuzzles(null);
     setBrowsing(entry.key);
     const next = gameForFamilyClick(entry, value);
     if (next !== null) onChange(next);
@@ -138,11 +147,11 @@ export function GamePicker({
     const step = STEPS[event.key];
     const to =
       step !== undefined
-        ? (at + step + SET_UP_FAMILIES.length) % SET_UP_FAMILIES.length
+        ? (at + step + ROW_FAMILIES.length) % ROW_FAMILIES.length
         : event.key === "Home"
           ? 0
           : event.key === "End"
-            ? SET_UP_FAMILIES.length - 1
+            ? ROW_FAMILIES.length - 1
             : -1;
     if (to === -1) return;
     event.preventDefault();
@@ -152,7 +161,7 @@ export function GamePicker({
      * to draw — and it has to be the same act as a click, or the keyboard
      * would have the browse-without-choosing behaviour that was the bug.
      */
-    openFamily(SET_UP_FAMILIES[to]);
+    openFamily(ROW_FAMILIES[to]);
     chips.current[to]?.focus();
   }
 
@@ -176,8 +185,8 @@ export function GamePicker({
       */}
       <div className={FAMILY_ROW}>
       <div role="tablist" aria-label="Families of games" className={FAMILY_TILES}>
-        {SET_UP_FAMILIES.map((entry, at) => {
-          const showing = entry.title === family.title;
+        {ROW_FAMILIES.map((entry, at) => {
+          const showing = entry.title === opened.title;
           return (
             <button
               key={entry.title}
@@ -225,7 +234,8 @@ export function GamePicker({
         })}
       </div>
 
-      {underFamilies}
+      {/* The board and its sizes belong to a two-seat game, so a family of puzzles has none. */}
+      {puzzles === null ? underFamilies : null}
       </div>
 
       {/*
@@ -246,7 +256,7 @@ export function GamePicker({
       <div
         role="tabpanel"
         id="family-games"
-        aria-labelledby={`family-tab-${SET_UP_FAMILIES.indexOf(family)}`}
+        aria-labelledby={`family-tab-${ROW_FAMILIES.indexOf(opened)}`}
         className="mt-1 flex min-w-0 flex-col gap-1 border-l-2 border-rule-strong pl-2.5"
         data-testid="set-up-family-games"
       >
@@ -260,6 +270,10 @@ export function GamePicker({
           Two lines on this control and no more: what the family is, here,
           and what the chosen game is, under the grid.
         */}
+        {puzzles !== null ? (
+          <PuzzleShelf family={puzzles} />
+        ) : (
+        <>
         <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
           {family.blurb}
         </span>
@@ -342,6 +356,8 @@ export function GamePicker({
             {tagline}
           </span>
         ) : null}
+        </>
+        )}
       </div>
     </fieldset>
   );
