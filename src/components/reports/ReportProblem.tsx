@@ -6,8 +6,9 @@ import { useRef, useState } from "react";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, INPUT_CLASS, TAP_HEIGHT, TONE_CLASS } from "@/components/ui/ui.constants";
 import { newReporterRef } from "@/lib/reports/reportDraft";
+import { prepareScreenshot, type PreparedScreenshot } from "@/lib/reports/reportScreenshot";
 import { reportingOpen, submitReport } from "@/lib/reports/reports.actions";
-import { REPORT_LIMITS, REPORTER_REF_KEY } from "@/lib/reports/reports.constants";
+import { REPORT_IMAGE_TYPES, REPORT_LIMITS, REPORTER_REF_KEY } from "@/lib/reports/reports.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 type Phase = "checking" | "paused" | "writing" | "sending" | "sent";
@@ -59,6 +60,27 @@ export function ReportProblem({ version }: { version: string }) {
   const [problem, setProblem] = useState<string | null>(null);
   // When the window was opened: the date the report will carry, shown before it is sent.
   const [openedAt, setOpenedAt] = useState<string | null>(null);
+  // A screenshot to go with it, picked or pasted, already made small enough to send.
+  const [shot, setShot] = useState<PreparedScreenshot | null>(null);
+  const [shotProblem, setShotProblem] = useState<string | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
+
+  async function attach(file: Blob) {
+    setShotProblem(null);
+    const prepared = await prepareScreenshot(file);
+    if ("problem" in prepared) {
+      setShotProblem(prepared.problem);
+      return;
+    }
+    if (shot) URL.revokeObjectURL(shot.preview);
+    setShot(prepared);
+  }
+
+  function detach() {
+    if (shot) URL.revokeObjectURL(shot.preview);
+    setShot(null);
+    setShotProblem(null);
+  }
 
   async function open() {
     setProblem(null);
@@ -73,9 +95,10 @@ export function ReportProblem({ version }: { version: string }) {
   async function send() {
     setPhase("sending");
     setProblem(null);
-    const sent = await submitReport({ body: text, path: pathname, reporterRef: reporterRef() });
+    const sent = await submitReport({ body: text, path: pathname, reporterRef: reporterRef(), image: shot?.base64 ?? null });
     if (sent.ok) {
       setText("");
+      detach();
       setPhase("sent");
       return;
     }
@@ -110,8 +133,8 @@ export function ReportProblem({ version }: { version: string }) {
             Report a problem <span className="font-mincho text-sm font-normal opacity-70">不具合の報告</span>
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Tell us what went wrong and what you were doing. With it we keep the page you were on, the version and the
-            date, and nothing else.
+            Tell us what went wrong and what you were doing. With it we keep the page you were on, the version, the date
+            and a screenshot if you add one, and nothing else.
           </p>
         </header>
 
@@ -152,7 +175,49 @@ export function ReportProblem({ version }: { version: string }) {
                 className={`${INPUT_CLASS} h-auto`}
                 data-testid="report-body"
                 autoFocus
+                onPaste={(event) => {
+                  // A picture pasted into the box is the screenshot; pasted words stay words.
+                  const file = Array.from(event.clipboardData.files).find((one) => one.type.startsWith("image/"));
+                  if (!file) return;
+                  event.preventDefault();
+                  void attach(file);
+                }}
               />
+              <div className="flex flex-wrap items-center gap-3">
+                {shot ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser, not a page asset */}
+                    <img src={shot.preview} alt="The screenshot that will go with the report" className="h-16 w-auto rounded-md border border-rule" data-testid="report-shot-preview" />
+                    <button type="button" onClick={detach} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="report-shot-remove">
+                      Remove the screenshot
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => picker.current?.click()} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="report-shot-add">
+                      Add a screenshot
+                    </button>
+                    <span className="text-xs text-muted">or paste one into the box</span>
+                  </>
+                )}
+                <input
+                  ref={picker}
+                  type="file"
+                  accept={REPORT_IMAGE_TYPES.join(",")}
+                  className="hidden"
+                  data-testid="report-shot-file"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    event.target.value = "";
+                    if (file) void attach(file);
+                  }}
+                />
+              </div>
+              {shotProblem ? (
+                <p role="alert" className="text-sm text-shu" data-testid="report-shot-problem">
+                  {shotProblem}
+                </p>
+              ) : null}
               {problem ? (
                 <p role="alert" className="text-sm text-shu" data-testid="report-problem-text">
                   {problem}
@@ -165,6 +230,14 @@ export function ReportProblem({ version }: { version: string }) {
                 </dd>
                 <dt>Version</dt>
                 <dd className="font-mono text-ink-soft">{version}</dd>
+                {shot ? (
+                  <>
+                    <dt>Screenshot</dt>
+                    <dd className="text-ink-soft" data-testid="report-shot-size">
+                      {Math.max(1, Math.round(shot.bytes / 1024))} KB
+                    </dd>
+                  </>
+                ) : null}
                 <dt>Date</dt>
                 <dd className="text-ink-soft" data-testid="report-date">
                   {openedAt ? <LocalTime at={openedAt} style="dateTime" /> : null}

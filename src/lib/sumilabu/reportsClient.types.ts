@@ -13,6 +13,8 @@ export type Report = {
   reporterName: string | null;
   status: ReportStatus;
   filedTicketId: string | null;
+  /** Whether a screenshot came with it. The bytes are asked for on their own (`reportImage`). */
+  hasImage?: boolean;
   createdAt: string;
 };
 
@@ -23,7 +25,12 @@ export type ReportDraft = {
   appVersion: string;
   reporterRef: string;
   reporterName: string | null;
+  /** A screenshot, JPEG, PNG or WebP, as plain base64 with no `data:` prefix; up to 1 MiB decoded. */
+  image?: string;
 };
+
+/** A screenshot as Sumilabu hands it back: its type, read off its first bytes there, and the bytes. */
+export type ReportImage = { type: string; bytes: ArrayBuffer };
 
 /** How a send went, in the words the window shows. */
 export type ReportSent =

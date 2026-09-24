@@ -106,6 +106,14 @@ const nextConfig: NextConfig = {
       "node_modules/.pnpm/**/.prisma/client/{query_engine_bg.wasm,wasm*,edge.js,index-browser.js,*.d.ts}",
     ],
   },
+  /*
+   * A Server Function takes up to 2 MB, not the default 1. "Report a problem"
+   * sends a screenshot of up to 1 MiB as base64, which is about 1.4 MB, and a
+   * reader with no invite can only reach it as a Server Function, because
+   * /api is behind the gate. Every Server Function still checks its own input:
+   * `submitReport` refuses a picture over 1 MiB before anything is sent on.
+   */
+  experimental: { serverActions: { bodySizeLimit: "2mb" } },
   async headers() {
     return [
       {

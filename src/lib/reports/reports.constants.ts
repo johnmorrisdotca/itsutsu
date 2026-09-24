@@ -45,3 +45,10 @@ export const REPORT_SEND_TIMEOUT_MS = 8_000;
 
 /** The browser's opaque id for its reporter, in its own storage. Never a name, an address or an account. */
 export const REPORTER_REF_KEY = "itsutsu-reporter-ref";
+
+/** The largest screenshot Sumilabu takes, decoded: 1 MiB (its reports contract, "Screenshots"). */
+export const REPORT_IMAGE_MAX_BYTES = 1024 * 1024;
+/** The kinds it takes, which it checks by the file's first bytes rather than trusting a name. */
+export const REPORT_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+/** A picture larger than the cap is redrawn no wider or taller than this, as a JPEG, until it fits. */
+export const REPORT_IMAGE_LONGEST_SIDE = 1600;

@@ -12,7 +12,7 @@ import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
 import type { SumilabuTarget } from "@/lib/sumilabu/sumilabuProject.types";
 import { VERSION } from "@/lib/version";
 
-import { REPORT_HEALTH_CACHE_MS, REPORT_LIMITS, REPORT_MOVES } from "./reports.constants";
+import { REPORT_HEALTH_CACHE_MS, REPORT_IMAGE_MAX_BYTES, REPORT_LIMITS, REPORT_MOVES } from "./reports.constants";
 import { cleanReportPath } from "./reportDraft";
 
 /**
@@ -73,10 +73,22 @@ async function reporterName(): Promise<string | null> {
   return name ? name.slice(0, REPORT_LIMITS.nameMax) : null;
 }
 
-export async function submitReport(asked: { body: string; path: string; reporterRef: string }): Promise<ReportSent> {
+/** Plain base64, which is all Sumilabu takes: no `data:` prefix, no whitespace. */
+const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
+
+/** The bytes a base64 string decodes to, without decoding it. */
+function decodedBytes(base64: string): number {
+  return Math.floor((base64.length * 3) / 4) - (base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0);
+}
+
+export async function submitReport(asked: { body: string; path: string; reporterRef: string; image?: string | null }): Promise<ReportSent> {
   const body = asked.body.trim();
   if (body.length < REPORT_LIMITS.bodyMin) return { ok: false, reason: "invalid", problem: "Say a little more about what went wrong." };
   if (body.length > REPORT_LIMITS.bodyMax) return { ok: false, reason: "invalid", problem: `Keep it under ${REPORT_LIMITS.bodyMax} characters.` };
+  const image = asked.image?.trim() || null;
+  if (image !== null && (!BASE64.test(image) || decodedBytes(image) > REPORT_IMAGE_MAX_BYTES)) {
+    return { ok: false, reason: "invalid", problem: "That picture could not be sent. Try a smaller one, or send the report without it." };
+  }
   const reporterRef = asked.reporterRef.trim().slice(0, REPORT_LIMITS.refMax);
   if (reporterRef === "") return { ok: false, reason: "invalid", problem: "This browser could not be told apart; reload and try again." };
 
@@ -93,6 +105,7 @@ export async function submitReport(asked: { body: string; path: string; reporter
     appVersion: VERSION.slice(0, REPORT_LIMITS.versionMax),
     reporterRef,
     reporterName: await reporterName(),
+    ...(image === null ? {} : { image }),
   });
 }
 

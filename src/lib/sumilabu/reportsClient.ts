@@ -1,6 +1,6 @@
 import { REPORT_HEALTH_TIMEOUT_MS, REPORT_SEND_TIMEOUT_MS } from "../reports/reports.constants.ts";
 
-import type { Report, ReportChanged, ReportDraft, ReportSent, ReportStatus } from "./reportsClient.types.ts";
+import type { Report, ReportChanged, ReportDraft, ReportImage, ReportSent, ReportStatus } from "./reportsClient.types.ts";
 import type { SumilabuTarget } from "./sumilabuProject.types.ts";
 
 /**
@@ -129,5 +129,24 @@ export async function fileReport(board: SumilabuTarget, id: string, actor: strin
     return changed(status, body, "filed");
   } catch (error) {
     return { ok: false, problem: (error as Error).message };
+  }
+}
+
+/**
+ * A report's screenshot, for the operator's page and nothing else. Asked with
+ * the reports token, the same as the list; null when there is none, or when
+ * Sumilabu cannot answer, so the page shows the report without it.
+ */
+export async function reportImage(target: SumilabuTarget, id: string): Promise<ReportImage | null> {
+  try {
+    const response = await fetch(`${target.url}/api/v1/projects/${target.projectKey}/reports/${encodeURIComponent(id)}/image`, {
+      headers: { authorization: `Bearer ${target.token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(REPORT_SEND_TIMEOUT_MS),
+    });
+    if (!response.ok) return null;
+    return { type: response.headers.get("content-type") ?? "application/octet-stream", bytes: await response.arrayBuffer() };
+  } catch {
+    return null;
   }
 }

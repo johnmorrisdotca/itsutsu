@@ -61,6 +61,18 @@ export async function AdminReports() {
                 <span>{report.reporterName ?? "A visitor, not signed in"}</span>
               </p>
               <p className="whitespace-pre-wrap break-words text-sm">{report.body}</p>
+              {report.hasImage ? (
+                // Drawn through our own route, which alone holds the token that reads it; opens full size on a press.
+                <a href={`/api/admin/reports/${encodeURIComponent(report.id)}/image`} target="_blank" rel="noreferrer" className="self-start" data-testid="report-shot">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a private image behind an admin route, never optimised or cached */}
+                  <img
+                    src={`/api/admin/reports/${encodeURIComponent(report.id)}/image`}
+                    alt="The screenshot sent with this report"
+                    loading="lazy"
+                    className="max-h-48 w-auto rounded-lg border border-rule"
+                  />
+                </a>
+              ) : null}
               <ReportActions id={report.id} status={report.status} />
             </li>
           ))}

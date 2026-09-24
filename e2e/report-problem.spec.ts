@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { ready } from "./support";
 
+/** A one-pixel PNG, for attaching without a file on disk. */
+const TINY_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+
 /**
  * "REPORT A PROBLEM", FROM THE FOOT OF ANY PAGE, AND WHERE IT ARRIVES.
  *
@@ -36,6 +39,12 @@ test.describe("reporting a problem", () => {
       // What goes with it is said before it is sent: the page, without its query, and the date.
       await expect(dialog.getByTestId("report-page")).toHaveText("/games");
       await expect(dialog.getByTestId("report-date")).not.toBeEmpty();
+      // A screenshot can go with it: picked, previewed, and taken off again.
+      await dialog.getByTestId("report-shot-file").setInputFiles({ name: "shot.png", mimeType: "image/png", buffer: TINY_PNG });
+      await expect(dialog.getByTestId("report-shot-preview")).toBeVisible();
+      await expect(dialog.getByTestId("report-shot-size")).toContainText("KB");
+      await dialog.getByTestId("report-shot-remove").click();
+      await expect(dialog.getByTestId("report-shot-add")).toBeVisible();
     }
     // And the way back out.
     await dialog.getByTestId("report-close").click();

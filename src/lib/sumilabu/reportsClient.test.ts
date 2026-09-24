@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { cleanReportPath, newReporterRef } from "../reports/reportDraft";
 
-import { ReportsUnreachable, fileReport, listReports, moveReport, reportsHealthy, sendReport } from "./reportsClient";
+import { ReportsUnreachable, fileReport, listReports, moveReport, reportImage, reportsHealthy, sendReport } from "./reportsClient";
 import type { ReportDraft } from "./reportsClient.types";
 import type { SumilabuTarget } from "./sumilabuProject.types";
 
@@ -82,6 +82,35 @@ describe("sending a report", () => {
       answers(answer);
       expect(await sendReport(reports, draft)).toEqual({ ok: false, reason: "unreachable" });
     }
+  });
+});
+
+describe("a screenshot with a report", () => {
+  it("goes in the same body, as plain base64, and only when there is one", async () => {
+    answers({ status: 201, body: { ok: true } });
+    await sendReport(reports, { ...draft, image: "iVBORw0KGgo=" });
+    expect(JSON.parse(calls[0]!.init.body as string).image).toBe("iVBORw0KGgo=");
+    await sendReport(reports, draft);
+    expect("image" in JSON.parse(calls[1]!.init.body as string)).toBe(false);
+  });
+
+  it("is read back with the reports token, with Sumilabu's type, and is nothing when it cannot be had", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init: RequestInit) => {
+        calls.push({ url, method: init.method ?? "GET", init });
+        return new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), { status: 200, headers: { "content-type": "image/png" } });
+      }),
+    );
+    const image = await reportImage(reports, "c1");
+    expect(image?.type).toBe("image/png");
+    expect(image?.bytes.byteLength).toBe(4);
+    expect(calls[0]!.url).toBe(`${BASE}/reports/c1/image`);
+    expect(header(0, "authorization")).toBe("Bearer dev-reports-secret");
+    answers({ status: 404, body: {} });
+    expect(await reportImage(reports, "c1")).toBeNull();
+    answers(new Error("network"));
+    expect(await reportImage(reports, "c1")).toBeNull();
   });
 });
 
