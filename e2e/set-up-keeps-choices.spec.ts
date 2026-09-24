@@ -2,6 +2,7 @@ import { join } from "node:path";
 
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
+import { isPuzzleKind } from "../src/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { memberContext, removeMember } from "./members";
@@ -271,7 +272,11 @@ test.describe("the set-up screen keeps its choices", () => {
      * five draughts games the same week — which is how a named example quietly
      * stops testing the thing it was named for.
      */
-    const smallest = [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0];
+    // Among the families the two-player set-up offers: a puzzle has no set-up screen (Numbers, 0.283.0).
+    const offered = GAME_FAMILIES.map((family) => ({ ...family, games: family.games.filter((game) => !isPuzzleKind(game)) })).filter(
+      (family) => family.games.length > 0,
+    );
+    const smallest = [...offered].sort((one, two) => one.games.length - two.games.length)[0];
     const lone = smallest.games[0];
     const { context, page, email } = await freshMember(browser, baseURL!, "smallest");
     try {
