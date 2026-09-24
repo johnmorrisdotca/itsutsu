@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { MEMBER_MARKS_SELECT, memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 
 /** How recently a member was seen, in the three bands the list marks. */
 export type Recency = "now" | "recent" | "today" | null;
@@ -39,6 +40,8 @@ export type HereNow = {
   timeZone: string;
   /** The member's own clock, if they said where they are. */
   localTime: string | null;
+  /** What is drawn after the name, as on every list of members. */
+  marks: MemberMarks;
 };
 
 /** The member's wall-clock time in their zone, or null when the zone is unset or unknown. */
@@ -62,7 +65,7 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
     where: { showOnline: true, lastSeenAt: { gte: since } },
     orderBy: { lastSeenAt: "desc" },
     take: HERE_MAX,
-    select: { id: true, email: true, name: true, picture: true, lastSeenAt: true, timeZone: true },
+    select: { id: true, email: true, name: true, picture: true, lastSeenAt: true, timeZone: true, ...MEMBER_MARKS_SELECT },
   });
   return rows.map((row) => ({
     id: row.id,
@@ -73,5 +76,6 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
     recency: recencyOf(row.lastSeenAt, now),
     timeZone: row.timeZone,
     localTime: localTimeIn(row.timeZone, now),
+    marks: memberMarks(row, now.getTime()),
   }));
 }

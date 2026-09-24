@@ -53,6 +53,8 @@ export type SharedGameProps = {
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
   opponent?: {
     name: string;
+    /** Their account, so their name leads to them; null or absent for a name with nobody behind it. */
+    memberId?: string | null;
     country: string;
     awayUntil?: string | null;
   } | null;

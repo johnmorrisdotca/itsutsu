@@ -2,9 +2,8 @@ import Link from "next/link";
 
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
-import { CountryMark } from "@/components/players/CountryMark";
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
+import { RecencyLegend } from "@/components/mine/Recency";
 import { RowActions } from "@/components/ui/Controls";
 import { RAISED_LINK } from "@/components/ui/ui.constants";
 import { fetchBuddies } from "@/lib/social/buddies";
@@ -71,9 +70,13 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               data-testid="buddy-row"
               data-member={buddy.id}
             >
-              <RecencyMark recency={buddy.recency} />
-              <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} />
-              <CountryMark country={buddy.country} />
+              <MemberTag
+                name={buddy.name}
+                memberId={buddy.id}
+                marks={buddy.marks}
+                recency={buddy.recency}
+                fallback={buddy.name}
+              />
               <span className="text-xs text-muted">
                 {buddy.city}
                 {buddy.localTime !== null ? `${buddy.city ? " · " : ""}${buddy.localTime} there` : ""}

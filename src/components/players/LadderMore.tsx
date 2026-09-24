@@ -9,7 +9,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { useLiveScroll } from "@/lib/ui/useLiveScroll";
 import { levelShown } from "@/lib/xp/levelShown";
 
-import { PlayerLink } from "./Standings";
+import { MemberTag } from "./MemberTag";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { XP_BLANK_BECAUSE } from "./players.constants";
@@ -25,7 +25,7 @@ import type { RecordSort } from "./recordSort";
 function ladderRow(player: LadderEntry): RecordTableRow {
   return {
     key: player.key,
-    subject: <PlayerLink name={player.name} memberId={player.memberId} />,
+    subject: <MemberTag name={player.name} memberId={player.memberId} marks={player.marks} fallback="" />,
     record: player,
     /*
       These are the ladder's own counting — rated games against people — so

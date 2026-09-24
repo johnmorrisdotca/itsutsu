@@ -11,8 +11,7 @@ import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
-import { playerPath } from "@/lib/rating/playerKey";
-import { shownName } from "@/lib/rating/shownName";
+import { PlayerName } from "./PlayerName";
 
 /**
  * What somebody has done here: the games by kind, the last few of them, and
@@ -151,20 +150,12 @@ export function ItsutsuRecord({
                   <GameThumb variant={game.variant} size="small" />
                   <span>
                   <GameName variant={game.variant} /> · vs{" "}
-                  {game.opponent ? (
-                    <Link
-                      href={playerPath(
-                        game.opponent,
-                        opponents?.members.get(playerKey(game.opponent))?.id,
-                      )}
-                      className="underline-offset-2 hover:underline"
-                      data-testid="player-opponent"
-                    >
-                      {shownName(game.opponent)}
-                    </Link>
-                  ) : (
-                    "anonymous"
-                  )}
+                  <PlayerName
+                    name={game.opponent}
+                    memberId={opponents?.members.get(playerKey(game.opponent))?.id}
+                    fallback="anonymous"
+                    testId="player-opponent"
+                  />
                   </span>
                 </span>
                 <span className="flex flex-wrap items-center justify-end gap-3">

@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/paging.cursor";
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
+import { MEMBER_MARKS_SELECT, memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 import type { DirectoryWho } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 
@@ -83,6 +84,8 @@ export type XpBoardRow = {
    * THEIR days, the ones their awards were keyed under. See `xpGains.ts`.
    */
   timeZone: string;
+  /** What is drawn after the name — 新, the flag, BOT — as on every list of members. */
+  marks: MemberMarks;
 };
 
 export type XpBoardPage = PagedEnvelope<XpBoardRow> & {
@@ -142,7 +145,16 @@ export async function fetchXpBoardPage({
     prisma.member.count({ where: onTheBoard }),
     prisma.member.findMany({
       where,
-      select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true, xpLastAt: true, timeZone: true },
+      select: {
+        id: true,
+        name: true,
+        xp: true,
+        xpEverywhere: true,
+        xpImported: true,
+        xpLastAt: true,
+        timeZone: true,
+        ...MEMBER_MARKS_SELECT,
+      },
       orderBy: keysetOrderBy(spec, sort) as Prisma.MemberOrderByWithRelationInput[],
       // One further than the page, so "is there more" needs no second query.
       take: takeFor(limit),
@@ -158,6 +170,7 @@ export async function fetchXpBoardPage({
       imported: scope === RECORD_SCOPES.everywhere ? row.xpImported : 0,
       lastAt: row.xpLastAt,
       timeZone: row.timeZone,
+      marks: memberMarks(row),
     })),
     next,
     total,

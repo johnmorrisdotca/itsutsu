@@ -3,7 +3,8 @@ import Link from "next/link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 
-import { LadderSideView, PlayerLink } from "@/components/players/Standings";
+import { PlayerName } from "@/components/players/PlayerName";
+import { LadderSideView } from "@/components/players/Standings";
 import { RecordLine } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
@@ -136,7 +137,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
       */}
       {leader === undefined ? null : (
         <p className="text-sm" data-testid="game-champion">
-          <span className="text-muted">Champion:</span> <PlayerLink name={leader.name} memberId={leader.memberId} />{" "}
+          <span className="text-muted">Champion:</span> <PlayerName name={leader.name} memberId={leader.memberId} fallback="" />{" "}
           <span className="font-mono text-muted tabular-nums">{leader.rating}</span>
         </p>
       )}

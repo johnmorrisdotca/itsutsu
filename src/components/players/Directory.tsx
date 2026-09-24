@@ -1,11 +1,7 @@
 import Link from "next/link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
-import { CountryMark } from "@/components/players/CountryMark";
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
-import { memberKind } from "@/lib/auth/memberKind";
 import { DirectoryFilters } from "@/components/players/DirectoryFilters";
-import { RecencyMark } from "@/components/mine/Recency";
 import { buddyMemberIds } from "@/lib/social/buddies";
 import { countText } from "@/lib/rating/figures";
 import { currentReader } from "@/lib/auth/currentReader";
@@ -26,9 +22,8 @@ import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import type { DirectoryFilter, DirectoryWho } from "@/lib/rating/directoryFilter";
 import { DirectoryEmpty, DirectoryNarrowed } from "./DirectoryNarrowing";
 import { ignoredMemberIds } from "@/lib/social/ignores";
-import { playerPath } from "@/lib/rating/playerKey";
-import { shownName } from "@/lib/rating/shownName";
 import { directoryActions } from "./directoryActions";
+import { MemberTag } from "./MemberTag";
 
 /**
  * One member's row, worked out from their profile and what they played
@@ -98,60 +93,20 @@ function directoryRow(
   const rating = ratingShown(entry.profile);
   return {
     key: entry.id,
+    /*
+      The name and its marks through `MemberTag`, the one way a row names a
+      member — the XP board, the ladders and the buddies draw theirs with it
+      too, so 新, the flag and BOT sit in the same order everywhere.
+    */
     subject: (
-      <span className="flex items-center gap-2">
-        <RecencyMark recency={actions.recency(entry)} />
-        {/*
-          No picture before the name. It was drawn on this tab alone, and only
-          for members who had signed in with one, so the names did not line up
-          with each other or with any other tab. John: "no point in showing the
-          icon before the name, as you don't do it anywhere else in the entire
-          Players section tabs. so be consistent."
-        */}
-        {entry.name.trim() !== "" ? (
-          <Link
-            href={playerPath(entry.name, entry.id)}
-            className="underline-offset-2 hover:underline"
-            data-testid="directory-name"
-          >
-            {shownName(entry.name)}
-          </Link>
-        ) : (
-          entry.email
-        )}
-        {/*
-          New for two weeks, as a mark on the name rather than a word in the
-          Joined column: the word made that column 138 pixels for a date that
-          needs 75, and the table had to fit the site's one width. John: "New
-          can go next to a name or be an icon on the name."
-        */}
-        {entry.isNew ? (
-          <span
-            className="text-[0.7rem] font-semibold text-moss"
-            title="New here, joined in the last two weeks"
-            aria-label="new member"
-            data-testid="record-new"
-          >
-            新
-          </span>
-        ) : null}
-        {/* Where they are, which is most of why they answer at four in the morning. */}
-        <CountryMark country={entry.country} className="text-sm" />
-        {/*
-          Which sort of member this is, drawn on the unusual rows only — the
-          badge the operator's list has used all along, rather than a second
-          one invented here. It earns its place now that the default shows
-          programs alongside people: a reader should never have to work out
-          which of the names is a program.
-        */}
-        <MemberKindBadge
-          kind={memberKind({
-            email: entry.email,
-            botTier: entry.botTier,
-            unclaimableBecause: entry.unclaimableBecause,
-          })}
-        />
-      </span>
+      <MemberTag
+        name={entry.name}
+        memberId={entry.id}
+        marks={entry.marks}
+        recency={actions.recency(entry)}
+        fallback={entry.email ?? ""}
+        testId="directory-name"
+      />
     ),
     record,
     /*

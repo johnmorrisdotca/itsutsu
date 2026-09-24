@@ -29,7 +29,7 @@ import { describe, expect, it } from "vitest";
  */
 
 /** Building an address for a person. */
-const LINKS_A_PERSON = /\bplayerPath\s*\(|<PlayerName\b|<PlayerLink\b/;
+const LINKS_A_PERSON = /\bplayerPath\s*\(|<PlayerName\b|<MemberTag\b/;
 
 /** An id going with it, however the caller writes it. */
 const CARRIES_AN_ID = /memberId\s*[=:]|playerPath\s*\([^)]*,/;
@@ -46,10 +46,6 @@ const EXEMPT = new Map<string, string>([
   [
     "src/components/players/PlayerName.tsx",
     "The component itself: it takes the id and builds the address. It is what the rule is about, not a caller of it.",
-  ],
-  [
-    "src/components/players/Standings.tsx",
-    "Defines PlayerLink and also uses it, passing the standing's memberId. The definition is what the rule is about.",
   ],
   [
     "src/components/game/PlayerNames.tsx",

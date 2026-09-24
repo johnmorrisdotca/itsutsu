@@ -11,7 +11,7 @@ import { ignoredMemberIds } from "@/lib/social/ignores";
 
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
-import { PlayerLink } from "@/components/players/Standings";
+import { MemberTag } from "@/components/players/MemberTag";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
@@ -193,11 +193,12 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
             {people.map(({ name, member }) => (
               <li key={member.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                 {/*
-                  `PlayerLink` rather than `PlayerName`: these names all have a
-                  member row behind them by the filter above, so there is no
-                  empty seat to describe and no fallback to invent.
+                  A row about a person, so the name and its marks as every list
+                  of members draws them. These names all have a member row
+                  behind them by the filter above, so there is no empty seat
+                  to describe and no fallback to invent.
                 */}
-                <PlayerLink name={name} />
+                <MemberTag name={name} memberId={member.id} marks={member.marks ?? null} fallback="" />
                 <PlayerActions
                   compact
                   testId="played-here-actions"

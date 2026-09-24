@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { revokeInviteCode } from "@/lib/invite/inviteStore";
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
+import { memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isAdminEmail } from "./admin";
 import { canBeClaimed } from "./memberId";
@@ -46,6 +47,8 @@ export type MemberSummary = NamedMember & {
    * could read the allowlist.
    */
   kind: MemberKind;
+  /** What is drawn after the name, the same marks as every other list — with the kind above, which knows the operator. */
+  marks: MemberMarks;
   /** True of exactly one row in the operator's own list: theirs. */
   isYou: boolean;
   /**
@@ -106,6 +109,7 @@ const MEMBER_SUMMARY_SELECT = {
   bannedNote: true,
   invitedWith: true,
   unclaimableBecause: true,
+  country: true,
   /*
    * The DATE the words were set, never the hash — see `MemberSummary.phraseSetAt`
    * for why the operator's list carries it and why one more column here is the
@@ -181,6 +185,7 @@ type SummaryRow = {
   bannedNote: string;
   invitedWith: string;
   unclaimableBecause: string | null;
+  country: string;
   phraseSetAt: Date | null;
   botTier: string | null;
 };
@@ -191,22 +196,26 @@ type SummaryRow = {
  * by id. Null when the operator has no member row — then no row is theirs.
  */
 function toSummary(rows: SummaryRow[], youId: string | null): MemberSummary[] {
-  return rows.map(({ unclaimableBecause, botTier, phraseSetAt, ...row }) => ({
-    ...row,
-    createdAt: row.createdAt.toISOString(),
-    lastSeenAt: row.lastSeenAt.toISOString(),
-    bannedAt: row.bannedAt === null ? null : row.bannedAt.toISOString(),
-    phraseSetAt: phraseSetAt === null ? null : phraseSetAt.toISOString(),
-    mayHavePhrase: canBeClaimed(unclaimableBecause),
-    kind: memberKind({
+  return rows.map(({ unclaimableBecause, botTier, phraseSetAt, country, ...row }) => {
+    const kind = memberKind({
       email: row.email,
       unclaimableBecause,
       botTier,
       isOperator: isAdminEmail(row.email),
       legacyKind: legacyKindOf(row.name),
-    }),
-    isYou: youId !== null && row.id === youId,
-  }));
+    });
+    return {
+      ...row,
+      createdAt: row.createdAt.toISOString(),
+      lastSeenAt: row.lastSeenAt.toISOString(),
+      bannedAt: row.bannedAt === null ? null : row.bannedAt.toISOString(),
+      phraseSetAt: phraseSetAt === null ? null : phraseSetAt.toISOString(),
+      mayHavePhrase: canBeClaimed(unclaimableBecause),
+      kind,
+      marks: { ...memberMarks({ country, botTier, unclaimableBecause, createdAt: row.createdAt }), kind },
+      isYou: youId !== null && row.id === youId,
+    };
+  });
 }
 
 /**

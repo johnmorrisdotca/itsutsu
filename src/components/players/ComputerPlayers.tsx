@@ -1,10 +1,7 @@
 import Link from "next/link";
 
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { CountryMark } from "@/components/players/CountryMark";
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
-import { MEMBER_KINDS } from "@/lib/auth/memberKind";
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
@@ -94,17 +91,7 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
       // without reading the names — which are copy and will change.
       attributes: { "data-tier": entry.botTier ?? "" },
       subject: (
-        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <PlayerName
-            name={entry.name}
-            memberId={entry.id}
-            fallback=""
-            className="font-medium"
-            testId="computer-player-name"
-          />
-          <CountryMark country={entry.country} className="text-sm" />
-          <MemberKindBadge kind={MEMBER_KINDS.robot} />
-        </span>
+        <MemberTag name={entry.name} memberId={entry.id} marks={entry.marks} fallback="" testId="computer-player-name" />
       ),
       record: here,
       /*

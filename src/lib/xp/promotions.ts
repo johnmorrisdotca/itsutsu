@@ -1,3 +1,4 @@
+import { memberMarks } from "@/lib/players/memberMarks";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 
 import { IMPORTED_XP_TYPES } from "./importedXp.constants";
@@ -135,6 +136,12 @@ export function promotionOf(batch: PromotionBatch): Promotion | null {
     memberId: batch.memberId,
     name: batch.name,
     computer: batch.botTier !== null,
+    marks: memberMarks({
+      country: batch.country,
+      botTier: batch.botTier,
+      unclaimableBecause: batch.unclaimableBecause,
+      createdAt: batch.joinedAt,
+    }),
     from,
     to,
     at: batch.at,

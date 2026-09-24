@@ -2,7 +2,7 @@ import { ResignButton } from "@/components/mine/ResignButton";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { otherStone } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { shownName } from "@/lib/rating/shownName";
+import { PlayerName } from "@/components/players/PlayerName";
 
 import { ReactionBar } from "./Reactions";
 import { writeQuiet } from "./quiet";
@@ -104,7 +104,13 @@ export function SharedGameFooter({
       {opponent !== null && seat !== null ? (
         <p className="text-xs text-muted" data-testid="opponent-line">
           You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
-          <span className="font-medium text-ink">{shownName(opponent.name)}</span>
+          <PlayerName
+            name={opponent.name}
+            memberId={opponent.memberId}
+            linkable={Boolean(opponent.memberId)}
+            fallback=""
+            className="font-medium text-ink"
+          />
           {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
           {opponent.awayUntil ? (
             <>

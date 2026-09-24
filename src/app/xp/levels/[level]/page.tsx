@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Paired } from "@/components/i18n/Paired";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
 import { WhoFilter } from "@/components/players/WhoFilter";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
@@ -263,14 +263,13 @@ function WhoIsHere({
                   data-testid="level-member"
                 >
                   <td className="py-1.5 pr-3">
-                    <PlayerName
+                    <MemberTag
                       name={member.name}
                       memberId={member.id}
+                      marks={member.marks}
+                      you={member.id === viewerId}
                       fallback="A member with no name yet"
                     />
-                    {member.id === viewerId ? (
-                      <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
-                    ) : null}
                     {notes.get(member.id) ?? null}
                   </td>
                   <td className={CELL}>{countText(member.xp)}</td>

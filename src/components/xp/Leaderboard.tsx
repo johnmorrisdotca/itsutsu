@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { ariaSort, sortHref } from "@/lib/api/paging";
 import type { SortChoice, SortColumn, SortSpec } from "@/lib/api/paging.types";
@@ -269,10 +269,13 @@ export function Leaderboard({
                 >
                   <td className={`${CELL} text-muted`}>{from + index + 1}</td>
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={row.name} memberId={row.id} fallback="A member with no name yet" />
-                    {you ? (
-                      <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
-                    ) : null}
+                    <MemberTag
+                      name={row.name}
+                      memberId={row.id}
+                      marks={row.marks}
+                      you={you}
+                      fallback="A member with no name yet"
+                    />
                     {notes?.get(row.id) ?? null}
                   </td>
                   <td className="py-1.5 pr-3">

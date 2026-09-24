@@ -81,7 +81,7 @@ export async function fetchPromotionsPage({
 
   const read = await prisma.$queryRaw<PromotionBatch[]>`
     SELECT p."memberId", p."at", p."dayKey", p."before", p."after", p."imported",
-           m."name", m."botTier", m."timeZone"
+           m."name", m."botTier", m."timeZone", m."country", m."unclaimableBecause", m."createdAt" AS "joinedAt"
     FROM (
       SELECT b."memberId", b."at", b."dayKey", b."imported",
              (SUM(b."points") OVER w - b."points")::int AS "before",

@@ -4,12 +4,12 @@ import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { InviteFriends } from "@/components/mine/InviteFriends";
-import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
+import { RecencyLegend } from "@/components/mine/Recency";
+import { MemberTag } from "@/components/players/MemberTag";
 import { RowActions } from "@/components/ui/Controls";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
 import { mailRefusalFor } from "@/lib/mail/mailSwitch";
-import { shownName } from "@/lib/rating/shownName";
 
 /**
  * The people a member has said something about: the ones they play, the ones
@@ -49,11 +49,16 @@ export async function MyPeople({ memberId }: { memberId: string }) {
           <ul className="flex flex-col gap-1 text-sm">
             {buddies.map((buddy) => (
               <li key={buddy.id} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
-                <RecencyMark recency={buddy.recency} />
-                <span className="font-medium">{shownName(buddy.name)}</span>
+                <MemberTag
+                  name={buddy.name}
+                  memberId={buddy.id}
+                  marks={buddy.marks}
+                  recency={buddy.recency}
+                  fallback={buddy.name}
+                />
                 <span className="text-xs text-muted">
-                  {[buddy.city, buddy.country].filter(Boolean).join(", ")}
-                  {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
+                  {buddy.city}
+                  {buddy.localTime !== null ? `${buddy.city ? " · " : ""}${buddy.localTime} there` : ""}
                 </span>
                 <span className="ml-auto">
                   <RowActions>
@@ -79,7 +84,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
           <ul className="flex flex-col gap-1 text-sm">
             {ignored.map((entry) => (
               <li key={entry.id} className="flex items-center gap-3">
-                <span>{shownName(entry.name)}</span>
+                <MemberTag name={entry.name} memberId={entry.id} marks={entry.marks} fallback={entry.name} />
                 <span className="ml-auto"><IgnoreButton memberId={entry.id} ignoring /></span>
               </li>
             ))}

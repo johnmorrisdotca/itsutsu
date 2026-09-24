@@ -18,6 +18,8 @@ import { isIgnoring } from "@/lib/social/ignores";
 /** The other seat, as the line under the board prints it. */
 export type Across = {
   name: string;
+  /** The account in that seat, so the name leads to them; null for a name typed at one screen. */
+  memberId: string | null;
   country: string;
   /** Set while they are away and their deadline is waiting. */
   awayUntil: string | null;
@@ -59,6 +61,7 @@ export async function acrossTheBoard(
       : null;
   return {
     name: member?.name || otherName || "the other seat",
+    memberId: member === null ? null : otherId,
     country: member?.country ?? "",
     awayUntil: away,
   };

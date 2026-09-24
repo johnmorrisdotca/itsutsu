@@ -1,4 +1,4 @@
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { promotionsCursor } from "@/lib/xp/promotions";
 import { xpDayKey } from "@/lib/xp/xpDay";
@@ -70,8 +70,13 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                   data-to={promotion.to}
                 >
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback="A member with no name yet" />
-                    {you ? <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span> : null}
+                    <MemberTag
+                      name={promotion.name}
+                      memberId={promotion.memberId}
+                      marks={promotion.marks}
+                      you={you}
+                      fallback="A member with no name yet"
+                    />
                   </td>
                   <td className="py-1.5 pr-3">
                     <span className="inline-flex flex-wrap items-baseline gap-x-2">

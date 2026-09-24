@@ -1,10 +1,8 @@
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { Paired } from "@/components/i18n/Paired";
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
 import { RecordTable, type RecordTableRow } from "@/components/players/RecordTable";
 import { BOT_ALL_TIERS, BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
-import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { lastPlayedByMember } from "@/lib/history/lastPlayed";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
@@ -89,16 +87,7 @@ export async function AdminBots() {
       attributes: { "data-tier": tier },
       subject: (
         <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <PlayerName
-              name={entry.name}
-              memberId={entry.id}
-              fallback=""
-              className="font-medium"
-              testId="admin-bot-name"
-            />
-            <MemberKindBadge kind={MEMBER_KINDS.robot} />
-          </span>
+          <MemberTag name={entry.name} memberId={entry.id} marks={entry.marks} fallback="" testId="admin-bot-name" />
           {/*
             THE GRADE AND WHEN IT LAST PLAYED, under the name rather than in
             columns of their own — `RecordTable` owns every column after the

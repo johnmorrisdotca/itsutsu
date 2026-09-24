@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 import { legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import type { PlayedTally } from "@/lib/history/playerRecord";
@@ -39,8 +40,8 @@ export type DirectoryEntry = {
   picture: string;
   lastSeenAt: string;
   joinedAt: string;
-  /** Joined within the last two weeks: someone to welcome. */
-  isNew: boolean;
+  /** What is drawn after the name — 新, the flag, BOT — worked out once in `memberMarks`. */
+  marks: MemberMarks;
   /** As they wrote it: free text, resolved to a flag where it can be. */
   country: string;
   profile: PlayerProfile | null;
@@ -110,9 +111,6 @@ export type DirectoryEntry = {
    */
   xp: number;
 };
-
-/** How long a member counts as new in the directory. */
-const NEW_FOR_DAYS = 14;
 
 /**
  * What one name played before this site, summed across the sites it was kept
@@ -211,7 +209,7 @@ export async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[
     picture: member.picture,
     lastSeenAt: member.lastSeenAt.toISOString(),
     joinedAt: member.createdAt.toISOString(),
-    isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
+    marks: memberMarks(member),
     country: member.country,
     profile: byMember.get(member.id) ?? byKey.get(playerKey(member.name)) ?? null,
     /*

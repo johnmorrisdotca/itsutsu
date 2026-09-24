@@ -1,3 +1,5 @@
+import type { MemberMarks } from "@/lib/players/memberMarks";
+
 /**
  * The shapes of a promotion, from the ledger row that reveals one to the line a
  * page draws. See `promotions.ts` for how one is derived and `promotionsRead.ts`
@@ -26,6 +28,11 @@ export type PromotionBatch = {
   name: string;
   /** A program's grade, or null for a person. */
   botTier: string | null;
+  /** Where they said they are, and the rest of what `memberMarks` reads. */
+  country: string;
+  unclaimableBecause: string | null;
+  /** When the member joined, which is not when the batch was written. */
+  joinedAt: Date;
   /** The member's zone as it is now; empty is UTC. */
   timeZone: string;
   /**
@@ -42,6 +49,8 @@ export type Promotion = {
   name: string;
   /** A computer player, which the Computers filter keeps and People takes off. */
   computer: boolean;
+  /** What is drawn after the name, as on every list of members. */
+  marks: MemberMarks;
   /** The level they stood on before the award. */
   from: number;
   /** The level the award carried them to — more than one above `from` when it crossed several. */

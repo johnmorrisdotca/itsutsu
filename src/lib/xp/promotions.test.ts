@@ -36,6 +36,9 @@ function batch(before: number, after: number, extra: Partial<PromotionBatch> = {
     after,
     name: "Climber",
     botTier: null,
+    country: "",
+    unclaimableBecause: null,
+    joinedAt: new Date("2026-01-01T00:00:00.000Z"),
     timeZone: "",
     imported: false,
     ...extra,
@@ -77,6 +80,7 @@ describe("the line a crossing becomes", () => {
       memberId: "m_climber",
       name: "Climber",
       computer: false,
+      marks: { country: "", kind: "member", isNew: false },
       from: 1,
       to: 2,
       at: new Date("2026-09-14T12:00:00.000Z"),
@@ -105,6 +109,12 @@ describe("the line a crossing becomes", () => {
     const program = promotionOf(batch(140, 160, { memberId: "kyu", name: "Kyu", botTier: "kyu" }));
     expect(program).toMatchObject({ computer: true, from: 2, to: 3 });
     expect(promotionOf(batch(140, 160))?.computer).toBe(false);
+  });
+
+  it("carries the same marks every list of members draws, so the line wears the BOT badge", () => {
+    const program = promotionOf(batch(140, 160, { botTier: "kyu", country: "Japan" }));
+    expect(program?.marks).toEqual({ country: "Japan", kind: "robot", isNew: false });
+    expect(promotionOf(batch(140, 160))?.marks.kind).toBe("member");
   });
 });
 

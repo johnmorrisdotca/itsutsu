@@ -265,7 +265,15 @@ it is short, and every line on it has been missed at least once:
 - **Every count of games leads to those games**, through `GameCount`, filtered
   to exactly what was counted — that player, that game, how it went, and which
   ladder was counting.
-- **Every player's name leads to their page**, through `PlayerName`.
+- **Every player's name leads to their page**, through `PlayerName` in a
+  sentence and `MemberTag` at the head of a row. `MemberTag` draws the marks
+  after a name in one order (here now, 新, flag, BOT, You) from `memberMarks`,
+  so every list of members shows the same ones; a query that lists members
+  selects `MEMBER_MARKS_SELECT` beside the name. John, 2026-09-24: "We really
+  need to be using components that show names in the same way everywhere in
+  the site." **Enforced by `src/components/players/memberNames.coverage.test.ts`**,
+  which fails on a name printed with `shownName` by hand, a mark drawn outside
+  `MemberTag`, or a row about a person headed by a bare `PlayerName`.
 - **Every opponent you are shown offers what you would want to do about them:**
   invite, challenge, buddy, ignore.
 - **Every page a link lands on says what it was narrowed to**, and lets it be

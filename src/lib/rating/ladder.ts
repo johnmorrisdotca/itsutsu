@@ -11,6 +11,8 @@ import { isRefusal, parseCursor, parseLimit, parseSort } from "@/lib/api/paging"
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
+import { marksByMemberId } from "@/lib/players/marksOfMembers";
+import type { MemberMarks } from "@/lib/players/memberMarks";
 import type { Prisma } from "@prisma/client";
 
 import { LADDER_SORT_SPEC, type LadderSortField } from "./ladder.sort";
@@ -73,7 +75,11 @@ export type LadderSort = SortChoice<LadderSortField>;
  * carry exactly what the first page carried, and `LadderMore` never has to
  * know a member's `botTier` to draw a dash.
  */
-export type LadderEntry = PlayerProfile & { xp: number | null };
+export type LadderEntry = PlayerProfile & {
+  xp: number | null;
+  /** What is drawn after the name, read once for the page like `xp`; null for a name with nobody behind it. */
+  marks: MemberMarks | null;
+};
 
 export type LadderPage = PagedEnvelope<LadderEntry> & {
   /**
@@ -135,10 +141,12 @@ export async function fetchLadderPage({
    * over `Player`, and the two are joined by an id with no relation between
    * them, so the XP heading here is plain text. The Members tab orders by it.
    */
-  const xp = await xpByMemberId(rows.map((row) => row.memberId));
+  const ids = rows.map((row) => row.memberId);
+  const [xp, marks] = await Promise.all([xpByMemberId(ids), marksByMemberId(ids)]);
   const items: LadderEntry[] = rows.map((row) => ({
     ...toProfile(row),
     xp: row.memberId === null ? null : (xp.get(row.memberId) ?? null),
+    marks: row.memberId === null ? null : (marks.get(row.memberId) ?? null),
   }));
   return { items, next, total };
 }
