@@ -24,7 +24,7 @@ this careful:
 | Doc | What it says | What is true |
 |---|---|---|
 | `README.md`, "The backlog" | five statuses: proposed 提案, planned 予定, building 作業中, done 完了, dropped 見送り | four since the board moved to Sumilabu: open, inProgress, done, dropped (`src/lib/backlog/backlog.constants.ts`, which records why `proposed` and `planned` were merged) |
-| `README.md`, headline and "Forty-five games, in seven families" | 45 games in 7 families | true today (checked 2026-09-24, after the races joined Territory), but typed by hand. It goes stale with the next game, and the tests that stop the About and home pages doing this do not read the README |
+| `README.md`, headline and "Forty-five games and a puzzle, in eight families" | 45 board games and 1 puzzle in 8 families | true today (checked 2026-09-24, after the races joined Territory and Numbers opened), but typed by hand. It goes stale with the next game, and the tests that stop the About and home pages doing this do not read the README |
 
 So the plan does two things. It moves as much as it can into the tested group.
 For what cannot be tested, it names who changes the doc and when, and it adds a
@@ -63,6 +63,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | Doc | Written for | Re-read it when these change |
 |---|---|---|
 | `README.md`, headline, "What it does", "Forty-five games…" | visitors, engineers | `src/lib/gomoku/gomoku.constants.ts` (`RULE_VARIANT_LIST`), `src/lib/gomoku/families.ts`, `src/lib/gomoku/variants.constants.ts` |
+| `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
 | `README.md`, "Openings", "Handicaps", "The board…" | engineers, players | `src/lib/gomoku/rules/**`, `src/lib/gomoku/engine.ts` |
 | `README.md`, "Players, ratings and records" | engineers, players | `src/lib/rating/**`, `src/lib/record/**`, `src/lib/xp/**`, `src/lib/legacy/**` |
 | `README.md`, "The computer players" | engineers, players | `src/lib/bots/**` |
@@ -73,7 +74,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, "The API" | integrators | `src/app/api/**` (new or removed routes) |
 | `README.md`, "Deploying", "Scripts", "Getting started" | engineers | `.github/workflows/**`, `package.json` scripts, `.env.example`, `next.config.ts` |
 | `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
-| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
+| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
@@ -92,6 +93,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `/learn` | `src/lib/learn/**` | the strategy advice depends on a rule that changed | nothing yet |
 | `/games` | `src/app/games/PublicCatalogue.tsx` | a game or family is added | `publicCatalogue.coverage.test.ts` |
 | game pictures | `public/art/games/*`, from `pnpm screenshots:games` | the board drawing changes | `boardArt.coverage.test.ts` |
+| puzzle pictures | `public/art/games/<puzzle>.jpg`, from `pnpm screenshots:puzzles` | the puzzle grid's drawing changes | `puzzleArt.coverage.test.ts` |
 | About screenshots | `public/art/about/*`, listed in `src/app/about/about.shots.ts` | a page one of them shows changes shape: the board, the replay panel, the picture window, the set-up screen, a player's page | `about.coverage.test.ts` (each file exists, at the size the page reserves) |
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |
@@ -128,7 +130,7 @@ None of these is built yet. Each is one test file or one script.
 1. **The README counts from the catalogue.** Extend the About page's
    no-counts-in-prose rule to `README.md`. The README is Markdown and cannot
    interpolate, so the test takes a different shape: it reads the number the
-   README states ("Forty-five games, in seven families") and fails when it is
+   README states ("Forty-five games and a puzzle, in eight families") and fails when it is
    not `RULE_VARIANT_LIST.length` and `GAME_FAMILIES.length`. When game 46
    lands, the build says which sentence to change.
 2. **Retired words.** One test that reads `README.md` and `docs/**/*.md` (not

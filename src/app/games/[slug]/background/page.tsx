@@ -5,18 +5,18 @@ import { notFound } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { gamePath, rulesPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { EVERY_GAME_KEY, gameCopyOf, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { gameKeyFor, gamePath, rulesPath, slugFor } from "@/lib/gomoku/slugs";
 import { backgroundFor } from "@/lib/gomoku/backgrounds";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/background">): Promise<Metadata> {
-  const variant = variantFor((await params).slug);
-  return { title: variant === null ? "Background" : `${RULE_VARIANT_DISPLAY[variant].label} · Background 背景` };
+  const copy = gameCopyOf(gameKeyFor((await params).slug) ?? "");
+  return { title: copy === null ? "Background" : `${copy.label} · Background 背景` };
 }
 
 export function generateStaticParams() {
-  return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
+  // A puzzle has the address like every game, and no art has been drawn for one yet.
+  return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
 }
 
 /**
@@ -38,10 +38,10 @@ export function generateStaticParams() {
  * made; until then the table says, truthfully, that there is none.
  */
 export default async function BackgroundPage({ params }: PageProps<"/games/[slug]/background">) {
-  const variant = variantFor((await params).slug);
+  const variant = gameKeyFor((await params).slug);
   if (variant === null) notFound();
-  const copy = RULE_VARIANT_DISPLAY[variant];
-  const art = backgroundFor(variant);
+  const copy = gameCopyOf(variant)!;
+  const art = isPuzzleKind(variant) ? null : backgroundFor(variant);
 
   return (
     <Page gap="gap-6">

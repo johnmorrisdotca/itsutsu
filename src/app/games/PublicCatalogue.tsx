@@ -14,7 +14,7 @@ import { forReader } from "@/lib/catalogue/catalogueReader";
 import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
 import type { CatalogueView } from "@/lib/gomoku/catalogueView";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 
 /*
  * /games FOR A READER WITH NO SESSION, and the catalogue's families as copy,
@@ -52,7 +52,7 @@ export function catalogueFamilies(): CatalogueFamily[] {
 
 /** One game's words, as a family's card shows them. */
 function gameCopy(variant: CatalogueFamily["games"][number]["variant"]): CatalogueFamily["games"][number] {
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const copy = gameCopyFor(variant);
   return { variant, label: copy.label, kanji: copy.kanji, tagline: copy.tagline, inspiredBy: copy.inspiredBy };
 }
 

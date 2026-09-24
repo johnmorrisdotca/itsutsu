@@ -1,15 +1,15 @@
 import type { FamilyStats, GameStats } from "@/lib/catalogue/catalogue.types";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { GameKey } from "@/lib/catalogue/gameKeys";
 
 /** One of the site's three picture sizes: "small" at half of "regular", or "large" at twice it. See `PICTURE_PX`. */
 export type PictureSize = "small" | "regular" | "large";
 
-/** What a game is won by: a line of this many, or turning discs. Derived from its spec. */
-export type GameCardKind = "3" | "4" | "5" | "6" | "flips";
+/** What a game is won by: a line of this many, or turning discs — or, for a puzzle, solving it. Derived from its spec. */
+export type GameCardKind = "3" | "4" | "5" | "6" | "flips" | "puzzle";
 
 /** One game as the card view knows it: enough to show and enough to narrow by. */
 export type GameCard = {
-  variant: RuleVariant;
+  variant: GameKey;
   label: string;
   kanji: string;
   tagline: string;
@@ -24,7 +24,7 @@ export type GameCard = {
  * shaped by who is reading — see `forReader`.
  */
 export type CatalogueGame = {
-  variant: RuleVariant;
+  variant: GameKey;
   label: string;
   kanji: string;
   tagline: string;

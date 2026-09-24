@@ -7,14 +7,18 @@ import { notFound } from "next/navigation";
 import { GameViewClient } from "@/components/game/GameViewClient";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
-import { gamePath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { gamePath, puzzleFor, rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/play">): Promise<Metadata> {
   const { slug } = await params;
-  const variant = variantFor(slug);
-  return { title: variant === null ? "Games" : `Play ${RULE_VARIANT_DISPLAY[variant].label}` };
+  const puzzle = puzzleFor(slug);
+  const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? "");
+  return { title: copy === null ? "Games" : `${puzzle !== null ? "Solve" : "Play"} ${copy.label}` };
 }
 
 /**
@@ -26,8 +30,11 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/play
  * reader wanted one or to find out what it was. The game's address is the
  * game; this is one of the things you can do with it.
  */
-export default async function PlayPage({ params }: PageProps<"/games/[slug]/play">) {
+export default async function PlayPage({ params, searchParams }: PageProps<"/games/[slug]/play">) {
   const { slug } = await params;
+  // A puzzle's solve: the size, level and seed in the query, the grid made in the browser.
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) return <PuzzlePlayPage kind={puzzle} query={await searchParams} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
@@ -79,7 +86,7 @@ export default async function PlayPage({ params }: PageProps<"/games/[slug]/play
               <span key={game}>
                 {i > 0 ? " · " : ""}
                 <Link href={gamePath(game)} className="underline underline-offset-4">
-                  {RULE_VARIANT_DISPLAY[game].label}
+                  {gameCopyFor(game).label}
                 </Link>
               </span>
             ))}

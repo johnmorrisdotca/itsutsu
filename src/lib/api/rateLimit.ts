@@ -177,6 +177,8 @@ export function overLimit(
 export const RATE_LIMITS = {
   /** Recording a finished game. */
   recordGame: { windowMs: 60_000, maxRequests: 20 },
+  /** Handing in a solved puzzle: a cost limit, since each one is a ledger write. A 4×4 takes a minute. */
+  puzzleSolved: { windowMs: 60_000, maxRequests: 12 },
   /** Starting a shared game. */
   createGame: { windowMs: 60_000, maxRequests: 30 },
   /** Playing a stone in a shared game — generous, it is the hot path. */

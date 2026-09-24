@@ -88,12 +88,14 @@ export function insideControl(source: string, at: number): boolean {
 export function isGameName(source: string, expression: string, at: number): boolean {
   if (/^variantLabel\(/.test(expression)) return true;
   if (/^RULE_VARIANT_DISPLAY\[/.test(expression)) return true;
+  // The copy of a game OR a puzzle, by key: the catalogue's one lookup since the Numbers family.
+  if (/^gameCopyFor\(/.test(expression)) return true;
   const held = /^([A-Za-z_$][\w$]*)\.label$/.exec(expression)?.[1];
   if (held === undefined) return false;
   const before = source.slice(0, at);
   let table: string | null = null;
   let assignedAt = -1;
-  for (const match of before.matchAll(new RegExp(`\\b${held}\\s*=\\s*([A-Za-z_$][\\w$]*)\\s*\\[`, "g"))) {
+  for (const match of before.matchAll(new RegExp(`\\b${held}\\s*=\\s*([A-Za-z_$][\\w$]*)\\s*[[(]`, "g"))) {
     table = match[1];
     assignedAt = match.index;
   }
@@ -102,7 +104,7 @@ export function isGameName(source: string, expression: string, at: number): bool
     paramAt = match.index;
   }
   if (paramAt > assignedAt) return new RegExp(`\\b${held}\\.variant\\b`).test(source);
-  return table === "RULE_VARIANT_DISPLAY";
+  return table === "RULE_VARIANT_DISPLAY" || table === "gameCopyFor";
 }
 
 /**
@@ -119,7 +121,11 @@ export const PAIRED_NAME = /<Paired\b[^>]{0,240}?\ben=\{\s*([^{}]{1,80}?)\s*\}/g
  * inside a SENTENCE — a hover note, a page title, a line of advice.
  */
 export function namesPrinted(source: string): number[] {
-  const patterns = [/(?<!\$)\{\s*variantLabel\(/g, /(?<!\$)\{\s*RULE_VARIANT_DISPLAY\[[^\]]+\]\.label\s*\}/g];
+  const patterns = [
+    /(?<!\$)\{\s*variantLabel\(/g,
+    /(?<!\$)\{\s*RULE_VARIANT_DISPLAY\[[^\]]+\]\.label\s*\}/g,
+    /(?<!\$)\{\s*gameCopyFor\([^)]+\)\.label\s*\}/g,
+  ];
   const found: number[] = [];
   for (const pattern of patterns) {
     for (const match of source.matchAll(pattern)) found.push(match.index);

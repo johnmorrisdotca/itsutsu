@@ -6,6 +6,7 @@ import { GameCards } from "@/components/games/GameCards";
 import { GameList } from "@/components/games/GameList";
 import { GameName } from "@/components/games/GameName";
 import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
+import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
@@ -17,10 +18,10 @@ import {
   cataloguePath,
   type CatalogueView,
 } from "@/lib/gomoku/catalogueView";
-import { RULE_VARIANT_LIST, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { EVERY_GAME_KEY, gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
 import { familyPath } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 import type { CatalogueFamily, CatalogueGame, CatalogueGuest, GameCard, GameCardKind } from "./games.types";
 
@@ -159,7 +160,10 @@ function Families({
                   toggling the family, which is what a link inside a summary
                   does.
                 */}
-                <FamilyStatsLine stats={stats.families[family.key]} />
+                {/* A family of puzzles has no played-figures: nothing is counted of a solve yet. */}
+                {family.games.every((game) => isPuzzleKind(game.variant)) ? null : (
+                  <FamilyStatsLine stats={stats.families[family.key]} />
+                )}
               </span>
             </span>
             <span className="text-xs text-muted group-open:hidden">show</span>
@@ -250,7 +254,11 @@ function FamilyGameCard({
           a member it still opens the game. The same figures on a guest's card as
           at home: they are the game's, not the shelf's.
         */}
-        <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
+        {isPuzzleKind(game.variant) ? (
+          <PuzzleLine kind={game.variant} signedIn={signedIn} />
+        ) : (
+          <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
+        )}
       </span>
       <CardArrow />
     </li>
@@ -263,15 +271,13 @@ function FamilyGameCard({
  * `kind` comes off the spec rather than being written down a second time, so
  * the bar that narrows by "what wins" cannot drift from what actually wins.
  */
-const CARDS: GameCard[] = RULE_VARIANT_LIST.map((variant) => {
-  const copy = RULE_VARIANT_DISPLAY[variant];
-  const spec = VARIANT_SPECS[variant];
-  return {
-    variant,
-    label: copy.label,
-    kanji: copy.kanji,
-    tagline: copy.tagline,
-    inspiredBy: copy.inspiredBy,
-    kind: spec.flips ? "flips" : (String(spec.winLength ?? 5) as GameCardKind),
-  };
+const CARDS: GameCard[] = EVERY_GAME_KEY.map((variant) => {
+  const copy = gameCopyFor(variant);
+  // A puzzle is won by nothing: it is solved. Its kind is its own chip on the bar.
+  const kind: GameCardKind = isPuzzleKind(variant)
+    ? "puzzle"
+    : VARIANT_SPECS[variant].flips
+      ? "flips"
+      : (String(VARIANT_SPECS[variant].winLength ?? 5) as GameCardKind);
+  return { variant, label: copy.label, kanji: copy.kanji, tagline: copy.tagline, inspiredBy: copy.inspiredBy, kind };
 });

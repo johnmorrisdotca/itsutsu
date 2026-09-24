@@ -71,6 +71,7 @@ export const XP_EVENTS = {
   everyFamilyPlayed: "everyFamilyPlayed",
   everyVariantPlayed: "everyVariantPlayed",
   everyVariantWonInFamily: "everyVariantWonInFamily",
+  puzzleSolved: "puzzleSolved",
   wins10: "wins10",
   wins100: "wins100",
   wins250: "wins250",
@@ -391,6 +392,23 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     kanji: "一族制覇",
     blurb: "For winning at every game in a family of more than one game. Paid on the win that completes it.",
     sentence: "You have won at every game in this family.",
+  },
+
+  /* ── The puzzles ────────────────────────────────────────────────────────
+     A puzzle finished is a game seen through, at the same price and under the
+     same allowance as `gameFinished`, so a member's evening of Number Place
+     is worth an evening of games and no more. Keyed on the puzzle, so the
+     same grid pays once however often it is re-entered; a fresh seed is a
+     fresh puzzle. Not a win: there is nobody to beat, so no `gameWon` rides
+     it, and a puzzle's family cannot be "won" (`familyToWin`). Paid only by
+     `POST /api/puzzles/solved`, after the server has checked the grid. */
+  puzzleSolved: {
+    points: 25,
+    label: "Puzzle solved",
+    kanji: "解決",
+    blurb: "For solving a puzzle right through, checked by the site. The same puzzle pays once.",
+    sentence: "A puzzle solved.",
+    cap: 6,
   },
 
   /* ── Milestones at one game ─────────────────────────────────────────────
@@ -751,12 +769,13 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   upsetWin: "the game id, so one game pays one band",
   bigUpsetWin: "the game id, so one game pays one band",
   giantKilled: "the game id, so one game pays one band",
-  firstOfVariant: "the RuleVariant key",
+  firstOfVariant: "the RuleVariant key, or a PuzzleKind for a puzzle solved",
   firstWinAtVariant: "the RuleVariant key",
   firstOfFamily: "the family's key in GAME_FAMILIES, which the family title is not",
   everyFamilyPlayed: "",
   everyVariantPlayed: "",
   everyVariantWonInFamily: "the family's key in GAME_FAMILIES, which the family title is not — once per family, and only a family of more than one game",
+  puzzleSolved: "the puzzle's kind, side and the hash of its givens, so one grid pays once",
   wins10: "the RuleVariant key, so it is once per game per member",
   wins100: "the RuleVariant key, so it is once per game per member",
   wins250: "the RuleVariant key, so it is once per game per member",

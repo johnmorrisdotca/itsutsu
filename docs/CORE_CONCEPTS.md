@@ -55,6 +55,16 @@ remembering: `variants.coverage.test.ts` fails the build for a game with no
 test of its own rule, no copy, no family, no screenshot or no end-to-end test.
 `AGENTS.md`, "New Game Gate", lists everything a game needs.
 
+**A puzzle is not a variant.** Number Place (our Sudoku) has one solver, no
+turns and no colours, so it is a `PuzzleKind` (`src/lib/puzzles/`) rather than
+a row in `VARIANT_SPECS`, with its own generator, checker and gate
+(`puzzles.coverage.test.ts`). The catalogue joins the two kinds through
+`GameKey` (`src/lib/catalogue/gameKeys.ts`): a family holds `GameKey`s, a
+name or a picture is asked for by `GameKey`, and the few places that only
+make sense for a board — the two-player set-up, a ladder, a record — read
+`boardGamesOf(family)` and skip the puzzles. `docs/plans/numbers/README.md`
+has the reasoning.
+
 ## 2. A game is its moves
 
 A stored game is **its settings plus its move list, never a board**. A board

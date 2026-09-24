@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { NO_HANDICAP, NO_HEAD_START, RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 
@@ -166,6 +166,9 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaFake }));
 
 const { recordPlayed } = await import("@/lib/rating/playedRun");
 const { awardFinishedGameXp } = await import("./xpGameServer");
+// After the mock, like the two above: the awarder reads the faked database.
+const { awardXp } = await import("./awardXp");
+const { puzzleAwards } = await import("./xpPuzzle");
 
 function member(
   id: string,
@@ -618,9 +621,22 @@ describe("a game at the weekend", () => {
   });
 });
 
+/** The family with the fewest games a member can WIN. Never the puzzles, which are solved. */
+function smallestFamily(): (typeof GAME_FAMILIES)[number] {
+  return GAME_FAMILIES.filter((family) => boardGamesOf(family).length >= 2).sort(
+    (one, two) => one.games.length - two.games.length,
+  )[0];
+}
+
+/** A puzzle solved: the one game on the tour no finished game can meet. */
+async function solvedAPuzzle(memberId: string): Promise<void> {
+  await awardXp({ memberId, awards: puzzleAwards("numberPlace", 4, "1..4.3..2.1..4.3") });
+}
+
 describe("the tour's two bonuses", () => {
   it("pays every-family and every-game once the last one is in", async () => {
     member("completer");
+    await solvedAPuzzle("completer");
 
     for (const variant of RULE_VARIANT_LIST) {
       await recordPlayed(finished({ black: "completer", white: null, winner: "black", variant }));
@@ -628,7 +644,7 @@ describe("the tour's two bonuses", () => {
 
     expect(paid("completer", "everyVariantPlayed")).toBe(1);
     expect(paid("completer", "everyFamilyPlayed")).toBe(1);
-    expect(paid("completer", "firstOfVariant")).toBe(RULE_VARIANT_LIST.length);
+    expect(paid("completer", "firstOfVariant")).toBe(RULE_VARIANT_LIST.length + 1);
   });
 
   it("pays them even though the day's allowance stopped the finishes", async () => {
@@ -637,6 +653,7 @@ describe("the tour's two bonuses", () => {
     // thirty-ninth game of something new on the same day is worth 500. Telling
     // somebody nothing happened is the failure a cap exists to prevent.
     member("busy");
+    await solvedAPuzzle("busy");
 
     for (const variant of RULE_VARIANT_LIST) {
       await recordPlayed(finished({ black: "busy", white: null, winner: "black", variant }));
@@ -829,7 +846,7 @@ describe("a family won, through the writer", () => {
      * of eight is a long way round for a test about the completing win, so
      * the family is read from the table rather than named.
      */
-    const smallest = [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0];
+    const smallest = smallestFamily();
     const games = smallest.games;
     expect(games.length).toBeGreaterThanOrEqual(2);
 
@@ -845,7 +862,7 @@ describe("a family won, through the writer", () => {
 
   it("pays nothing for a family played through but not won through", async () => {
     member("me");
-    const games = [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0].games;
+    const games = smallestFamily().games;
 
     await recordPlayed(finished({ black: "me", white: null, winner: "white", variant: games[0] }));
     for (const variant of games.slice(1)) {

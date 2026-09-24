@@ -7,6 +7,8 @@ import { gamePath } from "@/lib/gomoku/slugs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { GameStatsStrip } from "@/components/games/GameStats";
+import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
+import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD, STRETCHED_LINK } from "@/components/ui/ui.constants";
@@ -141,7 +143,11 @@ export function GameCards({
               {copy.inspiredBy !== undefined ? (
                 <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
               ) : null}
-              <GameStatsStrip stats={stats.games[copy.variant]} signedIn={signedIn} compact />
+              {isPuzzleKind(copy.variant) ? (
+                <PuzzleLine kind={copy.variant} signedIn={signedIn} />
+              ) : (
+                <GameStatsStrip stats={stats.games[copy.variant]} signedIn={signedIn} compact />
+              )}
             </span>
             <CardArrow />
           </li>

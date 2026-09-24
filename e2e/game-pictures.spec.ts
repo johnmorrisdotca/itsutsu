@@ -2,7 +2,7 @@ import { expect, test, type Locator } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
-import { GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 
 import { removeMember, seedMember } from "./members";
@@ -100,13 +100,15 @@ test.describe("the games index", () => {
     await ready(page, "set-up-game");
 
     const tabs = page.getByTestId("set-up-family");
-    await expect(tabs).toHaveCount(GAME_FAMILIES.length);
-    for (let index = 0; index < GAME_FAMILIES.length; index += 1) {
+    // The set-up screen offers the families with a game two people can play: the puzzles are not on it.
+    const offered = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0);
+    await expect(tabs).toHaveCount(offered.length);
+    for (let index = 0; index < offered.length; index += 1) {
       const tab = tabs.nth(index);
-      expect(await sideOf(tab.getByTestId("family-mark")), GAME_FAMILIES[index].title).toBe(REGULAR_PX);
+      expect(await sideOf(tab.getByTestId("family-mark")), offered[index].title).toBe(REGULAR_PX);
       // English only: the name and nothing else, on one line inside its tile ("Pieces and twists" used to wrap).
       const label = tab.locator(":scope > span");
-      await expect(label).toHaveText(GAME_FAMILIES[index].title);
+      await expect(label).toHaveText(offered[index].title);
       await isOneLineInside(label, tab);
     }
   });

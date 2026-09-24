@@ -240,6 +240,20 @@ that is missing any of them fails the build rather than shipping quietly.
 TypeScript already forces the `VARIANT_SPECS` and `RULE_VARIANT_DISPLAY` rows, because
 both are `Record<RuleVariant, …>`. The gate covers what types cannot see.
 
+**A puzzle is not a variant, and has a gate of its own.** Number Place and the
+Numbers family (2026-09-24) are a `PuzzleKind` under `src/lib/puzzles/`, never a
+row in `VARIANT_SPECS`: one solver, no turns, no colours, nothing the engine, the
+simulator, the bots or a ladder can do anything with. The catalogue joins the two
+kinds through `GameKey` (`src/lib/catalogue/gameKeys.ts`), so a puzzle is in a
+family, has a front door at `/games/<slug>` with `/rules`, `/family`, `/new` and
+`/play` under it, a picture (`pnpm screenshots:puzzles`, stamped by
+`puzzleArt.coverage.test.ts`) and a browser test, and `puzzles.coverage.test.ts`
+asks it every question above in its own terms — plus that its generator makes a
+puzzle with exactly one answer at every size and level it offers, in a browser's
+time, and that `checkSolution` refuses a wrong grid. Everything that thinks about
+a puzzle runs in the browser; the server checks a finished grid in O(cells) and
+pays. The reasoning is in `docs/plans/numbers/README.md`.
+
 ### Nothing Is A Dead End
 
 Two rules, in John's words, and one principle underneath them.

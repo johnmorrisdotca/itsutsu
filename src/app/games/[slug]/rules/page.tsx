@@ -5,22 +5,24 @@ import { notFound } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { gamePath, historyPath, playPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, playPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 
-import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
-  const variant = variantFor((await params).slug);
-  return { title: variant === null ? "Rules 規則" : `${RULE_VARIANT_DISPLAY[variant].label} · Rules 規則` };
+  const { slug } = await params;
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
+  return { title: copy === null ? "Rules 規則" : `${copy.label} · Rules 規則` };
 }
 
 export function generateStaticParams() {
-  return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
+  // A puzzle's rules are a document under it, as a game's are.
+  return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
 }
 
 /**
@@ -67,10 +69,19 @@ function Part({ heading, lines }: { heading: Paired; lines: string[] }) {
  * behind its own `connection()`.
  */
 export default async function RulesPage({ params }: PageProps<"/games/[slug]/rules">) {
-  const variant = variantFor((await params).slug);
-  if (variant === null) notFound();
-  const page = rulesPageFor(variant);
-  const guides = guidesFor(variant);
+  const { slug } = await params;
+  /*
+   * A puzzle's rules in the game's template: Object, Board, Play, House,
+   * built by `puzzleRulesPage` from the puzzle's own spec and copy. It has
+   * no record to link and no guide on the learning shelf yet, so those two
+   * are the game's alone.
+   */
+  const puzzle = puzzleFor(slug);
+  const variant = puzzle === null ? variantFor(slug) : null;
+  if (puzzle === null && variant === null) notFound();
+  const key = puzzle ?? variant!;
+  const page = puzzle !== null ? puzzleRulesPage(puzzle) : rulesPageFor(variant!);
+  const guides = variant === null ? [] : guidesFor(variant);
   const say = await currentSpeaker();
   /*
    * The game's own name. It has no dictionary entry and wants none — a name
@@ -112,7 +123,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
                 {say.say("nav.games")}
               </Link>{" "}
               /{" "}
-              <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="rules-up">
+              <Link href={gamePath(key)} className="underline-offset-2 hover:underline" data-testid="rules-up">
                 {name.text}
               </Link>{" "}
               / {say.say("nav.rules")}
@@ -164,8 +175,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
           <Part heading={say.pair("rules.house", "細則")} lines={page.house} />
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-<Link href={playPath(variant)} className="font-semibold underline-offset-2 hover:underline">
-              {say.say("rules.playThis", { game: name.text })}
+<Link href={puzzle !== null ? setUpPath(key) : playPath(key)} className="font-semibold underline-offset-2 hover:underline">
+              {puzzle !== null ? `Solve ${name.text}` : say.say("rules.playThis", { game: name.text })}
             </Link>
             {/*
               The ways out that are not "start one". Short here, because the
@@ -173,14 +184,16 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
               This is the document; a document that tries to be the hub as well
               is how /rules/<slug> ended up with a ladder bolted to it.
             */}
-            <Link
-              href={historyPath(variant)}
-              className="text-sm underline-offset-2 hover:underline"
-              data-testid="rules-record-link"
-            >
-              {played.text}{" "}
-              {played.kanji !== null ? <span className="font-mincho">{played.kanji}</span> : null}
-            </Link>
+            {variant !== null ? (
+              <Link
+                href={historyPath(variant)}
+                className="text-sm underline-offset-2 hover:underline"
+                data-testid="rules-record-link"
+              >
+                {played.text}{" "}
+                {played.kanji !== null ? <span className="font-mincho">{played.kanji}</span> : null}
+              </Link>
+            ) : null}
             {/*
               Somewhere outside this site that can contradict us. A rules page
               is only worth trusting if it can be checked, and the article is

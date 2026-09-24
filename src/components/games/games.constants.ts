@@ -71,6 +71,7 @@ export const GAME_CARD_KINDS: { kind: GameCardKind; label: string; kanji: string
   { kind: "5", label: "Five in a row", kanji: "五目" },
   { kind: "6", label: "Six in a row", kanji: "六目" },
   { kind: "flips", label: "Flips", kanji: "反転" },
+  { kind: "puzzle", label: "A puzzle", kanji: "詰" },
 ];
 
 /** A quiet text link in a row of them, as the plain list uses. */

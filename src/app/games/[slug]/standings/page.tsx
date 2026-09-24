@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -196,7 +197,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
             </span>
             {siblings.games.map((game) => (
               <Link key={game} href={standingsPath(game)} className="underline-offset-2 hover:underline">
-                {RULE_VARIANT_DISPLAY[game].label}
+                {gameCopyFor(game).label}
               </Link>
             ))}
           </p>

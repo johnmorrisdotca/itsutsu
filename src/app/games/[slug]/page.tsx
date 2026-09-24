@@ -11,13 +11,15 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, STRETCHED_ROW } from "@/components/ui/ui.constants";
-import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { PuzzleFrontDoor } from "@/components/puzzles/PuzzleFrontDoor";
+import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
   backgroundPath,
   familyPath,
   historyPath,
   myGamePath,
   playPath,
+  puzzleFor,
   rulesPath,
   setUpPath,
   slugFor,
@@ -28,14 +30,15 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
-  const variant = variantFor((await params).slug);
-  if (variant === null) return { title: "Games" };
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const { slug } = await params;
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
+  if (copy === null) return { title: "Games" };
   return { title: `${copy.label} ${copy.kanji}`, description: copy.tagline };
 }
 
 export function generateStaticParams() {
-  return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
+  // The puzzles have front doors at the same address shape as the games.
+  return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
 }
 
 /**
@@ -64,7 +67,15 @@ export function generateStaticParams() {
  * nothing deployed at all.
  */
 export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
-  const variant = variantFor((await params).slug);
+  const { slug } = await params;
+  /*
+   * A puzzle first: it has a front door of its own shape, with no ladder, no
+   * record and no board — see `PuzzleFrontDoor`, and docs/plans/numbers for
+   * why a puzzle is a kind of its own rather than a variant.
+   */
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) return <PuzzleFrontDoor kind={puzzle} />;
+  const variant = variantFor(slug);
   if (variant === null) notFound();
   const page = rulesPageFor(variant);
 

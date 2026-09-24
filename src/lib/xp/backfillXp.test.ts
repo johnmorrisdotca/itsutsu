@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 
 import { ledgerDisagreements } from "./backfillPay";
@@ -30,10 +30,18 @@ import type { XpEventType } from "./xp.types";
 
 const AT = (iso: string): Date => new Date(iso);
 
-/** The family with the fewest games: the shortest thing a member can win right through. */
+/** The family with the fewest games a member can WIN: the shortest thing to win right through. Never the puzzles. */
 function smallestFamily(): (typeof GAME_FAMILIES)[number] {
-  return [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0];
+  return GAME_FAMILIES.filter((family) => boardGamesOf(family).length >= 2).sort(
+    (one, two) => one.games.length - two.games.length,
+  )[0];
 }
+
+/** A puzzle already solved, so a tour of the board games can complete the set that now counts the puzzles. */
+const PUZZLE_SOLVED: HeldEvent[] = [
+  { memberId: "a", type: XP_EVENTS.firstOfVariant, subject: "numberPlace", dayKey: "2026-01-01" },
+  { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "numbers", dayKey: "2026-01-01" },
+];
 /* A Wednesday and the Saturday after it, for the weekend award. */
 const WED = "2026-02-04T12:00:00Z";
 const SAT = "2026-02-07T12:00:00Z";
@@ -346,7 +354,8 @@ describe("the replay completes a set on the game that completed it", () => {
         playedAt: new Date(Date.UTC(2026, 2, 1 + index)),
       }),
     );
-    const made = plan({ members: [member("a")], games });
+    // The puzzle counts among "every game" and is solved through no game, so it is in the ledger already.
+    const made = plan({ members: [member("a")], games, held: PUZZLE_SOLVED });
     expect(countOf(made, "a", XP_EVENTS.firstOfVariant)).toBe(RULE_VARIANT_LIST.length);
     expect(countOf(made, "a", XP_EVENTS.everyVariantPlayed)).toBe(1);
     expect(paidOn(made, "a", XP_EVENTS.everyVariantPlayed)).toEqual([games[games.length - 1].id]);
@@ -367,7 +376,7 @@ describe("the replay completes a set on the game that completed it", () => {
     const made = plan({
       members: [member("a")],
       games: [game({ blackMemberId: "a", variant: last, playedAt: AT(WED) })],
-      held,
+      held: [...held, ...PUZZLE_SOLVED],
     });
     expect(countOf(made, "a", XP_EVENTS.everyVariantPlayed)).toBe(1);
   });

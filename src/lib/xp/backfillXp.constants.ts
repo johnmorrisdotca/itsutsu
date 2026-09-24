@@ -167,6 +167,12 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
     from: "the replay's `firstWinAtVariant` rows for that family's games, ledger rows included, on the win that completes it — and only for a family of more than one game (`familyToWin`)",
   },
 
+  puzzleSolved: {
+    replayed: false,
+    recorded: false,
+    why: "A solved puzzle is checked and paid in the moment (`POST /api/puzzles/solved`) and no row of it is kept, so there is nothing to replay. The ledger's own row is the only record until solves are kept (docs/plans/numbers/NUM-05).",
+  },
+
   /* ── Milestones at one game ────────────────────────────────────────────── */
 
   wins10: { replayed: true, from: "the replay's own count of the member's wins at that game, over every decided game so far" },

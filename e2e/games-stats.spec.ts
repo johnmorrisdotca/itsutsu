@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
-import { ALSO_LISTED_IN, GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { ALSO_LISTED_IN, GAME_FAMILIES, boardGamesOf } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { playerKey } from "../src/lib/rating/playerKey";
 import { shownName } from "../src/lib/rating/shownName";
@@ -47,7 +47,8 @@ const PLAYED = RECORD.wins + RECORD.losses + RECORD.draws;
  * so a strip found by its variant alone would be two strips; the games this
  * spec seeds are chosen from the ones drawn once, so each locator names one.
  */
-const every = GAME_FAMILIES.flatMap((family) => family.games).filter((variant) => ALSO_LISTED_IN[variant] === undefined);
+// The board games: a puzzle has no played-figures strip (see `PuzzleLine`).
+const every = GAME_FAMILIES.flatMap(boardGamesOf).filter((variant) => ALSO_LISTED_IN[variant] === undefined);
 let seeded = "";
 let unplayed = "";
 /** A game played once, unrated, so it has a count and no standing. */

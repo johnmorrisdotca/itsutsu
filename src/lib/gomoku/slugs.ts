@@ -1,3 +1,6 @@
+import type { GameKey } from "../catalogue/gameKeys";
+import type { PuzzleKind } from "../puzzles/puzzles.types";
+
 import type { RuleVariant } from "./gomoku.types";
 
 /**
@@ -58,9 +61,35 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   go: "go",
 };
 
+/**
+ * The puzzles' places in the same paths: /games/number-place, with its
+ * rules, family, set-up and solve one segment under it, as a game has.
+ * One address shape for both kinds is what lets every name on the site go
+ * through `gamePath` and every page-width and gate rule already hold.
+ */
+export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
+  numberPlace: "number-place",
+  hiddenStones: "hidden-stones",
+  moreOrLess: "more-or-less",
+};
+
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
   (Object.entries(GAME_SLUGS) as [RuleVariant, string][]).map(([variant, slug]) => [slug, variant]),
 );
+
+const PUZZLE_BY_SLUG = new Map<string, PuzzleKind>(
+  (Object.entries(PUZZLE_SLUGS) as [PuzzleKind, string][]).map(([kind, slug]) => [slug, kind]),
+);
+
+/** The puzzle a slug names, or null for an address that names no puzzle. */
+export function puzzleFor(slug: string): PuzzleKind | null {
+  return PUZZLE_BY_SLUG.get(slug) ?? null;
+}
+
+/** The game or puzzle a slug names, or null. */
+export function gameKeyFor(slug: string): GameKey | null {
+  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? null;
+}
 
 /**
  * The slug for a variant. A stored game carries its variant as a string, and a
@@ -68,7 +97,7 @@ const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
  * key falls back to itself rather than throwing a whole page away.
  */
 export function slugFor(variant: string): string {
-  return GAME_SLUGS[variant as RuleVariant] ?? variant;
+  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? variant;
 }
 
 /** The variant a slug names, or null for an address that names nothing. */

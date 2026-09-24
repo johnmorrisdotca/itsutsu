@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { cookies } from "next/headers";
 
 import { HereNowPanel } from "@/components/mine/HereNowPanel";
@@ -199,10 +199,11 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   const openSeats = narrowed.slice(0, OPEN_GAMES_SHOWN);
 
   // The sentence reads the same lists the page below it shows.
-  const groups: GameGroup[] = GAME_FAMILIES.map((family) => ({
+  // The board games: the sentence starts a game between two people, which a puzzle is not.
+  const groups: GameGroup[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).map((family) => ({
     title: family.title,
     kanji: family.kanji,
-    games: family.games.map((variant) => ({
+    games: boardGamesOf(family).map((variant) => ({
       variant,
       label: RULE_VARIANT_DISPLAY[variant].label,
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,

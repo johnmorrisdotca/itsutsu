@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { openSetup, ready, readyHere } from "./support";
+import { EVERY_GAME_KEY } from "../src/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
 
@@ -17,8 +18,9 @@ test.describe("rules and learning", () => {
      * (games played to the record, a top player's record to those games, the
      * standings), and each of those is a link that leads somewhere else.
      */
-    await expect(index.getByTestId("game-card")).toHaveCount(RULE_VARIANT_LIST.length);
-    await expect(index.locator("[data-card-link]")).toHaveCount(RULE_VARIANT_LIST.length);
+    // Every game and every puzzle: the cards are the whole catalogue.
+    await expect(index.getByTestId("game-card")).toHaveCount(EVERY_GAME_KEY.length);
+    await expect(index.locator("[data-card-link]")).toHaveCount(EVERY_GAME_KEY.length);
     await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();
@@ -40,7 +42,7 @@ test.describe("rules and learning", () => {
     await page.getByTestId("catalogue-view-list").click();
     await expect(page).toHaveURL(/\/games\?view=list$/);
     await expect(page.getByTestId("every-game-family")).toHaveCount(GAME_FAMILIES.length);
-    await expect(page.getByTestId("every-game").locator("dt")).toHaveCount(RULE_VARIANT_LIST.length);
+    await expect(page.getByTestId("every-game").locator("dt")).toHaveCount(EVERY_GAME_KEY.length);
     await expect(page.getByTestId("every-game-freestyle")).toContainText("Also known as Go-Moku");
     // Our own name for a game is not one of its other names.
     await expect(page.getByTestId("every-game-halma")).not.toContainText("Also known as");

@@ -1,3 +1,6 @@
+// Relative, not `@/`: the browser specs import this file, and Playwright resolves no alias in what it imports.
+import { type GameKey, isPuzzleKind } from "../catalogue/gameKeys";
+
 import type { AlsoListing, GameFamily, ShelvedGame } from "./families.types";
 import type { RuleVariant } from "./gomoku.types";
 
@@ -145,7 +148,33 @@ export const GAME_FAMILIES: GameFamily[] = [
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",
     games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker"],
   },
+  {
+    key: "numbers",
+    /*
+     * THE PUZZLES. John, 2026-09-24: "adding a new category to the site.
+     * Numbers... for introducing Sudoku." One person, one grid, one answer:
+     * nothing here is a game between two colours, and the engine plays
+     * none of it. Each is a `PuzzleKind` (`src/lib/puzzles/`), catalogued
+     * beside the games through `GameKey`, and the family is the eighth
+     * shelf — the room the races made by joining Territory the same day.
+     * See docs/plans/numbers/README.md for why a puzzle is its own kind.
+     */
+    title: "Numbers",
+    kanji: "数",
+    blurb: "Puzzles for one: a grid, a few givens, and exactly one answer. Solve it on your own, against the clock.",
+    games: ["numberPlace"],
+  },
 ];
+
+/**
+ * The games in a family the engine plays: its rule variants, its puzzles
+ * left out. The two-player set-up, a ladder, a record and the played-figures
+ * read this; anything that names or counts a family's games reads
+ * `family.games`.
+ */
+export function boardGamesOf(family: GameFamily): RuleVariant[] {
+  return family.games.filter((game): game is RuleVariant => !isPuzzleKind(game));
+}
 
 /**
  * THE MOST GAMES ONE SHELF SHOWS, its own and its guests together.
@@ -286,9 +315,10 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
 };
 
 /** Whether a family's shelf shows this game, at home or as a guest. */
-export function familyShows(family: GameFamily, variant: RuleVariant): boolean {
+export function familyShows(family: GameFamily, variant: GameKey): boolean {
   return (
-    family.games.includes(variant) || (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key)
+    family.games.includes(variant) ||
+    (isPuzzleKind(variant) ? false : (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key))
   );
 }
 
@@ -309,8 +339,17 @@ export function gamesShownIn(family: GameFamily): ShelvedGame[] {
   return [...own, ...guests];
 }
 
+/**
+ * A family's shelf with its puzzles left off: what the two-player set-up
+ * screen draws. A puzzle on that screen would be a tile the board cannot
+ * show; a puzzle is set up from its own page.
+ */
+export function boardGamesShownIn(family: GameFamily): (ShelvedGame & { variant: RuleVariant })[] {
+  return gamesShownIn(family).filter((shown): shown is ShelvedGame & { variant: RuleVariant } => !isPuzzleKind(shown.variant));
+}
+
 /** The other games in the family a variant belongs to, for "also try" links. */
-export function siblingsOf(variant: RuleVariant): { family: (typeof GAME_FAMILIES)[number]; games: RuleVariant[] } | null {
+export function siblingsOf(variant: GameKey): { family: (typeof GAME_FAMILIES)[number]; games: GameKey[] } | null {
   const family = GAME_FAMILIES.find((entry) => entry.games.includes(variant));
   if (family === undefined) return null;
   return { family, games: family.games.filter((game) => game !== variant) };
@@ -324,7 +363,7 @@ export function siblingsOf(variant: RuleVariant): { family: (typeof GAME_FAMILIE
  * family's games that omits the one you are standing in is a list that is
  * wrong about the family. Two questions, two functions.
  */
-export function familyOf(variant: RuleVariant): (typeof GAME_FAMILIES)[number] | null {
+export function familyOf(variant: GameKey): (typeof GAME_FAMILIES)[number] | null {
   return GAME_FAMILIES.find((entry) => entry.games.includes(variant)) ?? null;
 }
 
@@ -338,6 +377,6 @@ export function familyOf(variant: RuleVariant): (typeof GAME_FAMILIES)[number] |
  * way, so null is the answer to a question about a game that has not been put
  * in one yet — which is a thing to stay silent about, not to guess at.
  */
-export function familyKeyOf(variant: RuleVariant): string | null {
+export function familyKeyOf(variant: GameKey): string | null {
   return familyOf(variant)?.key ?? null;
 }

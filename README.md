@@ -2,7 +2,7 @@
 
 # 五つ · Itsutsu
 
-**Forty-five board games on one engine.** Gomoku and renju, Othello and Go,
+**Forty-five board games on one engine, and a puzzle beside them.** Gomoku and renju, Othello and Go,
 checkers and draughts, Hex and Halma — two players in one browser, or two
 devices a QR code apart.
 
@@ -73,10 +73,11 @@ The variables that matter first, all described in `.env.example`:
 
 ## What it does
 
-### Forty-five games, in seven families
+### Forty-five games and a puzzle, in eight families
 
-The site began as one game and is now forty-five, grouped into seven families
-on `/games` (`GAME_FAMILIES` in `src/lib/gomoku/families.ts`):
+The site began as one game and is now forty-five board games and one puzzle,
+grouped into eight families on `/games` (`GAME_FAMILIES` in
+`src/lib/gomoku/families.ts`):
 
 | Family | Games |
 | --- | --- |
@@ -87,6 +88,7 @@ on `/games` (`GAME_FAMILIES` in `src/lib/gomoku/families.ts`):
 | Checkers | 6 |
 | Territory and races | 4 |
 | Small boards | 6 |
+| Numbers | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -94,11 +96,40 @@ discovery (`ALSO_LISTED_IN`), while it belongs to one. The **Games** button
 opens a browser over the board with each rule set spelled out, and picking one
 starts a new game with those rules.
 
-Every one of them is a row in `VARIANT_SPECS` that the same engine plays; none
+Every board game is a row in `VARIANT_SPECS` that the same engine plays; none
 of them is a special case in the code. The tables below group them by how they
 play, which is not quite how the families group them: the capture games sit
 with the flips, and the toroidal, obstacle, twist and piece games sit on the
-strange boards.
+strange boards. The Numbers family is different in kind — see "Puzzles" below.
+
+#### Puzzles
+
+A puzzle is for one person: a grid, a few givens, and exactly one answer. It
+is not a variant — the engine cannot play it, nobody is rated at it and no
+`Game` row is written — but a kind of its own (`PuzzleKind`,
+`src/lib/puzzles/`) catalogued beside the games through `GameKey`
+(`src/lib/catalogue/gameKeys.ts`), with the same address shape
+(`/games/number-place`, its `/rules`, `/family`, `/new` and `/play`) and the
+same gates: `puzzles.coverage.test.ts` asks a puzzle what
+`variants.coverage.test.ts` asks a game.
+
+Everything that thinks runs in the browser. The generator, the uniqueness
+check and the difficulty rating are ours (`numberPlace/generate.ts`,
+`solve.ts`), seeded so the same number makes the same grid in every browser,
+and the solve page makes its puzzle after it has loaded (`ssr: false`). The
+one thing the server does is `POST /api/puzzles/solved`: an O(cells) check
+that a member's finished grid is a solution (`puzzleCheck.ts`), and the XP
+writes a finished game makes — `puzzleSolved` (25, six a day) and the tour's
+first-of-this-puzzle and first-of-the-family, so the eighth family can be
+met. Nothing polls and nothing is timed on a server.
+
+| Puzzle | Our version of | Sizes | Levels |
+| --- | --- | --- | --- |
+| **Number Place** ナンプレ | Sudoku (Nikoli's name for it, a trademark in Japan; Number Place is the puzzle's original name) | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
+
+A solve is not kept yet: the puzzle's page has no record and no fastest
+times until the tables in `docs/plans/numbers/NUM-05-race-a-friend.md` land,
+which is also where two people race one grid.
 
 #### Lines of stones
 

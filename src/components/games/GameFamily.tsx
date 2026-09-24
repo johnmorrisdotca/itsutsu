@@ -3,8 +3,8 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
+import type { GameKey } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /**
  * The other games in this game's family, on the game's own page.
@@ -26,15 +26,23 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  * behalf of a reader who has not said yet. Its own page is where it says what
  * it is and offers all of it.
  */
-export function GameFamily({ variant }: { variant: RuleVariant }) {
+export function GameFamily({ variant }: { variant: GameKey }) {
   const siblings = siblingsOf(variant);
-  if (siblings === null || siblings.games.length === 0) return null;
+  if (siblings === null) return null;
   const { family } = siblings;
+  /*
+   * A family of one — Numbers, while Number Place is its only puzzle — still
+   * has a family: the head is drawn, with its picture and its blurb, and the
+   * empty list says so rather than the panel disappearing. An empty table is
+   * data (AGENTS.md, "Show The Data"), and a page that hides its family
+   * panel for one game is a page with a hole where the family should be.
+   */
+  const alone = siblings.games.length === 0;
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-family">
       <h2 className={SECTION_TITLE}>
-        Also in this family <span className="font-mincho normal-case tracking-normal">同族</span>
+        {alone ? "Its family" : "Also in this family"} <span className="font-mincho normal-case tracking-normal">同族</span>
       </h2>
       <div className="flex items-center gap-3">
         <FamilyMark family={family.title} size="regular" />
@@ -54,6 +62,11 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
         board beside the name is in flow under the stretched link, so it is
         part of the row's target and not a stop of its own.
       */}
+      {alone ? (
+        <p className="text-xs text-muted" data-testid="game-family-alone">
+          The only one in its family so far.
+        </p>
+      ) : null}
       <ul className="-mx-2 flex flex-col text-sm">
         {siblings.games.map((game) => (
           <li key={game} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1`}>

@@ -1,3 +1,4 @@
+import type { GameKey } from "@/lib/catalogue/gameKeys";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { XpEventType } from "./xp.types";
 import type { ImportedXpType } from "./importedXp.types";
@@ -35,6 +36,8 @@ export const XP_SUBJECT_KINDS = {
   game: "game",
   /** A family of games, by its title — `GAME_FAMILIES` has no other key. */
   family: "family",
+  /** A puzzle solved: `<kind>:<side>:<hash>`. The kind is a game here; the hash names one grid. */
+  puzzle: "puzzle",
   /** A person, by their member id. A buddy, or a computer player. */
   person: "person",
   /** A person at one game: `<memberId>:<variant>`. */
@@ -63,9 +66,9 @@ export type XpAbout =
    * and null means *this row cannot be linked* — never "freestyle".
    */
   | { of: "match"; gameId: string; variant: RuleVariant | null }
-  | { of: "game"; variant: RuleVariant }
+  | { of: "game"; variant: GameKey }
   /** `through` is a game in the family, which is how a family is addressed. */
-  | { of: "family"; title: string; through: RuleVariant | null }
+  | { of: "family"; title: string; through: GameKey | null }
   | { of: "person"; memberId: string; name: string | null }
   | { of: "rivalry"; memberId: string; variant: RuleVariant }
   /**

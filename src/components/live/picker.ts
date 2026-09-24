@@ -15,11 +15,22 @@
  * Linux runner, so the failure is not even the same in both places. Do not
  * put a `foo.ts` beside a `Foo.tsx`.
  */
-import { GAME_FAMILIES, familyOf, familyShows } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf, familyOf, familyShows } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /** One row of `GAME_FAMILIES`: a title, its kanji, its blurb and its games. */
 export type Family = (typeof GAME_FAMILIES)[number];
+
+/**
+ * THE FAMILIES THIS SCREEN OFFERS: the ones with a game two people can play.
+ *
+ * The set-up screen makes a game between two seats, and a family of puzzles
+ * (Numbers, since 2026-09-24) holds nothing it could make. A tile for it
+ * would open on a row of no games, or on a puzzle the board cannot show.
+ * A puzzle is reached from its own page, whose Solve button sets it up at
+ * /games/<slug>/new with sizes and levels rather than seats and clocks.
+ */
+export const SET_UP_FAMILIES: Family[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0);
 
 /**
  * Which family the picker's second row is showing: the one holding the game
@@ -59,9 +70,9 @@ export type Family = (typeof GAME_FAMILIES)[number];
  * the reader's last click deciding between shelves that both hold it.
  */
 export function familyShown(variant: string, browsing: string | null = null): Family {
-  const browsed = browsing === null ? undefined : GAME_FAMILIES.find((family) => family.key === browsing);
+  const browsed = browsing === null ? undefined : SET_UP_FAMILIES.find((family) => family.key === browsing);
   if (browsed !== undefined && familyShows(browsed, variant as RuleVariant)) return browsed;
-  return familyOf(variant as RuleVariant) ?? GAME_FAMILIES[0];
+  return familyOf(variant as RuleVariant) ?? SET_UP_FAMILIES[0];
 }
 
 /**
@@ -81,7 +92,7 @@ export function familyShown(variant: string, browsing: string | null = null): Fa
  * who taps the lit "Five in a row" chip has not asked to be moved to Gomoku.
  */
 export function defaultGameOf(family: Family): RuleVariant {
-  return family.games[0];
+  return boardGamesOf(family)[0];
 }
 
 /**

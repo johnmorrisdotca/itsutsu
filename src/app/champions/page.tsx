@@ -12,7 +12,7 @@ import { XpCell } from "@/components/players/recordTrailing";
 import { LevelName } from "@/components/xp/LevelName";
 import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { levelShown } from "@/lib/xp/levelShown";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { standingsPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchChampions, type VariantChampion } from "@/lib/rating/variantRatings";
@@ -137,14 +137,15 @@ export default async function ChampionsPage() {
                 <th className="py-1 pr-3">Games</th>
               </tr>
             </thead>
-            {GAME_FAMILIES.map((family) => (
+            {/* The families with a ladder: a puzzle has no champion, so Numbers is not a row here. */}
+            {GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).map((family) => (
               <tbody key={family.title} data-testid="champions-family">
                 <tr>
                   <th colSpan={7} className="pt-5 pb-1 text-left text-base font-semibold">
                     <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
                   </th>
                 </tr>
-                {family.games.map((variant) => (
+                {boardGamesOf(family).map((variant) => (
                   <ChampionRow key={variant} variant={variant} champion={champions.get(variant)} />
                 ))}
               </tbody>

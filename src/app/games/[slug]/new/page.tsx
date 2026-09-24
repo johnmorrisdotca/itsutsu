@@ -8,8 +8,9 @@ import { SetUpHeading } from "@/components/live/SetUpHeading";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
-import { variantFor } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { PuzzleSetUpPage } from "@/components/puzzles/PuzzleSetUpPage";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
 
@@ -17,8 +18,8 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/new">): Promise<Metadata> {
   const { slug } = await params;
-  const variant = variantFor(slug);
-  return { title: variant === null ? "Set up a game" : `Set up ${RULE_VARIANT_DISPLAY[variant].label}` };
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
+  return { title: copy === null ? "Set up a game" : `Set up ${copy.label}` };
 }
 
 /**
@@ -40,6 +41,9 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/new"
  */
 export default async function SetUpPage({ params, searchParams }: PageProps<"/games/[slug]/new">) {
   const [{ slug }, asked] = await Promise.all([params, searchParams]);
+  // A puzzle is set up with a size and a level, and nothing a game asks: see `PuzzleSetUp`.
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) return <PuzzleSetUpPage kind={puzzle} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
 

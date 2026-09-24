@@ -1,5 +1,6 @@
 import { expect, test, type Locator } from "@playwright/test";
 
+import { gameCopyFor } from "../src/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
@@ -26,7 +27,7 @@ import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
  * reason that has nothing to do with cards.
  */
 const FIRST = GAME_FAMILIES[0].games[0];
-const COPY = RULE_VARIANT_DISPLAY[FIRST];
+const COPY = gameCopyFor(FIRST);
 const GAME = `/games/${slugFor(FIRST)}`;
 
 /**

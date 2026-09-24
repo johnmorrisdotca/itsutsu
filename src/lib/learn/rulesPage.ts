@@ -15,6 +15,7 @@ import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { type Origin, originFor, wikipediaUrl } from "./origins";
 import { FORBIDDEN_PATTERN_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { GameKey } from "@/lib/catalogue/gameKeys";
 
 /**
  * A hexagon's side, in words. Only ever four to seven here — the four boards
@@ -38,7 +39,8 @@ function listOf(parts: readonly string[]): string {
  * could drift.
  */
 export type RulesPage = {
-  variant: RuleVariant;
+  /** The game or the puzzle this page is about: a puzzle builds one through `puzzleRulesPage`. */
+  variant: GameKey;
   title: string;
   kanji: string;
   tagline: string;

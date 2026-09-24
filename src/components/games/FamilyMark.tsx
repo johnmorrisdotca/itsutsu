@@ -4,12 +4,17 @@ import { pictureBox } from "./picture";
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
 
+/** A digit in a family's mark: the Numbers family, where nothing is a stone. A faded one is a cell still to fill. */
+type MarkDigit = { r: number; c: number; value?: number; faded?: boolean };
+
 type Mark = {
   /** Lines per side of the little board. */
   n: number;
   /** Cells rather than lines: Othello and the drop games. */
   cells?: boolean;
   stones: MarkStone[];
+  /** Digits in cells, for a family of number puzzles. */
+  digits?: MarkDigit[];
   /** An extra stroke drawn over the board, in the same 0..n coordinate space. */
   path?: string;
 };
@@ -167,6 +172,27 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
+   * NUMBERS: a 2×2-boxed grid with three digits placed, which is the smallest
+   * Number Place, and the one blank cell drawn faded — the answer waiting.
+   * Digits rather than stones, because a stone in every other mark means a
+   * move and here nothing moves; the mark is the one picture on the family
+   * row with a number in it, which is the family's whole idea.
+   */
+  Numbers: {
+    n: 4,
+    cells: true,
+    stones: [],
+    digits: [
+      { r: 0, c: 0, value: 1 },
+      { r: 0, c: 3, value: 4 },
+      { r: 1, c: 2, value: 2 },
+      { r: 2, c: 1, value: 3 },
+      { r: 3, c: 3, value: 1 },
+      { r: 2, c: 3, faded: true },
+    ],
+    path: "M 2 0 L 2 4 M 0 2 L 4 2",
+  },
+  /*
    * TERRITORY AND RACES, one picture for the family that took the races in
    * on 2026-09-24: the surrounded stone of Territory on the left, and on the
    * right a black piece hopping over a white one towards the far end of the
@@ -253,6 +279,21 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
       {mark.path !== undefined ? (
         <path d={mark.path} fill="none" stroke="var(--shu)" strokeWidth={0.14} strokeLinecap="round" />
       ) : null}
+      {(mark.digits ?? []).map((digit) => (
+        <text
+          key={`d${digit.r}-${digit.c}`}
+          x={at(digit.c)}
+          y={at(digit.r)}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={0.75}
+          fontWeight={600}
+          fill="var(--ink)"
+          opacity={digit.faded ? 0.35 : 1}
+        >
+          {digit.faded ? "?" : digit.value}
+        </text>
+      ))}
     </svg>
   );
 }

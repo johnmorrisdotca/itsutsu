@@ -11,10 +11,12 @@ import {
   historyPath,
   playPath,
   rulesPath,
+  setUpPath,
   standingsPath,
 } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
+import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 
 import { CATALOGUE_LINK_CLASS } from "./games.constants";
 
@@ -54,8 +56,8 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
           <p className="text-sm text-muted">{family.blurb}</p>
           <dl className="flex flex-col gap-3">
             {family.games.map((variant) => {
-              const copy = RULE_VARIANT_DISPLAY[variant];
-              const aliases = aliasesFor(variant);
+              const copy = gameCopyFor(variant);
+              const aliases = isPuzzleKind(variant) ? [] : aliasesFor(variant);
               return (
                 <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
                   <dt className="flex items-center gap-2 font-medium">
@@ -80,14 +82,28 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                       width a card does not — less its standings link, which
                       the row of links just below already carries.
                     */}
-                    <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} standings={false} />
-                    <span className="flex flex-wrap gap-x-3 text-xs">
-                      <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
-                      <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
-                      <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>record</Link>
-                      <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>standings</Link>
-                      <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
-                    </span>
+                    {isPuzzleKind(variant) ? (
+                      // A puzzle has no record and no standings yet, so its row offers what it has.
+                      <>
+                        <PuzzleLine kind={variant} signedIn={signedIn} />
+                        <span className="flex flex-wrap gap-x-3 text-xs">
+                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>solve</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
+                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} standings={false} />
+                        <span className="flex flex-wrap gap-x-3 text-xs">
+                          <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
+                          <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>record</Link>
+                          <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>standings</Link>
+                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                        </span>
+                      </>
+                    )}
                   </dd>
                 </div>
               );

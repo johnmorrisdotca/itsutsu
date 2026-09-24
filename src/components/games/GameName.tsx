@@ -4,10 +4,9 @@ import Link from "next/link";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RAISED_LINK, STRETCHED_LINK } from "@/components/ui/ui.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { type GameKey, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { aliasedVariant } from "@/lib/legacy/gameAliases";
-import { gamePath, variantFor } from "@/lib/gomoku/slugs";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { gameKeyFor, gamePath } from "@/lib/gomoku/slugs";
 
 /**
  * A game's name, leading to that game.
@@ -78,7 +77,7 @@ export function GameName({
 }) {
   const say = useSpeaker();
   const known = knownGame(variant, name);
-  const copy = known === null ? null : RULE_VARIANT_DISPLAY[known];
+  const copy = known === null ? null : gameCopyOf(known);
 
   if (known === null || copy === null) {
     return (
@@ -121,11 +120,11 @@ export function GameName({
   );
 }
 
-/** Which of our games this is, whether it arrived as a key, a slug or a name. */
-function knownGame(variant: string | undefined, name: string | undefined): RuleVariant | null {
+/** Which of our games this is, whether it arrived as a key, a slug or a name — a puzzle's key or slug included. */
+function knownGame(variant: string | undefined, name: string | undefined): GameKey | null {
   if (variant !== undefined) {
-    if (variant in RULE_VARIANT_DISPLAY) return variant as RuleVariant;
-    return variantFor(variant);
+    if (gameCopyOf(variant) !== null) return variant as GameKey;
+    return gameKeyFor(variant);
   }
   return name === undefined ? null : aliasedVariant(name);
 }

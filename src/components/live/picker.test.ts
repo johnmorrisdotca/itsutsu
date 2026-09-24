@@ -5,7 +5,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import { defaultGameOf, familyShown, gameForFamilyClick } from "./picker";
+import { SET_UP_FAMILIES, defaultGameOf, familyShown, gameForFamilyClick } from "./picker";
 
 /**
  * The rules in the game picker that can be wrong invisibly.
@@ -41,7 +41,7 @@ describe("which family the picker opens on", () => {
     // If some family held no game in the list above, its row would never be
     // asserted and this suite would be quieter than it looks.
     const opened = new Set(RULE_VARIANT_LIST.map((variant) => familyShown(variant).title));
-    expect([...opened].sort()).toEqual(GAME_FAMILIES.map((family) => family.title).sort());
+    expect([...opened].sort()).toEqual(SET_UP_FAMILIES.map((family) => family.title).sort());
   });
 
   it("still answers for a game the site no longer knows", () => {
@@ -53,8 +53,16 @@ describe("which family the picker opens on", () => {
 });
 
 describe("what a click on a family chooses", () => {
+  it("offers every family with a game two people can play, and only those", () => {
+    // Numbers holds puzzles for one; the set-up screen makes games between two.
+    expect(SET_UP_FAMILIES.map((family) => family.key)).toEqual(
+      GAME_FAMILIES.filter((family) => family.key !== "numbers").map((family) => family.key),
+    );
+    expect(GAME_FAMILIES.some((family) => family.key === "numbers")).toBe(true);
+  });
+
   it("every family stands for a real game that belongs to it", () => {
-    for (const family of GAME_FAMILIES) {
+    for (const family of SET_UP_FAMILIES) {
       const game = defaultGameOf(family);
       expect(family.games, `${family.title} defaults outside itself`).toContain(game);
       expect(RULE_VARIANT_DISPLAY[game], `${family.title} defaults to a game with no copy`).toBeDefined();
@@ -83,9 +91,9 @@ describe("what a click on a family chooses", () => {
       "Territory and races": "go",
       "Small boards": "tictactoe",
     };
-    // Every family is named, so a new one cannot slip past with no opinion.
-    expect(Object.keys(expected).sort()).toEqual(GAME_FAMILIES.map((family) => family.title).sort());
-    for (const family of GAME_FAMILIES) {
+    // Every family the screen offers is named, so a new one cannot slip past with no opinion.
+    expect(Object.keys(expected).sort()).toEqual(SET_UP_FAMILIES.map((family) => family.title).sort());
+    for (const family of SET_UP_FAMILIES) {
       expect(defaultGameOf(family), `${family.title}`).toBe(expected[family.title]);
     }
   });
@@ -121,7 +129,7 @@ describe("what a click on a family chooses", () => {
      * two-sources-of-truth bug broke.
      */
     for (const variant of RULE_VARIANT_LIST) {
-      for (const family of GAME_FAMILIES) {
+      for (const family of SET_UP_FAMILIES) {
         const next = gameForFamilyClick(family, variant);
         if (familyShows(family, variant)) {
           expect(next, `${variant} in ${family.title} should not move`).toBeNull();

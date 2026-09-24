@@ -6,11 +6,11 @@ import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameThumb } from "@/components/games/GameThumb";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { OneName } from "@/components/i18n/OneName";
-import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
+import { boardGamesShownIn } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import { familyShown, gameForFamilyClick, type Family } from "./picker";
+import { SET_UP_FAMILIES, familyShown, gameForFamilyClick, type Family } from "./picker";
 import { PickMark } from "./PickMark";
 import { FAMILY_ROW, FAMILY_TILES, PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
 
@@ -138,11 +138,11 @@ export function GamePicker({
     const step = STEPS[event.key];
     const to =
       step !== undefined
-        ? (at + step + GAME_FAMILIES.length) % GAME_FAMILIES.length
+        ? (at + step + SET_UP_FAMILIES.length) % SET_UP_FAMILIES.length
         : event.key === "Home"
           ? 0
           : event.key === "End"
-            ? GAME_FAMILIES.length - 1
+            ? SET_UP_FAMILIES.length - 1
             : -1;
     if (to === -1) return;
     event.preventDefault();
@@ -152,7 +152,7 @@ export function GamePicker({
      * to draw — and it has to be the same act as a click, or the keyboard
      * would have the browse-without-choosing behaviour that was the bug.
      */
-    openFamily(GAME_FAMILIES[to]);
+    openFamily(SET_UP_FAMILIES[to]);
     chips.current[to]?.focus();
   }
 
@@ -176,7 +176,7 @@ export function GamePicker({
       */}
       <div className={FAMILY_ROW}>
       <div role="tablist" aria-label="Families of games" className={FAMILY_TILES}>
-        {GAME_FAMILIES.map((entry, at) => {
+        {SET_UP_FAMILIES.map((entry, at) => {
           const showing = entry.title === family.title;
           return (
             <button
@@ -246,13 +246,13 @@ export function GamePicker({
       <div
         role="tabpanel"
         id="family-games"
-        aria-labelledby={`family-tab-${GAME_FAMILIES.indexOf(family)}`}
+        aria-labelledby={`family-tab-${SET_UP_FAMILIES.indexOf(family)}`}
         className="mt-1 flex min-w-0 flex-col gap-1 border-l-2 border-rule-strong pl-2.5"
         data-testid="set-up-family-games"
       >
         {/*
           WHAT THIS FAMILY IS. John: "Also would be good to see descriptions
-          for these categories of games." The line is the one `GAME_FAMILIES`
+          for these categories of games." The line is the one `SET_UP_FAMILIES`
           already carries and /games already prints, so there is no second
           copy of it to drift — and it doubles as the label that makes the
           indent legible without a heading.
@@ -264,7 +264,7 @@ export function GamePicker({
           {family.blurb}
         </span>
         <div className={PICK_GRID}>
-        {gamesShownIn(family).map((shown) => {
+        {boardGamesShownIn(family).map((shown) => {
           const game = shown.variant;
           const copy = RULE_VARIANT_DISPLAY[game];
           return (

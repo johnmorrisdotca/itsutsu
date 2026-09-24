@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES, familyKeyOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf, familyKeyOf } from "@/lib/gomoku/families";
+import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { BOT_SPECIALIST_LIST, BOT_TIERS, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 import { STREAK_KINDS, type Streak } from "@/lib/rating/streak";
@@ -352,10 +353,12 @@ describe("the families a win can complete", () => {
     for (const family of GAME_FAMILIES) {
       for (const variant of family.games) {
         const answer = familyToWin(variant);
-        if (family.games.length >= XP_FAMILY_WON_MIN_GAMES) expect(answer?.key, variant).toBe(family.key);
+        if (boardGamesOf(family).length >= XP_FAMILY_WON_MIN_GAMES) expect(answer?.key, variant).toBe(family.key);
         else expect(answer, variant).toBeNull();
       }
     }
+    // A puzzle is solved, never won: its family has nothing to win through.
+    expect(familyToWin("numberPlace")).toBeNull();
     /*
      * Hex used to be the clearest family of one and answered null. It sits with
      * Go under Territory now, so it can complete a family like anything else —
@@ -370,7 +373,7 @@ describe("the families a win can complete", () => {
     expect(familyToWin("somethingRetired")).toBeNull();
   });
 
-  it("counts every family as winnable today, there being no family of one left", () => {
+  it("counts every family of board games as winnable, and never the puzzles", () => {
     // Nine of eleven when Checkers gained International, Brazilian and Canadian
     // draughts beside it; Territory and Connections were the two that could not
     // be won, each holding one game. They became one family of two on
@@ -378,7 +381,8 @@ describe("the families a win can complete", () => {
     // is read from the table rather than written down, because the next family
     // of one game would have to move it.
     const winnable = GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null);
-    expect(winnable).toHaveLength(GAME_FAMILIES.length);
+    expect(winnable).toHaveLength(GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).length);
+    expect(winnable.length).toBe(GAME_FAMILIES.length - 1);
   });
 });
 
@@ -393,9 +397,10 @@ describe("the tour covers the site", () => {
     // The two "all of them" awards are counted against these numbers, so a new
     // game or a new family moves the target rather than leaving somebody holding
     // a set that is complete and unpaid.
-    expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length);
-    expect(XP_VARIANTS_TO_PLAY).toBe(45);
-    expect(GAME_FAMILIES.length).toBe(7);
+    // The puzzles count: "every game played" means every puzzle solved too.
+    expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
+    expect(XP_VARIANTS_TO_PLAY).toBe(46);
+    expect(GAME_FAMILIES.length).toBe(8);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {

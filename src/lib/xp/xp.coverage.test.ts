@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
+import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 
 import {
   XP_DAY_STREAK_MILESTONES,
@@ -171,20 +172,25 @@ describe("the economy holds its shape", () => {
     // of number puzzles): one fewer family to meet (−150) and one fewer to
     // win (−300). The same direction as the last merge, and the same note:
     // the ledger keeps what was paid, and the climb table is still to redo.
+    //
+    // 23,040 since the Numbers family opened with Number Place the same day:
+    // a family met (+150) and a first solve of one puzzle (+50). A puzzle has
+    // no first WIN and its family cannot be won, so nothing else moves.
     const perVariant = 44;
+    const perPuzzle = PUZZLE_KIND_LIST.length;
     // Read from the table rather than written down, so a merge or a new family
     // moves this figure instead of quietly leaving it true of nothing.
     const perFamily = GAME_FAMILIES.length;
-    expect(perFamily).toBe(7);
-    // A family won is only for a family of more than one game.
-    const familiesToWin = GAME_FAMILIES.filter((family) => family.games.length > 1).length;
+    expect(perFamily).toBe(8);
+    // A family won is only for a family of more than one BOARD game: puzzles are not won.
+    const familiesToWin = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 1).length;
     expect(familiesToWin).toBe(7);
     const grades = 5;
     const specialists = 2;
     const total =
       XP_EVENT_SPECS.joined.points +
       XP_EVENT_SPECS.firstGameEver.points +
-      XP_EVENT_SPECS.firstOfVariant.points * perVariant +
+      XP_EVENT_SPECS.firstOfVariant.points * (perVariant + perPuzzle) +
       XP_EVENT_SPECS.firstWinAtVariant.points * perVariant +
       XP_EVENT_SPECS.firstOfFamily.points * perFamily +
       XP_EVENT_SPECS.everyFamilyPlayed.points +
@@ -198,7 +204,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(22_840);
+    expect(total).toBe(23_040);
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {
@@ -292,6 +298,8 @@ describe("what is priced and not yet paid", () => {
     //
     // John's package of 2026-09-14 added fifteen: the milestones at one game on
     // `recordPlayed`, and the anniversaries on the first visit of a day.
+    //
+    // The Numbers family added `puzzleSolved`, paid by `POST /api/puzzles/solved`.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
       "applauseGiven",
@@ -342,6 +350,7 @@ describe("what is priced and not yet paid", () => {
       "losses50",
       "losses500",
       "nameSet",
+      "puzzleSolved",
       "rematchPlayed",
       "revengeWin",
       "seatClaimedElsewhere",
@@ -537,6 +546,9 @@ describe("every award is either people-only or a game result", () => {
     XP_EVENTS.everyFamilyPlayed,
     XP_EVENTS.everyVariantPlayed,
     XP_EVENTS.everyVariantWonInFamily,
+    /* A puzzle solved is a grid finished, checked by the server: a fact about
+       the solve, and a program never solves one, so nothing to hold back. */
+    XP_EVENTS.puzzleSolved,
     XP_EVENTS.gradeBeaten,
     XP_EVENTS.everyGradeBeaten,
     XP_EVENTS.specialistBeaten,

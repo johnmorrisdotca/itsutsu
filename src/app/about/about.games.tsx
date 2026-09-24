@@ -4,6 +4,7 @@ import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { familyPath } from "@/lib/gomoku/slugs";
+import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import Link from "next/link";
 
 import { Game, Inside } from "./about.links";
@@ -95,6 +96,13 @@ export const CATALOGUE_SECTION: AboutSection = {
       published, and each of those says so on its own rules page, with the name it is properly called and who
       made it. Borrowing a game and not saying whose it is would be the one thing a site built out of other
       people’s evenings has no excuse for.
+    </>,
+    <>
+      One family is not board games at all. Numbers holds {PUZZLE_KIND_LIST.length === 1 ? "a puzzle" : "puzzles"} for
+      one person — <Game variant="numberPlace">{PUZZLE_DISPLAY.numberPlace.label}</Game>, our version of{" "}
+      {PUZZLE_DISPLAY.numberPlace.inspiredBy}, at {PUZZLE_SPECS.numberPlace.sizes.map((side) => `${side}×${side}`).join(", ")} —
+      made in your own browser from a number, with exactly one answer, and timed from your first entry. The site
+      checks a finished grid and pays a member XP for it, and nothing about a puzzle costs a server anything.
     </>,
     <>
       The whole catalogue is <Inside href="/games">here</Inside>, and it is open to read without an account —

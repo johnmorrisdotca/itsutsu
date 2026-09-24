@@ -9,19 +9,19 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { EVERY_GAME_KEY, gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
-import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { familyPath, gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { familyPath, gameKeyFor, gamePath, slugFor } from "@/lib/gomoku/slugs";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/family">): Promise<Metadata> {
-  const variant = variantFor((await params).slug);
+  const variant = gameKeyFor((await params).slug);
   const family = variant === null ? null : familyOf(variant);
   return { title: family === null ? "Family" : `${family.title} ${family.kanji}` };
 }
 
 export function generateStaticParams() {
-  return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
+  // A puzzle's family page is under the puzzle, as a game's is under the game.
+  return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
 }
 
 /**
@@ -38,10 +38,10 @@ export function generateStaticParams() {
  * prerenders and nothing here reads the database.
  */
 export default async function GameFamilyPage({ params }: PageProps<"/games/[slug]/family">) {
-  const variant = variantFor((await params).slug);
+  const variant = gameKeyFor((await params).slug);
   if (variant === null) notFound();
   const family = familyOf(variant);
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const copy = gameCopyFor(variant);
   // A game in no family is a gap the New Game Gate refuses, but a page must
   // not pretend to an answer it has not got.
   if (family === null) notFound();
@@ -87,7 +87,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
       <ul className="flex flex-col gap-3" data-testid="family-games">
         {shelf.map((shown) => {
           const game = shown.variant;
-          const sibling = RULE_VARIANT_DISPLAY[game];
+          const sibling = gameCopyFor(game);
           return (
             /*
               The same card the catalogue draws, and the same rule: the whole

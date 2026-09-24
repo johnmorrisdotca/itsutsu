@@ -1,4 +1,5 @@
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
+import { type GameKey, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
@@ -79,6 +80,8 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   everyFamilyPlayed: XP_SUBJECT_KINDS.nobody,
   everyVariantPlayed: XP_SUBJECT_KINDS.nobody,
   everyVariantWonInFamily: XP_SUBJECT_KINDS.family,
+  /* A puzzle's kind, side and hash: the kind is a game here, the rest is which grid. */
+  puzzleSolved: XP_SUBJECT_KINDS.puzzle,
   // Milestones at one game, keyed on the game.
   wins10: XP_SUBJECT_KINDS.game,
   wins100: XP_SUBJECT_KINDS.game,
@@ -142,7 +145,8 @@ const DATE_IS_THE_ROW: ReadonlySet<XpEventType> = new Set<XpEventType>([
   XP_EVENTS.dayStreak365,
 ]);
 
-function asVariant(value: string): RuleVariant | null {
+function asVariant(value: string): GameKey | null {
+  if (isPuzzleKind(value)) return value;
   return (RULE_VARIANTS as Record<string, RuleVariant | undefined>)[value] ?? null;
 }
 
@@ -201,6 +205,12 @@ export function xpAboutFor(type: XpEventType, subject: string): XpAbout {
     return variant === null ? { of: "words", said: subject, stale: true } : { of: "game", variant };
   }
 
+  if (kind === XP_SUBJECT_KINDS.puzzle) {
+    // `numberPlace:9:1a2b3c4d`: the puzzle is a game here; the rest names one grid nobody can open.
+    const variant = asVariant(subject.split(":")[0] ?? "");
+    return variant === null ? { of: "words", said: subject, stale: true } : { of: "game", variant };
+  }
+
   if (kind === XP_SUBJECT_KINDS.family) {
     const family = familyNamed(subject);
     return { of: "family", title: family?.title ?? subject, through: family?.games[0] ?? null };
@@ -222,7 +232,8 @@ export function xpAboutFor(type: XpEventType, subject: string): XpAbout {
   const at = subject.lastIndexOf(":");
   if (at <= 0 || at === subject.length - 1) return { of: "words", said: subject, stale: true };
   const variant = asVariant(subject.slice(at + 1));
-  if (variant === null) return { of: "words", said: subject, stale: true };
+  // A rivalry is at a board game: nobody is anybody's rival at a puzzle.
+  if (variant === null || isPuzzleKind(variant)) return { of: "words", said: subject, stale: true };
   return { of: "rivalry", memberId: subject.slice(0, at), variant };
 }
 

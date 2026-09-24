@@ -108,12 +108,12 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
   "src/app/games/[slug]/standings/page.tsx": [
     { line: "<Paired en={copy.label}", why: "the title of one game's standings" },
     {
-      line: "{RULE_VARIANT_DISPLAY[game].label}",
+      line: "{gameCopyFor(game).label}",
       why: 'a caption-size sentence under the ladder: "Also in Captures: Ninuki-renju, Sannuki-renju"',
     },
   ],
   "src/app/games/[slug]/play/page.tsx": [
-    { line: "{RULE_VARIANT_DISPLAY[game].label}", why: 'the footer sentence "Also in Captures: …" under a board' },
+    { line: "{gameCopyFor(game).label}", why: 'the footer sentence "Also in Captures: …" under a board' },
   ],
   "src/app/games/[slug]/match/[id]/FiledMatchPage.tsx": [
     {
