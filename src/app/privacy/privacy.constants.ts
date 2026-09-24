@@ -73,6 +73,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
         "Your profile, every part of it optional and yours to change on your own page: the name you play under, your city and country, your time zone, a few words about yourself, the days you do not play and when you are away, how you like a board to look, how a new game starts for you, and whether you are listed as here and mailed when it is your move.",
         "Your games: every move of every game you play, when it was made, who sat on either side, and the result. Your rating, your record, your streaks, your experience points and your level are worked out from those games, and so are the applause, the reactions and the notes left on them. A finished game stays at its own address; hiding it from your own list removes it from nowhere else.",
         "What you say to people: direct messages to another member, and the buddy and ignore lists you keep.",
+        "Your age band: under 13, 13 to 17, or 18 or over, and nothing more exact than that. For a member under 13, who consented to the account: the name a parent or guardian gave, whether they are the parent or a guardian, and when.",
         "Records from other sites: a few players' records from ItsYourTurn and GoldToken, copied by hand from those sites with the date they were read, so that the people this site is a tribute to are remembered here. They name the player, the site, the games and the results, and nothing more private than that site showed. If one of them is yours and you want it changed or taken down, write to us.",
       ],
     },
@@ -95,7 +96,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
         "Members: your name and the level beside it, your record, your ratings and where you stand, and the games you have played, because every game here is a page any member can open, while it is played and after, with its moves and the reactions on it. If you filled them in, your city, country, time zone and the words about yourself, and, if you allow it, whether you are here now. Your email address is shown to nobody: not your opponent, not on your page, nowhere.",
         "The person you write to: a direct message is shown to them and to you. Nothing on the site shows it to anyone else, and the operator does not read messages except when one is reported.",
         "Another site, if the operator gives it a token: an embedded view shows a game or a player's summary, read-only, as a member would see it, and nothing more.",
-        "The operator, who runs the site: your email address, your invite code, when you were here, and the problems you report. The operator can shut an account, restore it, rename it, set new words for a member who has lost theirs or open the picker so they can choose, and attach a record kept under a name nobody had an account for to the member it belongs to. Every such act is logged with who did it, to whom, when and what changed, never the words themselves. Nobody at the site can sign in as you: there is no such door.",
+        "The operator, who runs the site: your email address, your invite code, when you were here, and the problems you report. The operator can shut an account, restore it, rename it, set new words for a member who has lost theirs or open the picker so they can choose, attach a record kept under a name nobody had an account for to the member it belongs to, and set a member's age band and record a parent's consent for a family by hand. Every such act is logged with who did it, to whom, when and what changed, never the words themselves and never a parent's name. Nobody at the site can sign in as you: there is no such door.",
       ],
     },
     {
@@ -142,7 +143,8 @@ export function privacySections(days: number): readonly PrivacySection[] {
       kanji: "子ども",
       paragraphs: [
         "Some of the people who play here are children, in families that play together, and the site is built with that in mind: nothing about a member reaches a stranger, a member's page is behind the invite, and there is no advertising.",
-        `The site does not ask your age yet. A parent or guardian who wants to know what we hold about their child, or to have the child's account removed, writes to ${CONTACT} and we do it by hand.`,
+        "The site asks your age band when you join, before anything else: under 13, 13 to 17, or 18 or over. Nothing more exact is asked or kept. A member under 13 needs a parent's or guardian's consent to keep an account here: on the same page, the parent or guardian gives their name and says whether they are the parent or a guardian, and we keep that with the date. Without it, the account cannot go on. Members who joined before the question existed are asked on their next visit to their own page, and the operator can record the answer for a family by hand.",
+        `A parent or guardian who wants to know what we hold about their child, or to have the child's account removed, writes to ${CONTACT} and we do it by hand.`,
       ],
     },
     {

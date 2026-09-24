@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { ageBandGate, recordAgeBand } from "@/lib/auth/ageBandStore";
+import { AGE_BAND_LIST, AGE_BAND_PROBLEMS, CONSENT_LIMITS } from "@/lib/social/ageBand.constants";
+
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile, renameMember, updateProfile, type ProfileUpdate } from "@/lib/auth/members";
@@ -19,6 +22,17 @@ import { zoneWrite } from "@/lib/auth/zoneGuess";
 import { ZONE_SOURCE } from "@/lib/auth/zoneSource.constants";
 
 const nameSchema = z.object({
+  /*
+   * THE AGE BAND, AND THE CONSENT THAT MAY HAVE TO COME WITH IT. A band is one
+   * of AGE_BAND_LIST; under 13 is refused unless a parent's or guardian's
+   * consent arrives in the same request or is already held (ageBandStore.ts),
+   * so a row can never be under 13 without one. Consent without a band is a
+   * mistake, and is refused as one.
+   */
+  ageBand: z.enum(AGE_BAND_LIST).optional(),
+  consent: z
+    .object({ name: z.string().max(CONSENT_LIMITS.name * 2), relationship: z.string().max(16), agreed: z.boolean() })
+    .optional(),
   name: z
     .string()
     .trim()
@@ -111,7 +125,15 @@ export async function PATCH(request: Request) {
     if (member === null) {
       return NextResponse.json({ error: "There is no account behind this session." }, { status: 404, headers: NO_STORE });
     }
-    const { name, awayFrom, awayUntil, preferences, timeZoneFrom, ...rest } = parsed.data;
+    const { name, awayFrom, awayUntil, preferences, timeZoneFrom, ageBand, consent, ...rest } = parsed.data;
+    if (consent !== undefined && ageBand === undefined) return badRequest(AGE_BAND_PROBLEMS.consentAlone);
+    if (ageBand !== undefined) {
+      const decision = await ageBandGate(mine, ageBand, consent ?? null);
+      if (!decision.ok) {
+        return NextResponse.json({ error: decision.problem, needsParent: decision.needsParent }, { status: 422, headers: NO_STORE });
+      }
+      await recordAgeBand(mine, ageBand, decision.consent);
+    }
     /*
      * Checked before anything is written, so a change the registry refuses
      * refuses the whole request, by name, with nothing else in the body

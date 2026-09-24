@@ -398,3 +398,27 @@ export const KEEP_ACCOUNT_COPY = {
  * use 2 different words. Play is shorter." See `ChallengeButton`.
  */
 export const PLAY = "Play";
+
+/**
+ * THE AGE QUESTION, on the welcome page before the name and on the Profile
+ * tab after. Three bands and no birthday: see `ageBand.constants.ts` for why.
+ * The consent sentence is addressed to the parent, because it is the parent
+ * who reads it; the child has handed over the device.
+ */
+export const AGE_COPY = {
+  welcomeLead: "You are in. One question before anything else, so the site knows how to look after you:",
+  question: "How old are you?",
+  questionKanji: "年齢",
+  consentLead:
+    "Somebody under 13 needs a parent or guardian to say this account is all right. If that is you, please give your name below; it is kept with today's date and shown to nobody but the people who run the site.",
+  consentName: "Your name",
+  consentRelationship: "You are the child's",
+  agree: "I am this child's parent or guardian, and they may have an account here",
+  save: "Save",
+  saved: "Saved.",
+  shown: "Age",
+  consented: "consent recorded",
+  change: "Change",
+  unsaid: "Not said yet",
+  why: "Asked once, so that a child here is looked after and an adult is not treated as one. Nothing more exact than the band is asked or kept.",
+} as const;

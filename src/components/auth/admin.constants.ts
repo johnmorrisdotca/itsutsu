@@ -91,7 +91,7 @@ export const ADMIN_LOG_COPY = {
    * a way to learn them.
    */
   lead:
-    "What has been done to members' accounts from this page, newest first: shutting one, opening it again, setting somebody's four words, starting a pick and attaching a kept record. It says who did it and when — never the words themselves, and never the name a record was kept under.",
+    "What has been done to members' accounts from this page, newest first: shutting one, opening it again, setting somebody's four words, starting a pick, attaching a kept record and setting an age band. It says who did it and when — never the words themselves, never the name a record was kept under, and never a parent's name.",
   when: "When",
   who: "Who",
   what: "What",
@@ -134,4 +134,25 @@ export const ADMIN_CLAIM_COPY = {
   close: "Close",
   lookFailed: "Could not look that name up.",
   attachFailed: "Could not attach that record.",
+} as const;
+
+/**
+ * THE AGE BAND ON A MEMBER'S ROW. Said in the muted line as a fact, and set
+ * from the row for the members who joined before the question existed, or
+ * whose parent consented by hand. Recording a consent here is the operator
+ * writing down what a parent told them; the row asks for the parent's name for
+ * that reason and for no other.
+ */
+export const ADMIN_AGE_COPY = {
+  rowUnsaid: "age not said",
+  row: (label: string) => `age ${label}`,
+  rowConsented: "parent consented",
+  select: "Age",
+  selectTitle: "Set this member's age band",
+  unsaid: "Age…",
+  consentLead: "Under 13 needs a parent or guardian on record. Who consented, and as what?",
+  consentName: "Parent or guardian's name",
+  consentRelationship: "Relationship",
+  record: "Record",
+  cancel: "Cancel",
 } as const;
