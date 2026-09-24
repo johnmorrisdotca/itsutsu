@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.290.0 — 2026-09-24
+- Your own page lists what Itsutsu holds about you, and you can remove your account from it; the operator can do the same on request.
+
 ## 0.289.0 — 2026-09-24
 - Race a friend at any puzzle: the same grid, two clocks kept by the site, and the faster correct solve wins. Every solve is kept, with the fastest on the puzzle's page.
 
