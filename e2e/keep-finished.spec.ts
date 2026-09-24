@@ -44,7 +44,7 @@ test.describe("keeping finished games in your own list", () => {
       name: `Keeper ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
 
     const choice = page.getByTestId("keep-finished-days");
     await expect(choice).toBeVisible();
@@ -54,10 +54,10 @@ test.describe("keeping finished games in your own list", () => {
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
     // the control back where it was.
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
 
     await choice.selectOption("14");
-    await page.getByRole("button", { name: "Save profile" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // It survives a reload, which is the whole point of it being on the
@@ -91,14 +91,14 @@ test.describe("keeping finished games in your own list", () => {
 
     // The shortest window there is. The game was finished seconds ago, so it
     // is still inside it — the setting is about age, not about hiding.
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
     // the control back where it was.
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
     await page.getByTestId("keep-finished-days").selectOption("7");
-    await page.getByRole("button", { name: "Save profile" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // Still in the record, which keeps everything however the queue is set.
@@ -147,14 +147,14 @@ test.describe("keeping finished games in your own list", () => {
     await page.goto("/play");
     await expect(page.getByTestId("my-games-finished")).toContainText(shownName(`Cloth${stamp} Tester`));
 
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
     // the control back where it was.
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
     await page.getByTestId("keep-finished-days").selectOption("7");
-    await page.getByRole("button", { name: "Save profile" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // A month old, a week's window: gone from the queue.
@@ -237,14 +237,14 @@ test.describe("keeping finished games in your own list", () => {
     await expect(row(page, lately)).toBeVisible();
     await expect(row(page, ancient)).toBeVisible();
 
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
     // the control back where it was.
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
     await page.getByTestId("keep-finished-days").selectOption("7");
-    await page.getByRole("button", { name: "Save profile" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // A week's window: the game from a month ago is not listed, and the one

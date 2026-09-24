@@ -16,7 +16,8 @@ import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { PhraseSetup } from "@/components/mine/PhraseSetup";
 import { DayZoneNote } from "@/components/mine/DayZoneNote";
-import { ProfileForm } from "@/components/mine/ProfileForm";
+import { ProfileForm, type ProfileFields } from "@/components/mine/ProfileForm";
+import { SettingsForm } from "@/components/mine/SettingsForm";
 import { RemoveAccount } from "@/components/mine/RemoveAccount";
 import { WhatWeHold } from "@/components/mine/WhatWeHold";
 import { signedInRecently } from "@/lib/auth/removeAccountRules";
@@ -88,7 +89,14 @@ const TABS: Tab[] = [
    * not last, so it is still on screen where the strip scrolls on a phone.
    */
   { key: "words", label: "Words", kanji: "合言葉" },
-  { key: "games", label: "New games", kanji: "既定" },
+  /*
+   * HOW THE SITE BEHAVES FOR YOU, where Profile is who you are: the pair the
+   * account menu on both sites names (the privacy plan's menu contract). It
+   * took in the "New games" tab — a board's defaults and how a turn works are
+   * settings too — and the holiday, days off, email and retention that sat at
+   * the foot of the Profile form.
+   */
+  { key: "settings", label: "Settings", kanji: "設定" },
   /*
    * 人 rather than 仲間 for the tab: 仲間 is buddies specifically, and this tab
    * holds the buddies, the people shut out, and the way to bring somebody new
@@ -132,6 +140,19 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const askAge = welcome && band === null;
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
   const open = activeTab(TABS, params.view);
+  /* The stored answers both halves of the account start from: Profile's form and Settings'. */
+  const profileFields: ProfileFields = {
+    awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",
+    awayUntil: member?.awayUntil ? member.awayUntil.toISOString().slice(0, 10) : "",
+    city: member?.city ?? "",
+    country: member?.country ?? "",
+    timeZone: member?.timeZone ?? "",
+    bio: member?.bio ?? "",
+    showOnline: member?.showOnline ?? true,
+    emailNotify: member?.emailNotify ?? true,
+    keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
+    daysOff: member?.daysOff ?? [],
+  };
   /* No address: in by invite code, and this browser is their only way back until they add one. */
   const addressless = !member?.email;
 
@@ -265,18 +286,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   preferences={member?.preferences ?? null}
                 />
                 <ProfileForm
-                  initial={{
-                    awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",
-                    awayUntil: member?.awayUntil ? member.awayUntil.toISOString().slice(0, 10) : "",
-                    city: member?.city ?? "",
-                    country: member?.country ?? "",
-                    timeZone: member?.timeZone ?? "",
-                    bio: member?.bio ?? "",
-                    showOnline: member?.showOnline ?? true,
-                    emailNotify: member?.emailNotify ?? true,
-                    keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
-                    daysOff: member?.daysOff ?? [],
-                  }}
+                  initial={profileFields}
                   countries={allCountries()}
                   timeZones={supportedTimeZones()}
                 />
@@ -288,15 +298,10 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
 
             {open === "words" && myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
 
-            {open === "games" ? (
+            {open === "settings" ? (
               <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
-                {/*
-                  A line rather than a heading. The tab is already called "New
-                  games 既定"; what it does not say is that these hold across
-                  every device somebody signs in on, which is the whole reason
-                  for setting them here rather than on each board.
-                */}
-                <p className="text-sm text-muted">
+                <SettingsForm initial={profileFields} />
+                <p className="border-t border-rule pt-4 text-sm text-muted">
                   What a new board is set out with, here and on every device you sign in on.
                 </p>
                 <GameDefaultsForm initial={gameDefaultsFrom(member?.gameDefaults)} />

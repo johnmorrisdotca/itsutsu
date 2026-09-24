@@ -122,7 +122,7 @@ test.describe("a page of many sections is tabs", () => {
      * fills in once — at the bottom of it.
      */
     await page.goto("/me");
-    // Six since 0.161.0: Record, XP, Profile, Words, New games, People.
+    // Six since 0.161.0: Record, XP, Profile, Words, Settings (New games until 0.292.0), People.
     await expect(page.getByTestId("tab")).toHaveCount(6);
     await expect(page.getByTestId("my-record")).toBeVisible();
     await expect(page.getByTestId("my-profile")).toHaveCount(0);
@@ -137,9 +137,10 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("name-form")).toBeVisible();
     await expect(page.getByTestId("my-record")).toHaveCount(0);
 
-    await page.goto("/me?view=games");
+    await page.goto("/me?view=settings");
     await expect(page.getByTestId("game-defaults-panel")).toBeVisible();
-    await expect(page.getByTestId("tab").filter({ hasText: "New games" })).toHaveAttribute("data-open", "true");
+    await expect(page.getByTestId("settings-form")).toBeVisible();
+    await expect(page.getByTestId("tab").filter({ hasText: "Settings" })).toHaveAttribute("data-open", "true");
   });
 
   test("a new member is asked one question at a time, with no tabs under it", async ({ browser, baseURL }) => {

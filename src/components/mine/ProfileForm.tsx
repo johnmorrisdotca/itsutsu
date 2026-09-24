@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
@@ -8,9 +7,8 @@ import { resolveCountry } from "@/lib/social/countries";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PROFILE_WIDTH } from "./mine.constants";
-import { ProfileAway } from "./ProfileAway";
-import { ProfileSends } from "./ProfileSends";
 import type { ProfileFields, ProfileFormProps } from "./profileForm.types";
+import { useSaveMe } from "./useSaveMe";
 
 /*
  * The fields' type, the width each control is capped at (`PROFILE_WIDTH` in
@@ -51,14 +49,11 @@ export function ProfileForm({
   countries,
   timeZones,
 }: ProfileFormProps) {
-  const router = useRouter();
   const [fields, setFields] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const { busy, saved, error, save, changed } = useSaveMe();
   const set = (patch: Partial<ProfileFields>) => {
     setFields((current) => ({ ...current, ...patch }));
-    setSaved(false);
+    changed();
   };
   /*
    * WHETHER THE MEMBER HAS TOUCHED THEIR TIME ZONE, and only then is it sent.
@@ -94,22 +89,14 @@ export function ProfileForm({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    setBusy(true);
-    setError(null);
-    const response = await fetch("/api/me", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      // An untouched zone is left out — `undefined` is dropped by JSON — so it is not sent as a choice.
-      body: JSON.stringify(zoneTouched ? fields : { ...fields, timeZone: undefined }),
+    // Who you are and what others see; the rest is the Settings tab's (`SettingsForm`).
+    // An untouched zone is left out — `undefined` is dropped by JSON — so it is not sent as a choice.
+    await save({
+      city: fields.city,
+      country: fields.country,
+      bio: fields.bio,
+      timeZone: zoneTouched ? fields.timeZone : undefined,
     });
-    setBusy(false);
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "That could not be saved.");
-      return;
-    }
-    setSaved(true);
-    router.refresh();
   }
 
   const guessZone = () => {
@@ -221,11 +208,7 @@ export function ProfileForm({
         </label>
       </div>
 
-      {/* When your deadlines wait: the holiday and the standing days off — see `ProfileAway`. */}
-      <ProfileAway fields={fields} set={set} />
-
-      {/* What the site sends you, and how long it keeps a finished game in your list — see `ProfileSends`. */}
-      <ProfileSends fields={fields} set={set} />
+      {/* When your games wait, what the site sends you and how long it keeps a finished game: the Settings tab (`SettingsForm`). */}
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">

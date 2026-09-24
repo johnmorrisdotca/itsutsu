@@ -207,10 +207,16 @@ export function AccountMenu({ initial, languages, version }: { initial: Who; lan
             </Link>
           ) : null}
           {named ? (
-            // Who you are and the switches beside it: the Profile tab. The name above opens the whole page.
-            <Link href="/me?view=profile" className={ITEM} data-testid="profile-link">
-              Profile
-            </Link>
+            <>
+              {/* Who you are and what others see: the Profile tab. The name above opens the whole page. */}
+              <Link href="/me?view=profile" className={ITEM} data-testid="profile-link">
+                Profile
+              </Link>
+              {/* How the site behaves for you: the Settings tab. The pair both sites' menus name. */}
+              <Link href="/me?view=settings" className={ITEM} data-testid="settings-link">
+                Settings
+              </Link>
+            </>
           ) : null}
           {/* Every page the masthead has, here too, for when the masthead is folded on a phone. */}
           <Link href="/about" className={ITEM} data-testid="about-link">

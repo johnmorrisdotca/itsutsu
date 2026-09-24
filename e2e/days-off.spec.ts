@@ -24,7 +24,7 @@ test.describe("days I do not play", () => {
       name: `Restful ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
 
     await expect(page.getByTestId("days-off")).toBeVisible();
     // Nobody starts with a day off: deadlines work as they always have.
@@ -34,10 +34,10 @@ test.describe("days I do not play", () => {
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
     // the control back where it was.
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
     await page.getByTestId("day-off-0").click();
     await page.getByTestId("day-off-6").click();
-    await page.getByRole("button", { name: "Save profile" }).click();
+    await page.getByRole("button", { name: "Save settings" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // On the account, not in this browser: it survives a reload.
@@ -56,13 +56,13 @@ test.describe("days I do not play", () => {
       name: `Hermit ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
 
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
     // the control back where it was.
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
     for (const day of [0, 1, 2, 3, 4, 5]) await page.getByTestId(`day-off-${day}`).click();
     // Six taken; the seventh is not on offer, because a game that could never
     // reach a deadline is not a preference.

@@ -67,13 +67,13 @@ test.describe("a control is named by its label", () => {
       name: `Named ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=profile");
+    await page.goto("/me?view=settings");
     /*
      * The form's own marker first. A name is computed from the rendered tree,
      * and the tree the server sent is replaced during hydration — asking
      * before then measures the markup rather than the page.
      */
-    await ready(page, "profile-form");
+    await ready(page, "settings-form");
 
     // Both checkboxes, which are the shared `Toggle`.
     for (const [label, hint] of [
