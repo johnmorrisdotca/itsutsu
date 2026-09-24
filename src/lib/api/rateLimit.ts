@@ -238,6 +238,13 @@ export const RATE_LIMITS = {
    * limit, so the suite's relief applies.
    */
   endings: { windowMs: 60_000, maxRequests: 20 },
+  /**
+   * "Report a problem": five from one address in ten minutes, the number
+   * Sumilabu holds each reporter to. Every send is a function call of ours and
+   * a call of Sumilabu's, and a person with five problems in ten minutes has
+   * said what they needed to. A cost limit, so the suite's relief applies.
+   */
+  report: { windowMs: 600_000, maxRequests: 5 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
   /**

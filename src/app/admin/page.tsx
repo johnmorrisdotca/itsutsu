@@ -14,6 +14,7 @@ import { AdminSite } from "@/components/auth/AdminSite";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
+import { AdminReports } from "@/components/reports/AdminReports";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
 import { readBoard } from "@/lib/backlog/backlogStore";
@@ -53,6 +54,11 @@ const TABS: Tab[] = [
   { key: "members", label: "The members", kanji: "会員" },
   { key: "bots", label: "The bots", kanji: "機械" },
   { key: "work", label: "The work", kanji: "仕事" },
+  /*
+   * What members have reported from "Report a problem", beside the work
+   * because a report is where a ticket often starts: one press files it there.
+   */
+  { key: "reports", label: "The reports", kanji: "報告" },
   /*
    * What the operator has done to members' accounts, kept: shut, opened again,
    * four words set, a pick opened. Last, so `/admin` still lands where it did,
@@ -111,6 +117,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       {open === "log" ? (
         <div className={PANEL_CLASS} data-testid="admin-log">
           <AdminOperatorLog />
+        </div>
+      ) : null}
+
+      {open === "reports" ? (
+        <div className={PANEL_CLASS}>
+          <AdminReports />
         </div>
       ) : null}
 
