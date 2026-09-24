@@ -103,6 +103,8 @@ describe("the paths that stay open", () => {
       "/games/hex/rules",
       "/games/hex/family",
       "/games/hex/background",
+      // The beta testers, thanked in public: John, 2026-09-24.
+      "/thanks",
     ]) {
       expect(wouldBeOpen(path), `${path} should be readable without an invite`).toBe(true);
     }
@@ -193,7 +195,7 @@ describe("the paths that stay open", () => {
   });
 
   it("is not opened by a name that merely starts with an open one", () => {
-    for (const path of ["/joinery", "/gamesy", "/aboutus", "/learners"]) {
+    for (const path of ["/joinery", "/gamesy", "/aboutus", "/learners", "/thanksgiving", "/thanks/anything"]) {
       expect(wouldBeOpen(path), `${path} must not ride in on a prefix`).toBe(false);
     }
   });

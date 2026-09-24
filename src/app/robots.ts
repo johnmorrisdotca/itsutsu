@@ -30,7 +30,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       // `/games` covers the catalogue and every game beneath it: the game, its
       // rules, its family and its background are all open reading.
-      allow: ["/$", "/about", "/games", "/learn", "/art/", "/brand/"],
+      allow: ["/$", "/about", "/games", "/learn", "/thanks", "/art/", "/brand/"],
       disallow: "/",
     },
   };
