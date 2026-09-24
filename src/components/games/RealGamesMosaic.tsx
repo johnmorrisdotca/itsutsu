@@ -2,7 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
 import { MOSAIC_TILES, realGameTiles } from "@/lib/catalogue/realGames";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
@@ -32,7 +32,7 @@ export async function RealGamesMosaic({ variant }: { variant: string }) {
   const copy = MOSAIC_COPY;
 
   const heading = (
-    <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+    <h2 className={SECTION_TITLE}>
       {copy.title} <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
     </h2>
   );

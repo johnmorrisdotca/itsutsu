@@ -4,6 +4,7 @@ import { Paired } from "@/components/i18n/Paired";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { PRACTICE_COPY } from "./game.constants";
+import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
  * THIS IS A PRACTICE BOARD, SAID ON THE BOARD ITSELF.
@@ -30,7 +31,7 @@ export function PracticeMark({ variant }: { variant: RuleVariant }) {
       className="flex flex-col gap-2 rounded-2xl border border-ochre/50 bg-ochre-soft p-3"
       data-testid="practice-mark"
     >
-      <h2 className="flex items-baseline gap-2 text-sm font-semibold">
+      <h2 className={SECTION_TITLE}>
         <Paired
           en={PRACTICE_COPY.mark.label}
           kanji={PRACTICE_COPY.mark.kanji}

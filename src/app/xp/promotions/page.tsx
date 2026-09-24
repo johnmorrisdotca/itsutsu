@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Paired } from "@/components/i18n/Paired";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
@@ -82,14 +82,13 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
   );
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-            <Paired en="Recent promotions" kanji="昇級" kanjiClassName="text-sm font-normal opacity-70" />
-          </h1>
+      <PageTitle
+        title="Recent promotions"
+        kanji="昇級"
+        aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
               Who is where <span className="font-mincho">経験値</span>
@@ -98,8 +97,9 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
               All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
             </Link>
           </div>
-        </div>
-
+        }
+      />
+      <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <p className="text-sm text-muted">
           Who went up a level lately, newest first. A level is read from the total, so a promotion
           is the moment an award carried somebody over a rung. An award that carried them over

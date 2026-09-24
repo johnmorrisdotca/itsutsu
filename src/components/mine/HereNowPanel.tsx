@@ -3,7 +3,7 @@ import { playerPath } from "@/lib/rating/playerKey";
 import { RowActions } from "@/components/ui/Controls";
 import Link from "next/link";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { HereNow } from "@/lib/social/presence";
 import { ChallengeButton } from "./ChallengeButton";
 import { START_COPY } from "./mine.constants";
@@ -35,7 +35,7 @@ export function HereNowPanel({
   const others = here.filter((entry) => entry.id !== me);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="here-panel">
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
         <Paired en={START_COPY.hereNow.label} kanji={START_COPY.hereNow.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         {others.length > 0 ? <span className="font-normal tracking-normal">{others.length}</span> : null}
       </h2>

@@ -1,4 +1,4 @@
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 
@@ -37,7 +37,7 @@ export function GoHelp({
 
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2 text-sm`} data-testid="go-help">
-      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={SECTION_TITLE}>
         {copy.title} <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
       </h2>
       {risk !== null ? (

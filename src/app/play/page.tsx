@@ -1,11 +1,11 @@
 import { INBOX_COPY } from "@/components/inbox/inbox.constants";
 import { unreadInbox } from "@/lib/inbox/inbox";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { memberNamed } from "@/lib/auth/members";
@@ -54,37 +54,33 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
   // The one page that says how much is new in the inbox: one count, here, not on every page's header.
   const unread = await unreadInbox(await currentMemberId());
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-            <Paired en="My games" kanji="対局" kanjiClassName="text-sm font-normal opacity-70" />
-          </h1>
-          <p className="text-sm text-muted">
-            Yours to move first, oldest waiting at the top — the one that has been sitting
-            longest is usually the one somebody is wondering about.
-          </p>
-        </div>
-        {/*
+      <PageTitle
+        title="My games"
+        kanji="対局"
+        lead="Yours to move first, oldest waiting at the top — the one that has been sitting longest is usually the one somebody is wondering about."
+        /*
           John, 2026-09-24: the two links beside this heading were "probably
           noise". All the games went: the header's Games is the same place. The
           inbox stays only when something in it is unread, because this is the
           one page that counts it (the count is kept off every other page for
           what it costs); a link saying there is nothing new said nothing.
-        */}
-        {unread > 0 ? (
-          <Link
-            href="/inbox"
-            className="text-sm font-semibold text-shu underline underline-offset-4"
-            data-testid="play-inbox"
-            data-unread={unread}
-          >
-            {INBOX_COPY.unread(unread)} {INBOX_COPY.kanji} →
-          </Link>
-        ) : null}
-      </div>
+        */
+        aside={
+          unread > 0 ? (
+            <Link
+              href="/inbox"
+              className="text-sm font-semibold text-shu underline underline-offset-4"
+              data-testid="play-inbox"
+              data-unread={unread}
+            >
+              {INBOX_COPY.unread(unread)} {INBOX_COPY.kanji} →
+            </Link>
+          ) : null
+        }
+      />
 
       {/*
         Which group, if any, the reader has asked to see whole. A query

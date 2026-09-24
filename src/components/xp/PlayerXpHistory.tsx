@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Paired } from "@/components/i18n/Paired";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
-import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_HEADING, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
 import { playerXpHistory } from "@/lib/xp/playerXpHistory";
 import { xpParamsFrom } from "@/lib/xp/xpHistory";
@@ -45,7 +45,7 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
 
   return (
     <section id={XP_HISTORY_ANCHOR} className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="xp-history">
-      <h2 className="flex items-baseline gap-2 text-base font-semibold">
+      <h2 className={SECTION_HEADING}>
         <Paired en="How the XP was earned" kanji="経験の記録" kanjiClassName="text-xs font-normal opacity-70" />
       </h2>
       <p className="text-xs text-muted">

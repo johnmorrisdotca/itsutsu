@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
@@ -54,21 +55,21 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
   const guests = shelf.filter((shown) => shown.listed === "shelf").length;
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <header className="flex flex-col gap-1">
-        <p className="text-xs text-muted">
-          <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="family-up">
-            {copy.label}
-          </Link>{" "}
-          / Family
-        </p>
-        <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-          {family.title}
-          <span className="font-mincho text-base font-normal opacity-70">{family.kanji}</span>
-        </h1>
-        <p className="text-sm text-muted">{family.blurb}</p>
-      </header>
+      <PageTitle
+        title={family.title}
+        kanji={family.kanji}
+        lead={family.blurb}
+        crumb={
+          <>
+            <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="family-up">
+              {copy.label}
+            </Link>{" "}
+            / Family
+          </>
+        }
+      />
 
       <div className="flex items-center gap-4">
         <FamilyMark family={family.title} size="regular" />

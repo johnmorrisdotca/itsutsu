@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { LocalTime } from "@/components/ui/LocalTime";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, INPUT_CLASS, TAP_HEIGHT, TONE_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, INPUT_CLASS, SECTION_HEADING, TAP_HEIGHT, TONE_CLASS } from "@/components/ui/ui.constants";
 import { newReporterRef } from "@/lib/reports/reportDraft";
 import { prepareScreenshot, type PreparedScreenshot } from "@/lib/reports/reportScreenshot";
 import { reportingOpen, submitReport } from "@/lib/reports/reports.actions";
@@ -129,7 +129,7 @@ export function ReportProblem({ version }: { version: string }) {
         data-phase={phase}
       >
         <header className="border-b border-rule bg-ivory/70 px-5 pt-4 pb-3">
-          <h2 id="report-problem-title" className="text-lg font-semibold">
+          <h2 id="report-problem-title" className={SECTION_HEADING}>
             Report a problem <span className="font-mincho text-sm font-normal opacity-70">不具合の報告</span>
           </h2>
           <p className="mt-1 text-sm text-muted">

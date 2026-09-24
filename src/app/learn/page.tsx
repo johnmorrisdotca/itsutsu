@@ -1,6 +1,6 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
@@ -28,17 +28,13 @@ export default async function LearnIndexPage() {
    */
   const say = await currentSpeaker();
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <section className="flex flex-col gap-2">
-        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en={say.say("nav.learn")} kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
-        </h1>
-        <p className="text-sm text-muted">
-          How to think about each game: the shapes that win, the moves that force, and
-          the mistakes everyone makes once. Each guide names the games it applies to.
-        </p>
-      </section>
+      <PageTitle
+        title={say.say("nav.learn")}
+        kanji="学び"
+        lead="How to think about each game: the shapes that win, the moves that force, and the mistakes everyone makes once. Each guide names the games it applies to."
+      />
       <ul className="grid gap-3 sm:grid-cols-2" data-testid="learn-index">
         {GUIDES.map((guide) => (
           <li key={guide.slug}>

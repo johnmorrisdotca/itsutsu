@@ -1,5 +1,5 @@
 import { OfferButtons } from "@/components/mine/OfferButtons";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { OFFER_PANEL_COPY } from "./live.constants";
 
 /**
@@ -35,7 +35,7 @@ export function OfferPanel({
   const copy = mine ? OFFER_PANEL_COPY.toMe : OFFER_PANEL_COPY.fromMe;
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="offer-panel">
-      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={SECTION_TITLE}>
         {copy.title}{" "}
         <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
       </h2>

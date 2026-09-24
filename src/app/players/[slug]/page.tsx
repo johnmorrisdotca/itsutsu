@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
@@ -217,42 +218,48 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const counted = offered && scope === RECORD_SCOPES.everywhere ? whole.figures : figures;
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
-        {/*
-          THE NAME, AT THE SIZE A PAGE ABOUT A PERSON DESERVES. John asked for
-          "a better header with the Name of the person, Stats/Record and XP +
-          XP level Name", and the name led that list: it is the size a game's
-          own page gives its title, above the record and the standing below.
-        */}
-        <h1 className="flex flex-wrap items-baseline gap-2 text-2xl font-semibold">
-          {shownName(wholeName)}
-          {/*
-            Where they are, said in full here because there is room for it —
-            the directory has only the flag. The profile form has promised
-            this for a long time and never showed it anywhere.
-          */}
-          <CountryMark
-            country={member?.country}
-            className="text-sm font-normal text-muted"
-            showName
-          />
-          {/*
-            The same badge the members list draws, rather than a second one
-            worded differently for the same fact. It was a separate badge on a
-            separate page, which is how "Remembered" and "KEPT RECORD" came to
-            be two names for one thing.
-          */}
-          <MemberKindBadge
-            kind={memberKind({
-              email: member?.email ?? null,
-              botTier: member?.botTier ?? null,
-              unclaimableBecause: member?.unclaimableBecause ?? null,
-              legacyKind: keptRecord?.kind ?? null,
-            })}
-          />
-        </h1>
+      {/*
+        THE NAME, THE RECORD AND THE STANDING, in that order — John's order for
+        this header. The name is the page's title, drawn as every page's title
+        is (see `PAGE_TITLE`), on the paper above the panel that holds the
+        record; the whole block carries `player-profile`, which is what the
+        specs read the name from.
+      */}
+      <section className="flex flex-col gap-6" data-testid="player-profile">
+        <PageTitle
+          title={
+            <>
+              {shownName(wholeName)}
+              {/*
+                Where they are, said in full here because there is room for it —
+                the directory has only the flag. The profile form has promised
+                this for a long time and never showed it anywhere.
+              */}
+              <CountryMark
+                country={member?.country}
+                className="text-sm font-normal text-muted"
+                showName
+              />
+              {/*
+                The same badge the members list draws, rather than a second one
+                worded differently for the same fact. It was a separate badge on a
+                separate page, which is how "Remembered" and "KEPT RECORD" came to
+                be two names for one thing.
+              */}
+              <MemberKindBadge
+                kind={memberKind({
+                  email: member?.email ?? null,
+                  botTier: member?.botTier ?? null,
+                  unclaimableBecause: member?.unclaimableBecause ?? null,
+                  legacyKind: keptRecord?.kind ?? null,
+                })}
+              />
+            </>
+          }
+        />
+        <div className={`${PANEL_CLASS} flex flex-col gap-4`}>
         {/*
           Where their playing happened, for somebody whose record was made
           before this site existed. It says the handles and the years, because
@@ -392,6 +399,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             . Kept from before Itsutsu, in its own tab.
           </p>
         ) : null}
+        </div>
       </section>
 
       {/*

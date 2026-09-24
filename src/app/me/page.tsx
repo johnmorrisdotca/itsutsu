@@ -1,4 +1,3 @@
-import { Paired } from "@/components/i18n/Paired";
 import { redirect } from "next/navigation";
 
 import { GameDefaultsForm } from "@/components/mine/GameDefaultsForm";
@@ -9,6 +8,7 @@ import { MyRecord } from "@/components/mine/MyRecord";
 import { MyXp } from "@/components/mine/MyXp";
 import { NameForm } from "@/components/mine/NameForm";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { PhraseSetup } from "@/components/mine/PhraseSetup";
 import { DayZoneNote } from "@/components/mine/DayZoneNote";
@@ -138,14 +138,31 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   };
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
+
+      {/*
+        The member's own name is the page's title, drawn as every page's is,
+        with the welcome — a notice, not the page's name — as a section under
+        it on a first visit.
+      */}
+      <PageTitle
+        testId="me-name"
+        title={
+          <>
+            {member?.picture ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
+              <img src={member.picture} alt="" className="size-8 self-center rounded-full" referrerPolicy="no-referrer" />
+            ) : null}
+            {name || "Unnamed"}
+          </>
+        }
+        lead={member?.email ? member.email : undefined}
+      />
 
       {welcome ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2 border-moss/50 bg-moss-soft`} data-testid="welcome">
-          <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-            <Paired en="Welcome" kanji="ようこそ" kanjiClassName="text-sm font-normal opacity-70" />
-          </h1>
+          <SectionHeading title="Welcome" kanji="ようこそ" />
           <p className="text-sm text-ink-soft">
             You are in. One question before the board: what should the other players call you?{" "}
             {addressless
@@ -167,16 +184,6 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
       ) : null}
 
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <div className="flex items-center gap-3">
-          {member?.picture ? (
-            // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
-            <img src={member.picture} alt="" className="size-12 rounded-full" referrerPolicy="no-referrer" />
-          ) : null}
-          <div className="flex flex-col">
-            <h1 className="text-xl font-semibold" data-testid="me-name">{name || "Unnamed"}</h1>
-            {member?.email ? <span className="text-xs text-muted">{member.email}</span> : null}
-          </div>
-        </div>
         <NameForm initial={name} next={next} />
       </section>
 
@@ -204,82 +211,84 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
         arriving before they have answered.
       */}
       {welcome ? null : (
-        <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
+        <>
+          {/* Bare, under the title, as every page's tabs are; the open tab's content is the panel. */}
           <Tabs tabs={TABS} active={open} base="/me" label="Which part of your account" />
+          <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
+            {open === "record" ? <MyRecord name={name} /> : null}
 
-          {open === "record" ? <MyRecord name={name} /> : null}
+            {/*
+              The ledger. The total and the level ride the member row this render
+              has already read and cached, so the standing costs no query and the
+              level is a lookup over the curve.
+            */}
+            {open === "xp" ? <MyXp params={params} /> : null}
 
-          {/*
-            The ledger. The total and the level ride the member row this render
-            has already read and cached, so the standing costs no query and the
-            level is a lookup over the curve.
-          */}
-          {open === "xp" ? <MyXp params={params} /> : null}
+            {open === "profile" ? (
+              <div className="flex flex-col gap-3" data-testid="my-profile">
+                {/*
+                  WHICH ZONE IS IN FORCE, AND WHETHER ANYBODY CHOSE IT. Above the
+                  form rather than inside it: a guess from the country is only
+                  harmless while it is visibly a guess, and the control that
+                  corrects it is the very next thing on the page.
+                */}
+                <DayZoneNote
+                  timeZone={member?.timeZone ?? ""}
+                  country={member?.country ?? ""}
+                  preferences={member?.preferences ?? null}
+                />
+                <ProfileForm
+                  initial={{
+                    awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",
+                    awayUntil: member?.awayUntil ? member.awayUntil.toISOString().slice(0, 10) : "",
+                    city: member?.city ?? "",
+                    country: member?.country ?? "",
+                    timeZone: member?.timeZone ?? "",
+                    bio: member?.bio ?? "",
+                    showOnline: member?.showOnline ?? true,
+                    emailNotify: member?.emailNotify ?? true,
+                    keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
+                    daysOff: member?.daysOff ?? [],
+                  }}
+                  countries={allCountries()}
+                  timeZones={supportedTimeZones()}
+                />
+              </div>
+            ) : null}
 
-          {open === "profile" ? (
-            <div className="flex flex-col gap-3" data-testid="my-profile">
-              {/*
-                WHICH ZONE IS IN FORCE, AND WHETHER ANYBODY CHOSE IT. Above the
-                form rather than inside it: a guess from the country is only
-                harmless while it is visibly a guess, and the control that
-                corrects it is the very next thing on the page.
-              */}
-              <DayZoneNote
-                timeZone={member?.timeZone ?? ""}
-                country={member?.country ?? ""}
-                preferences={member?.preferences ?? null}
-              />
-              <ProfileForm
-                initial={{
-                  awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",
-                  awayUntil: member?.awayUntil ? member.awayUntil.toISOString().slice(0, 10) : "",
-                  city: member?.city ?? "",
-                  country: member?.country ?? "",
-                  timeZone: member?.timeZone ?? "",
-                  bio: member?.bio ?? "",
-                  showOnline: member?.showOnline ?? true,
-                  emailNotify: member?.emailNotify ?? true,
-                  keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
-                  daysOff: member?.daysOff ?? [],
-                }}
-                countries={allCountries()}
-                timeZones={supportedTimeZones()}
-              />
-            </div>
-          ) : null}
+            {open === "words" && myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
 
-          {open === "words" && myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
+            {open === "games" ? (
+              <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
+                {/*
+                  A line rather than a heading. The tab is already called "New
+                  games 既定"; what it does not say is that these hold across
+                  every device somebody signs in on, which is the whole reason
+                  for setting them here rather than on each board.
+                */}
+                <p className="text-sm text-muted">
+                  What a new board is set out with, here and on every device you sign in on.
+                </p>
+                <GameDefaultsForm initial={gameDefaultsFrom(member?.gameDefaults)} />
 
-          {open === "games" ? (
-            <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
-              {/*
-                A line rather than a heading. The tab is already called "New
-                games 既定"; what it does not say is that these hold across
-                every device somebody signs in on, which is the whole reason
-                for setting them here rather than on each board.
-              */}
-              <p className="text-sm text-muted">
-                What a new board is set out with, here and on every device you sign in on.
-              </p>
-              <GameDefaultsForm initial={gameDefaultsFrom(member?.gameDefaults)} />
+                {/*
+                  How a turn works, beside what a board is set out with: both are
+                  answers somebody gives once and finds on every device.
+                */}
+                <p className="text-sm text-muted">How a turn works, on every board you play.</p>
+                <TurnFlowForm
+                  initial={{
+                    moveConfirm: preferences.moveConfirm,
+                    moveConfirmComputer: preferences.moveConfirmComputer,
+                    afterMove: preferences.afterMove,
+                  }}
+                />
+              </div>
+            ) : null}
 
-              {/*
-                How a turn works, beside what a board is set out with: both are
-                answers somebody gives once and finds on every device.
-              */}
-              <p className="text-sm text-muted">How a turn works, on every board you play.</p>
-              <TurnFlowForm
-                initial={{
-                  moveConfirm: preferences.moveConfirm,
-                  moveConfirmComputer: preferences.moveConfirmComputer,
-                  afterMove: preferences.afterMove,
-                }}
-              />
-            </div>
-          ) : null}
-
-          {open === "people" ? <MyPeople memberId={row.id} /> : null}
-        </section>
+            {open === "people" ? <MyPeople memberId={row.id} /> : null}
+          </section>
+        </>
       )}
     </Page>
   );

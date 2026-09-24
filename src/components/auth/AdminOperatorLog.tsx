@@ -5,7 +5,7 @@ import { OPERATOR_ACTIONS_SHOWN, OPERATOR_ACTION_DISPLAY } from "@/lib/auth/oper
 import type { OperatorActionEntry, OperatorActionName } from "@/lib/auth/operatorLog.types";
 
 import { ADMIN_LOG_COPY } from "./admin.constants";
-import { TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { SECTION_HEADING, TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * The operator log: what has been done to members' accounts, newest first.
@@ -29,7 +29,7 @@ export async function AdminOperatorLog() {
   const acts = await listOperatorActions(OPERATOR_ACTIONS_SHOWN);
   return (
     <section className="flex flex-col gap-3" data-testid="admin-operator-log">
-      <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+      <h2 className={SECTION_HEADING}>
         <Paired en={ADMIN_LOG_COPY.heading.label} kanji={ADMIN_LOG_COPY.heading.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
       <p className="text-sm text-muted">{ADMIN_LOG_COPY.lead}</p>

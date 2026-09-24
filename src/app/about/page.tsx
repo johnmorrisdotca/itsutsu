@@ -1,7 +1,7 @@
-import { Paired } from "@/components/i18n/Paired";
 import { Fragment } from "react";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
@@ -32,26 +32,21 @@ export default async function AboutPage({ searchParams }: PageProps<"/about">) {
   const open = activeTab(ABOUT_TABS, asked.view);
   const shown = ABOUT_SECTIONS.filter((section) => section.chapter === open);
   return (
-    <Page gap="gap-10">
+    <Page>
       <SiteHeader />
 
-      <header className="flex flex-col gap-2">
-        <h1 className="flex items-baseline gap-3 text-2xl font-semibold">
-          <Paired en="About" kanji="五つについて" kanjiClassName="text-lg font-normal opacity-70" />
-        </h1>
-        <p className="text-sm text-muted">
-          A tribute to the sites a family played on, and to a game a thousand years old.
-        </p>
-      </header>
+      <PageTitle
+        title="About"
+        kanji="五つについて"
+        lead="A tribute to the sites a family played on, and to a game a thousand years old."
+      />
 
       <Tabs tabs={ABOUT_TABS} active={open} base="/about" label="Which part of the story to read" />
 
       {shown.map((section, index) => (
         <section key={section.title} className="flex flex-col gap-4" data-testid="about-section">
           {index > 0 ? <BrandStones className="mb-2 opacity-70" /> : null}
-          <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-            <Paired en={section.title} kanji={section.kanji} kanjiClassName="text-sm font-normal opacity-70" />
-          </h2>
+          <SectionHeading title={section.title} kanji={section.kanji} />
           {section.paragraphs.map((paragraph, i) => (
             <Fragment key={i}>
               <p className="text-[0.95rem] leading-relaxed text-ink-soft">{paragraph}</p>

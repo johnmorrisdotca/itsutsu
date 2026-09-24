@@ -7,10 +7,11 @@ import { Suspense, type ReactNode } from "react";
 import { GameFamily } from "@/components/games/GameFamily";
 import { GameLadder } from "@/components/games/GameLadder";
 import { PlayedHere } from "@/components/games/PlayedHere";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, STRETCHED_ROW } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { PuzzleFrontDoor } from "@/components/puzzles/PuzzleFrontDoor";
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
@@ -80,10 +81,10 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   const page = rulesPageFor(variant);
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">
         {/*
           The picture is part of what this page is for. A name and a tagline
           tell a reader what a game is called; a board mid-game tells them
@@ -99,11 +100,9 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           data-testid="game-picture"
         />
         <div className="flex min-w-0 flex-col gap-2">
-          <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-            {page.title}
-            <span className="font-mincho text-base font-normal opacity-70">{page.kanji}</span>
-          </h1>
-          <p className="text-sm font-medium">{page.tagline}</p>
+          <PageTitle title={page.title} kanji={page.kanji}>
+            <p className="text-sm font-medium">{page.tagline}</p>
+          </PageTitle>
           <p className="text-xs text-muted italic">
             {page.from !== null ? (
               <span
@@ -153,7 +152,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             </Link>
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -164,7 +163,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             page it came from is still where a reader goes to settle a question.
           */}
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <h2 className={SECTION_TITLE}>
               The object <span className="font-mincho normal-case tracking-normal">目的</span>
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
@@ -220,7 +219,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           <GameFamily variant={variant} />
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <h2 className={SECTION_TITLE}>
               All of it <span className="font-mincho normal-case tracking-normal">一覧</span>
             </h2>
             {/*

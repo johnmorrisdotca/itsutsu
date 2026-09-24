@@ -10,6 +10,7 @@ import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
 import { mailRefusalFor } from "@/lib/mail/mailSwitch";
 import { shownName } from "@/lib/rating/shownName";
+import { SECTION_HEADING } from "@/components/ui/ui.constants";
 
 /**
  * The people a member has said something about: the ones they play, the ones
@@ -35,7 +36,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
   return (
     <div className="flex flex-col gap-4" data-testid="my-people">
       <section className="flex flex-col gap-3" data-testid="buddies">
-        <h2 className="flex items-baseline gap-2 font-semibold">
+        <h2 className={SECTION_HEADING}>
           Buddies <span className="font-mincho text-xs font-normal opacity-70">仲間</span>
           <span className="text-xs font-normal text-muted">{buddies.length}</span>
         </h2>
@@ -71,7 +72,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
 
       {ignored.length > 0 ? (
         <section className="flex flex-col gap-2 border-t border-rule pt-4" data-testid="ignored">
-          <h2 className="flex items-baseline gap-2 font-semibold">
+          <h2 className={SECTION_HEADING}>
             Ignored <span className="font-mincho text-xs font-normal opacity-70">無視</span>
             <span className="text-xs font-normal text-muted">{ignored.length}</span>
           </h2>

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { gamePath, historyPath, playPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
@@ -34,7 +35,7 @@ export function generateStaticParams() {
 function Part({ heading, lines }: { heading: Paired; lines: string[] }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
         {heading.text}
         {heading.kanji !== null ? (
           <span className="font-mincho text-xs normal-case tracking-normal">{heading.kanji}</span>
@@ -93,83 +94,82 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   const learn = say.pair("rules.learn", "学び");
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
+      <PageTitle
+        title={name.text}
+        kanji={name.kanji ?? ""}
+        crumb={
+          <>
+            {/*
+              THREE STEPS, AND THE FIRST ONE IS WHY.
+
+              Up to the GAME, not across to an index of rules: there is no
+              index of rules any more, a game's rules belong to the game, and
+              the way to another game's rules is through that game. The trail
+              reads Games / name / Rules because that is what the address
+              says, and this is where the word "Rules" goes on being said,
+              which is why taking the bar's entry out did not leave its
+              phrase with nothing to name.
+
+              AND THE CATALOGUE COMES FIRST BECAUSE OF WHO ELSE READS THIS
+              PAGE. This address is open without an invite and the game's own
+              page beside it is not — the hub carries the ladder and the
+              standings, which are members' names and figures. So for a
+              stranger, the middle step of this trail is a door and the first
+              one is the only way onward the site can actually honour. A page
+              that is public must have a public way out of it, or it is a
+              room with one exit that is locked.
+            */}
+            <Link href="/games" className="underline-offset-2 hover:underline" data-testid="rules-to-games">
+              {say.say("nav.games")}
+            </Link>{" "}
+            /{" "}
+            <Link href={gamePath(key)} className="underline-offset-2 hover:underline" data-testid="rules-up">
+              {name.text}
+            </Link>{" "}
+            / {say.say("nav.rules")}
+          </>
+        }
+      >
+        <p className="text-sm font-medium">{page.tagline}</p>
+        <p className="text-xs text-muted italic">
+          {/*
+            The flag sits with the sentence about where the game is from,
+            because that is the sentence it is a picture of. Hidden from a
+            screen reader: the country is already said in the prose, and
+            an emoji read aloud in the middle of it only interrupts.
+          */}
+          {page.from !== null ? (
+            <span
+              className="mr-1.5 not-italic"
+              aria-hidden="true"
+              title={say.say("rules.from", { country: page.from.country })}
+              data-testid="origin-flag"
+              data-country={page.from.code}
+            >
+              {page.from.flag}
+            </span>
+          ) : null}
+          {page.origin}
+        </p>
+        {page.inspiredBy !== undefined ? (
+          <p className="text-xs text-muted" data-testid="inspired-by">
+            {say.say("rules.inspiredBy", { name: page.inspiredBy })}
+          </p>
+        ) : null}
+        {/*
+          A player arrives knowing one name for a game, and it is often not
+          ours. Saying the others here is what lets them recognise it.
+        */}
+        {page.alsoKnownAs.length > 0 ? (
+          <p className="text-xs text-muted" data-testid="also-known-as">
+            {say.say("rules.alsoKnownAs", { names: page.alsoKnownAs.join(", ") })}
+          </p>
+        ) : null}
+      </PageTitle>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <article className={`${PANEL_CLASS} flex min-w-0 flex-1 flex-col gap-6`} data-testid="rules-page">
-          <header className="flex flex-col gap-1">
-            <p className="text-xs text-muted">
-              {/*
-                THREE STEPS, AND THE FIRST ONE IS WHY.
-
-                Up to the GAME, not across to an index of rules: there is no
-                index of rules any more, a game's rules belong to the game, and
-                the way to another game's rules is through that game. The trail
-                reads Games / name / Rules because that is what the address
-                says, and this is where the word "Rules" goes on being said,
-                which is why taking the bar's entry out did not leave its
-                phrase with nothing to name.
-
-                AND THE CATALOGUE COMES FIRST BECAUSE OF WHO ELSE READS THIS
-                PAGE. This address is open without an invite and the game's own
-                page beside it is not — the hub carries the ladder and the
-                standings, which are members' names and figures. So for a
-                stranger, the middle step of this trail is a door and the first
-                one is the only way onward the site can actually honour. A page
-                that is public must have a public way out of it, or it is a
-                room with one exit that is locked.
-              */}
-              <Link href="/games" className="underline-offset-2 hover:underline" data-testid="rules-to-games">
-                {say.say("nav.games")}
-              </Link>{" "}
-              /{" "}
-              <Link href={gamePath(key)} className="underline-offset-2 hover:underline" data-testid="rules-up">
-                {name.text}
-              </Link>{" "}
-              / {say.say("nav.rules")}
-            </p>
-            <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-              {name.text}
-              {name.kanji !== null ? (
-                <span className="font-mincho text-base font-normal opacity-70">{name.kanji}</span>
-              ) : null}
-            </h1>
-            <p className="text-sm font-medium">{page.tagline}</p>
-            <p className="text-xs text-muted italic">
-              {/*
-                The flag sits with the sentence about where the game is from,
-                because that is the sentence it is a picture of. Hidden from a
-                screen reader: the country is already said in the prose, and
-                an emoji read aloud in the middle of it only interrupts.
-              */}
-              {page.from !== null ? (
-                <span
-                  className="mr-1.5 not-italic"
-                  aria-hidden="true"
-                  title={say.say("rules.from", { country: page.from.country })}
-                  data-testid="origin-flag"
-                  data-country={page.from.code}
-                >
-                  {page.from.flag}
-                </span>
-              ) : null}
-              {page.origin}
-            </p>
-            {page.inspiredBy !== undefined ? (
-              <p className="text-xs text-muted" data-testid="inspired-by">
-                {say.say("rules.inspiredBy", { name: page.inspiredBy })}
-              </p>
-            ) : null}
-            {/*
-              A player arrives knowing one name for a game, and it is often not
-              ours. Saying the others here is what lets them recognise it.
-            */}
-            {page.alsoKnownAs.length > 0 ? (
-              <p className="text-xs text-muted" data-testid="also-known-as">
-                {say.say("rules.alsoKnownAs", { names: page.alsoKnownAs.join(", ") })}
-              </p>
-            ) : null}
-          </header>
           <Part heading={say.pair("rules.object", "目的")} lines={page.object} />
           <Part heading={say.pair("rules.board", "盤")} lines={page.board} />
           <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
@@ -233,7 +233,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           </figure>
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-learn">
-              <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              <h2 className={SECTION_TITLE}>
                 {learn.text}{" "}
                 {learn.kanji !== null ? (
                   <span className="font-mincho normal-case tracking-normal">{learn.kanji}</span>

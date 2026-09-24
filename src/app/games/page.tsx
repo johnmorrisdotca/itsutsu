@@ -2,6 +2,7 @@ import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { cookies } from "next/headers";
@@ -245,10 +246,10 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         the deciding. A section that only ever renders for a member cannot turn
         a no into a yes.
       */}
+      <PageTitle title={say.say("nav.games")} kanji="種目" />
+
       <section className="flex flex-col gap-4" data-testid="lobby-start">
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en={START_COPY.title.label} kanji={START_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
-        </h2>
+        <SectionHeading title={START_COPY.title.label} kanji={START_COPY.title.kanji} />
         <p className="text-sm text-muted">{START_COPY.lead}</p>
         {/*
           THE ONE-LINE SENTENCE, BACK BESIDE THE DOOR RATHER THAN INSTEAD OF
@@ -360,15 +361,13 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          {/*
-            `nav.everyGame` names this heading now. It used to name the page at
-            /games/all, which has become the plain-list VIEW below — so the
-            phrase did not die with the page, it moved down to the section
-            whose list it was always describing.
-          */}
-          <Paired en={say.say("nav.everyGame")} kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
-        </h2>
+        {/*
+          `nav.everyGame` names this heading now. It used to name the page at
+          /games/all, which has become the plain-list VIEW below — so the
+          phrase did not die with the page, it moved down to the section
+          whose list it was always describing.
+        */}
+        <SectionHeading title={say.say("nav.everyGame")} kanji="全種目" />
         <p className="text-sm text-muted">
           {/*
             The count lives on the plain list rather than here, and that is the

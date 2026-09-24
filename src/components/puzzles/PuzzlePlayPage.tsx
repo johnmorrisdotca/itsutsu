@@ -20,9 +20,14 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const asked = puzzleAsked(kind, query);
   const reader = await currentReader();
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <header className="flex flex-col gap-1">
+      {/*
+        A board page, like a game's: the grid is the page and there is no title
+        over it (see NO_TITLE in pageShape.coverage.test.ts). The trail stays,
+        because it is the way back to the puzzle and its set-up.
+      */}
+      <nav aria-label="Where this puzzle is" className="flex flex-col gap-1">
         <p className="text-xs text-muted">
           <Link href={gamePath(kind)} className="underline-offset-2 hover:underline" data-testid="play-up">
             {copy.label}
@@ -33,11 +38,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
           </Link>{" "}
           / Solve
         </p>
-        <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-          {copy.label}
-          <span className="font-mincho text-base font-normal opacity-70">{copy.kanji}</span>
-        </h1>
-      </header>
+      </nav>
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} hasAccount={reader.hasAccount} />
       </div>

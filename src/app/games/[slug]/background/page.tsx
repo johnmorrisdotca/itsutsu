@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -44,19 +45,20 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
   const art = isPuzzleKind(variant) ? null : backgroundFor(variant);
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <header className="flex flex-col gap-1">
-        <p className="text-xs text-muted">
-          <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="background-up">
-            {copy.label}
-          </Link>{" "}
-          / Background
-        </p>
-        <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-          Background <span className="font-mincho text-base font-normal opacity-70">背景</span>
-        </h1>
-      </header>
+      <PageTitle
+        title="Background"
+        kanji="背景"
+        crumb={
+          <>
+            <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="background-up">
+              {copy.label}
+            </Link>{" "}
+            / Background
+          </>
+        }
+      />
 
       {art === null ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="background-none">

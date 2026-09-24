@@ -11,6 +11,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { lineWords, streakWords } from "./rivalryWords";
 import type { RivalryBoardProps, RivalryCornerProps, RivalryStatProps } from "./rivalry.types";
+import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
  * THE VERSUS SCREEN.
@@ -80,7 +81,7 @@ export function RivalryBoard({ one, other, readerIsOne, all, game, line, testId 
         className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--moss-soft)_0%,var(--moss-soft)_46%,var(--ivory)_46%,var(--ivory)_54%,var(--shu-soft)_54%,var(--shu-soft)_100%)]"
       />
       <div className="flex flex-col gap-5 px-4 py-5 sm:px-8 sm:py-6">
-        <h2 className={`${smallLabel} flex flex-wrap items-center justify-center gap-x-2 text-center`}>
+        <h2 className={`flex flex-wrap items-center justify-center gap-x-2 text-center ${SECTION_TITLE}`}>
           <span>{say.say("rivalry.title")}</span>
           {variant !== undefined ? (
             <>

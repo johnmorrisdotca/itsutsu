@@ -1,11 +1,10 @@
-import { Paired } from "@/components/i18n/Paired";
-
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
 import { BuddyList } from "@/components/players/BuddyList";
 import { Directory } from "@/components/players/Directory";
 import { HereNow } from "@/components/players/HereNow";
 import { Ladder } from "@/components/players/Ladder";
 import { LegacyRoll } from "@/components/players/LegacyRoll";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -109,19 +108,17 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
    * scroll at the widths where there was room all along.
    */
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en="Players" kanji="対局者" kanjiClassName="text-sm font-normal opacity-70" />
-        </h1>
+      <PageTitle title="Players" kanji="対局者" />
 
-        {/* Above the tabs, not behind one: it is the only thing here that answers
-            "can I get a game this minute", and it is three lines whoever is in. */}
-        <HereNow now={now} />
+      {/* Above the tabs, not behind one: it is the only thing here that answers
+          "can I get a game this minute", and it is three lines whoever is in. */}
+      <HereNow now={now} />
 
-        <Tabs tabs={TABS} active={open} base="/players" label="Which players to look at" />
+      <Tabs tabs={TABS} active={open} base="/players" label="Which players to look at" />
 
+      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="players-panel">
         {shown !== null ? (
           <Directory
             filter={shown.filter}

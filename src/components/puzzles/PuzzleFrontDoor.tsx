@@ -2,10 +2,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { GameFamily } from "@/components/games/GameFamily";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, STRETCHED_ROW } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { backgroundPath, familyPath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -28,18 +29,16 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
   const spec = PUZZLE_SPECS[kind];
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
         {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
         <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule sm:w-56" data-testid="game-picture" />
         <div className="flex min-w-0 flex-col gap-2">
-          <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-            {page.title}
-            <span className="font-mincho text-base font-normal opacity-70">{page.kanji}</span>
-          </h1>
-          <p className="text-sm font-medium">{page.tagline}</p>
+          <PageTitle title={page.title} kanji={page.kanji}>
+            <p className="text-sm font-medium">{page.tagline}</p>
+          </PageTitle>
           <p className="text-xs text-muted italic">
             {page.from !== null ? (
               <span className="mr-1.5 not-italic" aria-hidden="true" title={`From ${page.from.country}`} data-testid="origin-flag" data-country={page.from.code}>
@@ -67,12 +66,12 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             </span>
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <h2 className={SECTION_TITLE}>
               The object <span className="font-mincho normal-case tracking-normal">目的</span>
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
@@ -93,7 +92,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             rows, which would promise a record this release does not keep.
           */}
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-solo">
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <h2 className={SECTION_TITLE}>
               For one <span className="font-mincho normal-case tracking-normal">一人で</span>
             </h2>
             <p className="text-sm leading-relaxed">
@@ -108,7 +107,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
           <GameFamily variant={kind} />
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <h2 className={SECTION_TITLE}>
               All of it <span className="font-mincho normal-case tracking-normal">一覧</span>
             </h2>
             <div className="-mx-2 flex flex-col">

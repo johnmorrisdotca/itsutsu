@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Paired } from "@/components/i18n/Paired";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -130,18 +130,13 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
   );
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
 
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-            <Paired
-              en="Experience"
-              kanji="経験値"
-              kanjiClassName="text-sm font-normal opacity-70"
-            />
-          </h1>
+      <PageTitle
+        title="Experience"
+        kanji="経験値"
+        aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp/promotions" className="text-sm underline underline-offset-4" data-testid="to-promotions">
               Recent promotions <span className="font-mincho">昇級</span>
@@ -150,8 +145,9 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
               All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
             </Link>
           </div>
-        </div>
-
+        }
+      />
+      <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <p className="text-sm text-muted">
           Experience is not the rating. A rating says how well you play; experience says you
           turned up and tried things — a game finished, a game won, a game you had never played

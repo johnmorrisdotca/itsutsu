@@ -63,7 +63,7 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
   const from = await setUpFrom({ variant, asked, defaults });
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
       <SetUpHeading from={from} variant={variant} />
       <SetUpGame

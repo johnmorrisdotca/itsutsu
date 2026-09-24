@@ -1,12 +1,12 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { StandingsTable } from "@/components/players/Standings";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
@@ -92,27 +92,29 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
   };
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="game-champions">
-        <header className="flex flex-col gap-1">
-          <p className="text-xs text-muted">
+      <PageTitle
+        title={copy.label}
+        kanji={copy.kanji}
+        crumb={
+          <>
             {/* Up to the game, which is what this is a facet of. */}
             <Link href={gamePath(variant)} className="underline-offset-2 hover:underline">
               {copy.label}
             </Link>{" "}
             / Standings
-          </p>
-          <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-            <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-base font-normal opacity-70" />
-          </h1>
-          <p className="text-sm font-medium">{copy.tagline}</p>
-          <p className="flex flex-wrap gap-x-3 text-xs">
-            <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-            <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">record</Link>
-            <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
-          </p>
-        </header>
+          </>
+        }
+      >
+        <p className="text-sm font-medium">{copy.tagline}</p>
+        <p className="flex flex-wrap gap-x-3 text-xs">
+          <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
+          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">record</Link>
+          <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
+        </p>
+      </PageTitle>
+      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="game-champions">
         <p className="text-sm text-muted">
           Ratings here are this game&apos;s own Elo, starting at 1600 and moved only by games of {copy.label} between
           two named members. A standing is unrated for the first few games, provisional while it settles, and
@@ -153,7 +155,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
           has happened to play one.
         */}
         <section className="flex flex-col gap-3" data-testid="computer-standings">
-            <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
               Against the computer players{" "}
               <span className="font-mincho text-[0.8rem] font-normal tracking-normal">機械</span>
             </h2>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { GameCount } from "@/components/games/GameCount";
-import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP, INPUT_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP, INPUT_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import type { ClaimPlan } from "@/lib/auth/claimRecord.types";
 
 import { ADMIN_CLAIM_COPY } from "./admin.constants";
@@ -85,7 +85,7 @@ export function MemberClaimModal({ member, onClose, onAttached }: MemberClaimMod
       data-testid="member-claim-modal"
     >
       <div className="flex flex-col gap-4">
-        <h2 id="member-claim-title" className="flex flex-wrap items-baseline gap-2 text-lg font-semibold">
+        <h2 id="member-claim-title" className={SECTION_HEADING}>
           {ADMIN_CLAIM_COPY.title} {member.name}
           <span className="font-mincho text-base font-normal opacity-70">{ADMIN_CLAIM_COPY.linkKanji}</span>
         </h2>

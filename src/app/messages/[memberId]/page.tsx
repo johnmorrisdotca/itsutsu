@@ -1,3 +1,4 @@
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MessageForm } from "@/components/messages/MessageForm";
@@ -34,13 +35,10 @@ export default async function MessagesPage({ params }: PageProps<"/messages/[mem
   const thread = reachable ? await readThread(me, otherId) : [];
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
+      <PageTitle title={MESSAGE_COPY.title} kanji={MESSAGE_COPY.kanji} />
       <section className="flex flex-col gap-4" data-testid="messages">
-        <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-          {MESSAGE_COPY.title}
-          <span className="font-mincho text-base font-normal opacity-70">{MESSAGE_COPY.kanji}</span>
-        </h1>
         {!reachable || other === null ? (
           <p className={`${PANEL_CLASS} text-sm text-muted`} data-testid="messages-nobody">
             {MESSAGE_COPY.nobody}

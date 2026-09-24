@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Controls";
-import { INPUT_CLASS, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { INPUT_CLASS, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
@@ -115,7 +115,7 @@ export function EndPositions({
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="end-positions" {...readyMark(hydrated)}>
-      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={SECTION_TITLE}>
         {ENDINGS_COPY.heading} <span className="font-mincho normal-case tracking-normal">{ENDINGS_COPY.kanji}</span>
       </h2>
       <p className="text-sm text-ink-soft">{ENDINGS_COPY.blurb}</p>

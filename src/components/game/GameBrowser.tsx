@@ -11,7 +11,7 @@ import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { GAME_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
@@ -76,7 +76,7 @@ function GameBrowser({
       <div className="flex max-h-[92vh] flex-col">
         <header className="flex items-start justify-between gap-4 border-b border-rule px-6 py-4">
           <div className="flex flex-col gap-1">
-            <h2 id="game-browser-title" className="flex items-baseline gap-2 text-lg font-semibold">
+            <h2 id="game-browser-title" className={SECTION_HEADING}>
               {GAME_COPY.browserTitle}
               <span className="font-mincho text-sm font-normal opacity-70">
                 {GAME_COPY.browser.kanji}

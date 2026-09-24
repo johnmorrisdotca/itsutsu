@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Releases } from "@/components/backlog/Releases";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -29,16 +30,14 @@ export default async function ReleasesPage() {
   const releases = await readReleases();
 
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
+      <PageTitle
+        title="What has shipped"
+        kanji="更新履歴"
+        lead="Newest first, in a player’s words. Read from the changelog itself, which is written in the same commit as the work, so this list cannot fall behind the site it describes. The edition you are being served is marked."
+      />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="release-history">
-        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          What has shipped <span className="font-mincho text-sm font-normal opacity-70">更新履歴</span>
-        </h1>
-        <p className="text-sm text-muted">
-          Newest first, in a player&apos;s words. Read from the changelog itself, which is written in the same commit as
-          the work, so this list cannot fall behind the site it describes. The edition you are being served is marked.
-        </p>
         <Releases releases={releases} current={VERSION} />
         <p className="text-xs text-muted">
           Every game is on{" "}

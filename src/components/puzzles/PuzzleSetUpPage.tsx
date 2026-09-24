@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
@@ -19,26 +20,28 @@ import { PuzzleSetUp } from "./PuzzleSetUp";
 export function PuzzleSetUpPage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
   return (
-    <Page gap="gap-6">
+    <Page>
       <SiteHeader />
-      <header className="flex flex-col gap-1">
-        <p className="text-xs text-muted">
-          <Link href={gamePath(kind)} className="underline-offset-2 hover:underline" data-testid="set-up-up">
-            {copy.label}
-          </Link>{" "}
-          / Set up
-        </p>
-        <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-          Solve {copy.label}
-          <span className="font-mincho text-base font-normal opacity-70">{copy.kanji}</span>
-        </h1>
-        <p className="text-sm text-muted">
-          {copy.tagline}{" "}
-          <Link href={rulesPath(kind)} className="underline underline-offset-2">
-            The rules <span className="font-mincho">規則</span>
-          </Link>
-        </p>
-      </header>
+      <PageTitle
+        title={`Solve ${copy.label}`}
+        kanji={copy.kanji}
+        crumb={
+          <>
+            <Link href={gamePath(kind)} className="underline-offset-2 hover:underline" data-testid="set-up-up">
+              {copy.label}
+            </Link>{" "}
+            / Set up
+          </>
+        }
+        lead={
+          <>
+            {copy.tagline}{" "}
+            <Link href={rulesPath(kind)} className="underline underline-offset-2">
+              The rules <span className="font-mincho">規則</span>
+            </Link>
+          </>
+        }
+      />
       <PuzzleSetUp kind={kind} />
     </Page>
   );

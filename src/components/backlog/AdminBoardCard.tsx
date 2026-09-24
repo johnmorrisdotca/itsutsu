@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { StatusPill } from "@/components/backlog/BacklogRow";
-import { SECTION_TITLE } from "@/components/ui/ui.constants";
+import { SECTION_HEADING, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BOARD_SCOPES, STATUS_DISPLAY, STATUS_ORDER } from "@/lib/backlog/backlog.constants";
 import { countFor } from "@/lib/backlog/boardScope";
 import { latestRelease } from "@/lib/backlog/releases";
@@ -30,7 +30,7 @@ export async function AdminBoardCard({ board }: AdminBoardCardProps) {
 
   return (
     <section className="flex flex-col gap-3" data-testid="admin-board">
-      <h2 className="flex items-baseline gap-2 text-base font-semibold">
+      <h2 className={SECTION_HEADING}>
         Backlog and releases <span className="font-mincho text-sm font-normal opacity-70">積み残しと更新履歴</span>
       </h2>
 

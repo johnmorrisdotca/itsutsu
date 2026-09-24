@@ -4,6 +4,7 @@ import { botName } from "@/lib/bots/bots";
 import { ladderNeighbours, readsAsLevel } from "@/lib/gomoku/ladderNeighbours";
 import type { LadderMeasurement, LadderNeighbour } from "@/lib/gomoku/ladderStrength.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
+import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
  * WHAT THIS GRADE ACTUALLY DOES, GAME BY GAME.
@@ -44,7 +45,7 @@ export function LadderStrength({ tier, measured }: { tier: BotTier; measured: re
 
   return (
     <section className="flex flex-col gap-2" data-testid="ladder-strength">
-      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={SECTION_TITLE}>
         Measured game by game <span className="font-mincho normal-case tracking-normal">実力</span>
       </h2>
       <ul className="flex flex-col gap-1.5">
