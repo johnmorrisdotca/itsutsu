@@ -4,57 +4,39 @@ import { BareBoard } from "./BareBoard";
 import { SiteFooter } from "./SiteFooter";
 
 /**
- * The three widths a page may be, and no others.
+ * THE ONE WIDTH EVERY PAGE IS, AND THERE IS NO OTHER.
  *
- *   wide      a board or a table with a sidebar beside it: play, a match,
- *             a replay, the record
- *   board     a live game, where the board is the page: the same frame as
- *             `wide` up to 1536px and wider past it, so a big screen has
- *             room for the board its reader chose (see `BoardColumn`)
- *   standard  a page of cards, a form, a list: the front, the games, rules,
- *             learning, players
+ * John, 2026-09-24: "We can't have pages be one width on one page, and then
+ * change width in other pages. It needs to be consistent." There used to be
+ * three: standard for most pages, wide for the players list, famous games and
+ * a board, and wider still for a live board on a big screen. A reader moving
+ * between them watched the header and the page jump sideways. Asked whether
+ * the board pages could keep their extra room: "I want consistency... we
+ * can't be consistent?" So a board page is this width too, and its board fits
+ * the column like everything else.
  *
- * A page that is read top to bottom — about, a lesson — is the standard
- * width too, so its header lines up with every other page's; it narrows
- * its own text column inside (max-w-3xl) for the line length, not the frame.
+ * The text inside the frame runs the frame's width as well. A paragraph held
+ * to `max-w-prose` stopped at half the page beside cards that ran the whole of
+ * it; a cap on purpose says why with `data-width-reason="…"`.
+ *
+ * `e2e/page-width.spec.ts` measures every page against this in a browser, and
+ * `pageWidth.coverage.test.ts` refuses a page that names a width of its own.
  */
-export const PAGE_WIDTH = {
-  wide: "max-w-6xl",
-  board: "max-w-6xl 2xl:max-w-[100rem]",
-  standard: "max-w-5xl",
-} as const;
-
-export type PageWidth = keyof typeof PAGE_WIDTH;
+export const PAGE_WIDTH = "max-w-5xl";
 
 /** The frame every page sits in: the paper, the margins, the column. */
 export function Page({
-  width = "standard",
   gap = "gap-8",
-  board = width !== "standard",
+  board = false,
   children,
 }: {
-  width?: PageWidth;
   /** Vertical rhythm between the page's sections. */
   gap?: "gap-6" | "gap-8" | "gap-10";
   /**
-   * Whether this page is a BOARD, which is a different question from whether
-   * it is wide — and until /players needed the room they were the same one.
-   *
-   * `wide` used to decide both the column and whether "Just the board" was
-   * offered, because every wide page was a board page. The members list is a
-   * ten-column table of two hundred rows and wants the same column; it has no
-   * board, so the switch would be a button whose own label and title talk
-   * about a board that is not there, and a reader who had turned it on during
-   * a game would find this page's masthead gone as well.
-   *
-   * So the two are separated rather than one of them fudged: `width` is a
-   * column and `board` is what may be read bare. It defaults to `width ===
-   * "wide"`, which keeps every board page exactly as it was WITHOUT touching a
-   * single caller — the safe way round, since a caller silently losing the
-   * switch would also silently stop being strippable and nothing would say so.
-   * The `board` frame is a board page by the same default, which is what it is
-   * named for.
-   * A wide page with no board says `board={false}` where it says the width.
+   * Whether this page is a BOARD: whether "Just the board" is offered and the
+   * masthead may be stripped. It used to follow from the page being wide,
+   * until /players needed the room without having a board; now that there is
+   * one width, it is only this. A board page says `board`.
    */
   board?: boolean;
   children: ReactNode;
@@ -87,7 +69,7 @@ export function Page({
       */}
       <main
         data-strippable={board ? "" : undefined}
-        className={`flex w-full flex-col ${PAGE_WIDTH[width]} ${gap}`}
+        className={`flex w-full flex-col ${PAGE_WIDTH} ${gap}`}
       >
         {children}
         {/*

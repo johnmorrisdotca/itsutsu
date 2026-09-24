@@ -82,7 +82,7 @@ function GameBrowser({
                 {GAME_COPY.browser.kanji}
               </span>
             </h2>
-            <p className="max-w-prose text-xs text-muted">
+            <p className="text-xs text-muted">
               {GAME_COPY.browserIntro}
             </p>
           </div>

@@ -84,7 +84,7 @@ export function SetUpHeading({
         )}
       </h1>
       {lead !== null ? (
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           {lead}{" "}
           {variant !== null ? (
             <Link href={rulesPath(variant)} className="underline underline-offset-4">

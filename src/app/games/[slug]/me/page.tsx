@@ -50,11 +50,11 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
 
   if (me === null) {
     return (
-      <Page width="standard" gap="gap-6">
+      <Page gap="gap-6">
         <SiteHeader />
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-unknown">
           <h1 className="text-lg font-semibold">Your games of {copy.label}</h1>
-          <p className="max-w-prose text-sm text-muted">
+          <p className="text-sm text-muted">
             {myId === null
               ? "This page counts your own games, and it does not know who you are yet."
               : "This page counts your own games, and there is no player on this account yet — finish one and it will have something to show."}

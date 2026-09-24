@@ -34,7 +34,7 @@ export default async function MessagesPage({ params }: PageProps<"/messages/[mem
   const thread = reachable ? await readThread(me, otherId) : [];
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className="flex flex-col gap-4" data-testid="messages">
         <h1 className="flex items-baseline gap-2 text-2xl font-semibold">

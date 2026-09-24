@@ -54,7 +54,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
   const guests = shelf.filter((shown) => shown.listed === "shelf").length;
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <header className="flex flex-col gap-1">
         <p className="text-xs text-muted">
@@ -67,7 +67,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
           {family.title}
           <span className="font-mincho text-base font-normal opacity-70">{family.kanji}</span>
         </h1>
-        <p className="max-w-prose text-sm text-muted">{family.blurb}</p>
+        <p className="text-sm text-muted">{family.blurb}</p>
       </header>
 
       <div className="flex items-center gap-4">

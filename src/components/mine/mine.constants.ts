@@ -207,7 +207,7 @@ export const START_COPY = {
   post: "Post the seat",
   sitWith: (who: string) => `Sit down with ${who}`,
   setUp: "Set up the board",
-  challenge: (who: string) => `Challenge ${who}`,
+  challenge: (who: string) => `Play ${who}`,
   seatsOpen: (count: number) => (count === 1 ? "1 seat open" : `${count} seats open`),
   matchHint: (who: string) =>
     `${who} is asking for exactly this. You sit down together now; colours are drawn at random.`,
@@ -391,3 +391,10 @@ export const KEEP_ACCOUNT_COPY = {
   addWordsNote: (days: number) =>
     `Play as yourself on a device somebody else is signed in on. Words do not sign a browser in, so on their own they will not bring this account back after ${days} days.`,
 } as const;
+
+/**
+ * The one word for offering somebody a game, on every button that does it.
+ * John, 2026-09-24: "does Challenge and Play mean the same thing??? If so, why
+ * use 2 different words. Play is shorter." See `ChallengeButton`.
+ */
+export const PLAY = "Play";

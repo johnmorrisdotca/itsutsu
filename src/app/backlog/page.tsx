@@ -51,13 +51,13 @@ export default async function BacklogPage({ searchParams }: PageProps<"/backlog"
   const total = board.ok ? countFor(board.items, board.scope, BOARD_SCOPES.all) : null;
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="backlog">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
           Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
         </h1>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           Every feature asked for, every fault reported, and what has become of each.{" "}
           {wanted === null ? null : (
             <>

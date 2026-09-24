@@ -91,7 +91,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
   };
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="game-champions">
         <header className="flex flex-col gap-1">
@@ -112,7 +112,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
             <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
           </p>
         </header>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           Ratings here are this game&apos;s own Elo, starting at 1600 and moved only by games of {copy.label} between
           two named members. A standing is unrated for the first few games, provisional while it settles, and
           established after twenty.
@@ -156,7 +156,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
               Against the computer players{" "}
               <span className="font-mincho text-[0.8rem] font-normal tracking-normal">機械</span>
             </h2>
-            <p className="max-w-prose text-xs text-muted">
+            <p className="text-xs text-muted">
               {/*
                 Said plainly because the grades invite exactly the wrong
                 reading. On this site's own measurements, Reversi's programs

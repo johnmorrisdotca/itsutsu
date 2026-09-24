@@ -70,7 +70,14 @@ export function Tabs({
   const hydrated = useHydrated();
   if (tabs.length === 0) return null;
   return (
-    <nav aria-label={label} className="-mx-1 overflow-x-auto" data-testid="tabs" {...readyMark(hydrated)}>
+    /*
+      Flush with the page, not 4px past it on each side: the rule under the
+      tabs is the widest line on /about, /admin and a player's page, and a
+      negative margin made those three pages 1,032 pixels wide against every
+      other page's 1,024 (e2e/page-width.spec.ts). The list's own padding keeps
+      the first tab's focus ring inside the scroll box.
+    */
+    <nav aria-label={label} className="overflow-x-auto" data-testid="tabs" {...readyMark(hydrated)}>
       <ul className="flex min-w-full gap-1 border-b border-rule px-1">
         {tabs.map((tab) => {
           const open = tab.key === active;

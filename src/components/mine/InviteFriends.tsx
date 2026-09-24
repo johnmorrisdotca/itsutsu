@@ -82,7 +82,7 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
       </h2>
       <p className="text-sm text-muted">
         A link that lets one person in, good for a month. Send it any way you like
-        {canEmail ? ", or have the site email it to them" : ""}; once they are in, challenge them from the players
+        {canEmail ? ", or have the site email it to them" : ""}; once they are in, press Play beside them on the players
         page.
       </p>
       {link === null ? (

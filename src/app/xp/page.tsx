@@ -130,7 +130,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
   );
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
@@ -152,7 +152,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           </div>
         </div>
 
-        <p className="max-w-3xl text-sm text-muted">
+        <p className="text-sm text-muted">
           Experience is not the rating. A rating says how well you play; experience says you
           turned up and tried things — a game finished, a game won, a game you had never played
           before, a buddy added, a weekend. Every level has a name, from{" "}

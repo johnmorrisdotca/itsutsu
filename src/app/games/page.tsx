@@ -211,7 +211,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   const seats: SeatOnBoard[] = choices.map((game) => seatOnBoard(game));
 
   return (
-    <Page width="standard">
+    <Page>
       <SiteHeader />
 
       {/*
@@ -248,7 +248,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           <Paired en={START_COPY.title.label} kanji={START_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
-        <p className="max-w-prose text-sm text-muted">{START_COPY.lead}</p>
+        <p className="text-sm text-muted">{START_COPY.lead}</p>
         {/*
           THE ONE-LINE SENTENCE, BACK BESIDE THE DOOR RATHER THAN INSTEAD OF
           IT. John: "we need that one line version back."
@@ -325,7 +325,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           <span className="flex items-baseline gap-2 text-base font-semibold">
             <Paired en="Learn how to play them" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
           </span>
-          <span className="max-w-prose text-sm text-muted">
+          <span className="text-sm text-muted">
             The shapes that win, the moves that force, and the mistakes everyone makes once.
             Each guide names the games it applies to.
           </span>
@@ -349,7 +349,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           <span className="flex items-baseline gap-2 text-base font-semibold">
             <Paired en="Famous games" kanji="名局" kanjiClassName="text-sm font-normal opacity-70" />
           </span>
-          <span className="max-w-prose text-sm text-muted">
+          <span className="text-sm text-muted">
             Title matches and historic games from public-domain records — each one a picture of every move.
           </span>
         </span>
@@ -368,7 +368,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           */}
           <Paired en={say.say("nav.everyGame")} kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           {/*
             The count lives on the plain list rather than here, and that is the
             gate's doing rather than a preference: a number beside the word

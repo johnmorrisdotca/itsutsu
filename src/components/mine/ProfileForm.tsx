@@ -235,7 +235,7 @@ export function ProfileForm({
           {saved ? <span className="text-xs text-moss">Saved.</span> : null}
           {error !== null ? <span className="text-xs text-shu">{error}</span> : null}
         </div>
-        <p className="max-w-prose text-xs text-muted">
+        <p className="text-xs text-muted">
           Your country shows as a flag beside your name wherever the site lists players; your city and the time
           where you are show on your own page. Everything is optional, and your address is never shown.
         </p>

@@ -165,7 +165,7 @@ export async function AdminBots() {
 
   return (
     <section className="flex flex-col gap-3" data-testid="admin-bots">
-      <p className="max-w-prose text-xs text-muted">{ADMIN_BOTS_COPY.lead}</p>
+      <p className="text-xs text-muted">{ADMIN_BOTS_COPY.lead}</p>
       <RecordTable
         subject={ADMIN_BOTS_COPY.player}
         rows={rows}
@@ -179,7 +179,7 @@ export async function AdminBots() {
          */
         empty={<>{ADMIN_BOTS_COPY.empty}</>}
         caption={
-          <p className="max-w-prose text-xs text-muted">
+          <p className="text-xs text-muted">
             {ADMIN_BOTS_COPY.ratingNote} {ADMIN_BOTS_COPY.keptRecordsNote}
           </p>
         }

@@ -41,7 +41,7 @@ export default async function ThanksPage() {
   const reader = await currentReader();
   const members = reader.signedIn ? await findMembersByNames(BETA_TESTERS.map((tester) => tester.name)) : null;
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className="flex flex-col gap-3">
         <h1 className="flex flex-wrap items-baseline gap-x-2 text-lg font-semibold">

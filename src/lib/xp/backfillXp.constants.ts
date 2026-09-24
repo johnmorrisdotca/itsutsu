@@ -221,12 +221,12 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
   challengeSent: {
     replayed: false,
     recorded: false,
-    why: "The ask was never written down. `createdGameKind` reads the REQUEST body, and no column on `Game` says a row was created as a challenge rather than posted or hot-seated.",
+    why: "The ask was never written down. `createdGameKind` reads the REQUEST body, and no column on `Game` says a row was created as an offer to somebody rather than posted or hot-seated.",
   },
   challengeAnswered: {
     replayed: false,
     recorded: false,
-    why: "It rides the challenged side's first move of a game created as a challenge, and nothing on the row says a game WAS one. See `challengeSent`.",
+    why: "It rides the offered side's first move of a game created as an offer, and nothing on the row says a game WAS one. See `challengeSent`.",
   },
   rematchPlayed: {
     replayed: false,

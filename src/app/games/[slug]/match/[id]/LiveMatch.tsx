@@ -258,11 +258,10 @@ export async function LiveMatch({
 
   return (
     /*
-     * `board` rather than `wide`: the same frame to 1536px, and wider past it,
-     * so a 27-inch screen has room for the board its reader asked for. See
-     * `PAGE_WIDTH.board` and `BoardColumn`.
+     * The same frame as every other page, a big screen included: see
+     * `PAGE_WIDTH`. The board fits that column; see `BoardColumn`.
      */
-    <Page width="board" gap="gap-6">
+    <Page board gap="gap-6">
       <SiteHeader />
       <SeatFullNotice shown={seatFull} />
       {/* Before the first stone: who these two are to each other. See RivalryPanel. */}
@@ -270,7 +269,16 @@ export async function LiveMatch({
         <RivalryPanel of={{ seats: { black: game.blackMemberId, white: game.whiteMemberId } }} variant={game.variant} moment={RIVALRY_MOMENTS.before} />
       ) : null}
 
-      <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
+      {/*
+        BESIDE THE BOARD AT FIT, UNDER IT AT MEDIUM AND LARGE. Every page is one
+        width now, so beside the panel a board has 672 pixels whatever size was
+        pressed, and Large would be Fit. A reader who asks for a bigger board
+        gets the page's whole width for it, and the panel moves below, as it does
+        on a phone.
+      */}
+      <div
+        className="group/match flex w-full flex-col items-start gap-8 lg:flex-row lg:has-[[data-board-size=medium]]:flex-col lg:has-[[data-board-size=large]]:flex-col"
+      >
         <div className="w-full min-w-0 flex-1">
           {/*
             THE COLUMN THE BOARD IS PLAYED IN, at the size this reader keeps on
@@ -293,7 +301,7 @@ export async function LiveMatch({
           </BoardColumn>
         </div>
 
-        <aside className="flex w-full flex-col gap-4 lg:w-80">
+        <aside className="flex w-full flex-col gap-4 lg:w-80 lg:group-has-[[data-board-size=medium]]/match:w-full lg:group-has-[[data-board-size=large]]/match:w-full">
           {/*
             THE ANSWER, FIRST IN THE PANEL. An offer is the one thing on this
             page a reader has to do something about, so it sits above the

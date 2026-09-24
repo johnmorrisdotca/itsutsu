@@ -54,7 +54,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
   // The one page that says how much is new in the inbox: one count, here, not on every page's header.
   const unread = await unreadInbox(await currentMemberId());
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -62,7 +62,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           <h1 className="flex items-baseline gap-2 text-lg font-semibold">
             <Paired en="My games" kanji="対局" kanjiClassName="text-sm font-normal opacity-70" />
           </h1>
-          <p className="max-w-prose text-sm text-muted">
+          <p className="text-sm text-muted">
             Yours to move first, oldest waiting at the top — the one that has been sitting
             longest is usually the one somebody is wondering about.
           </p>

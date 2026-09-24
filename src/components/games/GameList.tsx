@@ -34,7 +34,7 @@ import { CATALOGUE_LINK_CLASS } from "./games.constants";
 export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn: boolean }) {
   return (
     <div className="flex flex-col gap-8" data-testid="every-game">
-      <p className="max-w-prose text-sm text-muted">
+      <p className="text-sm text-muted">
         {/*
           A count of RULE SETS, not of games anybody played — "forty games in
           ten families" is a fact about the catalogue, and the catalogue is the
@@ -51,7 +51,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
               {family.games.length} {family.games.length === 1 ? "game" : "games"}
             </span>
           </h2>
-          <p className="max-w-prose text-sm text-muted">{family.blurb}</p>
+          <p className="text-sm text-muted">{family.blurb}</p>
           <dl className="flex flex-col gap-3">
             {family.games.map((variant) => {
               const copy = RULE_VARIANT_DISPLAY[variant];

@@ -253,7 +253,7 @@ test.describe("the bots have a tab of their own", () => {
      */
     await page.goto("/admin?view=members");
     await expect(page.getByTestId("admin-member").first()).toBeVisible();
-    await expect(page.getByTestId("admin-members").getByTestId("member-kind").filter({ hasText: "Robot" })).toHaveCount(
+    await expect(page.getByTestId("admin-members").locator('[data-testid="member-kind"][data-kind="robot"]')).toHaveCount(
       0,
     );
   });

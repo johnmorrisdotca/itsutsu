@@ -109,7 +109,7 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
    * scroll at the widths where there was room all along.
    */
   return (
-    <Page width="wide" board={false} gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">

@@ -15,7 +15,7 @@ export default function NotFound() {
         <h1 className="font-mincho text-3xl font-bold">
           何もない <span className="text-base font-normal text-muted">nothing here</span>
         </h1>
-        <p className="max-w-sm text-sm text-muted">
+        <p className="max-w-sm text-sm text-muted" data-width-reason="a short notice centred on a page with no frame">
           There is no page at this address. It may have been a game that does not exist, or a
           link that was not copied whole.
         </p>

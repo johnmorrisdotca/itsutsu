@@ -93,7 +93,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   );
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
@@ -123,7 +123,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
               <Paired en={rung.name} kanji={rung.kanji} kanjiClassName="text-lg font-normal opacity-70" />
             )}
           </h1>
-          <p className="max-w-3xl text-sm text-ink-soft">{rung.note}</p>
+          <p className="text-sm text-ink-soft">{rung.note}</p>
         </div>
 
         <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm" data-testid="level-costs">

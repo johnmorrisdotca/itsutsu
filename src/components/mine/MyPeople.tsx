@@ -75,7 +75,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
             Ignored <span className="font-mincho text-xs font-normal opacity-70">無視</span>
             <span className="text-xs font-normal text-muted">{ignored.length}</span>
           </h2>
-          <p className="text-xs text-muted">They cannot challenge you, and their messages in a game are hidden from you.</p>
+          <p className="text-xs text-muted">They cannot ask you to play, and their messages in a game are hidden from you.</p>
           <ul className="flex flex-col gap-1 text-sm">
             {ignored.map((entry) => (
               <li key={entry.id} className="flex items-center gap-3">

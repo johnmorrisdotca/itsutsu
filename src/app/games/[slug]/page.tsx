@@ -69,7 +69,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   const page = rulesPageFor(variant);
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">

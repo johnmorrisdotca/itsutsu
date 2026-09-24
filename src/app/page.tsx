@@ -81,14 +81,14 @@ export default async function Home() {
   const reader = await currentReader();
   const numbers = await siteNumbers();
   return (
-    <Page width="standard" gap="gap-10">
+    <Page gap="gap-10">
       <SiteHeader hero />
 
       <section className="flex flex-col items-center gap-5 text-center" data-testid="front-door">
         <h1 className="max-w-2xl text-2xl font-semibold sm:text-3xl">
           A board for two, wherever you both are.
         </h1>
-        <p className="max-w-xl text-sm text-muted sm:text-base">
+        <p className="text-sm text-muted sm:text-base">
           {RULE_VARIANT_LIST.length} board games for two people, from five in a row to Othello, checkers and go.
           Play across the table or across the world, learn the shapes that win, and keep every game you finish.
         </p>
@@ -99,7 +99,7 @@ export default async function Home() {
           People only, and the games number links to exactly those games; see
           `siteNumbers.ts`.
         */}
-        <p className="max-w-xl text-xs text-muted" data-testid="site-numbers">
+        <p className="text-xs text-muted" data-testid="site-numbers">
           Itsutsu is in early release, by invitation only — so far{" "}
           <Link href="/players" className="underline underline-offset-4" data-testid="site-numbers-players">
             {plural(numbers.players, "player")}

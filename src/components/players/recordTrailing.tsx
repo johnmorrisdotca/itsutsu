@@ -305,26 +305,6 @@ export function TrailingCells({
                 load. The first drawing is the UTC date, the same on both sides.
               */}
               <LocalTime at={row.joined.at} style="date" />
-              {/*
-                A COLOURED MARK AND NOT A PILL, AND THE XP COLUMN IS WHY. The
-                pill was 8 pixels of padding each side and an 8-pixel gap, which
-                is most of why this column wanted 142 pixels for a nine-character
-                date. Measured when XP arrived: the members list's min-content went
-                from 1,061 to 1,123 in a box of 1,118, so "Challenge" sat 5 pixels
-                past the edge on every row. Dropping the chrome gives back 18
-                pixels whatever the rows hold — the word, the kanji, the colour and
-                the weight all stay, so a new member is marked exactly as clearly.
-
-                The alternatives were weighed on the same measurement. Moving the
-                mark beside the name saves nothing on a page whose widest names are
-                themselves new members. Shaving the XP figure would mean writing it
-                without the thousands separator every other count here uses.
-              */}
-              {row.joined.isNew ? (
-                <span className="ml-1.5 text-[0.65rem] font-semibold text-moss" data-testid="record-new">
-                  New 新人
-                </span>
-              ) : null}
             </>
           )}
         </td>

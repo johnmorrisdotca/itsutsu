@@ -97,7 +97,7 @@ function HereRow({ entry, me }: { entry: HereNow; me: string | null }) {
       </span>
       <RowActions>
         {/* Everybody here is a member seen lately — a person, with or without an address. */}
-        {me !== null ? <ChallengeButton memberId={entry.id} label="Challenge" /> : null}
+        {me !== null ? <ChallengeButton memberId={entry.id} /> : null}
       </RowActions>
     </li>
   );

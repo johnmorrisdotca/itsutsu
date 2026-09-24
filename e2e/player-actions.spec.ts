@@ -35,7 +35,7 @@ test.describe("the actions on a player's page", () => {
      * one rather than creating a game where it stands. Buddy and Ignore are
      * still buttons: each of those is a thing that happens on the press.
      */
-    await expect(actions.getByRole("link", { name: /Ask for a game/ })).toBeVisible();
+    await expect(actions.getByRole("link", { name: "Play", exact: true })).toBeVisible();
     await expect(actions.getByRole("button", { name: /Buddy/ })).toBeVisible();
     await expect(actions.getByRole("button", { name: /Ignore/ })).toBeVisible();
   });

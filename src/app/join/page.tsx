@@ -53,7 +53,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <BrandWordmark className="h-8 w-auto" />
       </header>
       {typeof params.error === "string" ? (
-        <p className="max-w-sm text-center text-sm text-shu" data-testid="join-error">
+        <p className="max-w-sm text-center text-sm text-shu" data-testid="join-error" data-width-reason="a short notice centred on the doorstep, which has no page frame">
           Google sign-in did not complete ({params.error}). Try again, or use an invite code.
         </p>
       ) : null}

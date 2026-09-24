@@ -82,7 +82,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   const learn = say.pair("rules.learn", "学び");
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <article className={`${PANEL_CLASS} flex min-w-0 flex-1 flex-col gap-6`} data-testid="rules-page">

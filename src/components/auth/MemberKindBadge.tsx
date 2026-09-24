@@ -8,6 +8,12 @@ import { MEMBER_KINDS, MEMBER_KIND_DISPLAY, worthShowing, type MemberKind } from
  * badge on every row is a badge on none and the whole point is that the
  * operator, the robots and the kept records stand out from the people.
  *
+ * A bot's badge is one word, "BOT", with no kanji beside it. John,
+ * 2026-09-24, fitting the members table into the site's one width: "Robot
+ * badges don't need ENG and JP", and "use the term BOT throughout the site to
+ * save space." It sits on every program's row, so it is the badge whose width
+ * is paid most often.
+ *
  * Being shut is not a kind and has its own badge: somebody can be a shut
  * operator, and folding the two together would lose one of them.
  */
@@ -31,7 +37,11 @@ export function MemberKindBadge({ kind }: { kind: MemberKind }) {
       data-kind={kind}
       className={`inline-flex shrink-0 items-baseline gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.06em] uppercase ${TONE[kind]}`}
     >
-      <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.7rem] font-normal normal-case tracking-normal opacity-70" />
+      {kind === MEMBER_KINDS.robot ? (
+        copy.label
+      ) : (
+        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.7rem] font-normal normal-case tracking-normal opacity-70" />
+      )}
     </span>
   );
 }

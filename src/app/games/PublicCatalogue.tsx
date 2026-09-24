@@ -84,7 +84,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
   const stats = forReader(await fetchCatalogueStats(), false);
 
   return (
-    <Page width="standard">
+    <Page>
       <SiteHeader />
 
       {/*
@@ -97,7 +97,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
         className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`}
         data-testid="games-join"
       >
-        <span className="max-w-prose text-sm text-muted">
+        <span className="text-sm text-muted">
           Every game here is free to read about — the rules, what it is, where it came from, and
           the family it belongs to. Playing one needs an invite.
         </span>
@@ -126,7 +126,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
           <span className="flex items-baseline gap-2 text-base font-semibold">
             <Paired en="Learn how to play them" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
           </span>
-          <span className="max-w-prose text-sm text-muted">
+          <span className="text-sm text-muted">
             The shapes that win, the moves that force, and the mistakes everyone makes once.
             Each guide names the games it applies to.
           </span>
@@ -140,7 +140,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           <Paired en={say.say("nav.everyGame")} kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           Almost every game here is five in a row with one idea changed. Every name below leads to
           that game, and the three ways of looking at the list are the same games arranged
           differently.

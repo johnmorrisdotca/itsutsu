@@ -39,7 +39,7 @@ export default async function PlayPage({ params }: PageProps<"/games/[slug]/play
   const defaults = await gameDefaultsFor(reader.memberId);
 
   return (
-    <Page width="wide">
+    <Page board>
       <SiteHeader />
       <GameViewClient
         variant={variant}

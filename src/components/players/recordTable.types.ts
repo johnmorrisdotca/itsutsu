@@ -110,7 +110,7 @@ export type RecordTableRow = {
   /** Null prints a dash: a rating nobody has earned is not a rating of 1600. */
   rating?: ShownRating | null;
   tier?: RatingTier;
-  joined?: { at: string; isNew: boolean };
+  joined?: { at: string };
   /** What the reader may do about this row — a button or two. */
   actions?: ReactNode;
   /** A mark on the played count, for a total that needs qualifying. */

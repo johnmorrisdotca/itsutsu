@@ -42,7 +42,7 @@ export function DetailText({
 
   if (text.length <= SHORT) {
     return (
-      <p className="max-w-prose text-sm text-muted" data-testid={testId}>
+      <p className="text-sm text-muted" data-testid={testId}>
         {text}
       </p>
     );
@@ -56,7 +56,7 @@ export function DetailText({
   const short = `${cut.slice(0, Math.max(cut.lastIndexOf(" "), 1)).trimEnd()}…`;
 
   return (
-    <p className="max-w-prose text-sm text-muted" data-testid={testId}>
+    <p className="text-sm text-muted" data-testid={testId}>
       <span data-testid={open ? "backlog-detail-full" : "backlog-detail-short"}>{open ? text : short}</span>{" "}
       <button
         type="button"

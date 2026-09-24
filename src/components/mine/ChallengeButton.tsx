@@ -3,6 +3,8 @@ import Link from "next/link";
 import { setUpLink } from "@/lib/gomoku/slugs";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 
+import { PLAY } from "./mine.constants";
+
 /**
  * OFFERING SOMEBODY A GAME — WHICH MEANS GOING TO SETTLE ONE, NOT STARTING ONE.
  *
@@ -32,10 +34,18 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.con
  * handler to attach. It keeps its button clothes: it is still the loud thing on
  * a row, and it is still called `challenge` so that every spec naming it goes
  * on naming it.
+ *
+ * ITS WORD IS "PLAY", AND ONLY THAT. The same link was "Challenge" on the
+ * members list, "Ask for a game" on a player's page and "Play" beside a
+ * computer. John, 2026-09-24: "does Challenge and Play mean the same thing???
+ * If so, why use 2 different words. Play is shorter." So a caller offering a
+ * game passes no label; one that carries more than the opponent — a rematch, a
+ * fork — says so, and still starts with Play. `playWord.coverage.test.ts` holds
+ * both.
  */
 export function ChallengeButton({
   memberId,
-  label = "Challenge",
+  label = PLAY,
   strong = false,
   from,
   rematch,

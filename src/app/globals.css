@@ -166,6 +166,15 @@ html[data-bare="true"] [data-strippable] [data-bare-board] {
 }
 
 /*
+ * A board's column sits against the page's left edge on a desk, like every
+ * other page's content (`BOARD_COLUMN`). With the side matter gone there is
+ * nothing beside it, so just the board centres it again.
+ */
+html[data-bare="true"] [data-strippable] [data-board-column] {
+  margin-inline: auto;
+}
+
+/*
  * THE RIVALRY BOARD — components/history/RivalryBoard. The VS badge lands and
  * the two scores rise to meet it, once, when the board is drawn. Nothing
  * loops: a scoreboard that kept moving would be asking to be looked at after

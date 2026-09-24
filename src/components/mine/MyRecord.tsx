@@ -95,7 +95,7 @@ export async function MyRecord({ name }: { name: string }) {
     <div className="flex flex-col gap-3" data-testid="my-record">
       {!hasPlayed ? (
         <p className="text-sm text-muted">
-          No games yet. Rated games are shared games between two members: challenge someone from the{" "}
+          No games yet. Rated games are shared games between two members: press Play beside someone on the{" "}
           <Link href="/players" className="underline underline-offset-4">players</Link> page.
         </p>
       ) : (

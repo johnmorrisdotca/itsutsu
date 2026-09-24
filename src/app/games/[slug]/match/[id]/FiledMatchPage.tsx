@@ -274,7 +274,7 @@ function FiledMatch({
   const named = game.result !== "abandoned";
 
   return (
-    <Page width="wide" gap="gap-6">
+    <Page board gap="gap-6">
       {/* The game-end toasts are said by the result card, where it opens — see `XpToasts`. */}
       <SiteHeader
         xpHeldBy={card?.xp?.heldFlashAt ? { gameId: card.gameId, at: card.xp.heldFlashAt } : undefined}

@@ -45,7 +45,7 @@ export default async function LevelsPage() {
   const standing = viewer?.standing ?? null;
 
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
@@ -69,7 +69,7 @@ export default async function LevelsPage() {
           </div>
         </div>
 
-        <p className="max-w-3xl text-sm text-muted">
+        <p className="text-sm text-muted">
           Experience is the second of the two ladders here, and it is not the rating. A rating
           says how well you play; experience says you turned up and tried things — so an
           unrated game at one screen pays it, and a game you lost still pays for having been

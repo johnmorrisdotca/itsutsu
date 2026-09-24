@@ -28,13 +28,13 @@ export default async function LearnIndexPage() {
    */
   const say = await currentSpeaker();
   return (
-    <Page width="standard" gap="gap-6">
+    <Page gap="gap-6">
       <SiteHeader />
       <section className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
           <Paired en={say.say("nav.learn")} kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
-        <p className="max-w-prose text-sm text-muted">
+        <p className="text-sm text-muted">
           How to think about each game: the shapes that win, the moves that force, and
           the mistakes everyone makes once. Each guide names the games it applies to.
         </p>

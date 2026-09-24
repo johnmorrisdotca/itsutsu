@@ -34,7 +34,7 @@ export type MemberKind = (typeof MEMBER_KINDS)[keyof typeof MEMBER_KINDS];
 
 export const MEMBER_KIND_DISPLAY: Record<MemberKind, { label: string; kanji: string; note: string }> = {
   operator: { label: "Operator", kanji: "管理", note: "Runs the site. Named in the deployment, not in the members table." },
-  robot: { label: "Robot", kanji: "機械", note: "A program that plays, rated like anybody else." },
+  robot: { label: "Bot", kanji: "機械", note: "A program that plays, rated like anybody else." },
   remembered: { label: "Remembered", kanji: "偲ぶ", note: "Their record is kept here; they are not." },
   honorary: { label: "Honorary", kanji: "名誉", note: "Never played here, kept in their own right." },
   "kept-record": { label: "Kept record", kanji: "記録", note: "A record from before this site, with no account behind it." },
