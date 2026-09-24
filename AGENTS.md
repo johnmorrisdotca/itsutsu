@@ -864,6 +864,23 @@ immediately before the push that makes it real, and a taken one is caught
 rather than collided with. Leave `package.json` alone on a branch; the tool
 is what claims a number, and it does that once, right before pushing.
 
+### Documentation Upkeep
+
+**`docs/DOCS_UPKEEP.md` maps every doc to the code it describes.** Before
+`pnpm release:take`, list what the release changed
+(`git diff --name-only origin/main...HEAD`), find those paths in the map, and
+re-read the docs they name. Fix a sentence that is now false in the feature's
+own commit, since `release:take` commits only `package.json` and
+`CHANGELOG.md`. Leave a doc that is still true alone: an edit made only to
+show it was read is the "satisfy the report" failure described below.
+
+A rename or a removal (a route, a status, a script, a family) means grepping
+`README.md` and `docs/` for the old name: the README still listed the
+backlog's five old statuses after the board moved to four. A new doc gets a row
+in the map in the same commit, or nothing will ever prompt anybody to re-read
+it. Pages on the site are code and are held by their coverage tests; a count of
+the site is read from the site, never typed into a sentence.
+
 ### Nothing Answers What It Cannot Answer
 
 A gate, a name and a return value are all reports. When one of them will not
