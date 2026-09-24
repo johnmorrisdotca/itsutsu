@@ -63,3 +63,10 @@ export type MemberClaimModalProps = {
    */
   onAttached: () => void;
 };
+
+export type MemberAgeControlProps = {
+  member: { id: string; ageBand: string | null; consent: { name: string; relationship: string; at: string } | null };
+  busy: boolean;
+  /** The row's own PATCH, so one place reports errors and refreshes the list. */
+  onSet: (body: Record<string, unknown>) => Promise<void>;
+};

@@ -173,11 +173,24 @@ and the seats hang off it, so a rename moves nothing.
 | Away | `awayFrom`, `awayUntil`, `daysOff`, `awayDaysUsed`, `awayYear` | Deadlines in games that honour vacation wait. All seven days off is refused |
 | Preferences | `appearance`, `gameDefaults`, `preferences` (JSON), `keepFinishedDays` | Read back through `cleanAppearance`, `cleanGameDefaults` and `cleanPreferences`, never trusted, so a removed option falls back rather than breaking a page |
 | Moderation | `bannedAt`, `bannedNote` | A shut account's games and ratings stay as they are. The note is never shown to the member |
+| Age | `ageBand` | `under_13`, `13_17` or `18_plus` (`AGE_BANDS`, UmaKuma's vocabulary), or null for a member never asked. Null is not a band. Under 13 is written only together with a `ParentalConsent` row |
 | Computer player | `botTier` | The grade a program plays at, or null for a person |
 | Record | `played`, `won`, `lost`, `drawn`, `playedStreakKind`, `playedStreakCount` | Every finished game, rated or not, matched by member id. Written by `recordPlayed` from all four endings |
 | XP | `xp`, `xpImported`, `xpEverywhere`, `xpLastAt`, `xpFlash` | `xp` is earned here, `xpImported` is credit for a kept record, `xpEverywhere` is their sum. `xpFlash` holds awards not yet shown to the member |
 
 Indexed for each sort the members directory and the XP boards offer.
+
+### ParentalConsent
+
+Who consented to a member under 13 having an account, and when. One row per
+member (`memberId` unique), written in the same transaction as the band that
+needs it (`ageBandStore.ts`), deleted with the member.
+
+| Columns | Meaning |
+| --- | --- |
+| `name` | The parent's or guardian's name as they typed it, at most 120 characters |
+| `relationship` | `parent` or `guardian` (`PARENT_RELATIONSHIPS`) |
+| `createdAt` | When they consented |
 
 ### Player
 

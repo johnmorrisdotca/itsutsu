@@ -9,8 +9,10 @@ import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { ageBandLabel } from "@/lib/social/ageBand";
 import { PlayerName } from "@/components/players/PlayerName";
-import { ADMIN_CLAIM_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
+import { ADMIN_AGE_COPY, ADMIN_CLAIM_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
+import { MemberAgeControl } from "./MemberAgeControl";
 import { MemberKindBadge } from "./MemberKindBadge";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MemberClaimModal } from "./MemberClaimModal";
@@ -182,10 +184,26 @@ export function AdminMembers() {
                       : ADMIN_WORDS_COPY.rowSet(day(member.phraseSetAt))}
                   </span>
                 ) : null}
+                {/* The age band as a fact on the row, and whether a parent is on file. Never the parent's name here. */}
+                {member.kind === MEMBER_KINDS.robot ? null : (
+                  <span data-testid="member-age">
+                    {" · "}
+                    {ageBandLabel(member.ageBand) === null ? ADMIN_AGE_COPY.rowUnsaid : ADMIN_AGE_COPY.row(ageBandLabel(member.ageBand)!.label)}
+                    {member.consent === null ? "" : ` · ${ADMIN_AGE_COPY.rowConsented}`}
+                  </span>
+                )}
                 {member.bannedNote === "" ? "" : ` · ${member.bannedNote}`}
               </span>
             </span>
             <RowActions>
+            {/* AGE 年齢. The band, set from the row; under 13 asks who consented. See MemberAgeControl. */}
+            {member.mayHavePhrase ? (
+              <MemberAgeControl
+                member={{ id: member.id, ageBand: member.ageBand, consent: member.consent }}
+                busy={busy === member.email}
+                onSet={(body) => change(body, member.email ?? member.id)}
+              />
+            ) : null}
             {/*
               WORDS 合言葉. Setting a credential is the one thing here that
               gives somebody a way IN rather than taking one away, so it is

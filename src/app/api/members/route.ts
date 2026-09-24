@@ -4,7 +4,9 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { ageBandGate, recordAgeBand } from "@/lib/auth/ageBandStore";
 import { operatorActor } from "@/lib/auth/operatorLog";
+import { AGE_BAND_LIST, CONSENT_LIMITS } from "@/lib/social/ageBand.constants";
 import { renameMember } from "@/lib/auth/members";
 import { countMembers, listMembers, memberSummaryFor, setBanned } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
@@ -76,6 +78,18 @@ export async function GET(request: Request) {
 const changeSchema = z.union([
   z.object({ id: z.string().min(1).max(64), banned: z.boolean(), note: z.string().max(280).optional() }),
   z.object({ id: z.string().min(1).max(64), name: z.string().max(60) }),
+  /*
+   * The age band, for a member who joined before the question existed or whose
+   * parent consented by hand. The same rule as the member's own form
+   * (`ageBandGate`): under 13 needs a consent in the same request or on file.
+   */
+  z.object({
+    id: z.string().min(1).max(64),
+    ageBand: z.enum(AGE_BAND_LIST),
+    consent: z
+      .object({ name: z.string().max(CONSENT_LIMITS.name * 2), relationship: z.string().max(16), agreed: z.boolean() })
+      .optional(),
+  }),
 ]);
 
 /**
@@ -96,7 +110,17 @@ export async function PATCH(request: Request) {
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = changeSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Say whether to shut the account, or what to call them.");
+    if (!parsed.success) return badRequest("Say whether to shut the account, what to call them, or their age band.");
+
+    if ("ageBand" in parsed.data) {
+      const target = await memberSummaryFor(parsed.data.id);
+      if (target === null) return notFound("No such member.");
+      const decision = await ageBandGate(parsed.data.id, parsed.data.ageBand, parsed.data.consent ?? null);
+      if (!decision.ok) return badRequest(decision.problem);
+      // Logged in the same transaction as the band: the band before and after, never the parent's name.
+      await recordAgeBand(parsed.data.id, parsed.data.ageBand, decision.consent, { actor: operatorActor(me), before: target.ageBand });
+      return NextResponse.json(await memberSummaryFor(parsed.data.id), { headers: NO_STORE });
+    }
 
     if ("banned" in parsed.data) {
       /*

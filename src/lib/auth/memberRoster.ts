@@ -73,6 +73,10 @@ export type MemberSummary = NamedMember & {
    * `kind` is: the rule lives in one place and every list reads the same one.
    */
   mayHavePhrase: boolean;
+  /** AGE_BANDS, or null for a member never asked. */
+  ageBand: string | null;
+  /** For a member under 13: who consented and when. Never the parent's name past this table. */
+  consent: { name: string; relationship: string; at: string } | null;
 };
 
 /**
@@ -119,6 +123,8 @@ const MEMBER_SUMMARY_SELECT = {
    * size of the database, and however the row was written.
    */
   botTier: true,
+  ageBand: true,
+  parentalConsent: { select: { name: true, relationship: true, createdAt: true } },
 } as const;
 
 /** How many members there are, whatever a page of them is cut to. */
@@ -183,6 +189,8 @@ type SummaryRow = {
   unclaimableBecause: string | null;
   phraseSetAt: Date | null;
   botTier: string | null;
+  ageBand: string | null;
+  parentalConsent: { name: string; relationship: string; createdAt: Date } | null;
 };
 
 /**
@@ -191,8 +199,12 @@ type SummaryRow = {
  * by id. Null when the operator has no member row — then no row is theirs.
  */
 function toSummary(rows: SummaryRow[], youId: string | null): MemberSummary[] {
-  return rows.map(({ unclaimableBecause, botTier, phraseSetAt, ...row }) => ({
+  return rows.map(({ unclaimableBecause, botTier, phraseSetAt, parentalConsent, ...row }) => ({
     ...row,
+    consent:
+      parentalConsent === null
+        ? null
+        : { name: parentalConsent.name, relationship: parentalConsent.relationship, at: parentalConsent.createdAt.toISOString() },
     createdAt: row.createdAt.toISOString(),
     lastSeenAt: row.lastSeenAt.toISOString(),
     bannedAt: row.bannedAt === null ? null : row.bannedAt.toISOString(),

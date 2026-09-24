@@ -7,6 +7,10 @@ import { MyPeople } from "@/components/mine/MyPeople";
 import { MyRecord } from "@/components/mine/MyRecord";
 import { MyXp } from "@/components/mine/MyXp";
 import { NameForm } from "@/components/mine/NameForm";
+import { AgeBandForm } from "@/components/mine/AgeBandForm";
+import { AGE_COPY } from "@/components/mine/mine.constants";
+import { ageBandOf } from "@/lib/auth/ageBandStore";
+import { isAgeBand } from "@/lib/social/ageBand";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -114,6 +118,15 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const preferences = await preferencesFor();
   const name = member?.name ?? row.name;
   const welcome = params.welcome === "1";
+  /*
+   * THE AGE QUESTION COMES FIRST. On a first visit with no band on the row,
+   * the welcome asks it and nothing else; the name question waits behind it.
+   * A member who joined before the question existed meets it on the Profile
+   * tab, not as a gate, and the operator can answer for a family by hand.
+   */
+  const age = await ageBandOf(row.id);
+  const band = isAgeBand(age.band) ? age.band : null;
+  const askAge = welcome && band === null;
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
   const open = activeTab(TABS, params.view);
   /* No address: in by invite code, and this browser is their only way back until they add one. */
@@ -160,7 +173,15 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
         lead={member?.email ? member.email : undefined}
       />
 
-      {welcome ? (
+      {askAge ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-3 border-moss/50 bg-moss-soft`} data-testid="welcome">
+          <SectionHeading title="Welcome" kanji="ようこそ" />
+          <p className="text-sm text-ink-soft">{AGE_COPY.welcomeLead}</p>
+          <AgeBandForm band={null} consented={false} place="welcome" />
+        </section>
+      ) : null}
+
+      {welcome && !askAge ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2 border-moss/50 bg-moss-soft`} data-testid="welcome">
           <SectionHeading title="Welcome" kanji="ようこそ" />
           <p className="text-sm text-ink-soft">
@@ -183,9 +204,11 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
         </section>
       ) : null}
 
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <NameForm initial={name} next={next} />
-      </section>
+      {askAge ? null : (
+        <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
+          <NameForm initial={name} next={next} />
+        </section>
+      )}
 
       {/*
         THE REMINDER, AFTER THE WELCOME HAS CLOSED. The welcome says it once;
@@ -232,6 +255,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   harmless while it is visibly a guess, and the control that
                   corrects it is the very next thing on the page.
                 */}
+                <AgeBandForm band={band} consented={age.consented} place="profile" />
                 <DayZoneNote
                   timeZone={member?.timeZone ?? ""}
                   country={member?.country ?? ""}

@@ -748,6 +748,16 @@ model Member {
   /// would both be dates somebody could mistake for a real one.
   xpLastAt DateTime?
 
+  /// The band the member said they are in: AGE_BANDS in
+  /// src/lib/social/ageBand.constants.ts (under_13, 13_17, 18_plus; UmaKuma's
+  /// vocabulary, so the two sites can be compared). NULL MEANS NEVER ASKED,
+  /// which is every member who joined before the question existed; it is not
+  /// a band, nothing treats it as one, and nothing derives one from a name, a
+  /// bio or who invited them.
+  ageBand String?
+  /// For a member under 13: who consented to the account, and when.
+  parentalConsent ParentalConsent?
+
   @@index([botTier])
   /// The XP leaderboard's default sort: highest first. The LEVEL is derived from
   /// this column and the curve is monotonic, so sorting by level is sorting by
@@ -798,6 +808,23 @@ model Member {
 /// (Player.memberId, PlayerVariantRating.memberId, Game.blackMemberId): the id
 /// is opaque, the join is never wanted, and production carries decided games
 /// with null seat ids that a foreign key would have refused.
+/// Who consented to a member under 13 having an account here, and when.
+///
+/// One row per member, written in the same transaction as the age band that
+/// needs it (src/lib/auth/ageBandStore.ts), so a member can never be under 13
+/// without one. The name is what the parent or guardian typed, kept as they
+/// typed it; `relationship` is PARENT_RELATIONSHIPS. Deleting the member takes
+/// the consent with it. The privacy page says exactly these three facts are
+/// kept, and its coverage test reads this model.
+model ParentalConsent {
+  id           String   @id @default(cuid())
+  memberId     String   @unique
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  name         String   @db.VarChar(120)
+  relationship String   @db.VarChar(16)
+  createdAt    DateTime @default(now())
+}
+
 model XpEvent {
   id       String @id @default(cuid())
   memberId String

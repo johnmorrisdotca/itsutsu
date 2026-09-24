@@ -146,3 +146,20 @@ or to have the account removed. Move the date at the top.
 - Do not put the rules that READ the band here; that is PRIV-03.
 - Do not block existing members from playing until they answer. They are
   asked on their next visit to `/me`, and Admin can set it.
+
+## As built (2026-09-24, branch work/age-band)
+
+- Vocabulary and rules in `src/lib/social/ageBand.constants.ts` and
+  `ageBand.ts` (tested); the writes in `src/lib/auth/ageBandStore.ts`, one
+  transaction for the band and its consent, so no row is ever under 13 alone.
+  That made the abandoned-welcome sweep in step 3 unnecessary: there is no
+  half-written state to sweep.
+- `PATCH /api/me` takes `ageBand` and `consent`; 422 with `needsParent` when a
+  child arrives without one, 400 for consent alone, 422 for consent on an adult.
+- `AgeBandForm` on the welcome page, shown INSTEAD of the name form until
+  answered, and on the Profile tab with Change; `MemberAgeControl` on the
+  Admin row, through `PATCH /api/members`, logged as `OPERATOR_ACTIONS.ageBand`.
+- Privacy page: What we keep and Children rewritten; the coverage test reads
+  the `ParentalConsent` model for the three facts it names.
+- `e2e/age-band.spec.ts`: the welcome flow under 13, the API's refusals, and
+  a change on the Profile tab.

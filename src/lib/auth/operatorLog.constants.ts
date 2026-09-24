@@ -21,6 +21,12 @@ export const OPERATOR_ACTIONS = {
    * The row says what moved, in counts — never the name it was kept under.
    */
   recordClaimed: "recordClaimed",
+  /*
+   * The operator set a member's age band, and for a child recorded the
+   * parent's consent obtained by hand. The row says the band before and after
+   * and whether a consent was written — never the parent's name.
+   */
+  ageBand: "ageBand",
 } as const satisfies Record<string, OperatorActionName>;
 
 /** What the Admin tab says for each act, in the site's paired English and kanji. */
@@ -31,6 +37,7 @@ export const OPERATOR_ACTION_DISPLAY: Record<OperatorActionName, { label: string
   wordsPickOpened: { label: "Opened a four-word pick", kanji: "選択" },
   rename: { label: "Changed the name", kanji: "改名" },
   recordClaimed: { label: "Attached a record", kanji: "引継" },
+  ageBand: { label: "Set the age band", kanji: "年齢" },
 };
 
 /**

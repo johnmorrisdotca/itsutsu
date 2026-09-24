@@ -120,6 +120,7 @@ describe("the privacy page", () => {
       wordsSet: "set new words",
       wordsPickOpened: "open the picker",
       recordClaimed: "attach a record",
+      ageBand: "set a member's age band",
     };
     for (const action of Object.values(OPERATOR_ACTIONS)) {
       expect(who, `the operator can "${action}" and the page does not say so`).toContain(said[action]);
@@ -198,6 +199,10 @@ describe("the privacy page", () => {
       expect(section("children"), "the schema has an age band; PRIV-02 rewrites the Children section").not.toContain(
         "does not ask your age yet",
       );
+      // And says the three facts the consent row keeps, which the model beside it holds.
+      expect(schema).toMatch(/model ParentalConsent \{[\s\S]*\bname\b[\s\S]*\brelationship\b[\s\S]*\bcreatedAt\b/);
+      expect(section("children")).toContain("parent's or guardian's consent");
+      expect(section("what")).toContain("whether they are the parent or a guardian, and when");
     } else {
       expect(section("children")).toContain("does not ask your age yet");
     }
