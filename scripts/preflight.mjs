@@ -29,6 +29,7 @@ const LANES = [
   { name: "file sizes", commands: ["pnpm loc:check"] },
   { name: "unit tests", commands: ["pnpm test:unit"] },
   { name: "audit", commands: ["pnpm security:check"] },
+  { name: "no AI attribution", commands: ["pnpm attribution:check"] },
   { name: "types, then build", commands: ["pnpm typecheck", "pnpm build"] },
 ];
 
