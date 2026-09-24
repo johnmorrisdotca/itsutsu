@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.276.0 — 2026-09-24
+- The About page has a Playing here chapter, with pictures of the board, the move slider, a game as one picture, and playing with people.
+
 ## 0.275.0 — 2026-09-24
 - The Beta badge leads to the thank-you page, which now also says how to help test and how to ask for an invite.
 
