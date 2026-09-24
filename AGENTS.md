@@ -610,9 +610,11 @@ checks are made in three places and stated once.
   read from `CHANGELOG.md` at request time by `releasesFile.ts` — a second list kept by
   hand would drift within a day. `releases.test.ts` parses the real file, so a changelog
   that stops being readable fails the build, and it refuses a changelog naming a version
-  newer than `package.json`. Pages that read the file name it in
-  `outputFileTracingIncludes` (next.config.ts), or it is missing in production. The
-  operator reaches both halves from the Admin page.
+  newer than `package.json`. The build's tracer ships the file to the pages that read it,
+  because `releasesFile.ts` names it in a string it can follow; never name it in
+  `outputFileTracingIncludes`, which ships every package's changelog too
+  (`changelogTracing.coverage.test.ts`). The operator reaches both halves from the Admin
+  page.
 
 Whether work is *taken* from the board is the site owner's rule to make, not this file's.
 The gate only guarantees the board is worth making that rule out of.
@@ -752,7 +754,7 @@ deployment carries a copy.
 
 - **The deploy job measures before it uploads.** `scripts/check-function-sizes.mjs`
   (`pnpm functions:size`) reads `.vercel/output/functions` after `vercel build`
-  and fails any function over **60 MB**, or more than 20% and more than 5 MB
+  and fails any function over **40 MB**, or more than 20% and more than 5 MB
   over its size in `scripts/function-sizes.baseline.json`. The rules are in
   `src/lib/functionSizeGate.mjs`, tested beside it. The ceiling only ever comes
   down.
@@ -766,9 +768,10 @@ deployment carries a copy.
   client folder, and excludes the WebAssembly engines and the build machine's
   own. On 2026-09-23 that took the largest function from 127 MB to 44. **In this
   build an include beats an exclude**, and an include is matched against every
-  folder, not just the root: an include naming `CHANGELOG.md` also packs all
-  808 changelogs under `node_modules` (13.9 MB in two functions). Name one file
-  by its full path, and measure after any change to either list.
+  folder, not just the root: an include naming `CHANGELOG.md` packed all 808
+  changelogs under `node_modules` (13.9 MB in two functions) until 0.280.2 took
+  it out and let the tracer carry ours. Name one file by its full path, and
+  measure after any change to either list.
 - **A disk read names its folder.** `src/lib/serverFileTracing.test.ts` fails on
   `join(process.cwd(), variable)` and on a read rooted at the whole of `public`
   or `src`: the tracer cannot follow them, and packs everything that might

@@ -42,28 +42,15 @@ const nextConfig: NextConfig = {
     LADDER_FINGERPRINT: readLadderFingerprint() ?? "",
   },
   /*
-   * The backlog page and the Admin card read CHANGELOG.md at request time, so
-   * the release history is whatever the deployed commit actually says. Next
-   * only ships the files it can see being imported, and a path read at runtime
-   * is not one of those — without this the file is missing in production and
-   * the history renders empty.
-   */
-  /*
-   * Every page that reads the changelog at request time has to name it here
-   * or it is simply missing from the deployed bundle — the page renders, the
-   * read fails, and the history reads as empty in production and nowhere
-   * else. See AGENTS.md, Board Gate.
+   * CHANGELOG.md is NOT named here. /releases and the Admin card read it at
+   * request time, and the build's tracer carries it by itself, because
+   * `releasesFile.ts` names it in a string the tracer can follow. An include
+   * naming it is matched against every folder, not only the root: it packed
+   * all 808 CHANGELOG.md files under node_modules (13.9 MB) into both
+   * functions, and an exclude cannot take an include back out.
+   * `changelogTracing.coverage.test.ts` holds both halves of that.
    */
   outputFileTracingIncludes: {
-    "/releases": ["./CHANGELOG.md"],
-    "/backlog": ["./CHANGELOG.md"],
-    "/admin": ["./CHANGELOG.md"],
-    /*
-     * Keys are picomatch route globs, so a dynamic segment's brackets are
-     * escaped, as Next's own docs show for `/api/login/\[\[...slug\]\]`.
-     * `changelogTracing.coverage.test.ts` holds every route that can reach
-     * the reader to an entry here.
-     */
     /*
      * Prisma's query engine is a native binary loaded by a runtime path
      * lookup, not a static import, so Next's tracing misses it and a

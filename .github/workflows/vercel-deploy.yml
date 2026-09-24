@@ -196,7 +196,7 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       # SERVER FUNCTIONS STAY SMALL. Reads the build output about to ship and
-      # stops any function over 60 MB, or more than 20% and more than 5 MB over
+      # stops any function over 40 MB, or more than 20% and more than 5 MB over
       # the size recorded for it in scripts/function-sizes.baseline.json, before
       # the upload and before a deployment slot is spent. Every function counts
       # against the Functions Storage the whole Vercel account shares, and

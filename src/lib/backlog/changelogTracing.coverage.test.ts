@@ -13,7 +13,11 @@ const picomatch = createRequire(import.meta.url)("next/dist/compiled/picomatch")
 ) => (route: string) => boolean;
 
 /**
- * THE CHANGELOG IS SHIPPED ONLY TO THE ROUTES THAT NAME IT.
+ * THE CHANGELOG IS SHIPPED BY THE TRACER, AND NEVER BY AN INCLUDE (since
+ * 2026-09-24; see the case below that says why). What follows is the history of
+ * why this file exists, which still holds for what reading it at request time
+ * risks.
+ *
  *
  * `releasesFile.ts` reads CHANGELOG.md off the disk at request time, by a
  * path Next's file tracing cannot see, so a deployed function only has the
@@ -122,7 +126,7 @@ function keyMatches(key: string, route: string): boolean {
 
 const includes = (nextConfig.outputFileTracingIncludes ?? {}) as Record<string, string[]>;
 const changelogKeys = Object.entries(includes)
-  .filter(([, patterns]) => patterns.includes(CHANGELOG))
+  .filter(([, patterns]) => patterns.some((pattern) => pattern.endsWith(CHANGELOG.slice(2))))
   .map(([key]) => key);
 
 const files = sourceFiles(SRC);
@@ -132,7 +136,7 @@ const readingRoutes = [...reachers(READER, importers)]
   .map(routeOf)
   .sort();
 
-describe("CHANGELOG.md reaches every route that reads it", () => {
+describe("CHANGELOG.md reaches every route that reads it, and nothing else's does", () => {
   it("finds the reader's routes at all, so an empty answer cannot pass as a clean one", () => {
     expect(readingRoutes).toContain("/releases");
     expect(readingRoutes).toContain("/admin");
@@ -143,11 +147,25 @@ describe("CHANGELOG.md reaches every route that reads it", () => {
     expect(readingRoutes).toContain("/admin");
   });
 
-  it.each(readingRoutes)("%s names ./CHANGELOG.md in outputFileTracingIncludes", (route) => {
+  /*
+   * NO INCLUDE NAMES IT, since 2026-09-24. An include of `./CHANGELOG.md` is
+   * matched against every folder, not only the root, so it packed all 808
+   * CHANGELOG.md files under node_modules (13.9 MB) into both functions that
+   * read ours, and an exclude cannot take an include back out. The tracer
+   * carries ours by itself, because the reader names it in a string it can
+   * follow: a build's trace for /releases and /admin lists the root
+   * CHANGELOG.md and no other. So the reader's path must stay that literal,
+   * and no route may name the file again.
+   */
+  it("reads CHANGELOG.md by a path the build's tracer can follow", () => {
+    expect(readFileSync(READER, "utf8")).toContain('join(process.cwd(), "CHANGELOG.md")');
+  });
+
+  it.each(readingRoutes)("%s does not name CHANGELOG.md in outputFileTracingIncludes", (route) => {
     expect(
-      changelogKeys.some((key) => keyMatches(key, route)),
-      `${route} can read CHANGELOG.md and next.config.ts does not ship it there — see AGENTS.md, Board Gate`,
-    ).toBe(true);
+      changelogKeys.filter((key) => keyMatches(key, route)),
+      `${route}: an include of CHANGELOG.md packs every package's changelog as well; the tracer already carries ours`,
+    ).toEqual([]);
   });
 
   it("matches keys the way Next does: an escaped dynamic segment, containment, and the global key", () => {

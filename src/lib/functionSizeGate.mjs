@@ -15,11 +15,12 @@
  */
 
 /*
- * Just above the largest function Itsutsu builds today (44.4 MB, 2026-09-23,
- * after the Prisma engines were cut from 127 MB). UmaKuma's is 120 for its own
- * 90 MB functions. The ceiling only ever comes down.
+ * Just above the largest function Itsutsu builds today: 30.0 MB on 2026-09-24,
+ * after the Prisma engines (127 → 44.4 MB) and then every package's changelog
+ * (44.4 → 30.0) were taken out. It was 60. UmaKuma's is 120 for its own 90 MB
+ * functions. The ceiling only ever comes down.
  */
-export const FUNCTION_SIZE_LIMIT_MB = 60;
+export const FUNCTION_SIZE_LIMIT_MB = 40;
 export const FUNCTION_GROWTH_ALLOWED = 0.2;
 /**
  * Growth under this many megabytes never fails, whatever the percentage. A

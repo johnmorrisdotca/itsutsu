@@ -12,7 +12,7 @@
  * shares, so a function that creeps towards the limit is a problem well before
  * it reaches it.
  *
- * Two limits, from `src/lib/functionSizeGate.mjs`: no function over 60 MB,
+ * Two limits, from `src/lib/functionSizeGate.mjs`: no function over 40 MB,
  * and none more than 20% and more than 5 MB over the size recorded for it in
  * `scripts/function-sizes.baseline.json`. A function the baseline does not
  * know has the ceiling alone.

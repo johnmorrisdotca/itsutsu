@@ -14,7 +14,7 @@ const api = (mb: number) => ({ name: "api/admin/members/[id]/claim", mb, routes:
 
 const baseline = {
   functions: [
-    { name: "_not-found", mb: 40, sample: ["_not-found", "admin", "releases"] },
+    { name: "_not-found", mb: 25, sample: ["_not-found", "admin", "releases"] },
     { name: "api/admin/members/[id]/claim", mb: 30, sample: ["api/admin/members/[id]/claim", "api/games/[id]"] },
   ],
 };
@@ -22,14 +22,14 @@ const baseline = {
 /* John, 2026-09-23, on UmaKuma's gate: "no more than 20% sounds reasonable." */
 describe("the function-size gate", () => {
   it("passes a function within 20% of its recorded size", () => {
-    const [verdict] = judgeFunctionSizes([pages(47.9)], baseline);
+    const [verdict] = judgeFunctionSizes([pages(29.9)], baseline);
     expect(verdict!.failure).toBeNull();
-    expect(verdict!.allowedMb).toBeCloseTo(40 * (1 + FUNCTION_GROWTH_ALLOWED), 6);
+    expect(verdict!.allowedMb).toBeCloseTo(25 * (1 + FUNCTION_GROWTH_ALLOWED), 6);
   });
 
   it("fails a function that grew more than 20% and more than 5 MB over its recorded size", () => {
-    const [verdict] = judgeFunctionSizes([pages(48.5)], baseline);
-    expect(verdict!.failure).toContain("21% (8.5 MB) over the 40.0 MB recorded");
+    const [verdict] = judgeFunctionSizes([pages(31.5)], baseline);
+    expect(verdict!.failure).toContain("26% (6.5 MB) over the 25.0 MB recorded");
   });
 
   /* A 2 MB function has 0.4 MB of room at 20%, which build noise can use up. */
@@ -49,7 +49,7 @@ describe("the function-size gate", () => {
   });
 
   it("gives a function the baseline does not know the ceiling as its only limit", () => {
-    const [verdict] = judgeFunctionSizes([{ name: "api/brand-new", mb: 55, routes: ["api/brand-new"] }], baseline);
+    const [verdict] = judgeFunctionSizes([{ name: "api/brand-new", mb: FUNCTION_SIZE_LIMIT_MB - 5, routes: ["api/brand-new"] }], baseline);
     expect(verdict!.baseline).toBeNull();
     expect(verdict!.allowedMb).toBe(FUNCTION_SIZE_LIMIT_MB);
     expect(verdict!.failure).toBeNull();
@@ -65,7 +65,7 @@ describe("the function-size gate", () => {
    * 20% rule would quietly stop applying.
    */
   it("recognises a function renamed by a new route, by the routes it holds", () => {
-    expect(matchBaseline(pages(41, "_global-error"), baseline.functions)?.name).toBe("_not-found");
+    expect(matchBaseline(pages(26, "_global-error"), baseline.functions)?.name).toBe("_not-found");
     expect(matchBaseline(api(31), baseline.functions)?.name).toBe("api/admin/members/[id]/claim");
     expect(matchBaseline({ name: "x", mb: 1, routes: ["nothing-shared"] }, baseline.functions)).toBeNull();
   });
