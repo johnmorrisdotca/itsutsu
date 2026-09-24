@@ -39,7 +39,7 @@ export function HomeBeta({ signedIn }: { signedIn: boolean }) {
         <li>Tell us where a rule looked wrong, a page was confusing, or a move did not go where you put it.</li>
         <li>Say which games you would like to see here next, and which ones you played on the older sites.</li>
       </ul>
-      <TestersLine signedIn={signedIn} />
+      <TestersLine />
       {signedIn ? (
         <p className="text-sm leading-relaxed text-ink-soft" data-testid="front-beta-member">
           You are already in, which makes you a tester. Write to{" "}
@@ -79,11 +79,10 @@ export function HomeBeta({ signedIn }: { signedIn: boolean }) {
  *
  * John, 2026-09-24: "a small paragraph on the main page so it's very obvious
  * that people are helping test." It counts the testers who asked to be named,
- * and says where they are thanked. The thank-you page names members, so it is
- * behind the invite like every page that does: a member is given the link, a
- * stranger is told the page exists.
+ * and links the page that thanks them, which is open to everybody (John,
+ * 2026-09-24: "Yes, all Thanks pages should be public").
  */
-function TestersLine({ signedIn }: { signedIn: boolean }) {
+function TestersLine() {
   const count = BETA_TESTERS.length;
   const who =
     count === 0
@@ -91,17 +90,10 @@ function TestersLine({ signedIn }: { signedIn: boolean }) {
       : `${count === 1 ? "One person is" : `${count} people are`} helping test Itsutsu already, and each is thanked by name`;
   return (
     <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.good}`} data-testid="front-thanks">
-      {who}, under the name they play by,{" "}
-      {signedIn ? (
-        <>
-          on{" "}
-          <Link href="/thanks" className="font-medium underline underline-offset-4" data-testid="front-thanks-link">
-            our thank-you page
-          </Link>
-        </>
-      ) : (
-        "on a thank-you page inside the site"
-      )}
+      {who}, under the name they play by, on{" "}
+      <Link href="/thanks" className="font-medium underline underline-offset-4" data-testid="front-thanks-link">
+        our thank-you page
+      </Link>
       . We are grateful to every one of them.
     </p>
   );

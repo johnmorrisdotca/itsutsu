@@ -131,6 +131,20 @@ test.describe("the pages that stay open", () => {
     }
   });
 
+  test("the thank-you page is readable, and leads nobody to a player's page", async ({ page }) => {
+    /*
+     * John, 2026-09-24: "Yes, all Thanks pages should be public." It is the
+     * one open page that names members, each because they asked to be. The
+     * player pages stay behind the invite, so a stranger reads the handles and
+     * is given no address under them.
+     */
+    await page.goto("/thanks");
+    await expect(page).not.toHaveURL(/\/join/);
+    await expect(page.getByTestId("thanks-testers")).toBeVisible();
+    await expect(page.getByTestId("thanks-communities")).toContainText("ItsYourTurn");
+    expect(await page.content(), "/thanks links a player's page without a session").not.toMatch(/\/players\//);
+  });
+
   test("a variant's rules page is readable too", async ({ request }) => {
     expect((await request.get("/games/connect-six/rules")).status()).toBe(200);
   });

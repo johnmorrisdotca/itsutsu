@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMembersByNames } from "@/lib/auth/members";
+import { currentReader } from "@/lib/auth/currentReader";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
 import { playerKey } from "@/lib/rating/playerKey";
 import { BETA_TESTERS, communitiesSaid } from "@/lib/thanks/testers";
@@ -17,19 +18,23 @@ export const metadata = { title: "Thank you" };
  * worth it. By the name they play under, and only because they asked to be
  * named: see `BETA_TESTERS`.
  *
- * BEHIND THE INVITE, LIKE EVERY OTHER PAGE THAT NAMES MEMBERS. The front page
- * says that testers are thanked here and says it to everybody; the names
- * themselves are for members, on John's rule of 2026-09-22 that a stranger
- * reads the games and not the people.
+ * OPEN TO EVERYBODY. John, 2026-09-24: "Yes, all Thanks pages should be
+ * public." A thank-you only members can read thanks nobody in public, and
+ * every name here was put here by its owner asking, so this is the one open
+ * page that names members. It is still careful about how: the player pages
+ * are behind the invite, so a stranger reads each handle as plain text and
+ * only a member gets it as a link.
  *
- * EACH NAME LEADS TO ITS PAGE BY THE MEMBER'S ID, found in one query for the
- * whole list, so the address never carries somebody's whole name.
+ * FOR A MEMBER, EACH NAME LEADS TO ITS PAGE BY THE MEMBER'S ID, found in one
+ * query for the whole list, so the address never carries somebody's whole
+ * name.
  *
  * AN EMPTY LIST IS SHOWN, NOT HIDDEN. Before the first name it says where the
  * names will go and how to be among them, which is the page's second job.
  */
 export default async function ThanksPage() {
-  const members = await findMembersByNames(BETA_TESTERS.map((tester) => tester.name));
+  const reader = await currentReader();
+  const members = reader.signedIn ? await findMembersByNames(BETA_TESTERS.map((tester) => tester.name)) : null;
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
@@ -61,11 +66,15 @@ export default async function ThanksPage() {
             {BETA_TESTERS.map((tester) => (
               <li key={tester.name} className="flex flex-col gap-0.5 py-2 first:pt-0 last:pb-0" data-testid="thanks-tester">
                 <span className="flex flex-wrap items-baseline gap-x-2 text-sm font-medium">
-                  <PlayerName
-                    name={tester.name}
-                    memberId={members.get(playerKey(tester.name))?.id ?? null}
-                    fallback={tester.name}
-                  />
+                  {members ? (
+                    <PlayerName
+                      name={tester.name}
+                      memberId={members.get(playerKey(tester.name))?.id ?? null}
+                      fallback={tester.name}
+                    />
+                  ) : (
+                    <span data-testid="thanks-tester-name">{tester.name}</span>
+                  )}
                   {tester.from ? <span className="text-xs font-normal text-muted">from {tester.from}</span> : null}
                   <span className="text-xs font-normal text-muted">since {tester.since}</span>
                 </span>

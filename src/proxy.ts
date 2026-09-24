@@ -177,6 +177,15 @@ const OPEN_EXACTLY = [
    * deciding.
    */
   "/games",
+  /*
+   * /thanks — the beta testers, thanked by the name they play under. John,
+   * 2026-09-24: "Yes, all Thanks pages should be public." It is the one open
+   * page that names members, and on purpose: nobody is on it who did not ask
+   * to be, and a thank-you only a member can read thanks nobody in public.
+   * The page links a name to its player page for a member only, because
+   * /players stays shut, so a stranger gets the handle and no address.
+   */
+  "/thanks",
 ];
 
 /**
