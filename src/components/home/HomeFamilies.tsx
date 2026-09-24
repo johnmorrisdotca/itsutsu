@@ -23,9 +23,9 @@ export function HomeFamilies() {
   return (
     <section className="flex flex-col gap-4" data-testid="front-families">
       <div className="flex flex-col gap-1">
-        <h2 className="flex items-baseline gap-2 font-semibold">
+        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
           {GAME_FAMILIES.length} families of games
-          <span className="font-mincho text-xs font-normal opacity-70">種目</span>
+          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">種目</span>
         </h2>
         <p className="max-w-prose text-sm text-muted">
           Five in a row is where it started; the other families are the games that grew up beside it, from Othello and
@@ -46,7 +46,7 @@ export function HomeFamilies() {
                 <span className="flex min-w-0 flex-col gap-1">
                   <span className="flex flex-wrap items-baseline gap-x-2 font-semibold">
                     {family.title}
-                    <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
+                    <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
                     <span className="text-xs font-normal text-muted">
                       {family.games.length} {family.games.length === 1 ? "game" : "games"}
                     </span>

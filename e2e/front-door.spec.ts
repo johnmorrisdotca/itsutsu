@@ -38,6 +38,16 @@ test.describe("the front door", () => {
     await expect(page.getByTestId("site-numbers-beta")).toHaveCount(0);
   });
 
+  test("says people are helping test, and leads a member to the page that thanks them", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("front-thanks")).toContainText("thanked by name");
+    await page.getByTestId("front-thanks-link").click();
+    await page.waitForURL(/\/thanks$/);
+    // The list is drawn whether or not anybody is on it yet.
+    await expect(page.getByTestId("thanks-testers")).toBeVisible();
+    await expect(page.getByTestId("thanks-communities")).toContainText("ItsYourTurn");
+  });
+
   test("shows every family of games, each leading to its own page", async ({ page }) => {
     await page.goto("/");
     const families = page.getByTestId("front-family");

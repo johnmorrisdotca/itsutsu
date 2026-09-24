@@ -51,9 +51,9 @@ function StartList({
 }) {
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
-      <h2 className="flex items-baseline gap-2 font-semibold">
+      <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
         {title}
-        <span className="font-mincho text-xs font-normal opacity-70">{kanji}</span>
+        <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{kanji}</span>
       </h2>
       <ul className="flex flex-col gap-2 text-sm">
         {links.map((link) => (
