@@ -142,7 +142,7 @@ export const REPLAY_SECTION: AboutSection = {
       Above a finished game, a head-to-head card counts how the two players stand against each other: wins each,
       draws, the current streak, and when they last played. In a game you played, step back to an earlier
       position and <em>Fork</em> appears: a second game starting from exactly that position, against the same
-      opponent. Like a challenge or a rematch, it is an offer until they accept it.
+      opponent. Like any other offer of a game, or a rematch, it waits until they accept it.
     </>,
   ],
   figures: {
@@ -233,12 +233,12 @@ const WHERE = (
   <FigureTable
     head={["What", "Where", "In short"]}
     rows={[
-      ["Challenge, rematch, fork", "A player's page, a finished game", "An offer until the other player accepts it. Declining costs nothing, and you can withdraw it."],
+      ["Play, rematch, fork", "A player's page, a finished game", "An offer until the other player accepts it. Declining costs nothing, and you can withdraw it."],
       ["Paired games", "Setting up a game", `A match of ${spoken(PAIRED)} games at once against one player, taking each colour in turn.`],
       ["The waiting room", <Inside key="games" href="/games">Games</Inside>, "Everyone waiting for a game, with rating, time limit and country. Sit down shows you the game before you join."],
       ["A note with a move", "Beside Send", `An emoji and up to ${MESSAGE_MAX} characters, which arrive with the move.`],
       ["Messages", "A player's page", `Up to ${MESSAGE_TEXT_MAX} characters, delivered to their inbox. Ignoring somebody stops messages both ways.`],
-      ["Inbox", <Inside key="inbox" href="/inbox">Inbox</Inside>, `What happened while you were away: a game finished, a challenge, a seat taken, a note. Kept ${INBOX_KEEP_DAYS} days.`],
+      ["Inbox", <Inside key="inbox" href="/inbox">Inbox</Inside>, `What happened while you were away: a game finished, a game offered, a seat taken, a note. Kept ${INBOX_KEEP_DAYS} days.`],
       ["Buddies", <Inside key="me" href="/me">Your own page</Inside>, "The people you know, whether they are around, the games between you, and Play beside each name."],
       ["A head start", "Setting up a game", "Free turns for the weaker player, or the traditional handicap in Go, Othello and draughts. It does not count toward ratings."],
       ["Four words", "Somebody else's device", "Tap your four words to take your own seat on a shared tablet, with nothing to type."],

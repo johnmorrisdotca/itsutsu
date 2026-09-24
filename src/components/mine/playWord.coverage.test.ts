@@ -34,6 +34,11 @@ const EXCEPTIONS: readonly { file: string; text: string; why: string }[] = [
     why: "the event's own name, printed as the record gives it",
   },
   {
+    file: "src/app/about/about.shots.ts",
+    text: "Google DeepMind Challenge Match",
+    why: "the same event's name, in the caption of the Famous games screenshot",
+  },
+  {
     file: "src/app/about/about.constants.tsx",
     text: "You challenged the player above you",
     why: "how the old turn-based sites' ladders worked, in their own word; nothing here is offered by it",
