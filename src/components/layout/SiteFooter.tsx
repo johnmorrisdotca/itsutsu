@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { ReportProblem } from "@/components/reports/ReportProblem";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { languageOptions } from "@/lib/i18n/dictionaries";
 import { LANG_PARAM, type PhraseKey } from "@/lib/i18n/i18n.constants";
@@ -86,6 +87,8 @@ export async function SiteFooter() {
             {say.say(link.phrase)}
           </Link>
         ))}
+        {/* On every page, for anybody reading it: the page they are on is the one reported. */}
+        <ReportProblem />
         {/*
           The colophon is where a book says what edition and what language it
           is, so it is where this site does too. Suspended because the picker

@@ -1,5 +1,9 @@
-/** Which of Sumilabu's two token maps a call is asked of: the tickets board, or the settings store. */
-export type SumilabuScope = "board" | "settings";
+/**
+ * Which of Sumilabu's token maps a call is asked of: the tickets board, the
+ * settings store, or the members' problem reports. Three maps so a leaked key
+ * of one opens nothing of the others (Sumilabu's `REPORTS_CONTRACT.md`).
+ */
+export type SumilabuScope = "board" | "settings" | "reports";
 
 /**
  * The projects on Sumilabu this checkout may address: each site's live board,

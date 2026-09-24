@@ -16,9 +16,9 @@ import type { SumilabuProjectKey, SumilabuScope, SumilabuTarget } from "./sumila
  *    somebody forgot to take off.
  *
  * Each project has its own tokens and none borrows another's: the dev project
- * reads `SUMILABU_BOARD_DEV_TOKEN` and `SUMILABU_SETTINGS_DEV_TOKEN`, the live
- * one `SUMILABU_BOARD_TOKEN` and `SUMILABU_SETTINGS_TOKEN`, and UmaKuma's two
- * their own `…_UMAKUMA…` pair. A checkout that holds only the dev pair cannot
+ * reads `SUMILABU_BOARD_DEV_TOKEN`, `SUMILABU_SETTINGS_DEV_TOKEN` and
+ * `SUMILABU_REPORTS_DEV_TOKEN`, the live one the same three without `_DEV`, and
+ * UmaKuma's two their own `…_UMAKUMA…` set. A checkout that holds only the dev pair cannot
  * reach a live project even by asking for it, which is how every worktree's
  * `.env` is meant to be — and it is why adding UmaKuma here hands nothing out:
  * a checkout without UmaKuma's tokens is refused by name at the last step.
@@ -61,10 +61,14 @@ export const SUMILABU_ENV = {
 } as const;
 
 const TOKEN_ENV: Record<SumilabuProjectKey, Record<SumilabuScope, string>> = {
-  itsutsu: { board: "SUMILABU_BOARD_TOKEN", settings: "SUMILABU_SETTINGS_TOKEN" },
-  "itsutsu-dev": { board: "SUMILABU_BOARD_DEV_TOKEN", settings: "SUMILABU_SETTINGS_DEV_TOKEN" },
-  umakuma: { board: "SUMILABU_BOARD_UMAKUMA_TOKEN", settings: "SUMILABU_SETTINGS_UMAKUMA_TOKEN" },
-  "umakuma-dev": { board: "SUMILABU_BOARD_UMAKUMA_DEV_TOKEN", settings: "SUMILABU_SETTINGS_UMAKUMA_DEV_TOKEN" },
+  itsutsu: { board: "SUMILABU_BOARD_TOKEN", settings: "SUMILABU_SETTINGS_TOKEN", reports: "SUMILABU_REPORTS_TOKEN" },
+  "itsutsu-dev": { board: "SUMILABU_BOARD_DEV_TOKEN", settings: "SUMILABU_SETTINGS_DEV_TOKEN", reports: "SUMILABU_REPORTS_DEV_TOKEN" },
+  umakuma: { board: "SUMILABU_BOARD_UMAKUMA_TOKEN", settings: "SUMILABU_SETTINGS_UMAKUMA_TOKEN", reports: "SUMILABU_REPORTS_UMAKUMA_TOKEN" },
+  "umakuma-dev": {
+    board: "SUMILABU_BOARD_UMAKUMA_DEV_TOKEN",
+    settings: "SUMILABU_SETTINGS_UMAKUMA_DEV_TOKEN",
+    reports: "SUMILABU_REPORTS_UMAKUMA_DEV_TOKEN",
+  },
 } as const;
 
 type Env = Record<string, string | undefined>;

@@ -7,6 +7,8 @@ const TOKENS = {
   SUMILABU_SETTINGS_DEV_TOKEN: "dev-settings-secret",
   SUMILABU_BOARD_TOKEN: "live-board-secret",
   SUMILABU_SETTINGS_TOKEN: "live-settings-secret",
+  SUMILABU_REPORTS_DEV_TOKEN: "dev-reports-secret",
+  SUMILABU_REPORTS_TOKEN: "live-reports-secret",
   SUMILABU_BOARD_UMAKUMA_TOKEN: "umakuma-board-secret",
   SUMILABU_BOARD_UMAKUMA_DEV_TOKEN: "umakuma-dev-board-secret",
 };
@@ -30,6 +32,12 @@ describe("which Sumilabu project", () => {
       tokenEnv: "SUMILABU_BOARD_DEV_TOKEN",
     });
     expect(sumilabuTarget("settings", env({ SUMILABU_PROJECT_KEY: " " })).token).toBe("dev-settings-secret");
+  });
+
+  it("gives reports a token of their own, so a board or settings key never reads them", () => {
+    expect(sumilabuTarget("reports", env())).toMatchObject({ token: "dev-reports-secret", tokenEnv: "SUMILABU_REPORTS_DEV_TOKEN" });
+    expect(sumilabuTarget("reports", env({ NODE_ENV: "production", SUMILABU_PROJECT_KEY: "itsutsu" })).token).toBe("live-reports-secret");
+    expect(() => sumilabuTarget("reports", env({ SUMILABU_REPORTS_DEV_TOKEN: undefined }))).toThrow(/SUMILABU_REPORTS_DEV_TOKEN/);
   });
 
   it("refuses the live project anywhere but the site, unless a :prod script opts in by name", () => {
