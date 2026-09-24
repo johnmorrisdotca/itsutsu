@@ -76,8 +76,8 @@ A few consequences follow:
   somebody settled it. Null means nobody has looked, not that the game is over,
   and a reader who finds null replays the moves.
 - **Every position has an address.** `/games/<game>/match/<id>/<move>` is the
-  position after that many moves, and `/history/<game>/<id>/<move>` is the same
-  for a filed game: the link to send somebody who should see that moment.
+  position after that many moves, for a game being played and a finished one
+  alike: the link to send somebody who should see that moment.
 
 ## 3. Three ways a game is played
 
@@ -153,18 +153,21 @@ name, so the `Player` table is still keyed by the name folded to lower case,
 with a `memberId` attached once somebody claims it. A name typed at one screen
 and never claimed stays a name with no member behind it.
 
-**The operator** runs the site. An address in `ADMIN_EMAILS` gets the operator's
-session, which can mint invite codes and embed tokens, shut and restore
+**The operator** runs the site. An address in `ADMIN_EMAILS` signing in with
+Google gets the operator's session (an `ADMIN_TOKEN` lets local tooling and the
+browser suite do the same without Google), which can mint invite codes and embed tokens, shut and restore
 accounts, and change site settings. What the operator does to somebody else's
 account is written to `OperatorAction`.
 
 Getting in is by invitation. A code is three ordinary Japanese words
 (`natsu-yagura-fune`), chosen to be read down a phone and typed back correctly.
-Redeeming one exchanges it for a signed cookie, so the phrase stops being the
+The operator mints them from `/admin` or `pnpm invite`, and a member may invite
+a friend with a one-use code of their own. Redeeming one creates the member and
+exchanges the code for a signed cookie, so the phrase stops being the
 credential the moment it is used. Every rejection (unknown, revoked, expired,
-spent) answers the same way, and tries are rate limited. Redeeming a code while
-a Google identity is waiting creates the member: the first sign-in is the
-registration.
+spent) answers the same way, and tries are rate limited. If a Google identity
+was waiting when the code was redeemed, the member is created with that
+address, and from then on Google alone lets them in on any device.
 
 Reading is open and playing is not. A visitor with no invite can read the
 catalogue, every game's page, its rules and family, `/about` and `/learn`.
@@ -212,9 +215,15 @@ across sites; ratings never do, because no two sites share a scale.
 
 The computer players are members, not a setting on a game. They hold seats,
 appear in the record, and carry ratings that move when somebody beats them.
-Five are graded, gentlest to strongest, and play every game; three are
-specialists who play one game each, named in homage to real champions of that
-game. `Member.botTier` is what marks them as programs.
+There are seventeen (`src/lib/bots/bots.constants.ts`):
+
+| Kind | Who | Plays |
+| --- | --- | --- |
+| Five grades | разряд, 級, 段, 名人, 国手, gentlest to strongest | every game |
+| Six specialists | named in homage to real champions of their game | one game or family each: Reversi, five in a row, the races, checkers and draughts, Go, Connect6 |
+| Six characters | people with faces and home towns, each playing at an existing grade in a style of their own (defensive, attacking, changeable) | every game |
+
+`Member.botTier` is what marks a member as a program.
 
 **They think in the browser, not on the server.** When a computer is to move
 in a shared game, the device of the person waiting on it works the move out in
