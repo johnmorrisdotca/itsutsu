@@ -41,13 +41,13 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/new"
  */
 export default async function SetUpPage({ params, searchParams }: PageProps<"/games/[slug]/new">) {
   const [{ slug }, asked] = await Promise.all([params, searchParams]);
+  const reader = await currentReader();
   // A puzzle is set up with a size and a level, and nothing a game asks: see `PuzzleSetUp`.
   const puzzle = puzzleFor(slug);
-  if (puzzle !== null) return <PuzzleSetUpPage kind={puzzle} />;
+  if (puzzle !== null) return <PuzzleSetUpPage kind={puzzle} hasAccount={reader.hasAccount} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
 
-  const reader = await currentReader();
   const [defaults, opponents, seats] = await Promise.all([
     // Kept on the account, by member id; a session with no member opens at the site's own.
     gameDefaultsFor(reader.memberId),

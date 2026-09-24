@@ -9,7 +9,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { findMemberById } from "@/lib/auth/members";
-import { historyPath, myGamePath, variantFor } from "@/lib/gomoku/slugs";
+import { historyPath, myGamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { PuzzleMePage } from "@/components/puzzles/PuzzleMePage";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 // Whose games these are is read from the session on every request.
@@ -41,7 +42,11 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/me">
  * says which of the two happened and offers the way out.
  */
 export default async function MyGamesOfPage({ params, searchParams }: PageProps<"/games/[slug]/me">) {
-  const variant = variantFor((await params).slug);
+  const { slug } = await params;
+  // A puzzle's own page is your solves and races of it: see `PuzzleMePage`.
+  const puzzle = puzzleFor(slug);
+  if (puzzle !== null) return <PuzzleMePage kind={puzzle} />;
+  const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
 

@@ -56,6 +56,8 @@ export type XpEventType =
   | "everyVariantWonInFamily"
   // A puzzle finished: one person, one grid, checked by the server.
   | "puzzleSolved"
+  // A race at a puzzle won: the faster correct solve of two.
+  | "raceWon"
   // Milestones at one game: wins, losses and draws counted per game.
   | "wins10"
   | "wins100"

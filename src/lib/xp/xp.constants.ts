@@ -72,6 +72,7 @@ export const XP_EVENTS = {
   everyVariantPlayed: "everyVariantPlayed",
   everyVariantWonInFamily: "everyVariantWonInFamily",
   puzzleSolved: "puzzleSolved",
+  raceWon: "raceWon",
   wins10: "wins10",
   wins100: "wins100",
   wins250: "wins250",
@@ -409,6 +410,16 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     blurb: "For solving a puzzle right through, checked by the site. The same puzzle pays once.",
     sentence: "A puzzle solved.",
     cap: 6,
+  },
+  /* A race won: the faster correct solve of two, at `gameWon`'s price and
+     keyed on the race, so a race pays its winner once. The loser has their
+     `puzzleSolved` for the finish and nothing for the loss, as after a game. */
+  raceWon: {
+    points: 50,
+    label: "Race won",
+    kanji: "競解",
+    blurb: "For the faster correct solve when two people race one puzzle.",
+    sentence: "You won the race.",
   },
 
   /* ── Milestones at one game ─────────────────────────────────────────────
@@ -776,6 +787,7 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   everyVariantPlayed: "",
   everyVariantWonInFamily: "the family's key in GAME_FAMILIES, which the family title is not — once per family, and only a family of more than one game",
   puzzleSolved: "the puzzle's kind, side and the hash of its givens, so one grid pays once",
+  raceWon: "the race's id, so a race pays its winner once",
   wins10: "the RuleVariant key, so it is once per game per member",
   wins100: "the RuleVariant key, so it is once per game per member",
   wins250: "the RuleVariant key, so it is once per game per member",

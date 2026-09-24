@@ -11,6 +11,7 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { NumberSolve } from "./NumberSolve";
+import type { SolveRace } from "./solveShared";
 
 /**
  * Solving a puzzle: the whole of it, in the browser.
@@ -37,6 +38,7 @@ export function PuzzlePlay({
   level,
   seed,
   hasAccount,
+  race = null,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -44,6 +46,8 @@ export function PuzzlePlay({
   seed: number | null;
   /** Whether a solve can be paid: an account, not merely a session. */
   hasAccount: boolean;
+  /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
+  race?: (SolveRace & { givens: string }) | null;
 }) {
   const router = useRouter();
 
@@ -66,12 +70,26 @@ export function PuzzlePlay({
       </section>
     );
   }
+  /* A race's puzzle is made again here from its seed; if this browser's
+     generator makes a different grid from the one the server kept, the race
+     was made by another version of the site and cannot honestly be played. */
+  if (race !== null && race !== undefined && race.givens !== puzzle.givens) {
+    return (
+      <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-ready="true">
+        <p className="text-sm text-muted" data-testid="puzzle-race-mismatch">
+          This race was made by an earlier version of the site, and this browser makes a different puzzle from its
+          number. It cannot be played; start another.
+        </p>
+      </section>
+    );
+  }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
   const key = `${kind}-${size}-${level}-${seed}`;
+  const seat = race ?? null;
   switch (kind) {
     case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} />;
+      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} />;
     default:
-      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} />;
+      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} />;
   }
 }

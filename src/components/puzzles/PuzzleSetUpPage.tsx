@@ -17,7 +17,7 @@ import { PuzzleSetUp } from "./PuzzleSetUp";
  * the puzzle's Solve button and leaves for the solve with the choice in the
  * address.
  */
-export function PuzzleSetUpPage({ kind }: { kind: PuzzleKind }) {
+export function PuzzleSetUpPage({ kind, hasAccount }: { kind: PuzzleKind; hasAccount: boolean }) {
   const copy = PUZZLE_DISPLAY[kind];
   return (
     <Page>
@@ -42,7 +42,7 @@ export function PuzzleSetUpPage({ kind }: { kind: PuzzleKind }) {
           </>
         }
       />
-      <PuzzleSetUp kind={kind} />
+      <PuzzleSetUp kind={kind} hasAccount={hasAccount} />
     </Page>
   );
 }

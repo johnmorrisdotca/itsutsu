@@ -343,6 +343,7 @@ export function SetUpGame({
           variant={settled.variant}
           onGame={(variant) => setRules(applyRulesChange(settled, { variant }))}
           disabled={busy}
+          hasAccount={canAsk}
         />
       ) : (
       <>

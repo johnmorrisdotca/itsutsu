@@ -28,6 +28,7 @@ export function PuzzleHere({
   variant,
   onGame,
   disabled,
+  hasAccount,
 }: {
   puzzle: PuzzleKind;
   onPuzzle: (kind: PuzzleKind | null) => void;
@@ -35,6 +36,8 @@ export function PuzzleHere({
   variant: string;
   onGame: (variant: string) => void;
   disabled: boolean;
+  /** Whether this reader has an account, which a race needs. */
+  hasAccount: boolean;
 }) {
   const copy = PUZZLE_DISPLAY[puzzle];
   // The size belongs to the puzzle it was chosen for: another puzzle starts at its own usual size.
@@ -70,7 +73,7 @@ export function PuzzleHere({
             </div>
           }
         />
-        <PuzzleSetUp key={puzzle} kind={puzzle} framed={false} sized={{ size, onSize }} />
+        <PuzzleSetUp key={puzzle} kind={puzzle} hasAccount={hasAccount} framed={false} sized={{ size, onSize }} />
       </div>
     </>
   );

@@ -82,6 +82,7 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   everyVariantWonInFamily: XP_SUBJECT_KINDS.family,
   /* A puzzle's kind, side and hash: the kind is a game here, the rest is which grid. */
   puzzleSolved: XP_SUBJECT_KINDS.puzzle,
+  raceWon: XP_SUBJECT_KINDS.race,
   // Milestones at one game, keyed on the game.
   wins10: XP_SUBJECT_KINDS.game,
   wins100: XP_SUBJECT_KINDS.game,
@@ -209,6 +210,11 @@ export function xpAboutFor(type: XpEventType, subject: string): XpAbout {
     // `numberPlace:9:1a2b3c4d`: the puzzle is a game here; the rest names one grid nobody can open.
     const variant = asVariant(subject.split(":")[0] ?? "");
     return variant === null ? { of: "words", said: subject, stale: true } : { of: "game", variant };
+  }
+
+  if (kind === XP_SUBJECT_KINDS.race) {
+    // A race has a page under its puzzle, but the row does not say which puzzle: said in words.
+    return { of: "words", said: "a race at a puzzle" };
   }
 
   if (kind === XP_SUBJECT_KINDS.family) {

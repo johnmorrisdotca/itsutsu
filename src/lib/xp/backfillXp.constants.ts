@@ -169,8 +169,14 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
 
   puzzleSolved: {
     replayed: false,
-    recorded: false,
-    why: "A solved puzzle is checked and paid in the moment (`POST /api/puzzles/solved`) and no row of it is kept, so there is nothing to replay. The ledger's own row is the only record until solves are kept (docs/plans/numbers/NUM-05).",
+    recorded: true,
+    why: "A solved puzzle is checked and paid in the moment (`POST /api/puzzles/solved` and a race's finish), and kept as a `PuzzleSolve` since then. Solves from before that are in the ledger only. Replaying `PuzzleSolve` rows is a later ticket; every row so far was paid when it was written.",
+  },
+
+  raceWon: {
+    replayed: false,
+    recorded: true,
+    why: "Paid on the finish that settles a race (`finishSeat`), keyed on the race, and the race's stamps are kept. Replaying `PuzzleRace` rows is the same later ticket as the solves.",
   },
 
   /* ── Milestones at one game ────────────────────────────────────────────── */
