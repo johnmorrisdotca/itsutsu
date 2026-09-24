@@ -106,7 +106,6 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
     },
   ],
   "src/app/games/[slug]/standings/page.tsx": [
-    { line: "<Paired en={copy.label}", why: "the title of one game's standings" },
     {
       line: "{gameCopyFor(game).label}",
       why: 'a caption-size sentence under the ladder: "Also in Captures: Ninuki-renju, Sannuki-renju"',

@@ -218,13 +218,15 @@ describe("a person's public page shows their standing through MemberLevel", () =
      * "Show The Data, Not The Way To It" decides that it is on the page at all;
      * John decided where: "a better header with the Name of the person,
      * Stats/Record and XP + XP level Name" — in that order. So the tag follows
-     * the `<h1>` and the record figures, inside the profile section, and is
-     * not a badge on the heading's line any more. `xpColumn.coverage.test.ts`
-     * holds it to following `PlayerFigures`.
+     * the title (`<PageTitle>`, which is where the h1 is drawn since every
+     * page's title became one thing) and the record figures, inside the
+     * profile section, and is not a badge on the heading's line any more.
+     * `xpColumn.coverage.test.ts` holds it to following `PlayerFigures`.
      */
     const source = read(PAGE);
     expect(source).toContain('import { MemberLevel } from "@/components/xp/MemberLevel"');
-    const closed = source.indexOf("</h1>");
+    const opened = source.indexOf("<PageTitle");
+    const closed = opened === -1 ? -1 : source.indexOf("/>", opened);
     const at = source.indexOf("<MemberLevel");
     const section = source.indexOf("</section>", closed);
     expect(closed).toBeGreaterThan(-1);
