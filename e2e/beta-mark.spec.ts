@@ -22,5 +22,22 @@ test("a visitor with no invite sees it too", async ({ browser }) => {
   const page = await stranger.newPage();
   await page.goto("/games");
   await expect(page.locator("header[data-chrome]").getByTestId("beta-mark")).toBeVisible();
+  // And it leads a stranger somewhere they may go, not to the invite door.
+  await page.locator("header[data-chrome]").getByTestId("beta-mark").click();
+  await expect(page).toHaveURL(/\/thanks$/);
+  // Where the badge lands, it recruits: the way to ask for an invite is right there.
+  await expect(page.getByTestId("thanks-join-mail")).toBeVisible();
+  await page.getByTestId("thanks-join-ask").click();
+  await expect(page).toHaveURL(/\/join\?ask=1$/);
   await stranger.close();
+});
+
+/* John, 2026-09-24: "For our Beta badges, clicking on them should take us to the Beta testers page or thank you page!" */
+test("the Beta mark leads to the thank-you page, from the hero and from the header", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("header[data-chrome]").getByTestId("beta-mark").click();
+  await expect(page).toHaveURL(/\/thanks$/);
+  await page.goto("/games");
+  await page.locator("header[data-chrome]").getByTestId("beta-mark").click();
+  await expect(page).toHaveURL(/\/thanks$/);
 });

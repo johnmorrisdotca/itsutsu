@@ -1,3 +1,4 @@
+import { BetaAsk } from "@/components/home/BetaAsk";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -29,6 +30,10 @@ export const metadata = { title: "Thank you" };
  * query for the whole list, so the address never carries somebody's whole
  * name.
  *
+ * AND IT RECRUITS. The Beta badge on every page leads here, so it carries the
+ * front page's way in as well — how to help, and how to ask for an invite —
+ * through the same `BetaAsk`.
+ *
  * AN EMPTY LIST IS SHOWN, NOT HIDDEN. Before the first name it says where the
  * names will go and how to be among them, which is the page's second job.
  */
@@ -43,7 +48,7 @@ export default async function ThanksPage() {
           Thank you
           <span className="whitespace-nowrap font-mincho text-sm font-normal opacity-70">感謝</span>
         </h1>
-        <p className="max-w-prose text-sm leading-relaxed text-ink-soft">
+        <p className="text-sm leading-relaxed text-ink-soft">
           Itsutsu is free and in beta. The people below have given their own time to play it before it was finished:
           finding the rule that was wrong, the button that did nothing, the page that made no sense on a phone, and
           telling us. Every fix they lead to is theirs as much as ours. We are very grateful, and this page is where we
@@ -83,6 +88,20 @@ export default async function ThanksPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      {/*
+        The page's second job, said as fully as the front page says it: the Beta
+        badge on every page leads here, so this is where a curious visitor lands.
+        John, 2026-09-24: "so the page isn't just about thanks but about getting
+        more beta testers."
+      */}
+      <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-join" id="join">
+        <h2 className="flex flex-wrap items-baseline gap-x-2 font-semibold">
+          Become a beta tester
+          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">協力募集</span>
+        </h2>
+        <BetaAsk signedIn={reader.signedIn} testId="thanks-join" />
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-communities">

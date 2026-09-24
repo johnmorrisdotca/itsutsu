@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { STAGE } from "@/lib/version";
 
 /**
@@ -9,15 +11,21 @@ import { STAGE } from "@/lib/version";
  * A pill in ochre, the site's colour for a caveat rather than an alarm, with
  * the word from `STAGE` — the footer's word, so the two can never disagree and
  * the day the site leaves beta is one edit.
+ *
+ * And it leads to the people helping build it. John, 2026-09-24: "For our Beta
+ * badges, clicking on them should take us to the Beta testers page or thank
+ * you page!" So it is a link to /thanks, which is open to everybody, so a
+ * visitor with no invite can follow it too.
  */
 export function BetaMark({ className = "" }: { className?: string }) {
   return (
-    <span
-      className={`inline-block rounded-full border border-ochre/40 bg-ochre-soft px-1.5 py-px text-[0.6rem] leading-tight font-semibold tracking-[0.14em] text-ochre uppercase ${className}`}
-      title={`Itsutsu is in ${STAGE.toLowerCase()}: new things arrive most days, and some rough edges are still being smoothed.`}
+    <Link
+      href="/thanks"
+      className={`inline-block rounded-full border border-ochre/40 bg-ochre-soft px-1.5 py-px text-[0.6rem] leading-tight font-semibold tracking-[0.14em] text-ochre uppercase hover:border-ochre ${className}`}
+      title={`Itsutsu is in ${STAGE.toLowerCase()}: new things arrive most days, and some rough edges are still being smoothed. The people helping test it are thanked here.`}
       data-testid="beta-mark"
     >
       {STAGE}
-    </span>
+    </Link>
   );
 }
