@@ -16,6 +16,8 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMembersByNames } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
 import { PlayerActions } from "@/components/players/PlayerActions";
+import { ensureBotMembers } from "@/lib/bots/botMembers";
+import { isBotId } from "@/lib/bots/bots";
 import { buddyMemberIds } from "@/lib/social/buddies";
 import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
@@ -63,7 +65,13 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * Who this address names — by id first, then by either reading of a folded
    * name — with their rating row and their record. `lookUpPlayer` holds the
    * argument for that order.
+   *
+   * A computer player's own page writes the computer players first, as the
+   * players page and every game against one already do. Their rows are made
+   * on demand, so on a fresh database a bot's address opened directly found
+   * no member, and offered nobody a game.
    */
+  if (isBotId(slug)) await ensureBotMembers();
   const { key: decoded, player, record, member } = await lookUpPlayer(slug);
   const gifts = await fetchTimeGiftRecord(decoded);
   /*

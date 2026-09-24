@@ -67,11 +67,11 @@ export function PlayerActions({
   /**
    * For a row rather than a page heading.
    *
-   * The same three components and the same rules — only the challenge is
-   * worded shorter, because "Ask for a game 対局を申し込む" beside every line of
-   * a ten-row list is the offer shouting over the record it is attached to.
-   * Anything more than the wording would be a second version of this to keep
-   * in step, which is what the component exists to prevent.
+   * The same three components and the same rules, and the same word, Play —
+   * a row puts Buddy and Ignore behind "⋯" and keeps Play quiet rather than
+   * strong, so the offer does not shout over the record it is attached to.
+   * Anything more would be a second version of this to keep in step, which is
+   * what the component exists to prevent.
    */
   compact?: boolean;
   /**
