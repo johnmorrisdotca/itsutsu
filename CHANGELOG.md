@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.287.2 — 2026-09-24
+- A puzzle's sizes are chosen from the same tiles as every board on the site: the big number in the board's grid, a check on the chosen one, and a word for what the size is for.
+
 ## 0.287.1 — 2026-09-24
 - Choosing Numbers on the set-up screen now turns the screen to the puzzle: its name at the top, its picture where the board preview was, and its size, level and Solve in place of the opponent, the rules and Begin.
 - A puzzle's set-up marks the size that is chosen.
