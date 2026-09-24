@@ -5,9 +5,14 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { GameCount } from "@/components/games/GameCount";
-import { currentSession } from "@/lib/auth/currentSession";
+import { HomeBeta } from "@/components/home/HomeBeta";
+import { HomeFamilies } from "@/components/home/HomeFamilies";
+import { HomeStart } from "@/components/home/HomeStart";
+import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+import { currentReader } from "@/lib/auth/currentReader";
 import { siteNumbers } from "@/lib/site/siteNumbers";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { GUIDES } from "@/lib/learn/strategy";
 
 /** "1 player", "3 players": a count said in words. */
 function plural(count: number, noun: string): string {
@@ -16,7 +21,7 @@ function plural(count: number, noun: string): string {
   return `${grouped} ${noun}${count === 1 ? "" : "s"}`;
 }
 
-/** What the site says about itself, in three lines. */
+/** What the site offers, a card each: the games, how they are played, and what is kept. */
 const PITCH = [
   {
     title: "Five in a row",
@@ -42,6 +47,27 @@ const PITCH = [
     kanji: "分岐",
     body: "A close game deserves a second try. From any move of any game, start another game at exactly that position, against the same opponent, and play both.",
   },
+  {
+    title: "Always somebody to play",
+    kanji: "対戦相手",
+    body: "Five graded computer players, gentlest first, play every game here, and two specialists play only Othello or only five in a row. Games against them are rated, and their records are kept like anybody's.",
+  },
+  {
+    title: "A ladder for every game",
+    kanji: "番付",
+    body: "Each game has its own rating and its own ladder, and games against the programs are scored apart, so beating a computer never moves where you stand among people.",
+  },
+  {
+    title: "Your pace",
+    kanji: "手番",
+    body: "Play with no clock and move when you can, a move a day if that suits you, or put a blitz, rapid or classical clock on it. Keep a dozen games going at once, the way the old turn-based sites did; the ones waiting on you come first.",
+  },
+  {
+    title: "Learn the shapes",
+    kanji: "定石",
+    // Counted from the shelf, like the games above.
+    body: `${GUIDES.length === 1 ? "A strategy guide" : `${GUIDES.length} strategy guides`} on the threats, openings and endings that decide these games, each naming the games it applies to.`,
+  },
 ] as const;
 
 /**
@@ -52,7 +78,7 @@ const PITCH = [
 export default async function Home() {
   // The header has already asked; the member row behind it is cached for the
   // request, so asking again here reads no more than the cookie.
-  const session = await currentSession();
+  const reader = await currentReader();
   const numbers = await siteNumbers();
   return (
     <Page width="standard" gap="gap-10">
@@ -63,8 +89,8 @@ export default async function Home() {
           A board for two, wherever you both are.
         </h1>
         <p className="max-w-xl text-sm text-muted sm:text-base">
-          A quiet board for two people. Play across the table or across the world, learn the
-          shapes that win, and keep every game you finish.
+          {RULE_VARIANT_LIST.length} board games for two people, from five in a row to Othello, checkers and go.
+          Play across the table or across the world, learn the shapes that win, and keep every game you finish.
         </p>
         {/*
           THREE NUMBERS, the way Pente.org prints them (John, 2026-09-16) —
@@ -81,6 +107,15 @@ export default async function Home() {
           ,{" "}
           <GameCount count={plural(numbers.games, "game")} pool="people" testId="site-numbers-games" /> between people, and{" "}
           {numbers.hereNow} here now.
+          {!reader.signedIn && (
+            <>
+              {" "}
+              <a href="#beta" className="underline underline-offset-4" data-testid="site-numbers-beta">
+                Ask for an invite, or help test it
+              </a>
+              .
+            </>
+          )}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           {/*
@@ -145,6 +180,12 @@ export default async function Home() {
         ))}
       </section>
 
+      <HomeBeta signedIn={reader.signedIn} />
+
+      <HomeFamilies />
+
+      <HomeStart signedIn={reader.signedIn} />
+
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="front-story">
         <h2 className="flex items-baseline gap-2 font-semibold">
           Where this comes from
@@ -176,11 +217,15 @@ export default async function Home() {
         being told the site is by invitation and asked for a code they had
         already used.
       */}
-      {session === null && (
+      {!reader.signedIn && (
         <footer className="border-t border-rule pt-5 text-xs text-muted" data-testid="invite-line">
           Itsutsu <span className="font-mincho">五つ</span> is by invitation. If you have a code,{" "}
           <Link href="/join" className="underline underline-offset-4">
             come in
+          </Link>
+          . If you do not,{" "}
+          <Link href={ASK_FOR_INVITE_PATH} className="underline underline-offset-4" data-testid="invite-line-ask">
+            ask for one
           </Link>
           .
         </footer>

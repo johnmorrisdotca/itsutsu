@@ -36,6 +36,16 @@ test.describe("asking for an invite", () => {
     await expect(page.getByTestId("ask-for-invite-form")).toBeVisible();
   });
 
+  test("is offered on the front page, in the beta panel the hero points to", async ({ page }) => {
+    await page.goto("/");
+    // The line under the hero leads down to the panel, which says what testing asks of somebody.
+    await expect(page.getByTestId("site-numbers-beta")).toHaveAttribute("href", "#beta");
+    await expect(page.getByTestId("front-beta")).toContainText("beta testers");
+    await page.getByTestId("front-beta-ask").click();
+    await page.waitForURL(/\/join\?ask=1/);
+    await expect(page.getByTestId("ask-for-invite-form")).toBeVisible();
+  });
+
   test("a person's request reaches the sender", async ({ page }) => {
     await openTheForm(page);
     await page.getByTestId("ask-for-invite-email").fill(`someone-${Date.now()}@example.test`);
