@@ -12,6 +12,7 @@ import { xpFlashFor, type XpToastHold } from "@/lib/xp/xpFlash";
 import { BetaMark } from "./BetaMark";
 import { BrandHero, BrandWordmark } from "./BrandMarks";
 import { LearnTimeZone } from "./LearnTimeZone";
+import { MemberStrip } from "./MemberStrip";
 import { NavLinks } from "./NavLinks";
 import { XpToasts } from "./XpToasts";
 
@@ -86,6 +87,7 @@ export async function SiteHeader({
           </p>
           <Nav />
         </header>
+        <MemberStrip />
         <XpFlashToasts heldBy={xpHeldBy} />
       </>
     );
@@ -108,6 +110,8 @@ export async function SiteHeader({
         </span>
         <Nav />
       </header>
+      {/* The member's own figures, one quiet line: see `MemberStrip`. */}
+      <MemberStrip />
       <XpFlashToasts heldBy={xpHeldBy} />
     </>
   );

@@ -143,6 +143,10 @@ const EXCEPTIONS: Record<string, { calls: number; reason: string }> = {
    * It is still listed rather than matched loosely, because a date written
    * with `toLocaleString` in this file would look identical to the matcher.
    */
+  "src/components/layout/MemberStrip.tsx": {
+    calls: 1,
+    reason: "the XP total under the masthead: an integer with an explicit en-US locale, in a server component, as MyXp",
+  },
   "src/components/mine/MyXp.tsx": {
     calls: 2,
     reason: "integer counts with an explicit en-US locale, in a server component",

@@ -7,6 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { seatClaims } from "@/lib/history/seatCookie";
+import { ratedRecordOf } from "@/lib/rating/ratedRecord";
 
 /**
  * The games this browser holds a seat in, sorted into a queue. "Mine" is
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
      * who closed the tab comes looking: see `BotCatchUp` and
      * `unansweredBotTurns`. No computer move costs a paid function any more.
      */
-    const queue = await fetchMyGames(claims, memberId, now, keepFinishedDays);
+    const [queue, record] = await Promise.all([fetchMyGames(claims, memberId, now, keepFinishedDays), ratedRecordOf(memberId)]);
     const { groups } = queue;
     return NextResponse.json(
       {
@@ -71,6 +72,13 @@ export async function GET(request: Request) {
          * last page" and never for "ask again later" — see `PagedEnvelope`.
          */
         finished: queue.finished,
+        /*
+         * The reader's rated record, won, lost and drawn, for the line under
+         * the masthead. Here rather than in a request of its own because this
+         * one is already made once on every page, by the badge beside Play:
+         * the line reads the same answer, and costs one indexed sum.
+         */
+        record,
       },
       { status: 200, headers: NO_STORE },
     );
