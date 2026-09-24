@@ -214,6 +214,10 @@ describe("a count of games is the way into those games", () => {
      */
     "src/app/about/about.games.tsx": "counts rule sets, not matches",
     "src/app/about/about.more.tsx": "counts rule sets, not matches",
+    // Getting started and the catalogue's charts count games and families the
+    // same way, and link to /games, the whole catalogue those counts were read from.
+    "src/app/about/about.start.tsx": "counts rule sets, not matches",
+    "src/app/about/about.charts.tsx": "counts rule sets, not matches",
     /*
      * The measured round robin on the About page, for exactly the reason
      * `LadderStrength.tsx` below carries: those games were played in memory,

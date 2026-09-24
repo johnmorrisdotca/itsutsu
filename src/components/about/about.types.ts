@@ -49,3 +49,34 @@ export type TimelineProps = {
   /** Show the who-wins legend. */
   verdicts?: boolean;
 };
+
+/** The colour a bar or a box is drawn in, from the page's own palette. */
+export type FigureTone = "ink" | "moss" | "shu" | "ochre";
+
+export type BarRow = {
+  /** What the bar counts, as a reader says it. */
+  label: ReactNode;
+  value: number;
+  /** A short line after the number: which games, or where. */
+  note?: ReactNode;
+  tone?: FigureTone;
+};
+
+export type BarChartProps = {
+  rows: BarRow[];
+  caption: ReactNode;
+  /** What a screen reader says instead of the picture. */
+  label: string;
+};
+
+export type FlowStep = {
+  title: string;
+  kanji: string;
+  body: ReactNode;
+};
+
+export type FlowProps = {
+  steps: FlowStep[];
+  caption: ReactNode;
+  label: string;
+};

@@ -9,6 +9,11 @@ import { GO_SECTION } from "./about.go";
 import { Game, Inside, Out } from "./about.links";
 import { CONNECT_FOUR_SECTION, OPENINGS_SECTION, RATINGS_SECTION, SITES_SECTION } from "./about.more";
 import { NOTATION_SECTION } from "./about.notation";
+import { CHARTS_SECTION } from "./about.charts";
+import { ENGINE_SECTION } from "./about.engine";
+import { BETA_SECTION, HOW_IT_WORKS_SECTION } from "./about.start";
+import { WORDS_SECTION } from "./about.words";
+import { XP_SECTION } from "./about.xp";
 
 export type AboutSection = {
   title: string;
@@ -218,13 +223,13 @@ export const ABOUT_SECTIONS: AboutSection[] = (() => {
     out.push(section);
     // What is actually here, straight after why it exists: the reader has just
     // been told what the site is for and the next question is what is in it.
-    if (section.title === "Where this comes from") out.push(...after(section.title, CATALOGUE_SECTION));
+    if (section.title === "Where this comes from") out.push(...after(section.title, HOW_IT_WORKS_SECTION, BETA_SECTION, CATALOGUE_SECTION, CHARTS_SECTION));
     if (section.title === "Five stones, and where they came from") out.push(...after(section.title, OPENINGS_SECTION, CONNECT_FOUR_SECTION));
     // Go follows the heritage: it is the board and the stones every game here is drawn on.
-    if (section.title === "The Japanese thread") out.push(...after(section.title, GO_SECTION));
+    if (section.title === "The Japanese thread") out.push(...after(section.title, GO_SECTION, WORDS_SECTION));
     // The computer players close the site's own half, after the numbers that
     // rate them and the notation their games are written down in.
-    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION, NOTATION_SECTION, BOTS_SECTION));
+    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION, XP_SECTION, NOTATION_SECTION, BOTS_SECTION, ENGINE_SECTION));
   }
   out.push(SITES_SECTION);
   return out;
