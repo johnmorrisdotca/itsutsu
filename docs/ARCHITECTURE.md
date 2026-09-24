@@ -48,10 +48,13 @@ Three services beyond the database:
   the site is in maintenance). The clients are `src/lib/sumilabu/boardClient.ts`
   and `src/lib/site/siteStore.ts`. Everything reaches the development project
   (`itsutsu-dev`) unless it is told otherwise by name.
-- **Resend** sends email: an invite request to the owner, and notices to
-  members who asked for them. Every send passes through one sender
-  (`src/lib/mail/sendMail.ts`) and a set of caps kept in the database
-  (`EmailSendCount`), so a script cannot spend the site's email.
+- **Resend** sends email, in production only and only with `RESEND_API_KEY`
+  set: a request for an invite from `/join`, and a member's invitation to a
+  friend. Game notices ("your move") are written but switched off
+  (`NOTICES` in `src/lib/mail/mail.constants.ts`). Every send passes through
+  one sender (`src/lib/mail/sendMail.ts`) and caps kept in the database
+  (`EmailSendCount`): fifty a day and a thousand a month for the site, five a
+  day per member. `docs/email.md` has the detail.
 - **Google** proves a member's address at sign-in, through next-auth
   (`src/lib/auth/google.ts`). It proves identity only; membership is decided
   here.
@@ -171,10 +174,11 @@ maintenance it answers 503. Maintenance is an environment variable rather than
 a database row, so the gate costs no query per request.
 
 Sessions are one HMAC-signed cookie, `src/lib/auth/session.ts`, signed with
-`AUTH_SECRET`. There are two kinds: `admin` for the operator and `player` for
-everybody else. Without `AUTH_SECRET` the gate cannot verify anything and
-stays open, which is convenient for local development and wrong for a
-deployment.
+`AUTH_SECRET` (at least sixteen characters). There are two kinds: `admin` for
+the operator, lasting a day, and `player` for everybody else, lasting thirty.
+Without `AUTH_SECRET` nothing can be verified: in development and tests the
+gate then stays open, which makes local work bearable, and in production it
+answers 503 rather than open the site.
 
 Pages ask who is reading through `currentReader()` (`src/lib/auth/reader.ts`),
 which answers four facts: signed in, the address if any, the member id if any,
@@ -196,9 +200,11 @@ Each route follows the same shape:
 4. Do the work in `src/lib/`, which returns a result or a named refusal.
 5. Map the refusal to a status code and a message, and answer typed JSON.
 
-Listing endpoints answer `{ pagination, items }`. The page is clamped against
-the real total rather than rejected, and ordering always ends with the id, so
-paging cannot hide or repeat a row.
+Sorting and paging follow one convention, decided in `src/lib/api/paging.ts`:
+`sort=<column>[:asc|desc]`, `limit`, and an opaque `cursor` from the previous
+page. An unknown sort column is refused by name with a 400 listing what is
+accepted, and ordering always ends with the id, so paging cannot hide or
+repeat a row. `GET /api/games` answers `{ pagination, next, items, facets }`.
 
 The main endpoints:
 
@@ -208,8 +214,8 @@ The main endpoints:
 | A shared game | `.../moves`, `.../settings`, `.../sit`, `.../sit-as`, `.../resign`, `.../cancel`, `.../timeout`, `.../time`, `.../reactions`, `.../applause`, `.../verdict`, `.../hide`, `.../offer/{accept,decline,withdraw}` under `/api/games/[id]` |
 | Players | `/api/players`, `/api/members`, `/api/members/[id]/endings`, `/api/ladder` |
 | Me | `/api/me`, `/api/me/phrase`, `/api/me/phrase/draw`, `/api/buddies`, `/api/ignores`, `/api/messages` |
-| Getting in | `/api/session`, `/api/session/google`, `/api/auth/[...nextauth]`, `/api/invites`, `/api/invites/mine`, `/api/invites/[code]` |
-| Operator | `/api/admin/members/[id]/...`, `/api/site`, `/api/embed-tokens` |
+| Getting in | `/api/session`, `/api/session/google`, `/api/auth/[...nextauth]`, `/api/invites` (operator), `/api/invites/mine` (a member inviting a friend), `/api/invites/[code]` |
+| Operator | `/api/admin/members/[id]/{claim,phrase,phrase/draw}`, `PATCH /api/members`, `/api/site`, `/api/embed-tokens` |
 | Embeds | `/api/embed/summary` |
 
 Some writes from the operator's pages use Server Functions rather than routes
