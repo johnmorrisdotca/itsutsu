@@ -1,14 +1,12 @@
 import { Paired } from "@/components/i18n/Paired";
-import { playerPath } from "@/lib/rating/playerKey";
 import { RowActions } from "@/components/ui/Controls";
-import Link from "next/link";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { HereNow } from "@/lib/social/presence";
 import { ChallengeButton } from "./ChallengeButton";
 import { START_COPY } from "./mine.constants";
-import { RecencyLegend, RecencyMark } from "./Recency";
-import { shownName } from "@/lib/rating/shownName";
+import { RecencyLegend } from "./Recency";
+import { MemberTag } from "@/components/players/MemberTag";
 
 /**
  * Who is in the room, beside the seats they might take. The players page
@@ -84,15 +82,15 @@ const HERE_SHOWN = 6;
 function HereRow({ entry, me }: { entry: HereNow; me: string | null }) {
   return (
     <li className="flex items-center gap-2 py-0.5 text-sm">
-      <RecencyMark recency={entry.recency} />
       <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
-        {entry.name.trim() !== "" ? (
-          <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline">
-            {shownName(entry.name)}
-          </Link>
-        ) : (
-          entry.email
-        )}
+        <MemberTag
+          name={entry.name}
+          memberId={entry.id}
+          marks={entry.marks}
+          recency={entry.recency}
+          you={entry.id === me}
+          fallback={entry.email ?? ""}
+        />
         {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
       </span>
       <RowActions>

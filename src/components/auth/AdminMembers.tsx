@@ -9,9 +9,8 @@ import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
-import { PlayerName } from "@/components/players/PlayerName";
+import { MemberTag } from "@/components/players/MemberTag";
 import { ADMIN_CLAIM_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
-import { MemberKindBadge } from "./MemberKindBadge";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MemberClaimModal } from "./MemberClaimModal";
 import { MemberWordsModal } from "./MemberWordsModal";
@@ -148,15 +147,19 @@ export function AdminMembers() {
                 controls, for the same reason.
               */}
               <span className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium">
-                <span className="truncate">
-                  {member.name.trim() === "" ? (
-                    <span className="text-muted">No name yet</span>
-                  ) : (
-                    <PlayerName name={member.name} memberId={member.id} fallback="" whole />
-                  )}
-                </span>
-                {/* What they are, then what has been done to them. Somebody can be a shut operator. */}
-                <MemberKindBadge kind={member.kind} />
+                {/*
+                  The same name and marks as every list of members, whole
+                  rather than shortened because this is the operator's page.
+                  What has been done to them follows. Somebody can be a shut operator.
+                */}
+                <MemberTag
+                  name={member.name}
+                  memberId={member.id}
+                  marks={member.marks}
+                  you={member.isYou}
+                  fallback="No name yet"
+                  whole
+                />
                 {member.bannedAt === null ? null : (
                   <span className="shrink-0 rounded-full border border-shu/40 px-2 py-0.5 text-[0.65rem] font-semibold text-shu">
                     Shut 停止

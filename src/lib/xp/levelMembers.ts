@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { MEMBER_MARKS_SELECT, memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 import type { DirectoryWho } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 
@@ -61,6 +62,8 @@ export type LevelMember = {
   xp: number;
   /** What of that total is credit for another site's record: nought under Itsutsu only. */
   imported: number;
+  /** What is drawn after the name, as on every list of members. */
+  marks: MemberMarks;
 };
 
 export type LevelRoll = {
@@ -85,7 +88,7 @@ export async function membersAtLevel(
 
   const read = await prisma.member.findMany({
     where: { AND: [xpRangeWhere(scope, range), xpWhoWhere(who)] },
-    select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true },
+    select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true, ...MEMBER_MARKS_SELECT },
     /*
      * Highest first, so whoever is nearest the next rung is at the top — the same
      * direction the leaderboard runs, and the one that makes a rung read as part
@@ -104,6 +107,7 @@ export async function membersAtLevel(
       name: row.name,
       xp: xpTotalIn(row, scope),
       imported: scope === RECORD_SCOPES.everywhere ? row.xpImported : 0,
+      marks: memberMarks(row),
     })),
     more: read.length > LEVEL_ROLL,
   };

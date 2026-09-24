@@ -1,9 +1,7 @@
-import Link from "next/link";
 
-import { playerPath } from "@/lib/rating/playerKey";
-import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
+import { RecencyLegend } from "@/components/mine/Recency";
+import { MemberTag } from "./MemberTag";
 import { fetchHereNow } from "@/lib/social/presence";
-import { shownName } from "@/lib/rating/shownName";
 
 /**
  * Who is about, right now.
@@ -58,14 +56,14 @@ export async function HereNow({ now }: { now: Date }) {
 function Name({ entry }: { entry: Awaited<ReturnType<typeof fetchHereNow>>[number] }) {
   return (
     <span className="flex items-center gap-1">
-      <RecencyMark recency={entry.recency} />
-      {entry.name.trim() !== "" ? (
-        <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="here-name">
-          {shownName(entry.name)}
-        </Link>
-      ) : (
-        entry.email
-      )}
+      <MemberTag
+        name={entry.name}
+        memberId={entry.id}
+        marks={entry.marks}
+        recency={entry.recency}
+        fallback={entry.email ?? ""}
+        testId="here-name"
+      />
       {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
     </span>
   );

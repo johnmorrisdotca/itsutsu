@@ -2,6 +2,7 @@ import "server-only";
 
 import { listable } from "./listable";
 import { prisma } from "@/lib/prisma";
+import { memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 import { awardBuddyKept } from "@/lib/xp/xpSocial";
 import { localTimeIn, recencyOf, type Recency } from "./presence";
 
@@ -20,6 +21,8 @@ export type BuddyEntry = {
   localTime: string | null;
   city: string;
   country: string;
+  /** What is drawn after the name, as on every list of members. */
+  marks: MemberMarks;
 };
 
 /**
@@ -51,6 +54,7 @@ export async function fetchBuddies(ownerId: string, now = new Date()): Promise<B
     localTime: localTimeIn(member.timeZone, now),
     city: member.city,
     country: member.country,
+    marks: memberMarks(member, now.getTime()),
   }));
 }
 

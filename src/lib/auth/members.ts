@@ -3,6 +3,7 @@ import "server-only";
 import { isMemberId, makeMemberId } from "./memberId";
 
 import { prisma } from "@/lib/prisma";
+import { memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 import { playerKey } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
@@ -72,6 +73,8 @@ export type NamedMember = {
   xpEverywhere?: number;
   /** What of `xpEverywhere` came from another site. Absent means not read. */
   xpImported?: number;
+  /** What a list draws after the name — see `memberMarks`. Absent means not read. */
+  marks?: MemberMarks;
 };
 
 /** The member for an address, or null when the address has not been let in. */
@@ -305,9 +308,15 @@ export async function findMembersByNames(
       city: true,
       timeZone: true,
       bio: true,
+      createdAt: true,
     },
   });
-  return new Map(rows.map((row) => [playerKey(row.name ?? ""), row]));
+  return new Map(
+    rows.map(({ createdAt, ...row }) => [
+      playerKey(row.name ?? ""),
+      { ...row, marks: memberMarks({ ...row, createdAt }) },
+    ]),
+  );
 }
 
 /**

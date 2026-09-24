@@ -1,27 +1,16 @@
 import { Paired } from "@/components/i18n/Paired";
 import { RecordTable } from "./RecordTable";
 import { TABLE_CLASS, TABLE_HEAD_CLASS } from "./PlayerRecord";
-import { playerPath } from "@/lib/rating/playerKey";
-import Link from "next/link";
 
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
 import type { LadderStanding, VariantStanding } from "@/lib/rating/variantRatings";
 import { levelShown } from "@/lib/xp/levelShown";
 import type { ReactNode } from "react";
-import { shownName } from "@/lib/rating/shownName";
+import { MemberTag } from "./MemberTag";
 
 import { XP_BLANK_BECAUSE } from "./players.constants";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
-
-/** A player's name, leading to their page. */
-export function PlayerLink({ name, memberId }: { name: string; memberId?: string | null }) {
-  return (
-    <Link href={playerPath(name, memberId)} className="underline-offset-2 hover:underline">
-      {shownName(name)}
-    </Link>
-  );
-}
 
 /** A rating tier in a word and its kanji, as the ladder writes it. */
 export function TierMark({ tier }: { tier: RatingTier }) {
@@ -84,7 +73,7 @@ export function StandingsTable({
       subject="Player"
       rows={standings.map((standing) => ({
         key: standing.key,
-        subject: <PlayerLink name={standing.name} memberId={standing.memberId} />,
+        subject: <MemberTag name={standing.name} memberId={standing.memberId} marks={standing.marks} fallback="" />,
         record: standing,
         of: { player: standing.name, variant: standing.variant, pool, rated: "yes" },
         // The pool's own run, from the same row as the figures beside it —
@@ -141,7 +130,7 @@ export function LadderSideView({
   invitation,
   testId = "ladder-side-view",
 }: {
-  standings: VariantStanding[];
+  standings: LadderStanding[];
   /** What no rows MEANS here, in a sentence, under the headings. */
   emptyNote: string;
   /** The way in, for a ladder with nothing on it yet. */
@@ -180,7 +169,7 @@ export function LadderSideView({
                 <tr key={standing.key} className="border-t border-rule">
                   <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
                   <td className="min-w-0 truncate py-1.5 pr-2">
-                    <PlayerLink name={standing.name} memberId={standing.memberId} />
+                    <MemberTag name={standing.name} memberId={standing.memberId} marks={standing.marks} fallback="" />
                   </td>
                   <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
                 </tr>

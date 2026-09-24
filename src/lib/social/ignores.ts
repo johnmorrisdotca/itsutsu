@@ -1,11 +1,12 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { MEMBER_MARKS_SELECT, memberMarks, type MemberMarks } from "@/lib/players/memberMarks";
 
 import { listable } from "./listable";
 
 /** Somebody on a member's ignore list, as the list shows them. */
-export type IgnoredEntry = { id: string; name: string; since: string };
+export type IgnoredEntry = { id: string; name: string; since: string; marks: MemberMarks };
 
 /**
  * The member ids a member has chosen not to hear from.
@@ -34,9 +35,14 @@ export async function fetchIgnored(ownerId: string): Promise<IgnoredEntry[]> {
   const rows = await prisma.ignore.findMany({
     where: { ownerId },
     orderBy: { createdAt: "desc" },
-    select: { createdAt: true, ignored: { select: { id: true, name: true } } },
+    select: { createdAt: true, ignored: { select: { id: true, name: true, ...MEMBER_MARKS_SELECT } } },
   });
-  return rows.map((row) => ({ id: row.ignored.id, name: row.ignored.name, since: row.createdAt.toISOString() }));
+  return rows.map((row) => ({
+    id: row.ignored.id,
+    name: row.ignored.name,
+    since: row.createdAt.toISOString(),
+    marks: memberMarks(row.ignored),
+  }));
 }
 
 /** Ignores somebody. Nothing if they are you, or are not a person here — see `listable`. */
