@@ -2,7 +2,7 @@ import "server-only";
 
 import { cancelGame, resignGame } from "@/lib/history/liveGameEndings";
 import { declineOffer, withdrawOffer } from "@/lib/history/offerAnswer";
-import { isOffered, isOfferedTo } from "@/lib/history/offers";
+import { NOT_A_REFUSED_OFFER, isOffered, isOfferedTo } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
 
 import { operatorActionWrite } from "./operatorLog";
@@ -128,7 +128,10 @@ export async function removeMember(
   if (exists === null) return null;
 
   const left = await leaveEveryGame(memberId);
-  const gamesKept = await prisma.game.count({ where: { OR: [{ blackMemberId: memberId }, { whiteMemberId: memberId }] } });
+  // Games, not offers: a declined or withdrawn offer has the seat too, and was never a game (offers.coverage).
+  const gamesKept = await prisma.game.count({
+    where: { ...NOT_A_REFUSED_OFFER, OR: [{ blackMemberId: memberId }, { whiteMemberId: memberId }] },
+  });
   const races = await prisma.puzzleRace.findMany({
     where: { OR: [{ hostMemberId: memberId }, { guestMemberId: memberId }] },
     select: { id: true },

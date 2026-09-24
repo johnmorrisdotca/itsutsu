@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { GameCount } from "@/components/games/GameCount";
 import { LocalTime } from "@/components/ui/LocalTime";
 import type { MemberProfile } from "@/lib/auth/members.types";
+import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
 import { AGE_BAND_DISPLAY, type AgeBand } from "@/lib/social/ageBand.constants";
 
@@ -32,7 +33,8 @@ export async function WhatWeHold({
   const [extra, games, sent, received, inbox, buddies, ignores, xpEvents, solves, applause] = await Promise.all([
     // The two columns the profile type does not carry, read here rather than widened into every caller's type.
     prisma.member.findUnique({ where: { id }, select: { phraseSetAt: true, invitedWith: true } }),
-    prisma.game.count({ where: { OR: [{ blackMemberId: id }, { whiteMemberId: id }] } }),
+    // Games, not offers: a refused offer holds the seat and was never a game, and the list the count links to leaves it out too.
+    prisma.game.count({ where: { ...NOT_A_REFUSED_OFFER, OR: [{ blackMemberId: id }, { whiteMemberId: id }] } }),
     prisma.directMessage.count({ where: { fromId: id } }),
     prisma.directMessage.count({ where: { toId: id } }),
     prisma.inboxItem.count({ where: { memberId: id } }),
