@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AskForInvite } from "@/components/auth/AskForInvite";
@@ -82,6 +83,10 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <span className="opacity-70">{stamps.roman}</span>
         <span className="font-mincho opacity-70">{stamps.kanji}</span>
       </p>
+      {/* The doorstep has no footer, so the one policy a stranger should read before asking is here. */}
+      <Link href="/privacy" className="text-xs text-muted underline underline-offset-4" data-testid="join-privacy">
+        Privacy
+      </Link>
     </div>
   );
 }

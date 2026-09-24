@@ -15,12 +15,13 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (119)
+## 1. Written by a machine — please check these (120)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
 | Every screen — navigation bar | Games | **種目** | Kinds of game — the catalogue of games, not a game in progress. |  |
 | Every screen — navigation bar | Play | **遊ぶ** | Play / to play. |  |
+| Every screen — navigation bar | Privacy | **プライバシー** | Privacy — the loanword every Japanese site uses for the page that says what it keeps about you. |  |
 | Every screen — account menu, top right | Sign in | **サインイン** | Sign in. |  |
 | Every screen — account menu, top right | Sign out | **サインアウト** | Sign out. |  |
 | Every screen — footer | Language | **言語** | Language |  |

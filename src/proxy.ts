@@ -186,6 +186,14 @@ const OPEN_EXACTLY = [
    * /players stays shut, so a stranger gets the handle and no address.
    */
   "/thanks",
+  /*
+   * /privacy — what the site keeps and who sees it. John, 2026-09-24: "this
+   * is absolutely mandatory." Open because the reader who needs it most is
+   * the one with no invite yet: somebody deciding whether to ask for one, or
+   * whether a child may. It names no member and reads no row; every sentence
+   * is held to the code by privacy.coverage.test.ts.
+   */
+  "/privacy",
 ];
 
 /**

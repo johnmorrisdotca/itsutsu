@@ -53,6 +53,10 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "種目",
     back: "Kinds of game — the catalogue of games, not a game in progress.",
   },
+  "nav.privacy": {
+    text: "プライバシー",
+    back: "Privacy — the loanword every Japanese site uses for the page that says what it keeps about you.",
+  },
 
   "account.signIn": {
     text: "サインイン",

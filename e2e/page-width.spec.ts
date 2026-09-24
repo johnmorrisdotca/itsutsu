@@ -102,6 +102,7 @@ const ROUTES: Record<string, Route> = {
     also: ["/players?view=buddies", "/players?view=ladder", "/players?view=computers", "/players?view=remembered"],
   },
   "/players/[slug]": { url: () => `/players/${made.member}` },
+  "/privacy": { url: () => "/privacy" },
   "/releases": { url: () => "/releases" },
   "/thanks": { url: () => "/thanks" },
   "/xp": { url: () => "/xp" },
