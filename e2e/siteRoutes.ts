@@ -39,6 +39,7 @@ export const ROUTES: Record<string, Route> = {
   "/champions": { url: () => "/champions" },
   "/embed": { skip: "a widget drawn inside another site's frame, not a page of this one" },
   "/famous": { url: () => "/famous" },
+  "/feed": { url: () => "/feed", also: ["/feed?view=everyone"] },
   "/games": { url: () => "/games", also: ["/games?view=list"] },
   "/games/[slug]": { url: () => "/games/gomoku", also: ["/games/number-place"] },
   "/games/[slug]/background": { url: () => "/games/gomoku/background", also: ["/games/number-place/background"] },
