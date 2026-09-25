@@ -168,7 +168,7 @@ test.describe("choosing the board before the game exists", () => {
      */
     const stamp = Date.now().toString(36);
     // Somebody, and not this reader: their own seat is not offered back.
-    const waiting = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+    const waiting = await memberContext(browser, baseURL ?? "http://localhost:6700", {
       email: "board-waiting@example.test",
       name: "Board Waiting",
     });
@@ -192,7 +192,7 @@ test.describe("choosing the board before the game exists", () => {
     const stamp = Date.now().toString(36);
     // Somebody posts a 9×9 seat, at a pace nothing else here uses — and it has
     // to be somebody, since a seat is not offered back to its poster.
-    const poster = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+    const poster = await memberContext(browser, baseURL ?? "http://localhost:6700", {
       email: "board-poster@example.test",
       name: "Board Poster",
     });

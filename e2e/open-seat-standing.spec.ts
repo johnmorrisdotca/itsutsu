@@ -30,7 +30,7 @@ test.describe("the waiting room", () => {
     const stamp = Date.now().toString(36);
     // One token, so `shownName` prints it whole and the spec can find what it seeded.
     const poster = { email: `standing-poster-${stamp}@example.test`, name: `Standing-${stamp}`, country: "Japan" };
-    const theirs = await memberContext(browser, baseURL ?? "http://localhost:6600", poster);
+    const theirs = await memberContext(browser, baseURL ?? "http://localhost:6700", poster);
     const memberId = await memberIdFor(poster.email);
     let gameId: string | null = null;
 

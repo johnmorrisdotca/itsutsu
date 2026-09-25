@@ -982,11 +982,21 @@ objects, read what it is objecting to before making it stop.
 - Node 24.x, **pnpm** (never npm/yarn).
 - Vitest for unit tests.
 
+## Local Ports: 6700–6799
+
+Itsutsu's block on this Mac is **6700–6799**, from the table in John's global
+`CLAUDE.md` ("Local ports: one block of 100 per project"): the dev server on
+6700, and every worktree's dev server and e2e server on the next free port from
+6701 up. **Never a 66xx port**: 6600–6699 is Onibako's, whose Docker stack runs
+live on this machine (John, 2026-09-24: "ITS needs to get out of Onibako
+stuff"). Postgres stays on 55434. A `next dev` without a port is a bug — pass
+`WEB_PORT` or rely on the package script's default.
+
 ## Scripts
 
 | Task | Command |
 | --- | --- |
-| Dev server (port 6600, override with `WEB_PORT`) | `pnpm dev` |
+| Dev server (port 6700, override with `WEB_PORT`) | `pnpm dev` |
 | Lint / fix | `pnpm lint` / `pnpm lint:fix` |
 | Typecheck | `pnpm typecheck` |
 | Unit tests | `pnpm test:unit` |

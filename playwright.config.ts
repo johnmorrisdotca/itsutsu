@@ -6,7 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  * replayed — cross both. `reuseExistingServer` keeps a dev server you already
  * have running rather than fighting it for the port.
  */
-const PORT = Number(process.env.WEB_PORT ?? 6600);
+const PORT = Number(process.env.WEB_PORT ?? 6700);
 const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({

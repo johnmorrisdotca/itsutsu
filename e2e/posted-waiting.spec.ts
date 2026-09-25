@@ -63,7 +63,7 @@ test.describe("a seat posted for anyone", () => {
     try {
       const { memberContext } = await import("./members");
       const stamp = Date.now().toString(36);
-      const other = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+      const other = await memberContext(browser, baseURL ?? "http://localhost:6700", {
         email: `waiting-answerer-${stamp}@example.com`,
         name: `Waiting Answerer ${stamp}`,
       });

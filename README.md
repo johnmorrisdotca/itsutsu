@@ -50,7 +50,7 @@ cp .env.example .env      # before installing: the Prisma client records it
 pnpm install
 pnpm local:db:up          # disposable Postgres in Docker, port 55434
 pnpm db:deploy            # apply migrations
-pnpm dev                  # http://localhost:6600
+pnpm dev                  # http://localhost:6700
 ```
 
 `WEB_PORT` overrides the port. `pnpm local:db:reset` throws the database away
@@ -656,7 +656,7 @@ what is accepted, and an unrecordable game is a `422` listing what was wrong.
 `from` and `to`.
 
 ```bash
-curl 'localhost:6600/api/games?search=aki&result=black&sort=moves:asc&limit=5'
+curl 'localhost:6700/api/games?search=aki&result=black&sort=moves:asc&limit=5'
 ```
 
 ## Getting in
@@ -959,7 +959,7 @@ Several features are several runs of it and then one push. See AGENTS.md,
 
 | Task | Command |
 | --- | --- |
-| Dev server (port 6600) | `pnpm dev` |
+| Dev server (port 6700) | `pnpm dev` |
 | Lint / fix | `pnpm lint` / `pnpm lint:fix` |
 | Typecheck | `pnpm typecheck` |
 | Unit tests | `pnpm test:unit` |

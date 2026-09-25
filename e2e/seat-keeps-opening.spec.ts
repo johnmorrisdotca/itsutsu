@@ -33,7 +33,7 @@ test.describe("a posted seat keeps the opening somebody chose", () => {
     // Three days a move: a pace the set-up offers, and one both sides say out loud.
     const pace = "259200000";
 
-    const them = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+    const them = await memberContext(browser, baseURL ?? "http://localhost:6700", {
       email: `keeps-opening-${stamp}@example.com`,
       name: waiting,
     });

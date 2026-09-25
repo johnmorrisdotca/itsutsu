@@ -146,7 +146,7 @@ six hours is free, and the list prints it as STALE first.
 - Route tests: `POST` with the token creates a row whose `askedBy` is the
   header name; `PATCH` to `inProgress` with the token writes `claimedBy` as
   the header name.
-- Manual, against the local dev server with `BOARD_URL=http://localhost:6600`:
+- Manual, against the local dev server with `BOARD_URL=http://localhost:6700`:
   `add`, `claim`, a second `claim --by other` refused with the name,
   `release`, `grade`, `drop`, `reopen`. Paste the transcript in the closing
   message.

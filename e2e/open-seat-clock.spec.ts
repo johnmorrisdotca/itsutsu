@@ -119,7 +119,7 @@ test.describe("a game still waiting for somebody to sit down", () => {
        * left behind.
        */
       const stamp = Date.now().toString(36);
-      const newcomer = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+      const newcomer = await memberContext(browser, baseURL ?? "http://localhost:6700", {
         email: `newcomer-${stamp}@example.com`,
         name: `Newcomer ${stamp}`,
       });

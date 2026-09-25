@@ -148,7 +148,7 @@ jobs:
           AUTH_SECRET="ci-only-not-a-real-secret"
           ADMIN_EMAILS="operator@example.test"
           ADMIN_TOKEN="ci-only-operator-token"
-          NEXTAUTH_URL="http://localhost:6600"
+          NEXTAUTH_URL="http://localhost:6700"
           AUTH_GOOGLE_ID="ci-only-not-a-real-client-id"
           AUTH_GOOGLE_SECRET="ci-only-not-a-real-client-secret"
           RATE_LIMIT_RELIEF=20
@@ -170,7 +170,7 @@ jobs:
 
       # Playwright starts the dev server itself — see `webServer` in
       # playwright.config.ts — and `reuseExistingServer` finds nothing to reuse
-      # on a fresh runner, so it gets a clean one on port 6600.
+      # on a fresh runner, so it gets a clean one on port 6700.
       #
       # IT MUST BE THE DEV SERVER. Swapping this for `pnpm build && pnpm start`
       # to make the run faster is the obvious optimisation and it breaks the

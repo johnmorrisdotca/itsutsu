@@ -4,9 +4,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "next dev -p ${WEB_PORT:-6600}",
+    "dev": "next dev -p ${WEB_PORT:-6700}",
     "build": "next build",
-    "start": "next start -p ${WEB_PORT:-6600}",
+    "start": "next start -p ${WEB_PORT:-6700}",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "typecheck": "next typegen && tsc --noEmit",

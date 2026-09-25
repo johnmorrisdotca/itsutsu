@@ -28,7 +28,7 @@ test.describe("a seat from somebody you ignore", () => {
      * no member row and no address to be ignored by.
      */
     const other = { email: "ignored-poster@example.test", name: "Ignored Poster" };
-    const theirs = await memberContext(browser, baseURL ?? "http://localhost:6600", other);
+    const theirs = await memberContext(browser, baseURL ?? "http://localhost:6700", other);
     const posted = await theirs.request.post("/api/games/live", {
       // Named, so the board prints something this test can point at.
       data: { blackName: other.name, variant: "trapThree", size: 5, open: true, moveTimeMs: null },

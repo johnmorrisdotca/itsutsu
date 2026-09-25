@@ -31,7 +31,7 @@ test.describe("a seat somebody else is waiting on", () => {
     const pace = "259200000";
 
     // A stranger posts first.
-    const them = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+    const them = await memberContext(browser, baseURL ?? "http://localhost:6700", {
       email: `not-hidden-${stamp}@example.com`,
       name: `Waiting ${stamp}`,
     });
