@@ -11,7 +11,7 @@ another game… where you find all the cats… since this is an itsutsu site,
 no cats, should be something else like find the Black stone, and give it a
 nice name."
 
-Five rows, in order. Each plan file says what to read, every file that
+Nine rows, in order. Each plan file says what to read, every file that
 changes, the tests, the acceptance list, and what not to do. If a plan and
 the code disagree, the code moved after the plan was written; say so in the
 row and follow the code's gates.
@@ -25,6 +25,13 @@ row and follow the code's gates.
 | `a-find-the-stones-logic-puzzle-like-star-battle` | `NUM-03-hidden-stones.md` | NUM-02 |
 | `a-second-number-puzzle-beside-sudoku` | `NUM-04-more-or-less.md` | NUM-02 |
 | Race a friend (the timed head-to-head; part of the Numbers row, released on its own) | `NUM-05-race-a-friend.md` | NUM-02, **a migration**, John's word and a Neon branch |
+| `killer-sudoku-joins-the-numbers-family` (Sum Cages) | built on `its-killer`, no plan file | NUM-02 |
+| `towers-joins-the-numbers-family` | `NUM-07-towers.md` | Sum Cages (same files) |
+| `black-and-white-joins-the-numbers-family` | `NUM-08-black-and-white.md` | NUM-07 |
+| `about-a-numbers-chapter-with-an-article-for-each-puzzle` | `NUM-09-about-numbers.md` | the three above; the cloud agent's |
+
+The last four came from John's yes on 2026-09-24 to three more puzzles, which
+fills the shelf at eight.
 
 ## The decision: a puzzle is a kind of its own, catalogued with the games
 
