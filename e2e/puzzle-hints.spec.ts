@@ -10,15 +10,15 @@ import type { PuzzleKind } from "../src/lib/puzzles/puzzles.types";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * HINT MARKS WHICH CELLS ARE WRONG, ON EVERY KIND OF PUZZLE, AND ONLY WHEN IT
- * WAS CHOSEN. John, 2026-09-24: "when a user wants a HINT button they can add
- * as an option for these games... and when pressed, we highlight what's wrong.
- * Should be opposite side of CHECK button… perhaps it's always there and
- * disabled when not active or chosen in options."
+ * CHECK, SHOW AND HINT, ON EVERY KIND OF PUZZLE. John, 2026-09-25: "Keeping
+ * simple, should be CHECK and SHOW… so LHS Check, Show, RHS Hint." Show marks
+ * which cells are wrong (what Hint did until then) and is paid for from the
+ * checks; Hint, chosen at set-up, puts one right cell in.
  *
- * Each case makes one wrong entry the way a reader does, presses Hint, finds
- * that cell marked, changes it and finds the mark gone. Every grid is its own
- * (an unfinished puzzle is kept, and a kept one opens where it was left).
+ * Each case makes one wrong entry the way a reader does. Show finds that cell
+ * marked, and the mark goes when the cell is changed; Hint leaves one more cell
+ * right than there was. Every grid is its own (an unfinished puzzle is kept,
+ * and a kept one opens where it was left).
  */
 
 /** Puts one wrong entry on the grid, and says which cell. */
@@ -46,27 +46,61 @@ async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number
   return index;
 }
 
+/** How many cells on the page hold what the answer has there: the measure a hint moves by one. */
+async function rightCells(page: Page, kind: PuzzleKind, size: number, seed: number): Promise<number> {
+  const puzzle = generatePuzzle(kind, size, "easy", seed);
+  const cells = page.getByTestId("puzzle-cell");
+  if (kind === "hiddenStones") {
+    const stones = decodeStones(puzzle.solution, size)!;
+    const marks = await cells.evaluateAll((all) => all.map((cell) => cell.getAttribute("data-mark") ?? ""));
+    return stones.filter((col, row) => marks[row * size + col] === "stone").length;
+  }
+  if (kind === "blackAndWhite") {
+    const answer = decodeBlackAndWhite(puzzle.solution, size)!;
+    const shown = await cells.evaluateAll((all) => all.map((cell) => cell.getAttribute("data-stone") ?? ""));
+    return answer.filter((stone, cell) => shown[cell] === (stone === BLACK ? "black" : "white")).length;
+  }
+  const solution = decodeCells(puzzle.solution, size)!;
+  const values = await cells.evaluateAll((all) => all.map((cell) => cell.getAttribute("data-value") ?? ""));
+  return solution.filter((value, cell) => values[cell] === String(value)).length;
+}
+
 // Every puzzle that offers help (`PuzzleSpec.helps`): a WordDrop's colours are its hints.
 for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false)) {
-  test(`${kind}: with hints chosen, Hint marks the wrong entry until it is changed`, async ({ page }) => {
+  test(`${kind}: Show marks the wrong entry until it is changed, and costs a check`, async ({ page }) => {
+    const size = PUZZLE_SPECS[kind].defaultSize;
+    const seed = freshPuzzleSeed();
+    await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=easy&seed=${seed}&checks=3`);
+    await ready(page, "puzzle-play");
+    const show = page.getByTestId("puzzle-show");
+
+    const index = await oneWrong(page, kind, size, seed);
+    const cell = page.getByTestId("puzzle-cell").nth(index);
+    await expect(show).toBeEnabled();
+    await show.click();
+    await expect(cell).toHaveAttribute("data-wrong", "true");
+    // Paid for from the checks, as a Check is.
+    await expect(page.getByTestId("puzzle-check")).toHaveAttribute("data-left", "2");
+
+    // Changed, and the mark goes with the change.
+    if (kind === "hiddenStones" || kind === "blackAndWhite") await cell.click();
+    else await page.getByTestId("puzzle-key-clear").click();
+    await expect(cell).not.toHaveAttribute("data-wrong", "true");
+  });
+
+  test(`${kind}: with hints chosen, Hint puts one right cell in`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;
     const seed = freshPuzzleSeed();
     await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=easy&seed=${seed}&hints=1`);
     await ready(page, "puzzle-play");
     const hint = page.getByTestId("puzzle-hint");
     await expect(hint).toHaveAttribute("data-allowed", "true");
-
-    const index = await oneWrong(page, kind, size, seed);
-    const cell = page.getByTestId("puzzle-cell").nth(index);
-    await expect(hint).toBeEnabled();
+    // The clock starts on the first entry, and Hint waits for it as Check does.
+    await oneWrong(page, kind, size, seed);
+    const before = await rightCells(page, kind, size, seed);
     await hint.click();
-    await expect(cell).toHaveAttribute("data-wrong", "true");
     await expect(hint).toContainText("1 used");
-
-    // Changed, and the mark goes with the change.
-    if (kind === "hiddenStones" || kind === "blackAndWhite") await cell.click();
-    else await page.getByTestId("puzzle-key-clear").click();
-    await expect(cell).not.toHaveAttribute("data-wrong", "true");
+    await expect.poll(() => rightCells(page, kind, size, seed)).toBe(before + 1);
   });
 }
 

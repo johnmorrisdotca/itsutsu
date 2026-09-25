@@ -11,6 +11,8 @@ import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { checkedWords } from "./NumberSolve";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { SolveShow } from "./SolveShow";
+import { cellHint } from "@/lib/puzzles/hintCell";
 
 /** What a tap puts in an open cell: black, then white, then nothing. */
 function nextStone(stone: number): number {
@@ -59,12 +61,13 @@ export function BlackAndWhiteSolve({
     resumed,
   }, hints);
 
-  const press = useCallback(
-    (index: number) => {
+  /* One cell set to a stone, from a tap or a hint: the one door every change goes through. */
+  const place = useCallback(
+    (index: number, stone: number) => {
       if (done !== null || pausing.paused || givens[index] !== EMPTY) return;
       const at = begin();
       const next = [...stones];
-      next[index] = nextStone(next[index] ?? EMPTY);
+      next[index] = stone;
       setStones(next);
       hinting.unmark(index);
       setChecked(null);
@@ -78,9 +81,22 @@ export function BlackAndWhiteSolve({
     },
     [done, pausing.paused, givens, begin, stones, answer, finish, checking.allowed, hinting],
   );
+  const press = useCallback((index: number) => place(index, nextStone(stones[index] ?? EMPTY)), [place, stones]);
 
-  /* Hint: every stone put down that is not the answer's, marked until changed. */
-  const hint = () => hinting.show(stones.flatMap((stone, cell) => (givens[cell] === EMPTY && stone !== EMPTY && stone !== answer[cell] ? [cell] : [])));
+  /* Show: every stone put down that is not the answer's, marked until changed. A Check's worth, so paid for as one. */
+  const show = () => {
+    if (!checking.spend()) return;
+    const wrong = stones.flatMap((stone, cell) => (givens[cell] === EMPTY && stone !== EMPTY && stone !== answer[cell] ? [cell] : []));
+    hinting.mark(wrong);
+    setChecked({ wrong: wrong.length, empty: stones.filter((stone) => stone === EMPTY).length });
+  };
+
+  /* Hint: the right stone into the tightest cell not yet right (`cellHint`). */
+  const hint = () => {
+    const cell = cellHint(size, (index) => givens[index] !== EMPTY, stones, answer);
+    if (cell === null || !hinting.spend()) return;
+    place(cell, answer[cell]!);
+  };
 
   const check = () => {
     if (!checking.spend()) return;
@@ -98,9 +114,10 @@ export function BlackAndWhiteSolve({
       </SolvePaused>
       {done === null ? (
         <div className="flex flex-col gap-2">
-          {/* Check at one end of the row and Hint at the other (John: "opposite side of CHECK button"). */}
+          {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
           <div className="flex items-center gap-3">
             <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+            <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
             <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
           </div>
           {checked !== null ? (

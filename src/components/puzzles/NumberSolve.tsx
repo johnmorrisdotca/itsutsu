@@ -16,6 +16,8 @@ import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS, PUZZLE_KEYS_PER_ROW } from "./puzzles.constants";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { SolveShow } from "./SolveShow";
+import { cellHint } from "@/lib/puzzles/hintCell";
 
 /**
  * Solving a grid of numbers — Number Place and its variants, More or Less and Towers.
@@ -87,14 +89,15 @@ export function NumberSolve({
     resumed,
   }, hints);
 
-  const enter = useCallback(
-    (value: number) => {
-      if (selected === null || done !== null || pausing.paused || givens[selected] !== 0) return;
+  /* A value into one cell, from a key, a tap or a hint: the one door every entry goes through. */
+  const write = useCallback(
+    (cell: number, value: number) => {
+      if (done !== null || pausing.paused || givens[cell] !== 0) return;
       const at = begin();
       const next = [...entries];
-      next[selected] = value;
+      next[cell] = value;
       setEntries(next);
-      hinting.unmark(selected);
+      hinting.unmark(cell);
       setChecked(null);
       setFullNotRight(false);
       if (next.every((cell, index) => givens[index] !== 0 || cell !== 0)) {
@@ -104,7 +107,13 @@ export function NumberSolve({
         else setFullNotRight(true);
       }
     },
-    [selected, done, pausing.paused, givens, entries, solution, begin, finish, checking.allowed, hinting],
+    [done, pausing.paused, givens, entries, solution, begin, finish, checking.allowed, hinting],
+  );
+  const enter = useCallback(
+    (value: number) => {
+      if (selected !== null) write(selected, value);
+    },
+    [selected, write],
   );
 
   /* A tap on the chosen cell steps it on; a tap anywhere else chooses that cell. A given never steps. */
@@ -140,8 +149,21 @@ export function NumberSolve({
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, done, pausing.paused, size, enter]);
 
-  /* Hint: every entry that is not the answer, marked on the grid until it is changed. */
-  const hint = () => hinting.show(entries.flatMap((cell, index) => (givens[index] === 0 && cell !== 0 && cell !== solution[index] ? [index] : [])));
+  /* Show: every entry that is not the answer, marked on the grid until it is changed. A Check's worth, so paid for as one. */
+  const show = () => {
+    if (!checking.spend()) return;
+    const wrong = entries.flatMap((cell, index) => (givens[index] === 0 && cell !== 0 && cell !== solution[index] ? [index] : []));
+    hinting.mark(wrong);
+    setChecked({ wrong: wrong.length, empty: entries.filter((cell, index) => givens[index] === 0 && cell === 0).length });
+  };
+
+  /* Hint: one right number into the tightest cell not yet right (`cellHint`), chosen so it can be seen. */
+  const hint = () => {
+    const cell = cellHint(size, (index) => givens[index] !== 0, entries.map((value, index) => (givens[index] !== 0 ? givens[index]! : value)), solution);
+    if (cell === null || !hinting.spend()) return;
+    setSelected(cell);
+    write(cell, solution[cell]!);
+  };
 
   const check = () => {
     if (!checking.spend()) return;
@@ -183,9 +205,10 @@ export function NumberSolve({
             </button>
           </div>
           <div className="flex flex-col gap-2">
-            {/* Check at one end of the row and Hint at the other (John: "opposite side of CHECK button"). */}
+            {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
             <div className="flex items-center gap-3">
               <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+              <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
               <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
             </div>
             {checked !== null ? (
