@@ -11,16 +11,65 @@ game earned in XP and rating.
 
 ## The prices (proposed)
 
-| How it went | Points |
+A game's points are its result times its weight:
+
+| How it went | Base |
 |---|---|
 | Won | 100 |
 | Drawn | 50 |
 | Lost, having played it out | 20 |
 | Lost by resigning before the tenth move, abandoned, or cancelled | 0 |
 
-The same for every game and every board, rated or not, against a person or a
-program. A program earns them too (AGENTS.md: programs are players), and the
-board's People / Computers / Everyone keeps them apart.
+Rated or not, against a person or a program, it pays the same. A program earns
+points too (AGENTS.md: programs are players), and the board's People /
+Computers / Everyone keeps them apart.
+
+## The weights (proposed 2026-09-25, for John to approve)
+
+The weight measures how much a game asks: how long it runs and how deep it is.
+Gomoku on 15×15 is 1.0. A game's weight is at its default board; where a game
+offers other sizes, the size column says what each is worth. Kept in one
+table, `GAME_POINTS_WEIGHT` in `gomoku.constants.ts`, typed as a Record, so a
+new game cannot ship without one.
+
+| Family | Game | Weight | By size |
+|---|---|---|---|
+| Five in a row | Gomoku | 1.0 | 9×9 0.7, 13×13 0.9, 15×15 1.0, 19×19 1.2 |
+| | Tournament Gomoku | 1.0 | as Gomoku |
+| | Renju | 1.1 | as Gomoku, +0.1 |
+| | Omok | 1.0 | as Gomoku |
+| | Caro | 1.0 | as Gomoku |
+| | Connect6 | 1.2 | as Gomoku, +0.2 |
+| | Misère Five | 1.0 | as Gomoku |
+| | Hex Five | 1.0 | 7: 0.6, 9: 0.8, 11: 1.0, 13: 1.2 |
+| Drops | Drop Four and its seven variants (Ring, Hole, Hot, Clear, Giveaway, Edge, Wormhole) | 0.6 | 7 wide 0.5, 9: 0.6, 10: 0.7 |
+| Turn and take | Reversi, Classic Reversi, Anti-Reversi | 1.0 | |
+| | Mini Reversi | 0.5 | 4×4 0.25, 6×6 0.5, 8×8 1.0 |
+| | Grand Reversi | 1.3 | |
+| | Honeycomb | 1.0 | 7: 0.6, 9: 0.8, 11: 1.0, 13: 1.2 |
+| | Ninuki-renju, Sannuki-renju | 1.1 | as Gomoku, +0.1 |
+| Strange boards | Toroidal Five, Obstacle Five | 1.0 | as Gomoku |
+| | Domino Five, Block Five | 1.1 | 13: 1.0, 15: 1.1, 19: 1.3 |
+| | Twist Five | 0.7 | |
+| | Twist Four | 0.4 | |
+| Checkers | Checkers, Brazilian, Russian, Pool | 1.0 | |
+| | International Draughts (10×10) | 1.4 | |
+| | Canadian Checkers (12×12) | 1.6 | |
+| Territory and races | Go | 2.0 at 19×19 | 9×9 0.8, 13×13 1.2, 19×19 2.0 |
+| | Hex | 1.0 at 11×11 | 11: 1.0, 13: 1.2, 19: 1.6 |
+| | Halma | 1.6 at 16×16 | 8: 0.6, 10: 0.9, 16: 1.6 |
+| | Chinese Checkers | 1.4 | |
+| Small boards | Tic-tac-toe, Wild Tic-tac-toe | 0.1 | |
+| | Notakto | 0.15 | |
+| | Trap Three, Square Four | 0.3 | |
+| | Maker and Breaker | 0.4 | |
+
+So a Go win on 19×19 is 200 points, a Gomoku win 100, a Drop Four win 60 and a
+tic-tac-toe win 10. Nothing is worth farming: the quickest games pay the least
+per game, and about the same per minute as the long ones.
+
+The puzzles' weights are in PTS-01. They are set so a medium solve at a
+puzzle's default size is about 100, the same as a Gomoku win.
 
 ## Read first
 
