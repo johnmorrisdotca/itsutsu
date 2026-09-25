@@ -12,6 +12,7 @@ import { ResignButton } from "./ResignButton";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { boardWords } from "@/lib/gomoku/boardWords";
+import type { NameTag } from "@/lib/xp/nameTagsOf";
 
 /**
  * ONE GAME IN THE QUEUE, AS A ROW.
@@ -25,6 +26,11 @@ import { boardWords } from "@/lib/gomoku/boardWords";
  * here that knows about cursors or caps.
  */
 
+/** The tag read for a seat's member, where the seat has one. */
+function tagOf(tags: ReadonlyMap<string, NameTag>, memberId: string | null): NameTag | undefined {
+  return memberId === null ? undefined : tags.get(memberId);
+}
+
 /** "3 days ago", the way a list of games reads it. */
 function ago(iso: string, now: Date): string {
   const minutes = Math.max(0, Math.round((now.getTime() - new Date(iso).getTime()) / 60_000));
@@ -36,7 +42,7 @@ function ago(iso: string, now: Date): string {
   return days === 1 ? "yesterday" : `${days} days ago`;
 }
 
-export function Row({ item, now }: { item: MyGame; now: Date }) {
+export function Row({ item, now, tags }: { item: MyGame; now: Date; tags: ReadonlyMap<string, NameTag> }) {
   const { game, seat, group, offer, offerSide } = item;
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
@@ -109,7 +115,7 @@ export function Row({ item, now }: { item: MyGame; now: Date }) {
         wrap under them, rather than the words wrapping four deep beside a
         Resign button. At a desk the row is one line either way.
       */}
-      <span className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
+      <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
         {/*
           A PASS-AND-PLAY GAME LEADS WITH THE GAME, not "Player 1 vs Player 2":
           both seats are whoever is at this screen (John, 2026-09-25: "It's
@@ -117,9 +123,9 @@ export function Row({ item, now }: { item: MyGame; now: Date }) {
         */}
         {named ? (
           <span className="truncate font-medium">
-            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} />
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} country={tagOf(tags, game.blackMemberId)?.country} kind={tagOf(tags, game.blackMemberId)?.kind} />
             <span className="px-1 text-muted">vs</span>
-            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} />
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} country={tagOf(tags, game.whiteMemberId)?.country} kind={tagOf(tags, game.whiteMemberId)?.kind} />
           </span>
         ) : (
           <span className="truncate font-medium">
@@ -165,40 +171,47 @@ export function Row({ item, now }: { item: MyGame; now: Date }) {
           </span>
         )}
       </span>
-      {item.stale ? (
-        <span className="relative z-10 rounded-full border border-ochre/60 bg-ochre-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide uppercase" title={MY_GAMES_COPY.staleHint(STALE_AFTER_DAYS)}>
-          {MY_GAMES_COPY.stale}
-        </span>
-      ) : null}
       {/*
-        Above the stretched row link, or the link swallows the click. Anything
-        added to a row from here on needs the same, which is the cost of the
-        row being a link at all.
+        THE CONTROLS KEEP TOGETHER, at the row's far end: on a phone they drop
+        under the words as one line, Resign beside the arrow, rather than Resign
+        squeezing the words and the arrow wrapping on its own (John, 2026-09-25:
+        "you didn't think of MOBILE!!!").
       */}
-      {/*
-        Calling off an empty board is offered even where resigning is not. A
-        host who says nobody may walk away means a game in progress, and there
-        is nothing to walk away from before the first stone — leaving somebody
-        stuck with an empty board for ever would be a rule protecting nothing.
-      */}
-      {running && (game.allowResign || game.moveCount === 0) ? (
-        <span className={RAISED_LINK}>
-          <ResignButton id={game.id} moves={game.moveCount} />
-        </span>
-      ) : null}
-      {/*
-        Accept and Decline where the offer is, so answering does not need the
-        board first. Above the stretched row link — see the note on the resign
-        button — or the link swallows the press. Only while the offer stands: a
-        declined one is a row saying what happened, with nothing left to do.
-      */}
-      {offer === "offered" && offerSide !== null ? (
-        <span className={RAISED_LINK}>
-          <OfferButtons id={game.id} side={offerSide} />
-        </span>
-      ) : null}
-      {/* `ml-auto` only matters once the controls have wrapped: the arrow keeps the row's far end. */}
-      <CardArrow className="ml-auto" />
+      <span className="ml-auto flex shrink-0 items-center gap-2">
+        {item.stale ? (
+          <span className="relative z-10 rounded-full border border-ochre/60 bg-ochre-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide uppercase" title={MY_GAMES_COPY.staleHint(STALE_AFTER_DAYS)}>
+            {MY_GAMES_COPY.stale}
+          </span>
+        ) : null}
+        {/*
+          Above the stretched row link, or the link swallows the click. Anything
+          added to a row from here on needs the same, which is the cost of the
+          row being a link at all.
+        */}
+        {/*
+          Calling off an empty board is offered even where resigning is not. A
+          host who says nobody may walk away means a game in progress, and there
+          is nothing to walk away from before the first stone — leaving somebody
+          stuck with an empty board for ever would be a rule protecting nothing.
+        */}
+        {running && (game.allowResign || game.moveCount === 0) ? (
+          <span className={RAISED_LINK}>
+            <ResignButton id={game.id} moves={game.moveCount} />
+          </span>
+        ) : null}
+        {/*
+          Accept and Decline where the offer is, so answering does not need the
+          board first. Above the stretched row link — see the note on the resign
+          button — or the link swallows the press. Only while the offer stands: a
+          declined one is a row saying what happened, with nothing left to do.
+        */}
+        {offer === "offered" && offerSide !== null ? (
+          <span className={RAISED_LINK}>
+            <OfferButtons id={game.id} side={offerSide} />
+          </span>
+        ) : null}
+        <CardArrow />
+      </span>
     </li>
   );
 }

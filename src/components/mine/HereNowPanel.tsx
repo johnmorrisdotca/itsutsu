@@ -1,14 +1,12 @@
 import { Paired } from "@/components/i18n/Paired";
-import { playerPath } from "@/lib/rating/playerKey";
+import { PlayerName } from "@/components/players/PlayerName";
 import { RowActions } from "@/components/ui/Controls";
-import Link from "next/link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { HereNow } from "@/lib/social/presence";
 import { ChallengeButton } from "./ChallengeButton";
 import { START_COPY } from "./mine.constants";
 import { RecencyLegend, RecencyMark } from "./Recency";
-import { shownName } from "@/lib/rating/shownName";
 
 /**
  * Who is in the room, beside the seats they might take. The players page
@@ -87,9 +85,7 @@ function HereRow({ entry, me }: { entry: HereNow; me: string | null }) {
       <RecencyMark recency={entry.recency} />
       <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
         {entry.name.trim() !== "" ? (
-          <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline">
-            {shownName(entry.name)}
-          </Link>
+          <PlayerName name={entry.name} memberId={entry.id} fallback="" />
         ) : (
           entry.email
         )}

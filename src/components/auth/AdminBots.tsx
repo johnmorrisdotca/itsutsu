@@ -1,10 +1,8 @@
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { Paired } from "@/components/i18n/Paired";
 import { PlayerName } from "@/components/players/PlayerName";
 import { RecordTable, type RecordTableRow } from "@/components/players/RecordTable";
 import { BOT_ALL_TIERS, BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
-import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { lastPlayedByMember } from "@/lib/history/lastPlayed";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
@@ -97,7 +95,6 @@ export async function AdminBots() {
               className="font-medium"
               testId="admin-bot-name"
             />
-            <MemberKindBadge kind={MEMBER_KINDS.robot} />
           </span>
           {/*
             THE GRADE AND WHEN IT LAST PLAYED, under the name rather than in

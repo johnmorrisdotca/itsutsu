@@ -7,6 +7,7 @@ import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { WhoFilter } from "@/components/players/WhoFilter";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { PromotionsTable } from "@/components/xp/PromotionsTable";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
@@ -147,6 +148,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
           creditFrom={creditFrom}
           viewerId={viewer?.memberId ?? null}
           viewerZone={viewer?.timeZone ?? ""}
+          tags={await nameTagsOf(page.items.map((item) => item.memberId))}
           empty={
             narrowed ? (
               <>

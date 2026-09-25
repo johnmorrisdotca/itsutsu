@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import type { Promotion } from "@/lib/xp/promotions.types";
+import type { NameTag } from "@/lib/xp/nameTagsOf";
 
 /** The recent promotions table, drawn by `PromotionsTable`. */
 export type PromotionsTableProps = {
@@ -18,4 +19,6 @@ export type PromotionsTableProps = {
   viewerZone: string;
   /** What the empty table says and offers, worded by the page for whoever is reading. */
   empty: ReactNode;
+  /** The flag and badge beside each name, read once for the page (`nameTagsOf`). */
+  tags: ReadonlyMap<string, NameTag>;
 };

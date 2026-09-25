@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Paired } from "@/components/i18n/Paired";
 import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -23,6 +22,7 @@ import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
 import { ladderRung, levelXpRange } from "@/lib/xp/levelLadder";
 import { LEVEL_ROLL, membersAtLevel, type LevelRoll } from "@/lib/xp/levelMembers";
+import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS } from "@/lib/xp/xpCurve";
 import { viewerXp } from "@/lib/xp/xpViewer";
@@ -85,6 +85,8 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   const asked = await searchParams;
   const [who, scope, say] = await Promise.all([xpWhoFor(asked), xpScopeFor(asked), currentSpeaker()]);
   const [roll, viewer] = await Promise.all([membersAtLevel(level, who, scope), viewerXp()]);
+  // The flag and badge beside each name, one read for the rung (`nameTagsOf`).
+  const tags = await nameTagsOf(roll.members.map((member) => member.id));
   const query = new URLSearchParams({ who, scope }).toString();
   const notes = new Map(
     roll.members.flatMap((member) => {
@@ -196,7 +198,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
             </>
           ) : null}
         </p>
-        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} />
+        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} />
       </section>
     </Page>
   );
@@ -217,9 +219,12 @@ function WhoIsHere({
   viewerId,
   who,
   notes,
+  tags,
 }: {
   level: number;
   roll: LevelRoll;
+  /** The flag and badge beside each name (`nameTagsOf`). */
+  tags: ReadonlyMap<string, NameTag>;
   viewerId: string | null;
   who: DirectoryWho;
   /** The justification under a total that includes another site's credit, by member id. */
@@ -261,6 +266,8 @@ function WhoIsHere({
                       name={member.name}
                       memberId={member.id}
                       fallback="A member with no name yet"
+                      country={tags.get(member.id)?.country}
+                      kind={tags.get(member.id)?.kind}
                     />
                     {member.id === viewerId ? (
                       <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PlayerName } from "@/components/players/PlayerName";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
@@ -9,7 +10,6 @@ import { RowActions } from "@/components/ui/Controls";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
 import { mailRefusalFor } from "@/lib/mail/mailSwitch";
-import { shownName } from "@/lib/rating/shownName";
 import { SECTION_HEADING } from "@/components/ui/ui.constants";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { mayEmailInvites } from "@/lib/social/childRules";
@@ -53,7 +53,9 @@ export async function MyPeople({ memberId }: { memberId: string }) {
             {buddies.map((buddy) => (
               <li key={buddy.id} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
                 <RecencyMark recency={buddy.recency} />
-                <span className="font-medium">{shownName(buddy.name)}</span>
+                <span className="font-medium">
+                  <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} />
+                </span>
                 <span className="text-xs text-muted">
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
                   {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
@@ -82,7 +84,9 @@ export async function MyPeople({ memberId }: { memberId: string }) {
           <ul className="flex flex-col gap-1 text-sm">
             {ignored.map((entry) => (
               <li key={entry.id} className="flex items-center gap-3">
-                <span>{shownName(entry.name)}</span>
+                <span>
+                  <PlayerName name={entry.name} memberId={entry.id} fallback={entry.name} />
+                </span>
                 <span className="ml-auto"><IgnoreButton memberId={entry.id} ignoring /></span>
               </li>
             ))}

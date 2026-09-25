@@ -30,7 +30,7 @@ import { TABLE_SCROLL } from "@/components/ui/ui.constants";
  * and says it was imported and where the play was — never shown as a day's play
  * here. Under Itsutsu only there is no such line to draw.
  */
-export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty }: PromotionsTableProps) {
+export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty, tags }: PromotionsTableProps) {
   return (
     <div className={TABLE_SCROLL} data-testid="promotions">
       <table className={TABLE_CLASS}>
@@ -70,7 +70,7 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                   data-to={promotion.to}
                 >
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback="A member with no name yet" />
+                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback="A member with no name yet" country={tags.get(promotion.memberId)?.country} kind={tags.get(promotion.memberId)?.kind} />
                     {you ? <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span> : null}
                   </td>
                   <td className="py-1.5 pr-3">

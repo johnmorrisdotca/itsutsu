@@ -179,9 +179,10 @@ test.describe("a game's name leads to that game", () => {
   });
 
   test("in the prose that names one, not only in lists", async ({ page }) => {
-    // The champions page explains itself by naming two games. A name in a
-    // sentence is as much a name as a name in a table.
-    await page.goto("/champions");
+    // A family's page says "7 games in this family, including Gomoku." A name
+    // in a sentence is as much a name as a name in a table. (It was the
+    // champions page's own sentence until that page's prose was cut to one line.)
+    await page.goto("/games/gomoku/family");
     const named = page.getByRole("paragraph").getByTestId("game-name");
     await expect(named.first()).toHaveAttribute("href", /^\/games\//);
   });

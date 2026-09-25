@@ -1,5 +1,6 @@
 import "server-only";
 
+import { memberKind, type MemberKind } from "@/lib/auth/memberKind";
 import { isRefusal, parseCursor, parseLimit, parseSort } from "@/lib/api/paging";
 import {
   decodeCursor,
@@ -83,6 +84,10 @@ export type XpBoardRow = {
    * THEIR days, the ones their awards were keyed under. See `xpGains.ts`.
    */
   timeZone: string;
+  /** Where they are, for the flag beside the name, as on every list of players. */
+  country: string | null;
+  /** What sort of member, for the badge beside the name (a kept record, say); a program's comes from its id. */
+  kind: MemberKind;
 };
 
 export type XpBoardPage = PagedEnvelope<XpBoardRow> & {
@@ -142,7 +147,7 @@ export async function fetchXpBoardPage({
     prisma.member.count({ where: onTheBoard }),
     prisma.member.findMany({
       where,
-      select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true, xpLastAt: true, timeZone: true },
+      select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true, xpLastAt: true, timeZone: true, country: true, unclaimableBecause: true },
       orderBy: keysetOrderBy(spec, sort) as Prisma.MemberOrderByWithRelationInput[],
       // One further than the page, so "is there more" needs no second query.
       take: takeFor(limit),
@@ -158,6 +163,8 @@ export async function fetchXpBoardPage({
       imported: scope === RECORD_SCOPES.everywhere ? row.xpImported : 0,
       lastAt: row.xpLastAt,
       timeZone: row.timeZone,
+      country: row.country,
+      kind: memberKind({ email: null, unclaimableBecause: row.unclaimableBecause }),
     })),
     next,
     total,

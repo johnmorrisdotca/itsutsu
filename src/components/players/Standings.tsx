@@ -1,26 +1,20 @@
 import { Paired } from "@/components/i18n/Paired";
+import { PlayerName } from "./PlayerName";
 import { RecordTable } from "./RecordTable";
 import { TABLE_CLASS, TABLE_HEAD_CLASS } from "./PlayerRecord";
-import { playerPath } from "@/lib/rating/playerKey";
-import Link from "next/link";
 
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
 import type { LadderStanding, VariantStanding } from "@/lib/rating/variantRatings";
 import { levelShown } from "@/lib/xp/levelShown";
 import type { ReactNode } from "react";
-import { shownName } from "@/lib/rating/shownName";
 
 import { XP_BLANK_BECAUSE } from "./players.constants";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
-/** A player's name, leading to their page. */
+/** A player's name, leading to their page: the one name component, with its flag and badge. */
 export function PlayerLink({ name, memberId }: { name: string; memberId?: string | null }) {
-  return (
-    <Link href={playerPath(name, memberId)} className="underline-offset-2 hover:underline">
-      {shownName(name)}
-    </Link>
-  );
+  return <PlayerName name={name} memberId={memberId} fallback={name} />;
 }
 
 /** A rating tier in a word and its kanji, as the ladder writes it. */

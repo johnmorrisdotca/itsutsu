@@ -1,8 +1,7 @@
 import Link from "next/link";
+import { PlayerName } from "@/components/players/PlayerName";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
-import { CountryMark } from "@/components/players/CountryMark";
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { memberKind } from "@/lib/auth/memberKind";
 import { DirectoryFilters } from "@/components/players/DirectoryFilters";
 import { RecencyMark } from "@/components/mine/Recency";
@@ -26,8 +25,6 @@ import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import type { DirectoryFilter, DirectoryWho } from "@/lib/rating/directoryFilter";
 import { DirectoryEmpty, DirectoryNarrowed } from "./DirectoryNarrowing";
 import { ignoredMemberIds } from "@/lib/social/ignores";
-import { playerPath } from "@/lib/rating/playerKey";
-import { shownName } from "@/lib/rating/shownName";
 import { directoryActions } from "./directoryActions";
 import { closedToReader } from "@/lib/social/childReach";
 
@@ -110,13 +107,23 @@ function directoryRow(
           Players section tabs. so be consistent."
         */}
         {entry.name.trim() !== "" ? (
-          <Link
-            href={playerPath(entry.name, entry.id)}
-            className="underline-offset-2 hover:underline"
-            data-testid="directory-name"
-          >
-            {shownName(entry.name)}
-          </Link>
+          /*
+            Drawn by the one name component, which puts the flag and the kind
+            badge after the name here as on every other page; the new mark
+            goes after it, below.
+          */
+          <PlayerName
+            name={entry.name}
+            memberId={entry.id}
+            fallback=""
+            testId="directory-name"
+            country={entry.country}
+            kind={memberKind({
+              email: entry.email,
+              botTier: entry.botTier,
+              unclaimableBecause: entry.unclaimableBecause,
+            })}
+          />
         ) : (
           entry.email
         )}
@@ -136,22 +143,6 @@ function directoryRow(
             新
           </span>
         ) : null}
-        {/* Where they are, which is most of why they answer at four in the morning. */}
-        <CountryMark country={entry.country} className="text-sm" />
-        {/*
-          Which sort of member this is, drawn on the unusual rows only — the
-          badge the operator's list has used all along, rather than a second
-          one invented here. It earns its place now that the default shows
-          programs alongside people: a reader should never have to work out
-          which of the names is a program.
-        */}
-        <MemberKindBadge
-          kind={memberKind({
-            email: entry.email,
-            botTier: entry.botTier,
-            unclaimableBecause: entry.unclaimableBecause,
-          })}
-        />
       </span>
     ),
     record,

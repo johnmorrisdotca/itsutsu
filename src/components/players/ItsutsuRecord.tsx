@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PlayerName } from "@/components/players/PlayerName";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerActions } from "./PlayerActions";
@@ -11,8 +12,6 @@ import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
-import { playerPath } from "@/lib/rating/playerKey";
-import { shownName } from "@/lib/rating/shownName";
 
 /**
  * What somebody has done here: the games by kind, the last few of them, and
@@ -152,16 +151,12 @@ export function ItsutsuRecord({
                   <span>
                   <GameName variant={game.variant} /> · vs{" "}
                   {game.opponent ? (
-                    <Link
-                      href={playerPath(
-                        game.opponent,
-                        opponents?.members.get(playerKey(game.opponent))?.id,
-                      )}
-                      className="underline-offset-2 hover:underline"
-                      data-testid="player-opponent"
-                    >
-                      {shownName(game.opponent)}
-                    </Link>
+                    <PlayerName
+                      name={game.opponent}
+                      memberId={opponents?.members.get(playerKey(game.opponent))?.id}
+                      fallback="anonymous"
+                      testId="player-opponent"
+                    />
                   ) : (
                     "anonymous"
                   )}

@@ -153,6 +153,9 @@ export const MY_GAMES_COPY = {
    * a running count through the address for a label.
    */
   showOlder: "Older finished games",
+  /** The Completed tab's arrows. */
+  older: "Older",
+  newest: "Newest",
   /** And back to the caps, so an opened group is not a one-way trip. */
   showFewer: "Show fewer",
   /**

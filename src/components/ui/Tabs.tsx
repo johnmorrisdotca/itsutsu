@@ -39,9 +39,11 @@ function TabName({ shown }: { shown: Paired }) {
  * player's record from three sites is three long tables and nobody wants all
  * of them at once.
  *
- * The strip scrolls sideways rather than wrapping, so a page with five
- * sections looks the same on a phone as on a desk: one row of tabs, with the
- * open one always drawn the same way.
+ * ON A PHONE THE STRIP WRAPS, so every tab is in view. It used to scroll
+ * sideways, which hid the last tabs past the edge with nothing saying they
+ * were there — John, 2026-09-25, at My games on a phone with Pass and play cut
+ * in half and Puzzles gone: "you didn't think of MOBILE!!!" From the small
+ * breakpoint up it is one row, as before.
  *
  * A lone tab is still drawn. It used to be suppressed as pointless, which
  * made a page with one section a different-looking page from the same page
@@ -77,8 +79,8 @@ export function Tabs({
       other page's 1,024 (e2e/page-width.spec.ts). The list's own padding keeps
       the first tab's focus ring inside the scroll box.
     */
-    <nav aria-label={label} className="overflow-x-auto" data-testid="tabs" {...readyMark(hydrated)}>
-      <ul className="flex min-w-full gap-1 border-b border-rule px-1">
+    <nav aria-label={label} className="sm:overflow-x-auto" data-testid="tabs" {...readyMark(hydrated)}>
+      <ul className="flex min-w-full flex-wrap gap-x-1 border-b border-rule px-1 sm:flex-nowrap">
         {tabs.map((tab) => {
           const open = tab.key === active;
           return (

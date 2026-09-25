@@ -1,9 +1,6 @@
 import Link from "next/link";
 
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { CountryMark } from "@/components/players/CountryMark";
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
-import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { PlayerName } from "@/components/players/PlayerName";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
@@ -101,9 +98,8 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
             fallback=""
             className="font-medium"
             testId="computer-player-name"
+            country={entry.country}
           />
-          <CountryMark country={entry.country} className="text-sm" />
-          <MemberKindBadge kind={MEMBER_KINDS.robot} />
         </span>
       ),
       record: here,

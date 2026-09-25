@@ -1,9 +1,10 @@
 import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MyGame, MyGameGroup, ShownGroup } from "@/lib/history/myGames";
 import { viewHref, viewOfGroup } from "@/lib/history/myGamesViews";
+import type { NameTag } from "@/lib/xp/nameTagsOf";
 import { playerPath } from "@/lib/rating/playerKey";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { Row } from "./MyGameRow";
@@ -25,6 +26,9 @@ export function Group({
   open,
   more = null,
   empty = null,
+  tags,
+  whole = false,
+  newest = null,
 }: {
   group: MyGameGroup;
   bucket: ShownGroup<MyGame>;
@@ -41,6 +45,12 @@ export function Group({
    * data. Null for the groups that are simply left out when empty.
    */
   empty?: string | null;
+  /** The flag and badge beside each name in the rows (`nameTagsOf`). */
+  tags: ReadonlyMap<string, NameTag>;
+  /** Whether the tab is this list (Completed), so it pages with arrows and has no "Show fewer". */
+  whole?: boolean;
+  /** Where the first page is, past it, for the list that pages with arrows. */
+  newest?: string | null;
 }) {
   const copy = MY_GAMES_COPY.groups[group];
   return (
@@ -67,7 +77,7 @@ export function Group({
       ) : null}
       <ul className="flex flex-col gap-1.5">
         {bucket.items.map((item) => (
-          <Row key={item.game.id} item={item} now={now} />
+          <Row key={item.game.id} item={item} now={now} tags={tags} />
         ))}
       </ul>
       {/*
@@ -107,10 +117,21 @@ export function Group({
           address. Every page here is an address, so the browser's own Back works;
           and one click returns to the top of the group whatever page you reached.
         */}
+        {/*
+          ARROWS WHERE THE TAB IS THE LIST: back to the newest page and on to the
+          older one, as buttons, the way a paged list reads. Only forward pages
+          have an address (a cursor names a position, not a page number), so the
+          way back is to the newest page, and the browser's Back goes one page.
+        */}
+        {whole && newest !== null ? (
+          <Link href={newest} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3`} data-testid={`my-games-${group}-newest`}>
+            ← {MY_GAMES_COPY.newest}
+          </Link>
+        ) : null}
         {more !== null ? (
           <Link
             href={more}
-            className="text-xs font-medium underline underline-offset-4"
+            className={whole ? `${BUTTON_BASE} ${BUTTON_QUIET} ml-auto px-3` : "text-xs font-medium underline underline-offset-4"}
             /*
               `-older`, NOT `-more`: the record link below this row has been
               `my-games-finished-more` since it existed, and both of these are on
@@ -122,7 +143,7 @@ export function Group({
             */
             data-testid={`my-games-${group}-older`}
           >
-            {MY_GAMES_COPY.showOlder}
+            {whole ? `${MY_GAMES_COPY.older} →` : MY_GAMES_COPY.showOlder}
           </Link>
         ) : null}
         {/*
@@ -130,7 +151,7 @@ export function Group({
           forgets. Drawn only when this group is the opened one, so it is not a
           link that does nothing on every other panel.
         */}
-        {open ? (
+        {open && !whole ? (
           <Link
             href={viewHref(viewOfGroup(group))}
             className="text-xs font-medium underline underline-offset-4"

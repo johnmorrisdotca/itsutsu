@@ -1,9 +1,7 @@
-import Link from "next/link";
 
-import { playerPath } from "@/lib/rating/playerKey";
+import { PlayerName } from "@/components/players/PlayerName";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchHereNow } from "@/lib/social/presence";
-import { shownName } from "@/lib/rating/shownName";
 
 /**
  * Who is about, right now.
@@ -60,9 +58,7 @@ function Name({ entry }: { entry: Awaited<ReturnType<typeof fetchHereNow>>[numbe
     <span className="flex items-center gap-1">
       <RecencyMark recency={entry.recency} />
       {entry.name.trim() !== "" ? (
-        <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="here-name">
-          {shownName(entry.name)}
-        </Link>
+        <PlayerName name={entry.name} memberId={entry.id} fallback="" testId="here-name" />
       ) : (
         entry.email
       )}

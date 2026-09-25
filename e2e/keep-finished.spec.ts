@@ -316,7 +316,6 @@ test.describe("keeping finished games in your own list", () => {
      * correct, and go untested.
      */
     const HOW_MANY = 23;
-    const CLOSED = 5;
     const OPENED = 20;
 
     const made: string[] = [];
@@ -371,32 +370,23 @@ test.describe("keeping finished games in your own list", () => {
     const count = page.getByTestId("my-games-finished-count");
     const rows = panel.locator('[data-testid="my-game"]');
 
-    // ── The closed panel: five of twenty-three, and it says so. ──────────────
+    // ── The Completed tab IS the list: a page of twenty of twenty-three, and it says so. ──
     await page.goto("/play?view=completed");
     await expect(panel).toBeVisible();
-    await expect(rows).toHaveCount(CLOSED);
-    await expect(count).toHaveText(`${HOW_MANY} · showing ${CLOSED}`);
+    await expect(rows).toHaveCount(OPENED);
+    // The TRUE number over a page of twenty, not the page's own length.
+    await expect(count).toHaveText(`${HOW_MANY} · showing ${OPENED}`);
     // Newest first, oldest last — the order `lastMoveAt ?? playedAt` puts them in.
     await expect(rows.first()).toHaveAttribute("data-id", made[0]);
-    await expect(rows.nth(CLOSED - 1)).toHaveAttribute("data-id", made[CLOSED - 1]);
-
-    /*
-     * The rest are not on this page — asserted AFTER the five above, so it is a
-     * statement about a rendered page rather than about the speed of a request.
-     */
-    await expect(row(page, made[CLOSED])).toHaveCount(0);
-
-    // ── The link the count promised, clicked. ────────────────────────────────
-    await page.getByTestId("my-games-finished-all").click();
-    await expect(page).toHaveURL(/\?all=finished$/);
-    await expect(rows).toHaveCount(OPENED);
-    // Still the TRUE number over a page of twenty, not the page's own length.
-    await expect(count).toHaveText(`${HOW_MANY} · showing ${OPENED}`);
+    // No "Show all" and no "Show fewer" where the tab is the list; no way to a newer page from the newest.
+    await expect(page.getByTestId("my-games-finished-all")).toHaveCount(0);
+    await expect(page.getByTestId("my-games-finished-fewer")).toHaveCount(0);
+    await expect(page.getByTestId("my-games-finished-newest")).toHaveCount(0);
     const first = await rows.evaluateAll((seen) =>
       seen.map((one) => one.getAttribute("data-id") ?? ""),
     );
 
-    // ── And the page after it, which is where the cursor is. ─────────────────
+    // ── The Older arrow, which is where the cursor is. ───────────────────────
     const older = page.getByTestId("my-games-finished-older");
     await expect(older).toBeVisible();
     await older.click();
@@ -420,11 +410,10 @@ test.describe("keeping finished games in your own list", () => {
     await expect(older).toHaveCount(0);
 
     // ── The way back, which is the half a one-directional test never finds. ──
-    await page.getByTestId("my-games-finished-fewer").click();
-    // Back to the Completed tab, where the group lives.
+    await page.getByTestId("my-games-finished-newest").click();
     await expect(page).toHaveURL(/\/play\?view=completed$/);
-    await expect(rows).toHaveCount(CLOSED);
-    await expect(count).toHaveText(`${HOW_MANY} · showing ${CLOSED}`);
+    await expect(rows).toHaveCount(OPENED);
+    await expect(rows.first()).toHaveAttribute("data-id", made[0]);
 
     await context.close();
     await removeMember(me.email);

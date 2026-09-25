@@ -13,7 +13,6 @@ import { ageBandLabel } from "@/lib/social/ageBand";
 import { PlayerName } from "@/components/players/PlayerName";
 import { ADMIN_AGE_COPY, ADMIN_CLAIM_COPY, ADMIN_REMOVE_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
 import { MemberAgeControl } from "./MemberAgeControl";
-import { MemberKindBadge } from "./MemberKindBadge";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MemberClaimModal } from "./MemberClaimModal";
 import { MemberRemoveModal } from "./MemberRemoveModal";
@@ -157,11 +156,10 @@ export function AdminMembers() {
                   {member.name.trim() === "" ? (
                     <span className="text-muted">No name yet</span>
                   ) : (
-                    <PlayerName name={member.name} memberId={member.id} fallback="" whole />
+                    // What they are, drawn by the name: see `PlayerName`. Somebody can be a shut operator.
+                    <PlayerName name={member.name} memberId={member.id} fallback="" whole kind={member.kind} />
                   )}
                 </span>
-                {/* What they are, then what has been done to them. Somebody can be a shut operator. */}
-                <MemberKindBadge kind={member.kind} />
                 {member.bannedAt === null ? null : (
                   <span className="shrink-0 rounded-full border border-shu/40 px-2 py-0.5 text-[0.65rem] font-semibold text-shu">
                     Shut 停止

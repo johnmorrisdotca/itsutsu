@@ -1,7 +1,12 @@
 import Link from "next/link";
 
+import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
+import { MEMBER_KINDS, type MemberKind } from "@/lib/auth/memberKind";
+import { BOT_NAME_COUNTRIES } from "@/lib/bots/botNames";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
+
+import { CountryMark } from "./CountryMark";
 
 /**
  * A person's name, leading to their page.
@@ -26,6 +31,15 @@ import { shownName } from "@/lib/rating/shownName";
  * daughter is twelve and her full name was on every list on the site. The
  * address still carries the whole name, and that is a separate decision he has
  * flagged and not yet made — see `shownName`.
+ *
+ * AND WHAT THEY ARE, BESIDE IT, THE SAME ON EVERY PAGE. John, 2026-09-25, at
+ * an XP board naming programs with no mark while the players page marked them:
+ * "if it's a bot, it NEEDS the bot tag after the name… All names should be
+ * code reuse… the name shows the name, flag, role, etc… we can't be
+ * inconsistent in pages." So the flag and the kind badge are drawn here, not
+ * by each list. A program is known by its id alone (`botNames.ts`), so its
+ * BOT badge and flag cost no read anywhere; a person's flag is their
+ * `country`, which the list passes when it has it.
  */
 export function PlayerName({
   name,
@@ -35,6 +49,9 @@ export function PlayerName({
   whole: showWhole = false,
   className = "",
   testId = "player-name",
+  country,
+  kind,
+  tagged = true,
 }: {
   name: string;
   /**
@@ -68,18 +85,51 @@ export function PlayerName({
   whole?: boolean;
   className?: string;
   testId?: string;
+  /** Where they are, as they wrote it on their profile. A program's comes from its id. */
+  country?: string | null;
+  /**
+   * What sort of member this is, where the list knows (the operator's list,
+   * the directory): kept records and the operator get their badge from it. A
+   * program is badged BOT from its id whether or not this is passed.
+   */
+  kind?: MemberKind;
+  /**
+   * False only inside a sentence or a heading that already says who this is:
+   * a badge in the middle of a line of prose reads as a typo.
+   */
+  tagged?: boolean;
 }) {
   const whole = name.trim();
   if (whole === "") return <>{fallback}</>;
   const shown = showWhole ? whole : shownName(whole);
-  if (!linkable) return <>{shown}</>;
+  const botCountry = memberId === null || memberId === undefined ? undefined : BOT_NAME_COUNTRIES.get(memberId);
+  const shownKind = botCountry !== undefined ? MEMBER_KINDS.robot : kind;
+  const shownCountry = country ?? botCountry ?? null;
+  const tags =
+    tagged && (shownCountry !== null || shownKind !== undefined) ? (
+      <span className="ml-1 inline-flex items-center gap-1 align-middle" data-testid="player-tags">
+        <CountryMark country={shownCountry} className="text-sm leading-none" />
+        {shownKind !== undefined ? <MemberKindBadge kind={shownKind} /> : null}
+      </span>
+    ) : null;
+  if (!linkable) {
+    return (
+      <>
+        {shown}
+        {tags}
+      </>
+    );
+  }
   return (
-    <Link
-      href={playerPath(whole, memberId)}
-      className={`underline-offset-2 hover:underline ${className}`.trim()}
-      data-testid={testId}
-    >
-      {shown}
-    </Link>
+    <>
+      <Link
+        href={playerPath(whole, memberId)}
+        className={`underline-offset-2 hover:underline ${className}`.trim()}
+        data-testid={testId}
+      >
+        {shown}
+      </Link>
+      {tags}
+    </>
   );
 }

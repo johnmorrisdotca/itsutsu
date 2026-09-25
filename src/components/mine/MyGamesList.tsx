@@ -9,8 +9,9 @@ import { catchUpSeats } from "@/lib/bots/catchUpSeats";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
 import { MY_GAME_GROUPS, fetchMyGames, pagedGroup, shownGroup, type MyGameGroup } from "@/lib/history/myGames";
-import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, type MyGamesView } from "@/lib/history/myGamesViews";
+import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, viewHref, type MyGamesView } from "@/lib/history/myGamesViews";
 import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import type { Tab } from "@/lib/ui/tabs";
 import { gamesGoing } from "@/lib/history/gamesGoing";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -164,7 +165,14 @@ export async function MyGamesList({
   // A browser with no account and no seat: the board kept in it, and the open seats, and nothing else.
   if (claims.size === 0 && memberId === null && !seated) return <>{local}{openSeats}</>;
   const now = new Date();
-  const opened = openedGroup(showAll);
+  /*
+   * THE TAB, decided before the read, because the Completed tab IS the finished
+   * list: it opens as the paged list, twenty a page with arrows, rather than
+   * five and a "Show all" (John, 2026-09-25: "Why do we show 6… and where is the
+   * pagination?"). Counts are drawn on the tabs after the read.
+   */
+  const view = myGamesView(MY_GAMES_VIEWS.map((key) => ({ key, label: key })), viewAsked, showAll);
+  const opened = view === "completed" ? "finished" : openedGroup(showAll);
   const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
   const readQueue = async (at: Date) =>
     withMember !== null
@@ -192,7 +200,11 @@ export async function MyGamesList({
   const stuck = await catchUpSeats(groups, claims, memberId, now);
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   // The puzzles left unfinished, kept on the account: one indexed read, for the Puzzles tab and its count.
-  const runs = memberId === null ? [] : await runsOf(memberId);
+  // And the flag and badge beside every name in the queue, one read for all of them (`nameTagsOf`).
+  const [runs, tags] = await Promise.all([
+    memberId === null ? [] : runsOf(memberId),
+    nameTagsOf(MY_GAME_GROUPS.flatMap((group) => groups[group].flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId]))),
+  ]);
 
   /** One group's panel, or nothing for a closed empty group that has nothing to say when empty. */
   const panel = (group: MyGameGroup, empty: string | null = null) => {
@@ -234,6 +246,7 @@ export async function MyGamesList({
         now={now}
         open={open}
         empty={empty}
+        tags={tags}
         /*
          * The next page, for the one group that has one. Built here rather
          * than in the panel because the panel is given a bucket and knows
@@ -244,6 +257,9 @@ export async function MyGamesList({
         more={open && group === "finished" && queue.finished.next !== null
           ? `/play?all=finished&cursor=${encodeURIComponent(queue.finished.next)}`
           : null}
+        // The tab is this list, so there is no "Show fewer" to go back to; past the first page, the way to the newest.
+        whole={view === "completed" && group === "finished"}
+        newest={view === "completed" && group === "finished" && cursor !== null ? viewHref("completed") : null}
       />
     );
   };
@@ -271,7 +287,6 @@ export async function MyGamesList({
     puzzles: runs.length,
   };
   const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, count: counts[key] }));
-  const view = myGamesView(tabs, viewAsked, showAll);
   const goingShown = VIEW_GROUPS.going.reduce((n, group) => n + groups[group].length, 0);
 
   return (
