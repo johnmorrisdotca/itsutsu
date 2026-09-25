@@ -20,13 +20,24 @@ const IDLE_CHECK_MS = 60 * 1000;
 export function useIdleWatch({
   enabled = true,
   idleAfterMs = IDLE_AFTER_MS,
+  onIdle,
 }: {
   enabled?: boolean;
   idleAfterMs?: number;
+  /**
+   * Called once, from the timer, at the moment the watch turns idle — for a
+   * surface that must act then rather than draw something (a puzzle stops its
+   * clock at that moment, not a render later).
+   */
+  onIdle?: () => void;
 } = {}) {
   // Zero until mounted: reading the clock during render is not allowed.
   const lastActivity = useRef(0);
   const [idle, setIdle] = useState(false);
+  const turnedIdle = useRef(onIdle);
+  useEffect(() => {
+    turnedIdle.current = onIdle;
+  }, [onIdle]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -43,8 +54,12 @@ export function useIdleWatch({
     };
     document.addEventListener("visibilitychange", onVisible);
 
+    let saidIdle = false;
     const timer = setInterval(() => {
-      if (Date.now() - lastActivity.current >= idleAfterMs) setIdle(true);
+      const away = Date.now() - lastActivity.current >= idleAfterMs;
+      if (away && !saidIdle) turnedIdle.current?.();
+      saidIdle = away;
+      if (away) setIdle(true);
     }, IDLE_CHECK_MS);
 
     return () => {

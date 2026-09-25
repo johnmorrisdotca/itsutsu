@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+
+import { IdleModal } from "@/components/game/IdleModal";
+import { GAME_COPY } from "@/components/game/game.constants";
+import { useIdleWatch } from "@/components/game/useIdleWatch";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
@@ -69,6 +73,28 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
     }
   }, [canPause, pausedAt]);
 
+  /*
+   * "ARE YOU STILL THERE?", the same watch and question as every game. Away
+   * pauses the run as Pause does — clock stopped, grid covered — so two minutes
+   * of nobody is not two minutes on the time; "Still here" resumes it, but only
+   * a pause the watch made, never one the solver chose. In a race nothing can
+   * pause, so the question only asks.
+   */
+  const pausedByAway = useRef(false);
+  const { idle: away, confirm } = useIdleWatch({
+    enabled: startedAt !== null && done === null,
+    onIdle: () => {
+      if (!canPause || pausedAt !== null) return;
+      pausedByAway.current = true;
+      togglePause();
+    },
+  });
+  const here = useCallback(() => {
+    confirm();
+    if (pausedByAway.current && pausedAt !== null) togglePause();
+    pausedByAway.current = false;
+  }, [confirm, pausedAt, togglePause]);
+
   /* P, or Space when no button has the focus (a focused button already takes Space as its own press). */
   useEffect(() => {
     if (!canPause) return;
@@ -127,12 +153,21 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
   );
 
   const elapsedMs = done !== null ? done.elapsedMs : startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs);
-  const pausing: Pausing = { paused: pausedAt !== null, canPause, toggle: togglePause };
+  const pausing: Pausing = { paused: pausedAt !== null, canPause, toggle: togglePause, away, here, racing: race !== null };
   return { startedAt, elapsedMs, done, begin, finish, pausing };
 }
 
 /** Whether the run is paused, whether it may be, and the press that pauses or resumes it. */
-export type Pausing = { paused: boolean; canPause: boolean; toggle: () => void };
+export type Pausing = {
+  paused: boolean;
+  canPause: boolean;
+  toggle: () => void;
+  /** Nobody has touched anything for a while, and the question is up. */
+  away: boolean;
+  /** The answer "Still here". */
+  here: () => void;
+  racing: boolean;
+};
 
 /** The line over the grid: what was asked, the seed, and the clock. */
 export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; elapsedMs: number; pausing?: Pausing }) {
@@ -186,6 +221,12 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
           </button>
         </div>
       ) : null}
+      <IdleModal
+        open={pausing.away}
+        onConfirm={pausing.here}
+        detail={pausing.racing ? GAME_COPY.idleRaceDetail : GAME_COPY.idlePuzzleDetail}
+        kept={GAME_COPY.idlePuzzleKept}
+      />
     </div>
   );
 }

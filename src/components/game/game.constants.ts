@@ -254,6 +254,13 @@ export const GAME_COPY = {
    * the question rather than risk it.
    */
   idleKept: "This game is kept. It will be here when you come back.",
+  /* A live game's clock is the server's and does not stop for anyone; the game is kept on the site. */
+  idleLiveDetail: "Nothing has moved here for a couple of minutes. If this game has a clock, it is still running.",
+  idleLiveKept: "This game is kept on the site. It will be here, as it stands, when you come back.",
+  /* A puzzle's run is this tab's alone, so leaving is the end of it — said, so nobody leaves believing otherwise. */
+  idlePuzzleDetail: "Nothing has moved for a couple of minutes, so the clock is paused and the grid is covered.",
+  idleRaceDetail: "Nothing has moved for a couple of minutes. A race's clock is the site's, and it is still running.",
+  idlePuzzleKept: "A puzzle is not kept: leaving ends this one, and the next is a new grid.",
   pass: { label: "Pass", kanji: "パス" },
   forfeit: { label: "Timed out", kanji: "時間切れ" },
   piece: { label: "Piece in hand", kanji: "手駒" },

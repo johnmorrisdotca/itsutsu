@@ -19,7 +19,19 @@ import { GAME_COPY } from "./game.constants";
  * easier to agree with than to leave gets agreed with by people who did not
  * mean it, which makes the answer worth less than no answer at all.
  */
-export function IdleModal({ open, onConfirm }: { open: boolean; onConfirm: () => void }) {
+export function IdleModal({
+  open,
+  onConfirm,
+  detail = GAME_COPY.idleDetail,
+  kept = GAME_COPY.idleKept,
+}: {
+  open: boolean;
+  onConfirm: () => void;
+  /** What being away has done here — a practice clock paused, a live one not. */
+  detail?: string;
+  /** What leaving costs here: nothing for a game that is kept, the run for a puzzle. */
+  kept?: string;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -50,7 +62,7 @@ export function IdleModal({ open, onConfirm }: { open: boolean; onConfirm: () =>
         <h2 id="idle-title" className={SECTION_HEADING}>
           {GAME_COPY.idle.label}
         </h2>
-        <p className="text-sm text-muted">{GAME_COPY.idleDetail}</p>
+        <p className="text-sm text-muted">{detail}</p>
         <div className="flex w-full flex-col items-stretch gap-2">
           <Button onClick={onConfirm} strong data-testid="idle-confirm">
             {GAME_COPY.idleConfirm}
@@ -68,7 +80,7 @@ export function IdleModal({ open, onConfirm }: { open: boolean; onConfirm: () =>
             {GAME_COPY.idleLeave}
           </Link>
         </div>
-        <p className="text-xs text-muted">{GAME_COPY.idleKept}</p>
+        <p className="text-xs text-muted">{kept}</p>
       </div>
     </dialog>
   );

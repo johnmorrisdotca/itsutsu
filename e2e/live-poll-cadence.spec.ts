@@ -258,8 +258,15 @@ test.describe("how often an open board asks the server", () => {
       expect(await asked(page), "a sleeping board went on asking").toBe(asleep);
       await expect(page.getByRole("button", { name: "D6, White stone" })).toHaveCount(0);
 
-      // The reader presses the button the paused line offers: one ask, at once, with no clock moved.
-      await page.getByTestId("live-paused").getByRole("button").click();
+      /*
+       * The reader comes back to "Are you still there?" — a seat holder left an
+       * hour is asked, as on every surface a person plays on (John, 2026-09-24:
+       * "All games should have that") — and "Still here" is the press that
+       * wakes the board: one ask, at once, with no clock moved.
+       */
+      await expect(page.getByTestId("idle-modal")).toBeVisible();
+      await page.getByTestId("idle-confirm").click();
+      await expect(page.getByTestId("idle-modal")).toHaveCount(0);
       await expect(page.getByRole("button", { name: "D6, White stone" })).toBeVisible();
       await expect(page.getByTestId("live-paused")).toHaveCount(0);
       const after = await asked(page);

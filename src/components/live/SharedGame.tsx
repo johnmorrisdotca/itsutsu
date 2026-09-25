@@ -16,6 +16,8 @@ import {
   pieceMoves,
 } from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
+import { AskIfAway } from "@/components/game/AskIfAway";
+import { GAME_COPY } from "@/components/game/game.constants";
 import { PieceTray } from "@/components/game/PieceTray";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -484,6 +486,13 @@ export function SharedGame({
       />
       <ReactionLog reactions={shown} />
       </div>
+      {/* Asked of a seat holder while the game is on; the answer wakes a board that went quiet. */}
+      <AskIfAway
+        watching={seat !== null && offer === null && state.status === GAME_STATUS.playing}
+        onBack={resume}
+        detail={GAME_COPY.idleLiveDetail}
+        kept={GAME_COPY.idleLiveKept}
+      />
     </div>
   );
 }
