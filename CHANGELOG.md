@@ -10,6 +10,42 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.339.0 — 2026-09-25
+- Gomoji in French and German: Gomoji Mot and Gomoji Wort, with AZERTY and QWERTZ keys.
+
+## 0.338.1 — 2026-09-25
+- Gomoji's clock starts at the first letter you type, on the keys or a keyboard.
+
+## 0.338.0 — 2026-09-25
+- Gomoji boards are at least eight rows tall, easy uses every row as a guess, medium gets one more guess, and Strict is a choice at every level.
+
+## 0.337.2 — 2026-09-25
+- About describes Just the board as the modal it now is.
+
+## 0.337.1 — 2026-09-25
+- The Numbers and Other family pictures draw their digits and letters in their squares on an iPhone.
+
+## 0.337.0 — 2026-09-25
+- Just the board is a modal: the board alone over the page, a finished game's scrubber under it, and Esc or Close to leave.
+
+## 0.336.2 — 2026-09-25
+- A replay's buttons stay on one line: arrows to step, Play in words.
+
+## 0.336.1 — 2026-09-25
+- Gomoji's disc style and the site's own labels say Reversi, not Othello.
+
+## 0.336.0 — 2026-09-25
+- WordDrop is now Gomoji (五文字), and Gomoji Kana; every word you have played comes with it.
+
+## 0.335.1 — 2026-09-25
+- On a phone the letters you type stay in view, and 小 and ゛゜ show the kana they will make.
+
+## 0.335.0 — 2026-09-25
+- In WordDrop a key used more than once in the word you are typing carries a count.
+
+## 0.334.1 — 2026-09-25
+- The WordDrop board fills a phone's width like every other board.
+
 ## 0.334.0 — 2026-09-25
 - When a WordDrop ends, the keyboard stays and a scrubber replays your guesses.
 

@@ -26,6 +26,8 @@ export type KeptRun = {
   checksUsed: number;
   hintsAllowed: boolean;
   hintsUsed: number;
+  /** Gomoji's Strict; false for every other puzzle. */
+  strict: boolean;
   progress: string;
   /** Every grid it has been, for the scrubber (`stepLog.ts`), or null when none could be read. */
   steps: string | null;
@@ -62,7 +64,7 @@ export async function runsOf(memberId: string) {
     where: { memberId },
     orderBy: { updatedAt: "desc" },
     take: RUNS_KEPT,
-    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, hintsUsed: true, elapsedMs: true, updatedAt: true },
+    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, hintsUsed: true, strict: true, elapsedMs: true, updatedAt: true },
   });
 }
 
@@ -71,7 +73,7 @@ export async function latestRunOf(memberId: string, kind: PuzzleKind) {
   return prisma.puzzleRun.findFirst({
     where: { memberId, kind },
     orderBy: { updatedAt: "desc" },
-    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true },
+    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true },
   });
 }
 

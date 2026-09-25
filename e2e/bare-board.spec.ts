@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ready } from "./support";
+import { playSequence, ready, winningSequence } from "./support";
 
 /**
  * Reading a page as the board alone.
@@ -90,6 +90,87 @@ test.describe("just the board", () => {
     await page.getByTestId("bare-board-toggle").click();
     await expect(page.getByTestId("live-moves")).toBeVisible();
   });
+
+  /*
+   * A finished game, read as just the board, is a modal: the board, the
+   * one-line scrubber under it, a Close, and Esc. John, on a finished game:
+   * "a board that is still very busy… We don't need the header and applause
+   * and chat probably. Maybe a nice simple scrubber with controls at the
+   * bottom in this modal mode. and ESC key should take us out."
+   */
+  test("on a finished game, is a modal of the board and a scrubber, and Esc leaves it", async ({ page }) => {
+    await page.goto("/games/gomoku/play");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto("/games/gomoku/play");
+    await playSequence(page, 15, winningSequence());
+    // Stored once the address names the final position — see history.spec.ts.
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\/[^/]+\/9$/, { timeout: 30_000 });
+    const filed = page.url().replace(/\/9$/, "");
+
+    await page.goto(filed);
+    await ready(page, "game-replay");
+    await ready(page, "bare-board");
+    await expect(page.getByTestId("applause")).toBeVisible();
+    await page.getByTestId("bare-board-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+
+    // A modal: the column is a dialog over the page, and the page's own furniture is gone.
+    const panel = page.locator("main[data-strippable]");
+    await expect(panel).toHaveAttribute("role", "dialog");
+    await expect(page.getByTestId("applause")).toBeHidden();
+    await expect(page.getByRole("heading", { level: 1 })).toBeHidden();
+    await expect(page.getByTestId("replay-scrubber")).toBeHidden();
+    // The scrubber under the board, on one line, moving the board.
+    const scrubber = page.getByTestId("bare-replay-scrubber");
+    await expect(scrubber).toBeVisible();
+    await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
+    await page.getByTestId("bare-replay-start").click();
+    await expect(page.getByRole("button", { name: /^H8, empty$/ })).toBeVisible();
+    await page.getByTestId("bare-replay-forward").click();
+    await expect(page.getByRole("button", { name: "D8, Black stone" })).toBeVisible();
+    const tops = await Promise.all(
+      ["start", "back", "play", "forward", "end"].map(async (b) => (await page.getByTestId(`bare-replay-${b}`).boundingBox())!.y),
+    );
+    expect(new Set(tops).size, "the scrubber's buttons wrapped to a second line").toBe(1);
+
+    // Esc closes the top layer first: the result card this game opened with, and the modal stays.
+    await expect(page.getByTestId("result-card")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("result-card")).toBeHidden();
+    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+    // The next Esc takes the modal away, and the page is back as it was.
+    await page.keyboard.press("Escape");
+    await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
+    await expect(panel).not.toHaveAttribute("role", "dialog");
+    await expect(page.getByTestId("applause")).toBeVisible();
+    await expect(page.getByTestId("bare-replay-scrubber")).toBeHidden();
+  });
+
+  /*
+   * One line, always. John: "Scrubber should always be only 1 line. meaning we
+   * might use < and > arrows just for the back and forward, keeping Play as
+   * text." It wrapped in a finished game's side column; measured at a desk's
+   * width, where the column is narrowest, and at a phone's.
+   */
+  for (const width of [1280, 390]) {
+    test(`a finished game's scrubber buttons sit on one line at ${width} wide`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/games/gomoku/play");
+      await page.evaluate(() => window.localStorage.clear());
+      await page.goto("/games/gomoku/play");
+      await playSequence(page, 15, winningSequence());
+      await expect(page).toHaveURL(/\/games\/gomoku\/match\/[^/]+\/9$/, { timeout: 30_000 });
+      await page.goto(page.url().replace(/\/9$/, ""));
+      await ready(page, "game-replay");
+      const tops = await Promise.all(
+        ["start", "back", "play", "forward", "end"].map(async (b) => (await page.getByTestId(`replay-${b}`).boundingBox())!.y),
+      );
+      expect(new Set(tops).size, "the scrubber's buttons wrapped to a second line").toBe(1);
+      // Play is a word; the four that step are arrows, and still named for a reader who cannot see them.
+      await expect(page.getByTestId("replay-play")).toHaveText("Play");
+      await expect(page.getByRole("button", { name: "Back" })).toHaveText("‹");
+    });
+  }
 
   test("is not offered on a page with nothing to strip", async ({ page }) => {
     // The wide pages are the ones with a board or a table and a sidebar.

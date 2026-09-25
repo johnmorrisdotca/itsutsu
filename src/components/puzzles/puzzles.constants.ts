@@ -77,10 +77,10 @@ export const PUZZLE_CLOCK = "font-mono text-lg tabular-nums";
 /** How often the clock is redrawn: once a second, in the browser, and never on a server. */
 export const PUZZLE_CLOCK_TICK_MS = 1000;
 
-/** What a page says about a size: the cells across a grid, or the letters of a WordDrop word, which is not a square. */
+/** What a page says about a size: the cells across a grid, or the letters of a Gomoji word, which is not a square. */
 export function sizeWord(size: number, kind?: PuzzleKind): string {
-  if (kind === "wordDrop") return `${size} letters`;
-  if (kind === "wordDropKana") return `${size} kana`;
+  if (kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort") return `${size} letters`;
+  if (kind === "gomojiKana") return `${size} kana`;
   return `${size}×${size}`;
 }
 
@@ -117,7 +117,7 @@ export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border
 export const PUZZLE_CELL_WRONG = "ring-2 ring-inset ring-shu bg-shu-soft/50";
 
 /*
- * WORDDROP: letter tiles in rows, and a keyboard under them. A tile's colour
+ * GOMOJI: letter tiles in rows, and a keyboard under them. A tile's colour
  * says what its letter is to the hidden word — moss in its place, ochre in the
  * word elsewhere, grey not in it — as the site's own colours rather than the
  * published game's, and always with the letter written on it, so a reader who
@@ -140,31 +140,25 @@ export const WORD_TILE_MARK: Record<"hit" | "near" | "kin" | "miss", string> = {
 export const WORD_KEY =
   "flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-md border border-rule-strong/80 text-sm font-semibold uppercase transition-colors focus-visible:ring-2 focus-visible:ring-moss disabled:opacity-40 sm:text-base";
 /**
- * THE GRID'S WIDTH ON A PHONE. At 390×844 the site's header, the grid at full
- * width and three rows of keys came to more than the screen, and Enter — the
- * key every guess ends on — sat below the fold. Capped so the grid and the
- * whole keyboard are on one phone screen; from a tablet up the grid takes the
- * column like every puzzle's.
+ * THE GRID'S WIDTH: the column's, on a phone as on a desk, like every board.
+ * It was capped on phones (17rem, 13.5rem for kana) so Enter stayed on one
+ * screen; John, 2026-09-25, on an iPhone: "the board looks bad. Should fill
+ * screen too like the other boards." The board comes first; the keys sit
+ * under it and the page scrolls to them.
  */
-export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
-/**
- * The kana grid's width on a phone: a row more (the free word) and a taller
- * keyboard (five rows of kana and a row of 小 ゛゜ ⌫ Enter), so a smaller grid
- * keeps Enter on one phone screen, as English's does.
- */
-export const KANA_GRID_BOX = "mx-auto w-full max-w-[13.5rem] sm:max-w-none";
+export const WORD_GRID_BOX = "w-full";
 
 /*
- * WORDDROP IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter
+ * GOMOJI IN STONES: the Reversi and Gomoku styles (`wordStyles.ts`). A letter
  * is written on a stone shaded as the board's own stones are (`STONE_SETS`):
  * a white stone while it is typed, then moss in its place, ochre in the word
- * elsewhere, black not in it — Othello's two colours and the site's two marks.
- * An Othello disc sits inside its square; a Gomoku stone on its crossing,
+ * elsewhere, black not in it — Reversi's two colours and the site's two marks.
+ * A Reversi disc sits inside its square; a Gomoku stone on its crossing,
  * nearly touching its neighbours, as stones on a board do.
  */
 export const WORD_STONE =
   "flex items-center justify-center rounded-full text-xl font-bold uppercase leading-none shadow-[0_1px_2px_rgba(0,0,0,0.45)] sm:text-2xl";
-export const WORD_STONE_SIZE: Record<"othello" | "gomoku", string> = { othello: "size-[84%]", gomoku: "size-[94%]" };
+export const WORD_STONE_SIZE: Record<"reversi" | "gomoku", string> = { reversi: "size-[84%]", gomoku: "size-[94%]" };
 export const WORD_STONE_LOOK: Record<"typed" | "hit" | "near" | "kin" | "miss", { background: string; color: string }> = {
   typed: { background: STONE_SETS.classic.white, color: STONE_SETS.classic.whiteInk },
   hit: { background: "radial-gradient(circle at 35% 30%, #8fa585 0%, #52664b 45%, #2f3d2b 100%)", color: "#f7f3ea" },
@@ -196,6 +190,10 @@ export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "kin" | "miss", strin
  * reads on a green, a grey or a black key alike.
  */
 export const WORD_KEY_TYPED = "ring-2 ring-ink ring-offset-1 ring-offset-ivory";
+
+/** How many of a letter the row holds, from two: a small dark chip on the key's top right, over the ring. */
+export const WORD_KEY_COUNT =
+  "absolute -top-1.5 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[0.6rem] leading-none font-bold text-ivory";
 
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";

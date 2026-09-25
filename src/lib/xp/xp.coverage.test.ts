@@ -177,7 +177,7 @@ describe("the economy holds its shape", () => {
     // a family met (+150) and a first solve of one puzzle (+50). A puzzle has
     // no first WIN and its family cannot be won, so nothing else moves.
     // 23,090 with Hidden Stones beside it: a first solve of a second puzzle.
-    // +150 when the Other family opened with WordDrop on 2026-09-25: a family
+    // +150 when the Other family opened with Gomoji on 2026-09-25: a family
     // met. Its first solve is counted with the puzzles below, and a puzzle's
     // family cannot be won, so nothing else moves.
     const perVariant = 44;

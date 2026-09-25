@@ -47,7 +47,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
         {runs.map((run) => {
           const kind = run.kind as PuzzleKind;
           const level = run.level as PuzzleLevel;
-          const href = `${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed })}`;
+          const href = `${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed, strict: run.strict })}`;
           return (
             <li key={run.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-going" data-kind={kind} data-seed={run.seed}>
               {/* The whole card carries on, as a game's row opens its game; the name above it leads to the puzzle. */}
@@ -61,6 +61,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
                   {sizeWord(run.size, kind)} · {PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
                   {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
                   {run.hintsAllowed ? " · hints" : ""}
+                  {run.strict ? " · strict" : ""}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">

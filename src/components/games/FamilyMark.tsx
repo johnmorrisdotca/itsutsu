@@ -1,5 +1,6 @@
 import type { PictureSize } from "./games.types";
 import { pictureBox } from "./picture";
+import { centredBaseline } from "@/lib/ui/svgText";
 
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
@@ -203,16 +204,23 @@ export const FAMILY_MARKS: Record<string, Mark> = {
    * letter in its place and one gold for a letter elsewhere — the family's
    * first game in one line, and the one mark on the row made of letters.
    */
+  /*
+   * The game's own name in its tiles: GOMOJI, 五文字, "five characters".
+   * John, 2026-09-25: "replace word drop logo/image with one that says
+   * Gomoji… so we should be using the larger boards" — six letters want a
+   * six-square board, so this mark is drawn on one.
+   */
   Other: {
-    n: 5,
+    n: 6,
     cells: true,
     stones: [],
     digits: [
-      { r: 2, c: 0, letter: "W", tile: "hit" },
+      { r: 2, c: 0, letter: "G", tile: "hit" },
       { r: 2, c: 1, letter: "O" },
-      { r: 2, c: 2, letter: "R", tile: "near" },
-      { r: 2, c: 3, letter: "D", tile: "hit" },
-      { r: 2, c: 4, letter: "S" },
+      { r: 2, c: 2, letter: "M", tile: "near" },
+      { r: 2, c: 3, letter: "O", tile: "hit" },
+      { r: 2, c: 4, letter: "J" },
+      { r: 2, c: 5, letter: "I", tile: "hit" },
     ],
   },
   /*
@@ -311,9 +319,8 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
         <text
           key={`d${digit.r}-${digit.c}`}
           x={at(digit.c)}
-          y={at(digit.r)}
+          y={centredBaseline(at(digit.r), 0.75)}
           textAnchor="middle"
-          dominantBaseline="central"
           fontSize={0.75}
           fontWeight={600}
           fill={digit.tile === undefined ? "var(--ink)" : "var(--ivory)"}

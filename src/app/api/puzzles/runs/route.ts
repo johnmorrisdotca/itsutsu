@@ -37,6 +37,8 @@ const bodySchema = z.object({
   checksUsed: z.number().int().nonnegative().optional(),
   hintsUsed: z.number().int().nonnegative().optional(),
   hintsAllowed: z.boolean().optional(),
+  /** Gomoji's Strict, kept only for a Gomoji. */
+  strict: z.boolean().optional(),
   progress: z.string().max(PUZZLE_CODE_LONGEST),
   /** Every grid it has been (`stepLog.ts`); a log that does not read as this grid's is dropped, never the run. */
   steps: z.string().max(STEP_LOG_LONGEST).optional(),
@@ -74,6 +76,7 @@ export async function POST(request: Request) {
       checksUsed: Math.min(parsed.data.checksUsed ?? 0, checksAllowed ?? Number.MAX_SAFE_INTEGER),
       hintsAllowed: parsed.data.hintsAllowed ?? false,
       hintsUsed: parsed.data.hintsAllowed === true ? (parsed.data.hintsUsed ?? 0) : 0,
+      strict: parsed.data.strict === true && (kind === "gomoji" || kind === "gomojiKana"),
       progress,
       steps: stepsFor(parsed.data.steps, progress),
       elapsedMs: parsed.data.elapsedMs,

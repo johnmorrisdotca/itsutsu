@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import { isSmall, kanaBase, kanaTone } from "../src/lib/puzzles/wordDropKana/kanaMarks";
+import { isSmall, kanaBase, kanaTone } from "../src/lib/puzzles/gomojiKana/kanaMarks";
 
 /**
  * Types a kana word on the kana keys under the grid, as a phone player does:
@@ -17,5 +17,28 @@ export async function tapKana(page: Page, word: string): Promise<void> {
     const tone = kanaTone(kana);
     if (tone !== "") await page.getByTestId("kana-key-mark").click();
     if (tone === "゜") await page.getByTestId("kana-key-mark").click();
+  }
+}
+
+/**
+ * The same, pressed where a thumb presses — at the key's place on the screen,
+ * never scrolling to it first. A locator's click scrolls its element into view
+ * before pressing, which a finger never does, so a spec about the page staying
+ * still must not use it: it measures the tool, not the page.
+ */
+export async function thumbKana(page: Page, word: string): Promise<void> {
+  // The dev server's own button sits at the screen's lower left, on the 小 key when the keys meet the screen's bottom, and a tap there opens its menu. The live site has none.
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
+  const press = async (testId: string) => {
+    const box = await page.getByTestId(testId).boundingBox();
+    if (box === null) throw new Error(`${testId} is not on the page`);
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  };
+  for (const kana of word) {
+    await press(`kana-key-${kanaBase(kana)}`);
+    if (isSmall(kana)) await press("kana-key-small");
+    const tone = kanaTone(kana);
+    if (tone !== "") await press("kana-key-mark");
+    if (tone === "゜") await press("kana-key-mark");
   }
 }

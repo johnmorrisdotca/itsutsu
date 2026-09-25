@@ -62,6 +62,8 @@ A word is 3, 4 or 5 kana (John added 5), hiragana only (a reading in katakana
 is folded to hiragana; ー stays ー). Six guesses at every length: a kana
 alphabet is about seventy symbols against twenty-six, and more than half the
 5-kana words hold a small kana (きょう, しゅう), so 5 is the hard size.
+*Since 2026-09-25 six is hard's count; medium gives seven and easy every row
+the board leaves after the free word (`src/lib/puzzles/gomoji/layout.ts`).*
 
 **A free grey word** (John, 2026-09-25: "have a REAL word that is completely
 grey. that tells the user a lot."): on easy and medium the puzzle opens with a

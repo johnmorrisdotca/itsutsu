@@ -40,7 +40,7 @@ export async function keepSolve(solve: KeptSolve): Promise<void> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
     const { answer, solved = true, ...kept } = solve;
-    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs);
+    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
     await prisma.puzzleSolve.create({
       data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null },
     });
@@ -112,7 +112,7 @@ export async function ownSolveCount(memberId: string, kind: PuzzleKind): Promise
   return prisma.puzzleSolve.count({ where: { memberId, kind, solved: true } });
 }
 
-/** A WordDrop word a member has played to its end, found or not, with the guesses where they were kept. */
+/** A Gomoji word a member has played to its end, found or not, with the guesses where they were kept. */
 export type OwnWord = {
   id: string;
   size: number;
@@ -128,11 +128,14 @@ export type OwnWord = {
 export const OWN_WORDS_SHOWN = 50;
 
 /**
- * A member's WordDrop words, newest first, the found and the not found alike —
+ * A member's Gomoji words, newest first, the found and the not found alike —
  * the history John asked for: "the history of guesses/words that the user has
  * ever played? with score?" One indexed query, and how many there are in all.
  */
-export async function ownWordsOf(memberId: string, kind: "wordDrop" | "wordDropKana" = "wordDrop"): Promise<{ words: OwnWord[]; total: number }> {
+export async function ownWordsOf(
+  memberId: string,
+  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" = "gomoji",
+): Promise<{ words: OwnWord[]; total: number }> {
   const [words, total] = await Promise.all([
     prisma.puzzleSolve.findMany({
       where: { memberId, kind },

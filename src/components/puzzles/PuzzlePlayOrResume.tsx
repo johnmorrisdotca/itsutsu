@@ -26,7 +26,7 @@ export async function PuzzlePlayOrResume({ kind }: { kind: PuzzleKind }) {
   return (
     <>
       <PlayButton
-        href={`${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed })}`}
+        href={`${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed, strict: run.strict })}`}
         label="Resume →"
         testId="game-resume"
       />

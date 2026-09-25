@@ -5,9 +5,9 @@ import { generateSumCages } from "./killer/generate";
 import { generateDiagonal, generateNumberPlace } from "./numberPlace/generate";
 import { generateTowers } from "./towers/generate";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
-import { generateWordDrop } from "./wordDrop/generate";
-import { generateWordDropKana } from "./wordDropKana/generate";
-import { KANA_SIZES, loadKanaWords } from "./wordDropKana/kanaWords";
+import { generateGomoji } from "./gomoji/generate";
+import { generateGomojiKana } from "./gomojiKana/generate";
+import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -34,22 +34,26 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateTowers(size, level, seed);
     case "blackAndWhite":
       return generateBlackAndWhite(size, level, seed);
-    case "wordDrop":
-      return generateWordDrop(size, level, seed);
-    case "wordDropKana":
+    case "gomoji":
+      return generateGomoji(size, level, seed);
+    case "gomojiMot":
+      return generateGomoji(size, level, seed, "fr", "gomojiMot");
+    case "gomojiWort":
+      return generateGomoji(size, level, seed, "de", "gomojiWort");
+    case "gomojiKana":
       // Its list is loaded by length first (`loadKanaWords`); see its generator.
-      return generateWordDropKana(size, level, seed);
+      return generateGomojiKana(size, level, seed);
   }
 }
 
 /**
  * What a kind needs fetched before it can be made or checked: only the kana
- * WordDrop, whose word list is loaded a length at a time (`loadKanaWords`).
+ * Gomoji, whose word list is loaded a length at a time (`loadKanaWords`).
  * The solve page, the solved route and a race's finish await it for their one
  * puzzle; the gates await `prepareEveryPuzzle`.
  */
 export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<void> {
-  if (kind === "wordDropKana") await loadKanaWords(size);
+  if (kind === "gomojiKana") await loadKanaWords(size);
 }
 
 export async function prepareEveryPuzzle(): Promise<void> {

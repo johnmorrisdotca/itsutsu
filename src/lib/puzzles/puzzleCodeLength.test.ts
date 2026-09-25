@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { generatePuzzle, prepareEveryPuzzle } from "./generate";
 
-// The kana WordDrop is made from a list loaded a length at a time: load them all before anything is made.
+// The kana Gomoji is made from a list loaded a length at a time: load them all before anything is made.
 beforeAll(prepareEveryPuzzle);
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
 

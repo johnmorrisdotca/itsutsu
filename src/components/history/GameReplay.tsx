@@ -218,7 +218,7 @@ export function GameReplay({
       {...readyMark(useHydrated())}
     >
       <div className="w-full min-w-0 flex-1">
-        <div className="relative mx-auto w-full max-w-[min(100%,38rem)]">
+        <div className="relative mx-auto w-full max-w-[min(100%,38rem)]" data-bare-board>
           {overlay}
           <Board
             state={state}
@@ -231,6 +231,20 @@ export function GameReplay({
             readOnly
             onPlay={() => {}}
           />
+        </div>
+        {/*
+          Read as just the board, the side column goes and this comes instead:
+          the move it is at and the one-line scrubber, under the board, the same
+          width. John: "Maybe a nice simple scrubber with controls at the bottom
+          in this modal mode." Drawn only in that mode (`data-bare-only`), and
+          moved through the same `setIndex` as the one in the column.
+        */}
+        <div className="mx-auto mt-3 w-full max-w-[min(100%,38rem)]" data-bare-only data-bare-board>
+          <p className="mb-1 text-sm text-muted">
+            Move <span className="font-mono tabular-nums">{moveNumber}</span> of{" "}
+            <span className="font-mono tabular-nums">{game.moveCount}</span>
+          </p>
+          <ReplayScrubber index={index} last={timeline.length - 1} onGo={setIndex} testId="bare-replay" />
         </div>
       </div>
 

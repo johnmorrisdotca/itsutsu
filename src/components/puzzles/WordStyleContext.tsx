@@ -2,18 +2,18 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
-import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
+import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 type WordStyleValue = { style: WordStyle; setStyle: (next: WordStyle) => void };
 
-const WordStyleContext = createContext<WordStyleValue>({ style: WORD_STYLES.othello, setStyle: () => undefined });
+const WordStyleContext = createContext<WordStyleValue>({ style: WORD_STYLES.reversi, setStyle: () => undefined });
 
 /**
- * How a WordDrop grid is drawn, held for the page and kept on the account,
+ * How a Gomoji grid is drawn, held for the page and kept on the account,
  * the way the record's move format is (`MoveFormatProvider`): read once by the
  * page (`preferencesFor`), drawn at once when changed, and written back with
  * one PATCH. A reader with no account keeps the choice for the page. A race,
- * which has no provider above it, is drawn in Othello.
+ * which has no provider above it, is drawn in Reversi.
  */
 export function WordStyleProvider({ initial, saves, children }: { initial: WordStyle; saves: boolean; children: ReactNode }) {
   const [style, setState] = useState(initial);
@@ -33,7 +33,7 @@ export function WordStyleProvider({ initial, saves, children }: { initial: WordS
   return <WordStyleContext.Provider value={value}>{children}</WordStyleContext.Provider>;
 }
 
-/** The grid's style and the way to change it. Othello, where no provider is above. */
+/** The grid's style and the way to change it. Reversi, where no provider is above. */
 export function useWordStyle(): WordStyleValue {
   return useContext(WordStyleContext);
 }

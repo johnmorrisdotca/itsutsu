@@ -4,8 +4,8 @@ import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
-import { markKanaGuess } from "../src/lib/puzzles/wordDropKana/kanaMarks";
-import { kanaWordsOf } from "../src/lib/puzzles/wordDropKana/kanaWords";
+import { markKanaGuess } from "../src/lib/puzzles/gomojiKana/kanaMarks";
+import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeJigsaw } from "../src/lib/puzzles/jigsaw/code";
 import { decodeKiller } from "../src/lib/puzzles/killer/code";
@@ -46,14 +46,17 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "towers", size: 5, level: "medium", seed: 20260924, fill: 3 },
   // An 8×8 Black and White a third filled: printed stones on their shaded cells, and the solver's beside them.
   { kind: "blackAndWhite", size: 8, level: "medium", seed: 20260924, fill: 3 },
-  // A five-letter WordDrop two guesses in, with the word's first letters typed on the third row: the colours are the picture.
-  { kind: "wordDrop", size: 5, level: "easy", seed: 20260924, fill: 2 },
-  { kind: "wordDropKana", size: 4, level: "easy", seed: 20260925, fill: 2 },
+  // A five-letter Gomoji two guesses in, with the word's first letters typed on the third row: the colours are the picture.
+  { kind: "gomoji", size: 5, level: "easy", seed: 20260924, fill: 2 },
+  { kind: "gomojiKana", size: 4, level: "easy", seed: 20260925, fill: 2 },
+  // Gomoji Mot and Gomoji Wort: the same shape of picture, French's and German's own words.
+  { kind: "gomojiMot", size: 5, level: "easy", seed: 20260925, fill: 2 },
+  { kind: "gomojiWort", size: 5, level: "easy", seed: 20260925, fill: 2 },
 ];
 
 test.describe("puzzle screenshots", () => {
   test.skip(process.env.GAME_SCREENSHOTS !== "1", "Set GAME_SCREENSHOTS=1 to write them.");
-  // The kana WordDrop is made from a list loaded a length at a time, here as in the browser.
+  // The kana Gomoji is made from a list loaded a length at a time, here as in the browser.
   test.beforeAll(prepareEveryPuzzle);
 
   for (const scene of SCENES) {
@@ -85,15 +88,26 @@ test.describe("puzzle screenshots", () => {
           await cells.nth(row * scene.size + col).click();
           await cells.nth(row * scene.size + col).click();
         }
-      } else if (scene.kind === "wordDrop") {
+      } else if (scene.kind === "gomoji" || scene.kind === "gomojiMot") {
         // Two words that are not the answer, then the answer's first letters, typed as a person types them.
-        for (const guess of ["slate", "irony"].filter((word) => word !== puzzle.solution).slice(0, scene.fill)) {
+        const fillers = scene.kind === "gomojiMot" ? ["porte", "table"] : ["slate", "irony"];
+        for (const guess of fillers.filter((word) => word !== puzzle.solution).slice(0, scene.fill)) {
           await page.keyboard.type(guess);
           await page.keyboard.press("Enter");
           filled += 1;
         }
         await page.keyboard.type(puzzle.solution.slice(0, 2));
-      } else if (scene.kind === "wordDropKana") {
+      } else if (scene.kind === "gomojiWort") {
+        // German's answer may carry an umlaut, which `keyboard.type` cannot send: the on-screen keys instead,
+        // shown first — hidden by default on a desktop's pointer, as a phone's own screen would show them.
+        await page.getByTestId("word-keys-toggle").click();
+        for (const guess of ["haben", "leben"].filter((word) => word !== puzzle.solution).slice(0, scene.fill)) {
+          for (const letter of guess) await page.getByTestId(`word-key-${letter}`).click();
+          await page.getByTestId("word-key-enter").click();
+          filled += 1;
+        }
+        for (const letter of puzzle.solution.slice(0, 2)) await page.getByTestId(`word-key-${letter}`).click();
+      } else if (scene.kind === "gomojiKana") {
         // Two common words that light something up, then the word's first two kana: the colours, the arrows if any, and the free grey row above.
         const target = [...puzzle.solution];
         const lit = kanaWordsOf(scene.size).easy.filter(

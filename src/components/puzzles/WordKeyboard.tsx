@@ -1,25 +1,30 @@
 "use client";
 
-import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
-import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
+import type { GomojiLanguage, LetterMark } from "@/lib/puzzles/gomoji/code";
+import { KEYBOARD_ROWS } from "@/lib/puzzles/gomoji/keyboardRows";
+import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
-import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
+import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
-const ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-const NONE_TYPED: ReadonlySet<string> = new Set();
+const NONE_TYPED: ReadonlyMap<string, number> = new Map();
 
 /**
- * THE KEYBOARD UNDER A WORDDROP GRID, for a phone with no keys of its own:
+ * THE KEYBOARD UNDER A GOMOJI GRID, for a phone with no keys of its own:
  * three rows of letters, Enter and a delete key, each letter coloured with the
  * best the guesses so far have said about it — in its place beats elsewhere
  * beats not in the word. Ten keys to the widest row, so every key is a
  * fingertip on a 390px screen. A letter not in the word is grey under tiles
  * and black under stones, the colour its tile or stone took.
+ *
+ * `lang` picks the layout (`keyboardRows.ts`): QWERTY, AZERTY or QWERTZ with
+ * Ä, Ö and Ü of their own. Defaults to English so every existing caller keeps
+ * drawing the keyboard it always has.
  */
 export function WordKeyboard({
   known,
   typed = NONE_TYPED,
   style,
+  lang = "en",
   disabled,
   readOnly = false,
   onLetter,
@@ -27,9 +32,10 @@ export function WordKeyboard({
   onBack,
 }: {
   known: ReadonlyMap<string, LetterMark>;
-  /** The letters in the row being typed, whose keys are ringed (`WORD_KEY_TYPED`). */
-  typed?: ReadonlySet<string>;
+  /** How often each letter is in the row being typed (`typedCounts`): its key is ringed, and counted from two. */
+  typed?: ReadonlyMap<string, number>;
   style: WordStyle;
+  lang?: GomojiLanguage;
   disabled: boolean;
   /** Drawn at full colour and pressed by nobody: the keyboard of a finished game, replayed. */
   readOnly?: boolean;
@@ -42,7 +48,7 @@ export function WordKeyboard({
   const inert = readOnly ? { tabIndex: -1, "aria-disabled": true as const } : {};
   return (
     <div className={`flex flex-col gap-1.5 ${readOnly ? "pointer-events-none" : ""}`} data-testid="word-keyboard" data-read-only={readOnly ? "true" : undefined}>
-      {ROWS.map((row, index) => (
+      {KEYBOARD_ROWS[lang].map((row, index) => (
         <div key={row} className="flex gap-1">
           {index === 2 ? (
             <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onEnter} disabled={disabled} data-testid="word-key-enter" {...inert}>
@@ -52,19 +58,26 @@ export function WordKeyboard({
           ) : null}
           {[...row].map((letter) => {
             const mark = known.get(letter);
+            const count = typed.get(letter) ?? 0;
             return (
               <button
                 key={letter}
                 type="button"
-                className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(letter) ? WORD_KEY_TYPED : ""}`}
+                className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${count > 0 ? WORD_KEY_TYPED : ""} relative`}
                 onClick={() => onLetter(letter)}
                 disabled={disabled}
                 {...inert}
                 data-testid={`word-key-${letter}`}
                 data-mark={mark ?? ""}
-                data-typed={typed.has(letter) ? "true" : undefined}
+                data-typed={count > 0 ? "true" : undefined}
+                aria-label={count > 1 ? `${letter}, ${count} in the row` : undefined}
               >
                 {letter}
+                {count > 1 ? (
+                  <span className={WORD_KEY_COUNT} aria-hidden="true" data-testid="key-count">
+                    {count}
+                  </span>
+                ) : null}
               </button>
             );
           })}

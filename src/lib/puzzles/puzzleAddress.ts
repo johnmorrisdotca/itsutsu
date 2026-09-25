@@ -19,9 +19,16 @@ export type PuzzleAsked = {
   checks?: number | null;
   /** Whether Hint may be pressed; false, and left out of the address, by default. */
   hints?: boolean;
+  /**
+   * Gomoji's Strict: every letter found must be played again, a green one in
+   * its place. A set-up choice at any level (John, 2026-09-25: "have an option
+   * strict mode… right now there are no real options for the game"); false,
+   * and left out of the address, by default.
+   */
+  strict?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -39,7 +46,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const checksAsked = Number(one(PUZZLE_PARAMS.checks));
   const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;
   const hints = one(PUZZLE_PARAMS.hints) === "1";
-  return { size, level, seed, checks, hints };
+  const strict = one(PUZZLE_PARAMS.strict) === "1";
+  return { size, level, seed, checks, hints, strict };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -48,5 +56,6 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.seed !== null) params.set(PUZZLE_PARAMS.seed, String(asked.seed));
   if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
   if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");
+  if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");
   return `?${params.toString()}`;
 }

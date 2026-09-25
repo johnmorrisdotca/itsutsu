@@ -170,12 +170,12 @@ export const GAME_FAMILIES: GameFamily[] = [
      * OTHER. John, 2026-09-25, asking for a word puzzle of our own: "a special
      * OTHER category" on the games list, the cards and the families, and kept
      * off the set-up screen for now so it ships sooner. The home of whatever is
-     * neither stones nor numbers, starting with WordDrop.
+     * neither stones nor numbers, starting with Gomoji.
      */
     title: "Other",
     kanji: "その他",
-    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English or in kana, and whatever joins them.",
-    games: ["wordDrop", "wordDropKana"],
+    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, and whatever joins them.",
+    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort"],
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];

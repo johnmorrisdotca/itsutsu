@@ -56,7 +56,7 @@ export async function createRace(input: {
   if (!spec.sizes.includes(input.size) || !spec.levels.includes(input.level)) return { refused: "no such puzzle" };
   if (input.givens.length > spec.mostCells || input.solution.length > spec.mostCells) return { refused: "not a grid of that size" };
   await preparePuzzle(input.kind, input.size);
-  const verdict = checkSolution(input.kind, input.size, input.givens, input.solution);
+  const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level);
   if (!verdict.ok) return { refused: `the answer does not solve the puzzle: ${verdict.reason}` };
   const id = await freeRaceId();
   const row = await prisma.puzzleRace.create({
@@ -139,7 +139,7 @@ export async function finishSeat(
   if (!canFinish(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "the sitting is over" : "not started", status: 409 };
   if (answer.length > PUZZLE_SPECS[kind].mostCells) return { ok: false, reason: "not a grid of that size", status: 422 };
   await preparePuzzle(kind, race.size);
-  const verdict = checkSolution(kind, race.size, race.givens, answer);
+  const verdict = checkSolution(kind, race.size, race.givens, answer, level);
   if (!verdict.ok) return { ok: false, reason: verdict.reason, status: 422 };
 
   const stamped = await prisma.puzzleRace.updateMany({

@@ -65,7 +65,7 @@ async function rightCells(page: Page, kind: PuzzleKind, size: number, seed: numb
   return solution.filter((value, cell) => values[cell] === String(value)).length;
 }
 
-// Every puzzle that offers help (`PuzzleSpec.helps`): a WordDrop's colours are its hints.
+// Every puzzle that offers help (`PuzzleSpec.helps`): a Gomoji's colours are its hints.
 for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false)) {
   test(`${kind}: Show marks the wrong entry until it is changed, and costs a check`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;

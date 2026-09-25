@@ -11,8 +11,8 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
-import { KanaDropSolve } from "./KanaDropSolve";
-import { WordDropSolve } from "./WordDropSolve";
+import { GomojiKanaSolve } from "./GomojiKanaSolve";
+import { GomojiSolve } from "./GomojiSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 
@@ -44,6 +44,7 @@ export function PuzzlePlay({
   race = null,
   checks = null,
   hints = false,
+  strict = false,
   resumed = null,
 }: {
   kind: PuzzleKind;
@@ -54,6 +55,8 @@ export function PuzzlePlay({
   checks?: number | null;
   /** Whether Hint was chosen for this puzzle, from the address. */
   hints?: boolean;
+  /** Whether Gomoji's Strict was chosen: every letter found must be played again, a green in its place. */
+  strict?: boolean;
   /** The run the member kept of this grid, opened where it was left. */
   resumed?: ResumedRun | null;
   /** Whether a solve can be paid: an account, not merely a session. */
@@ -68,11 +71,11 @@ export function PuzzlePlay({
      that would draw a different one. */
   useEffect(() => {
     if (seed !== null) return;
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints })}`);
-  }, [seed, kind, size, level, checks, hints, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict })}`);
+  }, [seed, kind, size, level, checks, hints, strict, router]);
 
-  /* A kind whose words load by length (the kana WordDrop) waits for its list; every other kind is ready at once. */
-  const [loaded, setLoaded] = useState<string | null>(kind === "wordDropKana" ? null : `${kind}:${size}`);
+  /* A kind whose words load by length (the kana Gomoji) waits for its list; every other kind is ready at once. */
+  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" ? null : `${kind}:${size}`);
   useEffect(() => {
     let live = true;
     void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
@@ -108,17 +111,19 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}`;
   const seat = race ?? null;
   switch (kind) {
     case "hiddenStones":
       return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "blackAndWhite":
       return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
-    case "wordDrop":
-      return <WordDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
-    case "wordDropKana":
-      return <KanaDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+    case "gomoji":
+    case "gomojiMot":
+    case "gomojiWort":
+      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+    case "gomojiKana":
+      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

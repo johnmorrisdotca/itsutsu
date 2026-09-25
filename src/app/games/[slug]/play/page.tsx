@@ -69,7 +69,8 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
         defaults={defaults}
         moveFormat={moveFormat}
       />
-      <footer className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
+      {/* The game's name, its rules and its family: furniture that just the board leaves out. */}
+      <footer data-chrome className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
         <p>
           {/*
             The name leads to the game — its own page, where everything about

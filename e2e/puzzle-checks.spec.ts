@@ -12,7 +12,7 @@ import { freshPuzzleSeed, ready } from "./support";
  * address, so the same link is the same puzzle under the same allowance.
  * Running out takes Check away and leaves the puzzle going.
  */
-// Every puzzle that offers help (`PuzzleSpec.helps`): a WordDrop answers each guess as it is made, and has no Check.
+// Every puzzle that offers help (`PuzzleSpec.helps`): a Gomoji answers each guess as it is made, and has no Check.
 for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false)) {
   test(`${kind}: one check, spent, and then there are none`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;

@@ -20,7 +20,7 @@ describe("the Check allowance in a puzzle's address", () => {
 
   it("reads back what it writes", () => {
     const query = Object.fromEntries(new URLSearchParams(puzzleQuery({ size: 6, level: "hard", seed: 7, checks: 1 }).slice(1)));
-    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false });
+    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false, strict: false });
   });
 });
 
@@ -31,5 +31,9 @@ describe("hints in a puzzle's address", () => {
     expect(puzzleAsked("numberPlace", { hints: "yes" }).hints).toBe(false);
     expect(puzzleQuery({ size: 9, level: "easy", seed: 5, hints: true })).toBe("?size=9&level=easy&seed=5&hints=1");
     expect(puzzleQuery({ size: 9, level: "easy", seed: 5, hints: false })).toBe("?size=9&level=easy&seed=5");
+    // Gomoji's Strict, the same way: in the address when chosen, and read back.
+    expect(puzzleQuery({ size: 5, level: "easy", seed: 5, strict: true })).toBe("?size=5&level=easy&seed=5&strict=1");
+    expect(puzzleAsked("gomoji", { size: "5", level: "easy", strict: "1" }).strict).toBe(true);
+    expect(puzzleAsked("gomoji", { size: "5", level: "easy" }).strict).toBe(false);
   });
 });

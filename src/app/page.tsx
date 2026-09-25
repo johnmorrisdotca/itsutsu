@@ -52,7 +52,7 @@ const PITCH = [
   {
     title: "Always somebody to play",
     kanji: "対戦相手",
-    body: "Five graded computer players, gentlest first, play every game here, and two specialists play only Othello or only five in a row. Games against them are rated, and their records are kept like anybody's.",
+    body: "Five graded computer players, gentlest first, play every game here, and two specialists play only Reversi or only five in a row. Games against them are rated, and their records are kept like anybody's.",
   },
   {
     title: "A ladder for every game",
@@ -90,7 +90,7 @@ export default async function Home() {
           A board for two, wherever you both are.
         </h1>
         <p className="text-sm text-muted sm:text-base">
-          {RULE_VARIANT_LIST.length} board games for two people, from five in a row to Othello, checkers and go.
+          {RULE_VARIANT_LIST.length} board games for two people, from five in a row to Reversi, checkers and go.
           Play across the table or across the world, learn the shapes that win, and keep every game you finish.
         </p>
         {/*

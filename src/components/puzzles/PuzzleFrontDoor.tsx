@@ -77,7 +77,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 className="text-center text-sm font-medium underline underline-offset-4"
                 data-testid="game-daily"
               >
-                {kind === "wordDrop" ? "Today's word" : "Today's puzzle"} →
+                {kind === "gomoji" ? "Today's word" : "Today's puzzle"} →
               </Link>
             </div>
             <div className="flex min-w-0 flex-col gap-2">
@@ -152,7 +152,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 Fastest solves <span className="font-mincho opacity-70">最速</span>
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
-                {kind === "wordDrop" || kind === "wordDropKana" ? (
+                {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? (
                   <>
                     Your words <span className="font-mincho opacity-70">言葉</span>
                   </>

@@ -18,13 +18,13 @@ import { WordHistory } from "./WordHistory";
 /**
  * /games/<slug>/me for a puzzle: your own solves of it, newest first, and
  * your races at it. Two tables, each shown with its shape when empty and
- * the way in beside it, as every empty table here is. WordDrop's are its words
+ * the way in beside it, as every empty table here is. Gomoji's are its words
  * instead, found and not found, with their guesses (`WordHistory`).
  */
 export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
   const me = await currentMemberId();
-  const words = kind === "wordDrop" || kind === "wordDropKana";
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const [solves, races, played] =
     me === null ? [[], [], { words: [], total: 0 }] : await Promise.all([words ? [] : ownSolvesOf(me, kind), racesOf(me, kind), words ? ownWordsOf(me, kind) : { words: [], total: 0 }]);
   return (

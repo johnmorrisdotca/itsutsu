@@ -28,7 +28,7 @@ export function HomeFamilies() {
           <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">種目</span>
         </h2>
         <p className="text-sm text-muted">
-          Five in a row is where it started; the other families are the games that grew up beside it, from Othello and
+          Five in a row is where it started; the other families are the games that grew up beside it, from Reversi and
           checkers to go and hex. Open one to see its games, their rules, and a picture of each board.
         </p>
       </div>

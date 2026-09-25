@@ -5,6 +5,7 @@ import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 
 import { MOSAIC_ART, MOSAIC_PICKS, type MosaicPick } from "./mosaic.constants";
 import type { MosaicFrame, MosaicPicture } from "./mosaic.types";
+import { centredBaseline } from "@/lib/ui/svgText";
 
 /**
  * A GAME AS ONE PICTURE: every position it passed through, laid out in order
@@ -185,7 +186,7 @@ function detailsSvg(lines: readonly string[], x: number, y: number, width: numbe
   const text = lines
     .map(
       (line, i) =>
-        `<text x="${x + width / 2}" y="${top + i * gap}" font-family="system-ui, sans-serif" font-size="${font}" font-weight="${i === 0 ? 600 : 400}" text-anchor="middle" dominant-baseline="middle" fill="${art.line}">${escaped(fitted(line, most))}</text>`,
+        `<text x="${x + width / 2}" y="${centredBaseline(top + i * gap, font)}" font-family="system-ui, sans-serif" font-size="${font}" font-weight="${i === 0 ? 600 : 400}" text-anchor="middle" fill="${art.line}">${escaped(fitted(line, most))}</text>`,
     )
     .join("");
   return `<rect x="${x + pad}" y="${y + pad}" width="${wide}" height="${tall}" rx="${tall * 0.03}" fill="${art.wood}"/>${text}`;

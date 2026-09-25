@@ -12,9 +12,9 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeHidden } from "@/lib/puzzles/wordDrop/code";
-import { WORD_STYLES } from "@/lib/puzzles/wordDrop/wordStyles";
-import { decodeKanaGivens } from "@/lib/puzzles/wordDropKana/kanaCode";
+import { decodeHidden, languageOf } from "@/lib/puzzles/gomoji/code";
+import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
+import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
@@ -22,7 +22,7 @@ import { WordStyleProvider } from "./WordStyleContext";
 
 /** A word puzzle's hidden word, in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
-  return kind === "wordDropKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size) ?? "").toUpperCase();
+  return kind === "gomojiKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size, languageOf(kind)) ?? "").toUpperCase();
 }
 
 /**
@@ -40,7 +40,7 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
   const solve = me === null ? null : await ownSolveOf(me, kind, solveId);
   if (solve === null) notFound();
   const copy = PUZZLE_DISPLAY[kind];
-  const words = kind === "wordDrop" || kind === "wordDropKana";
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const outcome = solve.solved ? (words ? "Found" : "Solved") : "Not found";
   const helped = [
@@ -78,8 +78,8 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
         lead={`${outcome}, ${solve.finishedAt.toISOString().slice(0, 10)}.`}
       />
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"}>
-        <WordStyleProvider initial={wordStyle ?? WORD_STYLES.othello} saves={false}>
-          <FinishedPuzzle kind={kind} size={solve.size} givens={solve.givens} answer={solve.answer} />
+        <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={false}>
+          <FinishedPuzzle kind={kind} size={solve.size} level={solve.level as PuzzleLevel} givens={solve.givens} answer={solve.answer} />
         </WordStyleProvider>
         {solve.answer === null ? (
           <p className="text-sm text-muted" data-testid="solve-not-kept">
