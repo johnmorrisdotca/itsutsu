@@ -133,6 +133,15 @@ export const WORD_TILE_MARK: Record<"hit" | "near" | "miss", string> = {
 
 /** The keyboard under the grid: three rows, each key a fingertip tall. */
 export const WORD_KEY =
-  "flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-md border border-rule-strong/80 text-sm font-semibold uppercase transition-colors focus-visible:ring-2 focus-visible:ring-moss disabled:opacity-40 sm:text-base";
+  "flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-md border border-rule-strong/80 text-sm font-semibold uppercase transition-colors focus-visible:ring-2 focus-visible:ring-moss disabled:opacity-40 sm:text-base";
+/**
+ * THE GRID'S WIDTH ON A PHONE. At 390×844 the site's header, the grid at full
+ * width and three rows of keys came to more than the screen, and Enter — the
+ * key every guess ends on — sat below the fold. Capped so the grid and the
+ * whole keyboard are on one phone screen; from a tablet up the grid takes the
+ * column like every puzzle's.
+ */
+export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
+
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";

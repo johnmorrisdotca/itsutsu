@@ -60,7 +60,9 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
       <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} testId="puzzle-points-all" />
       <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} testId="puzzle-points-month" />
       <p className="text-xs text-muted">
-        {POINTS_A_CELL} a cell you fill, −{POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.
+        {kind === "wordDrop"
+          ? `${POINTS_A_CELL} a letter for the row that finds the word and every row you did not need. Your best of each word counts.`
+          : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
       </p>
       {whole ? null : (
         <p className="text-sm">

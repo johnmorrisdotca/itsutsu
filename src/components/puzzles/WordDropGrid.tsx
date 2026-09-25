@@ -3,7 +3,7 @@
 import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
 
 import { PuzzleBoard } from "./PuzzleBoard";
-import { WORD_TILE, WORD_TILE_EMPTY, WORD_TILE_MARK, WORD_TILE_TYPED } from "./puzzles.constants";
+import { WORD_GRID_BOX, WORD_TILE, WORD_TILE_EMPTY, WORD_TILE_MARK, WORD_TILE_TYPED } from "./puzzles.constants";
 
 const MARK_WORDS: Record<LetterMark, string> = { hit: "in its place", near: "in the word elsewhere", miss: "not in the word" };
 
@@ -32,7 +32,7 @@ export function WordDropGrid({
   done: boolean;
 }) {
   return (
-    <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
+    <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={rows}>
         <div className="flex h-full w-full items-center justify-center bg-white">
           <div
