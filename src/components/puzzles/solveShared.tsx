@@ -56,14 +56,19 @@ export function useSolve(
 ) {
   const router = useRouter();
   /*
-   * A RUN OPENED WHERE IT WAS LEFT starts covered and paused, with its time so
-   * far carried in, and its clock starts again on Resume — the same press, the
-   * same cover, as a pause made on this page.
+   * A RUN OPENED WHERE IT WAS LEFT is running the moment it opens, with its
+   * time so far carried in. It used to open covered and paused, waiting for a
+   * Resume; John, 2026-09-25, having pressed Continue in My games: "why is the
+   * Game paused??? The fact we just clicked to enter the game should mean it's
+   * Resumed, no?" Continue is the resume. This page is only ever drawn in the
+   * browser (`PuzzlePlayClient`, `ssr: false`), so reading the clock here
+   * cannot differ between a server and a browser.
    */
   const [carriedMs] = useState(keeping.resumed?.elapsedMs ?? 0);
-  const [awaiting, setAwaiting] = useState(keeping.resumed !== null && race === null);
   /* In a race the clock is the server's, started at Start; here it is read from then rather than from the first entry. */
-  const [startedAt, setStartedAt] = useState<number | null>(race === null ? null : race.since);
+  const [startedAt, setStartedAt] = useState<number | null>(() =>
+    race !== null ? race.since : keeping.resumed !== null ? Date.now() : null,
+  );
   const [now, setNow] = useState(0);
   const [done, setDone] = useState<Done | null>(null);
   /*
@@ -91,7 +96,7 @@ export function useSolve(
 
   const [pausedMs, setPausedMs] = useState(0);
   const [pausedAt, setPausedAt] = useState<number | null>(null);
-  const canPause = race === null && (startedAt !== null || awaiting) && done === null;
+  const canPause = race === null && startedAt !== null && done === null;
 
   useEffect(() => {
     if (startedAt === null || done !== null || pausedAt !== null) return;
@@ -101,7 +106,7 @@ export function useSolve(
 
   /* What is kept of this run, when it is paused or its page is left: nothing for a visitor, a race, or a puzzle finished or never started. */
   const keep = useKeptRun(() => {
-    if (!hasAccount || race !== null || done !== null || (startedAt === null && !awaiting)) return null;
+    if (!hasAccount || race !== null || done !== null || startedAt === null) return null;
     const at = Date.now();
     const elapsedMs = carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? at) - startedAt - pausedMs));
     return {
@@ -121,13 +126,6 @@ export function useSolve(
   const togglePause = useCallback(() => {
     if (!canPause) return;
     const at = Date.now();
-    if (awaiting) {
-      // A kept run resumed: its clock starts now, from the time it carried in.
-      setStartedAt(at);
-      setNow(at);
-      setAwaiting(false);
-      return;
-    }
     if (pausedAt === null) {
       setNow(at);
       setPausedAt(at);
@@ -137,7 +135,7 @@ export function useSolve(
       setPausedAt(null);
       setNow(at);
     }
-  }, [canPause, pausedAt, awaiting, keep]);
+  }, [canPause, pausedAt, keep]);
 
   /*
    * "ARE YOU STILL THERE?", the same watch and question as every game. Away
@@ -220,13 +218,12 @@ export function useSolve(
 
   const elapsedMs = done !== null ? done.elapsedMs : carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs));
   const pausing: Pausing = {
-    paused: pausedAt !== null || awaiting,
+    paused: pausedAt !== null,
     canPause,
     toggle: togglePause,
     away,
     here,
     racing: race !== null,
-    kept: awaiting,
     keptOnLeaving: hasAccount && race === null,
   };
   return { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting };
@@ -242,8 +239,6 @@ export type Pausing = {
   /** The answer "Still here". */
   here: () => void;
   racing: boolean;
-  /** Opened from the member's games, and not resumed yet. */
-  kept: boolean;
   /** Whether leaving keeps this run: a member's own puzzle does; a visitor's lasts the page. */
   keptOnLeaving: boolean;
 };
@@ -316,9 +311,7 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
             Paused <span className="font-mincho text-base font-normal opacity-70">一時停止</span>
           </p>
           <p className="text-sm text-muted" data-testid="puzzle-paused-words">
-            {pausing.kept
-              ? "Kept where you left it. The clock starts again from where it stopped when you resume."
-              : "The clock has stopped, and the grid is covered until you come back."}
+            The clock has stopped, and the grid is covered until you come back.
           </p>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT}`} onClick={pausing.toggle} data-testid="puzzle-resume">
             Resume

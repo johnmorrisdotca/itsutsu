@@ -41,9 +41,9 @@ test("paused and left by a link, it is in My games, opens where it was left, and
 
   await row.getByTestId("puzzle-going-continue").click();
   await ready(page, "puzzle-play");
-  // Opened where it was left: covered and paused, the number still written.
-  await expect(page.getByTestId("puzzle-paused-words")).toContainText("Kept where you left it");
-  await page.getByTestId("puzzle-resume").click();
+  // Opened where it was left and already running: Continue was the resume, so no cover and no second press.
+  await expect(page.getByTestId("puzzle-pausable")).toHaveAttribute("data-paused", "false");
+  await expect(page.getByTestId("puzzle-pause")).toBeEnabled();
   await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-value", String(solution[first]));
 
   for (const [index, given] of givens.entries()) {
