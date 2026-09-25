@@ -37,10 +37,63 @@ function used(grid: Grid, layout: Layout): number[] {
   return taken;
 }
 
-function candidatesAt(layout: Layout, index: number, taken: number[]): number {
+function candidatesAt(layout: Layout, index: number, taken: number[], work: Grid): number {
   let blocked = 0;
   for (const group of layout.groupsOf[index]!) blocked |= taken[group]!;
-  return ALL(layout.size) & ~blocked;
+  const open = ALL(layout.size) & ~blocked;
+  return layout.cages === undefined ? open : open & cageAllows(layout, index, work, open);
+}
+
+/**
+ * The values a cell may take and still leave its cage able to reach its sum:
+ * whatever is left of the sum after this cell, made of the cage's other empty
+ * cells with numbers not yet in it. Checked by bounds — the smallest and
+ * largest those cells could add to — which is exact for the cell that fills
+ * the cage and a sound pruning before it.
+ */
+function cageAllows(layout: Layout, index: number, work: Grid, open: number): number {
+  const cage = layout.cages![layout.cageOf![index]!]!;
+  let placed = 0;
+  let inCage = 0;
+  let empties = 0;
+  for (const cell of cage.cells) {
+    const value = work[cell]!;
+    if (value === 0) empties += 1;
+    else {
+      placed += value;
+      inCage |= 1 << value;
+    }
+  }
+  const others = empties - 1;
+  let allowed = 0;
+  for (let left = open; left !== 0; left &= left - 1) {
+    const value = lowestBit(left);
+    const rest = cage.sum - placed - value;
+    if (others === 0 ? rest === 0 : reachable(rest, others, ALL(layout.size) & ~inCage & ~(1 << value), layout.size)) allowed |= 1 << value;
+  }
+  return allowed;
+}
+
+/** Whether `count` different values from `from` can add to `sum`, by the smallest and largest they could. */
+function reachable(sum: number, count: number, from: number, size: number): boolean {
+  let low = 0;
+  let taken = 0;
+  for (let value = 1; value <= size && taken < count; value += 1) {
+    if ((from & (1 << value)) !== 0) {
+      low += value;
+      taken += 1;
+    }
+  }
+  if (taken < count) return false;
+  let high = 0;
+  taken = 0;
+  for (let value = size; value >= 1 && taken < count; value -= 1) {
+    if ((from & (1 << value)) !== 0) {
+      high += value;
+      taken += 1;
+    }
+  }
+  return low <= sum && sum <= high;
 }
 
 function place(layout: Layout, taken: number[], index: number, value: number): void {
@@ -68,7 +121,7 @@ function mostConstrained(work: Grid, layout: Layout, taken: number[]): { index: 
   let bestCount = layout.size + 1;
   for (let index = 0; index < work.length; index += 1) {
     if (work[index] !== 0) continue;
-    const mask = candidatesAt(layout, index, taken);
+    const mask = candidatesAt(layout, index, taken, work);
     const count = bitCount(mask);
     if (count < bestCount) {
       best = index;
@@ -85,12 +138,24 @@ function mostConstrained(work: Grid, layout: Layout, taken: number[]): { index: 
  * first, so a grid with one answer is confirmed in a few hundred steps.
  */
 export function countSolutions(grid: Grid, layout: Layout, limit = 2): number {
+  return countSolutionsWithin(grid, layout, limit, Infinity)!;
+}
+
+/**
+ * The same count, giving up after `budget` steps — null then, never a number,
+ * because "I stopped looking" is not "there are none". A Killer's generator
+ * asks this of layouts that are sometimes slow to settle, and draws another
+ * rather than keeping a browser waiting.
+ */
+export function countSolutionsWithin(grid: Grid, layout: Layout, limit: number, budget: number): number | null {
   const work = [...grid];
   const taken = used(work, layout);
   let found = 0;
+  let steps = 0;
 
   const step = (): void => {
-    if (found >= limit) return;
+    if (found >= limit || steps > budget) return;
+    steps += 1;
     const { index, mask } = mostConstrained(work, layout, taken);
     if (index === -1) {
       found += 1;
@@ -103,11 +168,11 @@ export function countSolutions(grid: Grid, layout: Layout, limit = 2): number {
       step();
       lift(layout, taken, index, value);
       work[index] = 0;
-      if (found >= limit) return;
+      if (found >= limit || steps > budget) return;
     }
   };
   step();
-  return found;
+  return steps > budget && found < limit ? null : found;
 }
 
 export type SinglesResult = { grid: Grid; solved: boolean; contradiction: boolean };
@@ -126,7 +191,7 @@ export function applySingles(grid: Grid, layout: Layout): SinglesResult {
     // Naked singles.
     for (let index = 0; index < work.length; index += 1) {
       if (work[index] !== 0) continue;
-      const mask = candidatesAt(layout, index, taken);
+      const mask = candidatesAt(layout, index, taken, work);
       if (mask === 0) return { grid: work, solved: false, contradiction: true };
       if (bitCount(mask) === 1) {
         const value = lowestBit(mask);
@@ -144,7 +209,7 @@ export function applySingles(grid: Grid, layout: Layout): SinglesResult {
         let places = 0;
         for (const index of layout.groups[group]!) {
           if (work[index] !== 0) continue;
-          if ((candidatesAt(layout, index, taken) & bit) !== 0) {
+          if ((candidatesAt(layout, index, taken, work) & bit) !== 0) {
             at = index;
             places += 1;
             if (places > 1) break;

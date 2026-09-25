@@ -7,6 +7,9 @@ import { BoardFrame } from "@/components/board/BoardFrame";
 import { playingAreaInset } from "@/components/board/margin";
 import { REGION_FILLS } from "@/components/puzzles/puzzles.constants";
 import { shakeRegions } from "@/lib/puzzles/jigsaw/generate";
+import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
+import { generateSumCages } from "@/lib/puzzles/killer/generate";
+import { cageOutline } from "@/lib/puzzles/killer/outline";
 import { NUMBER_PLACE_BOXES } from "@/lib/puzzles/numberPlace/boxes";
 import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -42,10 +45,18 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
 
   /* The region every cell is drawn in, or null for a plain square (More or Less). */
   const region = useMemo<number[] | null>(() => {
-    if ((kind === "numberPlace" || kind === "diagonal") && NUMBER_PLACE_BOXES[size] !== undefined) return boxedLayout(size).region;
+    if ((kind === "numberPlace" || kind === "diagonal" || kind === "sumCages") && NUMBER_PLACE_BOXES[size] !== undefined) return boxedLayout(size).region;
     if (kind === "jigsaw" || kind === "hiddenStones") return shakeRegions(size, seededRandom(size * 7919));
     return null;
   }, [kind, size]);
+
+  /* Sum Cages: the cages of a real easy puzzle at this size, from a fixed seed — a few milliseconds, and only a picture. */
+  const cages = useMemo<Cage[] | null>(
+    () => (kind === "sumCages" ? (decodeKiller(generateSumCages(size, "easy", 7).givens, size)?.cages ?? null) : null),
+    [kind, size],
+  );
+  const cageOf = new Map<number, number>();
+  (cages ?? []).forEach((cage, c) => cage.cells.forEach((index) => cageOf.set(index, c)));
 
   const cells = Array.from({ length: size * size }, (_, index) => index);
   const heavy = 0.08;
@@ -101,6 +112,20 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
                     />
                   ) : null}
                 </g>
+              );
+            })}
+            {/* The cages, dashed a little inside their cells, as the grid a puzzle is solved on draws them (`cageOutline`). */}
+            {cages !== null
+              ? cageOutline(size, (index) => cageOf.get(index)).map((line, at) => (
+                  <line key={`cage-${at}`} {...line} stroke={theme.line} strokeWidth={0.025} strokeDasharray="0.08 0.06" />
+                ))
+              : null}
+            {(cages ?? []).map((cage) => {
+              const first = Math.min(...cage.cells);
+              return (
+                <text key={`sum-${first}`} x={(first % size) + 0.16} y={Math.floor(first / size) + 0.34} fontSize={0.22} fill={theme.line}>
+                  {cage.sum}
+                </text>
               );
             })}
             <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={heavy} />

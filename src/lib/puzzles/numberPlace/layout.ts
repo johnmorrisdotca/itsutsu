@@ -25,6 +25,15 @@ export type Layout = {
   /** What a region is called when a check says which group repeats: a box, or a jigsaw's region. */
   regionWord: "box" | "region";
   diagonal: boolean;
+  /**
+   * A Killer's cages: cells that hold different numbers adding to `sum`. Each
+   * is also one of `groups`, so "different" is the solver's ordinary rule; the
+   * sum is the one thing the solver reads from here. Absent for every other
+   * puzzle, which is what keeps their search exactly as it was.
+   */
+  cages?: { cells: number[]; sum: number }[];
+  /** For each cell, the index of its cage in `cages`. */
+  cageOf?: number[];
 };
 
 function build(size: number, region: number[], regionWord: Layout["regionWord"], diagonal: boolean): Layout {
@@ -57,6 +66,23 @@ export function boxedLayout(size: number, diagonal = false): Layout {
 /** Rows, columns and the given regions, numbered 0..size-1, each `size` cells. */
 export function regionLayout(size: number, region: readonly number[]): Layout {
   return build(size, [...region], "region", false);
+}
+
+/** Rows, columns and boxes, and the cages over them, each cage a group of its own as well. */
+export function cagedLayout(size: number, cages: readonly { cells: readonly number[]; sum: number }[]): Layout {
+  const boxed = boxedLayout(size);
+  const groups = [...boxed.groups, ...cages.map((cage) => [...cage.cells])];
+  const groupsOf: number[][] = Array.from({ length: size * size }, () => []);
+  groups.forEach((cells, g) => cells.forEach((index) => groupsOf[index]!.push(g)));
+  const cageOf = new Array<number>(size * size).fill(-1);
+  cages.forEach((cage, c) => cage.cells.forEach((index) => (cageOf[index] = c)));
+  return {
+    ...boxed,
+    groups,
+    groupsOf,
+    cages: cages.map((cage) => ({ cells: [...cage.cells], sum: cage.sum })),
+    cageOf,
+  };
 }
 
 /**

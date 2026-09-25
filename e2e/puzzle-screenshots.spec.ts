@@ -6,6 +6,7 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeJigsaw } from "../src/lib/puzzles/jigsaw/code";
+import { decodeKiller } from "../src/lib/puzzles/killer/code";
 import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
@@ -34,6 +35,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "jigsaw", size: 7, level: "medium", seed: 20260924, fill: 3 },
   // A 9×9 Diagonal a third filled, its two diagonals shaded.
   { kind: "diagonal", size: 9, level: "medium", seed: 20260924, fill: 3 },
+  // A 6×6 Sum Cages a third filled: the dashed cages and their sums are the picture, and a 6×6's read at a thumbnail's size.
+  { kind: "sumCages", size: 6, level: "easy", seed: 20260924, fill: 3 },
 ];
 
 test.describe("puzzle screenshots", () => {
@@ -66,7 +69,9 @@ test.describe("puzzle screenshots", () => {
             ? decodeMoreOrLess(puzzle.givens, scene.size)!.cells
             : scene.kind === "jigsaw"
               ? decodeJigsaw(puzzle.givens, scene.size)!.cells
-              : decodeCells(puzzle.givens, scene.size)!;
+              : scene.kind === "sumCages"
+                ? decodeKiller(puzzle.givens, scene.size)!.cells
+                : decodeCells(puzzle.givens, scene.size)!;
         const solution = decodeCells(puzzle.solution, scene.size)!;
         for (const [index, given] of givens.entries()) {
           if (given !== 0 || index % scene.fill !== 0) continue;

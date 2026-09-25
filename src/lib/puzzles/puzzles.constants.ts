@@ -21,6 +21,7 @@ export const PUZZLE_KINDS = {
   moreOrLess: "moreOrLess",
   jigsaw: "jigsaw",
   diagonal: "diagonal",
+  sumCages: "sumCages",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -28,6 +29,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.numberPlace,
   PUZZLE_KINDS.jigsaw,
   PUZZLE_KINDS.diagonal,
+  PUZZLE_KINDS.sumCages,
   PUZZLE_KINDS.hiddenStones,
   PUZZLE_KINDS.moreOrLess,
 ];
@@ -84,6 +86,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 162: a 9×9's 81 cells and then its 81 region letters, which its code writes after the cells.
   jigsaw: { sizes: [5, 6, 7, 9], offered: [5, 6, 7, 9], defaultSize: 7, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 162 },
   diagonal: { sizes: [6, 9], offered: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
+  // 286: a 9×9's 81 cells, its 81 cage letters and two characters for each of up to 62 cages' sums.
+  sumCages: { sizes: [6, 9], offered: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 286 },
 };
 
 /**
@@ -130,6 +134,10 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     9: { label: "Classic", kanji: "本格" },
   },
   diagonal: {
+    6: { label: "Short", kanji: "短" },
+    9: { label: "Classic", kanji: "定番" },
+  },
+  sumCages: {
     6: { label: "Short", kanji: "短" },
     9: { label: "Classic", kanji: "定番" },
   },
@@ -217,6 +225,23 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
       "The two long diagonals, shaded corner to corner, must each hold every number exactly once as well.",
       "Every puzzle has exactly one answer, and the diagonals are part of reaching it: fewer numbers are printed than a plain grid would need.",
+      "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
+    ],
+    board: "9×9 is the usual size; 6×6, with boxes two rows tall and three wide, is the short one.",
+  },
+  sumCages: {
+    label: "Sum Cages",
+    kanji: "合計ナンプレ",
+    tagline: "Number Place with no numbers printed: dashed cages each give the sum of the numbers inside them.",
+    inspiredBy: "Killer Sudoku",
+    origin:
+      "Played in Japan in the 1990s as sum number place, and made famous as Killer Sudoku by The Times in 2005, which printed it daily beside the plain grid.",
+    alsoKnownAs: ["Killer Sudoku", "Sumdoku", "Sum Number Place"],
+    wikipedia: "Killer_sudoku",
+    rules: [
+      "Fill every cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
+      "The dashed outlines are cages. The small number in a cage's corner is the sum of the numbers inside it, and no number appears twice in one cage.",
+      "Almost nothing is printed: the sums are the clues. Every puzzle has exactly one answer, and the harder levels have fewer, bigger cages.",
       "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
     ],
     board: "9×9 is the usual size; 6×6, with boxes two rows tall and three wide, is the short one.",

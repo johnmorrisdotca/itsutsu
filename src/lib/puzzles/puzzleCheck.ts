@@ -1,6 +1,7 @@
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
+import { decodeKiller } from "./killer/code";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -33,6 +34,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkJigsaw(size, givens, answer);
     case "diagonal":
       return checkDiagonal(size, givens, answer);
+    case "sumCages":
+      return checkSumCages(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -58,6 +61,26 @@ function checkJigsaw(size: number, givens: string, answer: string): PuzzleCheck 
   if (asked === null) return { ok: false, reason: "the givens are not a grid with regions" };
   if (!regionsAreSound(size, asked.regions)) return { ok: false, reason: "the regions do not divide the grid" };
   return checkOnLayout(regionLayout(size, asked.regions), asked.cells, answer);
+}
+
+/**
+ * Sum Cages: a Number Place grid, and every cage it was handed holds no
+ * number twice and adds to its sum. The cages come from the givens, as a
+ * Jigsaw's regions do; each cell is in exactly one, which the code's shape
+ * already guarantees.
+ */
+function checkSumCages(size: number, givens: string, answer: string): PuzzleCheck {
+  const asked = decodeKiller(givens, size);
+  if (asked === null) return { ok: false, reason: "the givens are not a grid with cages" };
+  const plain = checkOnLayout(boxedLayout(size), asked.cells, answer);
+  if (!plain.ok) return plain;
+  const filled = decodeCells(answer, size)!;
+  for (const [at, cage] of asked.cages.entries()) {
+    const values = cage.cells.map((index) => filled[index]!);
+    if (new Set(values).size !== values.length) return { ok: false, reason: `cage ${at + 1} repeats a number` };
+    if (values.reduce((total, value) => total + value, 0) !== cage.sum) return { ok: false, reason: `cage ${at + 1} does not add to ${cage.sum}` };
+  }
+  return { ok: true };
 }
 
 /** Every group of the layout holds every number once, and no given was changed. One pass over the cells. */

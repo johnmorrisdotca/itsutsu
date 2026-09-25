@@ -18,6 +18,8 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/lib/puzzles/hiddenStones/generate.ts",
   "src/lib/puzzles/moreOrLess/generate.ts",
   "src/lib/puzzles/jigsaw/generate.ts",
+  "src/lib/puzzles/killer/generate.ts",
+  "src/lib/puzzles/killer/outline.ts",
   "src/lib/puzzles/numberPlace/layout.ts",
   "src/lib/puzzles/numberPlace/solve.ts",
   "e2e/puzzle-screenshots.spec.ts",

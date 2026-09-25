@@ -66,3 +66,9 @@ export const PUZZLE_CLOCK_TICK_MS = 1000;
 export function sizeWord(size: number): string {
   return `${size}×${size}`;
 }
+
+/** The cages' dashed outlines, one drawing laid over the whole grid (Sum Cages). */
+export const PUZZLE_CAGE_LINES = "pointer-events-none absolute inset-0 h-full w-full stroke-ink/70 [stroke-dasharray:4_3] [stroke-width:1]";
+
+/** A cage's sum, small in the top-left corner of its first cell. */
+export const PUZZLE_CAGE_SUM = "pointer-events-none absolute top-[4%] left-[6%] text-[0.55rem] leading-none font-semibold text-ink sm:text-[0.65rem]";
