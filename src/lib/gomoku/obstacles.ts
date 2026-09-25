@@ -92,12 +92,22 @@ export function emptyBoard(settings: GameSettings): Cell[] {
       }
     }
   }
-  // The honeycomb: everything outside the hexagon is sealed, and so is its centre — see rules/hexagon.ts.
+  /*
+   * The hexagon: everything outside it is sealed, on both hexagon games —
+   * see rules/hexagon.ts. The CENTRE is sealed too, but only for the
+   * flipping game: Honeycomb counts discs and wants an even number of
+   * playable cells, and the sealed centre is what gives it one. Hex Five
+   * counts nothing and plays no differently for it, so its centre stays
+   * open — the first stone of a game may go there.
+   */
   if (VARIANT_SPECS[settings.variant].hexagon) {
+    const sealsCentre = VARIANT_SPECS[settings.variant].flips;
     for (let row = 0; row < settings.size; row += 1) {
       for (let col = 0; col < settings.size; col += 1) {
         const point = { row, col };
-        if (!inHexagon(settings.size, point) || hexagonSealed(settings.size, point)) board[row * settings.size + col] = BLOCKED;
+        if (!inHexagon(settings.size, point) || (sealsCentre && hexagonSealed(settings.size, point))) {
+          board[row * settings.size + col] = BLOCKED;
+        }
       }
     }
   }

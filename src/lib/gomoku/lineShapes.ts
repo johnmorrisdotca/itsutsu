@@ -233,6 +233,8 @@ export function boardShapeScore(
   stone: Stone,
   /** What a window is worth by the stones it holds; the powers of four where the caller says nothing. */
   values?: readonly number[],
+  /** The lines a run may travel: the square board's four by default, the hexagon's three where the caller knows it is one. */
+  directions: readonly Point[] = DIRECTIONS,
 ): number | null {
   const table = values === undefined ? windowTable(winLength) : weightedWindowTable(winLength, values);
   if (table === null) return null;
@@ -243,7 +245,7 @@ export function boardShapeScore(
   const newest = 3 ** (winLength - 1);
   let total = 0;
 
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (let row = 0; row < size; row += 1) {
       /*
        * Only a cell on the rim can begin a line: one step back from anywhere
@@ -301,6 +303,8 @@ export function spanScore(
   winLength: number,
   stone: Stone,
   point: Point,
+  /** The lines a run may travel: the square board's four by default, the hexagon's three where the caller knows it is one. */
+  directions: readonly Point[] = DIRECTIONS,
 ): number | null {
   const table = spanTable(winLength);
   if (table === null) return null;
@@ -309,7 +313,7 @@ export function spanScore(
   const reach = winLength - 1;
   let total = 0;
 
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     let index = 0;
     let place = 1;
     for (let cell = 0; cell < span; cell += 1) {

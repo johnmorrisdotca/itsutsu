@@ -42,7 +42,9 @@ function isPlainFiveInARow(spec: VariantSpec): boolean {
     !spec.connects &&
     !spec.checkers &&
     !spec.chineseCheckers &&
-    !spec.go
+    !spec.go &&
+    // "On a plain board": no SGF board is a hexagon, which is why Hex Five gets no number of its own either.
+    !spec.hexagon
   );
 }
 

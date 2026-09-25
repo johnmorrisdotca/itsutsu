@@ -14,6 +14,27 @@ export const DIRECTIONS: readonly Point[] = [
 ];
 
 /**
+ * The three line orientations on the hexagon lattice — see rules/hexagon.ts
+ * for the embedding. Each is checked both ways, covering the six neighbours a
+ * hexagon cell has. Three of the square board's own four: horizontal,
+ * vertical and the slanted diagonal that follows the lattice's shear. The
+ * fourth, `{row: 1, col: 1}`, is a diagonal of the SQUARE embedding only —
+ * two cells that far apart along it are not lattice neighbours, and no
+ * unbroken run of hexagon cells ever lies along it — so it is left out here
+ * on purpose, never scanned as a line.
+ */
+export const HEX_LINE_DIRECTIONS: readonly Point[] = [
+  { row: 0, col: 1 },
+  { row: 1, col: 0 },
+  { row: 1, col: -1 },
+];
+
+/** The directions a winning line may run: the hexagon's three axes on a hexagon board, the square's four otherwise. */
+export function lineDirectionsFor(hexagon: boolean): readonly Point[] {
+  return hexagon ? HEX_LINE_DIRECTIONS : DIRECTIONS;
+}
+
+/**
  * Hoshi (star point) positions drawn on the board, by board size: the four
  * corner points, plus tengen at the centre, and for 19×19 the side points too.
  */

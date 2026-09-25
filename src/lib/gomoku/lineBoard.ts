@@ -1,5 +1,5 @@
 import { findWinningLine, forbiddenAt, hasHandicap, movesBeforeDraw, otherStone, rulesFor } from "./engine";
-import { DIRECTIONS, GAME_STATUS, STONES } from "./gomoku.constants";
+import { GAME_STATUS, STONES, VARIANT_SPECS, lineDirectionsFor } from "./gomoku.constants";
 import { findsForcedWins } from "./forcedWin";
 import { BLOCKED, EMPTY, OWN, leafSpanTable, openCountTable, ownCountTable } from "./lineBoardTables";
 import { boardShapeScore, spanTable } from "./lineShapes";
@@ -88,6 +88,9 @@ export class LineBoard {
 
   /** For each colour, direction and point: that point's span as a base-3 number. */
   private readonly codes: Int32Array;
+  /** The lines a run may travel: the square board's four, the hexagon's three. Read once and kept, never the module constant, so a hexagon game is never scored along its square embedding's fourth diagonal. */
+  private readonly directions: readonly Point[];
+  private readonly directionCount: number;
   private readonly pow3: Int32Array;
   private readonly reach: number;
   private readonly shapeTable: Int16Array;
@@ -116,6 +119,8 @@ export class LineBoard {
     this.cells = state.board.slice();
     this.toPlay = state.toPlay;
     this.moves = state.moves.length;
+    this.directions = lineDirectionsFor(VARIANT_SPECS[settings.variant].hexagon);
+    this.directionCount = this.directions.length;
     this.reach = this.winLength - 1;
     this.shapeTable = spanTable(this.winLength) as Int16Array;
     const toMove = this.winLength === 5 ? LINE_WINDOW_VALUES.toMove : undefined;
@@ -134,7 +139,7 @@ export class LineBoard {
     for (let place = 0, value = 1; place < span; place += 1, value *= 3) this.pow3[place] = value;
 
     const points = this.points;
-    this.codes = new Int32Array(2 * DIRECTIONS.length * points);
+    this.codes = new Int32Array(2 * this.directionCount * points);
     this.shapes = new Int32Array(2 * points);
     this.fiveLines = new Uint8Array(2 * points);
     this.fourLines = new Uint8Array(2 * points);
@@ -157,10 +162,10 @@ export class LineBoard {
     }
     for (const stone of [STONES.black, STONES.white] as const) {
       const side = sideOf(stone);
-      this.totalsToMove[side] = boardShapeScore(this.cells, this.size, this.winLength, stone, toMove) ?? 0;
-      this.totalsWaiting[side] = boardShapeScore(this.cells, this.size, this.winLength, stone, waiting) ?? 0;
-      for (let direction = 0; direction < DIRECTIONS.length; direction += 1) {
-        const step = DIRECTIONS[direction];
+      this.totalsToMove[side] = boardShapeScore(this.cells, this.size, this.winLength, stone, toMove, this.directions) ?? 0;
+      this.totalsWaiting[side] = boardShapeScore(this.cells, this.size, this.winLength, stone, waiting, this.directions) ?? 0;
+      for (let direction = 0; direction < this.directionCount; direction += 1) {
+        const step = this.directions[direction];
         for (let index = 0; index < points; index += 1) {
           const row = Math.floor(index / this.size);
           const col = index - row * this.size;
@@ -173,7 +178,7 @@ export class LineBoard {
             const digit = cell === stone ? OWN : cell === null ? EMPTY : BLOCKED;
             code += digit * this.pow3[place];
           }
-          this.codes[(side * 4 + direction) * points + index] = code;
+          this.codes[(side * this.directionCount + direction) * points + index] = code;
           this.count(side, index, code, 1);
         }
       }
@@ -280,9 +285,9 @@ export class LineBoard {
     const stoneSide = sideOf(stone);
     for (let side = 0; side < 2; side += 1) {
       const digit = side === stoneSide ? OWN : BLOCKED;
-      for (let direction = 0; direction < DIRECTIONS.length; direction += 1) {
-        const step = DIRECTIONS[direction];
-        const base = (side * 4 + direction) * this.points;
+      for (let direction = 0; direction < this.directionCount; direction += 1) {
+        const step = this.directions[direction];
+        const base = (side * this.directionCount + direction) * this.points;
         const before = this.codes[base + index];
         for (let shift = -this.reach; shift <= this.reach; shift += 1) {
           // The point whose span holds this stone `shift` places past its centre.
@@ -325,7 +330,7 @@ export class LineBoard {
   private longEnoughRun(index: number, stone: Stone): boolean {
     const row = Math.floor(index / this.size);
     const col = index - row * this.size;
-    for (const step of DIRECTIONS) {
+    for (const step of this.directions) {
       let run = 1;
       for (let sign = 1; sign >= -1; sign -= 2) {
         for (let k = 1; k < this.winLength && run < this.winLength; k += 1) {
@@ -373,8 +378,8 @@ export class LineBoard {
    */
   private mayBeForbidden(index: number, side: number): boolean {
     let linesWithTwo = 0;
-    for (let direction = 0; direction < DIRECTIONS.length; direction += 1) {
-      const own = this.ownTable[this.codes[(side * 4 + direction) * this.points + index]];
+    for (let direction = 0; direction < this.directionCount; direction += 1) {
+      const own = this.ownTable[this.codes[(side * this.directionCount + direction) * this.points + index]];
       if (own >= this.winLength - 2) return true;
       if (own >= this.winLength - 3) linesWithTwo += 1;
     }
@@ -384,8 +389,8 @@ export class LineBoard {
   /** The most of `stone`'s stones in any open window through the empty point `index`, read from its codes. */
   openCount(index: number, stone: Stone): number {
     let best = 0;
-    for (let direction = 0; direction < DIRECTIONS.length; direction += 1) {
-      const count = this.openTable[this.codes[(sideOf(stone) * 4 + direction) * this.points + index]];
+    for (let direction = 0; direction < this.directionCount; direction += 1) {
+      const count = this.openTable[this.codes[(sideOf(stone) * this.directionCount + direction) * this.points + index]];
       if (count > best) best = count;
     }
     return best;
@@ -402,7 +407,7 @@ export class LineBoard {
     const row = Math.floor(index / this.size);
     const col = index - row * this.size;
     const side = sideOf(stone);
-    for (const step of DIRECTIONS) {
+    for (const step of this.directions) {
       for (let k = -this.reach; k <= this.reach; k += 1) {
         if (k === 0) continue;
         const r = row + step.row * k;

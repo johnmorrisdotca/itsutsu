@@ -93,6 +93,7 @@ export const RULE_VARIANTS = {
   honeycomb: "honeycomb",
   halma: "halma",
   hex: "hex",
+  hexFive: "hexFive",
   checkers: "checkers",
   internationalDraughts: "internationalDraughts",
   brazilianDraughts: "brazilianDraughts",
@@ -159,6 +160,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.honeycomb,
   RULE_VARIANTS.halma,
   RULE_VARIANTS.hex,
+  RULE_VARIANTS.hexFive,
   RULE_VARIANTS.checkers,
   RULE_VARIANTS.internationalDraughts,
   RULE_VARIANTS.brazilianDraughts,
@@ -333,7 +335,9 @@ const HEX_SIZES = [11, 13, 19] as const;
  *
  * The centre is sealed on every one of them, which leaves an even count of
  * playable cells at every radius (`honeycombPlayable`) — the right parity for
- * a game decided by counting discs.
+ * a game decided by counting discs. Hex Five plays the same four hexagons —
+ * see `hexFive` below — but a line game has no parity to keep, so its centre
+ * is open: the first stone of a game may go there.
  */
 const HONEYCOMB_SIZES = [7, 9, 11, 13] as const;
 /** Checkers: the 8×8 board draughts is played on everywhere. */
@@ -879,6 +883,23 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   // On the crossings of a triangular lattice, as a wooden Hex board is ruled: see HEX_LATTICE.
   hex: small({ grid: BOARD_GRIDS.lines, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap], headStartTurns: 3 }), // 3 never decides: a chain needs a stone on every row.
   /*
+   * Hex Five: five in a row on the same hexagon of hexagons Honeycomb is
+   * played on, but read as a line game rather than a flipping one — six
+   * neighbours a cell, three real lattice axes to run a line along (see
+   * rules/hexagon.ts and rules/lines.ts), and the centre left open, since
+   * nothing here counts discs and so needs no even parity of playable cells.
+   * Swap sits beside the free opening, as it does for Hex itself, so the
+   * first player cannot simply take the board's one strongest point.
+   */
+  hexFive: small({
+    grid: BOARD_GRIDS.lines,
+    hexagon: true,
+    boardSizes: HONEYCOMB_SIZES,
+    defaultBoard: 11, // 91 cells: the same board Honeycomb opens on.
+    openings: [OPENING_RULES.free, OPENING_RULES.swap],
+    headStartTurns: 2, // 3 free turns give an open four, as in freestyle.
+  }),
+  /*
    * Checkers: no lines, no captures-to-win tally of its own — the capture is
    * the whole of the move, worked out fresh by rules/checkers.ts rather than
    * read from `captures` or `captureSizes`, which belong to the flanking
@@ -1161,4 +1182,4 @@ export const DEFAULT_SETTINGS: GameSettings = {
 /** Black opens unless the settings say otherwise. */
 export const FIRST_STONE: Stone = STONES.black;
 
-export { COLUMN_LETTERS, DIRECTIONS, STAR_POINTS } from "./board.constants";
+export { COLUMN_LETTERS, DIRECTIONS, HEX_LINE_DIRECTIONS, STAR_POINTS, lineDirectionsFor } from "./board.constants";

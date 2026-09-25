@@ -587,6 +587,21 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "11×11 is the usual size, and the one the world championship uses; 13×13 and 19×19 are played too. The corners belong to both of their sides.",
   },
+  hexFive: {
+    label: "Hex Five",
+    kanji: "六角五目",
+    tagline: "Five in a row on a hexagon of hexagons: six neighbours a cell, three ways to line them up.",
+    origin:
+      "Our own game. Gomoku moved onto the honeycomb lattice: the same board Hexversi turns discs on, read instead as a line game, with the centre open and no discs to count.",
+    rules: [
+      "The board is a hexagon of hexagon cells; a stone sits where the lines cross, and each point touches six others, as Hex's own board does. Nothing is sealed at the centre — the first stone of the game may go there.",
+      "Players take turns placing one stone on an empty point.",
+      "A line only runs along three of the six neighbour directions — the lattice's own axes. The other two directions a square board would read as diagonals are not lines here.",
+      "Five or more stones of one colour in an unbroken line along one of those three axes wins.",
+      "Black has the advantage of the first stone, so the swap opening is offered: White may take Black's opening move as their own instead of answering it.",
+    ],
+    board: "Four hexagons, the same four Honeycomb is played on: 37 cells at four a side, 61 at five, 91 at six, and 127 at seven. 91 is the default, the same board Honeycomb opens on.",
+  },
   checkers: {
     label: "Checkers",
     kanji: "チェッカー",

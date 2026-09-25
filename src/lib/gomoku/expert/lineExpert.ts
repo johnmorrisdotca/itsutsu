@@ -1,5 +1,5 @@
 import { isLegalMove, otherStone, pointOf } from "../engine";
-import { DIRECTIONS, GAME_STATUS, LINE_RULES, PLACEMENTS, WRAP_MODES } from "../gomoku.constants";
+import { GAME_STATUS, LINE_RULES, PLACEMENTS, VARIANT_SPECS, WRAP_MODES, lineDirectionsFor } from "../gomoku.constants";
 import { DECIDED_SCORE, DRAW_SCORE } from "../opponent.constants";
 import { tengen } from "../obstacles";
 import { EXPERT_KINDS, EXPERT_SEARCH, LINE_WEIGHTS } from "./expert.constants";
@@ -103,11 +103,12 @@ export function lineHeat(
   size: number,
   point: Point,
   stone: Stone,
+  directions: readonly Point[],
 ): number {
   const foe = otherStone(stone);
   const top = LINE_WEIGHTS.heat.length - 1;
   let heat = 0;
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (const colour of [stone, foe]) {
       let run = 0;
       for (const way of [1, -1]) {
@@ -184,6 +185,7 @@ export function lineCandidates(state: GameState, limit: number): Point[] {
   const { board, settings } = state;
   const { size } = settings;
   const mover = state.toPlay;
+  const directions = lineDirectionsFor(VARIANT_SPECS[settings.variant].hexagon);
 
   const mine = readingFor(state, mover);
   for (const index of mine.fives) {
@@ -208,7 +210,7 @@ export function lineCandidates(state: GameState, limit: number): Point[] {
 
   const scored = nearbyPoints(state, EXPERT_SEARCH.lineRadius)
     .filter((point) => isLegalMove(state, point))
-    .map((point) => ({ point, heat: lineHeat(board, size, point, mover) }));
+    .map((point) => ({ point, heat: lineHeat(board, size, point, mover, directions) }));
   scored.sort((a, b) => b.heat - a.heat);
   return scored.slice(0, limit).map((entry) => entry.point);
 }

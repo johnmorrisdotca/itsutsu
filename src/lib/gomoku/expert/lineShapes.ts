@@ -1,5 +1,5 @@
 import { rulesFor } from "../engine";
-import { DIRECTIONS, LINE_RULES } from "../gomoku.constants";
+import { DIRECTIONS, LINE_RULES, VARIANT_SPECS, lineDirectionsFor } from "../gomoku.constants";
 import { LINE_WEIGHTS } from "./expert.constants";
 import type { Cell, GameSettings, GameState, Point, Stone } from "../gomoku.types";
 import type { LineReading } from "./expert.types";
@@ -41,6 +41,8 @@ export function lineRead(
   length: number,
   stone: Stone,
   exact: boolean,
+  /** The lines a run may travel: the square board's four by default, the hexagon's three where the caller knows it is one. */
+  directions: readonly Point[] = DIRECTIONS,
 ): LineReading {
   const fives = new Set<number>();
   /*
@@ -72,7 +74,7 @@ export function lineRead(
   if (bounds === null) return { score: 0, fives: [], openThrees: 0 };
   const { fromRow, toRow, fromCol, toCol } = bounds;
 
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (let row = fromRow; row <= toRow; row += 1) {
       for (let col = fromCol; col <= toCol; col += 1) {
         const endRow = row + step.row * (length - 1);
@@ -121,7 +123,7 @@ export function lineRead(
          */
         if (own === length - 2 && bothFlanksEmpty(board, size, row, col, endRow, endCol, step)) {
           // Keyed by its first stone and its direction, so one three counts once.
-          threes.add(first * DIRECTIONS.length + DIRECTIONS.indexOf(step));
+          threes.add(first * directions.length + directions.indexOf(step));
         }
       }
     }
@@ -230,6 +232,7 @@ export function readingFor(state: GameState, stone: Stone): LineReading {
     rulesFor(settings, stone).winLength,
     stone,
     !overlineWins(settings, stone),
+    lineDirectionsFor(VARIANT_SPECS[settings.variant].hexagon),
   );
 }
 

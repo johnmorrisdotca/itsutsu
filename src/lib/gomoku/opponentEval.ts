@@ -1,6 +1,6 @@
 import { shapeScore } from "./analysis";
 import { otherStone } from "./engine";
-import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
+import { GAME_STATUS, STONES, VARIANT_SPECS, lineDirectionsFor } from "./gomoku.constants";
 import { SHAPE_BASE } from "./analysis.constants";
 import { boardShapeScore } from "./lineShapes";
 import { rulesFor } from "./engine";
@@ -98,13 +98,14 @@ function windowScore(
   size: number,
   winLength: number,
   stone: Stone,
-  values?: readonly number[],
+  values: readonly number[] | undefined,
+  directions: readonly Point[],
 ): number {
-  const tabled = boardShapeScore(board, size, winLength, stone, values);
+  const tabled = boardShapeScore(board, size, winLength, stone, values, directions);
   if (tabled !== null) return tabled;
 
   let total = 0;
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (let row = 0; row < size; row += 1) {
       for (let col = 0; col < size; col += 1) {
         const lastRow = row + step.row * (winLength - 1);
@@ -134,8 +135,9 @@ function windowScore(
 export function boardScore(state: GameState, stone: Stone, spec: VariantSpec): number {
   const { board, settings } = state;
   const foe = otherStone(stone);
-  const mine = windowScore(board, settings.size, rulesFor(settings, stone).winLength, stone, lineValues(state, stone, spec));
-  const theirs = windowScore(board, settings.size, rulesFor(settings, foe).winLength, foe, lineValues(state, foe, spec));
+  const directions = lineDirectionsFor(spec.hexagon);
+  const mine = windowScore(board, settings.size, rulesFor(settings, stone).winLength, stone, lineValues(state, stone, spec), directions);
+  const theirs = windowScore(board, settings.size, rulesFor(settings, foe).winLength, foe, lineValues(state, foe, spec), directions);
   // The maker wants a line of either colour; the breaker wants neither.
   if (spec.makerBreaker) return (stone === STONES.black ? 1 : -1) * (mine + theirs);
   return lineSign(spec, stone) * (mine - theirs);

@@ -143,6 +143,7 @@ export const SGF_TYPES: Record<RuleVariant, SgfTypeRow> = {
   poolCheckers: { gm: null, why: `${NO_NUMBER}: it numbers chess, shogi and Chinese chess, and not draughts.` },
   chineseCheckers: { gm: null, why: `Marbles race across a star-shaped board. ${NO_NUMBER}.` },
   hex: { gm: SGF_GAME_TYPES.hex, rules: null },
+  hexFive: { gm: null, why: `Five in a row on the hexagon lattice, read along three axes rather than two. ${NO_NUMBER}, and SGF's own hex type (11) is Hex's connection game, not a line on that board.` },
   go: { gm: SGF_GAME_TYPES.go, rules: null },
 };
 

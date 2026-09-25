@@ -1,5 +1,5 @@
 import { findWinningLine, indexOf, isOnBoard, otherStone, rulesFor } from "./engine";
-import { DIRECTIONS, GAME_STATUS, LINE_RULES, MOVE_KINDS, OPENING_STAGES, PLACEMENTS, STONES, VARIANT_SPECS, WRAP_MODES } from "./gomoku.constants";
+import { GAME_STATUS, LINE_RULES, MOVE_KINDS, OPENING_STAGES, PLACEMENTS, STONES, VARIANT_SPECS, WRAP_MODES, lineDirectionsFor } from "./gomoku.constants";
 import { FORCED } from "./opponent.constants";
 import { searchable } from "./opponentSearch";
 import { applyTurn } from "./opponentTurns";
@@ -80,8 +80,9 @@ export function completionsThrough(board: Cell[], state: GameState, stone: Stone
   const { size } = state.settings;
   const { winLength } = rulesFor(state.settings, stone);
   const reach = winLength - 1;
+  const directions = lineDirectionsFor(VARIANT_SPECS[state.settings.variant].hexagon);
   const found: Point[] = [];
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (let k = -reach; k <= reach; k += 1) {
       if (k === 0) continue;
       const point = { row: around.row + step.row * k, col: around.col + step.col * k };
@@ -89,7 +90,7 @@ export function completionsThrough(board: Cell[], state: GameState, stone: Stone
       const at = indexOf(size, point);
       if (board[at] !== null) continue;
       // The full check's own first condition, counted: a run of the colour's stones long enough to finish.
-      if (!longEnoughRun(board, size, point, stone, winLength)) continue;
+      if (!longEnoughRun(board, size, point, stone, winLength, directions)) continue;
       board[at] = stone;
       const wins = findWinningLine(board, state.settings, point).length > 0;
       board[at] = null;
@@ -105,8 +106,8 @@ export function completionsThrough(board: Cell[], state: GameState, stone: Stone
  * winning line needs, counted without building one. Straight lines only, which
  * is all `findsForcedWins` lets through.
  */
-function longEnoughRun(board: Cell[], size: number, point: Point, stone: Stone, winLength: number): boolean {
-  for (const step of DIRECTIONS) {
+function longEnoughRun(board: Cell[], size: number, point: Point, stone: Stone, winLength: number, directions: readonly Point[]): boolean {
+  for (const step of directions) {
     let run = 1;
     for (const sign of SIGNS) {
       for (let k = 1; k < winLength && run < winLength; k += 1) {
@@ -133,7 +134,8 @@ const SIGNS = [1, -1] as const;
 export function couldMakeLine(board: Cell[], state: GameState, stone: Stone, point: Point, short: number): boolean {
   const { size } = state.settings;
   const length = rulesFor(state.settings, stone).winLength;
-  for (const step of DIRECTIONS) {
+  const directions = lineDirectionsFor(VARIANT_SPECS[state.settings.variant].hexagon);
+  for (const step of directions) {
     for (let start = -(length - 1); start <= 0; start += 1) {
       let own = 0;
       let open = true;
