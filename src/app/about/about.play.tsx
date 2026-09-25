@@ -70,7 +70,7 @@ export const BOARD_SECTION: AboutSection = {
       The <em>practice board</em> is the one you can just start using. You play both sides, take moves back, ask
       whether either side has a winning line, and paste in a game from ItsYourTurn or GoldToken to step through it.
       Nothing played there is rated. <em>Just the board</em> opens the board on its own, over the page, with only
-      the controls you need to play, or a finished game's slider; Esc or Close takes you back, and it stays on from
+      the controls you need to play, or the slider of a finished game; Esc or Close takes you back, and it stays on from
       game to game until you do. The wood is your choice too: {listed(THEMES)}.
     </>,
     <>
