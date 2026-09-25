@@ -1,4 +1,7 @@
+import type { PuzzleKind } from "../puzzles.types";
 import { EN_WORDS } from "./words.en.data";
+import { FR_WORDS } from "./words.fr.data";
+import { DE_WORDS } from "./words.de.data";
 
 /**
  * GOMOJI: a word of `size` letters, found in `size + 1` guesses, each
@@ -12,7 +15,32 @@ import { EN_WORDS } from "./words.en.data";
  * - an ANSWER, and a run's progress, is every guess in order, run together in
  *   lower case ("slateprick crane" without the spaces). A guess is `size`
  *   letters, so where one ends is never in doubt.
+ *
+ * ONE ENGINE, THREE LANGUAGES (Gomoji Mot, French; Gomoji Wort, German):
+ * every function here takes the language its puzzle is in, defaulting to
+ * English so every existing caller keeps working unchanged. English and
+ * French share the plain A–Z alphabet (French folds its accents away when
+ * its word list is written, `word-lists-fr-de.mjs`); German alone adds Ä, Ö
+ * and Ü as letters of their own, so `decodeHidden` and `decodeGuesses` read
+ * the alphabet a language's givens and guesses may be spelled with.
  */
+export type GomojiLanguage = "en" | "fr" | "de";
+
+const WORD_DATA: Record<GomojiLanguage, Record<number, { easy: string; answers: string; allowed: string }>> = {
+  en: EN_WORDS,
+  fr: FR_WORDS,
+  de: DE_WORDS,
+};
+
+/** The letters a language's givens and guesses may be spelled with, upper case, for a decoding regex. */
+const ALPHABET: Record<GomojiLanguage, string> = { en: "A-Z", fr: "A-Z", de: "A-ZÄÖÜ" };
+
+/** Which language a Gomoji kind plays in: English for Gomoji itself, French for Mot, German for Wort. */
+export function languageOf(kind: PuzzleKind): GomojiLanguage {
+  if (kind === "gomojiMot") return "fr";
+  if (kind === "gomojiWort") return "de";
+  return "en";
+}
 
 /** How many guesses a word of this length allows: one more than its letters, six for five, five for four. */
 export function rowsFor(size: number): number {
@@ -48,18 +76,20 @@ export function markGuess(guess: string, hidden: string): LetterMark[] {
   return marks;
 }
 
-/** The hidden word a puzzle's givens name, lower case, or null for givens that are not one word in capitals. */
-export function decodeHidden(givens: string, size: number): string | null {
-  return typeof givens === "string" && givens.length === size && /^[A-Z]+$/.test(givens) ? givens.toLowerCase() : null;
+/** The hidden word a puzzle's givens name, lower case, or null for givens that are not one word in capitals of this language's alphabet. */
+export function decodeHidden(givens: string, size: number, lang: GomojiLanguage = "en"): string | null {
+  const re = new RegExp(`^[${ALPHABET[lang]}]+$`);
+  return typeof givens === "string" && givens.length === size && re.test(givens) ? givens.toLowerCase() : null;
 }
 
 export function encodeHidden(word: string): string {
   return word.toUpperCase();
 }
 
-/** The guesses a string holds, in order, or null for one that is not whole guesses of lower-case letters. */
-export function decodeGuesses(code: string, size: number): string[] | null {
-  if (typeof code !== "string" || code.length % size !== 0 || !/^[a-z]*$/.test(code)) return null;
+/** The guesses a string holds, in order, or null for one that is not whole guesses of this language's lower-case letters. */
+export function decodeGuesses(code: string, size: number, lang: GomojiLanguage = "en"): string[] | null {
+  const re = new RegExp(`^[${ALPHABET[lang].toLowerCase()}]*$`);
+  if (typeof code !== "string" || code.length % size !== 0 || !re.test(code)) return null;
   return Array.from({ length: code.length / size }, (_, row) => code.slice(row * size, row * size + size));
 }
 
@@ -67,27 +97,28 @@ export function decodeGuesses(code: string, size: number): string[] | null {
 
 type Lists = { easy: string[]; answers: string[]; allowed: Set<string> };
 
-const LISTS = new Map<number, Lists>();
+const LISTS = new Map<string, Lists>();
 
-function listsFor(size: number): Lists | null {
-  const known = LISTS.get(size);
+function listsFor(size: number, lang: GomojiLanguage = "en"): Lists | null {
+  const key = `${lang}:${size}`;
+  const known = LISTS.get(key);
   if (known !== undefined) return known;
-  const text = EN_WORDS[size];
+  const text = WORD_DATA[lang][size];
   if (text === undefined) return null;
   const split = (words: string) => words.split(/\s+/).filter(Boolean);
   const lists = { easy: split(text.easy), answers: split(text.answers), allowed: new Set(split(text.allowed)) };
-  LISTS.set(size, lists);
+  LISTS.set(key, lists);
   return lists;
 }
 
 /** Whether a word may be guessed: any word of the length in the list, whatever it is. */
-export function isWord(word: string, size: number): boolean {
-  return word.length === size && (listsFor(size)?.allowed.has(word) ?? false);
+export function isWord(word: string, size: number, lang: GomojiLanguage = "en"): boolean {
+  return word.length === size && (listsFor(size, lang)?.allowed.has(word) ?? false);
 }
 
 /** The words a hidden word is drawn from: the commonest for easy, the wider list for medium and hard. */
-export function answersFor(size: number, easy: boolean): readonly string[] {
-  const lists = listsFor(size);
+export function answersFor(size: number, easy: boolean, lang: GomojiLanguage = "en"): readonly string[] {
+  const lists = listsFor(size, lang);
   if (lists === null) return [];
   return easy ? lists.easy : lists.answers;
 }
