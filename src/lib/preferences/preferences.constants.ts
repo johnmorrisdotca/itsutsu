@@ -5,6 +5,7 @@ import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/direc
 import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
 import { BOARD_SIZES, BOARD_SIZE_LIST } from "./boardSize";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
+import { MOVE_FORMAT_CHOICES } from "@/lib/record/moveFormats";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
 
@@ -166,6 +167,14 @@ export const PREFERENCE_SPECS = {
    * never applies it, is left alone.
    */
   boardSize: { options: BOARD_SIZE_LIST, fallback: BOARD_SIZES.fit },
+
+  /*
+   * How a game's record writes its moves: ours, one a line, or two a line as
+   * ItsYourTurn and GoldToken print them. See `moveFormats.ts`. John,
+   * 2026-09-25: "a tertiary button that offers to display in all the known
+   * formats we support. and save to memory."
+   */
+  moveFormat: { options: MOVE_FORMAT_CHOICES, fallback: "itsutsu" },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

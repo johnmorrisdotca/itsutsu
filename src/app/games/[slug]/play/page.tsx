@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { currentReader } from "@/lib/auth/currentReader";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -47,6 +48,8 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   const board = await appearanceFor(reader.memberId);
   // Where a new game starts for them: board size, the switches, the clock.
   const defaults = await gameDefaultsFor(reader.memberId);
+  // How the record writes its moves, as this member last chose (`moveFormats.ts`).
+  const { moveFormat } = await preferencesFor();
 
   return (
     <Page board>
@@ -64,6 +67,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
         */
         savesToAccount={reader.hasAccount}
         defaults={defaults}
+        moveFormat={moveFormat}
       />
       <footer className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
         <p>

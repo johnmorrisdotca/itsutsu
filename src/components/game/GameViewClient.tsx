@@ -1,5 +1,7 @@
 "use client";
 
+import { MoveFormatProvider } from "./MoveFormatContext";
+import type { MoveFormatChoice } from "@/lib/record/moveFormats";
 import dynamic from "next/dynamic";
 
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -34,6 +36,7 @@ export function GameViewClient({
   appearance = null,
   savesToAccount = false,
   defaults,
+  moveFormat = "itsutsu",
 }: {
   variant?: RuleVariant;
   /** Keep the address at /games/<slug> as the game in play changes. */
@@ -50,15 +53,19 @@ export function GameViewClient({
   savesToAccount?: boolean;
   /** Where a new game starts for this member. */
   defaults: GameDefaults;
+  /** How this member likes a record's moves written, from their account (`moveFormats.ts`). */
+  moveFormat?: MoveFormatChoice;
 }) {
   return (
-    <GameView
-      variant={variant}
-      trackPath={trackPath}
-      match={match}
-      appearance={appearance}
-      savesToAccount={savesToAccount}
-      defaults={defaults}
-    />
+    <MoveFormatProvider initial={moveFormat} saves={savesToAccount}>
+      <GameView
+        variant={variant}
+        trackPath={trackPath}
+        match={match}
+        appearance={appearance}
+        savesToAccount={savesToAccount}
+        defaults={defaults}
+      />
+    </MoveFormatProvider>
   );
 }

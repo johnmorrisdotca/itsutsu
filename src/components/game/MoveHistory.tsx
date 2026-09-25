@@ -1,6 +1,6 @@
 "use client";
 
-import { pointName } from "@/lib/gomoku/notation";
+import { MOVE_FORMAT_CHOICES, MOVE_FORMAT_DISPLAY, linesOf, pointIn } from "@/lib/record/moveFormats";
 import { MOVE_KINDS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { slugFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -17,6 +17,7 @@ import {
 } from "./game.constants";
 import type { HistoryMode } from "./game.types";
 import type { GamePanelProps } from "./game.types";
+import { useMoveFormat } from "./MoveFormatContext";
 
 /**
  * The game record (棋譜). Every entry is a position to jump to, which is what
@@ -25,6 +26,7 @@ import type { GamePanelProps } from "./game.types";
  */
 export function MoveHistory({ session, actions }: GamePanelProps) {
   const { state, fatalMoves, moveIndex, record } = session;
+  const { format, setFormat } = useMoveFormat();
   const fatalNumbers = new Set(fatalMoves.map((move) => move.moveNumber));
 
   return (
@@ -60,83 +62,113 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
         </p>
       ) : (
         <details className="group" open data-testid="move-history-fold">
-          <summary className="flex cursor-pointer list-none items-center justify-between text-xs text-muted">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs text-muted">
             <span>
               {record.length} {record.length === 1 ? "move" : "moves"}
             </span>
             <span className="group-open:hidden">show</span>
             <span className="hidden group-open:inline">hide</span>
           </summary>
+          {/*
+            HOW THE MOVES ARE WRITTEN, a quiet control under the count: ours, or
+            two a line as ItsYourTurn and GoldToken print them, kept on the
+            account (`MoveFormatContext`). John, 2026-09-25: "a tertiary button
+            that offers to display in all the known formats we support. and save
+            to memory."
+          */}
+          <div className="mt-1 flex flex-wrap items-center gap-1" role="radiogroup" aria-label="How the moves are written" data-testid="move-format">
+            {MOVE_FORMAT_CHOICES.map((choice) => (
+              <button
+                key={choice}
+                type="button"
+                role="radio"
+                aria-checked={format === choice}
+                onClick={() => setFormat(choice)}
+                title={MOVE_FORMAT_DISPLAY[choice].example}
+                className={`rounded-full border px-2 py-0.5 text-[0.7rem] transition-colors ${
+                  format === choice ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-rule-strong hover:text-ink"
+                }`}
+                data-testid={`move-format-${choice}`}
+              >
+                {MOVE_FORMAT_DISPLAY[choice].label}
+              </button>
+            ))}
+          </div>
         <ol
           className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"
           data-testid="move-history"
+          data-format={format}
         >
-          {record.map((move, index) => {
-            const number = index + 1;
-            const fatal = fatalNumbers.has(number);
-            const current = moveIndex === number;
-            // Moves after the position on show are still there to step forward to.
-            const ahead = number > moveIndex;
-
-            return (
-              <li key={number}>
-                <button
-                  type="button"
-                  onClick={() => actions.jumpTo(number)}
-                  className={`flex w-full items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-shade ${
-                    current ? "bg-shade font-semibold" : ""
-                  } ${ahead ? "opacity-60" : ""}`}
-                  aria-current={current ? "step" : undefined}
-                >
-                  <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">
-                    {number}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className={`size-2.5 shrink-0 rounded-full ${
-                      move.stone === "black"
-                        ? "bg-ink"
-                        : "border border-rule-strong bg-ivory"
-                    }`}
-                  />
-                  <span className="font-mono">
-                    {move.kind === MOVE_KINDS.pass
-                      ? GAME_COPY.pass.label
-                      : move.kind === MOVE_KINDS.forfeit
-                        ? GAME_COPY.forfeit.label
-                        : pointName(state.settings.size, move)}
-                    {move.kind === MOVE_KINDS.piece && move.cells !== undefined
-                      ? ` ×${move.cells.length}`
-                      : ""}
-                  </span>
-                  <span className="sr-only">
-                    {STONE_DISPLAY[move.stone].label}
-                  </span>
-                  {move.kind === MOVE_KINDS.skip ? (
-                    <span className="text-xs text-muted">
-                      {GAME_COPY.skip.kanji}
-                    </span>
-                  ) : null}
-                  {move.captured !== undefined ? (
+          {linesOf(format, record).map((line) => (
+            <li key={line.number} className="flex items-stretch">
+              <span className="w-9 shrink-0 self-center pr-1 text-right font-mono text-xs text-muted tabular-nums">
+                {line.number}
+                {format === "itsYourTurn" ? "." : ""}
+              </span>
+              {line.moves.map(({ move, index }) => {
+                const number = index + 1;
+                const fatal = fatalNumbers.has(number);
+                const current = moveIndex === number;
+                // Moves after the position on show are still there to step forward to.
+                const ahead = number > moveIndex;
+                return (
+                  <button
+                    key={number}
+                    type="button"
+                    onClick={() => actions.jumpTo(number)}
+                    className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-shade ${
+                      current ? "bg-shade font-semibold" : ""
+                    } ${ahead ? "opacity-60" : ""}`}
+                    aria-current={current ? "step" : undefined}
+                    data-move={number}
+                  >
                     <span
-                      className="text-xs text-muted"
-                      title={`${GAME_COPY.captures.label}: ${move.captured.length / 2}`}
-                    >
-                      {GAME_COPY.captures.kanji}×{move.captured.length / 2}
+                      aria-hidden="true"
+                      className={`size-2.5 shrink-0 rounded-full ${
+                        move.stone === "black"
+                          ? "bg-ink"
+                          : "border border-rule-strong bg-ivory"
+                      }`}
+                    />
+                    <span className="font-mono">
+                      {move.kind === MOVE_KINDS.pass
+                        ? GAME_COPY.pass.label
+                        : move.kind === MOVE_KINDS.forfeit
+                          ? GAME_COPY.forfeit.label
+                          : pointIn(format, state.settings.size, move)}
+                      {move.kind === MOVE_KINDS.piece && move.cells !== undefined
+                        ? ` ×${move.cells.length}`
+                        : ""}
                     </span>
-                  ) : null}
-                  {fatal ? (
-                    <span
-                      className="ml-auto rounded px-1.5 py-0.5 text-[0.65rem] font-semibold text-shu ring-1 ring-shu/40"
-                      title={FATAL_MOVE_DISPLAY.detail}
-                    >
-                      {FATAL_MOVE_DISPLAY.kanji}
+                    <span className="sr-only">
+                      {STONE_DISPLAY[move.stone].label}
                     </span>
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
+                    {move.kind === MOVE_KINDS.skip ? (
+                      <span className="text-xs text-muted">
+                        {GAME_COPY.skip.kanji}
+                      </span>
+                    ) : null}
+                    {move.captured !== undefined ? (
+                      <span
+                        className="text-xs text-muted"
+                        title={`${GAME_COPY.captures.label}: ${move.captured.length / 2}`}
+                      >
+                        {GAME_COPY.captures.kanji}×{move.captured.length / 2}
+                      </span>
+                    ) : null}
+                    {fatal ? (
+                      <span
+                        className="ml-auto rounded px-1.5 py-0.5 text-[0.65rem] font-semibold text-shu ring-1 ring-shu/40"
+                        title={FATAL_MOVE_DISPLAY.detail}
+                      >
+                        {FATAL_MOVE_DISPLAY.kanji}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </li>
+          ))}
         </ol>
         </details>
       )}

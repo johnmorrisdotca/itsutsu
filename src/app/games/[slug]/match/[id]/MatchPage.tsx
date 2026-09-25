@@ -22,6 +22,7 @@ import { resolveSeat } from "@/lib/history/seats";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { currentReader } from "@/lib/auth/currentReader";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -129,6 +130,8 @@ export async function MatchPage({
     const reader = await currentReader();
     const board = await appearanceFor(reader.memberId);
     const defaults = await gameDefaultsFor(reader.memberId);
+    // How the record writes its moves, as this member last chose (`moveFormats.ts`).
+    const { moveFormat } = await preferencesFor();
     return (
       <Page board>
         <SiteHeader />
@@ -141,6 +144,7 @@ export async function MatchPage({
           // An account to write the board back to, not a session — see /games/<slug>/play.
           savesToAccount={reader.hasAccount}
           defaults={defaults}
+          moveFormat={moveFormat}
         />
       </Page>
     );
