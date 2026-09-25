@@ -5,7 +5,7 @@ import { OneName } from "@/components/i18n/OneName";
 import { BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 import { PickMark } from "./PickMark";
-import { PICK_BLOCKS, PICK_BLOCKS_ASIDE, PICK_BOARD_ASIDE, PICK_CARD } from "./picker.constants";
+import { PICK_BLOCKS, PICK_BLOCKS_ASIDE, PICK_BOARD_ASIDE, PICK_CARD, PICK_TILE, PICK_TILE_NAME } from "./picker.constants";
 
 /**
  * The board, as big blocks in a row. John: "for the board sizes, make it more
@@ -21,12 +21,12 @@ import { PICK_BLOCKS, PICK_BLOCKS_ASIDE, PICK_BOARD_ASIDE, PICK_CARD } from "./p
  * The picture is `BoardSizeMark`, which is the one place a board size is
  * drawn, and it carries the size as a big numeral in every block.
  *
- * The blocks sit in a row and wrap only if they must — there are at most four
- * of them — because a stack of four is a list and John asked for a row.
+ * The blocks sit in a row of four places — there are at most four of them —
+ * because a stack of four is a list and John asked for a row.
  *
  * `beside` is the one exception, and it is not a second design: from a tablet
  * up, where the preview of the board stands next to them, the same blocks go
- * one per line so the pair can be looked at together. Below that width they are
+ * two across so the pair can be looked at together. Below that width they are
  * the row they are everywhere else.
  */
 export function BoardPicker({
@@ -75,9 +75,9 @@ export function BoardPicker({
    * Not `disabled`, which would grey it out. Greying says "this is off", and
    * the board is not off — it is the board.
    *
-   * `only` decides the block's WIDTH and says `data-only`, and nothing else.
-   * What is inside the block is the same for one board and for four — see
-   * below, and `boardSizeMark.coverage.test.ts`, which holds it there.
+   * `only` says `data-only`, and nothing else: a lone board is the same tile,
+   * the same width, as one of four — see below, and
+   * `boardSizeMark.coverage.test.ts`, which holds what is inside it.
    */
   const only = sizes.length === 1;
   return (
@@ -94,22 +94,14 @@ export function BoardPicker({
             <label
               key={size}
               /*
-               * While there is a choice, the grid's equal columns share the
-               * row between two, three or four blocks (`PICK_BLOCKS`). A LONE
-               * block does not stretch: filling the panel edge to edge made
-               * Reversi's 8×8 read as a banner rather than as one board among
-               * the sizes it might have had, and a block four times the width
-               * of everybody else's looks like an announcement. A fixed width
-               * in its one column keeps it the size of a block.
-               *
-               * THAT FIXED WIDTH GIVES WAY IN THE COLUMN beside the preview,
-               * which is 152px — narrower than the 160px meant to hold a lone
-               * board in. There the column is itself the thing stopping a
-               * banner, so the block fills it rather than overflowing it.
+               * EVERY BLOCK IS THE ONE TILE (`PICK_TILE`), the families' and the
+               * games' box, in a grid of four places — one board or four. A lone
+               * board used to be a fixed 160px block and a board among several
+               * a share of the row, so the same screen drew sizes at three
+               * widths. John, 2026-09-24: "The Board size boxes should all have
+               * same height and even same width."
                */
-              className={`${PICK_CARD} min-w-24 cursor-pointer flex-col justify-center gap-1.5 p-2 ${
-                only ? (beside ? "w-40 md:w-auto" : "w-40") : ""
-              }`}
+              className={`${PICK_CARD} ${PICK_TILE} cursor-pointer`}
               data-testid="set-up-size"
               data-size={size}
               data-chosen={size === value ? "true" : "false"}
@@ -162,8 +154,8 @@ export function BoardPicker({
                 picture is: "Eight", not "Eight 八路".
               */}
               {copy !== undefined ? (
-                <span className="text-center text-[0.7rem] leading-none text-muted" data-testid="set-up-size-name">
-                  <OneName en={copy.label} kanji={copy.kanji} />
+                <span className={`${PICK_TILE_NAME} text-muted`} data-testid="set-up-size-name">
+                  <OneName en={copy.label} kanji={copy.kanji} wrap />
                 </span>
               ) : null}
               {/*
@@ -176,7 +168,7 @@ export function BoardPicker({
                 option is drawn as a chosen option is, one design, and its
                 radio is checked the same way, so it is announced the same way.
               */}
-              <PickMark className="absolute top-1.5 right-1.5 size-6" />
+              <PickMark className="absolute top-1.5 right-1.5 size-5" />
             </label>
           );
         })}

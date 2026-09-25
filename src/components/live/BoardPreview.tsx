@@ -7,7 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { createGame } from "@/lib/gomoku/engine";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameSettings, RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { SET_UP_COPY, SET_UP_PREVIEW_BOX } from "./live.constants";
+import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 
 /** What the set-up form holds, narrowed to the parts that change the picture. */
 export type PreviewRules = { variant: string; size: number; obstacles: string };
@@ -116,7 +116,7 @@ export function BoardPreview({ rules }: { rules: PreviewRules }) {
           viewer={null}
         />
       </div>
-      <figcaption className="text-center text-xs text-muted">
+      <figcaption className={SET_UP_PREVIEW_CAPTION}>
         {SET_UP_COPY.previewIs(RULE_VARIANT_DISPLAY[variant].label)}
         {dealt ? ` ${SET_UP_COPY.previewDealt}` : ""}
       </figcaption>

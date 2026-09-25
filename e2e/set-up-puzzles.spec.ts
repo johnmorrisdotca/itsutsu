@@ -47,13 +47,13 @@ test("the set-up screen turns to a puzzle chosen from Numbers, and back to the g
   const puzzleBox = await preview.boundingBox();
   expect(Math.round(puzzleBox!.width)).toBe(Math.round(boardBox!.width));
   expect(Math.round(puzzleBox!.height)).toBe(Math.round(boardBox!.height));
-  const smallest = PUZZLE_SPECS[first!].sizes[0]!;
+  const smallest = PUZZLE_SPECS[first!].offered[0]!;
   await page.locator(`[data-testid="set-up-size"][data-size="${smallest}"]`).click();
   await expect(preview).toHaveAttribute("data-size", String(smallest));
   // Its sizes are the board games' tiles, one chosen, each the big number in the board's own lattice.
   const sizes = page.getByTestId("set-up-size");
-  await expect(sizes).toHaveCount(PUZZLE_SPECS[first!].sizes.length);
-  await expect(sizes.getByTestId("board-size-mark")).toHaveCount(PUZZLE_SPECS[first!].sizes.length);
+  await expect(sizes).toHaveCount(PUZZLE_SPECS[first!].offered.length);
+  await expect(sizes.getByTestId("board-size-mark")).toHaveCount(PUZZLE_SPECS[first!].offered.length);
   await expect(page.locator('[data-testid="set-up-size"][data-chosen="true"]')).toHaveCount(1);
   await ready(page, "puzzle-set-up");
   // Asked only once the puzzle's own controls are there: no seats, no Begin.

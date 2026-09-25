@@ -585,3 +585,12 @@ export const MOVE_NOTE_COPY = {
  * anything the board and page doesn't shift and move up."
  */
 export const SET_UP_PREVIEW_BOX = "pointer-events-none w-full max-w-[15rem] sm:max-w-[22rem]";
+
+/**
+ * The line under that box, with the room its longest wording takes kept for
+ * every game: "A preview of the Obstacle Five board. Nothing here is a move.
+ * This game scatters its board…" is three lines on a phone and beside the sizes,
+ * and "A preview of the Gomoku board" one. It moved everything under it by a
+ * line from game to game until it kept the room.
+ */
+export const SET_UP_PREVIEW_CAPTION = "min-h-[3lh] text-center text-xs text-muted";

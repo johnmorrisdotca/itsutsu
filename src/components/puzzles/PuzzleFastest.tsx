@@ -70,7 +70,9 @@ export async function PuzzleFastest({ kind, title, whole = false }: { kind: Puzz
 /** The table: a row per size and level with any solves, the fastest names beside it — or the empty shape with the way in. */
 export function FastestTable({ kind, board, names, whole }: { kind: PuzzleKind; board: FastestBoard; names: Map<string, string>; whole: boolean }) {
   const spec = PUZZLE_SPECS[kind];
-  const rows = spec.sizes.flatMap((size) => spec.levels.map((level) => ({ size, level, key: `${size}:${level}`, at: board.get(`${size}:${level}`) })));
+  const all = spec.sizes.flatMap((size) => spec.levels.map((level) => ({ size, level, key: `${size}:${level}`, at: board.get(`${size}:${level}`) })));
+  // A size the set-up no longer offers keeps its row while somebody holds a time at it, and is not offered as empty.
+  const rows = all.filter((row) => spec.offered.includes(row.size) || row.at !== undefined);
   const shown = whole ? rows : rows.filter((row) => row.at !== undefined).slice(0, 4);
   if (shown.length === 0) {
     return (

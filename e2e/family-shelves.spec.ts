@@ -42,11 +42,18 @@ async function pickFrom(page: Page, family: string, note: string | null): Promis
   // Choosing it does not move the reader off the shelf they found it on.
   await expect(tile).toHaveAttribute("data-open", "true");
 
+  /*
+   * Where it lives is said on the line under the games, for the game chosen:
+   * a tile is one fixed box with no third line to give it (John, 2026-09-24: "Game
+   * boxes should also be consistent").
+   */
+  const line = page.getByTestId("set-up-variant-hint");
+  await expect(line).toBeVisible();
   if (note === null) {
-    // At home it says nothing about elsewhere — asked only now that the chip is known to be drawn.
-    await expect(chip.getByTestId("set-up-variant-home")).toHaveCount(0);
+    // At home it says nothing about elsewhere — asked only now that the line is known to be drawn.
+    await expect(line.getByTestId("set-up-variant-home")).toHaveCount(0);
   } else {
-    await expect(chip.getByTestId("set-up-variant-home")).toHaveText(note);
+    await expect(line.getByTestId("set-up-variant-home")).toHaveText(note);
   }
 
   /*

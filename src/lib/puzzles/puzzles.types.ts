@@ -14,8 +14,18 @@ export type PuzzleKind = "numberPlace" | "hiddenStones" | "moreOrLess" | "jigsaw
 export type PuzzleLevel = "easy" | "medium" | "hard";
 
 export type PuzzleSpec = {
-  /** The sides a puzzle of this kind is made at, smallest first. */
+  /**
+   * The sides a puzzle of this kind can be made and checked at, smallest first:
+   * every size an address, a race or a kept solve may name.
+   */
   sizes: readonly number[];
+  /**
+   * The sides the set-up screen offers, at most four and all of them in
+   * `sizes`. John, 2026-09-24: "We need to plan for 4 boards with predictable
+   * height." A size taken off the screen stays in `sizes`, so a race already
+   * started at it can still be finished and a solve at it still counts.
+   */
+  offered: readonly number[];
   /** The side the set-up opens on. */
   defaultSize: number;
   /** The levels the set-up offers; a kind with one kind of reasoning offers fewer. */

@@ -42,14 +42,20 @@ export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: s
   hard: { label: "Hard", kanji: "上級", blurb: "More than one place where you have to try something and see." },
 };
 
+/**
+ * Hidden Stones is made at six sides and offered at four — Quick, Usual, Long
+ * and Longest — because the set-up screen keeps room for four boards and no
+ * more (see `offered`). 6×6 and 8×8 stay in `sizes` for anything already made
+ * at them.
+ */
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
-  numberPlace: { sizes: [4, 6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
-  hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
+  numberPlace: { sizes: [4, 6, 9], offered: [4, 6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
+  hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], offered: [5, 7, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
   // 133: the 49 cells of a 7×7 and the 84 edges between them, which its code writes after the cells.
-  moreOrLess: { sizes: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
+  moreOrLess: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
   // 162: a 9×9's 81 cells and then its 81 region letters, which its code writes after the cells.
-  jigsaw: { sizes: [5, 6, 7, 9], defaultSize: 7, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 162 },
-  diagonal: { sizes: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
+  jigsaw: { sizes: [5, 6, 7, 9], offered: [5, 6, 7, 9], defaultSize: 7, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 162 },
+  diagonal: { sizes: [6, 9], offered: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
 };
 
 /**

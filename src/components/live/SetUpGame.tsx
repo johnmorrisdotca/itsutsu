@@ -27,6 +27,7 @@ import { readSetUpAsked } from "./setUpAsked";
 import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
 import { SetUpNotices } from "./SetUpNotices";
 import { PuzzleHere } from "./PuzzleHere";
+import { SET_UP_SUMMARY } from "./picker.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { seatsFor, stillARematch } from "./setUpStart";
 import { setUpBegin } from "./setUpBegin";
@@ -347,7 +348,7 @@ export function SetUpGame({
         />
       ) : (
       <>
-      <p className="text-sm font-semibold" data-testid="set-up-summary">
+      <p className={SET_UP_SUMMARY} data-testid="set-up-summary">
         {describeRules(settled)}
       </p>
 

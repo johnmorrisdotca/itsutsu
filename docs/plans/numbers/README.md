@@ -97,7 +97,8 @@ So:
     be used. Sizes 4×4 (2×2 boxes), 6×6 (2×3 boxes), 9×9; easy, medium, hard.
   - **Hidden Stones 隠し石** — one black stone hidden in every row, column and
     region, no two touching, even at a corner. The one-star form of Hans
-    Eendebak's Star Battle, which LinkedIn's Queens made a habit. Sizes 5 to 10.
+    Eendebak's Star Battle, which LinkedIn's Queens made a habit. Sizes 5 to 10,
+    of which the set-up screen offers 5, 7, 9 and 10 (four boards at most, 2026-09-24).
   - **More or Less 大小** — a Latin square with "more than" marks between
     cells. Our version of Futoshiki. Sizes 4 to 7.
 - **Generators are ours**, MIT-clean by construction. The candidate

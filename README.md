@@ -129,7 +129,7 @@ met. Nothing polls and nothing is timed on a server.
 | Puzzle | Our version of | Sizes | Levels |
 | --- | --- | --- | --- |
 | **Number Place** ナンプレ | Sudoku (Nikoli's name for it, a trademark in Japan; Number Place is the puzzle's original name) | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
-| **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5 to 10×10 | easy (reasoning alone finishes it), hard (a stone has to be tried) |
+| **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5, 7×7, 9×9 and 10×10 (made at 6×6 and 8×8 too, not offered) | easy (reasoning alone finishes it), hard (a stone has to be tried) |
 | **More or Less** 大小 | Futoshiki: a Latin square with more-than marks between cells; every given and mark is needed | 4×4 to 7×7 | easy, medium, hard, as Number Place |
 
 Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's

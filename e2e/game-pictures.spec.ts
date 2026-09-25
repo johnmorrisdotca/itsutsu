@@ -112,7 +112,8 @@ test.describe("the games index", () => {
       // English only: the name and nothing else, on one line inside its tile ("Pieces and twists" used to wrap).
       const label = tab.locator(":scope > span");
       await expect(label).toHaveText(offered[index].title);
-      await isOneLineInside(label, tab);
+      // The tile keeps two lines' room for a longer name (`PICK_TILE_NAME`); a family's own takes one at a desk.
+      await isOneLineInside(label.locator(":scope > span"), tab);
     }
   });
 });
@@ -166,7 +167,7 @@ test.describe("the set-up page and the page before a game", () => {
 
     // The board tile's name is English only, one line: "Eight", not "Eight 八路".
     await expect(board.getByTestId("set-up-size-name")).toHaveText("Eight");
-    await isOneLineInside(board.getByTestId("set-up-size-name"), board);
+    await isOneLineInside(board.getByTestId("set-up-size-name").locator(":scope > span"), board);
 
     /*
      * THE LARGE PICTURE IS THE DOORSTEP'S, AND IT IS ASSERTED WHERE THE

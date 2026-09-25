@@ -17,7 +17,7 @@ import type { PuzzleKind } from "./puzzles.types";
 export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
-  const sizes = spec.sizes.map((size) => `${size}×${size}`).join(", ");
+  const sizes = spec.offered.map((size) => `${size}×${size}`).join(", ");
   const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${PUZZLE_LEVEL_DISPLAY[level].blurb.toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];

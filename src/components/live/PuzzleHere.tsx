@@ -8,7 +8,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { GamePicker } from "./GamePicker";
 import { PuzzleBoardPreview } from "./PuzzleBoardPreview";
-import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } from "./picker.constants";
+import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES, SET_UP_SUMMARY } from "./picker.constants";
 
 /**
  * THE SET-UP SCREEN WITH A PUZZLE CHOSEN: the puzzle's name where the game's
@@ -47,7 +47,7 @@ export function PuzzleHere({
   const onSize = (next: number) => setChosen({ kind: puzzle, size: next });
   return (
     <>
-      <p className="text-sm font-semibold" data-testid="set-up-summary">
+      <p className={SET_UP_SUMMARY} data-testid="set-up-summary">
         {copy.label} <span className="font-mincho">{copy.kanji}</span> · a puzzle for one
       </p>
       <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">

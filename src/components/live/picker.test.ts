@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { ALSO_LISTED_IN, GAME_FAMILIES, familyOf, familyShows } from "@/lib/gomoku/families";
+import { ALSO_LISTED_IN, GAME_FAMILIES, boardGamesShownIn, familyOf, familyShows } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { RULE_VARIANT_LIST, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
+import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import { SET_UP_FAMILIES, defaultGameOf, familyShown, gameForFamilyClick } from "./picker";
+import { PUZZLE_SHELVES, ROW_FAMILIES, SET_UP_FAMILIES, defaultGameOf, familyShown, gameForFamilyClick } from "./picker";
+import { MOST_GAMES_ON_A_SHELF } from "./picker.constants";
 
 /**
  * The rules in the game picker that can be wrong invisibly.
@@ -179,6 +181,37 @@ describe("a game on two shelves", () => {
         // The old bug's shape: a family open over a game it does not hold. It cannot come back.
         expect(familyShown(variant, family.key).key, `${variant} browsing ${family.title}`).toBe(home.key);
       }
+    }
+  });
+});
+
+/*
+ * THE SET-UP SCREEN KEEPS ONE HEIGHT, AND THESE ARE THE TWO COUNTS IT IS
+ * BUILT FOR. John, 2026-09-24: "We cannot have the heights change in Mobile or
+ * Desktop… We need to plan for 4 boards with predictable height." The rows the
+ * games' panel keeps (`PICK_GAMES_PANEL`) are counted for the largest shelf,
+ * and the sizes' grid has four places. A ninth game on a shelf or a fifth size
+ * would not break the screen — it would make it grow for that one game, which
+ * is the fault this was built to end — so either fails here, where the fix is
+ * a decision about the catalogue and not a pixel.
+ */
+describe("what the set-up screen keeps room for", () => {
+  it(`no family shows more than ${MOST_GAMES_ON_A_SHELF} games`, () => {
+    for (const family of ROW_FAMILIES) {
+      const shown = PUZZLE_SHELVES.includes(family) ? family.games.length : boardGamesShownIn(family).length;
+      expect(shown, family.title).toBeLessThanOrEqual(MOST_GAMES_ON_A_SHELF);
+    }
+  });
+
+  it("no game offers more than four boards", () => {
+    for (const variant of RULE_VARIANT_LIST) expect(boardSizesFor(variant).length, variant).toBeLessThanOrEqual(4);
+  });
+
+  it("no puzzle offers more than four sizes, and every one it offers can be made", () => {
+    for (const [kind, spec] of Object.entries(PUZZLE_SPECS)) {
+      expect(spec.offered.length, kind).toBeLessThanOrEqual(4);
+      for (const size of spec.offered) expect(spec.sizes, `${kind} offers ${size}`).toContain(size);
+      expect(spec.offered, `${kind} opens on a size it offers`).toContain(spec.defaultSize);
     }
   });
 });

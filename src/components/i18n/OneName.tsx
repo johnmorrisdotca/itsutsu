@@ -15,9 +15,18 @@ import { useSpeaker } from "./LocaleProvider";
  *
  * `whitespace-nowrap`, because one line is the rule: the tile around it is sized
  * to fit the longest name rather than this cutting it short.
+ *
+ * `wrap` is the one exception, for the set-up screen's tiles (`PICK_TILE`), which
+ * are one fixed size so that nothing on that screen moves when something is
+ * chosen (John, 2026-09-24: "The Board size boxes should all have same height
+ * and even same width. Game boxes should also be consistent"). A tile as wide as
+ * a family's cannot hold "International Draughts" on one line, and cutting the
+ * name short is the thing this component exists not to do — so there the name
+ * may take a second line, in room the tile keeps for it whatever it holds. It
+ * is still one language.
  */
-export function OneName({ en, kanji, className = "" }: { en: string; kanji: string; className?: string }) {
+export function OneName({ en, kanji, className = "", wrap = false }: { en: string; kanji: string; className?: string; wrap?: boolean }) {
   const text = useSpeaker().pairName(en, kanji).text;
   const script = text === kanji && kanji !== "" ? "font-mincho" : "";
-  return <span className={`whitespace-nowrap ${script} ${className}`.trim()}>{text}</span>;
+  return <span className={`${wrap ? "whitespace-normal" : "whitespace-nowrap"} ${script} ${className}`.trim()}>{text}</span>;
 }

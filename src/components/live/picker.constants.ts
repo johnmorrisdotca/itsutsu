@@ -59,33 +59,61 @@ const PICK_CHOSEN =
 export const PICK_CARD = `${PICK_BASE} ${PICK_RESTING} ${PICK_CHOSEN}`;
 
 /**
+ * THE ONE TILE: a family, a game and a board size are all this box.
+ *
+ * John, 2026-09-24, with the set-up screen jumping as he clicked: "The Board
+ * size boxes should all have same height and even same width. Game boxes should
+ * also be consistent… redesigned to be as wide as the Family boxes… where we
+ * have the icon and the Text below on one line." Three shapes had grown up
+ * side by side — a family tile, a wide game card with its name beside the
+ * picture, and a size block that stretched to fill whatever row it was in —
+ * so the same screen drew three sizes of box, and the height of each row
+ * depended on which game was open.
+ *
+ * So one box, fixed in both directions: the regular 70px picture, and under it
+ * a name in a space two lines tall. A name that fits on one line leaves the
+ * second empty rather than making its tile shorter, and one that needs two
+ * ("International Draughts") takes them without making its tile taller. The
+ * height is written once, here, and every grid that reserves a row of tiles
+ * reads the same figure (`PICK_TILE_ROWS_*`), so a row and its tile cannot
+ * disagree.
+ *
+ * `TILE_WIDTH` is 6.75rem: eight of them and their gaps are 906px, which is
+ * what the panel holds for the games on a 1024px laptop, so a family of eight
+ * games is one row from there up. The side padding is 2px because a board size
+ * on a 390px phone is a quarter of the panel, 76px, and the picture is 70.
+ */
+export const PICK_TILE =
+  "flex h-[7.25rem] min-w-0 flex-col items-center justify-start gap-1 px-0.5 py-1.5 text-center";
+
+/** The name under a tile's picture: one language, up to two lines, in a space two lines tall whatever it holds. */
+export const PICK_TILE_NAME = "line-clamp-2 h-[2lh] w-full text-center text-[0.7rem] leading-tight [overflow-wrap:anywhere]";
+
+/**
  * One family in the row above the games.
  *
  * A button rather than a radio, because the family is NOT a value this form
  * holds — the game is. A control that showed itself checked while changing
  * nothing a game is played under would be claiming to be an answer to a
- * question nobody asked.
- *
- * `min-h-12` is 48px, comfortably past the 44px minimum rather than at it:
- * this screen is used on an iPad, and "the buttons are too small" is a
- * complaint John has made about two other screens.
- *
- * A TILE, THE MARK ABOVE THE NAME. It was a chip — a 20px mark beside the
- * name — and then a `w-24` tile holding the 56px family icon over a name that
- * could take two lines. John, 2026-09-15, pointed at "Pieces and twists"
- * wrapping under its mark and asked for one regular picture size on this page,
- * the board tile's, and a label under an icon that is one language on one line.
- * So the mark is the regular size and the tile is `w-28`: wide enough for the
- * longest family name on one line at this text size. Every tile is still the
- * same width, so the row stays the same number of tiles whatever the names
- * say, and a finger's target grows rather than shrinks.
+ * question nobody asked. The tile is `PICK_TILE`, the same box as a game and a
+ * board; only the chosen look differs, ink rather than a check, for that reason.
  */
 export const PICK_CHIP =
-  "flex w-28 min-h-12 flex-col items-center justify-start gap-1 rounded-lg border px-1 py-1.5 text-center text-xs leading-tight transition-colors" +
+  `${PICK_TILE} rounded-xl border transition-colors` +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
   " disabled:cursor-not-allowed disabled:opacity-50";
 
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
+
+/**
+ * A choice with words and no picture — a puzzle's level — in the families' ink
+ * when chosen. Not a tile: there is no picture to hold, and a 116px box round
+ * "Easy" would be most of a screen of paper on a phone.
+ */
+export const PICK_WORD_CHIP =
+  "flex min-h-11 w-28 flex-col items-center justify-center rounded-xl border px-1 py-1.5 text-center text-xs leading-tight transition-colors" +
+  " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
+  " disabled:cursor-not-allowed disabled:opacity-50";
 
 /**
  * The first row of the set-up screen: the families, and — through the picker's
@@ -106,73 +134,70 @@ export const FAMILY_ROW = "flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_auto_1f
  * sides weigh the same.
  */
 
-/** The family tiles: a wrapping row, then two columns against the left edge from `lg`. */
-export const FAMILY_TILES = "flex flex-wrap gap-1.5 lg:grid lg:w-fit lg:grid-cols-2 lg:justify-self-start";
+/**
+ * The family tiles: three across on a phone, four across from 640px (two rows
+ * of the eight), and two columns against the left edge from `lg`. The same
+ * columns the games under them are drawn in (`PICK_TILE_GRID`), so a family and
+ * a game are the same box on every screen.
+ */
+export const FAMILY_TILES = "grid grid-cols-3 gap-1.5 sm:grid-cols-[repeat(4,6.75rem)] lg:grid-cols-[repeat(2,6.75rem)]";
 
-/** How wide the families' two columns are: two 7rem tiles and the gap between them. */
-const FAMILY_TILES_WIDTH = "lg:w-[14.375rem]";
+/** The families' column from `lg`, with the heading that lines up with the board's. */
+export const FAMILY_COLUMN = "flex min-w-0 flex-col lg:justify-self-start";
+
+/** How wide two tiles and the gap between them are: the families' column, and the sizes' opposite it. */
+const TWO_TILES_WIDTH = "md:w-[13.875rem]";
 
 export const PICK_CHIP_SHUT =
   "border-rule bg-ivory/70 text-ink-soft hover:border-rule-strong hover:text-ink";
 
 /**
- * The games of the open family, as tall as the family.
+ * The games of the open family, in the columns the families are in.
  *
- * ROWS SIZED TO WHAT IS IN THEM, and this reverses a decision on purpose. The
- * template used to declare the rows of the largest family — eight games, so 1×8
- * on a phone, 2×4, 3×3, 4×2 on a desk — so the Start button would not walk up
- * and down under the reader's hand as families were browsed. Rows declared in a
- * template are drawn whether or not anything sits in them, and that is exactly
- * what John's screenshot of Checkers showed: one game card, then a band of empty
- * rows before the line saying what the game is — seven empty rows on a phone,
- * which reads as a page that failed to draw rather than as room kept.
+ * THE ROWS ARE THE LARGEST FAMILY'S, ON EVERY FAMILY. John, 2026-09-24: "Note
+ * how the games in the family shift up and down based on the content above
+ * and the Boards… We cannot have the heights change in Mobile or Desktop."
+ * This reverses the decision before it — rows sized to what was in them —
+ * which was right about one thing and is kept: a band of empty rows between a
+ * family's last game and the line saying what the chosen game is reads as a
+ * page that failed to draw. So the rows are not declared on the grid. The
+ * PANEL holding the grid, its two lines of words and the room left over is the
+ * fixed height (`PICK_GAMES_PANEL`), and any spare room is under the words, at
+ * the bottom of the panel, where it reads as the space before the next section.
  *
- * A family click already redraws everything under it (the boards, the openings,
- * the programs offered), so the rows below were never still; and a band of
- * nothing is a worse thing to be shown than a page that grows to fit its
- * answer. Each row is still exactly one card tall.
- *
- * ONE COLUMN ON A PHONE, which is what /games already does with its game
- * cards — two columns here was the odd one out. Measured: at 390px, two
- * columns leave 70px beside the board for the name, which cut seven of the
- * thirty-nine to about nine characters — "Tournament Gomo…", "Chinese
- * Checker…". A phone is the screen where reading is hardest and it is the
- * one place a clipped name is least affordable.
- *
- * TWO COLUMNS UNTIL A LAPTOP, THREE FROM THERE, AND NEVER FOUR — measured with
- * the regular 70px board beside each name. Three columns on an iPad in
- * portrait left 102px for a name and cut seven of them; four at a desk left 127
- * and cut "International Draughts". A clipped name is what this control was
- * rebuilt to stop, so the columns give way before a name does.
- *
- * THE ROW HEIGHT IS THE PICTURE'S. 5rem is the regular 70px board plus the
- * card's own padding and border and nothing else, so every pixel of this
- * control's height is a picture of a board. It was 3rem around a 40px board
- * until John asked for one picture size on this page. The first draft carried a
- * line of what-it-is under each name and was half again as tall; what that
- * bought was a tagline nobody was reading for a game they had not chosen, and
- * what it cost was the Start button, which went off the bottom of an iPad.
- *
- * THE NAME IS ONE LANGUAGE ON ONE LINE. The kanji used to follow the name and
- * take the squeeze — "Tournament Gomoku 競技…" — and a label beside a picture is
- * now the reader's own half of the pair (`OneName`), as it is under one. Where a
- * column is still too narrow for a name, it truncates from the end and its
- * title carries it whole. A picture with an unreadable name beside it is not
- * "board images with text", which was the complaint being answered here.
+ * Three across on a phone (three rows of the eight), four across from 640px
+ * (two rows), eight across from a laptop (one). `MOST_GAMES_ON_A_SHELF` is the
+ * eight, and `picker.test.ts` fails when a family grows past it.
  */
-export const PICK_GRID = "grid grid-cols-1 auto-rows-[5rem] gap-2 sm:grid-cols-2 lg:grid-cols-3";
+export const PICK_TILE_GRID =
+  "grid grid-cols-3 gap-1.5 sm:grid-cols-[repeat(4,6.75rem)] lg:grid-cols-[repeat(8,6.75rem)]";
+
+/** The most games any one family shows; the rows above are counted for this many. */
+export const MOST_GAMES_ON_A_SHELF = 8;
+
+/**
+ * The games' panel: the family's line, its games and the chosen game's line, at
+ * one height whichever family is open. Measured with every family, game and
+ * board clicked in turn at the narrowest width of each range (360, 640, 768 and
+ * 1024px), and held there by `e2e/set-up-steady.spec.ts`.
+ */
+export const PICK_GAMES_PANEL = "min-h-[31rem] sm:min-h-[20rem] lg:min-h-[11.25rem]";
 
 /**
  * The boards a game is played on, side by side rather than stacked.
  *
- * A GRID OF EQUAL COLUMNS, not a wrapping flex row. With every block the big
- * number, four blocks do not fit across a 400px phone. A flex row wrapped them
- * three and one, and `flex-1` stretched the one left over across the whole
- * panel — the banner a lone board is kept from becoming. `auto-fit` over a
- * 6rem minimum shares a wide row evenly, as `flex-1` did, and on a narrow one
- * puts the fourth block in a column exactly as wide as the three above it.
+ * FOUR PLACES, WHATEVER THE GAME HAS. John, 2026-09-24: "We need to plan for 4
+ * boards with predictable height." The columns are four whether a game has one
+ * board or four, so a lone board is one tile in the first place rather than a
+ * block stretched across the row, and a row of sizes is one row high.
+ *
+ * Four across a phone from 390px, where a quarter of the panel still holds the
+ * 70px picture; three below that, where it does not, with two rows kept so the
+ * fourth board wraps into room already there. Four tiles at the families' own
+ * width from 640px.
  */
-export const PICK_BLOCKS = "grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-2";
+export const PICK_BLOCKS =
+  "grid grid-cols-3 grid-rows-[repeat(2,7.25rem)] gap-1.5 min-[390px]:grid-cols-4 min-[390px]:grid-rows-[7.25rem] sm:grid-cols-[repeat(4,6.75rem)]";
 
 /**
  * THE BOARD AND THE BOARDS IT COULD BE, SIDE BY SIDE FROM A TABLET UP.
@@ -190,13 +215,13 @@ export const PICK_BLOCKS = "grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] g
  * looking at.
  *
  * CENTRED AS A PAIR, not spread across the panel. The preview is 22rem and the
- * column of sizes is 9.5rem, so together they are about 530px of a 990px panel.
+ * column of sizes two tiles, 13.875rem, so together about 600px of a 670px panel.
  * Letting the preview take the slack would have left the board in the middle of
  * the page and the sizes against the right edge — further apart than the row
  * they replaced, which is the opposite of what was asked for.
  *
  * FROM 768px, WHICH IS AN IPAD IN PORTRAIT, not from a laptop. The pair needs
- * 528px and that screen's panel gives about 688, so the width where it fits is
+ * about 600px and that screen's panel gives 670, so the width where it fits is
  * the width where it is offered. This page is used on an iPad — two of the
  * measurements in this file were taken for one — and holding the change back
  * to 1024 would have left the screen John was describing out of it.
@@ -214,12 +239,11 @@ export const PICK_BOARD_ROW = "flex flex-col items-center gap-3 md:flex-row md:i
 export const PICK_BOARD_PREVIEW = "w-full min-w-0 md:w-[22rem] md:shrink-0";
 
 /**
- * The column the sizes stand in. Wide enough for the regular 70px mark, its
- * padding and the board's name under it, and no wider: a block four times the
- * width of its own picture is the banner a lone board was already kept from
- * becoming.
+ * The column the sizes stand in: two tiles across, as wide as the families'
+ * column opposite, so the two sides of the board weigh the same and four sizes
+ * are two rows — never taller than the families beside them.
  */
-export const PICK_BOARD_ASIDE = `w-full md:w-[9.5rem] md:shrink-0 ${FAMILY_TILES_WIDTH} lg:justify-self-end`;
+export const PICK_BOARD_ASIDE = `w-full md:shrink-0 ${TWO_TILES_WIDTH} lg:justify-self-end`;
 
 /**
  * The board and its sizes under the families (`GamePicker`'s `underFamilies`).
@@ -230,10 +254,19 @@ export const PICK_BOARD_ASIDE = `w-full md:w-[9.5rem] md:shrink-0 ${FAMILY_TILES
 export const PICK_BOARD_ROW_UNDER_FAMILIES = "lg:contents";
 
 /**
- * The blocks themselves in that column: the row everywhere else, one per line
- * once there is a board beside them to line up against.
+ * The blocks themselves in that column: the row everywhere else, two across
+ * once there is a board beside them. Two rows at most, and the board beside them
+ * is taller than two, so the row is the board's height for one size or four.
  */
-export const PICK_BLOCKS_ASIDE = `${PICK_BLOCKS} md:grid-cols-1`;
+export const PICK_BLOCKS_ASIDE = `${PICK_BLOCKS} md:grid-cols-[repeat(2,6.75rem)] md:grid-rows-none`;
+
+/**
+ * The line naming what is being set up, at the top of the set-up screen: two
+ * lines kept on a phone, where "International Draughts 国際ドラフツ · 10×10
+ * International" wraps and a shorter one does not, and one from 640px, so the
+ * whole screen under it starts at the same place for every game.
+ */
+export const SET_UP_SUMMARY = "line-clamp-2 h-10 text-sm leading-5 font-semibold sm:line-clamp-1 sm:h-5";
 
 /**
  * A setting stated rather than offered — the one opening a game has, or a

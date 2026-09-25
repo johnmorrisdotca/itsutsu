@@ -15,7 +15,19 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { PUZZLE_SHELVES, ROW_FAMILIES, SET_UP_FAMILIES, familyShown, gameForFamilyClick, type Family } from "./picker";
 import { PuzzleShelf } from "./PuzzleShelf";
 import { PickMark } from "./PickMark";
-import { FAMILY_ROW, FAMILY_TILES, PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
+import {
+  FAMILY_COLUMN,
+  FAMILY_ROW,
+  FAMILY_TILES,
+  PICK_CARD,
+  PICK_CHIP,
+  PICK_CHIP_OPEN,
+  PICK_CHIP_SHUT,
+  PICK_GAMES_PANEL,
+  PICK_TILE,
+  PICK_TILE_GRID,
+  PICK_TILE_NAME,
+} from "./picker.constants";
 
 /** Which way an arrow key moves along the family row. Home and End are the ends. */
 const STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 1, ArrowUp: -1 };
@@ -137,6 +149,9 @@ export function GamePicker({
   const puzzles = puzzle === null ? null : (PUZZLE_SHELVES.find((shelf) => (shelf.games as string[]).includes(puzzle)) ?? null);
   const opened = puzzles ?? family;
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
+  // The chosen game when this shelf is not its home, for the "also under" on the line under the games.
+  const chosenShown = puzzles === null ? boardGamesShownIn(family).find((shown) => shown.variant === value) : undefined;
+  const chosenGuest = chosenShown?.listed === "shelf" ? chosenShown : undefined;
 
   /*
    * A click on a family chooses its game; a click on the family already open
@@ -186,7 +201,14 @@ export function GamePicker({
 
   return (
     <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-variant">
-      <legend className="mb-0.5 text-sm text-ink-soft">{label}</legend>
+      {/*
+        From a laptop the heading is drawn over the families' own column instead
+        (below), so it sits on the line the board's "Board" heading sits on. As
+        the fieldset's legend it was above the whole row, and the sizes' heading,
+        which is inside the row, stood a line lower. John, 2026-09-24: "RHS Board
+        column starts lower than the LHS Game. That needs to be fixed."
+      */}
+      <legend className="mb-0.5 text-sm text-ink-soft lg:sr-only">{label}</legend>
 
       {/*
         ROW ONE, AND ON A DESK IT IS THE BOARD'S ROW TOO. John, 2026-09-22:
@@ -203,6 +225,10 @@ export function GamePicker({
         board sits under them, still above the games that DO change height.
       */}
       <div className={FAMILY_ROW}>
+      <div className={FAMILY_COLUMN}>
+      <span aria-hidden="true" className="mb-0.5 hidden text-sm text-ink-soft lg:block">
+        {label}
+      </span>
       <div role="tablist" aria-label="Families of games" className={FAMILY_TILES}>
         {shelves.map((entry, at) => {
           const showing = entry.title === opened.title;
@@ -240,7 +266,9 @@ export function GamePicker({
                 the kanji as the whole label, so this never hides their only
                 copy of the name.
               */}
-              <OneName en={entry.title} kanji={entry.kanji} />
+              <span className={PICK_TILE_NAME}>
+                <OneName en={entry.title} kanji={entry.kanji} wrap />
+              </span>
               {/*
                 A dot used to mark the family holding the chosen game, for a
                 reader who had browsed away from it. Nobody can be away from
@@ -251,6 +279,7 @@ export function GamePicker({
             </button>
           );
         })}
+      </div>
       </div>
 
       {/* The board and its sizes, or the chosen puzzle's picture: whichever the screen is setting up. */}
@@ -276,7 +305,13 @@ export function GamePicker({
         role="tabpanel"
         id="family-games"
         aria-labelledby={`family-tab-${shelves.indexOf(opened)}`}
-        className="mt-1 flex min-w-0 flex-col gap-1 border-l-2 border-rule-strong pl-2.5"
+        /*
+          The rule and indent from 640px, where the board sits beside its sizes
+          or beside the families and the games need telling apart from them. On
+          a phone the board and its sizes already stand between the two, and the
+          indent would make a game tile narrower than the family tile above it.
+        */
+        className={`mt-1 flex min-w-0 flex-col gap-1.5 sm:border-l-2 sm:border-rule-strong sm:pl-2.5 ${PICK_GAMES_PANEL}`}
         data-testid="set-up-family-games"
       >
         {/*
@@ -296,14 +331,14 @@ export function GamePicker({
         <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
           {family.blurb}
         </span>
-        <div className={PICK_GRID}>
+        <div className={PICK_TILE_GRID}>
         {boardGamesShownIn(family).map((shown) => {
           const game = shown.variant;
           const copy = RULE_VARIANT_DISPLAY[game];
           return (
             <label
               key={game}
-              className={`${PICK_CARD} cursor-pointer gap-1.5 p-1`}
+              className={`${PICK_CARD} ${PICK_TILE} cursor-pointer`}
               data-testid="set-up-variant"
               data-variant={game}
               data-chosen={game === value ? "true" : "false"}
@@ -320,50 +355,22 @@ export function GamePicker({
               />
               <GameThumb variant={game} size="regular" />
               {/*
-                THE BOARD AND THE NAME, and not the tagline.
+                THE BOARD AND ITS NAME UNDER IT, as a family's tile has them —
+                the same box, so the games of a family are a row of the same
+                things as the families above them. John, 2026-09-24: "redesigned
+                to be as wide as the Family boxes… where we have the icon and the
+                Text below". The name has two lines' room and never makes its
+                tile taller; `title` carries it whole should one ever need more.
 
-                A line of what-it-is under every name read well and cost forty
-                pixels a row — a hundred and sixty on the tallest family,
-                which is most of the difference between a Start button you can
-                see and one you have to go looking for. It is not lost: the
-                tagline of the game actually chosen is printed under the
-                picker, which is the one a reader is deciding about. The
-                picture does the rest of the work, and doing that work is why
-                John asked for pictures.
+                A game shown on a second shelf used to say "also under Turn and
+                take" on a line of its own in its card. A tile has no third line
+                to give it, so it is said on the line under the games, for the
+                game chosen — where a reader deciding about it is looking.
               */}
-              {/*
-                A thirteenth of a pixel smaller than the site's small text
-                until a laptop, and one language on one line: the name only,
-                through `OneName`. With the regular 70px board beside it,
-                three columns on an iPad in portrait left 102px and cut seven
-                names, so `PICK_GRID` is two columns until a laptop and never
-                four. `truncate` and the title stay as the guard for a name
-                added later that is longer than any today.
-              */}
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-[0.8125rem] font-medium lg:text-sm" title={copy.label}>
-                  <OneName en={copy.label} kanji={copy.kanji} />
-                </span>
-                {/*
-                  A GUEST SAYS WHERE IT LIVES, on one line under its name: "also
-                  under Flips". The same game as at home — picking it here
-                  starts that game — and the line is what makes seeing it twice
-                  read as meant. Not a link: this is inside the label that
-                  chooses, and a link there would swallow the choice.
-
-                  0.7rem, the size a board tile's name is set in. Measured at
-                  640px, the narrowest two columns: "also under Pieces and
-                  twists" wanted 157px of 149 at text-xs, and fits at this.
-                */}
-                {shown.listed === "shelf" ? (
-                  <span className="truncate text-[0.7rem] text-muted" data-testid="set-up-variant-home">
-                    {speaker.say("setup.alsoUnder", {
-                      family: speaker.pairName(shown.home.title, shown.home.kanji).text,
-                    })}
-                  </span>
-                ) : null}
+              <span className={`${PICK_TILE_NAME} font-medium`} title={copy.label}>
+                <OneName en={copy.label} kanji={copy.kanji} wrap />
               </span>
-              <PickMark className="size-5" />
+              <PickMark className="absolute top-1.5 right-1.5 size-5" />
             </label>
           );
         })}
@@ -373,6 +380,16 @@ export function GamePicker({
         {tagline !== undefined ? (
           <span className="text-xs leading-snug text-muted" data-testid="set-up-variant-hint">
             {tagline}
+            {chosenGuest !== undefined ? (
+              <>
+                {" "}
+                <span data-testid="set-up-variant-home">
+                  {speaker.say("setup.alsoUnder", {
+                    family: speaker.pairName(chosenGuest.home.title, chosenGuest.home.kanji).text,
+                  })}
+                </span>
+              </>
+            ) : null}
           </span>
         ) : null}
         </>

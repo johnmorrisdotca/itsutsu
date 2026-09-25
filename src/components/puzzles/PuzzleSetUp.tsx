@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { PICK_CHIP, PICK_CHIP_OPEN } from "@/components/live/picker.constants";
+import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle } from "@/lib/puzzles/generate";
@@ -14,6 +14,7 @@ import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS }
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
+import { SetUpSection } from "@/components/live/SetUpSection";
 
 import { sizeWord } from "./puzzles.constants";
 
@@ -83,9 +84,18 @@ export function PuzzleSetUp({
     <section className={`${framed ? PANEL_CLASS : ""} flex flex-col gap-5`} data-testid="puzzle-set-up" {...readyMark(hydrated)}>
       {sized === undefined ? <PuzzleSizes kind={kind} size={size} onSize={setOwnSize} /> : null}
 
-      <fieldset className="flex flex-col gap-2">
-        {/* Headed the way the board tiles above it are ("Board"), so the two read as one form. */}
-        <legend className="mb-0.5 text-sm text-ink-soft">Level</legend>
+      {/*
+        THE PUZZLE'S OWN SETTINGS, UNDER A HEADING, BELOW THE CHOICE OF PUZZLE —
+        where a game's opponent and rules are. John, 2026-09-24: "Numbers
+        introduced Difficulty which takes up space that the others didn't.
+        Probably should just go with the rest of customization / settings later
+        below." What each size is for goes here too: it was a paragraph under
+        the size tiles, and made that column a different height for every puzzle.
+      */}
+      <SetUpSection title="Size and level" kanji="盤と難易度" testId="puzzle-settings">
+        <p className="text-xs text-muted" data-testid="puzzle-size-note">
+          {copy.board}
+        </p>
         <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Level">
           {spec.levels.map((each) => (
             <button
@@ -93,7 +103,7 @@ export function PuzzleSetUp({
               type="button"
               role="radio"
               aria-checked={level === each}
-              className={`${PICK_CHIP} min-h-11 ${level === each ? PICK_CHIP_OPEN : ""}`}
+              className={`${PICK_WORD_CHIP} ${level === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
               onClick={() => setLevel(each)}
               data-testid={`puzzle-level-${each}`}
             >
@@ -104,7 +114,7 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
           {PUZZLE_LEVEL_DISPLAY[level].blurb}
         </p>
-      </fieldset>
+      </SetUpSection>
 
       <div className="flex flex-wrap items-center gap-3">
         <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} data-testid="puzzle-solve">
@@ -147,13 +157,11 @@ export function PuzzleSetUp({
  * own with "4×4" printed under it: "Why does those size boards look different
  * than every other single size board we have ever created." They were drawn by
  * a second component the puzzles brought with them; `boardSizeMark.coverage`
- * now refuses a size picture that is not `BoardSizeMark`.
+ * now refuses a size picture that is not `BoardSizeMark`. What each size is
+ * for is said in the settings below (`PuzzleSetUp`), not under the tiles.
  */
 export function PuzzleSizes({ kind, size, onSize, beside = false }: { kind: PuzzleKind; size: number; onSize: (size: number) => void; beside?: boolean }) {
   return (
-    <div className="flex flex-col gap-2">
-      <BoardPicker value={size} sizes={PUZZLE_SPECS[kind].sizes} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} />
-      <p className="text-xs text-muted">{PUZZLE_DISPLAY[kind].board}</p>
-    </div>
+    <BoardPicker value={size} sizes={PUZZLE_SPECS[kind].offered} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} />
   );
 }

@@ -268,6 +268,16 @@ Held by `boardFrame.coverage.test.ts` and `boardSizeMark.coverage.test.ts`.
 Before a new kind of thing that draws a board, a size or a preview ships, find
 the component that already draws it and use that.
 
+**And nothing on the set-up screen changes height when something is chosen.**
+John, 2026-09-24: "We cannot have the heights change in Mobile or Desktop."
+A family, a game and a board size are one tile (`PICK_TILE`, fixed width and
+height); a shelf shows at most eight games and a game or puzzle offers at most
+four boards (`picker.test.ts`); the games' panel, the preview's caption and the
+line naming the game each keep the room their longest wording takes; and a
+puzzle's own settings sit under a heading below, where a game's opponent is.
+`e2e/set-up-steady.spec.ts` presses every family, game and board at three
+widths and fails if the chooser ends anywhere else.
+
 ### Nothing Is A Dead End
 
 Two rules, in John's words, and one principle underneath them.
@@ -353,7 +363,10 @@ in `PICTURE_PX` (`games.constants.ts`) — `/ 2` and `* 2` — never as numbers 
 their own. `GameThumb`, `FamilyMark`, `BoardSizeMark`, `OpeningMark`, `SeatMark`
 and the rated tiles' icons each take `size: "small" | "regular" | "large"` and
 read their side through `pictureBox`; no per-surface class or pixel count. A
-label under a picture is one language on one line, through `OneName`.
+label under a picture is one language on one line, through `OneName` — except
+on the set-up screen's tiles, which are one fixed box (`PICK_TILE`) so the
+screen never moves, and where a name too long for a family's width takes a
+second line in room every tile keeps (`OneName wrap`), never cut short.
 **Enforced by `src/components/games/gamePictures.coverage.test.ts`**, which
 fails the build for a name with no picture near it, for a picture at any size
 but the three, for a picture drawn at a size other than its file is classified

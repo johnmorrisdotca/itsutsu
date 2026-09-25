@@ -4,7 +4,7 @@ import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import type { Family } from "./picker";
-import { PICK_CARD, PICK_GRID } from "./picker.constants";
+import { PICK_CARD, PICK_TILE, PICK_TILE_GRID, PICK_TILE_NAME } from "./picker.constants";
 import { PickMark } from "./PickMark";
 
 /**
@@ -20,7 +20,8 @@ import { PickMark } from "./PickMark";
  * So a puzzle is chosen here the way a game is, a card with a mark, and the
  * screen turns to it: `SetUpGame` draws its picture, its size and level, and
  * Solve (`PuzzleHere`). The same radio shape as the game cards, so a chosen
- * puzzle looks chosen in the same way.
+ * puzzle looks chosen in the same way — and the same tile (`PICK_TILE`) in
+ * the same columns, so the games' panel is one height for puzzles and games.
  */
 export function PuzzleShelf({
   family,
@@ -38,13 +39,13 @@ export function PuzzleShelf({
       <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
         {family.blurb}
       </span>
-      <div className={PICK_GRID} role="radiogroup" aria-label={family.title}>
+      <div className={PICK_TILE_GRID} role="radiogroup" aria-label={family.title}>
         {(family.games as PuzzleKind[]).map((kind) => {
           const copy = gameCopyFor(kind);
           return (
             <label
               key={kind}
-              className={`${PICK_CARD} cursor-pointer gap-1.5 p-1`}
+              className={`${PICK_CARD} ${PICK_TILE} cursor-pointer`}
               data-testid="set-up-puzzle"
               data-kind={kind}
               data-chosen={kind === chosen ? "true" : "false"}
@@ -59,12 +60,10 @@ export function PuzzleShelf({
                 className="peer sr-only"
               />
               <GameThumb variant={kind} size="regular" />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-[0.8125rem] font-medium lg:text-sm" title={copy.label}>
-                  <OneName en={copy.label} kanji={copy.kanji} />
-                </span>
+              <span className={`${PICK_TILE_NAME} font-medium`} title={copy.label}>
+                <OneName en={copy.label} kanji={copy.kanji} wrap />
               </span>
-              <PickMark className="size-5" />
+              <PickMark className="absolute top-1.5 right-1.5 size-5" />
             </label>
           );
         })}

@@ -13,7 +13,7 @@ import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { seededRandom } from "@/lib/puzzles/random";
 
-import { SET_UP_COPY, SET_UP_PREVIEW_BOX } from "./live.constants";
+import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 
 /** The paper a puzzle is written on, inside the wood. */
 const PAPER = "#ffffff";
@@ -107,7 +107,7 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
           </svg>
         </BoardFrame>
       </div>
-      <figcaption className="text-center text-xs text-muted">{SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}</figcaption>
+      <figcaption className={SET_UP_PREVIEW_CAPTION}>{SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}</figcaption>
     </figure>
   );
 }
