@@ -79,7 +79,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        # FOURTEEN, from twelve (2026-09-25): the slowest of twelve was 8.9 minutes
+        # against a fastest of 3.6, and it was what the deploy waited on.
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
     timeout-minutes: 30
 
     services:

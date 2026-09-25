@@ -41,8 +41,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # MEASURED 2026-09-25 (John: "what takes a deployment so long???"): the
+      # run took 10.7 minutes and the deploy waited on one unit-test job of 8.7.
+      # So the unit tests are three legs of a third each (vitest --shard), and
+      # lint, types and audit, a minute each, share one leg to pay for them:
+      # still five legs, and five legs plus fourteen browser shards is nineteen
+      # jobs, inside GitHub's twenty at once on a free account.
       matrix:
-        check: [lint, types, unit, audit, build]
+        check: [static, unit-1, unit-2, unit-3, build]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,19 +68,22 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint, and the file size gate
-        if: matrix.check == 'lint'
+        if: matrix.check == 'static'
         run: pnpm lint && pnpm loc:check
 
       - name: Typecheck
-        if: matrix.check == 'types'
+        if: matrix.check == 'static'
         run: pnpm typecheck
 
+      # A third of the unit tests each; `N/3` is read off the leg's own name so the count cannot drift from the matrix.
       - name: Unit tests
-        if: matrix.check == 'unit'
-        run: pnpm test:unit
+        if: startsWith(matrix.check, 'unit-')
+        run: pnpm exec vitest run --shard=${MATRIX_CHECK#unit-}/3
+        env:
+          MATRIX_CHECK: ${{ matrix.check }}
 
       - name: Audit production dependencies
-        if: matrix.check == 'audit'
+        if: matrix.check == 'static'
         run: |
           for attempt in 1 2 3; do
             if pnpm security:check; then
