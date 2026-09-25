@@ -31,6 +31,27 @@ outcome, the reason and, where the rules keep one, the score).
 | Drawn, for any reason | 50% each | |
 | Abandoned, cancelled, or an offer never accepted | 0% | 0% |
 
+Two guards on top, John's "use your experience to guide me" answered with
+the first draft he asked for:
+
+- **The opponent's strength, in a rated game.** The win is multiplied by
+  1 + 0.5 × (1 − 2E), where E is the winner's expected score before the game
+  from the two ratings (Elo's own). An even game pays as the table says; an
+  upset over somebody rated 400 higher pays 1.41 times; beating somebody 400
+  lower pays 0.59; the limits are 1.5 and 0.5. A program is rated in its own
+  pool, so the same rule pays little for beating the easiest program and a lot
+  for the strongest. An unrated game is paid as the table says.
+- **The same two players again the same day.** The first game pays in full,
+  the second half, every one after that a quarter, winner and loser alike.
+
+**Playing alone.** A game against a computer player is a recorded game between
+two seats, so it pays, priced as above. A practice board lives in one browser
+and nothing checks its result, so it pays nothing (a "Play it for points"
+button can start the same game as a recorded one). A game at one screen (pass
+and play) pays nothing, because nobody can tell who played which side. That is
+the line the puzzles already draw: they pay once the server has checked the
+grid.
+
 So a Gomoku win is 100 and its loss 20; a Reversi loss by 30 discs to 34 is
 20 + 20 × 30⁄34, about 38; a Go game lost on time is 10% of 200, 20; a
 tic-tac-toe draw is 5 each.
