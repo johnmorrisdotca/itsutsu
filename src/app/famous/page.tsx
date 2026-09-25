@@ -25,8 +25,9 @@ export const metadata: Metadata = { title: `${FAMOUS_COPY.title} ${FAMOUS_COPY.k
  *
  * No database: the games are a data file, so the page is built once and every
  * view of it is a static file. Each card's final position is worked out then;
- * the picture of every move is made in the reader's browser, on a press. Each
- * game names the collection its record came from.
+ * the picture of every move is made in the reader's browser, on a press of
+ * the small picture, in a window. Each game names the collection its record
+ * came from.
  */
 export default function FamousGamesPage() {
   return (
@@ -43,7 +44,11 @@ export default function FamousGamesPage() {
           return (
             <article key={game.id} className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="famous-game" data-id={game.id}>
               <div className="flex items-start gap-3">
-                <MosaicTile tile={{ id: game.id, size: game.size, board: frameOf(last).board }} grid={VARIANT_SPECS[game.variant].grid} />
+                {/* The final position, small; pressed, the picture of every position opens in a window (`FamousMosaic`). */}
+                <FamousMosaic
+                  game={game}
+                  thumb={<MosaicTile tile={{ id: game.id, size: game.size, board: frameOf(last).board }} grid={VARIANT_SPECS[game.variant].grid} />}
+                />
                 <div className="flex min-w-0 flex-col gap-1 text-sm">
                   <p className="font-semibold">
                     {game.black} <span className="text-muted">vs</span> {game.white}
@@ -65,7 +70,6 @@ export default function FamousGamesPage() {
                   </p>
                 </div>
               </div>
-              <FamousMosaic game={game} />
             </article>
           );
         })}
