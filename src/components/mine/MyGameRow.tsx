@@ -13,6 +13,7 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
+import { countText } from "@/lib/rating/figures";
 
 /**
  * ONE GAME IN THE QUEUE, AS A ROW.
@@ -42,7 +43,7 @@ export function ago(iso: string, now: Date): string {
   return days === 1 ? "yesterday" : `${days} days ago`;
 }
 
-export function Row({ item, now, tags }: { item: MyGame; now: Date; tags: ReadonlyMap<string, NameTag> }) {
+export function Row({ item, now, tags, earned }: { item: MyGame; now: Date; tags: ReadonlyMap<string, NameTag>; earned?: number }) {
   const { game, seat, group, offer, offerSide } = item;
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
@@ -178,6 +179,17 @@ export function Row({ item, now, tags }: { item: MyGame; now: Date; tags: Readon
         "you didn't think of MOBILE!!!").
       */}
       <span className="ml-auto flex shrink-0 items-center gap-2">
+        {/*
+          WHAT THE GAME EARNED, on a finished game's row: John, 2026-09-25, "For
+          all completed games… show the XP Earned… these tables will be much more
+          interesting." Large enough to read at a glance, like a score.
+        */}
+        {earned !== undefined ? (
+          <span className="text-right leading-tight" data-testid="game-xp-earned" data-xp={earned}>
+            <span className="block font-mono text-base font-semibold tabular-nums">+{countText(earned)}</span>
+            <span className="block text-[0.6rem] tracking-wide text-muted uppercase">XP</span>
+          </span>
+        ) : null}
         {item.stale ? (
           <span className="relative z-10 rounded-full border border-ochre/60 bg-ochre-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide uppercase" title={MY_GAMES_COPY.staleHint(STALE_AFTER_DAYS)}>
             {MY_GAMES_COPY.stale}

@@ -27,6 +27,7 @@ export function Group({
   more = null,
   empty = null,
   tags,
+  earned,
   whole = false,
   newest = null,
 }: {
@@ -47,6 +48,8 @@ export function Group({
   empty?: string | null;
   /** The flag and badge beside each name in the rows (`nameTagsOf`). */
   tags: ReadonlyMap<string, NameTag>;
+  /** What each finished game earned the reader, where it earned anything (`xpEarnedIn`). */
+  earned?: ReadonlyMap<string, number>;
   /** Whether the tab is this list (Completed), so it pages with arrows and has no "Show fewer". */
   whole?: boolean;
   /** Where the first page is, past it, for the list that pages with arrows. */
@@ -71,7 +74,7 @@ export function Group({
       ) : null}
       <ul className="flex flex-col gap-1.5">
         {bucket.items.map((item) => (
-          <Row key={item.game.id} item={item} now={now} tags={tags} />
+          <Row key={item.game.id} item={item} now={now} tags={tags} earned={earned?.get(item.game.id)} />
         ))}
       </ul>
       {/*

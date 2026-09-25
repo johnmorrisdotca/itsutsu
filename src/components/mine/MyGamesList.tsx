@@ -12,6 +12,7 @@ import { MY_GAME_GROUPS, fetchMyGames, pagedGroup, shownGroup, type MyGameGroup 
 import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, viewHref, type MyGamesView } from "@/lib/history/myGamesViews";
 import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
+import { xpEarnedIn } from "@/lib/xp/xpOfGames";
 import type { Tab } from "@/lib/ui/tabs";
 import { gamesGoing } from "@/lib/history/gamesGoing";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -203,9 +204,11 @@ export async function MyGamesList({
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   // The puzzles left unfinished, kept on the account: one indexed read, for the Puzzles tab and its count.
   // And the flag and badge beside every name in the queue, one read for all of them (`nameTagsOf`).
-  const [runs, tags] = await Promise.all([
+  // And, on the Completed tab, what each finished game on the page earned the reader (`xpEarnedIn`).
+  const [runs, tags, earned] = await Promise.all([
     memberId === null ? [] : runsOf(memberId),
     nameTagsOf(MY_GAME_GROUPS.flatMap((group) => groups[group].flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId]))),
+    view === "completed" ? xpEarnedIn(memberId, groups.finished.map((item) => item.game.id)) : new Map<string, number>(),
   ]);
 
   /** One group's panel, or nothing for a closed empty group that has nothing to say when empty. */
@@ -249,6 +252,7 @@ export async function MyGamesList({
         open={open}
         empty={empty}
         tags={tags}
+        earned={earned}
         /*
          * The next page, for the one group that has one. Built here rather
          * than in the panel because the panel is given a bucket and knows
