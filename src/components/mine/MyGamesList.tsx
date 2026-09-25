@@ -18,11 +18,13 @@ import { gamesGoing } from "@/lib/history/gamesGoing";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { BotCatchUp } from "./BotCatchUp";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { FavouritesPanel } from "./FavouritesPanel";
 import { Group } from "./MyGamesGroup";
 import { MyPuzzleRuns } from "./MyPuzzleRuns";
 import { MyPuzzleSolves } from "./MyPuzzleSolves";
 import { mySolvesPage } from "@/lib/puzzles/server/mySolves";
 import { SEATED_ONLY } from "@/lib/history/myFinished";
+import { favouriteGamesOf, favouritesAmong } from "@/lib/history/favourites";
 import { SeatedNarrowing } from "./SeatedNarrowing";
 
 /**
@@ -205,10 +207,17 @@ export async function MyGamesList({
   // The puzzles left unfinished, kept on the account: one indexed read, for the Puzzles tab and its count.
   // And the flag and badge beside every name in the queue, one read for all of them (`nameTagsOf`).
   // And, on the Completed tab, what each finished game on the page earned the reader (`xpEarnedIn`).
+  // And on the Completed tab, the starred games for the panel above the list (first page only) and which of the page's rows are starred.
+  const completed = view === "completed" && memberId !== null;
+  const [favourites, starred] = await Promise.all([
+    completed && cursor === null ? favouriteGamesOf(memberId) : { rows: [], total: 0 },
+    completed ? favouritesAmong(memberId, groups.finished.map((item) => item.game.id)) : null,
+  ]);
+  const listed = [...MY_GAME_GROUPS.flatMap((group) => groups[group]), ...favourites.rows];
   const [runs, tags, earned] = await Promise.all([
     memberId === null ? [] : runsOf(memberId),
-    nameTagsOf(MY_GAME_GROUPS.flatMap((group) => groups[group].flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId]))),
-    view === "completed" ? xpEarnedIn(memberId, groups.finished.map((item) => item.game.id)) : new Map<string, number>(),
+    nameTagsOf(listed.flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId])),
+    view === "completed" ? xpEarnedIn(memberId, [...groups.finished, ...favourites.rows].map((item) => item.game.id)) : new Map<string, number>(),
   ]);
 
   /** One group's panel, or nothing for a closed empty group that has nothing to say when empty. */
@@ -253,6 +262,8 @@ export async function MyGamesList({
         empty={empty}
         tags={tags}
         earned={earned}
+        // A star on each finished row, for a member (the rows of a browser with no account offer none).
+        starred={group === "finished" ? starred : null}
         /*
          * The next page, for the one group that has one. Built here rather
          * than in the panel because the panel is given a bucket and knows
@@ -340,6 +351,8 @@ export async function MyGamesList({
         )
       ) : null}
       {view === "going" ? openSeats : null}
+      {/* The starred games first, on the first page: John, "favourite your game, it moves to the top". */}
+      {completed && cursor === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
       {view === "completed" ? panel("finished", MY_GAMES_COPY.empty.completed) : null}
       {view === "pass-and-play" ? (
         <>

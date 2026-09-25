@@ -7,6 +7,7 @@ import { SEAT_DISPLAY, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constan
 import { matchPath } from "@/lib/gomoku/slugs";
 import { STALE_AFTER_DAYS, type MyGame } from "@/lib/history/myGames";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { FavouriteStar } from "./FavouriteStar";
 import { OfferButtons } from "./OfferButtons";
 import { ResignButton } from "./ResignButton";
 import { GameName } from "@/components/games/GameName";
@@ -55,7 +56,20 @@ export function ago(iso: string, now: Date): string {
   return days === 1 ? "yesterday" : `${days} days ago`;
 }
 
-export function Row({ item, now, tags, earned }: { item: MyGame; now: Date; tags: ReadonlyMap<string, NameTag>; earned?: number }) {
+export function Row({
+  item,
+  now,
+  tags,
+  earned,
+  starred = null,
+}: {
+  item: MyGame;
+  now: Date;
+  tags: ReadonlyMap<string, NameTag>;
+  earned?: number;
+  /** Whether the reader has starred this finished game (`favourites.ts`); null where no star is offered. */
+  starred?: boolean | null;
+}) {
   const { game, seat, group, offer, offerSide } = item;
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
@@ -242,6 +256,8 @@ export function Row({ item, now, tags, earned }: { item: MyGame; now: Date; tags
             <OfferButtons id={game.id} side={offerSide} />
           </span>
         ) : null}
+        {/* The star, on a finished game a member played: pressed, it moves to the top of the Completed tab. */}
+        {starred === null ? null : <FavouriteStar gameId={game.id} starred={starred} regroup />}
         <CardArrow />
       </span>
     </li>

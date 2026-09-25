@@ -46,6 +46,13 @@ export const MY_GAMES_COPY = {
     hotSeat: { label: "Pass and play", kanji: "対面", hint: "Two people taking turns on this screen. Never rated." },
     finished: { label: "Completed", kanji: "終局", hint: "Filed in the record." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
+  /** The starred games, first on the Completed tab (`FavouritesPanel`); not a group of the queue, so apart from the seven. */
+  favourites: {
+    label: "Starred",
+    kanji: "お気に入り",
+    hint: "Games you starred, kept here first however old they are.",
+    empty: "Nothing starred yet. Press ☆ on a finished game to keep it here.",
+  },
   /**
    * WHAT AN OFFER'S ROW SAYS ABOUT ITSELF.
    *

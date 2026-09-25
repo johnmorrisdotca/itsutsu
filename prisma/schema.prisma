@@ -222,6 +222,7 @@ model Game {
   gifts     TimeGift[]
   reactions Reaction[]
   applause  Applause[]
+  favourites GameFavourite[]
 
   /// Listing sorts by these; a compound index covers the default ordering.
   @@index([playedAt])
@@ -318,6 +319,20 @@ model InviteCode {
 /// it, and each member leaves at most one — so the tally counts people, not
 /// clicks. There is deliberately no opposite: a game nobody marks stays
 /// quiet rather than showing a score against it.
+/// A finished game a member has starred, so it is listed first among their
+/// games (John, 2026-09-25: "ability to favourite your game, it moves to the
+/// top"). Only a game they sat in; gone with the game or the member.
+model GameFavourite {
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([memberId, gameId])
+  @@index([gameId])
+}
+
 model Applause {
   id        String   @id @default(cuid())
   gameId    String
@@ -714,6 +729,7 @@ model Member {
   messagesReceived DirectMessage[] @relation("MessageTo")
   ignoredBy Ignore[]   @relation("IgnoreTarget")
   applause  Applause[]
+  favourites GameFavourite[]
 
   /// `xp + xpImported`: the Everywhere total, which the XP board ranks by under
   /// Everywhere and the level badge beside a name is read from.

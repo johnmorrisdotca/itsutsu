@@ -30,7 +30,10 @@ export function Group({
   earned,
   whole = false,
   newest = null,
+  starred = null,
 }: {
+  /** The reader's starred games among these rows, where the rows offer a star (finished games, a member); null for none. */
+  starred?: ReadonlySet<string> | null;
   group: MyGameGroup;
   bucket: ShownGroup<MyGame>;
   /** Whose "see the rest" this is, when there is a rest and somewhere to send them for it. */
@@ -74,7 +77,7 @@ export function Group({
       ) : null}
       <ul className="flex flex-col gap-1.5">
         {bucket.items.map((item) => (
-          <Row key={item.game.id} item={item} now={now} tags={tags} earned={earned?.get(item.game.id)} />
+          <Row key={item.game.id} item={item} now={now} tags={tags} earned={earned?.get(item.game.id)} starred={starred === null ? null : starred.has(item.game.id)} />
         ))}
       </ul>
       {/*

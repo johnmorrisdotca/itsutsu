@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Applause } from "@/components/history/Applause";
+import { FavouriteStar } from "@/components/mine/FavouriteStar";
 import { GameReplay } from "@/components/history/GameReplay";
 import type { MovesShown } from "@/components/history/MovesFold";
 import { MoveFormatProvider } from "@/components/game/MoveFormatContext";
@@ -31,6 +32,7 @@ import { cookies } from "next/headers";
 import { currentReader } from "@/lib/auth/currentReader";
 import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
+import { favouritesAmong } from "@/lib/history/favourites";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { appearanceFor, keepFinishedDaysFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
@@ -230,6 +232,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
       movesShown={movesShown}
       card={card}
       match={{ id: members?.matchId ?? null, memberId: myId }}
+      starred={myColour === null ? null : (await favouritesAmong(myId, [id])).has(id)}
     />
   );
 }
@@ -251,7 +254,10 @@ function FiledMatch({
   movesShown,
   card,
   match,
+  starred,
 }: {
+  /** Whether this reader starred the game, for one who played it; null for anybody else. */
+  starred: boolean | null;
   game: GameDetail;
   move: number;
   /** The colour this reader takes in a rematch, or null when there is none to offer. */
@@ -403,6 +409,9 @@ function FiledMatch({
       ) : null}
 
       {verdict !== undefined ? <SelfVerdict id={game.id} initial={verdict} /> : null}
+
+      {/* The star, for the two who played it: starred, the game is listed first in their finished games. */}
+      {starred === null ? null : <FavouriteStar gameId={game.id} starred={starred} labelled />}
 
       {/* Anybody may say the game was worth playing, not only the two who played it. */}
       <Applause gameId={game.id} initial={applause} signedIn={signedIn} hasAccount={hasAccount} />
