@@ -80,4 +80,12 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await ready(page, "tabs");
   await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`)).toBeVisible();
+
+  // And the puzzle's own page says Resume, which opens that very grid (John, 2026-09-25).
+  await page.goto(AT);
+  const resume = page.getByTestId("game-resume");
+  await expect(resume).toHaveAttribute("href", new RegExp(`seed=${seed}`));
+  await resume.click();
+  await ready(page, "puzzle-play");
+  await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-value", String(solution[first]));
 });

@@ -64,6 +64,15 @@ export async function runsOf(memberId: string) {
   });
 }
 
+/** The member's most recently touched run of one puzzle, for its page's Resume (one indexed read), or null. */
+export async function latestRunOf(memberId: string, kind: PuzzleKind) {
+  return prisma.puzzleRun.findFirst({
+    where: { memberId, kind },
+    orderBy: { updatedAt: "desc" },
+    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true },
+  });
+}
+
 /** A grid finished: it is no longer going. */
 export async function dropRun(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number): Promise<void> {
   await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, level, seed } });

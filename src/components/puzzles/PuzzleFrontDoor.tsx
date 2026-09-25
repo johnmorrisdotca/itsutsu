@@ -17,6 +17,7 @@ import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.consta
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzleFastest } from "./PuzzleFastest";
+import { PuzzlePlayOrResume } from "./PuzzlePlayOrResume";
 import { PuzzlePoints } from "./PuzzlePoints";
 import { sizeWord } from "./puzzles.constants";
 
@@ -66,7 +67,9 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
               <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
               {/* The one big Play, under the picture, as on every game's page; alone or a friend is chosen on the set-up. */}
-              <PlayButton href={setUpPath(kind)} />
+              <Suspense fallback={<PlayButton href={setUpPath(kind)} />}>
+                <PuzzlePlayOrResume kind={kind} />
+              </Suspense>
             </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>
