@@ -218,6 +218,7 @@ export function KanaDropSolve({
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <KanaKeyboard
               known={known}
+              typed={new Set(typing.slots.filter((slot) => slot !== "").map(kanaBase))}
               style={style}
               disabled={pausing.paused}
               onKana={kana}

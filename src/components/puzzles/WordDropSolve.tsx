@@ -166,7 +166,7 @@ export function WordDropSolve({
             {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
-            <WordKeyboard known={known} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+            <WordKeyboard known={known} typed={new Set(typing.slots.filter((slot) => slot !== ""))} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <WordStylePicker />

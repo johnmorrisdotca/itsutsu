@@ -188,5 +188,14 @@ export const WORD_FOCUS = {
 /** The keys under a grid of stones: a letter not in the word is black, as its stone is. */
 export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "kin" | "miss", string> = { ...WORD_TILE_MARK, miss: "border-ink bg-ink text-ivory" };
 
+/**
+ * A key whose letter is in the row being typed, over whatever colour the key
+ * already has. John, 2026-09-25: "White letters that are being entered should
+ * be indicated in the keyboard as well… so the user can visually see if they
+ * are choosing new characters." A ring with a gap of the page between, so it
+ * reads on a green, a grey or a black key alike.
+ */
+export const WORD_KEY_TYPED = "ring-2 ring-ink ring-offset-1 ring-offset-ivory";
+
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";

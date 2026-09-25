@@ -3,9 +3,10 @@
 import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
 
-import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_TILE_MARK } from "./puzzles.constants";
+import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
 const ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+const NONE_TYPED: ReadonlySet<string> = new Set();
 
 /**
  * THE KEYBOARD UNDER A WORDDROP GRID, for a phone with no keys of its own:
@@ -17,6 +18,7 @@ const ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
  */
 export function WordKeyboard({
   known,
+  typed = NONE_TYPED,
   style,
   disabled,
   onLetter,
@@ -24,6 +26,8 @@ export function WordKeyboard({
   onBack,
 }: {
   known: ReadonlyMap<string, LetterMark>;
+  /** The letters in the row being typed, whose keys are ringed (`WORD_KEY_TYPED`). */
+  typed?: ReadonlySet<string>;
   style: WordStyle;
   disabled: boolean;
   onLetter: (letter: string) => void;
@@ -47,11 +51,12 @@ export function WordKeyboard({
               <button
                 key={letter}
                 type="button"
-                className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]}`}
+                className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(letter) ? WORD_KEY_TYPED : ""}`}
                 onClick={() => onLetter(letter)}
                 disabled={disabled}
                 data-testid={`word-key-${letter}`}
                 data-mark={mark ?? ""}
+                data-typed={typed.has(letter) ? "true" : undefined}
               >
                 {letter}
               </button>

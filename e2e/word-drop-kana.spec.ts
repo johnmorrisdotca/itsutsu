@@ -91,6 +91,16 @@ test.describe("the kana word puzzle", () => {
     await expect(page.getByTestId("kana-romaji")).toHaveCount(0);
   });
 
+  test("a kana being typed rings its key in any size or mark: ぱ rings は", async ({ page }) => {
+    await page.goto(`${AT}/play?size=4&level=medium&seed=${freshPuzzleSeed()}`);
+    await ready(page, "puzzle-play");
+    await tapKana(page, "ぱ");
+    await expect(page.getByTestId("kana-key-は")).toHaveAttribute("data-typed", "true");
+    await expect(page.getByTestId("kana-key-か")).not.toHaveAttribute("data-typed", /./);
+    await page.getByTestId("kana-key-back").click();
+    await expect(page.getByTestId("kana-key-は")).not.toHaveAttribute("data-typed", /./);
+  });
+
   test("hard opens with no free word", async ({ page }) => {
     await page.goto(`${AT}/play?size=4&level=hard&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");

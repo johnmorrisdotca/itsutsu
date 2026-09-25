@@ -99,6 +99,32 @@ test.describe("the word puzzle", () => {
     });
   });
 
+  test.describe("on a phone, the keys of the row being typed", () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test("are ringed while their letter is in the row, and let go when it is cleared or sent", async ({ page }) => {
+      const seed = freshPuzzleSeed();
+      const [miss] = misses(generatePuzzle(KIND, 5, LEVEL, seed).solution, 1);
+      await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+      await ready(page, "puzzle-play");
+      const key = (letter: string) => page.getByTestId(`word-key-${letter}`);
+      for (const letter of miss!.slice(0, 2)) await key(letter).click();
+      await expect(key(miss![0]!)).toHaveAttribute("data-typed", "true");
+      await expect(key(miss![1]!)).toHaveAttribute("data-typed", "true");
+      await expect(key(miss![2]!)).not.toHaveAttribute("data-typed", /./);
+      // Cleared from the row, the key lets go.
+      await page.locator('[data-testid="word-tile"][data-row="0"]').nth(0).click();
+      await page.keyboard.press(" ");
+      await expect(key(miss![0]!)).not.toHaveAttribute("data-typed", /./);
+      // Sent, no key is ringed.
+      await key(miss![0]!).click();
+      for (const letter of miss!.slice(2)) await key(letter).click();
+      await page.getByTestId("word-key-enter").click();
+      await expect(page.locator('[data-testid^="word-key-"][data-typed="true"]')).toHaveCount(0);
+      await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).not.toHaveAttribute("data-mark", "typed");
+    });
+  });
+
   test("on a computer the letter keys are put away until asked for, and the desk's keyboard is said to work", async ({ page }) => {
     const seed = freshPuzzleSeed();
     await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);

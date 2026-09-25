@@ -3,7 +3,7 @@
 import type { KanaMark } from "@/lib/puzzles/wordDropKana/kanaMarks";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
 
-import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_TILE_MARK } from "./puzzles.constants";
+import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
 /**
  * The gojūon, a column to a consonant and five kana down each, read left to
@@ -32,6 +32,7 @@ const COLUMNS: readonly (readonly string[])[] = [
  */
 export function KanaKeyboard({
   known,
+  typed,
   style,
   disabled,
   onKana,
@@ -42,6 +43,8 @@ export function KanaKeyboard({
 }: {
   /** The best each base kana has been marked, by `kanaBase`. */
   known: ReadonlyMap<string, KanaMark>;
+  /** The kana in the row being typed, by base, whose keys are ringed (`WORD_KEY_TYPED`): ぱ rings は. */
+  typed: ReadonlySet<string>;
   style: WordStyle;
   disabled: boolean;
   onKana: (kana: string) => void;
@@ -65,11 +68,12 @@ export function KanaKeyboard({
               <button
                 key={kana}
                 type="button"
-                className={`${key} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]}`}
+                className={`${key} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(kana) ? WORD_KEY_TYPED : ""}`}
                 onClick={() => onKana(kana)}
                 disabled={disabled}
                 data-testid={`kana-key-${kana}`}
                 data-mark={mark ?? ""}
+                data-typed={typed.has(kana) ? "true" : undefined}
               >
                 {kana}
               </button>
