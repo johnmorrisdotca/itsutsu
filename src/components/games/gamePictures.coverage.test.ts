@@ -275,6 +275,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/games/GameList.tsx": { GameThumb: "small" },
   "src/components/history/HistoryTable.tsx": { GameThumb: "small" },
   "src/components/inbox/InboxList.tsx": { GameThumb: "small" },
+  "src/components/feed/FeedLine.tsx": { GameThumb: "small" },
   // A card's line of facts about a famous game, the game named among them: a row of text, so small.
   "src/app/famous/page.tsx": { GameThumb: "small" },
   "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },

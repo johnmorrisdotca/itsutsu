@@ -8,6 +8,7 @@ import useSWR from "swr";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { LanguagePicker } from "@/components/layout/LanguagePicker";
+import { FEED_PATH } from "@/lib/feed/feed.constants";
 
 import type { MenuLanguages, MenuVersion } from "./accountMenu.types";
 
@@ -204,6 +205,12 @@ export function AccountMenu({ initial, languages, version }: { initial: Who; lan
             // What happened while they were away. The count is on /play, not here on every page.
             <Link href="/inbox" className={ITEM} data-testid="inbox-link">
               Inbox
+            </Link>
+          ) : null}
+          {data.member ? (
+            // What you and your buddies have been doing, and the games finished lately: see /feed.
+            <Link href={FEED_PATH} className={ITEM} data-testid="feed-link">
+              {say.say("feed.title")}
             </Link>
           ) : null}
           {named ? (

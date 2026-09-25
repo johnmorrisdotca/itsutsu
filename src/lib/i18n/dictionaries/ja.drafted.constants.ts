@@ -506,4 +506,146 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "{count}人が首位を分け合っています",
     back: "{count} players share the first places.",
   },
+
+  /* The feed (/feed). Drafted 2026-09-25 with the page; nobody who reads Japanese has read it yet. */
+  "feed.title": {
+    text: "近況",
+    back: "Recent activity.",
+  },
+  "feed.homeLink": {
+    text: "あなたの近況",
+    back: "Your recent activity.",
+  },
+  "feed.lead": {
+    text: "あなたと仲間が最近遊んだこと。新しい順です。",
+    back: "What you and your buddies played recently. Newest first.",
+  },
+  "feed.leadEveryone": {
+    text: "最近ここで終わった対局です。すべての対局者がコンピューターか、18歳以上と答えた会員である対局だけを表示します。",
+    back: "Games that ended here recently. Only games in which every player is a computer or a member who answered that they are 18 or over are shown.",
+  },
+  "feed.tabMine": {
+    text: "あなたと仲間",
+    back: "You and your buddies.",
+  },
+  "feed.tabEveryone": {
+    text: "みんな",
+    back: "Everyone.",
+  },
+  "feed.tabsLabel": {
+    text: "誰の近況を表示するか",
+    back: "Whose activity to show.",
+  },
+  "feed.today": {
+    text: "今日",
+    back: "Today.",
+  },
+  "feed.yesterday": {
+    text: "昨日",
+    back: "Yesterday.",
+  },
+  "feed.won.you": {
+    text: "{game}で{other}に勝ちました",
+    back: "You won against {other} at {game}.",
+  },
+  "feed.won.named": {
+    text: "{who}が{game}で{other}に勝ちました",
+    back: "{who} won against {other} at {game}.",
+  },
+  "feed.lost.you": {
+    text: "{game}で{other}に負けました",
+    back: "You lost to {other} at {game}.",
+  },
+  "feed.lost.named": {
+    text: "{who}が{game}で{other}に負けました",
+    back: "{who} lost to {other} at {game}.",
+  },
+  "feed.drawn.you": {
+    text: "{game}で{other}と引き分けました",
+    back: "You drew with {other} at {game}.",
+  },
+  "feed.drawn.named": {
+    text: "{who}が{game}で{other}と引き分けました",
+    back: "{who} drew with {other} at {game}.",
+  },
+  "feed.started.you": {
+    text: "{other}と{game}の対局を始めました",
+    back: "You started a game of {game} with {other}.",
+  },
+  "feed.started.named": {
+    text: "{who}が{other}と{game}の対局を始めました",
+    back: "{who} started a game of {game} with {other}.",
+  },
+  "feed.waiting.you": {
+    text: "{game}の対局を始めました。相手を待っています",
+    back: "You started a game of {game}. Waiting for an opponent.",
+  },
+  "feed.waiting.named": {
+    text: "{who}が{game}の対局を始めました。相手を待っています",
+    back: "{who} started a game of {game}. Waiting for an opponent.",
+  },
+  "feed.xp.you": {
+    text: "{xp}を獲得しました",
+    back: "You earned {xp}.",
+  },
+  "feed.xp.named": {
+    text: "{who}が{xp}を獲得しました",
+    back: "{who} earned {xp}.",
+  },
+  "feed.credited.you": {
+    text: "他のサイトでの対局に対して{xp}が加算されました",
+    back: "{xp} was added for games on other sites.",
+  },
+  "feed.credited.named": {
+    text: "{who}に他のサイトでの対局に対して{xp}が加算されました",
+    back: "{xp} was added to {who} for games on other sites.",
+  },
+  "feed.level.you": {
+    text: "レベル{level}「{name}」になりました",
+    back: "You became level {level}, \"{name}\".",
+  },
+  "feed.level.named": {
+    text: "{who}がレベル{level}「{name}」になりました",
+    back: "{who} became level {level}, \"{name}\".",
+  },
+  "feed.puzzleOne.you": {
+    text: "{game}のパズルを一つ解きました",
+    back: "You solved one {game} puzzle.",
+  },
+  "feed.puzzleOne.named": {
+    text: "{who}が{game}のパズルを一つ解きました",
+    back: "{who} solved one {game} puzzle.",
+  },
+  "feed.puzzleMany.you": {
+    text: "{game}のパズルを{count}問解きました",
+    back: "You solved {count} {game} puzzles.",
+  },
+  "feed.puzzleMany.named": {
+    text: "{who}が{game}のパズルを{count}問解きました",
+    back: "{who} solved {count} {game} puzzles.",
+  },
+  "feed.seeGame": {
+    text: "対局を見る",
+    back: "See the game.",
+  },
+  "feed.somebody": {
+    text: "誰か",
+    back: "Somebody.",
+  },
+  "feed.emptyMine": {
+    text: "まだ何もありません。あなたや仲間が対局を始めたり終えたり、経験値を得たり、レベルが上がったり、パズルを解いたりすると、ここに新しい順で表示されます。",
+    back: "Nothing yet. When you or your buddies start or finish a game, earn experience, go up a level or solve a puzzle, it is shown here, newest first.",
+  },
+  "feed.emptyEveryone": {
+    text: "最近、このタブに表示できる対局者どうしの対局はありません。",
+    back: "Recently there are no games between players this tab can show.",
+  },
+  "feed.beFirst": {
+    text: "最初に遊んでみましょう →",
+    back: "Be the first to play.",
+  },
+  "feed.findBuddies": {
+    text: "仲間を探す →",
+    back: "Find buddies.",
+  },
 };

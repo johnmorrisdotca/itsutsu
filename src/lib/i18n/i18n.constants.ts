@@ -316,6 +316,50 @@ export const PHRASES = {
   "catalogue.crownMeans":
     "A crown is the top of one game's ladder, as that game shows it. This player tops more of this family's games than anybody else.",
   "catalogue.crownsShared": "Crowns shared by {count} players",
+
+  /*
+   * The feed (/feed): what the reader and their buddies have been doing, and
+   * the games finished lately among adults. Each sentence comes as a "you"
+   * form and a named one, and its {slots} are filled with links by the page
+   * — see `feedWords.ts`.
+   */
+  "feed.title": "Feed",
+  "feed.homeLink": "Your feed",
+  "feed.lead": "What you and your buddies have been playing lately, newest first.",
+  "feed.leadEveryone":
+    "Games finished here lately. Only games in which every player is a computer player or has said they are 18 or over are shown.",
+  "feed.tabMine": "You and your buddies",
+  "feed.tabEveryone": "Everyone",
+  "feed.tabsLabel": "Whose activity to show",
+  "feed.today": "Today",
+  "feed.yesterday": "Yesterday",
+  "feed.won.you": "You beat {other} at {game}",
+  "feed.won.named": "{who} beat {other} at {game}",
+  "feed.lost.you": "You lost to {other} at {game}",
+  "feed.lost.named": "{who} lost to {other} at {game}",
+  "feed.drawn.you": "You drew with {other} at {game}",
+  "feed.drawn.named": "{who} drew with {other} at {game}",
+  "feed.started.you": "You started a game of {game} against {other}",
+  "feed.started.named": "{who} started a game of {game} against {other}",
+  "feed.waiting.you": "You started a game of {game}, waiting for somebody to sit down",
+  "feed.waiting.named": "{who} started a game of {game}, waiting for somebody to sit down",
+  "feed.xp.you": "You earned {xp}",
+  "feed.xp.named": "{who} earned {xp}",
+  "feed.credited.you": "You were credited {xp} for games played on other sites",
+  "feed.credited.named": "{who} was credited {xp} for games played on other sites",
+  "feed.level.you": "You reached level {level}, {name}",
+  "feed.level.named": "{who} reached level {level}, {name}",
+  "feed.puzzleOne.you": "You solved a {game} puzzle",
+  "feed.puzzleOne.named": "{who} solved a {game} puzzle",
+  "feed.puzzleMany.you": "You solved {count} {game} puzzles",
+  "feed.puzzleMany.named": "{who} solved {count} {game} puzzles",
+  "feed.seeGame": "See the game",
+  "feed.somebody": "somebody",
+  "feed.emptyMine":
+    "Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first.",
+  "feed.emptyEveryone": "No games have finished here lately between players this tab may show.",
+  "feed.beFirst": "Be the first to play →",
+  "feed.findBuddies": "Find buddies →",
 } as const;
 
 /** A phrase the site can say. */
