@@ -10,10 +10,18 @@ import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
  * template they already have — one template, read once, is the reason the
  * shape was kept rather than a puzzle getting a page of its own.
  *
- * NAMES OF OUR OWN. "Sudoku" 数独 is Nikoli's trademark in Japan, and the
- * others below are named after published puzzles too, so each is called
- * something of ours and says what it is our version of (`inspiredBy`), the
- * way Drop Four does for Connect Four. See `RULES_ATTRIBUTION`.
+ * NAMES A PLAYER ALREADY KNOWS. John, 2026-09-24, of "Number Place", "More or
+ * Less" and the rest: "those names need work… wth is number place? sudoku?",
+ * and then "do best guesses for names. I can change later." So a puzzle goes
+ * by the English name people search for — Sudoku, Killer Sudoku, Futoshiki,
+ * Skyscrapers — where that name is in common use. The kanji stays ours:
+ * 数独 is Nikoli's trademark in Japan, so the Japanese name is ナンプレ, the
+ * word Japanese publishers use. A puzzle whose name belongs to somebody
+ * (Queens is LinkedIn's; Takuzu and Binairo are trademarks in the EU) keeps a
+ * name of our own. Each still says what it is our version of (`inspiredBy`),
+ * because the puzzle is made here by our own code. See `RULES_ATTRIBUTION`.
+ * The addresses did not follow the rename (`PUZZLE_SLUGS`): links already
+ * sent, a race's included, keep working.
  */
 export const PUZZLE_KINDS = {
   numberPlace: "numberPlace",
@@ -165,13 +173,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
 
 export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   numberPlace: {
-    label: "Number Place",
+    label: "Sudoku",
     kanji: "ナンプレ",
     tagline: "Fill the grid so every row, column and box holds each number once. One person, one answer.",
     inspiredBy: "Sudoku",
     origin:
       "Howard Garns's Number Place, printed by Dell in 1979; Nikoli took it to Japan in 1984 and named it Sudoku, and from there it went round the world.",
-    alsoKnownAs: ["Sudoku", "Nanpure"],
+    alsoKnownAs: ["Number Place", "Nanpure"],
     country: "US",
     wikipedia: "Sudoku",
     rules: [
@@ -200,12 +208,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board: "7×7 is the everyday size. 5×5 is a first puzzle; 10×10 is an evening.",
   },
   moreOrLess: {
-    label: "More or Less",
-    kanji: "大小",
+    label: "Futoshiki",
+    kanji: "不等式",
     tagline: "Fill the square so every row and column holds each number once, and every more-than mark is true.",
     inspiredBy: "Futoshiki",
     origin: "Our version of Futoshiki 不等式, Tamaki Seimiya's puzzle of 2001, which Nikoli published.",
-    alsoKnownAs: ["Futoshiki", "Unequal"],
+    alsoKnownAs: ["Unequal", "Greater Than Sudoku"],
     country: "JP",
     wikipedia: "Futoshiki",
     rules: [
@@ -216,13 +224,13 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board: "5×5 is the usual size. 4×4 is quick; 7×7 is the long one.",
   },
   jigsaw: {
-    label: "Jigsaw",
+    label: "Jigsaw Sudoku",
     kanji: "変形ナンプレ",
-    tagline: "Number Place with the boxes cut into irregular regions: every row, column and region holds each number once.",
+    tagline: "Sudoku with the boxes cut into irregular regions: every row, column and region holds each number once.",
     inspiredBy: "Jigsaw Sudoku",
     origin:
-      "Number Place with its boxes traded for irregular shapes, printed under names such as Nonomino and Jigsaw Sudoku. Without boxes it is not tied to sides that divide evenly, so it comes at five and seven as well.",
-    alsoKnownAs: ["Jigsaw Sudoku", "Nonomino", "Irregular Sudoku"],
+      "Sudoku with its boxes traded for irregular shapes, printed under names such as Nonomino and Jigsaw Sudoku. Without boxes it is not tied to sides that divide evenly, so it comes at five and seven as well.",
+    alsoKnownAs: ["Nonomino", "Irregular Sudoku"],
     wikipedia: "Sudoku",
     rules: [
       "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each outlined region holds every number exactly once.",
@@ -233,13 +241,13 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board: "7×7 is the usual size. 5×5 is quick; 9×9 is the classic grid with the boxes cut up.",
   },
   diagonal: {
-    label: "Diagonal",
+    label: "Diagonal Sudoku",
     kanji: "対角ナンプレ",
-    tagline: "Number Place where the two long diagonals must hold each number once too.",
+    tagline: "Sudoku where the two long diagonals must hold each number once too.",
     inspiredBy: "Sudoku X",
     origin:
-      "The most common extra rule laid on Number Place: the two diagonals count as groups as well. Newspapers print it as Sudoku X, The Daily Mail at six by six.",
-    alsoKnownAs: ["Sudoku X", "Diagonal Sudoku"],
+      "The most common extra rule laid on Sudoku: the two diagonals count as groups as well. Newspapers print it as Sudoku X, The Daily Mail at six by six.",
+    alsoKnownAs: ["Sudoku X", "X-Sudoku"],
     wikipedia: "Sudoku",
     rules: [
       "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
@@ -250,13 +258,13 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board: "9×9 is the usual size; 6×6, with boxes two rows tall and three wide, is the short one.",
   },
   sumCages: {
-    label: "Sum Cages",
-    kanji: "合計ナンプレ",
-    tagline: "Number Place with no numbers printed: dashed cages each give the sum of the numbers inside them.",
+    label: "Killer Sudoku",
+    kanji: "サムナンプレ",
+    tagline: "Sudoku with no numbers printed: dashed cages each give the sum of the numbers inside them.",
     inspiredBy: "Killer Sudoku",
     origin:
       "Played in Japan in the 1990s as sum number place, and made famous as Killer Sudoku by The Times in 2005, which printed it daily beside the plain grid.",
-    alsoKnownAs: ["Killer Sudoku", "Sumdoku", "Sum Number Place"],
+    alsoKnownAs: ["Sumdoku", "Sum Number Place"],
     wikipedia: "Killer_sudoku",
     rules: [
       "Fill every cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
@@ -267,13 +275,13 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board: "9×9 is the usual size; 6×6, with boxes two rows tall and three wide, is the short one.",
   },
   towers: {
-    label: "Towers",
-    kanji: "塔",
+    label: "Skyscrapers",
+    kanji: "摩天楼",
     tagline: "Every number is a tower's height. The clues around the edge say how many towers you can see from there.",
     inspiredBy: "Skyscrapers",
     origin:
       "A Japanese logic puzzle known in English as Skyscrapers, set at the first World Puzzle Championship in 1992; Simon Tatham's puzzle collection calls it Towers.",
-    alsoKnownAs: ["Skyscrapers", "Building Heights"],
+    alsoKnownAs: ["Towers", "Building Heights"],
     country: "JP",
     rules: [
       "Fill every cell with a tower from 1 up to the side of the square, so that each row and each column holds every height exactly once.",

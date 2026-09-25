@@ -115,9 +115,9 @@ same gates: `puzzles.coverage.test.ts` asks a puzzle what
 
 Everything that thinks runs in the browser. The generators, the uniqueness
 checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`,
-`moreOrLess/`; Hidden Stones grows its regions out from a placed answer and
-then tightens the grid until the solver counts one; More or Less adds givens
-until it is a puzzle and then takes away every one it does not need), seeded
+`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`; Hidden
+Stones grows its regions out from a placed answer and then tightens the grid
+until the solver counts one; Futoshiki adds givens until it is a puzzle and then takes away every one it does not need), seeded
 so the same number makes the same grid in every browser,
 and the solve page makes its puzzle after it has loaded (`ssr: false`). The
 one thing the server does is `POST /api/puzzles/solved`: an O(cells) check
@@ -128,9 +128,20 @@ met. Nothing polls and nothing is timed on a server.
 
 | Puzzle | Our version of | Sizes | Levels |
 | --- | --- | --- | --- |
-| **Number Place** ナンプレ | Sudoku (Nikoli's name for it, a trademark in Japan; Number Place is the puzzle's original name) | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
+Names are the ones players search for, the kanji ours (数独 is Nikoli's mark
+in Japan, so the Japanese name is ナンプレ); addresses kept their first slugs
+(`/games/number-place`, `/games/more-or-less`, …) so links already sent work.
+
+| Puzzle | Our version of | Sizes | Levels |
+| --- | --- | --- | --- |
+| **Sudoku** ナンプレ | Howard Garns's Number Place (1979), named Sudoku by Nikoli | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
+| **Jigsaw Sudoku** 変形ナンプレ | Sudoku with irregular regions for boxes | 5×5, 6×6, 7×7, 9×9 | easy, medium, hard |
+| **Diagonal Sudoku** 対角ナンプレ | Sudoku X: the two long diagonals count too | 6×6, 9×9 | easy, medium, hard |
+| **Killer Sudoku** サムナンプレ | dashed cages with sums, next to nothing printed | 6×6, 9×9 | easy, medium, hard |
+| **Futoshiki** 不等式 | a Latin square with more-than marks between cells; every given and mark is needed | 4×4 to 7×7 | easy, medium, hard, as Sudoku |
+| **Skyscrapers** 摩天楼 | clues around the edge count the towers seen | 4×4 to 7×7 | graded by what a person sees at a glance |
 | **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5, 7×7, 9×9 and 10×10 (made at 6×6 and 8×8 too, not offered) | easy (reasoning alone finishes it), hard (a stone has to be tried) |
-| **More or Less** 大小 | Futoshiki: a Latin square with more-than marks between cells; every given and mark is needed | 4×4 to 7×7 | easy, medium, hard, as Number Place |
+| **Black and White** 白黒 | Takuzu / Binairo: half of each colour in every line, never three alike, no line repeated | 6×6, 8×8, 10×10, 12×12 | graded by what a person sees at a glance |
 
 Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's
 page shows the fastest solves at each size and level (`/standings`) and a

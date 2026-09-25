@@ -55,7 +55,7 @@ remembering: `variants.coverage.test.ts` fails the build for a game with no
 test of its own rule, no copy, no family, no screenshot or no end-to-end test.
 `AGENTS.md`, "New Game Gate", lists everything a game needs.
 
-**A puzzle is not a variant.** Number Place (our Sudoku) has one solver, no
+**A puzzle is not a variant.** Sudoku has one solver, no
 turns and no colours, so it is a `PuzzleKind` (`src/lib/puzzles/`) rather than
 a row in `VARIANT_SPECS`, with its own generator, checker and gate
 (`puzzles.coverage.test.ts`). The catalogue joins the two kinds through

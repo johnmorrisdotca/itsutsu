@@ -159,7 +159,7 @@ later.
 
 ### PuzzleSolve
 
-A puzzle finished by a member (Number Place and its family; see
+A puzzle finished by a member (Sudoku and the rest of Numbers; see
 `src/lib/puzzles/`). Kept so a puzzle's page can show the fastest solves at
 each size and level and a member their own, and so a race has a row per seat.
 No relation to `Member`, like a game's seats: `memberId` is a plain id. The
