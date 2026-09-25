@@ -5,7 +5,7 @@ import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordSt
 import { useWordStyle } from "./WordStyleContext";
 
 /**
- * THE THREE WAYS A GOMOJI GRID CAN BE DRAWN, side by side under it: Othello,
+ * THE THREE WAYS A GOMOJI GRID CAN BE DRAWN, side by side under it: Reversi,
  * Gomoku, Tiles. One press redraws the grid and is kept on the account
  * (`WordStyleProvider`). Every chip is the same width whichever is chosen, so
  * the row never moves.

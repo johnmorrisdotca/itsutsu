@@ -56,7 +56,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         </p>
       </nav>
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
-        <WordStyleProvider initial={wordStyle ?? WORD_STYLES.othello} saves={reader.hasAccount}>
+        <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
           <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} resumed={resumed} hasAccount={reader.hasAccount} />
         </WordStyleProvider>
       </div>

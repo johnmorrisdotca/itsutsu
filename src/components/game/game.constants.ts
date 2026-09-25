@@ -409,7 +409,7 @@ export const PRACTICE_COPY = {
 /** What each format is called in a sentence a player reads. */
 const FORMAT_WORDS: Record<string, string> = {
   coordinates: "coordinates",
-  squares: "Othello squares",
+  squares: "Reversi squares",
   sgf: "SGF",
   itsYourTurn: "an ItsYourTurn move list",
   goldToken: "a GoldToken move list",

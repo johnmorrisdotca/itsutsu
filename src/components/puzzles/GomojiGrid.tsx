@@ -32,7 +32,7 @@ const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size
  * puzzle is drawn on (`PuzzleBoard`). Rows already guessed show their marks;
  * the row being typed shows its letters; the rest are empty.
  *
- * Drawn in the style the player chose (`wordStyles.ts`): Othello discs in
+ * Drawn in the style the player chose (`wordStyles.ts`): Reversi discs in
  * squares ruled on the wood, Gomoku stones on the crossings, or letter tiles
  * on white paper. Every style carries the same letters, marks and words.
  *
@@ -193,22 +193,22 @@ const OUT_OF_PLAY = 0.3;
 
 /**
  * The lines on the wood, in the board's own ink, over the whole board: an
- * Othello board's squares (every cell ruled, the edge included), or a Gomoku
+ * Reversi board's squares (every cell ruled, the edge included), or a Gomoku
  * board's lines through the middle of every cell, where its stones sit on the
  * crossings. Faint everywhere, and at full ink over the places in play.
  */
 function GridLines({ span, size, rows, left, top, style }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle }) {
   const ink = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme].line;
-  const othello = style === WORD_STYLES.othello;
-  const width = othello ? 2 : 1.25;
-  const at = othello ? 0 : 0.5;
+  const reversi = style === WORD_STYLES.reversi;
+  const width = reversi ? 2 : 1.25;
+  const at = reversi ? 0 : 0.5;
   /* One set of lines over a rectangle of cells: `across` rows high and `down` columns wide, from (x, y). */
   const ruled = (x: number, y: number, down: number, across: number, opacity: number, key: string) => (
     <g key={key} opacity={opacity} data-testid={opacity === 1 ? "word-lines-in-play" : "word-lines-out-of-play"}>
-      {Array.from({ length: othello ? across + 1 : across }, (_, row) => y + row + at).map((line) => (
+      {Array.from({ length: reversi ? across + 1 : across }, (_, row) => y + row + at).map((line) => (
         <line key={`y${line}`} x1={x + at} y1={line} x2={x + down - at} y2={line} stroke={ink} strokeWidth={width} vectorEffect="non-scaling-stroke" />
       ))}
-      {Array.from({ length: othello ? down + 1 : down }, (_, col) => x + col + at).map((line) => (
+      {Array.from({ length: reversi ? down + 1 : down }, (_, col) => x + col + at).map((line) => (
         <line key={`x${line}`} x1={line} y1={y + at} x2={line} y2={y + across - at} stroke={ink} strokeWidth={width} vectorEffect="non-scaling-stroke" />
       ))}
     </g>

@@ -7,21 +7,26 @@
  * appropriate. also then the board should look like Othello board.", then
  * "allow user to choose 3 styles. Othello, Gomoku, Tiles".
  *
- *  - OTHELLO: a disc filling each square, on the wood, ruled as an Othello
+ *  - REVERSI: a disc filling each square, on the wood, ruled as a Reversi
  *    board is. The default, as the one he settled on.
  *  - GOMOKU: a stone on each crossing, the lines running between them.
  *  - TILES: a square letter tile in each cell, as the game was first drawn.
  *
+ * Named Reversi, as this site names the game, not Othello, a trademark (John,
+ * 2026-09-25: "can we really say Othello??? Otherwise call it what we do on
+ * the site, which is Reversi"). A member who chose the old key reads the
+ * fallback, which is the same style.
+ *
  * Only the drawing changes. The letters, the marks and what they say are the
  * same in every style, and each stone says its mark in words (`aria-label`).
  */
-export const WORD_STYLE_LIST = ["othello", "gomoku", "tiles"] as const;
+export const WORD_STYLE_LIST = ["reversi", "gomoku", "tiles"] as const;
 export type WordStyle = (typeof WORD_STYLE_LIST)[number];
 
-export const WORD_STYLES = { othello: "othello", gomoku: "gomoku", tiles: "tiles" } as const satisfies Record<WordStyle, WordStyle>;
+export const WORD_STYLES = { reversi: "reversi", gomoku: "gomoku", tiles: "tiles" } as const satisfies Record<WordStyle, WordStyle>;
 
 export const WORD_STYLE_DISPLAY: Record<WordStyle, { label: string }> = {
-  othello: { label: "Othello" },
+  reversi: { label: "Reversi" },
   gomoku: { label: "Gomoku" },
   tiles: { label: "Tiles" },
 };

@@ -178,11 +178,11 @@ export const PREFERENCE_SPECS = {
   moveFormat: { options: MOVE_FORMAT_CHOICES, fallback: "itsutsu" },
 
   /*
-   * How a Gomoji grid is drawn: Othello discs, Gomoku stones or letter
-   * tiles. See `wordStyles.ts`. Othello until chosen otherwise, the look John
+   * How a Gomoji grid is drawn: Reversi discs, Gomoku stones or letter
+   * tiles. See `wordStyles.ts`. Reversi until chosen otherwise, the look John
    * settled on before asking for the choice.
    */
-  wordStyle: { options: WORD_STYLE_LIST, fallback: WORD_STYLES.othello },
+  wordStyle: { options: WORD_STYLE_LIST, fallback: WORD_STYLES.reversi },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

@@ -32,13 +32,13 @@ test.describe("the word puzzle", () => {
     await expect(page.getByTestId("game-family")).toContainText("Other");
   });
 
-  test("the grid is drawn as Othello, Gomoku or Tiles, the choice is kept for the next word, and taken back", async ({ page }) => {
+  test("the grid is drawn as Reversi, Gomoku or Tiles, the choice is kept for the next word, and taken back", async ({ page }) => {
     const seed = freshPuzzleSeed();
     await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
     await ready(page, "puzzle-play");
     const grid = page.getByTestId("puzzle-grid");
-    await page.getByTestId("word-style-othello").click();
-    await expect(grid).toHaveAttribute("data-style", "othello");
+    await page.getByTestId("word-style-reversi").click();
+    await expect(grid).toHaveAttribute("data-style", "reversi");
     const [miss] = misses(generatePuzzle(KIND, 5, LEVEL, seed).solution, 1);
     await page.keyboard.type(miss!);
     await page.keyboard.press("Enter");
@@ -56,14 +56,14 @@ test.describe("the word puzzle", () => {
     await ready(page, "puzzle-play");
     await expect(grid).toHaveAttribute("data-style", "gomoku");
 
-    // Tiles draws no lines; and back to Othello, where it started.
+    // Tiles draws no lines; and back to Reversi, where it started.
     await page.getByTestId("word-style-tiles").click();
     await expect(grid).toHaveAttribute("data-style", "tiles");
     await expect(page.getByTestId("word-lines")).toHaveCount(0);
     const back = page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
-    await page.getByTestId("word-style-othello").click();
+    await page.getByTestId("word-style-reversi").click();
     expect((await back).ok()).toBe(true);
-    await expect(grid).toHaveAttribute("data-style", "othello");
+    await expect(grid).toHaveAttribute("data-style", "reversi");
   });
 
   test.describe("on a phone, where the letter keys show under the grid", () => {

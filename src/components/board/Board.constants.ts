@@ -143,7 +143,7 @@ export const STONE_SETS = {
  * the first, kept so a choice already saved still reads.
  */
 export const GRID_STYLES: Record<GridStyle, { label: string; kanji: string; hint: string }> = {
-  auto: { label: "Traditional view", kanji: "伝統", hint: "Each game drawn the way it is played: gomoku and go on the lines, tic-tac-toe and Othello in the squares." },
+  auto: { label: "Traditional view", kanji: "伝統", hint: "Each game drawn the way it is played: gomoku and go on the lines, tic-tac-toe and Reversi in the squares." },
   lines: { label: "Itsutsu view", kanji: "碁盤", hint: "Every game on the crossings, as on a go board — the house style, tic-tac-toe included." },
   cells: { label: "Squares view", kanji: "升目", hint: "Every game inside the squares, as on a chessboard — gomoku included." },
 };

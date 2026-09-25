@@ -149,16 +149,16 @@ export const WORD_KEY =
 export const WORD_GRID_BOX = "w-full";
 
 /*
- * GOMOJI IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter
+ * GOMOJI IN STONES: the Reversi and Gomoku styles (`wordStyles.ts`). A letter
  * is written on a stone shaded as the board's own stones are (`STONE_SETS`):
  * a white stone while it is typed, then moss in its place, ochre in the word
- * elsewhere, black not in it — Othello's two colours and the site's two marks.
- * An Othello disc sits inside its square; a Gomoku stone on its crossing,
+ * elsewhere, black not in it — Reversi's two colours and the site's two marks.
+ * A Reversi disc sits inside its square; a Gomoku stone on its crossing,
  * nearly touching its neighbours, as stones on a board do.
  */
 export const WORD_STONE =
   "flex items-center justify-center rounded-full text-xl font-bold uppercase leading-none shadow-[0_1px_2px_rgba(0,0,0,0.45)] sm:text-2xl";
-export const WORD_STONE_SIZE: Record<"othello" | "gomoku", string> = { othello: "size-[84%]", gomoku: "size-[94%]" };
+export const WORD_STONE_SIZE: Record<"reversi" | "gomoku", string> = { reversi: "size-[84%]", gomoku: "size-[94%]" };
 export const WORD_STONE_LOOK: Record<"typed" | "hit" | "near" | "kin" | "miss", { background: string; color: string }> = {
   typed: { background: STONE_SETS.classic.white, color: STONE_SETS.classic.whiteInk },
   hit: { background: "radial-gradient(circle at 35% 30%, #8fa585 0%, #52664b 45%, #2f3d2b 100%)", color: "#f7f3ea" },
