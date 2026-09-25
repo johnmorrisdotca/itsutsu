@@ -27,10 +27,17 @@ the set-up screen for now to ship sooner. Name: John's, "WordDrop".
   lower case, so the givens can never be handed in as a solve. The server checks
   guesses against the list, that the word was found last, and the row count.
 - **Running out** ends the puzzle: the word is shown, the route checks the loss
-  (`checkOutOfGuesses`) and takes the kept run off My games; nothing is paid.
-- **Points**: five a letter for the winning row and every row not needed, so
-  one guess is 150 at five letters and six guesses 25. No Check or Hint
-  (`PuzzleSpec.helps: false`): the colours are the help.
+  (`checkOutOfGuesses`), keeps it as a `PuzzleSolve` with `solved` false and its
+  guesses, pays `puzzleEnded` (5 XP), and takes the kept run off My games
+  (0.328.0).
+- **Points** (0.328.0, `wordScore.ts`): every letter found, 10 × the rows still
+  to come when it was placed or 4 × when it was only found elsewhere; the word
+  250 and 25 a row left; up to 50 for speed on a word found. A lost word scores
+  its letters; only a word with none found scores 0, and any word found beats
+  any word lost. No Check or Hint (`PuzzleSpec.helps: false`): the colours are
+  the help.
+- **History** (0.329.0): every word played, found or not, with its guesses and
+  score, on WordDrop's own page (`WordHistory`).
 - **Name**: WordDrop ワードドロップ, John's. "Wordle" is a trademark of The New
   York Times Company, named only in the attribution.
 - **Other family** (`key: "other"`, その他), with `notOnSetUp` saying why it is
@@ -39,7 +46,8 @@ the set-up screen for now to ship sooner. Name: John's, "WordDrop".
 ## Follow-ups (rows filed)
 
 - French, German, Japanese: one PuzzleKind each on the same engine, with its own
-  list, source, licence and date beside it. See the rows for the candidates.
+  list, source, licence and date beside it. See the rows for the candidates, and
+  `WORD-04-kana.md` for the Japanese one, which has rules of its own.
 - A word of the day: one seed from the date, the same word for everybody.
 - When Other joins the set-up screen, `PuzzleBoardPreview` needs the word's
   shape (rows of tiles), which it does not draw yet.
