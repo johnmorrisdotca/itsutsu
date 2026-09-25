@@ -16,6 +16,7 @@ import {
   type MyGameGroup,
   type ShownGroup,
 } from "@/lib/history/myGames";
+import { gamesGoing } from "@/lib/history/gamesGoing";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { playerPath } from "@/lib/rating/playerKey";
 import { BotCatchUp } from "./BotCatchUp";
@@ -226,8 +227,10 @@ export async function MyGamesList({
         the queue is read, and the games it is given come out of that same read.
       */}
       <BotCatchUp games={stuck} />
-      <h2 className={SECTION_HEADING}>
-        <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
+      {/* How many are going, in the heading: John, "The My Games should have the count (My Games (10))". The strip reads the same count. */}
+      <h2 className={SECTION_HEADING} data-testid="my-games-heading" data-going={gamesGoing(groups)}>
+        <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />{" "}
+        <span className="font-normal text-muted">({gamesGoing(groups)})</span>
       </h2>
       {seated ? <SeatedNarrowing total={shown} /> : null}
       {MY_GAME_GROUPS.map((group) => {

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { gamesGoing } from "@/lib/history/gamesGoing";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -41,6 +42,8 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         yourMove: groups.yourMove.length,
+        /** Every game the reader has going, whoever's move it is — the strip's second number, and My games' heading. */
+        going: gamesGoing(groups),
         /*
          * Offers waiting on this reader, counted separately rather than added
          * into `yourMove`.

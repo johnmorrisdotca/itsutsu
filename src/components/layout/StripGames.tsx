@@ -7,7 +7,7 @@ import { GameCount } from "@/components/games/GameCount";
 import type { RatedRecord } from "@/lib/rating/ratedRecord";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-type Mine = { yourMove: number; offered?: number; record?: RatedRecord | null };
+type Mine = { yourMove: number; going?: number; offered?: number; record?: RatedRecord | null };
 
 const fetcher = async (url: string): Promise<Mine | null> => {
   const response = await fetch(url);
@@ -30,12 +30,19 @@ export function StripGames({ memberId }: { memberId: string }) {
   const { data } = useSWR("/api/games/mine", fetcher, { refreshInterval: 0, revalidateOnFocus: true, dedupingInterval: 2_000 });
   const moves = data?.yourMove ?? 0;
   const offers = data?.offered ?? 0;
+  const going = data?.going ?? 0;
   const record = data?.record ?? null;
   return (
     <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1" data-testid="strip-games" {...readyMark(hydrated)}>
-      {data === undefined ? null : moves + offers === 0 ? (
+      {/*
+        TWO FACTS, EACH TRUE OF ONE THING: what is waiting on this reader, and
+        how much they have going. It used to say only the first, so ten games on
+        the other side read "Nothing waiting" — true, and read as "no games".
+        John: "seems like that would be 10 games waiting or in the queue".
+      */}
+      {data === undefined ? null : going + moves + offers === 0 ? (
         <Link href="/play" className={ITEM} data-testid="strip-waiting">
-          Nothing waiting
+          Nothing going
         </Link>
       ) : (
         <>
@@ -47,6 +54,11 @@ export function StripGames({ memberId }: { memberId: string }) {
           {offers > 0 ? (
             <Link href="/play" className={`${ITEM} text-ink`} data-testid="strip-offers">
               {offers} {offers === 1 ? "offer" : "offers"}
+            </Link>
+          ) : null}
+          {going > 0 ? (
+            <Link href="/play" className={ITEM} data-testid="strip-going" data-going={going}>
+              {going} going
             </Link>
           ) : null}
         </>
