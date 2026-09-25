@@ -41,7 +41,7 @@ language here: nothing ships without a reader who can sign it off.**
 |---|---|---|---|---|
 | 1 | Russian | Русский | one of renju and gomoku's strongest countries | Cyrillic |
 | 2 | Estonian | Eesti | vint.ee's home, and a renju country | Latin |
-| 3 | Chinese | 中文 | gomoku's widest audience | Han: Simplified or Traditional is a decision (below) |
+| 3 | Chinese | 中文 | gomoku's widest audience | Han: Simplified first, Traditional as its own entry after (decided, below) |
 | 4 | Vietnamese | Tiếng Việt | caro is Vietnam's own five-in-a-row, played here already | Latin with stacked diacritics |
 | 5 | Spanish | Español | declared already, a large audience | Latin |
 | 6 | French | Français | a large audience, and the French Gomoji (Mot) is here | Latin |
@@ -95,9 +95,16 @@ for the footer it becomes a paragraph.
 
 ## Decisions for John before the first build
 
-- **Chinese: Simplified, Traditional, or both.** vint.ee says "Chinese". The
-  gomoku world plays in both. Recommendation: Simplified first (`zh-Hans`),
-  Traditional as its own language later.
+- **Chinese: both, Simplified first. Decided by John, 2026-09-25 ("Ok").**
+  The big international game sites offer both as two entries (Lichess lists
+  中文 and 繁體中文; Chess.com 中文(简体) and 中文(繁體)); Wikipedia keeps one
+  text and converts it for display. So Chinese is two languages in the picker:
+  简体中文 (`zh-Hans`, mainland China and Singapore) first, for its reach, then
+  繁體中文 (`zh-Hant`, Taiwan and Hong Kong), which matters here beyond its size:
+  Taiwan has a strong gomoku and renju community, and Traditional is nearer the
+  kanji the site already shows. Traditional starts from the Simplified text
+  through OpenCC, but vocabulary differs as well as characters, so it has its
+  own reader's sign-off like any other language.
 - **The kanji beside every heading.** For every new language it is shown as it
   is for English, paired and read as a picture. For Chinese it is Japanese
   orthography, which is why `kanjiReadsAsOwn` is false for `zh` already. The
