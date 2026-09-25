@@ -82,6 +82,27 @@ test.describe("champions", () => {
     expect(missing?.status()).toBe(404);
   });
 
+  /*
+   * John, 2026-09-24, on vint.ee's leaders page: "it's simple to read… I like
+   * that. and a drilldown page is simple too." Simple is what /champions opens
+   * on — Game, Leader, Rating and XP — and the full table is one press away and
+   * back again.
+   */
+  test("opens simply, a line a game, and switches to the full table and back", async ({ page }) => {
+    await page.goto("/champions");
+    const simple = page.getByTestId("champions-simple");
+    await expect(simple).toBeVisible();
+    await expect(simple.locator("thead th")).toHaveText(["Game", "Leader", "Rating", "XP"]);
+    await expect(page.getByTestId("champions-family")).toHaveCount(0);
+    await page.getByTestId("champions-view-full").click();
+    await expect(page).toHaveURL(/\/champions\?view=full$/);
+    await expect(page.getByTestId("champions-family").first()).toBeVisible();
+    await expect(page.getByTestId("champions-simple")).toHaveCount(0);
+    await page.getByTestId("champions-view-simple").click();
+    await expect(page).toHaveURL(/\/champions$/);
+    await expect(page.getByTestId("champions-simple")).toBeVisible();
+  });
+
   test("the players page leads to the champions", async ({ page }) => {
     // The pointer sits with the site ladder, which is the thing it qualifies:
     // a rating here is across every game, and that is not what somebody who

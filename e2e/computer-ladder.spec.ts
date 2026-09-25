@@ -289,7 +289,8 @@ test.describe("the ladder against the computer players", () => {
       losses: 2,
     });
     try {
-      await page.goto("/champions");
+      // The games count is a column of the full table; the simple view is Game, Leader, Rating and XP.
+      await page.goto("/champions?view=full");
       const count = page.getByTestId("champion-games").first();
       await expect(count).toBeVisible();
       const href = (await count.locator("xpath=ancestor-or-self::a").first().getAttribute("href")) ?? "";

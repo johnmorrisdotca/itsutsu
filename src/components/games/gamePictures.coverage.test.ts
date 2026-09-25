@@ -267,6 +267,8 @@ function sourcesUnder(dir: string): { path: string; source: string }[] {
 const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], PictureSize>>> = {
   // Tables, ledgers and rows of a list.
   "src/app/champions/page.tsx": { GameThumb: "small" },
+  // The champions' simple view: a table, so small.
+  "src/components/players/SimpleChampions.tsx": { GameThumb: "small" },
   "src/app/learn/[slug]/page.tsx": { GameThumb: "small" },
   "src/components/games/GameList.tsx": { GameThumb: "small" },
   "src/components/history/HistoryTable.tsx": { GameThumb: "small" },

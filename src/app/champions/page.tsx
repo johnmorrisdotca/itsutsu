@@ -19,6 +19,7 @@ import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { standingsPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchChampions, type VariantChampion } from "@/lib/rating/variantRatings";
+import { SimpleChampions } from "@/components/players/SimpleChampions";
 
 export const metadata = { title: "Champions" };
 
@@ -107,7 +108,16 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
  * ranks everyone on one ladder whatever they played; this is the other
  * question, who is best at each game.
  */
-export default async function ChampionsPage() {
+export default async function ChampionsPage({ searchParams }: PageProps<"/champions">) {
+  /*
+   * TWO READINGS OF ONE TABLE, the simple one first. John, 2026-09-24, on
+   * vint.ee's leaders page: "it's simple to read. I don't know if we have a
+   * page that is as simple to read. but I like that." The simple view is that
+   * page: one line a game, its leader and their rating (and XP, which every
+   * table of players carries), each game leading to its own standings. The
+   * full table, families and tiers and counts, is `?view=full`.
+   */
+  const full = (await searchParams).view === "full";
   const champions = await fetchChampions();
   return (
     <Page>
@@ -124,7 +134,25 @@ export default async function ChampionsPage() {
           The best-rated player at each game today. Each game keeps its own rating; the{" "}
           <Link href="/players?view=ladder" className="underline underline-offset-4">ladder</Link> counts everything together.
         </p>
+        <nav className="flex gap-2 text-sm" aria-label="How to read the champions" data-testid="champions-views">
+          {(["simple", "full"] as const).map((view) => {
+            const here = (view === "full") === full;
+            return (
+              <Link
+                key={view}
+                href={view === "full" ? "/champions?view=full" : "/champions"}
+                aria-current={here ? "page" : undefined}
+                className={`rounded-full border px-3 py-1 ${here ? "border-ink bg-ink text-paper" : "border-rule-strong hover:border-ink"}`}
+                data-testid={`champions-view-${view}`}
+              >
+                {view === "full" ? "In full" : "Simple"}
+              </Link>
+            );
+          })}
+        </nav>
+        {full ? null : <SimpleChampions champions={champions} />}
         {/* Six columns of record. Unwrapped, this made /champions 570 pixels wide on a 390-pixel phone. */}
+        {full ? (
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
             <thead className={HEAD_CLASS}>
@@ -156,6 +184,7 @@ export default async function ChampionsPage() {
             ))}
           </table>
         </div>
+        ) : null}
       </section>
     </Page>
   );
