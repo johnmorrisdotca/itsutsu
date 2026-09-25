@@ -335,6 +335,6 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
     ],
     board:
-      "Five letters and six guesses is the game everybody knows. Four letters and five guesses is quicker, and not always easier: fewer letters give away less. Easy draws from the commonest words; medium and hard from a wider list, and hard adds its rule.",
+      "Five letters and six guesses, or four letters and five.",
   },
 };

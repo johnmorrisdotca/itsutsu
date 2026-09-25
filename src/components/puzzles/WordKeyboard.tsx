@@ -32,7 +32,8 @@ export function WordKeyboard({
         <div key={row} className="flex gap-1">
           {index === 2 ? (
             <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onEnter} disabled={disabled} data-testid="word-key-enter">
-              Enter
+              {/* Its own size on a span, not a second size on the key, so the word fits at 390px ("ENTER" was clipped). */}
+              <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
             </button>
           ) : null}
           {[...row].map((letter) => {
