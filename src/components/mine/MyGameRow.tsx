@@ -165,7 +165,7 @@ export function Row({
               <GameName variant={game.variant} raised /> ·{" "}
             </>
           ) : null}
-          {boardWords(game.variant, game.size)} · {game.moveCount} moves ·{" "}
+          {boardWords(game.variant, game.size)} · {game.moveCount} {game.moveCount === 1 ? "move" : "moves"} ·{" "}
           {/*
             "you WOULD be white" on an offer, because you are not in it yet.
             The colour is the fact a reader most wants before answering — a

@@ -43,7 +43,7 @@ export function GameStatsPanel({ session }: { session: GameSession }) {
       </SectionTitle>
 
       <p className="text-xs text-muted">
-        {session.state.moves.length} moves · {formatDuration(totalThinking)} at
+        {session.state.moves.length} {session.state.moves.length === 1 ? "move" : "moves"} · {formatDuration(totalThinking)} at
         the board
       </p>
 
