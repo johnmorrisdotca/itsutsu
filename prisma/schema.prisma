@@ -1220,6 +1220,13 @@ model PuzzleSolve {
   finishedAt DateTime @default(now())
   /// The race this solve was one seat of, or null for a solve on one's own.
   raceId     String?
+  /// How many times Check could be pressed: 3 or 1, or null for no limit —
+  /// which every solve kept before the allowance existed truly had.
+  checksAllowed Int?
+  /// How many times Check was pressed, or null where it was not recorded (a solve kept before the allowance).
+  checksUsed    Int?
+  /// Time spent paused, already taken off elapsedMs; null where not recorded (a solve kept before Pause).
+  pausedMs      Int?
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])
@@ -1253,6 +1260,8 @@ model PuzzleRace {
   hostFinishedAt  DateTime?
   guestStartedAt  DateTime?
   guestFinishedAt DateTime?
+  /// The Check allowance both seats race under, 3 or 1, or null for no limit (every race before it existed).
+  checksAllowed   Int?
 
   @@index([hostMemberId, createdAt])
   @@index([guestMemberId, createdAt])

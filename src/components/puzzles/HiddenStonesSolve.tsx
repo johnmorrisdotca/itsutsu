@@ -8,7 +8,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
-import { SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 /**
  * Solving Hidden Stones: tap a cell for a stone, again for a cross, again to
@@ -18,14 +18,27 @@ import { SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from ".
  * Check says the same on demand. The answer handed in is the column of each
  * row's stone (`encodeStones`).
  */
-export function HiddenStonesSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzle; hasAccount: boolean; race?: SolveRace | null }) {
+export function HiddenStonesSolve({
+  puzzle,
+  hasAccount,
+  race = null,
+  checks = null,
+}: {
+  puzzle: Puzzle;
+  hasAccount: boolean;
+  race?: SolveRace | null;
+  /** How many times Check may be pressed on one's own; null for no limit. A race's is the race's. */
+  checks?: number | null;
+}) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
   const regions = useMemo(() => decodeRegions(puzzle.givens, size) ?? [], [puzzle.givens, size]);
   const answer = useMemo(() => decodeStones(puzzle.solution, size) ?? [], [puzzle.solution, size]);
   const [marks, setMarks] = useState<StoneMark[]>(() => new Array<StoneMark>(size * size).fill(""));
   const [checked, setChecked] = useState<{ wrong: number; missing: number } | null>(null);
-  const { startedAt, elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race);
+  // A full grid that is not right, said without a count under an allowance: see NumberSolve.
+  const [fullNotRight, setFullNotRight] = useState(false);
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks);
 
   /** The column of each row's stone, or -1 for a row with none or more than one. */
   const stonesOf = useCallback(
@@ -45,17 +58,21 @@ export function HiddenStonesSolve({ puzzle, hasAccount, race = null }: { puzzle:
       next[index] = next[index] === "" ? "stone" : next[index] === "stone" ? "cross" : "";
       setMarks(next);
       setChecked(null);
+      setFullNotRight(false);
       const stones = stonesOf(next);
       if (stones.every((col) => col !== -1)) {
         const wrong = stones.filter((col, row) => col !== answer[row]).length;
         if (wrong === 0) void finish(encodeStones(stones), at);
-        else setChecked({ wrong, missing: 0 });
+        else if (checking.allowed === null) setChecked({ wrong, missing: 0 });
+        else setFullNotRight(true);
       }
     },
-    [done, begin, marks, stonesOf, answer, finish],
+    [done, begin, marks, stonesOf, answer, finish, checking.allowed],
   );
 
   const check = () => {
+    if (!checking.spend()) return;
+    setFullNotRight(false);
     const stones = stonesOf(marks);
     const wrong = stones.filter((col, row) => col !== -1 && col !== answer[row]).length;
     const missing = stones.filter((col) => col === -1).length;
@@ -70,19 +87,21 @@ export function HiddenStonesSolve({ puzzle, hasAccount, race = null }: { puzzle:
       </SolvePaused>
       {done === null ? (
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={startedAt === null || pausing.paused} data-testid="puzzle-check">
-            Check
-          </button>
+          <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
           {checked !== null ? (
             <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
               {checkedWords(checked)}
+            </span>
+          ) : fullNotRight ? (
+            <span className="text-sm text-muted" data-testid="puzzle-not-right" aria-live="polite">
+              A stone in every row, and it is not right yet.
             </span>
           ) : (
             <span className="text-sm text-muted">Tap a cell for a stone, again for a cross, again to clear it. The clock starts on your first tap.</span>
           )}
         </div>
       ) : (
-        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
+        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={checking.allowed} />
       )}
     </section>
   );

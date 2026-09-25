@@ -43,6 +43,34 @@ export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: s
 };
 
 /**
+ * HOW MANY TIMES CHECK MAY BE PRESSED: no limit, three, or one. John,
+ * 2026-09-24: "We should have difficulty or game ending rules where, should
+ * they choose this level, they only get 3 CHECKS, or 1 CHECK... or unlimited
+ * CHECKS. That should be an option."
+ *
+ * Running out takes the help away and does NOT end the puzzle. Sudoku.com
+ * ends a game at three mistakes, but there every wrong entry is marked the
+ * moment it is made; here Check only says how many cells are wrong, never
+ * which, so a solver who never presses it has made no mistake anybody saw,
+ * and ending their puzzle for pressing it would punish the asking rather
+ * than the error. `null` is no limit, which every solve kept before this
+ * existed truly had.
+ */
+export const PUZZLE_CHECK_ALLOWANCES: readonly (number | null)[] = [null, 3, 1];
+
+export function checkAllowanceWords(allowed: number | null): { label: string; kanji: string; blurb: string } {
+  if (allowed === null) return { label: "No limit", kanji: "無制限", blurb: "Check as often as you like. It says how many cells are wrong, never which." };
+  if (allowed === 1) return { label: "One", kanji: "一回", blurb: "One Check, so spend it well. Running out takes the help away; the puzzle goes on." };
+  if (allowed === 3) return { label: "Three", kanji: "三回", blurb: "Three Checks. Running out takes the help away; the puzzle goes on." };
+  return { label: String(allowed), kanji: `${allowed}回`, blurb: `${allowed} Checks. Running out takes the help away; the puzzle goes on.` };
+}
+
+/** Whether a number is one of the allowances offered, so an address or a request can name no other. */
+export function isCheckAllowance(value: unknown): value is number | null {
+  return PUZZLE_CHECK_ALLOWANCES.includes(value as number | null);
+}
+
+/**
  * Hidden Stones is made at six sides and offered at four — Quick, Usual, Long
  * and Longest — because the set-up screen keeps room for four boards and no
  * more (see `offered`). 6×6 and 8×8 stay in `sizes` for anything already made

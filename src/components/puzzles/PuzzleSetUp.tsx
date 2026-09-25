@@ -10,7 +10,7 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
@@ -52,6 +52,7 @@ export function PuzzleSetUp({
   const [ownSize, setOwnSize] = useState(spec.defaultSize);
   const size = sized?.size ?? ownSize;
   const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
+  const [checks, setChecks] = useState<number | null>(null);
   const [racing, setRacing] = useState<"" | "making" | string>("");
 
   /*
@@ -66,7 +67,7 @@ export function PuzzleSetUp({
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, size, level, seed: made.seed, givens: made.givens, solution: made.solution }),
+        body: JSON.stringify({ kind, size, level, seed: made.seed, givens: made.givens, solution: made.solution, checksAllowed: checks }),
       });
       const body = (await answered.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (!answered.ok || body?.at === undefined) {
@@ -92,7 +93,7 @@ export function PuzzleSetUp({
         below." What each size is for goes here too: it was a paragraph under
         the size tiles, and made that column a different height for every puzzle.
       */}
-      <SetUpSection title="Size and level" kanji="盤と難易度" testId="puzzle-settings">
+      <SetUpSection title="Size, level and checks" kanji="盤・難易度・確認" testId="puzzle-settings">
         <p className="text-xs text-muted" data-testid="puzzle-size-note">
           {copy.board}
         </p>
@@ -114,10 +115,36 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
           {PUZZLE_LEVEL_DISPLAY[level].blurb}
         </p>
+        {/*
+          HOW MANY TIMES CHECK MAY BE PRESSED — see `PUZZLE_CHECK_ALLOWANCES` for
+          why running out takes the help away rather than ending the puzzle. A
+          race carries it too, the same for both seats.
+        */}
+        <div className="flex flex-wrap gap-1.5 pt-1" role="radiogroup" aria-label="Checks">
+          {PUZZLE_CHECK_ALLOWANCES.map((each) => {
+            const words = checkAllowanceWords(each);
+            return (
+              <button
+                key={String(each)}
+                type="button"
+                role="radio"
+                aria-checked={checks === each}
+                className={`${PICK_WORD_CHIP} ${checks === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                onClick={() => setChecks(each)}
+                data-testid={`puzzle-checks-${each ?? "unlimited"}`}
+              >
+                {words.label} <span className="font-mincho opacity-70">{words.kanji}</span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-muted" data-testid="puzzle-checks-blurb">
+          {checkAllowanceWords(checks).blurb}
+        </p>
       </SetUpSection>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} data-testid="puzzle-solve">
+        <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} data-testid="puzzle-solve">
           Solve a {sizeWord(size)} {copy.label} →
         </Link>
         <span className="text-xs text-muted">Made in your browser, one answer, timed from your first entry.</span>

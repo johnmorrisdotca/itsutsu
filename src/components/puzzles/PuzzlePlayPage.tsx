@@ -40,7 +40,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         </p>
       </nav>
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
-        <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} hasAccount={reader.hasAccount} />
+        <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hasAccount={reader.hasAccount} />
       </div>
       <footer className="border-t border-rule pt-5 text-sm text-muted">
         <p>

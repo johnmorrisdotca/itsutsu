@@ -1,4 +1,4 @@
-import { PUZZLE_SPECS } from "./puzzles.constants";
+import { PUZZLE_SPECS, isCheckAllowance } from "./puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { isSeed } from "./random";
 
@@ -11,9 +11,15 @@ import { isSeed } from "./random";
  * in the other seat of a race — and it is left out only until the browser
  * has drawn one, which it then writes back into the address.
  */
-export type PuzzleAsked = { size: number; level: PuzzleLevel; seed: number | null };
+export type PuzzleAsked = {
+  size: number;
+  level: PuzzleLevel;
+  seed: number | null;
+  /** How many times Check may be pressed; null, and left out of the address, for no limit. */
+  checks?: number | null;
+};
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -28,12 +34,15 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const level = levelAsked !== undefined && spec.levels.includes(levelAsked) ? levelAsked : spec.defaultLevel;
   const seedAsked = Number(one(PUZZLE_PARAMS.seed));
   const seed = isSeed(seedAsked) ? seedAsked : null;
-  return { size, level, seed };
+  const checksAsked = Number(one(PUZZLE_PARAMS.checks));
+  const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;
+  return { size, level, seed, checks };
 }
 
-/** The query for a solve, as `?size=…&level=…&seed=…`, the seed left off while there is none. */
+/** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
 export function puzzleQuery(asked: PuzzleAsked): string {
   const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: String(asked.size), [PUZZLE_PARAMS.level]: asked.level });
   if (asked.seed !== null) params.set(PUZZLE_PARAMS.seed, String(asked.seed));
+  if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
   return `?${params.toString()}`;
 }

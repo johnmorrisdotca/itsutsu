@@ -12,7 +12,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
-import { SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 /**
  * Solving a grid of numbers — Number Place, and More or Less after it.
@@ -24,7 +24,18 @@ import { SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from ".
  * done and the whole grid — the givens where they were printed, the entries
  * everywhere else — is handed in through `useSolve`.
  */
-export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzle; hasAccount: boolean; race?: SolveRace | null }) {
+export function NumberSolve({
+  puzzle,
+  hasAccount,
+  race = null,
+  checks = null,
+}: {
+  puzzle: Puzzle;
+  hasAccount: boolean;
+  race?: SolveRace | null;
+  /** How many times Check may be pressed on one's own, from the address; null for no limit. A race's is the race's. */
+  checks?: number | null;
+}) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
   // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions; the rest are the cells alone.
@@ -44,7 +55,13 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
   const [entries, setEntries] = useState<number[]>(() => new Array<number>(size * size).fill(0));
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState<{ wrong: number; empty: number } | null>(null);
-  const { startedAt, elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race);
+  /*
+   * A FULL GRID THAT IS NOT RIGHT says so — it was handed in and nothing
+   * happened, which needs a word — but under a Check allowance it does not say
+   * HOW MANY are wrong, or filling the grid would be a Check nobody spent.
+   */
+  const [fullNotRight, setFullNotRight] = useState(false);
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks);
 
   const enter = useCallback(
     (value: number) => {
@@ -54,13 +71,15 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
       next[selected] = value;
       setEntries(next);
       setChecked(null);
+      setFullNotRight(false);
       if (next.every((cell, index) => givens[index] !== 0 || cell !== 0)) {
         const wrong = next.filter((cell, index) => givens[index] === 0 && cell !== solution[index]).length;
         if (wrong === 0) void finish(encodeCells(next.map((cell, index) => (givens[index] !== 0 ? givens[index] : cell))), at);
-        else setChecked({ wrong, empty: 0 });
+        else if (checking.allowed === null) setChecked({ wrong, empty: 0 });
+        else setFullNotRight(true);
       }
     },
-    [selected, done, pausing.paused, givens, entries, solution, begin, finish],
+    [selected, done, pausing.paused, givens, entries, solution, begin, finish, checking.allowed],
   );
 
   /* A tap on the chosen cell steps it on; a tap anywhere else chooses that cell. A given never steps. */
@@ -93,6 +112,8 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
   }, [selected, done, size, enter]);
 
   const check = () => {
+    if (!checking.spend()) return;
+    setFullNotRight(false);
     const wrong = entries.filter((cell, index) => givens[index] === 0 && cell !== 0 && cell !== solution[index]).length;
     const empty = entries.filter((cell, index) => givens[index] === 0 && cell === 0).length;
     setChecked({ wrong, empty });
@@ -127,12 +148,14 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={startedAt === null || pausing.paused} data-testid="puzzle-check">
-              Check
-            </button>
+            <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
             {checked !== null ? (
               <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
                 {checkedWords(checked)}
+              </span>
+            ) : fullNotRight ? (
+              <span className="text-sm text-muted" data-testid="puzzle-not-right" aria-live="polite">
+                Every cell is filled, and it is not right yet.
               </span>
             ) : (
               <span className="text-sm text-muted">Tap a cell, then a number, or tap it again to count up. The clock starts on your first entry.</span>
@@ -140,7 +163,7 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
           </div>
         </>
       ) : (
-        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
+        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={checking.allowed} />
       )}
     </section>
   );

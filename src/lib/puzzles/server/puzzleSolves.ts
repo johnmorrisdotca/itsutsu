@@ -22,6 +22,11 @@ export type KeptSolve = {
   givens: string;
   elapsedMs: number;
   raceId?: string | null;
+  /** The Check allowance it was solved under, 3 or 1, or null for no limit. */
+  checksAllowed: number | null;
+  checksUsed: number;
+  /** Time spent paused, already off `elapsedMs`. */
+  pausedMs: number;
 };
 
 export async function keepSolve(solve: KeptSolve): Promise<void> {
@@ -36,7 +41,8 @@ export async function keepSolve(solve: KeptSolve): Promise<void> {
   }
 }
 
-export type FastestSolve = { memberId: string; elapsedMs: number; finishedAt: Date };
+/** A fastest solve, with the Check allowance it was made under — so a one-check time is never shown as a free one. */
+export type FastestSolve = { memberId: string; elapsedMs: number; finishedAt: Date; checksAllowed: number | null };
 
 /** The fastest solve at each size and level of a kind, as a map keyed `${size}:${level}`, and how many solves each has. */
 export type FastestBoard = Map<string, { fastest: FastestSolve[]; solves: number }>;
@@ -62,7 +68,7 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
         where: { kind, size: Number(size), level },
         orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,
-        select: { memberId: true, elapsedMs: true, finishedAt: true },
+        select: { memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true },
       });
       board.get(key)!.fastest = rows;
     }),

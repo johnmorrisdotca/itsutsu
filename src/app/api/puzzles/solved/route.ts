@@ -6,7 +6,7 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
-import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
@@ -37,6 +37,15 @@ const bodySchema = z.object({
   answer: z.string().max(PUZZLE_CODE_LONGEST),
   /** The browser's own clock, kept only to say it back: nothing here is timed. */
   elapsedMs: z.number().int().nonnegative().optional(),
+  /*
+   * The Check allowance, the checks spent and the time paused, as the browser
+   * kept them — the same word the elapsed time is — so a one-check solve is
+   * never shown as though it had checked freely. Left out, as by a browser
+   * from before the allowance: no limit, not recorded, none.
+   */
+  checksAllowed: z.number().int().nullable().optional(),
+  checksUsed: z.number().int().nonnegative().optional(),
+  pausedMs: z.number().int().nonnegative().optional(),
 });
 
 export async function POST(request: Request) {
@@ -59,6 +68,11 @@ export async function POST(request: Request) {
     if (!spec.sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
     if (givens.length > spec.mostCells || answer.length > spec.mostCells) return unprocessable("Not a grid of that size.");
 
+    const checksAllowed = parsed.data.checksAllowed ?? null;
+    if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
+    const checksUsed = parsed.data.checksUsed ?? 0;
+    if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
+
     const verdict = checkSolution(kind, size, givens, answer);
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
 
@@ -66,7 +80,17 @@ export async function POST(request: Request) {
     /* Kept, so the puzzle's page can show the fastest solves and a member
        their own. The browser's clock, said back to it: a solo solve is
        timed by nobody else, which is why a race is timed by the server. */
-    await keepSolve({ memberId, kind, size, level: parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], givens, elapsedMs: parsed.data.elapsedMs ?? 0 });
+    await keepSolve({
+      memberId,
+      kind,
+      size,
+      level: parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number],
+      givens,
+      elapsedMs: parsed.data.elapsedMs ?? 0,
+      checksAllowed,
+      checksUsed,
+      pausedMs: parsed.data.pausedMs ?? 0,
+    });
     const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens), now });
     /* The tour, as after a finished game: a first solve of a puzzle can complete
        every game played, and a first puzzle at all can complete every family. */

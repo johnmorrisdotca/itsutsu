@@ -30,10 +30,13 @@ import { PUZZLE_CLOCK, PUZZLE_CLOCK_TICK_MS, sizeWord } from "./puzzles.constant
  */
 export type Done = { elapsedMs: number; paid: { points: number; awards: string[] } | null; problem: string | null };
 
-/** A race this solve is one seat of: its id, and when the server started this seat's clock. */
-export type SolveRace = { id: string; since: number };
+/** A race this solve is one seat of: its id, when the server started this seat's clock, and the Check allowance both seats race under. */
+export type SolveRace = { id: string; since: number; checksAllowed: number | null };
 
-export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | null = null) {
+/** How many times Check may still be pressed (null for no limit), and the press that spends one. */
+export type Checking = { allowed: number | null; used: number; left: number | null; spend: () => boolean };
+
+export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | null = null, checks: number | null = null) {
   const router = useRouter();
   /* In a race the clock is the server's, started at Start; here it is read from then rather than from the first entry. */
   const [startedAt, setStartedAt] = useState<number | null>(race === null ? null : race.since);
@@ -50,6 +53,17 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
    * Nothing about a run outlives the page, paused or not: the entries and the
    * clock are this tab's alone, so leaving loses the run either way.
    */
+  /* THE CHECK ALLOWANCE: a race's is the race's, the same for both seats; one's own is the address's. */
+  const allowed = race === null ? checks : race.checksAllowed;
+  const [used, setUsed] = useState(0);
+  const left = allowed === null ? null : Math.max(0, allowed - used);
+  const spend = useCallback((): boolean => {
+    if (left === 0) return false;
+    setUsed((so) => so + 1);
+    return true;
+  }, [left]);
+  const checking: Checking = { allowed, used, left, spend };
+
   const [pausedMs, setPausedMs] = useState(0);
   const [pausedAt, setPausedAt] = useState<number | null>(null);
   const canPause = race === null && startedAt !== null && done === null;
@@ -133,8 +147,8 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
             race === null
-              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, givens: puzzle.givens, answer, elapsedMs }
-              : { answer },
+              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, givens: puzzle.givens, answer, elapsedMs, checksAllowed: allowed, checksUsed: used, pausedMs }
+              : { answer, checksUsed: used },
           ),
         });
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string } | null;
@@ -149,12 +163,12 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, pausedMs, hasAccount, race, router],
+    [puzzle, startedAt, pausedMs, allowed, used, hasAccount, race, router],
   );
 
   const elapsedMs = done !== null ? done.elapsedMs : startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs);
   const pausing: Pausing = { paused: pausedAt !== null, canPause, toggle: togglePause, away, here, racing: race !== null };
-  return { startedAt, elapsedMs, done, begin, finish, pausing };
+  return { startedAt, elapsedMs, done, begin, finish, pausing, checking };
 }
 
 /** Whether the run is paused, whether it may be, and the press that pauses or resumes it. */
@@ -200,6 +214,27 @@ export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; el
 }
 
 /**
+ * The Check press, saying how many are left when there is a limit, and saying
+ * so plainly — rather than going grey without a word — once they are spent.
+ */
+export function SolveCheck({ checking, onCheck, disabled }: { checking: Checking; onCheck: () => void; disabled: boolean }) {
+  const spent = checking.left === 0;
+  return (
+    <button
+      type="button"
+      className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
+      onClick={onCheck}
+      disabled={disabled || spent}
+      title={spent ? "No checks left" : undefined}
+      data-testid="puzzle-check"
+      data-left={checking.left ?? "unlimited"}
+    >
+      {checking.left === null ? "Check" : spent ? "No checks left" : `Check · ${checking.left} left`}
+    </button>
+  );
+}
+
+/**
  * The grid, covered while the run is paused. The grid stays where it is and
  * only stops being drawn (`invisible`), so the page does not move and nothing
  * under the cover can be pressed; the cover says so and offers Resume.
@@ -232,11 +267,24 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
 }
 
 /** The card at the end: the time, what was paid, another puzzle, or a different size. */
-export function SolveDone({ puzzle, done, hasAccount, race = null }: { puzzle: Puzzle; done: Done; hasAccount: boolean; race?: SolveRace | null }) {
+export function SolveDone({
+  puzzle,
+  done,
+  hasAccount,
+  race = null,
+  checks = null,
+}: {
+  puzzle: Puzzle;
+  done: Done;
+  hasAccount: boolean;
+  race?: SolveRace | null;
+  /** The allowance this one was solved under, which Another keeps. */
+  checks?: number | null;
+}) {
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed() })}`);
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">

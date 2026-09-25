@@ -47,6 +47,7 @@ export async function createRace(input: {
   seed: number;
   givens: string;
   solution: string;
+  checksAllowed: number | null;
   hostMemberId: string;
   hostName: string;
 }): Promise<{ id: string; guestToken: string } | { refused: string }> {
@@ -119,7 +120,14 @@ export type FinishResult =
  * stamped, kept as a solve at the server's elapsed, and paid — and if that
  * settles the race, the winner is paid `raceWon`.
  */
-export async function finishSeat(id: string, seat: RaceSeat, memberId: string, answer: string, now = new Date()): Promise<FinishResult> {
+export async function finishSeat(
+  id: string,
+  seat: RaceSeat,
+  memberId: string,
+  answer: string,
+  checksUsed: number,
+  now = new Date(),
+): Promise<FinishResult> {
   const race = await raceFor(id);
   if (race === null) return { ok: false, reason: "no such race", status: 404 };
   const kind = race.kind as PuzzleKind;
@@ -139,7 +147,9 @@ export async function finishSeat(id: string, seat: RaceSeat, memberId: string, a
   const startedAt = (seat === "host" ? race.hostStartedAt : race.guestStartedAt) ?? now;
   const elapsedMs = now.getTime() - startedAt.getTime();
 
-  await keepSolve({ memberId, kind, size: race.size, level, givens: race.givens, elapsedMs, raceId: id });
+  /* A race cannot pause, and its checks are bounded by the race's allowance whatever a browser says. */
+  const spent = race.checksAllowed === null ? checksUsed : Math.min(checksUsed, race.checksAllowed);
+  await keepSolve({ memberId, kind, size: race.size, level, givens: race.givens, elapsedMs, raceId: id, checksAllowed: race.checksAllowed, checksUsed: spent, pausedMs: 0 });
   const paid = await awardXp({ memberId, awards: puzzleAwards(kind, race.size, race.givens), now });
   await awardTourBonuses({ memberId, paid, variant: kind, now });
 

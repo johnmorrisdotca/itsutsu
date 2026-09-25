@@ -39,11 +39,14 @@ export function PuzzlePlay({
   seed,
   hasAccount,
   race = null,
+  checks = null,
 }: {
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
   seed: number | null;
+  /** How many times Check may be pressed, from the address; null for no limit. */
+  checks?: number | null;
   /** Whether a solve can be paid: an account, not merely a session. */
   hasAccount: boolean;
   /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
@@ -56,8 +59,8 @@ export function PuzzlePlay({
      that would draw a different one. */
   useEffect(() => {
     if (seed !== null) return;
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed() })}`);
-  }, [seed, kind, size, level, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks })}`);
+  }, [seed, kind, size, level, checks, router]);
 
   const puzzle = useMemo(() => (seed === null ? null : generatePuzzle(kind, size, level, seed)), [kind, size, level, seed]);
 
@@ -84,12 +87,12 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}`;
   const seat = race ?? null;
   switch (kind) {
     case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} />;
+      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} />;
     default:
-      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} />;
+      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} />;
   }
 }

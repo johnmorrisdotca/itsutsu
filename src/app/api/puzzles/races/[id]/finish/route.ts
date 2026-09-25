@@ -7,7 +7,8 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { PUZZLE_CODE_LONGEST } from "@/lib/puzzles/puzzles.constants";
 import { finishSeat, raceFor, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 
-const bodySchema = z.object({ answer: z.string().max(PUZZLE_CODE_LONGEST) });
+// The checks this seat spent, which the race's allowance bounds; left out, as by an older browser, none.
+const bodySchema = z.object({ answer: z.string().max(PUZZLE_CODE_LONGEST), checksUsed: z.number().int().nonnegative().optional() });
 
 /**
  * A seat hands its answer in. A wrong grid is refused with its reason and
@@ -28,7 +29,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/puzzles/rac
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) return badRequest("The answer, as a grid.");
-    const result = await finishSeat(id, seat, memberId, parsed.data.answer);
+    const result = await finishSeat(id, seat, memberId, parsed.data.answer, parsed.data.checksUsed ?? 0);
     if (!result.ok) return NextResponse.json({ error: `Not solved: ${result.reason}.` }, { status: result.status, headers: NO_STORE });
     return NextResponse.json({ ok: true, seat, elapsedMs: result.elapsedMs, points: result.points, awards: result.awards, outcome: result.outcome }, { headers: NO_STORE });
   } catch (error) {

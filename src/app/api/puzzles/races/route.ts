@@ -5,7 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
 import { createRace } from "@/lib/puzzles/server/puzzleRaces";
@@ -24,6 +24,8 @@ const bodySchema = z.object({
   seed: z.number().int(),
   givens: z.string().max(PUZZLE_CODE_LONGEST),
   solution: z.string().max(PUZZLE_CODE_LONGEST),
+  /** The Check allowance both seats race under; left out, no limit. */
+  checksAllowed: z.number().int().nullable().optional(),
 });
 
 export async function POST(request: Request) {
@@ -38,6 +40,8 @@ export async function POST(request: Request) {
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) return badRequest("A puzzle, its size, level and seed, the givens and the answer.");
     if (!isSeed(parsed.data.seed)) return badRequest("Not a seed.");
+    const checksAllowed = parsed.data.checksAllowed ?? null;
+    if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
 
     const made = await createRace({
       kind: parsed.data.kind as PuzzleKind,
@@ -46,6 +50,7 @@ export async function POST(request: Request) {
       seed: parsed.data.seed,
       givens: parsed.data.givens,
       solution: parsed.data.solution,
+      checksAllowed,
       hostMemberId: me.id,
       hostName: me.name ?? "",
     });
