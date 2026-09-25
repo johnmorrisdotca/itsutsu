@@ -129,7 +129,8 @@ test.describe("rules and learning", () => {
     await page.getByTestId("rules-play").click();
     await expect(page).toHaveURL(/\/games\/twist-four\/new$/);
     await expect(page.getByTestId("set-up-game")).toBeVisible();
-    await expect(page.locator('[data-testid="set-up-variant"][data-chosen="true"]')).toHaveAttribute("data-variant", "twistFour");
+    // The address names the game, so the set-up is headed by it rather than offering a choice.
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Twist Four");
   });
 
   test("the library offers New game and folds the catalogue into families", async ({ page }) => {

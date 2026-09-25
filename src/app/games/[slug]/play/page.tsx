@@ -5,14 +5,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { GameViewClient } from "@/components/game/GameViewClient";
+import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
-import { gamePath, puzzleFor, rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { rulesPageFor } from "@/lib/learn/rulesPage";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/play">): Promise<Metadata> {
   const { slug } = await params;
@@ -38,6 +40,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
+  const rules = rulesPageFor(variant);
   const siblings = siblingsOf(variant);
   // The member's own board, so a phone and a laptop set out the same one.
   const reader = await currentReader();
@@ -73,10 +76,8 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
             {copy.label}
           </Link>{" "}
           <span className="font-mincho">{copy.kanji}</span> — {copy.tagline}{" "}
-          <Link href={rulesPath(variant)} className="underline underline-offset-4">
-            Rules
-          </Link>
-          .
+          {/* Over the board, not a page away from it: see `RulesModal`. */}
+          <RulesModal rules={{ title: rules.title, kanji: rules.kanji, object: rules.object, board: rules.board, play: rules.play, house: rules.house }} />.
         </p>
         {siblings !== null && siblings.games.length > 0 ? (
           <p data-testid="family-links">

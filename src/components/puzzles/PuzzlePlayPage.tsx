@@ -1,10 +1,12 @@
 import Link from "next/link";
 
+import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { currentReader } from "@/lib/auth/currentReader";
-import { gamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
+import { gamePath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked } from "@/lib/puzzles/puzzleAddress";
+import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -18,6 +20,7 @@ import { PuzzlePlayClient } from "./PuzzlePlayClient";
  */
 export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query: Record<string, string | string[] | undefined> }) {
   const copy = PUZZLE_DISPLAY[kind];
+  const rules = puzzleRulesPage(kind);
   const asked = puzzleAsked(kind, query);
   const reader = await currentReader();
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
@@ -49,10 +52,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       <footer className="border-t border-rule pt-5 text-sm text-muted">
         <p>
           {copy.tagline}{" "}
-          <Link href={rulesPath(kind)} className="underline underline-offset-4">
-            Rules
-          </Link>
-          .
+          {/* Over the puzzle, not a page away from it: see `RulesModal`. */}
+          <RulesModal rules={{ title: rules.title, kanji: rules.kanji, object: rules.object, board: rules.board, play: rules.play, house: rules.house }} />.
         </p>
       </footer>
     </Page>

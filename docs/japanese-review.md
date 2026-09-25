@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (157)
+## 1. Written by a machine — please check these (156)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -37,9 +37,8 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | 39 rules pages — one per game | Every game of {game} played here | **ここでの{game}の全対局** | Every game of {game} played here. |  |
 | 39 rules pages — one per game | From {country} | **{country}発** | Originating from {country}. |  |
 | 39 rules pages — one per game | A game of {game} in progress | **対局中の{game}の盤面** | The board of a game of {game} in play. |  |
-| 39 rules pages — one per game | A game in progress. | **対局中の盤面。** | A board in play. |  |
 | 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. |  |
-| 39 rules pages — one per game | Play {game} → | **{game}で遊ぶ →** | Play {game} → |  |
+| 39 rules pages — one per game | Play → | **遊ぶ →** | Play → |  |
 | 39 rules pages — one per game | Read about {game} on Wikipedia ↗ | **{game}をウィキペディアで読む ↗** | Read about {game} on Wikipedia ↗ |  |
 | After earning points — the notice that drops in from the top of the page | The top of the ladder. | **最高レベルです。** | This is the highest level. |  |
 | After earning points — the notice that drops in from the top of the page | Where everybody stands by experience | **経験値の順位表** | The experience-points ranking table. |  |
