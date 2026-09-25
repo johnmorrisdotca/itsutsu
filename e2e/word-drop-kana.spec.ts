@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { decodeKanaGivens, KANA_ROWS } from "../src/lib/puzzles/wordDropKana/kanaCode";
-import { markKanaGuess } from "../src/lib/puzzles/wordDropKana/kanaMarks";
+import { kanaBase, markKanaGuess } from "../src/lib/puzzles/wordDropKana/kanaMarks";
 import { kanaScore } from "../src/lib/puzzles/wordDropKana/kanaScore";
 import { kanaWordsOf } from "../src/lib/puzzles/wordDropKana/kanaWords";
 import { tapKana } from "./kanaTyping";
@@ -42,7 +42,10 @@ test.describe("the kana word puzzle", () => {
     await expect(free.first()).toHaveAttribute("aria-label", new RegExp(`^${[...grey!][0]}, `));
 
     // A guess, tapped on the kana keys, and its colours and arrows read off the grid as the rules give them.
-    const guess = kanaWordsOf(3).easy.find((each) => each !== word && markKanaGuess([...each], [...word]).some((mark) => mark.mark !== "miss"))!;
+    // A guess that lights something up, and a yellow among it where the list has one, so the keys' yellow is tested too.
+    const lights = (each: string, mark: string) => each !== word && markKanaGuess([...each], [...word]).some((one) => one.mark === mark);
+    const easy = kanaWordsOf(3).easy;
+    const guess = easy.find((each) => lights(each, "kin")) ?? easy.find((each) => each !== word && markKanaGuess([...each], [...word]).some((mark) => mark.mark !== "miss"))!;
     await tapKana(page, guess);
     await page.getByTestId("kana-key-enter").click();
     const expected = markKanaGuess([...guess], [...word]);
@@ -53,6 +56,19 @@ test.describe("the kana word puzzle", () => {
       if (arrow === null) await expect(row.nth(at)).not.toHaveAttribute("data-arrow", /./);
       else await expect(row.nth(at)).toHaveAttribute("data-arrow", arrow);
     }
+
+    // Each key shows the best colour its kana has had on the board, yellow included (John: "the yellow CHI should
+    // also be yellow in the keyboard"), green over orange over yellow over grey.
+    const rank = { hit: 4, near: 3, kin: 2, miss: 1 } as const;
+    const best = new Map<string, keyof typeof rank>();
+    for (const played of [grey!, guess]) {
+      markKanaGuess([...played], [...word]).forEach((mark, at) => {
+        const base = kanaBase([...played][at]!);
+        const was = best.get(base);
+        if (was === undefined || rank[mark.mark] > rank[was]) best.set(base, mark.mark);
+      });
+    }
+    for (const [base, mark] of best) await expect(page.getByTestId(`kana-key-${base}`)).toHaveAttribute("data-mark", mark);
 
     // The word itself.
     await tapKana(page, word);

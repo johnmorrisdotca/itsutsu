@@ -25,8 +25,13 @@ import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
-/** What a key shows: found, in the word, or out. A yellow says the kana itself is not there, so its key is out. */
-const KEY_RANK: Record<KanaMark, number> = { hit: 3, near: 2, kin: 1, miss: 1 };
+/**
+ * What a key shows: the best colour its kana has had on the board — green,
+ * then orange, then yellow, then grey. John, 2026-09-25: "I think the yellow
+ * CHI should also be yellow in the keyboard"; it had shown black, read as
+ * "this kana is not in the word".
+ */
+const KEY_RANK: Record<KanaMark, number> = { hit: 4, near: 3, kin: 2, miss: 1 };
 
 function arrowOf(mark: KanaMarked): CellArrow {
   return mark.wrongSize && mark.wrongMark ? "↓↑" : mark.wrongSize ? "↓" : mark.wrongMark ? "↑" : "";
@@ -84,7 +89,7 @@ export function KanaDropSolve({
     const best = new Map<string, KanaMark>();
     shown.forEach((guess, row) =>
       [...guess].forEach((kana, at) => {
-        const mark = marked[row]![at]!.mark === "kin" ? "miss" : marked[row]![at]!.mark;
+        const mark = marked[row]![at]!.mark;
         const base = kanaBase(kana);
         const was = best.get(base);
         if (was === undefined || KEY_RANK[mark] > KEY_RANK[was]) best.set(base, mark);
