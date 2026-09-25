@@ -63,7 +63,11 @@ export function Page({
       eight pixels would read as an app that had lost its frame, and `board` is
       already the answer to "is there a board here", so no new flag is needed.
     */
-    <div className={`paper flex flex-1 flex-col items-center py-6 sm:px-8 sm:py-8 ${board ? "px-2" : "px-4"}`}>
+    <div
+      className={`paper flex flex-1 flex-col items-center py-6 sm:px-8 sm:py-8 ${board ? "px-2" : "px-4"}`}
+      // Read as just the board, this frame is the modal's backdrop and the column below its panel (globals.css).
+      data-bare-frame={board ? "" : undefined}
+    >
       {/*
         Offered on the board pages and no others, and — THE SAME CONDITION, so
         the two cannot come apart — only those pages are stripped. `board` is

@@ -281,6 +281,13 @@ function FiledMatch({
         xpHeldBy={card?.xp?.heldFlashAt ? { gameId: card.gameId, at: card.xp.heldFlashAt } : undefined}
       />
 
+      {/*
+        JUST THE BOARD leaves the board and its scrubber and nothing else: the
+        title, the match, the head to head, the verdicts, the applause and the
+        conversation are all furniture around it (globals.css). John: "We don't
+        need the header and applause and chat probably."
+      */}
+      <div data-chrome className="contents">
       <PageTitle
         title={
           <>
@@ -385,6 +392,7 @@ function FiledMatch({
 
       {/* Anybody may say the game was worth playing, not only the two who played it. */}
       <Applause gameId={game.id} initial={applause} signedIn={signedIn} hasAccount={hasAccount} />
+      </div>
 
       <GameReplay
         game={game}
@@ -404,11 +412,13 @@ function FiledMatch({
         it is read against the moves: each remark links to the position it was
         made at, and the replay above is what it moves.
       */}
+      <div data-chrome className="contents">
       <Conversation
         game={game}
         basePath={matchPath(game.variant, game.id)}
         hidden={silenced}
       />
+      </div>
   </Page>
   );
 }
