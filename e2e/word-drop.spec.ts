@@ -186,6 +186,15 @@ test.describe("the word puzzle", () => {
     // Kept on the Puzzles tab, marked as not found.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
     await expect(page.locator('[data-testid="puzzle-solved"][data-kind="wordDrop"][data-solved="false"]').first()).toContainText("Not found");
+
+    // And in the history of every word played, from WordDrop's own page, with its guesses and its score.
+    await page.goto(AT);
+    await page.getByTestId("facet-me").click();
+    const newest = page.getByTestId("word-history-row").first();
+    await expect(newest).toHaveAttribute("data-solved", "false");
+    await expect(newest.getByTestId("word-history-word")).toHaveText(puzzle.solution);
+    await expect(newest.getByTestId("word-history-points")).toContainText(String(scored));
+    await expect(newest.getByLabel(/^Guesses: /)).toHaveAttribute("aria-label", `Guesses: ${wrong.map((word) => word.toUpperCase()).join(", ")}`);
   });
 
   test("the route refuses guesses that never found the word", async ({ request }) => {
