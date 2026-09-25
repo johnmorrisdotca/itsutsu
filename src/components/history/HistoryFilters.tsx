@@ -174,17 +174,25 @@ export function HistoryFilters({
         </div>
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <label className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
-          <span className="text-sm text-ink-soft">{say.say("filter.player")}</span>
-          <input
-            type="search"
-            className={INPUT_CLASS}
-            placeholder={say.say("filter.searchNames")}
-            defaultValue={value("search")}
-            onChange={(event) => update("search", event.target.value)}
-            data-testid="history-search"
-          />
-        </label>
+        {/*
+          THE SAME SHAPE AS THE FILTERS BESIDE IT: its name to the left of the
+          box, through `Field`. It had its name above the box, so on a wide
+          screen the box sat a line lower than every select beside it. John,
+          2026-09-25: "Player Search Names input is 2nd row... should all be ONE
+          row."
+        */}
+        <div className="sm:col-span-2 lg:col-span-1">
+          <Field label={say.say("filter.player")}>
+            <input
+              type="search"
+              className={`${INPUT_CLASS} min-w-0 flex-1`}
+              placeholder={say.say("filter.searchNames")}
+              defaultValue={value("search")}
+              onChange={(event) => update("search", event.target.value)}
+              data-testid="history-search"
+            />
+          </Field>
+        </div>
 
         {/*
         Two questions, and only one of them can be asked at a time. Without a

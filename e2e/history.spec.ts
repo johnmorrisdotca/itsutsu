@@ -89,6 +89,23 @@ test.describe("the game record", () => {
     await expect(page.getByTestId("history-result")).toHaveValue("white");
   });
 
+  /*
+   * John, 2026-09-25: "Player Search Names input is 2nd row... should all be
+   * ONE row." On a wide screen the search box and every select beside it share
+   * one line: the box used to sit under its own label, a line below the rest.
+   */
+  test("the filters sit on one row on a wide screen, the player search included", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/games/gomoku/history");
+    await ready(page, "history-filters");
+    const search = await page.getByTestId("history-search").boundingBox();
+    const result = await page.getByTestId("history-result").boundingBox();
+    const sort = await page.getByTestId("history-sort").boundingBox();
+    const middle = (box: { y: number; height: number }) => box.y + box.height / 2;
+    expect(Math.abs(middle(search!) - middle(result!))).toBeLessThan(6);
+    expect(Math.abs(middle(search!) - middle(sort!))).toBeLessThan(6);
+  });
+
   test("one game's record is a collection with its own address", async ({ page }) => {
     await page.goto("/games/gomoku/history?result=white");
     await expect(page.getByTestId("record-game")).toContainText("Gomoku");
