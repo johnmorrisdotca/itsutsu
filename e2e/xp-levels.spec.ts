@@ -154,3 +154,21 @@ test("a level the ladder does not have is not found", async ({ page }) => {
     expect(answer?.status(), `${address} should not be a page`).toBe(404);
   }
 });
+
+test("a rung the reader is not on says which one they are on, and leads there", async ({ page }) => {
+  /*
+   * John, 2026-09-25, on the page for 73 while standing on 74: "If I'm level
+   * 74, why do I not show up in the list???" The top rung is one nobody in the
+   * suite stands on, so the reader here is somewhere below it.
+   */
+  await page.goto(`/xp/levels/${XP_LEVELS}`);
+  const line = page.getByTestId("level-you-are-link");
+  await expect(line).toBeVisible();
+  const href = await line.getAttribute("href");
+  expect(href).toMatch(/^\/xp\/levels\/\d+\?/);
+  await line.click();
+  await expect(page).toHaveURL(new RegExp(`${href!.split("?")[0]}\\?`));
+  // On their own rung the line gives way to their own marked row.
+  await expect(page.getByTestId("level-name-heading")).toBeVisible();
+  await expect(page.getByTestId("level-you-are")).toHaveCount(0);
+});

@@ -15,7 +15,7 @@ import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { RECORD_SCOPES } from "@/lib/rating/recordScope";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { importedNoteText } from "@/lib/xp/importedNote";
-import { xpScopeHref } from "@/lib/xp/xpScope";
+import { xpScopeHref, xpTotalIn } from "@/lib/xp/xpScope";
 import { xpScopeFor } from "@/lib/xp/xpScopeServer";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
@@ -26,6 +26,7 @@ import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS } from "@/lib/xp/xpCurve";
 import { viewerXp } from "@/lib/xp/xpViewer";
+import { xpLevelFor } from "@/lib/xp/xpCurve";
 
 /*
  * One member's standing decides whether their own row is marked, so this is
@@ -88,6 +89,8 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   // The flag and badge beside each name, one read for the rung (`nameTagsOf`).
   const tags = await nameTagsOf(roll.members.map((member) => member.id));
   const query = new URLSearchParams({ who, scope }).toString();
+  // The reader's own rung, by the total this page is counting.
+  const mine = viewer === null ? null : xpLevelFor(xpTotalIn(viewer, scope));
   const notes = new Map(
     roll.members.flatMap((member) => {
       const facts = importedFactsFor(member.name, member.imported);
@@ -198,6 +201,20 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
             </>
           ) : null}
         </p>
+        {/*
+          WHERE THE READER STANDS, when it is not here. John, 2026-09-25, on the
+          page for 73 while standing on 74: "If I'm level 74, why do I not show
+          up in the list???" The list was right and said nothing about why. On
+          their own rung their row is marked instead, so this line is not drawn.
+        */}
+        {mine !== null && mine !== level ? (
+          <p className="text-sm" data-testid="level-you-are">
+            You are on{" "}
+            <Link href={`${levelPath(mine)}?${query}`} className="font-medium underline underline-offset-4" data-testid="level-you-are-link">
+              level {mine}, {xpLevelName(mine)} →
+            </Link>
+          </p>
+        ) : null}
         <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} />
       </section>
     </Page>
