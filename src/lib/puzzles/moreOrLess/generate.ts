@@ -20,7 +20,8 @@ import { countSolutions, guessDepth, type Grid } from "./solve";
 const LEVELS: Record<PuzzleLevel, number> = { easy: 0, medium: 1, hard: Infinity };
 const MARK_SHARE = 0.35;
 
-function latinSquare(size: number, random: Random): Grid {
+/** A seeded Latin square: every row and column holds 1..size once. Towers starts from one too. */
+export function latinSquare(size: number, random: Random): Grid {
   const grid: Grid = new Array<number>(size * size).fill(0);
   const values = Array.from({ length: size }, (_, i) => i + 1);
   const rows = new Array<number>(size).fill(0);

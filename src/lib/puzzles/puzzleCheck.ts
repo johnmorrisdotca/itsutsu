@@ -2,6 +2,7 @@ import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
 import { decodeKiller } from "./killer/code";
+import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -36,6 +37,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkDiagonal(size, givens, answer);
     case "sumCages":
       return checkSumCages(size, givens, answer);
+    case "towers":
+      return checkTowers(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -115,12 +118,23 @@ function groupName(layout: Layout, group: number): string {
 
 function checkMoreOrLess(size: number, givens: string, answer: string): PuzzleCheck {
   const asked = decodeMoreOrLess(givens, size);
-  const filled = decodeCells(answer, size);
   if (asked === null) return { ok: false, reason: "the givens are not a grid with marks" };
+  const square = checkLatinSquare(size, asked.cells, answer);
+  if (!square.ok) return square;
+  const filled = decodeCells(answer, size)!;
+  for (const mark of asked.marks) {
+    if (!(filled[mark.less] < filled[mark.more])) return { ok: false, reason: "a mark is not true" };
+  }
+  return { ok: true };
+}
+
+/** Every row and column a permutation of 1..size, nothing empty, and every given where it was: More or Less and Towers alike. */
+function checkLatinSquare(size: number, asked: readonly number[], answer: string): PuzzleCheck {
+  const filled = decodeCells(answer, size);
   if (filled === null) return { ok: false, reason: "the answer is not a grid" };
   if (filled.some((value) => value === 0)) return { ok: false, reason: "the answer has empty cells" };
-  for (let index = 0; index < asked.cells.length; index += 1) {
-    if (asked.cells[index] !== 0 && asked.cells[index] !== filled[index]) return { ok: false, reason: "a given was changed" };
+  for (let index = 0; index < asked.length; index += 1) {
+    if (asked[index] !== 0 && asked[index] !== filled[index]) return { ok: false, reason: "a given was changed" };
   }
   const rows = Array.from({ length: size }, () => 0);
   const cols = Array.from({ length: size }, () => 0);
@@ -133,8 +147,35 @@ function checkMoreOrLess(size: number, givens: string, answer: string): PuzzleCh
     rows[row] |= bit;
     cols[col] |= bit;
   }
-  for (const mark of asked.marks) {
-    if (!(filled[mark.less] < filled[mark.more])) return { ok: false, reason: "a mark is not true" };
+  return { ok: true };
+}
+
+/**
+ * Towers: a Latin square that keeps its givens, and from every clue exactly
+ * that many towers show. The counting is written out here rather than taken
+ * from the code's `towersSeen`, which the solver that made the puzzle uses;
+ * only where each clue looks from is shared, because that is the spelling.
+ */
+function checkTowers(size: number, givens: string, answer: string): PuzzleCheck {
+  const asked = decodeTowers(givens, size);
+  if (asked === null) return { ok: false, reason: "the givens are not a square with clues" };
+  const square = checkLatinSquare(size, asked.cells, answer);
+  if (!square.ok) return square;
+  const filled = decodeCells(answer, size)!;
+  for (const side of TOWER_SIDES) {
+    for (let at = 0; at < size; at += 1) {
+      const clue = asked.clues[side][at]!;
+      if (clue === 0) continue;
+      let tallest = 0;
+      let seen = 0;
+      for (const index of lineFrom(side, at, size)) {
+        if (filled[index]! > tallest) {
+          tallest = filled[index]!;
+          seen += 1;
+        }
+      }
+      if (seen !== clue) return { ok: false, reason: `the ${side} clue ${clue} sees ${seen}` };
+    }
   }
   return { ok: true };
 }

@@ -15,6 +15,8 @@ import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { seededRandom } from "@/lib/puzzles/random";
+import { decodeTowers, TOWER_SIDES, type TowerClues } from "@/lib/puzzles/towers/code";
+import { generateTowers } from "@/lib/puzzles/towers/generate";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 
@@ -34,14 +36,24 @@ const PAPER = "#ffffff";
  * as every board, in the same box (`SET_UP_PREVIEW_BOX`) with the same kind of
  * caption, and only the playing area differs: white paper, ruled at the chosen
  * size, with what makes this puzzle this puzzle drawn on it — the boxes, a
- * Jigsaw's regions, Diagonal's two diagonals, Hidden Stones' tinted regions.
+ * Jigsaw's regions, Diagonal's two diagonals, Hidden Stones' tinted regions,
+ * the ring of clues around a Towers square. A Towers board is two cells wider
+ * than its square, as the solve draws it (`TowerRing`), and has no letters and
+ * numbers along its edges: its clues stand where they would.
  *
  * A Jigsaw's and Hidden Stones' regions are a fixed example, shaken from one
  * seed: every puzzle has its own, and the caption does not promise these.
  */
 export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: number }) {
   const theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
-  const inset = playingAreaInset(size, true);
+  /* Towers: the clues of a real easy puzzle at this size, from a fixed seed, in a ring one cell deep around the square. */
+  const clues = useMemo<TowerClues | null>(
+    () => (kind === "towers" ? (decodeTowers(generateTowers(size, "easy", 7).givens, size)?.clues ?? null) : null),
+    [kind, size],
+  );
+  const ring = clues === null ? 0 : 1;
+  const span = size + 2 * ring;
+  const inset = playingAreaInset(span, true);
 
   /* The region every cell is drawn in, or null for a plain square (More or Less). */
   const region = useMemo<number[] | null>(() => {
@@ -65,8 +77,29 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="set-up-puzzle-preview" data-kind={kind} data-size={size}>
       <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
-        <BoardFrame size={size} theme={theme} flipped={false} inset={inset} lattice={false} shape="rhombus" coordinates={DEFAULT_APPEARANCE.showCoordinates}>
-          <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full" data-testid="puzzle-preview-grid">
+        <BoardFrame
+          size={span}
+          theme={theme}
+          flipped={false}
+          inset={inset}
+          lattice={false}
+          shape="rhombus"
+          coordinates={ring === 0 && DEFAULT_APPEARANCE.showCoordinates}
+        >
+          <svg viewBox={`0 0 ${span} ${span}`} className="absolute inset-0 h-full w-full" data-testid="puzzle-preview-grid">
+            {(clues === null ? [] : TOWER_SIDES).flatMap((side) =>
+              clues![side].map((clue, at) => {
+                if (clue === 0) return null;
+                const x = side === "left" ? 0.5 : side === "right" ? span - 0.5 : at + 1.5;
+                const y = side === "top" ? 0.5 : side === "bottom" ? span - 0.5 : at + 1.5;
+                return (
+                  <text key={`${side}-${at}`} x={x} y={y} fontSize={0.5} fontWeight={600} textAnchor="middle" dominantBaseline="central" fill={theme.line}>
+                    {clue}
+                  </text>
+                );
+              }),
+            )}
+            <g transform={`translate(${ring} ${ring})`}>
             <rect x={0} y={0} width={size} height={size} fill={PAPER} />
             {cells.map((index) => {
               const row = Math.floor(index / size);
@@ -129,6 +162,7 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
               );
             })}
             <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={heavy} />
+            </g>
           </svg>
         </BoardFrame>
       </div>

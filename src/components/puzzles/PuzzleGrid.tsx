@@ -1,10 +1,14 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { PuzzleBoard } from "./PuzzleBoard";
+import { TowerRing } from "./TowerRing";
 import type { Mark } from "@/lib/puzzles/moreOrLess/code";
 import { cageOutline } from "@/lib/puzzles/killer/outline";
 import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+import type { TowerClues } from "@/lib/puzzles/towers/code";
 
 import {
   PUZZLE_CAGE_LINES,
@@ -40,6 +44,7 @@ export function PuzzleGrid({
   marks = [],
   regions = null,
   cages = null,
+  clues = null,
   selected,
   done,
   onSelect,
@@ -54,6 +59,8 @@ export function PuzzleGrid({
   regions?: readonly number[] | null;
   /** Sum Cages: the cages, each drawn as a dashed outline inside its cells with its sum in the first one's corner. */
   cages?: readonly { cells: readonly number[]; sum: number }[] | null;
+  /** Towers: the clues around the edge, drawn in a ring on the wood with the square inside it. */
+  clues?: TowerClues | null;
   selected: number | null;
   done: boolean;
   onSelect: (index: number) => void;
@@ -85,7 +92,8 @@ export function PuzzleGrid({
   }
   return (
     <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
-      <PuzzleBoard size={size}>
+      <PuzzleBoard size={clues === null ? size : size + 2}>
+      <RingIf size={size} clues={clues}>
       <div className="relative h-full w-full">
       <div className={PUZZLE_GRID} style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}>
         {givens.map((given, index) => {
@@ -147,8 +155,14 @@ export function PuzzleGrid({
         </svg>
       ) : null}
       </div>
+      </RingIf>
       </PuzzleBoard>
     </div>
   );
+}
+
+/** The Towers ring around the square when there are clues; the square alone otherwise. */
+function RingIf({ size, clues, children }: { size: number; clues: TowerClues | null; children: ReactNode }) {
+  return clues === null ? <>{children}</> : <TowerRing size={size} clues={clues}>{children}</TowerRing>;
 }
 

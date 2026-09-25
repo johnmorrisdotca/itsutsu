@@ -8,6 +8,7 @@ import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
 import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
 import { decodeCells, encodeCells } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
+import { decodeTowers, type TowerClues } from "@/lib/puzzles/towers/code";
 import { stepEntry } from "@/lib/puzzles/stepEntry";
 import { decodeNumberProgress, encodeNumberProgress } from "@/lib/puzzles/puzzleProgress";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -17,11 +18,11 @@ import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 
 /**
- * Solving a grid of numbers — Number Place, and More or Less after it.
+ * Solving a grid of numbers — Number Place and its variants, More or Less and Towers.
  *
  * Tap a cell, then a number key (or type it) — or tap the chosen cell again
  * to step it on, 1, 2, 3 … and back to empty (`stepEntry`); Backspace clears,
- * the arrows move. Check compares against the answer this tab holds and says how many
+ * the arrows move, Escape lets the chosen cell go. Check compares against the answer this tab holds and says how many
  * cells are wrong, never which. When the last cell is right the puzzle is
  * done and the whole grid — the givens where they were printed, the entries
  * everywhere else — is handed in through `useSolve`.
@@ -43,21 +44,27 @@ export function NumberSolve({
 }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
-  // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions; the rest are the cells alone.
-  const asked = useMemo<{ cells: number[]; marks: Mark[]; regions: number[] | null; cages: Cage[] | null }>(() => {
+  // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions, a Towers the cells
+  // and then its clues; the rest are the cells alone.
+  const asked = useMemo<{ cells: number[]; marks: Mark[]; regions: number[] | null; cages: Cage[] | null; clues: TowerClues | null }>(() => {
+    const plain = { marks: [], regions: null, cages: null, clues: null };
     if (kind === "moreOrLess") {
       const read = decodeMoreOrLess(puzzle.givens, size);
-      return { cells: read?.cells ?? [], marks: read?.marks ?? [], regions: null, cages: null };
+      return { ...plain, cells: read?.cells ?? [], marks: read?.marks ?? [] };
     }
     if (kind === "sumCages") {
       const read = decodeKiller(puzzle.givens, size);
-      return { cells: read?.cells ?? [], marks: [], regions: null, cages: read?.cages ?? null };
+      return { ...plain, cells: read?.cells ?? [], cages: read?.cages ?? null };
     }
     if (kind === "jigsaw") {
       const read = decodeJigsaw(puzzle.givens, size);
-      return { cells: read?.cells ?? [], marks: [], regions: read?.regions ?? null, cages: null };
+      return { ...plain, cells: read?.cells ?? [], regions: read?.regions ?? null };
     }
-    return { cells: decodeCells(puzzle.givens, size) ?? [], marks: [], regions: null, cages: null };
+    if (kind === "towers") {
+      const read = decodeTowers(puzzle.givens, size);
+      return { ...plain, cells: read?.cells ?? [], clues: read?.clues ?? null };
+    }
+    return { ...plain, cells: decodeCells(puzzle.givens, size) ?? [] };
   }, [kind, puzzle.givens, size]);
   const givens = asked.cells;
   const solution = useMemo(() => decodeCells(puzzle.solution, size) ?? [], [puzzle.solution, size]);
@@ -102,7 +109,7 @@ export function NumberSolve({
     else setSelected(index);
   };
 
-  /* The keyboard: digits fill, Backspace clears, arrows move. Only while a cell is chosen. */
+  /* The keyboard: digits fill, Backspace clears, arrows move, Escape lets the cell go. Only while a cell is chosen. */
   useEffect(() => {
     if (selected === null || done !== null) return;
     const onKey = (event: KeyboardEvent) => {
@@ -114,6 +121,9 @@ export function NumberSolve({
       } else if (event.key === "Backspace" || event.key === "Delete" || event.key === "0") {
         event.preventDefault();
         enter(0);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        setSelected(null);
       } else if (event.key.startsWith("Arrow")) {
         event.preventDefault();
         const step = { ArrowUp: -size, ArrowDown: size, ArrowLeft: -1, ArrowRight: 1 }[event.key] ?? 0;
@@ -145,6 +155,7 @@ export function NumberSolve({
           marks={asked.marks}
           regions={asked.regions}
           cages={asked.cages}
+          clues={asked.clues}
           selected={selected}
           done={done !== null}
           onSelect={tap}

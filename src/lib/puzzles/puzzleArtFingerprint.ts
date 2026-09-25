@@ -13,6 +13,7 @@ import { fingerprintOf } from "../gomoku/ladderFingerprint.ts";
 export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/PuzzleGrid.tsx",
   "src/components/puzzles/HiddenStonesGrid.tsx",
+  "src/components/puzzles/TowerRing.tsx",
   "src/components/puzzles/puzzles.constants.ts",
   "src/lib/puzzles/numberPlace/generate.ts",
   "src/lib/puzzles/hiddenStones/generate.ts",
@@ -20,6 +21,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/lib/puzzles/jigsaw/generate.ts",
   "src/lib/puzzles/killer/generate.ts",
   "src/lib/puzzles/killer/outline.ts",
+  "src/lib/puzzles/towers/generate.ts",
   "src/lib/puzzles/numberPlace/layout.ts",
   "src/lib/puzzles/numberPlace/solve.ts",
   "e2e/puzzle-screenshots.spec.ts",

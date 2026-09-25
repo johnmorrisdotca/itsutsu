@@ -3,6 +3,7 @@ import { generateMoreOrLess } from "./moreOrLess/generate";
 import { generateJigsaw } from "./jigsaw/generate";
 import { generateSumCages } from "./killer/generate";
 import { generateDiagonal, generateNumberPlace } from "./numberPlace/generate";
+import { generateTowers } from "./towers/generate";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -25,5 +26,7 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateDiagonal(size, level, seed);
     case "sumCages":
       return generateSumCages(size, level, seed);
+    case "towers":
+      return generateTowers(size, level, seed);
   }
 }

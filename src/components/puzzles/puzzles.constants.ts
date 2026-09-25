@@ -72,3 +72,9 @@ export const PUZZLE_CAGE_LINES = "pointer-events-none absolute inset-0 h-full w-
 
 /** A cage's sum, small in the top-left corner of its first cell. */
 export const PUZZLE_CAGE_SUM = "pointer-events-none absolute top-[4%] left-[6%] text-[0.55rem] leading-none font-semibold text-ink sm:text-[0.65rem]";
+
+/** A Towers clue, on the wood beside the row or column it looks along: printed like a given, and never pressed. */
+export const PUZZLE_TOWER_CLUE = "flex select-none items-center justify-center text-lg font-bold tabular-nums leading-none text-ink sm:text-xl";
+
+/** The square inside a Towers ring: a hairline edge, so the white paper reads as a square on the wood and not a hole in it. */
+export const PUZZLE_TOWER_SQUARE = "relative ring-1 ring-ink/60";

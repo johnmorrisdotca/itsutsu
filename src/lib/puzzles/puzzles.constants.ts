@@ -22,6 +22,7 @@ export const PUZZLE_KINDS = {
   jigsaw: "jigsaw",
   diagonal: "diagonal",
   sumCages: "sumCages",
+  towers: "towers",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -30,8 +31,9 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.jigsaw,
   PUZZLE_KINDS.diagonal,
   PUZZLE_KINDS.sumCages,
-  PUZZLE_KINDS.hiddenStones,
   PUZZLE_KINDS.moreOrLess,
+  PUZZLE_KINDS.towers,
+  PUZZLE_KINDS.hiddenStones,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -88,6 +90,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   diagonal: { sizes: [6, 9], offered: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
   // 286: a 9×9's 81 cells, its 81 cage letters and two characters for each of up to 62 cages' sums.
   sumCages: { sizes: [6, 9], offered: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 286 },
+  // 77: a 7×7's 49 cells and then the 28 places around its edge where a clue can stand.
+  towers: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 77 },
 };
 
 /**
@@ -140,6 +144,12 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   sumCages: {
     6: { label: "Short", kanji: "短" },
     9: { label: "Classic", kanji: "定番" },
+  },
+  towers: {
+    4: { label: "Quick", kanji: "速" },
+    5: { label: "Usual", kanji: "定番" },
+    6: { label: "Longer", kanji: "長め" },
+    7: { label: "Long", kanji: "長" },
   },
 };
 
@@ -245,5 +255,22 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
     ],
     board: "9×9 is the usual size; 6×6, with boxes two rows tall and three wide, is the short one.",
+  },
+  towers: {
+    label: "Towers",
+    kanji: "塔",
+    tagline: "Every number is a tower's height. The clues around the edge say how many towers you can see from there.",
+    inspiredBy: "Skyscrapers",
+    origin:
+      "A Japanese logic puzzle known in English as Skyscrapers, set at the first World Puzzle Championship in 1992; Simon Tatham's puzzle collection calls it Towers.",
+    alsoKnownAs: ["Skyscrapers", "Building Heights"],
+    country: "JP",
+    rules: [
+      "Fill every cell with a tower from 1 up to the side of the square, so that each row and each column holds every height exactly once.",
+      "A number outside the square says how many towers can be seen looking in from there. A taller tower hides every shorter one behind it.",
+      "So a 1 means the tallest tower stands right beside the clue, and a clue as big as the square means the towers climb one step at a time.",
+      "Every puzzle has exactly one answer. The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
+    ],
+    board: "5×5 is the usual size. 4×4 is quick; 7×7 is the long one.",
   },
 };
