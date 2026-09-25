@@ -1,4 +1,4 @@
-import { decodeGuesses, decodeHidden } from "./gomoji/code";
+import { decodeGuesses, decodeHidden, type GomojiLanguage } from "./gomoji/code";
 import { wordScore } from "./gomoji/wordScore";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { baseGuesses, guessesFor } from "./gomoji/layout";
@@ -27,7 +27,7 @@ export const POINTS_A_HELP = 50;
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
-  if (kind === "gomoji" || kind === "gomojiKana") return size;
+  if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") return size;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
@@ -37,10 +37,10 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
  * (`wordScore`), and a word lost scores what it found. Read from the guesses,
  * run together as they are handed in.
  */
-export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel): number {
-  const hidden = decodeHidden(givens, size);
-  const guesses = decodeGuesses(answer, size);
-  // Weighed by the guesses the level gave (`layout.ts`); with no level, the published count.
+export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel, lang: GomojiLanguage = "en"): number {
+  const hidden = decodeHidden(givens, size, lang);
+  const guesses = decodeGuesses(answer, size, lang);
+  // Weighed by the guesses the level gave (`layout.ts`); with no level, the published count. Mot and Wort are laid out as English is.
   const rows = level === undefined ? baseGuesses("gomoji", size) : guessesFor("gomoji", size, level, 0);
   return hidden === null || guesses === null ? 0 : wordScore(hidden, guesses, rows, elapsedMs).total;
 }
@@ -65,6 +65,8 @@ export function pointsFor(
   level?: PuzzleLevel,
 ): number {
   if (kind === "gomoji") return wordPoints(size, givens, answer, elapsedMs, level);
+  if (kind === "gomojiMot") return wordPoints(size, givens, answer, elapsedMs, level, "fr");
+  if (kind === "gomojiWort") return wordPoints(size, givens, answer, elapsedMs, level, "de");
   if (kind === "gomojiKana") return kanaPoints(size, givens, answer, elapsedMs, level);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

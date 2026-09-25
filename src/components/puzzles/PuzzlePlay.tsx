@@ -119,6 +119,8 @@ export function PuzzlePlay({
     case "blackAndWhite":
       return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "gomoji":
+    case "gomojiMot":
+    case "gomojiWort":
       return <GomojiSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;

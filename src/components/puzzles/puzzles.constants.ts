@@ -79,7 +79,7 @@ export const PUZZLE_CLOCK_TICK_MS = 1000;
 
 /** What a page says about a size: the cells across a grid, or the letters of a Gomoji word, which is not a square. */
 export function sizeWord(size: number, kind?: PuzzleKind): string {
-  if (kind === "gomoji") return `${size} letters`;
+  if (kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort") return `${size} letters`;
   if (kind === "gomojiKana") return `${size} kana`;
   return `${size}×${size}`;
 }

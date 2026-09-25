@@ -132,7 +132,10 @@ export const OWN_WORDS_SHOWN = 50;
  * the history John asked for: "the history of guesses/words that the user has
  * ever played? with score?" One indexed query, and how many there are in all.
  */
-export async function ownWordsOf(memberId: string, kind: "gomoji" | "gomojiKana" = "gomoji"): Promise<{ words: OwnWord[]; total: number }> {
+export async function ownWordsOf(
+  memberId: string,
+  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" = "gomoji",
+): Promise<{ words: OwnWord[]; total: number }> {
   const [words, total] = await Promise.all([
     prisma.puzzleSolve.findMany({
       where: { memberId, kind },

@@ -1,5 +1,5 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
-import { decodeGuesses } from "./gomoji/code";
+import { decodeGuesses, type GomojiLanguage } from "./gomoji/code";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { MOST_GUESSES } from "./gomoji/layout";
 import { decodeCells, encodeCells } from "./puzzleCode";
@@ -55,8 +55,8 @@ export function encodeGomojiProgress(guesses: readonly string[]): string {
   return guesses.join("");
 }
 
-export function decodeGomojiProgress(code: string, size: number): string[] | null {
-  const guesses = decodeGuesses(code, size);
+export function decodeGomojiProgress(code: string, size: number, lang: GomojiLanguage = "en"): string[] | null {
+  const guesses = decodeGuesses(code, size, lang);
   // Any level's count: the kept run's level decides the rest when it is opened (`layout.ts`).
   return guesses !== null && guesses.length <= MOST_GUESSES ? guesses : null;
 }
@@ -77,6 +77,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "hiddenStones") return decodeStoneProgress(code, size) !== null;
   if (kind === "blackAndWhite") return decodeBlackAndWhiteProgress(code, size) !== null;
   if (kind === "gomoji") return decodeGomojiProgress(code, size) !== null;
+  if (kind === "gomojiMot") return decodeGomojiProgress(code, size, "fr") !== null;
+  if (kind === "gomojiWort") return decodeGomojiProgress(code, size, "de") !== null;
   if (kind === "gomojiKana") return decodeKanaProgress(code, size) !== null;
   return decodeNumberProgress(code, size) !== null;
 }

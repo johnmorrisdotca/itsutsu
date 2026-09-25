@@ -7,7 +7,7 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { breaksHardRule, decodeHidden, isWord, markGuess } from "@/lib/puzzles/gomoji/code";
+import { breaksHardRule, decodeHidden, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { letterKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
@@ -57,9 +57,11 @@ export function GomojiSolve({
   const { style } = useWordStyle();
   const keys = useWordKeys();
   const { kind, size, level, seed } = puzzle;
-  const hidden = useMemo(() => decodeHidden(puzzle.givens, size) ?? "", [puzzle.givens, size]);
+  const lang = useMemo(() => languageOf(kind), [kind]);
+  const hidden = useMemo(() => decodeHidden(puzzle.givens, size, lang) ?? "", [puzzle.givens, size, lang]);
+  // Mot and Wort are laid out as English Gomoji is (`layout.ts`).
   const rows = guessesFor("gomoji", size, level, 0);
-  const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size)) ?? []);
+  const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size, lang)) ?? []);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
@@ -108,7 +110,7 @@ export function GomojiSolve({
       setSaid(`A guess is ${size} letters.`);
       return;
     }
-    if (!isWord(word, size)) {
+    if (!isWord(word, size, lang)) {
       setSaid(`${word.toUpperCase()} is not in the word list.`);
       return;
     }
@@ -124,7 +126,7 @@ export function GomojiSolve({
     setSaid(null);
     if (word === hidden) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, typing, size, strict, guesses, hidden, begin, finish, runOut, rows]);
+  }, [closed, typing, size, strict, guesses, hidden, lang, begin, finish, runOut, rows]);
 
   /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
@@ -132,7 +134,7 @@ export function GomojiSolve({
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select") !== null) return;
-      if (/^[a-zA-Z]$/.test(event.key)) {
+      if (/^[a-zA-ZäöüÄÖÜ]$/.test(event.key)) {
         event.preventDefault();
         letter(event.key.toLowerCase());
       } else if (event.key === "Enter") {
@@ -171,7 +173,14 @@ export function GomojiSolve({
           />
         </SolvePaused>
       ) : (
-        <WordReplay kind={kind === "gomojiKana" ? "gomojiKana" : "gomoji"} size={size} givens={puzzle.givens} guesses={guesses} level={level} style={style} />
+        <WordReplay
+          kind={kind === "gomojiKana" ? "gomojiKana" : kind === "gomojiMot" ? "gomojiMot" : kind === "gomojiWort" ? "gomojiWort" : "gomoji"}
+          size={size}
+          givens={puzzle.givens}
+          guesses={guesses}
+          level={level}
+          style={style}
+        />
       )}
       {done === null ? (
         <>
@@ -179,7 +188,7 @@ export function GomojiSolve({
             {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
-            <WordKeyboard known={known} typed={typedCounts(typing.slots)} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+            <WordKeyboard known={known} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <WordStylePicker />
@@ -212,6 +221,20 @@ export function GomojiSolve({
           <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} />
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} />
         </>
+      )}
+      {/* FrequencyWords' licence asks for this on every page that shows its words: French and German only, English's SCOWL asks for no in-page credit. */}
+      {lang === "en" ? null : (
+        <p className="text-xs text-muted" data-testid="word-credit">
+          Words from{" "}
+          <a href="https://github.com/hermitdave/FrequencyWords" className="underline" rel="noreferrer" target="_blank">
+            FrequencyWords
+          </a>{" "}
+          by Hermit Dave, a count of OpenSubtitles 2018, used under{" "}
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline" rel="noreferrer" target="_blank">
+            CC BY-SA 4.0
+          </a>
+          .
+        </p>
       )}
     </section>
   );

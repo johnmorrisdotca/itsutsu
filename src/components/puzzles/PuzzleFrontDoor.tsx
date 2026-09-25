@@ -152,7 +152,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 Fastest solves <span className="font-mincho opacity-70">最速</span>
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
-                {kind === "gomoji" || kind === "gomojiKana" ? (
+                {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? (
                   <>
                     Your words <span className="font-mincho opacity-70">言葉</span>
                   </>

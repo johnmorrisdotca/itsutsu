@@ -36,6 +36,10 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateBlackAndWhite(size, level, seed);
     case "gomoji":
       return generateGomoji(size, level, seed);
+    case "gomojiMot":
+      return generateGomoji(size, level, seed, "fr", "gomojiMot");
+    case "gomojiWort":
+      return generateGomoji(size, level, seed, "de", "gomojiWort");
     case "gomojiKana":
       // Its list is loaded by length first (`loadKanaWords`); see its generator.
       return generateGomojiKana(size, level, seed);
