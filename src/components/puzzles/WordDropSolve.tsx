@@ -14,6 +14,7 @@ import { WordDropGrid } from "./WordDropGrid";
 import { WordKeyboard } from "./WordKeyboard";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
+import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 const BEST: Record<LetterMark, number> = { hit: 3, near: 2, miss: 1 };
@@ -43,6 +44,7 @@ export function WordDropSolve({
 }) {
   const hydrated = useHydrated();
   const { style } = useWordStyle();
+  const keys = useWordKeys();
   const { kind, size, level, seed } = puzzle;
   const hidden = useMemo(() => decodeHidden(puzzle.givens, size) ?? "", [puzzle.givens, size]);
   const rows = rowsFor(size);
@@ -144,8 +146,13 @@ export function WordDropSolve({
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
             {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
-          <WordKeyboard known={known} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
-          <WordStylePicker />
+          <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
+            <WordKeyboard known={known} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <WordStylePicker />
+            <WordKeysToggle shown={keys.shown} onToggle={keys.toggle} />
+          </div>
         </>
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">

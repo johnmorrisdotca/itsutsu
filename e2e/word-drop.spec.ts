@@ -65,32 +65,61 @@ test.describe("the word puzzle", () => {
     await expect(grid).toHaveAttribute("data-style", "othello");
   });
 
-  test("a guess is coloured as the rules say, and the word found finishes it", async ({ page }) => {
+  test.describe("on a phone, where the letter keys show under the grid", () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    test("a guess is coloured as the rules say, and the word found finishes it", async ({ page }) => {
+      const seed = freshPuzzleSeed();
+      const puzzle = generatePuzzle(KIND, 5, LEVEL, seed);
+      await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+      await ready(page, "puzzle-play");
+      await expect(page.getByTestId("word-tile")).toHaveCount(30);
+
+      // A word the list does not know is refused, and no row is spent on it.
+      await page.keyboard.type("qqqqq");
+      await page.keyboard.press("Enter");
+      await expect(page.getByTestId("word-said")).toContainText("not in the word list");
+      for (let i = 0; i < 5; i += 1) await page.getByTestId("word-key-back").click();
+
+      // A wrong word, typed on the keys under the grid, and its colours read off the tiles.
+      const [miss] = misses(puzzle.solution, 1);
+      for (const letter of miss!) await page.getByTestId(`word-key-${letter}`).click();
+      await page.getByTestId("word-key-enter").click();
+      const expected = markGuess(miss!, puzzle.solution);
+      const row = page.locator('[data-testid="word-tile"][data-row="0"]');
+      for (const [at, mark] of expected.entries()) await expect(row.nth(at)).toHaveAttribute("data-mark", mark);
+
+      // The word, on the desk's keyboard.
+      await page.keyboard.type(puzzle.solution);
+      await page.keyboard.press("Enter");
+      await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+      await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid/);
+    });
+  });
+
+  test("on a computer the letter keys are put away until asked for, and the desk's keyboard is said to work", async ({ page }) => {
     const seed = freshPuzzleSeed();
-    const puzzle = generatePuzzle(KIND, 5, LEVEL, seed);
     await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
     await ready(page, "puzzle-play");
-    await expect(page.getByTestId("word-tile")).toHaveCount(30);
+    const box = page.getByTestId("word-keys-box");
+    const toggle = page.getByTestId("word-keys-toggle");
+    await expect(toggle).toContainText("Show keys");
+    await expect(box).toBeHidden();
+    await expect(page.getByTestId("word-keys-note")).toBeVisible();
 
-    // A word the list does not know is refused, and no row is spent on it.
-    await page.keyboard.type("qqqqq");
-    await page.keyboard.press("Enter");
-    await expect(page.getByTestId("word-said")).toContainText("not in the word list");
-    for (let i = 0; i < 5; i += 1) await page.getByTestId("word-key-back").click();
+    await toggle.click();
+    await expect(box).toBeVisible();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("word-keys-note")).toBeHidden();
 
-    // A wrong word, typed on the keys under the grid, and its colours read off the tiles.
-    const [miss] = misses(puzzle.solution, 1);
-    for (const letter of miss!) await page.getByTestId(`word-key-${letter}`).click();
-    await page.getByTestId("word-key-enter").click();
-    const expected = markGuess(miss!, puzzle.solution);
-    const row = page.locator('[data-testid="word-tile"][data-row="0"]');
-    for (const [at, mark] of expected.entries()) await expect(row.nth(at)).toHaveAttribute("data-mark", mark);
+    // Kept in this browser: the next word opens with the keys out.
+    await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${freshPuzzleSeed()}`);
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("word-keys-box")).toBeVisible();
 
-    // The word, on the desk's keyboard.
-    await page.keyboard.type(puzzle.solution);
-    await page.keyboard.press("Enter");
-    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
-    await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid/);
+    // And put away again.
+    await page.getByTestId("word-keys-toggle").click();
+    await expect(page.getByTestId("word-keys-box")).toBeHidden();
+    await expect(page.getByTestId("word-keys-toggle")).toHaveAttribute("aria-pressed", "false");
   });
 
   test("running out of guesses ends it and shows the word", async ({ page }) => {
