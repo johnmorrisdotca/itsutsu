@@ -2,10 +2,12 @@
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
+import type { TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import {
+  WORD_FOCUS,
   WORD_GRID_BOX,
   WORD_STONE,
   WORD_STONE_LOOK,
@@ -27,6 +29,9 @@ const MARK_WORDS: Record<LetterMark, string> = { hit: "in its place", near: "in 
  * squares ruled on the wood, Gomoku stones on the crossings, or letter tiles
  * on white paper. Every style carries the same letters, marks and words.
  *
+ * The row being typed is a row of places: tapping one chooses it, and the one
+ * waiting for a letter carries a faint ring (`WORD_FOCUS`).
+ *
  * The board is square and the grid is not — six rows of five — so the board
  * is drawn at the number of rows and the grid sits centred across it. Nothing
  * here knows the word: it draws the rows and the marks it is handed.
@@ -39,14 +44,17 @@ export function WordDropGrid({
   typing,
   done,
   style,
+  onChoose,
 }: {
   size: number;
   rows: number;
   guesses: readonly string[];
   marks: readonly (readonly LetterMark[])[];
-  typing: string;
+  typing: TypingRow;
   done: boolean;
   style: WordStyle;
+  /** A tap on a place in the row being typed. */
+  onChoose: (place: number) => void;
 }) {
   const tiles = style === WORD_STYLES.tiles;
   return (
@@ -60,27 +68,44 @@ export function WordDropGrid({
             {tiles ? null : <GridLines size={size} rows={rows} style={style} />}
             {Array.from({ length: rows }, (_, row) => {
               const guessed = guesses[row];
-              const letters = guessed ?? (row === guesses.length && !done ? typing : "");
+              const live = guessed === undefined && row === guesses.length && !done;
+              const letters: ArrayLike<string> = guessed ?? (live ? typing.slots : []);
               return Array.from({ length: size }, (_, at) => {
                 const letter = letters[at] ?? "";
                 const mark = guessed === undefined ? null : marks[row]![at]!;
                 const label = letter === "" ? "empty" : `${letter.toUpperCase()}${mark === null ? "" : `, ${MARK_WORDS[mark]}`}`;
-                const said = { "data-testid": "word-tile", "data-row": row, "data-mark": mark ?? (letter === "" ? "empty" : "typed"), "aria-label": label };
-                if (tiles) {
-                  const look = mark !== null ? WORD_TILE_MARK[mark] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY;
-                  return (
-                    <div key={`${row}-${at}`} className={`${WORD_TILE} ${look}`} {...said}>
-                      {letter}
-                    </div>
-                  );
-                }
-                return (
-                  <div key={`${row}-${at}`} className="relative flex items-center justify-center" {...said}>
-                    {letter === "" ? null : (
-                      <span className={`${WORD_STONE} ${WORD_STONE_SIZE[style]}`} style={WORD_STONE_LOOK[mark ?? "typed"]} aria-hidden="true">
-                        {letter}
-                      </span>
-                    )}
+                const focused = live && typing.at === at;
+                const said = {
+                  "data-testid": "word-tile",
+                  "data-row": row,
+                  "data-mark": mark ?? (letter === "" ? "empty" : "typed"),
+                  "data-focus": focused ? "true" : undefined,
+                  "aria-label": live ? `${label}, letter ${at + 1}${focused ? ", chosen" : ""}` : label,
+                };
+                const face = tiles ? (
+                  letter
+                ) : letter === "" ? (
+                  focused ? <span className={`${WORD_STONE_SIZE[style]} ${WORD_FOCUS.stoneEmpty}`} aria-hidden="true" /> : null
+                ) : (
+                  <span
+                    className={`${WORD_STONE} ${WORD_STONE_SIZE[style]} ${focused ? WORD_FOCUS.stoneFilled : ""}`}
+                    style={WORD_STONE_LOOK[mark ?? "typed"]}
+                    aria-hidden="true"
+                  >
+                    {letter}
+                  </span>
+                );
+                const look = tiles
+                  ? `${WORD_TILE} ${mark !== null ? WORD_TILE_MARK[mark] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY} ${focused ? (letter === "" ? WORD_FOCUS.tileEmpty : WORD_FOCUS.tileFilled) : ""}`
+                  : "relative flex items-center justify-center";
+                // A place on the row being typed is a press; every other cell is only drawn.
+                return live ? (
+                  <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} {...said}>
+                    {face}
+                  </button>
+                ) : (
+                  <div key={`${row}-${at}`} className={look} {...said}>
+                    {face}
                   </div>
                 );
               });

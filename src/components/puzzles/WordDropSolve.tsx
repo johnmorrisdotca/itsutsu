@@ -8,6 +8,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeWordDropProgress, encodeWordDropProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor, type LetterMark } from "@/lib/puzzles/wordDrop/code";
+import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { WordDropGrid } from "./WordDropGrid";
@@ -49,7 +50,7 @@ export function WordDropSolve({
   const hidden = useMemo(() => decodeHidden(puzzle.givens, size) ?? "", [puzzle.givens, size]);
   const rows = rowsFor(size);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeWordDropProgress(resumed.progress, size)) ?? []);
-  const [typing, setTyping] = useState("");
+  const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
   const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(
     puzzle,
@@ -76,45 +77,44 @@ export function WordDropSolve({
 
   const closed = done !== null || pausing.paused;
 
-  const letter = useCallback(
-    (typed: string) => {
+  /* Every change to the row being typed goes through here (`typingRow.ts`): a letter, a clear, a tap, an arrow. */
+  const edit = useCallback(
+    (change: (row: TypingRow) => TypingRow) => {
       if (closed) return;
       setSaid(null);
-      setTyping((so) => (so.length < size ? so + typed : so));
+      setTyping(change);
     },
-    [closed, size],
+    [closed],
   );
-  const back = useCallback(() => {
-    if (closed) return;
-    setSaid(null);
-    setTyping((so) => so.slice(0, -1));
-  }, [closed]);
+  const letter = useCallback((typed: string) => edit((row) => typeLetter(row, typed)), [edit]);
+  const back = useCallback(() => edit(backspace), [edit]);
 
   const enter = useCallback(() => {
     if (closed) return;
-    if (typing.length < size) {
+    const word = wordOf(typing);
+    if (word === null) {
       setSaid(`A guess is ${size} letters.`);
       return;
     }
-    if (!isWord(typing, size)) {
-      setSaid(`${typing.toUpperCase()} is not in the word list.`);
+    if (!isWord(word, size)) {
+      setSaid(`${word.toUpperCase()} is not in the word list.`);
       return;
     }
-    const breaks = level === "hard" ? breaksHardRule(guesses, hidden, typing) : null;
+    const breaks = level === "hard" ? breaksHardRule(guesses, hidden, word) : null;
     if (breaks !== null) {
       setSaid(`Hard: ${breaks}.`);
       return;
     }
     const at = begin();
-    const next = [...guesses, typing];
+    const next = [...guesses, word];
     setGuesses(next);
-    setTyping("");
+    setTyping(emptyRow(size));
     setSaid(null);
-    if (typing === hidden) void finish(next.join(""), at);
+    if (word === hidden) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
   }, [closed, typing, size, level, guesses, hidden, begin, finish, runOut, rows]);
 
-  /* The desk's keyboard: letters, Enter and Backspace, whenever the puzzle is open. */
+  /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
     if (closed) return;
     const onKey = (event: KeyboardEvent) => {
@@ -129,17 +129,32 @@ export function WordDropSolve({
       } else if (event.key === "Backspace" || event.key === "Delete") {
         event.preventDefault();
         back();
+      } else if (event.key === " ") {
+        event.preventDefault();
+        edit(clearAt);
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        edit((row) => step(row, event.key === "ArrowLeft" ? -1 : 1));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [closed, letter, enter, back]);
+  }, [closed, letter, enter, back, edit]);
 
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <WordDropGrid size={size} rows={rows} guesses={guesses} marks={marks} typing={typing} done={done !== null} style={style} />
+        <WordDropGrid
+          size={size}
+          rows={rows}
+          guesses={guesses}
+          marks={marks}
+          typing={typing}
+          done={done !== null}
+          style={style}
+          onChoose={(place) => edit((row) => choose(row, place))}
+        />
       </SolvePaused>
       {done === null ? (
         <>

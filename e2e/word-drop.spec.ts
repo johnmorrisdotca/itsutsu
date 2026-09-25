@@ -122,6 +122,45 @@ test.describe("the word puzzle", () => {
     await expect(page.getByTestId("word-keys-toggle")).toHaveAttribute("aria-pressed", "false");
   });
 
+  test("a typed letter is tapped to choose it, then typed over, or cleared with Space or Delete, before Enter", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    const answer = generatePuzzle(KIND, 5, LEVEL, seed).solution;
+    test.skip(answer === "skate" || answer === "slate", "this spec types those two words");
+    await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const place = (at: number) => page.locator('[data-testid="word-tile"][data-row="0"]').nth(at);
+    // The first place waits, faintly marked.
+    await expect(place(0)).toHaveAttribute("data-focus", "true");
+
+    await page.keyboard.type("slate");
+    await expect(place(4)).not.toHaveAttribute("data-focus", "true");
+    // S-L-A-T-E: tap the L and type K over it, and the word reads SKATE.
+    await place(1).click();
+    await expect(place(1)).toHaveAttribute("data-focus", "true");
+    await page.keyboard.type("k");
+    await expect(place(1)).toHaveAttribute("aria-label", /^K, /);
+
+    // Space clears the chosen letter and the place stays chosen; Enter asks for the whole word.
+    await place(3).click();
+    await page.keyboard.press(" ");
+    await expect(place(3)).toHaveAttribute("data-mark", "empty");
+    await expect(place(3)).toHaveAttribute("data-focus", "true");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("word-said")).toContainText("A guess is 5 letters");
+
+    // Typed back in, and Delete on a chosen letter clears it the same way.
+    await page.keyboard.type("t");
+    await place(0).click();
+    await page.keyboard.press("Delete");
+    await expect(place(0)).toHaveAttribute("data-mark", "empty");
+    await page.keyboard.type("s");
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("aria-label", /^S, /);
+    await expect(page.locator('[data-testid="word-tile"][data-row="0"]').nth(1)).toHaveAttribute("aria-label", /^K, (in its place|in the word|not in)/);
+    // The next row's first place is the one waiting.
+    await expect(page.locator('[data-testid="word-tile"][data-row="1"]').first()).toHaveAttribute("data-focus", "true");
+  });
+
   test("running out of guesses ends it and shows the word", async ({ page }) => {
     const seed = freshPuzzleSeed();
     const puzzle = generatePuzzle(KIND, 4, LEVEL, seed);

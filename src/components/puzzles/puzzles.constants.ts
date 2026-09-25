@@ -161,6 +161,19 @@ export const WORD_STONE_LOOK: Record<"typed" | "hit" | "near" | "miss", { backgr
   near: { background: "radial-gradient(circle at 35% 30%, #d9a55a 0%, #9d6c1f 45%, #5f3f0e 100%)", color: "#f7f3ea" },
   miss: { background: STONE_SETS.classic.black, color: STONE_SETS.classic.blackInk },
 };
+/*
+ * THE PLACE WAITING FOR A LETTER on the row being typed (`typingRow.ts`).
+ * John, 2026-09-25: "keep it VERY SUBTLE because in Wordle it looks like this
+ * is not something they do." A faint ring, and nothing that moves: an empty
+ * place shows where its stone or tile would go, a chosen letter a thin ring.
+ */
+export const WORD_FOCUS = {
+  stoneEmpty: "rounded-full ring-1 ring-inset ring-ink/25",
+  stoneFilled: "ring-1 ring-ink/45 ring-offset-1 ring-offset-transparent",
+  tileEmpty: "border-ink-soft/45",
+  tileFilled: "outline outline-1 outline-offset-1 outline-ink/30",
+} as const;
+
 /** The keys under a grid of stones: a letter not in the word is black, as its stone is. */
 export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "miss", string> = { ...WORD_TILE_MARK, miss: "border-ink bg-ink text-ivory" };
 
