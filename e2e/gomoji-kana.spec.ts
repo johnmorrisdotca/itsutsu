@@ -91,6 +91,16 @@ test.describe("the kana word puzzle", () => {
     await expect(page.getByTestId("kana-romaji")).toHaveCount(0);
   });
 
+  test("the clock starts at the first kana typed on the keys, not at the first guess sent", async ({ page }) => {
+    // John, on an iPhone mid-word: "clock doesn't start on iPhone with keyboard use."
+    await page.goto(`${AT}/play?size=4&level=easy&seed=${freshPuzzleSeed()}`);
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("puzzle-pause")).toBeDisabled();
+    await tapKana(page, "か");
+    await expect(page.getByTestId("puzzle-pause")).toBeEnabled();
+    await expect(page.getByTestId("puzzle-clock")).not.toHaveText("0:00", { timeout: 5_000 });
+  });
+
   test("a kana being typed rings its key in any size or mark: ぱ rings は", async ({ page }) => {
     await page.goto(`${AT}/play?size=4&level=medium&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");

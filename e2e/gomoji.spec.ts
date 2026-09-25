@@ -69,6 +69,16 @@ test.describe("the word puzzle", () => {
 
   test.describe("on a phone, where the letter keys show under the grid", () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    test("the clock starts at the first letter tapped, not at the first guess sent", async ({ page }) => {
+      // John, on an iPhone mid-word: "clock doesn't start on iPhone with keyboard use."
+      await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+      await expect(page.getByTestId("puzzle-pause")).toBeDisabled();
+      await page.getByTestId("word-key-a").click();
+      await expect(page.getByTestId("puzzle-pause")).toBeEnabled();
+      await expect(page.getByTestId("puzzle-clock")).not.toHaveText("0:00", { timeout: 5_000 });
+    });
+
     test("a guess is coloured as the rules say, and the word found finishes it", async ({ page }) => {
       const seed = freshPuzzleSeed();
       const puzzle = generatePuzzle(KIND, 5, LEVEL, seed);

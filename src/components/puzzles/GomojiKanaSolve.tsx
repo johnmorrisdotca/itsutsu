@@ -104,7 +104,20 @@ export function GomojiKanaSolve({
     },
     [closed],
   );
-  const kana = useCallback((typed: string) => edit((row) => typeLetter(row, typed)), [edit]);
+  /*
+   * The first kana typed starts the clock, on the keys under the board as on
+   * a desk's keyboard. It started at the first guess sent, so on a phone a
+   * player typing their first word watched 0:00 and a Pause they could not
+   * press — John, 2026-09-25: "clock doesn't start on iPhone with keyboard use."
+   */
+  const kana = useCallback(
+    (typed: string) => {
+      if (closed) return;
+      begin();
+      edit((row) => typeLetter(row, typed));
+    },
+    [closed, begin, edit],
+  );
   const back = useCallback(() => {
     if (romaji !== "") setRomaji((pending) => pending.slice(0, -1));
     else edit(backspace);
@@ -115,10 +128,13 @@ export function GomojiKanaSolve({
     (key: string) => {
       if (closed) return;
       const { kana: made, rest } = readRomaji(romaji + key);
-      if (made.length > 0) edit((row) => made.reduce(typeLetter, row));
+      if (made.length > 0) {
+        begin();
+        edit((row) => made.reduce(typeLetter, row));
+      }
       setRomaji(rest);
     },
-    [closed, romaji, edit],
+    [closed, romaji, begin, edit],
   );
 
   const enter = useCallback(() => {

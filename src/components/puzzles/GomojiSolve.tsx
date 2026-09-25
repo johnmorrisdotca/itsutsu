@@ -90,7 +90,15 @@ export function GomojiSolve({
     },
     [closed],
   );
-  const letter = useCallback((typed: string) => edit((row) => typeLetter(row, typed)), [edit]);
+  /* The first letter typed starts the clock, not the first guess sent: see `GomojiKanaSolve`'s `kana`. */
+  const letter = useCallback(
+    (typed: string) => {
+      if (closed) return;
+      begin();
+      edit((row) => typeLetter(row, typed));
+    },
+    [closed, begin, edit],
+  );
   const back = useCallback(() => edit(backspace), [edit]);
 
   const enter = useCallback(() => {
