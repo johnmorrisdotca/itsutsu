@@ -224,7 +224,9 @@ test.describe("the word puzzle", () => {
     const scored = wordScore(puzzle.solution, wrong, 0).total;
     await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(scored));
     await expect(page.getByTestId("word-kept")).toContainText("My games");
-    await expect(page.getByTestId("word-kept")).toContainText("XP for playing it out");
+    // Paid for playing it out, or not paid because this member has already had today's six (the award's daily
+    // cap): those two, and nothing else. The suite's member plays many words a day.
+    await expect(page.getByTestId("word-kept")).toHaveText(/^(\+5 XP for playing it out\. )?Kept in My games with your guesses\.$/);
 
     // Kept on the Puzzles tab, marked as not found.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();

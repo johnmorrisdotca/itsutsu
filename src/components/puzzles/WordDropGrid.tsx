@@ -58,7 +58,6 @@ export function WordDropGrid({
   onChoose,
   arrows = [],
   free = 0,
-  box = WORD_GRID_BOX,
 }: {
   size: number;
   rows: number;
@@ -73,8 +72,6 @@ export function WordDropGrid({
   arrows?: readonly (readonly CellArrow[])[];
   /** How many of the first rows were played for the player, not by them: the kana version's grey word. */
   free?: number;
-  /** The box the grid is drawn in: English's, or the kana version's smaller one on a phone. */
-  box?: string;
 }) {
   const tiles = style === WORD_STYLES.tiles;
   // A board of stones is a whole board, the places in play centred on whole squares (`boardSpan`); tiles are paper.
@@ -82,7 +79,7 @@ export function WordDropGrid({
   const left = (span - size) / 2;
   const top = tiles ? 0 : Math.floor((span - rows) / 2);
   return (
-    <div className={box} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
+    <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={span}>
         <div className={`relative flex h-full w-full items-center justify-center ${tiles ? "bg-white" : ""}`}>
           {tiles ? null : <GridLines span={span} size={size} rows={rows} left={left} top={top} style={style} />}

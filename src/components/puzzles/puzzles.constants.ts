@@ -140,19 +140,13 @@ export const WORD_TILE_MARK: Record<"hit" | "near" | "kin" | "miss", string> = {
 export const WORD_KEY =
   "flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-md border border-rule-strong/80 text-sm font-semibold uppercase transition-colors focus-visible:ring-2 focus-visible:ring-moss disabled:opacity-40 sm:text-base";
 /**
- * THE GRID'S WIDTH ON A PHONE. At 390×844 the site's header, the grid at full
- * width and three rows of keys came to more than the screen, and Enter — the
- * key every guess ends on — sat below the fold. Capped so the grid and the
- * whole keyboard are on one phone screen; from a tablet up the grid takes the
- * column like every puzzle's.
+ * THE GRID'S WIDTH: the column's, on a phone as on a desk, like every board.
+ * It was capped on phones (17rem, 13.5rem for kana) so Enter stayed on one
+ * screen; John, 2026-09-25, on an iPhone: "the board looks bad. Should fill
+ * screen too like the other boards." The board comes first; the keys sit
+ * under it and the page scrolls to them.
  */
-export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
-/**
- * The kana grid's width on a phone: a row more (the free word) and a taller
- * keyboard (five rows of kana and a row of 小 ゛゜ ⌫ Enter), so a smaller grid
- * keeps Enter on one phone screen, as English's does.
- */
-export const KANA_GRID_BOX = "mx-auto w-full max-w-[13.5rem] sm:max-w-none";
+export const WORD_GRID_BOX = "w-full";
 
 /*
  * WORDDROP IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter

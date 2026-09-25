@@ -11,7 +11,6 @@ import { decodeKanaGivens, KANA_ROWS } from "@/lib/puzzles/wordDropKana/kanaCode
 import { markKanaGuess } from "@/lib/puzzles/wordDropKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
-import { KANA_GRID_BOX, WORD_GRID_BOX } from "./puzzles.constants";
 import { WordDropGrid, type CellArrow } from "./WordDropGrid";
 import { WordKeyboard } from "./WordKeyboard";
 
@@ -71,7 +70,6 @@ export function WordReplay({
         marks={marks}
         arrows={arrows}
         free={free}
-        box={kana ? KANA_GRID_BOX : WORD_GRID_BOX}
         typing={emptyRow(size)}
         done
         style={style}

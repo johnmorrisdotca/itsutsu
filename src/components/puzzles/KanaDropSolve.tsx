@@ -18,7 +18,6 @@ import { kanaKeyMarks } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
-import { KANA_GRID_BOX } from "./puzzles.constants";
 import { WordDropGrid, type CellArrow } from "./WordDropGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
@@ -184,7 +183,6 @@ export function KanaDropSolve({
               marks={marked.map((row) => row.map((each) => each.mark))}
               arrows={marked.map((row) => row.map(arrowOf))}
               free={free}
-              box={KANA_GRID_BOX}
               typing={typing}
               done={false}
               style={style}
