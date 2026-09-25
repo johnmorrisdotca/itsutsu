@@ -34,7 +34,8 @@ test.describe("the first puzzle", () => {
     const door = page.getByTestId("game-front-door");
     await expect(door).toHaveAttribute("data-kind", "puzzle");
     await expect(door.getByRole("heading", { level: 1 })).toContainText(NAME);
-    await expect(page.getByTestId("inspired-by")).toContainText("Sudoku");
+    // Its name is the published one, so no "Our version of" line repeats it; the heading above was waited for first.
+    await expect(page.getByTestId("inspired-by")).toHaveCount(0);
     await expect(page.getByTestId("game-set-up")).toHaveAttribute("href", `${AT}/new`);
     await expect(page.getByTestId("game-rules-link")).toHaveAttribute("href", `${AT}/rules`);
     // Its family, and the family's picture, as on every game's page.
@@ -42,10 +43,10 @@ test.describe("the first puzzle", () => {
     await expect(page.getByTestId("game-family").getByTestId("family-mark")).toHaveAttribute("data-family", "Numbers");
   });
 
-  test("the rules page is the game template, with a Solve link and no record", async ({ page }) => {
+  test("the rules page is the game template, with the big Play and no record", async ({ page }) => {
     await page.goto(`${AT}/rules`);
     await expect(page.getByTestId("rules-page")).toContainText("Sizes: 4×4, 6×6, 9×9");
-    await expect(page.getByTestId("rules-page").getByRole("link", { name: `Solve ${NAME}` })).toHaveAttribute("href", `${AT}/new`);
+    await expect(page.getByTestId("rules-play")).toHaveAttribute("href", `${AT}/new`);
     await expect(page.getByTestId("rules-record-link")).toHaveCount(0);
   });
 

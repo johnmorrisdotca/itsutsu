@@ -112,7 +112,7 @@ export function BlackAndWhiteSolve({
               Every cell holds a stone, and it is not right yet.
             </span>
           ) : (
-            <span className="text-sm text-muted">Tap a cell for black, again for white, again to clear it. The clock starts on your first tap.</span>
+            <span className="text-sm text-muted">Tap for black, again for white, again to clear.</span>
           )}
         </div>
       ) : (

@@ -141,8 +141,7 @@ export const PHRASES = {
   "rules.alsoKnownAs": "Also known as {names}.",
   "rules.from": "From {country}",
   "rules.imageAlt": "A game of {game} in progress",
-  "rules.inProgress": "A game in progress.",
-  "rules.playThis": "Play {game} →",
+  "rules.play.button": "Play →",
   "rules.everyGamePlayed": "Every game of {game} played here",
   "rules.wikipedia": "Read about {game} on Wikipedia ↗",
 

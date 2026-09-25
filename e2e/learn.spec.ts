@@ -1,9 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-import { openSetup, ready, readyHere } from "./support";
+import { ready, readyHere } from "./support";
 import { EVERY_GAME_KEY } from "../src/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
-import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
 
 /** The rules pages and the learning shelf, and the link from one to the board. */
 test.describe("rules and learning", () => {
@@ -126,15 +125,11 @@ test.describe("rules and learning", () => {
 
   test("a rules page can start a game of that kind", async ({ page }) => {
     await page.goto("/games/twist-four/rules");
-    await page.getByRole("link", { name: /Play Twist Four/ }).click();
-    await openSetup(page);
-    await expect(page.getByTestId("rules")).toHaveValue("twistFour");
-    /*
-     * Twist Four is `boardSizes: [4]`, so its board is stated rather than
-     * offered — a rule the game has settled is not drawn as a control nobody
-     * may use. The decision, and the test that guards it, are in games.spec.ts.
-     */
-    await expect(page.getByTestId("fixed-by-rules")).toContainText("4×4");
+    // The one big Play, under the picture, leads to the set-up with this game chosen.
+    await page.getByTestId("rules-play").click();
+    await expect(page).toHaveURL(/\/games\/twist-four\/new$/);
+    await expect(page.getByTestId("set-up-game")).toBeVisible();
+    await expect(page.locator('[data-testid="set-up-variant"][data-chosen="true"]')).toHaveAttribute("data-variant", "twistFour");
   });
 
   test("the library offers New game and folds the catalogue into families", async ({ page }) => {

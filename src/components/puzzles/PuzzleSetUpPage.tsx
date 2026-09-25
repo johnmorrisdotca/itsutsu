@@ -23,7 +23,7 @@ export function PuzzleSetUpPage({ kind, hasAccount }: { kind: PuzzleKind; hasAcc
     <Page>
       <SiteHeader />
       <PageTitle
-        title={`Solve ${copy.label}`}
+        title={`Play ${copy.label}`}
         kanji={copy.kanji}
         crumb={
           <>

@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { decodeRegions, decodeStones, encodeStones } from "@/lib/puzzles/hiddenStones/code";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -65,7 +64,8 @@ export function HiddenStonesSolve({
 
   const press = useCallback(
     (index: number) => {
-      if (done !== null) return;
+      // Nothing is pressed while paused (John, 2026-09-25: "if a game is paused, DISABLE the controls, all the controls").
+      if (done !== null || pausing.paused) return;
       const at = begin();
       const next = [...marks];
       next[index] = next[index] === "" ? "stone" : next[index] === "stone" ? "cross" : "";
@@ -81,7 +81,7 @@ export function HiddenStonesSolve({
         else setFullNotRight(true);
       }
     },
-    [done, begin, marks, stonesOf, answer, finish, checking.allowed, hinting],
+    [done, pausing.paused, begin, marks, stonesOf, answer, finish, checking.allowed, hinting],
   );
 
   /* Hint: every stone where the answer has none, and every cross on the answer's stone, marked until changed. */
@@ -124,7 +124,7 @@ export function HiddenStonesSolve({
               A stone in every row, and it is not right yet.
             </span>
           ) : (
-            <span className="text-sm text-muted">Tap a cell for a stone, again for a cross, again to clear it. The clock starts on your first tap.</span>
+            <span className="text-sm text-muted">Tap for a stone, again for a cross, again to clear.</span>
           )}
         </div>
       ) : (

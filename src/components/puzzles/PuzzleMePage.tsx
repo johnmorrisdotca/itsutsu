@@ -41,7 +41,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">fastest here</Link>
-          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">solve one</Link>
+          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">play one</Link>
         </p>
       </PageTitle>
 
@@ -53,7 +53,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
           <p className="text-sm text-muted">
             None yet.{" "}
             <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-              Solve one →
+              Play one →
             </Link>
           </p>
         ) : (
@@ -95,7 +95,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
           <p className="text-sm text-muted">
             None yet.{" "}
             <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-              Race a friend →
+              Play a friend →
             </Link>
           </p>
         ) : (

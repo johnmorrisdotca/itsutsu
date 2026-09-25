@@ -21,10 +21,11 @@ const NAME = PUZZLE_DISPLAY[KIND].label;
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
 
 test.describe("the towers puzzle", () => {
-  test("its front door names what it is our version of", async ({ page }) => {
+  test("its front door names it once", async ({ page }) => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
-    await expect(page.getByTestId("inspired-by")).toContainText("Skyscrapers");
+    // Its name is the published one, so no "Our version of" line repeats it; the heading above was waited for first.
+    await expect(page.getByTestId("inspired-by")).toHaveCount(0);
     await expect(page.getByTestId("game-family")).toContainText("Numbers");
   });
 

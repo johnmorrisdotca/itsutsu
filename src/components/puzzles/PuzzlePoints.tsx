@@ -60,8 +60,7 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
       <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} testId="puzzle-points-all" />
       <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} testId="puzzle-points-month" />
       <p className="text-xs text-muted">
-        {POINTS_A_CELL} points for every cell you fill, less {POINTS_A_HELP} for every Check or Hint; each puzzle counts once, at
-        your best.
+        {POINTS_A_CELL} a cell you fill, −{POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.
       </p>
       {whole ? null : (
         <p className="text-sm">

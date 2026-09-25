@@ -2,11 +2,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { GameFamily } from "@/components/games/GameFamily";
+import { PlayButton } from "@/components/games/PlayButton";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { Suspense } from "react";
 
 import { backgroundPath, familyPath, myGamePath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
@@ -48,8 +49,12 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
-            {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-            <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule sm:w-56" data-testid="game-picture" />
+            <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
+              <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
+              {/* The one big Play, under the picture, as on every game's page; alone or a friend is chosen on the set-up. */}
+              <PlayButton href={setUpPath(kind)} />
+            </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>
                 <p className="text-sm font-medium">{page.tagline}</p>
@@ -62,7 +67,8 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 ) : null}
                 {page.origin}
               </p>
-              {page.inspiredBy !== undefined ? (
+              {/* Only where it says something: "Our version of Skyscrapers" under "Skyscrapers" does not. */}
+              {page.inspiredBy !== undefined && page.inspiredBy !== page.title ? (
                 <p className="text-xs text-muted" data-testid="inspired-by">
                   Our version of {page.inspiredBy}.
                 </p>
@@ -72,14 +78,9 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                   Also known as {page.alsoKnownAs.join(", ")}.
                 </p>
               ) : null}
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <Link href={setUpPath(kind)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
-                  Solve {page.title} →
-                </Link>
-                <span className="text-xs text-muted">
-                  {spec.offered.map(sizeWord).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
-                </span>
-              </div>
+              <span className="text-xs text-muted">
+                {spec.offered.map(sizeWord).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
+              </span>
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-4">
@@ -99,23 +100,6 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             </p>
           </section>
 
-          <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-solo">
-            <h2 className={SECTION_TITLE}>
-              For one, or for two <span className="font-mincho normal-case tracking-normal">一人でも二人でも</span>
-            </h2>
-            <p className="text-sm leading-relaxed">
-              A puzzle is made in your browser from a number, with exactly one answer, and timed from your first
-              entry. When the last cell is right the site checks the grid, keeps the solve, and a member is paid XP
-              for it — the same puzzle once, up to six a day.
-            </p>
-            <p className="text-sm leading-relaxed">
-              Or race a friend: the same puzzle for two, each with a clock the site keeps from their own Start, and
-              the faster correct solve wins.{" "}
-              <Link href={setUpPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="puzzle-race-link">
-                Race a friend →
-              </Link>
-            </p>
-          </section>
           </div>
         </div>
 

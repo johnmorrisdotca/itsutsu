@@ -34,7 +34,7 @@ describe("saying something", () => {
 
   it("says it in the reader's language", () => {
     expect(speaker("ja").say("rules.object")).toBe("目的");
-    expect(speaker("ja").say("rules.inProgress")).toBe("対局中の盤面。");
+    expect(speaker("ja").say("rules.play.button")).toBe("遊ぶ →");
   });
 
   it("falls back to the English original for a language with no dictionary", () => {

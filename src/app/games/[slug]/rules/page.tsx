@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PlayButton } from "@/components/games/PlayButton";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { gamePath, historyPath, playPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
@@ -181,11 +182,9 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
           <Part heading={say.pair("rules.house", "細則")} lines={page.house} />
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-<Link href={puzzle !== null ? setUpPath(key) : playPath(key)} className="font-semibold underline-offset-2 hover:underline">
-              {puzzle !== null ? `Solve ${name.text}` : say.say("rules.playThis", { game: name.text })}
-            </Link>
             {/*
-              The ways out that are not "start one". Short here, because the
+              The ways out that are not "start one", which is the big Play under
+              the picture. Short here, because the
               game's own page carries every one of them in full one segment up.
               This is the document; a document that tries to be the hub as well
               is how /rules/<slug> ended up with a ladder bolted to it.
@@ -221,7 +220,12 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
         </article>
         </div>
 
-        <aside className="flex w-full flex-col gap-4 lg:w-80">
+        {/*
+          `contents` on a phone, so the picture and its Play can come first,
+          above the title, as on the game's own page, while the guides stay
+          last; a column of its own from a laptop.
+        */}
+        <aside className="contents lg:flex lg:w-80 lg:flex-col lg:gap-4">
           {/*
             Always shown. Whether the file is there is settled by the New Game
             Gate before anything ships, so there is nothing to ask while
@@ -229,14 +233,15 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
             depends on how the deployment lays out `public/` rather than on
             anything here.
           */}
-          <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
+          <figure className={`${PANEL_CLASS} order-first flex flex-col gap-2 lg:order-none`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
             <img
               src={page.image}
               alt={say.say("rules.imageAlt", { game: name.text })}
               className="w-full rounded-lg"
             />
-            <figcaption className="text-xs text-muted">{say.say("rules.inProgress")}</figcaption>
+            {/* The one big Play, under the picture, as on the game's page; see `PlayButton`. */}
+            <PlayButton href={setUpPath(key)} testId="rules-play" label={say.say("rules.play.button")} />
           </figure>
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-learn">

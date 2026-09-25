@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { decodeJigsaw } from "@/lib/puzzles/jigsaw/code";
 import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
 import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
@@ -114,9 +113,9 @@ export function NumberSolve({
     else setSelected(index);
   };
 
-  /* The keyboard: digits fill, Backspace clears, arrows move, Escape lets the cell go. Only while a cell is chosen. */
+  /* The keyboard: digits fill, Backspace clears, arrows move, Escape lets the cell go. Only while a cell is chosen, and not while paused. */
   useEffect(() => {
-    if (selected === null || done !== null) return;
+    if (selected === null || done !== null || pausing.paused) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       // 1–9, and past nine the letters A–G, either case (`valueOfSymbol`).
@@ -139,7 +138,7 @@ export function NumberSolve({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selected, done, size, enter]);
+  }, [selected, done, pausing.paused, size, enter]);
 
   /* Hint: every entry that is not the answer, marked on the grid until it is changed. */
   const hint = () => hinting.show(entries.flatMap((cell, index) => (givens[index] === 0 && cell !== 0 && cell !== solution[index] ? [index] : [])));
@@ -175,11 +174,11 @@ export function NumberSolve({
         <>
           <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${Math.min(size + 1, PUZZLE_KEYS_PER_ROW)}, minmax(0, 1fr))` }} data-testid="puzzle-keys">
             {Array.from({ length: size }, (_, i) => i + 1).map((value) => (
-              <button key={value} type="button" className={PUZZLE_KEY} onClick={() => enter(value)} data-testid={`puzzle-key-${value}`}>
+              <button key={value} type="button" className={PUZZLE_KEY} onClick={() => enter(value)} disabled={pausing.paused} data-testid={`puzzle-key-${value}`}>
                 {symbolOf(value)}
               </button>
             ))}
-            <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} aria-label="clear the cell" data-testid="puzzle-key-clear">
+            <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} disabled={pausing.paused} aria-label="clear the cell" data-testid="puzzle-key-clear">
               ×
             </button>
           </div>
@@ -198,7 +197,7 @@ export function NumberSolve({
                 Every cell is filled, and it is not right yet.
               </span>
             ) : (
-              <span className="text-sm text-muted">Tap a cell, then a number, or tap it again to count up. The clock starts on your first entry.</span>
+              <span className="text-sm text-muted">Tap a cell, then a number.</span>
             )}
           </div>
         </>

@@ -56,6 +56,16 @@ export const BUTTON_STRONG =
   "border-transparent bg-ink text-paper hover:bg-ink-soft";
 
 /*
+ * THE BIG PLAY BUTTON: under a game's picture (`PlayButton`) and the two on a
+ * puzzle's set-up, one size everywhere (John, 2026-09-25: "if we make changes
+ * in one place, change it everywhere"). The whole class rather than
+ * `BUTTON_BASE` plus sizes, because the base's own padding, text size and
+ * `sm:min-h-0` would win by stylesheet order and shrink it back at a desk.
+ */
+export const PLAY_BUTTON =
+  "inline-flex min-h-16 w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-ink px-6 py-4 text-xl font-semibold text-paper transition-colors outline-none hover:bg-ink-soft focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
+
+/*
  * `min-w-0` and `max-w-full` because a select is as wide as its longest
  * option and will otherwise push out of whatever it is sitting in. Naming an
  * option well is the real fix — see GAME_COPY's short penalty labels — but a

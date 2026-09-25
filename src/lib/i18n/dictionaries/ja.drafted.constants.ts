@@ -122,13 +122,9 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "対局中の{game}の盤面",
     back: "The board of a game of {game} in play.",
   },
-  "rules.inProgress": {
-    text: "対局中の盤面。",
-    back: "A board in play.",
-  },
-  "rules.playThis": {
-    text: "{game}で遊ぶ →",
-    back: "Play {game} →",
+  "rules.play.button": {
+    text: "遊ぶ →",
+    back: "Play →",
   },
   "rules.everyGamePlayed": {
     text: "ここでの{game}の全対局",

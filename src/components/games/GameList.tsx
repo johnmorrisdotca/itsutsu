@@ -88,7 +88,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                       <>
                         <PuzzleLine kind={variant} signedIn={signedIn} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>solve</Link>
+                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
                           <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
                           <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
                         </span>

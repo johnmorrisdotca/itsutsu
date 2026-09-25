@@ -6,12 +6,13 @@ import { Suspense, type ReactNode } from "react";
 
 import { GameFamily } from "@/components/games/GameFamily";
 import { GameLadder } from "@/components/games/GameLadder";
+import { PlayButton } from "@/components/games/PlayButton";
 import { PlayedHere } from "@/components/games/PlayedHere";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { PuzzleFrontDoor } from "@/components/puzzles/PuzzleFrontDoor";
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
@@ -27,7 +28,6 @@ import {
   standingsPath,
   variantFor,
 } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
@@ -103,13 +103,40 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               arrived with. eslint-disable: a static screenshot, already sized, with
               nothing for the optimiser to do.
             */}
-            {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-            <img
-              src={page.image}
-              alt={`A game of ${page.title} in progress`}
-              className="w-full rounded-xl border border-rule sm:w-56"
-              data-testid="game-picture"
-            />
+            <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
+              <img
+                src={page.image}
+                alt={`A game of ${page.title} in progress`}
+                className="w-full rounded-xl border border-rule"
+                data-testid="game-picture"
+              />
+              {/*
+                Two different intentions, and the site has always had both — but
+                they were the wrong way round. The loud one was "Play", which
+                lands straight on a board, and a board is a game the moment a
+                stone goes down: the mirror writes it as a hot-seat game without
+                anybody settling anything. So somebody wanting a game against a
+                person pressed the loud button and arrived somewhere that had
+                already started.
+
+                The fault was never that the wrong button was loud. It was that
+                the word Play was attached to the thing that does not start a
+                game, and a quieter lie is still a lie. So Play now leads where
+                the word means: to setting a game up, and then to a game.
+
+                The board keeps its place and gets an honest name. It is how you
+                meet one of the games nobody has played yet, and how two people
+                at one screen play, and both of those are worth having — they
+                were only ever mislabelled. Naming them makes the old argument
+                here true rather than refuted: two ways onto a board IS fine,
+                once the two say which they are.
+              */}
+              <PlayButton href={setUpPath(variant)} />
+              <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="game-play">
+                Try the board 試し打ち
+              </Link>
+            </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>
                 <p className="text-sm font-medium">{page.tagline}</p>
@@ -133,35 +160,6 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                   Also known as {page.alsoKnownAs.join(", ")}.
                 </p>
               ) : null}
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {/*
-                  Two different intentions, and the site has always had both — but
-                  they were the wrong way round. The loud one was "Play", which
-                  lands straight on a board, and a board is a game the moment a
-                  stone goes down: the mirror writes it as a hot-seat game without
-                  anybody settling anything. So somebody wanting a game against a
-                  person pressed the loud button and arrived somewhere that had
-                  already started.
-
-                  The fault was never that the wrong button was loud. It was that
-                  the word Play was attached to the thing that does not start a
-                  game, and a quieter lie is still a lie. So Play now leads where
-                  the word means: to setting a game up, and then to a game.
-
-                  The board keeps its place and gets an honest name. It is how you
-                  meet one of the games nobody has played yet, and how two people
-                  at one screen play, and both of those are worth having — they
-                  were only ever mislabelled. Naming them makes the old argument
-                  here true rather than refuted: two ways onto a board IS fine,
-                  once the two say which they are.
-                */}
-                <Link href={setUpPath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
-                  Play {page.title} →
-                </Link>
-                <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2`} data-testid="game-play">
-                  Try the board 試し打ち
-                </Link>
-              </div>
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-4">

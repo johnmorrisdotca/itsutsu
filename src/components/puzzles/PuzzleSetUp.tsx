@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -16,15 +16,14 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
-import { sizeWord } from "./puzzles.constants";
 
 /**
- * Setting a puzzle up, at /games/<slug>/new: a size, a level, and Solve.
+ * Setting a puzzle up, at /games/<slug>/new: a size, the options, and Play.
  *
  * The same address a game is set up at, and the same shape — tiles for the
  * one choice that has a picture, chips for the one that has not — with
  * everything a game asks left out: no seats, no clock, no opponent, because
- * a puzzle has none. Nothing is written when Solve is pressed; the address
+ * a puzzle has none. Nothing is written when Play alone is pressed; the address
  * it leads to holds the whole of the choice, and the browser makes the
  * puzzle when it gets there.
  */
@@ -95,11 +94,19 @@ export function PuzzleSetUp({
         below." What each size is for goes here too: it was a paragraph under
         the size tiles, and made that column a different height for every puzzle.
       */}
-      <SetUpSection title="Size, level and help" kanji="盤・難易度・手助け" testId="puzzle-settings">
+      {/*
+        OPTIONS ON THE LEFT, THE TWO PLAY BUTTONS BIG ON THE RIGHT, from a
+        tablet up; one column on a phone, the buttons under the options. John,
+        2026-09-25: "we have the 3 rows of options... and 2 rows of Play
+        buttons... and the RHS is empty. LHS could be options... and RHS could
+        be LARGER play buttons."
+      */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
+      <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
         <p className="text-xs text-muted" data-testid="puzzle-size-note">
           {copy.board}
         </p>
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Level">
+        <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Level">
           {spec.levels.map((each) => (
             <button
               key={each}
@@ -122,7 +129,7 @@ export function PuzzleSetUp({
           why running out takes the help away rather than ending the puzzle. A
           race carries it too, the same for both seats.
         */}
-        <div className="flex flex-wrap gap-1.5 pt-1" role="radiogroup" aria-label="Checks">
+        <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Checks">
           {PUZZLE_CHECK_ALLOWANCES.map((each) => {
             const words = checkAllowanceWords(each);
             return (
@@ -140,16 +147,13 @@ export function PuzzleSetUp({
             );
           })}
         </div>
-        <p className="text-xs text-muted" data-testid="puzzle-checks-blurb">
-          {checkAllowanceWords(checks).blurb}
-        </p>
         {/*
           HINT, chosen here or not at all. John, 2026-09-24: "when a user wants a
           HINT button they can add as an option for these games... and when
           pressed, we highlight what's wrong." Off by default; the button is
           always on the puzzle, disabled with its reason when it was not chosen.
         */}
-        <div className="flex flex-wrap gap-1.5 pt-1" role="radiogroup" aria-label="Hints">
+        <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Hints">
           {[false, true].map((each) => (
             <button
               key={String(each)}
@@ -164,41 +168,43 @@ export function PuzzleSetUp({
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted" data-testid="puzzle-hints-blurb">
-          {hints
-            ? "Hint marks which cells are wrong, as often as you like; a solve that used one says so beside its time."
-            : "No hints: Check is the only help, and it never says which cells."}
-        </p>
       </SetUpSection>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} data-testid="puzzle-solve">
-          Solve a {sizeWord(size)} {copy.label} →
+      {/*
+        TWO BIG BUTTONS, AND NOTHING TO READ. John, 2026-09-25, at the two
+        buttons this had — "Solve a 10×10…" and, under a heading of its own
+        with a paragraph, "Race a friend at 10×10": "Confused: are both these
+        buttons just a Play button?… should be Play Alone and Play a Friend…
+        we waste so much space with text… these buttons could be side by side
+        or above one another. big buttons". Both start the puzzle; the button
+        is the choice of who you play.
+      */}
+      <div className="flex flex-col justify-center gap-3" data-testid="puzzle-play-buttons">
+        <Link
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints })}`}
+          className={PLAY_BUTTON}
+          data-testid="puzzle-solve"
+        >
+          Play alone →
         </Link>
-        <span className="text-xs text-muted">Made in your browser, one answer, timed from your first entry.</span>
-      </div>
-
-      <fieldset className="flex flex-col gap-2 border-t border-rule pt-4">
-        <legend className={SECTION_TITLE}>
-          Race a friend <span className="font-mincho normal-case tracking-normal">競解</span>
-        </legend>
-        <p className="text-xs text-muted">
-          The same {sizeWord(size)} puzzle for two people, each with a clock the site keeps from their own Start. The
-          faster correct solve wins. You get a link to send; whoever opens it takes the other seat.
+        <button
+          type="button"
+          className={PLAY_BUTTON}
+          onClick={race}
+          disabled={!hasAccount || racing === "making"}
+          title={hasAccount ? undefined : "A race is between two members; this session has no account yet."}
+          data-testid="puzzle-race"
+        >
+          {racing === "making" ? "Making the race…" : "Play a friend →"}
+        </button>
+      {!hasAccount ? (
+        <p className="text-xs text-muted" data-testid="puzzle-race-needs-account">
+          Playing a friend needs an account.
         </p>
-        <div className="flex flex-wrap items-center gap-3">
-          {hasAccount ? (
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2`} onClick={race} disabled={racing === "making"} data-testid="puzzle-race">
-              {racing === "making" ? "Making the race…" : `Race a friend at ${sizeWord(size)} →`}
-            </button>
-          ) : (
-            <span className="text-sm text-muted" data-testid="puzzle-race-needs-account">
-              A race is between two members, and this session has no account yet.
-            </span>
-          )}
-          {racing !== "" && racing !== "making" ? <span className="text-sm text-shu">{racing}</span> : null}
-        </div>
-      </fieldset>
+      ) : null}
+      {racing !== "" && racing !== "making" ? <span className="text-sm text-shu">{racing}</span> : null}
+      </div>
+      </div>
     </section>
   );
 }

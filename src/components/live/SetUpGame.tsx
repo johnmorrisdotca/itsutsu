@@ -10,7 +10,6 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
-import { SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
 import { HeadStartChoice } from "./HeadStartChoice";
@@ -320,7 +319,7 @@ export function SetUpGame({
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="set-up-game" {...readyMark(ready)}>
-      <SectionTitle kanji="準備">Set up the game</SectionTitle>
+      {/* No heading of its own: the page's "Set up a game" is right above it (John, 2026-09-25: "we repeat 'Set up the Game' twice"). */}
       <SetUpNotices
         problem={problem}
         again={again}

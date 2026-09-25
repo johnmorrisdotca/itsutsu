@@ -41,7 +41,7 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={rulesPath(kind)} className="text-muted underline-offset-2 hover:underline">rules</Link>
           <Link href={myGamePath(kind)} className="text-muted underline-offset-2 hover:underline">your solves</Link>
-          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">solve one</Link>
+          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">play one</Link>
         </p>
       </PageTitle>
       <Suspense fallback={null}>

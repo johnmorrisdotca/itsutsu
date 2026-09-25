@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/play
   const { slug } = await params;
   const puzzle = puzzleFor(slug);
   const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? "");
-  return { title: copy === null ? "Games" : `${puzzle !== null ? "Solve" : "Play"} ${copy.label}` };
+  return { title: copy === null ? "Games" : `Play ${copy.label}` };
 }
 
 /**

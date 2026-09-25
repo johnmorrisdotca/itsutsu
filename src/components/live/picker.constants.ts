@@ -106,12 +106,13 @@ export const PICK_CHIP =
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
 
 /**
- * A choice with words and no picture — a puzzle's level — in the families' ink
- * when chosen. Not a tile: there is no picture to hold, and a 116px box round
+ * A choice with words and no picture — a puzzle's level, checks, hints — in
+ * the families' ink when chosen. A third of the row on a phone, so three fit
+ * on one line; 7rem from 640px. Not a tile: there is no picture to hold, and a 116px box round
  * "Easy" would be most of a screen of paper on a phone.
  */
 export const PICK_WORD_CHIP =
-  "flex min-h-11 w-28 flex-col items-center justify-center rounded-xl border px-1 py-1.5 text-center text-xs leading-tight transition-colors" +
+  "flex min-h-11 w-full flex-col items-center justify-center rounded-xl border px-1 py-1.5 text-center text-xs leading-tight transition-colors sm:w-28" +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
   " disabled:cursor-not-allowed disabled:opacity-50";
 

@@ -50,6 +50,7 @@ test.describe("a race at a puzzle", () => {
     await ready(host, "puzzle-set-up");
     await host.locator('[data-testid="set-up-size"][data-size="4"]').click();
     await host.getByTestId("puzzle-level-easy").click();
+    // Play a friend (John, 2026-09-25: "should be Play Alone and Play a Friend").
     await host.getByTestId("puzzle-race").click();
     await expect(host).toHaveURL(new RegExp(`${AT}/match/[a-z0-9]{4}-[a-z0-9]{4}$`));
     await ready(host, "race-controls");
@@ -98,6 +99,7 @@ test.describe("a race at a puzzle", () => {
     await host.goto(`${AT}/new`);
     await ready(host, "puzzle-set-up");
     await host.locator('[data-testid="set-up-size"][data-size="4"]').click();
+    // Play a friend (John, 2026-09-25: "should be Play Alone and Play a Friend").
     await host.getByTestId("puzzle-race").click();
     await expect(host).toHaveURL(new RegExp(`${AT}/match/[a-z0-9-]+$`));
     const id = host.url().split("/match/")[1];

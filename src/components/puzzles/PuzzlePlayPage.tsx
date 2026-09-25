@@ -40,7 +40,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
           <Link href={setUpPath(kind)} className="underline-offset-2 hover:underline">
             Set up
           </Link>{" "}
-          / Solve
+          / Play
         </p>
       </nav>
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">

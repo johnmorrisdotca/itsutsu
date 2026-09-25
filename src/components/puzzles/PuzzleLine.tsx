@@ -22,11 +22,11 @@ export function PuzzleLine({ kind, signedIn }: { kind: PuzzleKind; signedIn: boo
       <span className={`${STAT_CHIP} text-muted`}>A puzzle for one, solved in your browser.</span>
       {signedIn ? (
         <Link href={setUpPath(kind)} className={STAT_LINK} data-testid="puzzle-line-solve">
-          Solve one →
+          Play one →
         </Link>
       ) : (
         <Link href="/join" className={STAT_LINK} data-testid="puzzle-line-join">
-          Join to solve one →
+          Join to play one →
         </Link>
       )}
     </div>
