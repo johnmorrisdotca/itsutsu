@@ -151,6 +151,21 @@ const EXCEPTIONS: Record<string, { calls: number; reason: string }> = {
     calls: 2,
     reason: "integer counts with an explicit en-US locale, in a server component",
   },
+  /*
+   * The feed's two, both in server components that no client component
+   * imports. The points are an integer with an explicit en-US locale, as
+   * MyXp. The day heading is not a moment: it is a day key the server already
+   * worked out in the reader's own zone, written out at noon UTC with the zone
+   * pinned to UTC, so it is the same date wherever it is drawn.
+   */
+  "src/components/feed/FeedLine.tsx": {
+    calls: 1,
+    reason: "an XP total: an integer with an explicit en-US locale, in a server component, as MyXp",
+  },
+  "src/components/feed/FeedList.tsx": {
+    calls: 1,
+    reason: "a day heading from a day key, formatted with the zone pinned to UTC, in a server component",
+  },
 };
 
 describe("a moment is never formatted in a render the server also draws", () => {

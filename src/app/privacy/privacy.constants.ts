@@ -36,7 +36,7 @@ export const PRIVACY_TITLE = { en: "Privacy", kanji: "プライバシー" } as c
 export const PRIVACY_SUBTITLE = "What Itsutsu keeps about you, who can see it, and how to have it removed.";
 
 /** The day the page last changed, moved by whoever changes a sentence. */
-export const PRIVACY_CHANGED = "2026-09-24";
+export const PRIVACY_CHANGED = "2026-09-25";
 
 export const CONTACT = "hello@itsutsu.com";
 
@@ -92,6 +92,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
       paragraphs: [
         "Strangers, with no invite: the games and their rules, the About, Learn and thanks pages, and this page. Nothing about a member reaches them, except the thanks page, which names the beta testers who asked to be thanked in public.",
         "Members: your name and the level beside it, your record, your ratings and where you stand, and the games you have played, because every game here is a page any member can open, while it is played and after, with its moves and the reactions on it. If you filled them in, your city, country, time zone and the words about yourself, and, if you allow it, whether you are here now. Your email address is shown to nobody: not your opponent, not on your page, nowhere.",
+        "The members who keep you as a buddy: on their feed, the games you start and finish, the experience you earn a day at a time, the levels you reach, and how many puzzles of each kind you solved on a day. A game you hid from your own list is not followed into their feed. The feed's Everyone tab shows only finished games in which every player is a computer player or has said they are 18 or over, so nothing about a member under 18, or one who has not said, is ever on it.",
         "The person you write to: a direct message is shown to them and to you. Nothing on the site shows it to anyone else, and the operator does not read messages except when one is reported.",
         "Another site, if the operator gives it a token: an embedded view shows a game or a player's summary, read-only, as a member would see it, and nothing more.",
         "The operator, who runs the site: your email address, your invite code, when you were here, and the problems you report. The operator can shut an account, restore it, rename it, set new words for a member who has lost theirs or open the picker so they can choose, attach a record kept under a name nobody had an account for to the member it belongs to, set a member's age band and record a parent's consent for a family by hand, and remove an account when it is asked for. Every such act is logged with who did it, to whom, when and what changed, never the words themselves and never a parent's name. Nobody at the site can sign in as you: there is no such door.",

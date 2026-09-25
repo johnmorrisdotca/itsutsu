@@ -120,6 +120,17 @@ describe("the paths that stay open", () => {
     }
   });
 
+  /*
+   * The feed names members — the reader's buddies, and the adults whose games
+   * finished lately — so it is behind the gate with the players and the
+   * ladders: John, 2026-09-22, a visitor with no invite sees games, never people.
+   */
+  it("holds the feed shut", () => {
+    for (const path of ["/feed"]) {
+      expect(wouldBeOpen(path), `${path} names members and should need a session`).toBe(false);
+    }
+  });
+
   /**
    * READING IS OPEN, PLAYING IS GATED — and this is where the line falls under
    * a game. It is the assertion a prefix entry for "/games" would have wiped
