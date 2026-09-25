@@ -382,7 +382,8 @@ describe("the families a win can complete", () => {
     // of one game would have to move it.
     const winnable = GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null);
     expect(winnable).toHaveLength(GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).length);
-    expect(winnable.length).toBe(GAME_FAMILIES.length - 1);
+    // Numbers and Other are families of puzzles, which are solved and never won.
+    expect(winnable.length).toBe(GAME_FAMILIES.length - 2);
   });
 });
 
@@ -400,7 +401,8 @@ describe("the tour covers the site", () => {
     // The puzzles count: "every game played" means every puzzle solved too.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
     expect(XP_VARIANTS_TO_PLAY).toBe(45 + PUZZLE_KIND_LIST.length);
-    expect(GAME_FAMILIES.length).toBe(8);
+    // Nine since Other opened with WordDrop on 2026-09-25.
+    expect(GAME_FAMILIES.length).toBe(9);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {

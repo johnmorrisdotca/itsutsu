@@ -76,8 +76,9 @@ describe("every puzzle is finished, not just declared", () => {
         const puzzle = make(size, level, 5);
         const took = performance.now() - started;
         expect(took, `${kind} ${size}×${size} ${level} took ${Math.round(took)} ms to make`).toBeLessThan(3000);
-        // At least the cells; More or Less writes its marks after them, within the kind's cap.
-        expect(puzzle.givens.length).toBeGreaterThanOrEqual(size * size);
+        // At least the cells; More or Less writes its marks after them, within the kind's cap. A WordDrop's
+        // givens are its one word, whose length is its size: a word has letters, not a square of cells.
+        expect(puzzle.givens.length).toBeGreaterThanOrEqual(kind === "wordDrop" ? size : size * size);
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
         expect(checkSolution(kind, size, puzzle.givens, puzzle.solution), `${kind} ${size} ${level}`).toEqual({ ok: true });
         expect(make(size, level, 5), "the same seed must make the same puzzle").toEqual(puzzle);

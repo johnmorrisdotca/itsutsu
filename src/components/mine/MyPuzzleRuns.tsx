@@ -54,7 +54,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
               <GameThumb variant={kind} size="small" />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5 text-sm">
                 <span className="font-medium">
-                  <GameName variant={kind} /> · {sizeWord(run.size)} · {PUZZLE_LEVEL_DISPLAY[level].label}
+                  <GameName variant={kind} /> · {sizeWord(run.size, kind)} · {PUZZLE_LEVEL_DISPLAY[level].label}
                 </span>
                 <span className="text-xs text-muted">
                   {clockText(run.elapsedMs)} so far

@@ -15,6 +15,13 @@ export type GameFamily = {
    * (`GameKey`); a family of puzzles is a family like the rest.
    */
   games: GameKey[];
+  /**
+   * Why this family is left off the set-up screen's row, when it is. Its
+   * games are still on every other page that lists games; only the chooser
+   * where a game is started leaves it out. A reason, not a flag, so the
+   * exception says itself wherever it is read.
+   */
+  notOnSetUp?: string;
 };
 
 /** A shelf a game is also shown on, by the family's key, and why it belongs there. */

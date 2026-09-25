@@ -39,7 +39,7 @@ export const SET_UP_FAMILIES: Family[] = GAME_FAMILIES.filter((family) => boardG
  * as links to their own set-up (`PuzzleShelf`), never as choices this screen
  * would try to make into a two-seat game.
  */
-export const PUZZLE_SHELVES: Family[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length === 0);
+export const PUZZLE_SHELVES: Family[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length === 0 && family.notOnSetUp === undefined);
 
 /** Every tile on the family row, in the site's order: the board families, then the puzzles. */
 export const ROW_FAMILIES: Family[] = [...SET_UP_FAMILIES, ...PUZZLE_SHELVES];

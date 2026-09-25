@@ -79,7 +79,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 </p>
               ) : null}
               <span className="text-xs text-muted">
-                {spec.offered.map(sizeWord).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
+                {spec.offered.map((side) => sizeWord(side, kind)).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
               </span>
             </div>
           </div>

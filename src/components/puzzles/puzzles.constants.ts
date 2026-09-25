@@ -1,3 +1,5 @@
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+
 /*
  * The look of a puzzle: the grid, its cells and the keys under it.
  *
@@ -74,9 +76,9 @@ export const PUZZLE_CLOCK = "font-mono text-lg tabular-nums";
 /** How often the clock is redrawn: once a second, in the browser, and never on a server. */
 export const PUZZLE_CLOCK_TICK_MS = 1000;
 
-/** What the set-up says about a size: the cells across, as the tile's word. */
-export function sizeWord(size: number): string {
-  return `${size}×${size}`;
+/** What a page says about a size: the cells across a grid, or the letters of a WordDrop word, which is not a square. */
+export function sizeWord(size: number, kind?: PuzzleKind): string {
+  return kind === "wordDrop" ? `${size} letters` : `${size}×${size}`;
 }
 
 /** The cages' dashed outlines, one drawing laid over the whole grid (Sum Cages). */
@@ -110,3 +112,36 @@ export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border
  * shape. It goes when the cell is changed (`useHints`).
  */
 export const PUZZLE_CELL_WRONG = "ring-2 ring-inset ring-shu bg-shu-soft/50";
+
+/*
+ * WORDDROP: letter tiles in rows, and a keyboard under them. A tile's colour
+ * says what its letter is to the hidden word — moss in its place, ochre in the
+ * word elsewhere, grey not in it — as the site's own colours rather than the
+ * published game's, and always with the letter written on it, so a reader who
+ * cannot tell the colours apart still reads the row by its tiles' borders and
+ * labels (`aria-label` says the mark in words).
+ */
+export const WORD_TILE =
+  "flex aspect-square items-center justify-center rounded-sm border-2 text-xl font-bold uppercase leading-none tabular-nums sm:text-2xl";
+export const WORD_TILE_EMPTY = "border-rule bg-white text-ink";
+export const WORD_TILE_TYPED = "border-ink-soft bg-white text-ink";
+export const WORD_TILE_MARK: Record<"hit" | "near" | "miss", string> = {
+  hit: "border-moss bg-moss text-ivory",
+  near: "border-ochre bg-ochre text-ivory",
+  miss: "border-muted bg-muted text-ivory",
+};
+
+/** The keyboard under the grid: three rows, each key a fingertip tall. */
+export const WORD_KEY =
+  "flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-md border border-rule-strong/80 text-sm font-semibold uppercase transition-colors focus-visible:ring-2 focus-visible:ring-moss disabled:opacity-40 sm:text-base";
+/**
+ * THE GRID'S WIDTH ON A PHONE. At 390×844 the site's header, the grid at full
+ * width and three rows of keys came to more than the screen, and Enter — the
+ * key every guess ends on — sat below the fold. Capped so the grid and the
+ * whole keyboard are on one phone screen; from a tablet up the grid takes the
+ * column like every puzzle's.
+ */
+export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
+
+/** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
+export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";

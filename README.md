@@ -143,6 +143,11 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 | **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5, 7×7, 9×9 and 10×10 (made at 6×6 and 8×8 too, not offered) | easy (reasoning alone finishes it), hard (a stone has to be tried) |
 | **Black and White** 白黒 | Takuzu / Binairo: half of each colour in every line, never three alike, no line repeated | 6×6, 8×8, 10×10, 12×12 | graded by what a person sees at a glance |
 
+**Other** その他 holds what is neither stones nor digits, kept off the set-up
+screen for now: **WordDrop** ワードドロップ, a hidden word of four or five letters
+found in five or six guesses, each coloured letter by letter. English words
+from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
+
 Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's
 page shows the fastest solves at each size and level (`/standings`) and a
 member their own (`/me`). Two members can race one grid (`PuzzleRace`, at

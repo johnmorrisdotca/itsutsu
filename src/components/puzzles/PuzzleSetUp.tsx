@@ -124,6 +124,9 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
           {PUZZLE_LEVEL_DISPLAY[level].blurb}
         </p>
+        {/* A puzzle that answers every move as it is made offers neither Check nor Hint (`PuzzleSpec.helps`). */}
+        {spec.helps === false ? null : (
+          <>
         {/*
           HOW MANY TIMES CHECK MAY BE PRESSED — see `PUZZLE_CHECK_ALLOWANCES` for
           why running out takes the help away rather than ending the puzzle. A
@@ -168,6 +171,8 @@ export function PuzzleSetUp({
             </button>
           ))}
         </div>
+          </>
+        )}
       </SetUpSection>
 
       {/*

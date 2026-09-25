@@ -149,7 +149,7 @@ export async function finishSeat(
 
   /* A race cannot pause, and its checks are bounded by the race's allowance whatever a browser says. */
   const spent = race.checksAllowed === null ? checksUsed : Math.min(checksUsed, race.checksAllowed);
-  await keepSolve({ memberId, kind, size: race.size, level, givens: race.givens, elapsedMs, raceId: id, checksAllowed: race.checksAllowed, checksUsed: spent, pausedMs: 0, hintsUsed: 0 });
+  await keepSolve({ memberId, kind, size: race.size, level, givens: race.givens, elapsedMs, raceId: id, checksAllowed: race.checksAllowed, checksUsed: spent, pausedMs: 0, hintsUsed: 0, answer });
   const paid = await awardXp({ memberId, awards: puzzleAwards(kind, race.size, race.givens), now });
   await awardTourBonuses({ memberId, paid, variant: kind, now });
 

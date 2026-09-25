@@ -59,9 +59,9 @@ describe("which family the picker opens on", () => {
 
 describe("what a click on a family chooses", () => {
   it("offers every family with a game two people can play, and only those", () => {
-    // Numbers holds puzzles for one; the set-up screen makes games between two.
+    // Numbers and Other hold puzzles for one; the set-up screen makes games between two.
     expect(SET_UP_FAMILIES.map((family) => family.key)).toEqual(
-      GAME_FAMILIES.filter((family) => family.key !== "numbers").map((family) => family.key),
+      GAME_FAMILIES.filter((family) => family.key !== "numbers" && family.key !== "other").map((family) => family.key),
     );
     expect(GAME_FAMILIES.some((family) => family.key === "numbers")).toBe(true);
   });
@@ -232,8 +232,13 @@ describe("what the set-up screen keeps room for", () => {
 const GROUPS_GAMES_BY_FAMILY = (source: string) => /<optgroup/.test(source) && /family\.(title|games|kanji)/.test(source);
 
 describe("every chooser shows the catalogue's families", () => {
-  it("the set-up screen's row is every family in GAME_FAMILIES, in its order", () => {
-    expect(ROW_FAMILIES.map((family) => family.title)).toEqual(GAME_FAMILIES.map((family) => family.title));
+  it("the set-up screen's row is every family in GAME_FAMILIES, in its order, but those kept off it with a reason", () => {
+    expect(ROW_FAMILIES.map((family) => family.title)).toEqual(
+      GAME_FAMILIES.filter((family) => family.notOnSetUp === undefined).map((family) => family.title),
+    );
+    for (const family of GAME_FAMILIES.filter((one) => one.notOnSetUp !== undefined)) {
+      expect(family.notOnSetUp!.length, `${family.title} is kept off the set-up screen without saying why`).toBeGreaterThan(20);
+    }
   });
 
   it("no component groups games into a dropdown of its own", () => {

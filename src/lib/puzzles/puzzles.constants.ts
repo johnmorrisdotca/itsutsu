@@ -32,6 +32,7 @@ export const PUZZLE_KINDS = {
   sumCages: "sumCages",
   towers: "towers",
   blackAndWhite: "blackAndWhite",
+  wordDrop: "wordDrop",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -44,6 +45,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.towers,
   PUZZLE_KINDS.hiddenStones,
   PUZZLE_KINDS.blackAndWhite,
+  PUZZLE_KINDS.wordDrop,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -105,6 +107,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   towers: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 77 },
   // Even sides only: a line holds as many black stones as white.
   blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
+  // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
+  wordDrop: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
 };
 
 /**
@@ -170,6 +174,10 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     8: { label: "Usual", kanji: "定番" },
     10: { label: "Long", kanji: "長" },
     12: { label: "Longest", kanji: "最長" },
+  },
+  wordDrop: {
+    4: { label: "Four letters", kanji: "四文字" },
+    5: { label: "Five letters", kanji: "五文字" },
   },
 };
 
@@ -311,5 +319,22 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Tap a cell once for black, again for white, again to clear it. The printed stones stay where they are, and every puzzle has exactly one answer.",
     ],
     board: "8×8 is the usual size. 6×6 is quick; 12×12 is an evening.",
+  },
+  wordDrop: {
+    label: "WordDrop",
+    kanji: "ワードドロップ",
+    tagline: "Find the hidden word. Each guess shows which of its letters are in the word, and which are in the right place.",
+    inspiredBy: "Wordle",
+    origin:
+      "Guessing a word from what each guess gives away is an old parlour game: Jotto (1955) counted the letters two words share, and the television game Lingo (1987) coloured each letter in its place or not. Josh Wardle's Wordle (2021) made the five-letter form a daily habit.",
+    rules: [
+      "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
+      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
+      "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
+      "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
+    ],
+    board:
+      "Five letters and six guesses is the game everybody knows. Four letters and five guesses is quicker, and not always easier: fewer letters give away less. Easy draws from the commonest words; medium and hard from a wider list, and hard adds its rule.",
   },
 };

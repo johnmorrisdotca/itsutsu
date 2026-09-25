@@ -4,7 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { checkSolution } from "@/lib/puzzles/puzzleCheck";
+import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
@@ -51,6 +51,12 @@ const bodySchema = z.object({
   hintsUsed: z.number().int().nonnegative().optional(),
   /** The grid's seed, so the unfinished run kept of it (if any) is taken off the member's games. */
   seed: z.number().int().optional(),
+  /**
+   * A word puzzle whose guesses ran out: ended, not solved. Checked as a solve
+   * is (`checkOutOfGuesses`), then its kept run comes off the member's games;
+   * nothing is kept of it and nothing is paid.
+   */
+  outOfGuesses: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -78,6 +84,13 @@ export async function POST(request: Request) {
     const checksUsed = parsed.data.checksUsed ?? 0;
     if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
 
+    if (parsed.data.outOfGuesses === true) {
+      const ended = checkOutOfGuesses(kind, size, givens, answer);
+      if (!ended.ok) return unprocessable(`Not over: ${ended.reason}.`);
+      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);
+      return NextResponse.json({ ok: true, points: 0, awards: [] }, { headers: NO_STORE });
+    }
+
     const verdict = checkSolution(kind, size, givens, answer);
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
 
@@ -96,6 +109,7 @@ export async function POST(request: Request) {
       checksUsed,
       pausedMs: parsed.data.pausedMs ?? 0,
       hintsUsed: parsed.data.hintsUsed ?? 0,
+      answer,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
     if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);
