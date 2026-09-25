@@ -5,7 +5,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { gamePath, matchPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { gamePath, matchPath, mySolvePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { racesOf, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
@@ -83,7 +83,9 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
               {solves.map((solve) => (
                 <tr key={solve.id} className="border-t border-rule" data-testid="puzzle-own-solve">
                   <td className="py-1 pr-2">
-                    {sizeWord(solve.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
+                    <Link href={mySolvePath(kind, solve.id)} className="underline-offset-2 hover:underline" data-testid="puzzle-own-solve-open">
+                      {sizeWord(solve.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
+                    </Link>
                     {solve.raceId !== null ? (
                       <Link href={matchPath(kind, solve.raceId)} className="ml-2 text-xs underline-offset-2 hover:underline">
                         in a race

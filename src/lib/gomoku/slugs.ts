@@ -147,6 +147,11 @@ export function myGamePath(variant: string): string {
   return `${gamePath(variant)}/me`;
 }
 
+/** One of the reader's own finished puzzles, under their solves of it: the grid as it ended, and how. */
+export function mySolvePath(kind: string, solveId: string): string {
+  return `${myGamePath(kind)}/${solveId}`;
+}
+
 /** /games/<slug>/standings — this game's own ladder, in full. */
 export function standingsPath(variant: string): string {
   return `${gamePath(variant)}/standings`;

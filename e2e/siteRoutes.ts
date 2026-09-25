@@ -3,7 +3,9 @@ import { join } from "node:path";
 
 import { expect, type PlaywrightWorkerArgs } from "@playwright/test";
 
-import { ensureMember, memberIdFor, removeMember } from "./members";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { ensureMember, memberIdFor, newestSolveOf, removeMember } from "./members";
+import { suiteOperator } from "./operator";
 
 /**
  * EVERY PAGE THE SITE SERVES, listed once, with the address each is measured at.
@@ -22,7 +24,7 @@ import { ensureMember, memberIdFor, removeMember } from "./members";
  */
 
 /** Ids the specs make before a run. */
-export type MadeRows = { filed: string; live: string; member: string };
+export type MadeRows = { filed: string; live: string; member: string; solve: string };
 
 /**
  * Where a route is measured: the address, plus any other views of the same
@@ -47,6 +49,7 @@ export const ROUTES: Record<string, Route> = {
   "/games/[slug]/family": { url: () => "/games/hex/family", also: ["/games/number-place/family"] },
   "/games/[slug]/history": { url: () => "/games/gomoku/history" },
   "/games/[slug]/match/[id]": { url: (made) => `/games/gomoku/match/${made.live}` },
+  "/games/[slug]/me/[solveId]": { url: (made) => `/games/number-place/me/${made.solve}` },
   "/games/[slug]/match/[id]/[move]": { url: (made) => `/games/gomoku/match/${made.filed}/5` },
   "/games/[slug]/me": { url: () => "/games/gomoku/me", also: ["/games/number-place/me"] },
   "/games/[slug]/new": { url: () => "/games/gomoku/new", also: ["/games/number-place/new"] },
@@ -156,9 +159,15 @@ export async function seedRouteRows(
   });
   expect(live.status()).toBe(201);
   const liveId = track(((await live.json()) as { id: string }).id);
+  // A finished puzzle of the operator's own, handed in through the site as a solver's browser does.
+  const puzzle = generatePuzzle("numberPlace", 4, "easy", 424242);
+  const solved = await request.post("/api/puzzles/solved", {
+    data: { kind: "numberPlace", size: 4, level: "easy", seed: 424242, givens: puzzle.givens, answer: puzzle.solution, elapsedMs: 42_000 },
+  });
+  expect(solved.ok()).toBe(true);
   await request.dispose();
   await ensureMember(member);
-  return { filed: filedId, live: liveId, member: await memberIdFor(member.email) };
+  return { filed: filedId, live: liveId, member: await memberIdFor(member.email), solve: await newestSolveOf(suiteOperator().email, "numberPlace") };
 }
 
 /** Takes the member away; the games go with the spec's tidy. */

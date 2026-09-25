@@ -5,7 +5,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { sizeWord } from "@/components/puzzles/puzzles.constants";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, STRETCHED_HOST } from "@/components/ui/ui.constants";
-import { myGamePath } from "@/lib/gomoku/slugs";
+import { mySolvePath } from "@/lib/gomoku/slugs";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { clockText } from "@/lib/puzzles/clockText";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -55,7 +55,14 @@ export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: 
           const help = helpWords(solve);
           return (
             <li key={solve.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-solved" data-kind={solve.kind} data-solved={solve.solved ? "true" : "false"}>
-              <Link href={myGamePath(solve.kind)} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Your solves of ${solve.kind}`} />
+              {/* The row opens the puzzle itself, finished as it was (`PuzzleSolvePage`), not the list it is one of. */}
+              <Link
+                href={mySolvePath(solve.kind, solve.id)}
+                data-card-link=""
+                className="absolute inset-0 rounded-lg"
+                aria-label={`Your ${solve.kind} of ${solve.finishedAt.toISOString().slice(0, 10)}, as it ended`}
+                data-testid="puzzle-solved-open"
+              />
               <GameThumb variant={solve.kind} size="small" />
               <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
                 <span className="truncate font-medium">

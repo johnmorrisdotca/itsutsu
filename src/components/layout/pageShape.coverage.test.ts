@@ -55,6 +55,7 @@ const TITLE_DRAWN_BY: Record<string, { by: string; reason: string }> = {
     by: "src/app/games/[slug]/match/[id]/FiledMatchPage.tsx",
     reason: "one move of a finished game, the same page",
   },
+  "/games/[slug]/me/[solveId]": { by: "src/components/puzzles/PuzzleSolvePage.tsx", reason: "one of the reader's own finished puzzles, titled by the puzzle" },
 };
 
 /** An h2 that is neither a section heading nor a panel's label, and what it is instead. */

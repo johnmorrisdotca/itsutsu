@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { setUpPath } from "@/lib/gomoku/slugs";
+import { mySolvePath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -64,9 +64,9 @@ function WordRow({ word, kind }: { word: OwnWord; kind: "wordDrop" | "wordDropKa
   return (
     <li className="flex flex-col gap-2 py-2" data-testid="word-history-row" data-solved={word.solved ? "true" : "false"}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="font-semibold tracking-wide uppercase" data-testid="word-history-word">
+        <Link href={mySolvePath(kind, word.id)} className="font-semibold tracking-wide uppercase underline-offset-2 hover:underline" data-testid="word-history-word">
           {hidden}
-        </span>
+        </Link>
         <span className={`text-xs ${word.solved ? "text-moss" : "text-muted"}`}>{outcome}</span>
         <span className="text-xs text-muted">
           {PUZZLE_LEVEL_DISPLAY[word.level as PuzzleLevel]?.label ?? word.level} · {clockText(word.elapsedMs)} · {word.finishedAt.toISOString().slice(0, 10)}

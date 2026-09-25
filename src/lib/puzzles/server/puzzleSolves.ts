@@ -30,7 +30,7 @@ export type KeptSolve = {
   pausedMs: number;
   /** How many times Hint was pressed; a race allows none. */
   hintsUsed: number;
-  /** The answer handed in, which a word puzzle's points are read from (`pointsFor`); kept for a WordDrop only. */
+  /** The answer handed in, which a word puzzle's points are read from (`pointsFor`), kept so the finished puzzle can be opened again. */
   answer?: string;
   /** False for a word puzzle whose guesses ran out: kept for what it found, never counted as a solve. */
   solved?: boolean;
@@ -42,7 +42,7 @@ export async function keepSolve(solve: KeptSolve): Promise<void> {
     const { answer, solved = true, ...kept } = solve;
     const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs);
     await prisma.puzzleSolve.create({
-      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: solve.kind === "wordDrop" ? (answer ?? null) : null },
+      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null },
     });
   } catch (problem) {
     /* The solve has already been checked and paid; a row that could not be
@@ -143,4 +143,42 @@ export async function ownWordsOf(memberId: string, kind: "wordDrop" | "wordDropK
     prisma.puzzleSolve.count({ where: { memberId, kind } }),
   ]);
   return { words, total };
+}
+
+/** One finished puzzle, found or not, for the page that opens it again. */
+export type FinishedSolve = {
+  id: string;
+  kind: string;
+  size: number;
+  level: string;
+  givens: string;
+  answer: string | null;
+  solved: boolean;
+  points: number;
+  elapsedMs: number;
+  checksAllowed: number | null;
+  checksUsed: number | null;
+  hintsUsed: number | null;
+  raceId: string | null;
+  finishedAt: Date;
+};
+
+/**
+ * One of a member's own finished puzzles of a kind, or null — for somebody
+ * else's solve as for none at all, so an address cannot tell a stranger that
+ * a solve exists. One read on the primary key.
+ */
+export async function ownSolveOf(memberId: string, kind: PuzzleKind, id: string): Promise<FinishedSolve | null> {
+  const row = await prisma.puzzleSolve.findUnique({
+    where: { id },
+    select: {
+      id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, solved: true, points: true,
+      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true,
+    },
+  });
+  if (row === null || row.memberId !== memberId || row.kind !== kind) return null;
+  return {
+    id: row.id, kind: row.kind, size: row.size, level: row.level, givens: row.givens, answer: row.answer, solved: row.solved, points: row.points,
+    elapsedMs: row.elapsedMs, checksAllowed: row.checksAllowed, checksUsed: row.checksUsed, hintsUsed: row.hintsUsed, raceId: row.raceId, finishedAt: row.finishedAt,
+  };
 }

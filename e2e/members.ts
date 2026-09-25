@@ -711,3 +711,22 @@ export async function memberIdFor(email: string): Promise<string> {
     await prisma.$disconnect();
   }
 }
+
+/**
+ * The newest finished puzzle of a kind that a member has, by their email: the
+ * solve a spec has just handed in through the site, read back for its id,
+ * which the solved route does not answer with. The same bargain as above.
+ */
+export async function newestSolveOf(email: string, kind: string): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const member = await prisma.member.findUnique({ where: { email }, select: { id: true } });
+    if (member === null) throw new Error(`no member ${email}: seed them first`);
+    const row = await prisma.puzzleSolve.findFirst({ where: { memberId: member.id, kind }, orderBy: { finishedAt: "desc" }, select: { id: true } });
+    if (row === null) throw new Error(`${email} has no ${kind} solve`);
+    return row.id;
+  } finally {
+    await prisma.$disconnect();
+  }
+}

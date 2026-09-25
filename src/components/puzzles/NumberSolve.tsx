@@ -2,12 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { decodeJigsaw } from "@/lib/puzzles/jigsaw/code";
-import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
-import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
+import { readNumberGivens } from "@/lib/puzzles/numberGivens";
 import { decodeCells, encodeCells, symbolOf, valueOfSymbol } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { decodeTowers, type TowerClues } from "@/lib/puzzles/towers/code";
 import { stepEntry } from "@/lib/puzzles/stepEntry";
 import { decodeNumberProgress, encodeNumberProgress } from "@/lib/puzzles/puzzleProgress";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
@@ -54,26 +51,7 @@ export function NumberSolve({
   const { kind, size, seed } = puzzle;
   // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions, a Towers the cells
   // and then its clues; the rest are the cells alone.
-  const asked = useMemo<{ cells: number[]; marks: Mark[]; regions: number[] | null; cages: Cage[] | null; clues: TowerClues | null }>(() => {
-    const plain = { marks: [], regions: null, cages: null, clues: null };
-    if (kind === "moreOrLess") {
-      const read = decodeMoreOrLess(puzzle.givens, size);
-      return { ...plain, cells: read?.cells ?? [], marks: read?.marks ?? [] };
-    }
-    if (kind === "sumCages") {
-      const read = decodeKiller(puzzle.givens, size);
-      return { ...plain, cells: read?.cells ?? [], cages: read?.cages ?? null };
-    }
-    if (kind === "jigsaw") {
-      const read = decodeJigsaw(puzzle.givens, size);
-      return { ...plain, cells: read?.cells ?? [], regions: read?.regions ?? null };
-    }
-    if (kind === "towers") {
-      const read = decodeTowers(puzzle.givens, size);
-      return { ...plain, cells: read?.cells ?? [], clues: read?.clues ?? null };
-    }
-    return { ...plain, cells: decodeCells(puzzle.givens, size) ?? [] };
-  }, [kind, puzzle.givens, size]);
+  const asked = useMemo(() => readNumberGivens(kind, puzzle.givens, size), [kind, puzzle.givens, size]);
   const givens = asked.cells;
   const solution = useMemo(() => decodeCells(puzzle.solution, size) ?? [], [puzzle.solution, size]);
   const [entries, setEntries] = useState<number[]>(

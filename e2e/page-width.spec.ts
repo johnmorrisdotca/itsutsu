@@ -53,7 +53,7 @@ const MAX_W_PX: Record<string, number> = {
 const FRAME_PX = MAX_W_PX[PAGE_WIDTH] ?? Number.NaN;
 
 /** Ids this file makes before the run, filled in `beforeAll` — in place, since the route closures hold this object. */
-const made: MadeRows = { filed: "", live: "", member: "" };
+const made: MadeRows = { filed: "", live: "", member: "", solve: "" };
 
 /*
  * A member of this run's own, by a stamp: two runs on one database (another
