@@ -86,7 +86,18 @@ export const MY_GAMES_COPY = {
   cancelConfirm: "Call off this game? Nothing has been played, so nobody wins and no rating moves.",
   localGame: { label: "Your game", kanji: "続き" },
   /** The puzzles a member started and left unfinished, kept on the account (`MyPuzzleRuns`). */
-  puzzlesGoing: { label: "Puzzles going", kanji: "解きかけ" },
+  puzzlesGoing: {
+    label: "Puzzles going",
+    kanji: "解きかけ",
+    hint: "Left part way, kept where you left them. Open one to carry on.",
+  },
+  /** The puzzles solved, with what each was worth: John, 2026-09-25, "where will the completed puzzles go… where are the scores?!" */
+  puzzlesSolved: {
+    label: "Puzzles solved",
+    kanji: "解いた",
+    hint: "Newest first, each with its points on the leaderboard, its time and the help it took.",
+    empty: "Nothing solved yet.",
+  },
   openBoard: {
     label: "Open seats",
     kanji: "対局募集",
@@ -464,3 +475,10 @@ export const REMOVE_COPY = {
   press: "Remove my account",
   cancel: "Keep my account",
 } as const;
+
+/**
+ * A puzzle's row on /play, in the game rows' own card (`MyGameRow`): a bordered
+ * card the whole of which opens, with its thumbnail, a name line and a line of
+ * detail, so the Puzzles tab reads like the rest of the page.
+ */
+export const MY_PUZZLE_ROW = "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule px-3 py-2 text-sm";

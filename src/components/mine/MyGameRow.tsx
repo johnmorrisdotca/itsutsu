@@ -31,8 +31,8 @@ function tagOf(tags: ReadonlyMap<string, NameTag>, memberId: string | null): Nam
   return memberId === null ? undefined : tags.get(memberId);
 }
 
-/** "3 days ago", the way a list of games reads it. */
-function ago(iso: string, now: Date): string {
+/** "3 days ago", the way a list of games reads it, and a list of puzzles solved. */
+export function ago(iso: string, now: Date): string {
   const minutes = Math.max(0, Math.round((now.getTime() - new Date(iso).getTime()) / 60_000));
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;

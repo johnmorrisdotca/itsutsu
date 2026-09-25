@@ -19,6 +19,8 @@ import { BotCatchUp } from "./BotCatchUp";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { Group } from "./MyGamesGroup";
 import { MyPuzzleRuns } from "./MyPuzzleRuns";
+import { MyPuzzleSolves } from "./MyPuzzleSolves";
+import { mySolvesPage } from "@/lib/puzzles/server/mySolves";
 import { SEATED_ONLY } from "@/lib/history/myFinished";
 import { SeatedNarrowing } from "./SeatedNarrowing";
 
@@ -341,7 +343,13 @@ export async function MyGamesList({
           {panel("hotSeat", MY_GAMES_COPY.empty.passAndPlay)}
         </>
       ) : null}
-      {view === "puzzles" ? <MyPuzzleRuns runs={runs} /> : null}
+      {view === "puzzles" ? (
+        <>
+          <MyPuzzleRuns runs={runs} />
+          {/* Read only on this tab, a page at a time: the cursor, which names the finished games' page on Completed, names the solves' page here. */}
+          {memberId === null ? null : <MyPuzzleSolves page={await mySolvesPage(memberId, cursor)} now={now} paged={cursor !== null} />}
+        </>
+      ) : null}
     </section>
   );
 }

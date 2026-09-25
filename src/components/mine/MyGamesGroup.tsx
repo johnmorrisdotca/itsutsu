@@ -1,4 +1,3 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -7,6 +6,7 @@ import { viewHref, viewOfGroup } from "@/lib/history/myGamesViews";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
 import { playerPath } from "@/lib/rating/playerKey";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { GroupHeading } from "./GroupHeading";
 import { Row } from "./MyGameRow";
 
 /**
@@ -55,20 +55,14 @@ export function Group({
   const copy = MY_GAMES_COPY.groups[group];
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={`my-games-${group}`}>
-      <h3 className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
-        {/* The number first and large; "· showing 5" after it in the same run of text, which is what a spec reads. */}
-        <span className="text-sm font-normal tracking-normal normal-case" data-testid={`my-games-${group}-count`}>
-          <span
-            className={`inline-flex min-w-8 items-center justify-center rounded-full px-2.5 py-0.5 text-lg font-semibold tabular-nums ${
-              bucket.total > 0 && (group === "yourMove" || group === "offered") ? "bg-moss text-paper" : bucket.total > 0 ? "bg-ink text-paper" : "bg-rule/70 text-muted"
-            }`}
-          >
-            {bucket.total}
-          </span>
-          {bucket.hidden > 0 ? <> {MY_GAMES_COPY.showing(bucket.items.length)}</> : null}
-        </span>
-      </h3>
+      <GroupHeading
+        label={copy.label}
+        kanji={copy.kanji}
+        total={bucket.total}
+        showing={bucket.hidden > 0 ? bucket.items.length : null}
+        waiting={group === "yourMove" || group === "offered"}
+        testId={`my-games-${group}`}
+      />
       <p className="text-xs text-muted">{copy.hint}</p>
       {bucket.total === 0 && empty !== null ? (
         <p className="text-sm text-muted" data-testid={`my-games-${group}-empty`}>
