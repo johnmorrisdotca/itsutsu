@@ -4,10 +4,11 @@ import { useEffect, useEffectEvent, useState } from "react";
 
 import { Button } from "@/components/ui/Controls";
 
-import { REPLAY_BUTTONS, REPLAY_STEP_MS } from "./replay.constants";
+import { REPLAY_BUTTONS, REPLAY_GLYPHS, REPLAY_STEP_MS } from "./replay.constants";
 
 /**
- * FIRST, BACK, PLAY, FORWARD, LAST: the buttons under a scrubber.
+ * FIRST, BACK, PLAY, FORWARD, LAST: the buttons under a scrubber, on one line
+ * always — arrows for the four that step, Play in words (`REPLAY_GLYPHS`).
  *
  * John, 2026-09-24: "we might want a first and last and autoplay, if it can be
  * done elegantly." A finished game's replay had four of them and no Play; a
@@ -64,21 +65,21 @@ export function ReplayButtons({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button onClick={() => go(0)} disabled={index === 0} data-testid={`${testId}-start`}>
-        {REPLAY_BUTTONS.start}
+    <div className="flex flex-nowrap items-center gap-1.5" data-testid={`${testId}-buttons`}>
+      <Button onClick={() => go(0)} disabled={index === 0} aria-label={REPLAY_BUTTONS.start} title={REPLAY_BUTTONS.start} data-testid={`${testId}-start`}>
+        {REPLAY_GLYPHS.start}
       </Button>
-      <Button onClick={() => go(index - 1)} disabled={index === 0} data-testid={`${testId}-back`}>
-        {REPLAY_BUTTONS.back}
+      <Button onClick={() => go(index - 1)} disabled={index === 0} aria-label={REPLAY_BUTTONS.back} title={REPLAY_BUTTONS.back} data-testid={`${testId}-back`}>
+        {REPLAY_GLYPHS.back}
       </Button>
       <Button onClick={toggle} disabled={last === 0} strong={running} data-testid={`${testId}-play`}>
         {running ? REPLAY_BUTTONS.pause : REPLAY_BUTTONS.play}
       </Button>
-      <Button onClick={() => go(index + 1)} disabled={index >= last} data-testid={`${testId}-forward`}>
-        {REPLAY_BUTTONS.forward}
+      <Button onClick={() => go(index + 1)} disabled={index >= last} aria-label={REPLAY_BUTTONS.forward} title={REPLAY_BUTTONS.forward} data-testid={`${testId}-forward`}>
+        {REPLAY_GLYPHS.forward}
       </Button>
-      <Button onClick={() => go(last)} disabled={index >= last} data-testid={`${testId}-end`}>
-        {REPLAY_BUTTONS.end}
+      <Button onClick={() => go(last)} disabled={index >= last} aria-label={REPLAY_BUTTONS.end} title={REPLAY_BUTTONS.end} data-testid={`${testId}-end`}>
+        {REPLAY_GLYPHS.end}
       </Button>
     </div>
   );

@@ -38,7 +38,7 @@ export function Button({
    * spells the attribute in one place; this only has to let it through the
    * props rather than swallow it as unknown.
    */
-} & { "data-testid"?: string; "data-ready"?: string }) {
+} & { "data-testid"?: string; "data-ready"?: string; "aria-label"?: string }) {
   return (
     <button
       type="button"

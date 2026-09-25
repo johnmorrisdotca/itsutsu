@@ -4,7 +4,7 @@ import { ReplayButtons } from "./ReplayButtons";
 
 /**
  * THE SCRUBBER UNDER A RECORD: a slider from the empty board to the last move,
- * and Start, Back, Play, Forward and End beside it (`ReplayButtons`). One
+ * and Start, Back, Play, Forward and End under it, on one line (`ReplayButtons`). One
  * component, so a finished game's replay (`GameReplay`) and a famous game's
  * (`FamousReplay`) step through a record the same way, with the same keys and
  * the same look — a second slider written for the second page is how two
