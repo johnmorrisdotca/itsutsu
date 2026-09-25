@@ -93,6 +93,23 @@ test.describe("the word puzzle", () => {
       await page.keyboard.type(puzzle.solution);
       await page.keyboard.press("Enter");
       await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    // The game over, its board stays with its keyboard, and the scrubber replays it guess by guess (John: "the ability
+    // to see the keyboard even after the game… replay the words chosen, with the keyboard visible").
+    const replay = page.getByTestId("word-replay");
+    await expect(replay).toHaveAttribute("data-last", "2");
+    await expect(replay.getByTestId("word-keyboard")).toBeVisible();
+    await expect(replay.getByTestId("word-keyboard")).toHaveAttribute("data-read-only", "true");
+    await page.getByTestId("word-replay-start").click();
+    await expect(replay).toHaveAttribute("data-at", "0");
+    await expect(replay.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("data-mark", "empty");
+    await expect(replay.locator('[data-testid^="word-key-"][data-mark]:not([data-mark=""])')).toHaveCount(0);
+    await page.getByTestId("word-replay-forward").click();
+    await expect(replay).toHaveAttribute("data-at", "1");
+    for (const [at, mark] of expected.entries()) {
+      await expect(replay.locator('[data-testid="word-tile"][data-row="0"]').nth(at)).toHaveAttribute("data-mark", mark);
+      if (mark !== "miss") await expect(replay.getByTestId(`word-key-${miss![at]}`)).toHaveAttribute("data-mark", /hit|near/);
+    }
+    await expect(replay.locator('[data-testid="word-tile"][data-row="1"]').first()).toHaveAttribute("data-mark", "empty");
     // Found: the word's own points on top of every letter placed, so never less than a word lost can make.
     expect(Number(await page.getByTestId("word-score").getAttribute("data-total"))).toBeGreaterThanOrEqual(300);
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid/);

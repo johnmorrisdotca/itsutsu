@@ -61,4 +61,7 @@ test("a word not found opens from Your words with its guesses on the grid", asyn
   await expect(page.getByTestId("solve-word")).toHaveText(puzzle.solution.toUpperCase());
   await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("aria-label", new RegExp(`^${wrong[0]![0]!.toUpperCase()}, `));
   await expect(page.locator('[data-testid="word-tile"][data-row="4"]').first()).not.toHaveAttribute("data-mark", "empty");
+  // Replayable here too, with its keyboard.
+  await expect(page.getByTestId("word-replay")).toHaveAttribute("data-last", "5");
+  await expect(page.getByTestId("word-keyboard")).toBeVisible();
 });

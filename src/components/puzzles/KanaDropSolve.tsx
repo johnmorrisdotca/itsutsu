@@ -10,28 +10,23 @@ import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProg
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
 import { breaksKanaHardRule, decodeKanaGivens, KANA_ROWS, toHiragana } from "@/lib/puzzles/wordDropKana/kanaCode";
-import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMark, type KanaMarked } from "@/lib/puzzles/wordDropKana/kanaMarks";
+import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from "@/lib/puzzles/wordDropKana/kanaMarks";
 import { kanaScore } from "@/lib/puzzles/wordDropKana/kanaScore";
 import { kanaWordsOf } from "@/lib/puzzles/wordDropKana/kanaWords";
 import { finishRomaji, readRomaji } from "@/lib/puzzles/wordDropKana/romaji";
+import { kanaKeyMarks } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
 import { KANA_GRID_BOX } from "./puzzles.constants";
 import { WordDropGrid, type CellArrow } from "./WordDropGrid";
+import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
-/**
- * What a key shows: the best colour its kana has had on the board — green,
- * then orange, then yellow, then grey. John, 2026-09-25: "I think the yellow
- * CHI should also be yellow in the keyboard"; it had shown black, read as
- * "this kana is not in the word".
- */
-const KEY_RANK: Record<KanaMark, number> = { hit: 4, near: 3, kin: 2, miss: 1 };
 
 function arrowOf(mark: KanaMarked): CellArrow {
   return mark.wrongSize && mark.wrongMark ? "↓↑" : mark.wrongSize ? "↓" : mark.wrongMark ? "↑" : "";
@@ -85,18 +80,7 @@ export function KanaDropSolve({
   /* The rows drawn: the free grey word first where there is one, then the guesses. */
   const shown = useMemo(() => (given.grey === null ? guesses : [given.grey, ...guesses]), [given.grey, guesses]);
   const marked = useMemo(() => shown.map((guess) => markKanaGuess([...guess], [...hidden])), [shown, hidden]);
-  const known = useMemo(() => {
-    const best = new Map<string, KanaMark>();
-    shown.forEach((guess, row) =>
-      [...guess].forEach((kana, at) => {
-        const mark = marked[row]![at]!.mark;
-        const base = kanaBase(kana);
-        const was = best.get(base);
-        if (was === undefined || KEY_RANK[mark] > KEY_RANK[was]) best.set(base, mark);
-      }),
-    );
-    return best;
-  }, [shown, marked]);
+  const known = useMemo(() => kanaKeyMarks(shown, hidden), [shown, hidden]);
 
   const closed = done !== null || pausing.paused;
 
@@ -190,21 +174,26 @@ export function KanaDropSolve({
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
-      <SolvePaused pausing={pausing}>
-        <WordDropGrid
-          size={size}
-          rows={free + KANA_ROWS}
-          guesses={shown}
-          marks={marked.map((row) => row.map((each) => each.mark))}
-          arrows={marked.map((row) => row.map(arrowOf))}
-          free={free}
-          box={KANA_GRID_BOX}
-          typing={typing}
-          done={done !== null}
-          style={style}
-          onChoose={(place) => edit((row) => choose(row, place))}
-        />
-      </SolvePaused>
+      {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
+      {done === null ? (
+        <SolvePaused pausing={pausing}>
+            <WordDropGrid
+              size={size}
+              rows={free + KANA_ROWS}
+              guesses={shown}
+              marks={marked.map((row) => row.map((each) => each.mark))}
+              arrows={marked.map((row) => row.map(arrowOf))}
+              free={free}
+              box={KANA_GRID_BOX}
+              typing={typing}
+              done={false}
+              style={style}
+              onChoose={(place) => edit((row) => choose(row, place))}
+            />
+        </SolvePaused>
+      ) : (
+        <WordReplay kind="wordDropKana" size={size} givens={puzzle.givens} guesses={guesses} style={style} />
+      )}
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">

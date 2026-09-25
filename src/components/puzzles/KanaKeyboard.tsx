@@ -35,6 +35,7 @@ export function KanaKeyboard({
   typed,
   style,
   disabled,
+  readOnly = false,
   onKana,
   onSmall,
   onMark,
@@ -47,6 +48,8 @@ export function KanaKeyboard({
   typed: ReadonlySet<string>;
   style: WordStyle;
   disabled: boolean;
+  /** Drawn at full colour and pressed by nobody: the keyboard of a finished game, replayed. */
+  readOnly?: boolean;
   onKana: (kana: string) => void;
   onSmall: () => void;
   onMark: () => void;
@@ -56,8 +59,10 @@ export function KanaKeyboard({
   const marked = style === WORD_STYLES.tiles ? WORD_TILE_MARK : WORD_KEY_MARK_STONES;
   // A shade shorter than English's keys on a phone: six rows of them have to leave Enter on the screen.
   const key = `${WORD_KEY} min-h-8 px-0 text-sm normal-case sm:min-h-11 sm:text-base`;
+  // Read-only, the keys keep their colours and take no press: `disabled` would dim the colours being read.
+  const inert = readOnly ? { tabIndex: -1, "aria-disabled": true as const } : {};
   return (
-    <div className="flex flex-col gap-1.5" data-testid="kana-keyboard">
+    <div className={`flex flex-col gap-1.5 ${readOnly ? "pointer-events-none" : ""}`} data-testid="kana-keyboard" data-read-only={readOnly ? "true" : undefined}>
       <div className="grid grid-cols-10 gap-1">
         {[0, 1, 2, 3, 4].flatMap((row) =>
           COLUMNS.map((column, at) => {
@@ -71,6 +76,7 @@ export function KanaKeyboard({
                 className={`${key} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(kana) ? WORD_KEY_TYPED : ""}`}
                 onClick={() => onKana(kana)}
                 disabled={disabled}
+                {...inert}
                 data-testid={`kana-key-${kana}`}
                 data-mark={mark ?? ""}
                 data-typed={typed.has(kana) ? "true" : undefined}
@@ -82,16 +88,16 @@ export function KanaKeyboard({
         )}
       </div>
       <div className="flex gap-1">
-        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onSmall} disabled={disabled} aria-label="make the kana small or large" data-testid="kana-key-small">
+        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onSmall} disabled={disabled} aria-label="make the kana small or large" data-testid="kana-key-small" {...inert}>
           小
         </button>
-        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onMark} disabled={disabled} aria-label="change the kana's mark" data-testid="kana-key-mark">
+        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onMark} disabled={disabled} aria-label="change the kana's mark" data-testid="kana-key-mark" {...inert}>
           ゛゜
         </button>
-        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onBack} disabled={disabled} aria-label="delete a kana" data-testid="kana-key-back">
+        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onBack} disabled={disabled} aria-label="delete a kana" data-testid="kana-key-back" {...inert}>
           ⌫
         </button>
-        <button type="button" className={`${key} ${WORD_KEY_PLAIN} flex-[2]`} onClick={onEnter} disabled={disabled} data-testid="kana-key-enter">
+        <button type="button" className={`${key} ${WORD_KEY_PLAIN} flex-[2]`} onClick={onEnter} disabled={disabled} data-testid="kana-key-enter" {...inert}>
           <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
         </button>
       </div>

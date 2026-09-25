@@ -7,22 +7,22 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeWordDropProgress, encodeWordDropProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor, type LetterMark } from "@/lib/puzzles/wordDrop/code";
+import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor } from "@/lib/puzzles/wordDrop/code";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
+import { letterKeyMarks } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
 import { wordScore } from "@/lib/puzzles/wordDrop/wordScore";
 
 import { WordDropGrid } from "./WordDropGrid";
+import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
 import { WordKeyboard } from "./WordKeyboard";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
-
-const BEST: Record<LetterMark, number> = { hit: 3, near: 2, miss: 1 };
 
 /**
  * Solving WordDrop: type a word, press Enter, read its colours, and find the
@@ -67,17 +67,7 @@ export function WordDropSolve({
   );
 
   const marks = useMemo(() => guesses.map((guess) => markGuess(guess, hidden)), [guesses, hidden]);
-  const known = useMemo(() => {
-    const best = new Map<string, LetterMark>();
-    guesses.forEach((guess, row) =>
-      [...guess].forEach((letter, at) => {
-        const mark = marks[row]![at]!;
-        const was = best.get(letter);
-        if (was === undefined || BEST[mark] > BEST[was]) best.set(letter, mark);
-      }),
-    );
-    return best;
-  }, [guesses, marks]);
+  const known = useMemo(() => letterKeyMarks(guesses, hidden), [guesses, hidden]);
 
   const closed = done !== null || pausing.paused;
 
@@ -148,18 +138,23 @@ export function WordDropSolve({
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
-      <SolvePaused pausing={pausing}>
-        <WordDropGrid
-          size={size}
-          rows={rows}
-          guesses={guesses}
-          marks={marks}
-          typing={typing}
-          done={done !== null}
-          style={style}
-          onChoose={(place) => edit((row) => choose(row, place))}
-        />
-      </SolvePaused>
+      {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
+      {done === null ? (
+        <SolvePaused pausing={pausing}>
+          <WordDropGrid
+            size={size}
+            rows={rows}
+            guesses={guesses}
+            marks={marks}
+            typing={typing}
+            done={false}
+            style={style}
+            onChoose={(place) => edit((row) => choose(row, place))}
+          />
+        </SolvePaused>
+      ) : (
+        <WordReplay kind={kind === "wordDropKana" ? "wordDropKana" : "wordDrop"} size={size} givens={puzzle.givens} guesses={guesses} style={style} />
+      )}
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">

@@ -5,17 +5,14 @@ import { decodeRegions, decodeStones } from "@/lib/puzzles/hiddenStones/code";
 import { readNumberGivens } from "@/lib/puzzles/numberGivens";
 import { decodeCells } from "@/lib/puzzles/puzzleCode";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { decodeGuesses, decodeHidden, markGuess, rowsFor } from "@/lib/puzzles/wordDrop/code";
-import { emptyRow } from "@/lib/puzzles/wordDrop/typingRow";
-import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "@/lib/puzzles/wordDropKana/kanaCode";
-import { markKanaGuess } from "@/lib/puzzles/wordDropKana/kanaMarks";
+import { decodeGuesses } from "@/lib/puzzles/wordDrop/code";
+import { decodeKanaGuesses } from "@/lib/puzzles/wordDropKana/kanaCode";
 
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
 import { PuzzleGrid } from "./PuzzleGrid";
-import { KANA_GRID_BOX } from "./puzzles.constants";
-import { WordDropGrid } from "./WordDropGrid";
 import { useWordStyle } from "./WordStyleContext";
+import { WordReplay } from "./WordReplay";
 
 const NOTHING = () => undefined;
 /** Every grid here is finished: drawn readOnly, through its `done` mode, with nothing to press. */
@@ -47,44 +44,10 @@ export function FinishedPuzzle({ kind, size, givens, answer }: { kind: PuzzleKin
     return <BlackAndWhiteGrid size={size} givens={printed} stones={stones} done={readOnly} onPress={NOTHING} />;
   }
 
-  if (kind === "wordDrop") {
-    const hidden = decodeHidden(givens, size) ?? "";
-    const guesses = (answer === null ? null : decodeGuesses(answer, size)) ?? [];
-    return (
-      <WordDropGrid
-        size={size}
-        rows={rowsFor(size)}
-        guesses={guesses}
-        marks={guesses.map((guess) => markGuess(guess, hidden))}
-        typing={emptyRow(size)}
-        done={readOnly}
-        style={style}
-        onChoose={NOTHING}
-      />
-    );
-  }
-
-  if (kind === "wordDropKana") {
-    const given = decodeKanaGivens(givens, size);
-    const guesses = (answer === null ? null : decodeKanaGuesses(answer, size)) ?? [];
-    const grey = given?.grey ?? null;
-    const shown = grey === null ? guesses : [grey, ...guesses];
-    const marked = shown.map((guess) => markKanaGuess([...guess], [...(given?.word ?? "")]));
-    return (
-      <WordDropGrid
-        size={size}
-        rows={(grey === null ? 0 : 1) + KANA_ROWS}
-        guesses={shown}
-        marks={marked.map((row) => row.map((each) => each.mark))}
-        arrows={marked.map((row) => row.map((each) => (each.wrongSize && each.wrongMark ? "↓↑" : each.wrongSize ? "↓" : each.wrongMark ? "↑" : "")))}
-        free={grey === null ? 0 : 1}
-        box={KANA_GRID_BOX}
-        typing={emptyRow(size)}
-        done={readOnly}
-        style={style}
-        onChoose={NOTHING}
-      />
-    );
+  // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).
+  if (kind === "wordDrop" || kind === "wordDropKana") {
+    const guesses = (answer === null ? null : kind === "wordDrop" ? decodeGuesses(answer, size) : decodeKanaGuesses(answer, size)) ?? [];
+    return <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} style={style} />;
   }
 
   // Every grid of numbers: the printed cells as printed, the rest from the answer.

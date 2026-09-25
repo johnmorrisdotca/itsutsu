@@ -122,5 +122,27 @@ test.describe("the kana word puzzle", () => {
     await expect(page.getByTestId("word-out")).toBeVisible();
     await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution);
     await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(kanaScore(puzzle.solution, wrong, KANA_ROWS, 0).total));
+    // Replayed with its keyboard: all six guesses, and at the start nothing guessed yet (hard has no free word).
+    const replay = page.getByTestId("word-replay");
+    await expect(replay).toHaveAttribute("data-last", String(KANA_ROWS));
+    await expect(replay.getByTestId("kana-keyboard")).toHaveAttribute("data-read-only", "true");
+    await page.getByTestId("word-replay-start").click();
+    await expect(replay.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("data-mark", "empty");
+    await expect(replay.locator('[data-testid^="kana-key-"][data-mark="miss"]')).toHaveCount(0);
+  });
+
+  test("an easy word replayed from its start still shows the free grey word, its kana out on the keys", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    const puzzle = generatePuzzle(KIND, 3, "easy", seed);
+    const { word, grey } = decodeKanaGivens(puzzle.givens, 3)!;
+    await page.goto(`${AT}/play?size=3&level=easy&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await tapKana(page, word);
+    await page.getByTestId("kana-key-enter").click();
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    await page.getByTestId("word-replay-start").click();
+    const replay = page.getByTestId("word-replay");
+    await expect(replay.locator('[data-testid="word-tile"][data-free="true"]')).toHaveCount(3);
+    for (const kana of grey!) await expect(replay.getByTestId(`kana-key-${kanaBase(kana)}`)).toHaveAttribute("data-mark", "miss");
   });
 });

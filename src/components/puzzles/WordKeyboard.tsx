@@ -21,6 +21,7 @@ export function WordKeyboard({
   typed = NONE_TYPED,
   style,
   disabled,
+  readOnly = false,
   onLetter,
   onEnter,
   onBack,
@@ -30,17 +31,21 @@ export function WordKeyboard({
   typed?: ReadonlySet<string>;
   style: WordStyle;
   disabled: boolean;
+  /** Drawn at full colour and pressed by nobody: the keyboard of a finished game, replayed. */
+  readOnly?: boolean;
   onLetter: (letter: string) => void;
   onEnter: () => void;
   onBack: () => void;
 }) {
   const marked = style === WORD_STYLES.tiles ? WORD_TILE_MARK : WORD_KEY_MARK_STONES;
+  // Read-only, the keys keep their colours and take no press: `disabled` would dim the colours being read.
+  const inert = readOnly ? { tabIndex: -1, "aria-disabled": true as const } : {};
   return (
-    <div className="flex flex-col gap-1.5" data-testid="word-keyboard">
+    <div className={`flex flex-col gap-1.5 ${readOnly ? "pointer-events-none" : ""}`} data-testid="word-keyboard" data-read-only={readOnly ? "true" : undefined}>
       {ROWS.map((row, index) => (
         <div key={row} className="flex gap-1">
           {index === 2 ? (
-            <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onEnter} disabled={disabled} data-testid="word-key-enter">
+            <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onEnter} disabled={disabled} data-testid="word-key-enter" {...inert}>
               {/* Its own size on a span, not a second size on the key, so the word fits at 390px ("ENTER" was clipped). */}
               <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
             </button>
@@ -54,6 +59,7 @@ export function WordKeyboard({
                 className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(letter) ? WORD_KEY_TYPED : ""}`}
                 onClick={() => onLetter(letter)}
                 disabled={disabled}
+                {...inert}
                 data-testid={`word-key-${letter}`}
                 data-mark={mark ?? ""}
                 data-typed={typed.has(letter) ? "true" : undefined}
@@ -63,7 +69,7 @@ export function WordKeyboard({
             );
           })}
           {index === 2 ? (
-            <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onBack} disabled={disabled} aria-label="delete a letter" data-testid="word-key-back">
+            <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onBack} disabled={disabled} aria-label="delete a letter" data-testid="word-key-back" {...inert}>
               ⌫
             </button>
           ) : null}

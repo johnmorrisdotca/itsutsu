@@ -27,6 +27,7 @@ const NOT_PLAYED_ON: Record<string, string> = {
   "src/components/history/GameReplay.tsx": "a finished game played back; nobody is at it to be asked",
   "src/components/famous/FamousReplay.tsx": "a famous game from a published record, stepped through; nobody is playing it",
   "src/components/puzzles/FinishedPuzzle.tsx": "a puzzle already finished, drawn as it ended; nobody is solving it",
+  "src/components/puzzles/WordReplay.tsx": "a word puzzle already over, replayed guess by guess with its keyboard readOnly; nobody is playing it",
 };
 
 /**
