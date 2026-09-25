@@ -190,7 +190,8 @@ export function PuzzleSetUp({
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
-          Play alone →
+          {/* One kanji each beside the words, as every label here pairs them (John, 2026-09-25: "use SINGLE kanji"). */}
+          Play alone <span className="font-mincho text-base font-normal opacity-70">独</span> →
         </Link>
         <button
           type="button"
@@ -200,7 +201,13 @@ export function PuzzleSetUp({
           title={hasAccount ? undefined : "A race is between two members; this session has no account yet."}
           data-testid="puzzle-race"
         >
-          {racing === "making" ? "Making the race…" : "Play a friend →"}
+          {racing === "making" ? (
+            "Making the race…"
+          ) : (
+            <>
+              Play a friend <span className="font-mincho text-base font-normal opacity-70">友</span> →
+            </>
+          )}
         </button>
       {!hasAccount ? (
         <p className="text-xs text-muted" data-testid="puzzle-race-needs-account">
