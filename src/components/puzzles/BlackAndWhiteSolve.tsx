@@ -11,6 +11,8 @@ import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { checkedWords } from "./NumberSolve";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { PuzzleSteps } from "./PuzzleSteps";
+import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
 import { cellHint } from "@/lib/puzzles/hintCell";
 
@@ -62,9 +64,12 @@ export function BlackAndWhiteSolve({
   }, hints);
 
   /* One cell set to a stone, from a tap or a hint: the one door every change goes through. */
+  // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
+  const history = useStepHistory(stones);
+
   const place = useCallback(
     (index: number, stone: number) => {
-      if (done !== null || pausing.paused || givens[index] !== EMPTY) return;
+      if (done !== null || pausing.paused || history.reviewing || givens[index] !== EMPTY) return;
       const at = begin();
       const next = [...stones];
       next[index] = stone;
@@ -79,7 +84,7 @@ export function BlackAndWhiteSolve({
         else setFullNotRight(true);
       }
     },
-    [done, pausing.paused, givens, begin, stones, answer, finish, checking.allowed, hinting],
+    [done, pausing.paused, history.reviewing, givens, begin, stones, answer, finish, checking.allowed, hinting],
   );
   const press = useCallback((index: number) => place(index, nextStone(stones[index] ?? EMPTY)), [place, stones]);
 
@@ -110,8 +115,9 @@ export function BlackAndWhiteSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <BlackAndWhiteGrid size={size} givens={givens} stones={stones} wrong={hinting.marked} done={done !== null} onPress={press} />
+        <BlackAndWhiteGrid size={size} givens={givens} stones={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} />
       </SolvePaused>
+      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === BLACK ? "black" : value === WHITE ? "white" : "cleared")} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}

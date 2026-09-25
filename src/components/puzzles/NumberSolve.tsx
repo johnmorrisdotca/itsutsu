@@ -16,6 +16,8 @@ import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS, PUZZLE_KEYS_PER_ROW } from "./puzzles.constants";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { PuzzleSteps } from "./PuzzleSteps";
+import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
 import { cellHint } from "@/lib/puzzles/hintCell";
 
@@ -89,10 +91,13 @@ export function NumberSolve({
     resumed,
   }, hints);
 
+  // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
+  const history = useStepHistory(entries);
+
   /* A value into one cell, from a key, a tap or a hint: the one door every entry goes through. */
   const write = useCallback(
     (cell: number, value: number) => {
-      if (done !== null || pausing.paused || givens[cell] !== 0) return;
+      if (done !== null || pausing.paused || history.reviewing || givens[cell] !== 0) return;
       const at = begin();
       const next = [...entries];
       next[cell] = value;
@@ -107,7 +112,7 @@ export function NumberSolve({
         else setFullNotRight(true);
       }
     },
-    [done, pausing.paused, givens, entries, solution, begin, finish, checking.allowed, hinting],
+    [done, pausing.paused, history.reviewing, givens, entries, solution, begin, finish, checking.allowed, hinting],
   );
   const enter = useCallback(
     (value: number) => {
@@ -181,7 +186,7 @@ export function NumberSolve({
           kind={kind}
           size={size}
           givens={givens}
-          entries={entries}
+          entries={history.shown}
           marks={asked.marks}
           regions={asked.regions}
           cages={asked.cages}
@@ -192,6 +197,7 @@ export function NumberSolve({
           onSelect={tap}
         />
       </SolvePaused>
+      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === 0 ? "cleared" : symbolOf(value))} />
       {done === null ? (
         <>
           <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${Math.min(size + 1, PUZZLE_KEYS_PER_ROW)}, minmax(0, 1fr))` }} data-testid="puzzle-keys">

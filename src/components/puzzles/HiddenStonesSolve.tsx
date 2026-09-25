@@ -9,6 +9,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { PuzzleSteps } from "./PuzzleSteps";
+import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
 import { rowHint } from "@/lib/puzzles/hintCell";
 import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
@@ -65,10 +67,13 @@ export function HiddenStonesSolve({
   );
 
   /* The grid's marks replaced, from a tap or a hint: the one door every change goes through. `changed` are the cells it touched. */
+  // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
+  const history = useStepHistory(marks);
+
   const apply = useCallback(
     (next: StoneMark[], changed: readonly number[]) => {
       // Nothing is pressed while paused (John, 2026-09-25: "if a game is paused, DISABLE the controls, all the controls").
-      if (done !== null || pausing.paused) return;
+      if (done !== null || pausing.paused || history.reviewing) return;
       const at = begin();
       setMarks(next);
       changed.forEach((index) => hinting.unmark(index));
@@ -82,7 +87,7 @@ export function HiddenStonesSolve({
         else setFullNotRight(true);
       }
     },
-    [done, pausing.paused, begin, stonesOf, answer, finish, checking.allowed, hinting],
+    [done, pausing.paused, history.reviewing, begin, stonesOf, answer, finish, checking.allowed, hinting],
   );
   const press = useCallback(
     (index: number) => {
@@ -134,8 +139,9 @@ export function HiddenStonesSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <HiddenStonesGrid size={size} regions={regions} marks={marks} wrong={hinting.marked} done={done !== null} onPress={press} />
+        <HiddenStonesGrid size={size} regions={regions} marks={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} />
       </SolvePaused>
+      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(mark) => (mark === "stone" ? "a stone" : mark === "cross" ? "a cross" : "cleared")} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
