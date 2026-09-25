@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import type { DiagramProps, DiagramStone } from "./about.types";
+import { centredBaseline } from "@/lib/ui/svgText";
 
 /** One intersection or cell, in user units. */
 const UNIT = 24;
@@ -85,9 +86,8 @@ function Stone({ stone, x, y }: { stone: DiagramStone; x: number; y: number }): 
       {stone.label ? (
         <text
           x={x}
-          y={y}
+          y={centredBaseline(y, 11)}
           textAnchor="middle"
-          dominantBaseline="central"
           fontSize={11}
           fontWeight={600}
           fill={black ? "var(--ivory)" : "var(--ink)"}

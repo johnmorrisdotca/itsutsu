@@ -21,6 +21,7 @@ import { decodeTowers, TOWER_SIDES, type TowerClues } from "@/lib/puzzles/towers
 import { generateTowers } from "@/lib/puzzles/towers/generate";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
+import { centredBaseline } from "@/lib/ui/svgText";
 
 /** The paper a puzzle is written on, inside the wood. */
 const PAPER = "#ffffff";
@@ -100,7 +101,7 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
                 const x = side === "left" ? 0.5 : side === "right" ? span - 0.5 : at + 1.5;
                 const y = side === "top" ? 0.5 : side === "bottom" ? span - 0.5 : at + 1.5;
                 return (
-                  <text key={`${side}-${at}`} x={x} y={y} fontSize={0.5} fontWeight={600} textAnchor="middle" dominantBaseline="central" fill={theme.line}>
+                  <text key={`${side}-${at}`} x={x} y={centredBaseline(y, 0.5)} fontSize={0.5} fontWeight={600} textAnchor="middle" fill={theme.line}>
                     {clue}
                   </text>
                 );

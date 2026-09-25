@@ -1,5 +1,6 @@
 import type { PictureSize } from "./games.types";
 import { pictureBox } from "./picture";
+import { centredBaseline } from "@/lib/ui/svgText";
 
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
@@ -318,9 +319,8 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
         <text
           key={`d${digit.r}-${digit.c}`}
           x={at(digit.c)}
-          y={at(digit.r)}
+          y={centredBaseline(at(digit.r), 0.75)}
           textAnchor="middle"
-          dominantBaseline="central"
           fontSize={0.75}
           fontWeight={600}
           fill={digit.tile === undefined ? "var(--ink)" : "var(--ivory)"}
