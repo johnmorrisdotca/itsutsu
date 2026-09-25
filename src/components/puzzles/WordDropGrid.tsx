@@ -104,7 +104,7 @@ function GridLines({ size, rows, style }: { size: number; rows: number; style: W
   const across = Array.from({ length: othello ? rows + 1 : rows }, (_, row) => row + at);
   const down = Array.from({ length: othello ? size + 1 : size }, (_, col) => col + at);
   return (
-    <svg viewBox={`0 0 ${size} ${rows}`} preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true" data-testid="word-lines">
+    <svg viewBox={`0 0 ${size} ${rows}`} preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
       {across.map((y) => (
         <line key={`y${y}`} x1={at} y1={y} x2={size - at} y2={y} stroke={ink} strokeWidth={othello ? 2 : 1.25} vectorEffect="non-scaling-stroke" />
       ))}
