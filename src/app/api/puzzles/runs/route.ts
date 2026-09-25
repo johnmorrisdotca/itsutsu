@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { progressFits } from "@/lib/puzzles/puzzleProgress";
+import { decodeStepLog, STEPS_KEPT } from "@/lib/puzzles/stepLog";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
@@ -17,6 +18,16 @@ import { keepRun } from "@/lib/puzzles/server/puzzleRuns";
  * it is keeping and nothing else — there is no answer to check yet, and the
  * time is the browser's, as a finished solve's is.
  */
+/** The longest a step log can be: the first grid whole and every kept step changing every cell. */
+const STEP_LOG_LONGEST = PUZZLE_CODE_LONGEST * 4 * STEPS_KEPT;
+
+/** The steps to keep: the log as sent when it reads back and ends on the grid being kept, else none. */
+function stepsFor(log: string | undefined, progress: string): string | null {
+  if (log === undefined) return null;
+  const codes = decodeStepLog(log, progress.length);
+  return codes !== null && codes.at(-1) === progress ? log : null;
+}
+
 const bodySchema = z.object({
   kind: z.enum(PUZZLE_KIND_LIST as [string, ...string[]]),
   size: z.number().int(),
@@ -27,6 +38,8 @@ const bodySchema = z.object({
   hintsUsed: z.number().int().nonnegative().optional(),
   hintsAllowed: z.boolean().optional(),
   progress: z.string().max(PUZZLE_CODE_LONGEST),
+  /** Every grid it has been (`stepLog.ts`); a log that does not read as this grid's is dropped, never the run. */
+  steps: z.string().max(STEP_LOG_LONGEST).optional(),
   /** The time so far; a month is more than anybody spends on one grid. */
   elapsedMs: z.number().int().nonnegative().max(31 * 24 * 60 * 60 * 1000),
 });
@@ -62,6 +75,7 @@ export async function POST(request: Request) {
       hintsAllowed: parsed.data.hintsAllowed ?? false,
       hintsUsed: parsed.data.hintsAllowed === true ? (parsed.data.hintsUsed ?? 0) : 0,
       progress,
+      steps: stepsFor(parsed.data.steps, progress),
       elapsedMs: parsed.data.elapsedMs,
     });
     return NextResponse.json({ ok: true }, { headers: NO_STORE });

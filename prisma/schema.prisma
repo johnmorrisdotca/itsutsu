@@ -1274,6 +1274,10 @@ model PuzzleRun {
   hintsUsed     Int      @default(0)
   /// What has been written so far, one character a cell, in the kind's own code for an entry.
   progress      String
+  /// Every grid it has been, for the scrubber when it is picked up again
+  /// (`stepLog.ts`): the first whole, then each step's changed cells. Null for
+  /// a run kept before steps were, which opens with the one step it has.
+  steps         String?
   elapsedMs     Int
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

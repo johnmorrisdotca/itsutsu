@@ -14,6 +14,7 @@ import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
 import { rowHint } from "@/lib/puzzles/hintCell";
 import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
+import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
 
 /**
  * Solving Hidden Stones: tap a cell for a stone, again for a cross, again to
@@ -53,6 +54,7 @@ export function HiddenStonesSolve({
   const [fullNotRight, setFullNotRight] = useState(false);
   const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
     progress: encodeStoneProgress(marks),
+    steps: () => encodeStepLog(history.steps.map(encodeStoneProgress)),
     resumed,
   }, hints);
 
@@ -68,7 +70,8 @@ export function HiddenStonesSolve({
 
   /* The grid's marks replaced, from a tap or a hint: the one door every change goes through. `changed` are the cells it touched. */
   // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
-  const history = useStepHistory(marks);
+  const opening = useMemo(() => (resumed === null ? null : openingSteps(resumed.steps, resumed.progress, size, decodeStoneProgress)), [resumed, size]);
+  const history = useStepHistory(marks, opening);
 
   const apply = useCallback(
     (next: StoneMark[], changed: readonly number[]) => {

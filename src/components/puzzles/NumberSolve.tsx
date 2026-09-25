@@ -10,6 +10,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeTowers, type TowerClues } from "@/lib/puzzles/towers/code";
 import { stepEntry } from "@/lib/puzzles/stepEntry";
 import { decodeNumberProgress, encodeNumberProgress } from "@/lib/puzzles/puzzleProgress";
+import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
@@ -88,11 +89,13 @@ export function NumberSolve({
   const [fullNotRight, setFullNotRight] = useState(false);
   const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
     progress: encodeNumberProgress(entries),
+    steps: () => encodeStepLog(history.steps.map(encodeNumberProgress)),
     resumed,
   }, hints);
 
   // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
-  const history = useStepHistory(entries);
+  const opening = useMemo(() => (resumed === null ? null : openingSteps(resumed.steps, resumed.progress, size, decodeNumberProgress)), [resumed, size]);
+  const history = useStepHistory(entries, opening);
 
   /* A value into one cell, from a key, a tap or a hint: the one door every entry goes through. */
   const write = useCallback(
