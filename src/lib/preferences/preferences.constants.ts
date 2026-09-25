@@ -6,6 +6,7 @@ import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
 import { BOARD_SIZES, BOARD_SIZE_LIST } from "./boardSize";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 import { MOVE_FORMAT_CHOICES } from "@/lib/record/moveFormats";
+import { WORD_STYLES, WORD_STYLE_LIST } from "@/lib/puzzles/wordDrop/wordStyles";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
 
@@ -175,6 +176,13 @@ export const PREFERENCE_SPECS = {
    * formats we support. and save to memory."
    */
   moveFormat: { options: MOVE_FORMAT_CHOICES, fallback: "itsutsu" },
+
+  /*
+   * How a WordDrop grid is drawn: Othello discs, Gomoku stones or letter
+   * tiles. See `wordStyles.ts`. Othello until chosen otherwise, the look John
+   * settled on before asking for the choice.
+   */
+  wordStyle: { options: WORD_STYLE_LIST, fallback: WORD_STYLES.othello },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */
