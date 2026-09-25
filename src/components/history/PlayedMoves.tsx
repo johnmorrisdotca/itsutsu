@@ -33,6 +33,7 @@ export function PlayedMoves({
   onJump,
   emptyNote = "No moves yet.",
   testId = "played-moves",
+  nameOf,
 }: {
   size: number;
   moves: readonly GameMove[];
@@ -41,6 +42,12 @@ export function PlayedMoves({
   onJump?: (moveNumber: number) => void;
   emptyNote?: string;
   testId?: string;
+  /**
+   * A record's own name for a move, where it has one this site does not use:
+   * a famous Othello game counts its rows from the top, so its opening move
+   * is f5 and not F4. Left out, a move is said as the board says it.
+   */
+  nameOf?: (move: GameMove) => string;
 }) {
   if (moves.length === 0) {
     return (
@@ -58,7 +65,7 @@ export function PlayedMoves({
       {moves.map((move) => {
         const current = at === move.number;
         const ahead = at !== undefined && move.number > at;
-        const said = wordFor(size, move);
+        const said = nameOf?.(move) ?? wordFor(size, move);
         const inside = (
           <>
             <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { FamousMosaic } from "@/components/famous/FamousMosaic";
+import { FamousReplay } from "@/components/famous/FamousReplay";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { MosaicTile } from "@/components/games/MosaicTile";
@@ -26,8 +27,9 @@ export const metadata: Metadata = { title: `${FAMOUS_COPY.title} ${FAMOUS_COPY.k
  * No database: the games are a data file, so the page is built once and every
  * view of it is a static file. Each card's final position is worked out then;
  * the picture of every move is made in the reader's browser, on a press of
- * the small picture, in a window. Each game names the collection its record
- * came from.
+ * the small picture, in a window; the moves are stepped through on a press of
+ * their own, with a finished game's scrubber. Each game names the collection
+ * its record came from.
  */
 export default function FamousGamesPage() {
   return (
@@ -70,6 +72,7 @@ export default function FamousGamesPage() {
                   </p>
                 </div>
               </div>
+              <FamousReplay game={game} />
             </article>
           );
         })}

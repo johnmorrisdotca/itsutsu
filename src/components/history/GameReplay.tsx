@@ -10,7 +10,7 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
-import { ReplayButtons } from "./ReplayButtons";
+import { ReplayScrubber } from "./ReplayScrubber";
 import { GameMosaic } from "./GameMosaic";
 import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
@@ -265,19 +265,8 @@ export function GameReplay({
               </span>
             )}
           </p>
-          <input
-            type="range"
-            min={0}
-            max={timeline.length - 1}
-            value={index}
-            onChange={(event) => setIndex(Number(event.target.value))}
-            className="w-full accent-ink"
-            aria-label="Move"
-            data-testid="replay-scrubber"
-          />
+          <ReplayScrubber index={index} last={timeline.length - 1} onGo={setIndex} testId="replay" />
         </div>
-
-        <ReplayButtons index={index} last={timeline.length - 1} onGo={setIndex} testId="replay" />
 
         {/*
           A fork replays a position that could have gone differently — by

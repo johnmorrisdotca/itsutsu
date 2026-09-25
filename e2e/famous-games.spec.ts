@@ -6,7 +6,8 @@ import { readyHere } from "./support";
  * The famous games: reached from the games page, each card a championship
  * game with its record's source named. Its small picture opens the picture of
  * every position in a window — made in the browser, the site asked for
- * nothing — and Esc brings the page back.
+ * nothing — and Esc brings the page back. Its moves are stepped through with a
+ * finished game's scrubber and list.
  */
 const FINAL = '[data-testid="famous-game"][data-id="alphago-leesedol-4"]';
 
@@ -47,4 +48,32 @@ test("the famous games are reached from the games page, and a small picture open
   await open.click();
   await page.getByTestId("close-mosaic").click();
   await expect(page.getByTestId("mosaic-dialog")).toHaveCount(0);
+});
+
+test("a famous game's moves are stepped through with the scrubber and the list", async ({ page }) => {
+  await page.goto("/famous");
+  const final = page.locator(FINAL);
+  await readyHere(final.getByTestId("famous-replay"));
+  await final.getByTestId("famous-replay-open").click();
+
+  // It opens at the end, where the card's small picture leaves off.
+  const at = final.getByTestId("famous-replay-at");
+  const moves = final.getByTestId("played-move");
+  const count = await moves.count();
+  expect(count).toBeGreaterThan(100);
+  await expect(at).toContainText(`Move ${count} of ${count}`);
+
+  await final.getByTestId("famous-start").click();
+  await expect(at).toContainText(`Move 0 of ${count}`);
+  await final.getByTestId("famous-forward").click();
+  await expect(at).toContainText("Move 1 of");
+  await expect(final.getByTestId("famous-scrubber")).toHaveValue("1");
+
+  // A move in the list is a place to go.
+  await moves.nth(77).click();
+  await expect(at).toContainText(`Move 78 of ${count}`);
+  await expect(final.getByTestId("famous-scrubber")).toHaveValue("78");
+
+  await final.getByTestId("famous-replay-close").click();
+  await expect(final.getByTestId("famous-replay-open")).toBeVisible();
 });

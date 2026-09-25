@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { famousFrames, famousTimeline } from "./famous";
+import { famousMoveNames, famousMoves } from "./famousMoves";
 import { FAMOUS_NOTATIONS, FAMOUS_SOURCES } from "./famous.constants";
 import type { FamousGame } from "./famous.types";
 import { FAMOUS_GAMES } from "./famousGames.data";
@@ -50,5 +51,42 @@ describe("a famous game is shown only where its source allows it", () => {
       expect(source, game.id).toBeDefined();
       expect(source.openBecause.length, game.source).toBeGreaterThan(20);
     }
+  });
+});
+
+describe("a famous game's moves, for its scrubber and its list", () => {
+  it("numbers one move for each step of the timeline, so move n is the position at timeline[n]", () => {
+    for (const game of FAMOUS_GAMES) {
+      const timeline = famousTimeline(game);
+      const moves = famousMoves(timeline);
+      expect(moves.length, game.id).toBe(timeline.length - 1);
+      moves.forEach((move, index) => {
+        expect(move.number).toBe(index + 1);
+        expect(timeline[move.number]!.moves.at(-1)?.stone, game.id).toBe(move.stone);
+      });
+    }
+  });
+
+  it("names an Othello game's moves by its own record, and leaves Go's to the board's names", () => {
+    // The same opening the frames test reads: Othello counts its rows from the top, so these are not the board's names.
+    const othello: FamousGame = {
+      id: "fixture-names",
+      variant: "reversi",
+      size: 8,
+      notation: FAMOUS_NOTATIONS.othello,
+      event: "fixture",
+      round: null,
+      date: "",
+      place: null,
+      black: "Black",
+      white: "White",
+      result: "",
+      source: "brouwer",
+      moves: "f5 d6 c3 d3 c4",
+    };
+    const names = famousMoveNames(othello, famousMoves(famousTimeline(othello)))!;
+    expect([1, 2, 3, 4, 5].map((number) => names.get(number))).toEqual(["f5", "d6", "c3", "d3", "c4"]);
+    const go = FAMOUS_GAMES.find((game) => game.notation !== FAMOUS_NOTATIONS.othello)!;
+    expect(famousMoveNames(go, famousMoves(famousTimeline(go)))).toBeNull();
   });
 });
