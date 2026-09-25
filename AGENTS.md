@@ -278,6 +278,16 @@ puzzle's own settings sit under a heading below, where a game's opponent is.
 `e2e/set-up-steady.spec.ts` presses every family, game and board at three
 widths and fails if the chooser ends anywhere else.
 
+**Anything a person plays is kept until it is finished, and waits in My
+games.** John, 2026-09-24, having paused a puzzle and clicked away: "why is it
+not showing up in my current games list?… that seems like a BIG MISS". Games
+were always kept; the puzzles lived only in their tab, and the Are-you-there
+note said so as though it were a feature. A new kind of play answers, before it
+ships: what happens when the player leaves half way, and where do they find it
+again? A puzzle is kept through `useSolve` → `useKeptRun` (one write when it is
+paused or left, none while it is played) and listed by `MyPuzzleRuns`; held by
+`idleWatch.coverage.test.ts` and `e2e/puzzle-kept.spec.ts`.
+
 ### Nothing Is A Dead End
 
 Two rules, in John's words, and one principle underneath them.

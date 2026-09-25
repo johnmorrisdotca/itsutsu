@@ -78,4 +78,20 @@ describe("the idle question", () => {
     expect(solve).toMatch(/useIdleWatch\(/);
     expect(solve).toMatch(/<IdleModal[\s>]/);
   });
+
+  /*
+   * AND WHAT IS PLAYED IS KEPT. John, 2026-09-24, having paused a puzzle and
+   * clicked away: "why is it not showing up in my current games list?… that
+   * seems like a BIG MISS". A game was always kept — on the site, or in this
+   * browser for the practice board — and a puzzle lived only in its tab. A
+   * puzzle is kept through `useSolve`, which hands what is written to
+   * `useKeptRun`; a solve screen that stopped handing it over would keep a
+   * run with nothing in it.
+   */
+  it("keeps a puzzle when it is left, with what is written on it", () => {
+    expect(readFileSync("src/components/puzzles/solveShared.tsx", "utf8")).toMatch(/useKeptRun\(/);
+    for (const file of surfaces.filter((each) => /useSolve\(/.test(readFileSync(each, "utf8")))) {
+      expect(readFileSync(file, "utf8"), `${file} solves a puzzle and does not hand what is written to be kept`).toMatch(/progress: encode\w+Progress\(/);
+    }
+  });
 });
