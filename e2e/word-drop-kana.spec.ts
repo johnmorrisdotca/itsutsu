@@ -107,14 +107,16 @@ test.describe("the kana word puzzle", () => {
   });
 
   test.describe("on a phone", () => {
-    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    // An iPhone's screen with Safari's bars on it: 664 high, where the whole board and the whole keyboard do not fit together.
+    const HIGH = 664;
+    test.use({ viewport: { width: 390, height: HIGH }, hasTouch: true, isMobile: true });
 
     test("the kana typed stay on the screen with the keys, and the page moves once, not per key", async ({ page }) => {
       // John, on an iPhone at five kana: "Why don't we see the chars we type?"
       await page.goto(`${AT}/play?size=5&level=easy&seed=${freshPuzzleSeed()}`);
       await ready(page, "puzzle-play");
       const row = page.locator('[data-testid="word-tile"][data-row="1"]');
-      const onScreen = async (box: { y: number; height: number } | null) => box !== null && box.y >= 0 && box.y + box.height <= 844;
+      const onScreen = async (box: { y: number; height: number } | null) => box !== null && box.y >= 0 && box.y + box.height <= HIGH;
       // A thumb reaches the keys once (they start below the fold), then types where they are.
       await page.getByTestId("kana-key-か").scrollIntoViewIfNeeded();
       await thumbKana(page, "か");
@@ -122,6 +124,22 @@ test.describe("the kana word puzzle", () => {
       await thumbKana(page, "ぱたっ");
       expect(await page.evaluate(() => window.scrollY), "the page moved while the row was typed").toBe(settled);
       for (let at = 0; at < 4; at += 1) expect(await onScreen(await row.nth(at).boundingBox()), `kana ${at + 1} is off the screen`).toBe(true);
+      expect(await onScreen(await page.getByTestId("kana-key-enter").boundingBox()), "Enter is off the screen").toBe(true);
+    });
+
+    test("scrolled past the board's top, the first kana leaves the keys on the screen and the row in view", async ({ page }) => {
+      // The case the first version got wrong: it scrolled back to the board's top and put Enter below the screen.
+      await page.goto(`${AT}/play?size=5&level=easy&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+      const row = page.locator('[data-testid="word-tile"][data-row="1"]');
+      const onScreen = async (box: { y: number; height: number } | null) => box !== null && box.y >= 0 && box.y + box.height <= HIGH;
+      // The player scrolls until the whole keyboard is up, the board's top gone above.
+      await page.getByTestId("kana-key-enter").evaluate((enter) => window.scrollBy(0, enter.getBoundingClientRect().bottom - window.innerHeight + 16));
+      expect((await page.getByTestId("puzzle-grid").boundingBox())!.y, "the board's top is still on the screen, so this proves nothing").toBeLessThan(0);
+      await thumbKana(page, "かぱたっ");
+      for (let at = 0; at < 4; at += 1) expect(await onScreen(await row.nth(at).boundingBox()), `kana ${at + 1} is off the screen`).toBe(true);
+      await expect(row.nth(1)).toHaveAttribute("aria-label", /^ぱ, /);
+      await expect(row.nth(3)).toHaveAttribute("aria-label", /^っ, /);
       expect(await onScreen(await page.getByTestId("kana-key-enter").boundingBox()), "Enter is off the screen").toBe(true);
     });
 

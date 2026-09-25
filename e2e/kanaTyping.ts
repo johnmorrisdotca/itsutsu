@@ -27,6 +27,8 @@ export async function tapKana(page: Page, word: string): Promise<void> {
  * still must not use it: it measures the tool, not the page.
  */
 export async function thumbKana(page: Page, word: string): Promise<void> {
+  // The dev server's own button sits at the screen's lower left, on the 小 key when the keys meet the screen's bottom, and a tap there opens its menu. The live site has none.
+  await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   const press = async (testId: string) => {
     const box = await page.getByTestId(testId).boundingBox();
     if (box === null) throw new Error(`${testId} is not on the page`);
