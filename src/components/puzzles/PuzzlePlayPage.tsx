@@ -4,6 +4,8 @@ import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { currentReader } from "@/lib/auth/currentReader";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import { WORD_STYLES } from "@/lib/puzzles/wordDrop/wordStyles";
 import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
@@ -14,6 +16,7 @@ import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
+import { WordStyleProvider } from "./WordStyleContext";
 
 /**
  * /games/<slug>/play for a puzzle: the solve, at the size, level and seed the
@@ -30,6 +33,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
   const resumed = kept === null ? null : { progress: kept.progress, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
+  /* How a WordDrop grid is drawn, as this member last chose (`wordStyles.ts`); read only for WordDrop. */
+  const { wordStyle } = kind === "wordDrop" ? await preferencesFor() : { wordStyle: undefined };
   return (
     <Page>
       <SiteHeader />
@@ -51,7 +56,9 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         </p>
       </nav>
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
-        <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} resumed={resumed} hasAccount={reader.hasAccount} />
+        <WordStyleProvider initial={wordStyle ?? WORD_STYLES.othello} saves={reader.hasAccount}>
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} resumed={resumed} hasAccount={reader.hasAccount} />
+        </WordStyleProvider>
       </div>
       <footer className="border-t border-rule pt-5 text-sm text-muted">
         <p>

@@ -31,6 +31,40 @@ test.describe("the word puzzle", () => {
     await expect(page.getByTestId("game-family")).toContainText("Other");
   });
 
+  test("the grid is drawn as Othello, Gomoku or Tiles, the choice is kept for the next word, and taken back", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const grid = page.getByTestId("puzzle-grid");
+    await page.getByTestId("word-style-othello").click();
+    await expect(grid).toHaveAttribute("data-style", "othello");
+    const [miss] = misses(generatePuzzle(KIND, 5, LEVEL, seed).solution, 1);
+    await page.keyboard.type(miss!);
+    await page.keyboard.press("Enter");
+    // Stones on the wood, ruled: the letter on its stone, the mark unchanged.
+    await expect(page.getByTestId("word-lines")).toHaveCount(1);
+    await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("aria-label", new RegExp(`^${miss![0]!.toUpperCase()}, `));
+
+    // Gomoku, chosen here, is what the next word opens in.
+    const kept = page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
+    await page.getByTestId("word-style-gomoku").click();
+    await expect(grid).toHaveAttribute("data-style", "gomoku");
+    await expect(page.getByTestId("word-style-gomoku")).toHaveAttribute("aria-pressed", "true");
+    expect((await kept).ok()).toBe(true);
+    await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${freshPuzzleSeed()}`);
+    await ready(page, "puzzle-play");
+    await expect(grid).toHaveAttribute("data-style", "gomoku");
+
+    // Tiles draws no lines; and back to Othello, where it started.
+    await page.getByTestId("word-style-tiles").click();
+    await expect(grid).toHaveAttribute("data-style", "tiles");
+    await expect(page.getByTestId("word-lines")).toHaveCount(0);
+    const back = page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
+    await page.getByTestId("word-style-othello").click();
+    expect((await back).ok()).toBe(true);
+    await expect(grid).toHaveAttribute("data-style", "othello");
+  });
+
   test("a guess is coloured as the rules say, and the word found finishes it", async ({ page }) => {
     const seed = freshPuzzleSeed();
     const puzzle = generatePuzzle(KIND, 5, LEVEL, seed);

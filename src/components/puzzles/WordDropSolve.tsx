@@ -12,6 +12,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { WordDropGrid } from "./WordDropGrid";
 import { WordKeyboard } from "./WordKeyboard";
+import { useWordStyle } from "./WordStyleContext";
+import { WordStylePicker } from "./WordStylePicker";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 const BEST: Record<LetterMark, number> = { hit: 3, near: 2, miss: 1 };
@@ -40,6 +42,7 @@ export function WordDropSolve({
   resumed?: ResumedRun | null;
 }) {
   const hydrated = useHydrated();
+  const { style } = useWordStyle();
   const { kind, size, level, seed } = puzzle;
   const hidden = useMemo(() => decodeHidden(puzzle.givens, size) ?? "", [puzzle.givens, size]);
   const rows = rowsFor(size);
@@ -134,14 +137,15 @@ export function WordDropSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <WordDropGrid size={size} rows={rows} guesses={guesses} marks={marks} typing={typing} done={done !== null} />
+        <WordDropGrid size={size} rows={rows} guesses={guesses} marks={marks} typing={typing} done={done !== null} style={style} />
       </SolvePaused>
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
             {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
-          <WordKeyboard known={known} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+          <WordKeyboard known={known} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+          <WordStylePicker />
         </>
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">

@@ -1,3 +1,4 @@
+import { STONE_SETS } from "@/components/board/Board.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /*
@@ -107,7 +108,7 @@ export const PUZZLE_STONE_BLACK = "block size-[70%] rounded-full bg-ink shadow-[
 export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border-ink/70 bg-white shadow-[inset_0_-2px_3px_rgba(0,0,0,0.12)]";
 
 /**
- * A cell Hint marked wrong: a red ring inside it and a faint red ground, never
+ * A cell Show marked wrong: a red ring inside it and a faint red ground, never
  * colour alone — the number or stone is still there to read, and the ring is a
  * shape. It goes when the cell is changed (`useHints`).
  */
@@ -142,6 +143,26 @@ export const WORD_KEY =
  * column like every puzzle's.
  */
 export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
+
+/*
+ * WORDDROP IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter
+ * is written on a stone shaded as the board's own stones are (`STONE_SETS`):
+ * a white stone while it is typed, then moss in its place, ochre in the word
+ * elsewhere, black not in it — Othello's two colours and the site's two marks.
+ * An Othello disc sits inside its square; a Gomoku stone on its crossing,
+ * nearly touching its neighbours, as stones on a board do.
+ */
+export const WORD_STONE =
+  "flex items-center justify-center rounded-full text-xl font-bold uppercase leading-none shadow-[0_1px_2px_rgba(0,0,0,0.45)] sm:text-2xl";
+export const WORD_STONE_SIZE: Record<"othello" | "gomoku", string> = { othello: "size-[84%]", gomoku: "size-[94%]" };
+export const WORD_STONE_LOOK: Record<"typed" | "hit" | "near" | "miss", { background: string; color: string }> = {
+  typed: { background: STONE_SETS.classic.white, color: STONE_SETS.classic.whiteInk },
+  hit: { background: "radial-gradient(circle at 35% 30%, #8fa585 0%, #52664b 45%, #2f3d2b 100%)", color: "#f7f3ea" },
+  near: { background: "radial-gradient(circle at 35% 30%, #d9a55a 0%, #9d6c1f 45%, #5f3f0e 100%)", color: "#f7f3ea" },
+  miss: { background: STONE_SETS.classic.black, color: STONE_SETS.classic.blackInk },
+};
+/** The keys under a grid of stones: a letter not in the word is black, as its stone is. */
+export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "miss", string> = { ...WORD_TILE_MARK, miss: "border-ink bg-ink text-ivory" };
 
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";
