@@ -9,6 +9,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
+import { SolveHint } from "./SolveHint";
 import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
 
 /**
@@ -25,12 +26,15 @@ export function HiddenStonesSolve({
   race = null,
   checks = null,
   resumed = null,
+  hints = false,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
   /** The run kept of this grid, opened where it was left; null for a fresh one. */
   resumed?: ResumedRun | null;
+  /** Whether Hint was chosen for this puzzle; see `useHints`. */
+  hints?: boolean;
   /** How many times Check may be pressed on one's own; null for no limit. A race's is the race's. */
   checks?: number | null;
 }) {
@@ -44,10 +48,10 @@ export function HiddenStonesSolve({
   const [checked, setChecked] = useState<{ wrong: number; missing: number } | null>(null);
   // A full grid that is not right, said without a count under an allowance: see NumberSolve.
   const [fullNotRight, setFullNotRight] = useState(false);
-  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks, {
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
     progress: encodeStoneProgress(marks),
     resumed,
-  });
+  }, hints);
 
   /** The column of each row's stone, or -1 for a row with none or more than one. */
   const stonesOf = useCallback(
@@ -66,6 +70,7 @@ export function HiddenStonesSolve({
       const next = [...marks];
       next[index] = next[index] === "" ? "stone" : next[index] === "stone" ? "cross" : "";
       setMarks(next);
+      hinting.unmark(index);
       setChecked(null);
       setFullNotRight(false);
       const stones = stonesOf(next);
@@ -76,8 +81,17 @@ export function HiddenStonesSolve({
         else setFullNotRight(true);
       }
     },
-    [done, begin, marks, stonesOf, answer, finish, checking.allowed],
+    [done, begin, marks, stonesOf, answer, finish, checking.allowed, hinting],
   );
+
+  /* Hint: every stone where the answer has none, and every cross on the answer's stone, marked until changed. */
+  const hint = () =>
+    hinting.show(
+      marks.flatMap((mark, index) => {
+        const onAnswer = answer[Math.floor(index / size)] === index % size;
+        return (mark === "stone" && !onAnswer) || (mark === "cross" && onAnswer) ? [index] : [];
+      }),
+    );
 
   const check = () => {
     if (!checking.spend()) return;
@@ -92,11 +106,15 @@ export function HiddenStonesSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <HiddenStonesGrid size={size} regions={regions} marks={marks} done={done !== null} onPress={press} />
+        <HiddenStonesGrid size={size} regions={regions} marks={marks} wrong={hinting.marked} done={done !== null} onPress={press} />
       </SolvePaused>
       {done === null ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+        <div className="flex flex-col gap-2">
+          {/* Check at one end of the row and Hint at the other (John: "opposite side of CHECK button"). */}
+          <div className="flex items-center gap-3">
+            <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+            <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
+          </div>
           {checked !== null ? (
             <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
               {checkedWords(checked)}

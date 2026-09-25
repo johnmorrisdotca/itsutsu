@@ -47,6 +47,8 @@ const bodySchema = z.object({
   checksAllowed: z.number().int().nullable().optional(),
   checksUsed: z.number().int().nonnegative().optional(),
   pausedMs: z.number().int().nonnegative().optional(),
+  /** How many times Hint was pressed — kept with the solve, so a helped time is shown as one. */
+  hintsUsed: z.number().int().nonnegative().optional(),
   /** The grid's seed, so the unfinished run kept of it (if any) is taken off the member's games. */
   seed: z.number().int().optional(),
 });
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
       checksAllowed,
       checksUsed,
       pausedMs: parsed.data.pausedMs ?? 0,
+      hintsUsed: parsed.data.hintsUsed ?? 0,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
     if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);

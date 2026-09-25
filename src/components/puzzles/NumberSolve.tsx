@@ -16,6 +16,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
+import { SolveHint } from "./SolveHint";
 
 /**
  * Solving a grid of numbers — Number Place and its variants, More or Less and Towers.
@@ -33,12 +34,15 @@ export function NumberSolve({
   race = null,
   checks = null,
   resumed = null,
+  hints = false,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
   /** The run kept of this grid, opened where it was left; null for a fresh one. */
   resumed?: ResumedRun | null;
+  /** Whether Hint was chosen for this puzzle; see `useHints`. */
+  hints?: boolean;
   /** How many times Check may be pressed on one's own, from the address; null for no limit. A race's is the race's. */
   checks?: number | null;
 }) {
@@ -79,10 +83,10 @@ export function NumberSolve({
    * HOW MANY are wrong, or filling the grid would be a Check nobody spent.
    */
   const [fullNotRight, setFullNotRight] = useState(false);
-  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks, {
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
     progress: encodeNumberProgress(entries),
     resumed,
-  });
+  }, hints);
 
   const enter = useCallback(
     (value: number) => {
@@ -91,6 +95,7 @@ export function NumberSolve({
       const next = [...entries];
       next[selected] = value;
       setEntries(next);
+      hinting.unmark(selected);
       setChecked(null);
       setFullNotRight(false);
       if (next.every((cell, index) => givens[index] !== 0 || cell !== 0)) {
@@ -100,7 +105,7 @@ export function NumberSolve({
         else setFullNotRight(true);
       }
     },
-    [selected, done, pausing.paused, givens, entries, solution, begin, finish, checking.allowed],
+    [selected, done, pausing.paused, givens, entries, solution, begin, finish, checking.allowed, hinting],
   );
 
   /* A tap on the chosen cell steps it on; a tap anywhere else chooses that cell. A given never steps. */
@@ -135,6 +140,9 @@ export function NumberSolve({
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, done, size, enter]);
 
+  /* Hint: every entry that is not the answer, marked on the grid until it is changed. */
+  const hint = () => hinting.show(entries.flatMap((cell, index) => (givens[index] === 0 && cell !== 0 && cell !== solution[index] ? [index] : [])));
+
   const check = () => {
     if (!checking.spend()) return;
     setFullNotRight(false);
@@ -155,6 +163,7 @@ export function NumberSolve({
           marks={asked.marks}
           regions={asked.regions}
           cages={asked.cages}
+          wrong={hinting.marked}
           clues={asked.clues}
           selected={selected}
           done={done !== null}
@@ -173,8 +182,12 @@ export function NumberSolve({
               ×
             </button>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+          <div className="flex flex-col gap-2">
+            {/* Check at one end of the row and Hint at the other (John: "opposite side of CHECK button"). */}
+            <div className="flex items-center gap-3">
+              <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+              <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
+            </div>
             {checked !== null ? (
               <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
                 {checkedWords(checked)}

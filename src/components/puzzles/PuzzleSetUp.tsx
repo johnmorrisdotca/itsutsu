@@ -53,6 +53,8 @@ export function PuzzleSetUp({
   const size = sized?.size ?? ownSize;
   const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
   const [checks, setChecks] = useState<number | null>(null);
+  // Hint, off unless chosen: see `useHints`. Not carried into a race, which allows none.
+  const [hints, setHints] = useState(false);
   const [racing, setRacing] = useState<"" | "making" | string>("");
 
   /*
@@ -93,7 +95,7 @@ export function PuzzleSetUp({
         below." What each size is for goes here too: it was a paragraph under
         the size tiles, and made that column a different height for every puzzle.
       */}
-      <SetUpSection title="Size, level and checks" kanji="盤・難易度・確認" testId="puzzle-settings">
+      <SetUpSection title="Size, level and help" kanji="盤・難易度・手助け" testId="puzzle-settings">
         <p className="text-xs text-muted" data-testid="puzzle-size-note">
           {copy.board}
         </p>
@@ -141,10 +143,36 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-checks-blurb">
           {checkAllowanceWords(checks).blurb}
         </p>
+        {/*
+          HINT, chosen here or not at all. John, 2026-09-24: "when a user wants a
+          HINT button they can add as an option for these games... and when
+          pressed, we highlight what's wrong." Off by default; the button is
+          always on the puzzle, disabled with its reason when it was not chosen.
+        */}
+        <div className="flex flex-wrap gap-1.5 pt-1" role="radiogroup" aria-label="Hints">
+          {[false, true].map((each) => (
+            <button
+              key={String(each)}
+              type="button"
+              role="radio"
+              aria-checked={hints === each}
+              className={`${PICK_WORD_CHIP} ${hints === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+              onClick={() => setHints(each)}
+              data-testid={`puzzle-hints-${each ? "on" : "off"}`}
+            >
+              {each ? "Hints" : "No hints"} <span className="font-mincho opacity-70">{each ? "ヒント有" : "ヒント無"}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted" data-testid="puzzle-hints-blurb">
+          {hints
+            ? "Hint marks which cells are wrong, as often as you like; a solve that used one says so beside its time."
+            : "No hints: Check is the only help, and it never says which cells."}
+        </p>
       </SetUpSection>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} data-testid="puzzle-solve">
+        <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} data-testid="puzzle-solve">
           Solve a {sizeWord(size)} {copy.label} →
         </Link>
         <span className="text-xs text-muted">Made in your browser, one answer, timed from your first entry.</span>

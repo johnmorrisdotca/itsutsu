@@ -91,3 +91,10 @@ export const PUZZLE_STONE_BLACK = "block size-[70%] rounded-full bg-ink shadow-[
 
 /** The white stone: paper-white with an ink rim, so it reads on the white grid. */
 export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border-ink/70 bg-white shadow-[inset_0_-2px_3px_rgba(0,0,0,0.12)]";
+
+/**
+ * A cell Hint marked wrong: a red ring inside it and a faint red ground, never
+ * colour alone — the number or stone is still there to read, and the ring is a
+ * shape. It goes when the cell is changed (`useHints`).
+ */
+export const PUZZLE_CELL_WRONG = "ring-2 ring-inset ring-shu bg-shu-soft/50";

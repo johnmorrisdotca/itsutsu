@@ -52,10 +52,11 @@ export async function MyPuzzleRuns() {
                 <span className="text-xs text-muted">
                   {clockText(run.elapsedMs)} so far
                   {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
+                  {run.hintsAllowed ? " · hints" : ""}
                 </span>
               </span>
               <Link
-                href={`${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed })}`}
+                href={`${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed })}`}
                 className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`}
                 data-testid="puzzle-going-continue"
               >

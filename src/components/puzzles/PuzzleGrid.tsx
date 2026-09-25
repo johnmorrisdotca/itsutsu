@@ -17,6 +17,7 @@ import {
   PUZZLE_CELL_DIAGONAL,
   PUZZLE_CELL_GIVEN,
   PUZZLE_CELL_SELECTED,
+  PUZZLE_CELL_WRONG,
   PUZZLE_GRID,
   PUZZLE_MARK_BELOW,
   PUZZLE_MARK_RIGHT,
@@ -36,6 +37,9 @@ import {
  * fingertip, and the number keys under the grid are what a finger presses
  * to fill one.
  */
+/** No cell marked: the default, one set rather than a new one each render. */
+const NO_CELLS: ReadonlySet<number> = new Set();
+
 export function PuzzleGrid({
   kind,
   size,
@@ -45,6 +49,7 @@ export function PuzzleGrid({
   regions = null,
   cages = null,
   clues = null,
+  wrong = NO_CELLS,
   selected,
   done,
   onSelect,
@@ -64,6 +69,8 @@ export function PuzzleGrid({
   selected: number | null;
   done: boolean;
   onSelect: (index: number) => void;
+  /** The cells Hint marked wrong (`useHints`); none by default. */
+  wrong?: ReadonlySet<number>;
 }) {
   /*
    * Where the heavy rules go: between two cells of different regions — a
@@ -113,7 +120,7 @@ export function PuzzleGrid({
             <button
               key={index}
               type="button"
-              className={`relative ${PUZZLE_CELL} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${onDiagonal ? PUZZLE_CELL_DIAGONAL : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${edges}`}
+              className={`relative ${PUZZLE_CELL} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${onDiagonal ? PUZZLE_CELL_DIAGONAL : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${wrong.has(index) ? PUZZLE_CELL_WRONG : ""} ${edges}`}
               onClick={() => onSelect(index)}
               disabled={done}
               aria-label={`row ${row + 1}, column ${col + 1}, ${value === 0 ? "empty" : value}${isGiven ? ", given" : ""}${sumAt.has(index) ? `, a cage adding to ${sumAt.get(index)}` : ""}`}
@@ -125,6 +132,7 @@ export function PuzzleGrid({
               data-region={region === null ? undefined : region[index]}
               data-diagonal={onDiagonal ? "true" : undefined}
               data-cage={cageOf.get(index)}
+              data-wrong={wrong.has(index) ? "true" : undefined}
             >
               {sumAt.has(index) ? (
                 <span className={PUZZLE_CAGE_SUM} aria-hidden="true" data-testid="puzzle-cage-sum">

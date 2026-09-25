@@ -17,9 +17,11 @@ export type PuzzleAsked = {
   seed: number | null;
   /** How many times Check may be pressed; null, and left out of the address, for no limit. */
   checks?: number | null;
+  /** Whether Hint may be pressed; false, and left out of the address, by default. */
+  hints?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -36,7 +38,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const seed = isSeed(seedAsked) ? seedAsked : null;
   const checksAsked = Number(one(PUZZLE_PARAMS.checks));
   const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;
-  return { size, level, seed, checks };
+  const hints = one(PUZZLE_PARAMS.hints) === "1";
+  return { size, level, seed, checks, hints };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -44,5 +47,6 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: String(asked.size), [PUZZLE_PARAMS.level]: asked.level });
   if (asked.seed !== null) params.set(PUZZLE_PARAMS.seed, String(asked.seed));
   if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
+  if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");
   return `?${params.toString()}`;
 }

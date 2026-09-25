@@ -24,6 +24,8 @@ const bodySchema = z.object({
   seed: z.number().int(),
   checksAllowed: z.number().int().nullable().optional(),
   checksUsed: z.number().int().nonnegative().optional(),
+  hintsUsed: z.number().int().nonnegative().optional(),
+  hintsAllowed: z.boolean().optional(),
   progress: z.string().max(PUZZLE_CODE_LONGEST),
   /** The time so far; a month is more than anybody spends on one grid. */
   elapsedMs: z.number().int().nonnegative().max(31 * 24 * 60 * 60 * 1000),
@@ -57,6 +59,8 @@ export async function POST(request: Request) {
       seed,
       checksAllowed,
       checksUsed: Math.min(parsed.data.checksUsed ?? 0, checksAllowed ?? Number.MAX_SAFE_INTEGER),
+      hintsAllowed: parsed.data.hintsAllowed ?? false,
+      hintsUsed: parsed.data.hintsAllowed === true ? (parsed.data.hintsUsed ?? 0) : 0,
       progress,
       elapsedMs: parsed.data.elapsedMs,
     });

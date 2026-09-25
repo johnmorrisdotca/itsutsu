@@ -24,6 +24,8 @@ export type KeptRun = {
   seed: number;
   checksAllowed: number | null;
   checksUsed: number;
+  hintsAllowed: boolean;
+  hintsUsed: number;
   progress: string;
   elapsedMs: number;
 };
@@ -48,7 +50,7 @@ export async function keepRun(run: KeptRun): Promise<void> {
 export async function runOf(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number) {
   return prisma.puzzleRun.findUnique({
     where: { memberId_kind_size_level_seed: { memberId, kind, size, level, seed } },
-    select: { checksAllowed: true, checksUsed: true, progress: true, elapsedMs: true },
+    select: { checksAllowed: true, checksUsed: true, hintsUsed: true, progress: true, elapsedMs: true },
   });
 }
 
@@ -58,7 +60,7 @@ export async function runsOf(memberId: string) {
     where: { memberId },
     orderBy: { updatedAt: "desc" },
     take: RUNS_KEPT,
-    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, elapsedMs: true, updatedAt: true },
+    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, hintsUsed: true, elapsedMs: true, updatedAt: true },
   });
 }
 

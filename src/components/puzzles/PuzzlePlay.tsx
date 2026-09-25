@@ -41,6 +41,7 @@ export function PuzzlePlay({
   hasAccount,
   race = null,
   checks = null,
+  hints = false,
   resumed = null,
 }: {
   kind: PuzzleKind;
@@ -49,6 +50,8 @@ export function PuzzlePlay({
   seed: number | null;
   /** How many times Check may be pressed, from the address; null for no limit. */
   checks?: number | null;
+  /** Whether Hint was chosen for this puzzle, from the address. */
+  hints?: boolean;
   /** The run the member kept of this grid, opened where it was left. */
   resumed?: ResumedRun | null;
   /** Whether a solve can be paid: an account, not merely a session. */
@@ -63,8 +66,8 @@ export function PuzzlePlay({
      that would draw a different one. */
   useEffect(() => {
     if (seed !== null) return;
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks })}`);
-  }, [seed, kind, size, level, checks, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints })}`);
+  }, [seed, kind, size, level, checks, hints, router]);
 
   const puzzle = useMemo(() => (seed === null ? null : generatePuzzle(kind, size, level, seed)), [kind, size, level, seed]);
 
@@ -95,10 +98,10 @@ export function PuzzlePlay({
   const seat = race ?? null;
   switch (kind) {
     case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
+      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "blackAndWhite":
-      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
+      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     default:
-      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
+      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }
 }

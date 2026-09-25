@@ -1227,6 +1227,8 @@ model PuzzleSolve {
   checksUsed    Int?
   /// Time spent paused, already taken off elapsedMs; null where not recorded (a solve kept before Pause).
   pausedMs      Int?
+  /// How many times Hint was pressed; null where not recorded (a solve kept before Hint existed).
+  hintsUsed     Int?
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])
@@ -1247,6 +1249,10 @@ model PuzzleRun {
   /// The Check allowance it is being solved under, or null for no limit.
   checksAllowed Int?
   checksUsed    Int      @default(0)
+  /// Whether Hint was chosen for it, so it opens again with hints on.
+  hintsAllowed  Boolean  @default(false)
+  /// How many times Hint has been pressed on it so far.
+  hintsUsed     Int      @default(0)
   /// What has been written so far, one character a cell, in the kind's own code for an entry.
   progress      String
   elapsedMs     Int

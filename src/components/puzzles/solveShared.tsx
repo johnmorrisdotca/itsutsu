@@ -8,6 +8,7 @@ import { IdleModal } from "@/components/game/IdleModal";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { useIdleWatch } from "@/components/game/useIdleWatch";
 
+import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
@@ -39,7 +40,7 @@ export type SolveRace = { id: string; since: number; checksAllowed: number | nul
 export type Checking = { allowed: number | null; used: number; left: number | null; spend: () => boolean };
 
 /** An unfinished run kept on the account, opened where it was left: what was written, the time so far and the checks spent. */
-export type ResumedRun = { progress: string; elapsedMs: number; checksUsed: number };
+export type ResumedRun = { progress: string; elapsedMs: number; checksUsed: number; hintsUsed: number };
 
 /** What the solve screen is keeping: what is written now, and the run it opened with, if any. */
 export type Keeping = { progress: string; resumed: ResumedRun | null };
@@ -50,6 +51,8 @@ export function useSolve(
   race: SolveRace | null = null,
   checks: number | null = null,
   keeping: Keeping = { progress: "", resumed: null },
+  /** Whether Hint was chosen for this puzzle; never in a race. */
+  hints = false,
 ) {
   const router = useRouter();
   /*
@@ -84,6 +87,7 @@ export function useSolve(
     return true;
   }, [left]);
   const checking: Checking = { allowed, used, left, spend };
+  const hinting = useHints(race === null && hints, keeping.resumed?.hintsUsed ?? 0);
 
   const [pausedMs, setPausedMs] = useState(0);
   const [pausedAt, setPausedAt] = useState<number | null>(null);
@@ -107,6 +111,8 @@ export function useSolve(
       seed: puzzle.seed,
       checksAllowed: allowed,
       checksUsed: used,
+      hintsAllowed: hinting.allowed,
+      hintsUsed: hinting.used,
       progress: keeping.progress,
       elapsedMs,
     };
@@ -193,7 +199,7 @@ export function useSolve(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
             race === null
-              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, checksAllowed: allowed, checksUsed: used, pausedMs }
+              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs }
               : { answer, checksUsed: used },
           ),
         });
@@ -209,7 +215,7 @@ export function useSolve(
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hasAccount, race, router],
+    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router],
   );
 
   const elapsedMs = done !== null ? done.elapsedMs : carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs));
@@ -223,7 +229,7 @@ export function useSolve(
     kept: awaiting,
     keptOnLeaving: hasAccount && race === null,
   };
-  return { startedAt, elapsedMs, done, begin, finish, pausing, checking };
+  return { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting };
 }
 
 /** Whether the run is paused, whether it may be, and the press that pauses or resumes it. */

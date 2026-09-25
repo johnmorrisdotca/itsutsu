@@ -110,6 +110,11 @@ export function FastestTable({ kind, board, names, whole }: { kind: PuzzleKind; 
                     <span key={`${solve.memberId}-${index}`} className="flex items-baseline gap-2">
                       <span className="font-mono tabular-nums">{clockText(solve.elapsedMs)}</span>
                       <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />
+                      {solve.hintsUsed !== null && solve.hintsUsed > 0 ? (
+                        <span className="text-xs text-muted" data-testid="puzzle-fastest-hints">
+                          with hints
+                        </span>
+                      ) : null}
                       {solve.checksAllowed !== null ? (
                         <span className="text-xs text-muted" data-testid="puzzle-fastest-checks">
                           {solve.checksAllowed === 1 ? "1 check" : `${solve.checksAllowed} checks`}

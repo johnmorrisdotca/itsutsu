@@ -1,7 +1,11 @@
 "use client";
 
 import { PuzzleBoard } from "./PuzzleBoard";
-import { PUZZLE_GRID, REGION_FILLS } from "./puzzles.constants";
+import {
+  PUZZLE_CELL_WRONG,
+  PUZZLE_GRID,
+  REGION_FILLS,
+} from "./puzzles.constants";
 
 /** What a cell holds while solving: nothing, a stone, or a cross marking it ruled out. */
 export type StoneMark = "" | "stone" | "cross";
@@ -16,17 +20,23 @@ export type StoneMark = "" | "stone" | "cross";
  * answer: it draws the regions and the marks it is handed and reports a
  * press; `HiddenStonesSolve` decides what a press means.
  */
+/** No cell marked: the default, one set rather than a new one each render. */
+const NO_CELLS: ReadonlySet<number> = new Set();
+
 export function HiddenStonesGrid({
   size,
   regions,
   marks,
   done,
   onPress,
+  wrong = NO_CELLS,
 }: {
   size: number;
   regions: readonly number[];
   marks: readonly StoneMark[];
   done: boolean;
+  /** The cells Hint marked wrong (`useHints`); none by default. */
+  wrong?: ReadonlySet<number>;
   onPress: (index: number) => void;
 }) {
   return (
@@ -46,7 +56,8 @@ export function HiddenStonesGrid({
             <button
               key={index}
               type="button"
-              className={`relative flex aspect-square items-center justify-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-moss ${edges} ${col === 0 ? "border-l-0" : ""} ${row === 0 ? "border-t-0" : ""}`}
+              className={`relative flex aspect-square items-center justify-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-moss ${edges} ${col === 0 ? "border-l-0" : ""} ${row === 0 ? "border-t-0" : ""} ${wrong.has(index) ? PUZZLE_CELL_WRONG : ""}`}
+              data-wrong={wrong.has(index) ? "true" : undefined}
               style={{ backgroundColor: REGION_FILLS[region % REGION_FILLS.length] }}
               onClick={() => onPress(index)}
               disabled={done}

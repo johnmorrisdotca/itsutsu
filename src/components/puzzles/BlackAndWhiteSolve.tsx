@@ -10,6 +10,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { checkedWords } from "./NumberSolve";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
+import { SolveHint } from "./SolveHint";
 
 /** What a tap puts in an open cell: black, then white, then nothing. */
 function nextStone(stone: number): number {
@@ -29,6 +30,7 @@ export function BlackAndWhiteSolve({
   race = null,
   checks = null,
   resumed = null,
+  hints = false,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
@@ -37,6 +39,8 @@ export function BlackAndWhiteSolve({
   checks?: number | null;
   /** What was written on this puzzle when it was last left, to start from; null for a fresh start. */
   resumed?: ResumedRun | null;
+  /** Whether Hint was chosen for this puzzle; see `useHints`. */
+  hints?: boolean;
 }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
@@ -50,10 +54,10 @@ export function BlackAndWhiteSolve({
   const [checked, setChecked] = useState<{ wrong: number; empty: number } | null>(null);
   // A full grid that is not right, said without a count under an allowance: see NumberSolve.
   const [fullNotRight, setFullNotRight] = useState(false);
-  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks, {
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
     progress: encodeBlackAndWhiteProgress(stones),
     resumed,
-  });
+  }, hints);
 
   const press = useCallback(
     (index: number) => {
@@ -62,6 +66,7 @@ export function BlackAndWhiteSolve({
       const next = [...stones];
       next[index] = nextStone(next[index] ?? EMPTY);
       setStones(next);
+      hinting.unmark(index);
       setChecked(null);
       setFullNotRight(false);
       if (next.every((stone) => stone !== EMPTY)) {
@@ -71,8 +76,11 @@ export function BlackAndWhiteSolve({
         else setFullNotRight(true);
       }
     },
-    [done, pausing.paused, givens, begin, stones, answer, finish, checking.allowed],
+    [done, pausing.paused, givens, begin, stones, answer, finish, checking.allowed, hinting],
   );
+
+  /* Hint: every stone put down that is not the answer's, marked until changed. */
+  const hint = () => hinting.show(stones.flatMap((stone, cell) => (givens[cell] === EMPTY && stone !== EMPTY && stone !== answer[cell] ? [cell] : [])));
 
   const check = () => {
     if (!checking.spend()) return;
@@ -86,11 +94,15 @@ export function BlackAndWhiteSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <BlackAndWhiteGrid size={size} givens={givens} stones={stones} done={done !== null} onPress={press} />
+        <BlackAndWhiteGrid size={size} givens={givens} stones={stones} wrong={hinting.marked} done={done !== null} onPress={press} />
       </SolvePaused>
       {done === null ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+        <div className="flex flex-col gap-2">
+          {/* Check at one end of the row and Hint at the other (John: "opposite side of CHECK button"). */}
+          <div className="flex items-center gap-3">
+            <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+            <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
+          </div>
           {checked !== null ? (
             <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
               {checkedWords(checked)}

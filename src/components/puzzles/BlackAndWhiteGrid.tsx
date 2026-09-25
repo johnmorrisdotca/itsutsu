@@ -3,7 +3,14 @@
 import { BLACK, EMPTY, WHITE } from "@/lib/puzzles/blackAndWhite/code";
 
 import { PuzzleBoard } from "./PuzzleBoard";
-import { PUZZLE_GRID, PUZZLE_STONE_BLACK, PUZZLE_STONE_CELL, PUZZLE_STONE_PRINTED, PUZZLE_STONE_WHITE } from "./puzzles.constants";
+import {
+  PUZZLE_CELL_WRONG,
+  PUZZLE_GRID,
+  PUZZLE_STONE_BLACK,
+  PUZZLE_STONE_CELL,
+  PUZZLE_STONE_PRINTED,
+  PUZZLE_STONE_WHITE,
+} from "./puzzles.constants";
 
 const WORDS: Record<number, string> = { [EMPTY]: "empty", [BLACK]: "black", [WHITE]: "white" };
 
@@ -16,17 +23,23 @@ const WORDS: Record<number, string> = { [EMPTY]: "empty", [BLACK]: "black", [WHI
  * as every puzzle's cells are; the grid knows nothing of the answer and
  * reports a press, and `BlackAndWhiteSolve` decides what it means.
  */
+/** No cell marked: the default, one set rather than a new one each render. */
+const NO_CELLS: ReadonlySet<number> = new Set();
+
 export function BlackAndWhiteGrid({
   size,
   givens,
   stones,
   done,
   onPress,
+  wrong = NO_CELLS,
 }: {
   size: number;
   givens: readonly number[];
   stones: readonly number[];
   done: boolean;
+  /** The cells Hint marked wrong (`useHints`); none by default. */
+  wrong?: ReadonlySet<number>;
   onPress: (index: number) => void;
 }) {
   return (
@@ -41,7 +54,8 @@ export function BlackAndWhiteGrid({
               <button
                 key={index}
                 type="button"
-                className={`${PUZZLE_STONE_CELL} ${printed ? PUZZLE_STONE_PRINTED : ""} ${col === 0 ? "border-l-0" : ""} ${row === 0 ? "border-t-0" : ""}`}
+                className={`${PUZZLE_STONE_CELL} ${printed ? PUZZLE_STONE_PRINTED : ""} ${col === 0 ? "border-l-0" : ""} ${row === 0 ? "border-t-0" : ""} ${wrong.has(index) ? PUZZLE_CELL_WRONG : ""}`}
+                data-wrong={wrong.has(index) ? "true" : undefined}
                 onClick={() => onPress(index)}
                 disabled={done || printed}
                 aria-label={`row ${row + 1}, column ${col + 1}, ${WORDS[stone]}${printed ? ", printed" : ""}`}

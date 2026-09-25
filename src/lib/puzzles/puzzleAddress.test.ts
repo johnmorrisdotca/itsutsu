@@ -20,6 +20,16 @@ describe("the Check allowance in a puzzle's address", () => {
 
   it("reads back what it writes", () => {
     const query = Object.fromEntries(new URLSearchParams(puzzleQuery({ size: 6, level: "hard", seed: 7, checks: 1 }).slice(1)));
-    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1 });
+    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false });
+  });
+});
+
+describe("hints in a puzzle's address", () => {
+  it("are on only when the address says hints=1, and written only when on", () => {
+    expect(puzzleAsked("numberPlace", { hints: "1" }).hints).toBe(true);
+    expect(puzzleAsked("numberPlace", {}).hints).toBe(false);
+    expect(puzzleAsked("numberPlace", { hints: "yes" }).hints).toBe(false);
+    expect(puzzleQuery({ size: 9, level: "easy", seed: 5, hints: true })).toBe("?size=9&level=easy&seed=5&hints=1");
+    expect(puzzleQuery({ size: 9, level: "easy", seed: 5, hints: false })).toBe("?size=9&level=easy&seed=5");
   });
 });
