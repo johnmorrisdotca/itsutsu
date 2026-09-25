@@ -1,6 +1,7 @@
 "use client";
 
 import { linesOf, pointIn } from "@/lib/record/moveFormats";
+import { capturePaths, slideWord } from "@/lib/gomoku/notation";
 import { MOVE_KINDS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { slugFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -27,6 +28,8 @@ import { MoveFormatPicker } from "./MoveFormatPicker";
  */
 export function MoveHistory({ session, actions }: GamePanelProps) {
   const { state, fatalMoves, moveIndex, record } = session;
+  // Each capture's squares so far, for a draughts jump's colon (`capturePaths`).
+  const paths = capturePaths(record);
   const { format } = useMoveFormat();
   const fatalNumbers = new Set(fatalMoves.map((move) => move.moveNumber));
 
@@ -115,7 +118,12 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                         ? GAME_COPY.pass.label
                         : move.kind === MOVE_KINDS.forfeit
                           ? GAME_COPY.forfeit.label
-                          : pointIn(format, state.settings.size, move)}
+                          : paths[index] !== null
+                            ? // A draughts capture with a colon, a multi-jump as every square it landed on.
+                              slideWord(paths[index].map((point) => pointIn(format, state.settings.size, point)), true)
+                            : move.kind === MOVE_KINDS.move && move.from !== undefined
+                              ? slideWord([pointIn(format, state.settings.size, move.from), pointIn(format, state.settings.size, move)], false)
+                              : pointIn(format, state.settings.size, move)}
                       {move.kind === MOVE_KINDS.piece && move.cells !== undefined
                         ? ` ×${move.cells.length}`
                         : ""}

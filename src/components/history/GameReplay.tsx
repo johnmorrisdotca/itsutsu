@@ -16,6 +16,7 @@ import { useMoveFormat } from "@/components/game/MoveFormatContext";
 import { MoveFormatPicker } from "@/components/game/MoveFormatPicker";
 import { useSavedAppearance } from "@/components/game/useSavedAppearance";
 import { GameMosaic } from "./GameMosaic";
+import { PdnDownload } from "./PdnDownload";
 import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointIn, type MoveFormatChoice } from "@/lib/record/moveFormats";
@@ -94,6 +95,8 @@ function MoveList({
         </Button>
         {/* The same record as a file other programs open, where SGF has a type for the game. */}
         {offerSgf ? <SgfDownload game={game} /> : null}
+        {/* The draughts family's file, which SGF has no number for (`PdnDownload`). */}
+        {offerSgf ? <PdnDownload game={game} /> : null}
       </span>
     </details>
   );
@@ -326,6 +329,8 @@ export function GameReplay({
             // thing it was given as `at` — never a timeline position.
             onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
             emptyNote="No stones were played in this game."
+            // The engine's moves, for a draughts capture's colon (`capturePaths`).
+            played={timeline[timeline.length - 1]?.moves}
             format={format}
           />
         </MovesFold>

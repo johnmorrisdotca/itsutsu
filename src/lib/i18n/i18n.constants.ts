@@ -216,6 +216,8 @@ export const PHRASES = {
    * program that opens one.
    */
   "record.downloadSgf": "Download as SGF",
+  /** The same for the draughts family, whose file is PDN (Portable Draughts Notation). */
+  "record.downloadPdn": "Download as PDN",
 
   /*
    * The rivalry scoreboard: two members' record against each other, above the

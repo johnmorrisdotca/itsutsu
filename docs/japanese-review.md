@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (156)
+## 1. Written by a machine — please check these (157)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -84,6 +84,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | The games index, /games — under every game and every family, in all three views | The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder. | **この種目の対人順位表の首位です。メンバー同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。** | This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder. |  |
 | The games index, /games — under every game and every family, in all three views | Top player | **首位** | First place. |  |
 | The games index, /games — under every game and every family, in all three views | The rated games they won on this ladder | **この順位表で勝ったレーティング対局** | The rated games won on this ladder. |  |
+| Finished games of checkers and draughts — beside Copy as text, in the move list under the replay | Download as PDN | **PDN形式でダウンロード** | Download in PDN format. |  |
 | Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | against {name} | **{name}との対戦** | Games against {name}. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between {one} and {other} has been a draw | **{one}と{other}の対局はすべて引き分け** | Every game between {one} and {other} has been a draw. |  |

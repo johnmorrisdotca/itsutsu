@@ -2,6 +2,8 @@
 
 import { MOVE_KINDS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
+import { capturePaths, slideWord, type SlideMove } from "@/lib/gomoku/notation";
+import type { Point } from "@/lib/gomoku/gomoku.types";
 import type { GameMove } from "@/lib/history/gameHistory.types";
 import { MOVE_FORMAT_DISPLAY, linesOf, pointIn, type MoveFormatChoice } from "@/lib/record/moveFormats";
 
@@ -35,7 +37,14 @@ export function PlayedMoves({
   testId = "played-moves",
   nameOf,
   format = "itsutsu",
+  played,
 }: {
+  /**
+   * The same moves as the engine replayed them, in order, where the caller has
+   * a replay: what lets a draughts capture be written as one (g5:e3:c1). A list
+   * whose length disagrees is ignored and every slide is written plainly.
+   */
+  played?: readonly SlideMove[];
   size: number;
   moves: readonly GameMove[];
   /** Which move the board is showing. Later ones are dimmed: they are still to come. */
@@ -65,6 +74,9 @@ export function PlayedMoves({
   }
 
   const pairs = MOVE_FORMAT_DISPLAY[format].pairs;
+  // Each move's capture path, by its move number: the engine's list is in the record's order.
+  const paths = played !== undefined && played.length === moves.length ? capturePaths(played) : null;
+  const pathOf = new Map(moves.map((move, at) => [move.number, paths?.[at] ?? null]));
   return (
     <ol className="max-h-56 overflow-y-auto rounded-lg border border-rule text-sm" data-testid={testId} data-format={format}>
       {linesOf(format, moves).map((line) => (
@@ -79,7 +91,7 @@ export function PlayedMoves({
           {line.moves.map(({ move }) => {
             const current = at === move.number;
             const ahead = at !== undefined && move.number > at;
-            const said = nameOf?.(move) ?? wordFor(size, move, format);
+            const said = nameOf?.(move) ?? wordFor(size, move, format, pathOf.get(move.number) ?? null);
             const inside = (
               <>
                 {pairs ? null : (
@@ -131,12 +143,14 @@ export function PlayedMoves({
  * either would be a record that disagrees with the game it describes — a
  * Halma move reads as the square somebody left, not the one they arrived at.
  */
-function wordFor(size: number, move: GameMove, format: MoveFormatChoice): string {
+function wordFor(size: number, move: GameMove, format: MoveFormatChoice, capture: readonly Point[] | null): string {
   const without = stonelessWord(move.kind);
   if (without !== null) return without;
   const to = pointIn(format, size, move);
+  // A draughts capture with a colon, a multi-jump as every square it landed on (`slideWord`).
+  if (capture !== null) return slideWord(capture.map((point) => pointIn(format, size, point)), true);
   if (move.kind === MOVE_KINDS.move && move.from !== undefined) {
-    return `${pointIn(format, size, move.from)}→${to}`;
+    return slideWord([pointIn(format, size, move.from), to], false);
   }
   if (move.kind === MOVE_KINDS.piece && move.cells !== undefined) {
     return `${to} ×${move.cells.length}`;

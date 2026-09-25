@@ -304,6 +304,11 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "SGF形式でダウンロード",
     back: "Download in SGF format.",
   },
+  /* The draughts family's file, in the same words. */
+  "record.downloadPdn": {
+    text: "PDN形式でダウンロード",
+    back: "Download in PDN format.",
+  },
 
   /*
    * The rivalry scoreboard. 対戦 is "playing each other" and 対局 is "a game

@@ -1,4 +1,9 @@
+"use client";
+
+import { useMemo } from "react";
+
 import { SectionTitle } from "@/components/ui/Controls";
+import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 import { PlayedMoves } from "@/components/history/PlayedMoves";
@@ -13,10 +18,18 @@ import { PlayedMoves } from "@/components/history/PlayedMoves";
  * gate.
  */
 export function LiveMoves({ detail }: { detail: GameDetail }) {
+  // The record replayed in the browser, for a draughts capture's colon (`capturePaths`); again only when the record changes.
+  const played = useMemo(() => {
+    try {
+      return replayGame(detail).moves;
+    } catch {
+      return undefined;
+    }
+  }, [detail]);
   return (
     <div className="flex flex-col gap-2">
       <SectionTitle kanji="棋譜">Moves</SectionTitle>
-      <PlayedMoves size={detail.size} moves={detail.moves} emptyNote="Nothing played yet." testId="live-moves" />
+      <PlayedMoves size={detail.size} moves={detail.moves} emptyNote="Nothing played yet." testId="live-moves" played={played} />
     </div>
   );
 }

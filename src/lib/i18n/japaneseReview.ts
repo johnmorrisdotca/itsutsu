@@ -24,6 +24,8 @@ const MET: readonly { prefix: string; seen: string; place: string }[] = [
   { prefix: "rules.", seen: "39 rules pages", place: "one per game" },
   { prefix: "xp.", seen: "After earning points", place: "the notice that drops in from the top of the page" },
   { prefix: "catalogue.", seen: "The games index, /games", place: "under every game and every family, in all three views" },
+  // The draughts family's file, which is met on those games only; before `record.`, which would claim it.
+  { prefix: "record.downloadPdn", seen: "Finished games of checkers and draughts", place: "beside Copy as text, in the move list under the replay" },
   { prefix: "record.", seen: "Finished games of go, Othello, gomoku, renju and Hex", place: "beside Copy as text, in the move list under the replay" },
   { prefix: "rivalry.", seen: "Two members' games", place: "the head-to-head scoreboard above a pair's record, and on a match before and after it" },
 ];
