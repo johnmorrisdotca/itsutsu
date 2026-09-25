@@ -12,7 +12,8 @@ import { freshPuzzleSeed, ready } from "./support";
  * address, so the same link is the same puzzle under the same allowance.
  * Running out takes Check away and leaves the puzzle going.
  */
-for (const kind of PUZZLE_KIND_LIST) {
+// Every puzzle that offers help (`PuzzleSpec.helps`): a WordDrop answers each guess as it is made, and has no Check.
+for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false)) {
   test(`${kind}: one check, spent, and then there are none`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;
     // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.

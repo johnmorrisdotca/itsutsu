@@ -97,7 +97,7 @@ export function FastestTable({ kind, board, names, whole }: { kind: PuzzleKind; 
         {shown.map((row) => (
           <tr key={row.key} className="border-t border-rule" data-testid="puzzle-fastest-row" data-size={row.size} data-level={row.level}>
             <td className="py-1 pr-2 whitespace-nowrap">
-              {sizeWord(row.size)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[row.level].label.toLowerCase()}</span>
+              {sizeWord(row.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[row.level].label.toLowerCase()}</span>
             </td>
             <td className="py-1">
               {row.at === undefined || row.at.fastest.length === 0 ? (

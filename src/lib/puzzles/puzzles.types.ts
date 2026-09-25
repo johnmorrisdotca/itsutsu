@@ -8,7 +8,7 @@
  * rather than by stretching either.
  */
 
-export type PuzzleKind = "numberPlace" | "hiddenStones" | "moreOrLess" | "jigsaw" | "diagonal" | "sumCages" | "towers" | "blackAndWhite";
+export type PuzzleKind = "numberPlace" | "hiddenStones" | "moreOrLess" | "jigsaw" | "diagonal" | "sumCages" | "towers" | "blackAndWhite" | "wordDrop";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -34,6 +34,12 @@ export type PuzzleSpec = {
   defaultLevel: PuzzleLevel;
   /** The most characters a puzzle's code or answer may hold, for the route to refuse anything larger. */
   mostCells: number;
+  /**
+   * Whether Check and Hint are offered. Absent is yes. A word puzzle answers
+   * every guess as it is made, so a Check would say what the colours already
+   * say, and a Hint that marked wrong letters would do the same.
+   */
+  helps?: false;
 };
 
 /**

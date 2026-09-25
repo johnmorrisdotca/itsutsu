@@ -164,6 +164,20 @@ export const GAME_FAMILIES: GameFamily[] = [
     blurb: "Puzzles for one: a grid, a few givens, and exactly one answer. Solve it on your own, against the clock.",
     games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "hiddenStones", "blackAndWhite"],
   },
+  {
+    key: "other",
+    /*
+     * OTHER. John, 2026-09-25, asking for a word puzzle of our own: "a special
+     * OTHER category" on the games list, the cards and the families, and kept
+     * off the set-up screen for now so it ships sooner. The home of whatever is
+     * neither stones nor numbers, starting with WordDrop.
+     */
+    title: "Other",
+    kanji: "その他",
+    blurb: "Neither stones nor digits: a hidden word to find in six guesses, and whatever joins it.",
+    games: ["wordDrop"],
+    notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
+  },
 ];
 
 /**

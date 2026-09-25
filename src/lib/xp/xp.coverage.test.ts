@@ -177,12 +177,15 @@ describe("the economy holds its shape", () => {
     // a family met (+150) and a first solve of one puzzle (+50). A puzzle has
     // no first WIN and its family cannot be won, so nothing else moves.
     // 23,090 with Hidden Stones beside it: a first solve of a second puzzle.
+    // +150 when the Other family opened with WordDrop on 2026-09-25: a family
+    // met. Its first solve is counted with the puzzles below, and a puzzle's
+    // family cannot be won, so nothing else moves.
     const perVariant = 44;
     const perPuzzle = PUZZLE_KIND_LIST.length;
     // Read from the table rather than written down, so a merge or a new family
     // moves this figure instead of quietly leaving it true of nothing.
     const perFamily = GAME_FAMILIES.length;
-    expect(perFamily).toBe(8);
+    expect(perFamily).toBe(9);
     // A family won is only for a family of more than one BOARD game: puzzles are not won.
     const familiesToWin = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 1).length;
     expect(familiesToWin).toBe(7);
@@ -205,7 +208,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
+    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

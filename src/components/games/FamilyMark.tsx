@@ -4,8 +4,14 @@ import { pictureBox } from "./picture";
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
 
-/** A digit in a family's mark: the Numbers family, where nothing is a stone. A faded one is a cell still to fill. */
-type MarkDigit = { r: number; c: number; value?: number; faded?: boolean };
+/**
+ * A digit in a family's mark: the Numbers family, where nothing is a stone. A faded one is a cell still to fill.
+ * Or a letter, on a tile of the word puzzle's colours (`tile`), for a family whose game is words.
+ */
+type MarkDigit = { r: number; c: number; value?: number; faded?: boolean; letter?: string; tile?: "hit" | "near" };
+
+/** A letter tile's colours, as the word puzzle paints them: in its place, and in the word elsewhere. */
+const TILE_FILL: Record<"hit" | "near", string> = { hit: "var(--moss)", near: "var(--ochre)" };
 
 type Mark = {
   /** Lines per side of the little board. */
@@ -193,6 +199,23 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     path: "M 2 0 L 2 4 M 0 2 L 4 2",
   },
   /*
+   * OTHER: a row of letters, the word puzzle's, two tiles lit green for a
+   * letter in its place and one gold for a letter elsewhere — the family's
+   * first game in one line, and the one mark on the row made of letters.
+   */
+  Other: {
+    n: 5,
+    cells: true,
+    stones: [],
+    digits: [
+      { r: 2, c: 0, letter: "W", tile: "hit" },
+      { r: 2, c: 1, letter: "O" },
+      { r: 2, c: 2, letter: "R", tile: "near" },
+      { r: 2, c: 3, letter: "D", tile: "hit" },
+      { r: 2, c: 4, letter: "S" },
+    ],
+  },
+  /*
    * TERRITORY AND RACES, one picture for the family that took the races in
    * on 2026-09-24: the surrounded stone of Territory on the left, and on the
    * right a black piece hopping over a white one towards the far end of the
@@ -279,6 +302,11 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
       {mark.path !== undefined ? (
         <path d={mark.path} fill="none" stroke="var(--shu)" strokeWidth={0.14} strokeLinecap="round" />
       ) : null}
+      {(mark.digits ?? []).map((digit) =>
+        digit.tile === undefined ? null : (
+          <rect key={`t${digit.r}-${digit.c}`} x={digit.c + 0.06} y={digit.r + 0.06} width={0.88} height={0.88} fill={TILE_FILL[digit.tile]} />
+        ),
+      )}
       {(mark.digits ?? []).map((digit) => (
         <text
           key={`d${digit.r}-${digit.c}`}
@@ -288,10 +316,10 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           dominantBaseline="central"
           fontSize={0.75}
           fontWeight={600}
-          fill="var(--ink)"
+          fill={digit.tile === undefined ? "var(--ink)" : "var(--ivory)"}
           opacity={digit.faded ? 0.35 : 1}
         >
-          {digit.faded ? "?" : digit.value}
+          {digit.faded ? "?" : (digit.letter ?? digit.value)}
         </text>
       ))}
     </svg>

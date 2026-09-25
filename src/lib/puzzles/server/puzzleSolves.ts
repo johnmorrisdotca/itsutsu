@@ -30,14 +30,17 @@ export type KeptSolve = {
   pausedMs: number;
   /** How many times Hint was pressed; a race allows none. */
   hintsUsed: number;
+  /** The answer handed in, which a word puzzle's points are read from (`pointsFor`); not stored. */
+  answer?: string;
 };
 
 export async function keepSolve(solve: KeptSolve): Promise<void> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
-    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed);
+    const { answer, ...kept } = solve;
+    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer);
     await prisma.puzzleSolve.create({
-      data: { ...solve, raceId: solve.raceId ?? null, points },
+      data: { ...kept, raceId: solve.raceId ?? null, points },
     });
   } catch (problem) {
     /* The solve has already been checked and paid; a row that could not be

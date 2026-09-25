@@ -1,3 +1,4 @@
+import { rowsFor } from "./wordDrop/code";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -18,13 +19,25 @@ import type { PuzzleKind } from "./puzzles.types";
 export const POINTS_A_CELL = 5;
 export const POINTS_A_HELP = 50;
 
-/** The cells a solver filled: every cell of a Hidden Stones grid, the unprinted ones of every other. */
+/** The cells a solver filled: every cell of a Hidden Stones grid, the letters of a WordDrop word, the unprinted ones of every other. */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
+  if (kind === "wordDrop") return size;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
-export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number): number {
+/**
+ * A word puzzle has no cells to fill: what it rewards is finding the word in
+ * fewer guesses. Five points a letter for the row that found it and for every
+ * row it did not need, so a five-letter word in one guess is 150, in six 25.
+ */
+export function wordPoints(size: number, answer: string): number {
+  const used = Math.max(1, Math.ceil(answer.length / size));
+  return POINTS_A_CELL * size * Math.max(1, rowsFor(size) - used + 1);
+}
+
+export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number, answer = ""): number {
+  if (kind === "wordDrop") return wordPoints(size, answer);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

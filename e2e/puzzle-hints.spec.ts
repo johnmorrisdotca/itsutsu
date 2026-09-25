@@ -46,7 +46,8 @@ async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number
   return index;
 }
 
-for (const kind of PUZZLE_KIND_LIST) {
+// Every puzzle that offers help (`PuzzleSpec.helps`): a WordDrop's colours are its hints.
+for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false)) {
   test(`${kind}: with hints chosen, Hint marks the wrong entry until it is changed`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;
     const seed = freshPuzzleSeed();

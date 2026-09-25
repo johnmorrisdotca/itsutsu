@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { familyOf } from "../src/lib/gomoku/families";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
@@ -25,8 +26,9 @@ test.describe("the stone puzzle", () => {
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Star Battle");
     await expect(page.getByTestId("game-family")).toContainText("Numbers");
-    // Every other puzzle in the family is a sibling here, with its picture.
-    await expect(page.getByTestId("game-family").getByTestId("game-thumb")).toHaveCount(PUZZLE_KIND_LIST.length - 1);
+    // Every other puzzle in its family (Numbers, not every puzzle: WordDrop's is Other) is a sibling here, with its picture.
+    const numbers = PUZZLE_KIND_LIST.filter((kind) => familyOf(kind)?.key === "numbers");
+    await expect(page.getByTestId("game-family").getByTestId("game-thumb")).toHaveCount(numbers.length - 1);
   });
 
   test("a tap is a stone, another a cross, another nothing, and the right stones finish it", async ({ page }) => {

@@ -31,7 +31,13 @@ import { PUZZLE_CLOCK, PUZZLE_CLOCK_TICK_MS, sizeWord } from "./puzzles.constant
  * nothing before or after. The one server call is `POST /api/puzzles/solved`,
  * made once, on finishing.
  */
-export type Done = { elapsedMs: number; paid: { points: number; awards: string[] } | null; problem: string | null };
+export type Done = {
+  elapsedMs: number;
+  paid: { points: number; awards: string[] } | null;
+  problem: string | null;
+  /** Ended without being solved: a word whose guesses ran out. Nothing is paid and nothing kept. */
+  outOfGuesses?: true;
+};
 
 /** A race this solve is one seat of: its id, when the server started this seat's clock, and the Check allowance both seats race under. */
 export type SolveRace = { id: string; since: number; checksAllowed: number | null };
@@ -53,6 +59,8 @@ export function useSolve(
   keeping: Keeping = { progress: "", resumed: null },
   /** Whether Hint was chosen for this puzzle; never in a race. */
   hints = false,
+  /** A puzzle typed in letters (WordDrop), where P is a letter: only Space pauses it. */
+  typesLetters = false,
 ) {
   const router = useRouter();
   /*
@@ -165,14 +173,14 @@ export function useSolve(
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const onControl = event.target instanceof HTMLElement && event.target.closest("button, a, input, select, textarea") !== null;
-      if (event.key === "p" || event.key === "P" || (event.key === " " && !onControl)) {
+      if ((!typesLetters && (event.key === "p" || event.key === "P")) || (event.key === " " && !onControl)) {
         event.preventDefault();
         togglePause();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [canPause, togglePause]);
+  }, [canPause, togglePause, typesLetters]);
 
   /** The first entry: the clock starts. Returns the moment, for `finish`. */
   const begin = useCallback((): number => {
@@ -216,6 +224,30 @@ export function useSolve(
     [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router],
   );
 
+  /**
+   * A PUZZLE THAT ENDED UNSOLVED: a word whose guesses ran out. The run is over
+   * — nothing more is kept of it — and the route checks the loss as it checks
+   * a solve before it takes the kept run off the member's games. A race sends
+   * nothing: its seat simply never finishes, as a seat left does.
+   */
+  const runOut = useCallback(
+    async (answer: string, at: number) => {
+      const elapsedMs = carriedMs + (startedAt === null ? 0 : Math.max(0, at - startedAt - pausedMs));
+      setDone({ elapsedMs, paid: null, problem: null, outOfGuesses: true });
+      if (!hasAccount || race !== null) return;
+      try {
+        await fetch("/api/puzzles/solved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, outOfGuesses: true }),
+        });
+      } catch {
+        // Nothing is owed for a loss; a run left kept is opened again as it was and can be ended again.
+      }
+    },
+    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race],
+  );
+
   const elapsedMs = done !== null ? done.elapsedMs : carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs));
   const pausing: Pausing = {
     paused: pausedAt !== null,
@@ -226,7 +258,7 @@ export function useSolve(
     racing: race !== null,
     keptOnLeaving: hasAccount && race === null,
   };
-  return { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting };
+  return { startedAt, elapsedMs, done, begin, finish, runOut, pausing, checking, hinting };
 }
 
 /** Whether the run is paused, whether it may be, and the press that pauses or resumes it. */
@@ -248,7 +280,7 @@ export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; el
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
       <p className="text-sm text-muted" data-testid="puzzle-asked">
-        {sizeWord(puzzle.size)} · {PUZZLE_LEVEL_DISPLAY[puzzle.level].label}{" "}
+        {sizeWord(puzzle.size, puzzle.kind)} · {PUZZLE_LEVEL_DISPLAY[puzzle.level].label}{" "}
         <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
         <span className="ml-2 text-xs">№ {puzzle.seed}</span>
       </p>
@@ -259,7 +291,7 @@ export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; el
             className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} px-3 py-1 text-sm`}
             onClick={pausing.toggle}
             aria-pressed={pausing.paused}
-            aria-keyshortcuts="P"
+            aria-keyshortcuts={puzzle.kind === "wordDrop" ? "Space" : "P"}
             data-testid="puzzle-pause"
           >
             {pausing.paused ? "Resume" : "Pause"}

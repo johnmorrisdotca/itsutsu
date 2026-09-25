@@ -70,7 +70,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
               {solves.map((solve) => (
                 <tr key={solve.id} className="border-t border-rule" data-testid="puzzle-own-solve">
                   <td className="py-1 pr-2">
-                    {sizeWord(solve.size)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
+                    {sizeWord(solve.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
                     {solve.raceId !== null ? (
                       <Link href={matchPath(kind, solve.raceId)} className="ml-2 text-xs underline-offset-2 hover:underline">
                         in a race
@@ -108,7 +108,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
               return (
                 <li key={race.id} data-testid="puzzle-own-race">
                   <Link href={matchPath(kind, race.id)} className="underline-offset-2 hover:underline">
-                    {sizeWord(race.size)} against {other}
+                    {sizeWord(race.size, kind)} against {other}
                   </Link>{" "}
                   <span className="text-muted">— {standing}</span>
                 </li>

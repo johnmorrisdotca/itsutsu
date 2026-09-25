@@ -66,7 +66,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
             / Race
           </>
         }
-        lead={`${sizeWord(race.size)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
+        lead={`${sizeWord(race.size, kind)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
         testId="puzzle-race"
       />
 

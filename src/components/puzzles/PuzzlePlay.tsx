@@ -11,6 +11,7 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
+import { WordDropSolve } from "./WordDropSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 
@@ -101,6 +102,8 @@ export function PuzzlePlay({
       return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "blackAndWhite":
       return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+    case "wordDrop":
+      return <WordDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

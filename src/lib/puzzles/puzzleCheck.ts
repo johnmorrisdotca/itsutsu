@@ -4,6 +4,7 @@ import { decodeJigsaw } from "./jigsaw/code";
 import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
+import { decodeGuesses, decodeHidden, isWord, rowsFor } from "./wordDrop/code";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -42,6 +43,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkTowers(size, givens, answer);
     case "blackAndWhite":
       return checkBlackAndWhite(size, givens, answer);
+    case "wordDrop":
+      return checkWordDrop(size, givens, answer, "found");
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -209,6 +212,41 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
       seen.add(spelled);
     }
   }
+  return { ok: true };
+}
+
+/**
+ * A PUZZLE ENDED WITHOUT BEING SOLVED: only a word puzzle can be, when every
+ * guess is spent. Checked like a solve, so a member's games lose a run only
+ * for a loss that really happened — every row a word, none of them the word.
+ */
+export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string): PuzzleCheck {
+  if (kind !== "wordDrop") return { ok: false, reason: `a ${kind} cannot run out of guesses` };
+  if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
+  return checkWordDrop(size, givens, answer, "spent");
+}
+
+/**
+ * WordDrop: every guess a word of the list, in order, no more of them than
+ * the rows allow — and either the last is the word and none before it was
+ * ("found"), or every row is spent and none was ("spent"). Marking the
+ * letters is the browser's; the server asks only what decides the result.
+ */
+function checkWordDrop(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
+  const hidden = decodeHidden(givens, size);
+  const guesses = decodeGuesses(answer, size);
+  if (hidden === null) return { ok: false, reason: "the givens are not a hidden word" };
+  if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
+  if (guesses.length > rowsFor(size)) return { ok: false, reason: "more guesses than the rows allow" };
+  const unknown = guesses.find((guess) => !isWord(guess, size));
+  if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
+  const firstFound = guesses.indexOf(hidden);
+  if (ending === "found") {
+    if (firstFound !== guesses.length - 1) return { ok: false, reason: firstFound === -1 ? "the word was not guessed" : "guesses go on after the word was found" };
+    return { ok: true };
+  }
+  if (firstFound !== -1) return { ok: false, reason: "the word was found" };
+  if (guesses.length !== rowsFor(size)) return { ok: false, reason: "there are guesses left" };
   return { ok: true };
 }
 
