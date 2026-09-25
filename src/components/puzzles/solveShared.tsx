@@ -46,10 +46,15 @@ export type SolveRace = { id: string; since: number; checksAllowed: number | nul
 export type Checking = { allowed: number | null; used: number; left: number | null; spend: () => boolean };
 
 /** An unfinished run kept on the account, opened where it was left: what was written, the time so far and the checks spent. */
-export type ResumedRun = { progress: string; elapsedMs: number; checksUsed: number; hintsUsed: number };
+export type ResumedRun = { progress: string; elapsedMs: number; checksUsed: number; hintsUsed: number; steps?: string | null };
 
 /** What the solve screen is keeping: what is written now, and the run it opened with, if any. */
-export type Keeping = { progress: string; resumed: ResumedRun | null };
+export type Keeping = {
+  progress: string;
+  resumed: ResumedRun | null;
+  /** Every grid it has been, as a step log (`stepLog.ts`), worked out only when the run is kept: none for a WordDrop, whose grid is its history. */
+  steps?: () => string;
+};
 
 export function useSolve(
   puzzle: Puzzle,
@@ -127,6 +132,7 @@ export function useSolve(
       hintsAllowed: hinting.allowed,
       hintsUsed: hinting.used,
       progress: keeping.progress,
+      ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
       elapsedMs,
     };
   });

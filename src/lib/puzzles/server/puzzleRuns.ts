@@ -27,6 +27,8 @@ export type KeptRun = {
   hintsAllowed: boolean;
   hintsUsed: number;
   progress: string;
+  /** Every grid it has been, for the scrubber (`stepLog.ts`), or null when none could be read. */
+  steps: string | null;
   elapsedMs: number;
 };
 
@@ -50,7 +52,7 @@ export async function keepRun(run: KeptRun): Promise<void> {
 export async function runOf(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number) {
   return prisma.puzzleRun.findUnique({
     where: { memberId_kind_size_level_seed: { memberId, kind, size, level, seed } },
-    select: { checksAllowed: true, checksUsed: true, hintsUsed: true, progress: true, elapsedMs: true },
+    select: { checksAllowed: true, checksUsed: true, hintsUsed: true, progress: true, steps: true, elapsedMs: true },
   });
 }
 

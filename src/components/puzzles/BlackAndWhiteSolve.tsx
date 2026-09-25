@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { BLACK, decodeBlackAndWhite, EMPTY, encodeBlackAndWhite, WHITE } from "@/lib/puzzles/blackAndWhite/code";
 import { decodeBlackAndWhiteProgress, encodeBlackAndWhiteProgress } from "@/lib/puzzles/puzzleProgress";
+import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -60,12 +61,14 @@ export function BlackAndWhiteSolve({
   const [fullNotRight, setFullNotRight] = useState(false);
   const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
     progress: encodeBlackAndWhiteProgress(stones),
+    steps: () => encodeStepLog(history.steps.map(encodeBlackAndWhiteProgress)),
     resumed,
   }, hints);
 
   /* One cell set to a stone, from a tap or a hint: the one door every change goes through. */
   // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
-  const history = useStepHistory(stones);
+  const opening = useMemo(() => (resumed === null ? null : openingSteps(resumed.steps, resumed.progress, size, decodeBlackAndWhiteProgress)), [resumed, size]);
+  const history = useStepHistory(stones, opening);
 
   const place = useCallback(
     (index: number, stone: number) => {
