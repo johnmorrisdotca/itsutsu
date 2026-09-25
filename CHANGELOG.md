@@ -10,6 +10,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.331.3 — 2026-09-25
+- A finished puzzle opens as it ended, from My games, Your solves and Your words.
+- In WordDrop Kana a key takes the best colour its kana has had on the board, yellow included.
+
 ## 0.331.2 — 2026-09-25
 - A puzzle picked up again from My games keeps its steps, so the scrubber goes back past the moment it was left
 
