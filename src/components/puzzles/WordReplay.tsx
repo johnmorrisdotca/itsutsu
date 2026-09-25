@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { letterKeyMarks, kanaKeyMarks } from "@/lib/puzzles/keyMarks";
-import { decodeHidden, markGuess, rowsFor } from "@/lib/puzzles/gomoji/code";
+import { decodeHidden, languageOf, markGuess, rowsFor } from "@/lib/puzzles/gomoji/code";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { decodeKanaGivens, KANA_ROWS } from "@/lib/puzzles/gomojiKana/kanaCode";
@@ -38,7 +38,7 @@ export function WordReplay({
   guesses,
   style,
 }: {
-  kind: "gomoji" | "gomojiKana";
+  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
   size: number;
   givens: string;
   guesses: readonly string[];
@@ -48,11 +48,12 @@ export function WordReplay({
   const [at, setAt] = useState(last);
   const played = guesses.slice(0, Math.min(at, last));
   const kana = kind === "gomojiKana";
+  const lang = languageOf(kind);
 
   // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours.
   const kanaGiven = kana ? decodeKanaGivens(givens, size) : null;
   const grey = kanaGiven?.grey ?? null;
-  const word = kana ? (kanaGiven?.word ?? "") : (decodeHidden(givens, size) ?? "");
+  const word = kana ? (kanaGiven?.word ?? "") : (decodeHidden(givens, size, lang) ?? "");
   const rows = kana && grey !== null ? [grey, ...played] : played;
   const kanaMarks = kana ? rows.map((row) => markKanaGuess([...row], [...word])) : [];
   const marks = kana ? kanaMarks.map((row) => row.map((each) => each.mark)) : rows.map((row) => markGuess(row, word));
@@ -90,7 +91,7 @@ export function WordReplay({
           onBack={NOTHING}
         />
       ) : (
-        <WordKeyboard known={letterKeyMarks(played, word)} style={style} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
+        <WordKeyboard known={letterKeyMarks(played, word)} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
       )}
     </div>
   );

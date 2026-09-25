@@ -1,4 +1,4 @@
-import { decodeGuesses, decodeHidden } from "./gomoji/code";
+import { decodeGuesses, decodeHidden, type GomojiLanguage } from "./gomoji/code";
 import { wordScore } from "./gomoji/wordScore";
 import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./gomojiKana/kanaCode";
 import { kanaScore } from "./gomojiKana/kanaScore";
@@ -26,7 +26,7 @@ export const POINTS_A_HELP = 50;
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
-  if (kind === "gomoji" || kind === "gomojiKana") return size;
+  if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") return size;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
@@ -36,9 +36,9 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
  * (`wordScore`), and a word lost scores what it found. Read from the guesses,
  * run together as they are handed in.
  */
-export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number): number {
-  const hidden = decodeHidden(givens, size);
-  const guesses = decodeGuesses(answer, size);
+export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, lang: GomojiLanguage = "en"): number {
+  const hidden = decodeHidden(givens, size, lang);
+  const guesses = decodeGuesses(answer, size, lang);
   return hidden === null || guesses === null ? 0 : wordScore(hidden, guesses, elapsedMs).total;
 }
 
@@ -51,6 +51,8 @@ export function kanaPoints(size: number, givens: string, answer: string, elapsed
 
 export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number, answer = "", elapsedMs = 0): number {
   if (kind === "gomoji") return wordPoints(size, givens, answer, elapsedMs);
+  if (kind === "gomojiMot") return wordPoints(size, givens, answer, elapsedMs, "fr");
+  if (kind === "gomojiWort") return wordPoints(size, givens, answer, elapsedMs, "de");
   if (kind === "gomojiKana") return kanaPoints(size, givens, answer, elapsedMs);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

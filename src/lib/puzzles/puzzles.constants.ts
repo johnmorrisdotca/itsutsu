@@ -34,6 +34,8 @@ export const PUZZLE_KINDS = {
   blackAndWhite: "blackAndWhite",
   gomoji: "gomoji",
   gomojiKana: "gomojiKana",
+  gomojiMot: "gomojiMot",
+  gomojiWort: "gomojiWort",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -48,6 +50,8 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.blackAndWhite,
   PUZZLE_KINDS.gomoji,
   PUZZLE_KINDS.gomojiKana,
+  PUZZLE_KINDS.gomojiMot,
+  PUZZLE_KINDS.gomojiWort,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -113,6 +117,10 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
   /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
   gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false },
+  // Gomoji in French, from hermitdave's FrequencyWords: the same shape as English's, accents folded away.
+  gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
+  // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
+  gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
 };
 
 /**
@@ -187,6 +195,14 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     3: { label: "Three kana", kanji: "三文字" },
     4: { label: "Four kana", kanji: "四文字" },
     5: { label: "Five kana", kanji: "五文字" },
+  },
+  gomojiMot: {
+    4: { label: "Four letters", kanji: "四文字" },
+    5: { label: "Five letters", kanji: "五文字" },
+  },
+  gomojiWort: {
+    4: { label: "Four letters", kanji: "四文字" },
+    5: { label: "Five letters", kanji: "五文字" },
   },
 };
 
@@ -362,5 +378,41 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule — textbook-common words first, then by how often newspapers use them: easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",
+  },
+  gomojiMot: {
+    label: "Gomoji Mot",
+    kanji: "五文字・仏",
+    tagline: "Find the hidden French word. Each guess shows which of its letters are in the word, and which are in the right place.",
+    inspiredBy: "Wordle",
+    origin:
+      "Gomoji in French: the same hunt for a hidden word Josh Wardle's Wordle (2021) made a daily habit, played on the AZERTY keyboard. Accents fold to their plain letter, as French Wordle clones play it — É guesses the same as E.",
+    country: "FR",
+    rules: [
+      "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
+      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
+      "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
+      "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
+    ],
+    board:
+      "Five letters and six guesses, or four letters and five. The words come from hermitdave's FrequencyWords, a count of OpenSubtitles' French dialogue: easy hides one of the commoner words, medium and hard one of a wider list, and any word the list carries may be guessed. Accents are folded away, and words spelled with œ or æ are left out.",
+  },
+  gomojiWort: {
+    label: "Gomoji Wort",
+    kanji: "五文字・独",
+    tagline: "Find the hidden German word. Each guess shows which of its letters are in the word, and which are in the right place.",
+    inspiredBy: "Wordle",
+    origin:
+      "Gomoji in German: the same hunt for a hidden word Josh Wardle's Wordle (2021) made a daily habit, played on the QWERTZ keyboard with Ä, Ö and Ü as letters of their own.",
+    country: "DE",
+    rules: [
+      "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
+      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
+      "Ä, Ö and Ü are letters of their own, not vowels with a fold: a guess for ä only matches ä.",
+      "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
+    ],
+    board:
+      "Five letters and six guesses, or four letters and five. The words come from hermitdave's FrequencyWords, a count of OpenSubtitles' German dialogue: easy hides one of the commoner words, medium and hard one of a wider list, and any word the list carries may be guessed. Words spelled with ß are left out, the way French leaves out œ and æ.",
   },
 };

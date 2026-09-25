@@ -12,7 +12,7 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeHidden } from "@/lib/puzzles/gomoji/code";
+import { decodeHidden, languageOf } from "@/lib/puzzles/gomoji/code";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 
@@ -22,7 +22,7 @@ import { WordStyleProvider } from "./WordStyleContext";
 
 /** A word puzzle's hidden word, in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
-  return kind === "gomojiKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size) ?? "").toUpperCase();
+  return kind === "gomojiKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size, languageOf(kind)) ?? "").toUpperCase();
 }
 
 /**
@@ -40,7 +40,7 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
   const solve = me === null ? null : await ownSolveOf(me, kind, solveId);
   if (solve === null) notFound();
   const copy = PUZZLE_DISPLAY[kind];
-  const words = kind === "gomoji" || kind === "gomojiKana";
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const outcome = solve.solved ? (words ? "Found" : "Solved") : "Not found";
   const helped = [

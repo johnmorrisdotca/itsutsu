@@ -34,7 +34,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the two Gomojis. */
-  const { wordStyle } = kind === "gomoji" || kind === "gomojiKana" ? await preferencesFor() : { wordStyle: undefined };
+  const { wordStyle } =
+    kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? await preferencesFor() : { wordStyle: undefined };
   return (
     <Page>
       <SiteHeader />
