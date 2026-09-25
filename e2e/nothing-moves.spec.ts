@@ -11,10 +11,9 @@ import { playAt, ready } from "./support";
  * banner over the board is drawn at every position, and the status panel keeps
  * the height its notes take, so the board and the scrubber stay put.
  */
+/** Where the element sits on the PAGE, not in the window: a press scrolls the window to what it presses. */
 async function top(locator: Locator): Promise<number> {
-  const box = await locator.boundingBox();
-  expect(box, "laid out").not.toBeNull();
-  return Math.round(box!.y);
+  return Math.round(await locator.evaluate((element) => element.getBoundingClientRect().top + window.scrollY));
 }
 
 test("stepping back and forward leaves the board and the scrubber where they were", async ({ page }) => {

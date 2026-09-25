@@ -197,7 +197,8 @@ test.describe("a game's name leads to that game", () => {
      */
     await page.goto("/learn");
     await expect(page.getByTestId("game-name")).toHaveCount(0);
-    const card = page.getByRole("listitem").first().getByRole("link");
+    // The guides' own list: the Games tabs above it are list items too.
+    const card = page.getByTestId("learn-index").getByRole("listitem").first().getByRole("link");
     await card.click();
     await expect(page).toHaveURL(/\/learn\/.+/);
     const covered = page.getByRole("link").filter({ hasText: RULE_VARIANT_DISPLAY.freestyle.label });
