@@ -6,7 +6,7 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { decodeJigsaw } from "@/lib/puzzles/jigsaw/code";
 import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
 import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
-import { decodeCells, encodeCells } from "@/lib/puzzles/puzzleCode";
+import { decodeCells, encodeCells, symbolOf, valueOfSymbol } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeTowers, type TowerClues } from "@/lib/puzzles/towers/code";
 import { stepEntry } from "@/lib/puzzles/stepEntry";
@@ -14,7 +14,7 @@ import { decodeNumberProgress, encodeNumberProgress } from "@/lib/puzzles/puzzle
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
-import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
+import { PUZZLE_KEY, PUZZLE_KEYS, PUZZLE_KEYS_PER_ROW } from "./puzzles.constants";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
 
@@ -119,10 +119,11 @@ export function NumberSolve({
     if (selected === null || done !== null) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const digit = Number(event.key);
-      if (Number.isInteger(digit) && digit >= 1 && digit <= size) {
+      // 1–9, and past nine the letters A–G, either case (`valueOfSymbol`).
+      const typed = valueOfSymbol(event.key);
+      if (typed >= 1 && typed <= size) {
         event.preventDefault();
-        enter(digit);
+        enter(typed);
       } else if (event.key === "Backspace" || event.key === "Delete" || event.key === "0") {
         event.preventDefault();
         enter(0);
@@ -172,10 +173,10 @@ export function NumberSolve({
       </SolvePaused>
       {done === null ? (
         <>
-          <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${size + 1}, minmax(0, 1fr))` }} data-testid="puzzle-keys">
+          <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${Math.min(size + 1, PUZZLE_KEYS_PER_ROW)}, minmax(0, 1fr))` }} data-testid="puzzle-keys">
             {Array.from({ length: size }, (_, i) => i + 1).map((value) => (
               <button key={value} type="button" className={PUZZLE_KEY} onClick={() => enter(value)} data-testid={`puzzle-key-${value}`}>
-                {value}
+                {symbolOf(value)}
               </button>
             ))}
             <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} aria-label="clear the cell" data-testid="puzzle-key-clear">

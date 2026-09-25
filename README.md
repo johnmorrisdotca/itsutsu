@@ -134,7 +134,7 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 
 | Puzzle | Our version of | Sizes | Levels |
 | --- | --- | --- | --- |
-| **Sudoku** ナンプレ | Howard Garns's Number Place (1979), named Sudoku by Nikoli | 4×4, 6×6, 9×9 | easy, medium, hard, by what the solver needs: singles only, one guess, more |
+| **Sudoku** ナンプレ | Howard Garns's Number Place (1979), named Sudoku by Nikoli | 4×4, 6×6, 9×9 and the 16×16 Giant (1–9 then A–G) | easy, medium, hard, by what the solver needs: singles only, one guess, more |
 | **Jigsaw Sudoku** 変形ナンプレ | Sudoku with irregular regions for boxes | 5×5, 6×6, 7×7, 9×9 | easy, medium, hard |
 | **Diagonal Sudoku** 対角ナンプレ | Sudoku X: the two long diagonals count too | 6×6, 9×9 | easy, medium, hard |
 | **Killer Sudoku** サムナンプレ | dashed cages with sums, next to nothing printed | 6×6, 9×9 | easy, medium, hard |

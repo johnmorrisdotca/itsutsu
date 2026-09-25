@@ -91,7 +91,8 @@ export function isCheckAllowance(value: unknown): value is number | null {
  * at them.
  */
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
-  numberPlace: { sizes: [4, 6, 9], offered: [4, 6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 81 },
+  // 256: a 16×16's cells, one character each, 1–9 then A–G.
+  numberPlace: { sizes: [4, 6, 9, 16], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 256 },
   hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], offered: [5, 7, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
   // 133: the 49 cells of a 7×7 and the 84 edges between them, which its code writes after the cells.
   moreOrLess: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
@@ -128,6 +129,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     4: { label: "Quick", kanji: "速" },
     6: { label: "Short", kanji: "短" },
     9: { label: "Classic", kanji: "定番" },
+    16: { label: "Giant", kanji: "特大" },
   },
   hiddenStones: {
     5: { label: "Quick", kanji: "速" },
@@ -185,11 +187,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     rules: [
       "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
       "The numbers already printed are the givens. They stay where they are, and every puzzle here has exactly one answer that fits them.",
+      "The 16×16 Giant has sixteen symbols: 1 to 9, then A to G for 10 to 16. Type the letter, or press its key.",
       "There is no guessing at the easy level: every cell can be found by reasoning from what is already there. Medium and hard ask you to try something and see.",
       "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
     ],
     board:
-      "9×9 with 3×3 boxes is the puzzle everybody knows. 4×4 with 2×2 boxes is over in a minute and is the one to give a child; 6×6 with boxes two rows tall and three wide sits between.",
+      "9×9 with 3×3 boxes is the puzzle everybody knows. 4×4 with 2×2 boxes is over in a minute and is the one to give a child; 6×6 with boxes two rows tall and three wide sits between. 16×16, the Giant, has boxes four by four and the letters A to G after 9; it is best on a tablet or a computer, where its cells are big enough to tap.",
   },
   hiddenStones: {
     label: "Hidden Stones",

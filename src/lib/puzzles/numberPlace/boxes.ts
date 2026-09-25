@@ -11,6 +11,7 @@ export const NUMBER_PLACE_BOXES: Record<number, Boxes> = {
   4: { rows: 2, cols: 2 },
   6: { rows: 2, cols: 3 },
   9: { rows: 3, cols: 3 },
+  16: { rows: 4, cols: 4 },
 };
 
 /** The box a cell is in, numbered row-major from 0. */

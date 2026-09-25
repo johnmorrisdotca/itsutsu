@@ -16,7 +16,19 @@ export const PUZZLE_GRID = "grid h-full w-full select-none bg-white";
  * draws its lines with no gaps; the heavier box edges are added per cell.
  */
 export const PUZZLE_CELL =
-  "flex aspect-square items-center justify-center border-l border-t border-rule text-lg font-normal tabular-nums text-ink-soft outline-none transition-colors first:border-l-0 hover:bg-shade focus-visible:bg-shade disabled:hover:bg-transparent sm:text-xl";
+  "flex aspect-square items-center justify-center border-l border-t border-rule font-normal tabular-nums text-ink-soft outline-none transition-colors first:border-l-0 hover:bg-shade focus-visible:bg-shade disabled:hover:bg-transparent";
+
+/**
+ * A cell's number, sized to the grid: the size every grid up to 9×9 has
+ * always had, and smaller for the 16×16 Giant, whose cells are about 21px on a
+ * 390px phone and would crop a full-size letter.
+ */
+export function puzzleCellText(size: number): string {
+  return size > 9 ? "text-xs sm:text-base" : "text-lg sm:text-xl";
+}
+
+/** At most this many keys in a row under the grid: the 16×16's seventeen keys make two rows a fingertip each. */
+export const PUZZLE_KEYS_PER_ROW = 9;
 
 /** A given: printed, and not for changing. */
 export const PUZZLE_CELL_GIVEN = "font-semibold text-ink";

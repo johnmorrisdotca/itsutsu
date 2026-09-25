@@ -30,9 +30,9 @@ import { countSolutions, guessDepth, type Grid } from "./solve";
  * would be a medium one with a different label.
  */
 const LEVELS: Record<PuzzleLevel, { depth: number; floor: Record<number, number> }> = {
-  easy: { depth: 0, floor: { 4: 9, 6: 20, 9: 40 } },
-  medium: { depth: 1, floor: { 4: 7, 6: 15, 9: 31 } },
-  hard: { depth: Infinity, floor: { 4: 5, 6: 11, 9: 24 } },
+  easy: { depth: 0, floor: { 4: 9, 6: 20, 9: 40, 16: 150 } },
+  medium: { depth: 1, floor: { 4: 7, 6: 15, 9: 31, 16: 125 } },
+  hard: { depth: Infinity, floor: { 4: 5, 6: 11, 9: 24, 16: 116 } },
 };
 
 /** A full grid: every cell a value, every row, column and box a permutation. */
@@ -73,6 +73,26 @@ function fillInOrder(layout: Layout, random: Random): Grid {
  * removal kept only while the puzzle still has one answer and stays within
  * the level, down to the level's floor. Shared by every puzzle on a layout.
  */
+/**
+ * A FILLED 16×16 FROM A PATTERN, SHUFFLED BY THE SEED. Cell by cell with a
+ * random order, as the smaller grids are filled, can wander into a dead end
+ * deep in a 256-cell grid and take seconds to climb out. A grid that is right
+ * by construction — each row the one above it shifted a box's width, each band
+ * shifted by one — then shuffled in every way that keeps it right (the
+ * numbers relabelled, rows within a band, the bands, columns within a stack,
+ * the stacks) is as varied and costs nothing. Only 16×16 is made this way, so
+ * every smaller grid comes out of its seed exactly as it always has.
+ */
+function fillByPattern(size: number, random: Random): Grid {
+  const box = Math.sqrt(size);
+  const labels = shuffled(Array.from({ length: size }, (_, i) => i + 1), random);
+  const order = (): number[] => shuffled(Array.from({ length: box }, (_, b) => b), random).flatMap((band) => shuffled(Array.from({ length: box }, (_, r) => band * box + r), random));
+  const rows = order();
+  const cols = order();
+  const base = (r: number, c: number) => (box * (r % box) + Math.floor(r / box) + c) % size;
+  return Array.from({ length: size * size }, (_, index) => labels[base(rows[Math.floor(index / size)]!, cols[index % size]!)]!);
+}
+
 export function carve(solution: Grid, layout: Layout, level: PuzzleLevel, floor: number, random: Random): Grid {
   const { depth } = LEVELS[level];
   const givens = [...solution];
@@ -91,7 +111,7 @@ export function carve(solution: Grid, layout: Layout, level: PuzzleLevel, floor:
 export function generateNumberPlace(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const random = seededRandom(seed);
   const layout = boxedLayout(size);
-  const solution = fillInOrder(layout, random);
+  const solution = size === 16 ? fillByPattern(size, random) : fillInOrder(layout, random);
   const givens = carve(solution, layout, level, LEVELS[level].floor[size]!, random);
   return { kind: "numberPlace", size, level, seed, givens: encodeCells(givens), solution: encodeCells(solution) };
 }

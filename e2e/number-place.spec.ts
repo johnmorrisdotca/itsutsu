@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateNumberPlace } from "../src/lib/puzzles/numberPlace/generate";
-import { decodeCells } from "../src/lib/puzzles/puzzleCode";
+import { decodeCells, symbolOf } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
 
@@ -115,6 +115,32 @@ test.describe("the first puzzle", () => {
    * writes nothing; every tap after it steps the cell on, and past the largest
    * number it empties. A given does not step.
    */
+  test("the 16×16 Giant is written 1 to 9 then A to G, and typing the letters finishes it", async ({ page }) => {
+    // A fresh seed: a finished puzzle is not kept, but a run that stops half way would be, and would meet the next.
+    const seed = freshPuzzleSeed();
+    const puzzle = generateNumberPlace(16, LEVEL, seed);
+    const givens = decodeCells(puzzle.givens, 16)!;
+    const solution = decodeCells(puzzle.solution, 16)!;
+
+    await page.goto(`${AT}/play?size=16&level=${LEVEL}&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const cells = page.getByTestId("puzzle-cell");
+    await expect(cells).toHaveCount(256);
+    // Sixteen symbol keys and a clear, the letters printed on them.
+    await expect(page.getByTestId("puzzle-key-10")).toHaveText("A");
+    await expect(page.getByTestId("puzzle-key-16")).toHaveText("G");
+    const printedLetter = givens.findIndex((given) => given >= 10);
+    await expect(cells.nth(printedLetter)).toHaveText(symbolOf(givens[printedLetter]!));
+
+    // Typed, as a person at a keyboard would: lower case letters are read too.
+    for (const [index, given] of givens.entries()) {
+      if (given !== 0) continue;
+      await cells.nth(index).click();
+      await page.keyboard.press(symbolOf(solution[index]!).toLowerCase());
+    }
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+  });
+
   test("tapping the chosen cell again steps it through the numbers and back to empty", async ({ page }) => {
     // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.
     const seed = freshPuzzleSeed();

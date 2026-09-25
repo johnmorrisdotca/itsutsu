@@ -21,7 +21,9 @@ import {
   PUZZLE_GRID,
   PUZZLE_MARK_BELOW,
   PUZZLE_MARK_RIGHT,
+  puzzleCellText,
 } from "./puzzles.constants";
+import { symbolOf } from "@/lib/puzzles/puzzleCode";
 
 /**
  * The Number Place grid: a square of cells, the boxes drawn in heavier rules.
@@ -120,10 +122,10 @@ export function PuzzleGrid({
             <button
               key={index}
               type="button"
-              className={`relative ${PUZZLE_CELL} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${onDiagonal ? PUZZLE_CELL_DIAGONAL : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${wrong.has(index) ? PUZZLE_CELL_WRONG : ""} ${edges}`}
+              className={`relative ${PUZZLE_CELL} ${puzzleCellText(size)} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${onDiagonal ? PUZZLE_CELL_DIAGONAL : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${wrong.has(index) ? PUZZLE_CELL_WRONG : ""} ${edges}`}
               onClick={() => onSelect(index)}
               disabled={done}
-              aria-label={`row ${row + 1}, column ${col + 1}, ${value === 0 ? "empty" : value}${isGiven ? ", given" : ""}${sumAt.has(index) ? `, a cage adding to ${sumAt.get(index)}` : ""}`}
+              aria-label={`row ${row + 1}, column ${col + 1}, ${value === 0 ? "empty" : symbolOf(value)}${isGiven ? ", given" : ""}${sumAt.has(index) ? `, a cage adding to ${sumAt.get(index)}` : ""}`}
               aria-pressed={selected === index}
               data-testid="puzzle-cell"
               data-index={index}
@@ -139,7 +141,7 @@ export function PuzzleGrid({
                   {sumAt.get(index)}
                 </span>
               ) : null}
-              {value === 0 ? "" : value}
+              {value === 0 ? "" : symbolOf(value)}
               {rightOf.has(index) ? (
                 <span className={PUZZLE_MARK_RIGHT} aria-hidden="true" data-testid="puzzle-mark">
                   {rightOf.get(index)}
