@@ -1,3 +1,6 @@
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { ALSO_LISTED_IN, GAME_FAMILIES, boardGamesShownIn, familyOf, familyShows } from "@/lib/gomoku/families";
@@ -212,6 +215,35 @@ describe("what the set-up screen keeps room for", () => {
       expect(spec.offered.length, kind).toBeLessThanOrEqual(4);
       for (const size of spec.offered) expect(spec.sizes, `${kind} offers ${size}`).toContain(size);
       expect(spec.offered, `${kind} opens on a size it offers`).toContain(spec.defaultSize);
+    }
+  });
+});
+
+/*
+ * ONE LIST OF FAMILIES, WHEREVER A GAME IS CHOSEN. John, 2026-09-24, with the
+ * old "post a seat" form's dropdown open on /games: "the Dropdown doesn't even
+ * reflect the correct 8 sections! we need tests for that." That form built its
+ * own list — board-game families only, grouped its own way — beside the set-up
+ * screen's row of families, and nothing compared the two. It is gone, New game
+ * being the one place a game is set up; these hold the row to the catalogue,
+ * and fail the build if a second chooser grows its own list again.
+ */
+/** The shape the old form had: an <optgroup> per family, labelled with the family and listing its games. */
+const GROUPS_GAMES_BY_FAMILY = (source: string) => /<optgroup/.test(source) && /family\.(title|games|kanji)/.test(source);
+
+describe("every chooser shows the catalogue's families", () => {
+  it("the set-up screen's row is every family in GAME_FAMILIES, in its order", () => {
+    expect(ROW_FAMILIES.map((family) => family.title)).toEqual(GAME_FAMILIES.map((family) => family.title));
+  });
+
+  it("no component groups games into a dropdown of its own", () => {
+    const files = readdirSync("src", { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".tsx"))
+      .map((entry) => join(entry.parentPath, entry.name));
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      // A dropdown grouped by family: an <optgroup> drawn per family, whoever built the list it was handed.
+      expect(GROUPS_GAMES_BY_FAMILY(source), `${file} groups games into a dropdown of its own; choose a game with GamePicker`).toBe(false);
     }
   });
 });

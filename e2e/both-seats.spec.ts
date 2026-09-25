@@ -82,7 +82,7 @@ test.describe("answering your own posted seat", () => {
      * lobby is what says what is on offer now, and it is the surface the rule
      * is about. Waited for before anything is denied of it.
      */
-    await page.goto("/games");
+    await page.goto("/play");
     await expect(page.getByTestId("open-games")).toBeVisible();
 
     /*

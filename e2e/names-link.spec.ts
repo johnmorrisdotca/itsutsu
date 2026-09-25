@@ -128,7 +128,7 @@ test.describe("a person's name leads to their page", () => {
       await prisma.$disconnect();
     }
 
-    await page.goto("/games");
+    await page.goto("/play");
     /*
      * Only the rows nobody is bound to, found by the attribute a bound row
      * carries and this one does not — rather than whichever seat happens to be

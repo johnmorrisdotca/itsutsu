@@ -130,7 +130,7 @@ test.describe("open seats", () => {
      */
     const guest = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await guest.newPage();
-    await page.goto("/games");
+    await page.goto("/play");
     const row = page.getByTestId("open-game").filter({ hasText: hostName });
     await expect(row).toBeVisible();
     /*
@@ -146,7 +146,7 @@ test.describe("open seats", () => {
     await expect(page.getByTestId("turn-banner")).toContainText("Waiting");
 
     // The seat is gone from the board, and a second taker is refused.
-    await page.goto("/games");
+    await page.goto("/play");
     await expect(page.getByTestId("open-game").filter({ hasText: hostName })).toHaveCount(0);
     expect((await request.post(`/api/games/${game.id}/sit`)).status()).toBe(409);
     await guest.close();

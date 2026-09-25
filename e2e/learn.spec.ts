@@ -137,12 +137,11 @@ test.describe("rules and learning", () => {
     await expect(page.getByTestId("fixed-by-rules")).toContainText("4×4");
   });
 
-  test("the lobby offers the ways to start a game and folds the catalogue into families", async ({ page }) => {
+  test("the library offers New game and folds the catalogue into families", async ({ page }) => {
     await page.goto("/games");
-    await expect(page.getByTestId("lobby-start")).toContainText("Start a game");
     // A way into the screen that settles a game, rather than a form settling
     // half of one here. See set-up-first.spec.ts.
-    await expect(page.getByTestId("lobby-set-up")).toBeVisible();
+    await expect(page.getByTestId("nav-new-game")).toBeVisible();
     const families = page.getByTestId("lobby-family");
     await expect(families).toHaveCount(GAME_FAMILIES.length);
     // The first family is open; the rest are folded, so the page stays short.
@@ -177,13 +176,13 @@ test.describe("rules and learning", () => {
    * under: the rules of a game are reached THROUGH the game, and the learning
    * shelf is offered from /games where somebody has just met one.
    */
-  test("the bar is Play, Games, Players, About — and nothing it dropped is unreachable", async ({ page }) => {
+  test("the bar is My games, Games, Players, About and New game — and nothing it dropped is unreachable", async ({ page }) => {
     await page.goto("/games/gomoku");
     const nav = page.getByRole("navigation");
     for (const gone of [/^Rules$/, /^Learn$/]) {
       await expect(nav.getByRole("link", { name: gone })).toHaveCount(0);
     }
-    for (const kept of [/^Play$/, /^Games$/, /^Players$/, /^About$/]) {
+    for (const kept of [/^My games/, /^Games$/, /^Players$/, /^About$/, /^New game$/]) {
       await expect(nav.getByRole("link", { name: kept }).first()).toBeVisible();
     }
 

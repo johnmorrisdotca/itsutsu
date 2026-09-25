@@ -132,32 +132,19 @@ test.describe("asking for a game", () => {
     await theirs.close();
   });
 
-  test("the seats board and the room sit side by side, and both say when they are empty", async ({ page }) => {
-    await openGamesPage(page);
+  test("the seats board and the room are on My games, and both say when they are empty", async ({ page }) => {
+    /*
+     * On My games since 2026-09-24, beside the games the reader has going: the
+     * one-line sentence that stood beside them on /games went, New game being
+     * the one place a game is set up (John: "in Games there is a Post a Seat
+     * button which seems to do a lot of what New Game does").
+     */
+    await page.goto("/play");
     await expect(page.getByTestId("open-games")).toBeVisible();
     await expect(page.getByTestId("here-panel")).toBeVisible();
-
-    /*
-     * BOTH WAYS IN STAND HERE, and this case used to assert the opposite.
-     *
-     * 0.135.0 removed the one-line sentence and this line was written to hold
-     * it removed — `toHaveCount(0)` on `start-game`. John asked for it back in
-     * 0.143.0 ("we need that one line version back"), so the requirement
-     * changed under a correct test rather than the test being wrong.
-     *
-     * What he had objected to was landing on a board with nothing agreed, and
-     * the sentence being the ONLY way in. Neither is true now: it settles the
-     * game, the board, the pace and the opponent, its "set up the board" path
-     * goes to the game's front door, and `/games/new` stands beside it for
-     * everything the sentence does not ask. So the thing to assert is that
-     * BOTH are offered — a page with only one of them is the bug, in either
-     * direction.
-     *
-     * Still asserted after something already present, which is the half of
-     * this worth keeping from the original: an absence, or a presence, checked
-     * before a page has rendered is a statement about timing.
-     */
-    await expect(page.getByTestId("lobby-set-up")).toBeVisible();
-    await expect(page.getByTestId("start-game")).toBeVisible();
+    // And the library still leads to New game, with nothing of the sentence left on it.
+    await page.goto("/games");
+    await expect(page.getByTestId("nav-new-game")).toBeVisible();
+    await expect(page.getByTestId("start-game")).toHaveCount(0);
   });
 });

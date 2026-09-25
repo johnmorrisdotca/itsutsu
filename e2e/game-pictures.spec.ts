@@ -95,7 +95,7 @@ test.describe("the games index", () => {
     expect(await sideOf(page.getByTestId("lobby-family").first().getByTestId("game-thumb").first())).toBe(REGULAR_PX);
 
     // To the set-up screen by its own button, not by address.
-    await page.getByTestId("lobby-set-up").click();
+    await page.getByTestId("nav-new-game").click();
     await expect(page).toHaveURL(/\/games\/new$/);
     await ready(page, "set-up-game");
 

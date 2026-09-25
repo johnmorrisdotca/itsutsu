@@ -54,7 +54,8 @@ export function OpenSeatsFilters({
     const query = openSeatQuery(next);
     // Back to the board itself, not to the top of the page — a reader who
     // just changed a pill is looking at the noticeboard, not the hero above it.
-    return `${query === "" ? "/games" : `/games?${query}`}#open-seats`;
+    // On My games since 2026-09-24, beside the games the reader has going.
+    return `${query === "" ? "/play" : `/play?${query}`}#open-seats`;
   };
 
   return (

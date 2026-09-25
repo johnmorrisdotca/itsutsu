@@ -1,29 +1,8 @@
 import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
-import { BrandStones } from "@/components/layout/BrandMarks";
-import { PageTitle, SectionHeading } from "@/components/layout/Headings";
+import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
-import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
-import { cookies } from "next/headers";
-
-import { HereNowPanel } from "@/components/mine/HereNowPanel";
-import { StartGame } from "@/components/mine/StartGame";
-import { START_COPY } from "@/components/mine/mine.constants";
-import type { GameGroup, SeatOnBoard } from "@/components/mine/startGame.types";
-import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { OPEN_GAMES_SHOWN, fetchOpenSeats, oneOfEachKind } from "@/lib/history/openGames";
-import { filterOpenSeats, posterOf, readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
-import type { GameSummary } from "@/lib/history/gameHistory.types";
-import { posterKeyOf } from "@/lib/history/posterStanding";
-import { fetchPosterStandings } from "@/lib/history/posterStandingRead";
-import { sweepOpenSeats } from "@/lib/bots/botSeats";
-import { seatsTheSentenceOffers } from "@/lib/history/lobbySeats";
-import { seatOnBoard } from "@/lib/history/seatOnBoard";
-import { seatClaims } from "@/lib/history/seatCookie";
-import { fetchOpponents } from "@/lib/social/opponents";
-import { ignoredMemberIds } from "@/lib/social/ignores";
-import { fetchHereNow } from "@/lib/social/presence";
 import { fetchCatalogueStats } from "@/lib/catalogue/catalogueStats";
 import { forReader } from "@/lib/catalogue/catalogueReader";
 import { GameCatalogue } from "@/components/games/GameCatalogue";
@@ -31,9 +10,7 @@ import { readCatalogueView } from "@/lib/gomoku/catalogueView";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentReader } from "@/lib/auth/currentReader";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 
 import { PublicCatalogue, catalogueFamilies } from "./PublicCatalogue";
 
@@ -42,274 +19,52 @@ export const metadata = { title: "Games 種目" };
 // Read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
 
-
 /**
- * THE GAMES. /games, and the one index of them there is.
+ * THE GAMES. /games, the library: every game, by family, and the way to each
+ * one's rules, record, standings and board.
  *
- * It was three. This page listed them by family, /rules listed them as cards
- * with an A–Z, and /games/all listed them as text — three indexes of one
- * collection, each reachable from somewhere the other two were not. They are
- * three VIEWS now, chosen in the query, because how a list is laid out is a
- * filter and not an identity.
+ * It was three indexes — this page by family, /rules as cards, /games/all as
+ * text — and they are three VIEWS now, chosen in the query, because how a list
+ * is laid out is a filter and not an identity.
  *
- * One plain choice still comes first, so nobody has to understand forty games
- * to start playing; the catalogue sits below for whoever wants to look around.
+ * AND IT IS ONLY THE LIBRARY. John, 2026-09-24: "Play, New Game and Games is
+ * confusing... we have 3 different tabs to play games"; "in Games there is a
+ * Post a Seat button which seems to do a lot of what New Game does… Games page
+ * has a FULL page of text before you get down to the different families."
+ * Those are ItsYourTurn's and GoldToken's three pages, My Games, Start a Game
+ * and the game list, and this page had grown a second way to start a game (a
+ * one-line form with its own list of games, which had fallen out of step with
+ * the set-up screen's families) and the waiting seats above the list it is
+ * for. New game is the one place a game is set up, and the seats other
+ * members have posted are on My games (`OpenSeatsSection`). What is left is a
+ * heading, one line, the door to New game, and the families straight away.
  */
-export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
+export default async function GamesPage({ searchParams }: PageProps<"/games">) {
   const asked = await searchParams;
-  const filter = readOpenSeatFilter(asked);
-  // How the catalogue below is laid out. A filter, so it lives in the query.
+  // How the catalogue is laid out. A filter, so it lives in the query.
   const view = readCatalogueView(asked);
   const say = await currentSpeaker();
-
-  /**
-   * WHO IS ASKING, BEFORE ANYTHING ELSE IS ASKED.
-   *
-   * This page is open without an invite, and everything below this line is a
-   * database read for the lobby — the posted seats, who is here, what has been
-   * played. A stranger is shown none of it, so a stranger must not pay for any
-   * of it: the catalogue they came for is tables in this repository and needs
-   * no query at all.
-   *
-   * MEASURED RATHER THAN REASONED. The reads were in one `Promise.all` with
-   * `currentEmail()` and ran whatever the answer was, and a signed-out request
-   * to /games answered 500 against a database that was not there — on the one
-   * page a stranger is most likely to open. It would not have failed in
-   * production, where the database IS there; it would have quietly cost a
-   * handful of queries per visitor to build a lobby nobody was going to see,
-   * which is this repo's own "cost per call times call count" all over again.
-   *
-   * THE QUESTION IS "IS THERE A SESSION", NOT "IS THERE AN ADDRESS", and the
-   * difference is a person. This asked `currentEmail()`, which is null for a
-   * browser holding an INVITE session — somebody who redeemed a code and never
-   * signed in with Google, which is how everybody John invites gets in. They
-   * were shown the stranger's page: "playing one needs an invite", and a link
-   * to the door they had already come through. No lobby, no open seats, no way
-   * to start a game. The masthead beside it said "Sign out", because
-   * `SiteHeader` asks `currentSession()` — two halves of one page disagreeing
-   * about the same reader.
-   *
-   * `email === null` means both "a stranger" and "a member who joined by
-   * code", which is exactly the fault AGENTS.md calls Nothing Answers What It
-   * Cannot Answer. So the gate for the lobby is the session.
-   *
-   * AND THE SENTENCE BELOW WAS THE SAME FAULT ONE LEVEL DOWN. The lobby opened
-   * for them, and then its sentence was told "signed in" by the address: an
-   * invite holder was offered only "someone at this screen" and told to sign
-   * in, on a page whose seats they could post and sit at. `currentReader` is
-   * the one answer now — `signedIn` for what a session allows, `hasAccount` for
-   * what only an account does, `memberId` for who they are.
-   */
   const reader = await currentReader();
   if (!reader.signedIn) {
     return <PublicCatalogue view={view} say={say} />;
   }
-
-  const claims = seatClaims((await cookies()).getAll());
-  /*
-   * A seat that has sat on this board longer than the grace period is taken by
-   * one of the computer players, so a game posted on a quiet evening is still a
-   * game by the morning. Throttled and not awaited: the listing below is what
-   * the reader came for.
-   *
-   * Below the check above, deliberately. It takes seats on behalf of the
-   * computer players — it WRITES — and an anonymous page view is the last
-   * thing that should set that going.
-   */
-  sweepOpenSeats();
-
-  const claimed = [...claims.keys()];
-  // Who they are, off the row `currentReader` already read.
-  const mine = reader.memberId;
-  const [stats, seatGames, here] = await Promise.all([
-    fetchCatalogueStats(),
-    fetchOpenSeats(claimed),
-    fetchHereNow(),
-  ]);
-  const [opponents, ignored] = await Promise.all([
-    /*
-     * The same list the setup screen offers, FROM THE ONE PLACE THAT BUILDS
-     * IT. This page used to keep its own copy, and the copy asked the set of
-     * ignored MEMBER IDS below whether it held an ADDRESS — a question with
-     * only one answer, so the ignore list did nothing here at all and somebody
-     * who had been shut out was still offered a game. The sentence came back
-     * in 0.143.0; the copy did not, and must not.
-     */
-    fetchOpponents(reader),
-    /*
-     * Who this reader has shut out, by id, because a seat is keyed by member
-     * and the list is kept by address. An invite holder has no address, so
-     * there is nobody for them to ignore.
-     */
-    /*
-     * BY THE READER'S MEMBER ID, which is how the ignore list is kept now. This
-     * passed the ADDRESS after the list moved to ids — both strings, so it
-     * compiled, and it asked the list about an owner nobody is — and before
-     * that, an invite holder had no address and so nobody to ignore at all.
-     */
-    reader.memberId === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(reader.memberId),
-  ]);
-
-  /*
-   * Two seats never belong on somebody's board: their own, and one posted by
-   * a member they ignore.
-   *
-   * Their own, because you cannot sit across from yourself, and the sentence
-   * above was offering to — "Sit down with John Morris" on John's own screen,
-   * against a seat he had posted himself. The server refuses that, so the
-   * offer was one the site would then reject, which is a worse thing to show
-   * somebody than no offer at all. It had been excluded by the browser's own
-   * seat cookies, and a cookie is the wrong key: a seat belongs to the
-   * account on every device, so posting on a phone and reading the board on a
-   * laptop offered it straight back.
-   *
-   * The ignore list is a rule about who may reach you, and a seat is a way in
-   * — and it was not working at all: the list is kept by address, a seat is
-   * keyed by member id, and asking a set of addresses whether it holds an id
-   * is a question with only one answer.
-   */
-  const theirs = (game: GameSummary) => {
-    const poster = game.openSeat === STONES.black ? game.whiteMemberId : game.blackMemberId;
-    if (poster === null) return true;
-    if (mine !== null && poster === mine) return false;
-    return !ignored.has(poster);
-  };
-  /*
-   * Narrowed first, and then cut — in that order, which is the whole of what
-   * went wrong here twice. The seats a reader cannot sit in are taken out of
-   * the list before either reader of it decides how much to take: the board
-   * shows the newest thirty of what is left, and the sentence keeps one of
-   * each kind. A list cut to thirty and then narrowed has lost seats the
-   * narrowing would have kept, and one kept per kind and then narrowed loses
-   * a whole kind whenever the one kept was the reader's own.
-   */
-  const usable = seatGames.filter(theirs);
-  const choices = oneOfEachKind(seatsTheSentenceOffers(usable));
-
-  /*
-   * EVERY POSTER'S STRENGTH, read once for the whole board — their rating from
-   * the right pool with its tier, their XP level, and where they are — so a
-   * reader can pick an opponent of their own strength. Two queries whatever the
-   * board holds. Read for every seat the reader could sit in, before the rating
-   * filter narrows them, because the filter reads the same figure the line
-   * beside the name prints: by member first and name after, so a poster who
-   * renamed is neither shown one rating nor filtered by another.
-   */
-  const standings = await fetchPosterStandings(usable.map((game) => posterOf(game)));
-  const narrowed = filterOpenSeats(usable, filter, (poster) => standings.get(posterKeyOf(poster))?.rating?.rating ?? null);
-  const openSeats = narrowed.slice(0, OPEN_GAMES_SHOWN);
-
-  // The sentence reads the same lists the page below it shows.
-  // The board games: the sentence starts a game between two people, which a puzzle is not.
-  const groups: GameGroup[] = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).map((family) => ({
-    title: family.title,
-    kanji: family.kanji,
-    games: boardGamesOf(family).map((variant) => ({
-      variant,
-      label: RULE_VARIANT_DISPLAY[variant].label,
-      kanji: RULE_VARIANT_DISPLAY[variant].kanji,
-    })),
-  }));
-  const seats: SeatOnBoard[] = choices.map((game) => seatOnBoard(game));
+  const stats = await fetchCatalogueStats();
 
   return (
     <Page>
       <SiteHeader />
-
       {/*
-        * Starting a game comes first, and that is the fix rather than a
-        * preference. "Your games" grows without limit as somebody plays, so
-        * anything under it is pushed further down every week — John found the
-        * dropdown a full scroll below the fold, which is the same complaint
-        * that made this panel one sentence in the first place. A section whose
-        * height is fixed cannot bury anything, and a section that grows cannot
-        * bury what is above it.
-        */}
-      {/*
-        THE LOBBY IS FOR MEMBERS; THE CATALOGUE BELOW IS FOR ANYBODY.
-
-        This page became open without an invite when a game stopped having a
-        /rules page of its own — it is what the /rules index was, and John's
-        rule is that reading is open and playing is gated: "strangers should be
-        able to browse the site, the games, the rules etc... they need to
-        register to play."
-
-        Everything in this section is the playing half. Posted seats are
-        members offering games and carry their names; who is here is members;
-        the form starts a game. None of it is anything a stranger can act on,
-        and all of it names people. So it is not drawn for them at all, rather
-        than drawn and then refused — an offer the site would turn down is a
-        worse thing to show somebody than no offer.
-
-        Decided HERE and not in `proxy.ts`, which is that file's own rule:
-        an addition belongs after the gate has already said yes, never inside
-        the deciding. A section that only ever renders for a member cannot turn
-        a no into a yes.
+        A heading and one line, then the games. New game is the button in the
+        bar; a second one here, under it, was the same door twice.
       */}
-      <PageTitle title={say.say("nav.games")} kanji="種目" />
-
-      <section className="flex flex-col gap-4" data-testid="lobby-start">
-        <SectionHeading title={START_COPY.title.label} kanji={START_COPY.title.kanji} />
-        <p className="text-sm text-muted">{START_COPY.lead}</p>
-        {/*
-          THE ONE-LINE SENTENCE, BACK BESIDE THE DOOR RATHER THAN INSTEAD OF
-          IT. John: "we need that one line version back."
-
-          0.135.0 removed it, and that was half right. What he had objected to
-          was landing on a board with nothing agreed — "very bad design" — and
-          the sentence being the ONLY way in. It was not the sentence itself:
-          it settles the game, the board, the pace and who it is against, and
-          its "set up the board" path now goes to the game's own front door
-          rather than a live board, so the thing he objected to is gone from
-          it either way.
-
-          So there are two ways in and each says which it is. The sentence is
-          the quick one for somebody who knows what they want; /games/new is
-          the room where everything is settled, including the things the
-          sentence does not ask — rated or friendly, the opening, the draw
-          limit. Neither is a lesser version of the other.
-        */}
-        <div className={PANEL_CLASS}>
-          <StartGame
-            families={groups}
-            seats={seats}
-            opponents={opponents}
-            signedIn={reader.signedIn}
-            canAsk={reader.hasAccount}
-          />
-        </div>
-        <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="lobby-start-ways">
-          <Link href="/games/new" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="lobby-set-up">
-            Play 対局
-          </Link>
-          <span className="text-xs text-muted">
-            The game, the board, the pace and who it is against — settled before it exists.
-          </span>
-        </div>
-        {/* The waiting room is one table across every game, so it takes the page's width; the room of who is here follows it. */}
-        <OpenGamesBoard
-          games={openSeats}
-          shown={narrowed.length}
-          total={usable.length}
-          filter={filter}
-          standings={standings}
-        />
-        <HereNowPanel here={here} me={reader.memberId} />
+      <PageTitle
+        title={say.say("nav.games")}
+        kanji="種目"
+        lead="Almost every game here is five in a row with one idea changed. Every name leads to that game — its rules, its record, its standings and a board."
+      />
+      <section className="flex flex-col gap-4">
+        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} />
       </section>
-
-      {/*
-        The games you have going are their own page now, at /play. This one
-        is for starting another, and for meeting the games themselves: the
-        open seats, the room, and the whole catalogue underneath.
-
-        Inviting somebody to the SITE is not one of those things, and the
-        panel that did it lived here and on /me both. It is an account
-        errand — a one-use code and a QR for a phone across the table —
-        and it was costing this page vertical space above the games
-        themselves. It stays on /me, beside the people you already know.
-      */}
-      <BrandStones className="py-1 opacity-80" />
-
       {/*
         LEARN IS OFFERED HERE, PROMINENTLY, AND THAT IS WHY IT LEFT THE
         NAVIGATION. A word in the bar was five words of chrome on every page of
@@ -360,29 +115,6 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         </Link>
       </section>
 
-      <section className="flex flex-col gap-4">
-        {/*
-          `nav.everyGame` names this heading now. It used to name the page at
-          /games/all, which has become the plain-list VIEW below — so the
-          phrase did not die with the page, it moved down to the section
-          whose list it was always describing.
-        */}
-        <SectionHeading title={say.say("nav.everyGame")} kanji="全種目" />
-        <p className="text-sm text-muted">
-          {/*
-            The count lives on the plain list rather than here, and that is the
-            gate's doing rather than a preference: a number beside the word
-            "games" has to lead to those games, and a count of RULE SETS has
-            nowhere to lead. The list view states it with the exception written
-            against it, once, where it is a fact about the catalogue and not a
-            promise this sentence cannot keep.
-          */}
-          Almost every game here is five in a row with one idea changed. Every name below leads to
-          that game — its rules, its record, its standings and a board — and the three ways of
-          looking at the list are the same games arranged differently.
-        </p>
-        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} />
-      </section>
   </Page>
   );
 }

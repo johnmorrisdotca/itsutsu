@@ -6,6 +6,8 @@ import Link from "next/link";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { MyPuzzleRuns } from "@/components/mine/MyPuzzleRuns";
+import { OpenSeatsSection } from "@/components/mine/OpenSeatsSection";
+import { readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -121,6 +123,12 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
       {/* The puzzles left unfinished, kept on the account: see `MyPuzzleRuns`. */}
       <MyPuzzleRuns />
       <LocalGameCardClient />
+      {/*
+        The seats other members have posted, and who is here: moved from the
+        top of /games on 2026-09-24, when New game became the one place a game
+        is set up and /games the library. See `OpenSeatsSection`.
+      */}
+      <OpenSeatsSection filter={readOpenSeatFilter(asked)} />
     </Page>
   );
 }

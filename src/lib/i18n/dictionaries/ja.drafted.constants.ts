@@ -46,8 +46,12 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
    * nobody's but mine.
    */
   "nav.play": {
-    text: "遊ぶ",
-    back: "Play / to play.",
+    text: "対局中",
+    back: "Games in progress — my own games, going.",
+  },
+  "nav.newGame": {
+    text: "新しい対局",
+    back: "A new game — the screen a game is set up on.",
   },
   "nav.games": {
     text: "種目",

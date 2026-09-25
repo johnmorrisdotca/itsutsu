@@ -81,7 +81,7 @@ test.describe("the twenty-game cap", () => {
     // The ordinary way to a game: the games page, the set-up screen, the doorstep.
     const page = await context.newPage();
     await page.goto("/games");
-    await page.getByTestId("lobby-set-up").click();
+    await page.getByTestId("nav-new-game").click();
     await expect(page).toHaveURL(/\/games\/new/);
     await ready(page, "set-up-game");
     /*

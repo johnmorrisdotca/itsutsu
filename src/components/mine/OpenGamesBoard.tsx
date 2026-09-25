@@ -118,7 +118,7 @@ export function OpenGamesBoard({
                   ) : (
                     <>
                       {OPEN_SEATS_FILTER_COPY.empty}{" "}
-                      <Link href="/games#open-seats" className="underline underline-offset-4" data-testid="open-seats-clear">
+                      <Link href="/play#open-seats" className="underline underline-offset-4" data-testid="open-seats-clear">
                         {OPEN_SEATS_FILTER_COPY.clear}
                       </Link>
                       .

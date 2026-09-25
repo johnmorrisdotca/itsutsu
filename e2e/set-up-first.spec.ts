@@ -54,7 +54,7 @@ test.describe("play leads to settling a game, not to a board", () => {
     // some of a game and left the rest to be found at a board. It offers the
     // door now, and the room is where everything is decided.
     await page.goto("/games");
-    const start = page.getByTestId("lobby-set-up");
+    const start = page.getByTestId("nav-new-game");
     await expect(start).toBeVisible();
     await start.click();
     await expect(page).toHaveURL(/\/games\/new$/);

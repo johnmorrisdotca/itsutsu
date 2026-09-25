@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
+import { BUTTON_BASE, BUTTON_STRONG, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 /**
@@ -20,6 +21,9 @@ import type { PhraseKey } from "@/lib/i18n/i18n.constants";
  * no phrase here keeps its English label, so adding a section can never break
  * the bar. It only leaves that one word untranslated until somebody writes it.
  */
+/** The one screen a game is set up on — see the button after the tabs. */
+const NEW_GAME_HREF = "/games/new";
+
 const NAV_PHRASE: Readonly<Record<string, PhraseKey>> = {
   "/play": "nav.play",
   "/games": "nav.games",
@@ -53,26 +57,14 @@ export const NAV = [
    * elsewhere — a game's name, a section title, the rules pages — is the
    * site's own voice and stays.
    */
-  { href: "/play", label: "Play" },
   /*
-   * NEW GAME, WHICH THE BAR HAS NEVER HAD, AND EVERY SITE THIS WAS MODELLED ON
-   * DOES. ItsYourTurn puts it in the left rail directly under Game Status, and
-   * for good reason: the moment you notice you have nothing to move is the
-   * moment you want another game, and until now the answer to that was three
-   * pages — Games, pick one, then its setup screen.
-   *
-   * It sits between Play and Games on purpose, and the three read as a
-   * progression rather than as a list: Play is the games I have going, New game
-   * is another one of my own, Games is the catalogue of what there is. Putting
-   * it beside Play also puts the two "my own play" rows together, so Games keeps
-   * being about the site's games rather than about mine.
-   *
-   * ONE LINK AND NOTHING MORE, which it could not have been a week ago. /games/new
-   * used to be one of several ways in and the only one that settled anything; now
-   * every way in lands there, so a row in the bar pointing at it is the whole
-   * feature rather than a fourth door with its own behaviour to keep in step.
+   * "MY GAMES", WHICH IS WHAT THE PAGE IS CALLED. John, 2026-09-24: "Play, New
+   * Game and Games is confusing... we have 3 different tabs to play games...
+   * I don't know what is what." They are ItsYourTurn's and GoldToken's three:
+   * My Games, Start a Game and the list of games. The tab said Play and the page
+   * said My games, and Play was also the word on every button that starts one.
    */
-  { href: "/games/new", label: "New game" },
+  { href: "/play", label: "My games" },
   { href: "/games", label: "Games" },
   /*
    * RULES AND LEARN ARE GONE FROM HERE, AND NEITHER IS GONE FROM THE SITE.
@@ -130,6 +122,8 @@ export const NAV = [
  * alone — which is exactly why asking it per row gave two answers.
  */
 function currentHref(pathname: string): string | null {
+  // Setting a game up is New game's, the button beside these, not the catalogue's.
+  if (pathname === NEW_GAME_HREF) return null;
   const matches = NAV.filter(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
@@ -184,6 +178,21 @@ export function NavLinks() {
           </Link>
         );
       })}
+      {/*
+        NEW GAME IS A BUTTON, NOT A TAB. John, 2026-09-24: "New Game should be
+        prominent, since its a good page." A tab among tabs read as a third
+        place to play; a button reads as the one thing to do. Every other way
+        in — a game's Play, a player's Play, the empty My games — lands on the
+        same screen, so this is the door and they are shortcuts to it.
+      */}
+      <Link
+        href={NEW_GAME_HREF}
+        aria-current={pathname === NEW_GAME_HREF ? "page" : undefined}
+        className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT} px-3 py-1 text-sm whitespace-nowrap`}
+        data-testid="nav-new-game"
+      >
+        {say.say("nav.newGame")}
+      </Link>
     </>
   );
 }

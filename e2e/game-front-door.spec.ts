@@ -226,6 +226,6 @@ test.describe("a reader with no invite gets the game, and nothing about people",
     await page.goto("/games");
     await expect(page.getByTestId("game-catalogue"), "the games are open").toBeVisible();
     await expect(page.getByTestId("games-join"), "and the door is offered").toBeVisible();
-    await expect(page.getByTestId("lobby-start"), "posted seats are members offering games").toHaveCount(0);
+    await expect(page.getByTestId("open-games"), "posted seats are members offering games").toHaveCount(0);
   });
 });

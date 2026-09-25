@@ -118,8 +118,9 @@ test.describe("every way into a game is two presses", () => {
     await pressesToABoard(page, "/games", ["game-stats-be-first", "set-up-start"]);
   });
 
-  test("from the one-line sentence on the catalogue", async () => {
-    await pressesToABoard(page, "/games", ["start-game-go", "set-up-start"]);
+  // The one-line sentence on the catalogue went on 2026-09-24: New game is the one place a game is set up.
+  test("from New game, in the bar on every page", async () => {
+    await pressesToABoard(page, "/games", ["nav-new-game", "set-up-start"]);
   });
 
   test("from a game's own page", async () => {

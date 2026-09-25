@@ -302,7 +302,8 @@ test.describe("a reader with no session", () => {
   test("is opened nothing: the lobby is the catalogue, and setting up and players are behind the door", async ({ page }) => {
     await page.goto("/games");
     await expect(page.getByTestId("games-join")).toBeVisible();
-    await expect(page.getByTestId("lobby-start")).toHaveCount(0);
+    // The seats other members post are on My games, behind the door; nothing of them is on the catalogue.
+    await expect(page.getByTestId("open-games")).toHaveCount(0);
 
     await page.goto("/games/gomoku/new");
     await expect(page).toHaveURL(/\/join/);

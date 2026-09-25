@@ -15,8 +15,8 @@ test.describe("my games and new game are separate places", () => {
     await expect(page.getByRole("heading", { name: /My games/ })).toBeVisible();
 
     await page.goto("/games");
-    // The lobby keeps the sentence that starts a game; the queue has left it.
-    await expect(page.getByTestId("lobby-start")).toBeVisible();
+    // The library offers New game and is otherwise the games; the queue has left it.
+    await expect(page.getByTestId("nav-new-game")).toBeVisible();
     await expect(
       page.getByTestId("my-games"),
       "the queue is still on the page it was split out of",
@@ -29,7 +29,7 @@ test.describe("my games and new game are separate places", () => {
     // Play is the dashboard and Games is the catalogue: Play already meant
     // going to play your games, so it keeps the word.
     // Anchored, because "Players" is a link too and contains the word.
-    await expect(nav.getByRole("link", { name: /^Play(\s|$)/ })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /^My games(\s|$)/ })).toBeVisible();
     await expect(nav.getByRole("link", { name: /^Games$/ })).toBeVisible();
 
     /*

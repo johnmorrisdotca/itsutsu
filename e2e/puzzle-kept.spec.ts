@@ -33,7 +33,7 @@ test("paused and left by a link, it is in My games, opens where it was left, and
   await expect(page.getByTestId("puzzle-paused")).toBeVisible();
 
   // Clicked away, by the site's own navigation, as John did.
-  await page.getByRole("navigation").getByRole("link", { name: /^Play/ }).first().click();
+  await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
   await expect(page).toHaveURL(/\/play$/);
   const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
   await expect(row, "the puzzle left unfinished is not in My games").toBeVisible();
@@ -70,7 +70,7 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await ready(page, "puzzle-play");
   await page.getByTestId("puzzle-cell").nth(first).click();
   await page.getByTestId(`puzzle-key-${solution[first]}`).click();
-  await page.getByRole("navigation").getByRole("link", { name: /^Play/ }).first().click();
+  await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
   await expect(page).toHaveURL(/\/play$/);
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`)).toBeVisible();
 });

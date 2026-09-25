@@ -86,9 +86,12 @@ test.describe("a reader who joined with an invite code", () => {
   test("reaches the lobby rather than being told to go and get an invite", async ({ page }) => {
     await page.goto("/games");
 
-    // The playing half, which is what they came through the door for.
-    await expect(page.getByTestId("lobby-start")).toBeVisible();
+    // The playing half, which is what they came through the door for: New game from the library,
+    await expect(page.getByTestId("nav-new-game")).toBeVisible();
+    // and the seats other members have posted, on My games since 2026-09-24.
+    await page.goto("/play");
     await expect(page.getByTestId("open-games")).toBeVisible();
+    await page.goto("/games");
 
     // And NOT the page written for somebody who has never been here.
     await expect(page.getByTestId("games-join")).toHaveCount(0);

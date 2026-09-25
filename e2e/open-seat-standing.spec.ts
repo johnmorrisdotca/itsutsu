@@ -51,7 +51,7 @@ test.describe("the waiting room", () => {
       expect(posted.status(), await posted.text()).toBe(201);
       gameId = ((await posted.json()) as { id: string }).id;
 
-      await page.goto("/games");
+      await page.goto("/play");
       const room = page.getByTestId("waiting-room");
       const seat = room.getByTestId("open-game").filter({ hasText: poster.name });
       await expect(seat).toBeVisible();
@@ -92,7 +92,7 @@ test.describe("the waiting room", () => {
       await expect(page.getByTestId("level-name-heading")).toBeVisible();
 
       // Sit down leads to the doorstep for exactly this seat, which names the poster before anybody sits.
-      await page.goto("/games");
+      await page.goto("/play");
       await room.getByTestId("open-game").filter({ hasText: poster.name }).getByTestId("sit").click();
       await expect(page).toHaveURL(new RegExp(`/begin\\?.*sit=${gameId}`));
       await ready(page, "doorstep");

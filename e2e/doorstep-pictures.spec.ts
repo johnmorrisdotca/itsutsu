@@ -48,7 +48,7 @@ const tidyAway = gamesMade();
  * a seat reached COLD, which is this door.
  */
 async function start(page: Page, seat: string) {
-  await page.goto("/games");
+  await page.goto("/play");
   // By the seat's own id on its Sit down link: the room shortens names to an initial.
   const sit = page.locator(`[data-testid="sit"][href*="sit=${seat}"]`);
   await expect(sit, "the host's seat is not on the waiting room").toBeVisible();

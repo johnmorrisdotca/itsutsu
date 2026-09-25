@@ -39,7 +39,7 @@ test.describe("a seat from somebody you ignore", () => {
     // Before ignoring them, their seat is on the board. By name, because that
     // is what the board prints — the id is only in the link.
     const theirSeat = page.getByTestId("open-game").filter({ hasText: shownName(other.name) });
-    await page.goto("/games");
+    await page.goto("/play");
     // At least one: an earlier run may have left one of theirs standing too,
     // and the rule is about all of them, not about a particular seat.
     await expect(theirSeat.first(), "their seat was not on the board to begin with").toBeVisible();
@@ -48,7 +48,7 @@ test.describe("a seat from somebody you ignore", () => {
     const ignored = await page.request.post("/api/ignores", { data: { memberId: await memberIdFor(other.email) } });
     expect([200, 201]).toContain(ignored.status());
     try {
-      await page.goto("/games");
+      await page.goto("/play");
       await expect(
         page.getByTestId("open-game").filter({ hasText: shownName(other.name) }),
         "a seat from an ignored member was still on the board",

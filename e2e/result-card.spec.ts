@@ -288,26 +288,34 @@ test.describe("a result card over a finished board", () => {
       await page.goto("/play");
       await ready(page, "xp-toast-host");
       await expect(page.locator('[data-testid="xp-toast"][data-phase="shown"]').first()).toBeVisible();
-      const newGameLink = page.getByRole("navigation").locator('a[href="/games/new"]').first();
-      await expect(newGameLink).toBeVisible();
-
-      const where = await newGameLink.evaluate((link) => {
-        const r = link.getBoundingClientRect();
-        const x = r.left + r.width / 2;
-        const y = r.top + r.height / 2;
-        const under = [...document.querySelectorAll('[data-testid="xp-toast"]')].some((toast) => {
-          const t = toast.getBoundingClientRect();
-          return x >= t.left && x <= t.right && y >= t.top && y <= t.bottom;
-        });
-        const hit = document.elementFromPoint(x, y);
-        return { under, reaches: hit !== null && link.contains(hit) };
+      /*
+       * WHICHEVER HEADER LINK A TOAST IS OVER. It was New game, until New game
+       * became a button at the end of the bar (2026-09-24) and the toasts landed
+       * over another link instead. The rule is the same for every link: a press
+       * reaches it through a toast.
+       */
+      await expect(page.getByRole("navigation").locator("a").first()).toBeVisible();
+      const covered = await page.getByRole("navigation").first().evaluate((nav) => {
+        for (const link of nav.querySelectorAll("a")) {
+          const r = link.getBoundingClientRect();
+          const x = r.left + r.width / 2;
+          const y = r.top + r.height / 2;
+          const under = [...document.querySelectorAll('[data-testid="xp-toast"]')].some((toast) => {
+            const t = toast.getBoundingClientRect();
+            return x >= t.left && x <= t.right && y >= t.top && y <= t.bottom;
+          });
+          if (!under) continue;
+          const hit = document.elementFromPoint(x, y);
+          return { href: link.getAttribute("href"), reaches: hit !== null && link.contains(hit) };
+        }
+        return null;
       });
-      // A toast really is over the link — or this would say nothing about toasts at all.
-      expect(where.under, "no toast is over the New game link at this width").toBe(true);
-      expect(where.reaches, "a press on the New game link lands on the toast instead").toBe(true);
+      // A toast really is over a link — or this would say nothing about toasts at all.
+      expect(covered, "no toast is over any header link at this width").not.toBeNull();
+      expect(covered!.reaches, `a press on ${covered!.href} lands on the toast instead`).toBe(true);
 
-      await newGameLink.click();
-      await page.waitForURL(/\/games\/new(\?|$)/);
+      await page.getByRole("navigation").locator(`a[href="${covered!.href}"]`).first().click();
+      await page.waitForURL((url) => url.pathname === new URL(covered!.href!, url).pathname);
     } finally {
       await context.close();
       await theirs.close();
