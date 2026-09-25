@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (122)
+## 1. Written by a machine — please check these (157)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -126,6 +126,41 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | A player | **名前のない対局者** | A player with no name. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | vs | **対** | Versus. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Wins | **勝ち** | Wins. |  |
+| — — — | Be the first to play → | **最初に遊んでみましょう →** | Be the first to play. |  |
+| — — — | {who} was credited {xp} for games played on other sites | **{who}に他のサイトでの対局に対して{xp}が加算されました** | {xp} was added to {who} for games on other sites. |  |
+| — — — | You were credited {xp} for games played on other sites | **他のサイトでの対局に対して{xp}が加算されました** | {xp} was added for games on other sites. |  |
+| — — — | {who} drew with {other} at {game} | **{who}が{game}で{other}と引き分けました** | {who} drew with {other} at {game}. |  |
+| — — — | You drew with {other} at {game} | **{game}で{other}と引き分けました** | You drew with {other} at {game}. |  |
+| — — — | No games have finished here lately between players this tab may show. | **最近、このタブに表示できる対局者どうしの対局はありません。** | Recently there are no games between players this tab can show. |  |
+| — — — | Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first. | **まだ何もありません。あなたや仲間が対局を始めたり終えたり、経験値を得たり、レベルが上がったり、パズルを解いたりすると、ここに新しい順で表示されます。** | Nothing yet. When you or your buddies start or finish a game, earn experience, go up a level or solve a puzzle, it is shown here, newest first. |  |
+| — — — | Find buddies → | **仲間を探す →** | Find buddies. |  |
+| — — — | Your feed | **あなたの近況** | Your recent activity. |  |
+| — — — | What you and your buddies have been playing lately, newest first. | **あなたと仲間が最近遊んだこと。新しい順です。** | What you and your buddies played recently. Newest first. |  |
+| — — — | Games finished here lately. Only games in which every player is a computer player or has said they are 18 or over are shown. | **最近ここで終わった対局です。すべての対局者がコンピューターか、18歳以上と答えた会員である対局だけを表示します。** | Games that ended here recently. Only games in which every player is a computer or a member who answered that they are 18 or over are shown. |  |
+| — — — | {who} reached level {level}, {name} | **{who}がレベル{level}「{name}」になりました** | {who} became level {level}, "{name}". |  |
+| — — — | You reached level {level}, {name} | **レベル{level}「{name}」になりました** | You became level {level}, "{name}". |  |
+| — — — | {who} lost to {other} at {game} | **{who}が{game}で{other}に負けました** | {who} lost to {other} at {game}. |  |
+| — — — | You lost to {other} at {game} | **{game}で{other}に負けました** | You lost to {other} at {game}. |  |
+| — — — | {who} solved {count} {game} puzzles | **{who}が{game}のパズルを{count}問解きました** | {who} solved {count} {game} puzzles. |  |
+| — — — | You solved {count} {game} puzzles | **{game}のパズルを{count}問解きました** | You solved {count} {game} puzzles. |  |
+| — — — | {who} solved a {game} puzzle | **{who}が{game}のパズルを一つ解きました** | {who} solved one {game} puzzle. |  |
+| — — — | You solved a {game} puzzle | **{game}のパズルを一つ解きました** | You solved one {game} puzzle. |  |
+| — — — | See the game | **対局を見る** | See the game. |  |
+| — — — | somebody | **誰か** | Somebody. |  |
+| — — — | {who} started a game of {game} against {other} | **{who}が{other}と{game}の対局を始めました** | {who} started a game of {game} with {other}. |  |
+| — — — | You started a game of {game} against {other} | **{other}と{game}の対局を始めました** | You started a game of {game} with {other}. |  |
+| — — — | Everyone | **みんな** | Everyone. |  |
+| — — — | You and your buddies | **あなたと仲間** | You and your buddies. |  |
+| — — — | Whose activity to show | **誰の近況を表示するか** | Whose activity to show. |  |
+| — — — | Feed | **近況** | Recent activity. |  |
+| — — — | Today | **今日** | Today. |  |
+| — — — | {who} started a game of {game}, waiting for somebody to sit down | **{who}が{game}の対局を始めました。相手を待っています** | {who} started a game of {game}. Waiting for an opponent. |  |
+| — — — | You started a game of {game}, waiting for somebody to sit down | **{game}の対局を始めました。相手を待っています** | You started a game of {game}. Waiting for an opponent. |  |
+| — — — | {who} beat {other} at {game} | **{who}が{game}で{other}に勝ちました** | {who} won against {other} at {game}. |  |
+| — — — | You beat {other} at {game} | **{game}で{other}に勝ちました** | You won against {other} at {game}. |  |
+| — — — | {who} earned {xp} | **{who}が{xp}を獲得しました** | {who} earned {xp}. |  |
+| — — — | You earned {xp} | **{xp}を獲得しました** | You earned {xp}. |  |
+| — — — | Yesterday | **昨日** | Yesterday. |  |
 | — — — | also under {family} | **{family}にもあり** | Also found under {family}. |  |
 | — — — | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. |  |
 | — — — | Asked for | **指名** | Nominated — the person named for this game. |  |
