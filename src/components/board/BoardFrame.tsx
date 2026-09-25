@@ -172,6 +172,9 @@ export function BoardFrame({
       )}
       <div
         className="relative aspect-square rounded-md"
+        // Which surface is drawn, by name, for a test to read: a gradient is no way to ask.
+        data-testid="board-surface"
+        data-surface={theme.label}
         style={{
           background: theme.surface,
           /*

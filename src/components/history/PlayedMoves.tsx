@@ -1,9 +1,9 @@
 "use client";
 
 import { MOVE_KINDS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { pointName } from "@/lib/gomoku/notation";
 import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 import type { GameMove } from "@/lib/history/gameHistory.types";
+import { MOVE_FORMAT_DISPLAY, linesOf, pointIn, type MoveFormatChoice } from "@/lib/record/moveFormats";
 
 /**
  * The moves of a game, in order — the 棋譜 itself.
@@ -34,6 +34,7 @@ export function PlayedMoves({
   emptyNote = "No moves yet.",
   testId = "played-moves",
   nameOf,
+  format = "itsutsu",
 }: {
   size: number;
   moves: readonly GameMove[];
@@ -48,6 +49,12 @@ export function PlayedMoves({
    * is f5 and not F4. Left out, a move is said as the board says it.
    */
   nameOf?: (move: GameMove) => string;
+  /**
+   * How the moves are written: ours, one a line, or two a line as ItsYourTurn
+   * and GoldToken print them (`moveFormats.ts`), the same choice the live
+   * record offers. A record with names of its own (`nameOf`) keeps them.
+   */
+  format?: MoveFormatChoice;
 }) {
   if (moves.length === 0) {
     return (
@@ -57,53 +64,62 @@ export function PlayedMoves({
     );
   }
 
+  const pairs = MOVE_FORMAT_DISPLAY[format].pairs;
   return (
-    <ol
-      className="max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"
-      data-testid={testId}
-    >
-      {moves.map((move) => {
-        const current = at === move.number;
-        const ahead = at !== undefined && move.number > at;
-        const said = nameOf?.(move) ?? wordFor(size, move);
-        const inside = (
-          <>
-            <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">
-              {move.number}
+    <ol className="max-h-56 overflow-y-auto rounded-lg border border-rule text-sm" data-testid={testId} data-format={format}>
+      {linesOf(format, moves).map((line) => (
+        <li key={line.number} className="flex items-stretch" data-testid="played-line">
+          {/* Two a line, the line's number stands before the pair, as the other sites print it. */}
+          {pairs ? (
+            <span className="w-9 shrink-0 self-center pr-1 text-right font-mono text-xs text-muted tabular-nums">
+              {line.number}
+              {format === "itsYourTurn" ? "." : ""}
             </span>
-            <span
-              aria-hidden="true"
-              className={`size-2.5 shrink-0 rounded-full ${
-                move.stone === "black" ? "bg-ink" : "border border-rule-strong bg-ivory"
-              }`}
-            />
-            <span className="font-mono">{said}</span>
-            <span className="sr-only">
-              {STONE_DISPLAY[move.stone as keyof typeof STONE_DISPLAY]?.label ?? move.stone}
-            </span>
-          </>
-        );
-        const shared = `flex w-full items-center gap-2 px-2.5 py-1 text-left ${
-          current ? "bg-shade font-semibold" : ""
-        } ${ahead ? "opacity-60" : ""}`;
-
-        return (
-          <li key={move.number} data-testid="played-move" data-move={move.number}>
-            {onJump === undefined ? (
-              <span className={shared}>{inside}</span>
+          ) : null}
+          {line.moves.map(({ move }) => {
+            const current = at === move.number;
+            const ahead = at !== undefined && move.number > at;
+            const said = nameOf?.(move) ?? wordFor(size, move, format);
+            const inside = (
+              <>
+                {pairs ? null : (
+                  <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">{move.number}</span>
+                )}
+                <span
+                  aria-hidden="true"
+                  className={`size-2.5 shrink-0 rounded-full ${
+                    move.stone === "black" ? "bg-ink" : "border border-rule-strong bg-ivory"
+                  }`}
+                />
+                <span className="font-mono">{said}</span>
+                <span className="sr-only">
+                  {STONE_DISPLAY[move.stone as keyof typeof STONE_DISPLAY]?.label ?? move.stone}
+                </span>
+              </>
+            );
+            const shared = `flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1 text-left ${
+              current ? "bg-shade font-semibold" : ""
+            } ${ahead ? "opacity-60" : ""}`;
+            return onJump === undefined ? (
+              <span key={move.number} className={shared} data-testid="played-move" data-move={move.number}>
+                {inside}
+              </span>
             ) : (
               <button
+                key={move.number}
                 type="button"
                 onClick={() => onJump(move.number)}
                 className={`${shared} transition-colors hover:bg-shade`}
                 aria-current={current ? "step" : undefined}
+                data-testid="played-move"
+                data-move={move.number}
               >
                 {inside}
               </button>
-            )}
-          </li>
-        );
-      })}
+            );
+          })}
+        </li>
+      ))}
     </ol>
   );
 }
@@ -115,12 +131,12 @@ export function PlayedMoves({
  * either would be a record that disagrees with the game it describes — a
  * Halma move reads as the square somebody left, not the one they arrived at.
  */
-function wordFor(size: number, move: GameMove): string {
+function wordFor(size: number, move: GameMove, format: MoveFormatChoice): string {
   const without = stonelessWord(move.kind);
   if (without !== null) return without;
-  const to = pointName(size, move);
+  const to = pointIn(format, size, move);
   if (move.kind === MOVE_KINDS.move && move.from !== undefined) {
-    return `${pointName(size, move.from)}→${to}`;
+    return `${pointIn(format, size, move.from)}→${to}`;
   }
   if (move.kind === MOVE_KINDS.piece && move.cells !== undefined) {
     return `${to} ×${move.cells.length}`;

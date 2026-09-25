@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { BOARD_GRIDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
-import { DEFAULT_APPEARANCE } from "./Board.constants";
-import { appearanceFrom, cleanAppearance, gridFor, sameAppearance } from "./appearance";
+import { BOARD_THEMES, DEFAULT_APPEARANCE, FELTS } from "./Board.constants";
+import { appearanceFrom, boardThemeFor, cleanAppearance, gridFor, sameAppearance, wearsFelt } from "./appearance";
 
 /**
  * How a board is dressed, as it crosses the database.
@@ -116,5 +116,31 @@ describe("where the stones sit", () => {
     const squares = { ...DEFAULT_APPEARANCE, grid: BOARD_GRIDS.cells };
     expect(gridFor(squares, VARIANT_SPECS.freestyle)).toBe(BOARD_GRIDS.cells);
     expect(gridFor(squares, VARIANT_SPECS.go)).toBe(BOARD_GRIDS.cells);
+  });
+});
+
+describe("the felt of a Reversi board", () => {
+  it("is kept when it names a felt, or wood, and dropped otherwise", () => {
+    expect(cleanAppearance({ felt: "blue" }).felt).toBe("blue");
+    expect(cleanAppearance({ felt: "wood" }).felt).toBe("wood");
+    expect(cleanAppearance({ felt: "purple" }).felt).toBeUndefined();
+    expect(cleanAppearance({ felt: "toString" }).felt).toBeUndefined();
+    expect(appearanceFrom({}).felt).toBe("green");
+    expect(sameAppearance(DEFAULT_APPEARANCE, { ...DEFAULT_APPEARANCE, felt: "red" })).toBe(false);
+  });
+
+  it("covers every flipping game in the squares, and nothing else", () => {
+    expect(wearsFelt(DEFAULT_APPEARANCE, VARIANT_SPECS.reversi)).toBe(true);
+    expect(wearsFelt(DEFAULT_APPEARANCE, VARIANT_SPECS.antiReversi)).toBe(true);
+    // Honeycomb flips on a hexagon's crossings; gomoku does not flip; a Reversi put on the lines is on wood.
+    expect(wearsFelt(DEFAULT_APPEARANCE, VARIANT_SPECS.honeycomb)).toBe(false);
+    expect(wearsFelt(DEFAULT_APPEARANCE, VARIANT_SPECS.freestyle)).toBe(false);
+    expect(wearsFelt({ ...DEFAULT_APPEARANCE, grid: BOARD_GRIDS.lines }, VARIANT_SPECS.reversi)).toBe(false);
+  });
+
+  it("draws the felt chosen, and the reader's own wood when they choose it or the game wears none", () => {
+    expect(boardThemeFor({ ...DEFAULT_APPEARANCE, felt: "blue" }, VARIANT_SPECS.reversi)).toBe(FELTS.blue);
+    expect(boardThemeFor({ ...DEFAULT_APPEARANCE, felt: "wood", boardTheme: "sumi" }, VARIANT_SPECS.reversi)).toBe(BOARD_THEMES.sumi);
+    expect(boardThemeFor({ ...DEFAULT_APPEARANCE, felt: "blue", boardTheme: "washi" }, VARIANT_SPECS.freestyle)).toBe(BOARD_THEMES.washi);
   });
 });

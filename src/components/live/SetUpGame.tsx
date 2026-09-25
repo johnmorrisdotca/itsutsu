@@ -17,6 +17,9 @@ import { OpponentChoice } from "./OpponentChoice";
 import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
 import { BeginBar } from "./BeginBar";
 import { BoardPreview } from "./BoardPreview";
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance } from "@/components/board/board.types";
+import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { describeRules } from "./rulesSummary";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
@@ -86,7 +89,10 @@ export function SetUpGame({
   fork = null,
   carry = {},
   problem = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
+  /** The reader's board, so the preview is dressed as their game will be and a Reversi's felt can be chosen. */
+  appearance?: Appearance;
   /** The member's standing board and clock: what silence opens a game at. */
   defaults: KeptDefaults;
   /** The game the path names, at /games/<game>/new; null where the game is a choice. */
@@ -189,6 +195,8 @@ export function SetUpGame({
    * a button that stops being pressable while the next page arrives.
    */
   const [busy, setBusy] = useState(false);
+  // A Reversi board's felt, chosen under the preview and kept on the account (`useFeltChoice`).
+  const { felt, chooseFelt } = useFeltChoice(appearance);
   // A puzzle chosen from the row of families turns the whole screen to it — see `PuzzleHere`.
   const [puzzle, setPuzzle] = useState<PuzzleKind | null>(null);
   /*
@@ -378,7 +386,7 @@ export function SetUpGame({
           showVariant={chooseGame}
           variantLabel="Game"
           chooser={RULES_CHOOSERS.pictures}
-          preview={<BoardPreview rules={settled} />}
+          preview={<BoardPreview rules={settled} appearance={{ ...appearance, felt }} onFelt={chooseFelt} />}
           refused={refused}
           sections={{
             /*

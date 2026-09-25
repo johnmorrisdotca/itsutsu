@@ -88,6 +88,74 @@ export const BOARD_THEMES = {
 } as const satisfies Record<string, BoardThemeTokens>;
 
 /**
+ * THE FELT A REVERSI BOARD IS COVERED IN. John, 2026-09-25: "All Reversi
+ * boards: Introduce a beautiful colour patch row, where you can choose from all
+ * the known variant colours of green, blue, red". A Reversi board is not wood:
+ * it is a flat of cloth ruled in black, green on the classic set and the
+ * tournament table, and blue, red and black on the others. Drawn only for a
+ * flipping game in the squares (`wearsFelt`); `wood` in `Appearance.felt` puts
+ * such a game back on the reader's own board surface.
+ *
+ * Every one is dark and ruled in black. A board in the squares prints its
+ * letters and numbers outside the frame, on the page, so their ink is a mid
+ * tone of the cloth that reads on paper, not the pale ink a wood board's
+ * inside labels would need.
+ */
+export const FELTS = {
+  green: {
+    label: "Green",
+    kanji: "緑",
+    surface: "radial-gradient(130% 100% at 20% 0%, #2f9a5a 0%, #1f7f45 55%, #16663a 100%)",
+    frame: "#0c3d22",
+    playSquare: "rgba(0, 0, 0, 0.18)",
+    line: "#0b2a18",
+    star: "#0b2a18",
+    coordinate: "#2f6b45",
+    winning: "#ffd23f",
+    dark: true,
+  },
+  blue: {
+    label: "Blue",
+    kanji: "青",
+    surface: "radial-gradient(130% 100% at 20% 0%, #3a7fc4 0%, #2865a6 55%, #1d4f86 100%)",
+    frame: "#0f2c4d",
+    playSquare: "rgba(0, 0, 0, 0.18)",
+    line: "#0c2139",
+    star: "#0c2139",
+    coordinate: "#2d5a8a",
+    winning: "#ffd23f",
+    dark: true,
+  },
+  red: {
+    label: "Red",
+    kanji: "赤",
+    surface: "radial-gradient(130% 100% at 20% 0%, #c0473f 0%, #a3342e 55%, #862722 100%)",
+    frame: "#4a1210",
+    playSquare: "rgba(0, 0, 0, 0.18)",
+    line: "#360c0a",
+    star: "#360c0a",
+    coordinate: "#8a3a33",
+    winning: "#ffd23f",
+    dark: true,
+  },
+  black: {
+    label: "Black",
+    kanji: "黒",
+    surface: "radial-gradient(130% 100% at 20% 0%, #3a3d42 0%, #2a2c30 55%, #1d1f22 100%)",
+    frame: "#0b0c0e",
+    playSquare: "rgba(255, 255, 255, 0.10)",
+    line: "#6d737c",
+    star: "#8a909a",
+    coordinate: "#565b63",
+    winning: "#ffb020",
+    dark: true,
+  },
+} as const satisfies Record<string, BoardThemeTokens>;
+
+/** The felts in the order the patches show them, and `wood` last: the reader's own board. */
+export const FELT_LIST = ["green", "blue", "red", "black", "wood"] as const;
+
+/**
  * Stone colours. `classic` is the slate and clam of a real set; the rest keep
  * the same light/dark contrast so the board stays readable, and so the engine
  * terms "black" and "white" still describe what a player sees.
@@ -154,6 +222,8 @@ export const DEFAULT_APPEARANCE: Appearance = {
   showCoordinates: true,
   showMoveNumbers: false,
   grid: "auto",
+  // A Reversi board is green felt until the reader chooses otherwise.
+  felt: "green",
   // Not "do not turn it round": nobody has said, so the seat decides.
   flipped: null,
 };

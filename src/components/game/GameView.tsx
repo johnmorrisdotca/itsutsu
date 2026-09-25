@@ -6,6 +6,7 @@ import { useSavedAppearance } from "./useSavedAppearance";
 import { boardSettingsFrom, type GameDefaults } from "./gameDefaults";
 
 import { Board } from "@/components/board/Board";
+import { FeltUnderBoard } from "@/components/board/FeltPatches";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -201,6 +202,7 @@ export function GameView({
                */
               viewer={null}
             />
+            <FeltUnderBoard appearance={session.appearance} variant={session.state.settings.variant} onChoose={(felt) => actions.setAppearance({ felt })} />
           </div>
         </div>
         <GameSidebar session={session} actions={actions} postSeat={postSeat} practice={match === null} defaults={defaults} />

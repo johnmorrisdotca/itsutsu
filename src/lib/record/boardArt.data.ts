@@ -11,4 +11,4 @@
  *
  *   pnpm screenshots:games
  */
-export const BOARD_ART_FINGERPRINT = "6c653c7d85541c89";
+export const BOARD_ART_FINGERPRINT = "91e00c28295b6be7";

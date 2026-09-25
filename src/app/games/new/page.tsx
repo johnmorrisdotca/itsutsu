@@ -7,6 +7,7 @@ import { SetUpHeading } from "@/components/live/SetUpHeading";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
+import { appearanceFor } from "@/lib/auth/memberAccount";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
 
@@ -42,11 +43,13 @@ export const metadata: Metadata = { title: "Set up a game" };
  */
 export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/games/new">) {
   const [asked, reader] = await Promise.all([searchParams, currentReader()]);
-  const [defaults, opponents, seats] = await Promise.all([
+  const [defaults, opponents, seats, appearance] = await Promise.all([
     // Kept on the account, by member id; a session with no member opens at the site's own.
     gameDefaultsFor(reader.memberId),
     fetchOpponents(reader),
     seatsToSitAt(),
+    // The reader's board, so the preview is dressed as the game will be.
+    appearanceFor(reader.memberId),
   ]);
   /*
    * Reads a row only where the address asked for one — a game to repeat, a
@@ -68,6 +71,7 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
           and Continue disabled, because this asked for an address.
         */
         signedIn={reader.signedIn}
+        appearance={appearance ?? undefined}
         canAsk={reader.hasAccount}
         chooseGame
         opponent={from.opponent}

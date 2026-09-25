@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { Board } from "@/components/board/Board";
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { BoardTheme, StoneSet } from "@/components/board/board.types";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
@@ -99,6 +100,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
           showCoordinates: options.showCoordinates,
           showMoveNumbers: false,
           grid: "auto",
+          felt: DEFAULT_APPEARANCE.felt,
           // An embed on somebody else's page has no reader to have a preference.
           flipped: false,
         }}

@@ -1,6 +1,6 @@
 import type { PictureSize } from "@/components/games/games.types";
 import type { BoardGrid, Cell, GameState, MoveNarrowing, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
-import type { BOARD_THEMES, STONE_SETS } from "./Board.constants";
+import type { BOARD_THEMES, FELT_LIST, STONE_SETS } from "./Board.constants";
 
 export type BoardTheme = keyof typeof BOARD_THEMES;
 
@@ -13,6 +13,8 @@ export type BoardTheme = keyof typeof BOARD_THEMES;
  */
 export type GridStyle = "auto" | BoardGrid;
 export type StoneSet = keyof typeof STONE_SETS;
+/** The cloth a Reversi board is drawn in, or `wood` for the reader's own board surface (`FELTS`). */
+export type Felt = (typeof FELT_LIST)[number];
 
 /**
  * How the board looks. Appearance is kept apart from `GameSettings` on
@@ -27,6 +29,8 @@ export type Appearance = {
   /** Move numbers printed on the stones, as in a published game record. */
   showMoveNumbers: boolean;
   grid: GridStyle;
+  /** The colour of a Reversi board's felt (`FELTS`); every other game keeps `boardTheme`. */
+  felt: Felt;
   /**
    * The board turned round, so the far side of it is nearest you. A reader's
    * own view and nothing else: it moves no stone, changes no coordinate — A1

@@ -2,6 +2,7 @@
 
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { BOARD_THEMES, GRID_STYLES, STONE_SETS } from "@/components/board/Board.constants";
+import { FeltUnderBoard } from "@/components/board/FeltPatches";
 import type { BoardTheme, GridStyle, StoneSet } from "@/components/board/board.types";
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
@@ -70,6 +71,8 @@ export function AppearancePanel(props: GamePanelProps) {
         {GAME_COPY.appearance.label}
       </SectionTitle>
       <ThemeSwatches {...props} />
+      {/* A Reversi board is cloth, so the wood above does not reach it until Your board is chosen here. */}
+      <FeltUnderBoard appearance={session.appearance} variant={session.state.settings.variant} onChoose={(felt) => actions.setAppearance({ felt })} />
       <StoneSwatches {...props} />
       <Field label="Grid" hint={GRID_STYLES[session.appearance.grid].hint}>
         <Select
