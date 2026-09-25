@@ -11,7 +11,7 @@ another game… where you find all the cats… since this is an itsutsu site,
 no cats, should be something else like find the Black stone, and give it a
 nice name."
 
-Nine rows, in order. Each plan file says what to read, every file that
+Twelve rows, in order. Each plan file says what to read, every file that
 changes, the tests, the acceptance list, and what not to do. If a plan and
 the code disagree, the code moved after the plan was written; say so in the
 row and follow the code's gates.
@@ -32,6 +32,17 @@ row and follow the code's gates.
 
 The last four came from John's yes on 2026-09-24 to three more puzzles, which
 fills the shelf at eight.
+
+| `number-place-at-16-16-the-giant-size` | `NUM-10-giant-number-place.md` | NUM-07, NUM-08 |
+| `puzzle-leaderboards-as-prominent-as-puzzlemadness-s` | `NUM-11-puzzle-leaderboards.md` | **a migration** (a stored `points` column) |
+| `about-sites-worth-knowing-add-puzzlemadness` | the paragraph in NUM-11 | the cloud agent's |
+
+**A site to learn from: PuzzleMadness** (puzzlemadness.co.uk, read
+2026-09-24). Nearly forty Sudoku variants and close to sixty logic puzzles,
+daily at five levels, and leaderboards worth copying. How it scores and ranks
+is written down in NUM-11. Its catalogue is also the list to read when Numbers
+next has room: Samurai, 12×12, Hyper, Center-dot, Nonograms, Kakuro and Hitori
+are all there.
 
 ## The decision: a puzzle is a kind of its own, catalogued with the games
 
