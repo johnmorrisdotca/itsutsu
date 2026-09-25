@@ -82,3 +82,11 @@ test.describe("the word puzzle", () => {
     expect(refused.status()).toBe(422);
   });
 });
+
+test("today's word is one address for the day, reached from WordDrop's own page", async ({ page }) => {
+  const { dailySeed } = await import("../src/lib/puzzles/daily");
+  await page.goto("/games/word-drop");
+  await page.getByTestId("game-daily").click();
+  // The same seed for everybody today, on an ordinary address that can be shared and kept.
+  await expect(page).toHaveURL(new RegExp(`/games/word-drop/play\\?.*seed=${dailySeed(new Date())}`));
+});

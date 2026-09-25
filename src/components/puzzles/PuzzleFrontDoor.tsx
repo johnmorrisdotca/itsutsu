@@ -11,7 +11,8 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { Suspense } from "react";
 
-import { backgroundPath, familyPath, myGamePath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { backgroundPath, familyPath, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { DAILY_PARAM } from "@/lib/puzzles/daily";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -70,6 +71,14 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               <Suspense fallback={<PlayButton href={setUpPath(kind)} />}>
                 <PuzzlePlayOrResume kind={kind} />
               </Suspense>
+              {/* The same puzzle for everybody today (`daily.ts`), at the usual size and level. */}
+              <Link
+                href={`${playPath(kind)}?size=${spec.defaultSize}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`}
+                className="text-center text-sm font-medium underline underline-offset-4"
+                data-testid="game-daily"
+              >
+                {kind === "wordDrop" ? "Today's word" : "Today's puzzle"} →
+              </Link>
             </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>

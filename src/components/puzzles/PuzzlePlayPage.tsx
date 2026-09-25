@@ -4,8 +4,10 @@ import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { currentReader } from "@/lib/auth/currentReader";
-import { gamePath, setUpPath } from "@/lib/gomoku/slugs";
-import { puzzleAsked } from "@/lib/puzzles/puzzleAddress";
+import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
+import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -22,6 +24,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const copy = PUZZLE_DISPLAY[kind];
   const rules = puzzleRulesPage(kind);
   const asked = puzzleAsked(kind, query);
+  // Today's puzzle, asked for by `?daily=1`: resolved to the day's seed and an ordinary address (`daily.ts`).
+  if (query[DAILY_PARAM] === "1" && asked.seed === null) redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed: dailySeed(new Date()) })}`);
   const reader = await currentReader();
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
