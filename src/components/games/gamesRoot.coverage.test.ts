@@ -111,7 +111,7 @@ describe("the learning shelf is reachable without a Learn link", () => {
      * not.
      */
     // Since 2026-09-25 a tab of /games (John: "move the Learning Shelf button to another Tab"), not a panel under the list.
-    expect(read("src/lib/gomoku/catalogueView.ts"), "a tab in the games page's strip, leading to the shelf").toMatch(
+    expect(read("src/lib/catalogue/gamesTabs.ts"), "a tab in the games page's strip, leading to the shelf").toMatch(
       /key: "learn"[^}]*href: "\/learn"/,
     );
     expect(read("src/components/games/GameCatalogue.tsx"), "and the games page draws that strip").toContain("<Tabs tabs={GAMES_TABS}");

@@ -6,7 +6,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { MosaicTile } from "@/components/games/MosaicTile";
 import { PageTitle } from "@/components/layout/Headings";
 import { Tabs } from "@/components/ui/Tabs";
-import { GAMES_TABS } from "@/lib/gomoku/catalogueView";
+import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";

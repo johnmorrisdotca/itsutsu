@@ -15,8 +15,8 @@ import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import {
   CATALOGUE_VIEWS,
   type CatalogueView,
-  GAMES_TABS,
 } from "@/lib/gomoku/catalogueView";
+import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
 import { EVERY_GAME_KEY, gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
