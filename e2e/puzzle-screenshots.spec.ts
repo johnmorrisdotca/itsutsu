@@ -53,6 +53,14 @@ test.describe("puzzle screenshots", () => {
       mkdirSync(OUT, { recursive: true });
       await page.goto(`/games/${PUZZLE_SLUGS[scene.kind]}/play?size=${scene.size}&level=${scene.level}&seed=${scene.seed}`);
       await ready(page, "puzzle-play");
+      /*
+       * NO XP NOTICES IN A PICTURE OF A GAME. The operator this runs as earns XP
+       * like anybody, and the first scene of a run caught three "+25 Puzzle
+       * solved" notices over the Number Place grid, shipped in 0.305.0 and seen on
+       * the puzzle's own page. The notices are hidden for the picture, whatever
+       * the operator has waiting.
+       */
+      await page.addStyleTag({ content: '[data-testid="xp-toast-host"], [data-testid="xp-toast"] { display: none !important; }' });
       const puzzle = generatePuzzle(scene.kind, scene.size, scene.level, scene.seed);
       const cells = page.getByTestId("puzzle-cell");
       let filled = 0;
