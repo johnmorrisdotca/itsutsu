@@ -338,7 +338,14 @@ function OpeningNotice({ session }: { session: GameSession }) {
 
 export function GameStatus({ session }: { session: GameSession }) {
   return (
-    <section aria-live="polite" className="flex flex-col gap-3">
+    /*
+      ROOM FOR TWO NOTES WHETHER OR NOT THEY ARE THERE. The outlook and a
+      fatal-move note come and go as the record is stepped through, and every
+      time they did the record and its scrubber moved under the pointer. John,
+      2026-09-25: "Using the scrubber sucks when the content above the scrubber
+      changes height." The panel keeps the height two notes take.
+    */
+    <section aria-live="polite" className="flex min-h-[14.5rem] flex-col gap-3" data-testid="game-status-panel">
       <div className="flex flex-col gap-1">
         <ToPlay session={session} />
         {VARIANT_SPECS[session.state.settings.variant].camps ? (

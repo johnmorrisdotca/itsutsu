@@ -145,6 +145,9 @@ export const GAME_COPY = {
   shrinkBlocked: "The outer ring is in use, so the board cannot get smaller.",
   reviewing: { label: "Reviewing", kanji: "検討" },
   reviewingDetail: "You are looking at an earlier position.",
+  /** The banner over the board at the latest position: always drawn, so the board never moves (`ReviewBanner`). */
+  atLatest: { label: "Latest position", kanji: "現局" },
+  atLatestDetail: "Step back through the record to look at an earlier move.",
   returnToLatest: { label: "Back to the game", kanji: "戻る" },
   branchTitle: "Play from here?",
   branchConfirm: { label: "Discard and play", kanji: "分岐" },

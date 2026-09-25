@@ -7,19 +7,49 @@ import { GAME_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
 /**
- * Shown while an earlier position is on the board.
+ * Which position is on the board, over the board, ALWAYS.
  *
- * Without it, a board that quietly refuses stones looks broken rather than
- * read only — so it says which move is being looked at and offers the way back.
+ * While an earlier position is shown it says so and offers the way back —
+ * without it, a board that quietly refuses stones looks broken rather than
+ * read only. At the latest position it says that, with the way back there but
+ * switched off. It used to appear only while reviewing, so the board jumped
+ * down a banner's height at the first step back and up again at the end. John,
+ * 2026-09-25: "I HATE MOVING OBJECTS in the page… probably should just keep the
+ * banner at all times."
  */
 export function ReviewBanner({ session, actions }: GamePanelProps) {
-  if (!session.reviewing) return null;
+  if (!session.reviewing) {
+    return (
+      <div
+        className="flex flex-wrap items-center gap-3 rounded-xl border border-rule px-3 py-2.5"
+        role="status"
+        data-testid="review-banner"
+        data-reviewing="false"
+      >
+        <span className="font-mincho text-lg leading-none text-muted" aria-hidden="true">
+          {GAME_COPY.atLatest.kanji}
+        </span>
+        <span className="flex flex-col gap-0.5">
+          <span className="text-sm font-semibold">
+            {GAME_COPY.atLatest.label} — move {session.moveTotal}
+          </span>
+          <span className="text-xs text-muted">{GAME_COPY.atLatestDetail}</span>
+        </span>
+        <span className="ml-auto">
+          <Button onClick={actions.returnToLatest} disabled data-testid="return-to-latest">
+            {GAME_COPY.returnToLatest.label}
+          </Button>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
       className={`flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2.5 ${TONE_CLASS.calm}`}
       role="status"
       data-testid="review-banner"
+      data-reviewing="true"
     >
       <span className="font-mincho text-lg leading-none" aria-hidden="true">
         {GAME_COPY.reviewing.kanji}
