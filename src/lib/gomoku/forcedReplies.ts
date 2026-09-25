@@ -1,5 +1,5 @@
 import { otherStone, forbiddenAt, rulesFor } from "./engine";
-import { DIRECTIONS } from "./gomoku.constants";
+import { VARIANT_SPECS, lineDirectionsFor } from "./gomoku.constants";
 import { completionsThrough, findsForcedWins } from "./forcedWin";
 import { findWinningLine } from "./rules/lines";
 import { repliesToRead } from "./threatWin";
@@ -44,6 +44,7 @@ export function forcedReplies(state: GameState): Point[] | null {
   const { size } = settings;
   const moverLength = rulesFor(settings, mover).winLength;
   const foeLength = rulesFor(settings, foe).winLength;
+  const directions = lineDirectionsFor(VARIANT_SPECS[settings.variant].hexagon);
 
   const moverFives: Point[] = [];
   const foeFives: Point[] = [];
@@ -51,8 +52,8 @@ export function forcedReplies(state: GameState): Point[] | null {
   for (const point of candidatePoints(state)) {
     if (board[point.row * size + point.col] !== null) continue;
     // Each colour counted over windows of its own winning length, which a handicap can make differ.
-    const [mine, sameLengthTheirs] = openWindowCounts(board, size, point, mover, foe, moverLength);
-    const theirs = foeLength === moverLength ? sameLengthTheirs : openWindowCounts(board, size, point, mover, foe, foeLength)[1];
+    const [mine, sameLengthTheirs] = openWindowCounts(board, size, point, mover, foe, moverLength, directions);
+    const theirs = foeLength === moverLength ? sameLengthTheirs : openWindowCounts(board, size, point, mover, foe, foeLength, directions)[1];
     if (mine >= moverLength - 1) moverFives.push(point);
     if (theirs >= foeLength - 1) foeFives.push(point);
     else if (theirs >= foeLength - 2) foeFours.push(point);
@@ -95,10 +96,11 @@ function openWindowCounts(
   mover: Stone,
   foe: Stone,
   length: number,
+  directions: readonly Point[],
 ): [number, number] {
   let bestMine = 0;
   let bestTheirs = 0;
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (let start = -(length - 1); start <= 0; start += 1) {
       let mine = 0;
       let theirs = 0;

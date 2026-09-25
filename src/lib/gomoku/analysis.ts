@@ -7,7 +7,7 @@ import {
   otherStone,
   seatToPlay,
 } from "./engine";
-import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
+import { GAME_STATUS, STONES, VARIANT_SPECS, lineDirectionsFor } from "./gomoku.constants";
 import { spanScore } from "./lineShapes";
 import { candidatePoints, emptyReport, scanThreats } from "./threats";
 import { tengen } from "./obstacles";
@@ -230,12 +230,13 @@ export function shapeScore(
   point: Point,
 ): number {
   const { size, winLength } = settings;
-  const tabled = spanScore(board, size, winLength, stone, point);
+  const directions = lineDirectionsFor(VARIANT_SPECS[settings.variant].hexagon);
+  const tabled = spanScore(board, size, winLength, stone, point, directions);
   if (tabled !== null) return tabled;
 
   let score = 0;
 
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     for (let offset = -(winLength - 1); offset <= 0; offset += 1) {
       let own = 0;
       let usable = true;
