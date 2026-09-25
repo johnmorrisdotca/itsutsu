@@ -54,7 +54,7 @@ export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: 
         {page.solves.map((solve) => {
           const help = helpWords(solve);
           return (
-            <li key={solve.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-solved" data-kind={solve.kind}>
+            <li key={solve.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-solved" data-kind={solve.kind} data-solved={solve.solved ? "true" : "false"}>
               <Link href={myGamePath(solve.kind)} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Your solves of ${solve.kind}`} />
               <GameThumb variant={solve.kind} size="small" />
               <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
@@ -62,6 +62,8 @@ export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: 
                   <GameName variant={solve.kind} raised />
                 </span>
                 <span className="text-xs text-muted">
+                  {/* A word whose guesses ran out is kept too, scored for the letters it found; it says so first. */}
+                  {solve.solved ? "" : "Not found · "}
                   {sizeWord(solve.size, solve.kind)} · {PUZZLE_LEVEL_DISPLAY[solve.level].label} · {clockText(solve.elapsedMs)}
                   {help === null ? "" : ` · ${help}`}
                   {solve.raceId === null ? "" : " · race"} · {ago(solve.finishedAt.toISOString(), now)}

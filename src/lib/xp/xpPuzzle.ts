@@ -6,7 +6,10 @@ import { XP_EVENTS } from "./xp.constants";
 import type { XpAward } from "./xp.types";
 
 /**
- * What a solved puzzle pays, in the order it should be read.
+ * What a finished puzzle pays, in the order it should be read: a solve, or a
+ * word whose guesses ran out (`solved` false), which pays `puzzleEnded` in
+ * place of `puzzleSolved` and the same tour — a puzzle played out has been
+ * played, as a game lost has.
  *
  * The same shape as `gameAwards` for a finished game, and the same tour: a
  * puzzle is a game in the catalogue, so a first solve of it is a first game
@@ -22,9 +25,9 @@ export function puzzleSubject(kind: PuzzleKind, size: number, givens: string): s
   return `${kind}:${size}:${puzzleHash(givens)}`;
 }
 
-export function puzzleAwards(kind: PuzzleKind, size: number, givens: string): XpAward[] {
+export function puzzleAwards(kind: PuzzleKind, size: number, givens: string, solved = true): XpAward[] {
   const awards: XpAward[] = [
-    { type: XP_EVENTS.puzzleSolved, subject: puzzleSubject(kind, size, givens) },
+    { type: solved ? XP_EVENTS.puzzleSolved : XP_EVENTS.puzzleEnded, subject: puzzleSubject(kind, size, givens) },
     { type: XP_EVENTS.firstOfVariant, subject: kind },
   ];
   /* Null is a puzzle in no family, which `puzzles.coverage.test.ts` refuses;

@@ -4,6 +4,7 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { isWord, markGuess } from "../src/lib/puzzles/wordDrop/code";
+import { wordScore } from "../src/lib/puzzles/wordDrop/wordScore";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
@@ -92,6 +93,8 @@ test.describe("the word puzzle", () => {
       await page.keyboard.type(puzzle.solution);
       await page.keyboard.press("Enter");
       await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    // Found: the word's own points on top of every letter placed, so never less than a word lost can make.
+    expect(Number(await page.getByTestId("word-score").getAttribute("data-total"))).toBeGreaterThanOrEqual(300);
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid/);
     });
   });
@@ -174,6 +177,15 @@ test.describe("the word puzzle", () => {
     }
     await expect(page.getByTestId("word-out")).toBeVisible();
     await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution);
+    // A word not found still scores the letters it found, and says where it is kept.
+    const scored = wordScore(puzzle.solution, wrong, 0).total;
+    await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(scored));
+    await expect(page.getByTestId("word-kept")).toContainText("My games");
+    await expect(page.getByTestId("word-kept")).toContainText("XP for playing it out");
+
+    // Kept on the Puzzles tab, marked as not found.
+    await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
+    await expect(page.locator('[data-testid="puzzle-solved"][data-kind="wordDrop"][data-solved="false"]').first()).toContainText("Not found");
   });
 
   test("the route refuses guesses that never found the word", async ({ request }) => {

@@ -30,17 +30,19 @@ export type KeptSolve = {
   pausedMs: number;
   /** How many times Hint was pressed; a race allows none. */
   hintsUsed: number;
-  /** The answer handed in, which a word puzzle's points are read from (`pointsFor`); not stored. */
+  /** The answer handed in, which a word puzzle's points are read from (`pointsFor`); kept for a WordDrop only. */
   answer?: string;
+  /** False for a word puzzle whose guesses ran out: kept for what it found, never counted as a solve. */
+  solved?: boolean;
 };
 
 export async function keepSolve(solve: KeptSolve): Promise<void> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
-    const { answer, ...kept } = solve;
-    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer);
+    const { answer, solved = true, ...kept } = solve;
+    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs);
     await prisma.puzzleSolve.create({
-      data: { ...kept, raceId: solve.raceId ?? null, points },
+      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: solve.kind === "wordDrop" ? (answer ?? null) : null },
     });
   } catch (problem) {
     /* The solve has already been checked and paid; a row that could not be
@@ -62,7 +64,7 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
   const board: FastestBoard = new Map();
   const counts = await prisma.puzzleSolve.groupBy({
     by: ["size", "level"],
-    where: { kind },
+    where: { kind, solved: true },
     _count: { _all: true },
   });
   for (const row of counts) board.set(`${row.size}:${row.level}`, { fastest: [], solves: row._count._all });
@@ -73,7 +75,7 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
       const [size, level] = key.split(":");
       if (!spec.sizes.includes(Number(size))) return;
       const rows = await prisma.puzzleSolve.findMany({
-        where: { kind, size: Number(size), level },
+        where: { kind, size: Number(size), level, solved: true },
         orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,
         select: { memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true, hintsUsed: true },
@@ -90,7 +92,7 @@ export const OWN_SOLVES_SHOWN = 50;
 
 export async function ownSolvesOf(memberId: string, kind: PuzzleKind): Promise<OwnSolve[]> {
   return prisma.puzzleSolve.findMany({
-    where: { memberId, kind },
+    where: { memberId, kind, solved: true },
     orderBy: { finishedAt: "desc" },
     take: OWN_SOLVES_SHOWN,
     select: { id: true, size: true, level: true, elapsedMs: true, finishedAt: true, raceId: true },
@@ -107,5 +109,5 @@ export async function memberNamesOf(ids: readonly string[]): Promise<Map<string,
 
 /** How many solves a member has of a kind, for the count that leads to the list. */
 export async function ownSolveCount(memberId: string, kind: PuzzleKind): Promise<number> {
-  return prisma.puzzleSolve.count({ where: { memberId, kind } });
+  return prisma.puzzleSolve.count({ where: { memberId, kind, solved: true } });
 }

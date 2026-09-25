@@ -133,7 +133,8 @@ export async function readMineFeed(reader: FeedReader, now = new Date()): Promis
     xpByDay(people, since, false),
     xpByDay(people, since, true),
     prisma.puzzleSolve.findMany({
-      where: { memberId: { in: people }, finishedAt: { gte: since } },
+      // Solved ones: the feed says "solved", and a word that ran out is not news.
+      where: { memberId: { in: people }, finishedAt: { gte: since }, solved: true },
       orderBy: { finishedAt: "desc" },
       take: FEED_LIMITS.puzzlesRead,
       select: { id: true, memberId: true, kind: true, finishedAt: true },

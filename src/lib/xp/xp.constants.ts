@@ -72,6 +72,7 @@ export const XP_EVENTS = {
   everyVariantPlayed: "everyVariantPlayed",
   everyVariantWonInFamily: "everyVariantWonInFamily",
   puzzleSolved: "puzzleSolved",
+  puzzleEnded: "puzzleEnded",
   raceWon: "raceWon",
   wins10: "wins10",
   wins100: "wins100",
@@ -409,6 +410,19 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     kanji: "解決",
     blurb: "For solving a puzzle right through, checked by the site. The same puzzle pays once.",
     sentence: "A puzzle solved.",
+    cap: 6,
+  },
+  /* A word played out to its last guess without being found. John,
+     2026-09-25: "losing the game should give you 0 points... and you probably
+     get at least 1 XP or something." A fifth of `puzzleSolved`, so trying is
+     worth something and finding is worth far more; keyed on the grid like the
+     solve, so one word pays once, and under the same daily allowance. */
+  puzzleEnded: {
+    points: 5,
+    label: "Puzzle played out",
+    kanji: "挑戦",
+    blurb: "For playing a word to its last guess without finding it. The same word pays once.",
+    sentence: "A puzzle played to the end.",
     cap: 6,
   },
   /* A race won: the faster correct solve of two, at `gameWon`'s price and
@@ -787,6 +801,7 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   everyVariantPlayed: "",
   everyVariantWonInFamily: "the family's key in GAME_FAMILIES, which the family title is not — once per family, and only a family of more than one game",
   puzzleSolved: "the puzzle's kind, side and the hash of its givens, so one grid pays once",
+  puzzleEnded: "the puzzle's kind, side and the hash of its givens, as puzzleSolved, so one word pays once",
   raceWon: "the race's id, so a race pays its winner once",
   wins10: "the RuleVariant key, so it is once per game per member",
   wins100: "the RuleVariant key, so it is once per game per member",

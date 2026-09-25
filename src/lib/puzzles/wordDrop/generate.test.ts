@@ -4,7 +4,7 @@ import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
 import { wordPoints } from "../puzzlePoints";
 import { decodeWordDropProgress, progressFits } from "../puzzleProgress";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
-import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, isWord, markGuess, rowsFor } from "./code";
+import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, encodeHidden, isWord, markGuess, rowsFor } from "./code";
 import { generateWordDrop } from "./generate";
 
 /**
@@ -86,10 +86,14 @@ describe("what the server checks", () => {
     expect(checkOutOfGuesses("numberPlace", 9, givens, six).ok).toBe(false);
   });
 
-  it("scores the rows not needed: 150 in one guess, 25 in six", () => {
-    expect(wordPoints(5, "crane")).toBe(150);
-    expect(wordPoints(5, "slate".repeat(5) + "crane")).toBe(25);
-    expect(wordPoints(4, "cake")).toBe(100);
+  it("scores from the guesses handed in, a word lost for what it found (see wordScore.test.ts)", () => {
+    const crane = encodeHidden("crane");
+    // Found at once, inside a minute: every letter placed on the first row, the word, five rows left, the speed.
+    expect(wordPoints(5, crane, "crane", 10_000)).toBe(5 * 10 * 6 + 250 + 25 * 5 + 50);
+    // Lost: SLATE's A and E are placed on every row from the first, and nothing else is found.
+    expect(wordPoints(5, crane, "slate".repeat(6), 10_000)).toBe(2 * 10 * 6);
+    // Nothing a scorer can read scores nothing.
+    expect(wordPoints(5, "not a word", "crane", 0)).toBe(0);
   });
 
   it("keeps a run's guesses as they are written, whole guesses only", () => {

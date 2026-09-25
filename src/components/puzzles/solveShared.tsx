@@ -225,10 +225,11 @@ export function useSolve(
   );
 
   /**
-   * A PUZZLE THAT ENDED UNSOLVED: a word whose guesses ran out. The run is over
-   * — nothing more is kept of it — and the route checks the loss as it checks
-   * a solve before it takes the kept run off the member's games. A race sends
-   * nothing: its seat simply never finishes, as a seat left does.
+   * A PUZZLE THAT ENDED UNSOLVED: a word whose guesses ran out. The route
+   * checks the loss as it checks a solve, keeps it for the letters it found
+   * and pays for playing it out, then takes the kept run off the member's
+   * games. A race sends nothing: its seat simply never finishes, as a seat
+   * left does.
    */
   const runOut = useCallback(
     async (answer: string, at: number) => {
@@ -236,13 +237,15 @@ export function useSolve(
       setDone({ elapsedMs, paid: null, problem: null, outOfGuesses: true });
       if (!hasAccount || race !== null) return;
       try {
-        await fetch("/api/puzzles/solved", {
+        const answered = await fetch("/api/puzzles/solved", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, outOfGuesses: true }),
+          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true }),
         });
+        const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[] } | null;
+        if (answered.ok) setDone({ elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, outOfGuesses: true });
       } catch {
-        // Nothing is owed for a loss; a run left kept is opened again as it was and can be ended again.
+        // Nothing is owed that cannot wait: a run left kept is opened again as it was and can be ended again.
       }
     },
     [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race],
@@ -412,6 +415,7 @@ export function SolveDone({
 
 const AWARD_WORDS: Record<string, string> = {
   puzzleSolved: "the solve",
+  puzzleEnded: "playing it out",
   firstOfVariant: "your first of this puzzle",
   firstOfFamily: "your first puzzle at all",
   everyVariantPlayed: "every game on the site played",

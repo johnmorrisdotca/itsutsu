@@ -82,6 +82,7 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   everyVariantWonInFamily: XP_SUBJECT_KINDS.family,
   /* A puzzle's kind, side and hash: the kind is a game here, the rest is which grid. */
   puzzleSolved: XP_SUBJECT_KINDS.puzzle,
+  puzzleEnded: XP_SUBJECT_KINDS.puzzle,
   raceWon: XP_SUBJECT_KINDS.race,
   // Milestones at one game, keyed on the game.
   wins10: XP_SUBJECT_KINDS.game,

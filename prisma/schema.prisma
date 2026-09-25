@@ -1238,6 +1238,15 @@ model PuzzleSolve {
   hintsUsed     Int?
   /// The leaderboard's score for this solve (`pointsFor`): five a cell filled, less fifty a Check or Hint, never below 0.
   points        Int      @default(0)
+  /// False for a word puzzle whose guesses ran out: ended, not solved, and
+  /// kept so it scores what it found and waits in the player's history. Every
+  /// reader that means "solved" — the fastest times, the feed, the counts of
+  /// solves — asks for true; the points boards and the player's own list take both.
+  solved        Boolean  @default(true)
+  /// What was handed in, kept only where it is the story of the play: a
+  /// WordDrop's guesses, run together. Null for every grid, and for the words
+  /// solved before it was kept.
+  answer        String?
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])

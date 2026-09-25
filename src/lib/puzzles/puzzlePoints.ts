@@ -1,4 +1,5 @@
-import { rowsFor } from "./wordDrop/code";
+import { decodeGuesses, decodeHidden } from "./wordDrop/code";
+import { wordScore } from "./wordDrop/wordScore";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -28,16 +29,18 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
 }
 
 /**
- * A word puzzle has no cells to fill: what it rewards is finding the word in
- * fewer guesses. Five points a letter for the row that found it and for every
- * row it did not need, so a five-letter word in one guess is 150, in six 25.
+ * A word puzzle has no cells to fill: it scores every letter it found, sooner
+ * for more, the word itself, the rows it did not need and the time it took
+ * (`wordScore`), and a word lost scores what it found. Read from the guesses,
+ * run together as they are handed in.
  */
-export function wordPoints(size: number, answer: string): number {
-  const used = Math.max(1, Math.ceil(answer.length / size));
-  return POINTS_A_CELL * size * Math.max(1, rowsFor(size) - used + 1);
+export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number): number {
+  const hidden = decodeHidden(givens, size);
+  const guesses = decodeGuesses(answer, size);
+  return hidden === null || guesses === null ? 0 : wordScore(hidden, guesses, elapsedMs).total;
 }
 
-export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number, answer = ""): number {
-  if (kind === "wordDrop") return wordPoints(size, answer);
+export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number, answer = "", elapsedMs = 0): number {
+  if (kind === "wordDrop") return wordPoints(size, givens, answer, elapsedMs);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

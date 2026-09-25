@@ -354,6 +354,7 @@ describe("what is priced and not yet paid", () => {
       "losses50",
       "losses500",
       "nameSet",
+      "puzzleEnded",
       "puzzleSolved",
       "raceWon",
       "rematchPlayed",
@@ -554,6 +555,7 @@ describe("every award is either people-only or a game result", () => {
     /* A puzzle solved is a grid finished, checked by the server: a fact about
        the solve, and a program never solves one, so nothing to hold back. */
     XP_EVENTS.puzzleSolved,
+    XP_EVENTS.puzzleEnded,
     XP_EVENTS.raceWon,
     XP_EVENTS.gradeBeaten,
     XP_EVENTS.everyGradeBeaten,

@@ -29,6 +29,8 @@ export type MySolve = {
   checksUsed: number | null;
   hintsUsed: number | null;
   raceId: string | null;
+  /** False for a word whose guesses ran out: kept, scored for what it found, and shown as not found. */
+  solved: boolean;
 };
 
 export type MySolvesPage = { solves: MySolve[]; total: number; next: string | null };
@@ -40,7 +42,7 @@ export async function mySolvesPage(memberId: string, cursor: string | null): Pro
       orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
       take: MY_SOLVES_PAGE + 1,
       ...(cursor === null ? {} : { cursor: { id: cursor }, skip: 1 }),
-      select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true },
+      select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true, solved: true },
     }),
     prisma.puzzleSolve.count({ where: { memberId } }),
   ]);

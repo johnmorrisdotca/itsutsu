@@ -170,7 +170,13 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
   puzzleSolved: {
     replayed: false,
     recorded: true,
-    why: "A solved puzzle is checked and paid in the moment (`POST /api/puzzles/solved` and a race's finish), and kept as a `PuzzleSolve` since then. Solves from before that are in the ledger only. Replaying `PuzzleSolve` rows is a later ticket; every row so far was paid when it was written.",
+    why: "A solved puzzle is checked and paid in the moment (`POST /api/puzzles/solved` and a race's finish), and kept as a `PuzzleSolve` since then. Solves from before that are in the ledger only. Replaying `PuzzleSolve` rows is a later ticket; every row so far was paid when it was written. A row with `solved` false is a word whose guesses ran out: it paid `puzzleEnded`, never this.",
+  },
+
+  puzzleEnded: {
+    replayed: false,
+    recorded: true,
+    why: "Paid in the moment a word's guesses run out (`POST /api/puzzles/solved`), after the server has checked the loss, and kept as a `PuzzleSolve` with `solved` false. There were none before it.",
   },
 
   raceWon: {

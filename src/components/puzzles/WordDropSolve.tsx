@@ -11,7 +11,11 @@ import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor, type LetterMa
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { viewHref } from "@/lib/history/myGamesViews";
+import { wordScore } from "@/lib/puzzles/wordDrop/wordScore";
+
 import { WordDropGrid } from "./WordDropGrid";
+import { WordScoreLine } from "./WordScoreLine";
 import { WordKeyboard } from "./WordKeyboard";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
@@ -174,12 +178,27 @@ export function WordDropSolve({
           <p className="text-base">
             Out of guesses. The word was <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
+          <WordScoreLine score={wordScore(hidden, guesses, done.elapsedMs)} />
+          {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
+          {hasAccount && race === null ? (
+            <p className="text-xs text-muted" data-testid="word-kept">
+              {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
+              Kept in{" "}
+              <Link href={viewHref("puzzles")} className="underline">
+                My games
+              </Link>{" "}
+              with your guesses.
+            </p>
+          ) : null}
           <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false })}`} className="text-sm font-semibold underline" data-testid="word-another">
             Another word
           </Link>
         </div>
       ) : (
-        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} />
+        <>
+          <WordScoreLine score={wordScore(hidden, guesses, done.elapsedMs)} />
+          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} />
+        </>
       )}
     </section>
   );

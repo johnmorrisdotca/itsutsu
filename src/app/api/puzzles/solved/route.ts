@@ -53,8 +53,8 @@ const bodySchema = z.object({
   seed: z.number().int().optional(),
   /**
    * A word puzzle whose guesses ran out: ended, not solved. Checked as a solve
-   * is (`checkOutOfGuesses`), then its kept run comes off the member's games;
-   * nothing is kept of it and nothing is paid.
+   * is (`checkOutOfGuesses`), kept with `solved` false for the letters it
+   * found, paid `puzzleEnded`, and its kept run comes off the member's games.
    */
   outOfGuesses: z.boolean().optional(),
 });
@@ -87,8 +87,33 @@ export async function POST(request: Request) {
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer);
       if (!ended.ok) return unprocessable(`Not over: ${ended.reason}.`);
-      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);
-      return NextResponse.json({ ok: true, points: 0, awards: [] }, { headers: NO_STORE });
+      const level = parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number];
+      /* Kept, not solved: it scores the letters it found (`wordScore`) on the
+         points boards and waits in the member's own list, and nothing that
+         counts solves ever sees it. John, 2026-09-25: "0 points is only
+         possible for never hitting even one letter". */
+      await keepSolve({
+        memberId,
+        kind,
+        size,
+        level,
+        givens,
+        elapsedMs: parsed.data.elapsedMs ?? 0,
+        checksAllowed: null,
+        checksUsed: 0,
+        pausedMs: parsed.data.pausedMs ?? 0,
+        hintsUsed: 0,
+        answer,
+        solved: false,
+      });
+      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed);
+      const now = new Date();
+      const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
+      await awardTourBonuses({ memberId, paid, variant: kind, now });
+      return NextResponse.json(
+        { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type) },
+        { headers: NO_STORE },
+      );
     }
 
     const verdict = checkSolution(kind, size, givens, answer);
