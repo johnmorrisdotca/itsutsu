@@ -35,44 +35,53 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
     <Page>
       <SiteHeader />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-        <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule sm:w-56" data-testid="game-picture" />
-        <div className="flex min-w-0 flex-col gap-2">
-          <PageTitle title={page.title} kanji={page.kanji}>
-            <p className="text-sm font-medium">{page.tagline}</p>
-          </PageTitle>
-          <p className="text-xs text-muted italic">
-            {page.from !== null ? (
-              <span className="mr-1.5 not-italic" aria-hidden="true" title={`From ${page.from.country}`} data-testid="origin-flag" data-country={page.from.code}>
-                {page.from.flag}
-              </span>
-            ) : null}
-            {page.origin}
-          </p>
-          {page.inspiredBy !== undefined ? (
-            <p className="text-xs text-muted" data-testid="inspired-by">
-              Our version of {page.inspiredBy}.
-            </p>
-          ) : null}
-          {page.alsoKnownAs.length > 0 ? (
-            <p className="text-xs text-muted" data-testid="also-known-as">
-              Also known as {page.alsoKnownAs.join(", ")}.
-            </p>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Link href={setUpPath(kind)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
-              Solve {page.title} →
-            </Link>
-            <span className="text-xs text-muted">
-              {spec.offered.map(sizeWord).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
-            </span>
-          </div>
-        </div>
-      </div>
-
+      {/*
+        THE BOXES ON THE RIGHT START BESIDE THE HEADER. John, 2026-09-24, with a
+        game's page open: "move the RHS info area boxes higher. it's buried down
+        the page (below the header), but it's important good data so should be
+        flush next to header. This will give better balance." So the header is
+        the top of the left column rather than a row of its own across the page,
+        and from a laptop the side column stands level with it. On a phone it is
+        one column in the same order as before: header, panels, then the side.
+      */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
+            <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule sm:w-56" data-testid="game-picture" />
+            <div className="flex min-w-0 flex-col gap-2">
+              <PageTitle title={page.title} kanji={page.kanji}>
+                <p className="text-sm font-medium">{page.tagline}</p>
+              </PageTitle>
+              <p className="text-xs text-muted italic">
+                {page.from !== null ? (
+                  <span className="mr-1.5 not-italic" aria-hidden="true" title={`From ${page.from.country}`} data-testid="origin-flag" data-country={page.from.code}>
+                    {page.from.flag}
+                  </span>
+                ) : null}
+                {page.origin}
+              </p>
+              {page.inspiredBy !== undefined ? (
+                <p className="text-xs text-muted" data-testid="inspired-by">
+                  Our version of {page.inspiredBy}.
+                </p>
+              ) : null}
+              {page.alsoKnownAs.length > 0 ? (
+                <p className="text-xs text-muted" data-testid="also-known-as">
+                  Also known as {page.alsoKnownAs.join(", ")}.
+                </p>
+              ) : null}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Link href={setUpPath(kind)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
+                  Solve {page.title} →
+                </Link>
+                <span className="text-xs text-muted">
+                  {spec.offered.map(sizeWord).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex min-w-0 flex-col gap-4">
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
               The object <span className="font-mincho normal-case tracking-normal">目的</span>
@@ -106,6 +115,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               </Link>
             </p>
           </section>
+          </div>
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-72">

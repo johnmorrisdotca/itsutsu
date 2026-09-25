@@ -84,78 +84,87 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
     <Page>
       <SiteHeader />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">
-        {/*
-          The picture is part of what this page is for. A name and a tagline
-          tell a reader what a game is called; a board mid-game tells them
-          whether they want to play it, which is the question they actually
-          arrived with. eslint-disable: a static screenshot, already sized, with
-          nothing for the optimiser to do.
-        */}
-        {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-        <img
-          src={page.image}
-          alt={`A game of ${page.title} in progress`}
-          className="w-full rounded-xl border border-rule sm:w-56"
-          data-testid="game-picture"
-        />
-        <div className="flex min-w-0 flex-col gap-2">
-          <PageTitle title={page.title} kanji={page.kanji}>
-            <p className="text-sm font-medium">{page.tagline}</p>
-          </PageTitle>
-          <p className="text-xs text-muted italic">
-            {page.from !== null ? (
-              <span
-                className="mr-1.5 not-italic"
-                aria-hidden="true"
-                title={`From ${page.from.country}`}
-                data-testid="origin-flag"
-                data-country={page.from.code}
-              >
-                {page.from.flag}
-              </span>
-            ) : null}
-            {page.origin}
-          </p>
-          {page.alsoKnownAs.length > 0 ? (
-            <p className="text-xs text-muted" data-testid="also-known-as">
-              Also known as {page.alsoKnownAs.join(", ")}.
-            </p>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            {/*
-              Two different intentions, and the site has always had both — but
-              they were the wrong way round. The loud one was "Play", which
-              lands straight on a board, and a board is a game the moment a
-              stone goes down: the mirror writes it as a hot-seat game without
-              anybody settling anything. So somebody wanting a game against a
-              person pressed the loud button and arrived somewhere that had
-              already started.
-
-              The fault was never that the wrong button was loud. It was that
-              the word Play was attached to the thing that does not start a
-              game, and a quieter lie is still a lie. So Play now leads where
-              the word means: to setting a game up, and then to a game.
-
-              The board keeps its place and gets an honest name. It is how you
-              meet one of the games nobody has played yet, and how two people
-              at one screen play, and both of those are worth having — they
-              were only ever mislabelled. Naming them makes the old argument
-              here true rather than refuted: two ways onto a board IS fine,
-              once the two say which they are.
-            */}
-            <Link href={setUpPath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
-              Play {page.title} →
-            </Link>
-            <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2`} data-testid="game-play">
-              Try the board 試し打ち
-            </Link>
-          </div>
-        </div>
-      </div>
-
+      {/*
+        THE BOXES ON THE RIGHT START BESIDE THE HEADER. John, 2026-09-24, with a
+        game's page open: "move the RHS info area boxes higher. it's buried down
+        the page (below the header), but it's important good data so should be
+        flush next to header. This will give better balance." So the header is
+        the top of the left column rather than a row of its own across the page,
+        and from a laptop the side column stands level with it. On a phone it is
+        one column in the same order as before: header, panels, then the side.
+      */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">
+            {/*
+              The picture is part of what this page is for. A name and a tagline
+              tell a reader what a game is called; a board mid-game tells them
+              whether they want to play it, which is the question they actually
+              arrived with. eslint-disable: a static screenshot, already sized, with
+              nothing for the optimiser to do.
+            */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
+            <img
+              src={page.image}
+              alt={`A game of ${page.title} in progress`}
+              className="w-full rounded-xl border border-rule sm:w-56"
+              data-testid="game-picture"
+            />
+            <div className="flex min-w-0 flex-col gap-2">
+              <PageTitle title={page.title} kanji={page.kanji}>
+                <p className="text-sm font-medium">{page.tagline}</p>
+              </PageTitle>
+              <p className="text-xs text-muted italic">
+                {page.from !== null ? (
+                  <span
+                    className="mr-1.5 not-italic"
+                    aria-hidden="true"
+                    title={`From ${page.from.country}`}
+                    data-testid="origin-flag"
+                    data-country={page.from.code}
+                  >
+                    {page.from.flag}
+                  </span>
+                ) : null}
+                {page.origin}
+              </p>
+              {page.alsoKnownAs.length > 0 ? (
+                <p className="text-xs text-muted" data-testid="also-known-as">
+                  Also known as {page.alsoKnownAs.join(", ")}.
+                </p>
+              ) : null}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {/*
+                  Two different intentions, and the site has always had both — but
+                  they were the wrong way round. The loud one was "Play", which
+                  lands straight on a board, and a board is a game the moment a
+                  stone goes down: the mirror writes it as a hot-seat game without
+                  anybody settling anything. So somebody wanting a game against a
+                  person pressed the loud button and arrived somewhere that had
+                  already started.
+
+                  The fault was never that the wrong button was loud. It was that
+                  the word Play was attached to the thing that does not start a
+                  game, and a quieter lie is still a lie. So Play now leads where
+                  the word means: to setting a game up, and then to a game.
+
+                  The board keeps its place and gets an honest name. It is how you
+                  meet one of the games nobody has played yet, and how two people
+                  at one screen play, and both of those are worth having — they
+                  were only ever mislabelled. Naming them makes the old argument
+                  here true rather than refuted: two ways onto a board IS fine,
+                  once the two say which they are.
+                */}
+                <Link href={setUpPath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
+                  Play {page.title} →
+                </Link>
+                <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2`} data-testid="game-play">
+                  Try the board 試し打ち
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="flex min-w-0 flex-col gap-4">
           {/*
             What the game IS, in the two lines that answer it, with the whole
             document one click on. The rules used to be this page; the summary
@@ -187,6 +196,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             <PlayedHere variant={variant} title={page.title} />
           </Suspense>
 
+          </div>
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-72">
