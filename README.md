@@ -940,7 +940,7 @@ directly.
 Production runs on Vercel with a Neon Postgres, the same shape as umakuma. A
 push to `main` runs `.github/workflows/vercel-deploy.yml`: the checks (lint,
 types, unit tests, audit and build, as five jobs side by side) and the browser
-suite (twelve shards, side by side with them) — and only when BOTH pass,
+suite (fourteen shards, balanced by how long each file takes, side by side with them) — and only when BOTH pass,
 `prisma migrate deploy` against the production database, the build, a check
 that no server function has grown past its limit, the deploy, and the removal
 of superseded deployments. Migrations run before the new code goes live and

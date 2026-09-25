@@ -204,8 +204,16 @@ jobs:
       # reads them; Next's `.env` loading never overrides a variable already
       # set. A pull request from a fork is given no secrets by GitHub, so
       # those ten specs fail there by design.
-      # This shard's share of the spec files. Playwright splits the FILES
-      # across shards evenly by count, and the `setup` project runs on each.
+      # This shard's share of the spec files, BALANCED BY TIME rather than
+      # Playwright's `--shard=N/M`, which deals files out by count of tests:
+      # that left one shard at 7.9 minutes and another at 3.4 (2026-09-25), and
+      # the deploy waits on the slowest. `scripts/e2e-shard.mjs` deals the files
+      # by the seconds each took last time (`e2e/shard-times.json`, refreshed
+      # with `scripts/e2e-times.mjs` from a green run's log); the rule and the
+      # proof that every file lands in exactly one shard are in
+      # `src/lib/e2eShards.mjs` and its test. The `setup` project runs on each.
+      # The list is taken on its own line and checked non-empty, because
+      # `playwright test` given no file runs the WHOLE suite.
       #
       # `pnpm exec playwright test`, NOT `pnpm test:e2e -- --shard=…`. The
       # first attempt used the script with a `--` before the flag, which is
@@ -222,7 +230,10 @@ jobs:
       # more slowly. Naming the binary leaves nothing between the flag and the
       # thing that reads it.
       - name: Run this shard of the end-to-end suite
-        run: pnpm exec playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        run: |
+          FILES=$(node scripts/e2e-shard.mjs ${{ matrix.shard }} ${{ strategy.job-total }})
+          test -n "$FILES"
+          pnpm exec playwright test $FILES
         env:
           SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
           SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}

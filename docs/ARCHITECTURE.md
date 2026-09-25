@@ -307,7 +307,7 @@ it is worth reading before believing a red spec.
 ```
  push to main
    ├─ verify ×5 in parallel: lint · types · unit · audit · build
-   ├─ e2e ×12 shards in parallel (the browser suite, e2e.yml)
+   ├─ e2e ×14 shards in parallel, balanced by time (the browser suite, e2e.yml)
    └─ deploy — starts once all of the above pass
         ├─ vercel pull
         ├─ prisma migrate deploy against production, then a drift check

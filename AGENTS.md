@@ -751,19 +751,25 @@ below before trusting it — these numbers move):
    The one ceiling is GitHub's twenty concurrent jobs on a free account: five
    checks, twelve shards and the deploy is eighteen, so an overlapping
    pull-request run queues for a while and costs nothing.
-4. **Measure, don't guess.** Step timings of a run:
+4. **Shards are balanced by time, not by count.** `e2e.yml` gives each shard
+   the files `scripts/e2e-shard.mjs` deals it from `e2e/shard-times.json`
+   (heaviest first, each to the lightest shard). Refresh the times from a run
+   that was green first time: `gh run view <run> --log | node
+   scripts/e2e-times.mjs > e2e/shard-times.json`. A new spec counts as a
+   median one until then.
+5. **Measure, don't guess.** Step timings of a run:
    `gh api repos/johnmorrisdotca/itsutsu/actions/runs/<run>/jobs` and read each
    step's `started_at`/`completed_at` (the REST field is `id`, not
    `databaseId`). Per-file test time: the gap between consecutive `[n/N]` lines
    in a shard's log. Prove a shard split with `playwright test --shard=N/M
    --list` before pushing it — every test in exactly one shard.
-5. **A spec's wall time is paid on every release.** Wait on a condition, never
+6. **A spec's wall time is paid on every release.** Wait on a condition, never
    on a clock, unless the clock IS the subject (the invite form's three-second
    stamp is). A spec that adds a minute adds it to every deploy after it.
-6. **Follow the tools' own advice** rather than folklore: one Playwright worker
+7. **Follow the tools' own advice** rather than folklore: one Playwright worker
    per shard in CI and no caching of Playwright's browser download (both
    Playwright's CI guidance), package installs cached (`setup-node`'s `cache`).
-7. **The next known win** is running the suite against a production build
+8. **The next known win** is running the suite against a production build
    instead of the dev server, as Next.js recommends — every page answers
    faster. It is blocked by design, not by effort: the suite's relief (looser
    cost limits, faster polling) is refused in production mode on purpose, so it
