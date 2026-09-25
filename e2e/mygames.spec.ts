@@ -72,7 +72,10 @@ test.describe("your games", () => {
      */
     await readyHere(row.getByTestId("resign"));
     await row.getByTestId("resign").click();
+    // Stored before the page is left: leaving at once could beat the resignation to the server.
+    const resigned = page.waitForResponse((answer) => answer.url().endsWith(`/api/games/${game.id}/resign`) && answer.request().method() === "POST");
     await row.getByTestId("resign-yes").click();
+    expect((await resigned).ok()).toBe(true);
     // Finished, it moves to the Completed tab.
     await page.goto("/play?view=completed");
     await expect(page.getByTestId("my-games-finished").locator(row)).toBeVisible();
