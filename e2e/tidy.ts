@@ -267,6 +267,26 @@ export function namesPlayedUnder(): (name: string) => string {
 }
 
 /**
+ * The puzzles the suite's members left unfinished. A kept run opens its grid
+ * where it was left — covered and paused — so a spec opening that same grid
+ * next run would meet somebody else's half-solved puzzle. Before the members,
+ * whose ids find them.
+ */
+export async function clearSuitePuzzleRuns(): Promise<number> {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return 0;
+  const prisma = new PrismaClient();
+  try {
+    const theirs = await prisma.member.findMany({ where: SUITE_MEMBER, select: { id: true } });
+    if (theirs.length === 0) return 0;
+    const gone = await prisma.puzzleRun.deleteMany({ where: { memberId: { in: theirs.map((one) => one.id) } } });
+    return gone.count;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
  * And the members those runs invented.
  *
  * Every spec that needs a signed-in player writes one, and none of them take

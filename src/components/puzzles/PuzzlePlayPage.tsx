@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked } from "@/lib/puzzles/puzzleAddress";
+import { runOf } from "@/lib/puzzles/server/puzzleRuns";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -19,6 +20,9 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const copy = PUZZLE_DISPLAY[kind];
   const asked = puzzleAsked(kind, query);
   const reader = await currentReader();
+  /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
+  const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
+  const resumed = kept === null ? null : { progress: kept.progress, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed };
   return (
     <Page>
       <SiteHeader />
@@ -40,7 +44,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         </p>
       </nav>
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
-        <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hasAccount={reader.hasAccount} />
+        <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} resumed={resumed} hasAccount={reader.hasAccount} />
       </div>
       <footer className="border-t border-rule pt-5 text-sm text-muted">
         <p>

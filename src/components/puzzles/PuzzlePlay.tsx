@@ -11,7 +11,7 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { NumberSolve } from "./NumberSolve";
-import type { SolveRace } from "./solveShared";
+import type { ResumedRun, SolveRace } from "./solveShared";
 
 /**
  * Solving a puzzle: the whole of it, in the browser.
@@ -40,6 +40,7 @@ export function PuzzlePlay({
   hasAccount,
   race = null,
   checks = null,
+  resumed = null,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -47,6 +48,8 @@ export function PuzzlePlay({
   seed: number | null;
   /** How many times Check may be pressed, from the address; null for no limit. */
   checks?: number | null;
+  /** The run the member kept of this grid, opened where it was left. */
+  resumed?: ResumedRun | null;
   /** Whether a solve can be paid: an account, not merely a session. */
   hasAccount: boolean;
   /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
@@ -91,8 +94,8 @@ export function PuzzlePlay({
   const seat = race ?? null;
   switch (kind) {
     case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} />;
+      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
     default:
-      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} />;
+      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
   }
 }

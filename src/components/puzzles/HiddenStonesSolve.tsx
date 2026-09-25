@@ -8,7 +8,8 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
-import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
+import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
 
 /**
  * Solving Hidden Stones: tap a cell for a stone, again for a cross, again to
@@ -23,10 +24,13 @@ export function HiddenStonesSolve({
   hasAccount,
   race = null,
   checks = null,
+  resumed = null,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
+  /** The run kept of this grid, opened where it was left; null for a fresh one. */
+  resumed?: ResumedRun | null;
   /** How many times Check may be pressed on one's own; null for no limit. A race's is the race's. */
   checks?: number | null;
 }) {
@@ -34,11 +38,16 @@ export function HiddenStonesSolve({
   const { kind, size, seed } = puzzle;
   const regions = useMemo(() => decodeRegions(puzzle.givens, size) ?? [], [puzzle.givens, size]);
   const answer = useMemo(() => decodeStones(puzzle.solution, size) ?? [], [puzzle.solution, size]);
-  const [marks, setMarks] = useState<StoneMark[]>(() => new Array<StoneMark>(size * size).fill(""));
+  const [marks, setMarks] = useState<StoneMark[]>(
+    () => (resumed === null ? null : decodeStoneProgress(resumed.progress, size)) ?? new Array<StoneMark>(size * size).fill(""),
+  );
   const [checked, setChecked] = useState<{ wrong: number; missing: number } | null>(null);
   // A full grid that is not right, said without a count under an allowance: see NumberSolve.
   const [fullNotRight, setFullNotRight] = useState(false);
-  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks);
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks, {
+    progress: encodeStoneProgress(marks),
+    resumed,
+  });
 
   /** The column of each row's stone, or -1 for a row with none or more than one. */
   const stonesOf = useCallback(

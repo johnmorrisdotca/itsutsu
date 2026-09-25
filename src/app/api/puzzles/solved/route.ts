@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { checkSolution } from "@/lib/puzzles/puzzleCheck";
+import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
@@ -46,6 +47,8 @@ const bodySchema = z.object({
   checksAllowed: z.number().int().nullable().optional(),
   checksUsed: z.number().int().nonnegative().optional(),
   pausedMs: z.number().int().nonnegative().optional(),
+  /** The grid's seed, so the unfinished run kept of it (if any) is taken off the member's games. */
+  seed: z.number().int().optional(),
 });
 
 export async function POST(request: Request) {
@@ -91,6 +94,8 @@ export async function POST(request: Request) {
       checksUsed,
       pausedMs: parsed.data.pausedMs ?? 0,
     });
+    // Finished, so no longer going: the run kept of this grid comes off the member's games.
+    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);
     const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens), now });
     /* The tour, as after a finished game: a first solve of a puzzle can complete
        every game played, and a first puzzle at all can complete every family. */

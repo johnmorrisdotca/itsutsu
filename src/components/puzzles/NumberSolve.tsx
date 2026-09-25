@@ -8,11 +8,12 @@ import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
 import { decodeCells, encodeCells } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { stepEntry } from "@/lib/puzzles/stepEntry";
+import { decodeNumberProgress, encodeNumberProgress } from "@/lib/puzzles/puzzleProgress";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
-import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 
 /**
  * Solving a grid of numbers — Number Place, and More or Less after it.
@@ -29,10 +30,13 @@ export function NumberSolve({
   hasAccount,
   race = null,
   checks = null,
+  resumed = null,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
+  /** The run kept of this grid, opened where it was left; null for a fresh one. */
+  resumed?: ResumedRun | null;
   /** How many times Check may be pressed on one's own, from the address; null for no limit. A race's is the race's. */
   checks?: number | null;
 }) {
@@ -52,7 +56,9 @@ export function NumberSolve({
   }, [kind, puzzle.givens, size]);
   const givens = asked.cells;
   const solution = useMemo(() => decodeCells(puzzle.solution, size) ?? [], [puzzle.solution, size]);
-  const [entries, setEntries] = useState<number[]>(() => new Array<number>(size * size).fill(0));
+  const [entries, setEntries] = useState<number[]>(
+    () => (resumed === null ? null : decodeNumberProgress(resumed.progress, size)) ?? new Array<number>(size * size).fill(0),
+  );
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState<{ wrong: number; empty: number } | null>(null);
   /*
@@ -61,7 +67,10 @@ export function NumberSolve({
    * HOW MANY are wrong, or filling the grid would be a Check nobody spent.
    */
   const [fullNotRight, setFullNotRight] = useState(false);
-  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks);
+  const { startedAt, elapsedMs, done, begin, finish, pausing, checking } = useSolve(puzzle, hasAccount, race, checks, {
+    progress: encodeNumberProgress(entries),
+    resumed,
+  });
 
   const enter = useCallback(
     (value: number) => {

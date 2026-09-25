@@ -4,7 +4,7 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateNumberPlace } from "../src/lib/puzzles/numberPlace/generate";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { ready } from "./support";
+import { freshPuzzleSeed, ready } from "./support";
 
 /**
  * Number Place, the first puzzle: found, set up, solved and paid.
@@ -116,8 +116,10 @@ test.describe("the first puzzle", () => {
    * number it empties. A given does not step.
    */
   test("tapping the chosen cell again steps it through the numbers and back to empty", async ({ page }) => {
-    const givens = decodeCells(generateNumberPlace(SIZE, LEVEL, SEED).givens, SIZE)!;
-    await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${SEED}`);
+    // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.
+    const seed = freshPuzzleSeed();
+    const givens = decodeCells(generateNumberPlace(SIZE, LEVEL, seed).givens, SIZE)!;
+    await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${seed}`);
     await ready(page, "puzzle-play");
     const cells = page.getByTestId("puzzle-cell");
     const empty = cells.nth(givens.findIndex((given) => given === 0));
@@ -142,8 +144,10 @@ test.describe("the first puzzle", () => {
    */
   test("Pause stops the clock and covers the grid, and Resume brings both back", async ({ page }) => {
     await page.clock.install();
-    const givens = decodeCells(generateNumberPlace(SIZE, LEVEL, SEED).givens, SIZE)!;
-    await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${SEED}`);
+    // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.
+    const seed = freshPuzzleSeed();
+    const givens = decodeCells(generateNumberPlace(SIZE, LEVEL, seed).givens, SIZE)!;
+    await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${seed}`);
     await ready(page, "puzzle-play");
     const clock = page.getByTestId("puzzle-clock");
     const pause = page.getByTestId("puzzle-pause");

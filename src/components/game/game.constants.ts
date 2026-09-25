@@ -260,7 +260,10 @@ export const GAME_COPY = {
   /* A puzzle's run is this tab's alone, so leaving is the end of it — said, so nobody leaves believing otherwise. */
   idlePuzzleDetail: "Nothing has moved for a couple of minutes, so the clock is paused and the grid is covered.",
   idleRaceDetail: "Nothing has moved for a couple of minutes. A race's clock is the site's, and it is still running.",
-  idlePuzzleKept: "A puzzle is not kept: leaving ends this one, and the next is a new grid.",
+  /* A member's unfinished puzzle is kept when they leave (`useKeptRun`); a visitor's lasts the page, and says so. */
+  idlePuzzleKept: "This puzzle is kept in your games. It will be here, as it stands, when you come back.",
+  idlePuzzleNotKept: "Without an account a puzzle lasts this page: leaving ends it.",
+  idleRaceKept: "The race is kept on the site. Its link brings you back to it.",
   pass: { label: "Pass", kanji: "パス" },
   forfeit: { label: "Timed out", kanji: "時間切れ" },
   piece: { label: "Piece in hand", kanji: "手駒" },

@@ -10,6 +10,7 @@ import {
   clearSeededMembers,
   clearSeededRatings,
   clearSuiteGames,
+  clearSuitePuzzleRuns,
 } from "./tidy";
 
 /**
@@ -53,6 +54,8 @@ setup("clear what the last run left behind", async () => {
   if (gone > 0) console.log(`Cleared ${gone} abandoned open seat${gone === 1 ? "" : "s"}.`);
   const ratings = await clearSeededRatings();
   if (ratings > 0) console.log(`Cleared ${ratings} rating record${ratings === 1 ? "" : "s"} a previous run's members earned.`);
+  const runs = await clearSuitePuzzleRuns();
+  if (runs > 0) console.log(`Cleared ${runs} puzzle${runs === 1 ? "" : "s"} a previous run left unfinished.`);
   const members = await clearSeededMembers();
   if (members > 0) console.log(`Cleared ${members} member${members === 1 ? "" : "s"} a previous run invented.`);
 });

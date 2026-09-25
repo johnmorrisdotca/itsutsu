@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
+import { MyPuzzleRuns } from "@/components/mine/MyPuzzleRuns";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -117,6 +118,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         */
         cursor={typeof asked.cursor === "string" ? asked.cursor : null}
       />
+      {/* The puzzles left unfinished, kept on the account: see `MyPuzzleRuns`. */}
+      <MyPuzzleRuns />
       <LocalGameCardClient />
     </Page>
   );

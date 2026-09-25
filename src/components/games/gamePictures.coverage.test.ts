@@ -278,6 +278,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // A card's line of facts about a famous game, the game named among them: a row of text, so small.
   "src/app/famous/page.tsx": { GameThumb: "small" },
   "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },
+  "src/components/mine/MyPuzzleRuns.tsx": { GameThumb: "small" },
   "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },
   // A row per game of how this grade measured: a list, so a small picture.
   "src/components/players/LadderStrength.tsx": { GameThumb: "small" },

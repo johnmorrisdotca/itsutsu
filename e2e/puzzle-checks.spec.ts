@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
-import { ready } from "./support";
+import { freshPuzzleSeed, ready } from "./support";
 
 /**
  * A CHECK ALLOWANCE IS SPENT, AND RUNS OUT, ON EVERY KIND OF PUZZLE.
@@ -15,7 +15,8 @@ import { ready } from "./support";
 for (const kind of PUZZLE_KIND_LIST) {
   test(`${kind}: one check, spent, and then there are none`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;
-    await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=easy&seed=11&checks=1`);
+    // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.
+    await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=easy&seed=${freshPuzzleSeed()}&checks=1`);
     await ready(page, "puzzle-play");
     const check = page.getByTestId("puzzle-check");
     await expect(check).toHaveAttribute("data-left", "1");

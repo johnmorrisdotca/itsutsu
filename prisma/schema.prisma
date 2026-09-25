@@ -1232,6 +1232,31 @@ model PuzzleSolve {
   @@index([kind, size, level, elapsedMs])
 }
 
+/// A puzzle somebody started on their own and has not finished: kept when
+/// they pause or leave the page, so it waits in their games and opens where
+/// it was left. One per member per grid (the seed is the grid); finishing it,
+/// in `/api/puzzles/solved`, removes it. The site never times it — the elapsed
+/// time is the browser's, carried across, as a finished solve's is.
+model PuzzleRun {
+  id            String   @id @default(cuid())
+  memberId      String
+  kind          String
+  size          Int
+  level         String
+  seed          Int
+  /// The Check allowance it is being solved under, or null for no limit.
+  checksAllowed Int?
+  checksUsed    Int      @default(0)
+  /// What has been written so far, one character a cell, in the kind's own code for an entry.
+  progress      String
+  elapsedMs     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([memberId, kind, size, level, seed])
+  @@index([memberId, updatedAt])
+}
+
 /// Two people, one puzzle, two clocks. The host's browser made the puzzle
 /// and posted it whole; the guest comes in by the seat link, as for a game.
 /// Each seat's start and finish are the server's own stamps, so the time is

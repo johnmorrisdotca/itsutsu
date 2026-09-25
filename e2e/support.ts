@@ -586,3 +586,12 @@ export function watchForCrashes(page: Page): string[] {
   });
   return crashes;
 }
+
+/**
+ * A puzzle seed no other run has used, for a spec that leaves its puzzle
+ * unfinished. An unfinished puzzle is kept on the account and opens where it
+ * was left, so two specs sharing a fixed seed would meet each other's grid.
+ */
+export function freshPuzzleSeed(): number {
+  return 100_000 + Math.floor(Math.random() * 800_000);
+}

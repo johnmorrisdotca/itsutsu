@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateNumberPlace } from "../src/lib/puzzles/numberPlace/generate";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
-import { openSetUpPage, ready, startAndBegin } from "./support";
+import { freshPuzzleSeed, openSetUpPage, ready, startAndBegin } from "./support";
 
 /**
  * "ARE YOU STILL THERE?" ON A PUZZLE AND ON A LIVE GAME, not only the practice
@@ -17,8 +17,10 @@ import { openSetUpPage, ready, startAndBegin } from "./support";
  */
 test("a puzzle left alone asks, pauses its clock and covers its grid, and Still here carries on", async ({ page }) => {
   await page.clock.install();
-  const givens = decodeCells(generateNumberPlace(4, "easy", 5).givens, 4)!;
-  await page.goto(`/games/${PUZZLE_SLUGS.numberPlace}/play?size=4&level=easy&seed=5`);
+  // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.
+  const seed = freshPuzzleSeed();
+  const givens = decodeCells(generateNumberPlace(4, "easy", seed).givens, 4)!;
+  await page.goto(`/games/${PUZZLE_SLUGS.numberPlace}/play?size=4&level=easy&seed=${seed}`);
   await ready(page, "puzzle-play");
   // The clock starts on the first entry, and the question is about a run that has started.
   await page.getByTestId("puzzle-cell").nth(givens.findIndex((given) => given === 0)).click();
@@ -27,7 +29,7 @@ test("a puzzle left alone asks, pauses its clock and covers its grid, and Still 
   await page.clock.runFor("03:10");
   const modal = page.getByTestId("idle-modal");
   await expect(modal, "the idle question never appeared on a puzzle").toBeVisible();
-  await expect(modal).toContainText("A puzzle is not kept");
+  await expect(modal).toContainText("kept in your games");
   await expect(page.getByTestId("puzzle-pausable")).toHaveAttribute("data-paused", "true");
   const stopped = await page.getByTestId("puzzle-clock").textContent();
   await page.clock.runFor("01:00");
