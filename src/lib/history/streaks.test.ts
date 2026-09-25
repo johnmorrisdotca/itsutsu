@@ -34,6 +34,8 @@ function game(
     winner,
     moveCount: 20,
     durationMs: null,
+  blackRatingChange: null,
+  whiteRatingChange: null,
   allowResign: true,
   drawLimit: "none",
   clockMode: "move",

@@ -215,7 +215,7 @@ describe("a pass on a shared game", () => {
     });
     expect(recordPlayed).toHaveBeenCalledTimes(1);
     expect(recordResult).toHaveBeenCalledTimes(1);
-    expect(recordResult).toHaveBeenCalledWith("Kuro", "Shiro", expected.winner, "go", "people");
+    expect(recordResult).toHaveBeenCalledWith("Kuro", "Shiro", expected.winner, "go", "people", "g1");
   });
 
   it("files an unrated Go game ended by two passes without rating it", async () => {

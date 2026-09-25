@@ -156,6 +156,13 @@ export async function recordResult(
   winner: "black" | "white" | null,
   variant: string,
   pool: RatingPool,
+  /**
+   * The game, so the change each seat's rating at it made is kept on its row
+   * (`Game.blackRatingChange`), in the same transaction as the ratings. John,
+   * 2026-09-25: completed games should show "the scoring… that 1600 thingy
+   * like +10, -10". Null leaves the row alone, for a caller with no game.
+   */
+  gameId: string | null = null,
 ): Promise<void> {
   if (!isRateable(blackName, whiteName)) return;
 
@@ -203,7 +210,13 @@ export async function recordResult(
    */
   const score = scoreForBlack(winner);
   const ladder = rateGame(standingIn(blackRow, pool), standingIn(whiteRow, pool), score);
-  const standing = rateGame(standingIn(blackStanding, pool), standingIn(whiteStanding, pool), score);
+  const [blackBefore, whiteBefore] = [standingIn(blackStanding, pool), standingIn(whiteStanding, pool)];
+  const standing = rateGame(blackBefore, whiteBefore, score);
+  // What the game moved at this game's own standing — the rating its ladder shows — rounded as it is shown.
+  const change = {
+    blackRatingChange: Math.round(standing.first.rating) - Math.round(blackBefore.rating),
+    whiteRatingChange: Math.round(standing.second.rating) - Math.round(whiteBefore.rating),
+  };
 
   /*
    * The run is carried forward from the rows already in hand — THE WRITER
@@ -244,5 +257,7 @@ export async function recordResult(
         data: seat.standing as never,
       }),
     ),
+    // The change on the game's own row, in the same commit, so the figure shown on it is the one that happened.
+    ...(gameId === null ? [] : [prisma.game.update({ where: { id: gameId }, data: change })]),
   ]);
 }

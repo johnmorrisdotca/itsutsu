@@ -27,6 +27,18 @@ import { countText } from "@/lib/rating/figures";
  * here that knows about cursors or caps.
  */
 
+/** A rating change as a figure with its sign and its word, green for up and red for down. */
+function RatingChange({ change }: { change: number }) {
+  return (
+    <span className="text-right leading-tight" data-testid="game-rating-change" data-change={change}>
+      <span className={`block font-mono text-base font-semibold tabular-nums ${change > 0 ? "text-moss" : change < 0 ? "text-shu" : ""}`}>
+        {change > 0 ? `+${change}` : change < 0 ? `−${-change}` : "±0"}
+      </span>
+      <span className="block text-[0.6rem] tracking-wide text-muted uppercase">Rating</span>
+    </span>
+  );
+}
+
 /** The tag read for a seat's member, where the seat has one. */
 function tagOf(tags: ReadonlyMap<string, NameTag>, memberId: string | null): NameTag | undefined {
   return memberId === null ? undefined : tags.get(memberId);
@@ -184,6 +196,14 @@ export function Row({ item, now, tags, earned }: { item: MyGame; now: Date; tags
           all completed games… show the XP Earned… these tables will be much more
           interesting." Large enough to read at a glance, like a score.
         */}
+        {/*
+          AND WHAT IT DID TO THE READER'S RATING AT THIS GAME, "+12" or "−8",
+          where the game moved one (John, 2026-09-25: "the Scoring System earned,
+          that 1600 thingy like +10, -10"). Nothing where it moved none.
+        */}
+        {group === "finished" && (seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) !== null ? (
+          <RatingChange change={(seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) as number} />
+        ) : null}
         {earned !== undefined ? (
           <span className="text-right leading-tight" data-testid="game-xp-earned" data-xp={earned}>
             <span className="block font-mono text-base font-semibold tabular-nums">+{countText(earned)}</span>

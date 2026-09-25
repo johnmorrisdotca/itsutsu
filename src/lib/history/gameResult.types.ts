@@ -68,6 +68,8 @@ export type ResultCardData = {
    * is the ledger rows keyed to this game, and `heldFlashAt` is null.
    */
   xp: { points: number; level: { name: string; reached: boolean } | null; heldFlashAt: string | null } | null;
+  /** What the result did to each player's rating at this game, the reader's first; null where it moved none. */
+  rating: { mine: number; theirs: number } | null;
   /** Where these two stand now, this game included; null where there is no pair to read. */
   rivalry: RivalryView | null;
   /**

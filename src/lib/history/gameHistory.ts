@@ -56,6 +56,9 @@ export const SUMMARY_SELECT = {
   deadlineAt: true,
   extraMs: true,
   rated: true,
+  // What the result moved each seat's rating at this game by, where it moved one (`recordResult`).
+  blackRatingChange: true,
+  whiteRatingChange: true,
   openSeat: true,
   /*
    * The offer, on the one select every screen's `GameSummary` comes through.

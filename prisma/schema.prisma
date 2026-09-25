@@ -94,6 +94,13 @@ model Game {
   extraMs        Int        @default(0)
   /// Whether the result moves ratings. Off makes a friendly game between rated players.
   rated          Boolean    @default(true)
+  /// How far each seat's rating AT THIS GAME moved when it was decided (+10, -10),
+  /// written by recordResult in the same transaction that moves the ratings.
+  /// Null for a game that moved no rating (unrated, at one screen, a handicap)
+  /// and for one decided before this was kept, until the backfill fills it:
+  /// "moved nothing" and "never recorded" are different facts, so no zero.
+  blackRatingChange Int?
+  whiteRatingChange Int?
   /// What running out of time costs: "turn" (graceful) or "game".
   timeoutPenalty String    @default("turn")
   /// When the last move landed, so a deadline can be computed on the server.

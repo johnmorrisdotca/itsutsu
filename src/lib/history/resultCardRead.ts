@@ -94,6 +94,12 @@ export async function resultCardFor(input: {
      * game where the batch was already shown on another page.
      */
     xp: flashAboutGame(flash, game.id) ?? (earned > 0 ? { points: earned, level: null, heldFlashAt: null } : null),
+    rating:
+      game.blackRatingChange === null || game.whiteRatingChange === null
+        ? null
+        : seat === "black"
+          ? { mine: game.blackRatingChange, theirs: game.whiteRatingChange }
+          : { mine: game.whiteRatingChange, theirs: game.blackRatingChange },
     rivalry,
     rematch: input.rematchable
       ? { href: setUpLink({ rematch: game.id }), again: false }

@@ -87,6 +87,9 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
     deadlineAt: null,
     extraMs: 0,
     rated: true,
+    // A kept game from another site moved no rating here.
+    blackRatingChange: null,
+    whiteRatingChange: null,
     openSeat: null,
     /*
      * Nobody was asked to play these. They were played on another site years

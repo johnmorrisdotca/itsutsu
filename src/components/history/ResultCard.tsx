@@ -34,7 +34,7 @@ import { useResultCard } from "./useResultCard";
  * A dialog that does not trap: the page behind it stays usable, so it is labelled
  * and takes focus rather than claiming `aria-modal`. Escape closes it.
  */
-export function ResultCard({ gameId, facts, names, headStart, xp, rivalry, rematch, newGame, waiting }: ResultCardData) {
+export function ResultCard({ gameId, facts, names, headStart, xp, rating, rivalry, rematch, newGame, waiting }: ResultCardData) {
   const dialog = useRef<HTMLDivElement | null>(null);
   const { open, close, seen } = useResultCard(gameId, dialog);
   const say = useSpeaker();
@@ -91,6 +91,12 @@ export function ResultCard({ gameId, facts, names, headStart, xp, rivalry, remat
                 : ` · ${xp.level.reached ? RESULT_CARD_COPY.levelUp(xp.level.name) : RESULT_CARD_COPY.nextLevel(xp.level.name)}`}
             </p>
           ) : null}
+          {/* What the game did to both ratings at this game, +7 / −7 (John, 2026-09-25: "that 1600 thingy like +10, -10"). */}
+          {rating !== null ? (
+            <p className="font-mono text-xs font-semibold tabular-nums" data-testid="result-card-rating" data-mine={rating.mine}>
+              {RESULT_CARD_COPY.rating(signed(rating.mine), signed(rating.theirs))}
+            </p>
+          ) : null}
           {rivalry !== null ? (
             <p className="text-xs text-ink-soft" data-testid="result-card-rivalry">
               {lineWords(say, rivalry, rivalry.line)}
@@ -132,4 +138,9 @@ export function ResultCard({ gameId, facts, names, headStart, xp, rivalry, remat
       </div>
     </div>
   );
+}
+
+/** A rating change with its sign: "+7", "−7", "±0". */
+function signed(change: number): string {
+  return change > 0 ? `+${change}` : change < 0 ? `−${-change}` : "±0";
 }

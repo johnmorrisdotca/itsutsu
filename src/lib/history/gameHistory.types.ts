@@ -178,6 +178,9 @@ export type GameSummary = {
   extraMs: number;
   /** Whether the result moves ratings. */
   rated: boolean;
+  /** How far each seat's rating at this game moved when it was decided; null where none moved or it was never recorded. */
+  blackRatingChange: number | null;
+  whiteRatingChange: number | null;
   /** A seat anyone may take, while it waits; null otherwise. */
   openSeat: string | null;
   /**

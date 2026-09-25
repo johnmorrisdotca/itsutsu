@@ -37,6 +37,8 @@ const refusing = new Set<string>();
 /** Names rigged to lose the create race once, as two concurrent writers do. */
 const racing = new Set<string>();
 let transactions = 0;
+/** The games' rows, as far as the rating change is written to them. */
+const games = new Map<string, Row>();
 /** Every write, in the order the transaction applied it — the lock order. */
 let applied: string[] = [];
 
@@ -131,6 +133,16 @@ const prisma = {
       };
     },
   },
+  // The finished game's row, which takes the change each seat's rating made (`Game.blackRatingChange`).
+  game: {
+    update: ({ where, data }: { where: { id: string }; data: Row }): Write => ({
+      check: () => undefined,
+      apply: () => {
+        applied.push(`game:${where.id}`);
+        games.set(where.id, { ...(games.get(where.id) ?? {}), ...data });
+      },
+    }),
+  },
   /*
    * Prisma's own promise: every write is checked before ANY is applied, and a
    * refusal leaves the whole array undone. Without this the test could not
@@ -160,6 +172,7 @@ function figures(row: Row | undefined) {
 }
 
 beforeEach(() => {
+  games.clear();
   players.clear();
   standings.clear();
   refusing.clear();
@@ -282,5 +295,22 @@ describe("recording a rated result", () => {
     const standing = standings.get(standingKey("ada", "freestyle"));
     expect(standing?.computerRatedGames).toBe(1);
     expect(standing?.ratedGames).toBe(0);
+  });
+
+  it("writes each seat's rating change onto the game, in the same commit as the ratings", async () => {
+    await recordResult("Ada", "Bob", "black", "freestyle", RATING_POOLS.people, "g1");
+    const game = games.get("g1");
+    // Two newcomers on the same rating: the winner gains what the loser gives up.
+    expect(game?.blackRatingChange).toBeGreaterThan(0);
+    expect(game?.whiteRatingChange).toBe(-(game?.blackRatingChange as number));
+    // And it is what the standing moved, as the ladder shows it.
+    const ada = standings.get(standingKey("ada", "freestyle"));
+    expect(Math.round(ada?.rating as number) - RATING_START).toBe(game?.blackRatingChange);
+    expect(transactions).toBe(1);
+  });
+
+  it("leaves a game's row alone when no game is named", async () => {
+    await recordResult("Ada", "Bob", "white", "freestyle", RATING_POOLS.people);
+    expect(games.size).toBe(0);
   });
 });

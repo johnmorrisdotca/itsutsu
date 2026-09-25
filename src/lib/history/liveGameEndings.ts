@@ -185,7 +185,7 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
     await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
     // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap.
     if (countsOnLadder({ ...row, ...facts })) {
-      await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
+      await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id);
     }
     // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
     await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
@@ -263,7 +263,7 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
   // at one screen, never a friendly, never a handicap, and always into the pool
   // the seats decide.
   if (countsOnLadder({ ...row, ...facts })) {
-    await recordResult(row.blackName, row.whiteName, state.winner, row.variant, poolFor(hasBotSeat(row)));
+    await recordResult(row.blackName, row.whiteName, state.winner, row.variant, poolFor(hasBotSeat(row)), id);
   }
   return true;
 }
@@ -369,7 +369,7 @@ export async function resignGame(id: string, token: string, now = new Date()): P
   await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
   // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap.
   if (countsOnLadder({ ...row, ...facts })) {
-    await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
+    await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id);
   }
   await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
 

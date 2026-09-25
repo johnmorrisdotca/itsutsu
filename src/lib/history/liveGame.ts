@@ -277,7 +277,7 @@ export async function appendMove(
     const facts = ladderFacts(row);
     await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
     // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap. See `countsOnLadder`.
-    if (countsOnLadder({ ...row, ...facts })) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
+    if (countsOnLadder({ ...row, ...facts })) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id);
     // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
     await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
   } else if (next.toPlay !== stone) {

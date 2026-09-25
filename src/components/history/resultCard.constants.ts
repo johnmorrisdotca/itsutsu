@@ -68,6 +68,8 @@ export const RESULT_CARD_COPY = {
   review: "Review the moves 棋譜",
   close: "Close 閉じる",
   xp: (points: number) => `+${points} XP from this game`,
+  /** Both players' rating change at this game, the reader's first. */
+  rating: (mine: string, theirs: string) => `Rating ${mine} · opponent ${theirs}`,
   /* The level note the toasts would have carried: a level reached, or the next within a game. */
   levelUp: (name: string) => `Level up: ${name}`,
   nextLevel: (name: string) => `Next level: ${name}`,
