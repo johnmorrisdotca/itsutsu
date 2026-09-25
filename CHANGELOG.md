@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.300.0 — 2026-09-25
+- Live games and puzzles now ask "Are you still there?" after a couple of quiet minutes, as practice games always have; a puzzle pauses while you are away.
+
 ## 0.299.0 — 2026-09-25
 - Number puzzles have a Pause: the clock stops and the grid is covered until you resume.
 
