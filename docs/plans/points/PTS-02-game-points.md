@@ -9,25 +9,42 @@ A finished game pays points to each of the two who played it, and those points
 join the site total from PTS-01. The Completed tab shows them beside what each
 game earned in XP and rating.
 
-## The prices (proposed)
+## How a game is priced: its maximum, and a share of it for each result
 
-A game's points are its result times its weight:
+John, 2026-09-25: "a table of maximum weights per game… and then we work back
+what someone scores for a victory or a loss or a complex result".
 
-| How it went | Base |
-|---|---|
-| Won | 100 |
-| Drawn | 50 |
-| Lost, having played it out | 20 |
-| Lost by resigning before the tenth move, abandoned, or cancelled | 0 |
+**Every game has a maximum**, the most one game of it can pay: 100 times its
+weight in the table below, so Gomoku on 15×15 is 100, Go on 19×19 is 200 and
+tic-tac-toe is 10. **Every result is a share of that maximum**, worked out from
+what the site already records about how a game ended (`GameResultFacts`: the
+outcome, the reason and, where the rules keep one, the score).
 
-Rated or not, against a person or a program, it pays the same. A program earns
-points too (AGENTS.md: programs are players), and the board's People /
-Computers / Everyone keeps them apart.
+| Result | Winner's share | Loser's share |
+|---|---|---|
+| Won on the board: a line, captures, territory, discs, the camp reached, the other side blocked | 100% | 20% |
+| … and the score was close (Reversi discs, Go area, pairs captured) | 100% | 20%, plus up to 20% more the closer it was: the loser's score over the winner's |
+| Won because the other side resigned, from the tenth move on | 100% | 10% |
+| Won because the other side resigned before the tenth move | 50% | 0% |
+| Won on time | 80% | 10% |
+| Won with a handicap or head start given to the winner | 75% of the line above | as the line above |
+| Drawn, for any reason | 50% each | |
+| Abandoned, cancelled, or an offer never accepted | 0% | 0% |
+
+So a Gomoku win is 100 and its loss 20; a Reversi loss by 30 discs to 34 is
+20 + 20 × 30⁄34, about 38; a Go game lost on time is 10% of 200, 20; a
+tic-tac-toe draw is 5 each.
+
+Rated or not, against a person or a program, the prices are the same. A program
+earns points too (AGENTS.md: programs are players), and the board's People /
+Computers / Everyone keeps them apart. The shares are one table,
+`RESULT_SHARES` in `src/lib/points/gamePoints.ts`, and the maximums are
+`GAME_POINTS_MAX`, built from the weights below.
 
 ## The weights (proposed 2026-09-25, for John to approve)
 
 The weight measures how much a game asks: how long it runs and how deep it is.
-Gomoku on 15×15 is 1.0. A game's weight is at its default board; where a game
+Gomoku on 15×15 is 1.0, and a game's maximum is 100 times its weight. A game's weight is at its default board; where a game
 offers other sizes, the size column says what each is worth. Kept in one
 table, `GAME_POINTS_WEIGHT` in `gomoku.constants.ts`, typed as a Record, so a
 new game cannot ship without one.
@@ -64,8 +81,8 @@ new game cannot ship without one.
 | | Trap Three, Square Four | 0.3 | |
 | | Maker and Breaker | 0.4 | |
 
-So a Go win on 19×19 is 200 points, a Gomoku win 100, a Drop Four win 60 and a
-tic-tac-toe win 10. Nothing is worth farming: the quickest games pay the least
+So the maximums run from 200 for Go on 19×19, through 100 for Gomoku and 60 for
+Drop Four, to 10 for tic-tac-toe. Nothing is worth farming: the quickest games pay the least
 per game, and about the same per minute as the long ones.
 
 The puzzles' weights are in PTS-01. They are set so a medium solve at a
