@@ -95,8 +95,10 @@ describe("opening a capped group", () => {
    * link doing nothing on four other panels.
    */
   it("offers a way back, on the opened group alone", () => {
-    expect(LIST).toMatch(/\{open \? \(/);
+    // Show fewer on an opened group; where the tab IS the group (Completed), the way back is the Newest arrow instead.
+    expect(LIST).toMatch(/\{open && !whole \? \(/);
     expect(LIST).toMatch(/-fewer`\}/);
+    expect(LIST).toMatch(/-newest`\}/);
     // Back to the tab the group lives in, not to the top of /play.
     expect(LIST).toMatch(/href=\{viewHref\(viewOfGroup\(group\)\)\}/);
   });
