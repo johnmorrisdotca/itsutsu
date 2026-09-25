@@ -9,7 +9,7 @@ import { decodeWordDropProgress, encodeWordDropProgress } from "@/lib/puzzles/pu
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor } from "@/lib/puzzles/wordDrop/code";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
-import { letterKeyMarks } from "@/lib/puzzles/keyMarks";
+import { letterKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
@@ -161,7 +161,7 @@ export function WordDropSolve({
             {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
-            <WordKeyboard known={known} typed={new Set(typing.slots.filter((slot) => slot !== ""))} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+            <WordKeyboard known={known} typed={typedCounts(typing.slots)} style={style} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <WordStylePicker />

@@ -43,3 +43,20 @@ export function kanaKeyMarks(rows: readonly string[], word: string): Map<string,
   }
   return best;
 }
+
+/**
+ * How many times each letter is in the row being typed: its key is ringed at
+ * one and carries a count at two or more. John, 2026-09-25: "add Count chips
+ * on a letter when it is selected more than once." The row being typed only —
+ * the guesses already sent are on the board, and the chip is about what is
+ * being chosen now. A kana counts by its base, so ぱ and は are two of は.
+ */
+export function typedCounts(slots: readonly string[], keyOf: (letter: string) => string = (letter) => letter): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const slot of slots) {
+    if (slot === "") continue;
+    const key = keyOf(slot);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+}

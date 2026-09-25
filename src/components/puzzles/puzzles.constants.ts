@@ -191,5 +191,9 @@ export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "kin" | "miss", strin
  */
 export const WORD_KEY_TYPED = "ring-2 ring-ink ring-offset-1 ring-offset-ivory";
 
+/** How many of a letter the row holds, from two: a small dark chip on the key's top right, over the ring. */
+export const WORD_KEY_COUNT =
+  "absolute -top-1.5 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[0.6rem] leading-none font-bold text-ivory";
+
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";

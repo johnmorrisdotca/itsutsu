@@ -97,6 +97,11 @@ test.describe("the kana word puzzle", () => {
     await tapKana(page, "ぱ");
     await expect(page.getByTestId("kana-key-は")).toHaveAttribute("data-typed", "true");
     await expect(page.getByTestId("kana-key-か")).not.toHaveAttribute("data-typed", /./);
+    // ぱ and は are two of は: its key carries a count.
+    await tapKana(page, "は");
+    await expect(page.getByTestId("kana-key-は").getByTestId("key-count")).toHaveText("2");
+    await page.getByTestId("kana-key-back").click();
+    await expect(page.getByTestId("kana-key-は").getByTestId("key-count")).toHaveCount(0);
     await page.getByTestId("kana-key-back").click();
     await expect(page.getByTestId("kana-key-は")).not.toHaveAttribute("data-typed", /./);
   });

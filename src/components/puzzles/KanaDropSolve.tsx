@@ -14,7 +14,7 @@ import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from 
 import { kanaScore } from "@/lib/puzzles/wordDropKana/kanaScore";
 import { kanaWordsOf } from "@/lib/puzzles/wordDropKana/kanaWords";
 import { finishRomaji, readRomaji } from "@/lib/puzzles/wordDropKana/romaji";
-import { kanaKeyMarks } from "@/lib/puzzles/keyMarks";
+import { kanaKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
@@ -205,7 +205,7 @@ export function KanaDropSolve({
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <KanaKeyboard
               known={known}
-              typed={new Set(typing.slots.filter((slot) => slot !== "").map(kanaBase))}
+              typed={typedCounts(typing.slots, kanaBase)}
               style={style}
               disabled={pausing.paused}
               onKana={kana}

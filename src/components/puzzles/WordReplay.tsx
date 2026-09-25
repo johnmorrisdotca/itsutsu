@@ -15,7 +15,7 @@ import { WordDropGrid, type CellArrow } from "./WordDropGrid";
 import { WordKeyboard } from "./WordKeyboard";
 
 const NOTHING = () => undefined;
-const NONE: ReadonlySet<string> = new Set();
+const NONE: ReadonlyMap<string, number> = new Map();
 
 /**
  * A FINISHED WORDDROP, REPLAYED GUESS BY GUESS. John, 2026-09-25: "I want the

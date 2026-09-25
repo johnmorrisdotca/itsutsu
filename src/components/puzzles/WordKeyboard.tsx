@@ -3,10 +3,10 @@
 import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
 
-import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
+import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
 const ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-const NONE_TYPED: ReadonlySet<string> = new Set();
+const NONE_TYPED: ReadonlyMap<string, number> = new Map();
 
 /**
  * THE KEYBOARD UNDER A WORDDROP GRID, for a phone with no keys of its own:
@@ -27,8 +27,8 @@ export function WordKeyboard({
   onBack,
 }: {
   known: ReadonlyMap<string, LetterMark>;
-  /** The letters in the row being typed, whose keys are ringed (`WORD_KEY_TYPED`). */
-  typed?: ReadonlySet<string>;
+  /** How often each letter is in the row being typed (`typedCounts`): its key is ringed, and counted from two. */
+  typed?: ReadonlyMap<string, number>;
   style: WordStyle;
   disabled: boolean;
   /** Drawn at full colour and pressed by nobody: the keyboard of a finished game, replayed. */
@@ -52,19 +52,26 @@ export function WordKeyboard({
           ) : null}
           {[...row].map((letter) => {
             const mark = known.get(letter);
+            const count = typed.get(letter) ?? 0;
             return (
               <button
                 key={letter}
                 type="button"
-                className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(letter) ? WORD_KEY_TYPED : ""}`}
+                className={`${WORD_KEY} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${count > 0 ? WORD_KEY_TYPED : ""} relative`}
                 onClick={() => onLetter(letter)}
                 disabled={disabled}
                 {...inert}
                 data-testid={`word-key-${letter}`}
                 data-mark={mark ?? ""}
-                data-typed={typed.has(letter) ? "true" : undefined}
+                data-typed={count > 0 ? "true" : undefined}
+                aria-label={count > 1 ? `${letter}, ${count} in the row` : undefined}
               >
                 {letter}
+                {count > 1 ? (
+                  <span className={WORD_KEY_COUNT} aria-hidden="true" data-testid="key-count">
+                    {count}
+                  </span>
+                ) : null}
               </button>
             );
           })}

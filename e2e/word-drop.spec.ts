@@ -133,6 +133,13 @@ test.describe("the word puzzle", () => {
       await page.locator('[data-testid="word-tile"][data-row="0"]').nth(0).click();
       await page.keyboard.press(" ");
       await expect(key(miss![0]!)).not.toHaveAttribute("data-typed", /./);
+      // A letter twice in the row carries a count on its key; once, none.
+      await page.locator('[data-testid="word-tile"][data-row="0"]').nth(0).click();
+      await key(miss![1]!).click();
+      await expect(key(miss![1]!).getByTestId("key-count")).toHaveText("2");
+      await page.locator('[data-testid="word-tile"][data-row="0"]').nth(0).click();
+      await page.keyboard.press(" ");
+      await expect(key(miss![1]!).getByTestId("key-count")).toHaveCount(0);
       // Sent, no key is ringed.
       await key(miss![0]!).click();
       for (const letter of miss!.slice(2)) await key(letter).click();

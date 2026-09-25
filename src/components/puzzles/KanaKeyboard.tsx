@@ -3,7 +3,7 @@
 import type { KanaMark } from "@/lib/puzzles/wordDropKana/kanaMarks";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
 
-import { WORD_KEY, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
+import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
 /**
  * The gojūon, a column to a consonant and five kana down each, read left to
@@ -44,8 +44,8 @@ export function KanaKeyboard({
 }: {
   /** The best each base kana has been marked, by `kanaBase`. */
   known: ReadonlyMap<string, KanaMark>;
-  /** The kana in the row being typed, by base, whose keys are ringed (`WORD_KEY_TYPED`): ぱ rings は. */
-  typed: ReadonlySet<string>;
+  /** How often each kana is in the row being typed, by base (`typedCounts`): its key is ringed, and counted from two; ぱ rings は. */
+  typed: ReadonlyMap<string, number>;
   style: WordStyle;
   disabled: boolean;
   /** Drawn at full colour and pressed by nobody: the keyboard of a finished game, replayed. */
@@ -69,19 +69,26 @@ export function KanaKeyboard({
             const kana = column[row]!;
             if (kana === "") return <span key={`${at}-${row}`} aria-hidden="true" />;
             const mark = known.get(kana);
+            const count = typed.get(kana) ?? 0;
             return (
               <button
                 key={kana}
                 type="button"
-                className={`${key} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${typed.has(kana) ? WORD_KEY_TYPED : ""}`}
+                className={`${key} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${count > 0 ? WORD_KEY_TYPED : ""} relative`}
                 onClick={() => onKana(kana)}
                 disabled={disabled}
                 {...inert}
                 data-testid={`kana-key-${kana}`}
                 data-mark={mark ?? ""}
-                data-typed={typed.has(kana) ? "true" : undefined}
+                data-typed={count > 0 ? "true" : undefined}
+                aria-label={count > 1 ? `${kana}, ${count} in the row` : undefined}
               >
                 {kana}
+                {count > 1 ? (
+                  <span className={WORD_KEY_COUNT} aria-hidden="true" data-testid="key-count">
+                    {count}
+                  </span>
+                ) : null}
               </button>
             );
           }),
