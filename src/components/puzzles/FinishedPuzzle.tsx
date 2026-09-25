@@ -5,8 +5,8 @@ import { decodeRegions, decodeStones } from "@/lib/puzzles/hiddenStones/code";
 import { readNumberGivens } from "@/lib/puzzles/numberGivens";
 import { decodeCells } from "@/lib/puzzles/puzzleCode";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { decodeGuesses } from "@/lib/puzzles/wordDrop/code";
-import { decodeKanaGuesses } from "@/lib/puzzles/wordDropKana/kanaCode";
+import { decodeGuesses } from "@/lib/puzzles/gomoji/code";
+import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
@@ -45,8 +45,8 @@ export function FinishedPuzzle({ kind, size, givens, answer }: { kind: PuzzleKin
   }
 
   // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).
-  if (kind === "wordDrop" || kind === "wordDropKana") {
-    const guesses = (answer === null ? null : kind === "wordDrop" ? decodeGuesses(answer, size) : decodeKanaGuesses(answer, size)) ?? [];
+  if (kind === "gomoji" || kind === "gomojiKana") {
+    const guesses = (answer === null ? null : kind === "gomoji" ? decodeGuesses(answer, size) : decodeKanaGuesses(answer, size)) ?? [];
     return <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} style={style} />;
   }
 

@@ -1,6 +1,6 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
-import { decodeGuesses, rowsFor } from "./wordDrop/code";
-import { decodeKanaGuesses, KANA_ROWS } from "./wordDropKana/kanaCode";
+import { decodeGuesses, rowsFor } from "./gomoji/code";
+import { decodeKanaGuesses, KANA_ROWS } from "./gomojiKana/kanaCode";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -49,18 +49,18 @@ export function decodeBlackAndWhiteProgress(code: string, size: number): number[
   return decodeBlackAndWhite(code, size);
 }
 
-/** WordDrop writes its guesses so far, run together in lower case, as its answer is written. */
-export function encodeWordDropProgress(guesses: readonly string[]): string {
+/** Gomoji writes its guesses so far, run together in lower case, as its answer is written. */
+export function encodeGomojiProgress(guesses: readonly string[]): string {
   return guesses.join("");
 }
 
-export function decodeWordDropProgress(code: string, size: number): string[] | null {
+export function decodeGomojiProgress(code: string, size: number): string[] | null {
   const guesses = decodeGuesses(code, size);
   return guesses !== null && guesses.length <= rowsFor(size) ? guesses : null;
 }
 
 /** Whether a progress code is one a puzzle of this kind and size could have written. */
-/** A kana WordDrop writes its guesses as English does, run together, in hiragana. */
+/** A kana Gomoji writes its guesses as English does, run together, in hiragana. */
 export function encodeKanaProgress(guesses: readonly string[]): string {
   return guesses.join("");
 }
@@ -74,7 +74,7 @@ export function decodeKanaProgress(code: string, size: number): string[] | null 
 export function progressFits(kind: PuzzleKind, size: number, code: string): boolean {
   if (kind === "hiddenStones") return decodeStoneProgress(code, size) !== null;
   if (kind === "blackAndWhite") return decodeBlackAndWhiteProgress(code, size) !== null;
-  if (kind === "wordDrop") return decodeWordDropProgress(code, size) !== null;
-  if (kind === "wordDropKana") return decodeKanaProgress(code, size) !== null;
+  if (kind === "gomoji") return decodeGomojiProgress(code, size) !== null;
+  if (kind === "gomojiKana") return decodeKanaProgress(code, size) !== null;
   return decodeNumberProgress(code, size) !== null;
 }

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 const KEPT = "itsutsu.wordKeys";
 
 /**
- * WHETHER THE LETTER KEYS UNDER A WORDDROP GRID ARE SHOWN. John, 2026-09-25:
+ * WHETHER THE LETTER KEYS UNDER A GOMOJI GRID ARE SHOWN. John, 2026-09-25:
  * "allow user to toggle the keyboard… Mention you can use your computer
  * keyboard. default ON for mobile, off for computer."
  *

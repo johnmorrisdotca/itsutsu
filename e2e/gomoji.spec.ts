@@ -3,18 +3,18 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { isWord, markGuess } from "../src/lib/puzzles/wordDrop/code";
-import { wordScore } from "../src/lib/puzzles/wordDrop/wordScore";
+import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
+import { wordScore } from "../src/lib/puzzles/gomoji/wordScore";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * WordDrop: a hidden word found in guesses, each coloured letter by letter.
+ * Gomoji: a hidden word found in guesses, each coloured letter by letter.
  * Typed on the keyboard under the grid, as a phone is used, and on the desk's
  * keyboard; the colours on the page are the ones the rules give; a word the
  * list does not know is refused and costs nothing; and running out of guesses
  * ends the puzzle and shows the word.
  */
-const KIND = "wordDrop";
+const KIND = "gomoji";
 const LEVEL = "easy";
 const NAME = PUZZLE_DISPLAY[KIND].label;
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
@@ -237,9 +237,9 @@ test.describe("the word puzzle", () => {
 
     // Kept on the Puzzles tab, marked as not found.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
-    await expect(page.locator('[data-testid="puzzle-solved"][data-kind="wordDrop"][data-solved="false"]').first()).toContainText("Not found");
+    await expect(page.locator('[data-testid="puzzle-solved"][data-kind="gomoji"][data-solved="false"]').first()).toContainText("Not found");
 
-    // And in the history of every word played, from WordDrop's own page, with its guesses and its score.
+    // And in the history of every word played, from Gomoji's own page, with its guesses and its score.
     await page.goto(AT);
     await page.getByTestId("facet-me").click();
     const newest = page.getByTestId("word-history-row").first();
@@ -258,10 +258,10 @@ test.describe("the word puzzle", () => {
   });
 });
 
-test("today's word is one address for the day, reached from WordDrop's own page", async ({ page }) => {
+test("today's word is one address for the day, reached from Gomoji's own page", async ({ page }) => {
   const { dailySeed } = await import("../src/lib/puzzles/daily");
-  await page.goto("/games/word-drop");
+  await page.goto("/games/gomoji");
   await page.getByTestId("game-daily").click();
   // The same seed for everybody today, on an ordinary address that can be shared and kept.
-  await expect(page).toHaveURL(new RegExp(`/games/word-drop/play\\?.*seed=${dailySeed(new Date())}`));
+  await expect(page).toHaveURL(new RegExp(`/games/gomoji/play\\?.*seed=${dailySeed(new Date())}`));
 });

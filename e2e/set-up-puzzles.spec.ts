@@ -32,7 +32,7 @@ test("the set-up screen turns to a puzzle chosen from Numbers, and back to the g
   await expect(numbers).toHaveAttribute("data-open", "true");
 
   // The first puzzle is chosen, and the whole screen is about it.
-  // The Numbers shelf: every puzzle whose home is Numbers. WordDrop's family, Other, is kept off this screen for now.
+  // The Numbers shelf: every puzzle whose home is Numbers. Gomoji's family, Other, is kept off this screen for now.
   const shelf = PUZZLE_KIND_LIST.filter((kind) => familyOf(kind)?.key === "numbers");
   const [first, second] = shelf;
   const puzzles = page.getByTestId("set-up-puzzle");

@@ -2,7 +2,7 @@ import { kanaBase, markKanaGuess } from "./kanaMarks";
 import type { KanaWords } from "./kanaWords";
 
 /**
- * A KANA WORDDROP PUZZLE, written down and read back: the word, the free grey
+ * A KANA GOMOJI PUZZLE, written down and read back: the word, the free grey
  * word it opens with, the guesses, and the choosing of each from a seed.
  *
  * The givens are the word in KATAKANA, and on easy and medium a "|" and the

@@ -1,7 +1,7 @@
 import { markGuess, rowsFor } from "./code";
 
 /**
- * WHAT A WORDDROP WORD SCORES, won or lost. John, 2026-09-25: "lost words
+ * WHAT A GOMOJI WORD SCORES, won or lost. John, 2026-09-25: "lost words
  * would give you more than 0 for getting some GREEN and some yellow. like time
  * gives you some points, number of guesses, number of green, sooner the better
  * green, yellows, number of yellows, etc." and "0 points is only possible for

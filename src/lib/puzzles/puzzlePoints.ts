@@ -1,7 +1,7 @@
-import { decodeGuesses, decodeHidden } from "./wordDrop/code";
-import { wordScore } from "./wordDrop/wordScore";
-import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./wordDropKana/kanaCode";
-import { kanaScore } from "./wordDropKana/kanaScore";
+import { decodeGuesses, decodeHidden } from "./gomoji/code";
+import { wordScore } from "./gomoji/wordScore";
+import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./gomojiKana/kanaCode";
+import { kanaScore } from "./gomojiKana/kanaScore";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -22,11 +22,11 @@ import type { PuzzleKind } from "./puzzles.types";
 export const POINTS_A_CELL = 5;
 export const POINTS_A_HELP = 50;
 
-/** The cells a solver filled: every cell of a Hidden Stones grid, the letters of a WordDrop word, the unprinted ones of every other. */
+/** The cells a solver filled: every cell of a Hidden Stones grid, the letters of a Gomoji word, the unprinted ones of every other. */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
-  if (kind === "wordDrop" || kind === "wordDropKana") return size;
+  if (kind === "gomoji" || kind === "gomojiKana") return size;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
@@ -50,7 +50,7 @@ export function kanaPoints(size: number, givens: string, answer: string, elapsed
 }
 
 export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number, answer = "", elapsedMs = 0): number {
-  if (kind === "wordDrop") return wordPoints(size, givens, answer, elapsedMs);
-  if (kind === "wordDropKana") return kanaPoints(size, givens, answer, elapsedMs);
+  if (kind === "gomoji") return wordPoints(size, givens, answer, elapsedMs);
+  if (kind === "gomojiKana") return kanaPoints(size, givens, answer, elapsedMs);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

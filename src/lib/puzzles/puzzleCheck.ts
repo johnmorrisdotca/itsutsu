@@ -4,9 +4,9 @@ import { decodeJigsaw } from "./jigsaw/code";
 import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
-import { decodeGuesses, decodeHidden, isWord, rowsFor } from "./wordDrop/code";
-import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./wordDropKana/kanaCode";
-import { kanaWordsOf } from "./wordDropKana/kanaWords";
+import { decodeGuesses, decodeHidden, isWord, rowsFor } from "./gomoji/code";
+import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./gomojiKana/kanaCode";
+import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -45,10 +45,10 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkTowers(size, givens, answer);
     case "blackAndWhite":
       return checkBlackAndWhite(size, givens, answer);
-    case "wordDrop":
-      return checkWordDrop(size, givens, answer, "found");
-    case "wordDropKana":
-      return checkWordDropKana(size, givens, answer, "found");
+    case "gomoji":
+      return checkGomoji(size, givens, answer, "found");
+    case "gomojiKana":
+      return checkGomojiKana(size, givens, answer, "found");
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -225,19 +225,19 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  * for a loss that really happened — every row a word, none of them the word.
  */
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string): PuzzleCheck {
-  if (kind !== "wordDrop" && kind !== "wordDropKana") return { ok: false, reason: `a ${kind} cannot run out of guesses` };
+  if (kind !== "gomoji" && kind !== "gomojiKana") return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
-  return kind === "wordDrop" ? checkWordDrop(size, givens, answer, "spent") : checkWordDropKana(size, givens, answer, "spent");
+  return kind === "gomoji" ? checkGomoji(size, givens, answer, "spent") : checkGomojiKana(size, givens, answer, "spent");
 }
 
 /**
- * WordDrop in kana, as WordDrop: every guess a word of the kana list (which
+ * Gomoji in kana, as Gomoji: every guess a word of the kana list (which
  * the caller has loaded, `loadKanaWords`), no more than six, and either the
  * last is the word exactly — right size, right mark — and none before it was,
  * or all six are spent and none was. The free grey word is the puzzle's, not
  * a guess, and is not in the answer.
  */
-function checkWordDropKana(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
+function checkGomojiKana(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
   const puzzle = decodeKanaGivens(givens, size);
   const guesses = decodeKanaGuesses(answer, size);
   if (puzzle === null) return { ok: false, reason: "the givens are not a hidden kana word" };
@@ -263,12 +263,12 @@ function checkWordDropKana(size: number, givens: string, answer: string, ending:
 }
 
 /**
- * WordDrop: every guess a word of the list, in order, no more of them than
+ * Gomoji: every guess a word of the list, in order, no more of them than
  * the rows allow — and either the last is the word and none before it was
  * ("found"), or every row is spent and none was ("spent"). Marking the
  * letters is the browser's; the server asks only what decides the result.
  */
-function checkWordDrop(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
+function checkGomoji(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
   const hidden = decodeHidden(givens, size);
   const guesses = decodeGuesses(answer, size);
   if (hidden === null) return { ok: false, reason: "the givens are not a hidden word" };

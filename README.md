@@ -144,7 +144,7 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 | **Black and White** 白黒 | Takuzu / Binairo: half of each colour in every line, never three alike, no line repeated | 6×6, 8×8, 10×10, 12×12 | graded by what a person sees at a glance |
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
-screen for now: **WordDrop** ワードドロップ, a hidden word of four or five letters
+screen for now: **Gomoji** 五文字, a hidden word of four or five letters
 found in five or six guesses, each coloured letter by letter. English words
 from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
 
@@ -964,7 +964,7 @@ One-time setup:
 by side, and is the gate before every push.
 
 One other workflow runs on its own. `.github/workflows/jmdict-refresh.yml`
-writes the kana WordDrop's word lists again from JMdict's newest release on the
+writes the kana Gomoji's word lists again from JMdict's newest release on the
 1st of each month, because JMdict's licence asks for a monthly refresh. When
 the lists changed it pushes them to a `data/jmdict-YYYY-MM` branch and FAILS ON
 PURPOSE: the red run is the reminder to land that branch through the ordinary

@@ -5,7 +5,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { currentReader } from "@/lib/auth/currentReader";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
-import { WORD_STYLES } from "@/lib/puzzles/wordDrop/wordStyles";
+import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
@@ -33,8 +33,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
-  /* How a WordDrop grid is drawn, as this member last chose (`wordStyles.ts`); read only for the two WordDrops. */
-  const { wordStyle } = kind === "wordDrop" || kind === "wordDropKana" ? await preferencesFor() : { wordStyle: undefined };
+  /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the two Gomojis. */
+  const { wordStyle } = kind === "gomoji" || kind === "gomojiKana" ? await preferencesFor() : { wordStyle: undefined };
   return (
     <Page>
       <SiteHeader />

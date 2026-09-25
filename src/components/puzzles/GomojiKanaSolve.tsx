@@ -8,17 +8,17 @@ import { viewHref } from "@/lib/history/myGamesViews";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
-import { breaksKanaHardRule, decodeKanaGivens, KANA_ROWS, toHiragana } from "@/lib/puzzles/wordDropKana/kanaCode";
-import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from "@/lib/puzzles/wordDropKana/kanaMarks";
-import { kanaScore } from "@/lib/puzzles/wordDropKana/kanaScore";
-import { kanaWordsOf } from "@/lib/puzzles/wordDropKana/kanaWords";
-import { finishRomaji, readRomaji } from "@/lib/puzzles/wordDropKana/romaji";
+import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
+import { breaksKanaHardRule, decodeKanaGivens, KANA_ROWS, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { kanaScore } from "@/lib/puzzles/gomojiKana/kanaScore";
+import { kanaWordsOf } from "@/lib/puzzles/gomojiKana/kanaWords";
+import { finishRomaji, readRomaji } from "@/lib/puzzles/gomojiKana/romaji";
 import { kanaKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
-import { WordDropGrid, type CellArrow } from "./WordDropGrid";
+import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
@@ -44,7 +44,7 @@ function changeLast(row: TypingRow, change: (kana: string) => string): TypingRow
 }
 
 /**
- * Solving WordDrop in kana (docs/plans/other/WORD-04-kana.md): WordDrop's
+ * Solving Gomoji in kana (docs/plans/other/WORD-04-kana.md): Gomoji's
  * grid, styles and keys, with John's colours — green, orange, yellow for the
  * column, grey — and an arrow on a kana right but for its size or mark.
  *
@@ -53,7 +53,7 @@ function changeLast(row: TypingRow, change: (kana: string) => string): TypingRow
  * still being typed shown beside the prompt until it is a kana. On easy and
  * medium the grid opens with the free grey word already played.
  */
-export function KanaDropSolve({
+export function GomojiKanaSolve({
   puzzle,
   hasAccount,
   race = null,
@@ -181,7 +181,7 @@ export function KanaDropSolve({
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null ? (
         <SolvePaused pausing={pausing}>
-            <WordDropGrid
+            <GomojiGrid
               size={size}
               rows={free + KANA_ROWS}
               guesses={shown}
@@ -195,7 +195,7 @@ export function KanaDropSolve({
             />
         </SolvePaused>
       ) : (
-        <WordReplay kind="wordDropKana" size={size} givens={puzzle.givens} guesses={guesses} style={style} />
+        <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} style={style} />
       )}
       {done === null ? (
         <>

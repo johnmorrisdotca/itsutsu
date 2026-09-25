@@ -8,7 +8,7 @@ import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.con
 import { currentSession } from "@/lib/auth/currentSession";
 import { setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { POINTS_A_CELL, POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
-import { WORD_SCORE } from "@/lib/puzzles/wordDrop/wordScore";
+import { WORD_SCORE } from "@/lib/puzzles/gomoji/wordScore";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { POINTS_SHOWN, POINTS_WHOLE, type PointsRow, pointsBoardOf, startOfMonth } from "@/lib/puzzles/server/puzzleBoards";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
@@ -61,7 +61,7 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
       <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} testId="puzzle-points-all" />
       <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} testId="puzzle-points-month" />
       <p className="text-xs text-muted">
-        {kind === "wordDrop"
+        {kind === "gomoji"
           ? `Every letter you find scores, more the sooner and more in its place; the word itself ${WORD_SCORE.found}, and more for guesses left and speed. A word not found still scores its letters. Your best of each word counts.`
           : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
       </p>

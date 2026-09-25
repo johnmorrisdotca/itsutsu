@@ -1,7 +1,7 @@
 import { EN_WORDS } from "./words.en.data";
 
 /**
- * WORDDROP: a word of `size` letters, found in `size + 1` guesses, each
+ * GOMOJI: a word of `size` letters, found in `size + 1` guesses, each
  * guess coloured letter by letter — in its place, in the word elsewhere, or
  * not in it at all.
  *

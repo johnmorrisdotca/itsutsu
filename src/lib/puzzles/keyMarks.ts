@@ -1,5 +1,5 @@
-import { markGuess, type LetterMark } from "./wordDrop/code";
-import { kanaBase, markKanaGuess, type KanaMark } from "./wordDropKana/kanaMarks";
+import { markGuess, type LetterMark } from "./gomoji/code";
+import { kanaBase, markKanaGuess, type KanaMark } from "./gomojiKana/kanaMarks";
 
 /**
  * WHAT EACH KEY OF A WORD PUZZLE SHOWS: the best mark its letter has had on

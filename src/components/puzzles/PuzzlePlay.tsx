@@ -11,8 +11,8 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
-import { KanaDropSolve } from "./KanaDropSolve";
-import { WordDropSolve } from "./WordDropSolve";
+import { GomojiKanaSolve } from "./GomojiKanaSolve";
+import { GomojiSolve } from "./GomojiSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 
@@ -71,8 +71,8 @@ export function PuzzlePlay({
     router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints })}`);
   }, [seed, kind, size, level, checks, hints, router]);
 
-  /* A kind whose words load by length (the kana WordDrop) waits for its list; every other kind is ready at once. */
-  const [loaded, setLoaded] = useState<string | null>(kind === "wordDropKana" ? null : `${kind}:${size}`);
+  /* A kind whose words load by length (the kana Gomoji) waits for its list; every other kind is ready at once. */
+  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" ? null : `${kind}:${size}`);
   useEffect(() => {
     let live = true;
     void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
@@ -115,10 +115,10 @@ export function PuzzlePlay({
       return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "blackAndWhite":
       return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
-    case "wordDrop":
-      return <WordDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
-    case "wordDropKana":
-      return <KanaDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+    case "gomoji":
+      return <GomojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+    case "gomojiKana":
+      return <GomojiKanaSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

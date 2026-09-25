@@ -6,14 +6,14 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeGuesses, decodeHidden, markGuess } from "@/lib/puzzles/wordDrop/code";
-import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/wordDropKana/kanaCode";
-import { markKanaGuess } from "@/lib/puzzles/wordDropKana/kanaMarks";
+import { decodeGuesses, decodeHidden, markGuess } from "@/lib/puzzles/gomoji/code";
+import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
 
 /**
- * EVERY WORDDROP WORD A MEMBER HAS PLAYED, newest first: the word, whether it
+ * EVERY GOMOJI WORD A MEMBER HAS PLAYED, newest first: the word, whether it
  * was found and on which guess, what it scored, and the guesses themselves as
  * small stones in their colours. John, 2026-09-25: "shouldn't we show the
  * history of guesses/words that the user has ever played? with score?"
@@ -22,9 +22,9 @@ import { WORD_STONE_LOOK } from "./puzzles.constants";
  * A word found before its guesses were kept shows the word and its score, and
  * says its guesses were not kept rather than drawing nothing.
  */
-/** The word and the guesses of a kept row, and each guess's colours, for either WordDrop. */
-function readWord(kind: "wordDrop" | "wordDropKana", word: OwnWord): { hidden: string; guesses: string[] | null; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] } {
-  if (kind === "wordDropKana") {
+/** The word and the guesses of a kept row, and each guess's colours, for either Gomoji. */
+function readWord(kind: "gomoji" | "gomojiKana", word: OwnWord): { hidden: string; guesses: string[] | null; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] } {
+  if (kind === "gomojiKana") {
     const hidden = decodeKanaGivens(word.givens, word.size)?.word ?? "";
     return { hidden, guesses: word.answer === null ? null : decodeKanaGuesses(word.answer, word.size), marks: (guess) => markKanaGuess([...guess], [...hidden]).map((each) => each.mark) };
   }
@@ -32,7 +32,7 @@ function readWord(kind: "wordDrop" | "wordDropKana", word: OwnWord): { hidden: s
   return { hidden, guesses: word.answer === null ? null : decodeGuesses(word.answer, word.size), marks: (guess) => markGuess(guess, hidden) };
 }
 
-export function WordHistory({ words, total, kind = "wordDrop" }: { words: readonly OwnWord[]; total: number; kind?: "wordDrop" | "wordDropKana" }) {
+export function WordHistory({ words, total, kind = "gomoji" }: { words: readonly OwnWord[]; total: number; kind?: "gomoji" | "gomojiKana" }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="word-history">
       <h2 className={SECTION_TITLE}>
@@ -58,7 +58,7 @@ export function WordHistory({ words, total, kind = "wordDrop" }: { words: readon
   );
 }
 
-function WordRow({ word, kind }: { word: OwnWord; kind: "wordDrop" | "wordDropKana" }) {
+function WordRow({ word, kind }: { word: OwnWord; kind: "gomoji" | "gomojiKana" }) {
   const { hidden, guesses, marks: marksOf } = readWord(kind, word);
   const outcome = word.solved ? `Found in ${guesses?.length ?? "?"}` : "Not found";
   return (

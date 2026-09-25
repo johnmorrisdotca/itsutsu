@@ -1,7 +1,7 @@
 /**
  * TODAY'S PUZZLE: one seed a day, the same for everybody.
  *
- * WordDrop's row "a word of the day" (2026-09-25): the seed is the day's date in
+ * Gomoji's row "a word of the day" (2026-09-25): the seed is the day's date in
  * UTC written as a number, 2026-09-25 → 20260925, so every reader asking for
  * today's puzzle at a size and level meets the same grid, tomorrow's is another,
  * and the address it resolves to is an ordinary one — shareable, and kept like

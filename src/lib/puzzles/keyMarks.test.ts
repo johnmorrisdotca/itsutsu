@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { kanaKeyMarks, letterKeyMarks, typedCounts } from "./keyMarks";
-import { kanaBase } from "./wordDropKana/kanaMarks";
+import { kanaBase } from "./gomojiKana/kanaMarks";
 
 describe("what the keys of a word puzzle show", () => {
   it("counts each letter of the row being typed, empty places left out", () => {

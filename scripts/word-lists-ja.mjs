@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WRITES THE KANA WORDDROP LISTS from JMdict, so the list in the repository is
+ * WRITES THE KANA GOMOJI LISTS from JMdict, so the list in the repository is
  * a machine's output anybody can make again, never a hand-kept table. See
  * docs/plans/other/WORD-04-kana.md.
  *
@@ -41,7 +41,7 @@ if (SOURCE === undefined) {
   console.error("Usage: node scripts/word-lists-ja.mjs <JMdict_e.gz>");
   process.exit(1);
 }
-const OUT = (length) => `src/lib/puzzles/wordDropKana/words.ja.${length}.data.ts`;
+const OUT = (length) => `src/lib/puzzles/gomojiKana/words.ja.${length}.data.ts`;
 const LENGTHS = [3, 4, 5];
 const EASY = 900;
 const ANSWERS = 2000;
@@ -115,7 +115,7 @@ for (const length of LENGTHS) {
   writeFileSync(
     OUT(length),
     `/**
- * THE ${length}-KANA WORDS FOR WORDDROP. Written by \`scripts/word-lists-ja.mjs\` from
+ * THE ${length}-KANA WORDS FOR GOMOJI. Written by \`scripts/word-lists-ja.mjs\` from
  * JMdict, release ${created}. Never edited by hand; the monthly refresh
  * (.github/workflows/jmdict-refresh.yml) runs the script again.
  *

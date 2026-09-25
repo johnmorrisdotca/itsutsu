@@ -1,7 +1,7 @@
 "use client";
 
-import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
-import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
+import type { LetterMark } from "@/lib/puzzles/gomoji/code";
+import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
@@ -9,7 +9,7 @@ const ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
 const NONE_TYPED: ReadonlyMap<string, number> = new Map();
 
 /**
- * THE KEYBOARD UNDER A WORDDROP GRID, for a phone with no keys of its own:
+ * THE KEYBOARD UNDER A GOMOJI GRID, for a phone with no keys of its own:
  * three rows of letters, Enter and a delete key, each letter coloured with the
  * best the guesses so far have said about it — in its place beats elsewhere
  * beats not in the word. Ten keys to the widest row, so every key is a

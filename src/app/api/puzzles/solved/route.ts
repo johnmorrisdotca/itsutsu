@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     const checksUsed = parsed.data.checksUsed ?? 0;
     if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
 
-    // A kana WordDrop's word list is loaded a length at a time; the check needs this one.
+    // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     await preparePuzzle(kind, size);
 
     if (parsed.data.outOfGuesses === true) {

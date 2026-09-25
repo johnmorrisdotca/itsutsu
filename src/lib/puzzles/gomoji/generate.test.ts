@@ -2,34 +2,34 @@ import { describe, expect, it } from "vitest";
 
 import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
 import { wordPoints } from "../puzzlePoints";
-import { decodeWordDropProgress, progressFits } from "../puzzleProgress";
+import { decodeGomojiProgress, progressFits } from "../puzzleProgress";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, encodeHidden, isWord, markGuess, rowsFor } from "./code";
-import { generateWordDrop } from "./generate";
+import { generateGomoji } from "./generate";
 
 /**
- * WordDrop: a word drawn from the level's list by the seed, coloured the
+ * Gomoji: a word drawn from the level's list by the seed, coloured the
  * way a person colours a guess on paper, and checked by the server from the
  * guesses alone.
  */
-describe("drawing a WordDrop", () => {
-  for (const size of PUZZLE_SPECS.wordDrop.sizes) {
+describe("drawing a Gomoji", () => {
+  for (const size of PUZZLE_SPECS.gomoji.sizes) {
     for (const level of PUZZLE_LEVEL_LIST) {
       it(`${size} letters, ${level}: a word of the list, the same from the same seed`, () => {
         for (const seed of [1, 2, 3, 99]) {
-          const puzzle = generateWordDrop(size, level, seed);
+          const puzzle = generateGomoji(size, level, seed);
           const word = decodeHidden(puzzle.givens, size)!;
           expect(word).toHaveLength(size);
           expect(isWord(word, size)).toBe(true);
           expect(answersFor(size, level === "easy")).toContain(word);
-          expect(generateWordDrop(size, level, seed)).toEqual(puzzle);
+          expect(generateGomoji(size, level, seed)).toEqual(puzzle);
         }
       });
     }
   }
 
   it("draws different words from different seeds", () => {
-    const words = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => generateWordDrop(5, "medium", seed).solution));
+    const words = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => generateGomoji(5, "medium", seed).solution));
     expect(words.size).toBeGreaterThan(5);
   });
 
@@ -69,20 +69,20 @@ describe("what the server checks", () => {
   const givens = "CRANE";
 
   it("accepts the word found on the last guess, and nothing else", () => {
-    expect(checkSolution("wordDrop", 5, givens, "slatecrane")).toEqual({ ok: true });
-    expect(checkSolution("wordDrop", 5, givens, "crane")).toEqual({ ok: true });
-    expect(checkSolution("wordDrop", 5, givens, "slate").ok).toBe(false);
-    expect(checkSolution("wordDrop", 5, givens, "craneslate").ok).toBe(false);
-    expect(checkSolution("wordDrop", 5, givens, "zzzzzcrane").ok).toBe(false);
-    expect(checkSolution("wordDrop", 5, givens, "CRANE").ok).toBe(false);
-    expect(checkSolution("wordDrop", 5, givens, "slateslateslateslateslateslatecrane").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "slatecrane")).toEqual({ ok: true });
+    expect(checkSolution("gomoji", 5, givens, "crane")).toEqual({ ok: true });
+    expect(checkSolution("gomoji", 5, givens, "slate").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "craneslate").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "zzzzzcrane").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "CRANE").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "slateslateslateslateslateslatecrane").ok).toBe(false);
   });
 
   it("accepts running out only when every row is a word and none is the word", () => {
     const six = "slate".repeat(6);
-    expect(checkOutOfGuesses("wordDrop", 5, givens, six)).toEqual({ ok: true });
-    expect(checkOutOfGuesses("wordDrop", 5, givens, "slate".repeat(5)).ok).toBe(false);
-    expect(checkOutOfGuesses("wordDrop", 5, givens, `${"slate".repeat(5)}crane`).ok).toBe(false);
+    expect(checkOutOfGuesses("gomoji", 5, givens, six)).toEqual({ ok: true });
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(5)).ok).toBe(false);
+    expect(checkOutOfGuesses("gomoji", 5, givens, `${"slate".repeat(5)}crane`).ok).toBe(false);
     expect(checkOutOfGuesses("numberPlace", 9, givens, six).ok).toBe(false);
   });
 
@@ -97,10 +97,10 @@ describe("what the server checks", () => {
   });
 
   it("keeps a run's guesses as they are written, whole guesses only", () => {
-    expect(decodeWordDropProgress("slatecrane", 5)).toEqual(["slate", "crane"]);
-    expect(progressFits("wordDrop", 5, "")).toBe(true);
-    expect(progressFits("wordDrop", 5, "slat")).toBe(false);
-    expect(progressFits("wordDrop", 5, "slate".repeat(7))).toBe(false);
+    expect(decodeGomojiProgress("slatecrane", 5)).toEqual(["slate", "crane"]);
+    expect(progressFits("gomoji", 5, "")).toBe(true);
+    expect(progressFits("gomoji", 5, "slat")).toBe(false);
+    expect(progressFits("gomoji", 5, "slate".repeat(7))).toBe(false);
     expect(decodeGuesses("SLATE", 5)).toBeNull();
     expect(rowsFor(4)).toBe(5);
   });

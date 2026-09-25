@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WRITES THE WORDDROP LISTS from SCOWL, so the lists in the repository are
+ * WRITES THE GOMOJI LISTS from SCOWL, so the lists in the repository are
  * a machine's output that anybody can make again, never a hand-kept table.
  *
  *   curl -sL -o scowl.tar.gz https://downloads.sourceforge.net/wordlist/scowl-2020.12.07.tar.gz
@@ -30,7 +30,7 @@ if (FINAL === undefined) {
   console.error("Usage: node scripts/word-lists.mjs <scowl>/final");
   process.exit(1);
 }
-const OUT = "src/lib/puzzles/wordDrop/words.en.data.ts";
+const OUT = "src/lib/puzzles/gomoji/words.en.data.ts";
 const LENGTHS = [4, 5];
 
 const NOT_AN_ANSWER = new Set(
@@ -95,7 +95,7 @@ for (const length of LENGTHS) {
 writeFileSync(
   OUT,
   `/**
- * THE ENGLISH WORDS FOR WORDDROP. Written by \`scripts/word-lists.mjs\` from
+ * THE ENGLISH WORDS FOR GOMOJI. Written by \`scripts/word-lists.mjs\` from
  * SCOWL 2020.12.07 (http://wordlist.aspell.net/), read 2026-09-25: answers from
  * sizes 10–35 (easy: 10–20), guesses from sizes 10–70, English and American
  * spellings. Never edited by hand; run the script again instead.

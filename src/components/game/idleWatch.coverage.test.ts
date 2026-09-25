@@ -39,7 +39,7 @@ const NOT_ASKED: Record<string, string> = {
   "src/components/game/EmbedGame.tsx": "a board inside another site's page, with no clock, no polling and nothing kept",
 };
 
-const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|WordDropGrid)[\s>]/;
+const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|GomojiGrid)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
 function tsxUnder(folder: string): string[] {

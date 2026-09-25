@@ -1,4 +1,4 @@
-import { WORD_SCORE, type WordScore } from "../wordDrop/wordScore";
+import { WORD_SCORE, type WordScore } from "../gomoji/wordScore";
 import { kanaBase, markKanaGuess } from "./kanaMarks";
 
 /**

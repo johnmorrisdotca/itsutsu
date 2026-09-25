@@ -1,5 +1,5 @@
 /**
- * HOW A KANA GUESS IS COLOURED, by John's rules for WordDrop in kana
+ * HOW A KANA GUESS IS COLOURED, by John's rules for Gomoji in kana
  * (2026-09-25; the table is in docs/plans/other/WORD-04-kana.md):
  *
  *  - green: the same kana in this place;

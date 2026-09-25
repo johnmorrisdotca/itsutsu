@@ -1,5 +1,5 @@
 /**
- * HOW A WORDDROP GRID IS DRAWN, chosen by the player and kept on the account
+ * HOW A GOMOJI GRID IS DRAWN, chosen by the player and kept on the account
  * (`wordStyle` in the preferences registry).
  *
  * John, 2026-09-25: "SHOULDNT our WORD Drop game use Gomoku pebbles with the

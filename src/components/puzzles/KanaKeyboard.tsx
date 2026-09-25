@@ -1,7 +1,7 @@
 "use client";
 
-import { cycleMark, toggleSize, type KanaMark } from "@/lib/puzzles/wordDropKana/kanaMarks";
-import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
+import { cycleMark, toggleSize, type KanaMark } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
@@ -24,7 +24,7 @@ const COLUMNS: readonly (readonly string[])[] = [
 ];
 
 /**
- * THE KANA KEYS UNDER A KANA WORDDROP GRID: the plain kana of the gojūon, and
+ * THE KANA KEYS UNDER A KANA GOMOJI GRID: the plain kana of the gojūon, and
  * the three keys that make the rest of them from the kana just typed — 小 for
  * small or large (つ ⇄ っ), ゛゜ for its mark (は → ば → ぱ → は) — as a phone's
  * kana keyboard does. A key is coloured by what the guesses have said about

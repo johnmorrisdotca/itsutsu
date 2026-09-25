@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { boardSpan } from "./WordDropGrid";
+import { boardSpan } from "./GomojiGrid";
 
 describe("a whole board for a word", () => {
   it("is square, holds every row, and leaves the same spare columns either side", () => {

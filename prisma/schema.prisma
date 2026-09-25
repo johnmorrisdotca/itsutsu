@@ -1244,7 +1244,7 @@ model PuzzleSolve {
   /// solves — asks for true; the points boards and the player's own list take both.
   solved        Boolean  @default(true)
   /// What was handed in, kept only where it is the story of the play: a
-  /// WordDrop's guesses, run together. Null for every grid, and for the words
+  /// Gomoji's guesses, run together. Null for every grid, and for the words
   /// solved before it was kept.
   answer        String?
 

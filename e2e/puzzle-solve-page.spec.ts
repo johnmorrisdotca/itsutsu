@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
-import { isWord } from "../src/lib/puzzles/wordDrop/code";
+import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { PLAYER_STATE, freshPuzzleSeed, ready } from "./support";
 
 /**
@@ -48,14 +48,14 @@ test("a solve on the Puzzles tab opens its own finished grid, its time and its p
 
 test("a word not found opens from Your words with its guesses on the grid", async ({ page }) => {
   const seed = freshPuzzleSeed();
-  const puzzle = generatePuzzle("wordDrop", 4, "easy", seed);
+  const puzzle = generatePuzzle("gomoji", 4, "easy", seed);
   const wrong = ["tree", "cake", "moon", "fish", "bird", "lamp", "rope"].filter((word) => word !== puzzle.solution && isWord(word, 4)).slice(0, 5);
   const ended = await page.request.post("/api/puzzles/solved", {
-    data: { kind: "wordDrop", size: 4, level: "easy", seed, givens: puzzle.givens, answer: wrong.join(""), elapsedMs: 30_000, outOfGuesses: true },
+    data: { kind: "gomoji", size: 4, level: "easy", seed, givens: puzzle.givens, answer: wrong.join(""), elapsedMs: 30_000, outOfGuesses: true },
   });
   expect(ended.ok()).toBe(true);
 
-  await page.goto(`/games/${PUZZLE_SLUGS.wordDrop}/me`);
+  await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/me`);
   await page.getByTestId("word-history-row").first().getByTestId("word-history-word").click();
   await expect(page.getByTestId("solve-outcome")).toHaveText("Not found");
   await expect(page.getByTestId("solve-word")).toHaveText(puzzle.solution.toUpperCase());

@@ -4,21 +4,21 @@ import { useState } from "react";
 
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { letterKeyMarks, kanaKeyMarks } from "@/lib/puzzles/keyMarks";
-import { decodeHidden, markGuess, rowsFor } from "@/lib/puzzles/wordDrop/code";
-import { emptyRow } from "@/lib/puzzles/wordDrop/typingRow";
-import type { WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
-import { decodeKanaGivens, KANA_ROWS } from "@/lib/puzzles/wordDropKana/kanaCode";
-import { markKanaGuess } from "@/lib/puzzles/wordDropKana/kanaMarks";
+import { decodeHidden, markGuess, rowsFor } from "@/lib/puzzles/gomoji/code";
+import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
+import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
+import { decodeKanaGivens, KANA_ROWS } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
-import { WordDropGrid, type CellArrow } from "./WordDropGrid";
+import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordKeyboard } from "./WordKeyboard";
 
 const NOTHING = () => undefined;
 const NONE: ReadonlyMap<string, number> = new Map();
 
 /**
- * A FINISHED WORDDROP, REPLAYED GUESS BY GUESS. John, 2026-09-25: "I want the
+ * A FINISHED GOMOJI, REPLAYED GUESS BY GUESS. John, 2026-09-25: "I want the
  * ability to see the keyboard even after the game. we should also have the
  * History Scrubber here so we can replay the words chosen, with the keyboard
  * visible."
@@ -38,7 +38,7 @@ export function WordReplay({
   guesses,
   style,
 }: {
-  kind: "wordDrop" | "wordDropKana";
+  kind: "gomoji" | "gomojiKana";
   size: number;
   givens: string;
   guesses: readonly string[];
@@ -47,7 +47,7 @@ export function WordReplay({
   const last = guesses.length;
   const [at, setAt] = useState(last);
   const played = guesses.slice(0, Math.min(at, last));
-  const kana = kind === "wordDropKana";
+  const kana = kind === "gomojiKana";
 
   // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours.
   const kanaGiven = kana ? decodeKanaGivens(givens, size) : null;
@@ -63,7 +63,7 @@ export function WordReplay({
 
   return (
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
-      <WordDropGrid
+      <GomojiGrid
         size={size}
         rows={kana ? free + KANA_ROWS : rowsFor(size)}
         guesses={rows}

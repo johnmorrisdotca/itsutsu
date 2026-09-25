@@ -1,4 +1,4 @@
-import type { WordScore } from "@/lib/puzzles/wordDrop/wordScore";
+import type { WordScore } from "@/lib/puzzles/gomoji/wordScore";
 
 /** A word's score, English's or the kana version's, which adds the columns its yellows named. */
 type Scored = WordScore & { column?: number };
@@ -12,7 +12,7 @@ const PARTS: { key: keyof Omit<Scored, "total">; label: string }[] = [
 ];
 
 /**
- * WHAT A WORDDROP WORD SCORED, part by part, under the grid once it is over —
+ * WHAT A GOMOJI WORD SCORED, part by part, under the grid once it is over —
  * found or not. The same sum the server stored for the leaderboard
  * (`wordScore`), worked out here from the same guesses, so the page never
  * waits on the site to say it. A part worth nothing is left out, and a word

@@ -5,17 +5,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { decodeWordDropProgress, encodeWordDropProgress } from "@/lib/puzzles/puzzleProgress";
+import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor } from "@/lib/puzzles/wordDrop/code";
-import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
+import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor } from "@/lib/puzzles/gomoji/code";
+import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { letterKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
-import { wordScore } from "@/lib/puzzles/wordDrop/wordScore";
+import { wordScore } from "@/lib/puzzles/gomoji/wordScore";
 
-import { WordDropGrid } from "./WordDropGrid";
+import { GomojiGrid } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
 import { WordKeyboard } from "./WordKeyboard";
@@ -26,7 +26,7 @@ import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 /**
- * Solving WordDrop: type a word, press Enter, read its colours, and find the
+ * Solving Gomoji: type a word, press Enter, read its colours, and find the
  * hidden word before the rows run out.
  *
  * Letters come from the keyboard under the grid or the one on the desk; a
@@ -36,7 +36,7 @@ import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, u
  * the rows spent without finding it end the puzzle unsolved (`runOut`), and
  * the word is shown.
  */
-export function WordDropSolve({
+export function GomojiSolve({
   puzzle,
   hasAccount,
   race = null,
@@ -54,7 +54,7 @@ export function WordDropSolve({
   const { kind, size, level, seed } = puzzle;
   const hidden = useMemo(() => decodeHidden(puzzle.givens, size) ?? "", [puzzle.givens, size]);
   const rows = rowsFor(size);
-  const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeWordDropProgress(resumed.progress, size)) ?? []);
+  const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size)) ?? []);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
@@ -64,7 +64,7 @@ export function WordDropSolve({
     hasAccount,
     race,
     null,
-    { progress: encodeWordDropProgress(guesses), resumed },
+    { progress: encodeGomojiProgress(guesses), resumed },
     false,
     true,
   );
@@ -146,7 +146,7 @@ export function WordDropSolve({
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null ? (
         <SolvePaused pausing={pausing}>
-          <WordDropGrid
+          <GomojiGrid
             size={size}
             rows={rows}
             guesses={guesses}
@@ -158,7 +158,7 @@ export function WordDropSolve({
           />
         </SolvePaused>
       ) : (
-        <WordReplay kind={kind === "wordDropKana" ? "wordDropKana" : "wordDrop"} size={size} givens={puzzle.givens} guesses={guesses} style={style} />
+        <WordReplay kind={kind === "gomojiKana" ? "gomojiKana" : "gomoji"} size={size} givens={puzzle.givens} guesses={guesses} style={style} />
       )}
       {done === null ? (
         <>

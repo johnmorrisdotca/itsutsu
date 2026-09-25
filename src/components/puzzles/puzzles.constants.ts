@@ -77,10 +77,10 @@ export const PUZZLE_CLOCK = "font-mono text-lg tabular-nums";
 /** How often the clock is redrawn: once a second, in the browser, and never on a server. */
 export const PUZZLE_CLOCK_TICK_MS = 1000;
 
-/** What a page says about a size: the cells across a grid, or the letters of a WordDrop word, which is not a square. */
+/** What a page says about a size: the cells across a grid, or the letters of a Gomoji word, which is not a square. */
 export function sizeWord(size: number, kind?: PuzzleKind): string {
-  if (kind === "wordDrop") return `${size} letters`;
-  if (kind === "wordDropKana") return `${size} kana`;
+  if (kind === "gomoji") return `${size} letters`;
+  if (kind === "gomojiKana") return `${size} kana`;
   return `${size}×${size}`;
 }
 
@@ -117,7 +117,7 @@ export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border
 export const PUZZLE_CELL_WRONG = "ring-2 ring-inset ring-shu bg-shu-soft/50";
 
 /*
- * WORDDROP: letter tiles in rows, and a keyboard under them. A tile's colour
+ * GOMOJI: letter tiles in rows, and a keyboard under them. A tile's colour
  * says what its letter is to the hidden word — moss in its place, ochre in the
  * word elsewhere, grey not in it — as the site's own colours rather than the
  * published game's, and always with the letter written on it, so a reader who
@@ -149,7 +149,7 @@ export const WORD_KEY =
 export const WORD_GRID_BOX = "w-full";
 
 /*
- * WORDDROP IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter
+ * GOMOJI IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter
  * is written on a stone shaded as the board's own stones are (`STONE_SETS`):
  * a white stone while it is typed, then moss in its place, ochre in the word
  * elsewhere, black not in it — Othello's two colours and the site's two marks.

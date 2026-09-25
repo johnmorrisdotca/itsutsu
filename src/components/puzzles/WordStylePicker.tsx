@@ -1,11 +1,11 @@
 "use client";
 
-import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/wordDrop/wordStyles";
+import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { useWordStyle } from "./WordStyleContext";
 
 /**
- * THE THREE WAYS A WORDDROP GRID CAN BE DRAWN, side by side under it: Othello,
+ * THE THREE WAYS A GOMOJI GRID CAN BE DRAWN, side by side under it: Othello,
  * Gomoku, Tiles. One press redraws the grid and is kept on the account
  * (`WordStyleProvider`). Every chip is the same width whichever is chosen, so
  * the row never moves.

@@ -1,5 +1,5 @@
 /**
- * THE 5-KANA WORDS FOR WORDDROP. Written by `scripts/word-lists-ja.mjs` from
+ * THE 5-KANA WORDS FOR GOMOJI. Written by `scripts/word-lists-ja.mjs` from
  * JMdict, release 2026-09-25. Never edited by hand; the monthly refresh
  * (.github/workflows/jmdict-refresh.yml) runs the script again.
  *

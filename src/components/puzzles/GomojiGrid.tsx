@@ -1,9 +1,9 @@
 "use client";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import type { LetterMark } from "@/lib/puzzles/wordDrop/code";
-import type { TypingRow } from "@/lib/puzzles/wordDrop/typingRow";
-import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/wordDrop/wordStyles";
+import type { LetterMark } from "@/lib/puzzles/gomoji/code";
+import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
+import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import {
@@ -28,7 +28,7 @@ const MARK_WORDS: Record<CellMark, string> = { hit: "in its place", near: "in th
 const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size", "↑": "wrong mark", "↓↑": "wrong size and mark" };
 
 /**
- * THE WORDDROP GRID: a row for every guess the word allows, on the wood every
+ * THE GOMOJI GRID: a row for every guess the word allows, on the wood every
  * puzzle is drawn on (`PuzzleBoard`). Rows already guessed show their marks;
  * the row being typed shows its letters; the rest are empty.
  *
@@ -47,7 +47,7 @@ const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size
  * is drawn at the number of rows and the grid sits centred across it. Nothing
  * here knows the word: it draws the rows and the marks it is handed.
  */
-export function WordDropGrid({
+export function GomojiGrid({
   size,
   rows,
   guesses,

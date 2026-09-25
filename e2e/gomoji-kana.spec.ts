@@ -2,21 +2,21 @@ import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
-import { decodeKanaGivens, KANA_ROWS } from "../src/lib/puzzles/wordDropKana/kanaCode";
-import { kanaBase, markKanaGuess } from "../src/lib/puzzles/wordDropKana/kanaMarks";
-import { kanaScore } from "../src/lib/puzzles/wordDropKana/kanaScore";
-import { kanaWordsOf } from "../src/lib/puzzles/wordDropKana/kanaWords";
+import { decodeKanaGivens, KANA_ROWS } from "../src/lib/puzzles/gomojiKana/kanaCode";
+import { kanaBase, markKanaGuess } from "../src/lib/puzzles/gomojiKana/kanaMarks";
+import { kanaScore } from "../src/lib/puzzles/gomojiKana/kanaScore";
+import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import { tapKana, thumbKana } from "./kanaTyping";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * WordDrop in kana (docs/plans/other/WORD-04-kana.md): a word of kana found
+ * Gomoji in kana (docs/plans/other/WORD-04-kana.md): a word of kana found
  * in six guesses, coloured by John's rules — green, orange, yellow for the
  * column, grey, and an arrow for the wrong size or mark — after a free first
  * word that is grey everywhere, on easy and medium. Typed on the kana keys, as
  * a phone is used, or in romaji on the desk; JMdict is credited on the page.
  */
-const KIND = "wordDropKana";
+const KIND = "gomojiKana";
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
 
 test.beforeAll(prepareEveryPuzzle);
@@ -24,7 +24,7 @@ test.beforeAll(prepareEveryPuzzle);
 test.describe("the kana word puzzle", () => {
   test("its front door names it and its family", async ({ page }) => {
     await page.goto(AT);
-    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText("WordDrop Kana");
+    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText("Gomoji Kana");
     await expect(page.getByTestId("game-family")).toContainText("Other");
   });
 

@@ -1,5 +1,5 @@
 /**
- * THE ENGLISH WORDS FOR WORDDROP. Written by `scripts/word-lists.mjs` from
+ * THE ENGLISH WORDS FOR GOMOJI. Written by `scripts/word-lists.mjs` from
  * SCOWL 2020.12.07 (http://wordlist.aspell.net/), read 2026-09-25: answers from
  * sizes 10–35 (easy: 10–20), guesses from sizes 10–70, English and American
  * spellings. Never edited by hand; run the script again instead.

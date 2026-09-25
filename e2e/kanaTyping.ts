@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import { isSmall, kanaBase, kanaTone } from "../src/lib/puzzles/wordDropKana/kanaMarks";
+import { isSmall, kanaBase, kanaTone } from "../src/lib/puzzles/gomojiKana/kanaMarks";
 
 /**
  * Types a kana word on the kana keys under the grid, as a phone player does:

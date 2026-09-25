@@ -10,7 +10,7 @@ import { PUZZLE_SLUGS, slugFor } from "@/lib/gomoku/slugs";
 
 import { generatePuzzle, prepareEveryPuzzle } from "./generate";
 
-// The kana WordDrop is made from a list loaded a length at a time: load them all before anything is made.
+// The kana Gomoji is made from a list loaded a length at a time: load them all before anything is made.
 beforeAll(prepareEveryPuzzle);
 import { checkSolution } from "./puzzleCheck";
 import { puzzleRulesPage } from "./puzzleRulesPage";
@@ -79,10 +79,10 @@ describe("every puzzle is finished, not just declared", () => {
         const puzzle = make(size, level, 5);
         const took = performance.now() - started;
         expect(took, `${kind} ${size}×${size} ${level} took ${Math.round(took)} ms to make`).toBeLessThan(3000);
-        // At least the cells; More or Less writes its marks after them, within the kind's cap. A WordDrop's
+        // At least the cells; More or Less writes its marks after them, within the kind's cap. A Gomoji's
         // givens are its one word, whose length is its size: a word has letters, not a square of cells. A kana
-        // WordDrop's are its word and its free grey word.
-        expect(puzzle.givens.length).toBeGreaterThanOrEqual(kind === "wordDrop" || kind === "wordDropKana" ? size : size * size);
+        // Gomoji's are its word and its free grey word.
+        expect(puzzle.givens.length).toBeGreaterThanOrEqual(kind === "gomoji" || kind === "gomojiKana" ? size : size * size);
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
         expect(checkSolution(kind, size, puzzle.givens, puzzle.solution), `${kind} ${size} ${level}`).toEqual({ ok: true });
         expect(make(size, level, 5), "the same seed must make the same puzzle").toEqual(puzzle);

@@ -32,8 +32,8 @@ export const PUZZLE_KINDS = {
   sumCages: "sumCages",
   towers: "towers",
   blackAndWhite: "blackAndWhite",
-  wordDrop: "wordDrop",
-  wordDropKana: "wordDropKana",
+  gomoji: "gomoji",
+  gomojiKana: "gomojiKana",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -46,8 +46,8 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.towers,
   PUZZLE_KINDS.hiddenStones,
   PUZZLE_KINDS.blackAndWhite,
-  PUZZLE_KINDS.wordDrop,
-  PUZZLE_KINDS.wordDropKana,
+  PUZZLE_KINDS.gomoji,
+  PUZZLE_KINDS.gomojiKana,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -110,9 +110,9 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // Even sides only: a line holds as many black stones as white.
   blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
   // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
-  wordDrop: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
+  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
   /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
-  wordDropKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false },
+  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false },
 };
 
 /**
@@ -179,11 +179,11 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     10: { label: "Long", kanji: "長" },
     12: { label: "Longest", kanji: "最長" },
   },
-  wordDrop: {
+  gomoji: {
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
   },
-  wordDropKana: {
+  gomojiKana: {
     3: { label: "Three kana", kanji: "三文字" },
     4: { label: "Four kana", kanji: "四文字" },
     5: { label: "Five kana", kanji: "五文字" },
@@ -329,9 +329,9 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board: "8×8 is the usual size. 6×6 is quick; 12×12 is an evening.",
   },
-  wordDrop: {
-    label: "WordDrop",
-    kanji: "ワードドロップ",
+  gomoji: {
+    label: "Gomoji",
+    kanji: "五文字",
     tagline: "Find the hidden word. Each guess shows which of its letters are in the word, and which are in the right place.",
     inspiredBy: "Wordle",
     origin:
@@ -346,13 +346,13 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board:
       "Five letters and six guesses, or four letters and five. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
   },
-  wordDropKana: {
-    label: "WordDrop Kana",
-    kanji: "ワードドロップかな",
+  gomojiKana: {
+    label: "Gomoji Kana",
+    kanji: "五文字かな",
     tagline: "Find the hidden word in kana. Each guess shows which kana are right, which are in the word, and which column the right one is in.",
     inspiredBy: "Wordle",
     origin:
-      "WordDrop in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
+      "Gomoji in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
     rules: [
       "A word is hidden, three, four or five kana long, in hiragana. You have six guesses, and every guess must be a real word.",
       "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Grey is none of those.",

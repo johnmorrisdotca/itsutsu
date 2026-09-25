@@ -52,7 +52,7 @@ export type ResumedRun = { progress: string; elapsedMs: number; checksUsed: numb
 export type Keeping = {
   progress: string;
   resumed: ResumedRun | null;
-  /** Every grid it has been, as a step log (`stepLog.ts`), worked out only when the run is kept: none for a WordDrop, whose grid is its history. */
+  /** Every grid it has been, as a step log (`stepLog.ts`), worked out only when the run is kept: none for a Gomoji, whose grid is its history. */
   steps?: () => string;
 };
 
@@ -64,7 +64,7 @@ export function useSolve(
   keeping: Keeping = { progress: "", resumed: null },
   /** Whether Hint was chosen for this puzzle; never in a race. */
   hints = false,
-  /** A puzzle typed in letters (WordDrop), where P is a letter: only Space pauses it. */
+  /** A puzzle typed in letters (Gomoji), where P is a letter: only Space pauses it. */
   typesLetters = false,
 ) {
   const router = useRouter();
@@ -312,7 +312,7 @@ export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; el
             onClick={pausing.toggle}
             disabled={!pausing.canPause}
             aria-pressed={pausing.paused}
-            aria-keyshortcuts={puzzle.kind === "wordDrop" ? "Space" : "P"}
+            aria-keyshortcuts={puzzle.kind === "gomoji" ? "Space" : "P"}
             data-testid="puzzle-pause"
           >
             {pausing.paused ? "Resume" : "Pause"}

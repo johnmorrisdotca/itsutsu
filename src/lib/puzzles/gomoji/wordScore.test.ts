@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { isWord, rowsFor } from "./code";
 import { WORD_SCORE, wordScore } from "./wordScore";
 
-describe("what a WordDrop word scores", () => {
+describe("what a Gomoji word scores", () => {
   it("is 0 only when no letter was ever found", () => {
     // BUMPY and FJOLD share no letter with CRANE; GIRLS shares its R.
     expect(wordScore("crane", ["bumpy", "fjord".replace("r", "l")], 0).total).toBe(0);

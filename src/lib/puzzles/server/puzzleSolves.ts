@@ -112,7 +112,7 @@ export async function ownSolveCount(memberId: string, kind: PuzzleKind): Promise
   return prisma.puzzleSolve.count({ where: { memberId, kind, solved: true } });
 }
 
-/** A WordDrop word a member has played to its end, found or not, with the guesses where they were kept. */
+/** A Gomoji word a member has played to its end, found or not, with the guesses where they were kept. */
 export type OwnWord = {
   id: string;
   size: number;
@@ -128,11 +128,11 @@ export type OwnWord = {
 export const OWN_WORDS_SHOWN = 50;
 
 /**
- * A member's WordDrop words, newest first, the found and the not found alike —
+ * A member's Gomoji words, newest first, the found and the not found alike —
  * the history John asked for: "the history of guesses/words that the user has
  * ever played? with score?" One indexed query, and how many there are in all.
  */
-export async function ownWordsOf(memberId: string, kind: "wordDrop" | "wordDropKana" = "wordDrop"): Promise<{ words: OwnWord[]; total: number }> {
+export async function ownWordsOf(memberId: string, kind: "gomoji" | "gomojiKana" = "gomoji"): Promise<{ words: OwnWord[]; total: number }> {
   const [words, total] = await Promise.all([
     prisma.puzzleSolve.findMany({
       where: { memberId, kind },
