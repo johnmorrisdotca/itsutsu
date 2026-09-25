@@ -79,6 +79,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
+| `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
 
 ### On the site (kinds A and B)
