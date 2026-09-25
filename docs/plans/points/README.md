@@ -57,11 +57,12 @@ who plays a few words a day.
    `SITE_POINTS_WEIGHT` in `puzzles.constants.ts`. Each is chosen so that one
    medium solve at the puzzle's default size is worth about 100 site points.
    The puzzle's own board keeps its own points, unchanged.
-2. **Games: win 100, draw 50, loss 20, times the game's weight.** The weight
-   is 1.0 for Gomoku on 15×15, from 0.1 for tic-tac-toe to 2.0 for Go on
-   19×19 (the table is in PTS-02), so no game is worth farming over another.
-   The loss pays only for a game played to its end (not resigned before the
-   tenth move, not abandoned). Rated or not, it counts.
+2. **Games: a maximum per game, and each result a share of it** (John: "a
+   table of maximum weights per game… and then we work back what someone
+   scores"). The maximum is 100 for Gomoku on 15×15, from 10 for tic-tac-toe
+   to 200 for Go on 19×19. A win pays 100% of it, a draw 50% each, a loss
+   played out 20% (more for a close score), and time, resigning and head starts
+   have shares of their own. Both tables are in PTS-02.
 3. **Programs are players**, as they are for XP (AGENTS.md). The site board
    offers People / Computers / Everyone, as `/xp` does, with People as the
    default, so a program that plays all night does not bury everyone.
