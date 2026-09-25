@@ -37,9 +37,19 @@ export async function GET(
     const session = await currentSession();
     const me = await currentMemberId();
     if (me === null) {
-      const join = new URL("/join", request.url);
-      join.searchParams.set("next", seatPath(puzzle, id, token));
-      return NextResponse.redirect(join, 303);
+      /*
+       * SIGNED IN WITH NO ACCOUNT IS NOT SIGNED OUT. /join sends every session
+       * straight back where it was going, so sending one there from here made a
+       * loop the browser gave up on (ERR_TOO_MANY_REDIRECTS, found 2026-09-25).
+       * Only a reader with no session is sent to join; one with a session and no
+       * member goes to the race, which says the seat needs an account.
+       */
+      if (session === null) {
+        const join = new URL("/join", request.url);
+        join.searchParams.set("next", seatPath(puzzle, id, token));
+        return NextResponse.redirect(join, 303);
+      }
+      return NextResponse.redirect(new URL(matchPath(puzzle, id), request.url), 303);
     }
     const sat = await claimGuestSeat(id, token, me, session?.name ?? "");
     if (sat === "none") return new NextResponse(null, { status: 404 });

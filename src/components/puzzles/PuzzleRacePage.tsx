@@ -114,6 +114,11 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
         </div>
       ) : null}
 
+      {seat === null && !reader.hasAccount ? (
+        <p className="text-sm text-muted" data-testid="race-needs-account">
+          A race is between two members, and this sign-in has no member account, so the seat was not taken.
+        </p>
+      ) : null}
       {seat === null ? (
         <p className="text-sm text-muted" data-testid="race-not-yours">
           This race is between the two people above. Start one of your own from{" "}

@@ -34,9 +34,10 @@ vi.mock("@/lib/history/gameHistory", () => ({
   fetchGameDetail: async (id: string) => ({ id, variant: "freestyle" }),
 }));
 const currentMemberId = vi.fn<() => Promise<string | null>>(async () => "alice");
+const currentSession = vi.fn<() => Promise<{ name: string } | null>>(async () => ({ name: "Alice" }));
 vi.mock("@/lib/auth/currentSession", () => ({
   currentMemberId: () => currentMemberId(),
-  currentSession: async () => ({ name: "Alice" }),
+  currentSession: () => currentSession(),
 }));
 vi.mock("@/lib/history/liveGame", () => ({ seatForToken: async () => "black" }));
 vi.mock("@/lib/history/seats", () => ({
@@ -61,6 +62,8 @@ beforeEach(() => {
   markSeatTaken.mockClear();
   currentMemberId.mockClear();
   currentMemberId.mockResolvedValue("alice");
+  currentSession.mockClear();
+  currentSession.mockResolvedValue({ name: "Alice" });
 });
 
 describe("GET /games/[slug]/match/[id]/seat/[token]", () => {
@@ -130,5 +133,30 @@ describe("GET /games/[slug]/match/[id]/seat/[token]", () => {
 
     expect(response.status).toBe(303);
     expect(overActiveLimit).not.toHaveBeenCalled();
+  });
+
+  describe("a puzzle race's seat", () => {
+    /** The guest's link to a race at Sudoku. */
+    function claimRace() {
+      return GET(new Request("http://localhost/games/number-place/match/race-1/seat/seat-token"), {
+        params: Promise.resolve({ slug: "number-place", id: "race-1", token: "seat-token" }),
+      });
+    }
+
+    it("sends a reader with no session to join, and back to the link after", async () => {
+      currentMemberId.mockResolvedValueOnce(null);
+      currentSession.mockResolvedValueOnce(null);
+      const location = new URL((await claimRace()).headers.get("location")!);
+      expect(location.pathname).toBe("/join");
+      expect(location.searchParams.get("next")).toBe("/games/number-place/match/race-1/seat/seat-token");
+    });
+
+    it("sends a session with no member to the race, never to join, which would send it straight back", async () => {
+      // The loop found 2026-09-25: /join returns every session to where it was going.
+      currentMemberId.mockResolvedValueOnce(null);
+      const response = await claimRace();
+      expect(response.status).toBe(303);
+      expect(new URL(response.headers.get("location")!).pathname).toBe("/games/number-place/match/race-1");
+    });
   });
 });
