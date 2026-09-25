@@ -15,6 +15,7 @@ import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.consta
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzleFastest } from "./PuzzleFastest";
+import { PuzzlePoints } from "./PuzzlePoints";
 import { sizeWord } from "./puzzles.constants";
 
 /**
@@ -120,6 +121,10 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
 
         <aside className="flex w-full flex-col gap-4 lg:w-72">
           {/* Request time, in a component of its own holding a `connection()`, like the game ladder. */}
+          {/* The leaderboard first, where a reader looks first (John: "so prominent and easy to read"), and the fastest times under it. */}
+          <Suspense fallback={null}>
+            <PuzzlePoints kind={kind} title={page.title} />
+          </Suspense>
           <Suspense fallback={null}>
             <PuzzleFastest kind={kind} title={page.title} />
           </Suspense>

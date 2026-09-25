@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
+import { pointsFor } from "../puzzlePoints";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 
@@ -33,8 +34,10 @@ export type KeptSolve = {
 
 export async function keepSolve(solve: KeptSolve): Promise<void> {
   try {
+    // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
+    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed);
     await prisma.puzzleSolve.create({
-      data: { ...solve, raceId: solve.raceId ?? null },
+      data: { ...solve, raceId: solve.raceId ?? null, points },
     });
   } catch (problem) {
     /* The solve has already been checked and paid; a row that could not be

@@ -1229,9 +1229,12 @@ model PuzzleSolve {
   pausedMs      Int?
   /// How many times Hint was pressed; null where not recorded (a solve kept before Hint existed).
   hintsUsed     Int?
+  /// The leaderboard's score for this solve (`pointsFor`): five a cell filled, less fifty a Check or Hint, never below 0.
+  points        Int      @default(0)
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])
+  @@index([kind, memberId, givens])
 }
 
 /// A puzzle somebody started on their own and has not finished: kept when

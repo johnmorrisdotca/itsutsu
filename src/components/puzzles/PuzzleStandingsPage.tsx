@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -10,10 +11,11 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { fastestSolvesOf, memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
 
 import { FastestTable } from "./PuzzleFastest";
+import { PuzzlePoints } from "./PuzzlePoints";
 
 /**
- * /games/<slug>/standings for a puzzle: the fastest solves at every size
- * and level, the whole board. Members only, as every ladder is — the gate
+ * /games/<slug>/standings for a puzzle: the whole leaderboard, all time and
+ * this month (`PuzzlePoints`), then the fastest solves at every size and level. Members only, as every ladder is — the gate
  * leaves `/standings` shut — so nobody's name is printed to a stranger.
  */
 export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
@@ -31,10 +33,10 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
             <Link href={gamePath(kind)} className="underline-offset-2 hover:underline">
               {copy.label}
             </Link>{" "}
-            / Fastest
+            / Standings
           </>
         }
-        lead="The fastest solves of it here, at every size and level. A solve on your own is timed by your browser; a race by the site."
+        lead="Everybody's points at it, all time and this month, then the fastest solves at every size and level. A solve on your own is timed by your browser; a race by the site."
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={rulesPath(kind)} className="text-muted underline-offset-2 hover:underline">rules</Link>
@@ -42,6 +44,9 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
           <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">solve one</Link>
         </p>
       </PageTitle>
+      <Suspense fallback={null}>
+        <PuzzlePoints kind={kind} title={copy.label} whole />
+      </Suspense>
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-standings">
         <FastestTable kind={kind} board={board} names={names} whole />
       </section>
