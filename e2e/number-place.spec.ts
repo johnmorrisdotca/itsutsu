@@ -109,6 +109,32 @@ test.describe("the first puzzle", () => {
     await expect(page.getByTestId("puzzle-set-up")).toHaveAttribute("href", `${AT}/new`);
   });
 
+  /*
+   * John, 2026-09-24: "allow the user to click through the 1, 2, 3, 4, 5, X, 1,
+   * 2, 3.... so they can just keep tapping". The first tap chooses the cell and
+   * writes nothing; every tap after it steps the cell on, and past the largest
+   * number it empties. A given does not step.
+   */
+  test("tapping the chosen cell again steps it through the numbers and back to empty", async ({ page }) => {
+    const givens = decodeCells(generateNumberPlace(SIZE, LEVEL, SEED).givens, SIZE)!;
+    await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${SEED}`);
+    await ready(page, "puzzle-play");
+    const cells = page.getByTestId("puzzle-cell");
+    const empty = cells.nth(givens.findIndex((given) => given === 0));
+
+    await empty.click();
+    await expect(empty).toHaveAttribute("data-value", "");
+    for (const value of ["1", "2", "3", "4", "", "1"]) {
+      await empty.click();
+      await expect(empty).toHaveAttribute("data-value", value);
+    }
+
+    const given = givens.findIndex((cell) => cell !== 0);
+    await cells.nth(given).click();
+    await cells.nth(given).click();
+    await expect(cells.nth(given)).toHaveAttribute("data-value", String(givens[given]));
+  });
+
   test("the route refuses a grid that is not a solution, and pays nothing for it", async ({ request }) => {
     const puzzle = generateNumberPlace(SIZE, LEVEL, SEED);
     const wrong = puzzle.solution.slice(1) + puzzle.solution[0];

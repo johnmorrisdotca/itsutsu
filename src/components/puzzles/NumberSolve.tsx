@@ -7,6 +7,7 @@ import { decodeJigsaw } from "@/lib/puzzles/jigsaw/code";
 import { decodeMoreOrLess, type Mark } from "@/lib/puzzles/moreOrLess/code";
 import { decodeCells, encodeCells } from "@/lib/puzzles/puzzleCode";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
+import { stepEntry } from "@/lib/puzzles/stepEntry";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
@@ -16,8 +17,9 @@ import { SolveDone, SolveHeader, type SolveRace, useSolve } from "./solveShared"
 /**
  * Solving a grid of numbers — Number Place, and More or Less after it.
  *
- * Tap a cell, then a number key (or type it); Backspace clears, the arrows
- * move. Check compares against the answer this tab holds and says how many
+ * Tap a cell, then a number key (or type it) — or tap the chosen cell again
+ * to step it on, 1, 2, 3 … and back to empty (`stepEntry`); Backspace clears,
+ * the arrows move. Check compares against the answer this tab holds and says how many
  * cells are wrong, never which. When the last cell is right the puzzle is
  * done and the whole grid — the givens where they were printed, the entries
  * everywhere else — is handed in through `useSolve`.
@@ -61,6 +63,12 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
     [selected, done, givens, entries, solution, begin, finish],
   );
 
+  /* A tap on the chosen cell steps it on; a tap anywhere else chooses that cell. A given never steps. */
+  const tap = (index: number) => {
+    if (index === selected && givens[index] === 0) enter(stepEntry(entries[index] ?? 0, size));
+    else setSelected(index);
+  };
+
   /* The keyboard: digits fill, Backspace clears, arrows move. Only while a cell is chosen. */
   useEffect(() => {
     if (selected === null || done !== null) return;
@@ -102,7 +110,7 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
         regions={asked.regions}
         selected={selected}
         done={done !== null}
-        onSelect={setSelected}
+        onSelect={tap}
       />
       {done === null ? (
         <>
@@ -125,7 +133,7 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
                 {checkedWords(checked)}
               </span>
             ) : (
-              <span className="text-sm text-muted">Tap a cell, then a number. The clock starts on your first entry.</span>
+              <span className="text-sm text-muted">Tap a cell, then a number, or tap it again to count up. The clock starts on your first entry.</span>
             )}
           </div>
         </>
