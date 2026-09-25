@@ -4,13 +4,14 @@ import { decodeJigsaw } from "./jigsaw/code";
 import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
-import { decodeGuesses, decodeHidden, isWord, rowsFor } from "./gomoji/code";
-import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./gomojiKana/kanaCode";
+import { decodeGuesses, decodeHidden, isWord } from "./gomoji/code";
+import { baseGuesses, guessesFor } from "./gomoji/layout";
+import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
-import type { PuzzleCheck, PuzzleKind } from "./puzzles.types";
+import type { PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
  * Whether an answer solves a puzzle: the one check the server also runs.
@@ -26,7 +27,8 @@ import type { PuzzleCheck, PuzzleKind } from "./puzzles.types";
  * solver on purpose — the solver is what MADE the puzzle, and a check that
  * reads the solver's mind proves only that the solver agrees with itself.
  */
-export function checkSolution(kind: PuzzleKind, size: number, givens: string, answer: string): PuzzleCheck {
+/** `level` decides how many guesses a Gomoji gives (`layout.ts`); a grid of any other kind does not need it. */
+export function checkSolution(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
   switch (kind) {
     case "numberPlace":
@@ -46,9 +48,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "blackAndWhite":
       return checkBlackAndWhite(size, givens, answer);
     case "gomoji":
-      return checkGomoji(size, givens, answer, "found");
+      return checkGomoji(size, givens, answer, "found", level);
     case "gomojiKana":
-      return checkGomojiKana(size, givens, answer, "found");
+      return checkGomojiKana(size, givens, answer, "found", level);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -224,10 +226,10 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  * guess is spent. Checked like a solve, so a member's games lose a run only
  * for a loss that really happened — every row a word, none of them the word.
  */
-export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string): PuzzleCheck {
+export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
   if (kind !== "gomoji" && kind !== "gomojiKana") return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
-  return kind === "gomoji" ? checkGomoji(size, givens, answer, "spent") : checkGomojiKana(size, givens, answer, "spent");
+  return kind === "gomoji" ? checkGomoji(size, givens, answer, "spent", level) : checkGomojiKana(size, givens, answer, "spent", level);
 }
 
 /**
@@ -237,12 +239,15 @@ export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string
  * or all six are spent and none was. The free grey word is the puzzle's, not
  * a guess, and is not in the answer.
  */
-function checkGomojiKana(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
+function checkGomojiKana(size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
   const puzzle = decodeKanaGivens(givens, size);
   const guesses = decodeKanaGuesses(answer, size);
   if (puzzle === null) return { ok: false, reason: "the givens are not a hidden kana word" };
   if (guesses === null) return { ok: false, reason: "the answer is not whole guesses in hiragana" };
-  if (guesses.length > KANA_ROWS) return { ok: false, reason: "more guesses than the rows allow" };
+  // How many guesses the level gave: refused, never guessed at, without one.
+  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  const rows = guessesFor("gomojiKana", size, level, puzzle.grey === null ? 0 : 1);
+  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
   let allowed: ReadonlySet<string>;
   try {
     allowed = kanaWordsOf(size).allowed;
@@ -258,7 +263,8 @@ function checkGomojiKana(size: number, givens: string, answer: string, ending: "
     return { ok: true };
   }
   if (firstFound !== -1) return { ok: false, reason: "the word was found" };
-  if (guesses.length !== KANA_ROWS) return { ok: false, reason: "there are guesses left" };
+  // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
+  if (guesses.length !== rows && guesses.length !== baseGuesses("gomojiKana", size)) return { ok: false, reason: "there are guesses left" };
   return { ok: true };
 }
 
@@ -268,12 +274,14 @@ function checkGomojiKana(size: number, givens: string, answer: string, ending: "
  * ("found"), or every row is spent and none was ("spent"). Marking the
  * letters is the browser's; the server asks only what decides the result.
  */
-function checkGomoji(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
+function checkGomoji(size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
   const hidden = decodeHidden(givens, size);
   const guesses = decodeGuesses(answer, size);
   if (hidden === null) return { ok: false, reason: "the givens are not a hidden word" };
   if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
-  if (guesses.length > rowsFor(size)) return { ok: false, reason: "more guesses than the rows allow" };
+  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  const rows = guessesFor("gomoji", size, level, 0);
+  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
   const unknown = guesses.find((guess) => !isWord(guess, size));
   if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
   const firstFound = guesses.indexOf(hidden);
@@ -282,7 +290,8 @@ function checkGomoji(size: number, givens: string, answer: string, ending: "foun
     return { ok: true };
   }
   if (firstFound !== -1) return { ok: false, reason: "the word was found" };
-  if (guesses.length !== rowsFor(size)) return { ok: false, reason: "there are guesses left" };
+  // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
+  if (guesses.length !== rows && guesses.length !== baseGuesses("gomoji", size)) return { ok: false, reason: "there are guesses left" };
   return { ok: true };
 }
 

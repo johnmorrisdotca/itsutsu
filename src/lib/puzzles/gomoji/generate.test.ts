@@ -6,6 +6,7 @@ import { decodeGomojiProgress, progressFits } from "../puzzleProgress";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, encodeHidden, isWord, markGuess, rowsFor } from "./code";
 import { generateGomoji } from "./generate";
+import { foundBonus } from "./wordScore";
 
 /**
  * Gomoji: a word drawn from the level's list by the seed, coloured the
@@ -57,7 +58,7 @@ describe("colouring a guess", () => {
   });
 });
 
-describe("hard, where every letter found must be used again", () => {
+describe("Strict, where every letter found must be used again", () => {
   it("keeps a green letter in its place and a gold letter in the guess", () => {
     expect(breaksHardRule(["crane"], "cream", "clock")).toMatch(/second letter must be R/);
     expect(breaksHardRule(["crane"], "cream", "crust")).toMatch(/must use A/);
@@ -69,27 +70,38 @@ describe("what the server checks", () => {
   const givens = "CRANE";
 
   it("accepts the word found on the last guess, and nothing else", () => {
-    expect(checkSolution("gomoji", 5, givens, "slatecrane")).toEqual({ ok: true });
-    expect(checkSolution("gomoji", 5, givens, "crane")).toEqual({ ok: true });
-    expect(checkSolution("gomoji", 5, givens, "slate").ok).toBe(false);
-    expect(checkSolution("gomoji", 5, givens, "craneslate").ok).toBe(false);
-    expect(checkSolution("gomoji", 5, givens, "zzzzzcrane").ok).toBe(false);
-    expect(checkSolution("gomoji", 5, givens, "CRANE").ok).toBe(false);
-    expect(checkSolution("gomoji", 5, givens, "slateslateslateslateslateslatecrane").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "slatecrane", "hard")).toEqual({ ok: true });
+    expect(checkSolution("gomoji", 5, givens, "crane", "hard")).toEqual({ ok: true });
+    expect(checkSolution("gomoji", 5, givens, "slate", "hard").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "craneslate", "hard").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "zzzzzcrane", "hard").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, "CRANE", "hard").ok).toBe(false);
+    // Hard gives six guesses, so a seventh is refused; easy gives the board's nine, so it is not.
+    expect(checkSolution("gomoji", 5, givens, `${"slate".repeat(6)}crane`, "hard").ok).toBe(false);
+    expect(checkSolution("gomoji", 5, givens, `${"slate".repeat(6)}crane`, "easy")).toEqual({ ok: true });
+    expect(checkSolution("gomoji", 5, givens, `${"slate".repeat(9)}crane`, "easy").ok).toBe(false);
+    // With no level there is nothing to count the guesses by.
+    expect(checkSolution("gomoji", 5, givens, "crane").ok).toBe(false);
   });
 
   it("accepts running out only when every row is a word and none is the word", () => {
     const six = "slate".repeat(6);
-    expect(checkOutOfGuesses("gomoji", 5, givens, six)).toEqual({ ok: true });
-    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(5)).ok).toBe(false);
-    expect(checkOutOfGuesses("gomoji", 5, givens, `${"slate".repeat(5)}crane`).ok).toBe(false);
-    expect(checkOutOfGuesses("numberPlace", 9, givens, six).ok).toBe(false);
+    expect(checkOutOfGuesses("gomoji", 5, givens, six, "hard")).toEqual({ ok: true });
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(5), "hard").ok).toBe(false);
+    expect(checkOutOfGuesses("gomoji", 5, givens, `${"slate".repeat(5)}crane`, "hard").ok).toBe(false);
+    expect(checkOutOfGuesses("numberPlace", 9, givens, six, "hard").ok).toBe(false);
+    // Easy runs out at the board's nine; six is also taken, from a page opened before easy had nine.
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(9), "easy")).toEqual({ ok: true });
+    expect(checkOutOfGuesses("gomoji", 5, givens, six, "easy")).toEqual({ ok: true });
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(8), "easy").ok).toBe(false);
   });
 
   it("scores from the guesses handed in, a word lost for what it found (see wordScore.test.ts)", () => {
     const crane = encodeHidden("crane");
     // Found at once, inside a minute: every letter placed on the first row, the word, five rows left, the speed.
-    expect(wordPoints(5, crane, "crane", 10_000)).toBe(5 * 10 * 6 + 250 + 25 * 5 + 50);
+    expect(wordPoints(5, crane, "crane", 10_000)).toBe(5 * 10 * 6 + foundBonus(5, 6) + 25 * 5 + 50);
+    // Easy's nine rows weigh every guess more, and the word itself.
+    expect(wordPoints(5, crane, "crane", 10_000, "easy")).toBe(5 * 10 * 9 + foundBonus(5, 9) + 25 * 8 + 50);
     // Lost: SLATE's A and E are placed on every row from the first, and nothing else is found.
     expect(wordPoints(5, crane, "slate".repeat(6), 10_000)).toBe(2 * 10 * 6);
     // Nothing a scorer can read scores nothing.
@@ -100,7 +112,8 @@ describe("what the server checks", () => {
     expect(decodeGomojiProgress("slatecrane", 5)).toEqual(["slate", "crane"]);
     expect(progressFits("gomoji", 5, "")).toBe(true);
     expect(progressFits("gomoji", 5, "slat")).toBe(false);
-    expect(progressFits("gomoji", 5, "slate".repeat(7))).toBe(false);
+    expect(progressFits("gomoji", 5, "slate".repeat(9))).toBe(true);
+    expect(progressFits("gomoji", 5, "slate".repeat(10))).toBe(false);
     expect(decodeGuesses("SLATE", 5)).toBeNull();
     expect(rowsFor(4)).toBe(5);
   });

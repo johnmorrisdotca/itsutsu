@@ -3,7 +3,8 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
+import { breaksHardRule, isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
+import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { wordScore } from "../src/lib/puzzles/gomoji/wordScore";
 import { freshPuzzleSeed, ready } from "./support";
 
@@ -73,7 +74,8 @@ test.describe("the word puzzle", () => {
       const puzzle = generatePuzzle(KIND, 5, LEVEL, seed);
       await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
       await ready(page, "puzzle-play");
-      await expect(page.getByTestId("word-tile")).toHaveCount(30);
+      // Easy gives every row of the 9×9 board (`layout.ts`).
+      await expect(page.getByTestId("word-tile")).toHaveCount(5 * guessesFor(KIND, 5, LEVEL, 0));
 
       // A word the list does not know is refused, and no row is spent on it.
       await page.keyboard.type("qqqqq");
@@ -214,10 +216,80 @@ test.describe("the word puzzle", () => {
     await expect(page.locator('[data-testid="word-tile"][data-row="1"]').first()).toHaveAttribute("data-focus", "true");
   });
 
+  test("easy has every row of the board, medium one more guess than hard, and play starts below the top", async ({ page }) => {
+    for (const [level, guesses] of [["easy", 9], ["medium", 7], ["hard", 6]] as const) {
+      expect(guessesFor(KIND, 5, level, 0)).toBe(guesses);
+      await page.goto(`${AT}/play?size=5&level=${level}&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+      await expect(page.getByTestId("word-said")).toContainText(`${guesses} guesses left`);
+      await expect(page.getByTestId("word-tile")).toHaveCount(5 * guesses);
+    }
+  });
+
+  test("Strict, chosen at any level, refuses a guess that drops a letter already found", async ({ page }) => {
+    const words = ["slate", "irony", "chump", "gawky", "fjord", "blitz", "crane", "mound", "house", "plant"].filter((word) => isWord(word, 5));
+    // A seed whose word one of these finds a letter of and another then drops.
+    const pairFor = (seed: number): [string, string] | null => {
+      const answer = generatePuzzle(KIND, 5, "easy", seed).solution;
+      const first = words.find((word) => word !== answer && markGuess(word, answer).some((mark) => mark !== "miss"));
+      const second = first === undefined ? undefined : words.find((word) => word !== answer && breaksHardRule([first], answer, word) !== null);
+      return first === undefined || second === undefined ? null : [first, second];
+    };
+    const seeds = Array.from({ length: 50 }, () => freshPuzzleSeed());
+    const seed = seeds.find((each) => pairFor(each) !== null);
+    expect(seed).toBeDefined();
+    const [first, second] = pairFor(seed!)!;
+    await page.goto(`${AT}/play?size=5&level=easy&seed=${seed}&strict=1`);
+    await ready(page, "puzzle-play");
+    await page.keyboard.type(first);
+    await page.keyboard.press("Enter");
+    await page.keyboard.type(second);
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("word-said")).toContainText("Strict:");
+    await expect(page.locator('[data-testid="word-tile"][data-row="1"]').first()).toHaveAttribute("data-mark", "typed");
+
+    // Without Strict, the same guess is played.
+    await page.goto(`${AT}/play?size=5&level=easy&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await page.keyboard.type(first);
+    await page.keyboard.press("Enter");
+    await page.keyboard.type(second);
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-testid="word-tile"][data-row="1"]').first()).not.toHaveAttribute("data-mark", /^(typed|empty)$/);
+  });
+
+  test("Strict is chosen on the set-up screen, travels to the puzzle, and is kept with a run left half way", async ({ page }) => {
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    const solve = page.getByTestId("puzzle-solve");
+    await expect(page.getByTestId("puzzle-strict-off")).toHaveAttribute("aria-checked", "true");
+    await expect(solve).not.toHaveAttribute("href", /strict=/);
+    await page.getByTestId("puzzle-strict-on").click();
+    await expect(solve).toHaveAttribute("href", /strict=1/);
+    await solve.click();
+    await ready(page, "puzzle-play");
+    await expect(page).toHaveURL(/strict=1/);
+    const seed = new URL(page.url()).searchParams.get("seed");
+    const answer = generatePuzzle(KIND, 5, "medium", Number(seed)).solution;
+    const guess = misses(answer, 1)[0]!;
+    await page.keyboard.type(guess);
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).not.toHaveAttribute("data-mark", /^(typed|empty)$/);
+
+    // Left by the site's own navigation, and opened again from My games: still Strict.
+    await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
+    await ready(page, "tabs");
+    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+    const row = page.locator(`[data-testid="puzzle-going"][data-kind="${KIND}"][data-seed="${seed}"]`);
+    await expect(row).toContainText("strict");
+    await expect(row.getByTestId("puzzle-going-continue")).toHaveAttribute("href", /strict=1/);
+  });
+
   test("running out of guesses ends it and shows the word", async ({ page }) => {
+    // Hard, which keeps the published count: a guess more than the word has letters.
     const seed = freshPuzzleSeed();
-    const puzzle = generatePuzzle(KIND, 4, LEVEL, seed);
-    await page.goto(`${AT}/play?size=4&level=${LEVEL}&seed=${seed}`);
+    const puzzle = generatePuzzle(KIND, 4, "hard", seed);
+    await page.goto(`${AT}/play?size=4&level=hard&seed=${seed}`);
     await ready(page, "puzzle-play");
     const wrong = ["tree", "cake", "moon", "fish", "bird", "lamp", "rope"].filter((word) => word !== puzzle.solution && isWord(word, 4)).slice(0, 5);
     expect(wrong).toHaveLength(5);
@@ -228,7 +300,7 @@ test.describe("the word puzzle", () => {
     await expect(page.getByTestId("word-out")).toBeVisible();
     await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution);
     // A word not found still scores the letters it found, and says where it is kept.
-    const scored = wordScore(puzzle.solution, wrong, 0).total;
+    const scored = wordScore(puzzle.solution, wrong, guessesFor(KIND, 4, "hard", 0), 0).total;
     await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(scored));
     await expect(page.getByTestId("word-kept")).toContainText("My games");
     // Paid for playing it out, or not paid because this member has already had today's six (the award's daily

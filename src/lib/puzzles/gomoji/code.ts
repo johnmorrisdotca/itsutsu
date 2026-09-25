@@ -1,3 +1,4 @@
+import { baseGuesses } from "./layout";
 import { EN_WORDS } from "./words.en.data";
 
 /**
@@ -14,9 +15,9 @@ import { EN_WORDS } from "./words.en.data";
  *   letters, so where one ends is never in doubt.
  */
 
-/** How many guesses a word of this length allows: one more than its letters, six for five, five for four. */
+/** The published game's guesses for a word of this length, which hard keeps: one more than its letters. Every level's count is `guessesFor` (`layout.ts`). */
 export function rowsFor(size: number): number {
-  return size + 1;
+  return baseGuesses("gomoji", size);
 }
 
 /** What a guessed letter says about the hidden word. */

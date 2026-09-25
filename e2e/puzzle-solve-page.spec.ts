@@ -48,10 +48,10 @@ test("a solve on the Puzzles tab opens its own finished grid, its time and its p
 
 test("a word not found opens from Your words with its guesses on the grid", async ({ page }) => {
   const seed = freshPuzzleSeed();
-  const puzzle = generatePuzzle("gomoji", 4, "easy", seed);
+  const puzzle = generatePuzzle("gomoji", 4, "hard", seed);
   const wrong = ["tree", "cake", "moon", "fish", "bird", "lamp", "rope"].filter((word) => word !== puzzle.solution && isWord(word, 4)).slice(0, 5);
   const ended = await page.request.post("/api/puzzles/solved", {
-    data: { kind: "gomoji", size: 4, level: "easy", seed, givens: puzzle.givens, answer: wrong.join(""), elapsedMs: 30_000, outOfGuesses: true },
+    data: { kind: "gomoji", size: 4, level: "hard", seed, givens: puzzle.givens, answer: wrong.join(""), elapsedMs: 30_000, outOfGuesses: true },
   });
   expect(ended.ok()).toBe(true);
 

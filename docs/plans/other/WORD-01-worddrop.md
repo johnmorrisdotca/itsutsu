@@ -17,7 +17,10 @@ the set-up screen for now to ship sooner. Name: John's, "WordDrop".
   word's length, 4 and 5; a word allows one more guess than it has letters.
 - **Levels**: easy draws from SCOWL's commonest words (sizes 10–20), medium from
   the wider list (10–35), hard adds the published game's hard rule (every letter
-  found must be used again).
+  found must be used again). *Since 2026-09-25 the level is the count of
+  guesses instead — hard the published count, medium one more, easy every row
+  of an 8×8 or 9×9 board — and the hard rule is Strict, a choice at any level
+  (`src/lib/puzzles/gomoji/layout.ts`).*
 - **Words** (`src/lib/puzzles/wordDrop/words.en.data.ts`), written by
   `scripts/word-lists.mjs` from SCOWL 2020.12.07 (Kevin Atkinson, permissive
   notice carried in the file). Answers leave out plurals and past tenses whose

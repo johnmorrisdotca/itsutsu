@@ -40,6 +40,11 @@ export type PuzzleSpec = {
    * say, and a Hint that marked wrong letters would do the same.
    */
   helps?: false;
+  /**
+   * Whether Strict is offered: every letter found must be played again, a
+   * green in its place. A Gomoji's, at any level; absent is no.
+   */
+  strict?: true;
 };
 
 /**

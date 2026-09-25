@@ -54,6 +54,8 @@ export type Keeping = {
   resumed: ResumedRun | null;
   /** Every grid it has been, as a step log (`stepLog.ts`), worked out only when the run is kept: none for a Gomoji, whose grid is its history. */
   steps?: () => string;
+  /** Whether Gomoji's Strict was chosen, kept so Continue opens it Strict; none for any other puzzle. */
+  strict?: boolean;
 };
 
 export function useSolve(
@@ -133,6 +135,7 @@ export function useSolve(
       hintsUsed: hinting.used,
       progress: keeping.progress,
       ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
+      ...(keeping.strict === undefined ? {} : { strict: keeping.strict }),
       elapsedMs,
     };
   });
@@ -385,6 +388,7 @@ export function SolveDone({
   hasAccount,
   race = null,
   checks = null,
+  strict = false,
 }: {
   puzzle: Puzzle;
   done: Done;
@@ -392,11 +396,13 @@ export function SolveDone({
   race?: SolveRace | null;
   /** The allowance this one was solved under, which Another keeps. */
   checks?: number | null;
+  /** Gomoji's Strict, which Another keeps too. */
+  strict?: boolean;
 }) {
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks })}`);
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks, strict })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">

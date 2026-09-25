@@ -10,7 +10,7 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
-import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
@@ -54,6 +54,8 @@ export function PuzzleSetUp({
   const [checks, setChecks] = useState<number | null>(null);
   // Hint, off unless chosen: see `useHints`. Not carried into a race, which allows none.
   const [hints, setHints] = useState(false);
+  // Gomoji's Strict, off unless chosen, at any level; like Hint, not carried into a race.
+  const [strict, setStrict] = useState(false);
   const [racing, setRacing] = useState<"" | "making" | string>("");
 
   /*
@@ -123,8 +125,36 @@ export function PuzzleSetUp({
           ))}
         </div>
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
-          {PUZZLE_LEVEL_DISPLAY[level].blurb}
+          {levelBlurb(kind, level)}
         </p>
+        {/*
+          STRICT, a choice at every level. John, 2026-09-25: "have an option
+          strict mode for Hard where you have to play the Green items on the same
+          location like you have now. right now there are no real options for the
+          game." It was hard itself until then; now hard is the count of guesses.
+        */}
+        {spec.strict === true ? (
+          <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Strict">
+            {[false, true].map((each) => (
+              <button
+                key={String(each)}
+                type="button"
+                role="radio"
+                aria-checked={strict === each}
+                className={`${PICK_WORD_CHIP} ${strict === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                onClick={() => setStrict(each)}
+                data-testid={`puzzle-strict-${each ? "on" : "off"}`}
+              >
+                {each ? "Strict" : "Free"} <span className="font-mincho opacity-70">{each ? "厳" : "自"}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {spec.strict === true ? (
+          <p className="min-h-8 text-xs text-muted" data-testid="puzzle-strict-blurb">
+            {strict ? "Every letter found must be played again, a green one in its place." : "Any word may be guessed, whatever the last ones found."}
+          </p>
+        ) : null}
         {/* A puzzle that answers every move as it is made offers neither Check nor Hint (`PuzzleSpec.helps`). */}
         {spec.helps === false ? null : (
           <>
@@ -187,7 +217,7 @@ export function PuzzleSetUp({
       */}
       <div className="flex flex-col justify-center gap-3" data-testid="puzzle-play-buttons">
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

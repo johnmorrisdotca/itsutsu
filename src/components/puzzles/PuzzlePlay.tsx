@@ -44,6 +44,7 @@ export function PuzzlePlay({
   race = null,
   checks = null,
   hints = false,
+  strict = false,
   resumed = null,
 }: {
   kind: PuzzleKind;
@@ -54,6 +55,8 @@ export function PuzzlePlay({
   checks?: number | null;
   /** Whether Hint was chosen for this puzzle, from the address. */
   hints?: boolean;
+  /** Whether Gomoji's Strict was chosen: every letter found must be played again, a green in its place. */
+  strict?: boolean;
   /** The run the member kept of this grid, opened where it was left. */
   resumed?: ResumedRun | null;
   /** Whether a solve can be paid: an account, not merely a session. */
@@ -68,8 +71,8 @@ export function PuzzlePlay({
      that would draw a different one. */
   useEffect(() => {
     if (seed !== null) return;
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints })}`);
-  }, [seed, kind, size, level, checks, hints, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict })}`);
+  }, [seed, kind, size, level, checks, hints, strict, router]);
 
   /* A kind whose words load by length (the kana Gomoji) waits for its list; every other kind is ready at once. */
   const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" ? null : `${kind}:${size}`);
@@ -108,7 +111,7 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}`;
   const seat = race ?? null;
   switch (kind) {
     case "hiddenStones":
@@ -116,9 +119,9 @@ export function PuzzlePlay({
     case "blackAndWhite":
       return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "gomoji":
-      return <GomojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     case "gomojiKana":
-      return <GomojiKanaSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

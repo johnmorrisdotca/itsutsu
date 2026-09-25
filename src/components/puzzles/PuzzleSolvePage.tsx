@@ -79,7 +79,7 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
       />
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"}>
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={false}>
-          <FinishedPuzzle kind={kind} size={solve.size} givens={solve.givens} answer={solve.answer} />
+          <FinishedPuzzle kind={kind} size={solve.size} level={solve.level as PuzzleLevel} givens={solve.givens} answer={solve.answer} />
         </WordStyleProvider>
         {solve.answer === null ? (
           <p className="text-sm text-muted" data-testid="solve-not-kept">

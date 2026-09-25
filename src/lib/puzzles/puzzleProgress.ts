@@ -1,6 +1,7 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
-import { decodeGuesses, rowsFor } from "./gomoji/code";
-import { decodeKanaGuesses, KANA_ROWS } from "./gomojiKana/kanaCode";
+import { decodeGuesses } from "./gomoji/code";
+import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
+import { MOST_GUESSES } from "./gomoji/layout";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -56,7 +57,8 @@ export function encodeGomojiProgress(guesses: readonly string[]): string {
 
 export function decodeGomojiProgress(code: string, size: number): string[] | null {
   const guesses = decodeGuesses(code, size);
-  return guesses !== null && guesses.length <= rowsFor(size) ? guesses : null;
+  // Any level's count: the kept run's level decides the rest when it is opened (`layout.ts`).
+  return guesses !== null && guesses.length <= MOST_GUESSES ? guesses : null;
 }
 
 /** Whether a progress code is one a puzzle of this kind and size could have written. */
@@ -68,7 +70,7 @@ export function encodeKanaProgress(guesses: readonly string[]): string {
 export function decodeKanaProgress(code: string, size: number): string[] | null {
   if (code === "") return [];
   const guesses = decodeKanaGuesses(code, size);
-  return guesses !== null && guesses.length <= KANA_ROWS ? guesses : null;
+  return guesses !== null && guesses.length <= MOST_GUESSES ? guesses : null;
 }
 
 export function progressFits(kind: PuzzleKind, size: number, code: string): boolean {

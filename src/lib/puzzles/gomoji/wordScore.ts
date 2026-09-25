@@ -1,4 +1,4 @@
-import { markGuess, rowsFor } from "./code";
+import { markGuess } from "./code";
 
 /**
  * WHAT A GOMOJI WORD SCORES, won or lost. John, 2026-09-25: "lost words
@@ -15,22 +15,25 @@ import { markGuess, rowsFor } from "./code";
  *    put it there.
  *  - ELSEWHERE: a letter of the word found but never placed, 4 × the weight of
  *    the guess that first showed it.
- *  - FOUND: the word itself, 250, and 25 for every row left unused.
+ *  - FOUND: the word itself, 10 for every place of every guess the board
+ *    gives (`foundBonus`: 300 for five letters and six guesses, 450 for nine),
+ *    and 25 for every guess left unused.
  *  - SPEED: a word found inside a minute, 50, one fewer for every six seconds
  *    after that, nothing after six minutes. The browser's clock, as every solo
  *    time here is; a lost word earns none, or giving up fast would pay.
  *
  * So a word with no letter ever found scores 0 and nothing else does, and any
- * word found is worth more than any word lost. A lost word never had every
- * letter in place in one guess, so at best all but one went in on the first
- * row and the last on the second — 290 for five letters — while a word found
- * on its last row is 300 (`wordScore.test.ts` holds both). Everything but the time is read from the
+ * word found is worth more than any word lost, however many guesses the level
+ * gives (`layout.ts`). A lost word never had every letter in place in one
+ * guess, so at best all but one went in on the first row and the last on the
+ * second: 10 × (letters × guesses − 1). A word found on its last row has every
+ * place (10 × letters) and the bonus (10 × letters × guesses), which is more
+ * (`wordScore.test.ts` holds it at every size and level). Everything but the time is read from the
  * guesses, which the server has checked, so the server works it out itself.
  */
 export const WORD_SCORE = {
   placed: 10,
   elsewhere: 4,
-  found: 250,
   rowLeft: 25,
   speedMost: 50,
   speedFreeMs: 60_000,
@@ -39,9 +42,14 @@ export const WORD_SCORE = {
 
 export type WordScore = { placed: number; elsewhere: number; found: number; speed: number; total: number };
 
-export function wordScore(hidden: string, guesses: readonly string[], elapsedMs: number): WordScore {
+/** Finding the word: 10 for every place of every guess the board gives, so it grows with the board. */
+export function foundBonus(size: number, rows: number): number {
+  return WORD_SCORE.placed * size * rows;
+}
+
+/** `rows` is how many guesses the puzzle gives (`guessesFor`), which sets every weight. */
+export function wordScore(hidden: string, guesses: readonly string[], rows: number, elapsedMs: number): WordScore {
   const size = hidden.length;
-  const rows = rowsFor(size);
   const weight = (row: number) => rows - row;
   const marks = guesses.map((guess) => markGuess(guess, hidden));
 
@@ -66,7 +74,7 @@ export function wordScore(hidden: string, guesses: readonly string[], elapsedMs:
   }
 
   const foundRow = guesses.indexOf(hidden);
-  const found = foundRow === -1 ? 0 : WORD_SCORE.found + WORD_SCORE.rowLeft * (rows - 1 - foundRow);
+  const found = foundRow === -1 ? 0 : foundBonus(size, rows) + WORD_SCORE.rowLeft * (rows - 1 - foundRow);
   const late = Math.max(0, elapsedMs - WORD_SCORE.speedFreeMs);
   const speed = foundRow === -1 ? 0 : Math.max(0, WORD_SCORE.speedMost - Math.floor(late / WORD_SCORE.speedStepMs));
   return { placed, elsewhere, found, speed, total: placed + elsewhere + found + speed };

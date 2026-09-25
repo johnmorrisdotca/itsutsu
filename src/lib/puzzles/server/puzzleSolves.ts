@@ -40,7 +40,7 @@ export async function keepSolve(solve: KeptSolve): Promise<void> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
     const { answer, solved = true, ...kept } = solve;
-    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs);
+    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
     await prisma.puzzleSolve.create({
       data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null },
     });

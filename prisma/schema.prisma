@@ -1270,6 +1270,9 @@ model PuzzleRun {
   checksUsed    Int      @default(0)
   /// Whether Hint was chosen for it, so it opens again with hints on.
   hintsAllowed  Boolean  @default(false)
+  /// Whether Gomoji's Strict was chosen for it, so it opens again Strict. Runs
+  /// kept before the choice existed were Strict exactly when they were hard.
+  strict        Boolean  @default(false)
   /// How many times Hint has been pressed on it so far.
   hintsUsed     Int      @default(0)
   /// What has been written so far, one character a cell, in the kind's own code for an entry.

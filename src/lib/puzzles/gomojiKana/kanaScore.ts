@@ -1,4 +1,4 @@
-import { WORD_SCORE, type WordScore } from "../gomoji/wordScore";
+import { WORD_SCORE, foundBonus, type WordScore } from "../gomoji/wordScore";
 import { kanaBase, markKanaGuess } from "./kanaMarks";
 
 /**
@@ -10,13 +10,14 @@ import { kanaBase, markKanaGuess } from "./kanaMarks";
  *    or green with an arrow — 4 × the weight of the guess that first showed it.
  *  - COLUMN: a place never found either way whose column a yellow once named,
  *    1 × that guess's weight: it says which column, not which kana.
- *  - FOUND and SPEED: as English — the word 250 and 25 a row left, and up to
- *    50 for a word found inside a minute.
+ *  - FOUND and SPEED: as English — the word 10 a place for every guess the
+ *    board gives (`foundBonus`) and 25 a guess left, and up to 50 for a word
+ *    found inside a minute.
  *
- * A lost word never had every place plain green in one guess, so at best all
- * but one went in on the first row and the last on the second — 290 at five
- * kana, 170 at three — while a word found on its last row is 300 and 280
- * (`kanaScore.test.ts`). Only a word with no kana and no column found scores 0.
+ * A lost word never had every place plain green in one guess, so it comes to
+ * at most 10 × (kana × guesses − 1), and a word found on its last row to more
+ * than that (`kanaScore.test.ts`, at every size and count of guesses). Only a
+ * word with no kana and no column found scores 0.
  */
 export const KANA_COLUMN = 1;
 
@@ -61,7 +62,7 @@ export function kanaScore(word: string, guesses: readonly string[], rows: number
   });
 
   const foundRow = guesses.indexOf(word);
-  const found = foundRow === -1 ? 0 : WORD_SCORE.found + WORD_SCORE.rowLeft * (rows - 1 - foundRow);
+  const found = foundRow === -1 ? 0 : foundBonus(target.length, rows) + WORD_SCORE.rowLeft * (rows - 1 - foundRow);
   const late = Math.max(0, elapsedMs - WORD_SCORE.speedFreeMs);
   const speed = foundRow === -1 ? 0 : Math.max(0, WORD_SCORE.speedMost - Math.floor(late / WORD_SCORE.speedStepMs));
   return { placed, elsewhere, column, found, speed, total: placed + elsewhere + column + found + speed };

@@ -182,7 +182,7 @@ test.describe("the kana word puzzle", () => {
     const puzzle = generatePuzzle(KIND, 3, "hard", seed);
     await page.goto(`${AT}/play?size=3&level=hard&seed=${seed}`);
     await ready(page, "puzzle-play");
-    // Six real words none of which is the word; on hard, none may drop a kana an earlier one found, so they find nothing.
+    // Six real words none of which is the word and none placing a kana, so no Strict could refuse one.
     const wrong = kanaWordsOf(3).easy.filter((word) => markKanaGuess([...word], [...puzzle.solution]).every((mark) => mark.mark === "miss" || mark.mark === "kin")).slice(0, KANA_ROWS);
     for (const word of wrong) {
       await tapKana(page, word);

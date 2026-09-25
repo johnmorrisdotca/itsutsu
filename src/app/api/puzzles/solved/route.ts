@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     await preparePuzzle(kind, size);
 
     if (parsed.data.outOfGuesses === true) {
-      const ended = checkOutOfGuesses(kind, size, givens, answer);
+      const ended = checkOutOfGuesses(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
       if (!ended.ok) return unprocessable(`Not over: ${ended.reason}.`);
       const level = parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number];
       /* Kept, not solved: it scores the letters it found (`wordScore`) on the
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const verdict = checkSolution(kind, size, givens, answer);
+    const verdict = checkSolution(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
 
     const now = new Date();

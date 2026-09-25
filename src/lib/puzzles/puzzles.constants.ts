@@ -110,9 +110,9 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // Even sides only: a line holds as many black stones as white.
   blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
   // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
-  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
+  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true },
   /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
-  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false },
+  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false, strict: true },
 };
 
 /**
@@ -189,6 +189,26 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     5: { label: "Five kana", kanji: "五文字" },
   },
 };
+
+/**
+ * WHAT A LEVEL MEANS, where it means something else than how much has to be
+ * tried: a Gomoji's level is how many guesses it gives (`layout.ts`) and how
+ * common its word is. Every other puzzle reads `PUZZLE_LEVEL_DISPLAY`.
+ */
+const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
+  easy: "One of the commonest words, and every row of the board to find it in.",
+  medium: "A wider list of words, and one guess more than the classic game.",
+  hard: "A wider list of words, and the classic count of guesses.",
+};
+export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Record<PuzzleLevel, string>>> = {
+  gomoji: WORD_LEVEL_BLURBS,
+  gomojiKana: WORD_LEVEL_BLURBS,
+};
+
+/** The line under the level chips on the set-up screen, for this puzzle. */
+export function levelBlurb(kind: PuzzleKind, level: PuzzleLevel): string {
+  return PUZZLE_LEVEL_BLURBS[kind]?.[level] ?? PUZZLE_LEVEL_DISPLAY[level].blurb;
+}
 
 export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   numberPlace: {
@@ -340,11 +360,11 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
-      "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
-      "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
+      "Hard gives the classic count: six guesses for five letters, five for four. Medium gives one more, and easy every row of the board: nine for five letters, eight for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
     ],
     board:
-      "Five letters and six guesses, or four letters and five. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
+      "Five letters on a board nine squares across, or four on eight. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
   },
   gomojiKana: {
     label: "Gomoji Kana",
@@ -354,11 +374,11 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     origin:
       "Gomoji in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
     rules: [
-      "A word is hidden, three, four or five kana long, in hiragana. You have six guesses, and every guess must be a real word.",
+      "A word is hidden, three, four or five kana long, in hiragana. Hard gives six guesses, medium seven, and easy every row the board has left; every guess must be a real word.",
       "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Grey is none of those.",
       "An arrow means right kana, not quite: down for the wrong size (つ for っ), up for the wrong mark (は for ば or ぱ). The word is found only when every place is plain green.",
       "On easy and medium the puzzle opens with a free word already played that is grey everywhere, so its kana are out before you start.",
-      "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a double consonant for っ, nn for ん, - for ー). Hard keeps you honest: every kana found must be used again, a green one in its place.",
+      "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a double consonant for っ, nn for ん, - for ー). Strict, a choice at any level, keeps you honest: every kana found must be used again, a green one in its place.",
     ],
     board:
       "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule — textbook-common words first, then by how often newspapers use them: easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",

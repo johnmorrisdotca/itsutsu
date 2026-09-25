@@ -4,10 +4,12 @@ import { useState } from "react";
 
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { letterKeyMarks, kanaKeyMarks } from "@/lib/puzzles/keyMarks";
-import { decodeHidden, markGuess, rowsFor } from "@/lib/puzzles/gomoji/code";
+import { decodeHidden, markGuess } from "@/lib/puzzles/gomoji/code";
+import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
-import { decodeKanaGivens, KANA_ROWS } from "@/lib/puzzles/gomojiKana/kanaCode";
+import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
@@ -36,12 +38,15 @@ export function WordReplay({
   size,
   givens,
   guesses,
+  level,
   style,
 }: {
   kind: "gomoji" | "gomojiKana";
   size: number;
   givens: string;
   guesses: readonly string[];
+  /** The level it was played at, which decided its guesses (`layout.ts`). */
+  level: PuzzleLevel;
   style: WordStyle;
 }) {
   const last = guesses.length;
@@ -65,7 +70,7 @@ export function WordReplay({
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
       <GomojiGrid
         size={size}
-        rows={kana ? free + KANA_ROWS : rowsFor(size)}
+        rows={free + Math.max(guesses.length, guessesFor(kind, size, level, free))}
         guesses={rows}
         marks={marks}
         arrows={arrows}

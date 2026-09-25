@@ -4,7 +4,7 @@ import { decodeBlackAndWhite } from "@/lib/puzzles/blackAndWhite/code";
 import { decodeRegions, decodeStones } from "@/lib/puzzles/hiddenStones/code";
 import { readNumberGivens } from "@/lib/puzzles/numberGivens";
 import { decodeCells } from "@/lib/puzzles/puzzleCode";
-import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { decodeGuesses } from "@/lib/puzzles/gomoji/code";
 import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 
@@ -27,7 +27,7 @@ const readOnly = true;
  * With no answer — a solve kept before answers were — it draws the puzzle as
  * it was dealt, and the page says so; nothing is guessed at to fill it.
  */
-export function FinishedPuzzle({ kind, size, givens, answer }: { kind: PuzzleKind; size: number; givens: string; answer: string | null }) {
+export function FinishedPuzzle({ kind, size, level, givens, answer }: { kind: PuzzleKind; size: number; level: PuzzleLevel; givens: string; answer: string | null }) {
   const { style } = useWordStyle();
 
   if (kind === "hiddenStones") {
@@ -47,7 +47,7 @@ export function FinishedPuzzle({ kind, size, givens, answer }: { kind: PuzzleKin
   // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).
   if (kind === "gomoji" || kind === "gomojiKana") {
     const guesses = (answer === null ? null : kind === "gomoji" ? decodeGuesses(answer, size) : decodeKanaGuesses(answer, size)) ?? [];
-    return <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} style={style} />;
+    return <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} level={level} style={style} />;
   }
 
   // Every grid of numbers: the printed cells as printed, the rest from the answer.

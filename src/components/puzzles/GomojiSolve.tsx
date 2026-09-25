@@ -7,7 +7,8 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { breaksHardRule, decodeHidden, isWord, markGuess, rowsFor } from "@/lib/puzzles/gomoji/code";
+import { breaksHardRule, decodeHidden, isWord, markGuess } from "@/lib/puzzles/gomoji/code";
+import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { letterKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -30,18 +31,22 @@ import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, u
  * hidden word before the rows run out.
  *
  * Letters come from the keyboard under the grid or the one on the desk; a
- * guess must be a word of the list (`isWord`), and at hard it must use every
- * letter already found (`breaksHardRule`). A guess that is refused costs
+ * guess must be a word of the list (`isWord`), and Strict, where it was
+ * chosen, must use every letter already found (`breaksHardRule`). The level
+ * decides how many guesses there are (`layout.ts`). A guess that is refused costs
  * nothing and says why. The word found is handed in as every guess in order;
  * the rows spent without finding it end the puzzle unsolved (`runOut`), and
  * the word is shown.
  */
 export function GomojiSolve({
   puzzle,
+  strict = false,
   hasAccount,
   race = null,
   resumed = null,
 }: {
+  /** Whether Strict was chosen: every letter found must be played again, a green in its place. */
+  strict?: boolean;
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
@@ -53,7 +58,7 @@ export function GomojiSolve({
   const keys = useWordKeys();
   const { kind, size, level, seed } = puzzle;
   const hidden = useMemo(() => decodeHidden(puzzle.givens, size) ?? "", [puzzle.givens, size]);
-  const rows = rowsFor(size);
+  const rows = guessesFor("gomoji", size, level, 0);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size)) ?? []);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
@@ -64,7 +69,7 @@ export function GomojiSolve({
     hasAccount,
     race,
     null,
-    { progress: encodeGomojiProgress(guesses), resumed },
+    { progress: encodeGomojiProgress(guesses), resumed, strict },
     false,
     true,
   );
@@ -99,9 +104,9 @@ export function GomojiSolve({
       setSaid(`${word.toUpperCase()} is not in the word list.`);
       return;
     }
-    const breaks = level === "hard" ? breaksHardRule(guesses, hidden, word) : null;
+    const breaks = strict ? breaksHardRule(guesses, hidden, word) : null;
     if (breaks !== null) {
-      setSaid(`Hard: ${breaks}.`);
+      setSaid(`Strict: ${breaks}.`);
       return;
     }
     const at = begin();
@@ -111,7 +116,7 @@ export function GomojiSolve({
     setSaid(null);
     if (word === hidden) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, typing, size, level, guesses, hidden, begin, finish, runOut, rows]);
+  }, [closed, typing, size, strict, guesses, hidden, begin, finish, runOut, rows]);
 
   /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
@@ -158,7 +163,7 @@ export function GomojiSolve({
           />
         </SolvePaused>
       ) : (
-        <WordReplay kind={kind === "gomojiKana" ? "gomojiKana" : "gomoji"} size={size} givens={puzzle.givens} guesses={guesses} style={style} />
+        <WordReplay kind={kind === "gomojiKana" ? "gomojiKana" : "gomoji"} size={size} givens={puzzle.givens} guesses={guesses} level={level} style={style} />
       )}
       {done === null ? (
         <>
@@ -178,7 +183,7 @@ export function GomojiSolve({
           <p className="text-base">
             Out of guesses. The word was <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
-          <WordScoreLine score={wordScore(hidden, guesses, done.elapsedMs)} />
+          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} />
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
@@ -190,14 +195,14 @@ export function GomojiSolve({
               with your guesses.
             </p>
           ) : null}
-          <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false })}`} className="text-sm font-semibold underline" data-testid="word-another">
+          <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict })}`} className="text-sm font-semibold underline" data-testid="word-another">
             Another word
           </Link>
         </div>
       ) : (
         <>
-          <WordScoreLine score={wordScore(hidden, guesses, done.elapsedMs)} />
-          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} />
+          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} />
+          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} />
         </>
       )}
     </section>

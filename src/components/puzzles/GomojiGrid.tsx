@@ -2,6 +2,7 @@
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { LetterMark } from "@/lib/puzzles/gomoji/code";
+import { playPlace } from "@/lib/puzzles/gomoji/layout";
 import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
@@ -44,8 +45,9 @@ const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size
  * word it opens with, which is drawn like a guess and said to be a gift.
  *
  * The board is square and the grid is not — six rows of five — so the board
- * is drawn at the number of rows and the grid sits centred across it. Nothing
- * here knows the word: it draws the rows and the marks it is handed.
+ * is at least eight squares, the grid centred across it and a spare row over to
+ * the top (`playPlace`). Nothing here knows the word or the level: it draws the
+ * rows and the marks it is handed.
  */
 export function GomojiGrid({
   size,
@@ -74,10 +76,8 @@ export function GomojiGrid({
   free?: number;
 }) {
   const tiles = style === WORD_STYLES.tiles;
-  // A board of stones is a whole board, the places in play centred on whole squares (`boardSpan`); tiles are paper.
-  const span = tiles ? rows : boardSpan(size, rows);
-  const left = (span - size) / 2;
-  const top = tiles ? 0 : Math.floor((span - rows) / 2);
+  // A board of stones is a whole board, play centred across on whole squares and a spare row over to the top (`playPlace`); tiles are paper.
+  const { span, top, left } = tiles ? { span: rows, top: 0, left: 0 } : playPlace(size, rows);
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={span}>
@@ -173,19 +173,6 @@ function ArrowMark({ arrow }: { arrow: Exclude<CellArrow, ""> }) {
       ))}
     </span>
   );
-}
-
-/**
- * A WHOLE BOARD FOR A WORD: the smallest square at least as tall as the rows
- * and as wide as the word, whose spare columns split evenly either side, so the
- * places in play sit on whole squares. John, 2026-09-25, on a 3-kana board
- * ruled only where the word was: "actually show all the grid lines... the 3
- * in play should be regular dark, and the ones out of play would be lighter."
- * Five letters and six rows is a 7×7 board; four kana and seven rows, 8×8.
- */
-export function boardSpan(size: number, rows: number): number {
-  const span = Math.max(size, rows);
-  return (span - size) % 2 === 0 ? span : span + 1;
 }
 
 /** How faint the lines out of play are beside the ones in play. */

@@ -1,3 +1,4 @@
+import { baseGuesses } from "../gomoji/layout";
 import { kanaBase, markKanaGuess } from "./kanaMarks";
 import type { KanaWords } from "./kanaWords";
 
@@ -10,7 +11,8 @@ import type { KanaWords } from "./kanaWords";
  * HIRAGANA. So the givens can never be handed in as a solve, as English keeps
  * its givens in capitals and its guesses in lower case.
  */
-export const KANA_ROWS = 6;
+/** The guesses hard gives a kana word, the published game's six; every level's count is `guessesFor` (`layout.ts`). */
+export const KANA_ROWS = baseGuesses("gomojiKana", 0);
 const SPLIT = "|";
 
 export function toKatakana(text: string): string {

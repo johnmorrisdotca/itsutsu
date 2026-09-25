@@ -84,7 +84,7 @@ describe("every puzzle is finished, not just declared", () => {
         // Gomoji's are its word and its free grey word.
         expect(puzzle.givens.length).toBeGreaterThanOrEqual(kind === "gomoji" || kind === "gomojiKana" ? size : size * size);
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
-        expect(checkSolution(kind, size, puzzle.givens, puzzle.solution), `${kind} ${size} ${level}`).toEqual({ ok: true });
+        expect(checkSolution(kind, size, puzzle.givens, puzzle.solution, level), `${kind} ${size} ${level}`).toEqual({ ok: true });
         expect(make(size, level, 5), "the same seed must make the same puzzle").toEqual(puzzle);
       }
     }
@@ -96,8 +96,8 @@ describe("every puzzle is finished, not just declared", () => {
     const spec = PUZZLE_SPECS[kind];
     const puzzle = make(spec.sizes[0], spec.levels[0], 9);
     const wrong = puzzle.solution.slice(1) + puzzle.solution[0];
-    expect(checkSolution(kind, spec.sizes[0], puzzle.givens, wrong).ok).toBe(false);
-    expect(checkSolution(kind, spec.sizes[0], puzzle.givens, puzzle.givens).ok).toBe(false);
+    expect(checkSolution(kind, spec.sizes[0], puzzle.givens, wrong, spec.levels[0]).ok).toBe(false);
+    expect(checkSolution(kind, spec.sizes[0], puzzle.givens, puzzle.givens, spec.levels[0]).ok).toBe(false);
   });
 
   it.each(PUZZLE_KIND_LIST)("%s is named by at least one unit test", (kind) => {
