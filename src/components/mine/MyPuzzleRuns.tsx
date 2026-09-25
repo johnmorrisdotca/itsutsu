@@ -5,13 +5,12 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { Paired } from "@/components/i18n/Paired";
 import { sizeWord } from "@/components/puzzles/puzzles.constants";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
-import { currentMemberId } from "@/lib/auth/currentSession";
-import { playPath } from "@/lib/gomoku/slugs";
+import { familyPath, playPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
-import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
+import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 
 import { MY_GAMES_COPY } from "./mine.constants";
 
@@ -24,15 +23,23 @@ import { MY_GAMES_COPY } from "./mine.constants";
  * the puzzle, its size and level, the time so far, and the way back to the
  * very grid, opened where it was left.
  *
- * One indexed read, of at most `RUNS_KEPT` rows. Nothing for a visitor, and
- * nothing when there is nothing going — the games list above already says
- * what to do with an empty page.
+ * The Puzzles tab of /play. The runs are read once by `MyGamesList`, which
+ * also counts them on the tab, and handed in. An empty tab says so and offers
+ * the way to a puzzle, as an empty table does everywhere here.
  */
-export async function MyPuzzleRuns() {
-  const memberId = await currentMemberId();
-  if (memberId === null) return null;
-  const runs = await runsOf(memberId);
-  if (runs.length === 0) return null;
+export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>> }) {
+  if (runs.length === 0) {
+    return (
+      <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzles-going">
+        <p className="text-sm text-muted" data-testid="puzzles-going-empty">
+          {MY_GAMES_COPY.empty.puzzles}{" "}
+          <Link href={familyPath("numberPlace")} className="font-medium text-ink underline underline-offset-4">
+            Play one →
+          </Link>
+        </p>
+      </section>
+    );
+  }
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzles-going">
       <h2 className={SECTION_HEADING}>

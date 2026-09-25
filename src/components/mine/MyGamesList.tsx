@@ -1,27 +1,23 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import type { ReactNode } from "react";
 
-import { PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
+import { Tabs } from "@/components/ui/Tabs";
+import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { catchUpSeats } from "@/lib/bots/catchUpSeats";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
-import {
-  MY_GAME_GROUPS,
-  fetchMyGames,
-  pagedGroup,
-  shownGroup,
-  type MyGame,
-  type MyGameGroup,
-  type ShownGroup,
-} from "@/lib/history/myGames";
+import { MY_GAME_GROUPS, fetchMyGames, pagedGroup, shownGroup, type MyGameGroup } from "@/lib/history/myGames";
+import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, type MyGamesView } from "@/lib/history/myGamesViews";
+import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
+import type { Tab } from "@/lib/ui/tabs";
 import { gamesGoing } from "@/lib/history/gamesGoing";
 import { seatClaims } from "@/lib/history/seatCookie";
-import { playerPath } from "@/lib/rating/playerKey";
 import { BotCatchUp } from "./BotCatchUp";
 import { MY_GAMES_COPY } from "./mine.constants";
-import { Row } from "./MyGameRow";
+import { Group } from "./MyGamesGroup";
+import { MyPuzzleRuns } from "./MyPuzzleRuns";
 import { SEATED_ONLY } from "@/lib/history/myFinished";
 import { SeatedNarrowing } from "./SeatedNarrowing";
 
@@ -118,6 +114,9 @@ export async function MyGamesList({
   showAll = null,
   cursor = null,
   withMember = null,
+  viewAsked,
+  local = null,
+  openSeats = null,
 }: {
   /**
    * One other member, by id: the list becomes the games running between the
@@ -145,6 +144,12 @@ export async function MyGamesList({
    * carrying on rather than by a refusal.
    */
   cursor?: string | null;
+  /** The tab the address asks for (`?view=`), unchecked: `myGamesView` decides. */
+  viewAsked?: string | string[];
+  /** The board kept in this browser (`LocalGameCardClient`), drawn on Pass and play. */
+  local?: ReactNode;
+  /** The seats other members have posted (`OpenSeatsSection`), drawn under Going. */
+  openSeats?: ReactNode;
 } = {}) {
   const claims = seatClaims((await cookies()).getAll());
   // The member, by id — however they came in. Null for a browser holding only seat cookies.
@@ -156,7 +161,8 @@ export async function MyGamesList({
    * returns exactly `seatedLive` and nothing the count counted is dropped.
    */
   const seated = showAll === SEATED_ONLY;
-  if (claims.size === 0 && memberId === null && !seated) return null;
+  // A browser with no account and no seat: the board kept in it, and the open seats, and nothing else.
+  if (claims.size === 0 && memberId === null && !seated) return <>{local}{openSeats}</>;
   const now = new Date();
   const opened = openedGroup(showAll);
   const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
@@ -185,104 +191,142 @@ export async function MyGamesList({
    */
   const stuck = await catchUpSeats(groups, claims, memberId, now);
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
+  // The puzzles left unfinished, kept on the account: one indexed read, for the Puzzles tab and its count.
+  const runs = memberId === null ? [] : await runsOf(memberId);
+
+  /** One group's panel, or nothing for a closed empty group that has nothing to say when empty. */
+  const panel = (group: MyGameGroup, empty: string | null = null) => {
+    const open = group === opened;
+    const bucket = seated
+      ? /*
+         * NARROWED, EVERY ROW IS SHOWN — a branch of its own rather than a
+         * flag folded into `open`, because it is not "open every group".
+         * The set is `seatedLive`, which the games-at-once limit bounds, and
+         * a count elsewhere promised exactly that many rows; a cap here
+         * would show fewer than the number that led the reader in.
+         */
+        shownGroup(groups[group], groups[group].length)
+      : group === "finished"
+        ? /*
+           * A PAGE, so the total comes from the database and not from the
+           * list's own length. See `pagedGroup`: the finished list is five
+           * rows of however many there are, so counting the rows in hand
+           * would print the cap as the total — which is the fault
+           * `shownGroup` was written to make impossible, arriving by the
+           * other door.
+           */
+          pagedGroup(groups.finished, queue.finished.total)
+        : // Opened means no cap at all, which `shownGroup` says as the length itself.
+          shownGroup(groups[group], open ? groups[group].length : SHOWN[group]);
+    /*
+     * AN OPENED GROUP DRAWS EVEN WHEN IT IS EMPTY, which is the site's rule
+     * about empty tables and also the only way off the last page: a reader
+     * who follows "older finished games" past the end must find the panel and
+     * its way back, not a blank page with the heading gone. So does a group
+     * that has something to say when empty — the two columns and each tab.
+     */
+    return bucket.total === 0 && !open && empty === null ? null : (
+      <Group
+        key={group}
+        group={group}
+        bucket={bucket}
+        memberId={memberId}
+        now={now}
+        open={open}
+        empty={empty}
+        /*
+         * The next page, for the one group that has one. Built here rather
+         * than in the panel because the panel is given a bucket and knows
+         * nothing about cursors, and only ever offered while the group is
+         * open: on a closed panel "Show all" is the way in, and two links to
+         * two different pages of the same list would be one too many.
+         */
+        more={open && group === "finished" && queue.finished.next !== null
+          ? `/play?all=finished&cursor=${encodeURIComponent(queue.finished.next)}`
+          : null}
+      />
+    );
+  };
+
   /*
-   * NOTHING AT ALL IS A CLAIM ABOUT THE WHOLE QUEUE, so a page that is empty
-   * because it is past the END of one cannot make it. `opened === null` is what
-   * keeps the two apart: with no group opened this really is every group, and
-   * with one opened an empty answer means "no more of those", which the opened
-   * panel below says for itself. Without this a stale cursor would tell somebody
-   * holding twenty games that nothing is waiting on them.
+   * NARROWED TO ONE PERSON, OR TO THE GAMES THE LIMIT COUNTS: one list of what
+   * was asked for, with no tabs. A count led the reader here, and the page is
+   * that set and nothing beside it.
    */
-  if (shown === 0 && opened === null && !seated) {
-    if (memberId === null) return null;
+  if (seated || withMember !== null) {
     return (
-      <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
-        <h2 className={SECTION_HEADING}>
-          <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
-        </h2>
-        {/*
-          THE ONE PLACE ON THIS PAGE THAT SHOULD OFFER A GAME, and it had a
-          sentence with no way out of it. John raised it: /play is where a member
-          lands, it lists the games they have going, and somebody with none was
-          told what they could do rather than shown the door to it.
-        */}
-        <p className="text-sm text-muted">
-          Nothing waiting on you yet.{" "}
-          <Link href="/games/new" className="font-medium underline underline-offset-4" data-testid="empty-new-game">
-            Set up a game 対局設定
-          </Link>{" "}
-          — pick the game, the board and who it is against, and nothing starts until you say so. Or challenge
-          somebody from the{" "}
-          <Link href="/players" className="underline underline-offset-4">players</Link> page, or take an open
-          seat below.
-        </p>
+      <section className="flex flex-col gap-4" data-testid="my-games">
+        <BotCatchUp games={stuck} />
+        {seated ? <SeatedNarrowing total={shown} /> : null}
+        {MY_GAME_GROUPS.map((group) => panel(group))}
       </section>
     );
   }
 
+  const going = gamesGoing(groups);
+  const counts: Record<MyGamesView, number> = {
+    going,
+    completed: queue.finished.total,
+    "pass-and-play": groups.hotSeat.length,
+    puzzles: runs.length,
+  };
+  const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, count: counts[key] }));
+  const view = myGamesView(tabs, viewAsked, showAll);
+  const goingShown = VIEW_GROUPS.going.reduce((n, group) => n + groups[group].length, 0);
+
   return (
-    <section className="flex flex-col gap-4" data-testid="my-games">
+    <section className="flex flex-col gap-4" data-testid="my-games" data-view={view}>
       {/*
         Draws nothing. It is here rather than on the page because this is where
         the queue is read, and the games it is given come out of that same read.
       */}
       <BotCatchUp games={stuck} />
-      {/* How many are going, in the heading: John, "The My Games should have the count (My Games (10))". The strip reads the same count. */}
-      <h2 className={SECTION_HEADING} data-testid="my-games-heading" data-going={gamesGoing(groups)}>
-        <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />{" "}
-        <span className="font-normal text-muted">({gamesGoing(groups)})</span>
-      </h2>
-      {seated ? <SeatedNarrowing total={shown} /> : null}
-      {MY_GAME_GROUPS.map((group) => {
-        const open = group === opened;
-        const bucket = seated
-          ? /*
-             * NARROWED, EVERY ROW IS SHOWN — a branch of its own rather than a
-             * flag folded into `open`, because it is not "open every group".
-             * The set is `seatedLive`, which the games-at-once limit bounds, and
-             * a count elsewhere promised exactly that many rows; a cap here
-             * would show fewer than the number that led the reader in.
-             */
-            shownGroup(groups[group], groups[group].length)
-          : group === "finished"
-            ? /*
-               * A PAGE, so the total comes from the database and not from the
-               * list's own length. See `pagedGroup`: the finished list is five
-               * rows of however many there are, so counting the rows in hand
-               * would print the cap as the total — which is the fault
-               * `shownGroup` was written to make impossible, arriving by the
-               * other door.
-               */
-              pagedGroup(groups.finished, queue.finished.total)
-            : // Opened means no cap at all, which `shownGroup` says as the length itself.
-              shownGroup(groups[group], open ? groups[group].length : SHOWN[group]);
-        /*
-         * AN OPENED GROUP DRAWS EVEN WHEN IT IS EMPTY, which is the site's rule
-         * about empty tables and also the only way off the last page: a reader
-         * who follows "older finished games" past the end must find the panel and
-         * its way back, not a blank page with the heading gone.
-         */
-        return bucket.total === 0 && !open ? null : (
-          <Group
-            key={group}
-            group={group}
-            bucket={bucket}
-            memberId={memberId}
-            now={now}
-            open={open}
-            /*
-             * The next page, for the one group that has one. Built here rather
-             * than in the panel because the panel is given a bucket and knows
-             * nothing about cursors, and only ever offered while the group is
-             * open: on a closed panel "Show all" is the way in, and two links to
-             * two different pages of the same list would be one too many.
-             */
-            more={open && group === "finished" && queue.finished.next !== null
-              ? `/play?all=finished&cursor=${encodeURIComponent(queue.finished.next)}`
-              : null}
-          />
-        );
-      })}
+      {/* The count of games going is on the Going tab now, and the strip reads the same number. */}
+      <span hidden data-testid="my-games-heading" data-going={going} />
+      <Tabs tabs={tabs} active={view} base="/play" label="Which of your games" />
+
+      {view === "going" ? (
+        goingShown === 0 && opened === null ? (
+          <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
+            {/*
+              THE ONE PLACE ON THIS PAGE THAT SHOULD OFFER A GAME. Somebody with
+              nothing going is shown the door to one, not told about it.
+            */}
+            <p className="text-sm text-muted">
+              Nothing going.{" "}
+              <Link href="/games/new" className="font-medium text-ink underline underline-offset-4" data-testid="empty-new-game">
+                New game →
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <>
+            {panel("offered")}
+            {/*
+              YOUR MOVE ON THE LEFT, THEIR MOVE ON THE RIGHT. John, 2026-09-25:
+              "just do OUR MOVE on LHS, and their Move on RHS. Easier to keep
+              track of… make sure we don't show too much wide data otherwise
+              might mess up mobile. which will probably be top down anyway."
+              One column on a phone, your move first.
+            */}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start" data-testid="my-games-columns">
+              {panel("yourMove", MY_GAMES_COPY.empty.yourMove)}
+              {panel("theirMove", MY_GAMES_COPY.empty.theirMove)}
+            </div>
+            {panel("offerSent")}
+            {panel("unstarted")}
+          </>
+        )
+      ) : null}
+      {view === "going" ? openSeats : null}
+      {view === "completed" ? panel("finished", MY_GAMES_COPY.empty.completed) : null}
+      {view === "pass-and-play" ? (
+        <>
+          {local}
+          {panel("hotSeat", MY_GAMES_COPY.empty.passAndPlay)}
+        </>
+      ) : null}
+      {view === "puzzles" ? <MyPuzzleRuns runs={runs} /> : null}
     </section>
   );
 }
@@ -297,129 +341,4 @@ export async function MyGamesList({
  */
 function openedGroup(asked: string | null): MyGameGroup | null {
   return MY_GAME_GROUPS.find((group) => group === asked) ?? null;
-}
-
-function Group({
-  group,
-  bucket,
-  memberId,
-  now,
-  open,
-  more = null,
-}: {
-  group: MyGameGroup;
-  bucket: ShownGroup<MyGame>;
-  /** Whose "see the rest" this is, when there is a rest and somewhere to send them for it. */
-  memberId: string | null;
-  now: Date;
-  /** Whether the address has asked for this group whole. */
-  open: boolean;
-  /** Where the page after this one is, for the group that pages. Null for the six that do not. */
-  more?: string | null;
-}) {
-  const copy = MY_GAMES_COPY.groups[group];
-  return (
-    <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={`my-games-${group}`}>
-      <h3 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
-        <span className="font-normal tracking-normal" data-testid={`my-games-${group}-count`}>
-          {bucket.hidden > 0 ? MY_GAMES_COPY.shownOf(bucket.total, bucket.items.length) : bucket.total}
-        </span>
-      </h3>
-      <p className="text-xs text-muted">{copy.hint}</p>
-      <ul className="flex flex-col gap-1.5">
-        {bucket.items.map((item) => (
-          <Row key={item.game.id} item={item} now={now} />
-        ))}
-      </ul>
-      {/*
-        NOTHING AT ALL WHEN THERE IS NOTHING TO OFFER, which is the ordinary case
-        and the one worth protecting. A group inside its cap has no rest to show,
-        is not the opened one, and has no record to point at — so this row is not
-        drawn, and the panel is exactly the panel it was before any of this
-        existed. An empty flex row would be a gap under every group on John's
-        daily page, added by a feature that had nothing to say there.
-      */}
-      {bucket.hidden > 0 || open ? (
-      <div className="flex flex-wrap items-center gap-4">
-        {/*
-          THE CAP, OPENED. "14 · showing 5" said fourteen and offered nine
-          nowhere; this is the nine. It is a link and the group is in the
-          address, so an opened group can be linked, reloaded and arrived back
-          at — the same reasoning every filter on this site keeps.
-        */}
-        {bucket.hidden > 0 && !open ? (
-          <Link
-            href={`/play?all=${group}`}
-            className="text-xs font-medium underline underline-offset-4"
-            data-testid={`my-games-${group}-all`}
-          >
-            {MY_GAMES_COPY.showAll(bucket.total)}
-          </Link>
-        ) : null}
-        {/*
-          THE PAGE AFTER THIS ONE, for the finished group only. "Show all" above
-          leads to the FIRST page of an opened group, so drawing both at once
-          would be two links to two different pages of one list — which is why
-          that one is hidden while this group is open.
-
-          Forward only, and the way out is "Show fewer" rather than a page back:
-          a cursor is a position in a list and not an index into one, so there is
-          no previous page to name without keeping a stack of them in the
-          address. Every page here is an address, so the browser's own Back works;
-          and one click returns to the top of the group whatever page you reached.
-        */}
-        {more !== null ? (
-          <Link
-            href={more}
-            className="text-xs font-medium underline underline-offset-4"
-            /*
-              `-older`, NOT `-more`: the record link below this row has been
-              `my-games-finished-more` since it existed, and both of these are on
-              the finished panel at once. Two controls under one test id is a
-              spec that clicks whichever came first in the DOM and a `getByTestId`
-              that fails on a strict-mode violation — found by grepping the real
-              page's HTML for its ids, which is the only place the clash is
-              visible: nothing about writing either line says the other exists.
-            */
-            data-testid={`my-games-${group}-older`}
-          >
-            {MY_GAMES_COPY.showOlder}
-          </Link>
-        ) : null}
-        {/*
-          And the way back, which is the half a one-directional control always
-          forgets. Drawn only when this group is the opened one, so it is not a
-          link that does nothing on every other panel.
-        */}
-        {open ? (
-          <Link
-            href="/play"
-            className="text-xs font-medium underline underline-offset-4"
-            data-testid={`my-games-${group}-fewer`}
-          >
-            {MY_GAMES_COPY.showFewer}
-          </Link>
-        ) : null}
-        {/*
-          Held-back finished games also have somewhere to be seen BESIDE this
-          page: a signed-in member's own page counts every finished game, exactly
-          what this bucket does — and it counts the ones past the window this
-          list drops, which opening the group here cannot show. So it stays, and
-          it is a different promise from the one above rather than a duplicate of
-          it.
-        */}
-        {bucket.hidden > 0 && group === "finished" && memberId !== null ? (
-          <Link
-            href={playerPath("", memberId)}
-            className="text-xs font-medium underline underline-offset-4"
-            data-testid="my-games-finished-more"
-          >
-            {MY_GAMES_COPY.seeRecord}
-          </Link>
-        ) : null}
-      </div>
-      ) : null}
-    </div>
-  );
 }

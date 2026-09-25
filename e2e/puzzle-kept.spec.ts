@@ -35,6 +35,9 @@ test("paused and left by a link, it is in My games, opens where it was left, and
   // Clicked away, by the site's own navigation, as John did.
   await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
   await expect(page).toHaveURL(/\/play$/);
+  // The puzzles have a tab of their own on My games, with its count on it.
+  await ready(page, "tabs");
+  await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
   const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
   await expect(row, "the puzzle left unfinished is not in My games").toBeVisible();
   await expect(row).toContainText("so far");
@@ -54,8 +57,9 @@ test("paused and left by a link, it is in My games, opens where it was left, and
   await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
 
-  await page.goto("/play");
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.goto("/play?view=puzzles");
+  // The tab's own panel first, so the absence below is about a drawn list.
+  await expect(page.getByTestId("puzzles-going")).toBeVisible();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`), "a solved puzzle is still listed as going").toHaveCount(0);
 });
 
@@ -72,5 +76,8 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await page.getByTestId(`puzzle-key-${solution[first]}`).click();
   await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
   await expect(page).toHaveURL(/\/play$/);
+  // The puzzles have a tab of their own on My games, with its count on it.
+  await ready(page, "tabs");
+  await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`)).toBeVisible();
 });

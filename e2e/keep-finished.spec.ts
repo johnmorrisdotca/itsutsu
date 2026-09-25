@@ -144,7 +144,7 @@ test.describe("keeping finished games in your own list", () => {
     }
 
     // Keeping everything: it is in the list.
-    await page.goto("/play");
+    await page.goto("/play?view=completed");
     await expect(page.getByTestId("my-games-finished")).toContainText(shownName(`Cloth${stamp} Tester`));
 
     await page.goto("/me?view=settings");
@@ -158,8 +158,10 @@ test.describe("keeping finished games in your own list", () => {
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // A month old, a week's window: gone from the queue.
-    await page.goto("/play");
-    await expect(page.getByTestId("my-games-finished")).toHaveCount(0);
+    await page.goto("/play?view=completed");
+    // The Completed panel is drawn, even empty, so this is about a rendered list.
+    await expect(page.getByTestId("my-games-finished")).toBeVisible();
+    await expect(page.getByTestId("my-games-finished")).not.toContainText(shownName(`Cloth${stamp} Tester`));
 
     // And still in the record, which keeps everything.
     await page.goto(`/history?search=${encodeURIComponent(stamp)}`);
@@ -232,7 +234,7 @@ test.describe("keeping finished games in your own list", () => {
      * This is the half that makes the rest mean anything — without it, "gone"
      * below could as easily be "never arrived".
      */
-    await page.goto("/play");
+    await page.goto("/play?view=completed");
     await expect(page.getByTestId("my-games-finished")).toBeVisible();
     await expect(row(page, lately)).toBeVisible();
     await expect(row(page, ancient)).toBeVisible();
@@ -249,7 +251,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // A week's window: the game from a month ago is not listed, and the one
     // from a moment ago still is — waited for before anything is called absent.
-    await page.goto("/play");
+    await page.goto("/play?view=completed");
     await expect(page.getByTestId("my-games-finished")).toBeVisible();
     await expect(row(page, lately)).toBeVisible();
     await expect(row(page, ancient)).toHaveCount(0);
@@ -370,7 +372,7 @@ test.describe("keeping finished games in your own list", () => {
     const rows = panel.locator('[data-testid="my-game"]');
 
     // ── The closed panel: five of twenty-three, and it says so. ──────────────
-    await page.goto("/play");
+    await page.goto("/play?view=completed");
     await expect(panel).toBeVisible();
     await expect(rows).toHaveCount(CLOSED);
     await expect(count).toHaveText(`${HOW_MANY} · showing ${CLOSED}`);
@@ -419,7 +421,8 @@ test.describe("keeping finished games in your own list", () => {
 
     // ── The way back, which is the half a one-directional test never finds. ──
     await page.getByTestId("my-games-finished-fewer").click();
-    await expect(page).toHaveURL(/\/play$/);
+    // Back to the Completed tab, where the group lives.
+    await expect(page).toHaveURL(/\/play\?view=completed$/);
     await expect(rows).toHaveCount(CLOSED);
     await expect(count).toHaveText(`${HOW_MANY} · showing ${CLOSED}`);
 

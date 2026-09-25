@@ -5,7 +5,6 @@ import Link from "next/link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
-import { MyPuzzleRuns } from "@/components/mine/MyPuzzleRuns";
 import { OpenSeatsSection } from "@/components/mine/OpenSeatsSection";
 import { readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
 import { PageTitle } from "@/components/layout/Headings";
@@ -63,7 +62,6 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
       <PageTitle
         title="My games"
         kanji="対局"
-        lead="Yours to move first, oldest waiting at the top — the one that has been sitting longest is usually the one somebody is wondering about."
         /*
           John, 2026-09-24: the two links beside this heading were "probably
           noise". All the games went: the header's Games is the same place. The
@@ -119,16 +117,17 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           in a list nobody asked to see, and opens nothing.
         */
         cursor={typeof asked.cursor === "string" ? asked.cursor : null}
+        /*
+          THE TABS: Going, Completed, Pass and play, Puzzles (`myGamesViews.ts`).
+          The board kept in this browser goes on Pass and play; the seats other
+          members have posted, and who is here, under Going — moved from the
+          top of /games on 2026-09-24, when New game became the one place a game
+          is set up and /games the library. See `OpenSeatsSection`.
+        */
+        viewAsked={asked.view}
+        local={<LocalGameCardClient />}
+        openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
       />
-      {/* The puzzles left unfinished, kept on the account: see `MyPuzzleRuns`. */}
-      <MyPuzzleRuns />
-      <LocalGameCardClient />
-      {/*
-        The seats other members have posted, and who is here: moved from the
-        top of /games on 2026-09-24, when New game became the one place a game
-        is set up and /games the library. See `OpenSeatsSection`.
-      */}
-      <OpenSeatsSection filter={readOpenSeatFilter(asked)} />
     </Page>
   );
 }

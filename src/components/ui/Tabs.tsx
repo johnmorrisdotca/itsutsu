@@ -97,6 +97,16 @@ export function Tabs({
                 }`}
               >
                 <TabName shown={say.pairName(tab.label, tab.kanji ?? "")} />
+                {tab.count !== undefined ? (
+                  <span
+                    className={`self-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${
+                      tab.count > 0 ? "bg-ink text-paper" : "bg-rule/70 text-muted"
+                    }`}
+                    data-testid="tab-count"
+                  >
+                    {tab.count}
+                  </span>
+                ) : null}
               </Link>
             </li>
           );

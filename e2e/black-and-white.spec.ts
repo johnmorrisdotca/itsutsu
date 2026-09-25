@@ -69,12 +69,16 @@ test.describe("the black and white puzzle", () => {
     await expect(page.getByTestId("puzzle-paused")).toBeVisible();
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await expect(page).toHaveURL(/\/play$/);
+    // The puzzles have a tab of their own on My games, with its count on it.
+    await ready(page, "tabs");
+    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
 
     const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
     await expect(row).toBeVisible();
     await row.getByTestId("puzzle-going-continue").click();
     await ready(page, "puzzle-play");
-    await page.getByTestId("puzzle-resume").click();
+    // Continue is the resume: the puzzle opens running, with no cover to press through.
+    await expect(page.getByTestId("puzzle-pausable")).toHaveAttribute("data-paused", "false");
     await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-stone", "white");
     // The printed stones are where they were printed, whatever was kept.
     const printedAt = givens.findIndex((given) => given !== EMPTY);

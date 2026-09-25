@@ -326,6 +326,9 @@ test.describe("declining an offer", () => {
      * A declined offer is in no record at all. The offers panel above is
      * rendered before this absence is asked about.
      */
+    // Completed is its own tab: drawn first, so the absence is about a rendered list.
+    await mine.goto("/play?view=completed");
+    await expect(mine.getByTestId("my-games-finished")).toBeVisible();
     await expect(mine.getByTestId("my-games-finished").locator(`[data-id="${id}"]`)).toHaveCount(0);
     await mine.close();
   });

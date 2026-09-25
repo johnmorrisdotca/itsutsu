@@ -22,6 +22,12 @@ export type Tab = {
   label: string;
   /** The Japanese name, where the section has one. Shown small beside the label. */
   kanji?: string;
+  /**
+   * How many things are behind the tab, drawn as a badge, where that is worth
+   * knowing before opening it: My games' Going, Completed, Pass and play and
+   * Puzzles (John, 2026-09-25: "the counts are too subtle").
+   */
+  count?: number;
 };
 
 /**

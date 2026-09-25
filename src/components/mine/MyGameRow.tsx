@@ -110,21 +110,42 @@ export function Row({ item, now }: { item: MyGame; now: Date }) {
         Resign button. At a desk the row is one line either way.
       */}
       <span className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
-        <span className="truncate font-medium">
-          <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} />
-          <span className="px-1 text-muted">vs</span>
-          <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} />
-        </span>
+        {/*
+          A PASS-AND-PLAY GAME LEADS WITH THE GAME, not "Player 1 vs Player 2":
+          both seats are whoever is at this screen (John, 2026-09-25: "It's
+          also weird saying Player 1 vs Player 2… then why is it even there").
+        */}
+        {named ? (
+          <span className="truncate font-medium">
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} />
+            <span className="px-1 text-muted">vs</span>
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} />
+          </span>
+        ) : (
+          <span className="truncate font-medium">
+            <GameName variant={game.variant} raised />
+          </span>
+        )}
         <span className="text-xs text-muted">
-          <GameName variant={game.variant} raised /> · {boardWords(game.variant, game.size)} · {game.moveCount} moves ·{" "}
+          {named ? (
+            <>
+              <GameName variant={game.variant} raised /> ·{" "}
+            </>
+          ) : null}
+          {boardWords(game.variant, game.size)} · {game.moveCount} moves ·{" "}
           {/*
             "you WOULD be white" on an offer, because you are not in it yet.
             The colour is the fact a reader most wants before answering — a
             rematch swaps them — and stating it as though the seat were
             already theirs would be the one thing an offer must not say.
           */}
-          {offer === "offered" && offerSide === "to-me" ? "you would be " : "you are "}
-          {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} · {ago(item.since, now)}
+          {named ? (
+            <>
+              {offer === "offered" && offerSide === "to-me" ? "you would be " : "you are "}
+              {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} ·{" "}
+            </>
+          ) : null}
+          {ago(item.since, now)}
         </span>
         {/*
           WHAT AN OFFER IS DOING, in a sentence, on the row. A declined offer is

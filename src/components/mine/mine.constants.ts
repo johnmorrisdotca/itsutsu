@@ -4,6 +4,21 @@ import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 
 export const MY_GAMES_COPY = {
   title: { label: "Your games", kanji: "対局中" },
+  /** The tabs of /play (`myGamesViews.ts`). */
+  views: {
+    going: { label: "Going", kanji: "対局中" },
+    completed: { label: "Completed", kanji: "終局" },
+    "pass-and-play": { label: "Pass and play", kanji: "対面" },
+    puzzles: { label: "Puzzles", kanji: "解きかけ" },
+  },
+  /** What an empty column or tab says, with the way in beside it where there is one. */
+  empty: {
+    yourMove: "Nothing waiting on you.",
+    theirMove: "Nothing waiting on them.",
+    completed: "Nothing finished yet.",
+    passAndPlay: "No games on this screen. Try the board on any game's page starts one.",
+    puzzles: "No puzzles going.",
+  },
   groups: {
     /*
      * 申込 — a proposal, an application. The word the elder Japanese games
@@ -16,15 +31,20 @@ export const MY_GAMES_COPY = {
       hint: "Somebody has asked you for a game. Accept it or decline — declining costs you nothing.",
     },
     yourMove: { label: "Your move", kanji: "手番", hint: "Waiting on you." },
-    theirMove: { label: "Their move", kanji: "相手番", hint: "Waiting on the other side. You will be told when it is yours." },
+    theirMove: { label: "Their move", kanji: "相手番", hint: "Waiting on them." },
     offerSent: {
       label: "Your offers",
       kanji: "申込済",
       hint: "Games you have asked somebody for. Nothing starts until they accept, and you can withdraw one at any time.",
     },
     unstarted: { label: "Not started", kanji: "未着手", hint: "Boards with no stones yet. Hand out the other seat, post it for anyone, or play first." },
-    hotSeat: { label: "At this screen", kanji: "対面", hint: "Two people at one board, in this browser. Kept, never rated." },
-    finished: { label: "Lately finished", kanji: "終局", hint: "Filed in the record." },
+    /*
+     * John, 2026-09-25: "what's At this screen? Weird words again". Two people
+     * taking turns on one device is what the rest of the world calls pass and
+     * play, and it has a tab of its own now, away from the account's games.
+     */
+    hotSeat: { label: "Pass and play", kanji: "対面", hint: "Two people taking turns on this screen. Never rated." },
+    finished: { label: "Completed", kanji: "終局", hint: "Filed in the record." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   /**
    * WHAT AN OFFER'S ROW SAYS ABOUT ITSELF.
@@ -114,7 +134,8 @@ export const MY_GAMES_COPY = {
    * to it: "14 · showing 5", not a total that quietly meant "5 of however
    * many there really are".
    */
-  shownOf: (total: number, shown: number) => `${total} · showing ${shown}`,
+  /** After a group's count, when the panel shows fewer rows than it counts: "48 · showing 5". */
+  showing: (shown: number) => `· showing ${shown}`,
   /**
    * What opens the rest of a capped group, in place.
    *

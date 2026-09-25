@@ -24,7 +24,8 @@ import { MY_GAMES_COPY } from "./mine.constants";
  * already checks .tsx files with.
  */
 
-const LIST = readFileSync(join(process.cwd(), "src/components/mine/MyGamesList.tsx"), "utf8");
+// The queue and its panels, read as one: the panel moved to its own file when /play became tabs.
+const LIST = ["MyGamesList.tsx", "MyGamesGroup.tsx"].map((file) => readFileSync(join(process.cwd(), "src/components/mine", file), "utf8")).join("\n");
 const PAGE = readFileSync(join(process.cwd(), "src/app/play/page.tsx"), "utf8");
 
 describe("opening a capped group", () => {
@@ -51,7 +52,7 @@ describe("opening a capped group", () => {
 
   it("says the total in the link, matching the number the heading just claimed", () => {
     expect(MY_GAMES_COPY.showAll(14)).toContain("14");
-    expect(MY_GAMES_COPY.shownOf(14, 5)).toContain("14");
+    expect(MY_GAMES_COPY.showing(5)).toContain("5");
     expect(MY_GAMES_COPY.showFewer.trim()).not.toBe("");
   });
 
@@ -96,7 +97,8 @@ describe("opening a capped group", () => {
   it("offers a way back, on the opened group alone", () => {
     expect(LIST).toMatch(/\{open \? \(/);
     expect(LIST).toMatch(/-fewer`\}/);
-    expect(LIST).toMatch(/href="\/play"/);
+    // Back to the tab the group lives in, not to the top of /play.
+    expect(LIST).toMatch(/href=\{viewHref\(viewOfGroup\(group\)\)\}/);
   });
 
   /*
