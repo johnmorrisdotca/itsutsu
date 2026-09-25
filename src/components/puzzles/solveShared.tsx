@@ -287,12 +287,24 @@ export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; el
         <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
         <span className="ml-2 text-xs">№ {puzzle.seed}</span>
       </p>
+      {/*
+        THE CLOCK ON THE LEFT, PAUSE ON THE RIGHT, and Pause always there. John,
+        2026-09-25: "Pause button and clock should swap, since button has fixed
+        size, and time doesn't." The button is one width for both words and is
+        drawn from the start, switched off until the clock runs, so nothing
+        beside it moves when the first entry starts the clock. Not in a race,
+        whose clock nothing here can stop.
+      */}
       <div className="flex items-center gap-2">
-        {pausing?.canPause ? (
+        <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
+          {clockText(elapsedMs)}
+        </p>
+        {pausing !== undefined && !pausing.racing ? (
           <button
             type="button"
-            className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} px-3 py-1 text-sm`}
+            className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} w-24 px-3 py-1 text-sm`}
             onClick={pausing.toggle}
+            disabled={!pausing.canPause}
             aria-pressed={pausing.paused}
             aria-keyshortcuts={puzzle.kind === "wordDrop" ? "Space" : "P"}
             data-testid="puzzle-pause"
@@ -300,9 +312,6 @@ export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; el
             {pausing.paused ? "Resume" : "Pause"}
           </button>
         ) : null}
-        <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
-          {clockText(elapsedMs)}
-        </p>
       </div>
     </div>
   );

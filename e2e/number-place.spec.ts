@@ -178,9 +178,9 @@ test.describe("the first puzzle", () => {
     await ready(page, "puzzle-play");
     const clock = page.getByTestId("puzzle-clock");
     const pause = page.getByTestId("puzzle-pause");
-    // Nothing to pause before the clock has started.
+    // Nothing to pause before the clock has started: the button is there, switched off, so nothing moves when it can be.
     await expect(page.getByTestId("puzzle-check")).toBeDisabled();
-    await expect(pause).toHaveCount(0);
+    await expect(pause).toBeDisabled();
 
     await page.getByTestId("puzzle-cell").nth(givens.findIndex((given) => given === 0)).click();
     await page.getByTestId("puzzle-key-1").click();
