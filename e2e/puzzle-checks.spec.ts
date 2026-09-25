@@ -22,8 +22,9 @@ for (const kind of PUZZLE_KIND_LIST) {
     await expect(check).toHaveAttribute("data-left", "1");
     await expect(check).toBeDisabled();
 
-    // The clock starts on the first entry: a number in an empty cell, or a stone.
+    // The clock starts on the first entry: a number in an empty cell, or a stone — on a cell nothing was printed in.
     if (kind === "hiddenStones") await page.getByTestId("puzzle-cell").first().click();
+    else if (kind === "blackAndWhite") await page.locator('[data-testid="puzzle-cell"][data-given="false"]').first().click();
     else {
       await page.locator('[data-testid="puzzle-cell"][data-value=""]').first().click();
       await page.getByTestId("puzzle-key-1").click();

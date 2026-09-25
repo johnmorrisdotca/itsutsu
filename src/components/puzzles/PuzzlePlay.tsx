@@ -9,6 +9,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
 
+import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
@@ -18,7 +19,7 @@ import type { ResumedRun, SolveRace } from "./solveShared";
  *
  * The puzzle is made here from the seed in the address (`generatePuzzle`),
  * with its answer, and never asked of a server. Each kind has a solve of its
- * own — a grid of numbers, a grid of stones — sharing the clock, the
+ * own — a grid of numbers, a grid of stones, a grid of black and white — sharing the clock, the
  * handing-in and the card at the end (`solveShared.tsx`). Nothing polls,
  * nothing is timed on a server, and a stranger's solve costs the site
  * nothing at all (John: "should cost me nothing, no server calculations").
@@ -95,6 +96,8 @@ export function PuzzlePlay({
   switch (kind) {
     case "hiddenStones":
       return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
+    case "blackAndWhite":
+      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} resumed={race === null ? resumed : null} />;
   }

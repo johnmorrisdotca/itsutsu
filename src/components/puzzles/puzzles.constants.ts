@@ -78,3 +78,16 @@ export const PUZZLE_TOWER_CLUE = "flex select-none items-center justify-center t
 
 /** The square inside a Towers ring: a hairline edge, so the white paper reads as a square on the wood and not a hole in it. */
 export const PUZZLE_TOWER_SQUARE = "relative ring-1 ring-ink/60";
+
+/** A Black and White cell: a square button ruled on its left and top, as the number grid's are. */
+export const PUZZLE_STONE_CELL =
+  "relative flex aspect-square items-center justify-center border-l border-t border-rule outline-none transition-colors hover:bg-shade focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-moss disabled:hover:bg-transparent";
+
+/** A cell whose stone was printed: shaded, as Diagonal shades its extra groups, so a given reads apart from a move. */
+export const PUZZLE_STONE_PRINTED = "bg-rule/40 disabled:hover:bg-rule/40";
+
+/** The black stone, as Hidden Stones draws it. */
+export const PUZZLE_STONE_BLACK = "block size-[70%] rounded-full bg-ink shadow-[inset_0_-2px_3px_rgba(255,255,255,0.18)]";
+
+/** The white stone: paper-white with an ink rim, so it reads on the white grid. */
+export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border-ink/70 bg-white shadow-[inset_0_-2px_3px_rgba(0,0,0,0.12)]";

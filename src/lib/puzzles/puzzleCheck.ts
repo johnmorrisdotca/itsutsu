@@ -3,6 +3,7 @@ import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
 import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
+import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -39,6 +40,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkSumCages(size, givens, answer);
     case "towers":
       return checkTowers(size, givens, answer);
+    case "blackAndWhite":
+      return checkBlackAndWhite(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -175,6 +178,35 @@ function checkTowers(size: number, givens: string, answer: string): PuzzleCheck 
         }
       }
       if (seen !== clue) return { ok: false, reason: `the ${side} clue ${clue} sees ${seen}` };
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * Black and White: every cell a stone, every printed stone where it was
+ * printed, every row and column half black, never three alike side by side,
+ * and no two rows or two columns the same. Written out here, not taken from
+ * the solver that made the puzzle.
+ */
+function checkBlackAndWhite(size: number, givens: string, answer: string): PuzzleCheck {
+  const asked = decodeBlackAndWhite(givens, size);
+  const filled = decodeBlackAndWhite(answer, size);
+  if (asked === null) return { ok: false, reason: "the givens are not a grid of stones" };
+  if (filled === null) return { ok: false, reason: "the answer is not a grid of stones" };
+  if (filled.some((cell) => cell === EMPTY)) return { ok: false, reason: "the answer has empty cells" };
+  if (asked.some((given, index) => given !== EMPTY && given !== filled[index])) return { ok: false, reason: "a printed stone was changed" };
+  for (const direction of ["row", "column"] as const) {
+    const seen = new Set<string>();
+    for (let at = 0; at < size; at += 1) {
+      const line = Array.from({ length: size }, (_, k) => filled[direction === "row" ? at * size + k : k * size + at]!);
+      if (line.filter((cell) => cell === BLACK).length * 2 !== size) return { ok: false, reason: `${direction} ${at + 1} is not half black` };
+      for (let k = 2; k < size; k += 1) {
+        if (line[k] === line[k - 1] && line[k] === line[k - 2]) return { ok: false, reason: `${direction} ${at + 1} has three alike` };
+      }
+      const spelled = line.join("");
+      if (seen.has(spelled)) return { ok: false, reason: `${direction} ${at + 1} repeats another` };
+      seen.add(spelled);
     }
   }
   return { ok: true };

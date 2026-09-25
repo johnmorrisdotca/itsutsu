@@ -15,6 +15,8 @@ import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { seededRandom } from "@/lib/puzzles/random";
+import { BLACK, decodeBlackAndWhite, EMPTY } from "@/lib/puzzles/blackAndWhite/code";
+import { generateBlackAndWhite } from "@/lib/puzzles/blackAndWhite/generate";
 import { decodeTowers, TOWER_SIDES, type TowerClues } from "@/lib/puzzles/towers/code";
 import { generateTowers } from "@/lib/puzzles/towers/generate";
 
@@ -37,7 +39,7 @@ const PAPER = "#ffffff";
  * caption, and only the playing area differs: white paper, ruled at the chosen
  * size, with what makes this puzzle this puzzle drawn on it — the boxes, a
  * Jigsaw's regions, Diagonal's two diagonals, Hidden Stones' tinted regions,
- * the ring of clues around a Towers square. A Towers board is two cells wider
+ * the ring of clues around a Towers square, Black and White's printed stones. A Towers board is two cells wider
  * than its square, as the solve draws it (`TowerRing`), and has no letters and
  * numbers along its edges: its clues stand where they would.
  *
@@ -49,6 +51,11 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
   /* Towers: the clues of a real easy puzzle at this size, from a fixed seed, in a ring one cell deep around the square. */
   const clues = useMemo<TowerClues | null>(
     () => (kind === "towers" ? (decodeTowers(generateTowers(size, "easy", 7).givens, size)?.clues ?? null) : null),
+    [kind, size],
+  );
+  /* Black and White: the printed stones of a real easy puzzle at this size, from a fixed seed. */
+  const printed = useMemo<number[] | null>(
+    () => (kind === "blackAndWhite" ? decodeBlackAndWhite(generateBlackAndWhite(size, "easy", 7).givens, size) : null),
     [kind, size],
   );
   const ring = clues === null ? 0 : 1;
@@ -161,6 +168,19 @@ export function PuzzleBoardPreview({ kind, size }: { kind: PuzzleKind; size: num
                 </text>
               );
             })}
+            {(printed ?? []).map((stone, index) =>
+              stone === EMPTY ? null : (
+                <circle
+                  key={`stone-${index}`}
+                  cx={(index % size) + 0.5}
+                  cy={Math.floor(index / size) + 0.5}
+                  r={0.33}
+                  fill={stone === BLACK ? theme.line : PAPER}
+                  stroke={theme.line}
+                  strokeWidth={0.06}
+                />
+              ),
+            )}
             <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={heavy} />
             </g>
           </svg>

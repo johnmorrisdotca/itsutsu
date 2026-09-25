@@ -10,6 +10,7 @@ import { decodeKiller } from "../src/lib/puzzles/killer/code";
 import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
+import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { ready } from "./support";
 
@@ -40,6 +41,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "sumCages", size: 6, level: "easy", seed: 20260924, fill: 3 },
   // A 5×5 Towers a third filled: the ring of clues on the wood around the square is the picture.
   { kind: "towers", size: 5, level: "medium", seed: 20260924, fill: 3 },
+  // An 8×8 Black and White a third filled: printed stones on their shaded cells, and the solver's beside them.
+  { kind: "blackAndWhite", size: 8, level: "medium", seed: 20260924, fill: 3 },
 ];
 
 test.describe("puzzle screenshots", () => {
@@ -65,6 +68,16 @@ test.describe("puzzle screenshots", () => {
         for (const col of [0, scene.size - 1].filter((each) => each !== stones[row])) {
           await cells.nth(row * scene.size + col).click();
           await cells.nth(row * scene.size + col).click();
+        }
+      } else if (scene.kind === "blackAndWhite") {
+        const givens = decodeBlackAndWhite(puzzle.givens, scene.size)!;
+        const solution = decodeBlackAndWhite(puzzle.solution, scene.size)!;
+        for (const [index, given] of givens.entries()) {
+          if (given !== EMPTY || index % scene.fill !== 0) continue;
+          // One tap for black, two for white.
+          await cells.nth(index).click();
+          if (solution[index] !== BLACK) await cells.nth(index).click();
+          filled += 1;
         }
       } else {
         const givens =

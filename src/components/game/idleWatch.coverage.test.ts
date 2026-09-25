@@ -36,7 +36,7 @@ const NOT_ASKED: Record<string, string> = {
   "src/components/game/EmbedGame.tsx": "a board inside another site's page, with no clock, no polling and nothing kept",
 };
 
-const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid)[\s>]/;
+const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
 function tsxUnder(folder: string): string[] {
@@ -55,6 +55,7 @@ describe("the idle question", () => {
     expect(surfaces).toContain("src/components/live/SharedGame.tsx");
     expect(surfaces).toContain("src/components/puzzles/NumberSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/HiddenStonesSolve.tsx");
+    expect(surfaces).toContain("src/components/puzzles/BlackAndWhiteSolve.tsx");
   });
 
   it("is asked on every surface a person plays on", () => {

@@ -23,6 +23,7 @@ export const PUZZLE_KINDS = {
   diagonal: "diagonal",
   sumCages: "sumCages",
   towers: "towers",
+  blackAndWhite: "blackAndWhite",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -34,6 +35,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.moreOrLess,
   PUZZLE_KINDS.towers,
   PUZZLE_KINDS.hiddenStones,
+  PUZZLE_KINDS.blackAndWhite,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -92,6 +94,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   sumCages: { sizes: [6, 9], offered: [6, 9], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 286 },
   // 77: a 7×7's 49 cells and then the 28 places around its edge where a clue can stand.
   towers: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 77 },
+  // Even sides only: a line holds as many black stones as white.
+  blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
 };
 
 /**
@@ -150,6 +154,12 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     5: { label: "Usual", kanji: "定番" },
     6: { label: "Longer", kanji: "長め" },
     7: { label: "Long", kanji: "長" },
+  },
+  blackAndWhite: {
+    6: { label: "Quick", kanji: "速" },
+    8: { label: "Usual", kanji: "定番" },
+    10: { label: "Long", kanji: "長" },
+    12: { label: "Longest", kanji: "最長" },
   },
 };
 
@@ -272,5 +282,23 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Every puzzle has exactly one answer. The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
     ],
     board: "5×5 is the usual size. 4×4 is quick; 7×7 is the long one.",
+  },
+  blackAndWhite: {
+    label: "Black and White",
+    kanji: "白黒",
+    tagline: "Fill the grid with black and white stones: half of each in every row and column, and never three alike in a line.",
+    inspiredBy: "Takuzu",
+    origin:
+      "The binary puzzle made around 2009 by Adolfo Zanellati and, separately, by Peter De Schepper and Frank Coussement, printed as Takuzu and Binairo. LinkedIn plays a form of it daily as Tango, with suns and moons.",
+    alsoKnownAs: ["Takuzu", "Binairo", "Binary puzzle"],
+    wikipedia: "Takuzu",
+    rules: [
+      "Fill every empty cell with a black stone or a white one.",
+      "Every row and every column holds as many black stones as white ones.",
+      "Never three stones of one colour side by side in a line, across or down. Here three in a row is the one thing you may not make.",
+      "No two rows are the same, and no two columns are the same.",
+      "Tap a cell once for black, again for white, again to clear it. The printed stones stay where they are, and every puzzle has exactly one answer.",
+    ],
+    board: "8×8 is the usual size. 6×6 is quick; 12×12 is an evening.",
   },
 };

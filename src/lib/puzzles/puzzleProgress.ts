@@ -1,3 +1,4 @@
+import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -7,7 +8,8 @@ import type { PuzzleKind } from "./puzzles.types";
  *
  * A grid of numbers writes its entries the way a puzzle's cells are written
  * (`puzzleCode.ts`), givens left empty. A grid of stones writes "." for an
- * empty cell, "s" for a stone and "x" for a cross.
+ * empty cell, "s" for a stone and "x" for a cross. Black and White writes its
+ * whole grid as its code does, printed stones included: "b", "w" and ".".
  */
 export type StoneMarkCode = "" | "stone" | "cross";
 
@@ -37,7 +39,17 @@ export function decodeStoneProgress(code: string, size: number): StoneMarkCode[]
   return marks;
 }
 
+export function encodeBlackAndWhiteProgress(stones: readonly number[]): string {
+  return encodeBlackAndWhite(stones);
+}
+
+export function decodeBlackAndWhiteProgress(code: string, size: number): number[] | null {
+  return decodeBlackAndWhite(code, size);
+}
+
 /** Whether a progress code is one a puzzle of this kind and size could have written. */
 export function progressFits(kind: PuzzleKind, size: number, code: string): boolean {
-  return kind === "hiddenStones" ? decodeStoneProgress(code, size) !== null : decodeNumberProgress(code, size) !== null;
+  if (kind === "hiddenStones") return decodeStoneProgress(code, size) !== null;
+  if (kind === "blackAndWhite") return decodeBlackAndWhiteProgress(code, size) !== null;
+  return decodeNumberProgress(code, size) !== null;
 }
