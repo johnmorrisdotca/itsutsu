@@ -21,6 +21,7 @@ import { WordScoreLine } from "./WordScoreLine";
 import { WordKeyboard } from "./WordKeyboard";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
+import { usePlayInView } from "./usePlayInView";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
@@ -56,6 +57,8 @@ export function WordDropSolve({
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeWordDropProgress(resumed.progress, size)) ?? []);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
+  // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
+  const [engaged, setEngaged] = useState(false);
   const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(
     puzzle,
     hasAccount,
@@ -69,6 +72,7 @@ export function WordDropSolve({
   const marks = useMemo(() => guesses.map((guess) => markGuess(guess, hidden)), [guesses, hidden]);
   const known = useMemo(() => letterKeyMarks(guesses, hidden), [guesses, hidden]);
 
+  const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
 
   /* Every change to the row being typed goes through here (`typingRow.ts`): a letter, a clear, a tap, an arrow. */
@@ -76,6 +80,7 @@ export function WordDropSolve({
     (change: (row: TypingRow) => TypingRow) => {
       if (closed) return;
       setSaid(null);
+      setEngaged(true);
       setTyping(change);
     },
     [closed],
@@ -136,7 +141,7 @@ export function WordDropSolve({
   }, [closed, letter, enter, back, edit]);
 
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null ? (

@@ -6,7 +6,7 @@ import { decodeKanaGivens, KANA_ROWS } from "../src/lib/puzzles/wordDropKana/kan
 import { kanaBase, markKanaGuess } from "../src/lib/puzzles/wordDropKana/kanaMarks";
 import { kanaScore } from "../src/lib/puzzles/wordDropKana/kanaScore";
 import { kanaWordsOf } from "../src/lib/puzzles/wordDropKana/kanaWords";
-import { tapKana } from "./kanaTyping";
+import { tapKana, thumbKana } from "./kanaTyping";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
@@ -104,6 +104,52 @@ test.describe("the kana word puzzle", () => {
     await expect(page.getByTestId("kana-key-は").getByTestId("key-count")).toHaveCount(0);
     await page.getByTestId("kana-key-back").click();
     await expect(page.getByTestId("kana-key-は")).not.toHaveAttribute("data-typed", /./);
+  });
+
+  test.describe("on a phone", () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test("the kana typed stay on the screen with the keys, and the page moves once, not per key", async ({ page }) => {
+      // John, on an iPhone at five kana: "Why don't we see the chars we type?"
+      await page.goto(`${AT}/play?size=5&level=easy&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+      const row = page.locator('[data-testid="word-tile"][data-row="1"]');
+      const onScreen = async (box: { y: number; height: number } | null) => box !== null && box.y >= 0 && box.y + box.height <= 844;
+      // A thumb reaches the keys once (they start below the fold), then types where they are.
+      await page.getByTestId("kana-key-か").scrollIntoViewIfNeeded();
+      await thumbKana(page, "か");
+      const settled = await page.evaluate(() => window.scrollY);
+      await thumbKana(page, "ぱたっ");
+      expect(await page.evaluate(() => window.scrollY), "the page moved while the row was typed").toBe(settled);
+      for (let at = 0; at < 4; at += 1) expect(await onScreen(await row.nth(at).boundingBox()), `kana ${at + 1} is off the screen`).toBe(true);
+      expect(await onScreen(await page.getByTestId("kana-key-enter").boundingBox()), "Enter is off the screen").toBe(true);
+    });
+
+    test("小 and ゛゜ say what they will make of the last kana, and are dimmed when nothing", async ({ page }) => {
+      // John: "no way to enter ga vs Ka and po and little Tsu".
+      await page.goto(`${AT}/play?size=4&level=medium&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+      const small = page.getByTestId("kana-key-small");
+      const mark = page.getByTestId("kana-key-mark");
+      await expect(small).toBeDisabled();
+      await expect(mark).toBeDisabled();
+      await page.getByTestId("kana-key-か").click();
+      await expect(mark).toHaveAttribute("data-makes", "が");
+      await expect(small).toBeDisabled();
+      await page.getByTestId("kana-key-は").click();
+      await expect(mark).toHaveAttribute("data-makes", "ば");
+      await mark.click();
+      await expect(mark).toHaveAttribute("data-makes", "ぱ");
+      await mark.click();
+      await expect(page.locator('[data-testid="word-tile"][data-row="1"]').nth(1)).toHaveAttribute("aria-label", /^ぱ, /);
+      await page.getByTestId("kana-key-つ").click();
+      await expect(small).toHaveAttribute("data-makes", "っ");
+      await small.click();
+      await expect(page.locator('[data-testid="word-tile"][data-row="1"]').nth(2)).toHaveAttribute("aria-label", /^っ, /);
+      await page.getByTestId("kana-key-な").click();
+      await expect(mark).toBeDisabled();
+      await expect(small).toBeDisabled();
+    });
   });
 
   test("hard opens with no free word", async ({ page }) => {

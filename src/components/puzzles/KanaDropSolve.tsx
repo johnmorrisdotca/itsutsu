@@ -24,6 +24,7 @@ import { WordScoreLine } from "./WordScoreLine";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
+import { usePlayInView } from "./usePlayInView";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 
@@ -74,6 +75,8 @@ export function KanaDropSolve({
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [romaji, setRomaji] = useState("");
   const [said, setSaid] = useState<string | null>(null);
+  // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
+  const [engaged, setEngaged] = useState(false);
   const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeKanaProgress(guesses), resumed }, false, true);
 
   /* The rows drawn: the free grey word first where there is one, then the guesses. */
@@ -81,12 +84,14 @@ export function KanaDropSolve({
   const marked = useMemo(() => shown.map((guess) => markKanaGuess([...guess], [...hidden])), [shown, hidden]);
   const known = useMemo(() => kanaKeyMarks(shown, hidden), [shown, hidden]);
 
+  const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
 
   const edit = useCallback(
     (change: (row: TypingRow) => TypingRow) => {
       if (closed) return;
       setSaid(null);
+      setEngaged(true);
       setTyping(change);
     },
     [closed],
@@ -171,7 +176,7 @@ export function KanaDropSolve({
   const left = KANA_ROWS - guesses.length;
   const score = done === null ? null : kanaScore(hidden, guesses, KANA_ROWS, done.elapsedMs);
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null ? (
@@ -206,6 +211,7 @@ export function KanaDropSolve({
             <KanaKeyboard
               known={known}
               typed={typedCounts(typing.slots, kanaBase)}
+              last={lastTyped(typing) >= 0 && typing.slots[lastTyped(typing)] !== "" ? typing.slots[lastTyped(typing)]! : null}
               style={style}
               disabled={pausing.paused}
               onKana={kana}
