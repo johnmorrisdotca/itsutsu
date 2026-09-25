@@ -103,7 +103,8 @@ test.describe("the games index", () => {
     // Every family, the ones with a game two people can play first and then the puzzles (0.285.2: John wanted Numbers on this screen too).
     const offered = [
       ...GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0),
-      ...GAME_FAMILIES.filter((family) => boardGamesOf(family).length === 0),
+      // Less a shelf kept off this screen (`notOnSetUp`: the Other family, 2026-09-25).
+      ...GAME_FAMILIES.filter((family) => boardGamesOf(family).length === 0 && family.notOnSetUp === undefined),
     ];
     await expect(tabs).toHaveCount(offered.length);
     for (let index = 0; index < offered.length; index += 1) {
