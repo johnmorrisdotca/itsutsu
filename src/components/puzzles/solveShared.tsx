@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -35,12 +35,54 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
   const [startedAt, setStartedAt] = useState<number | null>(race === null ? null : race.since);
   const [now, setNow] = useState(0);
   const [done, setDone] = useState<Done | null>(null);
+  /*
+   * PAUSE. John, 2026-09-24: "Also a Game Pause, since I notice there is a
+   * clock." The time paused so far, and when the pause now running began (null
+   * while solving). A pause stops the clock AND covers the grid (`SolvePaused`),
+   * so it cannot be spent looking for free. Not in a race: a race's clock is the
+   * server's, started at Start and stopped at the finish, and nothing in this
+   * browser can stop it — a Pause there would say it had.
+   *
+   * Nothing about a run outlives the page, paused or not: the entries and the
+   * clock are this tab's alone, so leaving loses the run either way.
+   */
+  const [pausedMs, setPausedMs] = useState(0);
+  const [pausedAt, setPausedAt] = useState<number | null>(null);
+  const canPause = race === null && startedAt !== null && done === null;
 
   useEffect(() => {
-    if (startedAt === null || done !== null) return;
+    if (startedAt === null || done !== null || pausedAt !== null) return;
     const timer = window.setInterval(() => setNow(Date.now()), PUZZLE_CLOCK_TICK_MS);
     return () => window.clearInterval(timer);
-  }, [startedAt, done]);
+  }, [startedAt, done, pausedAt]);
+
+  const togglePause = useCallback(() => {
+    if (!canPause) return;
+    const at = Date.now();
+    if (pausedAt === null) {
+      setNow(at);
+      setPausedAt(at);
+    } else {
+      setPausedMs((so) => so + (at - pausedAt));
+      setPausedAt(null);
+      setNow(at);
+    }
+  }, [canPause, pausedAt]);
+
+  /* P, or Space when no button has the focus (a focused button already takes Space as its own press). */
+  useEffect(() => {
+    if (!canPause) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const onControl = event.target instanceof HTMLElement && event.target.closest("button, a, input, select, textarea") !== null;
+      if (event.key === "p" || event.key === "P" || (event.key === " " && !onControl)) {
+        event.preventDefault();
+        togglePause();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canPause, togglePause]);
 
   /** The first entry: the clock starts. Returns the moment, for `finish`. */
   const begin = useCallback((): number => {
@@ -54,7 +96,7 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
 
   const finish = useCallback(
     async (answer: string, at: number) => {
-      const elapsedMs = startedAt === null ? 0 : at - startedAt;
+      const elapsedMs = startedAt === null ? 0 : Math.max(0, at - startedAt - pausedMs);
       setDone({ elapsedMs, paid: null, problem: null });
       if (!hasAccount) return;
       try {
@@ -81,15 +123,19 @@ export function useSolve(puzzle: Puzzle, hasAccount: boolean, race: SolveRace | 
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, hasAccount, race, router],
+    [puzzle, startedAt, pausedMs, hasAccount, race, router],
   );
 
-  const elapsedMs = done !== null ? done.elapsedMs : startedAt === null ? 0 : Math.max(0, now - startedAt);
-  return { startedAt, elapsedMs, done, begin, finish };
+  const elapsedMs = done !== null ? done.elapsedMs : startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs);
+  const pausing: Pausing = { paused: pausedAt !== null, canPause, toggle: togglePause };
+  return { startedAt, elapsedMs, done, begin, finish, pausing };
 }
 
+/** Whether the run is paused, whether it may be, and the press that pauses or resumes it. */
+export type Pausing = { paused: boolean; canPause: boolean; toggle: () => void };
+
 /** The line over the grid: what was asked, the seed, and the clock. */
-export function SolveHeader({ puzzle, elapsedMs }: { puzzle: Puzzle; elapsedMs: number }) {
+export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; elapsedMs: number; pausing?: Pausing }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
       <p className="text-sm text-muted" data-testid="puzzle-asked">
@@ -97,9 +143,49 @@ export function SolveHeader({ puzzle, elapsedMs }: { puzzle: Puzzle; elapsedMs: 
         <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
         <span className="ml-2 text-xs">№ {puzzle.seed}</span>
       </p>
-      <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
-        {clockText(elapsedMs)}
-      </p>
+      <div className="flex items-center gap-2">
+        {pausing?.canPause ? (
+          <button
+            type="button"
+            className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} px-3 py-1 text-sm`}
+            onClick={pausing.toggle}
+            aria-pressed={pausing.paused}
+            aria-keyshortcuts="P"
+            data-testid="puzzle-pause"
+          >
+            {pausing.paused ? "Resume" : "Pause"}
+          </button>
+        ) : null}
+        <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
+          {clockText(elapsedMs)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The grid, covered while the run is paused. The grid stays where it is and
+ * only stops being drawn (`invisible`), so the page does not move and nothing
+ * under the cover can be pressed; the cover says so and offers Resume.
+ */
+export function SolvePaused({ pausing, children }: { pausing: Pausing; children: ReactNode }) {
+  return (
+    <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"}>
+      <div className={pausing.paused ? "invisible" : undefined} aria-hidden={pausing.paused || undefined}>
+        {children}
+      </div>
+      {pausing.paused ? (
+        <div className={`${PANEL_CLASS} absolute inset-0 flex flex-col items-center justify-center gap-3 text-center`} data-testid="puzzle-paused">
+          <p className="text-lg font-semibold">
+            Paused <span className="font-mincho text-base font-normal opacity-70">一時停止</span>
+          </p>
+          <p className="text-sm text-muted">The clock has stopped, and the grid is covered until you come back.</p>
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT}`} onClick={pausing.toggle} data-testid="puzzle-resume">
+            Resume
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

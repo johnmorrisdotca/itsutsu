@@ -12,7 +12,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PUZZLE_KEY, PUZZLE_KEYS } from "./puzzles.constants";
-import { SolveDone, SolveHeader, type SolveRace, useSolve } from "./solveShared";
+import { SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 
 /**
  * Solving a grid of numbers — Number Place, and More or Less after it.
@@ -44,11 +44,11 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
   const [entries, setEntries] = useState<number[]>(() => new Array<number>(size * size).fill(0));
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState<{ wrong: number; empty: number } | null>(null);
-  const { startedAt, elapsedMs, done, begin, finish } = useSolve(puzzle, hasAccount, race);
+  const { startedAt, elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race);
 
   const enter = useCallback(
     (value: number) => {
-      if (selected === null || done !== null || givens[selected] !== 0) return;
+      if (selected === null || done !== null || pausing.paused || givens[selected] !== 0) return;
       const at = begin();
       const next = [...entries];
       next[selected] = value;
@@ -60,7 +60,7 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
         else setChecked({ wrong, empty: 0 });
       }
     },
-    [selected, done, givens, entries, solution, begin, finish],
+    [selected, done, pausing.paused, givens, entries, solution, begin, finish],
   );
 
   /* A tap on the chosen cell steps it on; a tap anywhere else chooses that cell. A given never steps. */
@@ -100,18 +100,20 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
 
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
-      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} />
-      <PuzzleGrid
-        kind={kind}
-        size={size}
-        givens={givens}
-        entries={entries}
-        marks={asked.marks}
-        regions={asked.regions}
-        selected={selected}
-        done={done !== null}
-        onSelect={tap}
-      />
+      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
+      <SolvePaused pausing={pausing}>
+        <PuzzleGrid
+          kind={kind}
+          size={size}
+          givens={givens}
+          entries={entries}
+          marks={asked.marks}
+          regions={asked.regions}
+          selected={selected}
+          done={done !== null}
+          onSelect={tap}
+        />
+      </SolvePaused>
       {done === null ? (
         <>
           <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${size + 1}, minmax(0, 1fr))` }} data-testid="puzzle-keys">
@@ -125,7 +127,7 @@ export function NumberSolve({ puzzle, hasAccount, race = null }: { puzzle: Puzzl
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={startedAt === null} data-testid="puzzle-check">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={startedAt === null || pausing.paused} data-testid="puzzle-check">
               Check
             </button>
             {checked !== null ? (

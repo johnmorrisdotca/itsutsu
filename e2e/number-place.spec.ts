@@ -135,6 +135,46 @@ test.describe("the first puzzle", () => {
     await expect(cells.nth(given)).toHaveAttribute("data-value", String(givens[given]));
   });
 
+  /*
+   * John, 2026-09-24: "Also a Game Pause, since I notice there is a clock." A
+   * pause stops the clock and covers the grid, so it cannot be spent looking;
+   * Resume uncovers it and the clock goes on from where it stopped.
+   */
+  test("Pause stops the clock and covers the grid, and Resume brings both back", async ({ page }) => {
+    await page.clock.install();
+    const givens = decodeCells(generateNumberPlace(SIZE, LEVEL, SEED).givens, SIZE)!;
+    await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${SEED}`);
+    await ready(page, "puzzle-play");
+    const clock = page.getByTestId("puzzle-clock");
+    const pause = page.getByTestId("puzzle-pause");
+    // Nothing to pause before the clock has started.
+    await expect(page.getByTestId("puzzle-check")).toBeDisabled();
+    await expect(pause).toHaveCount(0);
+
+    await page.getByTestId("puzzle-cell").nth(givens.findIndex((given) => given === 0)).click();
+    await page.getByTestId("puzzle-key-1").click();
+    await page.clock.fastForward(5_000);
+    await expect(clock).toHaveText("0:05");
+
+    await pause.click();
+    await expect(page.getByTestId("puzzle-paused")).toBeVisible();
+    await expect(page.getByTestId("puzzle-grid")).toBeHidden();
+    await page.clock.fastForward(60_000);
+    await expect(page.getByTestId("puzzle-paused")).toBeVisible();
+    await expect(clock).toHaveText("0:05");
+
+    await page.getByTestId("puzzle-resume").click();
+    await expect(page.getByTestId("puzzle-grid")).toBeVisible();
+    await page.clock.fastForward(3_000);
+    await expect(clock).toHaveText("0:08");
+
+    // P does the same from the keyboard.
+    await page.keyboard.press("p");
+    await expect(page.getByTestId("puzzle-paused")).toBeVisible();
+    await page.keyboard.press("p");
+    await expect(page.getByTestId("puzzle-paused")).toHaveCount(0);
+  });
+
   test("the route refuses a grid that is not a solution, and pays nothing for it", async ({ request }) => {
     const puzzle = generateNumberPlace(SIZE, LEVEL, SEED);
     const wrong = puzzle.solution.slice(1) + puzzle.solution[0];
