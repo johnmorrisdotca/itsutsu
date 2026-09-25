@@ -6,15 +6,19 @@ import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { Button } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
 import { ReplayScrubber } from "./ReplayScrubber";
+import { MovesFold, type MovesShown } from "./MovesFold";
+import { useMoveFormat } from "@/components/game/MoveFormatContext";
+import { MoveFormatPicker } from "@/components/game/MoveFormatPicker";
+import { useSavedAppearance } from "@/components/game/useSavedAppearance";
 import { GameMosaic } from "./GameMosaic";
 import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
-import { pointName } from "@/lib/gomoku/notation";
+import { pointIn, type MoveFormatChoice } from "@/lib/record/moveFormats";
 import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 import { forkOffered } from "@/lib/history/fork";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -32,21 +36,26 @@ function MoveList({
   current,
   onJump,
   offerSgf,
+  format,
 }: {
   game: GameDetail;
   current: number;
   onJump: (moveNumber: number) => void;
   offerSgf: boolean;
+  /** How the moves are written, the reader's choice over the record above (`MoveFormatPicker`), so the text copied is the text shown. */
+  format: MoveFormatChoice;
 }) {
   const [copied, setCopied] = useState(false);
-  const names = useMemo(() => game.moves.map((move) => stonelessWord(move.kind) ?? pointName(game.size, move)), [game]);
+  const names = useMemo(() => game.moves.map((move) => stonelessWord(move.kind) ?? pointIn(format, game.size, move)), [game, format]);
+  // A pair a turn; GoldToken writes the turn's number with no stop after it.
+  const stop = format === "goldToken" ? "" : ".";
   const text = useMemo(() => {
     const turns: string[] = [];
     for (let i = 0; i < names.length; i += 2) {
-      turns.push(`${i / 2 + 1}. ${names[i]}${names[i + 1] !== undefined ? ` ${names[i + 1]}` : ""}`);
+      turns.push(`${i / 2 + 1}${stop} ${names[i]}${names[i + 1] !== undefined ? ` ${names[i + 1]}` : ""}`);
     }
     return turns.join("  ");
-  }, [names]);
+  }, [names, stop]);
 
   async function copy() {
     try {
@@ -68,7 +77,7 @@ function MoveList({
       <p className="mt-2 font-mono text-xs leading-relaxed break-words">
         {names.map((name, i) => (
           <span key={i}>
-            {i % 2 === 0 ? <span className="text-muted">{i / 2 + 1}. </span> : " "}
+            {i % 2 === 0 ? <span className="text-muted">{`${i / 2 + 1}${stop} `}</span> : " "}
             <button
               type="button"
               onClick={() => onJump(i + 1)}
@@ -100,8 +109,14 @@ export function GameReplay({
   offerSgf = false,
   offerMosaic = false,
   overlay = null,
+  savesToAccount = false,
+  movesShown = "open",
 }: {
   game: GameDetail;
+  /** Whether the reader has an account to keep their move numbers and folded moves on. */
+  savesToAccount?: boolean;
+  /** Whether the moves open or folded, as the reader last left them (`movesShown`). */
+  movesShown?: MovesShown;
   /**
    * Something drawn over the board and nothing else — the result card, the first
    * time a player opens a game that has just finished. Positioned inside the
@@ -164,7 +179,16 @@ export function GameReplay({
     const next = `${basePath}/${moveNumberAt(timeline[index])}`;
     if (window.location.pathname !== next) window.history.replaceState(null, "", next);
   }, [basePath, index, timeline]);
-  const [showNumbers, setShowNumbers] = useState(false);
+  /*
+   * Move numbers on the stones: the reader's own board setting, and a press
+   * here changes that setting, kept on the account the way the practice
+   * board keeps it (`useSavedAppearance`). John, 2026-09-25: "Show move numbers
+   * needs memory, we lose it on refresh." It started off on every page, whatever
+   * the reader had chosen.
+   */
+  const [showNumbers, setShowNumbers] = useState(appearance.showMoveNumbers);
+  useSavedAppearance({ ...appearance, showMoveNumbers: showNumbers }, savesToAccount);
+  const { format } = useMoveFormat();
   /*
    * The same way up this game was being read while it was played. It is the
    * same game and the same reader, so somebody who turned the board round to
@@ -259,7 +283,7 @@ export function GameReplay({
               <>
                 {" · "}
                 <span className="font-mono">
-                  {pointName(game.size, current)}
+                  {pointIn(format, game.size, current)}
                 </span>
                 {/* The line is always there, so the slider does not jump as the times come and go.
                     The last move is when the game ended, paired with move 0's "started" below. */}
@@ -315,8 +339,9 @@ export function GameReplay({
           what a move is: the whole point of reading a record is stopping at
           the move you wanted to look at.
         */}
-        <div className="flex flex-col gap-2">
-          <SectionTitle kanji="棋譜">Moves</SectionTitle>
+        <MovesFold count={game.moves.length} initial={movesShown} saves={savesToAccount}>
+          {/* How they are written, ours or the other sites': the same choice the live record offers. */}
+          <MoveFormatPicker />
           <PlayedMoves
             size={game.size}
             moves={game.moves}
@@ -325,13 +350,14 @@ export function GameReplay({
             // thing it was given as `at` — never a timeline position.
             onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
             emptyNote="No stones were played in this game."
+            format={format}
           />
-        </div>
+        </MovesFold>
 
         <Button onClick={() => writeTurned(game.id, !turned)} strong={turned} data-testid="turn-board">
           {turned ? "Turn the board back" : "Turn the board round"}
         </Button>
-        <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers}>
+        <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers} data-testid="show-move-numbers">
           {showNumbers ? "Hide" : "Show"} move numbers
         </Button>
         {/* The whole game as one picture, in a window on demand — see `GameMosaic`. */}
@@ -343,6 +369,7 @@ export function GameReplay({
             current={moveNumber}
             onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
             offerSgf={offerSgf}
+            format={format}
           />
         </div>
       </aside>

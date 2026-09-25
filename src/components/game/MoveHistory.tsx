@@ -1,6 +1,6 @@
 "use client";
 
-import { MOVE_FORMAT_CHOICES, MOVE_FORMAT_DISPLAY, linesOf, pointIn } from "@/lib/record/moveFormats";
+import { linesOf, pointIn } from "@/lib/record/moveFormats";
 import { MOVE_KINDS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { slugFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -18,6 +18,7 @@ import {
 import type { HistoryMode } from "./game.types";
 import type { GamePanelProps } from "./game.types";
 import { useMoveFormat } from "./MoveFormatContext";
+import { MoveFormatPicker } from "./MoveFormatPicker";
 
 /**
  * The game record (棋譜). Every entry is a position to jump to, which is what
@@ -26,7 +27,7 @@ import { useMoveFormat } from "./MoveFormatContext";
  */
 export function MoveHistory({ session, actions }: GamePanelProps) {
   const { state, fatalMoves, moveIndex, record } = session;
-  const { format, setFormat } = useMoveFormat();
+  const { format } = useMoveFormat();
   const fatalNumbers = new Set(fatalMoves.map((move) => move.moveNumber));
 
   return (
@@ -69,30 +70,9 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
             <span className="group-open:hidden">show</span>
             <span className="hidden group-open:inline">hide</span>
           </summary>
-          {/*
-            HOW THE MOVES ARE WRITTEN, a quiet control under the count: ours, or
-            two a line as ItsYourTurn and GoldToken print them, kept on the
-            account (`MoveFormatContext`). John, 2026-09-25: "a tertiary button
-            that offers to display in all the known formats we support. and save
-            to memory."
-          */}
-          <div className="mt-1 flex flex-wrap items-center gap-1" role="radiogroup" aria-label="How the moves are written" data-testid="move-format">
-            {MOVE_FORMAT_CHOICES.map((choice) => (
-              <button
-                key={choice}
-                type="button"
-                role="radio"
-                aria-checked={format === choice}
-                onClick={() => setFormat(choice)}
-                title={MOVE_FORMAT_DISPLAY[choice].example}
-                className={`rounded-full border px-2 py-0.5 text-[0.7rem] transition-colors ${
-                  format === choice ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-rule-strong hover:text-ink"
-                }`}
-                data-testid={`move-format-${choice}`}
-              >
-                {MOVE_FORMAT_DISPLAY[choice].label}
-              </button>
-            ))}
+          {/* How the moves are written, ours or the other sites' (`MoveFormatPicker`). */}
+          <div className="mt-1">
+            <MoveFormatPicker />
           </div>
         <ol
           className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"

@@ -84,3 +84,79 @@ test.describe("the moves of a game are listed where the game is read", () => {
     await expect(page.getByTestId("replay-scrubber")).toHaveValue("2");
   });
 });
+
+/*
+ * WHAT A READER CHOOSES ABOUT A FINISHED GAME'S RECORD IS KEPT. John,
+ * 2026-09-25: "Show move numbers needs memory, we lose it on refresh", "Move
+ * list I thought I asked for ability to be in multi-formats", and "Moves might
+ * be collapsed or hidden naturally as some people might not want it." Each is
+ * chosen by pressing it, read back after a reload, and put back as it was,
+ * since the suite's operator is one account every spec shares.
+ */
+test.describe("a finished game's record remembers how the reader reads it", () => {
+  async function finished(page: import("@playwright/test").Page, request: import("@playwright/test").APIRequestContext) {
+    const game = await playedGame(request);
+    await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 0, col: 2 } });
+    await page.goto(`/games/tic-tac-toe/match/${game.id}`);
+    await ready(page, "game-replay");
+    return game;
+  }
+  const saved = (page: import("@playwright/test").Page) =>
+    page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
+
+  test("move numbers stay on after a reload", async ({ page, request }) => {
+    await finished(page, request);
+    const numbers = page.getByTestId("show-move-numbers");
+    await expect(numbers).toHaveText("Show move numbers");
+    let wrote = saved(page);
+    await numbers.click();
+    expect((await wrote).ok()).toBe(true);
+    await page.reload();
+    await ready(page, "game-replay");
+    await expect(numbers).toHaveText("Hide move numbers");
+    wrote = saved(page);
+    await numbers.click();
+    expect((await wrote).ok()).toBe(true);
+  });
+
+  test("the moves are written in the format chosen, and still are after a reload", async ({ page, request }) => {
+    await finished(page, request);
+    const list = page.getByTestId("played-moves");
+    // Ours: one a line, the first stone at the top left of three by three is A3.
+    await expect(list).toHaveAttribute("data-format", "itsutsu");
+    await expect(list.getByTestId("played-line")).toHaveCount(5);
+    const wrote = saved(page);
+    await page.getByTestId("move-format-itsYourTurn").click();
+    expect((await wrote).ok()).toBe(true);
+    // ItsYourTurn's: two a line, lower case, rows counted as ours are — a3.
+    await expect(list.getByTestId("played-line")).toHaveCount(3);
+    await expect(list.getByTestId("played-move").first()).toContainText("a3");
+    await expect(page.getByTestId("move-list")).toContainText("1. a3");
+
+    await page.reload();
+    await ready(page, "game-replay");
+    await expect(page.getByTestId("played-moves")).toHaveAttribute("data-format", "itsYourTurn");
+    const back = saved(page);
+    await page.getByTestId("move-format-itsutsu").click();
+    expect((await back).ok()).toBe(true);
+  });
+
+  test("the moves fold away, and stay folded after a reload", async ({ page, request }) => {
+    await finished(page, request);
+    const fold = page.getByTestId("moves-fold");
+    await expect(fold).toHaveAttribute("open", "");
+    let wrote = saved(page);
+    await fold.locator("summary").click();
+    expect((await wrote).ok()).toBe(true);
+    await expect(page.getByTestId("played-moves")).toBeHidden();
+
+    await page.reload();
+    await ready(page, "game-replay");
+    await expect(page.getByTestId("moves-fold")).not.toHaveAttribute("open", /.*/);
+    await expect(page.getByTestId("played-moves")).toBeHidden();
+    wrote = saved(page);
+    await page.getByTestId("moves-fold").locator("summary").click();
+    expect((await wrote).ok()).toBe(true);
+    await expect(page.getByTestId("played-moves")).toBeVisible();
+  });
+});

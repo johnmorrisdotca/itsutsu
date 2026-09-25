@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 
 import { Applause } from "@/components/history/Applause";
 import { GameReplay } from "@/components/history/GameReplay";
+import type { MovesShown } from "@/components/history/MovesFold";
+import { MoveFormatProvider } from "@/components/game/MoveFormatContext";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import type { MoveFormatChoice } from "@/lib/record/moveFormats";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { LocalTime } from "@/components/ui/LocalTime";
@@ -185,6 +189,8 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * board they had never asked for.
    */
   const appearance = appearanceFrom(await appearanceFor(myId));
+  // How the record writes its moves, and whether its moves open folded, as this reader left them.
+  const { moveFormat, movesShown } = await preferencesFor();
 
   // A seat held by cookie counts too: a game played from a scanned link, or at one screen.
   const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, myId);
@@ -220,6 +226,8 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
       silenced={silenced}
       refusal={refusal}
       appearance={appearance}
+      moveFormat={moveFormat}
+      movesShown={movesShown}
       card={card}
       match={{ id: members?.matchId ?? null, memberId: myId }}
     />
@@ -239,6 +247,8 @@ function FiledMatch({
   silenced,
   refusal,
   appearance,
+  moveFormat,
+  movesShown,
   card,
   match,
 }: {
@@ -254,6 +264,10 @@ function FiledMatch({
   refusal: RatingRefusal | null;
   /** How this reader likes a board dressed. */
   appearance: Appearance;
+  /** How this reader has the record write its moves (`moveFormat`). */
+  moveFormat: MoveFormatChoice;
+  /** Whether this reader keeps a finished game's moves open or folded (`movesShown`). */
+  movesShown: MovesShown;
   /** The result card over the board, when this reader played a game that has just finished. */
   card: ResultCardData | null;
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
@@ -394,6 +408,7 @@ function FiledMatch({
       <Applause gameId={game.id} initial={applause} signedIn={signedIn} hasAccount={hasAccount} />
       </div>
 
+      <MoveFormatProvider initial={moveFormat} saves={hasAccount}>
       <GameReplay
         game={game}
         initialIndex={move}
@@ -405,7 +420,10 @@ function FiledMatch({
         // And as one picture of every position, drawn in the browser — see `GameMosaic`.
         offerMosaic
         overlay={card === null ? null : <ResultCard {...card} />}
+        savesToAccount={hasAccount}
+        movesShown={movesShown}
       />
+      </MoveFormatProvider>
 
       {/*
         Under the board rather than beside it, and after the replay, because

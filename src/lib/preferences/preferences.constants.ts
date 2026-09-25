@@ -183,6 +183,15 @@ export const PREFERENCE_SPECS = {
    * settled on before asking for the choice.
    */
   wordStyle: { options: WORD_STYLE_LIST, fallback: WORD_STYLES.reversi },
+
+  /*
+   * Whether a finished game's list of moves is open or folded. John,
+   * 2026-09-25: "Moves might be collapsed or hidden naturally as some people
+   * might not want it." Open until somebody folds it; folded once, it stays
+   * folded on the next finished game, which is what "people might not want
+   * it" asks of it.
+   */
+  movesShown: { options: ["open", "folded"], fallback: "open" },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */
