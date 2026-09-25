@@ -10,6 +10,8 @@ import { HomeFamilies } from "@/components/home/HomeFamilies";
 import { HomeStart } from "@/components/home/HomeStart";
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 import { currentReader } from "@/lib/auth/currentReader";
+import { FEED_PATH } from "@/lib/feed/feed.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { siteNumbers } from "@/lib/site/siteNumbers";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { GUIDES } from "@/lib/learn/strategy";
@@ -78,8 +80,7 @@ const PITCH = [
 export default async function Home() {
   // The header has already asked; the member row behind it is cached for the
   // request, so asking again here reads no more than the cookie.
-  const reader = await currentReader();
-  const numbers = await siteNumbers();
+  const [reader, numbers, say] = await Promise.all([currentReader(), siteNumbers(), currentSpeaker()]);
   return (
     <Page>
       <SiteHeader hero />
@@ -163,6 +164,16 @@ export default async function Home() {
           <Link href="/learn" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}>
             Learn
           </Link>
+          {/*
+            A member's own feed: what they and their buddies have been doing.
+            Only for somebody with an account, since it names people and the
+            gate keeps it from a stranger anyway.
+          */}
+          {reader.memberId !== null ? (
+            <Link href={FEED_PATH} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`} data-testid="enter-feed">
+              {say.say("feed.homeLink")}
+            </Link>
+          ) : null}
         </div>
       </section>
 
