@@ -59,4 +59,18 @@ test.describe("the jigsaw puzzle", () => {
     const refused = await request.post("/api/puzzles/solved", { data: { kind: KIND, size: SIZE, level: LEVEL, givens: blank, answer } });
     expect(refused.status()).toBe(422);
   });
+
+  /*
+   * A 9×9 Jigsaw's code is 162 characters, and the route used to refuse any
+   * code over 100 as a bad request — so the biggest Jigsaw, solved, was kept
+   * nowhere and paid nothing. The route checks it as it checks any other.
+   */
+  test("the route takes a solved 9×9, the longest code a puzzle has", async ({ request }) => {
+    const puzzle = generatePuzzle(KIND, 9, LEVEL, SEED);
+    expect(puzzle.givens.length).toBeGreaterThan(100);
+    const handed = await request.post("/api/puzzles/solved", {
+      data: { kind: KIND, size: 9, level: LEVEL, givens: puzzle.givens, answer: puzzle.solution, elapsedMs: 60_000 },
+    });
+    expect(handed.status(), await handed.text()).toBe(200);
+  });
 });

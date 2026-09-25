@@ -59,6 +59,16 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
 };
 
 /**
+ * THE LONGEST CODE ANY PUZZLE HAS — a 9×9 Jigsaw's cells and regions, 162
+ * characters — which is what a route may accept before it asks the kind's own
+ * `mostCells`. The solved route used to cap a code at 100, and every 9×9
+ * Jigsaw and 7×7 More or Less handed in was refused as a bad request, kept
+ * nowhere and paid nothing. Read from the specs, so a longer kind raises it.
+ */
+export const PUZZLE_CODE_LONGEST = Math.max(...Object.values(PUZZLE_SPECS).map((spec) => spec.mostCells));
+
+
+/**
  * WHAT EACH SIZE IS FOR, under its picture on the size tiles — the board
  * games' tiles, drawn by `BoardPicker`, whose own names ("Mini" for 9×9) are
  * a board game's and would call the classic Sudoku grid the small one. The big

@@ -4,9 +4,10 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { PUZZLE_CODE_LONGEST } from "@/lib/puzzles/puzzles.constants";
 import { finishSeat, raceFor, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 
-const bodySchema = z.object({ answer: z.string().max(200) });
+const bodySchema = z.object({ answer: z.string().max(PUZZLE_CODE_LONGEST) });
 
 /**
  * A seat hands its answer in. A wrong grid is refused with its reason and

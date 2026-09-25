@@ -6,7 +6,7 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
-import { PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
@@ -33,8 +33,8 @@ const bodySchema = z.object({
   kind: z.enum(PUZZLE_KIND_LIST as [string, ...string[]]),
   size: z.number().int(),
   level: z.enum(PUZZLE_LEVEL_LIST as [string, ...string[]]),
-  givens: z.string().max(100),
-  answer: z.string().max(100),
+  givens: z.string().max(PUZZLE_CODE_LONGEST),
+  answer: z.string().max(PUZZLE_CODE_LONGEST),
   /** The browser's own clock, kept only to say it back: nothing here is timed. */
   elapsedMs: z.number().int().nonnegative().optional(),
 });

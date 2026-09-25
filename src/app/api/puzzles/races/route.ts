@@ -5,7 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
 import { createRace } from "@/lib/puzzles/server/puzzleRaces";
@@ -22,8 +22,8 @@ const bodySchema = z.object({
   size: z.number().int(),
   level: z.enum(PUZZLE_LEVEL_LIST as [string, ...string[]]),
   seed: z.number().int(),
-  givens: z.string().max(200),
-  solution: z.string().max(200),
+  givens: z.string().max(PUZZLE_CODE_LONGEST),
+  solution: z.string().max(PUZZLE_CODE_LONGEST),
 });
 
 export async function POST(request: Request) {
