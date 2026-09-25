@@ -9,6 +9,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { SolveShow } from "./SolveShow";
+import { rowHint } from "@/lib/puzzles/hintCell";
 import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
 
 /**
@@ -62,15 +64,14 @@ export function HiddenStonesSolve({
     [size],
   );
 
-  const press = useCallback(
-    (index: number) => {
+  /* The grid's marks replaced, from a tap or a hint: the one door every change goes through. `changed` are the cells it touched. */
+  const apply = useCallback(
+    (next: StoneMark[], changed: readonly number[]) => {
       // Nothing is pressed while paused (John, 2026-09-25: "if a game is paused, DISABLE the controls, all the controls").
       if (done !== null || pausing.paused) return;
       const at = begin();
-      const next = [...marks];
-      next[index] = next[index] === "" ? "stone" : next[index] === "stone" ? "cross" : "";
       setMarks(next);
-      hinting.unmark(index);
+      changed.forEach((index) => hinting.unmark(index));
       setChecked(null);
       setFullNotRight(false);
       const stones = stonesOf(next);
@@ -81,17 +82,44 @@ export function HiddenStonesSolve({
         else setFullNotRight(true);
       }
     },
-    [done, pausing.paused, begin, marks, stonesOf, answer, finish, checking.allowed, hinting],
+    [done, pausing.paused, begin, stonesOf, answer, finish, checking.allowed, hinting],
+  );
+  const press = useCallback(
+    (index: number) => {
+      const next = [...marks];
+      next[index] = next[index] === "" ? "stone" : next[index] === "stone" ? "cross" : "";
+      apply(next, [index]);
+    },
+    [marks, apply],
   );
 
-  /* Hint: every stone where the answer has none, and every cross on the answer's stone, marked until changed. */
-  const hint = () =>
-    hinting.show(
-      marks.flatMap((mark, index) => {
-        const onAnswer = answer[Math.floor(index / size)] === index % size;
-        return (mark === "stone" && !onAnswer) || (mark === "cross" && onAnswer) ? [index] : [];
-      }),
-    );
+  /* Show: every stone where the answer has none, and every cross on the answer's stone, marked until changed. A Check's worth. */
+  const show = () => {
+    if (!checking.spend()) return;
+    const wrong = marks.flatMap((mark, index) => {
+      const onAnswer = answer[Math.floor(index / size)] === index % size;
+      return (mark === "stone" && !onAnswer) || (mark === "cross" && onAnswer) ? [index] : [];
+    });
+    hinting.mark(wrong);
+    setChecked({ wrong: wrong.length, missing: stonesOf(marks).filter((col) => col === -1).length });
+  };
+
+  /* Hint: one row's stone put where the answer has it, and any other stone in that row taken up (`rowHint`). */
+  const hint = () => {
+    const row = rowHint(size, stonesOf(marks), answer, (at) => marks.slice(at * size, at * size + size).filter((mark) => mark === "cross").length);
+    if (row === null || !hinting.spend()) return;
+    const next = [...marks];
+    const changed: number[] = [];
+    for (let col = 0; col < size; col += 1) {
+      const index = row * size + col;
+      const want: StoneMark = col === answer[row] ? "stone" : next[index] === "stone" ? "" : next[index]!;
+      if (next[index] !== want) {
+        next[index] = want;
+        changed.push(index);
+      }
+    }
+    apply(next, changed);
+  };
 
   const check = () => {
     if (!checking.spend()) return;
@@ -110,9 +138,10 @@ export function HiddenStonesSolve({
       </SolvePaused>
       {done === null ? (
         <div className="flex flex-col gap-2">
-          {/* Check at one end of the row and Hint at the other (John: "opposite side of CHECK button"). */}
+          {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
           <div className="flex items-center gap-3">
             <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
+            <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
             <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
           </div>
           {checked !== null ? (

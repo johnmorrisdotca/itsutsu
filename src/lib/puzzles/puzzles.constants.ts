@@ -75,10 +75,10 @@ export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: s
 export const PUZZLE_CHECK_ALLOWANCES: readonly (number | null)[] = [null, 3, 1];
 
 export function checkAllowanceWords(allowed: number | null): { label: string; kanji: string; blurb: string } {
-  if (allowed === null) return { label: "No limit", kanji: "無制限", blurb: "Check as often as you like. It says how many cells are wrong, never which." };
-  if (allowed === 1) return { label: "One", kanji: "一回", blurb: "One Check, so spend it well. Running out takes the help away; the puzzle goes on." };
-  if (allowed === 3) return { label: "Three", kanji: "三回", blurb: "Three Checks. Running out takes the help away; the puzzle goes on." };
-  return { label: String(allowed), kanji: `${allowed}回`, blurb: `${allowed} Checks. Running out takes the help away; the puzzle goes on.` };
+  if (allowed === null) return { label: "No limit", kanji: "無制限", blurb: "Check and Show as often as you like: Check says how many cells are wrong, Show marks which." };
+  if (allowed === 1) return { label: "One", kanji: "一回", blurb: "One Check or Show, so spend it well. Running out takes them away; the puzzle goes on." };
+  if (allowed === 3) return { label: "Three", kanji: "三回", blurb: "Three Checks or Shows between them. Running out takes them away; the puzzle goes on." };
+  return { label: String(allowed), kanji: `${allowed}回`, blurb: `${allowed} Checks or Shows between them. Running out takes them away; the puzzle goes on.` };
 }
 
 /** Whether a number is one of the allowances offered, so an address or a request can name no other. */
