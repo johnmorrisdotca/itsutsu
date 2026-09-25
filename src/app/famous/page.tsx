@@ -5,6 +5,8 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { MosaicTile } from "@/components/games/MosaicTile";
 import { PageTitle } from "@/components/layout/Headings";
+import { Tabs } from "@/components/ui/Tabs";
+import { GAMES_TABS } from "@/lib/gomoku/catalogueView";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -30,7 +32,10 @@ export default function FamousGamesPage() {
   return (
     <Page board>
       <SiteHeader />
-      <PageTitle title={FAMOUS_COPY.title} kanji={FAMOUS_COPY.kanji} lead={FAMOUS_COPY.blurb} />
+      {/* A tab of Games, drawn as one: the Games heading and strip with Famous games open (`GAMES_TABS`). */}
+      <PageTitle title="Games" kanji="種目" />
+      <Tabs tabs={GAMES_TABS} active="famous" base="/games" label="How to show the games" />
+      <p className="text-sm text-muted">{FAMOUS_COPY.blurb}</p>
       <div className="grid gap-4 md:grid-cols-2" data-testid="famous-games">
         {FAMOUS_GAMES.map((game) => {
           const last = famousTimeline(game).at(-1)!;

@@ -9,7 +9,7 @@ import { readyHere } from "./support";
  */
 test("the famous games are reached from the games page, and a title-match game becomes a picture without asking the site", async ({ page }) => {
   await page.goto("/games");
-  await page.getByTestId("games-famous-link").click();
+  await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="famous"]').click();
   await expect(page).toHaveURL(/\/famous$/);
 
   const final = page.locator('[data-testid="famous-game"][data-id="alphago-leesedol-4"]');

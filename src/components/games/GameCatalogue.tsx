@@ -9,14 +9,13 @@ import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
+import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import {
   CATALOGUE_VIEWS,
-  CATALOGUE_VIEW_DISPLAY,
-  CATALOGUE_VIEW_LIST,
-  cataloguePath,
   type CatalogueView,
+  GAMES_TABS,
 } from "@/lib/gomoku/catalogueView";
 import { EVERY_GAME_KEY, gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
@@ -59,7 +58,7 @@ export function GameCatalogue({
 }) {
   return (
     <section className="flex flex-col gap-4" data-testid="game-catalogue">
-      <ViewSwitch chosen={view} />
+      <Tabs tabs={GAMES_TABS} active={view} base="/games" label="How to show the games" />
       {view === CATALOGUE_VIEWS.list ? <GameList stats={stats} signedIn={signedIn} /> : null}
       {view === CATALOGUE_VIEWS.cards ? (
         // The filters read the query on the client, so they render once that is known.
@@ -85,40 +84,6 @@ export function GameCatalogue({
         ))}
       </section>
     </section>
-  );
-}
-
-/**
- * The three ways of looking, as links rather than as buttons.
- *
- * A link, so each view has an address that can be sent to somebody, opened in
- * a new tab and bookmarked — which is the whole reason the view is in the
- * query rather than in a piece of component state.
- */
-function ViewSwitch({ chosen }: { chosen: CatalogueView }) {
-  return (
-    <nav className="flex flex-col gap-1" aria-label="How to show the games" data-testid="catalogue-view">
-      <div className="flex flex-wrap gap-1">
-        {CATALOGUE_VIEW_LIST.map((view) => {
-          const copy = CATALOGUE_VIEW_DISPLAY[view];
-          const current = view === chosen;
-          return (
-            <Link
-              key={view}
-              href={cataloguePath(view)}
-              aria-current={current ? "page" : undefined}
-              className={`rounded-md border px-2.5 py-1 text-xs transition-colors ${
-                current ? "border-ink bg-ink text-paper" : "border-rule bg-ivory/70 hover:border-rule-strong"
-              }`}
-              data-testid={`catalogue-view-${view}`}
-            >
-              {copy.label} <span className="font-mincho opacity-70">{copy.kanji}</span>
-            </Link>
-          );
-        })}
-      </div>
-      <p className="text-xs text-muted">{CATALOGUE_VIEW_DISPLAY[chosen].blurb}</p>
-    </nav>
   );
 }
 

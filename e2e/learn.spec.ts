@@ -38,7 +38,7 @@ test.describe("rules and learning", () => {
   test("every game is on one plain page, family by family, with its other names", async ({ page }) => {
     // /games/all was a page of its own; it is the plain-list view of /games.
     await page.goto("/games");
-    await page.getByTestId("catalogue-view-list").click();
+    await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
     await expect(page).toHaveURL(/\/games\?view=list$/);
     await expect(page.getByTestId("every-game-family")).toHaveCount(GAME_FAMILIES.length);
     await expect(page.getByTestId("every-game").locator("dt")).toHaveCount(EVERY_GAME_KEY.length);
@@ -188,7 +188,7 @@ test.describe("rules and learning", () => {
 
     // The shelf, from the catalogue.
     await page.goto("/games");
-    await page.getByTestId("games-learn-link").click();
+    await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="learn"]').click();
     await expect(page).toHaveURL(/\/learn$/);
 
     await page.getByRole("navigation").getByRole("link", { name: /^Players/ }).click();

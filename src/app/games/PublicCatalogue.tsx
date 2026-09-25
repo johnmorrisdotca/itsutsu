@@ -1,4 +1,3 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
@@ -118,25 +117,6 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
       </section>
 
       <BrandStones className="py-1 opacity-80" />
-
-      {/* Open too, and the best thing to read next if a game has caught them. */}
-      <section
-        className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`}
-        data-testid="games-learn"
-      >
-        <span className="flex min-w-0 flex-col gap-1">
-          <span className="flex items-baseline gap-2 text-base font-semibold">
-            <Paired en="Learn how to play them" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
-          </span>
-          <span className="text-sm text-muted">
-            The shapes that win, the moves that force, and the mistakes everyone makes once.
-            Each guide names the games it applies to.
-          </span>
-        </span>
-        <Link href="/learn" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`} data-testid="games-learn-link">
-          The learning shelf →
-        </Link>
-      </section>
 
       <section className="flex flex-col gap-4">
         <SectionHeading title={say.say("nav.everyGame")} kanji="全種目" />

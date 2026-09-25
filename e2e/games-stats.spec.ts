@@ -262,7 +262,7 @@ test.describe("a member reading the games index", () => {
     await expect(strip.getByTestId("game-stats-standings")).toHaveAttribute("href", `/games/${slugFor(seeded)}/standings`);
 
     // CARDS, by its chip. A card has no other way to the standings, so the strip carries it.
-    await page.getByTestId("catalogue-view-cards").click();
+    await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="cards"]').click();
     await ready(page, "letter-filter");
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
@@ -278,7 +278,7 @@ test.describe("a member reading the games index", () => {
     await saysNobodyHasAStanding(await stripOf(page, unrated));
 
     // PLAIN LIST, by its chip.
-    await page.getByTestId("catalogue-view-list").click();
+    await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
     await expect(page).toHaveURL(/view=list/);
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
@@ -305,7 +305,7 @@ test.describe("a member reading the games index", () => {
 
   test("the games-played count opens every game it counted", async ({ page }) => {
     await page.goto("/games");
-    await page.getByTestId("catalogue-view-list").click();
+    await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
     const strip = await stripOf(page, seeded);
     await expect(strip.getByTestId("game-stats-played-count")).toHaveText(String(PLAYED));
     await strip.getByTestId("game-stats-played-count").click();
@@ -320,7 +320,7 @@ test.describe("a reader with no invite", () => {
 
   test("sees the figures and an invitation, and nobody's name", async ({ page }) => {
     await page.goto("/games");
-    await page.getByTestId("catalogue-view-list").click();
+    await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
     await expect(page).toHaveURL(/view=list/);
 
     await showsTheSeededGame(await stripOf(page, seeded), false);

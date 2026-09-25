@@ -94,12 +94,13 @@ describe("the rules are reachable without a Rules link", () => {
      * colophon is no longer the only way in, and could come out.
      */
     expect(read(CATALOGUE), "the catalogue must offer the plain list").toContain("<GameList");
-    expect(read(CATALOGUE), "through a switch a reader can see").toContain("catalogue-view");
+    // Through the page's tabs, since 2026-09-25 (they were buttons with their own look).
+    expect(read(CATALOGUE), "through a tab a reader can see").toContain("<Tabs tabs={GAMES_TABS}");
   });
 });
 
 describe("the learning shelf is reachable without a Learn link", () => {
-  it("/games offers it, prominently, in its own section", () => {
+  it("/games offers it, prominently, as one of its tabs", () => {
     /*
      * The condition John set for taking Learn out of the bar: it is offered
      * from /games rather than merely mentioned somewhere. A guide is wanted at
@@ -109,9 +110,12 @@ describe("the learning shelf is reachable without a Learn link", () => {
      * be a word buried in a paragraph — which is the thing a prominent offer is
      * not.
      */
-    const source = read(GAMES_ROOT);
-    expect(source, "a section of its own on the games page").toContain('data-testid="games-learn"');
-    expect(source, "and it leads to the shelf").toContain('href="/learn"');
+    // Since 2026-09-25 a tab of /games (John: "move the Learning Shelf button to another Tab"), not a panel under the list.
+    expect(read("src/lib/gomoku/catalogueView.ts"), "a tab in the games page's strip, leading to the shelf").toMatch(
+      /key: "learn"[^}]*href: "\/learn"/,
+    );
+    expect(read("src/components/games/GameCatalogue.tsx"), "and the games page draws that strip").toContain("<Tabs tabs={GAMES_TABS}");
+    expect(read("src/app/learn/page.tsx"), "which the shelf draws too, with itself open").toContain('active="learn"');
   });
 
   it("the lessons keep their own addresses", () => {

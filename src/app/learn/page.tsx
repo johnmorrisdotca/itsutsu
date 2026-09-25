@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { PageTitle } from "@/components/layout/Headings";
+import { Tabs } from "@/components/ui/Tabs";
+import { GAMES_TABS } from "@/lib/gomoku/catalogueView";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
@@ -30,11 +32,15 @@ export default async function LearnIndexPage() {
   return (
     <Page>
       <SiteHeader />
-      <PageTitle
-        title={say.say("nav.learn")}
-        kanji="学び"
-        lead="How to think about each game: the shapes that win, the moves that force, and the mistakes everyone makes once. Each guide names the games it applies to."
-      />
+      {/*
+        A TAB OF GAMES, drawn as one: the Games heading and strip with the
+        learning shelf open (`GAMES_TABS`). The shelf's own name is the tab.
+      */}
+      <PageTitle title={say.say("nav.games")} kanji="種目" />
+      <Tabs tabs={GAMES_TABS} active="learn" base="/games" label="How to show the games" />
+      <p className="text-sm text-muted">
+        {say.say("nav.learn")}: the shapes that win, the moves that force, and the mistakes everyone makes once.
+      </p>
       <ul className="grid gap-3 sm:grid-cols-2" data-testid="learn-index">
         {GUIDES.map((guide) => (
           <li key={guide.slug}>

@@ -1,5 +1,3 @@
-import { Paired } from "@/components/i18n/Paired";
-import Link from "next/link";
 
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -10,7 +8,6 @@ import { readCatalogueView } from "@/lib/gomoku/catalogueView";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentReader } from "@/lib/auth/currentReader";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 
 import { PublicCatalogue, catalogueFamilies } from "./PublicCatalogue";
 
@@ -66,55 +63,10 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
         <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} />
       </section>
       {/*
-        LEARN IS OFFERED HERE, PROMINENTLY, AND THAT IS WHY IT LEFT THE
-        NAVIGATION. A word in the bar was five words of chrome on every page of
-        the site for a shelf most readers want exactly once — when they have
-        met a game and want to get better at it. This is where they have just
-        met one.
-
-        Written before the bar was shortened, not after: `gamesRoot.coverage`
-        fails the build if this section stops leading to /learn, so "it is
-        reachable now" is a test rather than the opinion of whoever removed the
-        link.
+        The learning shelf and the famous games were two panels down here; they
+        are tabs of this page now (`GAMES_TABS`), beside Families, Cards and
+        Plain list, and each draws the same strip with itself open.
       */}
-      <section className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`} data-testid="games-learn">
-        <span className="flex min-w-0 flex-col gap-1">
-          <span className="flex items-baseline gap-2 text-base font-semibold">
-            <Paired en="Learn how to play them" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
-          </span>
-          <span className="text-sm text-muted">
-            The shapes that win, the moves that force, and the mistakes everyone makes once.
-            Each guide names the games it applies to.
-          </span>
-        </span>
-        <Link
-          href="/learn"
-          className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`}
-          data-testid="games-learn-link"
-        >
-          The learning shelf →
-        </Link>
-      </section>
-
-      {/*
-        The famous games, beside the learning shelf and shaped like it: games
-        worth studying, from world championships and title matches, each one
-        replayed by this site's rules and made into a picture on a press.
-      */}
-      <section className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`} data-testid="games-famous">
-        <span className="flex min-w-0 flex-col gap-1">
-          <span className="flex items-baseline gap-2 text-base font-semibold">
-            <Paired en="Famous games" kanji="名局" kanjiClassName="text-sm font-normal opacity-70" />
-          </span>
-          <span className="text-sm text-muted">
-            Title matches and historic games from public-domain records — each one a picture of every move.
-          </span>
-        </span>
-        <Link href="/famous" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`} data-testid="games-famous-link">
-          The famous games →
-        </Link>
-      </section>
-
   </Page>
   );
 }
