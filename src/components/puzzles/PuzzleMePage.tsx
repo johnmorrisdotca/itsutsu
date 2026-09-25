@@ -9,20 +9,24 @@ import { gamePath, matchPath, setUpPath, standingsPath } from "@/lib/gomoku/slug
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { racesOf, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
-import { ownSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { ownSolvesOf, ownWordsOf } from "@/lib/puzzles/server/puzzleSolves";
 
 import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
+import { WordHistory } from "./WordHistory";
 
 /**
  * /games/<slug>/me for a puzzle: your own solves of it, newest first, and
  * your races at it. Two tables, each shown with its shape when empty and
- * the way in beside it, as every empty table here is.
+ * the way in beside it, as every empty table here is. WordDrop's are its words
+ * instead, found and not found, with their guesses (`WordHistory`).
  */
 export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
   const me = await currentMemberId();
-  const [solves, races] = me === null ? [[], []] : await Promise.all([ownSolvesOf(me, kind), racesOf(me, kind)]);
+  const words = kind === "wordDrop";
+  const [solves, races, played] =
+    me === null ? [[], [], { words: [], total: 0 }] : await Promise.all([words ? [] : ownSolvesOf(me, kind), racesOf(me, kind), words ? ownWordsOf(me) : { words: [], total: 0 }]);
   return (
     <Page>
       <SiteHeader />
@@ -37,7 +41,13 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
             / Yours
           </>
         }
-        lead={me === null ? "This page lists your own solves, and it does not know who you are yet." : "Your solves of it, newest first, and your races."}
+        lead={
+          me === null
+            ? "This page lists your own solves, and it does not know who you are yet."
+            : words
+              ? "Every word you have played, found or not, with your guesses and what each scored."
+              : "Your solves of it, newest first, and your races."
+        }
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">fastest here</Link>
@@ -45,6 +55,9 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
         </p>
       </PageTitle>
 
+      {words ? <WordHistory words={played.words} total={played.total} /> : null}
+
+      {words ? null : (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-own-solves">
         <h2 className={SECTION_TITLE}>
           Your solves <span className="font-mincho normal-case tracking-normal">自分の解</span>
@@ -86,6 +99,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
           </div>
         )}
       </section>
+      )}
 
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-own-races">
         <h2 className={SECTION_TITLE}>

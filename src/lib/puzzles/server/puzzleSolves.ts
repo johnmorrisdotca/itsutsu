@@ -111,3 +111,36 @@ export async function memberNamesOf(ids: readonly string[]): Promise<Map<string,
 export async function ownSolveCount(memberId: string, kind: PuzzleKind): Promise<number> {
   return prisma.puzzleSolve.count({ where: { memberId, kind, solved: true } });
 }
+
+/** A WordDrop word a member has played to its end, found or not, with the guesses where they were kept. */
+export type OwnWord = {
+  id: string;
+  size: number;
+  level: string;
+  givens: string;
+  answer: string | null;
+  solved: boolean;
+  points: number;
+  elapsedMs: number;
+  finishedAt: Date;
+};
+
+export const OWN_WORDS_SHOWN = 50;
+
+/**
+ * A member's WordDrop words, newest first, the found and the not found alike —
+ * the history John asked for: "the history of guesses/words that the user has
+ * ever played? with score?" One indexed query, and how many there are in all.
+ */
+export async function ownWordsOf(memberId: string): Promise<{ words: OwnWord[]; total: number }> {
+  const [words, total] = await Promise.all([
+    prisma.puzzleSolve.findMany({
+      where: { memberId, kind: "wordDrop" },
+      orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
+      take: OWN_WORDS_SHOWN,
+      select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, points: true, elapsedMs: true, finishedAt: true },
+    }),
+    prisma.puzzleSolve.count({ where: { memberId, kind: "wordDrop" } }),
+  ]);
+  return { words, total };
+}

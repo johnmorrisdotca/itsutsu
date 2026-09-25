@@ -152,7 +152,15 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 Fastest solves <span className="font-mincho opacity-70">最速</span>
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
-                Your own solves <span className="font-mincho opacity-70">自分の解</span>
+                {kind === "wordDrop" ? (
+                  <>
+                    Your words <span className="font-mincho opacity-70">言葉</span>
+                  </>
+                ) : (
+                  <>
+                    Your own solves <span className="font-mincho opacity-70">自分の解</span>
+                  </>
+                )}
               </Facet>
               <Facet href={familyPath(kind)} testId="facet-family">
                 Its family <span className="font-mincho opacity-70">同族</span>
