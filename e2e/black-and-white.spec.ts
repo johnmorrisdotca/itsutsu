@@ -67,7 +67,7 @@ test.describe("the black and white puzzle", () => {
     await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-stone", "white");
     await page.getByTestId("puzzle-pause").click();
     await expect(page.getByTestId("puzzle-paused")).toBeVisible();
-    await page.getByRole("navigation").getByRole("link", { name: /^Play/ }).first().click();
+    await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await expect(page).toHaveURL(/\/play$/);
 
     const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
