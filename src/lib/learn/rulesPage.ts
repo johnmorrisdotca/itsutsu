@@ -192,7 +192,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
   }
   if (spec.checkers) board.push(checkersBoardLine(variant, opens));
-  if (spec.hexagon) {
+  if (spec.hexagon && spec.flips) {
     /*
      * COUNTED, NOT LOOKED UP. This line used to read the two boards off a
      * pair of ternaries on `sizes[0] === 11`, which said 61 for every board
@@ -207,6 +207,17 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     if (others.length > 0) {
       board.push(
         `It is played on ${others.length + 1} hexagons in all: this one, and ${listOf(others.map((size) => `${hexagonCells(size)} cells at ${sideWord(hexagonSide(size))} a side`))}. The centre is sealed on every one of them, which leaves an even number of cells to fill whichever board is chosen.`,
+      );
+    }
+  } else if (spec.hexagon) {
+    // The line game's own reading: the centre is open, and only three of the six neighbour directions are lattice axes a line can run along.
+    board.push(
+      `A hexagon of hexagons, ${sideWord(hexagonSide(opens))} cells a side and ${hexagonCells(opens)} in all, with nothing sealed at the centre. Every cell touches six others, but a line may only run along three of the lattice's own axes.`,
+    );
+    const others = sizes.filter((size) => size !== opens);
+    if (others.length > 0) {
+      board.push(
+        `It is played on ${others.length + 1} hexagons in all: this one, and ${listOf(others.map((size) => `${hexagonCells(size)} cells at ${sideWord(hexagonSide(size))} a side`))}.`,
       );
     }
   }

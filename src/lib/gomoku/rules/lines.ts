@@ -1,4 +1,4 @@
-import { BLOCKED, DIRECTIONS, HOT, LINE_RULES, VARIANT_SPECS, WORM } from "../gomoku.constants";
+import { BLOCKED, HOT, LINE_RULES, VARIANT_SPECS, WORM, lineDirectionsFor } from "../gomoku.constants";
 import { wormholeLinks } from "../obstacles";
 import type {
   Cell,
@@ -192,8 +192,9 @@ export function winningLineFor(
   if (!joins(board[indexOf(settings.size, point)], stone)) return [];
   const { lineRule, winLength } = rulesFor(settings, stone);
   const world = lineWorld(settings);
+  const directions = lineDirectionsFor(VARIANT_SPECS[settings.variant].hexagon);
 
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     const run = runThrough(board, settings.size, point, step, stone, world);
     if (runWins(lineRule, run, winLength, stone)) return run.cells;
   }

@@ -400,7 +400,7 @@ describe("the tour covers the site", () => {
     // a set that is complete and unpaid.
     // The puzzles count: "every game played" means every puzzle solved too.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
-    expect(XP_VARIANTS_TO_PLAY).toBe(45 + PUZZLE_KIND_LIST.length);
+    expect(XP_VARIANTS_TO_PLAY).toBe(46 + PUZZLE_KIND_LIST.length);
     // Nine since Other opened with WordDrop on 2026-09-25.
     expect(GAME_FAMILIES.length).toBe(9);
   });

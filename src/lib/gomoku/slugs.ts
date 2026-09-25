@@ -51,6 +51,7 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   honeycomb: "honeycomb",
   halma: "halma",
   hex: "hex",
+  hexFive: "hex-five",
   checkers: "checkers",
   internationalDraughts: "international-draughts",
   brazilianDraughts: "brazilian-draughts",

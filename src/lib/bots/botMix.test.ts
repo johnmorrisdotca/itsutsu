@@ -69,8 +69,8 @@ describe("the mixed plan: games nobody has played", () => {
     const seen = new Set<number>();
     const unplayed = RULE_VARIANT_LIST.filter((variant) => (LIVE.finishedByVariant[variant] ?? 0) === 0);
     // Twenty-eight on the live site as read, and the five draughts games added since, which nobody has played.
-    // Thirty-four with Honeycomb, which nobody had played when the snapshot was read.
-    expect(unplayed).toHaveLength(34);
+    // Thirty-four with Honeycomb, and thirty-five with Hex Five, neither played when the snapshot was read.
+    expect(unplayed).toHaveLength(35);
     for (const seed of SEEDS) {
       const plan = planMix(LIVE, options({ seed }));
       for (const variant of unplayed) {

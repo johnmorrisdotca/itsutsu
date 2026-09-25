@@ -194,6 +194,7 @@ export type RuleVariant =
   | "honeycomb"
   | "halma"
   | "hex"
+  | "hexFive"
   | "obstacleFive"
   | "checkers"
   | "internationalDraughts"

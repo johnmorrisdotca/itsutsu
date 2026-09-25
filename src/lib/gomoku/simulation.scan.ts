@@ -131,6 +131,24 @@ const SCAN_DIRECTIONS: Point[] = [
 ];
 
 /**
+ * Hex Five's own three, by hand: the square board's fourth diagonal,
+ * `{row: 1, col: 1}`, is not a lattice axis on the hexagon embedding — see
+ * board.constants.ts — so a run along it is never a line here, whatever its
+ * length. Restated rather than shared with the engine's own three, for the
+ * same reason SCAN_DIRECTIONS is restated above it.
+ */
+const HEX_SCAN_DIRECTIONS: Point[] = [
+  { row: 0, col: 1 },
+  { row: 1, col: 0 },
+  { row: 1, col: -1 },
+];
+
+/** Which directions a line may run in, by the game's name rather than its spec — see the note on SCAN_DIRECTIONS. */
+function scanDirectionsByHand(variant: string): readonly Point[] {
+  return variant === "hexFive" ? HEX_SCAN_DIRECTIONS : SCAN_DIRECTIONS;
+}
+
+/**
  * Which edges a variant joins, restated by hand: the ring game is a cylinder,
  * the toroidal game a torus, everything else a plain board.
  */
@@ -161,6 +179,7 @@ function wormPairs(board: Cell[]): Map<number, number> {
 export function bruteForceWinner(board: Cell[], settings: GameSettings): Stone | null {
   const { size } = settings;
   const wrap = wrapsOf(settings.variant);
+  const scanDirections = scanDirectionsByHand(settings.variant);
   const worms = settings.variant === "wormDrop" ? wormPairs(board) : new Map<number, number>();
   const fold = (n: number) => ((n % size) + size) % size;
   const at = (row: number, col: number): Cell | "edge" => {
@@ -191,7 +210,7 @@ export function bruteForceWinner(board: Cell[], settings: GameSettings): Stone |
       // A hotspot can start a run for either colour.
       const colours: Stone[] = isStone(cell) ? [cell] : ["black", "white"];
 
-      for (const stone of colours) for (const step of SCAN_DIRECTIONS) {
+      for (const stone of colours) for (const step of scanDirections) {
         /*
          * On a plain board, only measure from the start of a run so each run
          * is counted once. Where edges join there may be no start at all — a

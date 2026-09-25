@@ -61,6 +61,8 @@ const SCENES: Record<
   // Six legal moves from the ring, worked out by the engine: each one brackets and turns.
   honeycomb: { size: 11, moves: [[6, 3], [6, 2], [7, 2], [6, 6], [6, 1], [6, 0]] },
   hex: { size: 11, moves: [[5, 5], [0, 0], [4, 5], [1, 0], [6, 5], [2, 0], [7, 5], [3, 0]] },
+  // The first move takes the centre, which Honeycomb never allows; the rest sits near it.
+  hexFive: { size: 11, moves: [[5, 5], [4, 5], [5, 4], [4, 4], [5, 6], [3, 3], [6, 4]] },
   halma: {
     size: 16,
     moves: [],

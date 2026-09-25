@@ -31,7 +31,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Five in a row",
     kanji: "五目",
     blurb: "The classic and its tournament forms. Start with Gomoku; the rest tighten the rules.",
-    games: ["freestyle", "standard", "renju", "omok", "caro", "connect6", "misereFive"],
+    games: ["freestyle", "standard", "renju", "omok", "caro", "connect6", "misereFive", "hexFive"],
   },
   {
     key: "drops",
