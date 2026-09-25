@@ -14,13 +14,12 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import {
-  BOARD_THEMES,
   GUIDE_COLOURS,
   latticeFitFor,
   SQUARE_GUIDES,
   STONE_SETS,
 } from "./Board.constants";
-import { gridFor } from "./appearance";
+import { boardThemeFor, gridFor } from "./appearance";
 import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
@@ -97,7 +96,8 @@ export function Board({
   const [hovered, setHovered] = useState<Point | null>(null);
   const { size } = state.settings;
   const spec = VARIANT_SPECS[state.settings.variant];
-  const theme = BOARD_THEMES[appearance.boardTheme];
+  // Wood, or the felt of a Reversi board (`boardThemeFor`).
+  const theme = boardThemeFor(appearance, spec);
   const stones = STONE_SETS[appearance.stoneSet];
   // In the squares or on the crossings: the game's own custom, from its spec, unless the reader chose one look for all.
   const cells = gridFor(appearance, spec) === BOARD_GRIDS.cells;

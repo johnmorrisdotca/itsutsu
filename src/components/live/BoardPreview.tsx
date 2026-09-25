@@ -4,6 +4,8 @@ import { useMemo } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { FeltUnderBoard } from "@/components/board/FeltPatches";
+import type { Appearance, Felt } from "@/components/board/board.types";
 import { createGame } from "@/lib/gomoku/engine";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameSettings, RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -35,7 +37,17 @@ export type PreviewRules = { variant: string; size: number; obstacles: string };
  * nothing, and a control that silently ignores you is a worse experience than
  * one that was never offered. The caption is the honest half of that.
  */
-export function BoardPreview({ rules }: { rules: PreviewRules }) {
+export function BoardPreview({
+  rules,
+  appearance = DEFAULT_APPEARANCE,
+  onFelt,
+}: {
+  rules: PreviewRules;
+  /** The reader's board, so a Reversi shows the felt they will play on. */
+  appearance?: Appearance;
+  /** Choosing a Reversi board's felt here, on the patches under it; none where it cannot be chosen. */
+  onFelt?: (felt: Felt) => void;
+}) {
   /*
    * Only the three choices that change the PICTURE, and taken loosely on
    * purpose. The set-up form holds a draft whose `variant` and `obstacles` are
@@ -110,7 +122,7 @@ export function BoardPreview({ rules }: { rules: PreviewRules }) {
       <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
         <Board
           state={state}
-          appearance={DEFAULT_APPEARANCE}
+          appearance={appearance}
           readOnly
           onPlay={() => {}}
           viewer={null}
@@ -119,6 +131,16 @@ export function BoardPreview({ rules }: { rules: PreviewRules }) {
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
         {SET_UP_COPY.previewIs(RULE_VARIANT_DISPLAY[variant].label)}
         {dealt ? ` ${SET_UP_COPY.previewDealt}` : ""}
+        {/*
+          A Reversi board's felt, in the room the caption keeps: no game that
+          wears felt scatters its board, so the patches take the line the
+          scattering sentence would, and choosing a game moves nothing.
+        */}
+        {onFelt === undefined ? null : (
+          <span className="mt-1 block">
+            <FeltUnderBoard appearance={appearance} variant={variant} onChoose={onFelt} />
+          </span>
+        )}
       </figcaption>
     </figure>
   );

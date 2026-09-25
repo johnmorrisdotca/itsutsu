@@ -1,6 +1,7 @@
-import { BOARD_THEMES, DEFAULT_APPEARANCE, GRID_STYLES, STONE_SETS } from "./Board.constants";
+import { BOARD_GRIDS } from "@/lib/gomoku/gomoku.constants";
+import { BOARD_THEMES, DEFAULT_APPEARANCE, FELT_LIST, FELTS, GRID_STYLES, STONE_SETS } from "./Board.constants";
 import type { BoardGrid, VariantSpec } from "@/lib/gomoku/gomoku.types";
-import type { Appearance } from "./board.types";
+import type { Appearance, BoardThemeTokens } from "./board.types";
 
 /**
  * How a board is dressed, as it crosses the database.
@@ -46,6 +47,8 @@ export function cleanAppearance(stored: unknown): Partial<Appearance> {
   const grid = knownKey(GRID_STYLES, row.grid);
   if (grid !== undefined) clean.grid = grid;
 
+  if (typeof row.felt === "string" && (FELT_LIST as readonly string[]).includes(row.felt)) clean.felt = row.felt as Appearance["felt"];
+
   const showCoordinates = knownFlag(row.showCoordinates);
   if (showCoordinates !== undefined) clean.showCoordinates = showCoordinates;
 
@@ -73,6 +76,7 @@ export function sameAppearance(a: Appearance, b: Appearance): boolean {
     a.boardTheme === b.boardTheme &&
     a.stoneSet === b.stoneSet &&
     a.grid === b.grid &&
+    a.felt === b.felt &&
     a.showCoordinates === b.showCoordinates &&
     a.showMoveNumbers === b.showMoveNumbers &&
     a.flipped === b.flipped
@@ -91,4 +95,18 @@ export function sameAppearance(a: Appearance, b: Appearance): boolean {
  */
 export function gridFor(appearance: Appearance, spec: VariantSpec): BoardGrid {
   return appearance.grid === "auto" ? spec.grid : appearance.grid;
+}
+
+/**
+ * Whether this game's board is cloth rather than wood: a flipping game drawn in
+ * the squares, as Reversi is. Honeycomb flips on the crossings of a hexagon and
+ * keeps the wood, and so does a Reversi the reader has put on the crossings.
+ */
+export function wearsFelt(appearance: Appearance, spec: VariantSpec): boolean {
+  return spec.flips && !spec.hexagon && gridFor(appearance, spec) === BOARD_GRIDS.cells;
+}
+
+/** The surface a board is drawn on: its felt where it wears one and the reader has not asked for wood, their board theme otherwise. */
+export function boardThemeFor(appearance: Appearance, spec: VariantSpec): BoardThemeTokens {
+  return wearsFelt(appearance, spec) && appearance.felt !== "wood" ? FELTS[appearance.felt] : BOARD_THEMES[appearance.boardTheme];
 }

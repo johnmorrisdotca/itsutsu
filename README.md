@@ -577,6 +577,9 @@ are derived from the size.
 ### It looks like a board
 
 Five surfaces — kaya, shin-kaya, washi, sumi, matcha — and five stone sets.
+A Reversi board is felt instead: green, blue, red or black, chosen on a row of
+patches under the set-up screen's preview or under the board mid-game, or the
+reader's own wood (`FELTS` in `src/components/board/Board.constants.ts`).
 
 <p>
 <img src="docs/images/theme-kaya.jpg" alt="Kaya" width="150">

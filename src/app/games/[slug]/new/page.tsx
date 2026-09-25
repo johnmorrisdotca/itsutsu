@@ -8,6 +8,7 @@ import { SetUpHeading } from "@/components/live/SetUpHeading";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
+import { appearanceFor } from "@/lib/auth/memberAccount";
 import { PuzzleSetUpPage } from "@/components/puzzles/PuzzleSetUpPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleFor, variantFor } from "@/lib/gomoku/slugs";
@@ -48,11 +49,13 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
   const variant = variantFor(slug);
   if (variant === null) notFound();
 
-  const [defaults, opponents, seats] = await Promise.all([
+  const [defaults, opponents, seats, appearance] = await Promise.all([
     // Kept on the account, by member id; a session with no member opens at the site's own.
     gameDefaultsFor(reader.memberId),
     fetchOpponents(reader),
     seatsToSitAt(),
+    // The reader's board, so the preview is dressed as the game will be.
+    appearanceFor(reader.memberId),
   ]);
   /*
    * Reads a row only where the address asked for one — a position to carry, a
@@ -73,6 +76,7 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
         seats={seats}
         // A session to continue, an account to name who — see /games/new.
         signedIn={reader.signedIn}
+        appearance={appearance ?? undefined}
         canAsk={reader.hasAccount}
         opponent={from.opponent}
         again={from.again}

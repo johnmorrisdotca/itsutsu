@@ -4,18 +4,12 @@ import { useState, useSyncExternalStore } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import type { Appearance } from "@/components/board/board.types";
-import {
-  readTurned,
-  subscribeTurned,
-  turnedFor,
-} from "@/components/board/turned";
+import { FeltUnderBoard } from "@/components/board/FeltPatches";
 import {
   cellAt,
   inMovePhase,
   pieceMoves,
 } from "@/lib/gomoku/engine";
-import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { PieceTray } from "@/components/game/PieceTray";
@@ -38,6 +32,7 @@ import { readQuiet, subscribeQuiet } from "./quiet";
 import { settleFromRecord, settledSinceRendered } from "@/lib/history/settle";
 import { useBotSeat } from "./useBotSeat";
 import { useLiveGame } from "./useLiveGame";
+import { useSharedBoard } from "./useSharedBoard";
 import { useMatchAddress } from "./useMatchAddress";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
@@ -91,29 +86,10 @@ export function SharedGame({
     () => readQuiet(initial.id),
     () => false,
   );
-  /*
-   * This board's own way up, when it has been given one. Unset means the
-   * account's standing preference stands, so turning every board round in the
-   * settings still turns the ones nobody has spoken about.
-   */
-  const override = useSyncExternalStore(
-    subscribeTurned,
-    () => readTurned(initial.id),
-    () => null,
-  );
   const { game: detail, mutate, paused, resume, pollEvery, asking, answeredAt } = useLiveGame(initial);
   const state = settleFromRecord(replayGame(detail), detail);
-  /*
-   * Three answers to which way up, in order of how particular they are: what
-   * this person turned this game to, then what they prefer everywhere, then —
-   * where they have said neither — their own side of the board, nearest them.
-   */
-  const turned = turnedFor(
-    override,
-    appearance.flipped ?? boardStartsFlipped(state.settings, seat),
-  );
-  const board: Appearance = { ...appearance, flipped: turned };
-
+  // Which way up, and a Reversi board's felt: this reader's own, reaching neither the game nor the other seat.
+  const { board, turned, chooseFelt } = useSharedBoard(initial.id, appearance, state.settings, seat);
 
   const played = state.moves.length;
   // The address kept on the position, and the hand-back when the game ends
@@ -407,6 +383,7 @@ export function SharedGame({
         <RuleNotes state={state} />
         <ReactionBubbles reactions={shown} yourStone={seat} />
         <TurnBoardButton gameId={detail.id} turned={turned} />
+        <FeltUnderBoard appearance={board} variant={state.settings.variant} onChoose={chooseFelt} />
       </div>
 
       <div data-bare-board>
