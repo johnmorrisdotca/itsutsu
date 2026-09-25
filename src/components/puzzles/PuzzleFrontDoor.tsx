@@ -49,6 +49,18 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
       */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
+          {/*
+            THE TRAIL, AS ON EVERY PAGE UNDER A GAME. John, 2026-09-25: "We don't
+            show crumbs for the root game page, but show crumbs once drilled
+            down. Just show the crumbs for all." Its rules, set-up and board say
+            Games / name / …; this is the first step of that trail.
+          */}
+          <p className="text-xs text-muted" data-testid="game-crumb">
+            <Link href="/games" className="underline-offset-2 hover:underline">
+              Games
+            </Link>{" "}
+            / {page.title}
+          </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
