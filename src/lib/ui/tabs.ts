@@ -28,6 +28,12 @@ export type Tab = {
    * Puzzles (John, 2026-09-25: "the counts are too subtle").
    */
   count?: number;
+  /**
+   * An address of its own, for a tab that is a page elsewhere: Players'
+   * Champions tab is /champions, which draws the same strip with itself open,
+   * so it reads as part of Players without being a second copy of the page.
+   */
+  href?: string;
 };
 
 /**
@@ -48,6 +54,8 @@ export function activeTab(tabs: readonly Tab[], asked: string | string[] | undef
  * address does not grow a query string just by being looked at.
  */
 export function tabHref(base: string, tabs: readonly Tab[], key: string): string {
+  const own = tabs.find((tab) => tab.key === key)?.href;
+  if (own !== undefined) return own;
   if (tabs.length === 0 || key === tabs[0].key) return base;
   return `${base}?${TAB_PARAM}=${encodeURIComponent(key)}`;
 }

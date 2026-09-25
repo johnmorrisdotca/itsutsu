@@ -140,10 +140,6 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
       why: "the same sentence, the other way the data can come out",
     },
   ],
-  "src/app/champions/page.tsx": [
-    { line: 'so being good at <GameName variant="notakto" />', why: "a sentence of explanation above the table" },
-    { line: '<GameName variant="renju" />; the ladder', why: "the same sentence" },
-  ],
   "src/components/game/GameBrowser.tsx": [
     {
       line: "{GAME_COPY.browserOpenings.label} · <GameName variant={shown} />",

@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Paired } from "@/components/i18n/Paired";
 
 import { GameCount } from "@/components/games/GameCount";
-import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PageTitle } from "@/components/layout/Headings";
+import { Tabs } from "@/components/ui/Tabs";
+import { PLAYERS_TABS } from "@/app/players/players.tabs";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
@@ -111,20 +112,18 @@ export default async function ChampionsPage() {
   return (
     <Page>
       <SiteHeader />
-      <PageTitle
-        title="Champions"
-        kanji="名人"
-        lead={
-          <>
-            The best-rated player at each game, as the standings are today. Every game keeps its own Elo,
-            so being good at <GameName variant="notakto" /> is a different claim from being good at{" "}
-            <GameName variant="renju" />; the ladder on the{" "}
-            <Link href="/players?view=ladder" className="underline underline-offset-4">players</Link> page counts everything
-            together. Only games between two named members count. A game at one screen is filed and never rated.
-          </>
-        }
-      />
+      {/*
+        A TAB OF PLAYERS, drawn as one: the same heading and strip as /players,
+        with Champions open. John, 2026-09-25: "Champions is a direct descendant
+        of [Players]… yet there is no tab or link to view the Champs".
+      */}
+      <PageTitle title="Players" kanji="対局者" />
+      <Tabs tabs={PLAYERS_TABS} active="champions" base="/players" label="Which players to look at" />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="champions">
+        <p className="text-sm text-muted">
+          The best-rated player at each game today. Each game keeps its own rating; the{" "}
+          <Link href="/players?view=ladder" className="underline underline-offset-4">ladder</Link> counts everything together.
+        </p>
         {/* Six columns of record. Unwrapped, this made /champions 570 pixels wide on a 390-pixel phone. */}
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">

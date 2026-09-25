@@ -14,7 +14,8 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { directoryFilterFor } from "@/lib/rating/memberFilter";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
-import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { activeTab } from "@/lib/ui/tabs";
+import { PLAYERS_TABS as TABS, PLAYERS_OWN_TABS } from "./players.tabs";
 
 /** Everything the address already says, as a query string. */
 function addressOf(asked: Record<string, string | string[] | undefined>): string {
@@ -30,29 +31,6 @@ export const metadata = { title: "Players" };
 // The tables are read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
 
-/*
- * Four lists that happen to be about players, so the page shows one at a
- * time. They were four headings stacked down one page — a directory of two
- * hundred, a ladder of fifty, the computer players and the kept records — and
- * the ladder was three screens below the fold on the day it was added.
- *
- * The members come first, so /players with nothing appended is still the list
- * of people it has always been, and a filtered directory is still an address
- * with no `view` on it.
- */
-const TABS: Tab[] = [
-  { key: "members", label: "Members", kanji: "会員" },
-  /*
-   * THE PEOPLE YOU PLAY, second — John, 2026-09-21: "We need Buddy LIst page."
-   * Second rather than last because it is the shortest list and the one a
-   * returning player wants: the members tab is two hundred names and this is
-   * the handful of them you came for.
-   */
-  { key: "buddies", label: "Buddies", kanji: "仲間" },
-  { key: "ladder", label: "Ladder", kanji: "番付" },
-  { key: "computers", label: "Computers", kanji: "機械" },
-  { key: "remembered", label: "Remembered", kanji: "偲ぶ" },
-];
 
 /** The computer players' own tab, which is the only place that needs their rows. */
 async function ComputerTab() {
@@ -70,7 +48,7 @@ async function ComputerTab() {
 export default async function PlayersPage({ searchParams }: PageProps<"/players">) {
   const now = new Date();
   const asked = await searchParams;
-  const open = activeTab(TABS, asked.view);
+  const open = activeTab(PLAYERS_OWN_TABS, asked.view);
   /*
    * How this reader likes the directory narrowed, and whether the kind of
    * player came from their account — asked for only inside the tab that shows
