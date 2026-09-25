@@ -88,3 +88,14 @@ export const MOSAIC_COPY = {
   join: "No invite? Ask for one →",
   open: "Open this game",
 } as const;
+
+/*
+ * ONE RIGHT-HAND COLUMN AND ONE LARGE PICTURE, on a game's page, its rules page
+ * and a puzzle's page. John, 2026-09-25: the rules page's picture was larger
+ * than the game page's, the game page's right column was narrower than it, and
+ * "the LHS and RHS dimensions are different. they should be EQUAL." The column
+ * is one width everywhere; the picture is one size, the inside width of a panel
+ * in that column, so it fits there as well as beside the heading.
+ */
+export const GAME_SIDE_COLUMN = "lg:w-72 lg:shrink-0";
+export const GAME_PICTURE_BOX = "w-full sm:w-64 sm:shrink-0";

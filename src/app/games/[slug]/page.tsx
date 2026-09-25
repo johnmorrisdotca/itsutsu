@@ -1,4 +1,5 @@
 import { RealGamesMosaic } from "@/components/games/RealGamesMosaic";
+import { GAME_PICTURE_BOX, GAME_SIDE_COLUMN } from "@/components/games/games.constants";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -103,7 +104,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               arrived with. eslint-disable: a static screenshot, already sized, with
               nothing for the optimiser to do.
             */}
-            <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
+            <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
               <img
                 src={page.image}
@@ -197,7 +198,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           </div>
         </div>
 
-        <aside className="flex w-full flex-col gap-4 lg:w-72">
+        <aside className={`${GAME_SIDE_COLUMN} flex w-full flex-col gap-4`}>
           {/*
             The ladder: who is best at it, where everybody stands, where the
             reader stands, and the way on to the whole of it at

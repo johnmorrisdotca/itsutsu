@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GAME_SIDE_COLUMN } from "@/components/games/games.constants";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -225,7 +226,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           above the title, as on the game's own page, while the guides stay
           last; a column of its own from a laptop.
         */}
-        <aside className="contents lg:flex lg:w-80 lg:flex-col lg:gap-4">
+        <aside className={`${GAME_SIDE_COLUMN} contents lg:flex lg:flex-col lg:gap-4`}>
           {/*
             Always shown. Whether the file is there is settled by the New Game
             Gate before anything ships, so there is nothing to ask while

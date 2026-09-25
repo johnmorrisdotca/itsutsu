@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GAME_PICTURE_BOX, GAME_SIDE_COLUMN } from "@/components/games/games.constants";
 import type { ReactNode } from "react";
 
 import { GameFamily } from "@/components/games/GameFamily";
@@ -49,7 +50,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
-            <div className="flex w-full flex-col gap-2 sm:w-56 sm:shrink-0">
+            <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
               <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
               {/* The one big Play, under the picture, as on every game's page; alone or a friend is chosen on the set-up. */}
@@ -103,7 +104,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
           </div>
         </div>
 
-        <aside className="flex w-full flex-col gap-4 lg:w-72">
+        <aside className={`${GAME_SIDE_COLUMN} flex w-full flex-col gap-4`}>
           {/* Request time, in a component of its own holding a `connection()`, like the game ladder. */}
           {/* The leaderboard first, where a reader looks first (John: "so prominent and easy to read"), and the fastest times under it. */}
           <Suspense fallback={null}>
