@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Browser } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { ready } from "./support";
+import { openReplayAdvanced, ready } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -111,6 +111,8 @@ test.describe("the fork on a finished game's replay", () => {
      */
     await scrubber.press("ArrowLeft");
     await expect(scrubber).toHaveValue("4");
+    // Under Advanced, at the bottom of the replay.
+    await openReplayAdvanced(page);
     await expect(page.getByRole("link", { name: "Play from move 4 分岐" })).toBeVisible();
 
     await context.close();

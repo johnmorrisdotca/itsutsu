@@ -69,6 +69,7 @@ export function RulesForm({
    */
   showVariant = true,
   settledByBoard = false,
+  positionFixed = false,
   variantLabel = "Rules",
   chooser = RULES_CHOOSERS.select,
   refused,
@@ -99,6 +100,12 @@ export function RulesForm({
    * promises the same set on both screens. This one says which are ASKED.
    */
   settledByBoard?: boolean;
+  /**
+   * A fork: the board and the opening come with the position, so neither is
+   * offered — the server takes both from the game forked whatever is sent, and
+   * a choice it throws away is a control that lies. The preview still draws it.
+   */
+  positionFixed?: boolean;
   /**
    * What to call the chooser at the top.
    *
@@ -216,6 +223,7 @@ export function RulesForm({
       change={change}
       onSizeChosen={onSizeChosen}
       onPuzzle={onPuzzle}
+      boardFixed={positionFixed}
     />
   );
 
@@ -232,7 +240,7 @@ export function RulesForm({
         On the screen that CHOOSES, it is tiles with a picture of each rule;
         beside a board it stays a select, for the reason the game does.
       */}
-      {settledByBoard ? null : chooser === RULES_CHOOSERS.pictures ? (
+      {settledByBoard || positionFixed ? null : chooser === RULES_CHOOSERS.pictures ? (
         <OpeningPicker
           value={value.opening}
           variant={value.variant}

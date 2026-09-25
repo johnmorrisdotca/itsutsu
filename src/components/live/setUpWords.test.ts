@@ -16,7 +16,7 @@ const even = { variant: "freestyle", headStart: NO_HEAD_START };
 const them: SetUpOpponent = { id: "mem_them", name: "Bob Tester", computer: false };
 /** The specialist, because a program is the case the fork wording was wrong for. */
 const machine: SetUpOpponent = { id: "tamenoki", name: "Hidemasa Tamenoki", computer: true };
-const fork: SetUpFork = { id: "g_old", move: 12, alone: false, colour: STONES.black };
+const fork: SetUpFork = { id: "g_old", move: 12, alone: false, colour: STONES.black, position: null };
 const texts = (words: ReturnType<typeof recapWords>) => words.map((word) => word.text);
 
 describe("what the set-up screen's own fields say", () => {

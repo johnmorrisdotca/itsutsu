@@ -8,6 +8,7 @@ import {
   chosenBoard,
   chosenOpponent,
   matchIdIn,
+  openReplayAdvanced,
   openChoice,
   openMoreSettings,
   ready,
@@ -386,6 +387,8 @@ test.describe("carrying a position into a new game", () => {
      */
     const page = await context.newPage();
     await page.goto(`/games/gomoku/match/${game.id}/1`);
+    // Play from move N is under Advanced, at the bottom of the replay.
+    await openReplayAdvanced(page);
 
     const fork = page.getByRole("link", { name: /Play from move 1/ });
     await expect(fork).toBeVisible();
@@ -484,6 +487,8 @@ test.describe("carrying a position into a new game", () => {
      * fork-visibility spec cover.
      */
     await page.goto(`/games/gomoku/match/${game.id}/4`);
+    // Play from move N is under Advanced, at the bottom of the replay.
+    await openReplayAdvanced(page);
 
     const fork = page.getByRole("link", { name: /Play from move 4/ });
     await expect(fork).toBeVisible();
@@ -573,6 +578,8 @@ test.describe("carrying a position into a new game", () => {
 
     // One before the end, where the fork is offered at all.
     await page.goto(`/games/gomoku/match/${game.id}/4`);
+    // Play from move N is under Advanced, at the bottom of the replay.
+    await openReplayAdvanced(page);
     await page.getByRole("link", { name: /Play from move 4/ }).click();
     await expect(page).toHaveURL(new RegExp(`/games/gomoku/new\\?from=${game.id}&move=4`));
     await ready(page, "set-up-game");
@@ -611,6 +618,8 @@ test.describe("carrying a position into a new game", () => {
     const page = await context.newPage();
     // One before the end — see the fork test above for why the last move itself offers none.
     await page.goto(`/games/gomoku/match/${game.id}/4`);
+    // Play from move N is under Advanced, at the bottom of the replay.
+    await openReplayAdvanced(page);
     await page.getByRole("link", { name: /Play from move 4/ }).click();
     await ready(page, "set-up-game");
 

@@ -595,3 +595,15 @@ export function watchForCrashes(page: Page): string[] {
 export function freshPuzzleSeed(): number {
   return 100_000 + Math.floor(Math.random() * 800_000);
 }
+
+/**
+ * Opens Advanced at the bottom of a finished game's replay, where Play from
+ * move N is kept (`ReplayAdvanced`). It is a `<details>`, so it opens without
+ * waiting on anything but the page; the replay's marker is waited on anyway,
+ * because the move it offers is the scrubber's, which React owns.
+ */
+export async function openReplayAdvanced(page: Page) {
+  await ready(page, "game-replay");
+  const advanced = page.getByTestId("replay-advanced");
+  if ((await advanced.getAttribute("open")) === null) await advanced.locator("summary").click();
+}

@@ -2,6 +2,7 @@ import type { AnswerPlace } from "./answerRow";
 import type { ReactNode } from "react";
 
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
+import type { StoredGame } from "@/lib/gomoku/replay";
 import type { RulesDraft } from "./rulesDraft";
 import type { SettingWord } from "./rulesSummary";
 
@@ -188,6 +189,13 @@ export type SetUpFork = {
    * reason: black is a real colour and would read as one.
    */
   colour: Stone | null;
+  /**
+   * The game being forked with only its first `move` moves, for the preview to
+   * replay: the position the new game starts from, drawn before it exists.
+   * Null where it could not be read, and the preview falls back to the empty
+   * board of these rules rather than guessing at one.
+   */
+  position: StoredGame | null;
 };
 
 /**

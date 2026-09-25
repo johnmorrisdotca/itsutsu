@@ -386,7 +386,8 @@ export function SetUpGame({
           showVariant={chooseGame}
           variantLabel="Game"
           chooser={RULES_CHOOSERS.pictures}
-          preview={<BoardPreview rules={settled} appearance={{ ...appearance, felt }} onFelt={chooseFelt} />}
+          positionFixed={fork !== null}
+          preview={<BoardPreview rules={settled} appearance={{ ...appearance, felt }} onFelt={chooseFelt} position={fork?.position ?? null} />}
           refused={refused}
           sections={{
             /*

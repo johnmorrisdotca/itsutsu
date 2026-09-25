@@ -131,7 +131,7 @@ export const SET_UP_COPY = {
   /** The heading and lead for a fork. */
   fork: (move: number) => `Play on from move ${move}`,
   forkHint: (move: number, who: string) =>
-    `A second game from the position after move ${move}, against ${who}. Both games go on. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own.`,
+    `A second game from the position after move ${move}, against ${who}. The game it comes from is left as it is. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own.`,
   forkAlone:
     "Nobody held the other seat in the game this comes from, so this is a board at one screen: start it and hand the other seat out from there.",
   /** The head start's colour select, first under the Handicap heading: who is given a start. */

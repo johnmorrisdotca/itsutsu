@@ -24,7 +24,7 @@ const them: SetUpOpponent = { id: "mem_them", name: "Bob", computer: false };
 const again: SetUpAgain = { id: "g_old", colour: STONES.white, opponent: them };
 /** Somebody else, chosen on the set-up screen of a rematch against Bob. */
 const program: SetUpOpponent = { id: "kyu", name: "Kyu", computer: true };
-const fork: SetUpFork = { id: "g_old", move: 12, alone: false, colour: STONES.black };
+const fork: SetUpFork = { id: "g_old", move: 12, alone: false, colour: STONES.black, position: null };
 /** The line length and the seed, which no row on this form asks about. */
 const carry = { winLength: 3, seed: 7, opener: "black", drawLimit: "none" };
 

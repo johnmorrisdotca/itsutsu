@@ -7,6 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { FeltUnderBoard } from "@/components/board/FeltPatches";
 import type { Appearance, Felt } from "@/components/board/board.types";
 import { createGame } from "@/lib/gomoku/engine";
+import { replayGame, type StoredGame } from "@/lib/gomoku/replay";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameSettings, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
@@ -41,8 +42,14 @@ export function BoardPreview({
   rules,
   appearance = DEFAULT_APPEARANCE,
   onFelt,
+  position = null,
 }: {
   rules: PreviewRules;
+  /**
+   * A fork's position (`SetUpFork.position`): the board drawn as the new game
+   * will start, its stones and all, rather than the empty board of its rules.
+   */
+  position?: StoredGame | null;
   /** The reader's board, so a Reversi shows the felt they will play on. */
   appearance?: Appearance;
   /** Choosing a Reversi board's felt here, on the patches under it; none where it cannot be chosen. */
@@ -70,6 +77,8 @@ export function BoardPreview({
    */
   const state = useMemo(() => {
     try {
+      // A fork starts where the game it came from was, so that is the picture.
+      if (position !== null) return replayGame(position);
       // A fixed roll rather than a random one: an obstacle game would otherwise
       // deal itself a new board on every render, which reads as a flicker.
       return createGame(settings, 0.5);
@@ -81,7 +90,7 @@ export function BoardPreview({
        */
       return null;
     }
-  }, [settings]);
+  }, [settings, position]);
 
   /*
    * The games that deal themselves a board — rocks scattered, a hotspot placed,
@@ -97,6 +106,8 @@ export function BoardPreview({
    * scattering is added next year.
    */
   const dealt = useMemo(() => {
+    // A fork's board was dealt already, in the game it came from, and that is the one it keeps.
+    if (position !== null) return false;
     try {
       const a = createGame(settings, 0.1).board.join("");
       const b = createGame(settings, 0.9).board.join("");
@@ -104,7 +115,7 @@ export function BoardPreview({
     } catch {
       return false;
     }
-  }, [settings]);
+  }, [settings, position]);
 
   if (state === null || !(variant in RULE_VARIANT_DISPLAY)) return null;
 

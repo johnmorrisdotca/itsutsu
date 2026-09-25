@@ -10,6 +10,8 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap, parseHeadStart } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
+import { fetchGameDetail } from "@/lib/history/gameHistory";
+import type { StoredGame } from "@/lib/gomoku/replay";
 import { SET_UP_UNREAD } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER } from "./opponentOptions";
 import { plainDraft, silentDraft } from "./plainDraft";
@@ -317,6 +319,7 @@ async function fromPosition(
     move: from.move,
     alone: them === null,
     colour: seatOf(origin, mineId),
+    position: await positionAt(origin.id, from.move),
   };
 
   const asPlayed = { ...draftOf(origin), open: false };
@@ -337,6 +340,31 @@ async function fromPosition(
     fork,
     carry: carriedFrom(origin),
     problem: withUnread(null, unreadAsked(asked, want, initial, true)),
+  };
+}
+
+/**
+ * The game being forked, cut at the move it is forked from, for the preview to
+ * replay (`SetUpFork.position`). Only the fields a replay reads, so it crosses
+ * to the browser as plain data. One read, on a fork's visit and no other.
+ */
+async function positionAt(id: string, move: number): Promise<StoredGame | null> {
+  const game = await fetchGameDetail(id);
+  if (game === null) return null;
+  const { size, winLength, variant, obstacles, opener, opening, handicap, headStart, seed, drawLimit, moveTimeMs } = game;
+  return {
+    size,
+    winLength,
+    variant,
+    obstacles,
+    opener,
+    opening,
+    handicap,
+    headStart,
+    seed,
+    drawLimit,
+    moveTimeMs,
+    moves: game.moves.filter((each) => each.number <= move),
   };
 }
 

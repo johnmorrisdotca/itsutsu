@@ -4,7 +4,7 @@ import { DRAW_LIMITS, NO_HANDICAP, NO_HEAD_START } from "./gomoku.constants";
 import type { GameState, Handicap, HeadStart, MoveInput, Stone } from "./gomoku.types";
 
 /** The stored shape of a game, as both the API and the pages see it. */
-type StoredGame = {
+export type StoredGame = {
   size: number;
   winLength: number;
   variant: string;

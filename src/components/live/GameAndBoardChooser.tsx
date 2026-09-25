@@ -42,7 +42,10 @@ export function GameAndBoardChooser({
   change,
   onSizeChosen,
   onPuzzle,
+  boardFixed = false,
 }: {
+  /** The board comes with a position (a fork): the preview draws it and no sizes are offered. */
+  boardFixed?: boolean;
   value: RulesDraft;
   disabled: boolean;
   showVariant: boolean;
@@ -77,6 +80,7 @@ export function GameAndBoardChooser({
       }
     >
       {preview === undefined ? null : <div className={PICK_BOARD_PREVIEW}>{preview}</div>}
+      {boardFixed ? null : (
       <BoardPicker
         value={value.size}
         sizes={sizes}
@@ -87,6 +91,7 @@ export function GameAndBoardChooser({
           change({ size: next });
         }}
       />
+      )}
     </div>
   ) : null;
   /*
