@@ -77,15 +77,25 @@ export function WordDropGrid({
   box?: string;
 }) {
   const tiles = style === WORD_STYLES.tiles;
+  // A board of stones is a whole board, the places in play centred on whole squares (`boardSpan`); tiles are paper.
+  const span = tiles ? rows : boardSpan(size, rows);
+  const left = (span - size) / 2;
+  const top = tiles ? 0 : Math.floor((span - rows) / 2);
   return (
     <div className={box} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
-      <PuzzleBoard size={rows}>
-        <div className={`flex h-full w-full items-center justify-center ${tiles ? "bg-white" : ""}`}>
+      <PuzzleBoard size={span}>
+        <div className={`relative flex h-full w-full items-center justify-center ${tiles ? "bg-white" : ""}`}>
+          {tiles ? null : <GridLines span={span} size={size} rows={rows} left={left} top={top} style={style} />}
           <div
-            className={`relative grid h-full ${tiles ? "gap-1 p-1" : ""}`}
-            style={{ width: `${(size / rows) * 100}%`, gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}
+            className={tiles ? "relative grid h-full gap-1 p-1" : "absolute grid"}
+            style={{
+              ...(tiles
+                ? { width: `${(size / rows) * 100}%` }
+                : { left: `${(left / span) * 100}%`, top: `${(top / span) * 100}%`, width: `${(size / span) * 100}%`, height: `${(rows / span) * 100}%` }),
+              gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+            }}
           >
-            {tiles ? null : <GridLines size={size} rows={rows} style={style} />}
             {Array.from({ length: rows }, (_, row) => {
               const guessed = guesses[row];
               const live = guessed === undefined && row === guesses.length && !done;
@@ -169,24 +179,47 @@ function ArrowMark({ arrow }: { arrow: Exclude<CellArrow, ""> }) {
 }
 
 /**
- * The lines on the wood, in the board's own ink: an Othello board's squares
- * (every cell ruled, the edge included), or a Gomoku board's lines through the
- * middle of every cell, where its stones sit on the crossings.
+ * A WHOLE BOARD FOR A WORD: the smallest square at least as tall as the rows
+ * and as wide as the word, whose spare columns split evenly either side, so the
+ * places in play sit on whole squares. John, 2026-09-25, on a 3-kana board
+ * ruled only where the word was: "actually show all the grid lines... the 3
+ * in play should be regular dark, and the ones out of play would be lighter."
+ * Five letters and six rows is a 7×7 board; four kana and seven rows, 8×8.
  */
-function GridLines({ size, rows, style }: { size: number; rows: number; style: WordStyle }) {
+export function boardSpan(size: number, rows: number): number {
+  const span = Math.max(size, rows);
+  return (span - size) % 2 === 0 ? span : span + 1;
+}
+
+/** How faint the lines out of play are beside the ones in play. */
+const OUT_OF_PLAY = 0.3;
+
+/**
+ * The lines on the wood, in the board's own ink, over the whole board: an
+ * Othello board's squares (every cell ruled, the edge included), or a Gomoku
+ * board's lines through the middle of every cell, where its stones sit on the
+ * crossings. Faint everywhere, and at full ink over the places in play.
+ */
+function GridLines({ span, size, rows, left, top, style }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle }) {
   const ink = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme].line;
   const othello = style === WORD_STYLES.othello;
+  const width = othello ? 2 : 1.25;
   const at = othello ? 0 : 0.5;
-  const across = Array.from({ length: othello ? rows + 1 : rows }, (_, row) => row + at);
-  const down = Array.from({ length: othello ? size + 1 : size }, (_, col) => col + at);
+  /* One set of lines over a rectangle of cells: `across` rows high and `down` columns wide, from (x, y). */
+  const ruled = (x: number, y: number, down: number, across: number, opacity: number, key: string) => (
+    <g key={key} opacity={opacity} data-testid={opacity === 1 ? "word-lines-in-play" : "word-lines-out-of-play"}>
+      {Array.from({ length: othello ? across + 1 : across }, (_, row) => y + row + at).map((line) => (
+        <line key={`y${line}`} x1={x + at} y1={line} x2={x + down - at} y2={line} stroke={ink} strokeWidth={width} vectorEffect="non-scaling-stroke" />
+      ))}
+      {Array.from({ length: othello ? down + 1 : down }, (_, col) => x + col + at).map((line) => (
+        <line key={`x${line}`} x1={line} y1={y + at} x2={line} y2={y + across - at} stroke={ink} strokeWidth={width} vectorEffect="non-scaling-stroke" />
+      ))}
+    </g>
+  );
   return (
-    <svg viewBox={`0 0 ${size} ${rows}`} preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
-      {across.map((y) => (
-        <line key={`y${y}`} x1={at} y1={y} x2={size - at} y2={y} stroke={ink} strokeWidth={othello ? 2 : 1.25} vectorEffect="non-scaling-stroke" />
-      ))}
-      {down.map((x) => (
-        <line key={`x${x}`} x1={x} y1={at} x2={x} y2={rows - at} stroke={ink} strokeWidth={othello ? 2 : 1.25} vectorEffect="non-scaling-stroke" />
-      ))}
+    <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
+      {ruled(0, 0, span, span, OUT_OF_PLAY, "board")}
+      {ruled(left, top, size, rows, 1, "play")}
     </svg>
   );
 }
