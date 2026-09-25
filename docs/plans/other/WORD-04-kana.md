@@ -20,11 +20,24 @@ John, 2026-09-25, setting the rules himself (on the row):
 ## The word list: JMdict, and the question for John
 
 **Source**: JMdict (the Electronic Dictionary Research and Development Group,
-EDRDG), `JMdict_e.gz`, the kana reading (`reb`) of every entry. Its priority
-tags (`news1`, `ichi1`, `spec1`, `gai1`) mark the common words, which is what
-the answers need; every reading of the right length may be guessed.
+EDRDG), `JMdict_e.gz`, the kana reading (`reb`) of every entry. Every reading of
+the right length may be guessed; the answers are the commonest, chosen by a rule
+(John, 2026-09-25: "a programmatic way to narrow down words to best words… and
+shouldn't be too much larger than english"). `scripts/word-lists-ja.mjs`
+ranks each reading: textbook-common (`ichi1`) first, then its newspaper band
+(`nf01` is the 500 commonest, `nf02` the next 500; `spec1` counts as band 12,
+`gai1` 16, `spec2` 30), then more marks before fewer. Easy is the first 900 at
+each length and medium and hard the first 2,000, English's size (882 and 2,043
+at five letters; Wordle hides about 2,300). Against the 2026-09-25 release:
+accepted guesses 16,442 at 3 kana, 39,045 at 4 and 35,415 at 5.
 
-**Licence, read 2026-09-25 at https://www.edrdg.org/edrdg/licence.html**:
+**Loaded by length**: the three lists together are 419 KB (257 KB compressed),
+so each length is its own module, loaded when a puzzle of that length opens; a
+3-kana game carries about 50 KB.
+
+**Licence, read 2026-09-25 at https://www.edrdg.org/edrdg/licence.html**
+(John, 2026-09-25: "JMdict, monthly refresh sounds good"; UmaKuma already uses
+it, and its own refresh gap is on UmaKuma's board):
 CC BY-SA 4.0, with EDRDG's own conditions:
 
 1. Attribution on the pages that show the words, naming JMdict and EDRDG and
@@ -33,27 +46,35 @@ CC BY-SA 4.0, with EDRDG's own conditions:
 2. **"There must be a procedure for regular updating of the data from the most
    recent versions available… at least once a month. Failure to keep the
    versions up-to-date is a violation of the licence."** This is an ongoing
-   obligation, so it is John's decision (asked 2026-09-25). Recommended: a
-   monthly scheduled workflow regenerates the list and opens a pull request,
-   landed with the next ordinary push, so it costs no deployment of its own.
+   obligation, and John chose it: `.github/workflows/jmdict-refresh.yml` runs
+   on the 1st of each month, writes the lists again from the newest release,
+   and if they changed pushes them to a `data/jmdict-YYYY-MM` branch and fails
+   on purpose as the reminder. It opens no pull request and never pushes to
+   main (John, 2026-09-25: "don't make any prs without my permission"), as
+   UmaKuma's EDRDG refresh does; an agent lands the branch through the ordinary
+   release, so it costs no deployment of its own.
    A game already played keeps its word, because its record stores the word.
 3. Commercial use is not restricted.
 
-Nothing from JMdict enters the repository until John answers. If he declines,
-the fallback is a Wiktionary-derived list (CC BY-SA, no update clause) with no
-commonness marks, which makes easy answers much harder to choose.
-
 ## The rules, as they will be built
 
-A word is 3 or 4 kana, hiragana only (a reading in katakana is folded to
-hiragana; ー stays ー). Guesses: six at both lengths, one more than English's
-rule, because a kana alphabet is about seventy symbols against twenty-six.
+A word is 3, 4 or 5 kana (John added 5), hiragana only (a reading in katakana
+is folded to hiragana; ー stays ー). Six guesses at every length: a kana
+alphabet is about seventy symbols against twenty-six, and more than half the
+5-kana words hold a small kana (きょう, しゅう), so 5 is the hard size.
+
+**A free grey word** (John, 2026-09-25: "have a REAL word that is completely
+grey. that tells the user a lot."): on easy and medium the puzzle opens with a
+real word already played as its first row, every place grey — none of its kana
+is in the word and none shares the family of the word's kana in its place. It
+is drawn from the accepted list by the puzzle's own seed, so everybody with the
+same word sees the same clue, and it costs no guess. Hard has none.
 
 Every kana is read three ways: its **base** (size and mark removed: ぱ → は,
 っ → つ), its **size** (small or large) and its **mark** (none, ゛ or ゜). Its
 **family** is its consonant row of the gojūon (か行: か き く け こ, and their
-voiced forms, since the base decides the row); あ行 is the vowels, and や, ゆ, よ,
-わ, を and ん are each their own row with their own kana.
+voiced forms, since the base decides the row); あ行 is the vowels, や行 is
+や ゆ よ, わ行 is わ を, and ん is a row of its own.
 
 For each place in a guess, first match across the whole guess (so a kana is
 counted as many times as the word holds it, as the English marking does):
@@ -73,11 +94,10 @@ not found.
 family. Green in its place, orange elsewhere, grey otherwise; never yellow, and
 never an arrow.
 
-**Yellow is about this place**: the word's kana HERE shares the guess's
-family. It is not a claim about the rest of the word, so it adds nothing to
-what orange says. Decided here, for review: John wrote "same consonant family,
-wrong kana", and a place-bound reading is the one that tells a player something
-orange does not.
+**Yellow is about this place**: the word's kana HERE is in the guessed kana's
+family, and a yellow says nothing about the rest of the word. Decided here, for
+review: John wrote "same consonant family, wrong kana", and read against this
+place it tells a player something orange cannot, which kana row to try next.
 
 ## Typing it
 
@@ -100,12 +120,11 @@ generator that draws every size and level in a browser's time.
 
 ## Order of work
 
-1. John's answer on the licence (above).
-2. `scripts/word-lists-ja.mjs`: JMdict in, `words.ja.data.ts` out, with the
-   attribution and the date read at its head, as `words.en.data.ts` carries
-   SCOWL's.
-3. `kanaMarks.ts`: the table above, pure and tested by itself (every row, the
-   doubled kana, the arrows, ー).
-4. The kind, the keyboard, romaji, the drawing of arrows on the stones, the
-   gate's pictures and tests.
-5. The monthly refresh workflow, if John chooses JMdict.
+1. Done: John chose JMdict with a monthly refresh.
+2. Done: `scripts/word-lists-ja.mjs`, JMdict in, the lists out, with the
+   attribution and the release date at their head.
+3. Done: `kanaMarks.ts`, the table above, and `romaji.ts`, both tested.
+4. The lists split by length and loaded on demand; the grey word.
+5. The kind, the keyboard, the drawing of arrows on the stones, the credit on
+   the page, the gate's pictures and tests.
+6. Done: the monthly refresh workflow, `jmdict-refresh.yml`.

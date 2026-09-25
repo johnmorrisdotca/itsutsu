@@ -79,7 +79,9 @@ export const PUZZLE_CLOCK_TICK_MS = 1000;
 
 /** What a page says about a size: the cells across a grid, or the letters of a WordDrop word, which is not a square. */
 export function sizeWord(size: number, kind?: PuzzleKind): string {
-  return kind === "wordDrop" ? `${size} letters` : `${size}×${size}`;
+  if (kind === "wordDrop") return `${size} letters`;
+  if (kind === "wordDropKana") return `${size} kana`;
+  return `${size}×${size}`;
 }
 
 /** The cages' dashed outlines, one drawing laid over the whole grid (Sum Cages). */
@@ -126,9 +128,11 @@ export const WORD_TILE =
   "flex aspect-square items-center justify-center rounded-sm border-2 text-xl font-bold uppercase leading-none tabular-nums sm:text-2xl";
 export const WORD_TILE_EMPTY = "border-rule bg-white text-ink";
 export const WORD_TILE_TYPED = "border-ink-soft bg-white text-ink";
-export const WORD_TILE_MARK: Record<"hit" | "near" | "miss", string> = {
+export const WORD_TILE_MARK: Record<"hit" | "near" | "kin" | "miss", string> = {
   hit: "border-moss bg-moss text-ivory",
   near: "border-ochre bg-ochre text-ivory",
+  // The kana version's yellow: the word's kana here is in this one's column. Brighter than ochre's orange, dark ink on it.
+  kin: "border-[#d8b23a] bg-[#e3c24f] text-ink",
   miss: "border-muted bg-muted text-ivory",
 };
 
@@ -143,6 +147,12 @@ export const WORD_KEY =
  * column like every puzzle's.
  */
 export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
+/**
+ * The kana grid's width on a phone: a row more (the free word) and a taller
+ * keyboard (five rows of kana and a row of 小 ゛゜ ⌫ Enter), so a smaller grid
+ * keeps Enter on one phone screen, as English's does.
+ */
+export const KANA_GRID_BOX = "mx-auto w-full max-w-[13.5rem] sm:max-w-none";
 
 /*
  * WORDDROP IN STONES: the Othello and Gomoku styles (`wordStyles.ts`). A letter
@@ -155,10 +165,11 @@ export const WORD_GRID_BOX = "mx-auto w-full max-w-[17rem] sm:max-w-none";
 export const WORD_STONE =
   "flex items-center justify-center rounded-full text-xl font-bold uppercase leading-none shadow-[0_1px_2px_rgba(0,0,0,0.45)] sm:text-2xl";
 export const WORD_STONE_SIZE: Record<"othello" | "gomoku", string> = { othello: "size-[84%]", gomoku: "size-[94%]" };
-export const WORD_STONE_LOOK: Record<"typed" | "hit" | "near" | "miss", { background: string; color: string }> = {
+export const WORD_STONE_LOOK: Record<"typed" | "hit" | "near" | "kin" | "miss", { background: string; color: string }> = {
   typed: { background: STONE_SETS.classic.white, color: STONE_SETS.classic.whiteInk },
   hit: { background: "radial-gradient(circle at 35% 30%, #8fa585 0%, #52664b 45%, #2f3d2b 100%)", color: "#f7f3ea" },
   near: { background: "radial-gradient(circle at 35% 30%, #d9a55a 0%, #9d6c1f 45%, #5f3f0e 100%)", color: "#f7f3ea" },
+  kin: { background: "radial-gradient(circle at 35% 30%, #fff1b0 0%, #e3c24f 45%, #a8861c 100%)", color: "#22231f" },
   miss: { background: STONE_SETS.classic.black, color: STONE_SETS.classic.blackInk },
 };
 /*
@@ -175,7 +186,7 @@ export const WORD_FOCUS = {
 } as const;
 
 /** The keys under a grid of stones: a letter not in the word is black, as its stone is. */
-export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "miss", string> = { ...WORD_TILE_MARK, miss: "border-ink bg-ink text-ivory" };
+export const WORD_KEY_MARK_STONES: Record<"hit" | "near" | "kin" | "miss", string> = { ...WORD_TILE_MARK, miss: "border-ink bg-ink text-ivory" };
 
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";

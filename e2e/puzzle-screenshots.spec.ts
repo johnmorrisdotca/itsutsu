@@ -3,7 +3,9 @@ import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
-import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
+import { markKanaGuess } from "../src/lib/puzzles/wordDropKana/kanaMarks";
+import { kanaWordsOf } from "../src/lib/puzzles/wordDropKana/kanaWords";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeJigsaw } from "../src/lib/puzzles/jigsaw/code";
 import { decodeKiller } from "../src/lib/puzzles/killer/code";
@@ -12,6 +14,7 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
+import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
 
 /**
@@ -45,10 +48,13 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "blackAndWhite", size: 8, level: "medium", seed: 20260924, fill: 3 },
   // A five-letter WordDrop two guesses in, with the word's first letters typed on the third row: the colours are the picture.
   { kind: "wordDrop", size: 5, level: "easy", seed: 20260924, fill: 2 },
+  { kind: "wordDropKana", size: 4, level: "easy", seed: 20260925, fill: 2 },
 ];
 
 test.describe("puzzle screenshots", () => {
   test.skip(process.env.GAME_SCREENSHOTS !== "1", "Set GAME_SCREENSHOTS=1 to write them.");
+  // The kana WordDrop is made from a list loaded a length at a time, here as in the browser.
+  test.beforeAll(prepareEveryPuzzle);
 
   for (const scene of SCENES) {
     test(scene.kind, async ({ page }) => {
@@ -87,6 +93,20 @@ test.describe("puzzle screenshots", () => {
           filled += 1;
         }
         await page.keyboard.type(puzzle.solution.slice(0, 2));
+      } else if (scene.kind === "wordDropKana") {
+        // Two common words that light something up, then the word's first two kana: the colours, the arrows if any, and the free grey row above.
+        const target = [...puzzle.solution];
+        const lit = kanaWordsOf(scene.size).easy.filter(
+          (word) => word !== puzzle.solution && markKanaGuess([...word], target).some((each) => each.mark !== "miss"),
+        );
+        for (const guess of lit.slice(0, scene.fill)) {
+          await tapKana(page, guess);
+          await page.getByTestId("kana-key-enter").click();
+          filled += 1;
+        }
+        await tapKana(page, target.slice(0, 2).join(""));
+        // The picture is the grid alone, with its keys put away again.
+        await page.getByTestId("word-keys-toggle").click();
       } else if (scene.kind === "blackAndWhite") {
         const givens = decodeBlackAndWhite(puzzle.givens, scene.size)!;
         const solution = decodeBlackAndWhite(puzzle.solution, scene.size)!;

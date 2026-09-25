@@ -5,6 +5,8 @@ import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { decodeGuesses, decodeHidden, isWord, rowsFor } from "./wordDrop/code";
+import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./wordDropKana/kanaCode";
+import { kanaWordsOf } from "./wordDropKana/kanaWords";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -45,6 +47,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkBlackAndWhite(size, givens, answer);
     case "wordDrop":
       return checkWordDrop(size, givens, answer, "found");
+    case "wordDropKana":
+      return checkWordDropKana(size, givens, answer, "found");
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -221,9 +225,41 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  * for a loss that really happened — every row a word, none of them the word.
  */
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string): PuzzleCheck {
-  if (kind !== "wordDrop") return { ok: false, reason: `a ${kind} cannot run out of guesses` };
+  if (kind !== "wordDrop" && kind !== "wordDropKana") return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
-  return checkWordDrop(size, givens, answer, "spent");
+  return kind === "wordDrop" ? checkWordDrop(size, givens, answer, "spent") : checkWordDropKana(size, givens, answer, "spent");
+}
+
+/**
+ * WordDrop in kana, as WordDrop: every guess a word of the kana list (which
+ * the caller has loaded, `loadKanaWords`), no more than six, and either the
+ * last is the word exactly — right size, right mark — and none before it was,
+ * or all six are spent and none was. The free grey word is the puzzle's, not
+ * a guess, and is not in the answer.
+ */
+function checkWordDropKana(size: number, givens: string, answer: string, ending: "found" | "spent"): PuzzleCheck {
+  const puzzle = decodeKanaGivens(givens, size);
+  const guesses = decodeKanaGuesses(answer, size);
+  if (puzzle === null) return { ok: false, reason: "the givens are not a hidden kana word" };
+  if (guesses === null) return { ok: false, reason: "the answer is not whole guesses in hiragana" };
+  if (guesses.length > KANA_ROWS) return { ok: false, reason: "more guesses than the rows allow" };
+  let allowed: ReadonlySet<string>;
+  try {
+    allowed = kanaWordsOf(size).allowed;
+  } catch {
+    // Refused rather than waved through: a check that cannot read the list cannot say the guesses are words.
+    return { ok: false, reason: "the kana word list is not loaded" };
+  }
+  const unknown = guesses.find((guess) => !allowed.has(guess));
+  if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
+  const firstFound = guesses.indexOf(puzzle.word);
+  if (ending === "found") {
+    if (firstFound !== guesses.length - 1) return { ok: false, reason: firstFound === -1 ? "the word was not guessed" : "guesses go on after the word was found" };
+    return { ok: true };
+  }
+  if (firstFound !== -1) return { ok: false, reason: "the word was found" };
+  if (guesses.length !== KANA_ROWS) return { ok: false, reason: "there are guesses left" };
+  return { ok: true };
 }
 
 /**

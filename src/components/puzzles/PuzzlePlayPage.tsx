@@ -33,8 +33,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
   const resumed = kept === null ? null : { progress: kept.progress, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
-  /* How a WordDrop grid is drawn, as this member last chose (`wordStyles.ts`); read only for WordDrop. */
-  const { wordStyle } = kind === "wordDrop" ? await preferencesFor() : { wordStyle: undefined };
+  /* How a WordDrop grid is drawn, as this member last chose (`wordStyles.ts`); read only for the two WordDrops. */
+  const { wordStyle } = kind === "wordDrop" || kind === "wordDropKana" ? await preferencesFor() : { wordStyle: undefined };
   return (
     <Page>
       <SiteHeader />

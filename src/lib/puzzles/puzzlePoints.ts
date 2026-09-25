@@ -1,5 +1,7 @@
 import { decodeGuesses, decodeHidden } from "./wordDrop/code";
 import { wordScore } from "./wordDrop/wordScore";
+import { decodeKanaGivens, decodeKanaGuesses, KANA_ROWS } from "./wordDropKana/kanaCode";
+import { kanaScore } from "./wordDropKana/kanaScore";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -24,7 +26,7 @@ export const POINTS_A_HELP = 50;
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
-  if (kind === "wordDrop") return size;
+  if (kind === "wordDrop" || kind === "wordDropKana") return size;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
@@ -40,7 +42,15 @@ export function wordPoints(size: number, givens: string, answer: string, elapsed
   return hidden === null || guesses === null ? 0 : wordScore(hidden, guesses, elapsedMs).total;
 }
 
+/** A kana word, scored as English's is on the same scale (`kanaScore`). */
+export function kanaPoints(size: number, givens: string, answer: string, elapsedMs: number): number {
+  const puzzle = decodeKanaGivens(givens, size);
+  const guesses = decodeKanaGuesses(answer, size);
+  return puzzle === null || guesses === null ? 0 : kanaScore(puzzle.word, guesses, KANA_ROWS, elapsedMs).total;
+}
+
 export function pointsFor(kind: PuzzleKind, size: number, givens: string, checksUsed: number, hintsUsed: number, answer = "", elapsedMs = 0): number {
   if (kind === "wordDrop") return wordPoints(size, givens, answer, elapsedMs);
+  if (kind === "wordDropKana") return kanaPoints(size, givens, answer, elapsedMs);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

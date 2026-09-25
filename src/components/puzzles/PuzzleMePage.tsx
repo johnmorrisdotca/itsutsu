@@ -24,9 +24,9 @@ import { WordHistory } from "./WordHistory";
 export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
   const me = await currentMemberId();
-  const words = kind === "wordDrop";
+  const words = kind === "wordDrop" || kind === "wordDropKana";
   const [solves, races, played] =
-    me === null ? [[], [], { words: [], total: 0 }] : await Promise.all([words ? [] : ownSolvesOf(me, kind), racesOf(me, kind), words ? ownWordsOf(me) : { words: [], total: 0 }]);
+    me === null ? [[], [], { words: [], total: 0 }] : await Promise.all([words ? [] : ownSolvesOf(me, kind), racesOf(me, kind), words ? ownWordsOf(me, kind) : { words: [], total: 0 }]);
   return (
     <Page>
       <SiteHeader />
@@ -55,7 +55,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
         </p>
       </PageTitle>
 
-      {words ? <WordHistory words={played.words} total={played.total} /> : null}
+      {words ? <WordHistory words={played.words} total={played.total} kind={kind} /> : null}
 
       {words ? null : (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-own-solves">

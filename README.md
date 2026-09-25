@@ -963,6 +963,14 @@ One-time setup:
 `pnpm preflight:prod` runs the same checks the workflow does, locally and side
 by side, and is the gate before every push.
 
+One other workflow runs on its own. `.github/workflows/jmdict-refresh.yml`
+writes the kana WordDrop's word lists again from JMdict's newest release on the
+1st of each month, because JMdict's licence asks for a monthly refresh. When
+the lists changed it pushes them to a `data/jmdict-YYYY-MM` branch and FAILS ON
+PURPOSE: the red run is the reminder to land that branch through the ordinary
+release. It never opens a pull request or pushes to `main`. See
+`docs/plans/other/WORD-04-kana.md`.
+
 Every landed commit takes a version, and ONE FEATURE IS ONE VERSION:
 `pnpm release:take:prod --summary "…"` takes the number, dates the changelog,
 commits both and closes the board row it ships, immediately before the push.

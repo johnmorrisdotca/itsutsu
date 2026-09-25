@@ -77,6 +77,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   towers: "towers",
   blackAndWhite: "black-and-white",
   wordDrop: "word-drop",
+  wordDropKana: "word-drop-kana",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

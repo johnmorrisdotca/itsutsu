@@ -7,6 +7,8 @@ import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
 import { decodeGuesses, decodeHidden, markGuess } from "@/lib/puzzles/wordDrop/code";
+import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/wordDropKana/kanaCode";
+import { markKanaGuess } from "@/lib/puzzles/wordDropKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
 
@@ -20,7 +22,17 @@ import { WORD_STONE_LOOK } from "./puzzles.constants";
  * A word found before its guesses were kept shows the word and its score, and
  * says its guesses were not kept rather than drawing nothing.
  */
-export function WordHistory({ words, total }: { words: readonly OwnWord[]; total: number }) {
+/** The word and the guesses of a kept row, and each guess's colours, for either WordDrop. */
+function readWord(kind: "wordDrop" | "wordDropKana", word: OwnWord): { hidden: string; guesses: string[] | null; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] } {
+  if (kind === "wordDropKana") {
+    const hidden = decodeKanaGivens(word.givens, word.size)?.word ?? "";
+    return { hidden, guesses: word.answer === null ? null : decodeKanaGuesses(word.answer, word.size), marks: (guess) => markKanaGuess([...guess], [...hidden]).map((each) => each.mark) };
+  }
+  const hidden = decodeHidden(word.givens, word.size) ?? "";
+  return { hidden, guesses: word.answer === null ? null : decodeGuesses(word.answer, word.size), marks: (guess) => markGuess(guess, hidden) };
+}
+
+export function WordHistory({ words, total, kind = "wordDrop" }: { words: readonly OwnWord[]; total: number; kind?: "wordDrop" | "wordDropKana" }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="word-history">
       <h2 className={SECTION_TITLE}>
@@ -30,14 +42,14 @@ export function WordHistory({ words, total }: { words: readonly OwnWord[]; total
       {words.length === 0 ? (
         <p className="text-sm text-muted">
           None yet.{" "}
-          <Link href={setUpPath("wordDrop")} className="font-semibold text-ink underline-offset-2 hover:underline">
+          <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
             Play one →
           </Link>
         </p>
       ) : (
         <ul className="flex flex-col divide-y divide-rule">
           {words.map((word) => (
-            <WordRow key={word.id} word={word} />
+            <WordRow key={word.id} word={word} kind={kind} />
           ))}
         </ul>
       )}
@@ -46,9 +58,8 @@ export function WordHistory({ words, total }: { words: readonly OwnWord[]; total
   );
 }
 
-function WordRow({ word }: { word: OwnWord }) {
-  const hidden = decodeHidden(word.givens, word.size) ?? "";
-  const guesses = word.answer === null ? null : decodeGuesses(word.answer, word.size);
+function WordRow({ word, kind }: { word: OwnWord; kind: "wordDrop" | "wordDropKana" }) {
+  const { hidden, guesses, marks: marksOf } = readWord(kind, word);
   const outcome = word.solved ? `Found in ${guesses?.length ?? "?"}` : "Not found";
   return (
     <li className="flex flex-col gap-2 py-2" data-testid="word-history-row" data-solved={word.solved ? "true" : "false"}>
@@ -69,7 +80,7 @@ function WordRow({ word }: { word: OwnWord }) {
       ) : (
         <div className="flex flex-wrap gap-x-3 gap-y-1.5" aria-label={`Guesses: ${guesses.map((guess) => guess.toUpperCase()).join(", ")}`}>
           {guesses.map((guess, row) => {
-            const marks = markGuess(guess, hidden);
+            const marks = marksOf(guess);
             return (
               <span key={row} className="flex gap-0.5" aria-hidden="true">
                 {[...guess].map((letter, at) => (

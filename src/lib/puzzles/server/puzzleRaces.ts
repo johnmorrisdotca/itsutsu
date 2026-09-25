@@ -7,6 +7,7 @@ import { XP_EVENTS } from "@/lib/xp/xp.constants";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
 
+import { preparePuzzle } from "../generate";
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
@@ -54,6 +55,7 @@ export async function createRace(input: {
   const spec = PUZZLE_SPECS[input.kind];
   if (!spec.sizes.includes(input.size) || !spec.levels.includes(input.level)) return { refused: "no such puzzle" };
   if (input.givens.length > spec.mostCells || input.solution.length > spec.mostCells) return { refused: "not a grid of that size" };
+  await preparePuzzle(input.kind, input.size);
   const verdict = checkSolution(input.kind, input.size, input.givens, input.solution);
   if (!verdict.ok) return { refused: `the answer does not solve the puzzle: ${verdict.reason}` };
   const id = await freeRaceId();
@@ -136,6 +138,7 @@ export async function finishSeat(
   const mine = seat === "host" ? before.host : before.guest;
   if (!canFinish(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "the sitting is over" : "not started", status: 409 };
   if (answer.length > PUZZLE_SPECS[kind].mostCells) return { ok: false, reason: "not a grid of that size", status: 422 };
+  await preparePuzzle(kind, race.size);
   const verdict = checkSolution(kind, race.size, race.givens, answer);
   if (!verdict.ok) return { ok: false, reason: verdict.reason, status: 422 };
 

@@ -174,8 +174,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Other",
     kanji: "その他",
-    blurb: "Neither stones nor digits: a hidden word to find in six guesses, and whatever joins it.",
-    games: ["wordDrop"],
+    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English or in kana, and whatever joins them.",
+    games: ["wordDrop", "wordDropKana"],
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];

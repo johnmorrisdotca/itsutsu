@@ -1,5 +1,6 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { decodeGuesses, rowsFor } from "./wordDrop/code";
+import { decodeKanaGuesses, KANA_ROWS } from "./wordDropKana/kanaCode";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -59,9 +60,21 @@ export function decodeWordDropProgress(code: string, size: number): string[] | n
 }
 
 /** Whether a progress code is one a puzzle of this kind and size could have written. */
+/** A kana WordDrop writes its guesses as English does, run together, in hiragana. */
+export function encodeKanaProgress(guesses: readonly string[]): string {
+  return guesses.join("");
+}
+
+export function decodeKanaProgress(code: string, size: number): string[] | null {
+  if (code === "") return [];
+  const guesses = decodeKanaGuesses(code, size);
+  return guesses !== null && guesses.length <= KANA_ROWS ? guesses : null;
+}
+
 export function progressFits(kind: PuzzleKind, size: number, code: string): boolean {
   if (kind === "hiddenStones") return decodeStoneProgress(code, size) !== null;
   if (kind === "blackAndWhite") return decodeBlackAndWhiteProgress(code, size) !== null;
   if (kind === "wordDrop") return decodeWordDropProgress(code, size) !== null;
+  if (kind === "wordDropKana") return decodeKanaProgress(code, size) !== null;
   return decodeNumberProgress(code, size) !== null;
 }

@@ -1,14 +1,17 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { EVERY_GAME_KEY, gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { gameArtPath, gameThumbPath } from "@/lib/gomoku/artwork";
 import { GAME_FAMILIES, boardGamesOf, familyOf } from "@/lib/gomoku/families";
 import { PUZZLE_SLUGS, slugFor } from "@/lib/gomoku/slugs";
 
-import { generatePuzzle } from "./generate";
+import { generatePuzzle, prepareEveryPuzzle } from "./generate";
+
+// The kana WordDrop is made from a list loaded a length at a time: load them all before anything is made.
+beforeAll(prepareEveryPuzzle);
 import { checkSolution } from "./puzzleCheck";
 import { puzzleRulesPage } from "./puzzleRulesPage";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
@@ -77,8 +80,9 @@ describe("every puzzle is finished, not just declared", () => {
         const took = performance.now() - started;
         expect(took, `${kind} ${size}×${size} ${level} took ${Math.round(took)} ms to make`).toBeLessThan(3000);
         // At least the cells; More or Less writes its marks after them, within the kind's cap. A WordDrop's
-        // givens are its one word, whose length is its size: a word has letters, not a square of cells.
-        expect(puzzle.givens.length).toBeGreaterThanOrEqual(kind === "wordDrop" ? size : size * size);
+        // givens are its one word, whose length is its size: a word has letters, not a square of cells. A kana
+        // WordDrop's are its word and its free grey word.
+        expect(puzzle.givens.length).toBeGreaterThanOrEqual(kind === "wordDrop" || kind === "wordDropKana" ? size : size * size);
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
         expect(checkSolution(kind, size, puzzle.givens, puzzle.solution), `${kind} ${size} ${level}`).toEqual({ ok: true });
         expect(make(size, level, 5), "the same seed must make the same puzzle").toEqual(puzzle);

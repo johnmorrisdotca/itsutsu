@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { preparePuzzle } from "@/lib/puzzles/generate";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
@@ -83,6 +84,9 @@ export async function POST(request: Request) {
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
     const checksUsed = parsed.data.checksUsed ?? 0;
     if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
+
+    // A kana WordDrop's word list is loaded a length at a time; the check needs this one.
+    await preparePuzzle(kind, size);
 
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer);

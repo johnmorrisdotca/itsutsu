@@ -33,6 +33,7 @@ export const PUZZLE_KINDS = {
   towers: "towers",
   blackAndWhite: "blackAndWhite",
   wordDrop: "wordDrop",
+  wordDropKana: "wordDropKana",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -46,6 +47,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.hiddenStones,
   PUZZLE_KINDS.blackAndWhite,
   PUZZLE_KINDS.wordDrop,
+  PUZZLE_KINDS.wordDropKana,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -109,6 +111,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
   // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
   wordDrop: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false },
+  /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
+  wordDropKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false },
 };
 
 /**
@@ -178,6 +182,11 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   wordDrop: {
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
+  },
+  wordDropKana: {
+    3: { label: "Three kana", kanji: "三文字" },
+    4: { label: "Four kana", kanji: "四文字" },
+    5: { label: "Five kana", kanji: "五文字" },
   },
 };
 
@@ -335,6 +344,23 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
     ],
     board:
-      "Five letters and six guesses, or four letters and five.",
+      "Five letters and six guesses, or four letters and five. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
+  },
+  wordDropKana: {
+    label: "WordDrop Kana",
+    kanji: "ワードドロップかな",
+    tagline: "Find the hidden word in kana. Each guess shows which kana are right, which are in the word, and which column the right one is in.",
+    inspiredBy: "Wordle",
+    origin:
+      "WordDrop in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
+    rules: [
+      "A word is hidden, three, four or five kana long, in hiragana. You have six guesses, and every guess must be a real word.",
+      "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Grey is none of those.",
+      "An arrow means right kana, not quite: down for the wrong size (つ for っ), up for the wrong mark (は for ば or ぱ). The word is found only when every place is plain green.",
+      "On easy and medium the puzzle opens with a free word already played that is grey everywhere, so its kana are out before you start.",
+      "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a double consonant for っ, nn for ん, - for ー). Hard keeps you honest: every kana found must be used again, a green one in its place.",
+    ],
+    board:
+      "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule — textbook-common words first, then by how often newspapers use them: easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",
   },
 };

@@ -132,15 +132,15 @@ export const OWN_WORDS_SHOWN = 50;
  * the history John asked for: "the history of guesses/words that the user has
  * ever played? with score?" One indexed query, and how many there are in all.
  */
-export async function ownWordsOf(memberId: string): Promise<{ words: OwnWord[]; total: number }> {
+export async function ownWordsOf(memberId: string, kind: "wordDrop" | "wordDropKana" = "wordDrop"): Promise<{ words: OwnWord[]; total: number }> {
   const [words, total] = await Promise.all([
     prisma.puzzleSolve.findMany({
-      where: { memberId, kind: "wordDrop" },
+      where: { memberId, kind },
       orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
       take: OWN_WORDS_SHOWN,
       select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, points: true, elapsedMs: true, finishedAt: true },
     }),
-    prisma.puzzleSolve.count({ where: { memberId, kind: "wordDrop" } }),
+    prisma.puzzleSolve.count({ where: { memberId, kind } }),
   ]);
   return { words, total };
 }

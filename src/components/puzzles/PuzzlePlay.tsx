@@ -1,16 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { playPath } from "@/lib/gomoku/slugs";
-import { generatePuzzle } from "@/lib/puzzles/generate";
+import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
+import { KanaDropSolve } from "./KanaDropSolve";
 import { WordDropSolve } from "./WordDropSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
@@ -70,7 +71,19 @@ export function PuzzlePlay({
     router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints })}`);
   }, [seed, kind, size, level, checks, hints, router]);
 
-  const puzzle = useMemo(() => (seed === null ? null : generatePuzzle(kind, size, level, seed)), [kind, size, level, seed]);
+  /* A kind whose words load by length (the kana WordDrop) waits for its list; every other kind is ready at once. */
+  const [loaded, setLoaded] = useState<string | null>(kind === "wordDropKana" ? null : `${kind}:${size}`);
+  useEffect(() => {
+    let live = true;
+    void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
+    return () => {
+      live = false;
+    };
+  }, [kind, size]);
+  const puzzle = useMemo(
+    () => (seed === null || loaded !== `${kind}:${size}` ? null : generatePuzzle(kind, size, level, seed)),
+    [kind, size, level, seed, loaded],
+  );
 
   if (puzzle === null) {
     return (
@@ -104,6 +117,8 @@ export function PuzzlePlay({
       return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
     case "wordDrop":
       return <WordDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+    case "wordDropKana":
+      return <KanaDropSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

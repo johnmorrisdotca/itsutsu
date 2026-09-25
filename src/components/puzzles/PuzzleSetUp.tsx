@@ -7,7 +7,7 @@ import { useState } from "react";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
-import { generatePuzzle } from "@/lib/puzzles/generate";
+import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords } from "@/lib/puzzles/puzzles.constants";
@@ -64,6 +64,7 @@ export function PuzzleSetUp({
   const race = async () => {
     setRacing("making");
     try {
+      await preparePuzzle(kind, size);
       const made = generatePuzzle(kind, size, level, freshSeed());
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",

@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import { generatePuzzle } from "./generate";
+import { generatePuzzle, prepareEveryPuzzle } from "./generate";
+
+// The kana WordDrop is made from a list loaded a length at a time: load them all before anything is made.
+beforeAll(prepareEveryPuzzle);
 import { cellsFilled, pointsFor } from "./puzzlePoints";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
 
