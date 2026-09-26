@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { GAME_FAMILIES, gamesShownIn } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
 import { slugFor } from "../src/lib/gomoku/slugs";
-import { readyHere } from "./support";
+import { forgetFamilyFolds, readyHere } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
@@ -37,6 +37,8 @@ function shelvesShowing(variant: string): number {
 
 test.describe("a game's name leads to that game", () => {
   test("on the games index, every one of them, counted from the families", async ({ page }) => {
+    // Every family as a newcomer finds it: the families a reader opened stay open (`familyFolds.ts`).
+    await forgetFamilyFolds(page);
     await page.goto("/games");
     /*
      * Counted inside the index rather than across the page. The lobby above

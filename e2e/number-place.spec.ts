@@ -4,7 +4,7 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateNumberPlace } from "../src/lib/puzzles/numberPlace/generate";
 import { decodeCells, symbolOf } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { freshPuzzleSeed, ready } from "./support";
+import { forgetFamilyFolds, freshPuzzleSeed, ready } from "./support";
 
 /**
  * Number Place, the first puzzle: found, set up, solved and paid.
@@ -221,6 +221,8 @@ test.describe("the first puzzle", () => {
   });
 
   test("the catalogue lists the Numbers family with the puzzle in it, and the set-up screen offers it too", async ({ page }) => {
+    // Every family as a newcomer finds it: the families a reader opened stay open (`familyFolds.ts`).
+    await forgetFamilyFolds(page);
     await page.goto("/games");
     const family = page.getByTestId("lobby-family").filter({ hasText: "Numbers" });
     await expect(family).toHaveCount(1);

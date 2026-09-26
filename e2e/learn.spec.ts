@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { ready, readyHere } from "./support";
+import { forgetFamilyFolds, ready, readyHere } from "./support";
 import { EVERY_GAME_KEY } from "../src/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 
@@ -136,6 +136,8 @@ test.describe("rules and learning", () => {
   });
 
   test("the library offers New game and folds the catalogue into families", async ({ page }) => {
+    // Every family as a newcomer finds it: the families a reader opened stay open (`familyFolds.ts`).
+    await forgetFamilyFolds(page);
     await page.goto("/games");
     // A way into the screen that settles a game, rather than a form settling
     // half of one here. See set-up-first.spec.ts.

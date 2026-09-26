@@ -7,6 +7,7 @@ import { BOARD_SIZES, BOARD_SIZE_LIST } from "./boardSize";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 import { MOVE_FORMAT_CHOICES } from "@/lib/record/moveFormats";
 import { WORD_STYLES, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
+import { FAMILY_FOLD_SPECS } from "@/lib/catalogue/familyFolds";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
 
@@ -215,6 +216,14 @@ export const PREFERENCE_SPECS = {
    * device, and a JSON column already does that for nothing.
    */
   testMode: { options: [true, false] as const, fallback: false },
+
+  /*
+   * Which families this member keeps open on the Families tab of /games, one
+   * row a family. John, 2026-09-26: "Allow toggled families to have Memory and
+   * preserve on reload." See `familyFolds.ts` for why a key a family rather
+   * than one list.
+   */
+  ...FAMILY_FOLD_SPECS,
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */
