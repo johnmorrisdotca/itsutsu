@@ -43,14 +43,19 @@ export type AboutChapter = (typeof ABOUT_CHAPTERS)[keyof typeof ABOUT_CHAPTERS];
  *
  * The first is the bare address, so a link to /about is still a link to the
  * page's opening rather than to a query string.
+ *
+ * ONE WORD A TAB. John, 2026-09-26: "About page Tabs are too long and
+ * scroll." With the chapters' full names the strip ran past the page's width
+ * and scrolled sideways on a desktop. A tab is the way to a chapter, not its
+ * title: each section's heading inside the page keeps its full name.
  */
 export const ABOUT_TABS: Tab[] = [
-  { key: ABOUT_CHAPTERS.story, label: "The story", kanji: "由来" },
-  { key: ABOUT_CHAPTERS.start, label: "Getting started", kanji: "入門" },
-  { key: ABOUT_CHAPTERS.play, label: "Playing here", kanji: "対局" },
-  { key: ABOUT_CHAPTERS.games, label: "The games", kanji: "種目" },
-  { key: ABOUT_CHAPTERS.roots, label: "Where they came from", kanji: "来歴" },
+  { key: ABOUT_CHAPTERS.story, label: "Story", kanji: "由来" },
+  { key: ABOUT_CHAPTERS.start, label: "Start", kanji: "入門" },
+  { key: ABOUT_CHAPTERS.play, label: "Playing", kanji: "対局" },
+  { key: ABOUT_CHAPTERS.games, label: "Games", kanji: "種目" },
+  { key: ABOUT_CHAPTERS.roots, label: "Origins", kanji: "来歴" },
   { key: ABOUT_CHAPTERS.japan, label: "Japan", kanji: "和" },
-  { key: ABOUT_CHAPTERS.numbers, label: "The numbers", kanji: "番付" },
-  { key: ABOUT_CHAPTERS.programs, label: "The programs", kanji: "棋士" },
+  { key: ABOUT_CHAPTERS.numbers, label: "Numbers", kanji: "番付" },
+  { key: ABOUT_CHAPTERS.programs, label: "Programs", kanji: "棋士" },
 ];
