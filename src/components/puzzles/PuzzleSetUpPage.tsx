@@ -29,8 +29,10 @@ import { GameTrail } from "@/components/games/GameTrail";
  * address.
  *
  * A puzzle drawn on the board itself (`wordGrid`: the Gomojis) is previewed in
- * the reader's own board colour and style, so those two are read for it, and
- * for nothing else: every other puzzle is paper, and its page reads no row.
+ * the reader's own board colour and style, and a puzzle played with stones
+ * (`stones`) in the reader's own stone set, so the reader's board is read for
+ * those, and for nothing else: every other puzzle is paper, and its page
+ * reads no row.
  */
 export async function PuzzleSetUpPage({
   kind,
@@ -46,7 +48,12 @@ export async function PuzzleSetUpPage({
 }) {
   const copy = PUZZLE_DISPLAY[kind];
   const onBoard = drawnOnBoard(kind);
-  const [appearance, preferences] = onBoard ? await Promise.all([appearanceFor(memberId), preferencesFor()]) : [null, null];
+  // The stone puzzles read the reader's stone set too, for the preview's stones.
+  const [appearance, preferences] = onBoard
+    ? await Promise.all([appearanceFor(memberId), preferencesFor()])
+    : PUZZLE_SPECS[kind].stones === true
+      ? [await appearanceFor(memberId), null]
+      : [null, null];
   return (
     <Page>
       <SiteHeader />

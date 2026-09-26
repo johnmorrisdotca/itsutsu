@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -76,7 +76,7 @@ export function PuzzlePlay({
   hasAccount: boolean;
   /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
   race?: (SolveRace & { givens: string }) | null;
-  /** The reader's board, read only for Gomoji's board colour picker (`GomojiSolve`, `GomojiKanaSolve`). */
+  /** The reader's board: Gomoji's board colour picker (`GomojiSolve`, `GomojiKanaSolve`), and the stone set a puzzle played with stones draws. */
   appearance?: Appearance;
 }) {
   const router = useRouter();
@@ -137,9 +137,9 @@ export function PuzzlePlay({
   const headStarted = seat === null && headStart;
   switch (kind) {
     case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
     case "blackAndWhite":
-      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
     case "gomoji":
     case "gomojiMot":
     case "gomojiWort":

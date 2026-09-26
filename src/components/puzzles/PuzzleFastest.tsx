@@ -6,7 +6,7 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { mySolvePath, setUpPath, solvePath, standingsPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { type FastestBoard, fastestSolvesOf, memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { PUZZLE_RECORD_SORTS, puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
@@ -102,7 +102,7 @@ export function FastestTable({
   const spec = PUZZLE_SPECS[kind];
   const words = spec.helps === false;
   const columns = words ? 6 : 5;
-  const all = spec.sizes.flatMap((size) => spec.levels.map((level) => ({ size, level, key: `${size}:${level}`, at: board.get(`${size}:${level}`) })));
+  const all = spec.sizes.flatMap((size) => levelsFor(kind, size).map((level) => ({ size, level, key: `${size}:${level}`, at: board.get(`${size}:${level}`) })));
   // A size the set-up no longer offers keeps its row while somebody holds a time at it, and is not offered as empty.
   const rows = all.filter((row) => spec.offered.includes(row.size) || row.at !== undefined);
   const shown = whole ? rows : rows.filter((row) => row.at !== undefined).slice(0, 4);

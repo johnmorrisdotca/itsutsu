@@ -63,13 +63,17 @@ export const PUZZLE_KEY =
  * dark one alike and a black stone sits on any of them. A region's index is
  * the row of its stone, so regions with consecutive indexes are often
  * neighbours: the hues alternate warm and cool rather than running round the
- * wheel, which put three greens side by side in the first picture. A 10×10
- * has ten regions, so ten fills; `index % length` only keeps a grid from
- * falling off the end.
+ * wheel, which put three greens side by side in the first picture. A 12×12
+ * has twelve regions, so twelve fills — the last two, a deeper blue and a
+ * deeper terracotta, came with it, where two regions had shared a colour — and
+ * `index % length` only keeps a grid from falling off the end.
  */
-export const REGION_FILLS: readonly string[] = [205, 32, 125, 300, 58, 255, 0, 165, 330, 90].map(
-  (hue) => `hsl(${hue} 70% 55% / 0.34)`,
-);
+export const REGION_FILLS: readonly string[] = [
+  ...[205, 32, 125, 300, 58, 255, 0, 165, 330, 90].map((hue) => `hsl(${hue} 70% 55% / 0.34)`),
+  // The eleventh and twelfth: a hue between two already there, made deeper so it is not taken for either.
+  "hsl(230 70% 40% / 0.34)",
+  "hsl(18 70% 40% / 0.34)",
+];
 
 /** The clock over the grid. */
 export const PUZZLE_CLOCK = "font-mono text-lg tabular-nums";
@@ -105,11 +109,29 @@ export const PUZZLE_STONE_CELL =
 /** A cell whose stone was printed: shaded, as Diagonal shades its extra groups, so a given reads apart from a move. */
 export const PUZZLE_STONE_PRINTED = "bg-rule/40 disabled:hover:bg-rule/40";
 
-/** The black stone, as Hidden Stones draws it. */
-export const PUZZLE_STONE_BLACK = "block size-[70%] rounded-full bg-ink shadow-[inset_0_-2px_3px_rgba(255,255,255,0.18)]";
+/**
+ * THE ROOM A PUZZLE'S STONE IS DRAWN IN. The stone itself is the game boards'
+ * own (`StoneMark`: the shading, the shadow, the reader's stone set), which
+ * fills most of whatever holds it; this holds it a little inside the cell, so
+ * a region's heavier edge and a Show ring still show round it. John,
+ * 2026-09-26: "make sure you're using actual stones from things like our Tic
+ * Tac Toe or Reversi or Gomoku... the ones in Hidden Stones are just black
+ * circles."
+ */
+export const PUZZLE_STONE_BOX = "pointer-events-none flex size-[80%] items-center justify-center";
 
-/** The white stone: paper-white with an ink rim, so it reads on the white grid. */
-export const PUZZLE_STONE_WHITE = "block size-[70%] rounded-full border-2 border-ink/70 bg-white shadow-[inset_0_-2px_3px_rgba(0,0,0,0.12)]";
+/** How far a Hidden Stones line stops short of its own stone's centre, in cells: just outside the stone (80% of 86% of a cell across). */
+export const STONE_LINE_GAP = 0.36;
+
+/**
+ * LINES: from each stone to the board's edge, up, down, left and right, drawn
+ * over the grid in the site's vermilion, two pixels at any size, so the cells
+ * a stone rules out along its row and column can be seen at a glance.
+ */
+export const STONE_LINES = "pointer-events-none absolute inset-0 h-full w-full";
+
+/** The lines' colour: the light theme's vermilion (`--shu`) in both themes, because the paper under them is white in both, and the dark theme's pale one vanished on it. */
+export const STONE_LINE_COLOUR = "#b2302f";
 
 /**
  * A cell Show marked wrong: a red ring inside it and a faint red ground, never

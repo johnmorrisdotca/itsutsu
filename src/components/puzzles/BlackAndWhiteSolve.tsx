@@ -2,6 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 
+import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
+import type { StoneSetTokens } from "@/components/board/board.types";
+
 import { BLACK, decodeBlackAndWhite, EMPTY, encodeBlackAndWhite, WHITE } from "@/lib/puzzles/blackAndWhite/code";
 import { decodeBlackAndWhiteProgress, encodeBlackAndWhiteProgress } from "@/lib/puzzles/puzzleProgress";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
@@ -36,6 +39,7 @@ export function BlackAndWhiteSolve({
   checks = null,
   resumed = null,
   hints = false,
+  set = STONE_SETS[DEFAULT_APPEARANCE.stoneSet],
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
@@ -46,6 +50,8 @@ export function BlackAndWhiteSolve({
   resumed?: ResumedRun | null;
   /** Whether Hint was chosen for this puzzle; see `useHints`. */
   hints?: boolean;
+  /** The reader's stone set, so the stones are the ones their game boards draw. */
+  set?: StoneSetTokens;
 }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
@@ -118,7 +124,7 @@ export function BlackAndWhiteSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <BlackAndWhiteGrid size={size} givens={givens} stones={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} />
+        <BlackAndWhiteGrid size={size} givens={givens} stones={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} set={set} />
       </SolvePaused>
       <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === BLACK ? "black" : value === WHITE ? "white" : "cleared")} />
       {done === null ? (

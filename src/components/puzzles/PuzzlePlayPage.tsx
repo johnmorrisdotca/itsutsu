@@ -14,7 +14,7 @@ import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
-import { PUZZLE_DISPLAY, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
 import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { TsunagiLevelFastest } from "./TsunagiLevelFastest";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -47,8 +47,9 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const tsunagi = kind === "tsunagi";
   const { wordStyle, tsunagiMarks } = words || tsunagi ? await preferencesFor() : { wordStyle: undefined, tsunagiMarks: undefined };
-  /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for a puzzle drawn on the board, and Kumimoji's table. */
-  const appearance = drawnOnBoard(kind) || kind === "kumimoji" ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
+  /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`), and their stone set for a
+     puzzle played with stones; read only for a puzzle drawn on the board, Kumimoji's table, and the stone puzzles. */
+  const appearance = drawnOnBoard(kind) || kind === "kumimoji" || PUZZLE_SPECS[kind].stones === true ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
   /* Tsunagi's levels this member has solved at this size, so a level past the open rows is shut (`TsunagiSolve`). One read, for Tsunagi only. */
   const solved = tsunagi && reader.memberId !== null ? await tsunagiSolvedBy(reader.memberId) : null;
   const known = Object.fromEntries(Object.entries(solved?.[asked.size] ?? {}).map(([level, best]) => [level, best.elapsedMs]));
