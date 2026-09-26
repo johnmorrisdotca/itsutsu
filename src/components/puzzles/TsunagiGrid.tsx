@@ -32,6 +32,7 @@ export function TsunagiGrid({
   theme,
   done = false,
   readOnly = false,
+  flagged = null,
   onPress,
   onDrag,
   onLift,
@@ -45,6 +46,8 @@ export function TsunagiGrid({
   done?: boolean;
   /** Drawn only, never pressed: a picture of a level. */
   readOnly?: boolean;
+  /** The pairs Check found not joined: their two marbles flash, and nothing else is said about them. */
+  flagged?: ReadonlySet<number> | null;
   onPress?: (cell: number) => void;
   onDrag?: (cell: number) => void;
   onLift?: () => void;
@@ -145,6 +148,14 @@ export function TsunagiGrid({
                   aria-label={label}
                   role="img"
                 >
+                  {cell >= 0 && flagged?.has(cell) ? (
+                    <span
+                      className="pointer-events-none absolute inset-[8%] animate-ping rounded-full border-4"
+                      style={{ borderColor: tsunagiLineColour(cell, marks) }}
+                      data-testid="tsunagi-flag"
+                      data-pair={cell}
+                    />
+                  ) : null}
                   {cell >= 0 ? (
                     <span className={`${TSUNAGI_MARBLE} ${size >= 8 ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`} style={tsunagiMarbleLook(cell, marks)} data-testid="tsunagi-marble" data-pair={cell}>
                       {marks === "numbers" ? cell + 1 : null}

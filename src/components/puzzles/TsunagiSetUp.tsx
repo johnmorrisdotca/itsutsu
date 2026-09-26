@@ -14,7 +14,7 @@ import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/puzzles.constants";
-import { nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@/lib/puzzles/tsunagi/levels";
+import { firstUnsolvedTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@/lib/puzzles/tsunagi/levels";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { feltOrWoodTheme } from "./GomojiGrid";
@@ -22,7 +22,7 @@ import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiLevelBoard, tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { SetUpResume } from "./SetUpResume";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
-import { keptSolves } from "./tsunagiKept";
+import { keptAttempts, keptSolves } from "./tsunagiKept";
 import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
 /** The sizes the tiles show at once: four, as every set-up screen keeps room for (`picker.test.ts`). */
@@ -49,6 +49,7 @@ export function TsunagiSetUp({
   marksChosen,
   fillChosen = null,
   solved,
+  attempts = {},
   initialSize,
   resumeHref = null,
 }: {
@@ -58,6 +59,8 @@ export function TsunagiSetUp({
   fillChosen?: TsunagiFill | null;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
   solved: Record<number, Record<number, number>>;
+  /** The member's attempts by size and level, on the account: none for anybody without one, whose are in this browser. */
+  attempts?: Record<number, Record<number, number>>;
   initialSize: number;
   /** A level of Tsunagi already going, if any: offered first, above Start (`SetUpResume`). */
   resumeHref?: string | null;
@@ -85,8 +88,13 @@ export function TsunagiSetUp({
     return out;
   }, [here, solved, size]);
   const done = useMemo(() => new Set(Object.keys(best).map(Number)), [best]);
+  // A member's attempts are the account's; a visitor's this browser's, read once hydrated as the solves are.
+  const tries = useMemo(() => (hasAccount ? (attempts[size] ?? {}) : hydrated ? keptAttempts(size) : {}), [hasAccount, attempts, size, hydrated]);
   const open = openTsunagiLevels(size, done);
   const next = nextTsunagiLevel(size, done);
+  // Said when a later level is solved, so Start's number is not read as a slip.
+  const gap = firstUnsolvedTsunagiLevel(size, done);
+  const skippedPast = gap !== null && [...done].some((level) => level > gap);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
 
   const turnShelf = () => {
@@ -107,7 +115,7 @@ export function TsunagiSetUp({
       */}
       <div className={`${PICK_BOARD_ROW} py-2 md:flex-wrap`}>
         <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
-          <TsunagiLevelBoard size={size} best={best} open={open} next={next} marks={marks} theme={theme} />
+          <TsunagiLevelBoard size={size} best={best} attempts={tries} open={open} next={next} marks={marks} theme={theme} />
           <p className="text-xs text-muted" data-testid="tsunagi-levels-caption">
             {size}×{size}: {done.size} of {count} solved. Rows open ten at a time.
           </p>
@@ -134,6 +142,11 @@ export function TsunagiSetUp({
           <Link href={tsunagiLevelPath(size, next)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={next}>
             <PressLabel words={`${START_PRESS.start.words} level ${next}`} kanji={START_PRESS.start.kanji} />
           </Link>
+          {skippedPast ? (
+            <p className="text-xs text-muted" data-testid="tsunagi-first-unsolved">
+              Level {gap} is the first one you have not finished.
+            </p>
+          ) : null}
           <p className="text-xs text-muted" data-testid="tsunagi-kept-where">
             {hasAccount ? "Your solved levels are kept on your account." : "Your solved levels are kept in this browser. Join, and they are kept on an account."}
           </p>

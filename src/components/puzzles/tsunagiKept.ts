@@ -4,15 +4,18 @@ import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 
 /**
  * WHAT A BROWSER REMEMBERS OF TSUNAGI for somebody with no account: the
- * levels solved at each size, with the best time on each, whether they play
- * by colours or numbers, and whether a line's cells hold marbles. A member's solves are on the account
- * (`PuzzleSolve`) and read by the server; these sit beside them, so the board
+ * levels solved at each size, with the best time on each, how many times each
+ * was started, whether they play by colours or numbers, and whether a line's
+ * cells hold marbles. A member's solves and attempts are on the account
+ * (`PuzzleSolve`, `TsunagiAttempt`) and read by the server; these sit beside
+ * them, so the board
  * of levels opens the next row the moment a level is solved, account or not.
  *
  * Every read and write is guarded: a private window or blocked storage reads
  * as nothing solved and remembers nothing, and the page still works.
  */
 const SOLVED_KEY = (size: number) => `itsutsu.tsunagi.solved.${size}`;
+const ATTEMPTS_KEY = (size: number) => `itsutsu.tsunagi.attempts.${size}`;
 const MARKS_KEY = "itsutsu.tsunagi.marks";
 const FILL_KEY = "itsutsu.tsunagi.fill";
 
@@ -43,6 +46,36 @@ export function keepSolveHere(size: number, level: number, elapsedMs: number): v
   } catch {
     // Nowhere to keep it: the solve still stands on the page.
   }
+}
+
+/** How many times this browser has started each level of a size, for somebody with no account. */
+export function keptAttempts(size: number): Record<number, number> {
+  try {
+    const raw = window.localStorage.getItem(ATTEMPTS_KEY(size));
+    if (raw === null) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: Record<number, number> = {};
+    for (const [level, count] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Number.isInteger(Number(level)) && typeof count === "number" && Number.isInteger(count) && count > 0) out[Number(level)] = count;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/** One more attempt at a level, remembered here; the count it now stands at (counted for the page even where nothing can be kept). */
+export function keepAttemptHere(size: number, level: number): number {
+  let kept: Record<number, number> = {};
+  try {
+    kept = keptAttempts(size);
+    kept[level] = (kept[level] ?? 0) + 1;
+    window.localStorage.setItem(ATTEMPTS_KEY(size), JSON.stringify(kept));
+  } catch {
+    kept[level] = kept[level] ?? 1;
+  }
+  return kept[level]!;
 }
 
 export function keptMarks(): TsunagiMarks | null {

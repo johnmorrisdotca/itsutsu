@@ -171,6 +171,8 @@ export async function removeMember(
     prisma.puzzleSolve.deleteMany({ where: { memberId } }),
     // The puzzles they left unfinished, kept for them to come back to.
     prisma.puzzleRun.deleteMany({ where: { memberId } }),
+    // How many times they started each Tsunagi level.
+    prisma.tsunagiAttempt.deleteMany({ where: { memberId } }),
     prisma.puzzleSolve.updateMany({ where: { raceId: { in: raceIds } }, data: { raceId: null } }),
     prisma.puzzleRace.deleteMany({ where: { id: { in: raceIds } } }),
     prisma.autoMatchRequest.deleteMany({ where: { member: memberId } }),

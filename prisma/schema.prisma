@@ -1369,6 +1369,22 @@ model PuzzleRun {
   @@index([memberId, updatedAt])
 }
 
+/// How many times a member has started a Tsunagi level from an empty board:
+/// the first line drawn on a fresh board, and again after each Restart. John,
+/// 2026-09-26: "Keep a count of the player's attempts at each level and show
+/// it beside the level." A level is its size and number, the same board for
+/// everybody (`tsunagi/levels.ts`). One row a member and level, counted up by
+/// one write a start; a visitor's count is kept in their browser instead.
+model TsunagiAttempt {
+  memberId  String
+  size      Int
+  level     Int
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@id([memberId, size, level])
+}
+
 /// Two people, one puzzle, two clocks. The host's browser made the puzzle
 /// and posted it whole; the guest comes in by the seat link, as for a game.
 /// Each seat's start and finish are the server's own stamps, so the time is

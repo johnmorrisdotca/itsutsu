@@ -1,4 +1,4 @@
-import { CELL_BLOCKED, CELL_EMPTY, encodeAnswer, type LinkLayout } from "./code";
+import { CELL_BLOCKED, CELL_EMPTY, encodeAnswer, neighboursOf, PAIR_LETTERS, type LinkLayout } from "./code";
 
 /**
  * THE LINES A PLAYER HAS DRAWN, and what a press and a drag do to them.
@@ -41,6 +41,46 @@ export function joined(layout: LinkLayout, lines: Lines, pair: number): boolean 
 export function allJoined(layout: LinkLayout, lines: Lines): boolean {
   if (!layout.ends.every((_, pair) => joined(layout, lines, pair))) return false;
   return ownersOf(layout, lines).every((owner) => owner !== CELL_EMPTY);
+}
+
+/**
+ * The pairs not joined yet, for Check: every pair whose line does not run from
+ * one of its marbles to the other — a line stopped beside its partner looks
+ * joined and is not. Nothing about where any line should go.
+ */
+export function unjoinedPairs(layout: LinkLayout, lines: Lines): number[] {
+  return layout.ends.map((_, pair) => pair).filter((pair) => !joined(layout, lines, pair));
+}
+
+/**
+ * A level's answer drawn back as lines: each pair's cells, in order, from its
+ * first marble to its second. How a solved level opens on its solved board.
+ * Null for an answer that does not draw every pair as one unbroken line.
+ */
+export function linesOfAnswer(layout: LinkLayout, answer: string): Lines | null {
+  const { size } = layout;
+  if (answer.length !== size * size) return null;
+  const out: number[][] = [];
+  for (const [pair, [from, to]] of layout.ends.entries()) {
+    const letter = PAIR_LETTERS[pair];
+    const cells = [...answer].filter((char) => char === letter).length;
+    // A search, not a walk: a line that runs beside itself leaves a cell two ways on.
+    const line = [from];
+    const walk = (): boolean => {
+      const at = line[line.length - 1]!;
+      if (at === to) return line.length === cells;
+      for (const cell of neighboursOf(size, at)) {
+        if (answer[cell] !== letter || line.includes(cell)) continue;
+        line.push(cell);
+        if (walk()) return true;
+        line.pop();
+      }
+      return false;
+    };
+    if (!walk()) return null;
+    out.push(line);
+  }
+  return out;
 }
 
 /** How many open cells have a line through them or a stone on them, and how many there are. */

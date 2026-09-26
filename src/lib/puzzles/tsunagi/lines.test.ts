@@ -2,15 +2,15 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { checkTsunagi } from "./check";
 import { decodeLayout } from "./code";
-import { loadTsunagiLevels, tsunagiLevelsOf } from "./levels";
-import { allJoined, answerOf, decodeLines, dragThrough, dragTo, encodeLines, letGo, noLines, pressAt, type Lines } from "./lines";
+import { loadEveryTsunagiLevel, TSUNAGI_SIZES, tsunagiLevelsOf } from "./levels";
+import { allJoined, answerOf, decodeLines, dragThrough, dragTo, encodeLines, joined, letGo, linesOfAnswer, noLines, pressAt, unjoinedPairs, type Lines } from "./lines";
 
 /**
  * How a finger draws a Tsunagi line: the rules the grid hands every press and
  * drag to (`lines.ts`), on a board made to show them, and a real level solved
  * along its stored answer, kept half way, and handed to the server's check.
  */
-beforeAll(() => loadTsunagiLevels(4));
+beforeAll(loadEveryTsunagiLevel);
 
 function level(n: number) {
   const [givens, answer] = tsunagiLevelsOf(4)[n - 1]!;
@@ -146,5 +146,42 @@ describe("the check the server makes", () => {
     const swapped = answer[0] === "A" ? `B${answer.slice(1)}` : `A${answer.slice(1)}`;
     expect(checkTsunagi(4, givens, swapped).ok).toBe(false);
     expect(checkTsunagi(4, `${givens.slice(1)}${givens[0]}`, answer).ok).toBe(false);
+  });
+});
+
+describe("Check names the pairs not joined, and nothing else", () => {
+  it("names every pair on an empty board, none on a solved one", () => {
+    const { layout } = level(1);
+    expect(unjoinedPairs(layout, noLines(layout))).toEqual(layout.ends.map((_, pair) => pair));
+    const solved = linesOfAnswer(layout, level(1).answer)!;
+    expect(unjoinedPairs(layout, solved)).toEqual([]);
+  });
+
+  it("names a line stopped one cell short of its partner, which looks joined and is not", () => {
+    const { layout } = level(1);
+    const whole = answerLine(1, 0);
+    const short = draw(1, noLines(layout), whole.slice(0, -1));
+    expect(joined(layout, short, 0)).toBe(false);
+    expect(unjoinedPairs(layout, short)).toContain(0);
+    const done = draw(1, noLines(layout), whole);
+    expect(unjoinedPairs(layout, done)).not.toContain(0);
+  });
+});
+
+describe("a solved level is drawn back from its answer", () => {
+  it.each(TSUNAGI_SIZES.map((size) => [size]))("draws every %i×%i level's answer as lines that make exactly that answer", (size) => {
+    for (const [givens, answer] of tsunagiLevelsOf(size)) {
+      const layout = decodeLayout(givens, size)!;
+      const lines = linesOfAnswer(layout, answer);
+      expect(lines, givens).not.toBeNull();
+      expect(allJoined(layout, lines!)).toBe(true);
+      expect(answerOf(layout, lines!)).toBe(answer);
+    }
+  });
+
+  it("refuses an answer that is not a board of unbroken lines", () => {
+    const { layout, answer } = level(1);
+    expect(linesOfAnswer(layout, answer.slice(1))).toBeNull();
+    expect(linesOfAnswer(layout, answer.replaceAll("A", "B"))).toBeNull();
   });
 });

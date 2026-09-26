@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { TSUNAGI_4 } from "../src/lib/puzzles/tsunagi/levels/size4.data";
 import { TSUNAGI_5 } from "../src/lib/puzzles/tsunagi/levels/size5.data";
 import { TSUNAGI_7 } from "../src/lib/puzzles/tsunagi/levels/size7.data";
+import { TSUNAGI_8 } from "../src/lib/puzzles/tsunagi/levels/size8.data";
 import { ready } from "./support";
 
 /**
@@ -263,6 +264,122 @@ test.describe("Tsunagi", () => {
   });
 });
 
+/*
+ * THE NEXT LEVEL IS THE LOWEST ONE NOT YET SOLVED. John, 2026-09-26, with a
+ * screenshot of 5×5 level 10 solved and "Level 11 →" offered: 11 is not to be
+ * offered until 1 to 10 are done. Level 10 at 8×8 is solved here by dragging,
+ * on an account that has solved nothing else at 8×8.
+ */
+test.describe("Tsunagi's next level", () => {
+  test.use({ viewport: { width: 1280, height: 1100 } });
+
+  test("after level 10 alone, it offers level 1, says why, and the set-up and a shut level say the same", async ({ page }) => {
+    const level = TSUNAGI_8[9]!;
+    await openLevel(page, 8, 10);
+    for (const letter of lettersOf(level)) await drag(page, 8, answerLine(level, 8, letter));
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    const next = page.getByTestId("puzzle-next-level");
+    await expect(next).toHaveText("Level 1, the first one you have not finished →");
+    await expect(next).not.toContainText("11");
+
+    await next.click();
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("puzzle-asked")).toContainText("Level 1");
+
+    await page.goto(`${AT}/new?size=8`);
+    await ready(page, "puzzle-set-up");
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "1");
+    await expect(page.getByTestId("tsunagi-first-unsolved")).toHaveText("Level 1 is the first one you have not finished.");
+
+    // Level 11 by its address stays shut, and its way back is level 1.
+    await openLevelShut(page, 8, 11);
+    await expect(page.getByTestId("tsunagi-shut-first")).toHaveAttribute("href", /seed=1(&|$)/);
+  });
+});
+
+/*
+ * CHECK: WHICH PAIRS ARE NOT JOINED YET. John, 2026-09-26: a button that
+ * flashes the colours whose lines are not complete, for somebody who overlooks
+ * a pair that only looks connected. It says which pairs, never where a line goes.
+ */
+test.describe("Tsunagi's Check", () => {
+  test.use({ viewport: { width: 1280, height: 1100 } });
+
+  test("flashes the marbles of a line stopped one short, and not of a line joined", async ({ page }) => {
+    const level = TSUNAGI_5[3]!;
+    const [whole, other] = lettersOf(level).map((letter) => answerLine(level, 5, letter));
+    const short = other!;
+    await openLevel(page, 5, 4);
+    await drag(page, 5, whole!);
+    await drag(page, 5, short.slice(0, -1));
+    await expect(page.getByTestId("tsunagi-line")).toHaveCount(2);
+
+    await page.getByTestId("tsunagi-check").click();
+    const pairs = lettersOf(level).length;
+    await expect(page.getByTestId("tsunagi-check-says")).toContainText(`${pairs - 1} pairs are not joined yet`);
+    const pairOf = (cells: readonly number[]) => String(level[0].charCodeAt(cells[0]!) - 65);
+    await expect(page.locator(`[data-testid="tsunagi-flag"][data-pair="${pairOf(short)}"]`)).toHaveCount(2);
+    await expect(page.getByTestId("tsunagi-flag")).toHaveCount(2 * (pairs - 1));
+    await expect(page.locator(`[data-testid="tsunagi-flag"][data-pair="${pairOf(whole!)}"]`)).toHaveCount(0);
+    // A flash, not a mark left on the board: it goes by itself.
+    await expect(page.getByTestId("tsunagi-flag")).toHaveCount(0, { timeout: 5_000 });
+    await expect(page.getByTestId("tsunagi-check-says")).toBeVisible();
+    // And the words go as soon as the board changes.
+    await drag(page, 5, short);
+    await expect(page.getByTestId("tsunagi-check-says")).toHaveCount(0);
+  });
+});
+
+/*
+ * A SOLVED LEVEL OPENS SOLVED; RESTART PLAYS IT AGAIN; ATTEMPTS ARE COUNTED.
+ * John, 2026-09-26: opening a completed level shows it solved, not a fresh
+ * board; only Restart starts it again; the attempts at each level are kept
+ * and shown beside it. Counted on the account, so they survive leaving.
+ */
+test.describe("a Tsunagi level already solved", () => {
+  test.use({ viewport: { width: 1280, height: 1100 } });
+
+  test("opens on its finished board, Restart plays it again, and each start is an attempt kept on the account", async ({ page }) => {
+    const level = TSUNAGI_4[3]!;
+    const letters = lettersOf(level);
+    await openLevel(page, 4, 4);
+    await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "0");
+    for (const letter of letters) await drag(page, 4, answerLine(level, 4, letter));
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "1");
+
+    // Opened again: the finished board, not a fresh one.
+    await page.goto(`${AT}/new?size=4`);
+    await ready(page, "puzzle-set-up");
+    await page.locator('[data-testid="tsunagi-level"][data-level="4"]').click();
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-reviewing", "true");
+    await expect(page.getByTestId("tsunagi-solved-already")).toBeVisible();
+    await expect(page.getByTestId("tsunagi-line")).toHaveCount(letters.length);
+    await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-done", "true");
+    await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "1");
+    // Its best time opens the solve it was, as every time on the site does.
+    await expect(page.getByTestId("tsunagi-best-time")).toHaveAttribute("href", /\/games\/tsunagi\/.+/);
+
+    // Only Restart starts it again, and the first line drawn is the second attempt.
+    await page.getByTestId("tsunagi-restart-solved").click();
+    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-done", "false");
+    await drag(page, 4, answerLine(level, 4, letters[0]!));
+    await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "2");
+    // Restart and a new first line: the third.
+    await page.getByTestId("tsunagi-restart").click();
+    await drag(page, 4, answerLine(level, 4, letters[0]!));
+    await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "3");
+
+    // On the account: the board of levels says so without this browser's help.
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto(`${AT}/new?size=4`);
+    await ready(page, "puzzle-set-up");
+    await expect(page.locator('[data-testid="tsunagi-level"][data-level="4"]')).toHaveAttribute("data-attempts", "3");
+  });
+});
+
 async function openLevelShut(page: Page, size: number, level: number) {
   await page.goto(`${AT}/play?size=${size}&seed=${level}`);
   await ready(page, "puzzle-play");
@@ -293,6 +410,18 @@ test.describe("Tsunagi on a phone", () => {
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     await expect(page.getByTestId("tsunagi-line")).toHaveAttribute("data-cells", String(line.length));
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
+  });
+
+  test("Check sits on the phone's screen with Undo and Restart, and nothing scrolls sideways", async ({ page }) => {
+    await openLevel(page, 5, 5);
+    for (const control of ["tsunagi-undo", "tsunagi-restart", "tsunagi-check"]) {
+      const box = (await page.getByTestId(control).boundingBox())!;
+      expect(box.x, control).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, control).toBeLessThanOrEqual(390);
+    }
+    await page.getByTestId("tsunagi-check").click();
+    await expect(page.getByTestId("tsunagi-check-says")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });
 
