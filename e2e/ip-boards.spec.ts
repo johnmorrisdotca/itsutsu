@@ -50,6 +50,16 @@ test("a game won puts the winner on the IP boards, and a stranger sees them shut
     for (const table of ["site-ip-board-month", "site-ip-board-all"]) {
       await expect(site.getByTestId(table).locator(`[data-testid="ip-row"][data-member="${mine}"]`)).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));
     }
+    // The winner's own page says the IP they won and where it puts them; the loser's says none yet.
+    await page.goto(`/players/${mine}`);
+    await expect(page.getByTestId("player-ip")).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));
+    await expect(page.getByTestId("player-ip-all")).toHaveAttribute("data-place", /^[1-9]\d*$/);
+    await expect(page.getByTestId("player-ip-month")).toHaveAttribute("href", "/points");
+    await page.goto(`/players/${await memberIdFor(them.email)}`);
+    await expect(page.getByTestId("player-ip")).toHaveAttribute("data-ip", "0");
+    await expect(page.getByTestId("player-ip-none")).toBeVisible();
+
+    await page.goto("/points");
     // And how a game is priced, read from the same table that pays it.
     await expect(page.locator('[data-testid="ip-maximum"][data-variant="go"]')).toContainText("19: 200");
 

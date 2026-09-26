@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
 import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { MemberLevel } from "@/components/xp/MemberLevel";
+import { PlayerIp } from "@/components/points/PlayerIp";
 import { memberKind } from "@/lib/auth/memberKind";
 import { SnapshotWarning } from "@/components/players/WholeRecord";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
@@ -373,6 +374,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           xp={member?.xp === undefined || member.xpEverywhere === undefined ? undefined : xpForBadge({ xp: member.xp, xpEverywhere: member.xpEverywhere })}
           imported={member === null || member.xpImported === undefined ? null : importedFactsFor(member.name, member.xpImported)}
         />
+        {/* Their IP, won by results alone, and where it puts them on the site's board — see `PlayerIp`. */}
+        {earner === null ? null : <PlayerIp memberId={earner} />}
         {earner === null ? null : (
           <Link href={xpHistoryHref(`/players/${slug}`, new URLSearchParams(), null)} className="self-start text-xs underline underline-offset-4" data-testid="xp-history-link">
             How this XP was earned
