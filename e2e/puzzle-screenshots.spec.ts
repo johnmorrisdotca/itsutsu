@@ -9,6 +9,7 @@ import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeJigsaw } from "../src/lib/puzzles/jigsaw/code";
 import { decodeKiller } from "../src/lib/puzzles/killer/code";
+import { decodePlay } from "../src/lib/puzzles/koushi/lattice";
 import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
@@ -61,6 +62,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "tsunagi", size: 6, level: "easy", seed: 8, fill: 2 },
   // A Classic Kumimoji's first hand, most of it laid: a word across and words down from it, on the table's own colour.
   { kind: "kumimoji", size: 11, level: "medium", seed: 20260926, fill: 2 },
+  // A Koushi four swaps into its fewest: greens, golds and plain letters still to place, and the four holes of the lattice.
+  { kind: "koushi", size: 5, level: "medium", seed: 20260926, fill: 4 },
 ];
 
 /**
@@ -219,6 +222,13 @@ test.describe("puzzle screenshots", () => {
         for (const tile of crosswordFrom(puzzle.givens.slice(0, scene.size), scene.fill)) {
           await page.locator(`[data-testid="kumimoji-hand-tile"][data-letter="${tile.letter}"]`).first().click();
           await page.locator(`[data-testid="kumimoji-square"][data-square="${tile.square}"]`).click();
+          filled += 1;
+        }
+      } else if (scene.kind === "koushi") {
+        // The first few of the fewest swaps, each tapped as a person taps them: one tile, then its partner.
+        for (const [a, b] of decodePlay(puzzle.solution)!.swaps.slice(0, scene.fill)) {
+          await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${a}"]`).click();
+          await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${b}"]`).click();
           filled += 1;
         }
       } else if (scene.kind === "blackAndWhite") {

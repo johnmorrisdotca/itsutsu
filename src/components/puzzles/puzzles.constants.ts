@@ -87,6 +87,8 @@ export function sizeWord(size: number, kind?: PuzzleKind): string {
   if (kind === "gomojiKana") return `${size} kana`;
   // A Kumimoji's size is the hand it opens with.
   if (kind === "kumimoji") return `${size} tiles`;
+  // Koushi comes at one size, the lattice; what a reader wants told is what is in it.
+  if (kind === "koushi") return "6 words";
   return `${size}×${size}`;
 }
 
@@ -286,3 +288,21 @@ export function tsunagiWash(pair: number, marks: TsunagiMarks): string {
 /** A marble: round and shaded like a stone, sized to its cell, the pair's number on it for Numbers. */
 export const TSUNAGI_MARBLE =
   "flex size-[74%] items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-[0_1px_2px_rgba(0,0,0,0.5)]";
+
+/**
+ * KOUSHI: Gomoji's letter tiles (`WORD_TILE`, `WORD_TILE_MARK`) in a lattice on
+ * the board, the four holes left as the board. A plain letter — wanted by
+ * neither of its words — is a white tile, as a letter typed and not yet marked
+ * is in Gomoji, since here it is still to be placed rather than ruled out.
+ */
+export const KOUSHI_TILE_PLAIN = "border-ink-soft bg-white text-ink";
+/** The tile picked first, waiting for the one it will change places with: lifted, and ringed in ink. */
+export const KOUSHI_TILE_CHOSEN = "-translate-y-0.5 shadow-lg ring-2 ring-ink ring-offset-2 ring-offset-transparent";
+/** The tile a dragged one is over, which it will change places with if let go there. */
+export const KOUSHI_TILE_TARGET = "ring-2 ring-ink/60";
+/**
+ * THE MARKS AT THE END, one for every swap left unused, five at best: stones,
+ * as the site's own mark, black for a swap kept and an empty ring for one spent.
+ */
+export const KOUSHI_MARK_KEPT = "inline-block size-5 rounded-full bg-ink shadow-[inset_0_-2px_3px_rgba(255,255,255,0.18)]";
+export const KOUSHI_MARK_SPENT = "inline-block size-5 rounded-full border-2 border-ink/35";

@@ -1,8 +1,14 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
+import { swapsTaken } from "../koushi/check";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
-export type GuessesTaken = { used: number; allowed: number };
+export type GuessesTaken = {
+  used: number;
+  allowed: number;
+  /** What was counted, where it was not guesses: a Koushi counts its swaps, 11/15. */
+  unit?: "swaps";
+};
 
 /**
  * HOW MANY GUESSES A GOMOJI SOLVE TOOK, OUT OF HOW MANY IT HAD. John,
@@ -24,6 +30,10 @@ export function guessesTaken(
   answer: string | null,
 ): GuessesTaken | null {
   if (answer === null) return null;
+  if (kind === "koushi") {
+    const taken = swapsTaken(level, givens, answer);
+    return taken === null ? null : { ...taken, unit: "swaps" };
+  }
   if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort") return null;
   // A Futago's allowance is its own, a guess more than one word's (`futago.ts`); a kana puzzle's free grey word takes a row and is no guess.
   const hidden = hiddenWordsOf(kind, size, givens);

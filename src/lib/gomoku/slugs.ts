@@ -85,6 +85,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   gomojiWort: "gomoji-wort",
   tsunagi: "tsunagi",
   kumimoji: "kumimoji",
+  koushi: "koushi",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

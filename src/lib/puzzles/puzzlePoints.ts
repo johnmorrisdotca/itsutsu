@@ -3,6 +3,7 @@ import { guessesOf, hiddenWordsOf, wordGridOf, wordRowsOf } from "./gomoji/futag
 import { futagoKanaScore, futagoScore } from "./gomoji/futagoScore";
 import { baseGuesses } from "./gomoji/layout";
 import { kumimojiPoints } from "./kumimoji/check";
+import { koushiPoints } from "./koushi/check";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -78,5 +79,7 @@ export function pointsFor(
   if (kind === "gomojiKana") return helped(kanaPoints(size, givens, answer, elapsedMs, level));
   // A tile game: ten a tile of the bag, and up to as much again for speed.
   if (kind === "kumimoji") return kumimojiPoints(givens, elapsedMs);
+  // Fewest swaps first, then time (`koushiPoints`); it has no helps to price.
+  if (kind === "koushi") return koushiPoints(givens, answer, elapsedMs, level);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

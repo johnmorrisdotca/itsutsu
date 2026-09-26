@@ -18,6 +18,7 @@ import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiSolve } from "./KumimojiSolve";
+import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
@@ -80,7 +81,7 @@ export function PuzzlePlay({
   hasAccount: boolean;
   /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
   race?: (SolveRace & { givens: string }) | null;
-  /** The reader's board: Gomoji's board colour picker (`GomojiSolve`, `GomojiKanaSolve`), and the stone set a puzzle played with stones draws. */
+  /** The reader's board: the board colour picker of a puzzle drawn on the board (`GomojiSolve`, `GomojiKanaSolve`, `KoushiSolve`), and the stone set a puzzle played with stones draws. */
   appearance?: Appearance;
 }) {
   const router = useRouter();
@@ -165,6 +166,8 @@ export function PuzzlePlay({
       return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+    case "koushi":
+      return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

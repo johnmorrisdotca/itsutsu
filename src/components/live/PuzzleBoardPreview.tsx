@@ -26,6 +26,8 @@ import { GomojiGrid } from "@/components/puzzles/GomojiGrid";
 import { KumimojiTable, tableTheme } from "@/components/puzzles/KumimojiTable";
 import { TILE_PICTURE_BOX } from "@/components/puzzles/kumimoji.constants";
 import { decodeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { KoushiGrid } from "@/components/puzzles/KoushiGrid";
+import { LATTICE_CELLS, isHole } from "@/lib/puzzles/koushi/lattice";
 import { useWordStyle } from "@/components/puzzles/WordStyleContext";
 import { seededRandom } from "@/lib/puzzles/random";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "@/lib/puzzles/blackAndWhite/code";
@@ -89,12 +91,16 @@ export function PuzzleBoardPreview({
 }) {
   const spec = PUZZLE_SPECS[kind];
   const words = spec.wordGrid;
+  // A lattice is drawn on the board as a word grid is, with the board's colour chosen under it.
+  const onBoard = words !== undefined || spec.lattice === true;
   const { style } = useWordStyle();
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="set-up-puzzle-preview" data-kind={kind} data-size={size}>
       <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
         {spec.tiles === true ? (
           <TilePreview size={size} appearance={appearance} />
+        ) : spec.lattice === true ? (
+          <LatticePreview appearance={appearance} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
@@ -104,7 +110,7 @@ export function PuzzleBoardPreview({
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
         {SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
-        {(words === undefined && spec.tiles !== true) || onFelt === undefined ? null : (
+        {(!onBoard && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">
             <FeltPatches felt={appearance.felt} wood={appearance.boardTheme} onChoose={onFelt} />
           </span>
@@ -174,6 +180,12 @@ const TILE_EXAMPLES: Record<number, string> = { 3: "cat", 7: "2g/word/2i/2d", 11
 function TilePreview({ size, appearance }: { size: number; appearance: Appearance }) {
   const tiles = useMemo(() => decodeGrid(TILE_EXAMPLES[size] ?? "") ?? new Map<string, string>(), [size]);
   return <KumimojiTable tiles={tiles} theme={tableTheme(appearance)} readOnly boxClass={TILE_PICTURE_BOX} />;
+}
+
+/** Koushi's lattice before it is made: 21 blank tiles and four holes, in the board colour chosen under it. Nothing on it can be pressed. */
+function LatticePreview({ appearance }: { appearance: Appearance }) {
+  const blank = Array.from({ length: LATTICE_CELLS }, (_, cell) => (isHole(cell) ? "." : ""));
+  return <KoushiGrid grid={blank} marks={blank.map(() => null)} done onPress={NOTHING} onSwap={NOTHING} appearance={appearance} />;
 }
 
 /** A puzzle written on paper: the grid, ruled at this size, inside the wood every board has. */
