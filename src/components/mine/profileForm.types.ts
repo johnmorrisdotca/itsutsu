@@ -1,3 +1,4 @@
+import type { MailKindsWanted } from "@/lib/mail/mailStop";
 import type { MemberCountry } from "@/lib/social/countries";
 
 /**
@@ -19,7 +20,10 @@ export type ProfileFields = {
   timeZone: string;
   bio: string;
   showOnline: boolean;
+  /** Email from the site at all; each kind under it is `mailKinds`. */
   emailNotify: boolean;
+  /** Each kind of email, as chosen or at its default (`MAIL_KINDS`), saved as its preference. */
+  mailKinds: MailKindsWanted;
   /** Days a finished game stays in your own list; 0 keeps them all. */
   keepFinishedDays: number;
   /** Days of the week you do not play, 0 for Sunday. */
@@ -40,4 +44,6 @@ export type ProfileSectionProps = {
   set: (patch: Partial<ProfileFields>) => void;
   /** A member under 13: never listed as here and never emailed, so neither switch is offered. */
   child?: boolean;
+  /** Whether game emails go at all yet (`NOTICES.sending`). */
+  mailSending?: boolean;
 };

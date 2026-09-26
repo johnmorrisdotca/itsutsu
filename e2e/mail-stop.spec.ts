@@ -24,9 +24,10 @@ async function withPrisma<T>(read: (prisma: PrismaClient) => Promise<T>): Promis
   }
 }
 
-async function wanted(id: string): Promise<{ yourTurn: unknown; all: boolean }> {
+async function wanted(id: string): Promise<{ gameOver: unknown; all: boolean }> {
   const row = await withPrisma((prisma) => prisma.member.findUniqueOrThrow({ where: { id }, select: { emailNotify: true, preferences: true } }));
-  return { yourTurn: (row.preferences as Record<string, unknown> | null)?.["mail.yourTurn"] ?? "on", all: row.emailNotify };
+  // Unchosen reads as the default, which for a finished game is on.
+  return { gameOver: (row.preferences as Record<string, unknown> | null)?.["mail.gameOver"] ?? "on", all: row.emailNotify };
 }
 
 test.describe("stopping email from its own link", () => {
@@ -37,7 +38,7 @@ test.describe("stopping email from its own link", () => {
     const email = `stop-${Date.now().toString(36)}@example.test`;
     await seedMember({ email, name: "Stop Tester" });
     memberId = await withPrisma(async (prisma) => (await prisma.member.findUniqueOrThrow({ where: { email }, select: { id: true } })).id);
-    token = (await signStopToken(memberId, "your-turn"))!;
+    token = (await signStopToken(memberId, "game-over"))!;
     expect(token, "no AUTH_SECRET to sign a stop link with").toBeTruthy();
   });
 
@@ -54,15 +55,15 @@ test.describe("stopping email from its own link", () => {
     await expect(panel).not.toContainText("Stop Tester");
 
     await page.getByTestId("stop-kind-press").click();
-    await expect(page.getByTestId("stop-done")).toHaveText("Done: no more emails telling you it is your turn.");
+    await expect(page.getByTestId("stop-done")).toHaveText("Done: no more emails telling you a game of yours has finished.");
     await expect(panel).toHaveAttribute("data-kind-on", "false");
-    expect(await wanted(memberId)).toEqual({ yourTurn: "off", all: true });
+    expect(await wanted(memberId)).toEqual({ gameOver: "off", all: true });
 
     // The way back, from the same page.
     await page.getByTestId("stop-kind-press").click();
-    await expect(page.getByTestId("stop-done")).toHaveText("Done: you will get emails telling you it is your turn again.");
+    await expect(page.getByTestId("stop-done")).toHaveText("Done: you will get emails telling you a game of yours has finished again.");
     await expect(panel).toHaveAttribute("data-kind-on", "true");
-    expect(await wanted(memberId)).toEqual({ yourTurn: "on", all: true });
+    expect(await wanted(memberId)).toEqual({ gameOver: "on", all: true });
 
     await page.getByTestId("stop-all-press").click();
     await expect(page.getByTestId("stop-done")).toHaveText("Done: Itsutsu will not email you again.");
@@ -77,7 +78,7 @@ test.describe("stopping email from its own link", () => {
   test("a mail program's own unsubscribe stops that kind in one post", async ({ page }) => {
     const answer = await page.request.post(`/api/mail/stop?token=${token}`, { form: { "List-Unsubscribe": "One-Click" } });
     expect(answer.status()).toBe(200);
-    expect(await wanted(memberId)).toEqual({ yourTurn: "off", all: true });
+    expect(await wanted(memberId)).toEqual({ gameOver: "off", all: true });
     await page.goto(`/stop/${token}`);
     await expect(page.getByTestId("stop-page")).toHaveAttribute("data-kind-on", "false");
   });
@@ -88,7 +89,7 @@ test.describe("stopping email from its own link", () => {
     await page.goto(`/stop/${token}`);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     await expect(page.getByTestId("stop-page")).toHaveAttribute("data-kind-on", "true");
-    expect(await wanted(memberId)).toEqual({ yourTurn: "on", all: true });
+    expect(await wanted(memberId)).toEqual({ gameOver: "on", all: true });
 
     // Copied in part: the gate treats it as any stranger's request.
     await page.goto(`/stop/${token.slice(0, -4)}`);

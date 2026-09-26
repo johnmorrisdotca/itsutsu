@@ -4,6 +4,7 @@ import { Toggle } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
 
+import { MailChoices } from "./MailChoices";
 import { PROFILE_WIDTH } from "./mine.constants";
 import type { ProfileSectionProps } from "./profileForm.types";
 
@@ -15,7 +16,7 @@ import type { ProfileSectionProps } from "./profileForm.types";
  * file for why the form reads as three groups. The fields are the form's, and
  * this section changes them only through `set`, exactly as it did inline.
  */
-export function ProfileSends({ fields, set, child = false }: ProfileSectionProps) {
+export function ProfileSends({ fields, set, child = false, mailSending = false }: ProfileSectionProps) {
   /** The id the retention select is described by — see where it is used. */
   const keepHint = useId();
 
@@ -42,11 +43,12 @@ export function ProfileSends({ fields, set, child = false }: ProfileSectionProps
               onChange={(next) => set({ showOnline: next })}
               hint="Listed on the players page while you are on the site. Off, and nobody sees you come and go."
             />
-            <Toggle
-              label="Email me when it is my move"
-              checked={fields.emailNotify}
-              onChange={(next) => set({ emailNotify: next })}
-              hint="One mail per turn, once mail is set up. Off, and the site never writes to you."
+            <MailChoices
+              all={fields.emailNotify}
+              kinds={fields.mailKinds}
+              onAll={(next) => set({ emailNotify: next })}
+              onKind={(kind, next) => set({ mailKinds: { ...fields.mailKinds, [kind]: next } })}
+              sending={mailSending}
             />
           </>
         )}

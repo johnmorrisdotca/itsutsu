@@ -2,11 +2,12 @@ import "server-only";
 
 import { preferencesFrom } from "@/lib/preferences/preferences";
 import { prisma } from "@/lib/prisma";
+import { RECENCY_MINUTES } from "@/lib/social/presence";
 
 import { gameBookOnce } from "./gameOverSummary";
 import { NOTICES, SITE_ORIGIN } from "./mail.constants";
 import type { AddressBook, NoticeDeps, NoticeEvent, NoticeOutcome } from "./mail.types";
-import { MAIL_STOP_KINDS, STOP_API_PATH, signStopToken, stopPagePath, type StopKind } from "./mailStop";
+import { MAIL_KINDS, STOP_API_PATH, signStopToken, stopPagePath, type StopKind } from "./mailStop";
 import { noticeMail } from "./noticeMail";
 import { sendMail } from "./sendMail";
 
@@ -33,8 +34,9 @@ import { sendMail } from "./sendMail";
  *      your-turn email on every move would spend the site's day before lunch.
  *      Nothing is read and nothing is counted while that is false.
  *   2. Is there an address, and does this member want to hear? No row, no
- *      address, `emailNotify` off, or this kind of email stopped (`mail.<kind>`)
- *      is "no-address": nobody to write to.
+ *      address, `emailNotify` off, this kind of email off (`mail.<kind>`, at
+ *      its default until chosen), or its rule holding it back (a your-turn
+ *      email to somebody on the site) is "no-address": nobody to write to now.
  *   3. Its way out (`mailStop.ts`): a signed link in the footer and the
  *      headers a mail program offers in its own menu. An email that cannot be
  *      given one does not go ("no-stop-link") — every email says how to stop
@@ -83,10 +85,13 @@ export const memberAddresses: AddressBook = {
     try {
       const member = await prisma.member.findUnique({
         where: { id: memberId },
-        select: { email: true, emailNotify: true, preferences: true },
+        select: { email: true, emailNotify: true, preferences: true, lastSeenAt: true },
       });
       if (member === null || !member.emailNotify) return null;
-      if (preferencesFrom(member.preferences)[MAIL_STOP_KINDS[kind].preference] === "off") return null;
+      // This kind as chosen, or at its default where nobody has (`MAIL_KINDS`).
+      if (preferencesFrom(member.preferences)[MAIL_KINDS[kind].preference] === "off") return null;
+      // Its rule: a kind held back while the member is on the site, where they can see it for themselves.
+      if (MAIL_KINDS[kind].notWhileHere && Date.now() - member.lastSeenAt.getTime() < RECENCY_MINUTES.now * 60_000) return null;
       return member.email;
     } catch (error) {
       console.error("[mail] a member's address could not be read", error);
