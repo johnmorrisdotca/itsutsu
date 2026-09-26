@@ -14,7 +14,7 @@ import { Suspense } from "react";
 import { backgroundPath, familyPath, historyPath, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { DAILY_PARAM } from "@/lib/puzzles/daily";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
-import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
@@ -24,8 +24,8 @@ import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsL
 import { PuzzleFastest } from "./PuzzleFastest";
 import { PuzzlePlayOrResume } from "./PuzzlePlayOrResume";
 import { PuzzlePoints } from "./PuzzlePoints";
-import { sizeWord } from "./puzzles.constants";
 import { GameTrail } from "@/components/games/GameTrail";
+import { offeredLine } from "./offeredLine";
 
 /**
  * A puzzle's front door, at /games/<slug>: what every puzzle's name leads to.
@@ -113,7 +113,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 </p>
               ) : null}
               <span className="text-xs text-muted">
-                {spec.offered.map((side) => sizeWord(side, kind)).join(", ")} · {spec.levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ")}
+                {offeredLine(kind)}
               </span>
             </div>
           </div>
