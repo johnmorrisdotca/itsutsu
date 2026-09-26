@@ -33,11 +33,12 @@ const under = namesPlayedUnder();
  * green before the fix as well. It is here as the guard for a phone — a change
  * that starts shifting the masthead on one is caught — and not as evidence.
  *
- * The count is held back rather than raced for. `page.route` keeps the reply to
- * `/api/games/mine` until the first measurement is taken, so "the badge is not
- * here yet" is a fact rather than a guess — and the slot it will appear in
- * carries `data-ready`, so the absence is asserted on a page the browser has
- * taken over rather than on one that has not finished arriving.
+ * Measured without the count and then with it, on the same page for the same
+ * reader: first with nothing waiting (black has not moved), then once it has.
+ * The count arrives with the page itself now (`headerCounts`), so there is no
+ * request to hold back; the strip's "going" is the presence the badge's
+ * absence is asserted after, and the slot carries `data-ready`, so it is a
+ * page the browser has taken over rather than one still arriving.
  */
 test.describe("the masthead", () => {
   for (const width of [768, 390]) {
@@ -61,29 +62,18 @@ test.describe("the masthead", () => {
 
         const page = await context.newPage();
         await page.setViewportSize({ width, height: 900 });
-        // Taking the white seat binds it to this account, the way a seat link does.
+        // Taking the white seat binds it to this account, the way a seat link does. Nothing waits on it yet: black has not moved.
         await page.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
-        const moved = await context.request.post(`/api/games/${game.id}/moves`, {
-          data: { token: game.blackToken, row: 4, col: 4 },
-        });
-        expect(moved.ok(), "black could not move, so nothing is waiting").toBe(true);
 
-        // The count is held until the page has been measured without it.
-        let release = () => {};
-        const held = new Promise<void>((resolve) => {
-          release = resolve;
-        });
-        await page.route("**/api/games/mine**", async (route) => {
-          await held;
-          await route.continue();
-        });
-
+        /*
+         * Measured first with nothing waiting — the strip says what this
+         * reader has going, which is the presence the badge's absence is
+         * asserted after — then again once black has moved and a count is due.
+         */
         await page.goto("/players");
         await ready(page, "your-turn-slot");
-        await expect(
-          page.getByTestId("your-turn-badge"),
-          "the count arrived before it could be measured without it",
-        ).toHaveCount(0);
+        await expect(page.getByTestId("strip-going")).toBeVisible();
+        await expect(page.getByTestId("your-turn-badge"), "something was already waiting before black moved").toHaveCount(0);
 
         const masthead = page.locator("header[data-chrome]");
         const bar = masthead.locator("nav");
@@ -94,7 +84,12 @@ test.describe("the masthead", () => {
           play: await widthOf(play),
         };
 
-        release();
+        const moved = await context.request.post(`/api/games/${game.id}/moves`, {
+          data: { token: game.blackToken, row: 4, col: 4 },
+        });
+        expect(moved.ok(), "black could not move, so nothing is waiting").toBe(true);
+        await page.goto("/players");
+        await ready(page, "your-turn-slot");
         await expect(page.getByTestId("your-turn-badge")).toHaveText("1");
 
         expect(await widthOf(play), "the badge widened the link it hangs off").toBe(before.play);
@@ -117,18 +112,19 @@ test.describe("the masthead", () => {
  * that is an invocation every thirty seconds per open tab per signed-in
  * member, for ever, whether or not anybody is looking — and the site's owner
  * rules out both halves of that: no extra cost, ever, and no interval polling
- * on principle. It reads on mount, which is every page, and on focus. See
- * `YourTurnBadge`.
+ * on principle. It is worked out with the page itself (`headerCounts`, handed
+ * over by `HeaderCountsSeed`), so arriving asks nothing, and it is asked for
+ * only when a tab comes back into focus. See `YourTurnBadge`.
  *
  * The clock is driven rather than waited out, and it is installed before the
  * page loads and wound only after the browser has taken the masthead over:
- * the timer under test would be created by React, so winding before that
- * leaves nothing to fire and the test says nothing at all. Waiting for the
- * FIRST request is the presence this absence is measured against — without
- * it, "no requests" would also be true of a page that never asked.
+ * a timer would be created by React, so winding before that leaves nothing
+ * to fire and the test says nothing at all. The strip being drawn is the
+ * presence the first absence is measured against, and the one request a
+ * focus makes is the presence behind the second.
  */
 test.describe("the waiting count", () => {
-  test("asks once for a page and never again on a timer", async ({ browser, baseURL }) => {
+  test("asks nothing as a page arrives or on a timer, and once when the tab comes back", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const me = { email: `poll-${stamp}@example.test`, name: `Poll ${stamp}` };
     const context = await memberContext(browser, baseURL!, me);
@@ -142,11 +138,9 @@ test.describe("the waiting count", () => {
       await page.clock.install();
       await page.goto("/players");
       await ready(page, "your-turn-slot");
-      // The one read a page is allowed: it happened, so the count below means something.
-      await expect
-        .poll(() => asked.length, { message: "the badge never asked at all" })
-        .toBeGreaterThan(0);
-      const onLoad = asked.length;
+      // The page's own render handed the counts over: the strip is drawn, and nothing was asked for them.
+      await expect(page.getByTestId("strip-waiting")).toBeVisible();
+      expect(asked, "the page asked the server for counts it was rendered with").toEqual([]);
 
       // A minute of nobody touching anything — two turns of the interval that was.
       await page.clock.runFor("01:00");
@@ -155,10 +149,11 @@ test.describe("the waiting count", () => {
        * released would still have to cross the wire before it could be counted.
        */
       await page.waitForTimeout(500);
-      expect(
-        asked.length,
-        `the count polled while the page sat idle: ${asked.length} requests, ${onLoad} on load`,
-      ).toBe(onLoad);
+      expect(asked, "the count polled while the page sat idle").toEqual([]);
+
+      // Coming back to the tab is the one time it asks, and asking at all is the presence the two absences above lean on.
+      await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+      await expect.poll(() => asked.length, { message: "a tab coming back into focus did not ask" }).toBe(1);
     } finally {
       await context.close();
       await removeMember(me.email);

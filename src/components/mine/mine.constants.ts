@@ -489,3 +489,10 @@ export const REMOVE_COPY = {
  * detail, so the Puzzles tab reads like the rest of the page.
  */
 export const MY_PUZZLE_ROW = "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule px-3 py-2 text-sm";
+
+/**
+ * The key the header's badge and strip share in SWR's cache: one answer for
+ * both, seeded by the page's own render (`HeaderCountsSeed`) and refreshed
+ * from this route only when a tab comes back into focus.
+ */
+export const MINE_KEY = "/api/games/mine";

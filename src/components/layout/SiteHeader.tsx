@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "@/components/ui/Link";
 
 import { AccountMenu, type Who } from "@/components/auth/AccountMenu";
@@ -15,6 +16,8 @@ import { LearnTimeZone } from "./LearnTimeZone";
 import { MemberStrip } from "./MemberStrip";
 import { NavLinks } from "./NavLinks";
 import { XpToasts } from "./XpToasts";
+import { headerCounts } from "@/lib/history/headerCounts";
+import { HeaderCountsSeed } from "./HeaderCountsSeed";
 
 /** Who is signed in, read on the server so the header is right on first paint. */
 async function whoIsHere(): Promise<Who> {
@@ -30,6 +33,19 @@ async function whoIsHere(): Promise<Who> {
        address", which drew the stranger's menu for everybody who came in with an invite code. */
     member: session.kind === "player" && memberKeyOf(session) !== null,
   };
+}
+
+async function HeaderCountsFromServer() {
+  /*
+   * A count that cannot be read leaves the badge and the strip empty, as a
+   * failed request always did — never the page: the counts are a footnote to
+   * it, and an error here would otherwise take the whole render down with it.
+   */
+  const counts = await headerCounts().catch((error: unknown) => {
+    console.error(error);
+    return null;
+  });
+  return <HeaderCountsSeed counts={counts} />;
 }
 
 async function Nav() {
@@ -53,6 +69,14 @@ async function Nav() {
         fact about the browser that has just arrived.
       */}
       <LearnTimeZone />
+      {/*
+        The badge's and the strip's counts, worked out in this render and
+        streamed in behind the boundary so the bar never waits for them — see
+        `headerCounts`. Draws nothing.
+      */}
+      <Suspense fallback={null}>
+        <HeaderCountsFromServer />
+      </Suspense>
     </nav>
   );
 }
