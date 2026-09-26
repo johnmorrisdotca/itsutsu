@@ -86,7 +86,7 @@ export function SetUpFold({
          * Grown, every closed answer is one card of one height with its words
          * in the middle. In a column it has nothing to grow into.
          */
-        className={`flex w-full min-w-0 grow items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30 ${
+        className={`flex w-full min-w-0 grow cursor-pointer items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30 ${
           place === undefined ? "" : ANSWER_PART
         }`}
         style={place?.head}

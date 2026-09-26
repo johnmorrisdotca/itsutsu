@@ -30,6 +30,17 @@ test("a Reversi board's felt is chosen at set-up, kept, and changed mid-game", a
     // Green until chosen otherwise.
     await expect(preview.getByTestId("board-surface")).toHaveAttribute("data-surface", "Green");
     await expect(preview.getByTestId("felt-green")).toHaveAttribute("aria-checked", "true");
+    // Square patches of the board, not dots, each with a pointer over it. John: "Reserve the use of Circles for Marble colours."
+    for (const felt of ["green", "blue", "red", "black", "wood"]) {
+      const look = await preview.getByTestId(`felt-${felt}`).evaluate((patch) => {
+        const style = getComputedStyle(patch);
+        const at = patch.getBoundingClientRect();
+        return { width: at.width, height: at.height, radius: parseFloat(style.borderTopLeftRadius), cursor: style.cursor };
+      });
+      expect(Math.abs(look.width - look.height), felt).toBeLessThanOrEqual(1);
+      expect(look.radius, felt).toBeLessThanOrEqual(look.width / 4);
+      expect(look.cursor, felt).toBe("pointer");
+    }
 
     const saved = page.waitForResponse((response) => response.url().endsWith("/api/me") && response.request().method() === "PATCH");
     await preview.getByTestId("felt-blue").click();
