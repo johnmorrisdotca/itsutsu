@@ -10,7 +10,7 @@
  * gate's open list in `proxy.ts`, what an invite request keeps
  * (`inviteRequest.ts`: nothing), what a report keeps (`reportDraft.ts`), the
  * operator's actions (`operatorLog.constants.ts`), the mail switch
- * (`NOTICES` in `mail.constants.ts`), the kept records in `lib/legacy`, and
+ * (`gameEmails` in `site.constants.ts`), the kept records in `lib/legacy`, and
  * `package.json`, which carries no analytics or advertising package.
  *
  * `privacy.coverage.test.ts` reads these sentences against that code, so when
@@ -133,7 +133,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
       heading: "Email",
       kanji: "メール",
       paragraphs: [
-        "The site itself sends email only when something asks for it: an invitation a member sends to a friend. A note that it is your move exists and is switched off for now; when it is switched on, the setting on your page turns it off for you. When you ask for an invite or report a problem, any answer comes from a person, to the address you gave. Your address is never sold or given out.",
+        "The site itself sends email only when something asks for it: an invitation a member sends to a friend, and notes about your own games (a game that has finished, or your move) while the site has game emails switched on, of the kinds you choose on your page. Every one says how to stop getting it, without signing in. When you ask for an invite or report a problem, any answer comes from a person, to the address you gave. Your address is never sold or given out.",
       ],
     },
     {

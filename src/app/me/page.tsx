@@ -35,7 +35,7 @@ import { activeTab, type Tab } from "@/lib/ui/tabs";
 import { allCountries } from "@/lib/social/countries";
 import { TurnFlowForm } from "@/components/mine/TurnFlowForm";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
-import { NOTICES } from "@/lib/mail/mail.constants";
+import { gameEmailsOn } from "@/lib/site/gameEmails";
 import { mailKindsFrom } from "@/lib/mail/mailStop";
 import { WelcomeMail } from "@/components/mine/WelcomeMail";
 
@@ -121,7 +121,7 @@ const TABS: Tab[] = [
  */
 export default async function MePage({ searchParams }: PageProps<"/me">) {
   const params = await searchParams;
-  const [me, row] = await Promise.all([currentSession(), currentMemberRow()]);
+  const [me, row, mailSending] = await Promise.all([currentSession(), currentMemberRow(), gameEmailsOn()]);
   if (me === null || row === null) redirect("/join?next=%2Fme");
 
   /*
@@ -231,7 +231,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
             <KeepThisAccount days={PLAYER_SESSION_DAYS} googleReady={isGoogleAuthConfigured()} />
           ) : isChild(band) ? null : (
             /* With an address to write to, and not a child: what to hear about, kept as it is pressed. */
-            <WelcomeMail all={profileFields.emailNotify} kinds={profileFields.mailKinds} sending={NOTICES.sending} />
+            <WelcomeMail all={profileFields.emailNotify} kinds={profileFields.mailKinds} sending={mailSending} />
           )}
         </section>
       ) : null}
@@ -309,7 +309,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
 
             {open === "settings" ? (
               <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
-                <SettingsForm initial={profileFields} child={isChild(band)} mailSending={NOTICES.sending} />
+                <SettingsForm initial={profileFields} child={isChild(band)} mailSending={mailSending} />
                 <p className="border-t border-rule pt-4 text-sm text-muted">
                   What a new board is set out with, here and on every device you sign in on.
                 </p>

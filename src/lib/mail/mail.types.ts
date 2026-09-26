@@ -43,7 +43,7 @@ export type MailRefusal =
   | CapRefusal
   | "count-unavailable"
   | "transport-error"
-  /** Game notices are switched off at `NOTICES.sending`; see the reasoning there. */
+  /** Game notices are off while the operator's switch is (`gameEmails` on Admin's site panel). */
   | "notices-off"
   /** Nobody to write to: no member row, no address on it, or the member asked not to hear. */
   | "no-address"
@@ -98,7 +98,12 @@ export type AddressBook = {
   addressOf(memberId: string, kind: StopKind): Promise<string | null>;
 };
 
-export type NoticeDeps = SendDeps & { addresses?: AddressBook; games?: GameBook };
+export type NoticeDeps = SendDeps & {
+  addresses?: AddressBook;
+  games?: GameBook;
+  /** Whether game emails are switched on: the operator's switch (`gameEmailsOn`) unless a test says. */
+  switchedOn?: () => Promise<boolean>;
+};
 
 /** One counter a send must fit under: the row it counts in, its cap, and what to say when full. */
 export type MailLimit = {

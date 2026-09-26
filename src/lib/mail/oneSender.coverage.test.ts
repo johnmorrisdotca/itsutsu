@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { NOTICES } from "./mail.constants";
+import { SITE_SETTING_SPECS } from "@/lib/site/site.constants";
 
 /**
  * THERE IS ONE WAY OUT OF THIS SITE, AND THE CAPS ARE ON IT.
@@ -98,6 +98,8 @@ describe("one sender, and the caps are on it", () => {
      * are their own tickets. If this test is failing because somebody set it
      * deliberately, one of those has to have shipped first.
      */
-    expect(NOTICES.sending, "game notices were switched on; see NOTICES for what has to exist first").toBe(false);
+    // Now the operator's switch (`gameEmails`, John 2026-09-26): what this holds is that it starts OFF, so no
+    // deployment and no fresh settings store ever sends a game email that nobody chose to switch on.
+    expect(SITE_SETTING_SPECS.gameEmails.fallback, "game emails must start off until the operator turns them on").toBe("off");
   });
 });

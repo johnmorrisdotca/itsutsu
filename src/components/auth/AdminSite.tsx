@@ -19,6 +19,8 @@ import type { SiteSettingKey, SiteSettingState } from "@/lib/site/site.types";
 type Loaded = {
   settings: SiteSettingState[];
   maintenance: { on: boolean; variable: string };
+  /** Settings this deployment cannot honour, with why (game emails where email is not set up); null or absent where it can. */
+  locked?: Partial<Record<SiteSettingKey, string | null>>;
 };
 
 const json = async <T,>(url: string): Promise<T> => {
@@ -82,7 +84,9 @@ export function AdminSite({ modes = null }: { /** Server-rendered rows for the M
     const spec = SITE_SETTING_SPECS[key];
     const copy = SITE_SETTING_COPY[key];
     const state = states.get(key);
-    const chosen = spec.kind === "choice" ? String(state?.value ?? spec.fallback) : null;
+    // A setting this deployment cannot honour is drawn at its fallback (off) and cannot be changed, with the reason under it.
+    const locked = data?.locked?.[key] ?? null;
+    const chosen = spec.kind === "choice" ? (locked !== null ? String(spec.fallback) : String(state?.value ?? spec.fallback)) : null;
     return (
       <PanelRow
         key={key}
@@ -98,14 +102,22 @@ export function AdminSite({ modes = null }: { /** Server-rendered rows for the M
             <span title={copy.blurb}>{copy.options[chosen]?.blurb ?? copy.blurb}</span>
           )
         }
-        note={<Provenance state={state} />}
+        note={
+          locked !== null ? (
+            <span className="text-xs text-muted" data-testid={`site-setting-${key}-locked`}>
+              {locked}
+            </span>
+          ) : (
+            <Provenance state={state} />
+          )
+        }
         control={
           spec.kind === "choice" ? (
             <ChoiceRow
               options={spec.options}
               copy={copy.options}
               chosen={chosen ?? spec.fallback}
-              busy={busy === key}
+              busy={busy === key || locked !== null}
               onPick={(value) => void save(key, value)}
               testId={key}
             />
@@ -241,7 +253,7 @@ function ChoiceRow({
                 confirm={words.label}
                 onConfirm={() => onPick(option)}
                 disabled={busy}
-                className={`${segment} bg-ivory text-ink-soft transition-colors hover:bg-rule/60`}
+                className={`${segment} bg-ivory text-ink-soft transition-colors hover:bg-rule/60 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-ivory`}
                 testId={`${testId}-${option}-use`}
               />
             ) : (
@@ -249,7 +261,7 @@ function ChoiceRow({
                 type="button"
                 onClick={() => onPick(option)}
                 disabled={busy}
-                className={`${segment} bg-ivory text-ink-soft transition-colors hover:bg-rule/60`}
+                className={`${segment} bg-ivory text-ink-soft transition-colors hover:bg-rule/60 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-ivory`}
                 data-testid={`${testId}-${option}-use`}
               >
                 {label}

@@ -5,7 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { RECENCY_MINUTES } from "@/lib/social/presence";
 
 import { gameBookOnce } from "./gameOverSummary";
-import { NOTICES, SITE_ORIGIN } from "./mail.constants";
+import { gameEmailsOn } from "@/lib/site/gameEmails";
+
+import { SITE_ORIGIN } from "./mail.constants";
 import type { AddressBook, NoticeDeps, NoticeEvent, NoticeOutcome } from "./mail.types";
 import { MAIL_KINDS, STOP_API_PATH, signStopToken, stopPagePath, type StopKind } from "./mailStop";
 import { noticeMail } from "./noticeMail";
@@ -30,9 +32,10 @@ import { sendMail } from "./sendMail";
  *
  * In order:
  *
- *   1. Are notices switched on? They are not — see `NOTICES` for why a
- *      your-turn email on every move would spend the site's day before lunch.
- *      Nothing is read and nothing is counted while that is false.
+ *   1. Are game emails switched on? The operator's switch on Admin's site
+ *      panel (`gameEmailsOn`), off until turned on, off while this deployment
+ *      cannot send email at all, and off when the setting cannot be read.
+ *      Nothing is read and nothing is counted while it is off.
  *   2. Is there an address, and does this member want to hear? No row, no
  *      address, `emailNotify` off, this kind of email off (`mail.<kind>`, at
  *      its default until chosen), or its rule holding it back (a your-turn
@@ -50,7 +53,7 @@ import { sendMail } from "./sendMail";
  *      person receiving it rather than some notion of a system sender.
  */
 export async function sendNotice(event: NoticeEvent, deps: NoticeDeps = {}): Promise<NoticeOutcome> {
-  if (!NOTICES.sending) return { sent: false, refusal: "notices-off" };
+  if (!(await (deps.switchedOn ?? gameEmailsOn)())) return { sent: false, refusal: "notices-off" };
 
   const to = await (deps.addresses ?? memberAddresses).addressOf(event.memberId, event.kind);
   if (to === null) return { sent: false, refusal: "no-address" };

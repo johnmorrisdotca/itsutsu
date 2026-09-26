@@ -14,7 +14,7 @@ import { sendNotice } from "@/lib/mail/sendNotice";
  * Every notice used to be asked for whenever the game was not at one screen,
  * so a seat held by a program was asked for too: a batch of programs' games
  * asked for a your-turn email on every one of its two thousand moves, and a
- * game-over for every game. Notices are switched off (`NOTICES`), so it costs
+ * game-over for every game. Notices are off until the operator switches them on (`gameEmails`), so it costs
  * nothing today — and it would the day they are switched on.
  *
  * Nor is it answered by the address book finding no address for a program.

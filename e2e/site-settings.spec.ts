@@ -47,7 +47,7 @@ const underBoards = namesPlayedUnder();
 test.afterEach(async ({ request }) => {
   // Null, not "invite-only": back to nobody having said anything, which is the
   // state this file found the site in and the one a fresh database is in.
-  for (const key of ["registration", "joinNotice", "livePollFast", "livePollOrdinary"]) {
+  for (const key of ["registration", "joinNotice", "livePollFast", "livePollOrdinary", "gameEmails"]) {
     const put = await request.put(SETTINGS, { data: { key, value: null } });
     expect(put.ok(), `could not put ${key} back`).toBe(true);
   }
@@ -217,6 +217,27 @@ test("says plainly how the site is shut, rather than offering a switch that woul
   // they do not shut the whole site when they meant to close the door.
   await expect(shutter).toContainText("SITE_MAINTENANCE=on");
   await expect(shutter).toContainText("Nobody new");
+});
+
+/**
+ * The master switch for game emails (John, 2026-09-26), where email cannot be sent: the suite's server is not the
+ * live site, so this is the state it must report. Off, greyed, the reason beside it, and the API refusing "on" too —
+ * a switch that could be pressed and then did nothing is the fault the shutter's row above exists to avoid.
+ */
+test("draws game emails off and locked where email is not set up, and refuses to switch them on", async ({ page, request }) => {
+  await openThePanel(page);
+  const row = page.getByTestId("site-setting-gameEmails");
+  await expect(row).toBeVisible();
+  await expect(row.getByTestId("gameEmails-off")).toHaveAttribute("data-chosen", "true");
+  await expect(row.getByTestId("gameEmails-on-use")).toBeDisabled();
+  await expect(row.getByTestId("site-setting-gameEmails-locked")).toContainText("cannot be switched on here");
+
+  const on = await request.put(SETTINGS, { data: { key: "gameEmails", value: "on" } });
+  expect(on.status()).toBe(422);
+  expect(((await on.json()) as { error?: string }).error).toContain("cannot be switched on here");
+  // Off is always allowed: a way out never waits on the provider.
+  const off = await request.put(SETTINGS, { data: { key: "gameEmails", value: "off" } });
+  expect(off.ok()).toBe(true);
 });
 
 /**

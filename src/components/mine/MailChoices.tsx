@@ -24,7 +24,7 @@ export function MailChoices({
   kinds: MailKindsWanted;
   onAll: (next: boolean) => void;
   onKind: (kind: StopKind, next: boolean) => void;
-  /** Whether game emails go at all yet (`NOTICES.sending`): until they do, the rows say they are kept for then. */
+  /** Whether game emails go at all yet (`gameEmailsOn`, the operator's switch): until they do, the rows say they are kept for then. */
   sending: boolean;
 }) {
   return (

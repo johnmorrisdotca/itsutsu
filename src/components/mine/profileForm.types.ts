@@ -44,6 +44,6 @@ export type ProfileSectionProps = {
   set: (patch: Partial<ProfileFields>) => void;
   /** A member under 13: never listed as here and never emailed, so neither switch is offered. */
   child?: boolean;
-  /** Whether game emails go at all yet (`NOTICES.sending`). */
+  /** Whether game emails go at all yet (`gameEmailsOn`, the operator's switch). */
   mailSending?: boolean;
 };

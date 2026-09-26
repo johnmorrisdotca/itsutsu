@@ -5,7 +5,8 @@ import { describe, expect, it } from "vitest";
 
 import { OPERATOR_ACTIONS } from "@/lib/auth/operatorLog.constants";
 import { PLAYER_SESSION_DAYS } from "@/lib/auth/session";
-import { CONTACT_ADDRESS, NOTICES } from "@/lib/mail/mail.constants";
+import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
+import { SITE_SETTING_SPECS } from "@/lib/site/site.constants";
 import { PHRASES } from "@/lib/i18n/i18n.constants";
 
 import { CONTACT, PRIVACY_CHANGED, privacySections, wordsAccountSentence } from "./privacy.constants";
@@ -135,13 +136,15 @@ describe("the privacy page", () => {
     expect(who).toContain("Nobody at the site can sign in as you");
   });
 
-  it("agrees with the mail switch about move notices", () => {
+  it("says what is true of game emails whichever way the operator's switch is set", () => {
+    // The switch is on Admin's site panel now (`gameEmails`), so the page cannot say "off for now" or "on":
+    // it says they go only while switched on, only of the kinds chosen, and each with a way to stop.
     const email = section("email");
-    if (NOTICES.sending) {
-      expect(email).not.toContain("switched off for now");
-    } else {
-      expect(email).toContain("switched off for now");
-    }
+    expect(SITE_SETTING_SPECS.gameEmails.options).toEqual(["off", "on"]);
+    expect(email).toContain("while the site has game emails switched on");
+    expect(email).toContain("of the kinds you choose");
+    expect(email).toContain("how to stop getting it");
+    expect(email).not.toContain("switched off for now");
   });
 
   it("fills the words-only account's lifetime from the cookie, never by hand", () => {

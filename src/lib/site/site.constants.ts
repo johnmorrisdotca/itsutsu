@@ -100,6 +100,23 @@ export const SITE_SETTING_SPECS = {
    */
   livePollFast: { kind: "seconds", min: 2, max: 15, fallback: 3 },
   livePollOrdinary: { kind: "seconds", min: 15, max: 60, fallback: 15 },
+  /*
+   * WHETHER GAME EMAILS GO AT ALL — John, 2026-09-26: "Let's have a master
+   * switch in the admin page to turn off emails aka toggle." It was a constant
+   * in code (`NOTICES.sending`) so that nobody could flip it without reading
+   * why it was off; the why now sits beside the switch as its confirmation, and
+   * every flip is in the operator log like any other setting.
+   *
+   * OFF until the operator turns it on, and off whenever the store cannot be
+   * read (`gameEmailsOn`): silence is the safe answer. What it switches is only
+   * the game emails `sendNotice` sends. Underneath it everything stays as it
+   * is: a member's own choices (`emailNotify`, each kind), the rule that a
+   * your-turn email never reaches somebody on the site, the stop link in every
+   * email, and the caps in `sendMail` — fifty emails a day for the whole site,
+   * five a day to any one member. Invitations a member sends are not game
+   * emails and do not wait on it.
+   */
+  gameEmails: { kind: "choice", options: ["off", "on"], fallback: "off" },
 } as const satisfies Record<string, SiteSettingSpec>;
 
 /** Every declared key, in registry order — which is the order the panel shows. */
@@ -118,6 +135,7 @@ export const SITE_SETTING_REMOTE_KEYS = {
   joinNotice: "join_notice",
   livePollFast: "live_poll_fast",
   livePollOrdinary: "live_poll_ordinary",
+  gameEmails: "game_emails",
 } as const satisfies Record<SiteSettingKey, string>;
 
 /** How the site behaves when nothing at all has been written: each setting at its fallback. */
@@ -174,6 +192,7 @@ export const SITE_PANEL_GROUPS = [
   { key: "access", label: "Access", kanji: "入口" },
   { key: "notices", label: "Notices", kanji: "掲示" },
   { key: "boards", label: "Live boards", kanji: "対局" },
+  { key: "email", label: "Email", kanji: "郵便" },
   { key: "modes", label: "Modes", kanji: "状態" },
 ] as const;
 
@@ -258,5 +277,25 @@ export const SITE_SETTING_COPY: Record<
       "How often, in seconds, a board being looked at asks when the other player is not on the site. Never under fifteen, to keep the cost down. A board picks up a change the next time its page loads.",
     options: {},
     fieldLabel: "Seconds between asks, 15 to 60",
+  },
+  gameEmails: {
+    label: "Game emails",
+    kanji: "通知",
+    group: "email",
+    blurb:
+      "The master switch for the emails games send: a game that has finished, and your move for members who chose it. Off, none go, whatever anybody chose. Invitations members send are not affected.",
+    options: {
+      off: {
+        label: "Off",
+        blurb: "No game emails go to anybody. Each member's choices are kept for when they are switched on.",
+      },
+      on: {
+        label: "On",
+        blurb:
+          "Game emails go to members who want them, of the kinds each chose. Every one says how to stop getting it, and a your-turn email never goes to somebody already on the site.",
+        confirm:
+          "Switch game emails on? From now on members who asked for them are emailed when a game of theirs finishes, and on their move if they chose that. The site sends at most fifty emails a day in all and five to any one person, so on a busy day some will not go. There is no morning digest yet. You can switch them off here at any time.",
+      },
+    },
   },
 };

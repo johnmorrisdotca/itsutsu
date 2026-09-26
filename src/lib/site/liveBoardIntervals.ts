@@ -21,7 +21,7 @@ export const SITE_SETTINGS_TAG = "site-settings";
  * read, which `unstable_cache` never keeps, so a failed read is asked again on
  * the next page rather than remembered for ten minutes.
  */
-const cachedSettings = unstable_cache(
+export const cachedSiteSettings = unstable_cache(
   async () => siteSettingsFrom(storedFromRemote(await readRemoteSettings(sumilabuTarget("settings")))),
   ["site-settings-for-boards"],
   { revalidate: 600, tags: [SITE_SETTINGS_TAG] },
@@ -49,7 +49,7 @@ const cachedSettings = unstable_cache(
  */
 export async function liveBoardIntervals(): Promise<LiveBoardIntervals> {
   try {
-    return liveBoardIntervalsFrom(await cachedSettings());
+    return liveBoardIntervalsFrom(await cachedSiteSettings());
   } catch (error) {
     console.error(`Live boards ask at the default intervals: the settings store could not be read. ${error instanceof Error ? error.message : String(error)}`);
     return liveBoardIntervalsFrom(DEFAULT_SITE_SETTINGS);

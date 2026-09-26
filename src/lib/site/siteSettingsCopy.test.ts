@@ -19,6 +19,7 @@ describe("the cut-over copy, as a report", () => {
       { key: "joinNotice", remoteKey: "join_notice", action: "put", value: "Beta — ask John", was: null, by: "nobody recorded" },
       { key: "livePollFast", remoteKey: "live_poll_fast", action: "none" },
       { key: "livePollOrdinary", remoteKey: "live_poll_ordinary", action: "none" },
+      { key: "gameEmails", remoteKey: "game_emails", action: "none" },
     ]);
   });
 
@@ -30,7 +31,7 @@ describe("the cut-over copy, as a report", () => {
       ],
       [remote("registration", "closed"), remote("join_notice", "Old words")],
     );
-    expect(plan.steps.map((step) => step.action)).toEqual(["refused", "delete", "none", "none"]);
+    expect(plan.steps.map((step) => step.action)).toEqual(["refused", "delete", "none", "none", "none"]);
     expect(plan.ignored).toEqual(["maintenance"]);
     expect(copyPlan([{ key: "registration", value: "closed" }], [remote("registration", "closed")]).steps[0]).toMatchObject({ action: "same" });
     expect(copyPlan([{ key: "joinNotice", value: "   " }], []).steps[1]).toMatchObject({ action: "none" });
@@ -43,6 +44,7 @@ describe("the cut-over copy, as a report", () => {
       'PUT settings/join_notice "Hi" (the target holds nothing; last set here by op)',
       "nothing to do: live_poll_fast is unset on both",
       "nothing to do: live_poll_ordinary is unset on both",
+      "nothing to do: game_emails is unset on both",
       "not copied, not a setting this site declares: maintenance",
     ]);
   });

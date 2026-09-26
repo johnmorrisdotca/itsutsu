@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } 
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { MAINTENANCE_ENV } from "@/lib/site/site.constants";
+import { gameEmailsUnavailable } from "@/lib/site/gameEmails";
 import { acceptSiteSetting, maintenanceIsOn } from "@/lib/site/site";
 import { SITE_SETTINGS_TAG } from "@/lib/site/liveBoardIntervals";
 import { fetchSiteSettingStates, writeSiteSetting } from "@/lib/site/siteStore";
@@ -42,6 +43,13 @@ export async function GET(request: Request) {
           on: maintenanceIsOn(process.env[MAINTENANCE_ENV]),
           variable: MAINTENANCE_ENV,
         },
+        /*
+         * Settings this deployment cannot honour, each with why: game emails
+         * while email itself is not set up here. The panel draws them off and
+         * greyed with the reason, and the write below refuses them — the same
+         * honesty as the shutter above: never a switch that appears to work.
+         */
+        locked: { gameEmails: gameEmailsUnavailable() },
       },
       { headers: NO_STORE },
     );
@@ -75,6 +83,9 @@ export async function PUT(request: Request) {
      */
     const accepted = acceptSiteSetting(key, value === undefined ? null : value);
     if (!accepted.ok) return unprocessable(accepted.problem);
+    // Game emails cannot be switched on where email cannot be sent at all (John, 2026-09-26): off is always allowed.
+    const emailLocked = accepted.key === "gameEmails" && accepted.value === "on" ? gameEmailsUnavailable() : null;
+    if (emailLocked !== null) return unprocessable(emailLocked);
 
     await writeSiteSetting(accepted.key, accepted.value, admin.email ?? "operator");
     // The boards read their intervals through a cache (`liveBoardIntervals`); the next board page reads this write.
