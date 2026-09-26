@@ -320,6 +320,16 @@ literature uses them. Both sections are linked from the header.
 
 ### Players, ratings and records
 
+Two numbers sit beside a player's rating, and they are kept apart on purpose.
+**XP** is experience: earned by taking part in anything, it never goes down
+and it sets a player's level (`src/lib/xp/`). **IP, Itsutsu Points,** is
+ability: won by results alone, in every game and every puzzle. A game pays IP
+when it ends (`payGameIp`), priced by `gamePoints` as the most that game can
+pay (Gomoku on 15×15 is 100, Go on 19×19 is 200) times the share its result
+earns, and stored on the game's row. Every game's page, every family's page
+and `/points` show an IP board, this month and all time (`ipBoards.ts`).
+Games finished before IP are priced by `pnpm ip:backfill`, in process.
+
 Ratings began as a record kept for a NAME, when a name was the only identity
 the site had. They now hang off the member who claims the name
 (`Player.memberId`), and an anonymous seat is never rated. Every finished rated

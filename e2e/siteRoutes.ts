@@ -75,6 +75,7 @@ export const ROUTES: Record<string, Route> = {
   "/terms": { url: () => "/terms" },
   "/thanks": { url: () => "/thanks" },
   "/xp": { url: () => "/xp" },
+  "/points": { url: () => "/points" },
   "/xp/levels": { url: () => "/xp/levels" },
   "/xp/levels/[level]": { url: () => "/xp/levels/1" },
   "/xp/promotions": { url: () => "/xp/promotions" },

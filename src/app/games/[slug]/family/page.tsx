@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameName } from "@/components/games/GameName";
@@ -8,11 +9,13 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { IpBoard } from "@/components/points/IpBoard";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { EVERY_GAME_KEY, gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
-import { familyPath, gameKeyFor, gamePath, slugFor } from "@/lib/gomoku/slugs";
+import { familyPath, gameKeyFor, gamePath, setUpPath, slugFor } from "@/lib/gomoku/slugs";
+import { scopeOfFamily } from "@/lib/points/ipBoards";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/family">): Promise<Metadata> {
   const variant = gameKeyFor((await params).slug);
@@ -129,6 +132,19 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
           );
         })}
       </ul>
+
+      {/*
+        THE FAMILY'S IP BOARD: who has won the most across all its games, this
+        month and all time. John, 2026-09-25: "EVERY game in every family is also
+        going to have a Leaderboard. So IP matters." The family's home games only,
+        the way its counts and its XP are read (AGENTS.md, a family is a game's
+        one HOME).
+      */}
+      {scopeOfFamily(family.key) === null ? null : (
+        <Suspense fallback={null}>
+          <IpBoard scope={scopeOfFamily(family.key)!} title={family.title} playHref={setUpPath(variant)} testId="family-ip-board" />
+        </Suspense>
+      )}
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">

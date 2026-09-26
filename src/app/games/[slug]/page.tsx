@@ -7,6 +7,8 @@ import { Suspense, type ReactNode } from "react";
 
 import { GameFamily } from "@/components/games/GameFamily";
 import { GameLadder } from "@/components/games/GameLadder";
+import { IpBoard } from "@/components/points/IpBoard";
+import { scopeOfGame } from "@/lib/points/ipBoards";
 import { PlayButton } from "@/components/games/PlayButton";
 import { PlayedHere } from "@/components/games/PlayedHere";
 import { PageTitle } from "@/components/layout/Headings";
@@ -225,6 +227,16 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           */}
           <Suspense fallback={null}>
             <GameLadder variant={variant} title={page.title} />
+          </Suspense>
+
+          {/*
+            AND WHO HAS WON THE MOST HERE: this game's IP board, this month and
+            all time. John, 2026-09-25: "EVERY game in every family is also going
+            to have a Leaderboard. So IP matters." The ladder is who is best; this
+            is who has won most, and the two need not agree.
+          */}
+          <Suspense fallback={null}>
+            <IpBoard scope={scopeOfGame(variant)} title={page.title} playHref={setUpPath(variant)} stacked />
           </Suspense>
 
           {/* The game made of its own games: see `RealGamesMosaic`. A panel of its own, holding its own `connection()`. */}
