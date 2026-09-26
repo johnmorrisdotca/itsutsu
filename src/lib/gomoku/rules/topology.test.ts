@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { cellAt, createGame, playMove } from "../engine";
-import { RULE_VARIANTS, WRAP_MODES, VARIANT_SPECS } from "../gomoku.constants";
+import { GAME_STATUS, HOT, RULE_VARIANTS, STONES, WRAP_MODES, VARIANT_SPECS } from "../gomoku.constants";
 import { randomSquares } from "../obstacles";
-import type { GameState, Point } from "../gomoku.types";
+import type { Cell, GameState, Point, Stone } from "../gomoku.types";
 
 const p = (row: number, col: number): Point => ({ row, col });
 
@@ -126,6 +126,50 @@ describe("Obstacle Five", () => {
     if (!taken.has("0,0")) {
       expect(playMove(state, free)).not.toBe(state);
     }
+  });
+
+  /**
+   * A board of our own: the seed's squares cleared, one hotspot at the centre
+   * of row 7, and the given stones laid. Black is to move.
+   */
+  function hotRow(black: number[], white: number[], toPlay: Stone = STONES.black): GameState {
+    const state = game();
+    const board: Cell[] = state.board.map(() => null);
+    board[7 * 15 + 7] = HOT;
+    for (const col of black) board[7 * 15 + col] = STONES.black;
+    for (const col of white) board[7 * 15 + col] = STONES.white;
+    return { ...state, board, toPlay };
+  }
+
+  it("counts a hotspot in a five of either colour", () => {
+    // x x x * _ : black's stone on the gap makes five through the hotspot.
+    const black = playMove(hotRow([4, 5, 6], []), p(7, 8));
+    expect(black.winner).toBe(STONES.black);
+    expect(black.winningLine).toHaveLength(5);
+    // o o o * _ : the same hotspot finishes white's five just as well.
+    const white = playMove(hotRow([], [4, 5, 6], STONES.white), p(7, 8));
+    expect(white.winner).toBe(STONES.white);
+    expect(white.winningLine).toHaveLength(5);
+  });
+
+  it("never makes a stone finish the other colour's five: it blocks it, and nobody loses", () => {
+    // o o o * _ with black to move. The gap would finish white's five; black's stone there only blocks it.
+    const blocked = playMove(hotRow([], [4, 5, 6]), p(7, 8));
+    expect(cellAt(blocked, p(7, 8))).toBe(STONES.black);
+    expect(blocked.status).toBe(GAME_STATUS.playing);
+    expect(blocked.winner).toBeNull();
+    expect(blocked.toPlay).toBe(STONES.white);
+  });
+
+  it("gives a hotspot shared by both colours' lines to whoever makes five with their own stone", () => {
+    // Column 7 holds white's o o o above the hotspot; row 7 holds black's x x x beside it.
+    const state = hotRow([4, 5, 6], []);
+    const board = state.board.slice();
+    for (const row of [4, 5, 6]) board[row * 15 + 7] = STONES.white;
+    const shared = { ...state, board };
+    const next = playMove(shared, p(7, 8));
+    expect(next.winner).toBe(STONES.black);
+    expect(next.winningLine).toContainEqual(p(7, 7));
   });
 
   it("does not scatter anything on a plain game", () => {

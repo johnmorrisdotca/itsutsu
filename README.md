@@ -261,7 +261,7 @@ replay reproduces it:
 | --- | --- | --- |
 | **Ring Drop** 輪落とし | The left and right edges join, so a line may wrap. | Connect Four |
 | **Hole Drop** 穴落とし | One random square is dead: stones fall past it and no line runs through it. | Connect Four |
-| **Hot Drop** 熱点落とし | One random hotspot counts as either colour, and one hole counts as nothing. A stone that finishes the other side's four through the hotspot loses. | Connect Four |
+| **Hot Drop** 熱点落とし | One random hotspot counts as either colour, and one hole counts as nothing. A stone counts only for its own side, so one dropped into the gap of the other side's line blocks it. | Connect Four |
 | **Clear Drop** 消し落とし | A full bottom row disappears and everything drops a row, as in the falling-block game. | Connect Four |
 | **Giveaway Drop** 譲り落とし | Making four loses. You may not play on top of the opponent's last stone while another column has room. A full board goes to the opener. | Connect Four |
 | **Edge Drop** 縁寄せ | Gravity from all four edges: a stone must rest on an edge or against another stone. | Connect Four |
