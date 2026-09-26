@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { DirectoryWho } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
+import { HIDES_TEST_MEMBERS, hiddenMembersWhere, type TestModeReader } from "@/lib/testMode/testMode";
 
 import { levelXpRange } from "./levelLadder";
 import { XP_WHO_DEFAULT, xpWhoWhere } from "./xpWho";
@@ -74,6 +75,7 @@ export async function membersAtLevel(
   level: number,
   who: DirectoryWho = XP_WHO_DEFAULT,
   scope: RecordScope = XP_SCOPE_DEFAULT,
+  reader: TestModeReader = HIDES_TEST_MEMBERS,
 ): Promise<LevelRoll> {
   const range = levelXpRange(level);
   /*
@@ -84,7 +86,7 @@ export async function membersAtLevel(
   if (range === null) return { members: [], more: false };
 
   const read = await prisma.member.findMany({
-    where: { AND: [xpRangeWhere(scope, range), xpWhoWhere(who)] },
+    where: { AND: [xpRangeWhere(scope, range), xpWhoWhere(who), hiddenMembersWhere(reader)] },
     select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true },
     /*
      * Highest first, so whoever is nearest the next rung is at the top — the same

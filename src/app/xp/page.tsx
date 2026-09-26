@@ -12,6 +12,7 @@ import { YourXpStanding } from "@/components/xp/YourXpStanding";
 import type { SortChoice } from "@/lib/api/paging.types";
 import { isRefusal } from "@/lib/api/paging";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { countText } from "@/lib/rating/figures";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS } from "@/lib/xp/xpCurve";
@@ -107,7 +108,8 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
     : wanted;
 
   const narrowed = who !== DIRECTORY_WHO.everyone;
-  const [board, viewer] = await Promise.all([fetchXpBoardPage({ ...paging, who, scope }), viewerXp()]);
+  const reader = await currentTestModeReader();
+  const [board, viewer] = await Promise.all([fetchXpBoardPage({ ...paging, who, scope, reader }), viewerXp()]);
   /*
    * WHAT EACH ROW GAINED, AND HOW FAR IT TRAILS THE ONE ABOVE. John: "XP tables
    * aren't useful if they don't tell us how much you went up each day... and how
@@ -193,7 +195,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
         </div>
         <XpScopeSaid scope={scope} say={say} href={xpScopeHref("/xp", query, RECORD_SCOPES.everywhere)} />
 
-        <YourXpStanding viewer={viewer} board={board} who={who} scope={scope} />
+        <YourXpStanding viewer={viewer} board={board} who={who} scope={scope} reader={reader} />
 
         <Leaderboard
           rows={board.items}

@@ -14,6 +14,8 @@ import { prisma } from "@/lib/prisma";
 import type { DirectoryWho } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 
+import { HIDES_TEST_MEMBERS, hiddenMembersWhere, type TestModeReader } from "@/lib/testMode/testMode";
+
 import { XP_WHO_DEFAULT, xpWhoWhere } from "./xpWho";
 import type { Prisma } from "@prisma/client";
 
@@ -122,6 +124,7 @@ export async function fetchXpBoardPage({
   cursor,
   who = XP_WHO_DEFAULT,
   scope = XP_SCOPE_DEFAULT,
+  reader,
 }: {
   sort: XpBoardSort;
   limit: number;
@@ -130,6 +133,8 @@ export async function fetchXpBoardPage({
   who?: DirectoryWho;
   /** Everywhere, or Itsutsu only — see `xpScope.ts`. */
   scope?: RecordScope;
+  /** Whether THIS reader may see the site's simulated test members — see `testMode.ts`. */
+  reader: TestModeReader;
 }): Promise<XpBoardPage> {
   const spec = xpBoardSortSpec(scope);
   const after = cursor === null ? null : decodeCursor(cursor, sort);
@@ -139,7 +144,7 @@ export async function fetchXpBoardPage({
    * dropped afterwards, which would page and count a list the reader is not
    * looking at.
    */
-  const onTheBoard: Prisma.MemberWhereInput = { AND: [xpOnBoardWhere(scope), xpWhoWhere(who)] };
+  const onTheBoard: Prisma.MemberWhereInput = { AND: [xpOnBoardWhere(scope), xpWhoWhere(who), hiddenMembersWhere(reader)] };
   const where: Prisma.MemberWhereInput =
     after === null ? onTheBoard : { AND: [onTheBoard, keysetWhere(spec, sort, after)] };
 
@@ -195,11 +200,12 @@ export async function xpRankOf(
   total: number,
   who: DirectoryWho = XP_WHO_DEFAULT,
   scope: RecordScope = XP_SCOPE_DEFAULT,
+  reader: TestModeReader = HIDES_TEST_MEMBERS,
 ): Promise<number | null> {
   if (total <= 0) return null;
   // Within the narrowing, so a rank printed under a filter is the rank within it.
   const above = await prisma.member.count({
-    where: { AND: [xpAboveWhere(scope, total), xpWhoWhere(who)] },
+    where: { AND: [xpAboveWhere(scope, total), xpWhoWhere(who), hiddenMembersWhere(reader)] },
   });
   return above + 1;
 }
