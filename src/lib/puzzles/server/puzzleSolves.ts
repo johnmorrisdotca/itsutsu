@@ -91,7 +91,8 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
       if (!spec.sizes.includes(Number(size))) return;
       const rows = await prisma.puzzleSolve.findMany({
         where: { kind, size: Number(size), level, solved: true },
-        orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
+        /* Koushi ranks the fewest swaps first and then the time, which its stored points already say (`koushiPoints`). */
+        orderBy: kind === "koushi" ? [{ points: "desc" }, { elapsedMs: "asc" }, { finishedAt: "asc" }] : [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,
         select: { memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true, hintsUsed: true, givens: true, answer: true },
       });

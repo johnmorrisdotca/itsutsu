@@ -180,8 +180,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Other",
     kanji: "その他",
-    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, and whatever joins them.",
-    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort"],
+    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, six words to swap into a lattice, and whatever joins them.",
+    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "koushi"],
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];

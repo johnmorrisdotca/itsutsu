@@ -3,6 +3,7 @@ import { wordScore } from "./gomoji/wordScore";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { kanaScore } from "./gomojiKana/kanaScore";
+import { koushiPoints } from "./koushi/check";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -70,5 +71,7 @@ export function pointsFor(
   if (kind === "gomojiMot") return helped(wordPoints(size, givens, answer, elapsedMs, level, "fr"));
   if (kind === "gomojiWort") return helped(wordPoints(size, givens, answer, elapsedMs, level, "de"));
   if (kind === "gomojiKana") return helped(kanaPoints(size, givens, answer, elapsedMs, level));
+  // Fewest swaps first, then time (`koushiPoints`); it has no helps to price.
+  if (kind === "koushi") return koushiPoints(givens, answer, elapsedMs, level);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

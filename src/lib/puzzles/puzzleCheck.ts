@@ -8,6 +8,7 @@ import { decodeGuesses, decodeHidden, isWord, languageOf, type GomojiLanguage } 
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
+import { checkKoushi } from "./koushi/check";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -55,6 +56,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkGomoji(size, givens, answer, "found", level, "de");
     case "gomojiKana":
       return checkGomojiKana(size, givens, answer, "found", level);
+    case "koushi":
+      return checkKoushi(size, givens, answer, "found", level);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -231,10 +234,12 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  * for a loss that really happened — every row a word, none of them the word.
  */
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
-  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort") {
+  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "koushi") {
     return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   }
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
+  // Koushi's guesses are its swaps: every one the level gives made, and the grid not right.
+  if (kind === "koushi") return checkKoushi(size, givens, answer, "spent", level);
   if (kind === "gomojiKana") return checkGomojiKana(size, givens, answer, "spent", level);
   return checkGomoji(size, givens, answer, "spent", level, languageOf(kind));
 }

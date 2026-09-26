@@ -23,6 +23,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   gomojiKana: 0.12,
   gomojiMot: 0.12,
   gomojiWort: 0.12,
+  // A medium solve is about 880 (`koushiPoints`: 500, three swaps spare, a quick time).
+  koushi: 0.11,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

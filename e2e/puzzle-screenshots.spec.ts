@@ -9,6 +9,7 @@ import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeJigsaw } from "../src/lib/puzzles/jigsaw/code";
 import { decodeKiller } from "../src/lib/puzzles/killer/code";
+import { decodePlay } from "../src/lib/puzzles/koushi/lattice";
 import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
@@ -52,6 +53,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   // Gomoji Mot and Gomoji Wort: the same shape of picture, French's and German's own words.
   { kind: "gomojiMot", size: 5, level: "easy", seed: 20260925, fill: 2 },
   { kind: "gomojiWort", size: 5, level: "easy", seed: 20260925, fill: 2 },
+  // A Koushi four swaps into its fewest: greens, golds and plain letters still to place, and the four holes of the lattice.
+  { kind: "koushi", size: 5, level: "medium", seed: 20260926, fill: 4 },
 ];
 
 test.describe("puzzle screenshots", () => {
@@ -121,6 +124,13 @@ test.describe("puzzle screenshots", () => {
         await tapKana(page, target.slice(0, 2).join(""));
         // The picture is the grid alone, with its keys put away again.
         await page.getByTestId("word-keys-toggle").click();
+      } else if (scene.kind === "koushi") {
+        // The first few of the fewest swaps, each tapped as a person taps them: one tile, then its partner.
+        for (const [a, b] of decodePlay(puzzle.solution)!.swaps.slice(0, scene.fill)) {
+          await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${a}"]`).click();
+          await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${b}"]`).click();
+          filled += 1;
+        }
       } else if (scene.kind === "blackAndWhite") {
         const givens = decodeBlackAndWhite(puzzle.givens, scene.size)!;
         const solution = decodeBlackAndWhite(puzzle.solution, scene.size)!;

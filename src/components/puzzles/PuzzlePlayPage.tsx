@@ -37,8 +37,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis. */
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
-  /* The reader's board colour, so Gomoji's picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for the four Gomojis. */
-  const appearance = words ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
+  /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for a puzzle drawn on the board: the Gomojis and Koushi. */
+  const appearance = words || kind === "koushi" ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
   return (
     <Page>
       <SiteHeader />

@@ -20,7 +20,8 @@ export type PuzzleKind =
   | "gomoji"
   | "gomojiKana"
   | "gomojiMot"
-  | "gomojiWort";
+  | "gomojiWort"
+  | "koushi";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -64,6 +65,12 @@ export type PuzzleSpec = {
    * Names the layout its rows follow (`gomojiLayout`); absent is paper.
    */
   wordGrid?: "gomoji" | "gomojiKana";
+  /**
+   * Whether the puzzle is a lattice of letter tiles drawn on the board itself
+   * in the reader's board colour, as Koushi's is: previewed and played on the
+   * board with its colour patches, and never in a Gomoji's word styles.
+   */
+  lattice?: true;
 };
 
 /**

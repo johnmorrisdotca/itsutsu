@@ -22,13 +22,13 @@ import { GameTrail } from "@/components/games/GameTrail";
  * the puzzle's Play button and leaves for the solve with the choice in the
  * address.
  *
- * A puzzle drawn on the board itself (`wordGrid`: the Gomojis) is previewed in
+ * A puzzle drawn on the board itself (`wordGrid`: the Gomojis; `lattice`: Koushi) is previewed in
  * the reader's own board colour and style, so those two are read for it, and
  * for nothing else: every other puzzle is paper, and its page reads no row.
  */
 export async function PuzzleSetUpPage({ kind, hasAccount, memberId }: { kind: PuzzleKind; hasAccount: boolean; memberId: string | null }) {
   const copy = PUZZLE_DISPLAY[kind];
-  const onBoard = PUZZLE_SPECS[kind].wordGrid !== undefined;
+  const onBoard = PUZZLE_SPECS[kind].wordGrid !== undefined || PUZZLE_SPECS[kind].lattice === true;
   const [appearance, preferences] = onBoard ? await Promise.all([appearanceFor(memberId), preferencesFor()]) : [null, null];
   return (
     <Page>

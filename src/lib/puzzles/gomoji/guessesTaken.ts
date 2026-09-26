@@ -2,9 +2,15 @@ import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { decodeKanaGivens, decodeKanaGuesses } from "../gomojiKana/kanaCode";
 import { decodeGuesses, languageOf } from "./code";
 import { guessesFor } from "./layout";
+import { swapsTaken } from "../koushi/check";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
-export type GuessesTaken = { used: number; allowed: number };
+export type GuessesTaken = {
+  used: number;
+  allowed: number;
+  /** What was counted, where it was not guesses: a Koushi counts its swaps, 11/15. */
+  unit?: "swaps";
+};
 
 /**
  * HOW MANY GUESSES A GOMOJI SOLVE TOOK, OUT OF HOW MANY IT HAD. John,
@@ -38,6 +44,10 @@ export function guessesTaken(
     if (guesses === null) return null;
     // Mot and Wort are laid out as English is.
     return { used: guesses.length, allowed: guessesFor("gomoji", size, at, 0) };
+  }
+  if (kind === "koushi") {
+    const taken = swapsTaken(level, givens, answer);
+    return taken === null ? null : { ...taken, unit: "swaps" };
   }
   return null;
 }

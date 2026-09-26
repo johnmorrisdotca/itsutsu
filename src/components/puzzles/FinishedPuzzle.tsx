@@ -7,9 +7,12 @@ import { decodeCells } from "@/lib/puzzles/puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { decodeGuesses, languageOf } from "@/lib/puzzles/gomoji/code";
 import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { readKoushi } from "@/lib/puzzles/koushi/check";
+import { decodeGivens, markLattice } from "@/lib/puzzles/koushi/lattice";
 
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
+import { KoushiGrid } from "./KoushiGrid";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
@@ -57,6 +60,14 @@ export function FinishedPuzzle({
     const printed = decodeBlackAndWhite(givens.slice(0, size * size), size) ?? [];
     const stones = (answer === null ? null : decodeBlackAndWhite(answer, size)) ?? printed;
     return <BlackAndWhiteGrid size={size} givens={printed} stones={stones} done={readOnly} onPress={NOTHING} />;
+  }
+
+  // A lattice as it ended, in its colours: the grid its swaps made, or the scramble it was dealt.
+  if (kind === "koushi") {
+    const asked = decodeGivens(givens);
+    if (asked === null) return null;
+    const grid = readKoushi(givens, answer)?.played.grid ?? asked.scramble;
+    return <KoushiGrid grid={grid} marks={markLattice(grid, asked.solution)} done={readOnly} onPress={NOTHING} onSwap={NOTHING} />;
   }
 
   // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).

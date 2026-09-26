@@ -2,7 +2,7 @@ import { gameArtPath } from "@/lib/gomoku/artwork";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "./puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -18,7 +18,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
   const sizes = spec.offered.map((size) => `${size}×${size}`).join(", ");
-  const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${PUZZLE_LEVEL_DISPLAY[level].blurb.toLowerCase()})`);
+  // What each level means for this puzzle: a word puzzle's guesses or a lattice's swaps, where they are what differs (`levelBlurb`).
+  const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];
   const board = [

@@ -114,7 +114,7 @@ export function FastestTable({ kind, board, names, whole }: { kind: PuzzleKind; 
                       {/* A word's time says half of how it went; the guesses it needed say the rest (John: "like 3/6 guesses"). */}
                       {solve.guesses === null ? null : (
                         <span className="text-xs text-muted tabular-nums" data-testid="puzzle-fastest-guesses">
-                          {guessesText(solve.guesses)} guesses
+                          {guessesText(solve.guesses)} {solve.guesses.unit ?? "guesses"}
                         </span>
                       )}
                       <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />

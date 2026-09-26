@@ -1,6 +1,7 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { MOST_GUESSES } from "./gomoji/layout";
+import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -37,6 +38,7 @@ export const PUZZLE_KINDS = {
   gomojiKana: "gomojiKana",
   gomojiMot: "gomojiMot",
   gomojiWort: "gomojiWort",
+  koushi: "koushi",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -53,6 +55,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.gomojiKana,
   PUZZLE_KINDS.gomojiMot,
   PUZZLE_KINDS.gomojiWort,
+  PUZZLE_KINDS.koushi,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -132,6 +135,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
   gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  // One lattice of 21 letters; an answer is the grid and every swap made, two characters each (`lattice.ts`).
+  koushi: { sizes: [5], offered: [5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: KOUSHI_ANSWER_MOST, helps: false, lattice: true },
 };
 
 /**
@@ -215,6 +220,9 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
   },
+  koushi: {
+    5: { label: "Six words", kanji: "六語" },
+  },
 };
 
 /**
@@ -230,6 +238,11 @@ const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Record<PuzzleLevel, string>>> = {
   gomoji: WORD_LEVEL_BLURBS,
   gomojiKana: WORD_LEVEL_BLURBS,
+  koushi: {
+    easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
+    medium: "Solvable in 10 swaps, with 15 to do it in, and the commonest words.",
+    hard: "Solvable in 12 swaps, with 17 to do it in, and a wider list of words.",
+  },
 };
 
 /** The line under the level chips on the set-up screen, for this puzzle. */
@@ -453,5 +466,23 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "Five letters and six guesses, or four letters and five. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
+  },
+  koushi: {
+    label: "Koushi",
+    kanji: "格子",
+    tagline: "Six words woven into a lattice, their letters scrambled. Swap two letters at a time until every word is right.",
+    inspiredBy: "the swap-the-letters word grid",
+    origin:
+      "Our own take on the swap-the-letters word grid: six words crossing in a lattice, found by moving letters rather than guessing them. 格子 is the lattice of a shoji screen, paper panes held in a grid of wood, and the words here are held the same way.",
+    rules: [
+      "Six five-letter words are hidden in the lattice: three across, on the first, third and fifth rows, and three down, on the first, third and fifth columns. Where two words cross they share a letter, so 21 letters make all six.",
+      "The letters start scrambled. Tap a letter and then another, or drag one onto the other, and they change places. A green letter is right and stays where it is.",
+      "Green is the right letter in the right place. Gold means one of the letter's words needs it somewhere else. Plain means neither of its words needs it anywhere that is not already green.",
+      "A letter where two words cross turns gold if either word needs it, and the colour does not say which. A word lights a letter only as often as it still needs it: a word wanting one E turns the first E it comes to gold, reading left to right or top to bottom, and not the second.",
+      "Every puzzle can be solved in exactly its level's number of swaps, 8 at easy, 10 at medium and 12 at hard, and you have five more than that. Run out, and the puzzle ends unsolved and shows its words.",
+      "Every swap left at the end is a mark, five at best. The leaderboard counts the fewest swaps first, then the time.",
+    ],
+    board:
+      "One lattice, five letters each way, its four holes showing the board beneath. The words come from SCOWL, the spelling lists by Kevin Atkinson, as Gomoji's do: easy and medium use the commonest words, hard a wider list.",
   },
 };
