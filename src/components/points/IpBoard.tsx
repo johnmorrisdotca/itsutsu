@@ -6,12 +6,15 @@ import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
+import { monthOf } from "@/lib/history/recordMonth";
 import { IP_SHOWN, IP_WHOLE } from "@/lib/points/points.constants";
 import { type IpRow, type IpScope, ipBoardOf } from "@/lib/points/ipBoards";
 import { startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
+
+import { IpFigure } from "./IpFigure";
 
 /**
  * AN IP LEADERBOARD: who has won the most Itsutsu Points here, all time, this
@@ -88,9 +91,10 @@ export async function IpBoard({
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid={testId}>
       {heading}
       <div className={`grid gap-4 ${stacked ? "" : "md:grid-cols-3"}`}>
-        <IpTable label="All time" kanji="通算" rows={allTime} names={names} xp={xp} playHref={playHref} testId={`${testId}-all`} />
-        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} xp={xp} playHref={playHref} testId={`${testId}-month`} />
-        <IpTable label="This week" kanji="今週" rows={thisWeek} names={names} xp={xp} playHref={playHref} testId={`${testId}-week`} />
+        <IpTable label="All time" kanji="通算" rows={allTime} names={names} xp={xp} playHref={playHref} scope={scope} month={null} testId={`${testId}-all`} />
+        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} xp={xp} playHref={playHref} scope={scope} month={monthOf(startOfMonth())} testId={`${testId}-month`} />
+        {/* No week filter on the record yet: a week's figure opens that month's games (a row is filed for a week filter). */}
+        <IpTable label="This week" kanji="今週" rows={thisWeek} names={names} xp={xp} playHref={playHref} scope={scope} month={monthOf(startOfMonth())} testId={`${testId}-week`} />
       </div>
       <p className="text-xs text-muted">
         IP, Itsutsu Points, is won by results alone: a win pays the most the game is worth, a draw half, and a close loss
@@ -112,6 +116,8 @@ function IpTable({
   names,
   xp,
   playHref,
+  scope,
+  month,
   testId,
 }: {
   label: string;
@@ -120,6 +126,10 @@ function IpTable({
   names: Map<string, string>;
   xp: Map<string, number | null>;
   playHref: string;
+  /** What the board counts, which decides where each figure leads (`IpFigure`). */
+  scope: IpScope;
+  /** "2026-09" for this month's board, null for all time. */
+  month: string | null;
   testId: string;
 }) {
   return (
@@ -159,7 +169,9 @@ function IpTable({
                     <td className="py-1">
                       <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" />
                     </td>
-                    <td className="py-1 text-right font-mono font-semibold tabular-nums">{thousands(row.ip)}</td>
+                    <td className="py-1 text-right font-mono font-semibold tabular-nums">
+                      <IpFigure scope={scope} memberId={row.memberId} ip={row.ip} month={month} testId="ip-row-figure" />
+                    </td>
                     <td className="py-1 pl-3 text-right font-mono text-muted tabular-nums">{earned === null || earned === undefined ? "–" : thousands(earned)}</td>
                   </tr>
                 );

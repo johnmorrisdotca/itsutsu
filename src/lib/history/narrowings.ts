@@ -5,10 +5,12 @@ import { shownName } from "@/lib/rating/shownName";
 import {
   GAME_POOL_DISPLAY,
   GAME_RATED_DISPLAY,
+  GAME_IP_DISPLAY,
   outcomeLabel,
   verdictLabel,
 } from "./gameHistory.constants";
 import { outcomeNeedsPlayer } from "./gameHistoryClauses";
+import { monthWords, readMonth } from "./recordMonth";
 
 /**
  * A player filter as the record actually applied it — never as an address
@@ -91,8 +93,12 @@ export function appliedNarrowings(input: {
   pool: string;
   rated: string;
   verdict: string;
+  /** Whether the games paid IP, and the month they finished in: a board's figure arrives with both. Optional, for callers that have neither. */
+  ip?: string;
+  month?: string;
 }): Narrowing[] {
-  const { player, outcome, pool, rated, verdict } = input;
+  const { player, outcome, pool, rated, verdict, ip = "", month = "" } = input;
+  const monthRead = readMonth(month);
   const list: (Narrowing | null)[] = [
     player === null
       ? null
@@ -117,6 +123,8 @@ export function appliedNarrowings(input: {
       : named("outcome", outcomeLabel(outcome)),
     named("pool", pool === "" ? null : (GAME_POOL_DISPLAY[pool]?.label ?? null)),
     named("rated", rated === "" ? null : (GAME_RATED_DISPLAY[rated]?.label ?? null)),
+    named("ip", ip === "" ? null : (GAME_IP_DISPLAY[ip]?.label ?? null)),
+    named("month", monthRead === null ? null : `Finished in ${monthWords(monthRead)}`),
     // Unlike outcome, verdict has no player-independent reading at all — see verdictWhere.
     verdict === "" || player === null ? null : named("verdict", verdictLabel(verdict)),
   ];

@@ -124,6 +124,8 @@ export function HistoryFilters({
     pool: value("pool"),
     rated: value("rated"),
     verdict: value("verdict"),
+    ip: value("ip"),
+    month: value("month"),
   });
 
   return (

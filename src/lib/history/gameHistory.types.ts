@@ -6,6 +6,7 @@ import type {
   GAME_OUTCOMES,
   GAME_POOL_FILTERS,
   GAME_RATED_FILTERS,
+  GAME_IP_FILTERS,
   GAME_VERDICT_FILTERS,
   GAME_VERDICTS,
   GAME_RESULT_FILTERS,
@@ -25,6 +26,7 @@ export type GamePoolFilter = (typeof GAME_POOL_FILTERS)[number];
 export type GameVerdict = (typeof GAME_VERDICTS)[number];
 export type GameVerdictFilter = (typeof GAME_VERDICT_FILTERS)[number];
 export type GameRatedFilter = (typeof GAME_RATED_FILTERS)[number];
+export type GameIpFilter = (typeof GAME_IP_FILTERS)[number];
 export type GameVariantFilter = (typeof GAME_VARIANT_FILTERS)[number];
 export type GameSizeFilter = (typeof GAME_SIZE_FILTERS)[number];
 
@@ -111,6 +113,13 @@ export type GameHistoryQuery = {
   pool: GamePoolFilter;
   /** Whether the game moved a rating. */
   rated: GameRatedFilter;
+  /** Whether the game paid `player` IP: the games an IP figure counted. */
+  ip: GameIpFilter;
+  /**
+   * "2026-09": the games FINISHED in that month (`lastMoveAt`), as a monthly
+   * board counts them. Not `from`, which reads when a game was set up.
+   */
+  month: string | null;
   /** What `player` thought of their own play. Read against that name, and ignored without one. */
   verdict: GameVerdictFilter;
   variant: GameVariantFilter;

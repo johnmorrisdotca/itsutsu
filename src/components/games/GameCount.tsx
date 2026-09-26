@@ -6,6 +6,7 @@ import type {
   GameOutcome,
   GamePoolFilter,
   GameRatedFilter,
+  GameIpFilter,
   GameVerdictFilter,
 } from "@/lib/history/gameHistory.types";
 import type { ReactNode } from "react";
@@ -78,6 +79,13 @@ export function gamesHref(options: {
   rated?: GameRatedFilter;
   /** What that player said about their own play, or "judged" for either. */
   verdict?: GameVerdictFilter;
+  /**
+   * The games that paid that player IP, when the number is an IP figure: an IP
+   * board sums exactly those, so its figure links to exactly those.
+   */
+  ip?: GameIpFilter;
+  /** "2026-09": the games finished in that month, when the number came from a monthly board. */
+  month?: string | null;
 }): string {
   const base = options.variant === undefined ? "/history" : historyPath(options.variant);
   const query = new URLSearchParams();
@@ -102,6 +110,8 @@ export function gamesHref(options: {
   if (options.pool !== undefined && options.pool !== "all") query.set("pool", options.pool);
   if (options.rated !== undefined && options.rated !== "all") query.set("rated", options.rated);
   if (options.verdict !== undefined && options.verdict !== "all") query.set("verdict", options.verdict);
+  if (options.ip !== undefined && options.ip !== "all") query.set("ip", options.ip);
+  if (options.month) query.set("month", options.month);
   const search = query.toString();
   return search === "" ? base : `${base}?${search}`;
 }

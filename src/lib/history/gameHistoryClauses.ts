@@ -148,6 +148,21 @@ export function outcomeWhere(
 }
 
 /**
+ * The games that paid somebody IP: their seat's points above nought, which is
+ * exactly what an IP board sums (`ipBoards.ts`, `"blackPoints" > 0`). Read
+ * against the player when there is one; otherwise a game that paid either seat.
+ */
+export function ipWhere(player: string | null, named: readonly string[]): Prisma.GameWhereInput {
+  if (player === null) return { OR: [{ blackPoints: { gt: 0 } }, { whitePoints: { gt: 0 } }] };
+  return {
+    OR: [
+      { AND: [seatIs("black", player, named), { blackPoints: { gt: 0 } }] },
+      { AND: [seatIs("white", player, named), { whitePoints: { gt: 0 } }] },
+    ],
+  };
+}
+
+/**
  * Which games one of the two ladders was counting.
  *
  * A game is in the computer pool when either seat was a program, so the

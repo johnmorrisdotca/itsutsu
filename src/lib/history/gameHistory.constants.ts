@@ -134,6 +134,17 @@ export const GAME_RATED_DISPLAY: Record<string, { label: string }> = {
   no: { label: "Friendly" },
 };
 
+/**
+ * Whether a game paid the player IP (`Game.blackPoints` / `whitePoints` above
+ * nought): the games an IP figure is the sum of. Read against the player, like
+ * an outcome; without one, a game that paid either seat.
+ */
+export const GAME_IP_FILTERS = ["all", "paid"] as const;
+
+export const GAME_IP_DISPLAY: Record<string, { label: string }> = {
+  paid: { label: "Paid IP" },
+};
+
 export const GAME_VARIANT_FILTERS = ["all", ...RULE_VARIANT_LIST] as const;
 
 export const GAME_SIZE_FILTERS = ["all", "9", "13", "15", "19"] as const;

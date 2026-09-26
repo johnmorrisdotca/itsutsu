@@ -1,9 +1,10 @@
 import Link from "@/components/ui/Link";
 
-import { thousands } from "@/components/about/XpCurve";
 import { SITE_SCOPE, type IpStanding, ipStandingOf } from "@/lib/points/ipBoards";
 import { startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
+
+import { IpFigure } from "./IpFigure";
 
 /**
  * A PLAYER'S IP ON THEIR PAGE, beside their level and XP: the total they have
@@ -24,7 +25,7 @@ export async function PlayerIp({ memberId }: { memberId: string }) {
   ]);
   return (
     <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="player-ip" data-ip={all?.ip ?? 0}>
-      <span className="font-mono font-semibold tabular-nums">{thousands(all?.ip ?? 0)} IP</span>
+      <IpFigure scope={SITE_SCOPE} memberId={memberId} ip={all?.ip ?? 0} suffix=" IP" className="font-mono font-semibold tabular-nums" testId="player-ip-figure" />
       {all === null ? (
         <Link href="/points" className="text-xs text-muted underline underline-offset-4" data-testid="player-ip-none">
           None won yet: IP is for results →

@@ -10,6 +10,7 @@ import {
   GAME_OUTCOME_FILTERS,
   GAME_POOL_FILTERS,
   GAME_RATED_FILTERS,
+  GAME_IP_FILTERS,
   GAME_VERDICT_FILTERS,
   GAME_RESULT_FILTERS,
   GAME_SEARCH_MAX,
@@ -19,6 +20,7 @@ import {
   PLAYER_NAME_MAX,
 } from "./gameHistory.constants";
 import {
+  ipWhere,
   outcomeWhere,
   pairOutcomeWhere,
   pairWhere,
@@ -27,6 +29,7 @@ import {
   verdictWhere,
 } from "./gameHistoryClauses";
 import { NOT_A_REFUSED_OFFER } from "./offers";
+import { monthBounds, readMonth } from "./recordMonth";
 import { GAME_SORT_SPEC, gameSortChoice, readGamePaging } from "./gameHistory.sort";
 import type { GameHistoryQuery } from "./gameHistory.types";
 
@@ -53,6 +56,8 @@ const querySchema = z.object({
   outcome: z.enum(GAME_OUTCOME_FILTERS).default("all"),
   pool: z.enum(GAME_POOL_FILTERS).default("all"),
   rated: z.enum(GAME_RATED_FILTERS).default("all"),
+  ip: z.enum(GAME_IP_FILTERS).default("all"),
+  month: z.string().max(7).optional(),
   verdict: z.enum(GAME_VERDICT_FILTERS).default("all"),
   variant: z.enum(GAME_VARIANT_FILTERS).default("all"),
   size: z.enum(GAME_SIZE_FILTERS).default("all"),
@@ -97,6 +102,8 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
     outcome: get("outcome"),
     pool: get("pool"),
     rated: get("rated"),
+    ip: get("ip"),
+    month: get("month"),
     verdict: get("verdict"),
     variant: variantFilter(get("variant")),
     size: get("size"),
@@ -135,6 +142,9 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
     outcome: data.outcome,
     pool: data.pool,
     rated: data.rated,
+    ip: data.ip,
+    // A month that is not one narrows nothing, rather than refusing the page.
+    month: readMonth(data.month),
     verdict: data.verdict,
     variant: data.variant,
     size: data.size === "all" ? null : Number(data.size),
@@ -230,6 +240,11 @@ export function buildGameWhere(
     if (side !== null) conditions.push(side);
   }
   if (query.rated !== "all") conditions.push({ rated: query.rated === "yes" });
+  if (query.ip !== "all") conditions.push(ipWhere(query.player, named));
+  if (query.month !== null) {
+    const { start, end } = monthBounds(query.month);
+    conditions.push({ lastMoveAt: { gte: start, lt: end } });
+  }
   if (query.verdict !== "all") {
     const said = verdictWhere(query.verdict, query.player, named);
     if (said !== null) conditions.push(said);
