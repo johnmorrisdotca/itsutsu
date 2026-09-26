@@ -68,6 +68,10 @@ test.describe("one tier per rating", () => {
 
     // The Members tab, by its tab: the same two rows, the same rule.
     await openTab(page, "Members");
+    // Everyone, chosen here: the list remembers who a reader last narrowed it to, and another spec
+    // on this operator may have left it on People, which lists no bots (CI, 2026-09-26).
+    await page.getByTestId("who-everyone").click();
+    await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
     const directory = page.getByTestId("directory");
     const settledMember = rowFor(directory, settling);
     await expect(settledMember, "the seeded program is not on the first page of the members list").toHaveCount(1);
