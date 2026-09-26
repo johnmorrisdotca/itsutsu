@@ -75,10 +75,12 @@ test.describe("a control is named by its label", () => {
      */
     await ready(page, "settings-form");
 
-    // Both checkboxes, which are the shared `Toggle`.
+    // Every checkbox, which are the shared `Toggle`: being here, and the email rows (`MailChoices`).
     for (const [label, hint] of [
       ["Show when I am here", "Listed on the players page while you are on the site."],
-      ["Email me when it is my move", "One mail per turn, once mail is set up."],
+      ["Email from Itsutsu", "Off, and the site never writes to you"],
+      ["When it is my move", "Never while you are on the site"],
+      ["When a game of mine finishes", "Who won and why"],
     ]) {
       const box = page.getByRole("checkbox", { name: label, exact: true });
       await expect(box, `no checkbox is named exactly "${label}"`).toHaveCount(1);

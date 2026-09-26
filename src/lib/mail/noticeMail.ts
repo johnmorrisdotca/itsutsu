@@ -7,7 +7,7 @@ import { shownName } from "@/lib/rating/shownName";
 
 import { CONTACT_ADDRESS, SITE_ORIGIN } from "./mail.constants";
 import type { GameOverSummary, NoticeEvent, OutgoingMail } from "./mail.types";
-import { MAIL_STOP_KINDS } from "./mailStop";
+import { MAIL_KINDS } from "./mailStop";
 
 /**
  * The words of a game notice. Plain text, like every other email the site
@@ -34,7 +34,7 @@ export function noticeMail(event: NoticeEvent, to: string, summary: GameOverSumm
     "",
     `You are getting this because you play on Itsutsu. Questions? Write to ${CONTACT_ADDRESS}.`,
     // Every email says how to stop getting it (`mailStop.ts`): this kind, or all of them, with no sign-in.
-    `To stop ${MAIL_STOP_KINDS[event.kind].words}, or any email from Itsutsu:`,
+    `To stop ${MAIL_KINDS[event.kind].words}, or any email from Itsutsu:`,
     stopUrl,
   ];
 

@@ -3,7 +3,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
-import { MAIL_STOP_KINDS, STOP_API_PATH, verifyStopToken } from "@/lib/mail/mailStop";
+import { MAIL_KINDS, STOP_API_PATH, verifyStopToken } from "@/lib/mail/mailStop";
 import { stopStateOf } from "@/lib/mail/mailStopWrite";
 
 export const metadata = { title: "Stop emails", robots: { index: false } };
@@ -27,7 +27,7 @@ export default async function StopPage({ params, searchParams }: PageProps<"/sto
   const { done } = await searchParams;
   const stop = await verifyStopToken(token);
   const state = stop === null ? null : await stopStateOf(stop.member, stop.mail);
-  const said = stop === null || typeof done !== "string" ? null : doneWords(done, MAIL_STOP_KINDS[stop.mail].words);
+  const said = stop === null || typeof done !== "string" ? null : doneWords(done, MAIL_KINDS[stop.mail].words);
 
   return (
     <Page>
@@ -50,8 +50,8 @@ export default async function StopPage({ params, searchParams }: PageProps<"/sto
             token={token}
             what={stop.mail}
             on={state.kindOn}
-            now={state.kindOn ? `You get ${MAIL_STOP_KINDS[stop.mail].words}.` : `You do not get ${MAIL_STOP_KINDS[stop.mail].words}.`}
-            stopLabel={`Stop ${MAIL_STOP_KINDS[stop.mail].words}`}
+            now={state.kindOn ? `You get ${MAIL_KINDS[stop.mail].words}.` : `You do not get ${MAIL_KINDS[stop.mail].words}.`}
+            stopLabel={`Stop ${MAIL_KINDS[stop.mail].words}`}
             testId="stop-kind"
           />
           <StopChoice

@@ -1,4 +1,5 @@
 import { expiryInDays, nowInSeconds, signPayload, verifyPayload, type Signed } from "../auth/signing.ts";
+import type { Preferences } from "../preferences/preferences.types.ts";
 
 /**
  * EVERY EMAIL SAYS HOW TO STOP GETTING IT.
@@ -27,18 +28,47 @@ import { expiryInDays, nowInSeconds, signPayload, verifyPayload, type Signed } f
  * back matters as much as the way out.
  */
 
-/** The emails a member can be sent, each with the preference that stops it and what it is called on the page. */
-export const MAIL_STOP_KINDS = {
-  "your-turn": { preference: "mail.yourTurn", words: "emails telling you it is your turn" },
-  "game-over": { preference: "mail.gameOver", words: "emails telling you a game of yours has finished" },
+/**
+ * THE EMAILS A MEMBER CAN BE SENT, each a record rather than a switch. John,
+ * 2026-09-16, pointing at GoldToken: a row per kind with a plain sentence
+ * under it, and a default stated deliberately — the rare ones on, anything
+ * chatty off. And the part worth taking from GoldToken's small print: a kind
+ * carries a rule as well as a state, so a your-turn email is never sent to
+ * somebody who is on the site to see the board for themselves.
+ *
+ * - `preference`: the registry row that says this kind is on or off, whose
+ *   fallback is the default (`preferences.constants.ts`).
+ * - `words`: what the stop page and an email's footer call it.
+ * - `label` and `hint`: the switch in Settings and in the welcome.
+ * - `notWhileHere`: held back while the member is on the site
+ *   (`RECENCY_MINUTES.now`), where they would see it anyway.
+ *
+ * A kind added here is a kind every door knows: the stop link, the footer, the
+ * switches and the address book all read this record.
+ */
+export const MAIL_KINDS = {
+  "your-turn": {
+    preference: "mail.yourTurn",
+    words: "emails telling you it is your turn",
+    label: "When it is my move",
+    hint: "Never while you are on the site: only when a game is waiting and you are away.",
+    notWhileHere: true,
+  },
+  "game-over": {
+    preference: "mail.gameOver",
+    words: "emails telling you a game of yours has finished",
+    label: "When a game of mine finishes",
+    hint: "Who won and why, how long it took, and a link to play again.",
+    notWhileHere: false,
+  },
 } as const;
 
-export type StopKind = keyof typeof MAIL_STOP_KINDS;
+export type StopKind = keyof typeof MAIL_KINDS;
 
-export const STOP_KIND_LIST = Object.keys(MAIL_STOP_KINDS) as StopKind[];
+export const STOP_KIND_LIST = Object.keys(MAIL_KINDS) as StopKind[];
 
 export function isStopKind(value: unknown): value is StopKind {
-  return typeof value === "string" && Object.hasOwn(MAIL_STOP_KINDS, value);
+  return typeof value === "string" && Object.hasOwn(MAIL_KINDS, value);
 }
 
 /** What a stop token carries: whose emails, and which kind it came with. */
@@ -65,4 +95,20 @@ export async function verifyStopToken(token: string | null | undefined): Promise
   const payload = await verifyPayload<StopToken>(token ?? undefined, STOP_TOKEN_KIND);
   if (payload === null || typeof payload.member !== "string" || payload.member === "" || !isStopKind(payload.mail)) return null;
   return payload;
+}
+
+/** Which kinds a member hears, one switch a kind, as Settings and the welcome show them. */
+export type MailKindsWanted = Record<StopKind, boolean>;
+
+/** The switches from the member's preferences: each kind as chosen, or at its default where nobody has. */
+export function mailKindsFrom(preferences: Pick<Preferences, (typeof MAIL_KINDS)[StopKind]["preference"]>): MailKindsWanted {
+  return Object.fromEntries(STOP_KIND_LIST.map((kind) => [kind, preferences[MAIL_KINDS[kind].preference] === "on"])) as MailKindsWanted;
+}
+
+/** The switches as a preferences patch, every kind said, so what is saved is exactly what was shown. */
+export function mailKindsPatch(kinds: MailKindsWanted): Record<(typeof MAIL_KINDS)[StopKind]["preference"], "on" | "off"> {
+  return Object.fromEntries(STOP_KIND_LIST.map((kind) => [MAIL_KINDS[kind].preference, kinds[kind] ? "on" : "off"])) as Record<
+    (typeof MAIL_KINDS)[StopKind]["preference"],
+    "on" | "off"
+  >;
 }

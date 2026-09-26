@@ -226,12 +226,15 @@ export const PREFERENCE_SPECS = {
   ...FAMILY_FOLD_SPECS,
 
   /*
-   * Each kind of email a member can be sent, on until they stop it — from the
-   * link every one of them carries (`mailStop.ts`), which needs no sign-in.
-   * One kind a row, so stopping one leaves the others alone; stopping all of
-   * them is `emailNotify`, the switch beside these.
+   * Each kind of email a member can be sent (`MAIL_KINDS` in `mailStop.ts`),
+   * chosen in Settings and in the welcome, and stopped from the link every one
+   * of them carries, which needs no sign-in. One kind a row, so stopping one
+   * leaves the others alone; stopping all of them is `emailNotify`, the switch
+   * above these. The defaults are the row's, stated deliberately: a finished
+   * game is rare and on; a your-turn email comes with every move and is off
+   * until somebody asks for it.
    */
-  "mail.yourTurn": { options: ["on", "off"] as const, fallback: "on" },
+  "mail.yourTurn": { options: ["on", "off"] as const, fallback: "off" },
   "mail.gameOver": { options: ["on", "off"] as const, fallback: "on" },
 } as const satisfies Record<string, PreferenceSpec>;
 

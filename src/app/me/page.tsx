@@ -35,6 +35,9 @@ import { activeTab, type Tab } from "@/lib/ui/tabs";
 import { allCountries } from "@/lib/social/countries";
 import { TurnFlowForm } from "@/components/mine/TurnFlowForm";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import { NOTICES } from "@/lib/mail/mail.constants";
+import { mailKindsFrom } from "@/lib/mail/mailStop";
+import { WelcomeMail } from "@/components/mine/WelcomeMail";
 
 export const metadata = { title: "You" };
 export const dynamic = "force-dynamic";
@@ -151,6 +154,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
     bio: member?.bio ?? "",
     showOnline: member?.showOnline ?? true,
     emailNotify: member?.emailNotify ?? true,
+    mailKinds: mailKindsFrom(preferences),
     keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
     daysOff: member?.daysOff ?? [],
   };
@@ -225,7 +229,10 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
              * what they do. Both are controls here, not a tab to find later.
              */
             <KeepThisAccount days={PLAYER_SESSION_DAYS} googleReady={isGoogleAuthConfigured()} />
-          ) : null}
+          ) : isChild(band) ? null : (
+            /* With an address to write to, and not a child: what to hear about, kept as it is pressed. */
+            <WelcomeMail all={profileFields.emailNotify} kinds={profileFields.mailKinds} sending={NOTICES.sending} />
+          )}
         </section>
       ) : null}
 
@@ -302,7 +309,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
 
             {open === "settings" ? (
               <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
-                <SettingsForm initial={profileFields} child={isChild(band)} />
+                <SettingsForm initial={profileFields} child={isChild(band)} mailSending={NOTICES.sending} />
                 <p className="border-t border-rule pt-4 text-sm text-muted">
                   What a new board is set out with, here and on every device you sign in on.
                 </p>
