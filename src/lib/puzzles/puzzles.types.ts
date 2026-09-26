@@ -86,6 +86,13 @@ export type PuzzleSpec = {
    */
   fixedLevels?: true;
   /**
+   * Whether the set-up offers every size in `sizes`, `offered` at a time: its
+   * four tiles are a shelf, and a button turns to the next (Tsunagi, 4×4 to
+   * 7×7 and then 8×8 and 9×9). Absent is `offered` alone. Read through
+   * `sizesOffered`, so a front door never lists fewer boards than its set-up.
+   */
+  shelves?: true;
+  /**
    * Whether the puzzle is a tile game (Kumimoji): its size is the hand it opens
    * with, not the side of a grid, and any sound grid of its tiles finishes it,
    * so it has many answers rather than one. Absent is a grid with one answer.

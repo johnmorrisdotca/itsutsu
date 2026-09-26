@@ -13,7 +13,7 @@ import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLA
 import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import { nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@/lib/puzzles/tsunagi/levels";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -57,11 +57,12 @@ export function TsunagiSetUp({
   initialSize: number;
 }) {
   const hydrated = useHydrated();
-  const spec = PUZZLE_SPECS.tsunagi;
+  // Every board the shelves turn to: the same list the front door names (`sizesOffered`).
+  const boards = sizesOffered("tsunagi");
   const copy = PUZZLE_DISPLAY.tsunagi;
   const [size, setSize] = useState(initialSize);
-  const [shelf, setShelf] = useState(initialSize > spec.sizes[TILES - 1]! ? spec.sizes.length - TILES : 0);
-  const shown = spec.sizes.slice(shelf, shelf + TILES);
+  const [shelf, setShelf] = useState(initialSize > boards[TILES - 1]! ? boards.length - TILES : 0);
+  const shown = boards.slice(shelf, shelf + TILES);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
   const theme = feltOrWoodTheme({ ...appearance, felt });
@@ -82,25 +83,32 @@ export function TsunagiSetUp({
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
 
   const turnShelf = () => {
-    const other = shelf === 0 ? spec.sizes.length - TILES : 0;
+    const other = shelf === 0 ? boards.length - TILES : 0;
     setShelf(other);
-    const sizes = spec.sizes.slice(other, other + TILES);
+    const sizes = boards.slice(other, other + TILES);
     if (!sizes.includes(size)) setSize(other === 0 ? sizes[sizes.length - 1]! : sizes[0]!);
   };
 
   return (
     <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" {...readyMark(hydrated)}>
-      <div className={`${PICK_BOARD_ROW} py-2`}>
+      {/*
+        THE SIZES BESIDE THE BOARD OF LEVELS, OR UNDER IT. John, 2026-09-26: at
+        narrower desk widths the tiles ran off the right edge, "Bigger boards"
+        cut in half. The row wraps, so where the two do not fit side by side
+        the sizes go under the board, and their column never gives up width
+        it needs (`shrink-0`): nothing is ever clipped.
+      */}
+      <div className={`${PICK_BOARD_ROW} py-2 md:flex-wrap`}>
         <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
           <TsunagiLevelBoard size={size} best={best} open={open} next={next} marks={marks} theme={theme} />
           <p className="text-xs text-muted" data-testid="tsunagi-levels-caption">
             {size}×{size}: {done.size} of {count} solved. Rows open ten at a time.
           </p>
         </div>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="tsunagi-sizes">
           <BoardPicker value={size} sizes={shown} onChange={setSize} names={PUZZLE_SIZE_NAMES.tsunagi} beside />
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turnShelf} data-testid="tsunagi-more-sizes">
-            {shelf === 0 ? `Bigger boards, to ${spec.sizes[spec.sizes.length - 1]}×${spec.sizes[spec.sizes.length - 1]} →` : `← Smaller boards, from ${spec.sizes[0]}×${spec.sizes[0]}`}
+            {shelf === 0 ? `Bigger boards, to ${boards[boards.length - 1]}×${boards[boards.length - 1]} →` : `← Smaller boards, from ${boards[0]}×${boards[0]}`}
           </button>
         </div>
       </div>
