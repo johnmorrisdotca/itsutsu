@@ -108,7 +108,7 @@ test.describe("XP on every stats table, and on a person's page", () => {
     await expect(bot.getByTestId("record-level")).toHaveAttribute("data-level", String(PROGRAM_LEVEL));
 
     // The Computers tab, by its tab: every row a program, every cell its own total.
-    await openTab(page, "Computers");
+    await openTab(page, "Bots");
     const computers = page.getByTestId("computer-players-table");
     const botRow = rowFor(computers, program);
     await expect(botRow, "the seeded program is not on the Computers tab").toHaveCount(1);

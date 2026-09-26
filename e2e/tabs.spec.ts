@@ -97,17 +97,17 @@ test.describe("a page of many sections is tabs", () => {
 
     await page.goto("/players?view=computers");
     await expect(page.getByTestId("computer-players")).toBeVisible();
-    await expect(page.getByTestId("tab").filter({ hasText: "Computers" })).toHaveAttribute("data-open", "true");
+    await expect(page.getByTestId("tab").filter({ hasText: "Bots" })).toHaveAttribute("data-open", "true");
 
     await page.goto("/players?view=remembered");
     await expect(page.getByTestId("legacy-roll-remembered")).toBeVisible();
 
     // Champions is its own page, and it draws the same strip with itself open, and the way back.
     await ready(page, "tabs");
-    await page.getByTestId("tab").filter({ hasText: "Champions" }).click();
+    await page.getByTestId("tab").filter({ hasText: "Champs" }).click();
     await expect(page).toHaveURL(/\/champions$/);
     await expect(page.getByTestId("champions")).toBeVisible();
-    await expect(page.getByTestId("tab").filter({ hasText: "Champions" })).toHaveAttribute("data-open", "true");
+    await expect(page.getByTestId("tab").filter({ hasText: "Champs" })).toHaveAttribute("data-open", "true");
     await ready(page, "tabs");
     await page.getByTestId("tab").filter({ hasText: "Members" }).click();
     await expect(page).toHaveURL(/\/players$/);

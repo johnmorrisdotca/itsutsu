@@ -75,7 +75,7 @@ test.describe("one tier per rating", () => {
     await expect(rowFor(directory, starting).getByTestId("record-rating")).toHaveText("–");
 
     // The program's own page, reached from its name: the same number, the same word.
-    await openTab(page, "Computers");
+    await openTab(page, "Bots");
     await rowFor(page.getByTestId("computer-players-table"), settling).getByTestId("computer-player-name").click();
     await expect(page.getByTestId("player-figures")).toBeVisible();
     await expect(page.getByTestId("player-rating")).toContainText("1584");

@@ -26,9 +26,10 @@ export const PLAYERS_TABS: Tab[] = [
    * of Players... yet there is no tab or link to view the Champs... bad
    * design." /champions draws this same strip with Champions open.
    */
-  { key: "champions", label: "Champions", kanji: "名人", href: "/champions" },
-  { key: "computers", label: "Computers", kanji: "機械" },
-  { key: "remembered", label: "Remembered", kanji: "偲ぶ" },
+  // Short, so the strip fits a phone (John, 2026-09-26: "Champs, Bots, HONORS… use shorter names where possible"); each page keeps its full heading.
+  { key: "champions", label: "Champs", kanji: "名人", href: "/champions" },
+  { key: "computers", label: "Bots", kanji: "機械" },
+  { key: "remembered", label: "Honors", kanji: "偲ぶ" },
 ];
 
 /** The tabs drawn on /players itself; Champions is its own page. */
