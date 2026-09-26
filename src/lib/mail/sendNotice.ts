@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
+import { gameBookOnce } from "./gameOverSummary";
 import { NOTICES } from "./mail.constants";
 import type { AddressBook, NoticeDeps, NoticeEvent, NoticeOutcome } from "./mail.types";
 import { noticeMail } from "./noticeMail";
@@ -31,7 +32,11 @@ import { sendMail } from "./sendMail";
  *      Nothing is read and nothing is counted while that is false.
  *   2. Is there an address, and does this member want to hear? No row, no
  *      address, or `emailNotify` off is "no-address": nobody to write to.
- *   3. `sendMail`, which is where the caps are. The member a notice is FOR is
+ *   3. For a game that has finished, the game itself (`gameOverSummary.ts`):
+ *      read only now, when an email is really going, so an ending nobody is
+ *      told about costs nothing. Unreadable, it is left out and the email
+ *      says what the event knows.
+ *   4. `sendMail`, which is where the caps are. The member a notice is FOR is
  *      the member it is counted against, so the five-a-day limit protects the
  *      person receiving it rather than some notion of a system sender.
  */
@@ -41,7 +46,8 @@ export async function sendNotice(event: NoticeEvent, deps: NoticeDeps = {}): Pro
   const to = await (deps.addresses ?? memberAddresses).addressOf(event.memberId);
   if (to === null) return { sent: false, refusal: "no-address" };
 
-  return sendMail(noticeMail(event, to), { memberId: event.memberId }, deps);
+  const summary = event.kind === "game-over" ? await (deps.games ?? gameBookOnce()).gameOverOf(event.gameId) : null;
+  return sendMail(noticeMail(event, to, summary), { memberId: event.memberId }, deps);
 }
 
 /**

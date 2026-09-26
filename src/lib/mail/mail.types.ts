@@ -1,3 +1,5 @@
+import type { GameResultFacts } from "@/lib/history/gameResult.types";
+
 /** One email, as the site means to send it. Plain text only: nothing a person typed is ever put into HTML. */
 export type OutgoingMail = {
   to: string;
@@ -57,6 +59,30 @@ export type NoticeEvent =
   | { kind: "your-turn"; gameId: string; stone: "black" | "white"; memberId: string }
   | { kind: "game-over"; gameId: string; winner: "black" | "white" | null; stone: "black" | "white"; memberId: string };
 
+/**
+ * WHAT A GAME-OVER EMAIL SAYS ABOUT THE GAME, read once for the game and
+ * shared by both seats' emails. The facts are the result card's own
+ * (`gameResultFacts`), read with no seat, so each email turns "decided" into
+ * "won" or "lost" for the person it is for.
+ */
+export type GameOverSummary = {
+  gameId: string;
+  variant: string;
+  facts: GameResultFacts;
+  names: { black: string; white: string };
+  moveCount: number;
+  /** When the game was made and when its last move was played, for how long it took. */
+  startedAt: Date;
+  endedAt: Date | null;
+  /** What the result did to each colour's rating; null where it moved none. */
+  ratingChange: { black: number; white: number } | null;
+};
+
+/** Reads a finished game for its email, so a test can answer without a database. Null when it cannot be read. */
+export type GameBook = {
+  gameOverOf(gameId: string): Promise<GameOverSummary | null>;
+};
+
 /** What became of a notice. The same vocabulary as every other send, because it is the same sender. */
 export type NoticeOutcome = SendOutcome;
 
@@ -65,7 +91,7 @@ export type AddressBook = {
   addressOf(memberId: string): Promise<string | null>;
 };
 
-export type NoticeDeps = SendDeps & { addresses?: AddressBook };
+export type NoticeDeps = SendDeps & { addresses?: AddressBook; games?: GameBook };
 
 /** One counter a send must fit under: the row it counts in, its cap, and what to say when full. */
 export type MailLimit = {
