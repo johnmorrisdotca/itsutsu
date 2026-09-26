@@ -67,7 +67,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const solve = kept ? found : { ...found, answer: null, steps: null };
   const solver = (await memberNamesOf([solverId])).get(solverId) ?? "";
   const copy = PUZZLE_DISPLAY[kind];
-  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const outcome = solve.solved ? (words ? "Found" : "Solved") : "Not found";
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, found.answer);

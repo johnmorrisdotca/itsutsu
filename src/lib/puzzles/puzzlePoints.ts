@@ -28,7 +28,7 @@ export const POINTS_A_HELP = 50;
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
-  if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") return size;
+  if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.
   if (kind === "kumimoji") return givens.length;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
@@ -42,7 +42,7 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
  * so and adds them (`futagoScore.ts`).
  */
 export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel, lang: GomojiLanguage = "en"): number {
-  return wordsPoints(lang === "fr" ? "gomojiMot" : lang === "de" ? "gomojiWort" : "gomoji", size, givens, answer, elapsedMs, level);
+  return wordsPoints(lang === "fr" ? "gomojiMot" : lang === "de" ? "gomojiWort" : lang === "pop" ? "gomojiPop" : "gomoji", size, givens, answer, elapsedMs, level);
 }
 
 /** A kana word, scored as English's is on the same scale (`kanaScore`). */
@@ -76,6 +76,7 @@ export function pointsFor(
   if (kind === "gomoji") return helped(wordPoints(size, givens, answer, elapsedMs, level));
   if (kind === "gomojiMot") return helped(wordPoints(size, givens, answer, elapsedMs, level, "fr"));
   if (kind === "gomojiWort") return helped(wordPoints(size, givens, answer, elapsedMs, level, "de"));
+  if (kind === "gomojiPop") return helped(wordPoints(size, givens, answer, elapsedMs, level, "pop"));
   if (kind === "gomojiKana") return helped(kanaPoints(size, givens, answer, elapsedMs, level));
   // A tile game: ten a tile of the bag, and up to as much again for speed.
   if (kind === "kumimoji") return kumimojiPoints(givens, elapsedMs);

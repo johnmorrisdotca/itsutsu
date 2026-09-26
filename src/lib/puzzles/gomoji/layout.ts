@@ -99,5 +99,5 @@ export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: P
 /** The most guesses any Gomoji can have — a Futago of six letters at easy — what a kept run's guesses are checked against before its level is known. */
 export const MOST_GUESSES = 10;
 
-/** The longest word any Gomoji hides, in letters or kana: six, for Gomoji 6. */
-export const LONGEST_WORD = 6;
+/** The longest word any Gomoji hides, in letters or kana: seven, for Pop Gomoji's longest. */
+export const LONGEST_WORD = 7;

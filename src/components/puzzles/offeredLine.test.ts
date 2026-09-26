@@ -36,10 +36,11 @@ describe("the line under a puzzle's description", () => {
     const door = readFileSync("src/components/puzzles/PuzzleFrontDoor.tsx", "utf8");
     expect(door).toContain("offeredLine(kind)");
     expect(door).not.toMatch(/spec\.offered\.map/);
-    // Tsunagi is the one puzzle with shelves, and its set-up reads the list rather than the spec's sizes.
-    expect(PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].shelves === true)).toEqual(["tsunagi"]);
-    const setUp = readFileSync("src/components/puzzles/TsunagiSetUp.tsx", "utf8");
-    expect(setUp).toContain('sizesOffered("tsunagi")');
-    expect(setUp).not.toContain("spec.sizes");
+    // The shelved puzzles: Tsunagi, whose set-up is its own, and Pop Gomoji, on the shared one. Both turn through the list.
+    expect(PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].shelves === true)).toEqual(["gomojiPop", "tsunagi"]);
+    const tsunagi = readFileSync("src/components/puzzles/TsunagiSetUp.tsx", "utf8");
+    expect(tsunagi).toContain('sizesOffered("tsunagi")');
+    expect(tsunagi).not.toContain("spec.sizes");
+    expect(readFileSync("src/components/puzzles/PuzzleSetUp.tsx", "utf8")).toContain("sizesOffered(kind)");
   });
 });

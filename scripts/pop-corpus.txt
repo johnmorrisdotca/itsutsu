@@ -1,0 +1,137 @@
+# POP GOMOJI'S WORDS: every answer, with the category shown as its clue.
+#
+# Hand-kept, and read by `node scripts/word-lists-pop.mjs`, which checks every
+# word (a to z only, three to seven letters, family-safe, no word twice) and
+# writes `src/lib/puzzles/gomoji/words.pop.data.ts`. Edit here, never there.
+#
+# One category a line: `Category: word word word`. A word that fits two
+# categories is kept under the FIRST, so the order of the sections is the order
+# of preference. Names are used as plain words, as a quiz would print them.
+#
+# Kept to what a child may meet (John, 2026-09-24: for members under thirteen,
+# always the stricter rule): nothing from a series rated for adults or older
+# teens (R, M, TV-14, TV-MA), no gambling, no alcohol, no word a playground
+# would snigger at or read as a slur, and nothing violent for its own sake.
+# Quality over count; it grows a category at a time.
+
+# Games
+Super Mario: mario luigi peach toad yoshi bowser wario waluigi daisy koopa goomba boo lakitu shyguy birdo kamek
+Zelda: zelda link ganon epona navi midna sheik impa zora goron rito hyrule tingle
+Pokemon: pikachu eevee mew mewtwo ash misty brock onix snorlax psyduck gengar abra kadabra machop geodude zubat ekans arbok vulpix ditto lapras jolteon flareon umbreon espeon togepi lugia entei suicune raikou celebi mudkip torchic treecko kyogre groudon lucario riolu piplup oddish meowth seel dewgong staryu starmie golem rhydon chansey tauros kabuto zapdos moltres dratini cubone marowak
+Minecraft: steve alex creeper ghast blaze wither nether biome piglin axolotl elytra pickaxe
+Sonic the Hedgehog: sonic tails amy shadow eggman rouge
+Street Fighter: ryu ken chunli guile blanka dhalsim zangief sagat vega cammy akuma
+Final Fantasy: cloud tifa aerith barret yuna tidus squall rinoa zidane vivi terra kefka chocobo moogle cactuar bahamut ifrit materia
+Video game: myst portal roblox spore fable braid okami metroid pikmin stardew cuphead tunic zork worms kirby pacman megaman rayman spyro samus
+Arcade classic: pong galaga frogger qbert joust tempest tetris
+Gaming word: level boss quest loot respawn combo npc rpg mmo hud grind raid spawn joypad cheat powerup dungeon gamer mod lag ping clan guild healer buff
+Board game: gomoku reversi renju pente risk clue sorry boggle catan yahtzee jenga twister ludo mancala shogi xiangqi trouble mahjong domino carrom chess
+Chess word: king queen rook bishop knight pawn check mate castle gambit blitz fork pin skewer opening endgame rank file
+Chess legend: carlsen fischer polgar tal karpov anand lasker morphy spassky kramnik euwe
+Card game: bridge rummy uno snap whist euchre canasta hearts spades skat piquet karuta
+
+# Myth and legend
+Greek deity: zeus hera athena apollo ares hermes hades artemis hestia demeter eros gaia nike hebe iris pan helios selene eos nyx kronos rhea atlas hecate tyche nemesis
+Greek myth: jason perseus theseus orpheus ajax hector helen icarus pandora midas echo psyche ariadne troy olympus argo
+Greek myth creature: medusa hydra cyclops pegasus sphinx siren centaur chimera harpy
+Norse myth: odin thor loki freya frigg baldur tyr hel idun njord bragi fenrir ymir mjolnir asgard jotun surtr mimir sif vidar vali midgard bifrost gungnir
+Egyptian myth: osiris horus anubis set thoth bastet sekhmet hathor ptah amun nut geb maat sobek apophis khepri ankh pharaoh mummy
+Japanese folklore: kappa tengu kitsune tanuki oni yokai baku kirin raiju nue kodama
+Arthurian legend: merlin gawain galahad mordred camelot avalon grail tristan isolde nimue kay
+Fantasy creature: dragon elf dwarf troll goblin ogre pixie fairy griffin unicorn phoenix wyvern kraken sprite gnome yeti kelpie banshee imp orc mermaid
+
+# Japan
+Japanese culture: sakura kimono haiku origami bonsai karaoke sumo ninja samurai shogun torii kabuki noh bunraku ikebana tatami futon shoji kanji kana emoji hanami onsen ryokan kotatsu daruma kokeshi obon sensei dojo koi katana yen kendama sudoku kakuro zen shiatsu fuji
+Japanese food: sushi ramen udon soba mochi miso tofu natto tempura wasabi bento onigiri matcha dashi nori unagi ponzu gyoza katsu sashimi edamame wagyu dango taiyaki ramune yuzu shiso kombu donburi
+Anime word: anime manga chibi kawaii otaku shonen shojo mecha isekai senpai kaiju cosplay
+Martial art: judo karate kendo aikido kungfu wushu sambo jujitsu boxing fencing kyudo hapkido
+
+# Anime
+Studio Ghibli: totoro ponyo chihiro kiki haku sheeta howl jiji catbus yubaba
+Dragon Ball: goku vegeta gohan krillin frieza bulma trunks buu shenron
+Naruto: naruto sasuke kakashi hinata itachi gaara jiraiya tsunade
+Sailor Moon: usagi ami rei makoto minako
+Doraemon: nobita shizuka gian suneo
+Anime and manga: gundam astro yugi kaiba
+
+# Space and science
+Planet or dwarf planet: mercury venus earth mars jupiter saturn neptune pluto ceres eris haumea
+Moon: titan europa triton phobos deimos charon oberon miranda dione mimas tethys
+Space: comet orbit nebula galaxy quasar pulsar rocket hubble sputnik voyager cosmos meteor eclipse aurora nova zenith lunar solar crater rover capsule shuttle ufo
+Constellation: orion lyra cygnus aquila cetus lepus crux carina vela pavo corvus bootes auriga lupus norma ara
+Zodiac sign: aries taurus gemini leo virgo libra scorpio pisces
+Element: gold iron neon tin zinc lead carbon helium oxygen argon xenon radon cobalt nickel copper silver sodium calcium iodine boron sulfur lithium osmium radium krypton uranium cesium barium bismuth gallium indium iridium
+Prehistoric: trex raptor minmi zuul mammoth fossil
+Scientist: newton darwin curie tesla edison galileo hawking turing bohr kepler euler gauss fermi sagan noether hopper mendel pasteur faraday planck dirac hooke nobel
+
+# Sci-fi
+Star Wars: yoda luke leia han chewie vader rey finn jabba lando anakin padme obiwan ahsoka grogu jango droid jedi sith ewok wookiee jawa hoth endor naboo dagobah rancor porg maul dooku xwing hutt sarlacc yavin
+Star Trek: kirk spock picard riker worf sulu uhura scotty mccoy janeway sisko odo quark borg klingon vulcan romulan ferengi tribble phaser warp troi geordi neelix tuvok
+Doctor Who: tardis dalek davros clara donna rory
+Dune: arrakis spice fremen melange chani stilgar leto
+Robot or AI: hal robby walle eve marvin kitt gort baymax optimus ultron vision jarvis tars glados data
+Hitchhiker's Guide: zaphod vogon
+
+# Superheroes
+Marvel: hulk groot gamora drax wanda hawkeye falcon wasp storm rogue magneto venom shuri okoye tchalla stark kang xavier beast iceman wakanda
+DC Comics: batman robin joker alfred gotham bane riddler penguin zod lex lois flash aquaman cyborg raven diana shazam quinn batgirl zatanna hawkman lantern
+Superhero word: cape mask lair villain hero origin
+
+# Fantasy books and film
+Harry Potter: harry ron hagrid dobby snape sirius lupin draco ginny neville luna hedwig fawkes snitch muggle nimbus nagini percy cedric cho dursley
+Lord of the Rings: frodo sam gandalf aragorn legolas gimli boromir gollum sauron bilbo smaug elrond arwen pippin merry shire mordor rohan gondor hobbit ent balrog mithril shelob eowyn faramir saruman
+Narnia: aslan edmund narnia tumnus caspian jadis
+Wizard of Oz: dorothy toto glinda tinman
+
+# Music
+Music genre: rock pop jazz blues funk soul disco punk metal grunge reggae ska emo techno house trance dubstep swing bebop gospel opera rap hiphop salsa tango samba polka folk country indie kpop jpop motown grime ambient lofi zydeco calypso mambo fado baroque
+Musical instrument: piano guitar violin cello viola harp flute oboe tuba drum banjo sitar ukulele trumpet bassoon piccolo organ lute lyre fiddle bongo conga gong cymbal tabla koto taiko erhu kazoo zither marimba maracas bagpipe timpani celesta sax horn fife bugle djembe cajon synth
+Music word: chord octave melody rhythm tempo forte encore chorus verse riff solo duet trio remix lyric album vinyl scale treble clef legato sonata opus aria fugue anthem ballad mixtape
+Band: beatles abba queen oasis blur muse kiss rush genesis wham eagles nirvana weezer blondie monkees kinks ramones madness pixies keane travis beegees aqua bts journey
+Singer: adele madonna shakira beyonce rihanna lorde sia bjork cher elvis bowie sting bono enya dido lizzo bieber sheeran moby kylie whitney mariah dolly elton lennon jagger hendrix rosalia
+Composer: bach mozart handel haydn chopin liszt verdi wagner elgar holst ravel satie grieg dvorak mahler brahms vivaldi puccini rossini purcell debussy strauss copland bizet berlioz uematsu
+
+# Sport
+Sport: soccer tennis golf rugby hockey cricket rowing sailing skiing surfing cycling polo squash netball archery curling bowling darts snooker diving luge bobsled slalom hurling sprint hurdles javelin discus shotput vault relay kabaddi parkour skating karting bmx esports
+Sports word: goal ace birdie eagle bogey par slam dunk strike spare tackle penalty offside volley smash deuce wicket innings umpire referee fumble punt huddle puck icing serve rally lob bunker caddie tee putt medal podium trophy
+Sports legend: pele messi ronaldo bolt ali jordan federer nadal serena phelps biles gretzky ohtani ichiro lebron beckham cruyff senna
+
+# Film and TV
+Disney and Pixar: simba nala mufasa timon pumbaa rafiki elsa anna olaf sven moana maui ariel belle mulan aladdin jasmine genie jafar abu iago bambi dumbo stitch lilo woody buzz jessie rex nemo dory marlin remy merida tiana raya mirabel bruno coco miguel sulley hiro mickey minnie goofy donald ursula gaston cruella lumiere zazu luca joy
+Cartoon: popeye snoopy daffy tweety porky taz scooby shaggy velma daphne homer marge bart lisa maggie shrek fiona dora peppa bluey bingo pingu barney elmo grover ernie bert kermit gonzo piggy fozzie tigger pooh eeyore piglet roo kanga wallace gromit noddy tintin snowy asterix obelix smurf casper felix heidi odie
+Film: jaws rocky titanic frozen tron matilda annie gandhi wicked dune encanto brave wonka willow goonies tarzan zorro avatar
+Kaiju: gojira mothra rodan kong gamera
+Detective: poirot marple holmes watson columbo morse maigret conan
+
+# Books
+Author: dickens austen orwell tolkien rowling twain poe dante kafka tolstoy wilde keats byron bronte dahl seuss verne asimov basho soseki atwood angelou hugo zola ibsen goethe camus proust chekhov lorca neruda tagore rumi milton chaucer yeats shelley carroll milne
+Book character: alice hatter gatsby pippi moomin quixote crusoe jekyll dracula
+
+# Art and places
+Artist: monet manet renoir degas picasso dali kahlo warhol matisse cezanne vermeer goya klimt munch miro rothko pollock hokusai banksy raphael titian giotto bosch turner
+Landmark: eiffel petra louvre kremlin uluru everest niagara
+World city: paris rome tokyo kyoto osaka nara london berlin madrid lisbon dublin oslo cairo delhi mumbai seoul beijing sydney toronto ottawa calgary boston chicago denver miami dallas seattle atlanta vienna prague athens havana lima quito rio dubai hanoi manila nairobi lagos quebec halifax regina
+Country: japan canada peru chile cuba egypt kenya nepal india china spain italy france brazil mexico norway sweden finland iceland ireland wales fiji tonga samoa laos oman qatar chad mali togo ghana benin gabon nauru palau tuvalu bhutan vietnam korea jamaica haiti panama bolivia uruguay greece poland latvia estonia malta cyprus monaco austria belgium denmark morocco tunisia
+Canadian icon: toque loonie toonie mountie beaver maple caribou inuksuk canoe banff yukon nunavut
+
+# Food and drink
+Food: pizza pasta taco burrito curry kebab falafel hummus paella risotto lasagna ravioli gnocchi pretzel bagel waffle donut muffin crepe brioche scone burger hotdog pho bao dimsum wonton kimchi bulgogi satay laksa biryani samosa naan poutine bannock gumbo chili fondue goulash pierogi borscht blini baklava gyro churro tamale arepa popcorn sundae gelato sorbet mousse eclair brownie cookie cupcake pancake quiche omelet
+Drink: boba latte mocha cocoa chai soda cola lassi juice tea
+
+# Everyday pop
+Dog breed: pug beagle poodle corgi husky boxer collie shiba akita whippet basset terrier spaniel setter pointer mastiff samoyed maltese shihtzu vizsla saluki
+Cat breed: persian siamese sphynx bengal ragdoll manx burmese korat birman
+Toy: lego yoyo kite slinky frisbee rubik furby teddy barbie marble puzzle jigsaw crayon nerf pogo scooter playdoh
+Brand: sega atari sony xbox nokia ikea casio canon nikon yamaha google yahoo netflix skype sanrio
+Car maker: ferrari porsche lotus jaguar bentley subaru mazda nissan lexus volvo fiat audi skoda kia saab honda toyota
+Dance: ballet waltz hula limbo jive twist rumba zumba foxtrot bolero jig reel hora lindy tap floss dab vogue shuffle bhangra kathak butoh haka
+Fashion: denim tuxedo sneaker hoodie beanie fedora beret bowtie poncho sari tutu kilt toga tiara tote loafer sandal parka anorak blazer tartan paisley sequin
+Festival: diwali easter eid purim holi tet nowruz kwanzaa yule
+Halloween: pumpkin witch ghost zombie vampire candy costume spooky broom bat spider cobweb
+Winter holiday: santa rudolph sleigh tinsel holly carol wreath grinch scrooge frosty eggnog noel snowman present
+Circus and magic: circus clown juggler acrobat trapeze mime houdini magic wand
+
+# Internet and tech
+Internet: meme blog vlog wiki selfie podcast hashtag gif spam browser server pixel cursor modem online offline update reboot wifi email inbox hacker captcha stream viral noob lol brb afk ftw emote lurker tweet sticker filter profile follow
+Programming language: java python ruby perl rust swift kotlin scala haskell lisp cobol fortran pascal basic julia elixir erlang dart ada lua php html sql css clojure prolog ocaml
+Tech word: laptop tablet robot drone mouse router chip laser sensor circuit battery gadget gizmo console arcade binary byte bit coding app bug glitch patch debug cache widget

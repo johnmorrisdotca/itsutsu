@@ -23,7 +23,7 @@ import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
  * A word found before its guesses were kept shows the word and its score, and
  * says its guesses were not kept rather than drawing nothing.
  */
-type WordKind = "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
+type WordKind = "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" | "gomojiPop";
 
 /**
  * The words and the guesses of a kept row, and each guess's colours, for any

@@ -25,7 +25,7 @@ import { GameTrail } from "@/components/games/GameTrail";
 export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
   const me = await currentMemberId();
-  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
   const [solves, races, played] =
     me === null ? [[], [], { words: [], total: 0 }] : await Promise.all([words ? [] : ownSolvesOf(me, kind), racesOf(me, kind), words ? ownWordsOf(me, kind) : { words: [], total: 0 }]);
   return (

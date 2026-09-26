@@ -155,6 +155,13 @@ from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an
 English borrowing (`scripts/word-lists-fr-de.mjs`); kana from JMdict.
+**Pop Gomoji** 五文字・流行 hides a pop-culture word of three to seven letters and
+shows its category as the clue. Its answers are one list kept by hand,
+`scripts/pop-corpus.txt`, checked and written by `scripts/word-lists-pop.mjs`;
+any English word of the length may be guessed too, from SCOWL, with the
+three- and seven-letter guesses in a file of their own fetched only when such
+a puzzle is played (`src/lib/puzzles/gomoji/popWords.ts`). Its five lengths
+are two shelves of four on its set-up screen (`shelves`, `sizesOffered`).
 Beside them, **Kumimoji** 組文字, our own solo take on the anagram-grid race
 games: a hand of seven or eleven letter tiles laid out as one crossword on a
 table with no board, which grows and zooms to fit (`tableView.ts`), drawing

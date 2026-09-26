@@ -58,6 +58,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   // Gomoji Mot and Gomoji Wort: the same shape of picture, French's and German's own words.
   { kind: "gomojiMot", size: 5, level: "easy", seed: 20260925, fill: 2 },
   { kind: "gomojiWort", size: 5, level: "easy", seed: 20260925, fill: 2 },
+  // A five-letter Pop Gomoji, two everyday words in and the answer begun: the colours on the same board as Gomoji's.
+  { kind: "gomojiPop", size: 5, level: "easy", seed: 20260926, fill: 2 },
   // A 6×6 Tsunagi, level 8 (in the first row, open to anybody), all but two of its lines drawn and one of those begun: marbles, lines and washed cells.
   { kind: "tsunagi", size: 6, level: "easy", seed: 8, fill: 2 },
   // A Classic Kumimoji's first hand, most of it laid: a word across and words down from it, on the table's own colour.
@@ -170,6 +172,14 @@ test.describe("puzzle screenshots", () => {
         // Two words that are not the answer, then the answer's first letters, typed as a person types them.
         const fillers = ["porte", "table"];
         for (const guess of fillers.filter((word) => word !== puzzle.solution).slice(0, scene.fill)) {
+          await page.keyboard.type(guess);
+          await page.keyboard.press("Enter");
+          filled += 1;
+        }
+        await page.keyboard.type(puzzle.solution.slice(0, 2));
+      } else if (scene.kind === "gomojiPop") {
+        // Two everyday English words, which Pop Gomoji takes as guesses beside its own list, then the answer's first letters.
+        for (const guess of ["house", "table", "crane"].filter((word) => word !== puzzle.solution).slice(0, scene.fill)) {
           await page.keyboard.type(guess);
           await page.keyboard.press("Enter");
           filled += 1;

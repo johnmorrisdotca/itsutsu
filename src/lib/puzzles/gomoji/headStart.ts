@@ -43,6 +43,8 @@ export const HEAD_START_RANKS = {
   en: "eartoilsnduchpmgbwfykvzjqx",
   fr: "eriaotunlscpmdbgvfhxjyqzk",
   de: "earntilshuogdmbkfcwzpüväöjxqy",
+  // Pop Gomoji is spelled in English's letters, so it ranks them as English does.
+  pop: "eartoilsnduchpmgbwfykvzjqx",
   ja: "うんしいよかくきつゆこたとりせけちさてはふひるやおそほえすにあみなもめらまねのろわへれむぬ",
 } as const;
 
@@ -50,14 +52,14 @@ export const HEAD_START_RANKS = {
 const KANA_KEYS = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんー";
 
 /** Every key of the Latin keyboards, for any letter the rankings leave out. */
-const LATIN_KEYS = { en: "abcdefghijklmnopqrstuvwxyz", fr: "abcdefghijklmnopqrstuvwxyz", de: "abcdefghijklmnopqrstuvwxyzäöü" } as const;
+const LATIN_KEYS = { en: "abcdefghijklmnopqrstuvwxyz", fr: "abcdefghijklmnopqrstuvwxyz", de: "abcdefghijklmnopqrstuvwxyzäöü", pop: "abcdefghijklmnopqrstuvwxyz" } as const;
 
 /** The pool the keys are drawn from: this many times as many as are greyed. */
 const POOL_TIMES = 2;
 
 /** A word puzzle offers Head start, and only at easy. */
 export function offersHeadStart(kind: PuzzleKind, level: PuzzleLevel): boolean {
-  return (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") && level === "easy";
+  return (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") && level === "easy";
 }
 
 /**

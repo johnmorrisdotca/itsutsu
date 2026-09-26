@@ -37,7 +37,7 @@ export function approxPuzzleIp(kind: PuzzleKind, level: PuzzleLevel): number {
 
 /** Whether this puzzle kind can be "played out" without being solved (only the word puzzles can). */
 export function isWordPuzzle(kind: PuzzleKind): boolean {
-  return kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "koushi";
+  return kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "koushi";
 }
 
 /** Chance a single attempt at this level is solved rather than played out or abandoned. Approximate, not measured. */

@@ -54,6 +54,7 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "gomoji":
     case "gomojiMot":
     case "gomojiWort":
+    case "gomojiPop":
     case "gomojiKana":
       return checkWords(kind, size, givens, answer, "found", level);
     case "tsunagi":
@@ -238,7 +239,7 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  * for a loss that really happened — every row a word, none of them the word.
  */
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
-  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "koushi") {
+  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop" && kind !== "koushi") {
     return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   }
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };

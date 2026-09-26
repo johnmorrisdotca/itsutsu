@@ -20,13 +20,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { DE_WORDS } from "../src/lib/puzzles/gomoji/words.de.data.ts";
 import { EN_WORDS } from "../src/lib/puzzles/gomoji/words.en.data.ts";
 import { FR_WORDS } from "../src/lib/puzzles/gomoji/words.fr.data.ts";
+import { POP_ANSWERS } from "../src/lib/puzzles/gomoji/words.pop.data.ts";
 import { unpack } from "../src/lib/puzzles/gomojiKana/kanaWords.ts";
 import type { PackedDailyPool } from "../src/lib/puzzles/dailyWords/dailyWords.types.ts";
 
 const DIR = "src/lib/puzzles/dailyWords";
 const TODAY = new Date().toISOString().slice(0, 10);
 
-type Source = { lang: "en" | "fr" | "de" | "ja"; size: number; words: () => string[]; file: string; describe: string };
+type Source = { lang: "en" | "fr" | "de" | "pop" | "ja"; size: number; words: () => string[]; file: string; describe: string };
 
 const split = (text: string) => text.split(/\s+/).filter(Boolean);
 
@@ -41,6 +42,17 @@ function alphabetSources(): Source[] {
       describe: `the ${size}-letter answers (medium and hard) of words.${lang}.data.ts, read ${TODAY}`,
     })),
   );
+}
+
+/** Pop Gomoji's answers, each written `word.n` with its category (`words.pop.data.ts`): the pool keeps the word alone. */
+function popSources(): Source[] {
+  return Object.keys(POP_ANSWERS).map(Number).map((size) => ({
+    lang: "pop" as const,
+    size,
+    words: () => split(POP_ANSWERS[size]!).map((entry) => entry.slice(0, entry.indexOf("."))),
+    file: "src/lib/puzzles/gomoji/words.pop.data.ts",
+    describe: `the ${size}-letter answers of words.pop.data.ts, read ${TODAY}`,
+  }));
 }
 
 async function kanaSources(): Promise<Source[]> {
@@ -150,8 +162,8 @@ function grown(kept: readonly PackedDailyPool[] | undefined, source: Source, nex
 
 async function main() {
   const next = nextAsked();
-  const alphabet = alphabetSources();
-  for (const lang of ["en", "fr", "de"] as const) {
+  const alphabet = [...alphabetSources(), ...popSources()];
+  for (const lang of ["en", "fr", "de", "pop"] as const) {
     const file = `${DIR}/pool.${lang}.data.ts`;
     const name = `DAILY_POOL_${lang.toUpperCase()}`;
     const kept = ((await existing(file, name)) ?? {}) as Record<number, readonly PackedDailyPool[]>;

@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { generatePuzzle, prepareEveryPuzzle } from "../generate";
 import { checkSolution } from "../puzzleCheck";
-import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../puzzles.constants";
+import { PUZZLE_KIND_LIST, PUZZLE_SPECS, sizesOffered } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { answersFor } from "../gomoji/code";
 import { kanaWordsOf } from "../gomojiKana/kanaWords";
@@ -69,7 +69,8 @@ describe("the daily words' pools", () => {
 
   it("have a pool at every length each Gomoji offers, so a new length has its daily word from the day it ships", () => {
     for (const kind of WORD_KINDS) {
-      expect(dailyLengths(kind), `${kind}: run node scripts/daily-pools.ts for the missing lengths`).toEqual([...PUZZLE_SPECS[kind].offered].sort((a, b) => a - b));
+      // Every size its set-up offers, both shelves of a shelved one (`sizesOffered`).
+      expect(dailyLengths(kind), `${kind}: run node scripts/daily-pools.ts for the missing lengths`).toEqual([...sizesOffered(kind)].sort((a, b) => a - b));
     }
   });
 

@@ -34,7 +34,7 @@ export function guessesTaken(
     const taken = swapsTaken(level, givens, answer);
     return taken === null ? null : { ...taken, unit: "swaps" };
   }
-  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort") return null;
+  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop") return null;
   // A Futago's allowance is its own, a guess more than one word's (`futago.ts`); a kana puzzle's free grey word takes a row and is no guess.
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);

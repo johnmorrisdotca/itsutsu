@@ -20,9 +20,9 @@ import { FR_WORDS } from "./words.fr.data";
  * letters at theirs, which players already find winnable.
  */
 
-const ALLOWED: Record<GomojiLanguage, Record<number, { allowed: string }>> = { en: EN_WORDS, fr: FR_WORDS, de: DE_WORDS };
+const ALLOWED: Record<Exclude<GomojiLanguage, "pop">, Record<number, { allowed: string }>> = { en: EN_WORDS, fr: FR_WORDS, de: DE_WORDS };
 
-function allowedWords(size: number, lang: GomojiLanguage): string[] {
+function allowedWords(size: number, lang: Exclude<GomojiLanguage, "pop">): string[] {
   return ALLOWED[lang][size]!.allowed.split(/\s+/).filter(Boolean);
 }
 
@@ -58,7 +58,7 @@ function guessesTaken(hidden: string, pool: readonly string[], opening: string, 
 }
 
 /** The share of a level's answers (every `step`th, for time) the greedy player finds within `within` guesses. */
-function foundWithin(size: number, lang: GomojiLanguage, within: readonly number[], step: number): number[] {
+function foundWithin(size: number, lang: Exclude<GomojiLanguage, "pop">, within: readonly number[], step: number): number[] {
   const pool = allowedWords(size, lang);
   const opening = greedyGuess(pool, size);
   const hidden = answersFor(size, false, lang).filter((_, at) => at % step === 0);

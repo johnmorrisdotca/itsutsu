@@ -23,6 +23,7 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   gomojiKana: 0.12,
   gomojiMot: 0.12,
   gomojiWort: 0.12,
+  gomojiPop: 0.12,
   // Five a cell drawn through: a middling 7×7 level fills about 35, so about 175 points.
   tsunagi: 0.57,
   // A Classic game of fifty tiles in about ten minutes scores about 800 (`KUMIMOJI_SCORE`).

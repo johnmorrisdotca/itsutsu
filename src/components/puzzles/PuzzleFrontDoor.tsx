@@ -164,7 +164,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 Every solve here <span className="font-mincho opacity-70">棋譜</span>
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
-                {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? (
+                {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" ? (
                   <>
                     Your words <span className="font-mincho opacity-70">言葉</span>
                   </>

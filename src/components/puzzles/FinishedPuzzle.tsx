@@ -91,7 +91,7 @@ export function FinishedPuzzle({
   }
 
   // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).
-  if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") {
+  if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") {
     const guesses = (answer === null ? null : kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind))) ?? [];
     return (
       <Focused story={story} hydrated={hydrated} testId="solve-board" state="word">

@@ -3,6 +3,7 @@ import { baseGuesses } from "./layout";
 import { EN_WORDS } from "./words.en.data";
 import { FR_WORDS } from "./words.fr.data";
 import { DE_WORDS } from "./words.de.data";
+import { isPopWord, popAnswers } from "./popWords";
 
 /**
  * GOMOJI: a word of `size` letters, found in `size + 1` guesses, each
@@ -24,22 +25,28 @@ import { DE_WORDS } from "./words.de.data";
  * its word list is written, `word-lists-fr-de.mjs`); German alone adds Ä, Ö
  * and Ü as letters of their own, so `decodeHidden` and `decodeGuesses` read
  * the alphabet a language's givens and guesses may be spelled with.
+ *
+ * POP GOMOJI is a fourth "language" in the same sense: English letters, its
+ * own answers (a person's pop-culture list, each word with its category) and
+ * its own guesses (that list and the English dictionary), kept in
+ * `popWords.ts`.
  */
-export type GomojiLanguage = "en" | "fr" | "de";
+export type GomojiLanguage = "en" | "fr" | "de" | "pop";
 
-const WORD_DATA: Record<GomojiLanguage, Record<number, { easy: string; answers: string; allowed: string }>> = {
+const WORD_DATA: Record<Exclude<GomojiLanguage, "pop">, Record<number, { easy: string; answers: string; allowed: string }>> = {
   en: EN_WORDS,
   fr: FR_WORDS,
   de: DE_WORDS,
 };
 
 /** The letters a language's givens and guesses may be spelled with, upper case, for a decoding regex. */
-const ALPHABET: Record<GomojiLanguage, string> = { en: "A-Z", fr: "A-Z", de: "A-ZÄÖÜ" };
+const ALPHABET: Record<GomojiLanguage, string> = { en: "A-Z", fr: "A-Z", de: "A-ZÄÖÜ", pop: "A-Z" };
 
-/** Which language a Gomoji kind plays in: English for Gomoji itself, French for Mot, German for Wort. */
+/** Which language a Gomoji kind plays in: English for Gomoji itself, French for Mot, German for Wort, and Pop's own list. */
 export function languageOf(kind: PuzzleKind): GomojiLanguage {
   if (kind === "gomojiMot") return "fr";
   if (kind === "gomojiWort") return "de";
+  if (kind === "gomojiPop") return "pop";
   return "en";
 }
 
@@ -100,7 +107,7 @@ type Lists = { easy: string[]; answers: string[]; allowed: Set<string> };
 
 const LISTS = new Map<string, Lists>();
 
-function listsFor(size: number, lang: GomojiLanguage = "en"): Lists | null {
+function listsFor(size: number, lang: Exclude<GomojiLanguage, "pop"> = "en"): Lists | null {
   const key = `${lang}:${size}`;
   const known = LISTS.get(key);
   if (known !== undefined) return known;
@@ -114,11 +121,13 @@ function listsFor(size: number, lang: GomojiLanguage = "en"): Lists | null {
 
 /** Whether a word may be guessed: any word of the length in the list, whatever it is. */
 export function isWord(word: string, size: number, lang: GomojiLanguage = "en"): boolean {
+  if (lang === "pop") return isPopWord(word, size);
   return word.length === size && (listsFor(size, lang)?.allowed.has(word) ?? false);
 }
 
 /** The words a hidden word is drawn from: the commonest for easy, the wider list for medium and hard. */
 export function answersFor(size: number, easy: boolean, lang: GomojiLanguage = "en"): readonly string[] {
+  if (lang === "pop") return popAnswers(size);
   const lists = listsFor(size, lang);
   if (lists === null) return [];
   return easy ? lists.easy : lists.answers;
@@ -148,7 +157,7 @@ export function breaksHardRule(guesses: readonly string[], hidden: string, next:
 }
 
 function ordinal(n: number): string {
-  return ["first", "second", "third", "fourth", "fifth", "sixth"][n - 1] ?? `${n}th`;
+  return ["first", "second", "third", "fourth", "fifth", "sixth", "seventh"][n - 1] ?? `${n}th`;
 }
 
 /**
