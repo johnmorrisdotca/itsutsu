@@ -67,7 +67,7 @@ export function StripGames({ memberId }: { memberId: string }) {
         </>
       )}
       {record === null ? null : (
-        <span className="whitespace-nowrap" data-testid="strip-record" title="Rated games, against people and the computer">
+        <span className="whitespace-nowrap" data-testid="strip-record" title="Rated games, against people and bots">
           <GameCount count={record.won} memberId={memberId} rated="yes" outcome="won" className={ITEM} testId="strip-won" />W{" · "}
           <GameCount count={record.lost} memberId={memberId} rated="yes" outcome="lost" className={ITEM} testId="strip-lost" />L{" · "}
           <GameCount count={record.drawn} memberId={memberId} rated="yes" outcome="drawn" className={ITEM} testId="strip-drawn" />D

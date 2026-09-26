@@ -119,7 +119,7 @@ export async function MyRecord({ name }: { name: string }) {
             {shown?.pool === RATING_POOLS.computer ? (
               <span
                 className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                title="Earned against the computer players, which are rated in a pool of their own."
+                title="Earned against the bots, which are rated in a pool of their own."
                 data-testid="my-rating-computer"
               >
                 機械
@@ -187,7 +187,7 @@ export async function MyRecord({ name }: { name: string }) {
               {row.pool === RATING_POOLS.computer ? (
                 <span
                   className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                  title="Against the computer players, rated in a pool of their own."
+                  title="Against the bots, rated in a pool of their own."
                   data-testid="standing-pool-computer"
                 >
                   機械
@@ -219,7 +219,7 @@ export async function MyRecord({ name }: { name: string }) {
             No rated game of any one game yet. Rated games are shared games between two
             members, or a game against one of the{" "}
             <Link href="/players?view=computers" className="underline underline-offset-4">
-              computer players
+              bots
             </Link>
             .
           </>

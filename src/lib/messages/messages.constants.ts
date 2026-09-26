@@ -12,7 +12,7 @@ export function messagesPath(memberId: string): string {
 /** Why a message was not sent, in the words the sender is told. */
 export const MESSAGE_REFUSALS = {
   "no-such-member": "There is nobody by that name to write to.",
-  "not-a-person": "Only a person can be written to — a computer player does not read.",
+  "not-a-person": "Only a person can be written to — a bot does not read.",
   "to-yourself": "That is you.",
   "not-taking-messages": "They are not taking messages from you.",
   "you-ignore-them": "You have ignored them. Take that off to write to them.",

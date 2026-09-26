@@ -618,3 +618,16 @@ export function isPrefetch(request: Request): boolean {
   const headers = request.headers();
   return headers["next-router-prefetch"] === "1" || headers["next-router-segment-prefetch"] !== undefined;
 }
+
+/**
+ * Sets "Include worldwide" (`RecordScopeBar`) to the scope asked for: ticked
+ * counts every site (`everywhere`), unticked this site only (`here`). One box,
+ * so pressing it when it already says the answer would take the answer away;
+ * this presses only when it must, and waits for the page to say it.
+ */
+export async function countScope(page: Page, scope: "everywhere" | "here") {
+  const bar = page.getByTestId("record-scope");
+  await expect(bar).toBeVisible();
+  if ((await bar.getAttribute("data-scope")) !== scope) await bar.getByTestId("include-worldwide").click();
+  await expect(page.getByTestId("record-scope")).toHaveAttribute("data-scope", scope);
+}

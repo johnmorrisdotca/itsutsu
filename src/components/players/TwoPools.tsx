@@ -51,10 +51,10 @@ export function TwoPools({
         pool={RATING_POOLS.computer}
         rated="yes"
         className="font-medium text-ink-soft"
-        title="Rated games against the computer players"
+        title="Rated games against the bots"
         testId="player-rated-computer"
       />{" "}
-      against the computer players. A game against a program never moves where you stand among the people, and a
+      against the bots. A game against a program never moves where you stand among the people, and a
       game against yourself counts as neither.
     </p>
   );

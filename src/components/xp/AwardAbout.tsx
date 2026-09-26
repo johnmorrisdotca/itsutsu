@@ -96,7 +96,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
         their page
       </Link>
     ) : (
-      <PlayerName name={about.name} memberId={about.memberId} fallback="a computer player" />
+      <PlayerName name={about.name} memberId={about.memberId} fallback="a bot" />
     );
   }
 

@@ -66,11 +66,11 @@ export const ADMIN_BOTS_COPY = {
    * itself, that hold seats and carry ratings like anybody else.
    */
   lead:
-    "The computer players, which are member rows like anybody else: they hold seats, their games count, and their ratings move when somebody beats them. They never sign in, so they are never seen and never late — and they cannot hold four words, because there is nobody to hand them to.",
+    "The bots, which are member rows like anybody else: they hold seats, their games count, and their ratings move when somebody beats them. They never sign in, so they are never seen and never late — and they cannot hold four words, because there is nobody to hand them to.",
   /** Why their rating is a different number from everybody else's. */
   ratingNote:
-    "The rating is the one earned against the computer players, which is the only pool they play in — a program never plays a person-against-person game, so its ordinary rating would sit at its starting value for ever.",
-  empty: "No computer players are set up on this site yet.",
+    "The rating is the one earned against the bots, which is the only pool they play in — a program never plays a person-against-person game, so its ordinary rating would sit at its starting value for ever.",
+  empty: "No bots are set up on this site yet.",
   /** The heading over the column that names the player. */
   player: "Player",
   lastPlayed: (date: string) => `last played ${date}`,

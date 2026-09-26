@@ -21,9 +21,9 @@ describe("playedScopeNote says what a table's Played column actually counts", ()
     expect(note).toMatch(/other people/i);
   });
 
-  it("names the computer pool for the Computers tab's scope", () => {
+  it("names the computer pool for the Bots tab's scope", () => {
     const note = playedScopeNote({ pool: "computer", rated: "yes" });
-    expect(note).toMatch(/computer players/i);
+    expect(note).toMatch(/the bots/i);
   });
 
   it("says a kept record has nothing here to open, same as the streak cell does", () => {

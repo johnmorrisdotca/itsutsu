@@ -50,7 +50,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | After earning points — the notice that drops in from the top of the page | Level up | **昇級** | Promotion — going up a grade. |  |
 | After earning points — the notice that drops in from the top of the page | Next level: {name} | **次のレベル：{name}** | Next level: {name} |  |
 | After earning points — the notice that drops in from the top of the page | Points earned | **獲得ポイント** | Points earned — the points acquired. |  |
-| After earning points — the notice that drops in from the top of the page | Count everywhere | **通算で数える** | Count in total. |  |
+| After earning points — the notice that drops in from the top of the page | Include worldwide | **他のサイトも含める** | Include other sites. |  |
 | After earning points — the notice that drops in from the top of the page | Counting everywhere: experience earned here, plus credit for games played on other sites. | **通算で集計：ここで得た経験値に、他のサイトでの対局分を加えています。** | Counting in total: the credit for games on other sites is added to the experience points earned here. |  |
 | After earning points — the notice that drops in from the top of the page | Counting this site only: experience earned here, and nothing credited from elsewhere. | **このサイトのみで集計：ここで得た経験値だけで、他のサイトの分は含みません。** | Counting this site only: only the experience points earned here; the credit from other sites is not included. |  |
 | After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
@@ -77,10 +77,10 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | The games index, /games — under every game and every family, in all three views | Play → | **対局する →** | Play → |  |
 | The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} |  |
 | The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} |  |
-| The games index, /games — under every game and every family, in all three views | against the computer | **対コンピュータ** | Against the computer. |  |
+| The games index, /games — under every game and every family, in all three views | against bots | **対コンピュータ** | Against the computer. |  |
 | The games index, /games — under every game and every family, in all three views | among people | **対人** | Against people. |  |
 | The games index, /games — under every game and every family, in all three views | Standings → | **順位表 →** | Standings → |  |
-| The games index, /games — under every game and every family, in all three views | Nobody holds a standing among people yet, so this is the top of the ladder against the computer players — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder. | **対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。** | There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder. |  |
+| The games index, /games — under every game and every family, in all three views | Nobody holds a standing among people yet, so this is the top of the ladder against the bots — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder. | **対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。** | There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder. |  |
 | The games index, /games — under every game and every family, in all three views | The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder. | **この種目の対人順位表の首位です。メンバー同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。** | This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder. |  |
 | The games index, /games — under every game and every family, in all three views | Top player | **首位** | First place. |  |
 | The games index, /games — under every game and every family, in all three views | The rated games they won on this ladder | **この順位表で勝ったレーティング対局** | The rated games won on this ladder. |  |
@@ -139,7 +139,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | {who} won {ip} | **{who}が{ip}を勝ち取りました** | {who} won {ip}. |  |
 | — — — | You won {ip} | **{ip}を勝ち取りました** | You won {ip}. |  |
 | — — — | What you and your buddies have been playing lately, newest first. | **あなたと仲間が最近遊んだこと。新しい順です。** | What you and your buddies played recently. Newest first. |  |
-| — — — | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only computer players and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース(初めての出来事、新しい首位、最速記録)です。名前を表示するのは、コンピューターと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. |  |
+| — — — | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース(初めての出来事、新しい首位、最速記録)です。名前を表示するのは、コンピューターと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. |  |
 | — — — | {who} reached level {level}, {name} | **{who}がレベル{level}「{name}」になりました** | {who} became level {level}, "{name}". |  |
 | — — — | You reached level {level}, {name} | **レベル{level}「{name}」になりました** | You became level {level}, "{name}". |  |
 | — — — | {who} lost to {other} at {game} | **{who}が{game}で{other}に負けました** | {who} lost to {other} at {game}. |  |
@@ -190,7 +190,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | Ratings | **レーティング** | Rating. |  |
 | — — — | Show all {count} | **全{count}人を表示** | Show all {count} people. |  |
 | — — — | Show fewer | **折りたたむ** | Fold it back up — show fewer. |  |
-| — — — | The computer | **対コンピュータ** | Against the computer. |  |
+| — — — | Bots | **対コンピュータ** | Against the computer. |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is
 drawn — a game's name, a country. They have to survive a correction exactly as

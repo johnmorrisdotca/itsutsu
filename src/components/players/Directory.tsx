@@ -344,27 +344,24 @@ export async function Directory({
         query={query}
         shown={page.matching}
         total={page.total}
+        /*
+          Drawn only where it can change an answer — the same rule a player's
+          own page keeps. With nobody on this list carrying a record from
+          anywhere else, the two scopes are the same games, and a control that
+          cannot change anything is furniture that also promises a chapter
+          which is not there.
+        */
+        worldwide={
+          scopeWorthAsking(anyKept ? 2 : 1) ? (
+            <RecordScopeBar base="/players" query={query} scope={scope} label="How much of these records to count" />
+          ) : null
+        }
       />
       <DirectoryNarrowed filter={filter} query={query} rememberedWho={rememberedWho} />
       {refused ? (
         <p className="text-sm text-muted" data-testid="directory-sort-refused">
           That was not an order the members list has, so this is the list by who was seen last.
         </p>
-      ) : null}
-      {/*
-        Drawn only where it can change an answer — the same rule a player's own
-        page keeps. With nobody on this list carrying a record from anywhere
-        else, the two scopes are the same games, and a control that cannot
-        change anything is furniture that also promises a chapter which is not
-        there.
-      */}
-      {scopeWorthAsking(anyKept ? 2 : 1) ? (
-        <RecordScopeBar
-          base="/players"
-          query={query}
-          scope={scope}
-          label="How much of these records to count"
-        />
       ) : null}
       <RecordTable
         subject="Member"
