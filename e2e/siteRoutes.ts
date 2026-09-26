@@ -37,6 +37,7 @@ export const ROUTES: Record<string, Route> = {
   "/": { url: () => "/" },
   "/about": { url: () => "/about", also: ["/about?view=games"] },
   "/admin": { url: () => "/admin", also: ["/admin?view=work"] },
+  "/admin/player-journeys": { url: () => "/admin/player-journeys" },
   "/backlog": { url: () => "/backlog" },
   "/champions": { url: () => "/champions" },
   "/embed": { skip: "a widget drawn inside another site's frame, not a page of this one" },
