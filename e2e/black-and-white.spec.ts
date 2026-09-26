@@ -71,7 +71,7 @@ test.describe("the black and white puzzle", () => {
     await expect(page).toHaveURL(/\/play$/);
     // The puzzles have a tab of their own on My games, with its count on it.
     await ready(page, "tabs");
-    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+    await page.locator('[data-testid="tab"][data-tab="going"]').click();
 
     const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
     await expect(row).toBeVisible();

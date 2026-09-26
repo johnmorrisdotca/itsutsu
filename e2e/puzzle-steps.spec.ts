@@ -88,7 +88,7 @@ test("a puzzle picked up again from My games still has every step to go back thr
 
   await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
   await ready(page, "tabs");
-  await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+  await page.locator('[data-testid="tab"][data-tab="going"]').click();
   await page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`).getByTestId("puzzle-going-continue").click();
   await ready(page, "puzzle-play");
 

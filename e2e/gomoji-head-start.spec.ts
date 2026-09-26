@@ -79,7 +79,7 @@ test.describe("Gomoji's head start", () => {
 
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await ready(page, "tabs");
-    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+    await page.locator('[data-testid="tab"][data-tab="going"]').click();
     const row = page.locator(`[data-testid="puzzle-going"][data-kind="gomoji"][data-seed="${seed}"]`);
     await expect(row).toContainText("head start");
     const onward = row.getByTestId("puzzle-going-continue");
