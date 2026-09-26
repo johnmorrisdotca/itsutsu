@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { ready, readyHere, winningSequence } from "./support";
+import { isPrefetch, ready, readyHere, winningSequence } from "./support";
 
 /**
  * A finished game made into one picture of every position, in the reader's
@@ -34,11 +34,11 @@ test("a finished game opens as one picture of every move, in a window, drawn in 
 
   /*
    * Everything the site is asked for while the window opens and draws, less
-   * the dev server's code files.
+   * the code files and the links the page prefetches on its own.
    */
   const asked: string[] = [];
   page.on("request", (sent) => {
-    if (!sent.url().startsWith("http")) return;
+    if (!sent.url().startsWith("http") || isPrefetch(sent)) return;
     const path = new URL(sent.url()).pathname;
     if (!path.startsWith("/_next/")) asked.push(path);
   });

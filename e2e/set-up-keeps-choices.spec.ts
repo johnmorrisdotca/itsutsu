@@ -12,6 +12,7 @@ import {
   chooseRated,
   chosenBoard,
   chosenRated,
+  isPrefetch,
   matchIdIn,
   openMoreSettings,
   ready,
@@ -98,6 +99,8 @@ function watchServer(page: Page) {
   const asked: string[] = [];
   page.on("request", (request) => {
     const url = request.url();
+    // A link prefetching itself is not a press asking the server (`isPrefetch`).
+    if (isPrefetch(request)) return;
     const rsc = url.includes("_rsc=") || request.headers()["rsc"] === "1";
     const document = request.isNavigationRequest() && request.frame() === page.mainFrame();
     if (rsc || document) asked.push(url);
