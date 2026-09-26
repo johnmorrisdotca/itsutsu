@@ -13,7 +13,10 @@ import { xpForBadge } from "@/lib/xp/xpScope";
 import { DAY_MS, FEED_LIMITS } from "./feed.constants";
 import { gameEntry, orderFeed, puzzleEntries, xpEntries } from "./feed";
 import type { FeedEntry, FeedGameRow, FeedPerson, FeedSeatStanding, FeedXpDay } from "./feed.types";
-import { everyoneMayShow } from "./feedEveryone";
+import { everyoneMayShow, mayBeNamed } from "./feedEveryone";
+import { addedEntries, gamesToldByNews, newsEntries } from "./feedNews";
+import { newsMemberIds, readNews } from "./feedNewsRead";
+import { GAME_ADDED } from "@/lib/catalogue/gameAdded.data";
 
 /**
  * THE FEED'S READS: once per page view, never on a timer and never polled.
@@ -80,7 +83,7 @@ function feedRow(row: GameRow, names: CurrentNames): FeedGameRow {
   };
 }
 
-type Standing = { id: string; name: string; ageBand: string | null; botTier: string | null; bannedAt: Date | null };
+type Standing = { id: string; name: string; ageBand: string | null; botTier: string | null; bannedAt: Date | null; isTest: boolean };
 
 /** The members a page names, in one read: current names, and what the Everyone tab asks of each. */
 async function membersOf(ids: Iterable<string>): Promise<Map<string, Standing>> {
@@ -88,7 +91,7 @@ async function membersOf(ids: Iterable<string>): Promise<Map<string, Standing>> 
   if (wanted.length === 0) return new Map();
   const rows = await prisma.member.findMany({
     where: { id: { in: wanted } },
-    select: { id: true, name: true, ageBand: true, botTier: true, bannedAt: true },
+    select: { id: true, name: true, ageBand: true, botTier: true, bannedAt: true, isTest: true },
   });
   return new Map(rows.map((row) => [row.id, row]));
 }
@@ -205,7 +208,7 @@ async function xpTotals(reader: FeedReader, buddies: readonly string[]): Promise
  */
 export async function readEveryoneFeed(readerId: string | null, now = new Date()): Promise<FeedEntry[]> {
   const since = windowStart(now);
-  const [games, ignored] = await Promise.all([
+  const [games, ignored, news] = await Promise.all([
     prisma.game.findMany({
       where: {
         AND: [inWindow(since)],
@@ -223,9 +226,10 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
       select: GAME_SELECT,
     }),
     readerId === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(readerId),
+    readNews(since),
   ]);
 
-  const members = await membersOf(seatIds(games));
+  const members = await membersOf([...seatIds(games), ...newsMemberIds(news)]);
   const names = namesOf(members);
   const standing = (id: string | null): FeedSeatStanding => {
     const member = id === null ? undefined : members.get(id);
@@ -233,7 +237,17 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
   };
   const welcome = (id: string | null) => id !== null && !ignored.has(id) && members.get(id)?.bannedAt == null;
 
+  /* The site's news, under the same rule as the games: see `feedNews.ts`. A
+     test member is never named to anybody here — the feed does not read the
+     operator's Test Mode yet — and neither is a member the games would leave out. */
+  const told = newsEntries(news.rows, news.games(names), {
+    nameOf: (id) => members.get(id)?.name.trim() ?? "",
+    mayName: (id) => id !== null && mayBeNamed(standing(id)) && welcome(id) && members.get(id)?.isTest !== true,
+  });
+  const alreadyTold = gamesToldByNews(told);
+
   const lines = games
+    .filter((row) => !alreadyTold.has(row.id))
     .filter((row) => everyoneMayShow([standing(row.blackMemberId), standing(row.whiteMemberId)]))
     .filter((row) => welcome(row.blackMemberId) && welcome(row.whiteMemberId))
     .map((row) => {
@@ -243,5 +257,5 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
       return gameEntry(shown, everybody, readerId);
     })
     .filter((line): line is FeedEntry => line !== null);
-  return orderFeed(lines, FEED_LIMITS.entries);
+  return orderFeed([...lines, ...told, ...addedEntries(GAME_ADDED, now, FEED_LIMITS.windowDays)], FEED_LIMITS.entries);
 }

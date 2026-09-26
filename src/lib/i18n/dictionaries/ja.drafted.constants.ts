@@ -526,8 +526,8 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "What you and your buddies played recently. Newest first.",
   },
   "feed.leadEveryone": {
-    text: "最近ここで終わった対局です。すべての対局者がコンピューターか、18歳以上と答えた会員である対局だけを表示します。",
-    back: "Games that ended here recently. Only games in which every player is a computer or a member who answered that they are 18 or over are shown.",
+    text: "最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース(初めての出来事、新しい首位、最速記録)です。名前を表示するのは、コンピューターと18歳以上と答えた会員だけです。",
+    back: "Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over.",
   },
   "feed.tabMine": {
     text: "あなたと仲間",
@@ -629,6 +629,59 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "{who}が{game}のパズルを{count}問解きました",
     back: "{who} solved {count} {game} puzzles.",
   },
+  /* The site's news on the Everyone tab. Drafted 2026-09-26 with the news; nobody who reads Japanese has read it yet. */
+  "feed.news.firstGameWon": {
+    text: "{game}がここで初めて遊ばれました。{who}が{other}に勝ちました",
+    back: "{game} was played here for the first time. {who} won against {other}.",
+  },
+  "feed.news.firstGameDrawn": {
+    text: "{game}がここで初めて遊ばれました。{who}と{other}は引き分けでした",
+    back: "{game} was played here for the first time. {who} and {other} drew.",
+  },
+  "feed.news.firstGame": {
+    text: "{game}がここで初めて遊ばれました",
+    back: "{game} was played here for the first time.",
+  },
+  "feed.news.firstPlace": {
+    text: "{who}が{game}で首位に立ちました",
+    back: "{who} took first place at {game}.",
+  },
+  "feed.news.botBeaten": {
+    text: "{who}が{game}で{other}に勝ちました。ここで勝った最初の人です",
+    back: "{who} won against {other} at {game}. The first person here to win.",
+  },
+  "feed.news.botBeatenNobody": {
+    text: "{other}が{game}で初めて負けました",
+    back: "{other} lost at {game} for the first time.",
+  },
+  "feed.news.firstWin": {
+    text: "{who}がここで初めて勝ちました({game})",
+    back: "{who} won for the first time here ({game}).",
+  },
+  "feed.news.firstLoss": {
+    text: "{who}がここで初めて負けました({game})",
+    back: "{who} lost for the first time here ({game}).",
+  },
+  "feed.news.bestTime": {
+    text: "{game} {board}の最速記録:{who}、{time}",
+    back: "The fastest record at {game} {board}: {who}, {time}.",
+  },
+  "feed.news.bestTimeNobody": {
+    text: "{game} {board}の最速記録:{time}",
+    back: "The fastest record at {game} {board}: {time}.",
+  },
+  "feed.added": {
+    text: "新しく加わりました:{games}",
+    back: "Newly added: {games}.",
+  },
+  "feed.seeLadder": {
+    text: "順位表を見る",
+    back: "See the ladder.",
+  },
+  "feed.seeFastest": {
+    text: "最速記録を見る",
+    back: "See the fastest records.",
+  },
   "feed.seeGame": {
     text: "対局を見る",
     back: "See the game.",
@@ -642,8 +695,8 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Nothing yet. When you or your buddies start or finish a game, earn experience, go up a level or solve a puzzle, it is shown here, newest first.",
   },
   "feed.emptyEveryone": {
-    text: "最近、このタブに表示できる対局者どうしの対局はありません。",
-    back: "Recently there are no games between players this tab can show.",
+    text: "まだ何もありません。このタブに表示できる対局者どうしの最近の対局も、新しいゲームも、ニュースもありません。",
+    back: "Nothing yet. There are no recent games between players this tab can show, no new games and no news.",
   },
   "feed.beFirst": {
     text: "最初に遊んでみましょう →",

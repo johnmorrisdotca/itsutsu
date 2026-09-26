@@ -4,8 +4,9 @@ import { PHRASES, PHRASE_KEYS } from "@/lib/i18n/i18n.constants";
 import { placeholdersIn } from "@/lib/i18n/i18n";
 
 import { FEED_KINDS, FEED_OUTCOMES } from "./feed.constants";
-import type { FeedEntry } from "./feed.types";
+import type { FeedEntry, FeedNewsEntry } from "./feed.types";
 import { dayHeading, entryPhrase, phraseParts } from "./feedWords";
+import { SITE_NEWS } from "./siteNews.constants";
 
 const who = { memberId: "m1", name: "Aki" };
 const base = { id: "x", at: "2026-09-20T00:00:00.000Z", who };
@@ -44,6 +45,53 @@ describe("the sentence a line is said in", () => {
         expect(slots).toContain("game");
       }
     }
+  });
+});
+
+describe("the sentence a line of the site's news is said in", () => {
+  const news = (over: Partial<FeedNewsEntry>): FeedNewsEntry => ({
+    ...base,
+    you: false,
+    kind: FEED_KINDS.news,
+    news: SITE_NEWS.firstWin,
+    named: true,
+    variant: "reversi",
+    gameId: "g",
+    other: null,
+    outcome: null,
+    subject: "",
+    ...over,
+  });
+  const every: FeedNewsEntry[] = [
+    news({ news: SITE_NEWS.firstGameOfGame, outcome: FEED_OUTCOMES.won, other: who }),
+    news({ news: SITE_NEWS.firstGameOfGame, outcome: FEED_OUTCOMES.drawn, other: who }),
+    news({ news: SITE_NEWS.firstGameOfGame, named: false }),
+    news({ news: SITE_NEWS.tookFirstPlace }),
+    news({ news: SITE_NEWS.hardBotBeaten, other: who }),
+    news({ news: SITE_NEWS.hardBotBeaten, named: false, other: who }),
+    news({ news: SITE_NEWS.firstWin }),
+    news({ news: SITE_NEWS.firstLoss }),
+    news({ news: SITE_NEWS.bestTime, subject: "9:hard:1000" }),
+    news({ news: SITE_NEWS.bestTime, named: false, subject: "9:hard:1000" }),
+  ];
+
+  it("is a phrase of its own for every kind, named and not", () => {
+    const keys = every.map(entryPhrase);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const key of keys) expect(PHRASE_KEYS).toContain(key);
+  });
+
+  it("names a person only in a line allowed to, and names the game in every one", () => {
+    for (const entry of every) {
+      const slots = placeholdersIn(PHRASES[entryPhrase(entry)]);
+      expect(slots.includes("who"), entryPhrase(entry)).toBe(entry.named);
+      expect(slots, entryPhrase(entry)).toContain("game");
+    }
+  });
+
+  it("gives a day's new games a sentence with room for all of them", () => {
+    const added: FeedEntry = { ...base, you: false, kind: FEED_KINDS.added, variants: ["reversi", "hex"] };
+    expect(placeholdersIn(PHRASES[entryPhrase(added)])).toEqual(["games"]);
   });
 });
 

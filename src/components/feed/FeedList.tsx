@@ -5,8 +5,11 @@ import type { FeedDay } from "@/lib/feed/feed.types";
 import { dayHeading } from "@/lib/feed/feedWords";
 import type { Speaker } from "@/lib/i18n/i18n";
 
+import { FEED_KINDS } from "@/lib/feed/feed.constants";
+
 import { FEED_DATE_FORMAT } from "./feed.constants";
 import { FeedLine } from "./FeedLine";
+import { FeedNewsLine } from "./FeedNewsLine";
 
 /**
  * THE FEED, A DAY AT A TIME, newest first.
@@ -65,9 +68,13 @@ export function FeedList({
               {"phrase" in heading ? say.say(heading.phrase) : dates.format(new Date(`${heading.date}T12:00:00Z`))}
             </h2>
             <ul className="flex flex-col divide-y divide-rule">
-              {day.entries.map((entry) => (
-                <FeedLine key={entry.id} entry={entry} say={say} />
-              ))}
+              {day.entries.map((entry) =>
+                entry.kind === FEED_KINDS.news || entry.kind === FEED_KINDS.added ? (
+                  <FeedNewsLine key={entry.id} entry={entry} say={say} />
+                ) : (
+                  <FeedLine key={entry.id} entry={entry} say={say} />
+                ),
+              )}
             </ul>
           </section>
         );

@@ -38,6 +38,10 @@ export const FEED_KINDS = {
   level: "level",
   /** Puzzles of one kind finished, one day's worth. */
   puzzles: "puzzles",
+  /** Something the site told everybody when it happened: a `SiteNews` row. */
+  news: "news",
+  /** The games that arrived on the site on one day, in one line. */
+  added: "added",
 } as const;
 
 export type FeedKind = (typeof FEED_KINDS)[keyof typeof FEED_KINDS];
@@ -66,6 +70,8 @@ export const FEED_LIMITS = {
   gamesRead: 200,
   /** Puzzle solves read for the reader and their buddies, newest first. */
   puzzlesRead: 300,
+  /** The site's news read for the Everyone tab, newest first: a line each, so no more than a page can show. */
+  newsRead: 60,
 } as const;
 
 /** A day, in milliseconds, for the window's arithmetic. */

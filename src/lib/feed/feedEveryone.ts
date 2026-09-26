@@ -24,13 +24,24 @@ import type { FeedSeatStanding } from "./feed.types";
  * anything is drawn, so nothing about a member under 18 is ever on that tab.
  */
 export function everyoneMayShow(seats: readonly FeedSeatStanding[]): boolean {
-  if (seats.length === 0) return false;
-  let person = false;
-  for (const seat of seats) {
-    if (seat === null) return false;
-    if (seat.botTier !== null && seat.botTier !== "") continue;
-    if (seat.ageBand !== AGE_BANDS.adult) return false;
-    person = true;
-  }
-  return person;
+  return seats.length > 0 && seats.every(mayBeNamed) && seats.some((seat) => !isProgram(seat));
+}
+
+function isProgram(seat: FeedSeatStanding): boolean {
+  return seat !== null && seat.botTier !== null && seat.botTier !== "";
+}
+
+/**
+ * WHETHER ONE MEMBER MAY BE NAMED ON THE EVERYONE TAB: a program, or a member
+ * who has said they are 18 or over — the same rule as a game's seats above,
+ * asked of one person. Every line of the site's news that names somebody asks
+ * it of each person it names (`feedNews.ts`), so the news cannot name a child
+ * the games list would have left out.
+ *
+ * Null — nobody behind the name, or a member the read could not find — is not
+ * named: nobody can say how old they are.
+ */
+export function mayBeNamed(seat: FeedSeatStanding): boolean {
+  if (seat === null) return false;
+  return isProgram(seat) || seat.ageBand === AGE_BANDS.adult;
 }

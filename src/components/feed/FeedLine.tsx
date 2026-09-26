@@ -6,7 +6,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerName } from "@/components/players/PlayerName";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { FEED_KINDS } from "@/lib/feed/feed.constants";
-import type { FeedEntry, FeedPerson } from "@/lib/feed/feed.types";
+import type { FeedActivityEntry, FeedPerson } from "@/lib/feed/feed.types";
 import { entryPhrase, phraseParts } from "@/lib/feed/feedWords";
 import type { Speaker } from "@/lib/i18n/i18n";
 import { matchPath } from "@/lib/gomoku/slugs";
@@ -23,7 +23,7 @@ import { xpHistoryHref } from "@/lib/xp/xpHistoryDays";
  * game itself, experience to that member's own XP history, and a level to the
  * level's page. No count of games is printed: a game is its own line.
  */
-export function FeedLine({ entry, say }: { entry: FeedEntry; say: Speaker }) {
+export function FeedLine({ entry, say }: { entry: FeedActivityEntry; say: Speaker }) {
   const variant = "variant" in entry ? entry.variant : null;
   const gameId = "gameId" in entry ? entry.gameId : null;
   const parts = phraseParts(say.say(entryPhrase(entry)));
@@ -55,7 +55,7 @@ function person(who: FeedPerson, say: Speaker, testId: string): ReactNode {
 }
 
 /** What goes in one `{slot}` of a line's sentence. */
-function slot(name: string, entry: FeedEntry, say: Speaker): ReactNode {
+function slot(name: string, entry: FeedActivityEntry, say: Speaker): ReactNode {
   switch (name) {
     case "who":
       return person(entry.who, say, "feed-who");

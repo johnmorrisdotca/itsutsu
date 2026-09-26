@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { AGE_BANDS } from "@/lib/social/ageBand.constants";
 
-import { everyoneMayShow } from "./feedEveryone";
+import { everyoneMayShow, mayBeNamed } from "./feedEveryone";
 
 const adult = { ageBand: AGE_BANDS.adult, botTier: null };
 const teen = { ageBand: AGE_BANDS.teen, botTier: null };
@@ -55,5 +55,24 @@ describe("a game on the Everyone tab", () => {
 
   it("does not let an empty bot tier pass for a program", () => {
     expect(everyoneMayShow([adult, { ageBand: null, botTier: "" }])).toBe(false);
+  });
+});
+
+describe("naming one person on the Everyone tab", () => {
+  it("names an adult and a program", () => {
+    expect(mayBeNamed(adult)).toBe(true);
+    expect(mayBeNamed(program)).toBe(true);
+  });
+
+  it("never names a member under 18, one never asked, or a seat nobody is behind", () => {
+    expect(mayBeNamed(child)).toBe(false);
+    expect(mayBeNamed(teen)).toBe(false);
+    expect(mayBeNamed(neverAsked)).toBe(false);
+    expect(mayBeNamed(null)).toBe(false);
+  });
+
+  it("reads an unknown band as not adult, and an empty tier as no program", () => {
+    expect(mayBeNamed({ ageBand: "18+", botTier: null })).toBe(false);
+    expect(mayBeNamed({ ageBand: null, botTier: "" })).toBe(false);
   });
 });

@@ -100,7 +100,15 @@ test.describe("the feed", () => {
     await page.locator('[data-testid="tab"][data-tab="everyone"]').click();
     await expect(page).toHaveURL(/\/feed\?view=everyone$/);
     await expect(page.getByTestId("feed-panel")).toHaveAttribute("data-tab", "everyone");
-    await expect(page.locator(`[data-testid="feed-entry"][data-game-id="${between}"]`)).toBeVisible();
+    /* The game's own line — or, when it was the first game of its kind on this
+       database, the news that says so, which tells the same game with both
+       players named and stands in for its line (`gamesToldByNews`). Those two,
+       and nothing else. */
+    await expect(
+      page.locator(
+        `[data-testid="feed-entry"][data-game-id="${between}"], [data-testid="feed-entry"][data-news="firstGameOfGame"][data-news-game="${between}"]`,
+      ),
+    ).toBeVisible();
     await expect(page.locator(`[data-testid="feed-entry"][data-game-id="${withTeen}"]`)).toHaveCount(0);
 
     // And back again: the way there is not the only way tested.

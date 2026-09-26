@@ -1,7 +1,8 @@
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 import { FEED_KINDS, FEED_OUTCOMES } from "./feed.constants";
-import type { FeedEntry } from "./feed.types";
+import type { FeedEntry, FeedNewsEntry } from "./feed.types";
+import { SITE_NEWS } from "./siteNews.constants";
 
 /**
  * WHICH SENTENCE A LINE IS SAID IN.
@@ -33,6 +34,32 @@ export function entryPhrase(entry: FeedEntry): PhraseKey {
     case FEED_KINDS.puzzles:
       if (entry.count === 1) return you ? "feed.puzzleOne.you" : "feed.puzzleOne.named";
       return you ? "feed.puzzleMany.you" : "feed.puzzleMany.named";
+    case FEED_KINDS.news:
+      return newsPhrase(entry);
+    case FEED_KINDS.added:
+      return "feed.added";
+  }
+}
+
+/**
+ * The site's news, said with its person where it may name them and without
+ * where it may not (`named`). Always the third person: see `feedNews.ts`.
+ */
+export function newsPhrase(entry: FeedNewsEntry): PhraseKey {
+  switch (entry.news) {
+    case SITE_NEWS.firstGameOfGame:
+      if (!entry.named) return "feed.news.firstGame";
+      return entry.outcome === FEED_OUTCOMES.drawn ? "feed.news.firstGameDrawn" : "feed.news.firstGameWon";
+    case SITE_NEWS.tookFirstPlace:
+      return "feed.news.firstPlace";
+    case SITE_NEWS.hardBotBeaten:
+      return entry.named ? "feed.news.botBeaten" : "feed.news.botBeatenNobody";
+    case SITE_NEWS.firstWin:
+      return "feed.news.firstWin";
+    case SITE_NEWS.firstLoss:
+      return "feed.news.firstLoss";
+    case SITE_NEWS.bestTime:
+      return entry.named ? "feed.news.bestTime" : "feed.news.bestTimeNobody";
   }
 }
 

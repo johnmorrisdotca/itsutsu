@@ -1,4 +1,5 @@
 import type { FeedKind, FeedOutcome } from "./feed.constants";
+import type { SiteNewsKind } from "./siteNews.constants";
 
 /** Somebody a line names: a member by id, or a name a seat was played under with nobody behind it. */
 export type FeedPerson = {
@@ -38,7 +39,39 @@ export type FeedLevelEntry = FeedLine<"level"> & { level: number };
 
 export type FeedPuzzlesEntry = FeedLine<"puzzles"> & { variant: string; count: number };
 
-export type FeedEntry = FeedGameEntry | FeedStartedEntry | FeedXpEntry | FeedLevelEntry | FeedPuzzlesEntry;
+/**
+ * A line of the site's news. `named` is false when the person it is about may
+ * not be named on the tab it is drawn on — the line is then said without them,
+ * or not drawn at all (`feedNews.ts` decides which).
+ */
+export type FeedNewsEntry = FeedLine<"news"> & {
+  news: SiteNewsKind;
+  named: boolean;
+  /** The game it happened at, or null where that could not be read. */
+  variant: string | null;
+  gameId: string | null;
+  /** The other player: the loser of a game's first game, or the program beaten. */
+  other: FeedPerson | null;
+  /** How a game's first game went for `who`. */
+  outcome: FeedOutcome | null;
+  /** The row's subject: a grade, or a best time's "size:level:ms". */
+  subject: string;
+};
+
+/** One day's new games, in one line. `who` is nobody: the site is the subject. */
+export type FeedAddedEntry = FeedLine<"added"> & { variants: string[] };
+
+export type FeedEntry =
+  | FeedGameEntry
+  | FeedStartedEntry
+  | FeedXpEntry
+  | FeedLevelEntry
+  | FeedPuzzlesEntry
+  | FeedNewsEntry
+  | FeedAddedEntry;
+
+/** A line about somebody's own activity, as `FeedLine` draws it; the site's news is `FeedNewsLine`'s. */
+export type FeedActivityEntry = Exclude<FeedEntry, FeedNewsEntry | FeedAddedEntry>;
 
 /** One day of the feed, newest first, in the reader's own zone. */
 export type FeedDay = { day: string; entries: FeedEntry[] };
