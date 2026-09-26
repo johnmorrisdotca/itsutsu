@@ -1,5 +1,6 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
+import { MOST_GUESSES } from "./gomoji/layout";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -98,6 +99,9 @@ export function isCheckAllowance(value: unknown): value is number | null {
  * more (see `offered`). 6×6 and 8×8 stay in `sizes` for anything already made
  * at them.
  */
+/** The longest answer a word puzzle can hand in: every guess its most generous level gives, of its longest word. */
+const WORD_ANSWER_MOST = MOST_GUESSES * 5;
+
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 256: a 16×16's cells, one character each, 1–9 then A–G.
   numberPlace: { sizes: [4, 6, 9, 16], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 256 },
@@ -113,14 +117,21 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   towers: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 77 },
   // Even sides only: a line holds as many black stones as white.
   blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
-  // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
-  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
-  /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
-  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false, strict: true, wordGrid: "gomojiKana" },
+  /*
+   * A size is the word's length, and an answer is every guess made, one
+   * character a letter or a kana: the most guesses any level gives
+   * (`MOST_GUESSES`) of the longest word. It was 30, six guesses of five, and
+   * when medium grew a seventh row and easy the whole board (2026-09-25) every
+   * solve past the sixth guess was refused as "Not a grid of that size" —
+   * solved, and never kept or paid. `puzzleCodeLength.test.ts` holds it now.
+   */
+  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  /* The longest answer the same way, in kana; the givens are the word and its grey word. */
+  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomojiKana" },
   // Gomoji in French, from the Lexique dictionary: the same shape as English's, accents folded away.
-  gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
+  gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
-  gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
+  gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
 };
 
 /**

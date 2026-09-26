@@ -4,6 +4,7 @@ import { generatePuzzle, prepareEveryPuzzle } from "./generate";
 
 // The kana Gomoji is made from a list loaded a length at a time: load them all before anything is made.
 beforeAll(prepareEveryPuzzle);
+import { guessesFor } from "./gomoji/layout";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
 
 /*
@@ -20,6 +21,29 @@ describe("puzzle codes fit the routes", () => {
         for (const code of [made.givens, made.solution]) {
           expect(code.length, `${kind} ${size}`).toBeLessThanOrEqual(spec.mostCells);
           expect(code.length, `${kind} ${size}`).toBeLessThanOrEqual(PUZZLE_CODE_LONGEST);
+        }
+      }
+    }
+  });
+
+  /*
+   * A word puzzle hands in every guess it made, not the one word, so its
+   * longest answer is the most guesses its most generous level gives, each a
+   * word long. The check above measured the word alone, and passed while every
+   * medium solve found on the seventh guess was refused (John's MUSTY,
+   * 2026-09-26: "Not a grid of that size", solved and never kept).
+   */
+  it("at every word puzzle, size and level, every guess the level gives fits what the solved route accepts", () => {
+    for (const kind of PUZZLE_KIND_LIST) {
+      const spec = PUZZLE_SPECS[kind];
+      if (spec.wordGrid === undefined) continue;
+      const grid = spec.wordGrid;
+      for (const size of spec.sizes) {
+        for (const level of spec.levels) {
+          // The kana version may give a free grey word; the most guesses is the larger of the two.
+          const most = Math.max(guessesFor(grid, size, level, 0), grid === "gomojiKana" ? guessesFor(grid, size, level, 1) : 0);
+          expect(most * size, `${kind} ${size} ${level}: ${most} guesses of ${size}`).toBeLessThanOrEqual(spec.mostCells);
+          expect(most * size, `${kind} ${size} ${level}`).toBeLessThanOrEqual(PUZZLE_CODE_LONGEST);
         }
       }
     }
