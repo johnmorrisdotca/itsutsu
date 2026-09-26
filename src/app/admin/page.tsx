@@ -100,7 +100,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       <Tabs tabs={TABS} active={open} base="/admin" label="What the operator does here" />
 
       {open === "access" ? (
-        <div className="grid gap-4 md:grid-cols-2" data-testid="admin-door">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2" data-testid="admin-door">
+          {/* One column on a phone that never grows past it (`grid-cols-1` is minmax(0, 1fr)): a long invite code wraps in its row rather than widening the page. */}
           <div className={PANEL_CLASS}>
             <AdminInvites />
           </div>

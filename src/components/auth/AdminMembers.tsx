@@ -196,7 +196,8 @@ export function AdminMembers() {
                 {member.bannedNote === "" ? "" : ` · ${member.bannedNote}`}
               </span>
             </span>
-            <RowActions>
+            {/* Six controls a row: on a phone they wrap under the name rather than run off the page. */}
+            <RowActions wrap>
             {/* AGE 年齢. The band, set from the row; under 13 asks who consented. See MemberAgeControl. */}
             {member.mayHavePhrase ? (
               <MemberAgeControl
