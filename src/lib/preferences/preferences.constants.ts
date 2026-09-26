@@ -224,6 +224,15 @@ export const PREFERENCE_SPECS = {
    * than one list.
    */
   ...FAMILY_FOLD_SPECS,
+
+  /*
+   * Each kind of email a member can be sent, on until they stop it — from the
+   * link every one of them carries (`mailStop.ts`), which needs no sign-in.
+   * One kind a row, so stopping one leaves the others alone; stopping all of
+   * them is `emailNotify`, the switch beside these.
+   */
+  "mail.yourTurn": { options: ["on", "off"] as const, fallback: "on" },
+  "mail.gameOver": { options: ["on", "off"] as const, fallback: "on" },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

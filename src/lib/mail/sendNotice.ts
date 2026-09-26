@@ -1,10 +1,12 @@
 import "server-only";
 
+import { preferencesFrom } from "@/lib/preferences/preferences";
 import { prisma } from "@/lib/prisma";
 
 import { gameBookOnce } from "./gameOverSummary";
-import { NOTICES } from "./mail.constants";
+import { NOTICES, SITE_ORIGIN } from "./mail.constants";
 import type { AddressBook, NoticeDeps, NoticeEvent, NoticeOutcome } from "./mail.types";
+import { MAIL_STOP_KINDS, STOP_API_PATH, signStopToken, stopPagePath, type StopKind } from "./mailStop";
 import { noticeMail } from "./noticeMail";
 import { sendMail } from "./sendMail";
 
@@ -31,23 +33,44 @@ import { sendMail } from "./sendMail";
  *      your-turn email on every move would spend the site's day before lunch.
  *      Nothing is read and nothing is counted while that is false.
  *   2. Is there an address, and does this member want to hear? No row, no
- *      address, or `emailNotify` off is "no-address": nobody to write to.
- *   3. For a game that has finished, the game itself (`gameOverSummary.ts`):
+ *      address, `emailNotify` off, or this kind of email stopped (`mail.<kind>`)
+ *      is "no-address": nobody to write to.
+ *   3. Its way out (`mailStop.ts`): a signed link in the footer and the
+ *      headers a mail program offers in its own menu. An email that cannot be
+ *      given one does not go ("no-stop-link") — every email says how to stop
+ *      getting it, or it is not sent.
+ *   4. For a game that has finished, the game itself (`gameOverSummary.ts`):
  *      read only now, when an email is really going, so an ending nobody is
  *      told about costs nothing. Unreadable, it is left out and the email
  *      says what the event knows.
- *   4. `sendMail`, which is where the caps are. The member a notice is FOR is
+ *   5. `sendMail`, which is where the caps are. The member a notice is FOR is
  *      the member it is counted against, so the five-a-day limit protects the
  *      person receiving it rather than some notion of a system sender.
  */
 export async function sendNotice(event: NoticeEvent, deps: NoticeDeps = {}): Promise<NoticeOutcome> {
   if (!NOTICES.sending) return { sent: false, refusal: "notices-off" };
 
-  const to = await (deps.addresses ?? memberAddresses).addressOf(event.memberId);
+  const to = await (deps.addresses ?? memberAddresses).addressOf(event.memberId, event.kind);
   if (to === null) return { sent: false, refusal: "no-address" };
 
+  const token = await signStopToken(event.memberId, event.kind);
+  if (token === null) return { sent: false, refusal: "no-stop-link" };
+
   const summary = event.kind === "game-over" ? await (deps.games ?? gameBookOnce()).gameOverOf(event.gameId) : null;
-  return sendMail(noticeMail(event, to, summary), { memberId: event.memberId }, deps);
+  const mail = noticeMail(event, to, summary, `${SITE_ORIGIN}${stopPagePath(token)}`);
+  return sendMail({ ...mail, headers: stopHeaders(token) }, { memberId: event.memberId }, deps);
+}
+
+/**
+ * The headers Gmail and Apple Mail read to offer their own "unsubscribe": the
+ * address to post to, and that one post is enough (RFC 8058), so it takes one
+ * click there and no page at all.
+ */
+export function stopHeaders(token: string): Record<string, string> {
+  return {
+    "List-Unsubscribe": `<${SITE_ORIGIN}${STOP_API_PATH}?token=${token}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
 }
 
 /**
@@ -56,13 +79,14 @@ export async function sendNotice(event: NoticeEvent, deps: NoticeDeps = {}): Pro
  * silence is the safe answer when the question cannot be settled.
  */
 export const memberAddresses: AddressBook = {
-  async addressOf(memberId: string): Promise<string | null> {
+  async addressOf(memberId: string, kind: StopKind): Promise<string | null> {
     try {
       const member = await prisma.member.findUnique({
         where: { id: memberId },
-        select: { email: true, emailNotify: true },
+        select: { email: true, emailNotify: true, preferences: true },
       });
       if (member === null || !member.emailNotify) return null;
+      if (preferencesFrom(member.preferences)[MAIL_STOP_KINDS[kind].preference] === "off") return null;
       return member.email;
     } catch (error) {
       console.error("[mail] a member's address could not be read", error);

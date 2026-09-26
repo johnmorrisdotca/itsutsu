@@ -172,7 +172,12 @@ It lets a request through when:
   catalogue and each game's rules, family and background pages;
 - the request carries a valid signed session cookie; or
 - the path is `/embed` or `/api/embed/*` and the request carries a valid embed
-  token with the right scope.
+  token with the right scope; or
+- the path is `/stop/<token>` or `/api/mail/stop?token=…` and the token is a
+  valid stop link, which every member email carries so its way out needs no
+  sign-in (`src/lib/mail/mailStop.ts`).
+
+Both tokens are checked in `src/lib/auth/ownCredentials.ts`.
 
 Otherwise a page redirects to `/join` and an API route answers 401. The gate
 also handles the language (a `?lang=` choice becomes a cookie), and during

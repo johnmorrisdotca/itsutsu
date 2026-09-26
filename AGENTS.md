@@ -142,8 +142,9 @@ through: wrap the `NextResponse.next()` a decision has already arrived at,
 never the deciding. A change that only ever runs after "yes" cannot turn a no
 into one.
 
-**The one sanctioned exception is a narrow, its-own-secret credential for a
-specific path, not a session** — the embed token for `/embed` and `/api/embed/`.
+**The sanctioned exceptions are narrow, its-own-secret credentials for specific
+paths, not sessions**, and there are two, both in `src/lib/auth/ownCredentials.ts`.
+The first is the embed token for `/embed` and `/api/embed/`.
 It exists because the caller has no browser to hold a session cookie in, it is
 checked by its own dedicated function (`verifyEmbedToken`), it grants nothing
 beyond letting the request continue to the route — which re-checks the same
@@ -151,7 +152,15 @@ secret itself, plus the embed's `data` scope the gate does not know about — an
 it never removes a way through that already existed; a wrong or missing
 credential falls through to the ordinary session check exactly as before.
 
-There was a second, until the board moved to Sumilabu: the board token for
+The second is the stop link every member email carries (`src/lib/mail/mailStop.ts`),
+for `/stop/<token>` and `/api/mail/stop`: Canada's anti-spam law wants a way out
+of every such email that works without signing in, so the link carries a token
+of its own kind naming one member and one kind of email, checked by
+`verifyStopToken`, and the page and route re-check it and can do nothing but
+switch that member's email off or back on. Neither exception is shuttered for
+maintenance.
+
+There was a third, until the board moved to Sumilabu: the board token for
 `/api/backlog` and `/api/backlog/[id]` (board convergence ITS-02), so an agent's
 terminal could work the backlog. It is gone, and so are those routes. `pnpm task`
 talks to Sumilabu with a token of Sumilabu's, the page writes through Server

@@ -22,6 +22,8 @@ const reversi: GameOverSummary = {
   ratingChange: { black: 12, white: -12 },
 };
 
+const STOP = "https://itsutsu.com/stop/t0k3n";
+
 const over = (stone: "black" | "white"): NoticeEvent => ({ kind: "game-over", gameId: "k3m9-p2qx", winner: "black", stone, memberId: `m-${stone}` });
 
 describe("the email a finished game sends", () => {
@@ -61,19 +63,28 @@ describe("the email a finished game sends", () => {
   });
 
   it("carries the footer and the way to the reader's games, like every notice", () => {
-    const mail = noticeMail(over("black"), "hanako@example.test", reversi);
+    const mail = noticeMail(over("black"), "hanako@example.test", reversi, STOP);
     expect(mail.to).toBe("hanako@example.test");
     expect(mail.subject).toBe("You won at Reversi against Kuro T.");
     expect(mail.text).toContain("Your games:\nhttps://itsutsu.com/play");
     expect(mail.text).toContain("hello@itsutsu.com");
   });
 
+  it("says how to stop getting it, naming the kind it is, in every notice", () => {
+    const over_ = noticeMail(over("black"), "hanako@example.test", reversi, STOP);
+    expect(over_.text).toContain("To stop emails telling you a game of yours has finished, or any email from Itsutsu:\nhttps://itsutsu.com/stop/t0k3n");
+    const turn = noticeMail({ kind: "your-turn", gameId: "g", stone: "white", memberId: "m" }, "kuro@example.test", null, STOP);
+    expect(turn.text).toContain("To stop emails telling you it is your turn, or any email from Itsutsu:\nhttps://itsutsu.com/stop/t0k3n");
+    // Unread, it still says how to stop it.
+    expect(noticeMail(over("white"), "kuro@example.test", null, STOP).text).toContain(STOP);
+  });
+
   it("says only what the event knows when the game could not be read, or is another game", () => {
-    const unread = noticeMail(over("white"), "kuro@example.test");
+    const unread = noticeMail(over("white"), "kuro@example.test", null, STOP);
     expect(unread.subject).toBe("Your game on Itsutsu has finished");
     expect(unread.text).toContain("Your game has finished, and you lost.");
     expect(unread.text).not.toContain("match/");
-    const other = noticeMail(over("white"), "kuro@example.test", { ...reversi, gameId: "zzzz-zzzz" });
+    const other = noticeMail(over("white"), "kuro@example.test", { ...reversi, gameId: "zzzz-zzzz" }, STOP);
     expect(other.subject).toBe("Your game on Itsutsu has finished");
   });
 

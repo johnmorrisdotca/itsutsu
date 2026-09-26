@@ -7,6 +7,7 @@ import { shownName } from "@/lib/rating/shownName";
 
 import { CONTACT_ADDRESS, SITE_ORIGIN } from "./mail.constants";
 import type { GameOverSummary, NoticeEvent, OutgoingMail } from "./mail.types";
+import { MAIL_STOP_KINDS } from "./mailStop";
 
 /**
  * The words of a game notice. Plain text, like every other email the site
@@ -27,9 +28,15 @@ import type { GameOverSummary, NoticeEvent, OutgoingMail } from "./mail.types";
  * read it says only how it went for them, which the event alone knows —
  * never a sentence made up to fill the gap.
  */
-export function noticeMail(event: NoticeEvent, to: string, summary: GameOverSummary | null = null): OutgoingMail {
+export function noticeMail(event: NoticeEvent, to: string, summary: GameOverSummary | null, stopUrl: string): OutgoingMail {
   const yourGames = `${SITE_ORIGIN}/play`;
-  const footer = ["", `You are getting this because you play on Itsutsu. Questions? Write to ${CONTACT_ADDRESS}.`];
+  const footer = [
+    "",
+    `You are getting this because you play on Itsutsu. Questions? Write to ${CONTACT_ADDRESS}.`,
+    // Every email says how to stop getting it (`mailStop.ts`): this kind, or all of them, with no sign-in.
+    `To stop ${MAIL_STOP_KINDS[event.kind].words}, or any email from Itsutsu:`,
+    stopUrl,
+  ];
 
   if (event.kind === "your-turn") {
     return {

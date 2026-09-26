@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AddressBook, GameBook, GameOverSummary, NoticeEvent, OutgoingMail } from "./mail.types";
 
@@ -43,11 +43,24 @@ function games(asked: string[]): GameBook {
 }
 
 /** An address book that answers without a database. */
-function book(address: string | null): AddressBook {
-  return { addressOf: async () => address };
+function book(address: string | null, asked: string[] = []): AddressBook {
+  return {
+    addressOf: async (memberId, kind) => {
+      asked.push(`${memberId}:${kind}`);
+      return address;
+    },
+  };
 }
 
 describe("sending a game notice", () => {
+  // The key a stop link is signed with; without it a notice does not go (see the case for that below).
+  beforeEach(() => {
+    vi.stubEnv("AUTH_SECRET", "a-test-secret-of-some-length");
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("sends nothing at all while notices are switched off", async () => {
     const { sendNotice } = await import("./sendNotice");
     const transport = vi.fn(async () => ({ ok: true as const, id: "x" }));
@@ -156,6 +169,52 @@ describe("sending a game notice", () => {
     expect(sent[0].text).toContain("It took 31 moves in 20 minutes.");
     expect(sent[0].text).toContain("/games/gomoku/match/g1");
     expect(sent[0].text).toContain("rematch=g1");
+    vi.doUnmock("./mail.constants");
+    vi.resetModules();
+  });
+
+  it("says how to stop it, in its footer and in the headers a mail program offers, for that member and that kind", async () => {
+    vi.doMock("./mail.constants", async (original) => ({
+      ...(await original<typeof import("./mail.constants")>()),
+      ...ON,
+    }));
+    vi.resetModules();
+    const { sendNotice } = await import("./sendNotice");
+    const { verifyStopToken } = await import("./mailStop");
+    const sent: OutgoingMail[] = [];
+    const transport = async (mail: OutgoingMail) => {
+      sent.push(mail);
+      return { ok: true as const, id: "sent-3" };
+    };
+    const asked: string[] = [];
+
+    await sendNotice(yourTurn, { transport, counter: { reserve: async () => null }, addresses: book("player@example.test", asked) });
+
+    // The address book was asked about this kind of email, not email in general.
+    expect(asked).toEqual(["m1:your-turn"]);
+    const link = sent[0].text.match(/https:\/\/itsutsu\.com\/stop\/(\S+)/);
+    expect(link, "no stop link in the footer").not.toBeNull();
+    expect(await verifyStopToken(link![1])).toMatchObject({ member: "m1", mail: "your-turn" });
+    expect(sent[0].headers?.["List-Unsubscribe"]).toBe(`<https://itsutsu.com/api/mail/stop?token=${link![1]}>`);
+    expect(sent[0].headers?.["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
+    vi.doUnmock("./mail.constants");
+    vi.resetModules();
+  });
+
+  it("does not go at all when it cannot be given a way out", async () => {
+    vi.stubEnv("AUTH_SECRET", "");
+    vi.doMock("./mail.constants", async (original) => ({
+      ...(await original<typeof import("./mail.constants")>()),
+      ...ON,
+    }));
+    vi.resetModules();
+    const { sendNotice } = await import("./sendNotice");
+    const transport = vi.fn(async () => ({ ok: true as const, id: "x" }));
+
+    const outcome = await sendNotice(yourTurn, { transport, counter: { reserve: async () => null }, addresses: book("player@example.test") });
+
+    expect(outcome).toEqual({ sent: false, refusal: "no-stop-link" });
+    expect(transport).not.toHaveBeenCalled();
     vi.doUnmock("./mail.constants");
     vi.resetModules();
   });

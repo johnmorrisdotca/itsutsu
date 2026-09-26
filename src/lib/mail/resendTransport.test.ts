@@ -28,6 +28,15 @@ describe("resendTransport", () => {
     });
   });
 
+  it("hands the provider a member email's stop headers, and none on mail without them", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async () => Response.json({ id: "abc-124" }));
+    const headers = { "List-Unsubscribe": "<https://itsutsu.com/api/mail/stop?token=t>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
+    await resendTransport(KEY, fetchImpl)({ ...MAIL, headers });
+    expect(JSON.parse(String(fetchImpl.mock.calls[0]![1]?.body)).headers).toEqual(headers);
+    await resendTransport(KEY, fetchImpl)(MAIL);
+    expect(JSON.parse(String(fetchImpl.mock.calls[1]![1]?.body))).not.toHaveProperty("headers");
+  });
+
   it("reports a refusal by status alone, without the key", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => Response.json({ message: `bad key ${KEY}` }, { status: 403 }));
 

@@ -64,7 +64,7 @@ The variables that matter first, all described in `.env.example`:
 | Variable | What it is |
 | --- | --- |
 | `DATABASE_URL`, `DIRECT_URL` | Postgres: pooled for the app, direct for migrations. The example points both at the local container |
-| `AUTH_SECRET` | Signs sessions and embed tokens, at least 16 characters. Without it the gate stays open in development and refuses everything in production |
+| `AUTH_SECRET` | Signs sessions, embed tokens and the stop links in member emails, at least 16 characters. Without it the gate stays open in development and refuses everything in production |
 | `ADMIN_EMAILS` | The operator's addresses. Locally, end the list with `operator@example.test`, which the browser suite signs in as |
 | `ADMIN_TOKEN` | Lets local tooling and the browser suite act as the operator without Google |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `NEXTAUTH_URL` | Google sign-in |

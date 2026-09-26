@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { EMBED_TOKEN_PARAM, verifyEmbedToken } from "@/lib/auth/embedToken";
+import { carriesOwnCredential } from "@/lib/auth/ownCredentials";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import {
@@ -248,17 +248,6 @@ function isOpenPath(pathname: string): boolean {
   );
 }
 
-function isEmbed(pathname: string): boolean {
-  return (
-    pathname === "/embed" ||
-    pathname.startsWith("/embed/") ||
-    // The read-only endpoint an embedded board calls. It re-checks the token
-    // itself, and additionally requires the `data` scope, which the gate does
-    // not know about.
-    pathname.startsWith("/api/embed/")
-  );
-}
-
 /**
  * A language asked for in the address, remembered and then taken back out of
  * it. Null when the address says nothing about language, which is almost
@@ -383,17 +372,12 @@ export async function proxy(request: NextRequest) {
   if (isOpenPath(pathname)) return carryOn(request);
 
   /*
-   * An embed carries its own credential in the URL, because a cross-site
-   * iframe cannot rely on a cookie — browsers block third-party cookies. The
-   * board it unlocks makes no API calls, so this grants a game and nothing
-   * else; a signed-in visitor still reaches /embed the ordinary way below.
+   * An embed or a stop link, each carrying its own narrow credential rather
+   * than a session: see `ownCredentials.ts`, where both are reasoned. Only
+   * ever "continue", and a wrong or missing token falls through to the
+   * session check below exactly as before.
    */
-  if (isEmbed(pathname)) {
-    const token = request.nextUrl.searchParams.get(EMBED_TOKEN_PARAM);
-    if (token !== null && (await verifyEmbedToken(token)) !== null) {
-      return NextResponse.next();
-    }
-  }
+  if (await carriesOwnCredential(request)) return NextResponse.next();
 
   /*
    * THE TICKET THIS BLOCK IS FOR: a gate with no key cannot verify a
@@ -417,7 +401,7 @@ export async function proxy(request: NextRequest) {
    * protected, and generating a secret before `pnpm dev` even starts was
    * never the point of AUTH_SECRET.
    *
-   * Only ever a narrowing: `isOpenPath` and `isEmbed` above are
+   * Only ever a narrowing: `isOpenPath` and `carriesOwnCredential` above are
    * untouched and still run first, so a request that already had a way
    * through keeps it. This adds no new one — it takes away the one bypass
    * that should never have been unconditional.
