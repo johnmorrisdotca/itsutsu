@@ -1,9 +1,9 @@
 import { puzzleHash } from "../puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled } from "../random";
-import { decodeKanaGivens } from "../gomojiKana/kanaCode";
 import { kanaBase } from "../gomojiKana/kanaMarks";
-import { decodeHidden, languageOf } from "./code";
+import { languageOf } from "./code";
+import { hiddenWordsOf } from "./futago";
 
 /**
  * GOMOJI'S HEAD START (先手, the name and kanji a game's head start has on
@@ -80,16 +80,15 @@ export function drawHeadStart(ranking: string, keys: string, excluded: ReadonlyS
  * no help.
  */
 export function headStartKeys(kind: PuzzleKind, size: number, givens: string): string[] {
+  // One word or a Futago's two (`futago.ts`): a key greyed is in neither.
+  const hidden = hiddenWordsOf(kind, size, givens);
+  if (hidden === null) return [];
   if (kind === "gomojiKana") {
-    const given = decodeKanaGivens(givens, size);
-    if (given === null) return [];
-    const excluded = new Set([...given.word, ...(given.grey ?? "")].map(kanaBase));
+    const excluded = new Set([...hidden.words.join(""), ...(hidden.grey ?? "")].map(kanaBase));
     return drawHeadStart(HEAD_START_RANKS.ja, KANA_KEYS, excluded, size, givens);
   }
   const lang = languageOf(kind);
-  const hidden = decodeHidden(givens, size, lang);
-  if (hidden === null) return [];
-  return drawHeadStart(HEAD_START_RANKS[lang], LATIN_KEYS[lang], new Set(hidden), size, givens);
+  return drawHeadStart(HEAD_START_RANKS[lang], LATIN_KEYS[lang], new Set(hidden.words.join("")), size, givens);
 }
 
 /*

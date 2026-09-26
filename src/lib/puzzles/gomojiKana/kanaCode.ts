@@ -80,14 +80,22 @@ export function kanaWordFor(words: KanaWords, easy: boolean, seed: number): stri
 
 /**
  * The free first row (John, 2026-09-25: "a REAL word that is completely
- * grey"): a word every place of which is grey against the hidden one. Drawn
- * from the answers first, so it is a word a player knows, then from every
- * word; null in the rare case none fits.
+ * grey"): a word every place of which is grey against the hidden one — or,
+ * for a Futago, against both of its words. Drawn from the answers first, so
+ * it is a word a player knows, then from every word; null in the rare case
+ * none fits.
  */
-export function greyWordFor(words: KanaWords, word: string, seed: number): string | null {
-  const target = [...word];
-  const allGrey = (candidate: string) => markKanaGuess([...candidate], target).every((each) => each.mark === "miss");
+export function greyWordFor(words: KanaWords, word: string | readonly string[], seed: number): string | null {
+  const targets = (typeof word === "string" ? [word] : word).map((each) => [...each]);
+  const allGrey = (candidate: string) => targets.every((target) => markKanaGuess([...candidate], target).every((each) => each.mark === "miss"));
   return lowest(seed, words.answers, allGrey) ?? lowest(seed, words.allowed, allGrey);
+}
+
+/** A Futago's second word (`futago.ts`): the one the seed would hide next, never the first again. */
+export function otherKanaWordFor(words: KanaWords, easy: boolean, seed: number, first: string): string {
+  const word = lowest(seed, easy ? words.easy : words.answers, (each) => each !== first);
+  if (word === null) throw new Error("A kana list of one word.");
+  return word;
 }
 
 /**

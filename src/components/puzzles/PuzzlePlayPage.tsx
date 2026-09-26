@@ -11,6 +11,7 @@ import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { dailyWordSeed, dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
+import { futagoDailySeed } from "@/lib/puzzles/gomoji/futagoSeed";
 import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
@@ -36,7 +37,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
      for a Gomoji, the seed of today's word at the length asked (`dailyWords/dailyDay.ts`). */
   if (query[DAILY_PARAM] === "1" && asked.seed === null) {
     const today = new Date();
-    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : dailyWordSeed(dayKeyOf(today));
+    // A Futago's day has two words at a seed of its own (`futagoSeed.ts`).
+    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : asked.twins === true ? futagoDailySeed(dayKeyOf(today)) : dailyWordSeed(dayKeyOf(today));
     redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed })}`);
   }
   const reader = await currentReader();
@@ -66,7 +68,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} twins={asked.twins === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null } : null} />
         </WordStyleProvider>
       </div>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}

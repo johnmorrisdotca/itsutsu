@@ -27,12 +27,14 @@ import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordSt
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
+import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
+import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { useWordStyle } from "./WordStyleContext";
 
@@ -84,6 +86,8 @@ export function PuzzleSetUp({
   const [strict, setStrict] = useState(asked?.strict ?? false);
   // Gomoji's Head start, off unless chosen, easy only; like Strict, not carried into a race.
   const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
+  // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
+  const [twins, setTwins] = useState(asked?.twins ?? false);
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -95,7 +99,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -115,7 +119,7 @@ export function PuzzleSetUp({
     setRacing("making");
     try {
       await preparePuzzle(kind, size);
-      const made = generatePuzzle(kind, size, level, freshSeed());
+      const made = generatePuzzle(kind, size, level, twins && spec.wordGrid !== undefined ? freshFutagoSeed() : freshSeed());
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -143,7 +147,7 @@ export function PuzzleSetUp({
         Preview Board too. And the Board colour options."
       */}
       {sized === undefined ? (
-        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} />
+        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} twins={twins} />
       ) : null}
 
       {/*
@@ -191,6 +195,11 @@ export function PuzzleSetUp({
           {levelBlurb(kind, level)}
         </p>
         {/*
+          ONE WORD OR TWO: a Gomoji's Futago (`futago.ts`). John, 2026-09-26:
+          "a Gomoji mode with two hidden words at once… Use our own name."
+        */}
+        {spec.wordGrid === undefined ? null : <FutagoChips kind={kind} size={size} level={level} chosen={twins} onChoose={setTwins} />}
+        {/*
           STRICT, a choice at every level. John, 2026-09-25: "have an option
           strict mode for Hard where you have to play the Green items on the same
           location like you have now. right now there are no real options for the
@@ -226,7 +235,7 @@ export function PuzzleSetUp({
           hard its chips are switched off and the line under them says why.
         */}
         {offersHeadStart(kind, "easy") ? (
-          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} />
+          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} twins={twins} />
         ) : null}
         {/*
           HOW THE GRID IS DRAWN, chosen here as well as under the keyboard.
@@ -321,7 +330,7 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
@@ -379,6 +388,7 @@ export function PuzzleBoardAndSizes({
   appearance,
   onFelt,
   underFamilies = false,
+  twins = false,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -386,13 +396,15 @@ export function PuzzleBoardAndSizes({
   level?: PuzzleLevel;
   appearance?: Appearance;
   onFelt?: (felt: Felt) => void;
+  /** A Gomoji's Futago chosen: its preview is two boards (`futago.ts`). */
+  twins?: boolean;
   /** Under the row of families, where from a laptop's width the pair joins that row (`PICK_BOARD_ROW_UNDER_FAMILIES`). */
   underFamilies?: boolean;
 }) {
   return (
     <div className={`${PICK_BOARD_ROW} py-2 ${underFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`}>
       <div className={PICK_BOARD_PREVIEW}>
-        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} />
+        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} twins={twins} />
       </div>
       <PuzzleSizes kind={kind} size={size} onSize={onSize} beside />
     </div>

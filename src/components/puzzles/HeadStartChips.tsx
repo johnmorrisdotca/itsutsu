@@ -19,12 +19,15 @@ export function HeadStartChips({
   level,
   chosen,
   onChoose,
+  twins = false,
 }: {
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
   chosen: boolean;
   onChoose: (chosen: boolean) => void;
+  /** A Futago chosen (`futago.ts`): the keys greyed are in neither word. */
+  twins?: boolean;
 }) {
   const offered = offersHeadStart(kind, level);
   // As many as the word has (`headStartKeys`): the size chosen above.
@@ -52,7 +55,7 @@ export function HeadStartChips({
         {!offered
           ? "A head start is for easy: choose Easy to have one."
           : chosen
-            ? `${size} ${unit} not in the word start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`
+            ? `${size} ${unit} not in ${twins ? "either word" : "the word"} start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`
             : "Nothing is ruled out on the keyboard until the board rules it out."}
       </p>
     </>

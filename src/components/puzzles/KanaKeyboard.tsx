@@ -4,10 +4,14 @@ import { cycleMark, toggleSize, type KanaMark } from "@/lib/puzzles/gomojiKana/k
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { keyLabel } from "@/lib/puzzles/keyMarks";
 
+import { FUTAGO_KEY, FUTAGO_KEY_LETTER, FutagoKeyHalves, futagoKeyWords } from "./FutagoKey";
 import { KeyFace } from "./KeyFace";
 import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
 const NONE_COUNTED: ReadonlyMap<string, number> = new Map();
+
+/** A split key's halves, in words, for a screen reader. */
+const MARK_WORDS: Record<KanaMark, string> = { hit: "in its place", near: "in the word elsewhere", kin: "its column is here", miss: "not in it" };
 
 /**
  * The gojūon, a column to a consonant and five kana down each, read left to
@@ -32,10 +36,12 @@ const COLUMNS: readonly (readonly string[])[] = [
  * the three keys that make the rest of them from the kana just typed — 小 for
  * small or large (つ ⇄ っ), ゛゜ for its mark (は → ば → ぱ → は) — as a phone's
  * kana keyboard does. A key is coloured by what the guesses have said about
- * its kana in any size or mark: found, in the word, or out.
+ * its kana in any size or mark: found, in the word, or out — and for a
+ * Futago (`futago.ts`), in two halves, one board's colour each (`FutagoKey`).
  */
 export function KanaKeyboard({
   known,
+  split = null,
   counted = NONE_COUNTED,
   typed,
   last = null,
@@ -50,6 +56,8 @@ export function KanaKeyboard({
 }: {
   /** The best each base kana has been marked, by `kanaBase`. */
   known: ReadonlyMap<string, KanaMark>;
+  /** A Futago's two boards' marks by base kana, the first board's on the left half of each key; null for one word. */
+  split?: readonly [ReadonlyMap<string, KanaMark>, ReadonlyMap<string, KanaMark>] | null;
   /** How many of each base kana the guesses prove the word holds (`knownCounts` by `kanaBase`): a count on the kana from two. */
   counted?: ReadonlyMap<string, number>;
   /** How often each kana is in the row being typed, by base (`typedCounts`): its key is ringed, and counted from two; ぱ rings は. */
@@ -90,21 +98,30 @@ export function KanaKeyboard({
             const mark = known.get(kana);
             const count = typed.get(kana) ?? 0;
             const proven = counted.get(kana) ?? 0;
+            const halves = split === null ? null : ([split[0].get(kana), split[1].get(kana)] as const);
+            const face = halves !== null ? FUTAGO_KEY : mark === undefined ? WORD_KEY_PLAIN : marked[mark];
             return (
               <button
                 key={kana}
                 type="button"
-                className={`${key} ${mark === undefined ? WORD_KEY_PLAIN : marked[mark]} ${count > 0 ? WORD_KEY_TYPED : ""} relative`}
+                className={`${key} ${face} ${count > 0 ? WORD_KEY_TYPED : ""} relative`}
                 onClick={() => onKana(kana)}
                 disabled={disabled}
                 {...inert}
                 data-testid={`kana-key-${kana}`}
-                data-mark={mark ?? ""}
+                data-mark={halves === null ? (mark ?? "") : halves.map((each) => each ?? "").join("|")}
                 data-typed={count > 0 ? "true" : undefined}
                 data-known-count={proven >= 2 ? proven : undefined}
-                aria-label={keyLabel(kana, proven, count)}
+                aria-label={halves === null ? keyLabel(kana, proven, count) : `${keyLabel(kana, proven, count) ?? kana}, ${futagoKeyWords(halves, MARK_WORDS)}`}
               >
-                <KeyFace letter={kana} known={proven} />
+                {halves === null ? null : <FutagoKeyHalves marks={halves} marked={marked} />}
+                {halves === null || (halves[0] === undefined && halves[1] === undefined) ? (
+                  <KeyFace letter={kana} known={proven} />
+                ) : (
+                  <span className={FUTAGO_KEY_LETTER}>
+                    <KeyFace letter={kana} known={proven} />
+                  </span>
+                )}
                 {count > 1 ? (
                   <span className={WORD_KEY_COUNT} aria-hidden="true" data-testid="key-count">
                     {count}

@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 
 import { guessesTaken } from "../gomoji/guessesTaken";
 import type { PuzzleKind } from "../puzzles.types";
-import { givensOfWord, hiddenWordOf } from "../dailyWords/dailyAddress";
+import { givensOfWord } from "../dailyWords/dailyAddress";
 import { dailyWordSeed, dayAfter, dayStart } from "../dailyWords/dailyDay";
+import { hiddenWordsOf } from "../gomoji/futago";
+import { futagoDailySeed } from "../gomoji/futagoSeed";
 import type { DailyFastest, DailyStatus } from "../dailyWords/dailyWords.types";
 
 /**
@@ -21,35 +23,49 @@ import type { DailyFastest, DailyStatus } from "../dailyWords/dailyWords.types";
 /**
  * The reader's standing with each length's word today: the solves they
  * finished today of this kind (on `[memberId, finishedAt]`), matched to the
- * words by what they hid, and the runs they left at today's seed.
+ * words by what they hid, and the runs they left at today's seed — and the
+ * same of today's Futago, two words a length (`futago.ts`), from the same two
+ * reads, its runs at the day's Futago seed.
  */
 export async function dailyStatusesOf(
   memberId: string,
   kind: PuzzleKind,
   day: string,
   words: ReadonlyMap<number, string>,
-): Promise<Map<number, DailyStatus>> {
+  pairs: ReadonlyMap<number, readonly string[]> = new Map(),
+): Promise<{ one: Map<number, DailyStatus>; two: Map<number, DailyStatus> }> {
   const [solves, runs] = await Promise.all([
     prisma.puzzleSolve.findMany({
       where: { memberId, kind, finishedAt: { gte: dayStart(day), lt: dayStart(dayAfter(day)) } },
       orderBy: { finishedAt: "asc" },
       select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, elapsedMs: true },
     }),
-    prisma.puzzleRun.findMany({ where: { memberId, kind, seed: dailyWordSeed(day) }, select: { size: true } }),
+    prisma.puzzleRun.findMany({ where: { memberId, kind, seed: { in: [dailyWordSeed(day), futagoDailySeed(day)] } }, select: { size: true, seed: true } }),
   ]);
-  const statuses = new Map<number, DailyStatus>();
-  for (const [size, word] of words) {
-    const played = solves.filter((solve) => solve.size === size && hiddenWordOf(kind, size, solve.givens) === word);
-    // Found beats missed: a word found on a second go is found.
-    const found = played.find((solve) => solve.solved);
-    const any = found ?? played[0];
-    if (any !== undefined) {
-      const guesses = guessesTaken(kind, size, any.level, any.givens, any.answer);
-      statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses, solveId: any.id } : { state: "missed", guesses });
-    } else if (runs.some((run) => run.size === size)) statuses.set(size, { state: "going" });
-    else statuses.set(size, { state: "notYet" });
-  }
-  return statuses;
+  const standing = (sought: ReadonlyMap<number, readonly string[]>, seed: number) => {
+    const statuses = new Map<number, DailyStatus>();
+    for (const [size, hidden] of sought) {
+      const played = solves.filter((solve) => solve.size === size && sameWords(hiddenWordsOf(kind, size, solve.givens)?.words ?? null, hidden));
+      // Found beats missed: a word found on a second go is found.
+      const found = played.find((solve) => solve.solved);
+      const any = found ?? played[0];
+      if (any !== undefined) {
+        const guesses = guessesTaken(kind, size, any.level, any.givens, any.answer);
+        statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses, solveId: any.id } : { state: "missed", guesses });
+      } else if (runs.some((run) => run.size === size && run.seed === seed)) statuses.set(size, { state: "going" });
+      else statuses.set(size, { state: "notYet" });
+    }
+    return statuses;
+  };
+  return {
+    one: standing(new Map([...words].map(([size, word]) => [size, [word]])), dailyWordSeed(day)),
+    two: standing(pairs, futagoDailySeed(day)),
+  };
+}
+
+/** Whether a solve hid exactly these words, in this order. */
+function sameWords(hid: readonly string[] | null, sought: readonly string[]): boolean {
+  return hid !== null && hid.length === sought.length && hid.every((word, at) => word === sought[at]);
 }
 
 /** How many of the fastest a day's page shows at each length. */

@@ -1,12 +1,12 @@
 import { gamePath, playPath } from "@/lib/gomoku/slugs";
 
 import { DAILY_PARAM } from "../daily";
-import { decodeHidden, languageOf } from "../gomoji/code";
-import { decodeKanaGivens, toKatakana } from "../gomojiKana/kanaCode";
+import { toKatakana } from "../gomojiKana/kanaCode";
 import { puzzleQuery } from "../puzzleAddress";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { dailyWordSeed } from "./dailyDay";
+import { futagoDailySeed } from "../gomoji/futagoSeed";
 
 /**
  * WHERE THE DAILY WORDS ARE, and how a kept solve is matched to a day's word.
@@ -41,10 +41,14 @@ export function todayPlayPath(kind: PuzzleKind, size: number): string {
   return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null })}&${DAILY_PARAM}=1`;
 }
 
-/** The word a kept solve's givens hid, as the pools write it (lower case, or hiragana), or null for givens that are not a word. */
-export function hiddenWordOf(kind: PuzzleKind, size: number, givens: string): string | null {
-  if (kind === "gomojiKana") return decodeKanaGivens(givens, size)?.word ?? null;
-  return decodeHidden(givens, size, languageOf(kind));
+/** The address a day's Futago is played at, at a length: its two words, at the day's Futago seed (`futagoDailySeed`). */
+export function dailyFutagoPlayPath(kind: PuzzleKind, size: number, day: string): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: futagoDailySeed(day), twins: true })}`;
+}
+
+/** Today's Futago at a length, for a page drawn before anybody asked: `?daily=1` with `twins=1` turns into today's Futago seed. */
+export function todayFutagoPlayPath(kind: PuzzleKind, size: number): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, twins: true })}&${DAILY_PARAM}=1`;
 }
 
 /** The givens a solve of this word was kept with, for a query: exactly, or as the start before a kana puzzle's grey word. */
