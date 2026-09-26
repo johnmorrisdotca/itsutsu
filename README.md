@@ -155,6 +155,14 @@ from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an
 English borrowing (`scripts/word-lists-fr-de.mjs`); kana from JMdict.
+Beside them, **Kumimoji** 組文字, our own solo take on the anagram-grid race
+games: a hand of seven or eleven letter tiles laid out as one crossword on a
+table with no board, which grows and zooms to fit (`tableView.ts`), drawing
+one more tile whenever the hand is used and the grid is sound, until the bag
+of forty or fifty is used. The bag is drawn from the 144-tile letter mix
+(`TILE_MIX`) and laid out once as a crossword before it is dealt, so every
+game can be finished; any SCOWL word of two to fifteen letters counts
+(`scripts/tile-words.mjs`), and the list is fetched only when a game opens.
 
 Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's
 page shows the fastest solves at each size and level (`/standings`) and a
