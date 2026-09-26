@@ -96,7 +96,8 @@ export function GomojiGrid({
 }) {
   const tiles = style === WORD_STYLES.tiles;
   // A board of stones is a whole board, play centred across on whole squares and a spare row over to the top (`playPlace`); tiles are paper.
-  const { span, top, left } = tiles ? { span: rows, top: 0, left: 0 } : playPlace(size, rows);
+  // Tiles stand centred across the board (`justify-center` below), so the play area's border starts where they do, not at the board's edge.
+  const { span, top, left } = tiles ? { span: rows, top: 0, left: (rows - size) / 2 } : playPlace(size, rows);
   const theme = feltOrWoodTheme(appearance);
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
