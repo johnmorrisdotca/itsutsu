@@ -53,8 +53,8 @@ describe("which rating row is the poster's", () => {
 
 describe("what a poster's line shows", () => {
   it("shows the ladder rating with its tier, and the level their total stands on", () => {
-    const standing = standingOf({ profile: profile(), member: { xp: xpForLevel(7), country: "JP" } });
-    expect(standing).toEqual({ rating: { rating: 1712, pool: "people", tier: "established" }, level: 7, xp: xpForLevel(7), country: "JP" });
+    const standing = standingOf({ profile: profile(), member: { xp: xpForLevel(7), country: "JP", ip: 140 } });
+    expect(standing).toEqual({ rating: { rating: 1712, pool: "people", tier: "established" }, level: 7, xp: xpForLevel(7), ip: 140, country: "JP" });
   });
 
   /*
@@ -80,5 +80,7 @@ describe("what a poster's line shows", () => {
 
   it("shows no level for a name with no member behind it, who has no total to stand on", () => {
     expect(standingOf({ profile: profile({ memberId: null }), member: null }).level).toBeNull();
+    // Nor any IP: a nought would claim a member who has won nothing.
+    expect(standingOf({ profile: profile({ memberId: null }), member: null }).ip).toBeNull();
   });
 });

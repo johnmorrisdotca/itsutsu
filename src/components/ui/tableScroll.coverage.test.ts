@@ -44,6 +44,10 @@ const MAY_NOT_SCROLL = new Map<string, string>([
     "xpColumn.coverage.test.ts",
     "A gate, not a page: it holds the STRING \"<table\" to find hand-built tables in other files.",
   ],
+  [
+    "ipColumn.coverage.test.ts",
+    "A gate, not a page: it holds the STRING \"<table\" to find hand-built tables in other files.",
+  ],
 ]);
 
 /** Every source file under `src/`, since a table may be written in a page or a component alike. */

@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
+import { LISTED_ALREADY, ipByGameOf } from "@/lib/points/ipBoards";
 import { playerKey } from "./playerKey";
 import { tierFor, type GameScore, type RatingTier } from "./elo";
 import { POOL_COLUMNS, RATING_POOLS, standingIn, type RatingPool } from "./pools";
@@ -231,6 +232,8 @@ export type VariantChampion = {
   players: number;
   /** Rated games played under it. A game moves two standings, so it is counted once here. */
   games: number;
+  /** The IP the leader has won at this game, once `fetchChampions` has read it; null with no member behind the name. */
+  ip: number | null;
 };
 
 /**
@@ -249,6 +252,7 @@ export function championsOf(standings: readonly VariantStanding[]): Map<string, 
         leader: { ...standing, xp: null },
         players: 1,
         games: standing.ratedGames,
+        ip: null,
       });
     } else {
       entry.players += 1;
@@ -282,10 +286,16 @@ export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
    * after the rating on every one of those. Null stays null for a name with no
    * member behind it; `xpShown` answers null for a program.
    */
-  const xp = await xpByMemberId([...champions.values()].map((one) => one.leader.memberId));
+  const leaders = [...champions.values()].map((one) => one.leader.memberId);
+  // And what each has won at the game they lead, for the IP column after XP: one grouped query.
+  const [xp, ip] = await Promise.all([
+    xpByMemberId(leaders),
+    ipByGameOf(leaders.flatMap((id) => (id === null ? [] : [id])), LISTED_ALREADY),
+  ]);
   for (const champion of champions.values()) {
     const { memberId } = champion.leader;
     champion.leader.xp = memberId === null ? null : (xp.get(memberId) ?? null);
+    champion.ip = memberId === null ? null : (ip.get(memberId)?.get(champion.variant) ?? 0);
   }
   return champions;
 }

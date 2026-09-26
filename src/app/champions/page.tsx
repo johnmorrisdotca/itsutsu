@@ -11,7 +11,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
-import { XpCell } from "@/components/players/recordTrailing";
+import { IP_HEAD_TITLE, IpCell, XpCell, championIp } from "@/components/players/recordTrailing";
 import { LevelName } from "@/components/xp/LevelName";
 import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { levelShown } from "@/lib/xp/levelShown";
@@ -44,7 +44,7 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
         </span>
       </td>
       {champion === undefined ? (
-        <td className="py-1.5 pr-3 text-xs text-muted" colSpan={6}>
+        <td className="py-1.5 pr-3 text-xs text-muted" colSpan={7}>
           No rated games yet
         </td>
       ) : (
@@ -74,6 +74,8 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
             xp={champion.leader.xp}
             blankBecause={champion.leader.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined}
           />
+          {/* What the champion has won at this game, leading to those games. */}
+          <IpCell ip={championIp(champion)} />
           <td className="py-1.5 pr-3">
             <TierMark tier={champion.leader.tier} />
           </td>
@@ -161,6 +163,9 @@ export default async function ChampionsPage({ searchParams }: PageProps<"/champi
                 <th className="py-1 pr-3" title="Experience 経験 — what this member has earned on Itsutsu">
                   XP
                 </th>
+                <th className="py-1 pr-3" title={IP_HEAD_TITLE}>
+                  IP
+                </th>
                 <th className="py-1 pr-3">Tier</th>
                 <th className="py-1 pr-3">Players</th>
                 <th className="py-1 pr-3">Games</th>
@@ -170,7 +175,7 @@ export default async function ChampionsPage({ searchParams }: PageProps<"/champi
             {GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).map((family) => (
               <tbody key={family.title} data-testid="champions-family">
                 <tr>
-                  <th colSpan={7} className="pt-5 pb-1 text-left text-base font-semibold">
+                  <th colSpan={8} className="pt-5 pb-1 text-left text-base font-semibold">
                     <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
                   </th>
                 </tr>

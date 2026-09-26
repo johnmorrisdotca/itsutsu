@@ -7,6 +7,7 @@ import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
 import type { LadderStanding, VariantStanding } from "@/lib/rating/variantRatings";
 import { levelShown } from "@/lib/xp/levelShown";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { ReactNode } from "react";
 
 import { XP_BLANK_BECAUSE } from "./players.constants";
@@ -42,8 +43,17 @@ export function StandingsTable({
   actionsLabel = "",
   testId = "standings-table",
   empty = "Nobody has a rated game of this yet.",
+  game,
+  ip,
 }: {
   standings: LadderStanding[];
+  /**
+   * The game this ladder is, and what each member on it has won at it: the IP
+   * column after XP is this game's, and leads to the games that paid it. Read
+   * by the page in one query over both ladders' members (`ipTotalsOf`).
+   */
+  game: RuleVariant;
+  ip: ReadonlyMap<string, number>;
   /**
    * Which ladder these figures came from, so the counts lead to the games
    * behind THEM and not to a wider set.
@@ -97,6 +107,7 @@ export function StandingsTable({
         level: standing.xp === null ? null : levelShown({ xp: standing.xp }),
         xp: standing.xp,
         xpBlankBecause: standing.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined,
+        ip: standing.memberId === null ? null : { ip: ip.get(standing.memberId) ?? 0, memberId: standing.memberId, game },
         actions: actions === undefined ? undefined : actions(standing),
       }))}
       columns={{ rank: true, tier: true, actions: actions === undefined ? undefined : actionsLabel }}

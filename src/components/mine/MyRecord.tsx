@@ -212,7 +212,7 @@ export async function MyRecord({ name }: { name: string }) {
           would be the same number down the column — a figure about the reader,
           not about the row. Their standing is the XP tab beside this one.
         */
-        columns={{ tier: true, xp: false }}
+        columns={{ tier: true, xp: false, ip: false }}
         testId="me-standings"
         empty={
           <>
