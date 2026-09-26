@@ -17,6 +17,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/TowerRing.tsx",
   "src/components/puzzles/BlackAndWhiteGrid.tsx",
   "src/components/puzzles/GomojiGrid.tsx",
+  "src/components/puzzles/TsunagiGrid.tsx",
   "src/components/puzzles/puzzles.constants.ts",
   "src/lib/puzzles/numberPlace/generate.ts",
   "src/lib/puzzles/hiddenStones/generate.ts",

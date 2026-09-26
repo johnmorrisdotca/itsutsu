@@ -52,6 +52,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   // Gomoji Mot and Gomoji Wort: the same shape of picture, French's and German's own words.
   { kind: "gomojiMot", size: 5, level: "easy", seed: 20260925, fill: 2 },
   { kind: "gomojiWort", size: 5, level: "easy", seed: 20260925, fill: 2 },
+  // A 6×6 Tsunagi, level 8 (in the first row, open to anybody), all but two of its lines drawn and one of those begun: marbles, lines and washed cells.
+  { kind: "tsunagi", size: 6, level: "easy", seed: 8, fill: 2 },
 ];
 
 test.describe("puzzle screenshots", () => {
@@ -121,6 +123,25 @@ test.describe("puzzle screenshots", () => {
         await tapKana(page, target.slice(0, 2).join(""));
         // The picture is the grid alone, with its keys put away again.
         await page.getByTestId("word-keys-toggle").click();
+      } else if (scene.kind === "tsunagi") {
+        // Drawn by dragging, as a player draws: the whole board on screen, then each line through its cells' centres.
+        await page.setViewportSize({ width: 1280, height: 1100 });
+        const box = (await page.getByTestId("tsunagi-board").boundingBox())!;
+        const centre = (cell: number) => ({
+          x: box.x + (((cell % scene.size) + 0.5) * box.width) / scene.size,
+          y: box.y + ((Math.floor(cell / scene.size) + 0.5) * box.height) / scene.size,
+        });
+        const letters = [...new Set([...puzzle.givens].filter((char) => char !== "."))];
+        for (const [at, letter] of letters.entries()) {
+          if (at >= letters.length - scene.fill + 1) break;
+          const line = tsunagiLine(puzzle.givens, puzzle.solution, scene.size, letter);
+          const cells = at === letters.length - scene.fill ? line.slice(0, Math.ceil(line.length / 2)) : line;
+          await page.mouse.move(centre(cells[0]!).x, centre(cells[0]!).y);
+          await page.mouse.down();
+          for (const cell of cells.slice(1)) await page.mouse.move(centre(cell).x, centre(cell).y, { steps: 3 });
+          await page.mouse.up();
+          filled += 1;
+        }
       } else if (scene.kind === "blackAndWhite") {
         const givens = decodeBlackAndWhite(puzzle.givens, scene.size)!;
         const solution = decodeBlackAndWhite(puzzle.solution, scene.size)!;
@@ -168,3 +189,16 @@ test.describe("puzzle screenshots", () => {
     });
   }
 });
+
+/** A Tsunagi pair's line in a level's answer, from its first stone to its second. */
+function tsunagiLine(layout: string, answer: string, size: number, letter: string): number[] {
+  const line = [layout.indexOf(letter)];
+  for (;;) {
+    const at = line[line.length - 1]!;
+    const next = [at - size, at + 1, at + size, at - 1].find(
+      (cell) => cell >= 0 && cell < size * size && answer[cell] === letter && !line.includes(cell) && (Math.abs(cell - at) === size || Math.floor(cell / size) === Math.floor(at / size)),
+    );
+    if (next === undefined) return line;
+    line.push(next);
+  }
+}
