@@ -26,12 +26,25 @@ const AT = `/games/${PUZZLE_SLUGS.gomoji}`;
 test.beforeAll(prepareEveryPuzzle);
 
 /** A real five-letter word sharing no letter with either hidden word, so every key it presses must turn grey on both halves. */
-function sharedWithNeither(words: readonly string[]): string {
-  const found = ["jumpy", "fizzy", "whisk", "gawky", "vouch", "blitz", "chump", "fjord", "mound", "crypt", "dwarf", "nymph"].find(
+function sharedWithNeither(words: readonly string[]): string | undefined {
+  return ["jumpy", "fizzy", "whisk", "gawky", "vouch", "blitz", "chump", "fjord", "mound", "crypt", "dwarf", "nymph"].find(
     (each) => isWord(each, 5) && [...each].every((letter) => words.every((word) => !word.includes(letter))),
   );
-  if (found === undefined) throw new Error(`no miss for ${words.join(" and ")}`);
-  return found;
+}
+
+/**
+ * A fresh Futago whose two words leave a miss to guess. Some pairs leave none
+ * ("bring" and "cruel" between them use every vowel the list has), which made
+ * a random seed fail now and then; so draw until one does, still fresh.
+ */
+function futagoWithAMiss(): { seed: number; puzzle: ReturnType<typeof generatePuzzle>; words: [string, string]; miss: string } {
+  for (;;) {
+    const seed = freshFutagoSeed();
+    const puzzle = generatePuzzle("gomoji", 5, "easy", seed);
+    const words = hiddenWordsOf("gomoji", 5, puzzle.givens)!.words as [string, string];
+    const miss = sharedWithNeither(words);
+    if (miss !== undefined) return { seed, puzzle, words, miss };
+  }
 }
 
 test.describe("Gomoji Futago", () => {
@@ -53,16 +66,13 @@ test.describe("Gomoji Futago", () => {
   });
 
   test("a guess goes to both boards, each key shows both, and each board stops when its word is found", async ({ page }) => {
-    const seed = freshFutagoSeed();
-    const puzzle = generatePuzzle("gomoji", 5, "easy", seed);
-    const [first, second] = hiddenWordsOf("gomoji", 5, puzzle.givens)!.words as [string, string];
+    const { seed, words: [first, second], miss } = futagoWithAMiss();
     await page.goto(`${AT}/play?size=5&level=easy&seed=${seed}`);
     await ready(page, "puzzle-play");
     const boards = page.getByTestId("futago-board");
     await expect(boards).toHaveCount(2);
 
     // A miss on both: written on both boards, and every key it pressed grey on both halves.
-    const miss = sharedWithNeither([first, second]);
     await page.keyboard.type(miss);
     await page.keyboard.press("Enter");
     for (const at of [0, 1]) await expect(boards.nth(at).locator('[data-testid="word-tile"][data-row="0"]')).toHaveCount(5);
