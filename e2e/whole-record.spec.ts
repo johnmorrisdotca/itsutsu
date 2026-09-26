@@ -344,9 +344,11 @@ test.describe("how much of a record the page leads with", () => {
        * arrived and measured 218.6 after it: the link is a 16px gap and a 16px
        * line of small text, so the budget is 200 plus that one line. The link
        * stays where it is, under the XP it explains; moved below this warning it
-       * would read as explaining the snapshot.
+       * would read as explaining the snapshot. Then the IP line arrived between
+       * the standing and that link — "0 IP", or what they have won and where it
+       * stands — and measured 254.6: a 16px gap and one line of it, so 40 more.
        */
-      expect(noteBox!.y - figuresBox!.y).toBeLessThan(200 + 32);
+      expect(noteBox!.y - figuresBox!.y).toBeLessThan(200 + 32 + 40);
       /*
        * And the thing the pixel budget stands for, said directly: the warning
        * is in the headline, above the tabs, where it cannot become fine print.

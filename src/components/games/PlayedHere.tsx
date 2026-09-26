@@ -12,6 +12,7 @@ import { ignoredMemberIds } from "@/lib/social/ignores";
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PlayerLink } from "@/components/players/Standings";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, SECTION_TITLE, STRETCHED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
@@ -115,7 +116,12 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
     .map((name) => ({ name, member: members.get(playerKey(name)) }))
     .filter((one): one is { name: string; member: NamedMember } => one.member !== undefined);
   // Members under 13 who have not made the reader a buddy: no game is offered on their line (childReach.ts).
-  const closed = await closedToReader(mine, people.flatMap(({ member }) => (member.id ? [member.id] : [])));
+  // And the flag, badge and level beside every name on the panel, in one read (`nameTagsOf`).
+  const [closed, tags] = await Promise.all([
+    closedToReader(mine, people.flatMap(({ member }) => (member.id ? [member.id] : []))),
+    nameTagsOf([...played.flatMap((game) => [game.blackMemberId, game.whiteMemberId]), ...people.map(({ member }) => member.id)]),
+  ]);
+  const tagOf = (id: string | null | undefined) => (id ? tags.get(id) : undefined);
   /*
    * NOT HIDDEN WHEN EMPTY. This used to `return null` here, which is the thing
    * John objected to: "empty tables are fine! show the table. Show nothing has
@@ -169,9 +175,9 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
           */
           <li key={game.id} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md py-1.5`}>
             <span className="min-w-0 truncate">
-              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} className={RAISED_LINK} />
+              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} className={RAISED_LINK} tag={tagOf(game.blackMemberId)} />
               <span className="px-1 text-muted">vs</span>
-              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} className={RAISED_LINK} />
+              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} className={RAISED_LINK} tag={tagOf(game.whiteMemberId)} />
             </span>
             <span className="flex shrink-0 items-center gap-2">
               <Link
@@ -200,7 +206,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
                   member row behind them by the filter above, so there is no
                   empty seat to describe and no fallback to invent.
                 */}
-                <PlayerLink name={name} />
+                <PlayerLink name={name} memberId={member.id} tag={tagOf(member.id)} />
                 <PlayerActions
                   compact
                   testId="played-here-actions"

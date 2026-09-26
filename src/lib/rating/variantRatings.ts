@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
+import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { LISTED_ALREADY, ipByGameOf } from "@/lib/points/ipBoards";
 import { playerKey } from "./playerKey";
 import { tierFor, type GameScore, type RatingTier } from "./elo";
@@ -70,7 +71,11 @@ export type VariantStanding = {
  * player's OWN standings (`fetchVariantStandings`) stay plain `VariantStanding`
  * rows: on that table the rows are games and the person is the page.
  */
-export type LadderStanding = VariantStanding & { xp: number | null };
+export type LadderStanding = VariantStanding & {
+  xp: number | null;
+  /** The flag, badge and level beside the name (`nameTagsOf`), read with the XP; null with no member behind it. */
+  tag: NameTag | null;
+};
 
 type StandingRow = {
   key: string;
@@ -149,10 +154,11 @@ export async function fetchVariantLeaders(
   const rows = await prisma.playerVariantRating.findMany({ ...ladderQuery(variant, pool), take: limit });
   // The XP column, in one further read over this ladder's member ids — see
   // `xpOfMembers.ts` for why it is one query and what a null means.
-  const xp = await xpByMemberId(rows.map((row) => row.memberId));
+  const [xp, tags] = await Promise.all([xpByMemberId(rows.map((row) => row.memberId)), nameTagsOf(rows.map((row) => row.memberId))]);
   return rows.map((row) => ({
     ...toStanding(row, pool),
     xp: row.memberId === null ? null : (xp.get(row.memberId) ?? null),
+    tag: row.memberId === null ? null : (tags.get(row.memberId) ?? null),
   }));
 }
 
@@ -249,7 +255,7 @@ export function championsOf(standings: readonly VariantStanding[]): Map<string, 
       // `xp: null` until `fetchChampions` reads it: a standing alone cannot know it.
       champions.set(standing.variant, {
         variant: standing.variant,
-        leader: { ...standing, xp: null },
+        leader: { ...standing, xp: null, tag: null },
         players: 1,
         games: standing.ratedGames,
         ip: null,
@@ -288,14 +294,16 @@ export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
    */
   const leaders = [...champions.values()].map((one) => one.leader.memberId);
   // And what each has won at the game they lead, for the IP column after XP: one grouped query.
-  const [xp, ip] = await Promise.all([
+  const [xp, ip, tags] = await Promise.all([
     xpByMemberId(leaders),
     ipByGameOf(leaders.flatMap((id) => (id === null ? [] : [id])), LISTED_ALREADY),
+    nameTagsOf(leaders),
   ]);
   for (const champion of champions.values()) {
     const { memberId } = champion.leader;
     champion.leader.xp = memberId === null ? null : (xp.get(memberId) ?? null);
     champion.ip = memberId === null ? null : (ip.get(memberId)?.get(champion.variant) ?? 0);
+    champion.leader.tag = memberId === null ? null : (tags.get(memberId) ?? null);
   }
   return champions;
 }

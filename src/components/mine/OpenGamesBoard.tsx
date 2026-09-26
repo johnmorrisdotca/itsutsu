@@ -23,6 +23,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { byGameName, sitDownHref, waitingRoomSays } from "./waitingRoom";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 
 /** How many columns the table has, for the span of its one empty row. */
 const COLUMNS = 8;
@@ -173,6 +174,8 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
           name={poster.name}
           memberId={poster.memberId}
           fallback={game.openSeat === "black" ? SEAT_DISPLAY.two.label : SEAT_DISPLAY.one.label}
+          // Flag beside the name as on every list; the level is drawn after it, below, as it always was here.
+          tag={standing === null || poster.memberId === null ? undefined : { country: standing.country, kind: MEMBER_KINDS.member, level: null }}
         />
         {standing?.level != null ? (
           <LevelName level={standing.level} compact className="ml-2 text-muted" testId="open-game-level" />

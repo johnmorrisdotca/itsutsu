@@ -11,6 +11,7 @@ import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 import { solveCountsOf } from "@/lib/puzzles/server/puzzleRecord";
 
 import { PlayerName } from "./PlayerName";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
 /** The most games in progress a player's page lists; the rest are a click on their own page's record away. */
 const GOING_SHOWN = 10;
@@ -51,6 +52,8 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
     }),
     solveCountsOf(memberId),
   ]);
+  // The flag, badge and level beside each opponent's name, as on every list: one read for the panel.
+  const tags = await nameTagsOf(going.flatMap((game) => [game.blackMemberId, game.whiteMemberId]));
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-plays">
@@ -83,7 +86,7 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
                   <span className="flex min-w-0 items-center gap-2">
                     <GameThumb variant={game.variant} size="small" />
                     <span>
-                      <GameName variant={game.variant} /> · vs <PlayerName name={other.name} memberId={other.id} fallback="somebody" />
+                      <GameName variant={game.variant} /> · vs <PlayerName name={other.name} memberId={other.id} fallback="somebody" tag={other.id === null ? undefined : tags.get(other.id)} />
                     </span>
                   </span>
                   <Link href={matchPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline" data-testid="player-going-watch">

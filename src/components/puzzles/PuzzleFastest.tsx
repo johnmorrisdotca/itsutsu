@@ -8,7 +8,9 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { mySolvePath, setUpPath, solvePath, standingsPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { type FastestBoard, fastestSolvesOf, memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { type FastestBoard, fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 import { PUZZLE_RECORD_SORTS, puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 
 import { sizeWord } from "./puzzles.constants";
@@ -55,11 +57,11 @@ export async function PuzzleFastest({ kind, title, whole = false }: { kind: Puzz
     );
   }
   const [board, me] = await Promise.all([fastestSolvesOf(kind), currentMemberId()]);
-  const names = await memberNamesOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
+  const { names, tags } = await namesAndTagsOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-fastest">
       {heading}
-      <FastestTable kind={kind} board={board} names={names} whole={whole} me={me} />
+      <FastestTable kind={kind} board={board} names={names} tags={tags} whole={whole} me={me} />
       {whole ? null : (
         <p className="text-sm">
           <Link href={standingsPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="puzzle-fastest-all">
@@ -90,12 +92,15 @@ export function FastestTable({
   kind,
   board,
   names,
+  tags,
   whole,
   me,
 }: {
   kind: PuzzleKind;
   board: FastestBoard;
   names: Map<string, string>;
+  /** The flag, badge and level beside each name, read with the names. */
+  tags: ReadonlyMap<string, NameTag>;
   whole: boolean;
   me: string | null;
 }) {
@@ -184,7 +189,7 @@ export function FastestTable({
                     <tr key={solve.id} className="border-t border-rule align-baseline" data-testid="puzzle-fastest-rank" data-solve={solve.id} data-member={solve.memberId}>
                       <td className={`${cell} text-right text-muted tabular-nums`}>{index + 1}</td>
                       <td className={`${cell} whitespace-nowrap`}>
-                        <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />
+                        <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" tag={tags.get(solve.memberId)} />
                         {help.length === 0 ? null : (
                           <span className="block text-xs text-muted" data-testid="puzzle-fastest-help">
                             {help.join(" · ")}

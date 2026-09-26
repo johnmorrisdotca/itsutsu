@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/paging.cursor";
 import { prisma } from "@/lib/prisma";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { GAME_SORT_SPEC, gameSortChoice } from "./gameHistory.sort";
 import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
@@ -286,12 +287,17 @@ export async function fetchGameHistoryPage(
     select: SUMMARY_SELECT,
   });
   const { rows, next } = nextCursorFrom(GAME_SORT_SPEC, sort, read, pagination.pageSize);
-  const names = await currentNamesFor(rows);
+  // The names as they are now, and the flag, badge and level beside each: two reads for the page, never one a row.
+  const [names, tags] = await Promise.all([
+    currentNamesFor(rows),
+    nameTagsOf(rows.flatMap((row) => [row.blackMemberId, row.whiteMemberId])),
+  ]);
+  const tagOf = (id: string | null) => (id === null ? undefined : tags.get(id));
 
   return {
     pagination,
     next,
-    items: rows.map((row) => toSummary(row, names)),
+    items: rows.map((row) => ({ ...toSummary(row, names), blackTag: tagOf(row.blackMemberId), whiteTag: tagOf(row.whiteMemberId) })),
     facets: {
       byResult: Object.fromEntries(
         GAME_RESULTS.map((result) => [

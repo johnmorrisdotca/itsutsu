@@ -5,6 +5,8 @@ import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { PlayerName } from "@/components/players/PlayerName";
+import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { RowActions } from "@/components/ui/Controls";
 import { RAISED_LINK } from "@/components/ui/ui.constants";
 import { fetchBuddies } from "@/lib/social/buddies";
@@ -33,6 +35,8 @@ import { gamesWithEach } from "@/lib/social/buddyGames";
  */
 export async function BuddyList({ memberId }: { memberId: string }) {
   const [buddies, games] = await Promise.all([fetchBuddies(memberId), gamesWithEach(memberId)]);
+  // The flag, badge and level beside each name, as on the members list, in one read for the page.
+  const tags = await nameTagsOf(buddies.map((buddy) => buddy.id));
 
   if (buddies.length === 0) {
     /*
@@ -61,7 +65,11 @@ export async function BuddyList({ memberId }: { memberId: string }) {
         The people you play, most recently seen first. {buddies.length}{" "}
         {buddies.length === 1 ? "person" : "people"}.
       </p>
-      <ul className="flex flex-col">
+      {/*
+        The table's size and the table's name: John, 2026-09-26, "Buddies has
+        totally different name formatting. Larger font and no flags etc..."
+      */}
+      <ul className="flex flex-col text-sm">
         {buddies.map((buddy) => {
           const with_ = games.get(buddy.id) ?? { going: 0, yours: 0 };
           return (
@@ -72,7 +80,9 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               data-member={buddy.id}
             >
               <RecencyMark recency={buddy.recency} />
-              <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} country={buddy.country} />
+              <span>
+                <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} tag={tags.get(buddy.id) ?? { country: buddy.country, kind: MEMBER_KINDS.member, level: null }} />
+              </span>
               <span className="text-xs text-muted">
                 {buddy.city}
                 {buddy.localTime !== null ? `${buddy.city ? " · " : ""}${buddy.localTime} there` : ""}

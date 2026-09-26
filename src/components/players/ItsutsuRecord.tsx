@@ -156,6 +156,7 @@ export function ItsutsuRecord({
                       memberId={opponents?.members.get(playerKey(game.opponent))?.id}
                       fallback="anonymous"
                       testId="player-opponent"
+                      tag={opponents?.tags?.get(opponents.members.get(playerKey(game.opponent))?.id ?? "")}
                     />
                   ) : (
                     "anonymous"

@@ -3,6 +3,7 @@ import Link from "@/components/ui/Link";
 import { GameThumb } from "@/components/games/GameThumb";
 import { Paired } from "@/components/i18n/Paired";
 import { PlayerLink } from "@/components/players/Standings";
+import { withoutLevel } from "@/lib/xp/nameTag.types";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
 import { IP_HEAD_TITLE, IpCell, XpCell, championIp } from "@/components/players/recordTrailing";
 import { LevelName } from "@/components/xp/LevelName";
@@ -65,7 +66,7 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
                     <td className="py-1.5 pr-3">
                       {/* The leader's level beside the name, as on the full table and every table of players. */}
                       <span className="flex min-w-0 items-baseline gap-2">
-                        <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
+                        <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} tag={withoutLevel(champion.leader.tag ?? undefined)} />
                         {champion.leader.xp === null ? null : (
                           <LevelName level={levelShown({ xp: champion.leader.xp }) ?? 1} compact className="text-muted" testId="champion-level" />
                         )}

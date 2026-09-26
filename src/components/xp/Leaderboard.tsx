@@ -280,7 +280,7 @@ export function Leaderboard({
                 >
                   <td className={`${CELL} text-muted`}>{from + index + 1}</td>
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={row.name} memberId={row.id} fallback="A member with no name yet" country={row.country} kind={row.kind} />
+                    <PlayerName name={row.name} memberId={row.id} fallback="A member with no name yet" tag={{ country: row.country, kind: row.kind, level: null }} />
                     {you ? (
                       <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
                     ) : null}

@@ -10,7 +10,8 @@ import { ALL_TIME, monthOf, weekOf, type RecordPeriod } from "@/lib/history/reco
 import { IP_SHOWN, IP_WHOLE } from "@/lib/points/points.constants";
 import { type IpRow, type IpScope, ipBoardOf } from "@/lib/points/ipBoards";
 import { startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
-import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 
@@ -86,14 +87,14 @@ export async function IpBoard({
     ipBoardOf(scope, startOfWeek(), take, reader),
   ]);
   const ids = [...allTime, ...thisMonth, ...thisWeek].map((row) => row.memberId);
-  const [names, xp] = await Promise.all([memberNamesOf(ids), xpByMemberId(ids)]);
+  const [{ names, tags }, xp] = await Promise.all([namesAndTagsOf(ids), xpByMemberId(ids)]);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid={testId}>
       {heading}
       <div className={`grid gap-4 ${stacked ? "" : "md:grid-cols-3"}`}>
-        <IpTable label="All time" kanji="通算" rows={allTime} names={names} xp={xp} playHref={playHref} scope={scope} period={ALL_TIME} testId={`${testId}-all`} />
-        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} xp={xp} playHref={playHref} scope={scope} period={{ month: monthOf(startOfMonth()), week: null }} testId={`${testId}-month`} />
-        <IpTable label="This week" kanji="今週" rows={thisWeek} names={names} xp={xp} playHref={playHref} scope={scope} period={{ month: null, week: weekOf(startOfWeek()) }} testId={`${testId}-week`} />
+        <IpTable label="All time" kanji="通算" rows={allTime} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={ALL_TIME} testId={`${testId}-all`} />
+        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={{ month: monthOf(startOfMonth()), week: null }} testId={`${testId}-month`} />
+        <IpTable label="This week" kanji="今週" rows={thisWeek} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={{ month: null, week: weekOf(startOfWeek()) }} testId={`${testId}-week`} />
       </div>
       <p className="text-xs text-muted">
         IP, Itsutsu Points, is won by results alone: a win pays the most the game is worth, a draw half, and a close loss
@@ -113,6 +114,7 @@ function IpTable({
   kanji,
   rows,
   names,
+  tags,
   xp,
   playHref,
   scope,
@@ -123,6 +125,8 @@ function IpTable({
   kanji: string;
   rows: readonly IpRow[];
   names: Map<string, string>;
+  /** The flag, badge and level beside each name, read with the names. */
+  tags: ReadonlyMap<string, NameTag>;
   xp: Map<string, number | null>;
   playHref: string;
   /** What the board counts, which decides where each figure leads (`IpFigure`). */
@@ -166,7 +170,7 @@ function IpTable({
                   <tr key={row.memberId} className="border-t border-rule" data-testid="ip-row" data-member={row.memberId} data-ip={row.ip}>
                     <td className="py-1 text-muted tabular-nums">{at + 1}</td>
                     <td className="py-1">
-                      <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" />
+                      <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" tag={tags.get(row.memberId)} />
                     </td>
                     <td className="py-1 text-right font-mono font-semibold tabular-nums">
                       <IpFigure scope={scope} memberId={row.memberId} ip={row.ip} month={period.month} week={period.week} testId="ip-row-figure" />

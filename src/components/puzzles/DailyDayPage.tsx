@@ -16,7 +16,8 @@ import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { fastestOfWord } from "@/lib/puzzles/server/dailyPlays";
-import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 import { SolveTime } from "./SolveTime";
 
 /**
@@ -36,7 +37,7 @@ export async function DailyDayPage({ kind, day, today }: { kind: PuzzleKind; day
     return word === undefined ? [] : [{ size, word }];
   });
   const boards = await Promise.all(lengths.map(async ({ size, word }) => ({ size, word, fastest: await fastestOfWord(kind, size, word) })));
-  const names = await memberNamesOf(boards.flatMap((board) => board.fastest.map((row) => row.memberId)));
+  const { names, tags } = await namesAndTagsOf(boards.flatMap((board) => board.fastest.map((row) => row.memberId)));
   const before = dayAfter(day, -1);
   return (
     <Page>
@@ -78,14 +79,14 @@ export async function DailyDayPage({ kind, day, today }: { kind: PuzzleKind; day
               </span>
             ) : null}
           </h2>
-          <FastestOfDay kind={kind} rows={board.fastest} names={names} playHref={dailyPlayPath(kind, board.size, day)} />
+          <FastestOfDay kind={kind} rows={board.fastest} names={names} tags={tags} playHref={dailyPlayPath(kind, board.size, day)} />
         </section>
       ))}
     </Page>
   );
 }
 
-function FastestOfDay({ kind, rows, names, playHref }: { kind: PuzzleKind; rows: readonly DailyFastest[]; names: Map<string, string>; playHref: string }) {
+function FastestOfDay({ kind, rows, names, tags, playHref }: { kind: PuzzleKind; rows: readonly DailyFastest[]; names: Map<string, string>; tags: ReadonlyMap<string, NameTag>; playHref: string }) {
   return (
     <div className={TABLE_SCROLL}>
       <table className="w-full text-sm" data-testid="daily-day-fastest-table">
@@ -115,7 +116,7 @@ function FastestOfDay({ kind, rows, names, playHref }: { kind: PuzzleKind; rows:
                 </td>
                 <td className="py-1 pr-2 tabular-nums text-muted">{row.guesses === null ? "—" : guessesText(row.guesses)}</td>
                 <td className="py-1 pr-2">
-                  <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" />
+                  <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" tag={tags.get(row.memberId)} />
                 </td>
                 <td className="py-1 text-muted">{PUZZLE_LEVEL_DISPLAY[row.level as PuzzleLevel]?.label ?? row.level}</td>
               </tr>

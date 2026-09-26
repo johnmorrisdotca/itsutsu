@@ -150,9 +150,9 @@ export function Row({
         */}
         {named ? (
           <span className="truncate font-medium">
-            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} country={tagOf(tags, game.blackMemberId)?.country} kind={tagOf(tags, game.blackMemberId)?.kind} />
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.blackMemberId)} />
             <span className="px-1 text-muted">vs</span>
-            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} country={tagOf(tags, game.whiteMemberId)?.country} kind={tagOf(tags, game.whiteMemberId)?.kind} />
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.whiteMemberId)} />
           </span>
         ) : (
           <span className="truncate font-medium">

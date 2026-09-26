@@ -85,7 +85,7 @@ function HereRow({ entry, me }: { entry: HereNow; me: string | null }) {
       <RecencyMark recency={entry.recency} />
       <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
         {entry.name.trim() !== "" ? (
-          <PlayerName name={entry.name} memberId={entry.id} fallback="" />
+          <PlayerName name={entry.name} memberId={entry.id} fallback="" tag={entry.tag} />
         ) : (
           entry.email
         )}

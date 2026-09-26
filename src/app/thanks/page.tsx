@@ -9,6 +9,7 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
 import { playerKey } from "@/lib/rating/playerKey";
 import { BETA_TESTERS, communitiesSaid } from "@/lib/thanks/testers";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
 export const metadata = { title: "Thank you" };
 
@@ -41,6 +42,8 @@ export const metadata = { title: "Thank you" };
 export default async function ThanksPage() {
   const reader = await currentReader();
   const members = reader.signedIn ? await findMembersByNames(BETA_TESTERS.map((tester) => tester.name)) : null;
+  // The flag, badge and level beside each name, as on every list.
+  const tags = await nameTagsOf(members === null ? [] : [...members.values()].map((member) => member.id));
   return (
     <Page>
       <SiteHeader />
@@ -67,6 +70,7 @@ export default async function ThanksPage() {
                       name={tester.name}
                       memberId={members.get(playerKey(tester.name))?.id ?? null}
                       fallback={tester.name}
+                      tag={tags.get(members.get(playerKey(tester.name))?.id ?? "")}
                     />
                   ) : (
                     <span data-testid="thanks-tester-name">{tester.name}</span>

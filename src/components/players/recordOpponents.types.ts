@@ -1,4 +1,5 @@
 import type { NamedMember } from "@/lib/auth/members";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 
 /**
  * Who the opponents in a player's Recent Games are, and what the reader may do
@@ -14,6 +15,8 @@ export type RecordOpponents = {
   members: Map<string, NamedMember>;
   /** Member ids on the reader's buddy list. */
   buddies: Set<string>;
+  /** The flag, badge and level beside each opponent's name, by member id (`nameTagsOf`). */
+  tags?: ReadonlyMap<string, NameTag>;
   /** Member ids the reader has ignored. */
   ignored: Set<string>;
   /** Members under 13 who have not made the reader a buddy (`closedToReader`). */

@@ -11,6 +11,7 @@ import type { RecordSolve } from "@/lib/puzzles/server/puzzleRecord";
 import { sizeWord } from "./puzzles.constants";
 import { OneSolvePoints } from "./SolvePoints";
 import { SolveTime } from "./SolveTime";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 
 /**
  * The rows of a puzzle's record: who, which size and level, the time (the way
@@ -24,6 +25,7 @@ export function RecordSolvesTable({
   kind,
   solves,
   names,
+  tags,
   me,
   counted,
   filtered,
@@ -31,6 +33,8 @@ export function RecordSolvesTable({
   kind: PuzzleKind;
   solves: readonly RecordSolve[];
   names: ReadonlyMap<string, string>;
+  /** The flag, badge and level beside each name, read with the names. */
+  tags: ReadonlyMap<string, NameTag>;
   me: string | null;
   counted: ReadonlySet<string> | null;
   /** Whether a filter is on, which changes what an empty table says. */
@@ -64,7 +68,7 @@ export function RecordSolvesTable({
               return (
                 <tr key={solve.id} className="border-t border-rule" data-testid="record-solve" data-solve={solve.id} data-member={solve.memberId} data-counted={counted?.has(solve.id) ? "true" : undefined}>
                   <td className="py-1 pr-2">
-                    <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />
+                    <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" tag={tags.get(solve.memberId)} />
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
                     {sizeWord(solve.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level]?.label.toLowerCase() ?? solve.level}</span>

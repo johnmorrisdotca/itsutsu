@@ -48,6 +48,7 @@ import { mayReachMember } from "@/lib/social/childReach";
 import { showsLocalTime } from "@/lib/social/childRules";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { closedToReader } from "@/lib/social/childReach";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
 export const metadata = { title: "Player" };
 
@@ -156,13 +157,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * of them.
    */
   const opponentRows = reader.hasAccount ? await findMembersByNames(record.recent.map((one) => one.opponent)) : null;
+  const opponentIds = opponentRows === null ? [] : [...opponentRows.values()].flatMap((member) => (member.id ? [member.id] : []));
   const opponents =
     opponentRows !== null
       ? {
           members: opponentRows,
           buddies: myBuddies,
           ignored: myIgnored,
-          closed: await closedToReader(reader.memberId, [...opponentRows.values()].flatMap((member) => (member.id ? [member.id] : []))),
+          closed: await closedToReader(reader.memberId, opponentIds),
+          // The flag, badge and level beside each opponent's name, as on every list (`nameTagsOf`).
+          tags: await nameTagsOf(opponentIds),
           me: reader.memberId,
           canAsk: reader.hasAccount,
         }

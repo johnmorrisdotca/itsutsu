@@ -30,6 +30,7 @@ import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS } from "@/lib/xp/xpCurve";
 import { viewerXp } from "@/lib/xp/xpViewer";
 import { xpLevelFor } from "@/lib/xp/xpCurve";
+import { withoutLevel } from "@/lib/xp/nameTag.types";
 
 /*
  * One member's standing decides whether their own row is marked, so this is
@@ -297,8 +298,8 @@ function WhoIsHere({
                       name={member.name}
                       memberId={member.id}
                       fallback="A member with no name yet"
-                      country={tags.get(member.id)?.country}
-                      kind={tags.get(member.id)?.kind}
+                      // Everybody here stands on this rung, which the page is named for.
+                      tag={withoutLevel(tags.get(member.id))}
                     />
                     {member.id === viewerId ? (
                       <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
