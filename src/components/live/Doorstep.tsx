@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button, SectionTitle } from "@/components/ui/Controls";
+import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_LEAD, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { beginGame, type BeginAction } from "./beginGame";
 import { DoorstepPictures } from "./DoorstepPictures";
 import { RulesStatement } from "./RulesStatement";
-import { DOORSTEP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
+import { DOORSTEP_COPY, SIGN_IN_TO_PLAY, START_PRESS } from "./live.constants";
 import { useGameBegunHere } from "./doorstepMemory";
 import type { RulesDraft } from "./rulesDraft";
 
@@ -244,15 +245,17 @@ export function Doorstep({
         column here and the way back sits under it, both a fingertip tall.
       */}
       <div className="mt-1 flex flex-col items-stretch gap-3 border-t border-rule pt-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Button onClick={go} disabled={busy || !signedIn} strong lead data-testid="doorstep-begin">
+        <div className="sm:w-72">
+        <Button onClick={go} disabled={busy || !signedIn} play data-testid="doorstep-begin">
           {busy
-            ? DOORSTEP_COPY.beginning
+            ? START_PRESS.starting
             : made !== null
               ? DOORSTEP_COPY.board
               : taking && begin.kind === "sit"
                 ? DOORSTEP_COPY.sit(begin.who)
-                : DOORSTEP_COPY.begin}
+                : <PressLabel {...START_PRESS.start} />}
         </Button>
+        </div>
         {/*
           A LINK, and that matters: a browser back would be the same address
           rendered from a cache, and the way back has to work from an address

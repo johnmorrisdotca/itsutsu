@@ -126,7 +126,7 @@ function describeSeats(rules: { opening: string }, who: DoorstepWho): string {
   if (who.lot === true) {
     return against === null
       ? "Who plays black is drawn by lot as the game is made."
-      : `Against ${against}. Who plays black is drawn by lot as you press Begin.`;
+      : `Against ${against}. Who plays black is drawn by lot as you press Start.`;
   }
   if (who.mine === null) {
     /*

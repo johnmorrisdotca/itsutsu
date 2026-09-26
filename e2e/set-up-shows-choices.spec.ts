@@ -159,7 +159,7 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       await expect(page.getByTestId("set-up-handicap-words")).toBeVisible();
       await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${namedId}`);
       await expect(page.getByTestId("set-up-opponent-elsewhere")).toBeVisible();
-      await expect(page.getByTestId("set-up-start")).toHaveText(/^Begin/);
+      await expect(page.getByTestId("set-up-start")).toHaveText(/^Start/);
 
       // And one press each opens them, which is the whole cost of disagreeing.
       await openMoreSettings(page);

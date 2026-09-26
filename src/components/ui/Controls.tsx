@@ -9,6 +9,7 @@ import {
   BUTTON_LEAD,
   BUTTON_QUIET,
   BUTTON_STRONG,
+  PLAY_BUTTON,
   SECTION_TITLE,
   SELECT_CLASS,
 } from "./ui.constants";
@@ -19,6 +20,7 @@ export function Button({
   disabled = false,
   strong = false,
   lead = false,
+  play = false,
   title,
   ...rest
 }: {
@@ -32,6 +34,12 @@ export function Button({
    * one.
    */
   lead?: boolean;
+  /**
+   * The press that starts a game or a puzzle: `PLAY_BUTTON`, the size of the
+   * Play under a game's picture, so the two words that start anything (Play,
+   * then Start) are one size wherever they are drawn.
+   */
+  play?: boolean;
   title?: string;
   /*
    * The hydration mark, for a button a spec has to wait for. `readyMark`
@@ -45,7 +53,7 @@ export function Button({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`${lead ? BUTTON_LEAD : BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET}`}
+      className={play ? PLAY_BUTTON : `${lead ? BUTTON_LEAD : BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET}`}
       {...rest}
     >
       {children}

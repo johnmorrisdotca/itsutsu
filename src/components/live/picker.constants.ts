@@ -469,5 +469,5 @@ export const RANDOM_COMPUTER_WORDS = {
   against: "Against a random computer player",
   /** The mark on its black stone, where a program carries its own script. */
   mark: "?",
-  means: "One of the programs above, drawn once, when you press Begin on the next page.",
+  means: "One of the programs above, drawn once, when you press Start.",
 } as const;

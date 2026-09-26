@@ -180,7 +180,7 @@ export const SET_UP_COPY = {
   /* Sitting down at a matched seat IS the start: the rules are the ones just chosen, and the name is on the button. */
   startLeads: "Their seat is at exactly this game. Press, and you are sitting opposite them on the board.",
   /** What Begin does here: it writes the game, and the next thing you see is the board. */
-  beginHere: "Nothing is written until you press Begin. The next thing you see is the board.",
+  beginHere: "Nothing is written until you press Start. The next thing you see is the board.",
   /**
    * THE BUTTON AT THE BOTTOM, named for what it does — and what it does has
    * changed twice.
@@ -200,8 +200,6 @@ export const SET_UP_COPY = {
    * `continueToSeat` is still Continue, and still true: that press leads to
    * the doorstep, because the rules being agreed to there are somebody else's.
    */
-  begin: "Begin 開始",
-  beginning: "Beginning…",
   /** The press after a game has already been begun from this address, in this tab. */
   board: "Open the board 対局へ",
   /** The same press where somebody is already asking for exactly this game. */
@@ -345,18 +343,16 @@ export const DOORSTEP_COPY = {
   kanji: "確認",
   /** Above the table of rows, saying why nothing on this page can be changed here. */
   note: "This is what will be played. Nothing has been written yet.",
-  begin: "Begin 開始",
-  beginning: "Beginning…",
   /** Taking a seat somebody has already posted, rather than making a second game. */
   sit: (who: string) => `Sit down with ${who} 着席`,
   change: "Change something 変更",
   /** Who a game against a computer player drawn at random is against, before the draw. */
   drawnFrom: (names: readonly string[]) =>
-    `a computer player drawn at random from ${names.join(", ")} when you press Begin`,
+    `a computer player drawn at random from ${names.join(", ")} when you press Start`,
   /** Once this doorstep has made its game, the same control opens its board. */
   board: "Open the board 対局へ",
   made: "You have already begun this game. The button below opens its board rather than making a second one.",
-  another: "Begin another like this one",
+  another: "Start another like this one",
   refused: "That game could not be started.",
   /*
    * WHERE THE GAME CAME FROM A REMATCH, what it is now — see `describeLineage`.
@@ -375,7 +371,7 @@ export const DOORSTEP_COPY = {
    * one used to do it silently — a press naming one person quietly posting a game
    * for anyone. The destination was right; doing it without saying so was not.
    */
-  seatGone: "Somebody else took that seat first. Press Begin again to start a game of your own instead.",
+  seatGone: "Somebody else took that seat first. Press Start again for a game of your own instead.",
   /** Why a posted seat is no longer there to be taken — one line per reason. */
   gone: {
     taken: "Somebody else took that seat first, so this would be a new game of your own instead.",
@@ -594,3 +590,23 @@ export const SET_UP_PREVIEW_BOX = "pointer-events-none w-full max-w-[15rem] sm:m
  * line from game to game until it kept the room.
  */
 export const SET_UP_PREVIEW_CAPTION = "min-h-[3lh] text-center text-xs text-muted";
+
+/**
+ * THE TWO WORDS THAT START ANYTHING, AND WHICH PRESS SAYS WHICH. John,
+ * 2026-09-25, at a game's set-up saying Begin 開始 and a puzzle's saying Play
+ * alone, at two sizes: "I told you to only use one set of terms… one is
+ * actually a button to go to the Settings / Configure and the other is to
+ * actually Start… so perhaps it should always be PLAY and START. Use the same
+ * font sizes."
+ *
+ * So Play, on a game's page (`PlayButton`), leads to its set-up screen and
+ * writes nothing; Start, on the set-up screen and the doorstep, is the one
+ * press that makes the game or the puzzle. Every one of them is drawn at
+ * `PLAY_BUTTON`'s size, with `PressLabel`.
+ */
+export const START_PRESS = {
+  start: { words: "Start", kanji: "始" },
+  alone: { words: "Start alone", kanji: "独" },
+  friend: { words: "Start with a friend", kanji: "友" },
+  starting: "Starting…",
+} as const;

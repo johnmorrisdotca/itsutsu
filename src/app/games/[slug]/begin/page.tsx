@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/begi
      * tab and the heading naming one page are the case where a second copy shows
      * up as the site disagreeing with itself in a browser's own tab strip.
      */
-    title: variant === null ? DOORSTEP_COPY.title : `Begin ${RULE_VARIANT_DISPLAY[variant].label}`,
+    title: variant === null ? DOORSTEP_COPY.title : `Start ${RULE_VARIANT_DISPLAY[variant].label}`,
   };
 }
 

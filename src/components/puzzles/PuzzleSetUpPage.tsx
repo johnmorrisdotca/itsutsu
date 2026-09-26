@@ -19,7 +19,7 @@ import { GameTrail } from "@/components/games/GameTrail";
  *
  * Gated like a game's set-up (`OPEN_PATTERNS` in proxy.ts leaves `/new` shut),
  * so a stranger reads the rules and is invited in; a member arrives here from
- * the puzzle's Solve button and leaves for the solve with the choice in the
+ * the puzzle's Play button and leaves for the solve with the choice in the
  * address.
  *
  * A puzzle drawn on the board itself (`wordGrid`: the Gomojis) is previewed in
@@ -34,15 +34,17 @@ export async function PuzzleSetUpPage({ kind, hasAccount, memberId }: { kind: Pu
     <Page>
       <SiteHeader />
       <PageTitle
-        title={`Play ${copy.label}`}
+        /* The puzzle's name, as a game's set-up is headed (`SetUpHeading`): Play was the press that led here, and Start is the one below. */
+        title={copy.label}
         kanji={copy.kanji}
         crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: "Set up" }]} />}
         lead={
           <>
             {copy.tagline}{" "}
-            <Link href={rulesPath(kind)} className="underline underline-offset-2">
-              The rules <span className="font-mincho">規則</span>
+            <Link href={rulesPath(kind)} className="underline underline-offset-4">
+              How it is played
             </Link>
+            .
           </>
         }
       />

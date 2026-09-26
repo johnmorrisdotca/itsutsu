@@ -6,7 +6,9 @@ import { COLOUR_CHOICES, type ColourChoice } from "./colourChoice";
 import { MATCH_SIZES, type MatchSize } from "@/lib/history/liveMatch";
 import { START_COPY } from "@/components/mine/mine.constants";
 
-import { DOORSTEP_COPY, SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
+import { PressLabel } from "@/components/ui/PressLabel";
+
+import { DOORSTEP_COPY, SET_UP_COPY, SIGN_IN_TO_PLAY, START_PRESS } from "./live.constants";
 
 /**
  * THE BOTTOM OF THE SET-UP SCREEN: who will be sitting where, and the one
@@ -132,11 +134,11 @@ export function BeginBar({
         </p>
       ) : null}
       {/*
-        NOT WRAPPED IN A SHRINKING SPAN. `lead` gives the button the column's
-        full width on a phone, and an inline wrapper around it takes that
-        width straight back off again.
+        NOT WRAPPED IN A SHRINKING SPAN. The button fills the column on a phone,
+        and an inline wrapper around it takes that width straight back off
+        again; at a desk it is the width of the Play under a game's picture.
       */}
-      <div className="flex">
+      <div className="flex sm:w-72">
         {/*
           The button says what it does: it continues, to the page that states
           the game. John: "it's not Start the Game... button should be
@@ -152,8 +154,7 @@ export function BeginBar({
         <Button
           onClick={press}
           disabled={busy || !signedIn || (!canAsk && named)}
-          strong
-          lead
+          play
           data-testid="set-up-start"
           /*
            * WHAT THIS PRESS WILL DO, on the button itself. Nearly always it
@@ -167,12 +168,12 @@ export function BeginBar({
           data-press={waiting !== undefined ? "seat" : "begin"}
         >
           {busy
-            ? SET_UP_COPY.beginning
+            ? START_PRESS.starting
             : made !== null
               ? SET_UP_COPY.board
               : waiting !== undefined
                 ? SET_UP_COPY.continueToSeat(waiting.who)
-                : SET_UP_COPY.begin}
+                : <PressLabel {...START_PRESS.start} />}
         </Button>
       </div>
       {/*

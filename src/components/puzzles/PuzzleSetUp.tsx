@@ -8,6 +8,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance, Felt } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { PuzzleBoardPreview } from "@/components/live/PuzzleBoardPreview";
+import { START_PRESS } from "@/components/live/live.constants";
 import {
   PICK_BOARD_PREVIEW,
   PICK_BOARD_ROW,
@@ -16,6 +17,7 @@ import {
   PICK_CHIP_SHUT,
   PICK_WORD_CHIP,
 } from "@/components/live/picker.constants";
+import { PressLabel } from "@/components/ui/PressLabel";
 import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
@@ -238,7 +240,9 @@ export function PuzzleSetUp({
         buttons just a Play button?… should be Play Alone and Play a Friend…
         we waste so much space with text… these buttons could be side by side
         or above one another. big buttons". Both start the puzzle; the button
-        is the choice of who you play.
+        is the choice of who you play. Then, the same day, at a game's set-up
+        saying Begin beside these: "it should always be PLAY and START" — so
+        they read Start alone and Start with a friend (`START_PRESS`).
       */}
       <div className="flex flex-col justify-center gap-3" data-testid="puzzle-play-buttons">
         <Link
@@ -246,8 +250,8 @@ export function PuzzleSetUp({
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
-          {/* One kanji each beside the words, as every label here pairs them (John, 2026-09-25: "use SINGLE kanji"). */}
-          Play alone <span className="font-mincho text-base font-normal opacity-70">独</span> →
+          {/* Start, as every set-up screen's press says it (`START_PRESS`); Play is the word for the way here. */}
+          <PressLabel {...START_PRESS.alone} />
         </Link>
         <button
           type="button"
@@ -258,16 +262,14 @@ export function PuzzleSetUp({
           data-testid="puzzle-race"
         >
           {racing === "making" ? (
-            "Making the race…"
+            START_PRESS.starting
           ) : (
-            <>
-              Play a friend <span className="font-mincho text-base font-normal opacity-70">友</span> →
-            </>
+            <PressLabel {...START_PRESS.friend} />
           )}
         </button>
       {!hasAccount ? (
         <p className="text-xs text-muted" data-testid="puzzle-race-needs-account">
-          Playing a friend needs an account.
+          Starting with a friend needs an account.
         </p>
       ) : null}
       {racing !== "" && racing !== "making" ? <span className="text-sm text-shu">{racing}</span> : null}
