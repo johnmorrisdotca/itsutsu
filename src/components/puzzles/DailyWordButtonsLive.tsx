@@ -1,9 +1,9 @@
 import { connection } from "next/server";
 
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { dailyDayPath, dailyPlayPath, todayPlayPath } from "@/lib/puzzles/dailyWords/dailyAddress";
+import { dailyDayPath, dailyFutagoPlayPath, dailyPlayPath, todayFutagoPlayPath, todayPlayPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
-import { dailyLengths, dailyWordOf, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
+import { dailyFutagoWordsOf, dailyLengths, dailyWordOf, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { dailyStatusesOf } from "@/lib/puzzles/server/dailyPlays";
 
@@ -25,19 +25,29 @@ export async function DailyWordButtonsLive({ kind, framed }: { kind: PuzzleKind;
     const word = dailyWordOf(kind, size, today)?.word;
     return word === undefined ? [] : [[size, word] as const];
   }));
+  // Today's Futago at each length, two words from the same pool (`dailyFutagoWordsOf`).
+  const pairs = new Map(sizes.flatMap((size) => {
+    const pair = dailyFutagoWordsOf(kind, size, today);
+    return pair === null ? [] : [[size, pair] as const];
+  }));
   const memberId = await currentMemberId();
-  const statuses = memberId === null ? null : await dailyStatusesOf(memberId, kind, today, words);
+  const statuses = memberId === null ? null : await dailyStatusesOf(memberId, kind, today, words, pairs);
+  const notYet = { state: "notYet" as const };
   const rows = sizes.map((size) => ({
     size,
     // Before the first day of the daily words, a length has no word yet and its button asks for today's as it always did.
     href: words.has(size) ? dailyPlayPath(kind, size, today) : todayPlayPath(kind, size),
-    status: statuses?.get(size) ?? (statuses === null ? null : { state: "notYet" as const }),
+    status: statuses === null ? null : (statuses.one.get(size) ?? notYet),
+    futago: {
+      href: pairs.has(size) ? dailyFutagoPlayPath(kind, size, today) : todayFutagoPlayPath(kind, size),
+      status: statuses === null ? null : (statuses.two.get(size) ?? notYet),
+    },
   }));
   return <DailyWordButtons kind={kind} rows={rows} todayHref={memberId === null ? null : dailyDayPath(kind, today)} framed={framed} />;
 }
 
 /** The same buttons with nothing read: the prerendered shell, each asking for today's word when followed. */
 export function DailyWordButtonsShell({ kind, framed }: { kind: PuzzleKind; framed: boolean }) {
-  const rows = dailyLengths(kind).map((size) => ({ size, href: todayPlayPath(kind, size), status: null }));
+  const rows = dailyLengths(kind).map((size) => ({ size, href: todayPlayPath(kind, size), status: null, futago: { href: todayFutagoPlayPath(kind, size), status: null } }));
   return <DailyWordButtons kind={kind} rows={rows} todayHref={null} framed={framed} />;
 }

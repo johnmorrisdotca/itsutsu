@@ -10,6 +10,24 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.374.1 — 2026-09-26
+- The Families tab remembers which families you opened and which you closed.
+- A puzzle's set-up keeps the board, level and options chosen when the page is reloaded.
+- Hidden Stones and Black and White draw the site's real stones, not flat circles.
+- Tsunagi's board of levels is ruled on all four sides.
+
+## 0.374.0 — 2026-09-26
+- Hidden Stones has Lines beside Hint: a line from every stone along its row and column, so the cells it rules out show at a glance.
+
+## 0.373.0 — 2026-09-26
+- Hidden Stones comes in a 4×4 for beginners and a 12×12 for a long evening.
+
+## 0.372.0 — 2026-09-26
+- Koushi: six words woven into a lattice with their letters scrambled; swap two at a time to put every word right before the swaps run out.
+
+## 0.371.0 — 2026-09-26
+- Gomoji Futago: two hidden words at once, every guess going to both boards, in every Gomoji language and with its own daily pair.
+
 ## 0.370.1 — 2026-09-26
 - A game's Fastest solves panel fits its narrow desktop column: names stay on one line and nothing runs off the edge.
 

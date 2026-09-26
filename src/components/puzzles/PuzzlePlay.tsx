@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -11,12 +11,14 @@ import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
+import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiSolve } from "./KumimojiSolve";
+import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
@@ -52,12 +54,15 @@ export function PuzzlePlay({
   hints = false,
   strict = false,
   headStart = false,
+  twins = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
 }: {
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
+  /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
+  twins?: boolean;
   /** Tsunagi's levels already solved at this size on the account, and whether it is played by colours or numbers. */
   tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null } | null;
   kind: PuzzleKind;
@@ -76,7 +81,7 @@ export function PuzzlePlay({
   hasAccount: boolean;
   /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
   race?: (SolveRace & { givens: string }) | null;
-  /** The reader's board, read only for Gomoji's board colour picker (`GomojiSolve`, `GomojiKanaSolve`). */
+  /** The reader's board: the board colour picker of a puzzle drawn on the board (`GomojiSolve`, `GomojiKanaSolve`, `KoushiSolve`), and the stone set a puzzle played with stones draws. */
   appearance?: Appearance;
 }) {
   const router = useRouter();
@@ -91,8 +96,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict, headStart })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, router]);
 
   /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji) waits for them; every other kind is ready at once. */
   const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" ? null : `${kind}:${size}`);
@@ -137,9 +142,9 @@ export function PuzzlePlay({
   const headStarted = seat === null && headStart;
   switch (kind) {
     case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
     case "blackAndWhite":
-      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
     case "gomoji":
     case "gomojiMot":
     case "gomojiWort":
@@ -161,6 +166,8 @@ export function PuzzlePlay({
       return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+    case "koushi":
+      return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

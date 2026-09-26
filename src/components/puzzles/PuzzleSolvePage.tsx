@@ -17,18 +17,18 @@ import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeHidden, languageOf } from "@/lib/puzzles/gomoji/code";
+import { FUTAGO_DISPLAY, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
-/** A word puzzle's hidden word, in the case it is played in. */
+/** A word puzzle's hidden word, or a Futago's two (`futago.ts`), in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
-  return kind === "gomojiKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size, languageOf(kind)) ?? "").toUpperCase();
+  const words = hiddenWordsOf(kind, size, givens)?.words ?? [];
+  return words.length > 1 ? `${wordsShown(kind, words)} (${FUTAGO_DISPLAY.label} ${FUTAGO_DISPLAY.kanji})` : wordsShown(kind, words);
 }
 
 /** Whether a moment falls on today's date in UTC, the day today's puzzle is everybody's (`dailySeed`). */
@@ -83,7 +83,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
     // A word's guesses, out of the level's allowance: the other half of how it went.
-    ...(taken === null ? [] : [{ label: "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
+    ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
     { label: "Points", value: String(solve.points), testId: "solve-points" },
     { label: "Help", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
     { label: "Finished", value: solve.finishedAt.toISOString().slice(0, 10), testId: "solve-date" },

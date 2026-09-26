@@ -1,6 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
+import type { StoneSetTokens } from "@/components/board/board.types";
 
 import { decodeRegions, decodeStones, encodeStones } from "@/lib/puzzles/hiddenStones/code";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -12,6 +15,7 @@ import { SolveHint } from "./SolveHint";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
+import { StoneLinesToggle, useStoneLines } from "./StoneLinesToggle";
 import { rowHint } from "@/lib/puzzles/hintCell";
 import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
@@ -31,6 +35,7 @@ export function HiddenStonesSolve({
   checks = null,
   resumed = null,
   hints = false,
+  set = STONE_SETS[DEFAULT_APPEARANCE.stoneSet],
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
@@ -41,6 +46,8 @@ export function HiddenStonesSolve({
   hints?: boolean;
   /** How many times Check may be pressed on one's own; null for no limit. A race's is the race's. */
   checks?: number | null;
+  /** The reader's stone set, so the stones are the ones their game boards draw. */
+  set?: StoneSetTokens;
 }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
@@ -68,6 +75,26 @@ export function HiddenStonesSolve({
     [size],
   );
 
+  /*
+   * LINES, where hints were chosen: each stone's row and column drawn to the
+   * edge. A help, so counted as a Hint is (`POINTS_A_HELP` off the score, and
+   * the count beside the time): once a puzzle, the first time the lines are on
+   * while the clock runs — switched on during the solve, or on already (the
+   * choice is remembered) when the first stone goes down. Never in a race,
+   * where `hinting.allowed` is false.
+   */
+  const stoneLines = useStoneLines();
+  const linesOn = hinting.allowed && stoneLines.on;
+  const linesCounted = useRef(false);
+  const countLines = useCallback(() => {
+    if (linesCounted.current) return;
+    linesCounted.current = hinting.spend();
+  }, [hinting]);
+  const toggleLines = () => {
+    if (pausing.paused || done !== null) return;
+    if (stoneLines.toggle() && startedAt !== null) countLines();
+  };
+
   /* The grid's marks replaced, from a tap or a hint: the one door every change goes through. `changed` are the cells it touched. */
   // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
   const opening = useMemo(() => (resumed === null ? null : openingSteps(resumed.steps, resumed.progress, size, decodeStoneProgress)), [resumed, size]);
@@ -78,6 +105,7 @@ export function HiddenStonesSolve({
       // Nothing is pressed while paused (John, 2026-09-25: "if a game is paused, DISABLE the controls, all the controls").
       if (done !== null || pausing.paused || history.reviewing) return;
       const at = begin();
+      if (linesOn) countLines();
       setMarks(next);
       changed.forEach((index) => hinting.unmark(index));
       setChecked(null);
@@ -90,7 +118,7 @@ export function HiddenStonesSolve({
         else setFullNotRight(true);
       }
     },
-    [done, pausing.paused, history.reviewing, begin, stonesOf, answer, finish, checking.allowed, hinting],
+    [done, pausing.paused, history.reviewing, begin, linesOn, countLines, stonesOf, answer, finish, checking.allowed, hinting],
   );
   const press = useCallback(
     (index: number) => {
@@ -142,16 +170,19 @@ export function HiddenStonesSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <HiddenStonesGrid size={size} regions={regions} marks={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} />
+        <HiddenStonesGrid size={size} regions={regions} marks={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} lines={linesOn} set={set} />
       </SolvePaused>
       <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(mark) => (mark === "stone" ? "a stone" : mark === "cross" ? "a cross" : "cleared")} />
       {done === null ? (
         <div className="flex flex-col gap-2">
-          {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
-          <div className="flex items-center gap-3">
+          {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"), and Lines beside Hint where hints were chosen. */}
+          <div className="flex flex-wrap items-center gap-3">
             <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
             <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
-            <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
+            <div className="ml-auto flex items-center gap-3">
+              {hinting.allowed ? <StoneLinesToggle on={stoneLines.on} onToggle={toggleLines} disabled={pausing.paused} /> : null}
+              <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
+            </div>
           </div>
           {checked !== null ? (
             <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">

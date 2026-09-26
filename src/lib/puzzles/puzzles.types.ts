@@ -22,7 +22,8 @@ export type PuzzleKind =
   | "gomojiMot"
   | "gomojiWort"
   | "tsunagi"
-  | "kumimoji";
+  | "kumimoji"
+  | "koushi";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -44,6 +45,12 @@ export type PuzzleSpec = {
   defaultSize: number;
   /** The levels the set-up offers; a kind with one kind of reasoning offers fewer. */
   levels: readonly PuzzleLevel[];
+  /**
+   * The levels a size can be made at, where that is fewer than `levels`: a
+   * 4×4 Hidden Stones has two possible answers and looking always tells them
+   * apart, so it has no hard puzzle to make. Read through `levelsFor`.
+   */
+  levelsAt?: Readonly<Record<number, readonly PuzzleLevel[]>>;
   /** The level the set-up opens on. */
   defaultLevel: PuzzleLevel;
   /** The most characters a puzzle's code or answer may hold, for the route to refuse anything larger. */
@@ -69,7 +76,7 @@ export type PuzzleSpec = {
   /**
    * Drawn on the board itself in the board colour the player chooses, as a
    * Gomoji is, without a Gomoji's rows: Tsunagi's marbles and lines. Absent
-   * is paper. `drawnOnBoard` asks both.
+   * is paper. `drawnOnBoard` asks this, `wordGrid` and `lattice`.
    */
   onBoard?: true;
   /**
@@ -84,6 +91,17 @@ export type PuzzleSpec = {
    * so it has many answers rather than one. Absent is a grid with one answer.
    */
   tiles?: true;
+  /**
+   * Whether the puzzle is played with stones, drawn as the game boards draw
+   * theirs (`StoneMark`) in the reader's own stone set. Absent is no.
+   */
+  stones?: true;
+  /**
+   * Whether the puzzle is a lattice of letter tiles drawn on the board itself
+   * in the reader's board colour, as Koushi's is: previewed and played on the
+   * board with its colour patches, and never in a Gomoji's word styles.
+   */
+  lattice?: true;
 };
 
 /**

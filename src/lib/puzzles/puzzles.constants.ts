@@ -2,6 +2,7 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
 import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "./kumimoji/tiles.constants";
+import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -40,6 +41,7 @@ export const PUZZLE_KINDS = {
   gomojiWort: "gomojiWort",
   tsunagi: "tsunagi",
   kumimoji: "kumimoji",
+  koushi: "koushi",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -58,6 +60,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.gomojiWort,
   PUZZLE_KINDS.tsunagi,
   PUZZLE_KINDS.kumimoji,
+  PUZZLE_KINDS.koushi,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -99,10 +102,14 @@ export function isCheckAllowance(value: unknown): value is number | null {
 }
 
 /**
- * Hidden Stones is made at six sides and offered at four — Quick, Usual, Long
- * and Longest — because the set-up screen keeps room for four boards and no
- * more (see `offered`). 6×6 and 8×8 stay in `sizes` for anything already made
- * at them.
+ * Hidden Stones is made at eight sides and offered at four — Beginner, Usual,
+ * Long and Longest — because the set-up screen keeps room for four boards and
+ * no more (see `offered`). John, 2026-09-26: "is it possible to add a 12x12
+ * game? and a beginner 4x4 game?" The two new ones took the ends, and 9×9
+ * stayed between the everyday 7×7 and the 12×12 as the step up; 5×5, 6×6,
+ * 8×8 and 10×10 stay in `sizes` for anything already made at them. A 4×4 is
+ * made easy only (`levelsAt`): it has two possible answers, and looking
+ * always tells them apart.
  */
 /** The longest answer a word puzzle can hand in: every guess its most generous level gives, of its longest word. */
 const WORD_ANSWER_MOST = MOST_GUESSES * LONGEST_WORD;
@@ -119,7 +126,16 @@ const TILE_GAME_MOST = 400;
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 256: a 16×16's cells, one character each, 1–9 then A–G.
   numberPlace: { sizes: [4, 6, 9, 16], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 256 },
-  hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], offered: [5, 7, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
+  hiddenStones: {
+    sizes: [4, 5, 6, 7, 8, 9, 10, 12],
+    offered: [4, 7, 9, 12],
+    defaultSize: 7,
+    levels: ["easy", "hard"],
+    levelsAt: { 4: ["easy"] },
+    defaultLevel: "easy",
+    mostCells: 144,
+    stones: true,
+  },
   // 133: the 49 cells of a 7×7 and the 84 edges between them, which its code writes after the cells.
   moreOrLess: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
   // 162: a 9×9's 81 cells and then its 81 region letters, which its code writes after the cells.
@@ -130,7 +146,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 77: a 7×7's 49 cells and then the 28 places around its edge where a clue can stand.
   towers: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 77 },
   // Even sides only: a line holds as many black stones as white.
-  blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
+  blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144, stones: true },
   /*
    * A size is the word's length, and an answer is every guess made, one
    * character a letter or a kana: the most guesses any level gives
@@ -169,12 +185,14 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     helps: false,
     tiles: true,
   },
+  // One lattice of 21 letters; an answer is the grid and every swap made, two characters each (`lattice.ts`).
+  koushi: { sizes: [5], offered: [5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: KOUSHI_ANSWER_MOST, helps: false, lattice: true },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
 export function drawnOnBoard(kind: PuzzleKind): boolean {
   const spec = PUZZLE_SPECS[kind];
-  return spec.wordGrid !== undefined || spec.onBoard === true;
+  return spec.wordGrid !== undefined || spec.onBoard === true || spec.lattice === true;
 }
 
 /**
@@ -185,6 +203,12 @@ export function drawnOnBoard(kind: PuzzleKind): boolean {
  * nowhere and paid nothing. Read from the specs, so a longer kind raises it.
  */
 export const PUZZLE_CODE_LONGEST = Math.max(...Object.values(PUZZLE_SPECS).map((spec) => spec.mostCells));
+
+/** The levels a puzzle can be made at, at this size: the kind's levels, less any this size cannot have (`levelsAt`). */
+export function levelsFor(kind: PuzzleKind, size: number): readonly PuzzleLevel[] {
+  const spec = PUZZLE_SPECS[kind];
+  return spec.levelsAt?.[size] ?? spec.levels;
+}
 
 
 /**
@@ -202,12 +226,14 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     16: { label: "Giant", kanji: "特大" },
   },
   hiddenStones: {
+    4: { label: "Beginner", kanji: "入門" },
     5: { label: "Quick", kanji: "速" },
     6: { label: "Short", kanji: "短" },
     7: { label: "Usual", kanji: "定番" },
     8: { label: "Longer", kanji: "長め" },
     9: { label: "Long", kanji: "長" },
-    10: { label: "Longest", kanji: "最長" },
+    10: { label: "Evening", kanji: "夜長" },
+    12: { label: "Longest", kanji: "最長" },
   },
   moreOrLess: {
     4: { label: "Quick", kanji: "速" },
@@ -274,6 +300,9 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     [KUMIMOJI_HANDS.quick]: { label: "Quick", kanji: "速" },
     [KUMIMOJI_HANDS.classic]: { label: "Classic", kanji: "定番" },
   },
+  koushi: {
+    5: { label: "Six words", kanji: "六語" },
+  },
 };
 
 /**
@@ -296,6 +325,11 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
   },
   kumimoji: {
     medium: `Every tile of the bag goes down before the clock stops: ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} in a Quick game, ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]} in a Classic one.`,
+  },
+  koushi: {
+    easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
+    medium: "Solvable in 10 swaps, with 15 to do it in, and the commonest words.",
+    hard: "Solvable in 12 swaps, with 17 to do it in, and a wider list of words.",
   },
 };
 
@@ -343,7 +377,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Every puzzle has exactly one answer. Tap a cell once for a stone, again for a cross to mark a cell you have ruled out, and again to clear it; the puzzle is done when every row's stone is right.",
       "Easy puzzles yield to looking alone; hard ones ask you to try a stone somewhere and see.",
     ],
-    board: "7×7 is the everyday size. 5×5 is a first puzzle; 10×10 is an evening.",
+    board: "7×7 is the everyday size. 4×4 is a first puzzle, easy only; 12×12 is an evening.",
   },
   moreOrLess: {
     label: "Futoshiki",
@@ -562,5 +596,23 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "The game ends when the bag is empty and every tile is on a sound grid. Your time is your score. Every bag has been laid out once before you see it, so it can always be finished.",
     ],
     board: `There is no board: the tiles lie on a table that grows as the crossword does, and zooms to fit it. A Quick game uses ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} tiles and a Classic one ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]}, drawn from the full mix of 144: thirteen A's, eighteen E's, and two each of J, K, Q, X and Z. Any word from two letters to fifteen in SCOWL, Kevin Atkinson's English and American spelling lists, counts.`,
+  },
+  koushi: {
+    label: "Koushi",
+    kanji: "格子",
+    tagline: "Six words woven into a lattice, their letters scrambled. Swap two letters at a time until every word is right.",
+    inspiredBy: "the swap-the-letters word grid",
+    origin:
+      "Our own take on the swap-the-letters word grid: six words crossing in a lattice, found by moving letters rather than guessing them. 格子 is the lattice of a shoji screen, paper panes held in a grid of wood, and the words here are held the same way.",
+    rules: [
+      "Six five-letter words are hidden in the lattice: three across, on the first, third and fifth rows, and three down, on the first, third and fifth columns. Where two words cross they share a letter, so 21 letters make all six.",
+      "The letters start scrambled. Tap a letter and then another, or drag one onto the other, and they change places. A green letter is right and stays where it is.",
+      "Green is the right letter in the right place. Gold means one of the letter's words needs it somewhere else. Plain means neither of its words needs it anywhere that is not already green.",
+      "A letter where two words cross turns gold if either word needs it, and the colour does not say which. A word lights a letter only as often as it still needs it: a word wanting one E turns the first E it comes to gold, reading left to right or top to bottom, and not the second.",
+      "Every puzzle can be solved in exactly its level's number of swaps, 8 at easy, 10 at medium and 12 at hard, and you have five more than that. Run out, and the puzzle ends unsolved and shows its words.",
+      "Every swap left at the end is a mark, five at best. The leaderboard counts the fewest swaps first, then the time.",
+    ],
+    board:
+      "One lattice, five letters each way, its four holes showing the board beneath. The words come from SCOWL, the spelling lists by Kevin Atkinson, as Gomoji's do: easy and medium use the commonest words, hard a wider list.",
   },
 };

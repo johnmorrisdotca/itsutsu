@@ -7,6 +7,7 @@ export const EMBED_TOKEN_FILE = ".auth/embed.json";
 import { expect, type APIRequestContext, type Locator, type Page, type Request } from "@playwright/test";
 
 import { UNRATED_BELOW } from "../src/lib/rating/elo";
+import { FAMILY_FOLD_KEYS } from "../src/lib/catalogue/familyFolds";
 
 /**
  * The page's tab strip holds exactly these tabs, named by their keys
@@ -630,4 +631,18 @@ export async function countScope(page: Page, scope: "everywhere" | "here") {
   await expect(bar).toBeVisible();
   if ((await bar.getAttribute("data-scope")) !== scope) await bar.getByTestId("include-worldwide").click();
   await expect(page.getByTestId("record-scope")).toHaveAttribute("data-scope", scope);
+}
+
+/**
+ * Forgets which families this reader keeps open on /games (`familyFolds.ts`),
+ * so the Families tab opens as it does for somebody who never pressed one: the
+ * first family open, the rest shut. The suite's operator is one account across
+ * every spec, and a family one spec opened stays open for the next — which is
+ * the feature working, and a spec about the default has to start from it.
+ */
+export async function forgetFamilyFolds(page: Page) {
+  const forgotten = await page.request.patch("/api/me", {
+    data: { preferences: Object.fromEntries(FAMILY_FOLD_KEYS.map((key) => [`familyOpen.${key}`, null])) },
+  });
+  expect(forgotten.ok(), "the operator's family folds could not be forgotten").toBe(true);
 }

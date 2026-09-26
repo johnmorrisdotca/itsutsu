@@ -2,6 +2,7 @@ import { gameArtPath } from "@/lib/gomoku/artwork";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
+import { futagoRule } from "./gomoji/futago";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -19,7 +20,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const spec = PUZZLE_SPECS[kind];
   // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
   const sizes = spec.offered.map((size) => (spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`)).join(", ");
-  const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${(spec.fixedLevels === true ? levelBlurb(kind, level) : PUZZLE_LEVEL_DISPLAY[level].blurb).toLowerCase()})`);
+  const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];
   const board = [
@@ -32,6 +33,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   ];
   const play = [
     ...copy.rules.slice(1),
+    ...(spec.wordGrid === undefined ? [] : [futagoRule(spec.wordGrid)]),
     `Levels: ${levels.join("; ")}.`,
     "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
   ];

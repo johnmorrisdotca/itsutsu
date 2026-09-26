@@ -9,7 +9,7 @@ import { awardTourBonuses } from "@/lib/xp/xpTour";
 
 import { preparePuzzle } from "../generate";
 import { checkSolution } from "../puzzleCheck";
-import { PUZZLE_SPECS } from "../puzzles.constants";
+import { PUZZLE_SPECS, levelsFor } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { type RaceOutcome, type RaceSeat, type SeatState, canFinish, canStart, raceOutcome, seatState } from "../raceState";
 import { keepSolve } from "./puzzleSolves";
@@ -53,7 +53,7 @@ export async function createRace(input: {
   hostName: string;
 }): Promise<{ id: string; guestToken: string } | { refused: string }> {
   const spec = PUZZLE_SPECS[input.kind];
-  if (!spec.sizes.includes(input.size) || !spec.levels.includes(input.level)) return { refused: "no such puzzle" };
+  if (!spec.sizes.includes(input.size) || !levelsFor(input.kind, input.size).includes(input.level)) return { refused: "no such puzzle" };
   if (input.givens.length > spec.mostCells || input.solution.length > spec.mostCells) return { refused: "not a grid of that size" };
   await preparePuzzle(input.kind, input.size);
   const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level);

@@ -1,10 +1,12 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
-import { decodeGuesses, type GomojiLanguage } from "./gomoji/code";
+import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
+import { isFutagoSeed } from "./gomoji/futagoSeed";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
-import { MOST_GUESSES } from "./gomoji/layout";
+import { MOST_GUESSES, guessesFor } from "./gomoji/layout";
+import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
-import type { PuzzleKind } from "./puzzles.types";
+import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { linesCodeFits } from "./tsunagi/lines";
 
 /**
@@ -86,5 +88,24 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "tsunagi") return linesCodeFits(code, size);
   // A Kumimoji's shape only: its bag is checked when the game is opened again (`decodeTileProgress`).
   if (kind === "kumimoji") return readTileProgress(code) !== null;
+  // Koushi keeps the grid as it stands and the swaps so far, as its answer is written.
+  if (kind === "koushi") return decodePlay(code) !== null;
   return decodeNumberProgress(code, size) !== null;
+}
+
+/**
+ * Whether a word puzzle's kept guesses are no more than its own level allows:
+ * `progressFits` reads a code against the most any Gomoji has (`MOST_GUESSES`,
+ * a Futago's), and a run is kept with its level and seed, which say how many
+ * this one has — one word or a Futago's two (`futagoSeed.ts`), and the kana
+ * version's free grey word below hard. A run past its rows could never end.
+ * Any other kind has no count to be past.
+ */
+export function runGuessesFit(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, code: string): boolean {
+  if (kind !== "gomoji" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiKana") return true;
+  const guesses = kind === "gomojiKana" ? decodeKanaProgress(code, size) : decodeGomojiProgress(code, size, languageOf(kind));
+  if (guesses === null) return false;
+  const grid = kind === "gomojiKana" ? "gomojiKana" : "gomoji";
+  const free = grid === "gomojiKana" && level !== "hard" ? 1 : 0;
+  return guesses.length <= guessesFor(grid, size, level, free, isFutagoSeed(seed) ? 2 : 1);
 }

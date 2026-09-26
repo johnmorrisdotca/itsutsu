@@ -5,6 +5,10 @@ import { decodeRegions, decodeStones, encodeRegions, encodeStones } from "./code
 import { generateHiddenStones } from "./generate";
 import { applyReasoning, countSolutions, guessDepth } from "./solve";
 
+/** Two grids as they were made before 12×12 was climbed: sizes up to ten must go on making exactly these. */
+const PINNED_7_EASY = "ccbbbbaccbcbbbccccbddecccbddeeecdddfeeddggffggggg";
+const PINNED_10_HARD = "bbbbbbbaaabbbgbbbdddccggbbedddcgggbeeedfcgggijeeffggiiijjeefhggiijjeffhgiiiijjffhiiiiijjjjhiiiijjjjj";
+
 /**
  * A Hidden Stones puzzle is a puzzle: one answer, its stones where the rules
  * allow, made the same way from the same seed.
@@ -51,6 +55,39 @@ describe("generating Hidden Stones", () => {
     for (const seed of [21, 22, 23]) generateHiddenStones(10, "hard", seed);
     // Four seconds: the gate runs its five lanes side by side, and this measured 2.2 s under that load.
     expect((performance.now() - started) / 3).toBeLessThan(4000);
+  });
+
+  it("has no hard 4×4 to make: two answers are possible, and looking always tells them apart", () => {
+    // Every column once and no two consecutive rows within one column of each other: at four sides, 2413 and 3142 alone.
+    const orders = (left: number[]): number[][] => (left.length === 0 ? [[]] : left.flatMap((col) => orders(left.filter((c) => c !== col)).map((rest) => [col, ...rest])));
+    const answers = orders([0, 1, 2, 3]).filter((cols) => cols.every((col, row) => row === 0 || Math.abs(col - cols[row - 1]) >= 2));
+    expect(answers.map((cols) => cols.join("")).sort()).toEqual(["1302", "2031"]);
+    for (let seed = 1; seed <= 40; seed += 1) {
+      const grid = decodeRegions(generateHiddenStones(4, "hard", seed).givens, 4)!;
+      expect(applyReasoning(4, grid).solved).toBe(true);
+    }
+    expect(PUZZLE_SPECS.hiddenStones.levelsAt?.[4]).toEqual(["easy"]);
+  });
+
+  it("climbs a 12×12 to one answer at each level, in the time a browser can spare", () => {
+    const started = performance.now();
+    for (const seed of [31, 32, 33]) {
+      const easy = generateHiddenStones(12, "easy", seed);
+      const easyRegions = decodeRegions(easy.givens, 12)!;
+      expect(applyReasoning(12, easyRegions).solved).toBe(true);
+      const hard = generateHiddenStones(12, "hard", seed);
+      const hardRegions = decodeRegions(hard.givens, 12)!;
+      expect(countSolutions(12, hardRegions, 2)).toBe(1);
+      expect(applyReasoning(12, hardRegions).solved).toBe(false);
+      expect(decodeStones(hard.solution, 12)).not.toBeNull();
+    }
+    // Six grids; measured at about a third of a second each on their own, so four seconds leaves the gate's parallel lanes room.
+    expect((performance.now() - started) / 6).toBeLessThan(4000);
+  });
+
+  it("makes the grid it always made at the sizes up to ten, so a seed already played is the same puzzle", () => {
+    expect(generateHiddenStones(7, "easy", 20260924).givens).toBe(PINNED_7_EASY);
+    expect(generateHiddenStones(10, "hard", 21).givens).toBe(PINNED_10_HARD);
   });
 
   it("round-trips the regions and the stones, and refuses what is not one of them", () => {

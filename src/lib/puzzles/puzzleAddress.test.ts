@@ -20,7 +20,7 @@ describe("the Check allowance in a puzzle's address", () => {
 
   it("reads back what it writes", () => {
     const query = Object.fromEntries(new URLSearchParams(puzzleQuery({ size: 6, level: "hard", seed: 7, checks: 1 }).slice(1)));
-    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false, strict: false, headStart: false });
+    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false, strict: false, headStart: false, twins: false });
   });
 });
 
@@ -56,5 +56,13 @@ describe("Gomoji's Head start in a puzzle's address", () => {
     expect(puzzleQuery(keptRunAsked("gomojiMot", run))).toBe("?size=5&level=easy&seed=9&head-start=1");
     expect(keptRunAsked("numberPlace", { ...run, size: 9 })).toMatchObject({ headStart: false, hints: true });
     expect(keptRunAsked("gomoji", { ...run, hintsAllowed: false })).toMatchObject({ headStart: false, hints: false });
+  });
+});
+
+describe("a level the size cannot be made at", () => {
+  it("is the first level it can: a 4×4 Hidden Stones asked for hard is easy, and the other sizes keep hard", () => {
+    expect(puzzleAsked("hiddenStones", { size: "4", level: "hard", seed: "9" })).toMatchObject({ size: 4, level: "easy", seed: 9 });
+    expect(puzzleAsked("hiddenStones", { size: "12", level: "hard" })).toMatchObject({ size: 12, level: "hard" });
+    expect(puzzleAsked("hiddenStones", { size: "7", level: "hard" }).level).toBe("hard");
   });
 });

@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance, Felt } from "@/components/board/board.types";
@@ -25,14 +25,16 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
-import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
+import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
+import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
+import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { useWordStyle } from "./WordStyleContext";
 
@@ -53,6 +55,7 @@ export function PuzzleSetUp({
   framed = true,
   sized,
   appearance = DEFAULT_APPEARANCE,
+  asked,
 }: {
   kind: PuzzleKind;
   /** A race is between two members, so a session with no account is told so rather than offered one. */
@@ -66,21 +69,47 @@ export function PuzzleSetUp({
   sized?: { size: number; onSize: (size: number) => void };
   /** The reader's board, for a puzzle drawn on the board itself: its colour is chosen under the preview (`PuzzleBoardPreview`). */
   appearance?: Appearance;
+  /** What the address asked for (`puzzleAsked`): the choice this screen opens on, so a reload keeps what was chosen. */
+  asked?: PuzzleAsked;
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
   const spec = PUZZLE_SPECS[kind];
   const copy = PUZZLE_DISPLAY[kind];
-  const [ownSize, setOwnSize] = useState(spec.defaultSize);
+  const [ownSize, setOwnSize] = useState(asked?.size ?? spec.defaultSize);
   const size = sized?.size ?? ownSize;
-  const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
-  const [checks, setChecks] = useState<number | null>(null);
+  const [chosenLevel, setLevel] = useState<PuzzleLevel>(asked?.level ?? spec.defaultLevel);
+  /* The level asked for, unless this size cannot be made at it (a 4×4 Hidden
+     Stones is easy only): then the first it can, and the choice comes back
+     when a size that has it is chosen again. */
+  const sizeLevels = levelsFor(kind, size);
+  const level = sizeLevels.includes(chosenLevel) ? chosenLevel : sizeLevels[0]!;
+  const [checks, setChecks] = useState<number | null>(asked?.checks ?? null);
   // Hint, off unless chosen: see `useHints`. Not carried into a race, which allows none.
-  const [hints, setHints] = useState(false);
+  const [hints, setHints] = useState(asked?.hints ?? false);
   // Gomoji's Strict, off unless chosen, at any level; like Hint, not carried into a race.
-  const [strict, setStrict] = useState(false);
+  const [strict, setStrict] = useState(asked?.strict ?? false);
   // Gomoji's Head start, off unless chosen, easy only; like Strict, not carried into a race.
-  const [headStart, setHeadStart] = useState(false);
+  const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
+  // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
+  const [twins, setTwins] = useState(asked?.twins ?? false);
+  /*
+   * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
+   * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
+   * lived only in this component, and a reload began again at the default.
+   * The address already said what a set-up opens on (`puzzleAsked`); now each
+   * choice writes it back, with the browser's own `replaceState` — no request,
+   * no render on the server, and no new entry in the history for Back to walk
+   * through. The first render writes nothing: an address nobody changed stays
+   * as it was typed.
+   */
+  const shownSize = sized === undefined ? size : null;
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined });
+  const opened = useRef(query);
+  useEffect(() => {
+    if (query === opened.current && window.location.search === "") return;
+    if (window.location.search !== query) window.history.replaceState(window.history.state, "", `${window.location.pathname}${query}`);
+  }, [query]);
   const { style, setStyle } = useWordStyle();
   const [racing, setRacing] = useState<"" | "making" | string>("");
   // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).
@@ -95,7 +124,7 @@ export function PuzzleSetUp({
     setRacing("making");
     try {
       await preparePuzzle(kind, size);
-      const made = generatePuzzle(kind, size, level, freshSeed());
+      const made = generatePuzzle(kind, size, level, twins && spec.wordGrid !== undefined ? freshFutagoSeed() : freshSeed());
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +152,7 @@ export function PuzzleSetUp({
         Preview Board too. And the Board colour options."
       */}
       {sized === undefined ? (
-        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} />
+        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} twins={twins} />
       ) : null}
 
       {/*
@@ -160,6 +189,8 @@ export function PuzzleSetUp({
               aria-checked={level === each}
               className={`${PICK_WORD_CHIP} ${level === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
               onClick={() => setLevel(each)}
+              disabled={!sizeLevels.includes(each)}
+              title={sizeLevels.includes(each) ? undefined : `A ${size}×${size} has no ${PUZZLE_LEVEL_DISPLAY[each].label.toLowerCase()} puzzle to make`}
               data-testid={`puzzle-level-${each}`}
             >
               {PUZZLE_LEVEL_DISPLAY[each].label} <span className="font-mincho opacity-70">{PUZZLE_LEVEL_DISPLAY[each].kanji}</span>
@@ -170,6 +201,11 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
           {levelBlurb(kind, level)}
         </p>
+        {/*
+          ONE WORD OR TWO: a Gomoji's Futago (`futago.ts`). John, 2026-09-26:
+          "a Gomoji mode with two hidden words at once… Use our own name."
+        */}
+        {spec.wordGrid === undefined ? null : <FutagoChips kind={kind} size={size} level={level} chosen={twins} onChoose={setTwins} />}
         {/*
           STRICT, a choice at every level. John, 2026-09-25: "have an option
           strict mode for Hard where you have to play the Green items on the same
@@ -206,7 +242,7 @@ export function PuzzleSetUp({
           hard its chips are switched off and the line under them says why.
         */}
         {offersHeadStart(kind, "easy") ? (
-          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} />
+          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} twins={twins} />
         ) : null}
         {/*
           HOW THE GRID IS DRAWN, chosen here as well as under the keyboard.
@@ -301,7 +337,7 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
@@ -359,6 +395,7 @@ export function PuzzleBoardAndSizes({
   appearance,
   onFelt,
   underFamilies = false,
+  twins = false,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -366,13 +403,15 @@ export function PuzzleBoardAndSizes({
   level?: PuzzleLevel;
   appearance?: Appearance;
   onFelt?: (felt: Felt) => void;
+  /** A Gomoji's Futago chosen: its preview is two boards (`futago.ts`). */
+  twins?: boolean;
   /** Under the row of families, where from a laptop's width the pair joins that row (`PICK_BOARD_ROW_UNDER_FAMILIES`). */
   underFamilies?: boolean;
 }) {
   return (
     <div className={`${PICK_BOARD_ROW} py-2 ${underFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`}>
       <div className={PICK_BOARD_PREVIEW}>
-        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} />
+        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} twins={twins} />
       </div>
       <PuzzleSizes kind={kind} size={size} onSize={onSize} beside />
     </div>

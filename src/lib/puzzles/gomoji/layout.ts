@@ -75,20 +75,29 @@ export type GomojiLayout = {
   left: number;
 };
 
-export function gomojiLayout(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number): GomojiLayout {
-  const base = baseGuesses(kind, size);
-  const room = boardSpan(size, Math.max(LEAST_SPAN, base + free)) - free;
+/**
+ * FUTAGO, TWO WORDS AT ONCE (`futago.ts`), is laid out by the same rule with
+ * one more guess at every level, as Dordle gives seven where Wordle gives six:
+ * every guess has to serve two words. Easy still gets every row of its board,
+ * and its board is two squares taller than one word's, so easy stays a guess
+ * or two ahead of medium: a Futago of five letters is 7, 8 and 9, of four 6, 7
+ * and 8, and of six 7, 8 and 10 on a board of ten.
+ */
+export function gomojiLayout(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards = 1): GomojiLayout {
+  const more = boards - 1;
+  const base = baseGuesses(kind, size) + more;
+  const room = boardSpan(size, Math.max(LEAST_SPAN, base + free + 2 * more)) - free;
   const guesses = level === "easy" ? room : level === "medium" ? Math.min(base + 1, room) : base;
   return { ...playPlace(size, free + guesses), guesses, free };
 }
 
-/** The guesses a puzzle of this kind, size and level allows, with or without its free word. */
-export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number): number {
-  return gomojiLayout(kind, size, level, free).guesses;
+/** The guesses a puzzle of this kind, size and level allows, with or without its free word, for one word or a Futago's two. */
+export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards = 1): number {
+  return gomojiLayout(kind, size, level, free, boards).guesses;
 }
 
-/** The most guesses any Gomoji can have: what a kept run's guesses are checked against before its level is known. */
-export const MOST_GUESSES = 9;
+/** The most guesses any Gomoji can have — a Futago of six letters at easy — what a kept run's guesses are checked against before its level is known. */
+export const MOST_GUESSES = 10;
 
 /** The longest word any Gomoji hides, in letters or kana: six, for Gomoji 6. */
 export const LONGEST_WORD = 6;

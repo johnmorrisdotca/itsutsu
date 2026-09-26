@@ -5,8 +5,8 @@ import { mySolvePath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeGuesses, decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
-import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { markGuess } from "@/lib/puzzles/gomoji/code";
+import { FUTAGO_DISPLAY, boardGuesses, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
@@ -25,15 +25,20 @@ import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
  */
 type WordKind = "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
 
-/** The word and the guesses of a kept row, and each guess's colours, for any Gomoji. */
-function readWord(kind: WordKind, word: OwnWord): { hidden: string; guesses: string[] | null; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] } {
-  if (kind === "gomojiKana") {
-    const hidden = decodeKanaGivens(word.givens, word.size)?.word ?? "";
-    return { hidden, guesses: word.answer === null ? null : decodeKanaGuesses(word.answer, word.size), marks: (guess) => markKanaGuess([...guess], [...hidden]).map((each) => each.mark) };
-  }
-  const lang = languageOf(kind);
-  const hidden = decodeHidden(word.givens, word.size, lang) ?? "";
-  return { hidden, guesses: word.answer === null ? null : decodeGuesses(word.answer, word.size, lang), marks: (guess) => markGuess(guess, hidden) };
+/**
+ * The words and the guesses of a kept row, and each guess's colours, for any
+ * Gomoji: one board, or a Futago's two (`futago.ts`), each with the guesses it
+ * was shown.
+ */
+function readWord(kind: WordKind, word: OwnWord): { hidden: string; boards: { guesses: readonly string[]; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] }[] | null } {
+  const words = hiddenWordsOf(kind, word.size, word.givens)?.words ?? [""];
+  const guesses = word.answer === null ? null : guessesOf(kind, word.size, word.answer);
+  const marksAgainst = (hidden: string) => (guess: string) =>
+    kind === "gomojiKana" ? markKanaGuess([...guess], [...hidden]).map((each) => each.mark) : markGuess(guess, hidden);
+  return {
+    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${FUTAGO_DISPLAY.kanji}` : words[0]!,
+    boards: guesses === null ? null : words.map((hidden) => ({ guesses: boardGuesses(guesses, hidden), marks: marksAgainst(hidden) })),
+  };
 }
 
 export function WordHistory({ words, total, kind = "gomoji" }: { words: readonly OwnWord[]; total: number; kind?: WordKind }) {
@@ -63,10 +68,10 @@ export function WordHistory({ words, total, kind = "gomoji" }: { words: readonly
 }
 
 function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
-  const { hidden, guesses, marks: marksOf } = readWord(kind, word);
+  const { hidden, boards } = readWord(kind, word);
   // Found in 3 of the 6 guesses the level gave (`guessesTaken`), as the boards say it.
   const taken = guessesTaken(kind, word.size, word.level, word.givens, word.answer);
-  const outcome = word.solved ? (taken === null ? `Found in ${guesses?.length ?? "?"}` : `Found in ${guessesText(taken)}`) : "Not found";
+  const outcome = word.solved ? (taken === null ? `Found in ${boards?.[0] === undefined ? "?" : Math.max(...boards.map((board) => board.guesses.length))}` : `Found in ${guessesText(taken)}`) : "Not found";
   return (
     <li className="flex flex-col gap-2 py-2" data-testid="word-history-row" data-solved={word.solved ? "true" : "false"}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -84,27 +89,29 @@ function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
           <span className="font-semibold tabular-nums">{word.points}</span> <span className="text-[0.65rem] tracking-wide text-muted uppercase">points</span>
         </Link>
       </div>
-      {guesses === null ? (
+      {boards === null ? (
         <p className="text-xs text-muted">Its guesses were not kept: it was played before they were.</p>
       ) : (
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5" aria-label={`Guesses: ${guesses.map((guess) => guess.toUpperCase()).join(", ")}`}>
-          {guesses.map((guess, row) => {
-            const marks = marksOf(guess);
-            return (
-              <span key={row} className="flex gap-0.5" aria-hidden="true">
-                {[...guess].map((letter, at) => (
-                  <span
-                    key={at}
-                    className="flex size-5 items-center justify-center rounded-full text-[0.6rem] font-bold uppercase shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
-                    style={WORD_STONE_LOOK[marks[at]!]}
-                  >
-                    {letter}
-                  </span>
-                ))}
-              </span>
-            );
-          })}
-        </div>
+        boards.map((board, at) => (
+          <div key={at} className="flex flex-wrap gap-x-3 gap-y-1.5" aria-label={`Guesses: ${board.guesses.map((guess) => guess.toUpperCase()).join(", ")}`} data-testid="word-history-board">
+            {board.guesses.map((guess, row) => {
+              const marks = board.marks(guess);
+              return (
+                <span key={row} className="flex gap-0.5" aria-hidden="true">
+                  {[...guess].map((letter, place) => (
+                    <span
+                      key={place}
+                      className="flex size-5 items-center justify-center rounded-full text-[0.6rem] font-bold uppercase shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
+                      style={WORD_STONE_LOOK[marks[place]!]}
+                    >
+                      {letter}
+                    </span>
+                  ))}
+                </span>
+              );
+            })}
+          </div>
+        ))
       )}
     </li>
   );
