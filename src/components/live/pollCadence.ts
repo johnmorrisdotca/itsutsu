@@ -1,3 +1,5 @@
+import { SUITE_SERVER_ENV, reliefAllowed } from "@/lib/suiteServer";
+
 import { POLL_MS, POLL_RELIEF_FLOOR_MS } from "./live.constants";
 
 /**
@@ -28,12 +30,14 @@ import { POLL_MS, POLL_RELIEF_FLOOR_MS } from "./live.constants";
  * two-second dedupe (`POLL_RELIEF_FLOOR_MS`).
  */
 export function pollEvery(
-  env: { nodeEnv: string | undefined; relief: string | undefined } = {
+  env: { nodeEnv: string | undefined; relief: string | undefined; suite?: string | undefined } = {
     nodeEnv: process.env.NODE_ENV,
     relief: process.env.LIVE_POLL_RELIEF,
+    suite: process.env.SUITE_SERVER,
   },
 ): number {
-  if (env.nodeEnv === "production") return POLL_MS;
+  // Production refuses it, except the suite's own production build (`suiteServer.ts`), whose marker next.config.ts writes into the bundle.
+  if (!reliefAllowed({ NODE_ENV: env.nodeEnv, [SUITE_SERVER_ENV]: env.suite })) return POLL_MS;
   const relief = Number(env.relief ?? "1");
   if (!Number.isFinite(relief) || relief < 1) return POLL_MS;
   return Math.max(POLL_RELIEF_FLOOR_MS, Math.floor(POLL_MS / Math.floor(relief)));

@@ -154,6 +154,7 @@ jobs:
           AUTH_GOOGLE_ID="ci-only-not-a-real-client-id"
           AUTH_GOOGLE_SECRET="ci-only-not-a-real-client-secret"
           RATE_LIMIT_RELIEF=20
+          ITSUTSU_SUITE_SERVER=1
           ENV
 
       - name: Install dependencies
@@ -167,23 +168,33 @@ jobs:
 
       # Chromium only: playwright.config.ts defines two projects and both use
       # Desktop Chrome.
-      - name: Install Playwright's browser
-        run: pnpm exec playwright install --with-deps chromium
+      # THE PRODUCTION BUILD, NOT THE DEV SERVER, built while the browser
+      # downloads: the two take about the same half-minute and neither reads
+      # the other. The shard then runs against `next start`, where no page
+      # compiles on its first request and React renders in production mode —
+      # measured on one shard's sixteen files, 177 seconds on the dev server
+      # and 97 on the build, the same 108 passing (2026-09-26).
+      - name: Install Playwright's browser, and build the site the suite runs against
+        run: |
+          pnpm build > build.log 2>&1 &
+          BUILD=$!
+          pnpm exec playwright install --with-deps chromium
+          wait $BUILD || { cat build.log; exit 1; }
 
-      # Playwright starts the dev server itself — see `webServer` in
-      # playwright.config.ts — and `reuseExistingServer` finds nothing to reuse
-      # on a fresh runner, so it gets a clean one on port 6700.
+      # Playwright starts the server itself — see `webServer` in
+      # playwright.config.ts, which `E2E_SERVER: start` below points at the
+      # build — and `reuseExistingServer` finds nothing to reuse on a fresh
+      # runner, so it gets a clean one on port 6700.
       #
-      # IT MUST BE THE DEV SERVER. Swapping this for `pnpm build && pnpm start`
-      # to make the run faster is the obvious optimisation and it breaks the
-      # suite: `next start` sets NODE_ENV=production, and BOTH reliefs are
-      # deliberately ignored in production — `allowanceFor()` in
-      # src/lib/api/rateLimit.ts and `activeGameLimit()` in
-      # src/lib/history/activeGames.ts each return the unrelieved number as
-      # their first act. The suite would then drive the whole site from one
-      # address against household-scale limits and fail a dozen specs with
-      # 429s, in files testing something else entirely, with nothing naming
-      # the cause. That is the single most expensive wrong turn available here.
+      # THE SUITE'S RELIEF UNDER NODE_ENV=production. `next start` is
+      # production, and the reliefs the suite needs (the cost-bounding rate
+      # limits, a live board's poll, the operator's pass past the twenty-game
+      # cap) are refused in production — except on a server that says it is
+      # the suite's, with `ITSUTSU_SUITE_SERVER=1` in the .env above, and never
+      # on Vercel whatever is set (`src/lib/suiteServer.ts`, and its test,
+      # which fails if vercel-deploy.yml ever names the marker). Without the
+      # marker the suite drives the whole site from one address against
+      # household-scale limits and fails a dozen specs with 429s.
       #
       # THE BOARD AND THE SITE'S SETTINGS LIVE ON SUMILABU (0.196.1, 0.196.2),
       # so the dev server needs somewhere to read them. Without these, every
@@ -194,13 +205,13 @@ jobs:
       #
       # THE DEV PROJECT ONLY, NEVER THE LIVE TOKENS. `sumilabuTarget` answers
       # itsutsu-dev when SUMILABU_PROJECT_KEY is unset, refuses the live
-      # project outside NODE_ENV=production (and this is the dev server — see
-      # above), and the dev project reads only these two tokens. Nothing here
+      # project unless SUMILABU_PROJECT_KEY names it, which nothing here does,
+      # and the dev project reads only these two tokens. Nothing here
       # sets SUMILABU_BOARD_TOKEN or SUMILABU_SETTINGS_TOKEN, and nothing may.
       #
       # On this step and no other: `pnpm install` runs dependencies' install
       # scripts, and they have no business with a token. Playwright's
-      # `webServer` inherits this environment, so the dev server it starts
+      # `webServer` inherits this environment, so the server it starts
       # reads them; Next's `.env` loading never overrides a variable already
       # set. A pull request from a fork is given no secrets by GitHub, so
       # those ten specs fail there by design.
@@ -235,6 +246,7 @@ jobs:
           test -n "$FILES"
           pnpm exec playwright test $FILES
         env:
+          E2E_SERVER: start
           SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
           SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}
           SUMILABU_SETTINGS_DEV_TOKEN: ${{ secrets.SUMILABU_SETTINGS_DEV_TOKEN }}

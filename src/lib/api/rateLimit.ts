@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { reliefAllowed } from "@/lib/suiteServer";
 
 /**
  * Request rate limiting, in the shape UmaKuma uses.
@@ -44,7 +45,8 @@ type RateLimitConfig = {
  */
 function allowanceFor(config: RateLimitConfig): number {
   if (config.strict === true) return config.maxRequests;
-  if (process.env.NODE_ENV === "production") return config.maxRequests;
+  // Never on the live site; outside production, or on the suite's own production build (`suiteServer.ts`).
+  if (!reliefAllowed()) return config.maxRequests;
 
   const relief = Number(process.env.RATE_LIMIT_RELIEF ?? "1");
   if (!Number.isFinite(relief) || relief < 1) return config.maxRequests;
