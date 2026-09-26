@@ -1,6 +1,6 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
-import { MOST_GUESSES } from "./gomoji/layout";
+import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -100,7 +100,7 @@ export function isCheckAllowance(value: unknown): value is number | null {
  * at them.
  */
 /** The longest answer a word puzzle can hand in: every guess its most generous level gives, of its longest word. */
-const WORD_ANSWER_MOST = MOST_GUESSES * 5;
+const WORD_ANSWER_MOST = MOST_GUESSES * LONGEST_WORD;
 
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 256: a 16×16's cells, one character each, 1–9 then A–G.
@@ -125,13 +125,13 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * solve past the sixth guess was refused as "Not a grid of that size" —
    * solved, and never kept or paid. `puzzleCodeLength.test.ts` holds it now.
    */
-  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  gomoji: { sizes: [4, 5, 6], offered: [4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
   /* The longest answer the same way, in kana; the givens are the word and its grey word. */
   gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomojiKana" },
   // Gomoji in French, from the Lexique dictionary: the same shape as English's, accents folded away.
-  gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  gomojiMot: { sizes: [4, 5, 6], offered: [4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
-  gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  gomojiWort: { sizes: [4, 5, 6], offered: [4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
 };
 
 /**
@@ -201,6 +201,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   gomoji: {
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
+    6: { label: "Six letters", kanji: "六文字" },
   },
   gomojiKana: {
     3: { label: "Three kana", kanji: "三文字" },
@@ -210,10 +211,12 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   gomojiMot: {
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
+    6: { label: "Six letters", kanji: "六文字" },
   },
   gomojiWort: {
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
+    6: { label: "Six letters", kanji: "六文字" },
   },
 };
 
@@ -388,15 +391,15 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     origin:
       "Guessing a word from what each guess gives away is an old parlour game: Jotto (1955) counted the letters two words share, and the television game Lingo (1987) coloured each letter in its place or not. Josh Wardle's Wordle (2021) made the five-letter form a daily habit.",
     rules: [
-      "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
+      "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
-      "Hard gives the classic count: six guesses for five letters, five for four. Medium gives one more, and easy every row of the board: nine for five letters, eight for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Hard gives the classic count: six guesses for five letters, five for four, and six for six, since a longer word gives more away with every guess. Medium gives one more, and easy every row of the board: nine for five letters, eight for four or six. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],
     board:
-      "Five letters on a board nine squares across, or four on eight. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
+      "Five letters on a board nine squares across, or four or six on eight. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
   },
   gomojiKana: {
     label: "Gomoji Kana",
@@ -425,15 +428,15 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Gomoji in French: the same hunt for a hidden word Josh Wardle's Wordle (2021) made a daily habit, played on the AZERTY keyboard. Accents fold to their plain letter, as French Wordle clones play it — É guesses the same as E.",
     country: "FR",
     rules: [
-      "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
+      "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
-      "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Six guesses for five letters, five for four, six for six. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],
     board:
-      "Five letters and six guesses, or four letters and five. Any word in Lexique, a dictionary of about 140,000 French words, may be guessed. The hidden word is one Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words, as Lexique counts them among those French film dialogue uses most (hermitdave's FrequencyWords), and medium and hard one of the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
+      "Five letters and six guesses, four letters and five, or six letters and six. Any word in Lexique, a dictionary of about 140,000 French words, may be guessed. The hidden word is one Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words, as Lexique counts them among those French film dialogue uses most (hermitdave's FrequencyWords), and medium and hard one of the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
   },
   gomojiWort: {
     label: "Gomoji Wort",
@@ -444,14 +447,14 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Gomoji in German: the same hunt for a hidden word Josh Wardle's Wordle (2021) made a daily habit, played on the QWERTZ keyboard with Ä, Ö and Ü as letters of their own.",
     country: "DE",
     rules: [
-      "A word is hidden: five letters, or four in the short form. Type a word of that length and press Enter to guess it.",
+      "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "Ä, Ö and Ü are letters of their own, not vowels with a fold: a guess for ä only matches ä.",
-      "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Six guesses for five letters, five for four, six for six. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],
     board:
-      "Five letters and six guesses, or four letters and five. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
+      "Five letters and six guesses, four letters and five, or six letters and six. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
   },
 };

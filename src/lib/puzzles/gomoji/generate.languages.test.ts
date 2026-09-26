@@ -31,7 +31,7 @@ describe("drawing a Gomoji Mot (French)", () => {
   }
 
   it("draws only plain A–Z: accents are folded away when the list is written, and œ/æ words are left out entirely", () => {
-    for (const size of [4, 5]) {
+    for (const size of PUZZLE_SPECS.gomojiMot.sizes) {
       for (const word of answersFor(size, false, "fr")) {
         expect(word).toMatch(/^[a-z]+$/);
         expect(word).not.toMatch(/[œæ]/);
@@ -65,7 +65,7 @@ describe("drawing a Gomoji Wort (German)", () => {
   }
 
   it("keeps Ä, Ö and Ü as letters of their own, and leaves out any word spelled with ß", () => {
-    for (const size of [4, 5]) {
+    for (const size of PUZZLE_SPECS.gomojiWort.sizes) {
       for (const word of answersFor(size, false, "de")) {
         expect(word).toMatch(/^[a-zäöü]+$/);
         expect(word).not.toContain("ß");

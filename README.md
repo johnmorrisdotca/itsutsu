@@ -144,10 +144,10 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 | **Black and White** 白黒 | Takuzu / Binairo: half of each colour in every line, never three alike, no line repeated | 6×6, 8×8, 10×10, 12×12 | graded by what a person sees at a glance |
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
-screen for now: **Gomoji** 五文字, a hidden word of four or five letters
+screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
 found on a board of eight or nine squares, each guess coloured letter by
-letter: hard gives the classic count of guesses, medium one more, easy every
-row, and Strict at any level holds each guess to the letters already found
+letter: hard gives the classic count of guesses (a letter more than the word,
+never more than six), medium one more, easy every row, and Strict at any level holds each guess to the letters already found
 (`src/lib/puzzles/gomoji/layout.ts`). Head start, at easy only, greys as many
 keys as the word is long before the first guess, none of them in the word,
 for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). English words
