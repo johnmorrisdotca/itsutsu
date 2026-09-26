@@ -11,6 +11,7 @@ import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
+import { freshDodgeSeed } from "@/lib/puzzles/gomoji/dodgeSeed";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
@@ -52,12 +53,15 @@ export function PuzzlePlay({
   hints = false,
   strict = false,
   headStart = false,
+  dodge = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
 }: {
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
+  /** Whether a Gomoji's Nige was asked for, the word that dodges (`dodge.ts`): read only to draw a seed, which says it from then on. */
+  dodge?: boolean;
   /** Tsunagi's levels already solved at this size on the account, and whether it is played by colours or numbers. */
   tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null } | null;
   kind: PuzzleKind;
@@ -91,8 +95,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict, headStart })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: dodge ? freshDodgeSeed() : freshSeed(), checks, hints, strict, headStart, dodge })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, dodge, router]);
 
   /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji) waits for them; every other kind is ready at once. */
   const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" ? null : `${kind}:${size}`);

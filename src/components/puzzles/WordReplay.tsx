@@ -7,8 +7,8 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { knownCounts, letterKeyMarks, kanaKeyMarks, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
-import { guessesFor } from "@/lib/puzzles/gomoji/layout";
-import { decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
+import { guessesOfPlay, wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
+import { languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -76,7 +76,8 @@ export function WordReplay({
   // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours.
   const kanaGiven = kana ? decodeKanaGivens(givens, size) : null;
   const grey = kanaGiven?.grey ?? null;
-  const word = kana ? (kanaGiven?.word ?? "") : (decodeHidden(givens, size, lang) ?? "");
+  // The word every row is coloured against: the hidden one, or where a dodger stood at the end (`wordOfPlay`), which colours every step alike.
+  const word = wordOfPlay(kind, size, level, givens, guesses) ?? "";
   const rows = kana && grey !== null ? [grey, ...played] : played;
   const kanaMarks = kana ? rows.map((row) => markKanaGuess([...row], [...word])) : [];
   const marks = kana ? kanaMarks.map((row) => row.map((each) => each.mark)) : rows.map((row) => markGuess(row, word));
@@ -92,7 +93,7 @@ export function WordReplay({
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
       <GomojiGrid
         size={size}
-        rows={free + Math.max(guesses.length, guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free))}
+        rows={free + Math.max(guesses.length, guessesOfPlay(kind, size, level, givens))}
         guesses={rows}
         marks={marks}
         arrows={arrows}

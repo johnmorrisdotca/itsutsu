@@ -17,18 +17,23 @@ import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeHidden, languageOf } from "@/lib/puzzles/gomoji/code";
+import { decodeGuesses, languageOf } from "@/lib/puzzles/gomoji/code";
+import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
+import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { loadKanaWords } from "@/lib/puzzles/gomojiKana/kanaWords";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
-/** A word puzzle's hidden word, in the case it is played in. */
-function wordOf(kind: PuzzleKind, givens: string, size: number): string {
-  return kind === "gomojiKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size, languageOf(kind)) ?? "").toUpperCase();
+/** A word puzzle's hidden word, in the case it is played in — a dodger's where it stood at the end (`wordOfPlay`). */
+function wordOf(kind: PuzzleKind, givens: string, size: number, level: string, answer: string | null): string {
+  const guesses = answer === null ? [] : ((kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind))) ?? []);
+  const word = wordOfPlay(kind, size, level as PuzzleLevel, givens, guesses) ?? "";
+  return kind === "gomojiKana" ? word : word.toUpperCase();
 }
 
 /** Whether a moment falls on today's date in UTC, the day today's puzzle is everybody's (`dailySeed`). */
@@ -65,6 +70,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const own = solverId === me;
   const kept = own || !isTodayUtc(found.finishedAt) || (await finishedSameGrid(me, kind, found.givens));
   const solve = kept ? found : { ...found, answer: null, steps: null };
+  // A kana dodger's word is replayed from its list (`wordOfPlay`), loaded first.
+  if (kind === "gomojiKana" && isDodgeGivens(found.givens)) await loadKanaWords(found.size);
   const solver = (await memberNamesOf([solverId])).get(solverId) ?? "";
   const copy = PUZZLE_DISPLAY[kind];
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
@@ -79,7 +86,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const facts: { label: string; value: string; testId: string }[] = [
     { label: "How it ended", value: outcome, testId: "solve-outcome" },
     // A word puzzle says its word, found or not: a word not found is the one thing the grid cannot show.
-    ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size) : "Kept back until tomorrow", testId: "solve-word" }] : []),
+    ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size, solve.level, found.answer) : "Kept back until tomorrow", testId: "solve-word" }] : []),
     { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
     // A word's guesses, out of the level's allowance: the other half of how it went.

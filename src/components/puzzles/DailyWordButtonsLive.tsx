@@ -1,11 +1,11 @@
 import { connection } from "next/server";
 
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { dailyDayPath, dailyPlayPath, todayPlayPath } from "@/lib/puzzles/dailyWords/dailyAddress";
+import { dailyDayPath, dailyDodgePlayPath, dailyPlayPath, todayDodgePlayPath, todayPlayPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLengths, dailyWordOf, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { dailyStatusesOf } from "@/lib/puzzles/server/dailyPlays";
+import { dailyDodgeStatusesOf, dailyStatusesOf } from "@/lib/puzzles/server/dailyPlays";
 
 import { DailyWordButtons } from "./DailyWordButtons";
 
@@ -26,18 +26,20 @@ export async function DailyWordButtonsLive({ kind, framed }: { kind: PuzzleKind;
     return word === undefined ? [] : [[size, word] as const];
   }));
   const memberId = await currentMemberId();
-  const statuses = memberId === null ? null : await dailyStatusesOf(memberId, kind, today, words);
+  const [statuses, dodges] = memberId === null ? [null, null] : await Promise.all([dailyStatusesOf(memberId, kind, today, words), dailyDodgeStatusesOf(memberId, kind, today, sizes)]);
   const rows = sizes.map((size) => ({
     size,
     // Before the first day of the daily words, a length has no word yet and its button asks for today's as it always did.
     href: words.has(size) ? dailyPlayPath(kind, size, today) : todayPlayPath(kind, size),
     status: statuses?.get(size) ?? (statuses === null ? null : { state: "notYet" as const }),
+    // Today's Nige at this length, the dodger everybody meets today (`dodgeDailySeed`): no pool, so there from the first day.
+    dodge: { href: dailyDodgePlayPath(kind, size, today), status: dodges?.get(size) ?? (dodges === null ? null : { state: "notYet" as const }) },
   }));
   return <DailyWordButtons kind={kind} rows={rows} todayHref={memberId === null ? null : dailyDayPath(kind, today)} framed={framed} />;
 }
 
 /** The same buttons with nothing read: the prerendered shell, each asking for today's word when followed. */
 export function DailyWordButtonsShell({ kind, framed }: { kind: PuzzleKind; framed: boolean }) {
-  const rows = dailyLengths(kind).map((size) => ({ size, href: todayPlayPath(kind, size), status: null }));
+  const rows = dailyLengths(kind).map((size) => ({ size, href: todayPlayPath(kind, size), status: null, dodge: { href: todayDodgePlayPath(kind, size), status: null } }));
   return <DailyWordButtons kind={kind} rows={rows} todayHref={null} framed={framed} />;
 }

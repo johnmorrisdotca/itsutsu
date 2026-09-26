@@ -4,6 +4,8 @@ import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { kanaScore } from "./gomojiKana/kanaScore";
 import { kumimojiPoints } from "./kumimoji/check";
+import { dodgeGuesses, wordOfPlay } from "./gomoji/dodgePlay";
+import { isDodgeGivens } from "./gomoji/dodgeSeed";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -41,8 +43,14 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
  * run together as they are handed in.
  */
 export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel, lang: GomojiLanguage = "en"): number {
-  const hidden = decodeHidden(givens, size, lang);
   const guesses = decodeGuesses(answer, size, lang);
+  // A dodger is scored against the word it was pinned to, or stood for when the rows ran out, over its own count of guesses (`dodgePlay.ts`).
+  if (isDodgeGivens(givens)) {
+    const kind = lang === "fr" ? "gomojiMot" : lang === "de" ? "gomojiWort" : "gomoji";
+    const word = guesses === null || level === undefined ? null : wordOfPlay(kind, size, level, givens, guesses);
+    return word === null || guesses === null || level === undefined ? 0 : wordScore(word, guesses, dodgeGuesses(kind, size, level), elapsedMs).total;
+  }
+  const hidden = decodeHidden(givens, size, lang);
   // Weighed by the guesses the level gave (`layout.ts`); with no level, the published count. Mot and Wort are laid out as English is.
   const rows = level === undefined ? baseGuesses("gomoji", size) : guessesFor("gomoji", size, level, 0);
   return hidden === null || guesses === null ? 0 : wordScore(hidden, guesses, rows, elapsedMs).total;
@@ -50,8 +58,12 @@ export function wordPoints(size: number, givens: string, answer: string, elapsed
 
 /** A kana word, scored as English's is on the same scale (`kanaScore`). */
 export function kanaPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel): number {
-  const puzzle = decodeKanaGivens(givens, size);
   const guesses = decodeKanaGuesses(answer, size);
+  if (isDodgeGivens(givens)) {
+    const word = guesses === null || level === undefined ? null : wordOfPlay("gomojiKana", size, level, givens, guesses);
+    return word === null || guesses === null || level === undefined ? 0 : kanaScore(word, guesses, dodgeGuesses("gomojiKana", size, level), elapsedMs).total;
+  }
+  const puzzle = decodeKanaGivens(givens, size);
   if (puzzle === null || guesses === null) return 0;
   const rows = level === undefined ? baseGuesses("gomojiKana", size) : guessesFor("gomojiKana", size, level, puzzle.grey === null ? 0 : 1);
   return kanaScore(puzzle.word, guesses, rows, elapsedMs).total;

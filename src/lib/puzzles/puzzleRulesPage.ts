@@ -2,6 +2,7 @@ import { gameArtPath } from "@/lib/gomoku/artwork";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
+import { dodgeRule } from "./gomoji/dodgeWords";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -32,6 +33,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   ];
   const play = [
     ...copy.rules.slice(1),
+    ...(spec.wordGrid === undefined ? [] : [dodgeRule(spec.wordGrid)]),
     `Levels: ${levels.join("; ")}.`,
     "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
   ];

@@ -13,6 +13,8 @@ import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzle
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, decodeHidden, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
+import { dodgeGuesses, readDodge } from "@/lib/puzzles/gomoji/dodgePlay";
+import { decodeDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
@@ -75,10 +77,14 @@ export function GomojiSolve({
   const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
   const lang = useMemo(() => languageOf(kind), [kind]);
-  const hidden = useMemo(() => decodeHidden(puzzle.givens, size, lang) ?? "", [puzzle.givens, size, lang]);
-  // Mot and Wort are laid out as English Gomoji is (`layout.ts`).
-  const rows = guessesFor("gomoji", size, level, 0);
+  // A Gomoji Nige 逃げ hides nothing: every guess is answered by the dodger (`dodgePlay.ts`), its seed in the givens.
+  const dodging = decodeDodgeGivens(puzzle.givens);
+  // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a dodger gives its own count.
+  const rows = dodging === null ? guessesFor("gomoji", size, level, 0) : dodgeGuesses(kind, size, level);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size, lang)) ?? []);
+  // The word every row is coloured against: the hidden one, or the one the dodger stands for after these guesses.
+  const dodge = useMemo(() => (dodging === null ? null : readDodge(kind, size, level, dodging, guesses)), [dodging, kind, size, level, guesses]);
+  const hidden = useMemo(() => dodge?.word ?? decodeHidden(puzzle.givens, size, lang) ?? "", [dodge, puzzle.givens, size, lang]);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
@@ -145,9 +151,11 @@ export function GomojiSolve({
     setGuesses(next);
     setTyping(emptyRow(size));
     setSaid(null);
-    if (word === hidden) void finish(next.join(""), at);
+    // A dodger is found only when the guess left it nowhere else to go (`dodgeFound`).
+    const found = dodging === null ? word === hidden : readDodge(kind, size, level, dodging, next).found;
+    if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, typing, size, strict, guesses, hidden, lang, begin, finish, runOut, rows]);
+  }, [closed, typing, size, strict, guesses, hidden, lang, begin, finish, runOut, rows, dodging, kind, level]);
 
   /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
@@ -209,7 +217,10 @@ export function GomojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
+            {said ??
+              `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left${
+                dodge === null ? "" : `, and ${dodge.standing} ${dodge.standing === 1 ? "word" : "words"} for it to hide among`
+              }.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
@@ -223,7 +234,9 @@ export function GomojiSolve({
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
           <p className="text-base">
-            Out of {rows} guesses. The word was <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>.
+            Out of {rows} guesses.{" "}
+            {dodge === null || dodge.standing <= 1 ? "The word was " : `It was still hiding among ${dodge.standing} words, one of them `}
+            <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
           <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} headStart={headStart} />
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
@@ -239,7 +252,7 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, dodge: dodging !== null })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >

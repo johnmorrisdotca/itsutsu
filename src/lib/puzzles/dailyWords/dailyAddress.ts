@@ -7,6 +7,7 @@ import { puzzleQuery } from "../puzzleAddress";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { dailyWordSeed } from "./dailyDay";
+import { dodgeDailySeed } from "../gomoji/dodgeSeed";
 
 /**
  * WHERE THE DAILY WORDS ARE, and how a kept solve is matched to a day's word.
@@ -39,6 +40,16 @@ export function dailyPlayPath(kind: PuzzleKind, size: number, day: string): stri
  */
 export function todayPlayPath(kind: PuzzleKind, size: number): string {
   return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null })}&${DAILY_PARAM}=1`;
+}
+
+/** The address a day's Nige is played at, at a length: the dodger everybody meets that day (`dodgeDailySeed`). */
+export function dailyDodgePlayPath(kind: PuzzleKind, size: number, day: string): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: dodgeDailySeed(day), dodge: true })}`;
+}
+
+/** Today's Nige at a length, for a page drawn before anybody asked: `?daily=1` with `nige=1` turns into today's dodger's seed. */
+export function todayDodgePlayPath(kind: PuzzleKind, size: number): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, dodge: true })}&${DAILY_PARAM}=1`;
 }
 
 /** The word a kept solve's givens hid, as the pools write it (lower case, or hiragana), or null for givens that are not a word. */

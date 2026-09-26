@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
+
 import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
-import { clockText } from "@/lib/puzzles/clockText";
 import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import type { DailyStatus } from "@/lib/puzzles/dailyWords/dailyWords.types";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
@@ -28,27 +29,16 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
  * a panel of its own. Two narrow columns, so it fits a 390-pixel phone.
  */
 export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordButtonsProps) {
-  const showStatus = rows.some((row) => row.status !== null);
   const table = (
-    <div className={TABLE_SCROLL}>
-    <table className="w-full text-sm" data-testid="daily-words-table">
-      <tbody>
-        {rows.map((row) => (
-          <tr key={row.size} data-testid="daily-row" data-size={row.size}>
-            <td className="py-0.5 pr-2">
-              <Link href={row.href} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full whitespace-nowrap`} data-testid="daily-play" data-size={row.size}>
-                Today&apos;s {row.size} <span className="font-mincho opacity-70">今日の{row.size}</span>
-              </Link>
-            </td>
-            {showStatus ? (
-              <td className="py-0.5 text-xs whitespace-nowrap tabular-nums" data-testid="daily-status" data-state={row.status?.state ?? "unknown"}>
-                {row.status === null ? null : <StatusText kind={kind} status={row.status} />}
-              </td>
-            ) : null}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="flex flex-col gap-2">
+      <ButtonTable kind={kind} prefix="daily" rows={rows} label={(size) => <>Today&apos;s {size} <span className="font-mincho opacity-70">今日の{size}</span></>} />
+      {/* The day's Nige 逃げ at every length: a word that dodges, the same dodger for everybody (`dodgeSeed.ts`). */}
+      <ButtonTable
+        kind={kind}
+        prefix="nige-daily"
+        rows={rows.map((row) => ({ size: row.size, ...row.dodge }))}
+        label={(size) => <>Nige {size} <span className="font-mincho opacity-70">逃げの{size}</span></>}
+      />
     </div>
   );
   const links = (
@@ -69,7 +59,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         <h2 className={SECTION_TITLE}>
           Today&apos;s words <span className="font-mincho normal-case tracking-normal">今日の言葉</span>
         </h2>
-        <p className="text-xs text-muted">The same word for everybody today at each length, new at midnight UTC.</p>
+        <p className="text-xs text-muted">The same word for everybody today at each length, and the same word that dodges, new at midnight UTC.</p>
         {table}
         {links}
       </section>
@@ -83,6 +73,35 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
       {table}
       {links}
     </section>
+  );
+}
+
+type ButtonRow = { size: number; href: string; status: DailyStatus | null };
+
+/** One table of buttons, a row a length, with where the reader stands beside each: today's words, or today's dodgers. */
+function ButtonTable({ kind, prefix, rows, label }: { kind: PuzzleKind; prefix: string; rows: readonly ButtonRow[]; label: (size: number) => ReactNode }) {
+  const showStatus = rows.some((row) => row.status !== null);
+  return (
+    <div className={TABLE_SCROLL}>
+      <table className="w-full text-sm" data-testid={prefix === "daily" ? "daily-words-table" : `${prefix}-table`}>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.size} data-testid={`${prefix}-row`} data-size={row.size}>
+              <td className="py-0.5 pr-2">
+                <Link href={row.href} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full whitespace-nowrap`} data-testid={`${prefix}-play`} data-size={row.size}>
+                  {label(row.size)}
+                </Link>
+              </td>
+              {showStatus ? (
+                <td className="py-0.5 text-xs whitespace-nowrap tabular-nums" data-testid={`${prefix}-status`} data-state={row.status?.state ?? "unknown"}>
+                  {row.status === null ? null : <StatusText kind={kind} status={row.status} />}
+                </td>
+              ) : null}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

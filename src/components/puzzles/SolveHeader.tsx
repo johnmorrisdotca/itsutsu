@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { clockText } from "@/lib/puzzles/clockText";
+import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
@@ -38,6 +40,11 @@ export function SolveHeader({
                 {" "}· {PUZZLE_LEVEL_DISPLAY[puzzle.level].label} <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
               </>
             )}
+            {isDodgeGivens(puzzle.givens) ? (
+              <span data-testid="puzzle-asked-dodge">
+                {" "}· {DODGE_DISPLAY.label} <span className="font-mincho">{DODGE_DISPLAY.kanji}</span>
+              </span>
+            ) : null}
             {headStart ? (
               <span data-testid="puzzle-asked-head-start">
                 {" "}· {HEAD_START_DISPLAY.label} <span className="font-mincho">{HEAD_START_DISPLAY.kanji}</span>

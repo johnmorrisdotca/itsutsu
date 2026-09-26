@@ -18,6 +18,7 @@ import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
+import { freshDodgeSeed, isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { PuzzleWayBack } from "./PuzzleWayBack";
@@ -383,7 +384,9 @@ export function SolveDone({
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks, strict, headStart })}`);
+    // A dodger's Another is another dodger (`dodge.ts`): its seed says so.
+    const dodge = isDodgeGivens(puzzle.givens);
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: dodge ? freshDodgeSeed() : freshSeed(), checks, strict, headStart, dodge })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">

@@ -14,6 +14,8 @@ import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProg
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
+import { dodgeGuesses, readDodge } from "@/lib/puzzles/gomoji/dodgePlay";
+import { decodeDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { breaksKanaHardRule, decodeKanaGivens, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
 import { kanaScore } from "@/lib/puzzles/gomojiKana/kanaScore";
@@ -92,11 +94,14 @@ export function GomojiKanaSolve({
   const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
   const given = useMemo(() => decodeKanaGivens(puzzle.givens, size) ?? { word: "", grey: null }, [puzzle.givens, size]);
-  const hidden = given.word;
+  // A Gomoji Nige 逃げ in kana hides nothing and has no free grey word: the dodger answers every guess (`dodgePlay.ts`).
+  const dodging = decodeDodgeGivens(puzzle.givens);
   const free = given.grey === null ? 0 : 1;
-  const rows = guessesFor("gomojiKana", size, level, free);
+  const rows = dodging === null ? guessesFor("gomojiKana", size, level, free) : dodgeGuesses(kind, size, level);
   const words = useMemo(() => kanaWordsOf(size), [size]);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeKanaProgress(resumed.progress, size)) ?? []);
+  const dodge = useMemo(() => (dodging === null ? null : readDodge(kind, size, level, dodging, guesses)), [dodging, kind, size, level, guesses]);
+  const hidden = dodge?.word ?? given.word;
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [romaji, setRomaji] = useState("");
   const [said, setSaid] = useState<string | null>(null);
@@ -191,9 +196,11 @@ export function GomojiKanaSolve({
     setGuesses(next);
     setTyping(emptyRow(size));
     setSaid(null);
-    if (word === hidden) void finish(next.join(""), at);
+    // A dodger is found only when the guess left it nowhere else to go (`dodgeFound`).
+    const found = dodging === null ? word === hidden : readDodge(kind, size, level, dodging, next).found;
+    if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, romaji, typing, size, words, strict, guesses, hidden, begin, finish, runOut, rows]);
+  }, [closed, romaji, typing, size, words, strict, guesses, hidden, begin, finish, runOut, rows, dodging, kind, level]);
 
   /* The desk's keyboard: romaji, kana from a Japanese keyboard, Enter, Backspace and Delete, Space and the arrows. */
   useEffect(() => {
@@ -253,7 +260,10 @@ export function GomojiKanaSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `${free === 1 ? "The first word is free, grey everywhere. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
+            {said ??
+              `${free === 1 ? "The first word is free, grey everywhere. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left${
+                dodge === null ? "" : `, and ${dodge.standing} ${dodge.standing === 1 ? "word" : "words"} for it to hide among`
+              }.`}
             {romaji === "" ? null : (
               <span className="ml-2 font-mono text-ink" data-testid="kana-romaji">
                 {romaji}…
@@ -284,7 +294,9 @@ export function GomojiKanaSolve({
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
           <p className="text-base">
-            Out of {rows} guesses. The word was <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>.
+            Out of {rows} guesses.{" "}
+            {dodge === null || dodge.standing <= 1 ? "The word was " : `It was still hiding among ${dodge.standing} words, one of them `}
+            <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
           <WordScoreLine score={score!} headStart={headStart} />
           {hasAccount && race === null ? (
@@ -299,7 +311,7 @@ export function GomojiKanaSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, dodge: dodging !== null })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
