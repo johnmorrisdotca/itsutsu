@@ -3,6 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
+// The page's own width: a board opened on its own is as wide as the page it came from.
+import { PAGE_WIDTH } from "@/components/layout/pageWidth.constants";
 import { FOCUS_RING } from "@/components/ui/ui.constants";
 
 /**
@@ -66,7 +68,7 @@ export function BoardFocus({
       data-testid="board-focus"
     >
       <div
-        className={open ? "relative mx-auto flex w-full max-w-6xl flex-col gap-3 rounded-xl bg-paper p-3 pt-12 shadow-2xl sm:p-5 sm:pt-14" : "contents"}
+        className={open ? `relative mx-auto flex w-full ${PAGE_WIDTH} flex-col gap-3 rounded-xl bg-paper p-3 pt-12 shadow-2xl sm:p-5 sm:pt-14` : "contents"}
         role={open ? "dialog" : undefined}
         aria-modal={open ? true : undefined}
         aria-label={open ? `${label}, on its own` : undefined}

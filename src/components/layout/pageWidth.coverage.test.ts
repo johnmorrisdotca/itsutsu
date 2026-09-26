@@ -20,7 +20,7 @@ import { PAGE_WIDTH } from "./Page";
  * before they are ever drawn:
  *
  * - a second frame: a page-sized `max-w-5xl`/`6xl`/`7xl` or a
- *   `2xl:max-w-[…]` anywhere but `Page.tsx`;
+ *   `2xl:max-w-[…]` anywhere but `pageWidth.constants.ts`, where `PAGE_WIDTH` lives;
  * - a paragraph capped with `max-w-prose`, or with a `max-w-…` size on the
  *   `<p>` itself, with no `data-width-reason` saying why.
  *
@@ -60,15 +60,15 @@ describe("page width", () => {
     expect(typeof PAGE_WIDTH, "PAGE_WIDTH is a single class, not a choice of widths").toBe("string");
   });
 
-  it("has no second frame anywhere but Page.tsx", () => {
+  it("has no second frame anywhere but the one PAGE_WIDTH", () => {
     const found = offenders(
       /\bmax-w-(5xl|6xl|7xl)\b|\b(sm|md|lg|xl|2xl):max-w-(5xl|6xl|7xl|screen|\[(6[4-9]|[7-9]\d|\d{3,})rem\])/,
-      (path) => path.endsWith(join("layout", "Page.tsx")),
+      (path) => path.endsWith(join("layout", "pageWidth.constants.ts")),
     );
     expect(
       found,
-      "A page-sized width outside Page.tsx is a page choosing its own frame. Every page is PAGE_WIDTH " +
-        "(src/components/layout/Page.tsx); take the class off and let the page fill the frame.",
+      "A page-sized width outside pageWidth.constants.ts is a page choosing its own frame. Every page is PAGE_WIDTH " +
+        "(src/components/layout/pageWidth.constants.ts); take the class off and let the page fill the frame.",
     ).toEqual([]);
   });
 

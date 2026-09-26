@@ -20,7 +20,7 @@ import { gamesMade, namesPlayedUnder } from "./tidy";
  * `max-width` (see `pageWidth.ts` for exactly what is measured).
  *
  * A FAILURE NAMES THE PAGE, THE WIDTHS AND THE ELEMENT, so it can be fixed
- * from the report. The frame is `PAGE_WIDTH` in `src/components/layout/Page.tsx`
+ * from the report. The frame is `PAGE_WIDTH` in `src/components/layout/pageWidth.constants.ts`
  * and nothing else; a paragraph narrower on purpose carries
  * `data-width-reason="…"` in the source, which this reads and leaves alone.
  *
@@ -39,7 +39,7 @@ const VIEWPORT = { width: 1440, height: 900 };
  * this file wants.
  */
 const PAGE_WIDTH = /export const PAGE_WIDTH = "([^"]+)"/.exec(
-  readFileSync(join(process.cwd(), "src/components/layout/Page.tsx"), "utf8"),
+  readFileSync(join(process.cwd(), "src/components/layout/pageWidth.constants.ts"), "utf8"),
 )?.[1] ?? "";
 
 /** Tailwind's container sizes, which is all `PAGE_WIDTH` may be. */
