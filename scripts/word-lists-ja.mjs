@@ -27,7 +27,14 @@
  * best. Left out of the answers: interjections, particles, conjunctions,
  * affixes, counters, auxiliaries and set phrases, anything JMdict marks vulgar,
  * derogatory, sensitive, archaic, obsolete or rare, irregular spellings, a word
- * starting with ー or a small kana, and the few below.
+ * starting with ー or a small kana, and the few below. A loanword (a katakana
+ * reading with no kanji) counts only its ichi1, gai1 and newspaper marks: spec1
+ * and spec2 alone mark English written in katakana (クレイジー, トレジャー,
+ * ネイチャー), which may be guessed and is not yet a Japanese word to hide.
+ *
+ * JMdict is a real dictionary, so every word here is Japanese; any language
+ * Gomoji adds later takes its words from a real dictionary of that language
+ * too, never from a frequency count alone (`word-lists-fr-de.mjs` says why).
  *
  * Stored one character a kana, the words of one length run together with
  * nothing between them, one file a length: a 3-kana puzzle loads about fifty
@@ -53,7 +60,7 @@ const NOT_ANSWER_POS = new Set(["int", "prt", "conj", "suf", "pref", "ctr", "aux
 /** JMdict's own marks for words a puzzle should not hide. */
 const NOT_ANSWER_MISC = new Set(["vulg", "X", "derog", "sens", "arch", "obs", "rare", "obsc"]);
 /** Readings a puzzle should not hide that JMdict marks no differently. */
-const NOT_AN_ANSWER = new Set(["うんこ", "うんち", "おなら", "おしっこ", "ちんこ", "まんこ", "ちんぽ", "くそ", "げろ", "しっこ", "ぶす", "でぶ", "はげ", "ばか", "あほ", "ぼけ", "かす"]);
+const NOT_AN_ANSWER = new Set(["うんこ", "うんち", "おなら", "おしっこ", "ちんこ", "まんこ", "ちんぽ", "くそ", "げろ", "しっこ", "ぶす", "でぶ", "はげ", "ばか", "あほ", "ぼけ", "かす", "しょうべん", "ぱんてぃー", "ふぇらちお", "ばいしゅん", "ちくしょう"]);
 
 const HIRAGANA = /^[ぁ-ゖー]+$/u;
 /** Every character a word may hold, in a fixed order: each is written as one printable character. */
@@ -91,7 +98,9 @@ for (const entry of xml.split("<entry>").slice(1)) {
     if (/<re_inf>&(ik|ok|rk|sk);<\/re_inf>/.test(element) || !fit || NOT_AN_ANSWER.has(reading)) continue;
     // A word may not start with ー or a small kana, whatever a dictionary spells.
     if (reading.startsWith("ー") || /^[ぁぃぅぇぉっゃゅょゎゕゖ]/u.test(reading)) continue;
-    const marks = [...element.matchAll(/<re_pri>([^<]+)<\/re_pri>/g)].map((match) => match[1]);
+    const loanword = !entry.includes("<k_ele>") && /[ァ-ヶ]/u.test(/<reb>([^<]+)<\/reb>/.exec(element)[1]);
+    // A loanword JMdict marks common only by spec1 or spec2 is English in katakana (クレイジー, トレジャー, ネイチャー), not yet Japanese.
+    const marks = [...element.matchAll(/<re_pri>([^<]+)<\/re_pri>/g)].map((match) => match[1]).filter((mark) => !(loanword && /^spec[12]$/.test(mark)));
     const bands = marks.map((mark) => (/^nf\d\d$/.test(mark) ? Number(mark.slice(2)) : BAND[mark])).filter((band) => band !== undefined);
     if (bands.length === 0) continue;
     const rank = (marks.includes("ichi1") ? 0 : 1000) + Math.min(...bands) * 10 - marks.length;
