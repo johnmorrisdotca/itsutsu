@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.387.0 — 2026-09-26
+- Tsunagi has bridges: a cell where one line crosses another, taught at a block's 15th level and tested at its 16th.
+
 ## 0.386.0 — 2026-09-26
 - Tsunagi has 256 levels at each size (192 at 4×4), in blocks of 16, ranked easiest to hardest by a measured difficulty; every solve stays on the board it was played on.
 
