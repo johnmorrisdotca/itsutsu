@@ -108,6 +108,9 @@ test.describe("the first puzzle", () => {
     await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid/);
     await expect(page.getByTestId("puzzle-another")).toBeVisible();
     await expect(page.getByTestId("puzzle-set-up")).toHaveAttribute("href", `${AT}/new`);
+    // And the way back: the puzzle's own page and its family, beside Another.
+    await expect(done.getByTestId("puzzle-way-game")).toHaveAttribute("href", AT);
+    await expect(done.getByTestId("puzzle-way-family")).toHaveAttribute("href", `${AT}/family`);
   });
 
   /*

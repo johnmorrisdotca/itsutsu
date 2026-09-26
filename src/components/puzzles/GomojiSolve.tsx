@@ -25,6 +25,8 @@ import { WordStylePicker } from "./WordStylePicker";
 import { usePlayInView } from "./usePlayInView";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { PuzzleWayBack } from "./PuzzleWayBack";
+import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 
 /**
  * Solving Gomoji: type a word, press Enter, read its colours, and find the
@@ -212,9 +214,16 @@ export function GomojiSolve({
               with your guesses.
             </p>
           ) : null}
-          <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict })}`} className="text-sm font-semibold underline" data-testid="word-another">
-            Another word
-          </Link>
+          <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
+            <Link
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict })}`}
+              className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
+              data-testid="word-another"
+            >
+              Another word →
+            </Link>
+            <PuzzleWayBack kind={kind} />
+          </div>
         </div>
       ) : (
         <>

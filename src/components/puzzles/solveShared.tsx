@@ -20,6 +20,7 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
 
 import { PUZZLE_CLOCK, PUZZLE_CLOCK_TICK_MS, sizeWord } from "./puzzles.constants";
+import { PuzzleWayBack } from "./PuzzleWayBack";
 
 /**
  * What every kind of solve shares: the clock, handing the answer in, and the
@@ -381,7 +382,7 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
   );
 }
 
-/** The card at the end: the time, what was paid, another puzzle, or a different size. */
+/** The card at the end: the time, what was paid, another puzzle or a different size, and the way back to the puzzle's page and its family. */
 export function SolveDone({
   puzzle,
   done,
@@ -418,18 +419,20 @@ export function SolveDone({
               : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
             : (done.problem ?? "Recording your solve…")}
       </p>
-      {race === null ? (
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
-            Another {copy.label} →
-          </button>
-          <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-            Change the size or level
-          </Link>
-        </div>
-      ) : (
-        <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>
-      )}
+      {race === null ? null : <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>}
+      <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
+        {race === null ? (
+          <>
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
+              Another {copy.label} →
+            </button>
+            <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
+              Change the size or level
+            </Link>
+          </>
+        ) : null}
+        <PuzzleWayBack kind={puzzle.kind} />
+      </div>
     </div>
   );
 }

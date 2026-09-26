@@ -316,6 +316,11 @@ test.describe("the word puzzle", () => {
     // Paid for playing it out, or not paid because this member has already had today's six (the award's daily
     // cap): those two, and nothing else. The suite's member plays many words a day.
     await expect(page.getByTestId("word-kept")).toHaveText(/^(\+5 XP for playing it out\. )?Kept in My games with your guesses\.$/);
+    // And the way on: another word, Gomoji's own page, and its family (nothing ends in a dead end).
+    const wayOn = page.getByTestId("word-out").getByTestId("puzzle-way-on");
+    await expect(wayOn.getByTestId("word-another")).toBeVisible();
+    await expect(wayOn.getByTestId("puzzle-way-game")).toHaveAttribute("href", AT);
+    await expect(wayOn.getByTestId("puzzle-way-family")).toHaveAttribute("href", `${AT}/family`);
 
     // Kept on the Puzzles tab, marked as not found.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
