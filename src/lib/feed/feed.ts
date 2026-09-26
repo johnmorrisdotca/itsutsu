@@ -1,4 +1,5 @@
 import { STONES } from "@/lib/gomoku/gomoku.constants";
+import type { IpEarned } from "@/lib/points/ipBoards";
 import { xpDayKey } from "@/lib/xp/xpDay";
 import { xpLevelFor } from "@/lib/xp/xpCurve";
 
@@ -223,6 +224,41 @@ export function puzzleEntries(
     variant: group.kind,
     count: group.count,
   }));
+}
+
+/**
+ * IP won, one line per member per day in the reader's zone, as puzzles are
+ * told (`puzzleEntries`): a day's games and puzzles summed, and the line dated
+ * by the last of them. Rounded as the boards round, and a day that comes to
+ * nothing is not a line.
+ */
+export function ipEntries(
+  earned: readonly IpEarned[],
+  zone: string | null,
+  people: ReadonlyMap<string, FeedPerson>,
+  readerId: string | null,
+): FeedEntry[] {
+  const days = new Map<string, { memberId: string; day: string; ip: number; lastAt: Date }>();
+  for (const one of earned) {
+    const day = xpDayKey(one.at, zone);
+    const key = `${one.memberId}:${day}`;
+    const had = days.get(key);
+    if (had === undefined) days.set(key, { memberId: one.memberId, day, ip: one.ip, lastAt: one.at });
+    else {
+      had.ip += one.ip;
+      if (one.at > had.lastAt) had.lastAt = one.at;
+    }
+  }
+  return [...days.values()]
+    .filter((group) => Math.round(group.ip) > 0)
+    .map((group) => ({
+      kind: FEED_KINDS.ip,
+      id: `${FEED_KINDS.ip}:${group.memberId}:${group.day}`,
+      at: group.lastAt.toISOString(),
+      who: personFor(group.memberId, people),
+      you: group.memberId === readerId,
+      points: Math.round(group.ip),
+    }));
 }
 
 /**

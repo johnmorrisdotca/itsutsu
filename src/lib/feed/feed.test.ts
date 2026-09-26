@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { xpForLevel } from "@/lib/xp/xpCurve";
 
 import { FEED_KINDS, FEED_OUTCOMES } from "./feed.constants";
-import { feedDays, gameEntry, orderFeed, outcomeFor, puzzleEntries, xpEntries } from "./feed";
+import { feedDays, gameEntry, orderFeed, outcomeFor, puzzleEntries, xpEntries, ipEntries } from "./feed";
 import type { FeedEntry, FeedGameRow, FeedPerson } from "./feed.types";
 
 const READER = "m-reader";
@@ -201,5 +201,38 @@ describe("the order of the feed", () => {
       ["2026-09-20", ["a", "b"]],
       ["2026-09-19", ["c"]],
     ]);
+  });
+});
+
+describe("IP won, told a day at a time", () => {
+  const people = new Map([["m1", { memberId: "m1", name: "Hanako" }]]);
+
+  it("sums a day's games and puzzles into one line, dated by the last of them, and leaves out a day of nothing", () => {
+    const lines = ipEntries(
+      [
+        { memberId: "m1", ip: 70, at: new Date("2026-09-26T10:00:00Z") },
+        { memberId: "m1", ip: 12.4, at: new Date("2026-09-26T15:00:00Z") },
+        { memberId: "m1", ip: 35, at: new Date("2026-09-25T09:00:00Z") },
+        { memberId: "m1", ip: 0.3, at: new Date("2026-09-24T09:00:00Z") },
+      ],
+      "UTC",
+      people,
+      "m1",
+    );
+    expect(lines.map((line) => [line.id, line.kind === FEED_KINDS.ip ? line.points : null, line.at])).toEqual([
+      ["ip:m1:2026-09-26", 82, "2026-09-26T15:00:00.000Z"],
+      ["ip:m1:2026-09-25", 35, "2026-09-25T09:00:00.000Z"],
+    ]);
+    expect(lines.every((line) => line.you)).toBe(true);
+  });
+
+  it("splits the days where the reader's zone does", () => {
+    const earned = [
+      { memberId: "m1", ip: 10, at: new Date("2026-09-26T02:00:00Z") },
+      { memberId: "m1", ip: 10, at: new Date("2026-09-26T10:00:00Z") },
+    ];
+    expect(ipEntries(earned, "UTC", people, null)).toHaveLength(1);
+    // In Vancouver the first is still the evening before.
+    expect(ipEntries(earned, "America/Vancouver", people, null)).toHaveLength(2);
   });
 });

@@ -29,6 +29,8 @@ export function entryPhrase(entry: FeedEntry): PhraseKey {
       return you ? "feed.xp.you" : "feed.xp.named";
     case FEED_KINDS.credited:
       return you ? "feed.credited.you" : "feed.credited.named";
+    case FEED_KINDS.ip:
+      return you ? "feed.ip.you" : "feed.ip.named";
     case FEED_KINDS.level:
       return you ? "feed.level.you" : "feed.level.named";
     case FEED_KINDS.puzzles:

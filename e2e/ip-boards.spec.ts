@@ -65,6 +65,13 @@ test("a game won puts the winner on the IP boards, and a stranger sees them shut
     await expect(page.getByTestId("player-ip-none")).toBeVisible();
 
     await page.goto("/points");
+    // The winner's own feed tells the IP they won today, leading to the board.
+    await page.goto("/feed");
+    const won = page.locator('[data-testid="feed-entry"][data-kind="ip"][data-you="true"]').first();
+    await expect(won.getByTestId("feed-ip")).toHaveText(`${gameMax("freestyle", 9)} IP`);
+    await expect(won.getByTestId("feed-ip")).toHaveAttribute("href", "/points");
+
+    await page.goto("/points");
     // And how a game is priced, read from the same table that pays it.
     await expect(page.locator('[data-testid="ip-maximum"][data-variant="go"]')).toContainText("19: 200");
 

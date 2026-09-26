@@ -347,6 +347,8 @@ export const PHRASES = {
   "feed.waiting.named": "{who} started a game of {game}, waiting for somebody to sit down",
   "feed.xp.you": "You earned {xp}",
   "feed.xp.named": "{who} earned {xp}",
+  "feed.ip.you": "You won {ip}",
+  "feed.ip.named": "{who} won {ip}",
   "feed.credited.you": "You were credited {xp} for games played on other sites",
   "feed.credited.named": "{who} was credited {xp} for games played on other sites",
   "feed.level.you": "You reached level {level}, {name}",

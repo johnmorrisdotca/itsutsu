@@ -597,6 +597,14 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "{who}が{xp}を獲得しました",
     back: "{who} earned {xp}.",
   },
+  "feed.ip.you": {
+    text: "{ip}を勝ち取りました",
+    back: "You won {ip}.",
+  },
+  "feed.ip.named": {
+    text: "{who}が{ip}を勝ち取りました",
+    back: "{who} won {ip}.",
+  },
   "feed.credited.you": {
     text: "他のサイトでの対局に対して{xp}が加算されました",
     back: "{xp} was added for games on other sites.",

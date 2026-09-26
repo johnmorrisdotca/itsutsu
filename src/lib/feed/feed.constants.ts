@@ -34,6 +34,14 @@ export const FEED_KINDS = {
   xp: "xp",
   /** Experience credited for games played on other sites, one day's worth. */
   credited: "credited",
+  /**
+   * IP, Itsutsu Points, won in one day: games won or drawn, close losses, and
+   * puzzles solved. John, 2026-09-26: "We show people earning their XP but no
+   * mention of IP anywhere… start making IP earnings part of our Feeds." A line
+   * of its own rather than a word added to the XP line, because a day can win
+   * IP after its XP allowance is spent, and a folded line would lose it.
+   */
+  ip: "ip",
   /** A level reached, on the day the total crossed it. */
   level: "level",
   /** Puzzles of one kind finished, one day's worth. */
@@ -72,6 +80,8 @@ export const FEED_LIMITS = {
   puzzlesRead: 300,
   /** The site's news read for the Everyone tab, newest first: a line each, so no more than a page can show. */
   newsRead: 60,
+  /** IP earnings read for either tab, newest first: a game or a puzzle's best each, told a day at a time. */
+  ipRead: 300,
 } as const;
 
 /** A day, in milliseconds, for the window's arithmetic. */
