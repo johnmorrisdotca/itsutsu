@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { prepareEveryPuzzle } from "../generate";
 import { archiveMonthAsked, archiveMonths, archiveWeeks, lastPastDay } from "./dailyArchive";
 import { DAILY_WORDS_EPOCH, dayAfter, dayIndexOf } from "./dailyDay";
-import { dailyWordOf } from "./dailyPools";
+import { dailyLengths, dailyWordOf } from "./dailyPools";
 
 beforeAll(prepareEveryPuzzle);
 
@@ -50,7 +50,8 @@ describe("the archive of past words", () => {
   it("links each word to its own day's puzzle, and each day to its page", () => {
     const [week] = archiveWeeks("gomojiMot", dayAfter(DAILY_WORDS_EPOCH, 3), "all");
     const row = week!.days[0]!;
-    expect(row.words.map((each) => each.size)).toEqual([4, 5]);
+    // One word a length the puzzle offers, read from its spec as the archive does (6 joined on 2026-09-26).
+    expect(row.words.map((each) => each.size)).toEqual(dailyLengths("gomojiMot"));
     expect(row.words[0]!.href).toMatch(/^\/games\/gomoji-mot\/play\?size=4&level=medium&seed=10\d{8}$/);
     expect(row.dayHref).toBe(`/games/gomoji-mot/daily/${row.day}`);
     expect(row.words[0]!.word).toBe(row.words[0]!.word.toUpperCase());

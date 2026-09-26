@@ -149,4 +149,134 @@ zweck zweig zweit zwerg zwirn zwist zwölf zyste zügel zügig ärmel ästen ät
 `,
     },
   ],
+  6: [
+    {
+      fromCycle: 0,
+      source: "the 6-letter answers (medium and hard) of words.de.data.ts, read 2026-09-26",
+      words: `
+abbild abends abfall abflug abfuhr abgabe abgang abhang abitur ablage ablauf abriss abrupt absage
+absatz absurd abteil abwehr abwurf achtel achten ackern adrett affekt affäre agenda agiert ahnung
+akkord aktion akzent albern allein alltag altern amboss ameise ananas andere anders anfall anfang
+anflug angabe angeln angler anhand anhang anhieb anlage anlass anlauf anonym anrede anreiz ansage
+ansatz anteil antrag anwalt anzahl anämie appell araber arbeit archiv arrest arznei asbest aspekt
+asthma athlet atmung aufbau aufruf aufzug august ausbau ausruf auster ausweg auszug backen bagger
+bahnen balken balkon ballen ballon balsam bambus bammel banane bandit bangen bannen barbar barren
+barsch beamen beamer beamte becher becken bedarf beeilt befehl befund begabt begehr beginn behagt
+belang belebt belegt bellen bemalt bemüht bengel benzin bequem bereit bereut bergen beruht besagt
+besitz bestie besuch betont betrag betrug betten beugen beulen beutel bewegt beweis bezirk biegen
+bieten bieter bikini bilanz bilden billig binden binnen bisher bissig bistro bitten bitter bizarr
+bizeps blabla blasen bleibe blende bluten blutig blöken blühen bohren bohrer bolzen bomben bonbon
+bonsai booten borgen bowlen braten brauch brauen brause bremse brezel brille britin bronze bruder
+brutal brücke brüten buchen buckel buffet butter bäcker bäumen büchse bücken büfett büffel bügeln
+bündel bündig bürgen bürger bürste cabrio chance charge charme chefin chemie christ clique coupon
+cousin coyote dackel daheim damals danach danken darauf daraus dasein dauern daumen deckel decken
+defekt dehnen dekret delfin dellen demenz denken denker derart detail deuten devise dezent diakon
+dialog diebin dienen diener dienst diesel diktat dingen diplom direkt disput doktor donner doppel
+double dozent drache drehen dreier dreist dritte droben drohen drohne drüben drüber dubios ducken
+duften dulden dunkel durchs dusche dünger dünnen dürfen düster ebenso effekt ehrbar ehrung eichel
+eichen eifrig eigelb eigens eignen einmal einsam einser einzig einzug einöde eisbär eisern ekelig
+eltern embryo empört endlos entern entzug enzian episch epoche erbaut erdgas erfolg erhalt erholt
+erhöht erhört erlass erlebt erlegt erlöst erneut ernten erregt ersatz ertrag erwerb essbar essenz
+etappe examen exfrau exmann exodus extrem fabrik fackel fahren fahrer faible faktor fallen falsch
+falten fangen farbig faseln fasern fassen fasten faulen federn fehlen fehler feiern feilen ferien
+ferkel fernab ferner fertig fessel fetten fettig fetzen feucht feuern feurig fiasko fieber fiedel
+fiktiv filmen filzen finden finder finger firmen flagge flamme flanke flaute flegel flehen fliege
+flinte flosse flucht fluten fläche flöten flügel fohlen folgen folter fondue format formel formen
+forsch fortan fossil fracht fragen franke fratze freude freuen freund frevel friede frisch frisur
+frisör frivol frosch frucht früher fummel funken funker furcht fussel futter fährte fällen fällig
+färben fügung fühlen führen führer füllen füller fünfer fünfte gabeln gaffen galant galgen galopp
+ganove garage garten gatter gattin gaumen gauner geahnt gebaut gebell gebiet gebiss geboxt gebräu
+geburt gebäck gebühr geduld geehrt geerbt gefahr gefaxt gefegt gefeit gefühl gegend gegner gehabe
+gehabt gehalt gehege geheim geheul gehirn geholt gehweg gehört geigen geiger geirrt geisel geizig
+gejagt gekaut gelage gelebt gelegt gelenk gelobt gelten gelöst gemahl gemalt gemein gemixt gemäht
+gemüse genehm genial genick genuss genäht genüge genügt gepard gepäck gerade gerast gerede gering
+gerste geruch geruht geröll gerüst gesagt gesang gesetz gespür gestüt gesuch gesund gewagt gewalt
+gewand gewebe gewehr geweht geweih gewinn gewiss gewähr geysir gierig giften giftig gigant gipfel
+gitter glaser glatze glaube gleich global globus glocke glotze glühen gnädig gockel golden goldig
+golfen gondel graben grafik granit grappa grasen grauen grenze grippe grotte gruppe gräuel grölen
+grütze gucken gulden gurren guttun gähnen gönnen gönner göttin gültig gürtel haaren haarig hacken
+haften hallen halten halter hammel hammer handel hangar happen harken harsch hassen hastig haufen
+hausen heften heftig heikel heilen heilig heimat heirat heiser heiter heizen heizer hektar hektik
+heldin helfen helfer helium hellen hemmen hengst henkel henker herauf heraus herbst hering herold
+herrin hervor herzen herzog hetzen heuern heuert heulen hieran hierin hierzu himmel hinaus hinein
+hinken hinten hinter hintun hinweg hirsch hissen hitzig hocken hocker hoffen hoheit hoppla hormon
+horror horten hospiz hotdog hummer hummus hunger hurtig husten hybrid hälfte hängen häufen häufig
+häuten höchst höhlen hörbar hübsch hüllen hülsen hündin hüpfen imbiss immens impfen impuls ingwer
+inhalt inland insekt intakt intern iraker irisch ironie irrtum januar japsen jaulen jawort jedoch
+jemals jemand jetlag jodeln joggen johlen jubeln jugend junker jurist justiz jüngst kabine kadett
+kaffee kaiser kajüte kaktus kalium kamera kammer kanone kanten kanton kanzel kapern kaplan kappen
+kapsel kaputt kapuze karate karren kartei karten karton kasino kaufen kaviar kegeln kehren keller
+kennen kenner kerben kerker kessel ketten ketzer keusch kicken kiefer killen kippen kirche kirmes
+kissen kitsch kittel kitten kitzel klagen klappe klaren klasse klauen kleben kleber klecks klemme
+klerus klette klient klinge klinik klinke klippe kloake klonen kläger klären knarre knebel knecht
+kneipe knicks knirps knospe knoten knödel kobold kochen koffer kognak kohlen kojote koller koloss
+kommen konfus konsul konsum kontra konvoi koppel korken kosmos kosten kostüm krabbe kragen kralle
+krampf krater kredit kreide krippe kritik kruste krypta krähen krämer krätze krönen krücke krümel
+kuchen kugeln kultur kummer kumpel kundin kupfer kuppel kurbel kurier kurios kurven kurzum kusine
+kutter kämmen käufer köchin ködern können köpfen körper kühlen kürbis kürzen küssen labern lachen
+lacher ladung lagern lagune lahmen landen langen lappen lassen lasten laster lauern laufen lausig
+lauten lauter lawine lebend leblos lecken lecker leeren legion leguan lehnen lehren lehrer leiche
+leicht leiden leider leihen leinen leiste leiten leiter lektor lenken lenker lerche lernen lerner
+lesung letzte lieben liegen lineal linsen listen listig lizenz locken locker lohnen lotsen lustig
+lähmen längst lässig lästig läufer läuten löffel lösung lüften lügner lümmel machen macher magier
+magnet mahlen mailen makler mammut mandat mandel manege mangel mantel marine marmor marsch masche
+masern massig massiv matrix matsch mauern maurer maxime meiden meinen melden melken melone mengen
+mensch mental merken messen messer metall meteor methan metier miauen mieder mieten mieter milieu
+minder minute misere missen mittag mittel modell modeln modern mogeln moment montag morast morden
+morgen morsch mosaik motten muffig mulmig munter murmel murren museum muskel muslim muster mutant
+mutter mästen möbeln mörder mörtel mühsal mühsam müller münzen müssen nachts nacken nageln nahezu
+namens narren nation neblig nehmen neigen nektar nennen nenner nerven nervig nervös neubau neunte
+nichte nichts nickel nicken nieder niesen nieten nippen nische nisten niveau norden normen notruf
+nudeln nullen nummer nutzen nutzer nymphe nähern nähren närrin nützen obdach oberst objekt obwohl
+opfern orakel orange ordnen ordner ortung ostern paaren packen paddel palais palast panzer papier
+parade parfum parfüm parken parker partei partie pascha passen passiv patent patron patzer pauken
+pausen pendel pennen perlen perser person petzen pfanne pfeife pflege pforte pfütze phobie phrase
+physik pickel picken piepen pieper pikant pilger pinsel plagen plakat planen planet planke pleite
+plural pochen podest podium poesie pointe pokern police polier pollen portal posten potenz pracht
+praxis presse primär privat proben profil profit prägen prämie prüfen prügel psyche pudern pulver
+pumpen puppen pusten putsch putzen putzig pyjama python quaken qualle quelle quiche quälen rabatt
+rachen racker radius ragout rahmen rakete rallye rammen ramsch ranken rappen rasant rasend rassel
+rasten raster ration ratlos ratsam rauben raufen raunen rausch razzia rebell rechts redner reflex
+reform regeln regime region regler regnen reiben reifen reihen reimen reisen reiten reiter reizen
+rekord rektor relikt reling rennen renner reptil retten retter revier rezept rheuma riegel riemen
+riesig ringen ringer rippen risiko ritter ritual ritzen rivale robben robust rochen rocken rocker
+roggen rollen roller rosine rosten rostig rotten rubrik rudern rummel runden runter rupfen russin
+rutsch rächen rächer rädern rätsel räuber räumen rösten rücken rühmen rühren rüssel rüsten sabber
+sachte sacken saftig saison salben salzig sattel sauber saugen sausen schach schade schall scharf
+schatz schaum scheck schein schelm schema schere scherz schick schief schier schiff schild schilf
+schiri schirm schlaf schlag schlau schmal schnee schnur schock schopf schrei schrot schräg schubs
+schuld schule schund schuss schutt schutz schwan schwer schwur schwül segeln segler segnen sehnen
+seilen sektor selber selbst selten senden sender senior senken sepsis seriös sessel setzen seuche
+sicher sieben siebte siegel siegen sieger siezen signal silber simpel simsen singen sinken sinnen
+sirene sitzen skaten skizze sklave skript sobald sockel sodass soeben sofern sofort sohlen soiree
+soldat solide sollen sommer sonett sonnen sonnig sopran sorgen soweit sowohl sozial spagat spange
+spanne sparen specht speise spende sperre spesen sphinx sphäre spinat spinne spital spruch sprung
+spröde spucke spuken spulen spuren sputen späher später spülen spüren stabil stange stapel stativ
+statue statur status stehen stelle steppe steril stetig steuer steven stimme storch strafe straff
+strahl stramm strand strebe streik streit streng strich strick strikt studie studio stufen stumpf
+stunde stärke stätte stören stütze subtil suchen sucher sultan superb surren symbol system sänger
+söhnen sühnen sünder tadeln tagung taille taktik tanken tanzen tapete tapfer tappen tarnen tasche
+tasten taufen taugen tausch teenie teilen teller tempel tempus termin testen teufel texten ticken
+tigern tilgen tippen tollen tomate topfit toppen torero tortur touren tracht tragen trapez traube
+trauen trauer trauma treppe tresen tresor treten triade tribut trikot trubel trumpf truppe tränen
+trödel trüben trügen tugend tumult tunken tupfen turnen turner tyrann tänzer täufer tölpel tötung
+tümpel türkis türmen umarmt umfang umfeld umgang umhang umkehr umlauf umsatz umwelt unecht unfair
+unfall ungern unheil unhold unklar unklug unnütz unreif unrein unruhe unsinn unterm untreu unwahr
+unweit unwohl urlaub urteil urwald vakuum vampir vektor ventil verbot verein verhör verlag verrat
+verruf vertan vertun verübt vesper vetter vierer vierte visage visier vision visite voraus vorbei
+vorher vorhin vorort vorrat vortag vorzug vulgär vulkan völlig wachen wacker waffel waggon wahren
+walten walzer wandel wanken wappen warnen warten wasser wecken wecker wedeln wehren wehtun weiden
+weihen weilen weinen weisen weiten weiter weizen welken wellen wenden werben werden werfen werfer
+werken werten wetten wetter whisky wickel widder widern widmen wieder wiegen wiener wiesel willig
+windel winden windig winkel winken winter winzig wirbel wirken wirtin wissen witwer witzig wohnen
+wollen wonach worauf woraus wucher wunsch wurzel wählen wähler währen wälzen wärmen wärter wäsche
+wölfin wühlen würdig würfel würgen würger würzen würzig wütend zacken zahlen zander zanken zapfen
+zaster zauber zehnte zeigen zeiger zeitig zelten zement zensur zepter zerren zettel zeugen zeugin
+ziegel ziehen zielen zieren ziffer zimmer zinken zinsen zipfel zirkel zirkus zocken zocker zollen
+zoomen zornig zucken zucker zuerst zufall zugabe zugang zumute zupfen zurück zusage zusatz zutage
+zuviel zwecks zweier zweite zyklop zyklus zählen zähler zähmen zögern zügeln zünden ächzen ähneln
+ändern ärgern ärztin ätzend ödland öffnen öfters üblich
+`,
+    },
+  ],
 };

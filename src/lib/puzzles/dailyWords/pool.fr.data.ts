@@ -156,4 +156,142 @@ voute voyou vulve xeres zarbi zebre zeste
 `,
     },
   ],
+  6: [
+    {
+      fromCycle: 0,
+      source: "the 6-letter answers (medium and hard) of words.fr.data.ts, read 2026-09-26",
+      words: `
+abattu abbaye abimer abject abolir abonne aboyer absent absolu abuser abusif abysse acajou accent
+accord accroc aconit acteur action actuel acuite adepte adorer adroit adulte aerien affame affile
+afflux affole agacer agence agenda agiter agneau agonie agrafe ailier aimant alarme alcool alcove
+alerte aliene alinea allier allure amande amante amarre ambigu amende amener amical amidon amiral
+amitie amorce amorti ampute amuser ananas ancien anemie angine animal animer anneau annexe annuel
+anodin aparte apeure aplati aplomb apogee apotre appart apport arcade archer archet ardent ardeur
+argent argile armada armure artere aspect assaut assidu asthme astral astuce atrium atroce aucune
+aucuns audace augure aumone aupres auquel aurore autant auteur autour autres autrui avaler avance
+avarie avatar avenir avenue averer aviron aviser avocat avoine avorte avouer babine babord bafoue
+bagage baiser balade balcon baleze balise ballet ballon ballot bambin bambou banane bancal bandit
+bannir banque baquet barber barder bardot barjot barque barrer basane basque basset bassin baston
+bateau battre bavard baveux bavoir bavure beaute becane beguin beigne belier belote bercer berger
+berner besoin betail betise beurre bibine biceps bichon bidule bikini billet billot binome biquet
+bisque bistro bitume blabla blague blamer blason blesse blinde blocus blouse bobard bobine boheme
+boiter bolero bolide bonbon bondir bonnet bordee border borgne bosser botter bottin boucan bouche
+boucle bouder boudin boueux bouffe bouffi bouger bougie bougon bougre bouler boulet boulon boulot
+bourde bourge bourre bourru bourse bouton boxeur braise brasse braver brebis breche brelan breton
+brevet brique briser broche broder bronze brosse broyer bruler brutal bucher buffet buffle bureau
+butoir butter buveur cabale cabane cabine cacher cachet cachot caddie cadeau cadran cadrer cafard
+cafter cageot cagibi cahier caille caiman caisse calcul calice calife calmar calmer camion campus
+canape canard canari cancan cancer cancre canine canton canyon capter captif caquet carafe careme
+carlin carnet carrer cartel carton casbah casher casier casque casser cassis castor causer cavale
+caveau caviar cavite cecite celeri celles cendre centre cercle cerise cerner cesser chacal chacun
+chahut chaine chaire chaise chalet chaman chance chaque charge charme charte chasse chaste chaton
+chauve chelem chemin chenal chenil cheque cherir chetif cheval chevet cheveu chevre chiche chichi
+chiffe chimie chiper chipie chique chlore choeur choper chouia chrome chrono chuter cibler cierge
+cigale cigare ciment cinema cingle cintre cirage cireur cirque ciseau citron clamer clapet claque
+clarte classe clause clerge cliche client climat clique cloche cloque clouer cobalt cobaye coccyx
+cocher cochon codage coffre cognac cognee cogner coiffe colere coller collet colore combat comble
+comete comite commun compas compte concis condor confus conque consul conter contre convoi copain
+copier coquin corail corbin cordon coreen cornee corner cornet corpus corser corset corvee cosmos
+couard couche coucou coudre coulee couler coulis couper couple coupon courbe courge courir courre
+course cousin couter couver coyote cramer crampe crasse crayon creche credit creole crever crible
+crique croate croche croire crosse croupe croute cruche crypte cubain cuisse cuivre cupide cursus
+cypres damner danger danois danser debine debout debris decale decent dechet declic declin decret
+dedain dedale dedier deesse defait defaut defier defini defunt degout dehors delice delier delire
+deluge demain dement demode demuni denree depens depuis derive desaxe desert desole dessin dessus
+destin desuet detail detenu detour deuzio devant devier devise devoir devolu devoue diable diacre
+dictee dicter dicton dindon dingue direct dispos disque divers docile doigte domino donjon donner
+dormir dosage douane double doucet douche doudou douter dragon drague draper drogue droite druide
+dument duplex duquel durant durcir durete ebloui echine eclair eclore ecoper ecorce ecrire ecurie
+ecuyer editer effort effroi egaler egarer egayer eglise ehonte elever elixir embout emeche emeute
+emigre emotif empire emploi empote encens enclin enclos encore enduit enfant enfler enfuir enfume
+enieme enigme enjoue ennemi ennuye enonce enorme entete entier entite entree entrer envers envier
+epater epaule epeler epiler epique eponge epopee epoque epuise equipe equite erable eriger ermite
+errant erreur errone ersatz erudit escale escroc espace espece espion espoir esprit essaim essieu
+estime etable etabli etaler etalon etayer ethnie etirer etoffe etoile etrier etroit evader evasif
+eveque eviter exalte examen exempt exiger exiler expert expier export expose expres exquis facade
+facher facial facile faible faille faisan fameux famine farcir farine faucon fautif faveur favori
+fendre fermer feroce ferrer festif festin fetard fetide feutre fiable fiacre fiance fiasco ficele
+ficher fictif fidele fiente fierte fiesta fievre figure filmer filtre finale fiscal fiston flacon
+flamme flaner flaque fleche flemme fletan fleuri fleuve flocon flopee floral flores flotte fluide
+foirer follet foncer fonder fondre fondue forage forain forcat forcer forger format formel former
+formol foudre fougue fouine foulee fouler fourbe fourmi fourre fracas fraise frange fraude frayer
+frelon fremir frerot fretin friand frimer fripon friser froler fronde fruite fugace fuguer fuiter
+fumant fumeur fumier fumoir fureur furtif fuseau fusion futile fuyant fuyard gacher gachis gagner
+gaiete galant galeux garage garant garcon garder garrot gasoil gastro gateau gateux gauche gaufre
+gazeux geisha genant gendre genese gentil gerant germer geyser ghetto gibier giclee gicler gifler
+girafe gisant glacer glacon glaise glaive glande glaner global gloire gluant gluten gorgee gosier
+goujat goulag goulot gourde gourou gouter goutte graine gramme grange granit grappe gratin gratis
+gratos graver gravir gredin greffe griffe grille grippe grotte groupe guenon guerir guerre gueule
+guider guidon guigne guinde guinee habile hacher hachis hamada hameau hammam hanche hangar hanter
+hareng harpie harpon hasard hausse havane hebreu helice hernie hideux hindou hisser hocher hochet
+homard hombre hoquet hormis hostie hourra housse hublot huitre humain humble humeur humide humour
+hurler idylle iguane illico imiter impact impair impala impoli import impuni inapte indice indien
+inedit inegal inerte infame infect infime infini ingrat initie injure instit intact intime intrus
+ironie irreel isoler ivoire jaguar jaloux jamais jambon jardin jargon jarret jasmin jauger jeuner
+jeunot joueur joujou jovial joyeux jubile jumeau jument junior jusque juteux kabuki karate kitsch
+labeur lacher ladite lagune laiton laitue lancee lancer langer langue lapsus larbin larcin larynx
+lascar lasser lavabo lavage laveur legion leguer legume lequel lesion lester lettre leurre levier
+levure lezard liasse lierre liesse lievre lignee limace limier limite lingot litige livide livree
+livrer livret loisir longer loquet lotion louche loulou louper loutre lucide lustre lutter lyceen
+maboul macher machin madame madone madras magnat magner magnum maigre maille mairie maison maitre
+majeur malade malgre malice manche mandat mander manege manger mangue manier manoir manuel maquis
+marais marbre marche marier marine marque marrer marron martel martyr masque masser massif massue
+mastic mature maudit maxime mecano mecene medina medium meduse mefait mefier membre memere menace
+menage meneur mental menthe mentir menton mentor mepris merlan merlin messie mesure metier mettre
+meuble mienne miette mignon mikado milice milieu millet mineur minier minime minois minuit minute
+mioche mirage miroir misere mitard miteux mixage mixeur mobile modele modere module moelle moisir
+moitie mollet moment montee monter montre moquer morale mordre mormon morose mortel motard moteur
+motion mouche moudre mouise moulin mourir mouron mousse mouton muguet muscle museau museum mutile
+mutuel myrrhe nageur naitre nankin narine narval nation nature nausee navire nectar neiger neutre
+neveux nickel nigaud niveau noirci nomade nombre nommer normal notice notion notres nougat nounou
+nourri nouvel novice noyade nuance nudite nulles numero nymphe obscur obsede occase odieux odorat
+office offrir oignon oiseau opaque operer option oracle orange orbite organe orteil osseux ourlet
+ourson ouvert ouvrir ovaire paella pagaie paille paitre palais paleur palier palper panade panier
+panser pantin papaye papier paquet parano pardon pareil parent parfum parier parler parole partie
+partir parure passer passif pastis patate patine patrie patron pature pauvre pavane payant paysan
+pecher pecule peigne peiner pelage pelote pendre pensee penser pensif people pepere pepite percee
+percer perche perdre perime permis perron persan persil pesant petale petant petard peteux petrin
+peuple phenix phobie phoque phrase piaule picard pichet pieger pierre pieton pietre pigeon pignon
+pilier piller pilori pilote pilule piment pinard pincee pincer pingre pinson pinter pioche pipeau
+piquer piquet piqure pirate pister piston piteux pivert placer plaine plaire planer plante plaque
+platre plombe plumer plutot podium poesie pognon poigne pointe pointu poison poisse poivre police
+pollen pomper pompon poncho pondre ponton porche portee porter postal poster potage poteau potele
+potion poudre poulet poulie poulpe poumon poupee poupon pourri poutre precis prefet prenom presse
+presto preter pretre preuve prevot priere prieur prince prisme prison priver proces proche profil
+profit projet prompt propos propre psaume pseudo psyche public pudeur pueril puiser purete purger
+putois putsch pyjama pylone python quaker quartz quatre quelle quiche quille quinze quorum rabais
+rabbin rachat racial racine raclee racler radeau radier radius rafale raffut rafiot rafler ragout
+rainer raisin raison raleur rallye rameau ramper rancon rangee ranger rapace rapide raquer rarete
+rasage rasoir rateau ration rauque ravage ravoir rayure reagir rebond rebord recent reclus recoin
+recrue redire reduit reflet reflux refuge regain regard regate regent reggae regime region regler
+regner regret rejoui relais relaxe releve relief relier relire remede remise remous remuer renard
+rendre renier renvoi report requin reseau residu resine restau rester retard retine retors retour
+reunir reveil revers reveur revoir revolu rictus rideau rigide rigolo rincer risque rituel rivage
+rocher rocker rodeur romain rompre ronger rosbif roseau rosier rosser rotule rouage rougir rouler
+roussi ruelle ruiner rumeur rustre rythme sabbat sachet safari safran saisie saisir saison salade
+salete salive saluer samedi sangle santal saphir saquer satane satire satyre saumon sauter sauver
+savane savant saveur savoir scelle schema sciure scribe seance secher second secret seigle seisme
+sejour seller senile senior sentir serein sermon serrer servir severe sevrer siecle sieger sienne
+sieste signal signer sillon simple singer siphon sirene situer social soiree soldat soleil solide
+sombre sommet sonate sonder songer sonner sonnet sonore sorbet sortie sortir souche souder soufre
+souler souper soupir souple source souris soyeux spasme sphere sphinx stable statue statut steppe
+strass strict studio subtil succes suisse suivre sultan summum sureau surete surfer surgir surnom
+sursis survet survie survol suture svelte syndic syrien tacher tacite taille talent tamise tampon
+tanner tantot tapage taquet tarder tardif tasser tatoue taudis teigne teinte telles temoin temple
+tenace tendon tendre teneur tenter ternir terrer tester tetard tetine thorax tienne tierce timbre
+timide tinter tirade tirage tireur tiroir tisane tisser titane toison tomate tomber tondre tonton
+toquer torche tordre torero tortue toubib touffe touffu toupet toupie tourte toutou tracas tracer
+trafic trahir traire traite trajet transe transi trappe trauma trefle treize trempe trente trepas
+tresor tresse treuil triade triage tribal tribun tribut tricot trimer triple tripot trique triste
+triton trombe trotte trouee trouer troupe truand truffe truite truque tuerie tueuse tulipe tumeur
+turban turbin tuteur tympan typhon typhus ulcere ultime unique urbain urgent uterus utopie vacant
+vaccin vaincu valeur valide valise vallee vallon valoir valser vanite vanter vapeur varier vassal
+vaudou veille veloce vendre venere venger ventre verbal vereux verger verite vernis verrat verrou
+verrue verser verset versus vessie veston vexant viable viaduc viande vibrer videur vielle vigile
+vilain vinyle violet violon vipere virage visage viseur vision visite visser visuel vivant voguer
+voiler voisin volage volcan voleur volume vorace vortex votres voyage vrille whisky yankee yaourt
+zenith zephyr zigzag zinzin
+`,
+    },
+  ],
 };

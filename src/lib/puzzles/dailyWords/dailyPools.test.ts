@@ -53,6 +53,9 @@ const PINS: Record<string, number> = {
   "ja:3:0": 0x15185fec, // 2000 words, 5.5 years
   "ja:4:0": 0xb92dbf57, // 2000 words, 5.5 years
   "ja:5:0": 0xc62c1e70, // 2000 words, 5.5 years
+  "de:6:0": 0xaa10573c, // 1702 words, 4.7 years (six letters, 2026-09-26)
+  "fr:6:0": 0xe5159bab, // 1810 words, 5.0 years (six letters, 2026-09-26)
+  "en:6:0": 0xf0d4bea1, // 2965 words, 8.1 years (six letters, 2026-09-26)
 };
 
 describe("the daily words' pools", () => {
