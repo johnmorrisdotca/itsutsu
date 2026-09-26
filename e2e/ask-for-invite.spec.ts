@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { MAIL_REFUSAL_TEXT } from "../src/lib/mail/mail.constants";
 import { ready } from "./support";
 
 /**
@@ -56,7 +57,10 @@ test.describe("asking for an invite", () => {
     await page.waitForTimeout(A_PERSON_READING);
     await page.getByTestId("ask-for-invite-send").click();
     // The sender answered — here, that email is off. Only a request that got past every check reaches it.
-    await expect(page.getByTestId("ask-for-invite-problem")).toHaveText("Email is not switched on here, so nothing was sent.");
+    // Off one of exactly two ways: not the live site (the dev server), or a production build with no key (the suite's own).
+    const problem = page.getByTestId("ask-for-invite-problem");
+    await expect(problem).toBeVisible();
+    expect([MAIL_REFUSAL_TEXT["not-production"], MAIL_REFUSAL_TEXT["no-key"]]).toContain(await problem.textContent());
   });
 
   test("a form sent faster than anybody reads it is told it was sent, and never reaches the sender", async ({ page }) => {

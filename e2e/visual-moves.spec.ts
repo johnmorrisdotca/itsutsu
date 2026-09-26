@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { readyHere } from "./support";
+import { isPrefetch, readyHere } from "./support";
 
 /**
  * A game still being played: its moves beside the board, and every position so
@@ -34,7 +34,7 @@ test("a live board's moves sit beside it, and open as one picture of every posit
    */
   const asked: string[] = [];
   page.on("request", (sent) => {
-    if (!sent.url().startsWith("http")) return;
+    if (!sent.url().startsWith("http") || isPrefetch(sent)) return;
     const path = new URL(sent.url()).pathname;
     if (!path.startsWith("/_next/") && path !== `/api/games/${game.id}`) asked.push(path);
   });

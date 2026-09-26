@@ -4,7 +4,7 @@ export const PLAYER_STATE = ".auth/player.json";
 /** An embed token minted by the setup, for the embed specs to use. */
 export const EMBED_TOKEN_FILE = ".auth/embed.json";
 
-import { expect, type APIRequestContext, type Locator, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page, type Request } from "@playwright/test";
 
 import { UNRATED_BELOW } from "../src/lib/rating/elo";
 
@@ -606,4 +606,15 @@ export async function openReplayAdvanced(page: Page) {
   await ready(page, "game-replay");
   const advanced = page.getByTestId("replay-advanced");
   if ((await advanced.getAttribute("open")) === null) await advanced.locator("summary").click();
+}
+
+/**
+ * Whether a request is Next's own link prefetch: a production build sends one
+ * for every link that scrolls into view, and the dev server never does. It is
+ * never the act a spec that counts requests is watching, so those specs leave
+ * it out — the suite runs against the production build (`E2E_SERVER=start`).
+ */
+export function isPrefetch(request: Request): boolean {
+  const headers = request.headers();
+  return headers["next-router-prefetch"] === "1" || headers["next-router-segment-prefetch"] !== undefined;
 }

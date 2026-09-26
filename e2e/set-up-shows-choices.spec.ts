@@ -173,7 +173,8 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       expect(whoTop).toBeLessThan(rulesTop);
 
       // The chosen person is named on the folded row before anything is opened.
-      await expect(page.getByTestId("set-up-opponent-fold").filter({ hasText: /Named/ })).toBeVisible();
+      // On the "Asked for" row, which is the choice: the same person may also be listed under Here now.
+      await expect(page.locator('[data-testid="set-up-opponent-fold"][data-group="asked"]').filter({ hasText: /Named/ })).toBeVisible();
       await openOpponentLists(page);
 
       const computerTile = page.locator('[data-testid="set-up-opponent"][data-computer="true"]').first();
