@@ -2,7 +2,7 @@ import { STONES, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 
 /**
- * WHAT A FINISHED GAME PAYS IN SITE POINTS: the most one game of it can be
+ * WHAT A FINISHED GAME PAYS IN IP, ITSUTSU POINTS: the most one game of it can be
  * worth, and a share of that for each way a game ends. John, 2026-09-25: "a
  * table of maximum weights per game… and then we work back what someone scores
  * for a victory or a loss or a complex result" — and, of games having scored
@@ -92,22 +92,25 @@ export function gameMax(variant: RuleVariant, size: number): number {
 }
 
 /**
- * EACH RESULT AS A SHARE OF THE MAXIMUM, winner and loser. A loss played out
- * is worth something, and a close one more; a game given up early, or lost on
- * the clock, less; a head start or a handicap in the winner's favour takes a
+ * EACH RESULT AS A SHARE OF THE MAXIMUM, winner and loser. IP is ability and
+ * nothing else — John, 2026-09-25: "XP is site wide experience and maturity,
+ * like in D&D… and IP aka Points is only about games. Pure ability" — so a loss
+ * pays nothing for having taken part (that is XP's), and only a close score
+ * earns the loser anything. A game given up early, or won on the clock, pays
+ * the winner less; a head start or a handicap in the winner's favour takes a
  * quarter off the win; and a game nobody finished pays nobody.
  */
 export const RESULT_SHARES = {
   /** Won on the board: a line, captures, territory, discs, the camp, a blocked side. */
-  won: { winner: 1, loser: 0.2 },
-  /** The most a close score adds to the loser's share: 20% more at a dead heat. */
+  won: { winner: 1, loser: 0 },
+  /** What a close score earns the loser: up to 20% of the most, at a dead heat. */
   closeLoss: 0.2,
   /** The other side resigned from the tenth move on. */
-  resigned: { winner: 1, loser: 0.1 },
+  resigned: { winner: 1, loser: 0 },
   /** The other side resigned before the tenth move: hardly a game. */
   resignedEarly: { winner: 0.5, loser: 0 },
   /** Won on the clock. */
-  time: { winner: 0.8, loser: 0.1 },
+  time: { winner: 0.8, loser: 0 },
   /** Drawn, for any reason. */
   drawn: 0.5,
   /** The winner had the head start, or the handicap was the loser's. */

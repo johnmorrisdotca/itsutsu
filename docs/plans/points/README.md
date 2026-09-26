@@ -1,10 +1,26 @@
-# Site-wide points: one score for everything played
+# IP, Itsutsu Points: one score for ability, beside XP for experience
 
 John, 2026-09-25: "we need a site-wide scoring system like that puzzlemaddness..."
 
 Row: `site-wide-points-one-score-for-everything-played-with-all-time-and-monthly-board`.
-The row asks for a plan first. **The game prices and the puzzle weights are
-John's to approve**; the tickets below are not built until he has.
+
+## XP and IP are two different things, on purpose
+
+John, 2026-09-25: "XP and Points or (IP - Itsutsu Points) should be different
+enough to justify… there has to be a reason for people want to collect
+either/both. XP is site wide experience and maturity, like in D&D etc... and IP
+aka Points is only about games. Pure ability." And: "Yes, ALL games count
+towards IP", the puzzles included.
+
+| | XP, experience 経験 | IP, Itsutsu Points 点 |
+|---|---|---|
+| **What it means** | How long and how widely you have been part of the site | How well you play |
+| **Earned by** | Everything: playing, finishing, new games, streaks, visits, buddies, applause | Results only: wins, draws, close losses, and every puzzle solved |
+| **A loss** | Still earns XP: you took part | Earns no IP, except a close score (up to 20% of the game's most) |
+| **Goes down?** | Never; a lifetime total | Never within a month; each month is a fresh race, and the all-time total stays |
+| **Why collect it** | Your level and title beside your name everywhere | The monthly IP board, a champion-of-the-month mark for the top three, and IP by family (best at Five in a row this month) |
+
+Nothing in IP pays for turning up. Anything that does belongs to XP.
 
 ## What there is today (read 2026-09-25, at 0.340.1)
 
@@ -61,7 +77,7 @@ who plays a few words a day.
    table of maximum weights per game… and then we work back what someone
    scores"). The maximum is 100 for Gomoku on 15×15, from 10 for tic-tac-toe
    to 200 for Go on 19×19. A win pays 100% of it, a draw 50% each, a loss
-   played out 20% (more for a close score), and time, resigning and head starts
+   nothing but up to 20% for a close score, and time, resigning and head starts
    have shares of their own. Both tables are in PTS-02.
 3. **Programs are players**, as they are for XP (AGENTS.md). The site board
    offers People / Computers / Everyone, as `/xp` does, with People as the
