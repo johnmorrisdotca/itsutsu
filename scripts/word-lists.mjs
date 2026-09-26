@@ -17,10 +17,15 @@
  *
  * An answer is a word anybody would be glad to see. Plurals and past tenses
  * whose stem is itself a word are left out of the answers (a puzzle whose
- * answer is "cats" is a puzzle about "cat"), as are slurs, vulgarity and
- * anything sexual, by the list below. All of them may still be GUESSED: the
- * allowed list is every word, because refusing a real word is the one thing a
- * word puzzle must not do.
+ * answer is "cats" is a puzzle about "cat"), as are slurs, vulgarity,
+ * anything sexual, drugs and insults a player could read as aimed at them, by
+ * the list below. All of them may still be GUESSED: the allowed list is every
+ * word, because refusing a real word is the one thing a word puzzle must not
+ * do.
+ *
+ * SCOWL is a real dictionary, so a word here is English; any language Gomoji
+ * adds later takes its words from a real dictionary of that language too, never
+ * from a frequency count alone (`word-lists-fr-de.mjs` says why).
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -38,7 +43,7 @@ const NOT_AN_ANSWER = new Set(
   fucks gook hell piss pissy shit slut sluts spic tits titty turd twat wank whore pussy prick horny bimbo homo negro
   kike pimp porn rape raped rapes sexy penis semen sperm anal anus coon dago gypsy honky jizz kinky nazi queer skank
   slag spunk tramp wench wop bong booze crack weed pee poop puke vomit pubic nude nudes lust lusty balls ballsy bust
-  busty strip`.split(/\s+/).filter(Boolean),
+  busty strip chink lynch noose orgy lewd smut hump booty thong puss coke dope moron idiot scum`.split(/\s+/).filter(Boolean),
 );
 
 function wordsAt(sizes) {
