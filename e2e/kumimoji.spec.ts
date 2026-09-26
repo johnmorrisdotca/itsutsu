@@ -78,8 +78,7 @@ async function hideDevBadge(page: Page) {
 /** Tap a tile of this letter in the hand, then a square on the table. */
 async function lay(page: Page, letter: string, square: string) {
   await page.locator(`[data-testid="kumimoji-hand-tile"][data-letter="${letter}"]`).first().click();
-  await page.locator(`[data-testid="kumimoji-square"][data-square="${square}"]`).click();
-  await expect(page.locator(`[data-testid="kumimoji-tile"][data-square="${square}"]`)).toHaveAttribute("data-letter", letter);
+  await page.locator(`[data-testid="kumimoji-square"][data-square="${square}"]`).click();  await expect(page.locator(`[data-testid="kumimoji-tile"][data-square="${square}"]`)).toHaveAttribute("data-letter", letter);
 }
 
 test.describe("Kumimoji", () => {
@@ -164,6 +163,9 @@ test.describe("Kumimoji", () => {
       }
       await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
       await expect(page.getByTestId("kumimoji-score")).toContainText("All 5 tiles");
+      // The finished table is read-only and still has every tile where it was laid, the last one included.
+      await expect(page.locator('[data-testid="kumimoji-table"] [data-testid="kumimoji-tile"]')).toHaveCount(5);
+      for (const tile of game.drawn) await expect(page.locator(`[data-testid="kumimoji-tile"][data-square="${tile.square}"]`)).toHaveAttribute("data-letter", tile.letter);
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
     });
