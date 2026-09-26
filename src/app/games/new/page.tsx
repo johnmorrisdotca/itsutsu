@@ -10,6 +10,7 @@ import { gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFor } from "@/lib/auth/memberAccount";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
 
 export const dynamic = "force-dynamic";
 
@@ -43,13 +44,15 @@ export const metadata: Metadata = { title: "Set up a game" };
  */
 export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/games/new">) {
   const [asked, reader] = await Promise.all([searchParams, currentReader()]);
-  const [defaults, opponents, seats, appearance] = await Promise.all([
+  const [defaults, opponents, seats, appearance, preferences] = await Promise.all([
     // Kept on the account, by member id; a session with no member opens at the site's own.
     gameDefaultsFor(reader.memberId),
     fetchOpponents(reader),
     seatsToSitAt(),
     // The reader's board, so the preview is dressed as the game will be.
     appearanceFor(reader.memberId),
+    // How they last drew a Gomoji grid, for a puzzle chosen here.
+    preferencesFor(),
   ]);
   /*
    * Reads a row only where the address asked for one — a game to repeat, a
@@ -72,6 +75,7 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
         */
         signedIn={reader.signedIn}
         appearance={appearance ?? undefined}
+        wordStyle={preferences.wordStyle ?? null}
         canAsk={reader.hasAccount}
         chooseGame
         opponent={from.opponent}

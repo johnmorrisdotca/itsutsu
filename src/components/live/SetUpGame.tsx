@@ -7,6 +7,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
@@ -90,7 +91,10 @@ export function SetUpGame({
   carry = {},
   problem = null,
   appearance = DEFAULT_APPEARANCE,
+  wordStyle = null,
 }: {
+  /** How the reader last drew a Gomoji grid, for a puzzle chosen here (`PuzzleHere`). */
+  wordStyle?: WordStyle | null;
   /** The reader's board, so the preview is dressed as their game will be and a Reversi's felt can be chosen. */
   appearance?: Appearance;
   /** The member's standing board and clock: what silence opens a game at. */
@@ -354,6 +358,7 @@ export function SetUpGame({
           hasAccount={canAsk}
           appearance={{ ...appearance, felt }}
           onFelt={chooseFelt}
+          wordStyle={wordStyle}
         />
       ) : (
       <>

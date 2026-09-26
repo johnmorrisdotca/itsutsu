@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import type { Appearance, Felt } from "@/components/board/board.types";
 import { PuzzleBoardAndSizes, PuzzleSetUp } from "@/components/puzzles/PuzzleSetUp";
+import { WordStyleProvider } from "@/components/puzzles/WordStyleContext";
+import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -32,6 +34,7 @@ export function PuzzleHere({
   hasAccount,
   appearance,
   onFelt,
+  wordStyle,
 }: {
   puzzle: PuzzleKind;
   onPuzzle: (kind: PuzzleKind | null) => void;
@@ -44,6 +47,8 @@ export function PuzzleHere({
   /** The reader's board and the way to change its colour, which the screen already holds for a game (`useFeltChoice`). */
   appearance?: Appearance;
   onFelt?: (felt: Felt) => void;
+  /** How the reader last drew a Gomoji grid, so its preview and its Options start there (`WordStyleProvider`). */
+  wordStyle?: WordStyle | null;
 }) {
   const copy = PUZZLE_DISPLAY[puzzle];
   // The size belongs to the puzzle it was chosen for: another puzzle starts at its own usual size.
@@ -51,7 +56,8 @@ export function PuzzleHere({
   const size = chosen !== null && chosen.kind === puzzle ? chosen.size : PUZZLE_SPECS[puzzle].defaultSize;
   const onSize = (next: number) => setChosen({ kind: puzzle, size: next });
   return (
-    <>
+    // A Gomoji's style is chosen in its Options and drawn on its preview, as on its own set-up page.
+    <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
       <p className={SET_UP_SUMMARY} data-testid="set-up-summary">
         {copy.label} <span className="font-mincho">{copy.kanji}</span> · a puzzle for one
       </p>
@@ -73,6 +79,6 @@ export function PuzzleHere({
         />
         <PuzzleSetUp key={puzzle} kind={puzzle} hasAccount={hasAccount} framed={false} sized={{ size, onSize }} />
       </div>
-    </>
+    </WordStyleProvider>
   );
 }

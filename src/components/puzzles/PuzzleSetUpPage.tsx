@@ -48,7 +48,7 @@ export async function PuzzleSetUpPage({ kind, hasAccount, memberId }: { kind: Pu
           </>
         }
       />
-      <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={false}>
+      <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
         <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} />
       </WordStyleProvider>
     </Page>

@@ -25,8 +25,8 @@ export type WordStyle = (typeof WORD_STYLE_LIST)[number];
 
 export const WORD_STYLES = { reversi: "reversi", gomoku: "gomoku", tiles: "tiles" } as const satisfies Record<WordStyle, WordStyle>;
 
-export const WORD_STYLE_DISPLAY: Record<WordStyle, { label: string }> = {
-  reversi: { label: "Reversi" },
-  gomoku: { label: "Gomoku" },
-  tiles: { label: "Tiles" },
+export const WORD_STYLE_DISPLAY: Record<WordStyle, { label: string; blurb: string }> = {
+  reversi: { label: "Reversi", blurb: "Letters sit in the squares of a Reversi board." },
+  gomoku: { label: "Gomoku", blurb: "Letters sit on the crossings of a Gomoku board." },
+  tiles: { label: "Tiles", blurb: "Letters sit on plain white tiles inside the board." },
 };

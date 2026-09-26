@@ -23,6 +23,7 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
+import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
@@ -30,6 +31,8 @@ import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
+
+import { useWordStyle } from "./WordStyleContext";
 
 
 /**
@@ -74,6 +77,7 @@ export function PuzzleSetUp({
   const [hints, setHints] = useState(false);
   // Gomoji's Strict, off unless chosen, at any level; like Hint, not carried into a race.
   const [strict, setStrict] = useState(false);
+  const { style, setStyle } = useWordStyle();
   const [racing, setRacing] = useState<"" | "making" | string>("");
   // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -187,6 +191,35 @@ export function PuzzleSetUp({
             {strict ? "Every letter found must be played again, a green one in its place." : "Any word may be guessed, whatever the last ones found."}
           </p>
         ) : null}
+        {/*
+          HOW THE GRID IS DRAWN, chosen here as well as under the keyboard.
+          John, 2026-09-26: "where is the Reversi / Gomoku / Tiles options in
+          our Options (it's only currently in the actual Play page)?" The same
+          choice as the play page's (`useWordStyle`): it redraws the preview at
+          once and is kept on the account, so the game opens the way it was set.
+        */}
+        {spec.wordGrid === undefined ? null : (
+          <>
+            <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="How the grid is drawn" data-testid="puzzle-word-style">
+              {WORD_STYLE_LIST.map((each) => (
+                <button
+                  key={each}
+                  type="button"
+                  role="radio"
+                  aria-checked={style === each}
+                  className={`${PICK_WORD_CHIP} ${style === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                  onClick={() => setStyle(each)}
+                  data-testid={`puzzle-word-style-${each}`}
+                >
+                  {WORD_STYLE_DISPLAY[each].label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted" data-testid="puzzle-word-style-blurb">
+              {WORD_STYLE_DISPLAY[style].blurb}
+            </p>
+          </>
+        )}
         {/* A puzzle that answers every move as it is made offers neither Check nor Hint (`PuzzleSpec.helps`). */}
         {spec.helps === false ? null : (
           <>
