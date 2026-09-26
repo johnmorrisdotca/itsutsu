@@ -81,9 +81,10 @@ describe("every puzzle is finished, not just declared", () => {
         expect(took, `${kind} ${size}×${size} ${level} took ${Math.round(took)} ms to make`).toBeLessThan(3000);
         // At least the cells; More or Less writes its marks after them, within the kind's cap. A Gomoji's
         // givens are its one word, whose length is its size: a word has letters, not a square of cells. A kana
-        // Gomoji's are its word and its free grey word.
+        // Gomoji's are its word and its free grey word. A tile game's (Kumimoji) are its bag, more tiles than the
+        // hand its size names, and any sound grid of them is an answer: the solution only proves there is one.
         expect(puzzle.givens.length).toBeGreaterThanOrEqual(
-          kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? size : size * size,
+          kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || spec.tiles === true ? size : size * size,
         );
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
         expect(checkSolution(kind, size, puzzle.givens, puzzle.solution, level), `${kind} ${size} ${level}`).toEqual({ ok: true });
