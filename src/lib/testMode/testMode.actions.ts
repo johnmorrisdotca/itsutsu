@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { rememberPreferences } from "@/lib/preferences/memberPreferences";
@@ -13,10 +11,10 @@ import { rememberPreferences } from "@/lib/preferences/memberPreferences";
  * writes, so it re-checks the session itself rather than trusting whoever
  * rendered the button that called it.
  *
- * `revalidatePath("/", "layout")` because the banner this drives
- * (`TestModeBanner`) sits in the root layout and is shown on every page — a
- * flip has to be visible on whichever page the operator flips it from, and
- * on the next one they open, without a full reload.
+ * No revalidation: the banner this drives (`TestModeBanner`) is read per
+ * request, and the switch refreshes its own page, so the one reader it
+ * changes anything for sees it at once without the site's cache being
+ * thrown away for everybody.
  */
 export async function setTestMode(on: boolean): Promise<{ ok: true; on: boolean } | { ok: false; problem: string }> {
   const admin = await currentAdmin();
@@ -27,6 +25,5 @@ export async function setTestMode(on: boolean): Promise<{ ok: true; on: boolean 
   }
 
   await rememberPreferences({ testMode: on });
-  revalidatePath("/", "layout");
   return { ok: true, on };
 }

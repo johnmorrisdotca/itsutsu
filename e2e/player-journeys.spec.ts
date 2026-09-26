@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, removeMember } from "./members";
+import { ready } from "./support";
 
 /**
  * `/admin/player-journeys`: a projection of 1000 simulated players' XP and
@@ -29,6 +30,32 @@ test.describe("player journeys projection", () => {
 
     await expect(page.getByTestId("journey-small-multiples")).toBeVisible();
     await expect(page.getByTestId("journey-observations").locator("li").first()).toBeVisible();
+  });
+
+  /*
+   * TEST MODE, pressed the way the operator presses it: the row in Admin's
+   * Modes group, on and back off. On, the banner every page carries says so;
+   * off, it is gone again — the way back is tested, not only the way there.
+   * Ends off, so no other spec signed in as the operator sees test members.
+   */
+  test("the operator's Test mode switch shows the banner and takes it away again", async ({ page }) => {
+    await page.goto("/admin?view=site");
+    await ready(page, "test-mode-control");
+    const row = page.getByTestId("site-test-mode");
+    const toggle = page.getByTestId("test-mode-switch");
+    if ((await row.getAttribute("data-test-mode")) === "on") {
+      await toggle.click();
+      await expect(row).toHaveAttribute("data-test-mode", "off");
+      await expect(page.getByTestId("test-mode-banner")).toHaveCount(0);
+    }
+    await toggle.click();
+    await expect(row).toHaveAttribute("data-test-mode", "on");
+    await expect(page.getByTestId("test-mode-banner")).toBeVisible();
+    await expect(page.getByTestId("test-mode-journeys")).toHaveAttribute("href", "/admin/player-journeys");
+
+    await toggle.click();
+    await expect(row).toHaveAttribute("data-test-mode", "off");
+    await expect(page.getByTestId("test-mode-banner")).toHaveCount(0);
   });
 
   test("an ordinary, signed-in member gets a 404, not a refusal", async ({ browser, baseURL }) => {

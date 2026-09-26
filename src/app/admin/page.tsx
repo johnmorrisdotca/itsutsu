@@ -22,6 +22,7 @@ import { readBoard } from "@/lib/backlog/backlogStore";
 import { scopeOf, statusFromAddress } from "@/lib/backlog/boardScope";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { TestModeControl } from "@/components/admin/TestModeControl";
 
 export const metadata = { title: "Admin", robots: { index: false, follow: false } };
 
@@ -103,7 +104,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
       {open === "site" ? (
         <div data-testid="admin-site-tab">
-          <AdminSite />
+          <AdminSite modes={<TestModeControl />} />
         </div>
       ) : null}
 

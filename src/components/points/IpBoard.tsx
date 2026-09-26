@@ -10,6 +10,7 @@ import { IP_SHOWN, IP_WHOLE } from "@/lib/points/points.constants";
 import { type IpRow, type IpScope, ipBoardOf } from "@/lib/points/ipBoards";
 import { startOfMonth } from "@/lib/puzzles/server/puzzleBoards";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 
 /**
@@ -69,7 +70,8 @@ export async function IpBoard({
     );
   }
   const take = whole ? IP_WHOLE : IP_SHOWN;
-  const [thisMonth, allTime] = await Promise.all([ipBoardOf(scope, startOfMonth(), take), ipBoardOf(scope, null, take)]);
+  const reader = await currentTestModeReader();
+  const [thisMonth, allTime] = await Promise.all([ipBoardOf(scope, startOfMonth(), take, reader), ipBoardOf(scope, null, take, reader)]);
   const ids = [...thisMonth, ...allTime].map((row) => row.memberId);
   const [names, xp] = await Promise.all([memberNamesOf(ids), xpByMemberId(ids)]);
   return (

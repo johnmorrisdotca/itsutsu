@@ -146,12 +146,19 @@ comments.
 |---|---|
 | `src/lib/xp/xpBoard.ts` | The XP leaderboard (`/xp`) and a reader's own rank on it |
 | `src/lib/xp/levelMembers.ts` | Who is standing on one rung (`/xp/levels/[level]`) |
+| `src/lib/points/ipBoards.ts` | Every IP leaderboard: a game's, a family's and the site's (`/points`). Raw SQL, so the rule is written there as `WHERE NOT "Member"."isTest"`, and `IpBoard` reads the reader once |
 
 Both took a `reader: TestModeReader` parameter (required on the board's own fetch,
 defaulted to `HIDES_TEST_MEMBERS` on the smaller helper so nothing else calling it
 had to change today), read once per page in `src/app/xp/page.tsx` and
 `src/app/xp/levels/[level]/page.tsx` via `currentTestModeReader()`, and threaded
 into `YourXpStanding` as a prop.
+
+The switch is a row of Admin → The site's Modes group (`TestModeControl`, drawn
+by `TestModeToggle` with the panel's own `PanelRow` and `PanelSwitch`), with the
+projection at `/admin/player-journeys` linked under it. A flip refreshes the
+page it was pressed on and revalidates nothing else: only the operator's view
+changes, so no cache anybody else reads is thrown away.
 
 **Named, with the reason it is not converted yet — this is the real remaining
 work, roughly in the order it matters:**

@@ -9,6 +9,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, type TestModeReader } from "@/lib/testMode/testMode";
 import { PUZZLE_IP_WEIGHT } from "./points.constants";
 
 /**
@@ -45,7 +46,13 @@ export function scopeOfFamily(familyKey: string): IpScope | null {
 /** The site's board: everything. */
 export const SITE_SCOPE: IpScope = { variants: RULE_VARIANT_LIST, puzzles: PUZZLE_KIND_LIST };
 
-export async function ipBoardOf(scope: IpScope, since: Date | null, take: number): Promise<IpRow[]> {
+export async function ipBoardOf(
+  scope: IpScope,
+  since: Date | null,
+  take: number,
+  /** Whether this reader may see the simulated test members (`testMode.ts`): nobody but the operator in Test mode. */
+  reader: TestModeReader = HIDES_TEST_MEMBERS,
+): Promise<IpRow[]> {
   const parts: Prisma.Sql[] = [];
   if (scope.variants.length > 0) {
     const variants = Prisma.join(scope.variants.map((variant) => Prisma.sql`${variant}`));
@@ -74,10 +81,13 @@ export async function ipBoardOf(scope: IpScope, since: Date | null, take: number
   }
   if (parts.length === 0) return [];
   // Members who still exist only: a row a removed member left behind names nobody, and a board of "A member" says nothing.
+  // And no simulated test member unless this reader asked to see them — the rule `hiddenMembersWhere` keeps, in SQL.
+  const tests = reader.showsTestMembers ? Prisma.empty : Prisma.sql`WHERE NOT "Member"."isTest"`;
   const rows = await prisma.$queryRaw<{ memberId: string; ip: number }[]>`
     SELECT earned."memberId", ROUND(SUM(earned.ip))::int AS ip
     FROM (${Prisma.join(parts, " UNION ALL ")}) AS earned
     JOIN "Member" ON "Member"."id" = earned."memberId"
+    ${tests}
     GROUP BY earned."memberId"
     HAVING ROUND(SUM(earned.ip)) > 0
     ORDER BY ip DESC, earned."memberId" ASC

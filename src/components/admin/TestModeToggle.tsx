@@ -1,19 +1,27 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { PanelRow, PanelState, PanelSwitch } from "@/components/admin/ControlPanel";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { setTestMode } from "@/lib/testMode/testMode.actions";
 
 /**
- * THE ON/OFF CONTROL ITSELF, split from `TestModeControl.tsx` because that
- * one is a server component (it reads the stored preference with no request
- * from the browser) and this one has to be a client component to call the
- * Server Function on a click. `on` is the value the server rendered with;
- * this only ever moves from there, and a failed write puts it back.
+ * TEST MODE'S ROW IN THE ADMIN PANEL: a line saying what it does, the state,
+ * and WazaDB's switch, like every other row of the Modes group. A client
+ * component because the switch calls a Server Function; `TestModeControl` reads
+ * the stored answer on the server and hands it in as `on`. A failed write puts
+ * the switch back and says why.
+ *
+ * A flip refreshes this page only (`router.refresh()`), which redraws the
+ * banner in the layout above it: the only reader Test Mode changes anything
+ * for is the one pressing it, so nothing else's cache is thrown away.
  */
 export function TestModeToggle({ on }: { on: boolean }) {
+  const router = useRouter();
   const [checked, setChecked] = useState(on);
   const [problem, setProblem] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -28,29 +36,41 @@ export function TestModeToggle({ on }: { on: boolean }) {
       if (!result.ok) {
         setChecked(!next);
         setProblem(result.problem);
+        return;
       }
+      router.refresh();
     });
   }
 
   return (
-    <div className="flex flex-col items-end gap-1" {...readyMark(hydrated)}>
-      <label className="flex items-center gap-2 text-sm text-ink-soft">
-        {checked ? "On" : "Off"}
-        <input
-          type="checkbox"
-          checked={checked}
-          disabled={pending}
-          onChange={flip}
-          aria-label="Test Mode"
-          data-testid="test-mode-switch"
-          className="size-4 accent-ink disabled:cursor-not-allowed"
-        />
-      </label>
-      {problem !== null ? (
-        <p className={`rounded-lg border px-2 py-1 text-xs ${TONE_CLASS.alarm}`} role="alert" data-testid="test-mode-problem">
-          {problem}
-        </p>
-      ) : null}
+    <div {...readyMark(hydrated)} data-testid="test-mode-control">
+      <PanelRow
+        label="Test mode"
+        kanji="試験"
+        tone={checked ? "on" : "plain"}
+        busy={pending}
+        testId="site-test-mode"
+        data={{ "data-test-mode": checked ? "on" : "off" }}
+        blurb="Shows the simulated test members in every list, board and count — to you only, here and on the live site alike. Nobody else ever sees them."
+        note={
+          <>
+            {problem === null ? null : (
+              <span className={`mr-2 rounded-lg border px-2 py-0.5 ${TONE_CLASS.alarm}`} role="alert" data-testid="test-mode-problem">
+                {problem}
+              </span>
+            )}
+            <Link href="/admin/player-journeys" className="underline underline-offset-2" data-testid="test-mode-journeys">
+              A year of 1000 players, projected →
+            </Link>
+          </>
+        }
+        control={
+          <>
+            <PanelState tone={checked ? "on" : "plain"}>{checked ? "On" : "Off"}</PanelState>
+            <PanelSwitch on={checked} label="Test mode" onToggle={flip} disabled={pending} testId="test-mode-switch" />
+          </>
+        }
+      />
     </div>
   );
 }

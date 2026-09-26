@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import useSWR from "swr";
 
 import { PanelFrame, PanelGroup, PanelRow, PanelState } from "@/components/admin/ControlPanel";
@@ -42,7 +42,7 @@ const json = async <T,>(url: string): Promise<T> => {
  * returns the settings as they now stand and the panel re-renders from those,
  * so what is shown is what the site will do.
  */
-export function AdminSite() {
+export function AdminSite({ modes = null }: { /** Server-rendered rows for the Modes group: Test mode (`TestModeControl`). */ modes?: ReactNode }) {
   const { data, error, mutate } = useSWR<Loaded>("/api/site", json);
   const [busy, setBusy] = useState<SiteSettingKey | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -159,11 +159,13 @@ export function AdminSite() {
         {SITE_PANEL_GROUPS.map((group) => {
           const keys = unreadable ? [] : SITE_SETTING_KEYS.filter((key) => SITE_SETTING_COPY[key].group === group.key);
           const shutter = group.key === "modes" ? <Shutter maintenance={data?.maintenance} /> : null;
-          if (keys.length === 0 && shutter === null) return null;
+          const extra = group.key === "modes" ? modes : null;
+          if (keys.length === 0 && shutter === null && extra === null) return null;
           return (
             <PanelGroup key={group.key} label={group.label} kanji={group.kanji} testId={`site-group-${group.key}`}>
               {keys.map(row)}
               {shutter}
+              {extra}
             </PanelGroup>
           );
         })}
