@@ -122,7 +122,7 @@ describe("hole drop and hot drop", () => {
     expect(next.winningLine).toHaveLength(4);
   });
 
-  it("a stone that finishes the opponent's line through the hotspot loses", () => {
+  it("a stone never finishes the opponent's line through the hotspot, so nobody loses by one", () => {
     const state = fromDiagram(
       `
         . . . . . . .
@@ -137,14 +137,15 @@ describe("hole drop and hot drop", () => {
     );
     const board = state.board.slice();
     board[6 * 7 + 2] = HOT;
-    // White has o o *; black dropping on D1 does not complete white's four (needs four), so no win.
+    // White has o o * with the fourth point open. Black's stone there is black, so it blocks white's four rather than finishing it.
     const hot: GameState = { ...state, board };
-    expect(playMove(hot, p(0, 3)).status).toBe(GAME_STATUS.playing);
-    // But with o o * o, white's line is done by whoever lands on the hotspot's far side... it already is complete: four cells.
+    const blocked = playMove(hot, p(0, 3));
+    expect(cellAt(blocked, p(6, 3))).toBe(STONES.black);
+    expect(blocked.status).toBe(GAME_STATUS.playing);
+    // With o o * o already on the board, a black drop elsewhere decides nothing either: only a stone of white's own could have made that line.
     const done = board.slice();
     done[6 * 7 + 3] = STONES.white;
     const filled: GameState = { ...hot, board: done };
-    // Black drops elsewhere; the position already held a white four through the hotspot, made by white's own stone.
     expect(playMove(filled, p(0, 6)).status).toBe(GAME_STATUS.playing);
   });
 });
