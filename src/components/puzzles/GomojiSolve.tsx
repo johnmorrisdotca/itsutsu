@@ -12,6 +12,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, decodeHidden, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
+import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
@@ -130,7 +131,7 @@ export function GomojiSolve({
       setSaid(`A guess is ${size} letters.`);
       return;
     }
-    if (!isWord(word, size, lang)) {
+    if (!isWord(word, size, lang) && !(word === hidden && isDailyPoolWord(lang, size, word))) {
       setSaid(`${word.toUpperCase()} is not in the word list.`);
       return;
     }

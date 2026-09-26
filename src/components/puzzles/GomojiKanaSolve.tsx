@@ -18,6 +18,7 @@ import { breaksKanaHardRule, decodeKanaGivens, toHiragana } from "@/lib/puzzles/
 import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
 import { kanaScore } from "@/lib/puzzles/gomojiKana/kanaScore";
 import { kanaWordsOf } from "@/lib/puzzles/gomojiKana/kanaWords";
+import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
 import { finishRomaji, readRomaji } from "@/lib/puzzles/gomojiKana/romaji";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
 import { kanaKeyMarks, knownCounts, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
@@ -176,7 +177,7 @@ export function GomojiKanaSolve({
       setSaid(`A guess is ${size} kana.`);
       return;
     }
-    if (!words.allowed.has(word)) {
+    if (!words.allowed.has(word) && !(word === hidden && isDailyPoolWord("ja", size, word))) {
       setSaid(`${word} is not in the word list.`);
       return;
     }

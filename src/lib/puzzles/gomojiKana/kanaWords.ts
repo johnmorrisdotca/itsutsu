@@ -22,8 +22,8 @@ export type KanaWords = {
 
 const loaded = new Map<number, KanaWords>();
 
-/** A packed list read into words: one character a kana, run together, `size` to a word. */
-function unpack(packed: Packed, size: number): KanaWords {
+/** A packed list read into words: one character a kana, run together, `size` to a word. Exported for `scripts/daily-pools.ts`, which snapshots the answers. */
+export function unpack(packed: Packed, size: number): KanaWords {
   const kanaOf = new Map([...packed.codes].map((code, at) => [code, packed.alphabet[at]!]));
   const words = (run: string) => {
     const chars = [...run];
