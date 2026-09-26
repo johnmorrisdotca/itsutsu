@@ -11,6 +11,7 @@ import { fingerprintOf } from "../gomoku/ladderFingerprint.ts";
  * forty-five boards', and the other way about.
  */
 export const PUZZLE_ART_FILES: readonly string[] = [
+  "src/components/puzzles/PuzzleBoard.tsx",
   "src/components/puzzles/PuzzleGrid.tsx",
   "src/components/puzzles/HiddenStonesGrid.tsx",
   "src/components/puzzles/TowerRing.tsx",

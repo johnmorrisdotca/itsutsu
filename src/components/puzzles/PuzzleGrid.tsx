@@ -101,7 +101,8 @@ export function PuzzleGrid({
   }
   return (
     <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
-      <PuzzleBoard size={clues === null ? size : size + 2}>
+      {/* Towers' ring already carries its own clues where coordinates would sit, so its board keeps none. */}
+      <PuzzleBoard size={clues === null ? size : size + 2} coordinates={clues === null}>
       <RingIf size={size} clues={clues}>
       <div className="relative h-full w-full">
       <div className={PUZZLE_GRID} style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}>

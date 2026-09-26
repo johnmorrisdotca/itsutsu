@@ -11,17 +11,29 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
  *
  * John, 2026-09-24: "the inside of the board could be white because it's a
  * place where people write. But the rest of the board should look like the
- * rest of the boards." No coordinates: a solver writes in cells, and a row of
- * letters over a grid of numbers is noise. The set-up screen's preview keeps
- * them, to be the same size as a game's preview beside it
- * (`PuzzleBoardPreview`).
+ * rest of the boards." Then, 2026-09-25, finding no row numbers or column
+ * letters on Gomoji's board beside a real Gomoku board's: "Do this for all
+ * the boards" — so every puzzle grid now carries the same coordinates a
+ * game's board does (`BoardFrame`'s own drawing, never a second one), the
+ * whole side lettered and numbered as the board itself is sized.
  *
  * `theme` defaults to the reader's plain board wood: every puzzle but Gomoji
  * draws it that way. Gomoji reads the reader's own felt-or-wood choice
  * (`feltOrWoodTheme`) and hands it in, so its board carries the same colour
  * picker a Reversi or Gomoku board offers.
  */
-export function PuzzleBoard({ size, theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme], children }: { size: number; theme?: BoardThemeTokens; children: ReactNode }) {
+export function PuzzleBoard({
+  size,
+  theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme],
+  coordinates = true,
+  children,
+}: {
+  size: number;
+  theme?: BoardThemeTokens;
+  /** Row numbers and column letters, as a game's board draws them; on by default, off only where a caller draws its own (Towers' ring of clues). */
+  coordinates?: boolean;
+  children: ReactNode;
+}) {
   return (
     <BoardFrame
       size={size}
@@ -30,7 +42,7 @@ export function PuzzleBoard({ size, theme = BOARD_THEMES[DEFAULT_APPEARANCE.boar
       inset={playingAreaInset(size, true)}
       lattice={false}
       shape="rhombus"
-      coordinates={false}
+      coordinates={coordinates}
     >
       {children}
     </BoardFrame>
