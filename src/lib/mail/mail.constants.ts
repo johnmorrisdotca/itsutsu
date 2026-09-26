@@ -111,5 +111,6 @@ export const MAIL_REFUSAL_TEXT: Record<MailRefusal, string> = {
   "transport-error": "The email could not be confirmed as sent. It may not arrive.",
   "notices-off": "Notices about games are not switched on yet, so nothing was sent.",
   "no-address": "There is no address to write to, so nothing was sent.",
+  "no-stop-link": "Not sent: every email says how to stop getting it, and this one could not be given that link.",
   "to-a-child": "Not sent: the address belongs to a member under 13, and the site never emails a child.",
 };

@@ -1,5 +1,7 @@
 import type { GameResultFacts } from "@/lib/history/gameResult.types";
 
+import type { StopKind } from "./mailStop";
+
 /** One email, as the site means to send it. Plain text only: nothing a person typed is ever put into HTML. */
 export type OutgoingMail = {
   to: string;
@@ -11,6 +13,8 @@ export type OutgoingMail = {
    * pressing Reply. Everything else replies to `CONTACT_ADDRESS`.
    */
   replyTo?: string;
+  /** Extra headers: a member's email carries `List-Unsubscribe` and its one-click partner (`mailStop.ts`). */
+  headers?: Record<string, string>;
 };
 
 /** What a transport reports: a provider's id when it accepted the mail, or why it did not. */
@@ -43,6 +47,8 @@ export type MailRefusal =
   | "notices-off"
   /** Nobody to write to: no member row, no address on it, or the member asked not to hear. */
   | "no-address"
+  /** A member's email that could not be given its way out (`mailStop.ts`): it does not go without one. */
+  | "no-stop-link"
   /** The address is a member under 13's, and the site never emails a child (childRules.ts, PRIV-03). */
   | "to-a-child";
 
@@ -88,7 +94,8 @@ export type NoticeOutcome = SendOutcome;
 
 /** Reads the address a notice would go to, so a test can answer without a database. */
 export type AddressBook = {
-  addressOf(memberId: string): Promise<string | null>;
+  /** The member's address, or null where there is none or they have stopped this kind of email, or all of it. */
+  addressOf(memberId: string, kind: StopKind): Promise<string | null>;
 };
 
 export type NoticeDeps = SendDeps & { addresses?: AddressBook; games?: GameBook };

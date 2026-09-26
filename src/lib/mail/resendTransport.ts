@@ -23,6 +23,7 @@ export function resendTransport(apiKey: string, fetchImpl: typeof fetch = fetch)
           subject: mail.subject,
           text: mail.text,
           reply_to: mail.replyTo ?? CONTACT_ADDRESS,
+          ...(mail.headers === undefined ? {} : { headers: mail.headers }),
         }),
         signal: AbortSignal.timeout(MAIL_TIMEOUT_MS),
       });

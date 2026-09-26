@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { EMBED_TOKEN_PARAM, signEmbedToken } from "@/lib/auth/embedToken";
 import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { signStopToken } from "@/lib/mail/mailStop";
 
 import { MATCHER_EXEMPT, config, proxy, wouldBeOpen } from "./proxy";
 
@@ -435,6 +436,63 @@ describe("the embed token survives the fail-closed change, in production", () =>
 });
 
 /**
+ * A stop link: every email says how to stop getting it, and the law asks that
+ * it work with no sign-in. Driven through `proxy` itself, as the embed token
+ * is above, because the question is what a REQUEST without a session gets.
+ */
+describe("a stop link needs no sign-in, and opens nothing else", () => {
+  const ENV = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ENV };
+    vi.unstubAllEnvs();
+  });
+
+  function production(): void {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+  }
+
+  it("lets the page and the route through with a valid token and no session", async () => {
+    production();
+    const token = await signStopToken("m-1", "your-turn");
+    expect(token).not.toBeNull();
+    const page = await proxy(new NextRequest(`https://itsutsu.com/stop/${token}`));
+    expect(page.status).toBe(200);
+    expect(page.headers.get("location")).toBeNull();
+    const route = await proxy(new NextRequest(`https://itsutsu.com/api/mail/stop?token=${token}`, { method: "POST" }));
+    expect(route.status).toBe(200);
+  });
+
+  it("sends a stranger with no token, or a wrong one, the ordinary way", async () => {
+    production();
+    const token = (await signStopToken("m-1", "your-turn"))!;
+    for (const path of ["/stop/nonsense", `/stop/${token.slice(0, -2)}xx`, "/stop/", `/stop/${token}/more`]) {
+      const response = await proxy(new NextRequest(`https://itsutsu.com${path}`));
+      expect(response.status, path).not.toBe(200);
+    }
+    const route = await proxy(new NextRequest("https://itsutsu.com/api/mail/stop?token=nonsense", { method: "POST" }));
+    expect(route.status).toBe(401);
+  });
+
+  it("opens only its own two addresses, whatever else carries the token", async () => {
+    production();
+    const token = (await signStopToken("m-1", "your-turn"))!;
+    for (const path of [`/xp?token=${token}`, `/players?token=${token}`, `/api/me?token=${token}`, `/api/mail/other?token=${token}`]) {
+      const response = await proxy(new NextRequest(`https://itsutsu.com${path}`));
+      expect(response.status, path).not.toBe(200);
+    }
+  });
+
+  it("is not a session: a session cookie's own token in the address opens nothing", async () => {
+    production();
+    const session = await signSession({ kind: "player", memberId: "m-1", code: "x", exp: Math.floor(Date.now() / 1000) + 3600 });
+    const response = await proxy(new NextRequest(`https://itsutsu.com/stop/${session}`));
+    expect(response.status).not.toBe(200);
+  });
+});
+
+/**
  * The maintenance shutter, which is the only thing in this repository allowed
  * to turn the gate's yes into a no.
  *
@@ -655,6 +713,14 @@ describe("the site being worked on", () => {
     const token = await signEmbedToken("proxy.test.ts");
     const embed = await proxy(ask(`/embed?${EMBED_TOKEN_PARAM}=${token}`));
     expect(embed.status).toBe(200);
+  });
+
+  // Nor is a way out of email: it has to work while the site is being worked on.
+  it("leaves a stop link alone", async () => {
+    shutTheSite();
+    const token = await signStopToken("m-1", "game-over");
+    const stop = await proxy(ask(`/stop/${token}`));
+    expect(stop.status).toBe(200);
   });
 
   /*
