@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
-import { monthWords } from "@/lib/history/recordMonth";
+import { monthWords, weekWords } from "@/lib/history/recordMonth";
 import { PUZZLE_RECORD_SORTS, puzzleRecordAsked, puzzleRecordHref, type PuzzleRecordAsked } from "@/lib/puzzles/puzzleRecordAddress";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -110,7 +110,8 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
           <p className="text-sm" data-testid="record-tally" data-points={record.tally.points}>
             <span className="font-semibold tabular-nums">{thousands(record.tally.points)} points</span> from{" "}
             {record.tally.puzzles} {record.tally.puzzles === 1 ? "puzzle" : "puzzles"}
-            {asked.month === null ? "" : ` in ${monthWords(asked.month)}`}: each puzzle counts once, at its best, and the
+            {asked.month === null ? "" : ` in ${monthWords(asked.month)}`}
+            {asked.week === null ? "" : ` in ${weekWords(asked.week)}`}: each puzzle counts once, at its best, and the
             rows marked <span aria-hidden>★</span><span className="sr-only">with a star</span> are the ones counted.
           </p>
         ) : null}
@@ -147,6 +148,7 @@ function chipsOf(kind: PuzzleKind, asked: PuzzleRecordAsked, whose: string | nul
     asked.size === null ? null : { key: "size", label: sizeWord(asked.size, kind), without: off({ size: null }) },
     asked.level === null ? null : { key: "level", label: PUZZLE_LEVEL_DISPLAY[asked.level].label, without: off({ level: null }) },
     asked.month === null ? null : { key: "month", label: `Finished in ${monthWords(asked.month)}`, without: off({ month: null }) },
+    asked.week === null ? null : { key: "week", label: `Finished in ${weekWords(asked.week)}`, without: off({ week: null }) },
     asked.sort === PUZZLE_RECORD_SORTS.fastest ? { key: "sort", label: "Solved, fastest first", without: off({ sort: PUZZLE_RECORD_SORTS.newest }) } : null,
   ];
   return chips.filter((chip): chip is Chip => chip !== null);

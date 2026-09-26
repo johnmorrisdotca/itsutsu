@@ -1,5 +1,5 @@
 import { historyPath } from "@/lib/gomoku/slugs";
-import { readMonth } from "@/lib/history/recordMonth";
+import { readMonth, readWeek } from "@/lib/history/recordMonth";
 
 import { PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -22,6 +22,7 @@ export const PUZZLE_RECORD_PARAMS = {
   size: "size",
   level: "level",
   month: "month",
+  week: "week",
   sort: "sort",
   page: "page",
 } as const;
@@ -37,6 +38,8 @@ export type PuzzleRecordAsked = {
   level: PuzzleLevel | null;
   /** "2026-09": the solves finished in that month, as the monthly board counts them. */
   month: string | null;
+  /** "2026-09-21": the solves finished in the week starting that Monday, UTC, as the weekly board counts them. */
+  week: string | null;
   sort: PuzzleRecordSort;
   page: number;
 };
@@ -52,7 +55,7 @@ type Query = Record<string, string | string[] | undefined>;
 /**
  * What an address asks for, each filter dropped where it names nothing this
  * puzzle has — a size it is never made at, a level it does not offer, a month
- * that is not one. A dropped filter narrows nothing, so the page never claims
+ * or a week that is not one. A dropped filter narrows nothing, so the page never claims
  * a narrowing it did not make.
  */
 export function puzzleRecordAsked(kind: PuzzleKind, query: Query): PuzzleRecordAsked {
@@ -70,6 +73,7 @@ export function puzzleRecordAsked(kind: PuzzleKind, query: Query): PuzzleRecordA
     size: spec.sizes.includes(size) ? size : null,
     level: spec.levels.includes(level) ? level : null,
     month: readMonth(one(PUZZLE_RECORD_PARAMS.month)),
+    week: readWeek(one(PUZZLE_RECORD_PARAMS.week)),
     sort: one(PUZZLE_RECORD_PARAMS.sort) === PUZZLE_RECORD_SORTS.fastest ? PUZZLE_RECORD_SORTS.fastest : PUZZLE_RECORD_SORTS.newest,
     page: Number.isInteger(page) && page >= 1 && page <= PUZZLE_RECORD_PAGE_MAX ? page : 1,
   };
@@ -82,6 +86,7 @@ export function puzzleRecordHref(kind: PuzzleKind | string, asked: Partial<Puzzl
   if (asked.size) query.set(PUZZLE_RECORD_PARAMS.size, String(asked.size));
   if (asked.level) query.set(PUZZLE_RECORD_PARAMS.level, asked.level);
   if (asked.month) query.set(PUZZLE_RECORD_PARAMS.month, asked.month);
+  if (asked.week) query.set(PUZZLE_RECORD_PARAMS.week, asked.week);
   if (asked.sort === PUZZLE_RECORD_SORTS.fastest) query.set(PUZZLE_RECORD_PARAMS.sort, PUZZLE_RECORD_SORTS.fastest);
   if (asked.page !== undefined && asked.page > 1) query.set(PUZZLE_RECORD_PARAMS.page, String(asked.page));
   const search = query.toString();

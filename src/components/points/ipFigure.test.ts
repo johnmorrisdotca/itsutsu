@@ -21,6 +21,9 @@ describe("where an IP figure leads", () => {
 
   it("one puzzle's board: that puzzle's record, narrowed to the member", () => {
     expect(ipHref({ variants: [], puzzles: ["hiddenStones"] }, "m-ann", "2026-09")).toBe("/games/hidden-stones/history?member=m-ann&month=2026-09");
+    // A week's figure leads to that week, not the month around it: the month would be a larger set than it counted.
+    expect(ipHref({ variants: ["freestyle"], puzzles: [] }, "m-ann", null, "2026-09-21")).toBe("/games/gomoku/history?member=m-ann&ip=paid&week=2026-09-21");
+    expect(ipHref({ variants: [], puzzles: ["hiddenStones"] }, "m-ann", null, "2026-09-21")).toBe("/games/hidden-stones/history?member=m-ann&week=2026-09-21");
   });
 
   it("a family's board or the site's: no one page, so no link", () => {

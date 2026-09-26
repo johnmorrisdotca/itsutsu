@@ -595,7 +595,7 @@ describe("a puzzle's time and a score lead to what they were made of", () => {
     expect(time).toContain("solvePath(");
     expect(time).toContain("mySolvePath(");
     const points = readFileSync("src/components/puzzles/SolvePoints.tsx", "utf8");
-    expect(points).toMatch(/puzzleRecordHref\(kind, \{ member: memberId, month \}\)/);
+    expect(points).toMatch(/puzzleRecordHref\(kind, \{ member: memberId, month, week \}\)/);
     expect(points).toContain("mySolvePath(kind, solveId) : solvePath(kind, solveId)");
     const ip = readFileSync("src/components/points/IpFigure.tsx", "utf8");
     expect(ip).toContain('ip: "paid"');

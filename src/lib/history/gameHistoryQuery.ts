@@ -29,7 +29,7 @@ import {
   verdictWhere,
 } from "./gameHistoryClauses";
 import { NOT_A_REFUSED_OFFER } from "./offers";
-import { monthBounds, readMonth } from "./recordMonth";
+import { monthBounds, readMonth, readWeek, weekBounds } from "./recordMonth";
 import { GAME_SORT_SPEC, gameSortChoice, readGamePaging } from "./gameHistory.sort";
 import type { GameHistoryQuery } from "./gameHistory.types";
 
@@ -58,6 +58,7 @@ const querySchema = z.object({
   rated: z.enum(GAME_RATED_FILTERS).default("all"),
   ip: z.enum(GAME_IP_FILTERS).default("all"),
   month: z.string().max(7).optional(),
+  week: z.string().max(10).optional(),
   verdict: z.enum(GAME_VERDICT_FILTERS).default("all"),
   variant: z.enum(GAME_VARIANT_FILTERS).default("all"),
   size: z.enum(GAME_SIZE_FILTERS).default("all"),
@@ -104,6 +105,7 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
     rated: get("rated"),
     ip: get("ip"),
     month: get("month"),
+    week: get("week"),
     verdict: get("verdict"),
     variant: variantFilter(get("variant")),
     size: get("size"),
@@ -145,6 +147,8 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
     ip: data.ip,
     // A month that is not one narrows nothing, rather than refusing the page.
     month: readMonth(data.month),
+    // A week likewise: a Monday, or nothing narrowed.
+    week: readWeek(data.week),
     verdict: data.verdict,
     variant: data.variant,
     size: data.size === "all" ? null : Number(data.size),
@@ -243,6 +247,10 @@ export function buildGameWhere(
   if (query.ip !== "all") conditions.push(ipWhere(query.player, named));
   if (query.month !== null) {
     const { start, end } = monthBounds(query.month);
+    conditions.push({ lastMoveAt: { gte: start, lt: end } });
+  }
+  if (query.week !== null) {
+    const { start, end } = weekBounds(query.week);
     conditions.push({ lastMoveAt: { gte: start, lt: end } });
   }
   if (query.verdict !== "all") {

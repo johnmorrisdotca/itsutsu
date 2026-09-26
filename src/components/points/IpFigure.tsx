@@ -10,7 +10,7 @@ import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
  *
  * One game's board sums the games of it that paid the member IP, so it leads to
  * that game's record narrowed to exactly those (`ip=paid`), and to the month
- * when the board was this month's. One puzzle's board sums the member's best
+ * or the week when the board was this month's or this week's. One puzzle's board sums the member's best
  * solve of each grid, so it leads to that puzzle's record narrowed to them,
  * where the same sum is printed with its rows marked.
  *
@@ -19,14 +19,14 @@ import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
  * shows that set, and a link to a part of it would open a smaller list than
  * the number — the fault this rule exists to stop, wearing a link.
  */
-export function ipHref(scope: IpScope, memberId: string, month: string | null): string | null {
+export function ipHref(scope: IpScope, memberId: string, month: string | null, week: string | null = null): string | null {
   const [variant] = scope.variants;
   const [puzzle] = scope.puzzles;
   if (scope.variants.length === 1 && scope.puzzles.length === 0 && variant !== undefined) {
-    return gamesHref({ variant, memberId, ip: "paid", month });
+    return gamesHref({ variant, memberId, ip: "paid", month, week });
   }
   if (scope.puzzles.length === 1 && scope.variants.length === 0 && puzzle !== undefined) {
-    return puzzleRecordHref(puzzle, { member: memberId, month });
+    return puzzleRecordHref(puzzle, { member: memberId, month, week });
   }
   return null;
 }
@@ -42,6 +42,7 @@ export function IpFigure({
   memberId,
   ip,
   month = null,
+  week = null,
   suffix = "",
   className = "",
   testId = "ip-figure",
@@ -51,12 +52,14 @@ export function IpFigure({
   ip: number;
   /** "2026-09" when the figure is one month's. */
   month?: string | null;
+  /** "2026-09-21", the Monday, when the figure is one week's. */
+  week?: string | null;
   /** A unit after the number, " IP". */
   suffix?: string;
   className?: string;
   testId?: string;
 }) {
-  const href = ipHref(scope, memberId, month);
+  const href = ipHref(scope, memberId, month, week);
   const text = `${thousands(ip)}${suffix}`;
   if (href === null || ip === 0) {
     return (

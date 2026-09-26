@@ -289,6 +289,15 @@ test("a best time on the feed opens the solve it was, and a game's IP opens the 
     await expect(page.locator('[data-testid="history-narrowing"][data-narrowing="ip"]')).toHaveText(/Paid IP/);
     await expect(page.locator('[data-testid="history-narrowing"][data-narrowing="month"]')).toHaveText(/Finished in/);
     await expect(page.locator(`a[href$="/match/${id}"]`).first()).toBeVisible();
+
+    // And this week's board: the same figure opens the games of this week alone, never the whole month's.
+    await page.goto("/games/gomoku");
+    const weekly = page.locator(`[data-testid="ip-board-week"] [data-testid="ip-row"][data-member="${world.ann.id}"] [data-testid="ip-row-figure"]`);
+    await expect(weekly).toHaveText("900,000");
+    await weekly.click();
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/history\\?member=${world.ann.id}&ip=paid&week=\\d{4}-\\d{2}-\\d{2}$`));
+    await expect(page.locator('[data-testid="history-narrowing"][data-narrowing="week"]')).toHaveText(/Finished in the week of/);
+    await expect(page.locator(`a[href$="/match/${id}"]`).first()).toBeVisible();
   } finally {
     await unmakeWorld(world);
   }
