@@ -1,5 +1,6 @@
 import "server-only";
 
+import { bestBefore, tellSolve } from "@/lib/feed/siteNewsWrite";
 import { prisma } from "@/lib/prisma";
 
 import { pointsFor } from "../puzzlePoints";
@@ -42,9 +43,14 @@ export async function keepSolve(solve: KeptSolve): Promise<void> {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
     const { answer, solved = true, ...kept } = solve;
     const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
+    /* The fastest time before this one, for the Everyone feed's "a new best
+       time" — read first, since afterwards this solve is in the answer. */
+    const news = { memberId: solve.memberId, kind: solve.kind, size: solve.size, level: solve.level, elapsedMs: solve.elapsedMs, solved };
+    const best = await bestBefore(news);
     await prisma.puzzleSolve.create({
       data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null },
     });
+    await tellSolve(news, best);
   } catch (problem) {
     /* The solve has already been checked and paid; a row that could not be
        kept is logged, never a failure the solver is shown. */

@@ -2,6 +2,7 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 
+import { leaderBefore, tellFirstPlace } from "@/lib/feed/siteNewsWrite";
 import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame } from "./elo";
 import { playerKey } from "./playerKey";
@@ -177,9 +178,13 @@ export async function recordResult(
    * Asked ONCE for the whole result. The two halves used to ask separately,
    * which read the Member table four times to answer one game twice.
    */
-  const [blackId, whiteId] = await Promise.all([
+  const [blackId, whiteId, leader] = await Promise.all([
     memberIdForName(blackName),
     memberIdForName(whiteName),
+    /* Who led this game's ladder of people before the result, so the Everyone
+       feed can say when a result puts somebody at the top. Read before the rows
+       below are opened, since opening one touches the tiebreak's `updatedAt`. */
+    leaderBefore(variant, pool),
   ]);
 
   const black: Seat = {
@@ -261,6 +266,8 @@ export async function recordResult(
     // The change on the game's own row, in the same commit, so the figure shown on it is the one that happened.
     ...(gameId === null ? [] : [prisma.game.update({ where: { id: gameId }, data: change })]),
   ]);
+  // After the commit, and never able to fail it: see `siteNewsWrite.ts`.
+  await tellFirstPlace(variant, gameId, leader, [black.key, white.key]);
   // The two ratings the game was played at, for the IP it pays (`payGameIp`): beating a stronger player pays more.
   return { black: blackBefore.rating, white: whiteBefore.rating };
 }

@@ -157,6 +157,16 @@ const prisma = {
 
 vi.mock("@/lib/prisma", () => ({ prisma }));
 
+/* The site's news rides the same writes and is `siteNewsWrite.test.ts`'s to
+   test; answered here so this file's errors are about this file. */
+vi.mock("@/lib/feed/siteNewsWrite", () => ({
+  tellFinishedGame: async () => {},
+  leaderBefore: async () => undefined,
+  tellFirstPlace: async () => {},
+  bestBefore: async () => undefined,
+  tellSolve: async () => {},
+}));
+
 const { recordResult } = await import("./recordResult");
 
 function figures(row: Row | undefined) {

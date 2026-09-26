@@ -1,5 +1,6 @@
 import "server-only";
 
+import { tellFinishedGame } from "@/lib/feed/siteNewsWrite";
 import { prisma } from "@/lib/prisma";
 import { awardFinishedGameXp } from "@/lib/xp/xpGameServer";
 import {
@@ -333,6 +334,10 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
       xpLastAt: true,
       playedStreakKind: true,
       playedStreakCount: true,
+      /* Read before this game is counted, so the site's news can say a win or
+         a loss is somebody's first here without asking anything else. */
+      won: true,
+      lost: true,
     },
   });
   const byId = new Map(rows.map((row) => [row.id, row]));
@@ -375,6 +380,15 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
   await prisma.$transaction(writes);
 
   await awardGameXp(game, sides, { byId, runs });
+  /* The Everyone feed's news about this game — a game's first, a first win or
+     loss, a top grade beaten — last, and unable to fail the ending. */
+  await tellFinishedGame(
+    game,
+    sides.flatMap((side) => {
+      const row = byId.get(side.memberId);
+      return row === undefined ? [] : [{ ...side, wonBefore: row.won, lostBefore: row.lost }];
+    }),
+  );
 }
 
 /**

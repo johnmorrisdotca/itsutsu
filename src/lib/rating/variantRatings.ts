@@ -103,19 +103,18 @@ export function scoreForBlack(winner: "black" | "white" | null): GameScore {
 }
 
 /**
- * The leaderboard for one game: best first, unrated standings included.
+ * WHICH ROWS A GAME'S LADDER IS, AND IN WHAT ORDER: the one definition, read
+ * by the ladder itself and by the news that somebody has reached the top of
+ * it (`fetchLadderLeader`), so "first place" in a feed line is the row the
+ * ladder draws first and never a second opinion about it.
  *
  * Tied on rating and on games played, the one who played most recently
  * stands higher, and the name settles the rest — see `fetchLeaders`. Without
  * a total order the same page shows a different fifty each time it is loaded.
  */
-export async function fetchVariantLeaders(
-  variant: string,
-  limit: number,
-  pool: RatingPool = RATING_POOLS.people,
-): Promise<LadderStanding[]> {
+function ladderQuery(variant: string, pool: RatingPool) {
   const columns = POOL_COLUMNS[pool];
-  const rows = await prisma.playerVariantRating.findMany({
+  return {
     /*
      * Somebody with a standing in THIS pool, which is not the same as somebody
      * with a row. A row is written the first time a name finishes a game of
@@ -132,8 +131,21 @@ export async function fetchVariantLeaders(
       { updatedAt: "desc" },
       { key: "asc" },
     ] as never,
-    take: limit,
-  });
+  };
+}
+
+/** Who stands first on one game's ladder in one pool, or null when nobody does yet. */
+export async function fetchLadderLeader(variant: string, pool: RatingPool): Promise<{ key: string; memberId: string | null } | null> {
+  return prisma.playerVariantRating.findFirst({ ...ladderQuery(variant, pool), select: { key: true, memberId: true } });
+}
+
+/** The leaderboard for one game: best first, unrated standings included, in the ladder's order. */
+export async function fetchVariantLeaders(
+  variant: string,
+  limit: number,
+  pool: RatingPool = RATING_POOLS.people,
+): Promise<LadderStanding[]> {
+  const rows = await prisma.playerVariantRating.findMany({ ...ladderQuery(variant, pool), take: limit });
   // The XP column, in one further read over this ladder's member ids — see
   // `xpOfMembers.ts` for why it is one query and what a null means.
   const xp = await xpByMemberId(rows.map((row) => row.memberId));

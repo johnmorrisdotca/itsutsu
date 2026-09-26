@@ -117,6 +117,16 @@ vi.mock("@/lib/prisma", () => ({
  * awards then come to is `awardXp.test.ts`.
  */
 const asked: { memberId: string | null | undefined; types: string[]; subjects: string[] }[] = [];
+/* The site's news rides the same writes and is `siteNewsWrite.test.ts`'s to
+   test; answered here so this file's errors are about this file. */
+vi.mock("@/lib/feed/siteNewsWrite", () => ({
+  tellFinishedGame: async () => {},
+  leaderBefore: async () => undefined,
+  tellFirstPlace: async () => {},
+  bestBefore: async () => undefined,
+  tellSolve: async () => {},
+}));
+
 vi.mock("@/lib/xp/awardXp", () => ({
   awardXp: async ({
     memberId,

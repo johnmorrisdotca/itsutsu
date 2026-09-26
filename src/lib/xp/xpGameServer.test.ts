@@ -165,6 +165,16 @@ const prismaFake = {
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaFake }));
 
+/* The site's news rides the same writes and is `siteNewsWrite.test.ts`'s to
+   test; answered here so this file's errors are about this file. */
+vi.mock("@/lib/feed/siteNewsWrite", () => ({
+  tellFinishedGame: async () => {},
+  leaderBefore: async () => undefined,
+  tellFirstPlace: async () => {},
+  bestBefore: async () => undefined,
+  tellSolve: async () => {},
+}));
+
 const { recordPlayed } = await import("@/lib/rating/playedRun");
 const { awardFinishedGameXp } = await import("./xpGameServer");
 // After the mock, like the two above: the awarder reads the faked database.
