@@ -105,7 +105,8 @@ test("a member reads what is held, removes their account, and the game stays for
     expect(game).toEqual({ blackMemberId: null, blackName: "", whiteName: `Stays${stamp.slice(-5)}` });
     const opened = await page.goto(matchPath("freestyle", world.gameId));
     expect(opened?.status()).toBe(200);
-    await expect(page.getByText(`Stays${stamp.slice(-5)}`).first()).toBeVisible();
+    // The shown name, not the "Just the board" header that carries it hidden until that view is chosen.
+    await expect(page.getByText(`Stays${stamp.slice(-5)}`).filter({ visible: true }).first()).toBeVisible();
     await expect(page.getByText(world.name)).toHaveCount(0);
   } finally {
     await member.close();
