@@ -45,7 +45,7 @@ export const CATALOGUE_VIEW_DISPLAY: Record<CatalogueView, { label: string; kanj
     blurb: "One card each, narrowed by first letter or by what wins.",
   },
   list: {
-    label: "Plain list",
+    label: "List",
     kanji: "全種目",
     blurb: "Every game as text: its names elsewhere, and everywhere it lives here.",
   },

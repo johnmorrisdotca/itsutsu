@@ -71,7 +71,8 @@ export const GAME_CARD_KINDS: { kind: GameCardKind; label: string; kanji: string
   { kind: "5", label: "Five in a row", kanji: "五目" },
   { kind: "6", label: "Six in a row", kanji: "六目" },
   { kind: "flips", label: "Flips", kanji: "反転" },
-  { kind: "puzzle", label: "A puzzle", kanji: "詰" },
+  // Plural, as the filter is read: "Puzzles" (John, 2026-09-26: "Rename A PUZZLE to Puzzles").
+  { kind: "puzzle", label: "Puzzles", kanji: "詰" },
 ];
 
 /** A quiet text link in a row of them, as the plain list uses. */

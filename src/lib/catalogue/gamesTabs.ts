@@ -12,8 +12,13 @@ import type { Tab } from "@/lib/ui/tabs";
  * the key every tab strip reads, so no address changes; /learn and /famous
  * draw this same strip with themselves open.
  */
+/*
+ * ONE WORD EACH. John, 2026-09-26: "Rename the two word ones to List,
+ * Learning and Famous." The pages keep their fuller names in their own
+ * headings; a tab is a place to press, and five fit on a phone's line.
+ */
 export const GAMES_TABS: readonly Tab[] = [
   ...CATALOGUE_VIEW_LIST.map((view) => ({ key: view, label: CATALOGUE_VIEW_DISPLAY[view].label, kanji: CATALOGUE_VIEW_DISPLAY[view].kanji })),
-  { key: "learn", label: "Learning shelf", kanji: "学び", href: "/learn" },
-  { key: "famous", label: "Famous games", kanji: "名局", href: "/famous" },
+  { key: "learn", label: "Learning", kanji: "学び", href: "/learn" },
+  { key: "famous", label: "Famous", kanji: "名局", href: "/famous" },
 ];
