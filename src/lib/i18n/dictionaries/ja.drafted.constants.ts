@@ -690,6 +690,10 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "最速記録を見る",
     back: "See the fastest records.",
   },
+  "feed.seeSolves": {
+    text: "解いた記録を見る",
+    back: "See the records of what was solved.",
+  },
   "feed.seeGame": {
     text: "対局を見る",
     back: "See the game.",

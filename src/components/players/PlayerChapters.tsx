@@ -10,6 +10,7 @@ import { EndPositions } from "./EndPositions";
 import { ItsutsuRecord } from "./ItsutsuRecord";
 import { KEPT_RECORD_COPY } from "./LegacyRecord";
 import { LegacySourcePanel } from "./LegacySource";
+import { PlayerPlays } from "./PlayerPlays";
 import { WholeRecordPanel } from "./WholeRecord";
 import type { PlayerChaptersProps } from "./playerPage.types";
 
@@ -78,6 +79,12 @@ export function PlayerChapters({
              */
             emptyNote={keptRecord === null ? undefined : KEPT_RECORD_COPY[keptRecord.kind]?.here}
           />
+          {/*
+            Every game they have finished, the ones they have going, the games
+            with the reader, and their puzzles: a name leads here, so here
+            leads on to everything they have played. See `PlayerPlays`.
+          */}
+          {member?.id !== undefined && member !== null ? <PlayerPlays memberId={member.id} readerId={reader.memberId} /> : null}
           {/*
             Their games of one kind, each as it ended, on one picture — made in
             the reader's browser on a press; see `EndPositions`. The games are

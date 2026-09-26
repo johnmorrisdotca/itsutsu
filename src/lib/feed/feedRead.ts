@@ -18,7 +18,8 @@ import { gameEntry, ipEntries, orderFeed, puzzleEntries, xpEntries } from "./fee
 import type { FeedEntry, FeedGameRow, FeedPerson, FeedSeatStanding, FeedXpDay } from "./feed.types";
 import { everyoneMayShow, mayBeNamed } from "./feedEveryone";
 import { addedEntries, gamesToldByNews, newsEntries } from "./feedNews";
-import { newsMemberIds, readNews } from "./feedNewsRead";
+import { bestTimeSolves, newsMemberIds, readNews } from "./feedNewsRead";
+import { SITE_NEWS } from "./siteNews.constants";
 import { GAME_ADDED } from "@/lib/catalogue/gameAdded.data";
 
 /**
@@ -248,10 +249,14 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
   /* The site's news, under the same rule as the games: see `feedNews.ts`. A
      test member is never named to anybody here — the feed does not read the
      operator's Test Mode yet — and neither is a member the games would leave out. */
-  const told = newsEntries(news.rows, news.games(names), {
+  const said = newsEntries(news.rows, news.games(names), {
     nameOf: (id) => members.get(id)?.name.trim() ?? "",
     mayName: (id) => id !== null && mayBeNamed(standing(id)) && welcome(id) && members.get(id)?.unclaimableBecause !== UNCLAIMABLE_REASONS.test,
   });
+  /* A best time's time opens the solve it was — for a line that may name its
+     solver; one said without them does not lead to them either. */
+  const solves = await bestTimeSolves(news.rows.filter((row) => said.some((line) => line.named && line.id === `news:${row.id}`)));
+  const told = said.map((line) => (line.news === SITE_NEWS.bestTime ? { ...line, solveId: solves.get(line.id.slice("news:".length)) ?? null } : line));
   const alreadyTold = gamesToldByNews(told);
 
   const lines = games

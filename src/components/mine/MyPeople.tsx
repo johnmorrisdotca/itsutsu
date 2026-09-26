@@ -1,5 +1,6 @@
 import Link from "@/components/ui/Link";
 
+import { gamesHref } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
@@ -60,6 +61,10 @@ export async function MyPeople({ memberId }: { memberId: string }) {
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
                   {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
                 </span>
+                {/* The games the two of you have finished, in the record narrowed to the pair. */}
+                <Link href={gamesHref({ memberId, against: buddy.id })} className="text-xs text-muted underline underline-offset-4" data-testid="buddy-played">
+                  games together
+                </Link>
                 <span className="ml-auto">
                   <RowActions>
                     <ChallengeButton memberId={buddy.id} />

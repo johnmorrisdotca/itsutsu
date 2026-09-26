@@ -59,6 +59,12 @@ export type FeedNewsEntry = FeedLine<"news"> & {
   outcome: FeedOutcome | null;
   /** The row's subject: a grade, or a best time's "size:level:ms". */
   subject: string;
+  /**
+   * A best time's solve, which its time leads to (`SolveTime`): found when the
+   * feed is read, in one query for the page. Absent for every other line, and
+   * null for a best time whose solve is no longer kept.
+   */
+  solveId?: string | null;
 };
 
 /** One day's new games, in one line. `who` is nobody: the site is the subject. */

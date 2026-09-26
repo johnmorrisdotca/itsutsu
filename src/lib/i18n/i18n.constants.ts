@@ -371,6 +371,7 @@ export const PHRASES = {
   "feed.seeGame": "See the game",
   "feed.seeLadder": "See the ladder",
   "feed.seeFastest": "See the fastest times",
+  "feed.seeSolves": "See their solves",
   "feed.somebody": "somebody",
   "feed.emptyMine":
     "Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first.",

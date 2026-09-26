@@ -10,6 +10,7 @@ import type { FeedActivityEntry, FeedPerson } from "@/lib/feed/feed.types";
 import { entryPhrase, phraseParts } from "@/lib/feed/feedWords";
 import type { Speaker } from "@/lib/i18n/i18n";
 import { matchPath } from "@/lib/gomoku/slugs";
+import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 import { playerPath } from "@/lib/rating/playerKey";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpHistoryHref } from "@/lib/xp/xpHistoryDays";
@@ -37,14 +38,7 @@ export function FeedLine({ entry, say }: { entry: FeedActivityEntry; say: Speake
             "text" in part ? <span key={index}>{part.text}</span> : <span key={index}>{slot(part.slot, entry, say)}</span>,
           )}
         </p>
-        <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
-          <LocalTime at={entry.at} />
-          {gameId !== null && variant !== null ? (
-            <Link href={matchPath(variant, gameId)} className="underline underline-offset-4" data-testid="feed-open">
-              {say.say("feed.seeGame")}
-            </Link>
-          ) : null}
-        </p>
+        <LineFoot entry={entry} say={say} />
       </div>
     </li>
   );
@@ -94,4 +88,31 @@ function slot(name: string, entry: FeedActivityEntry, say: Speaker): ReactNode {
     default:
       return null;
   }
+}
+
+/**
+ * Under the sentence: when it happened, and where to go on to — the game a line
+ * is about, or for a day's puzzles the solver's solves of that puzzle, in its
+ * record. That count itself stays a number: it is one day in the reader's own
+ * zone, and the record narrows by month, so a link on the count would open
+ * more solves than it counted.
+ */
+function LineFoot({ entry, say }: { entry: FeedActivityEntry; say: Speaker }) {
+  const variant = "variant" in entry ? entry.variant : null;
+  const gameId = "gameId" in entry ? entry.gameId : null;
+  return (
+    <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
+      <LocalTime at={entry.at} />
+      {gameId !== null && variant !== null ? (
+        <Link href={matchPath(variant, gameId)} className="underline underline-offset-4" data-testid="feed-open">
+          {say.say("feed.seeGame")}
+        </Link>
+      ) : null}
+      {entry.kind === FEED_KINDS.puzzles && entry.who.memberId !== null ? (
+        <Link href={puzzleRecordHref(entry.variant, { member: entry.who.memberId })} className="underline underline-offset-4" data-testid="feed-solves">
+          {say.say("feed.seeSolves")}
+        </Link>
+      ) : null}
+    </p>
+  );
 }

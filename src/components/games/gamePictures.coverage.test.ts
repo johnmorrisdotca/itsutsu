@@ -288,6 +288,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/mine/MyRecord.tsx": { GameThumb: "small" },
   "src/components/mine/OpenGamesBoard.tsx": { GameThumb: "small" },
   "src/components/players/ItsutsuRecord.tsx": { GameThumb: "small" },
+  "src/components/players/PlayerPlays.tsx": { GameThumb: "small" },
   "src/components/players/KeptGames.tsx": { GameThumb: "small" },
   "src/components/players/LegacySource.tsx": { GameThumb: "small" },
   // The About page's family table: a row per family, so the family's own mark

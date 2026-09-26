@@ -1,5 +1,6 @@
 import Link from "@/components/ui/Link";
 
+import { gamesHref } from "@/components/games/GameCount";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
@@ -97,6 +98,14 @@ export async function BuddyList({ memberId }: { memberId: string }) {
                   </Link>
                 )}
               </span>
+              {/* And every game the two of you have FINISHED, in the record narrowed to the pair: the past half of "what you have with somebody". */}
+              <Link
+                href={gamesHref({ memberId, against: buddy.id })}
+                className={`${RAISED_LINK} text-xs text-muted underline underline-offset-4`}
+                data-testid="buddy-played"
+              >
+                games together
+              </Link>
               <span className="ml-auto">
                 <RowActions>
                   {/* One press to the set-up screen against them; one more begins it. */}

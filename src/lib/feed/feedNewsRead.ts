@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 
 import { FEED_LIMITS } from "./feed.constants";
 import type { NewsGameSeats, NewsRead } from "./feedNews";
+import { bestTimeParts } from "./siteNews";
+import { SITE_NEWS } from "./siteNews.constants";
 
 /**
  * THE SITE'S NEWS, READ ONCE PER VISIT TO THE EVERYONE TAB: one query for the
@@ -69,6 +71,32 @@ export async function readNews(since: Date): Promise<NewsReadResult> {
         ]),
       ),
   };
+}
+
+/**
+ * THE SOLVE EACH BEST TIME WAS, so its time on the line opens it: one query for
+ * the whole page over the rows' own facts — who, which puzzle, size, level and
+ * the time to the millisecond — never one per line. A record is strictly faster
+ * than the one before it, so those facts name one solve; the earliest is taken
+ * if two ever tie. Keyed by the news row's id.
+ */
+export async function bestTimeSolves(rows: readonly NewsRead[]): Promise<Map<string, string>> {
+  const wanted = rows.flatMap((row) => {
+    const parts = row.kind === SITE_NEWS.bestTime && row.memberId !== null ? bestTimeParts(row.subject) : null;
+    return parts === null ? [] : [{ row, memberId: row.memberId as string, kind: row.variant, ...parts }];
+  });
+  if (wanted.length === 0) return new Map();
+  const solves = await prisma.puzzleSolve.findMany({
+    where: { solved: true, OR: wanted.map(({ memberId, kind, size, level, elapsedMs }) => ({ memberId, kind, size, level, elapsedMs })) },
+    orderBy: { finishedAt: "asc" },
+    select: { id: true, memberId: true, kind: true, size: true, level: true, elapsedMs: true },
+  });
+  const found = new Map<string, string>();
+  for (const want of wanted) {
+    const solve = solves.find((one) => one.memberId === want.memberId && one.kind === want.kind && one.size === want.size && one.level === want.level && one.elapsedMs === want.elapsedMs);
+    if (solve !== undefined) found.set(want.row.id, solve.id);
+  }
+  return found;
 }
 
 /** Every member the news could name: the rows' own, and the seats of the games they name. */

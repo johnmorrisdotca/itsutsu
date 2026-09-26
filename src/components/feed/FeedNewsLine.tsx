@@ -14,7 +14,7 @@ import { bestTimeParts } from "@/lib/feed/siteNews";
 import { SITE_NEWS } from "@/lib/feed/siteNews.constants";
 import { matchPath, standingsPath } from "@/lib/gomoku/slugs";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { clockText } from "@/lib/puzzles/clockText";
+import { SolveTime } from "@/components/puzzles/SolveTime";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
@@ -118,11 +118,10 @@ function slot(name: string, entry: FeedNewsEntry | FeedAddedEntry, say: Speaker)
     case "board":
       return boardWords(entry);
     case "time": {
+      // The time opens the solve it was, as every time on a board of solves does.
       const parts = bestTimeParts(entry.subject);
-      return parts === null ? null : (
-        <span className="font-mono tabular-nums" data-testid="feed-time">
-          {clockText(parts.elapsedMs)}
-        </span>
+      return parts === null || entry.variant === null ? null : (
+        <SolveTime kind={entry.variant} solveId={entry.solveId ?? null} elapsedMs={parts.elapsedMs} testId="feed-time" />
       );
     }
     default:
