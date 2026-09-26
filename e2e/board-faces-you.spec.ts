@@ -67,7 +67,7 @@ test.describe("a board that sets men out", () => {
   test("draws the practice board the standard way, A1 at the bottom left, whatever the game sets out", async ({ page }) => {
     for (const slug of ["halma", "chinese-checkers", "checkers"]) {
       await page.goto(`/games/${slug}/play`);
-      const first = page.locator("button[aria-label]").first();
+      const first = page.locator(".aspect-square button[aria-label]").first();
       await expect(first).toBeVisible();
       // The first cell in the array is the top-left one, and it is named A<size>: A1 is at the bottom left.
       await expect(first, `${slug} is drawn turned round on the practice board`).toHaveAttribute("aria-label", /^A\d+/);
@@ -78,7 +78,7 @@ test.describe("a board that sets men out", () => {
     // Gomoku has no sides before anybody plays, so nothing should have moved.
     // The coordinates are the tell: turning the board turns them with it.
     await page.goto("/games/gomoku/play");
-    const first = page.locator("button[aria-label]").first();
+    const first = page.locator(".aspect-square button[aria-label]").first();
     await expect(first).toBeVisible();
     await expect(first).toHaveAttribute("aria-label", /^A15/);
   });
