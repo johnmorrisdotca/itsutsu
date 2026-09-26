@@ -5,6 +5,8 @@ import { Paired } from "@/components/i18n/Paired";
 import { PlayerLink } from "@/components/players/Standings";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
 import { XpCell } from "@/components/players/recordTrailing";
+import { LevelName } from "@/components/xp/LevelName";
+import { levelShown } from "@/lib/xp/levelShown";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { standingsPath } from "@/lib/gomoku/slugs";
@@ -58,7 +60,13 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
                 ) : (
                   <>
                     <td className="py-1.5 pr-3">
-                      <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
+                      {/* The leader's level beside the name, as on the full table and every table of players. */}
+                      <span className="flex min-w-0 items-baseline gap-2">
+                        <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
+                        {champion.leader.xp === null ? null : (
+                          <LevelName level={levelShown({ xp: champion.leader.xp }) ?? 1} compact className="text-muted" testId="champion-level" />
+                        )}
+                      </span>
                     </td>
                     <td className="py-1.5 pr-3 font-mono tabular-nums">{champion.leader.rating}</td>
                     <XpCell
