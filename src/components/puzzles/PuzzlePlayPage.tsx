@@ -8,6 +8,7 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { backwardsDailySeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { dailyWordSeed, dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
@@ -36,7 +37,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
      for a Gomoji, the seed of today's word at the length asked (`dailyWords/dailyDay.ts`). */
   if (query[DAILY_PARAM] === "1" && asked.seed === null) {
     const today = new Date();
-    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : dailyWordSeed(dayKeyOf(today));
+    // Today's Sakasa (`backwardsSeed.ts`) where one was asked for: the same word for everybody at each length.
+    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : asked.backwards === true ? backwardsDailySeed(dayKeyOf(today)) : dailyWordSeed(dayKeyOf(today));
     redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed })}`);
   }
   const reader = await currentReader();
@@ -66,7 +68,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} backwards={asked.backwards === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null } : null} />
         </WordStyleProvider>
       </div>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}

@@ -5,8 +5,9 @@ import { mySolvePath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeGuesses, decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
-import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { decodeGuesses, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
+import { hiddenOfPlay } from "@/lib/puzzles/gomoji/backwardsPlay";
+import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
@@ -28,11 +29,11 @@ type WordKind = "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
 /** The word and the guesses of a kept row, and each guess's colours, for any Gomoji. */
 function readWord(kind: WordKind, word: OwnWord): { hidden: string; guesses: string[] | null; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] } {
   if (kind === "gomojiKana") {
-    const hidden = decodeKanaGivens(word.givens, word.size)?.word ?? "";
+    const hidden = hiddenOfPlay(kind, word.size, word.givens) ?? "";
     return { hidden, guesses: word.answer === null ? null : decodeKanaGuesses(word.answer, word.size), marks: (guess) => markKanaGuess([...guess], [...hidden]).map((each) => each.mark) };
   }
   const lang = languageOf(kind);
-  const hidden = decodeHidden(word.givens, word.size, lang) ?? "";
+  const hidden = hiddenOfPlay(kind, word.size, word.givens) ?? "";
   return { hidden, guesses: word.answer === null ? null : decodeGuesses(word.answer, word.size, lang), marks: (guess) => markGuess(guess, hidden) };
 }
 

@@ -7,12 +7,11 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { knownCounts, letterKeyMarks, kanaKeyMarks, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
-import { guessesFor } from "@/lib/puzzles/gomoji/layout";
-import { decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
+import { languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
+import { greyOfPlay, hiddenOfPlay, rowsOfPlay } from "@/lib/puzzles/gomoji/backwardsPlay";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
-import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { kanaBase, markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
@@ -74,9 +73,9 @@ export function WordReplay({
   const lang = languageOf(kind);
 
   // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours.
-  const kanaGiven = kana ? decodeKanaGivens(givens, size) : null;
-  const grey = kanaGiven?.grey ?? null;
-  const word = kana ? (kanaGiven?.word ?? "") : (decodeHidden(givens, size, lang) ?? "");
+  // Whichever way it was played: a Sakasa's word sits behind a mark, with no free grey word (`backwardsPlay.ts`).
+  const grey = kana ? greyOfPlay(size, givens) : null;
+  const word = hiddenOfPlay(kind, size, givens) ?? "";
   const rows = kana && grey !== null ? [grey, ...played] : played;
   const kanaMarks = kana ? rows.map((row) => markKanaGuess([...row], [...word])) : [];
   const marks = kana ? kanaMarks.map((row) => row.map((each) => each.mark)) : rows.map((row) => markGuess(row, word));
@@ -92,7 +91,7 @@ export function WordReplay({
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
       <GomojiGrid
         size={size}
-        rows={free + Math.max(guesses.length, guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free))}
+        rows={free + Math.max(guesses.length, rowsOfPlay(kind, size, level, givens))}
         guesses={rows}
         marks={marks}
         arrows={arrows}

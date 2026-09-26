@@ -5,6 +5,9 @@ import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { decodeGuesses, decodeHidden, isWord, languageOf, type GomojiLanguage } from "./gomoji/code";
+import { backwardsGuesses, breaksBackwardsRule, isGuessable } from "./gomoji/backwards";
+import { isBackwardsGivens } from "./gomoji/backwardsSeed";
+import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
@@ -254,6 +257,7 @@ export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string
  * a guess, and is not in the answer.
  */
 function checkGomojiKana(size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
+  if (isBackwardsGivens(givens)) return checkBackwards("gomojiKana", size, givens, answer, ending, level);
   const puzzle = decodeKanaGivens(givens, size);
   const guesses = decodeKanaGuesses(answer, size);
   if (puzzle === null) return { ok: false, reason: "the givens are not a hidden kana word" };
@@ -297,6 +301,7 @@ function checkGomoji(
   level: PuzzleLevel | undefined,
   lang: GomojiLanguage = "en",
 ): PuzzleCheck {
+  if (isBackwardsGivens(givens)) return checkBackwards(lang === "fr" ? "gomojiMot" : lang === "de" ? "gomojiWort" : "gomoji", size, givens, answer, ending, level);
   const hidden = decodeHidden(givens, size, lang);
   const guesses = decodeGuesses(answer, size, lang);
   if (hidden === null) return { ok: false, reason: "the givens are not a hidden word" };
@@ -315,6 +320,47 @@ function checkGomoji(
   if (firstFound !== -1) return { ok: false, reason: "the word was found" };
   // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
   if (guesses.length !== rows && guesses.length !== baseGuesses("gomoji", size)) return { ok: false, reason: "there are guesses left" };
+  return { ok: true };
+}
+
+/**
+ * A GOMOJI SAKASA 逆さ, played backwards (`gomoji/backwards.ts`): its ending
+ * the other way round. Solved ("found", the puzzle's own win) is every row
+ * filled and none of them the word; ended unsolved ("spent") is the word typed
+ * on the last row and on none before. Every guess a word of the list, each
+ * keeping to what the rows before it uncovered, as the page made it.
+ */
+function checkBackwards(kind: PuzzleKind, size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
+  let word: string | null;
+  try {
+    word = hiddenOfPlay(kind, size, givens);
+  } catch {
+    return { ok: false, reason: "the word list is not loaded" };
+  }
+  const guesses = kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind));
+  if (word === null) return { ok: false, reason: "the givens are not a hidden word" };
+  if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
+  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  const rows = backwardsGuesses(kind, size, level);
+  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
+  for (const [at, guess] of guesses.entries()) {
+    let known: boolean;
+    try {
+      known = isGuessable(kind, size, guess);
+    } catch {
+      return { ok: false, reason: "the word list is not loaded" };
+    }
+    if (!known) return { ok: false, reason: `${guess} is not in the word list` };
+    const breaks = breaksBackwardsRule(kind, guesses.slice(0, at), word, guess);
+    if (breaks !== null) return { ok: false, reason: breaks };
+  }
+  const caught = guesses.indexOf(word);
+  if (ending === "found") {
+    if (caught !== -1) return { ok: false, reason: "the word was typed" };
+    if (guesses.length !== rows) return { ok: false, reason: "there are rows left" };
+    return { ok: true };
+  }
+  if (caught !== guesses.length - 1) return { ok: false, reason: caught === -1 ? "the word was never typed" : "guesses go on after the word was typed" };
   return { ok: true };
 }
 

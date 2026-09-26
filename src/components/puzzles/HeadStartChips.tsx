@@ -19,14 +19,17 @@ export function HeadStartChips({
   level,
   chosen,
   onChoose,
+  backwards = false,
 }: {
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
   chosen: boolean;
   onChoose: (chosen: boolean) => void;
+  /** A Sakasa chosen (`backwards.ts`): every letter is to be avoided already, so a head start would only take letters away. */
+  backwards?: boolean;
 }) {
-  const offered = offersHeadStart(kind, level);
+  const offered = offersHeadStart(kind, level) && !backwards;
   // As many as the word has (`headStartKeys`): the size chosen above.
   const unit = kind === "gomojiKana" ? "kana" : "letters";
   return (
@@ -49,7 +52,9 @@ export function HeadStartChips({
         ))}
       </div>
       <p className="min-h-8 text-xs text-muted" data-testid="puzzle-head-start-blurb">
-        {!offered
+        {backwards
+          ? "Played backwards, a head start would only take letters away, so there is none."
+          : !offered
           ? "A head start is for easy: choose Easy to have one."
           : chosen
             ? `${size} ${unit} not in the word start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`

@@ -27,12 +27,14 @@ import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordSt
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
+import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
+import { BackwardsChips } from "./BackwardsChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { useWordStyle } from "./WordStyleContext";
 
@@ -81,6 +83,9 @@ export function PuzzleSetUp({
   const [strict, setStrict] = useState(false);
   // Gomoji's Head start, off unless chosen, easy only; like Strict, not carried into a race.
   const [headStart, setHeadStart] = useState(false);
+  // A Gomoji's Sakasa, played backwards (`backwards.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
+  const [backwards, setBackwards] = useState(false);
+  const turned = backwards && spec.wordGrid !== undefined;
   const { style, setStyle } = useWordStyle();
   const [racing, setRacing] = useState<"" | "making" | string>("");
   // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).
@@ -95,7 +100,7 @@ export function PuzzleSetUp({
     setRacing("making");
     try {
       await preparePuzzle(kind, size);
-      const made = generatePuzzle(kind, size, level, freshSeed());
+      const made = generatePuzzle(kind, size, level, turned ? freshBackwardsSeed() : freshSeed());
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,6 +176,12 @@ export function PuzzleSetUp({
           {levelBlurb(kind, level)}
         </p>
         {/*
+          FIND THE WORD OR AVOID IT: a Gomoji's Sakasa (`backwards.ts`). The
+          ticket, 2026-09-26: "avoid the hidden word as long as you can,
+          reusing every letter uncovered… give it our own name."
+        */}
+        {spec.wordGrid === undefined ? null : <BackwardsChips kind={kind} size={size} level={level} chosen={backwards} onChoose={setBackwards} />}
+        {/*
           STRICT, a choice at every level. John, 2026-09-25: "have an option
           strict mode for Hard where you have to play the Green items on the same
           location like you have now. right now there are no real options for the
@@ -206,7 +217,7 @@ export function PuzzleSetUp({
           hard its chips are switched off and the line under them says why.
         */}
         {offersHeadStart(kind, "easy") ? (
-          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} />
+          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} backwards={turned} />
         ) : null}
         {/*
           HOW THE GRID IS DRAWN, chosen here as well as under the keyboard.
@@ -301,7 +312,7 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && !turned, backwards: turned })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

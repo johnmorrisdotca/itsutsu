@@ -17,9 +17,8 @@ import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
-import { decodeHidden, languageOf } from "@/lib/puzzles/gomoji/code";
+import { hiddenOfPlay } from "@/lib/puzzles/gomoji/backwardsPlay";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
@@ -28,7 +27,9 @@ import { GameTrail } from "@/components/games/GameTrail";
 
 /** A word puzzle's hidden word, in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
-  return kind === "gomojiKana" ? (decodeKanaGivens(givens, size)?.word ?? "") : (decodeHidden(givens, size, languageOf(kind)) ?? "").toUpperCase();
+  // Whichever way it was played: a Sakasa's word sits behind a mark (`backwardsPlay.ts`).
+  const word = hiddenOfPlay(kind, size, givens) ?? "";
+  return kind === "gomojiKana" ? word : word.toUpperCase();
 }
 
 /** Whether a moment falls on today's date in UTC, the day today's puzzle is everybody's (`dailySeed`). */

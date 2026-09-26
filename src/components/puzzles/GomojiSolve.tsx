@@ -11,9 +11,11 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { breaksHardRule, decodeHidden, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
+import { breaksHardRule, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
-import { guessesFor } from "@/lib/puzzles/gomoji/layout";
+import { breaksBackwardsRule } from "@/lib/puzzles/gomoji/backwards";
+import { hiddenOfPlay, rowsOfPlay } from "@/lib/puzzles/gomoji/backwardsPlay";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
 import { knownCounts, letterKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
@@ -25,6 +27,7 @@ import { wordScore } from "@/lib/puzzles/gomoji/wordScore";
 import { GomojiGrid } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
+import { SakasaScoreLine } from "./SakasaScoreLine";
 import { WordKeyboard } from "./WordKeyboard";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
@@ -75,9 +78,11 @@ export function GomojiSolve({
   const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
   const lang = useMemo(() => languageOf(kind), [kind]);
-  const hidden = useMemo(() => decodeHidden(puzzle.givens, size, lang) ?? "", [puzzle.givens, size, lang]);
-  // Mot and Wort are laid out as English Gomoji is (`layout.ts`).
-  const rows = guessesFor("gomoji", size, level, 0);
+  // A Sakasa, played backwards (`backwards.ts`), hides its word as ever and is won by never typing it.
+  const backwards = isBackwardsGivens(puzzle.givens);
+  const hidden = useMemo(() => hiddenOfPlay(kind, size, puzzle.givens) ?? "", [kind, size, puzzle.givens]);
+  // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a Sakasa has its own count, the levels the other way round.
+  const rows = rowsOfPlay(kind, size, level, puzzle.givens);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size, lang)) ?? []);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
@@ -135,9 +140,9 @@ export function GomojiSolve({
       setSaid(`${word.toUpperCase()} is not in the word list.`);
       return;
     }
-    const breaks = strict ? breaksHardRule(guesses, hidden, word) : null;
+    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word) : strict ? breaksHardRule(guesses, hidden, word) : null;
     if (breaks !== null) {
-      setSaid(`Strict: ${breaks}.`);
+      setSaid(`${backwards ? "Sakasa" : "Strict"}: ${breaks}.`);
       return;
     }
     const at = begin();
@@ -145,9 +150,13 @@ export function GomojiSolve({
     setGuesses(next);
     setTyping(emptyRow(size));
     setSaid(null);
-    if (word === hidden) void finish(next.join(""), at);
+    // Backwards, the word typed is the loss and every row filled without it the win.
+    if (backwards) {
+      if (word === hidden) void runOut(next.join(""), at);
+      else if (next.length === rows) void finish(next.join(""), at);
+    } else if (word === hidden) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, typing, size, strict, guesses, hidden, lang, begin, finish, runOut, rows]);
+  }, [closed, typing, size, strict, backwards, kind, guesses, hidden, lang, begin, finish, runOut, rows]);
 
   /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
@@ -209,7 +218,10 @@ export function GomojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
+            {said ??
+              (backwards
+                ? `Type any ${size}-letter word but the hidden one, keeping every letter uncovered. ${rows - guesses.length} ${rows - guesses.length === 1 ? "row" : "rows"} to get through.`
+                : `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`)}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
@@ -220,6 +232,33 @@ export function GomojiSolve({
             <WordKeysToggle shown={keys.shown} onToggle={keys.toggle} />
           </div>
         </>
+      ) : done.outOfGuesses && backwards ? (
+        <div className="flex flex-col gap-2" data-testid="word-out">
+          <p className="text-base">
+            Caught on row {guesses.length} of {rows}: <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong> was the word.
+          </p>
+          <SakasaScoreLine word={hidden} guesses={guesses} />
+          {hasAccount && race === null ? (
+            <p className="text-xs text-muted" data-testid="word-kept">
+              {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
+              Kept in{" "}
+              <Link href={viewHref("completed")} className="underline">
+                My games
+              </Link>{" "}
+              with your guesses.
+            </p>
+          ) : null}
+          <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
+            <Link
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, backwards: true })}`}
+              className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
+              data-testid="word-another"
+            >
+              Another word →
+            </Link>
+            <PuzzleWayBack kind={kind} />
+          </div>
+        </div>
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
           <p className="text-base">
@@ -250,7 +289,7 @@ export function GomojiSolve({
         </div>
       ) : (
         <>
-          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} headStart={headStart} />
+          {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} headStart={headStart} />}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>
       )}

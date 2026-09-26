@@ -2,7 +2,13 @@ import type { ArchiveWeek, DailyStatus } from "@/lib/puzzles/dailyWords/dailyWor
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /** One length's button: where it plays, and where the reader stands with it — null where nobody is signed in to say. */
-export type DailyButtonRow = { size: number; href: string; status: DailyStatus | null };
+export type DailyButtonRow = {
+  size: number;
+  href: string;
+  status: DailyStatus | null;
+  /** The same length's Sakasa today, played backwards (`backwards.ts`): its button and the reader's standing with it. */
+  backwards: { href: string; status: DailyStatus | null };
+};
 
 export type DailyWordButtonsProps = {
   kind: PuzzleKind;

@@ -2,6 +2,8 @@ import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { encodeKanaGivens, greyWordFor, kanaWordFor } from "./kanaCode";
 import { kanaWordsOf } from "./kanaWords";
 import { dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { generateBackwards } from "../gomoji/generate";
+import { isBackwardsSeed } from "../gomoji/backwardsSeed";
 
 /**
  * Making a kana Gomoji puzzle from a seed: the word, and on easy and medium
@@ -12,6 +14,8 @@ import { dailyWordOfSeed } from "../dailyWords/dailyPools";
  * which `preparePuzzle` fetches with the list; its grey word is drawn as ever.
  */
 export function generateGomojiKana(size: number, level: PuzzleLevel, seed: number): Puzzle {
+  // A Sakasa, played backwards, is made the same way in every language (`gomoji/generate.ts`).
+  if (isBackwardsSeed(seed)) return generateBackwards("gomojiKana", size, level, seed);
   const words = kanaWordsOf(size);
   const word = dailyWordOfSeed("gomojiKana", size, seed) ?? kanaWordFor(words, level === "easy", seed);
   const grey = level === "hard" ? null : greyWordFor(words, word, seed);

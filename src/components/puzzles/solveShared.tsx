@@ -18,6 +18,7 @@ import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
+import { freshBackwardsSeed, isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { PuzzleWayBack } from "./PuzzleWayBack";
@@ -383,7 +384,9 @@ export function SolveDone({
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks, strict, headStart })}`);
+    // A Sakasa's Another is another Sakasa (`backwards.ts`): its seed says so.
+    const backwards = isBackwardsGivens(puzzle.givens);
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: backwards ? freshBackwardsSeed() : freshSeed(), checks, strict, headStart, backwards })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">

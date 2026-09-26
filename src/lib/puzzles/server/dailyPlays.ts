@@ -6,6 +6,7 @@ import { guessesTaken } from "../gomoji/guessesTaken";
 import type { PuzzleKind } from "../puzzles.types";
 import { givensOfWord, hiddenWordOf } from "../dailyWords/dailyAddress";
 import { dailyWordSeed, dayAfter, dayStart } from "../dailyWords/dailyDay";
+import { backwardsDailySeed, backwardsGivensPrefix } from "../gomoji/backwardsSeed";
 import type { DailyFastest, DailyStatus } from "../dailyWords/dailyWords.types";
 
 /**
@@ -43,6 +44,37 @@ export async function dailyStatusesOf(
     // Found beats missed: a word found on a second go is found.
     const found = played.find((solve) => solve.solved);
     const any = found ?? played[0];
+    if (any !== undefined) {
+      const guesses = guessesTaken(kind, size, any.level, any.givens, any.answer);
+      statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses, solveId: any.id } : { state: "missed", guesses });
+    } else if (runs.some((run) => run.size === size)) statuses.set(size, { state: "going" });
+    else statuses.set(size, { state: "notYet" });
+  }
+  return statuses;
+}
+
+/**
+ * The reader's standing with today's Sakasa at each length (`backwards.ts`):
+ * the solves they finished today whose givens begin with the day's Sakasa's
+ * seed (`backwardsGivensPrefix`), and the runs they left at that seed. Its
+ * word differs by length and comes from no pool, so the seed in its givens is
+ * what it is matched by. The same two indexed reads. Got through is "found",
+ * caught is "missed", as a Sakasa's own ending says.
+ */
+export async function dailyBackwardsStatusesOf(memberId: string, kind: PuzzleKind, day: string, sizes: readonly number[]): Promise<Map<number, DailyStatus>> {
+  const seed = backwardsDailySeed(day);
+  const [solves, runs] = await Promise.all([
+    prisma.puzzleSolve.findMany({
+      where: { memberId, kind, givens: { startsWith: backwardsGivensPrefix(seed) }, finishedAt: { gte: dayStart(day), lt: dayStart(dayAfter(day)) } },
+      orderBy: { finishedAt: "asc" },
+      select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, elapsedMs: true },
+    }),
+    prisma.puzzleRun.findMany({ where: { memberId, kind, seed }, select: { size: true } }),
+  ]);
+  const statuses = new Map<number, DailyStatus>();
+  for (const size of sizes) {
+    const played = solves.filter((solve) => solve.size === size);
+    const any = played.find((solve) => solve.solved) ?? played[0];
     if (any !== undefined) {
       const guesses = guessesTaken(kind, size, any.level, any.givens, any.answer);
       statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses, solveId: any.id } : { state: "missed", guesses });

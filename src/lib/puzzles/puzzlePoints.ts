@@ -4,6 +4,9 @@ import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { kanaScore } from "./gomojiKana/kanaScore";
 import { kumimojiPoints } from "./kumimoji/check";
+import { hiddenOfPlay } from "./gomoji/backwardsPlay";
+import { isBackwardsGivens } from "./gomoji/backwardsSeed";
+import { sakasaScore } from "./gomoji/backwardsScore";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -41,8 +44,13 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
  * run together as they are handed in.
  */
 export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel, lang: GomojiLanguage = "en"): number {
-  const hidden = decodeHidden(givens, size, lang);
   const guesses = decodeGuesses(answer, size, lang);
+  // A Sakasa scores the rows it got through without the word (`backwardsScore.ts`).
+  if (isBackwardsGivens(givens)) {
+    const word = hiddenOfPlay(lang === "fr" ? "gomojiMot" : lang === "de" ? "gomojiWort" : "gomoji", size, givens);
+    return word === null || guesses === null ? 0 : sakasaScore(word, guesses).total;
+  }
+  const hidden = decodeHidden(givens, size, lang);
   // Weighed by the guesses the level gave (`layout.ts`); with no level, the published count. Mot and Wort are laid out as English is.
   const rows = level === undefined ? baseGuesses("gomoji", size) : guessesFor("gomoji", size, level, 0);
   return hidden === null || guesses === null ? 0 : wordScore(hidden, guesses, rows, elapsedMs).total;
@@ -50,8 +58,12 @@ export function wordPoints(size: number, givens: string, answer: string, elapsed
 
 /** A kana word, scored as English's is on the same scale (`kanaScore`). */
 export function kanaPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel): number {
-  const puzzle = decodeKanaGivens(givens, size);
   const guesses = decodeKanaGuesses(answer, size);
+  if (isBackwardsGivens(givens)) {
+    const word = hiddenOfPlay("gomojiKana", size, givens);
+    return word === null || guesses === null ? 0 : sakasaScore(word, guesses).total;
+  }
+  const puzzle = decodeKanaGivens(givens, size);
   if (puzzle === null || guesses === null) return 0;
   const rows = level === undefined ? baseGuesses("gomojiKana", size) : guessesFor("gomojiKana", size, level, puzzle.grey === null ? 0 : 1);
   return kanaScore(puzzle.word, guesses, rows, elapsedMs).total;

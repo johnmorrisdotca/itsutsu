@@ -34,10 +34,24 @@ export const SEED_MOST = 2 ** 31 - 1;
  */
 export const DAILY_SEED_BLOCK = { from: 1_000_000_000, size: 100_000_000 } as const;
 
-/** A new seed for a puzzle nobody asked for by number: anywhere in the range but the daily words' block. */
+/**
+ * THE SEEDS KEPT FOR A GOMOJI PLAYED ANOTHER WAY, a hundred million a way,
+ * where the seed says how the word is played as well as which. Gomoji Sakasa
+ * 逆さ, played backwards (`gomoji/backwardsSeed.ts`), from sixteen hundred
+ * million. A kept run, a solve and an address carry nothing but the seed, so
+ * the seed is where the way of playing has to live; `freshSeed` never lands in
+ * a block, so an ordinary word is never mistaken for one played another way.
+ */
+export const BACKWARDS_SEED_BLOCK = { from: 1_600_000_000, size: 100_000_000 } as const;
+
+/** Every block `freshSeed` keeps out of, lowest first. */
+const KEPT_SEED_BLOCKS: readonly { from: number; size: number }[] = [DAILY_SEED_BLOCK, BACKWARDS_SEED_BLOCK];
+
+/** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {
-  const drawn = Math.floor(Math.random() * (SEED_MOST - DAILY_SEED_BLOCK.size)) + 1;
-  return drawn >= DAILY_SEED_BLOCK.from ? drawn + DAILY_SEED_BLOCK.size : drawn;
+  let drawn = Math.floor(Math.random() * (SEED_MOST - KEPT_SEED_BLOCKS.reduce((sum, block) => sum + block.size, 0))) + 1;
+  for (const block of KEPT_SEED_BLOCKS) if (drawn >= block.from) drawn += block.size;
+  return drawn;
 }
 
 /** Whether a number read from an address or a body is a seed this can use. */

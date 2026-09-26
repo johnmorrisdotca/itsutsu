@@ -2,6 +2,8 @@ import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { decodeKanaGivens, decodeKanaGuesses } from "../gomojiKana/kanaCode";
 import { decodeGuesses, languageOf } from "./code";
 import { guessesFor } from "./layout";
+import { backwardsGuesses } from "./backwardsRows";
+import { isBackwardsGivens } from "./backwardsSeed";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
 export type GuessesTaken = { used: number; allowed: number };
@@ -27,6 +29,11 @@ export function guessesTaken(
 ): GuessesTaken | null {
   if (answer === null) return null;
   const at = level as PuzzleLevel;
+  // A Sakasa's rows are its own (`backwards.ts`): the count to get through, the levels the other way round.
+  if (isBackwardsGivens(givens)) {
+    const guesses = kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind));
+    return guesses === null ? null : { used: guesses.length, allowed: backwardsGuesses(kind, size, at) };
+  }
   if (kind === "gomojiKana") {
     const guesses = decodeKanaGuesses(answer, size);
     const given = decodeKanaGivens(givens, size);
