@@ -36,6 +36,7 @@ import { SetUpSection } from "@/components/live/SetUpSection";
 
 import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
+import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";
 
 
@@ -56,6 +57,7 @@ export function PuzzleSetUp({
   sized,
   appearance = DEFAULT_APPEARANCE,
   asked,
+  resumeHref = null,
 }: {
   kind: PuzzleKind;
   /** A race is between two members, so a session with no account is told so rather than offered one. */
@@ -71,6 +73,8 @@ export function PuzzleSetUp({
   appearance?: Appearance;
   /** What the address asked for (`puzzleAsked`): the choice this screen opens on, so a reload keeps what was chosen. */
   asked?: PuzzleAsked;
+  /** The reader's puzzle of this kind already going, if any: offered first, above Start (`SetUpResume`). */
+  resumeHref?: string | null;
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
@@ -336,6 +340,7 @@ export function PuzzleSetUp({
         they read Start alone and Start with a friend (`START_PRESS`).
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
+        <SetUpResume href={resumeHref} />
         <Link
           href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined })}`}
           className={PLAY_BUTTON}

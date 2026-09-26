@@ -4,13 +4,14 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { appearanceFor } from "@/lib/auth/memberAccount";
-import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
+import { gamePath, playPath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
 import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { puzzleAsked } from "@/lib/puzzles/puzzleAddress";
+import { keptRunAsked, puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
 
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { Suspense } from "react";
@@ -49,6 +50,9 @@ export async function PuzzleSetUpPage({
 }) {
   const copy = PUZZLE_DISPLAY[kind];
   const onBoard = drawnOnBoard(kind);
+  // One of this puzzle already going leads the Start column, as it leads the front door (`PuzzlePlayOrResume`).
+  const run = memberId === null ? null : await latestRunOf(memberId, kind);
+  const resumeHref = run === null ? null : `${playPath(kind)}${puzzleQuery(keptRunAsked(kind, run))}`;
   // The stone puzzles read the reader's stone set too, for the preview's stones.
   const [appearance, preferences] = onBoard
     ? await Promise.all([appearanceFor(memberId), preferencesFor()])
@@ -80,10 +84,11 @@ export async function PuzzleSetUpPage({
           marksChosen={preferences?.tsunagiMarks ?? null}
           solved={memberId === null ? {} : bestTimes(await tsunagiSolvedBy(memberId))}
           initialSize={sizeAsked(kind, query)}
+          resumeHref={resumeHref}
         />
       ) : (
         <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
-          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={puzzleAsked(kind, query)} />
+          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={puzzleAsked(kind, query)} resumeHref={resumeHref} />
         </WordStyleProvider>
       )}
       {dailyLanguageOf(kind) !== null ? (

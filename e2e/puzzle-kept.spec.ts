@@ -88,7 +88,15 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await page.goto(AT);
   const resume = page.getByTestId("game-resume");
   await expect(resume).toHaveAttribute("href", new RegExp(`seed=${seed}`));
-  await resume.click();
+  const resumeHref = await resume.getAttribute("href");
+
+  // So does its set-up screen, first above Start, to the same grid (John, 2026-09-26, BUG CRITICAL: it showed only Start).
+  await page.getByTestId("game-set-up").click();
+  await ready(page, "puzzle-set-up");
+  const setUpResume = page.getByTestId("puzzle-play-buttons").getByTestId("set-up-resume");
+  await expect(setUpResume).toHaveAttribute("href", resumeHref!);
+  await expect(page.getByTestId("puzzle-play-buttons").locator("a, button").first()).toHaveAttribute("data-testid", "set-up-resume");
+  await setUpResume.click();
   await ready(page, "puzzle-play");
   await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-value", String(solution[first]));
 });

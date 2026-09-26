@@ -675,5 +675,7 @@ export const START_PRESS = {
   start: { words: "Start", kanji: "始" },
   alone: { words: "Start alone", kanji: "独" },
   friend: { words: "Start with a friend", kanji: "友" },
+  /** The puzzle already going, first on its set-up screen as on its front door (`PuzzlePlayOrResume`). */
+  resume: { words: "Resume", kanji: "続" },
   starting: "Starting…",
 } as const;

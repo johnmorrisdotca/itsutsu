@@ -20,6 +20,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { feltOrWoodTheme } from "./GomojiGrid";
 import type { TsunagiMarks } from "./puzzles.constants";
 import { TsunagiLevelBoard, tsunagiLevelPath } from "./TsunagiLevelBoard";
+import { SetUpResume } from "./SetUpResume";
 import { TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import { keptSolves } from "./tsunagiKept";
 import { useTsunagiMarks } from "./useTsunagiMarks";
@@ -48,6 +49,7 @@ export function TsunagiSetUp({
   marksChosen,
   solved,
   initialSize,
+  resumeHref = null,
 }: {
   hasAccount: boolean;
   appearance?: Appearance;
@@ -55,6 +57,8 @@ export function TsunagiSetUp({
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
   solved: Record<number, Record<number, number>>;
   initialSize: number;
+  /** A level of Tsunagi already going, if any: offered first, above Start (`SetUpResume`). */
+  resumeHref?: string | null;
 }) {
   const hydrated = useHydrated();
   const spec = PUZZLE_SPECS.tsunagi;
@@ -114,6 +118,7 @@ export function TsunagiSetUp({
           <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
+          <SetUpResume href={resumeHref} />
           <Link href={tsunagiLevelPath(size, next)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={next}>
             <PressLabel words={`${START_PRESS.start.words} level ${next}`} kanji={START_PRESS.start.kanji} />
           </Link>
