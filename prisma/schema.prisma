@@ -101,6 +101,12 @@ model Game {
   /// "moved nothing" and "never recorded" are different facts, so no zero.
   blackRatingChange Int?
   whiteRatingChange Int?
+  /// The IP (Itsutsu Points) each seat won by this game (`gamePoints`): its
+  /// result as a share of the most the game can pay. Written once, when the
+  /// game is decided; null for a game not yet priced (one decided before IP,
+  /// until the backfill), never 0 standing in for "not priced".
+  blackPoints Int?
+  whitePoints Int?
   /// What running out of time costs: "turn" (graceful) or "game".
   timeoutPenalty String    @default("turn")
   /// When the last move landed, so a deadline can be computed on the server.

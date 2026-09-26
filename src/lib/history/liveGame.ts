@@ -20,6 +20,7 @@ import { settledTurn } from "./settledTurn";
 import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
 import { GAME_ROW, isHotSeat, ladderFacts, replay, sameRecord, stoneForToken } from "./liveGameRow";
 import { isOffered } from "./offers";
+import { payGameIp } from "@/lib/points/payGameIp";
 
 /*
  * Playing a move on a live game. The row shape, the replay and the seat lookups
@@ -277,7 +278,11 @@ export async function appendMove(
     const facts = ladderFacts(row);
     await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
     // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap. See `countsOnLadder`.
-    if (countsOnLadder({ ...row, ...facts })) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id);
+    const before = countsOnLadder({ ...row, ...facts })
+      ? await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id)
+      : null;
+    // The IP it won, at the ratings it was played at (`payGameIp`): once, on its own row.
+    await payGameIp(id, before);
     // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
     await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
   } else if (next.toPlay !== stone) {

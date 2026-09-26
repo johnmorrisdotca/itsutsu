@@ -218,6 +218,19 @@ export function Row({
         {group === "finished" && (seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) !== null ? (
           <RatingChange change={(seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) as number} />
         ) : null}
+        {/*
+          AND THE IP IT WON: Itsutsu Points, results only (`gamePoints`), beside
+          the XP it earned for taking part. Nothing where the game won none or is
+          not priced yet: a loss is XP's, not IP's.
+        */}
+        {group === "finished" && ((seat === STONES.black ? game.blackPoints : game.whitePoints) ?? 0) > 0 ? (
+          <span className="text-right leading-tight" data-testid="game-ip-won" data-ip={seat === STONES.black ? game.blackPoints : game.whitePoints}>
+            <span className="block font-mono text-base font-semibold tabular-nums">
+              +{countText((seat === STONES.black ? game.blackPoints : game.whitePoints) as number)}
+            </span>
+            <span className="block text-[0.6rem] tracking-wide text-muted uppercase">IP</span>
+          </span>
+        ) : null}
         {earned !== undefined ? (
           <span className="text-right leading-tight" data-testid="game-xp-earned" data-xp={earned}>
             <span className="block font-mono text-base font-semibold tabular-nums">+{countText(earned)}</span>

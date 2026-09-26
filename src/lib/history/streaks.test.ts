@@ -36,6 +36,8 @@ function game(
     durationMs: null,
   blackRatingChange: null,
   whiteRatingChange: null,
+  blackPoints: null,
+  whitePoints: null,
   allowResign: true,
   drawLimit: "none",
   clockMode: "move",

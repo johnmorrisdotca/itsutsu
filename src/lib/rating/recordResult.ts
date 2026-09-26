@@ -10,6 +10,7 @@ import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
 import { isRateable } from "./rateable";
 import { PLAYER_STREAK_SCOPES, VARIANT_STREAK_SCOPES, streakWrite, type StreakOutcome } from "./streak";
 import { scoreForBlack } from "./variantRatings";
+import type { RatingsBefore } from "@/lib/points/gamePoints";
 
 /**
  * Records one finished game: win, loss and draw tallies for both players, a
@@ -163,8 +164,8 @@ export async function recordResult(
    * like +10, -10". Null leaves the row alone, for a caller with no game.
    */
   gameId: string | null = null,
-): Promise<void> {
-  if (!isRateable(blackName, whiteName)) return;
+): Promise<RatingsBefore | null> {
+  if (!isRateable(blackName, whiteName)) return null;
 
   /*
    * Whose record this is. A rating is earned by a person rather than by a
@@ -260,4 +261,6 @@ export async function recordResult(
     // The change on the game's own row, in the same commit, so the figure shown on it is the one that happened.
     ...(gameId === null ? [] : [prisma.game.update({ where: { id: gameId }, data: change })]),
   ]);
+  // The two ratings the game was played at, for the IP it pays (`payGameIp`): beating a stronger player pays more.
+  return { black: blackBefore.rating, white: whiteBefore.rating };
 }

@@ -181,6 +181,9 @@ export type GameSummary = {
   /** How far each seat's rating at this game moved when it was decided; null where none moved or it was never recorded. */
   blackRatingChange: number | null;
   whiteRatingChange: number | null;
+  /** The IP (Itsutsu Points) each seat won by this game (`payGameIp`); null until it is priced. */
+  blackPoints: number | null;
+  whitePoints: number | null;
   /** A seat anyone may take, while it waits; null otherwise. */
   openSeat: string | null;
   /**

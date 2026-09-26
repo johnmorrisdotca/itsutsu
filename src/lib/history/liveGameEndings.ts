@@ -23,6 +23,7 @@ import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGame";
 import { isOffered } from "./offers";
 import { settledTurn } from "./settledTurn";
 import type { TimeoutOutcome } from "./liveGame.types";
+import { payGameIp } from "@/lib/points/payGameIp";
 
 /**
  * How a shared game ends other than on the board, and the clock's courtesies:
@@ -184,9 +185,11 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
     const facts = ladderFacts(row);
     await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
     // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap.
-    if (countsOnLadder({ ...row, ...facts })) {
-      await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id);
-    }
+    const before = countsOnLadder({ ...row, ...facts })
+      ? await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id)
+      : null;
+    // The IP it won, at the ratings it was played at (`payGameIp`): once, on its own row.
+    await payGameIp(id, before);
     // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
     await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
   } else {
@@ -262,9 +265,11 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
   // Rated exactly as any other finish is, and by the same rules: never a game
   // at one screen, never a friendly, never a handicap, and always into the pool
   // the seats decide.
-  if (countsOnLadder({ ...row, ...facts })) {
-    await recordResult(row.blackName, row.whiteName, state.winner, row.variant, poolFor(hasBotSeat(row)), id);
-  }
+  const before = countsOnLadder({ ...row, ...facts })
+    ? await recordResult(row.blackName, row.whiteName, state.winner, row.variant, poolFor(hasBotSeat(row)), id)
+    : null;
+  // The IP it won, at the ratings it was played at (`payGameIp`): once, on its own row.
+  await payGameIp(id, before);
   return true;
 }
 
@@ -368,9 +373,11 @@ export async function resignGame(id: string, token: string, now = new Date()): P
   const facts = ladderFacts(row);
   await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
   // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap.
-  if (countsOnLadder({ ...row, ...facts })) {
-    await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id);
-  }
+  const before = countsOnLadder({ ...row, ...facts })
+    ? await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)), id)
+    : null;
+  // The IP it won, at the ratings it was played at (`payGameIp`): once, on its own row.
+  await payGameIp(id, before);
   await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
 
   const game = await fetchGameDetail(id);

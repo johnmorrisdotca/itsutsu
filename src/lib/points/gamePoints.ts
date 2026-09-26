@@ -162,6 +162,9 @@ export type PricedResult = {
   oneScreen: boolean;
 };
 
+/** The two ratings at this game before it moved them, as `recordResult` read them; null for a game it did not rate. */
+export type RatingsBefore = { black: number; white: number };
+
 /** Elo's expected score for a player rated `mine` against one rated `theirs`. */
 export function expectedScore(mine: number, theirs: number): number {
   return 1 / (1 + 10 ** ((theirs - mine) / 400));

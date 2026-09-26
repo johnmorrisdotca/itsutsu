@@ -59,7 +59,9 @@
     "standings:reconcile": "STANDINGS_RECONCILE=1 vitest run src/lib/rating/reconcileStandings.play.test.ts --disable-console-intercept",
     "site-settings:copy": "SITE_SETTINGS_COPY=1 vitest run src/lib/site/siteSettingsCopy.play.test.ts --disable-console-intercept",
     "site-settings:copy:prod": "node scripts/site-settings-copy-prod.mjs",
-    "xp:backfill:prod": "node scripts/xp-backfill-prod.mjs"
+    "xp:backfill:prod": "node scripts/xp-backfill-prod.mjs",
+    "ip:backfill": "IP_BACKFILL=1 vitest run src/lib/points/backfillGameIp.play.test.ts --disable-console-intercept",
+    "ip:backfill:prod": "node scripts/ip-backfill-prod.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
