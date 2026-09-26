@@ -22,11 +22,11 @@ outcome, the reason and, where the rules keep one, the score).
 
 | Result | Winner's share | Loser's share |
 |---|---|---|
-| Won on the board: a line, captures, territory, discs, the camp reached, the other side blocked | 100% | 20% |
-| … and the score was close (Reversi discs, Go area, pairs captured) | 100% | 20%, plus up to 20% more the closer it was: the loser's score over the winner's |
-| Won because the other side resigned, from the tenth move on | 100% | 10% |
+| Won on the board: a line, captures, territory, discs, the camp reached, the other side blocked | 100% | 0% |
+| … and the score was close (Reversi discs, Go area, pairs captured) | 100% | up to 20%, the closer the more: the loser's score over the winner's |
+| Won because the other side resigned, from the tenth move on | 100% | 0% |
 | Won because the other side resigned before the tenth move | 50% | 0% |
-| Won on time | 80% | 10% |
+| Won on time | 80% | 0% |
 | Won with a handicap or head start given to the winner | 75% of the line above | as the line above |
 | Drawn, for any reason | 50% each | |
 | Abandoned, cancelled, or an offer never accepted | 0% | 0% |
@@ -52,9 +52,10 @@ and play) pays nothing, because nobody can tell who played which side. That is
 the line the puzzles already draw: they pay once the server has checked the
 grid.
 
-So a Gomoku win is 100 and its loss 20; a Reversi loss by 30 discs to 34 is
-20 + 20 × 30⁄34, about 38; a Go game lost on time is 10% of 200, 20; a
-tic-tac-toe draw is 5 each.
+A loss pays no IP for having taken part: that is XP's (README, "XP and IP are
+two different things"). So a Gomoku win is 100 and its loss 0; a Reversi loss
+by 30 discs to 34 is 20 × 30⁄34, about 18; a Go win on time is 80% of 200,
+160; a tic-tac-toe draw is 5 each.
 
 Rated or not, against a person or a program, the prices are the same. A program
 earns points too (AGENTS.md: programs are players), and the board's People /
