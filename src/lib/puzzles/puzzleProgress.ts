@@ -1,6 +1,7 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
 import { isFutagoSeed } from "./gomoji/futagoSeed";
+import { isYotsugoSeed } from "./gomoji/yotsugoSeed";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesFor } from "./gomoji/layout";
@@ -97,7 +98,7 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
  * Whether a word puzzle's kept guesses are no more than its own level allows:
  * `progressFits` reads a code against the most any Gomoji has (`MOST_GUESSES`,
  * a Futago's), and a run is kept with its level and seed, which say how many
- * this one has — one word or a Futago's two (`futagoSeed.ts`), and the kana
+ * this one has — one word, a Futago's two (`futagoSeed.ts`) or a Yotsugo's four, and the kana
  * version's free grey word below hard. A run past its rows could never end.
  * Any other kind has no count to be past.
  */
@@ -107,5 +108,5 @@ export function runGuessesFit(kind: PuzzleKind, size: number, level: PuzzleLevel
   if (guesses === null) return false;
   const grid = kind === "gomojiKana" ? "gomojiKana" : "gomoji";
   const free = grid === "gomojiKana" && level !== "hard" ? 1 : 0;
-  return guesses.length <= guessesFor(grid, size, level, free, isFutagoSeed(seed) ? 2 : 1);
+  return guesses.length <= guessesFor(grid, size, level, free, isYotsugoSeed(seed) ? 4 : isFutagoSeed(seed) ? 2 : 1);
 }

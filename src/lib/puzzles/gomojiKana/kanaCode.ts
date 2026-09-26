@@ -91,6 +91,17 @@ export function greyWordFor(words: KanaWords, word: string | readonly string[], 
   return lowest(seed, words.answers, allGrey) ?? lowest(seed, words.allowed, allGrey);
 }
 
+/** A Yotsugo's four words (`yotsugo.ts`): the seed's word, then each one it would hide next, never one twice. */
+export function kanaWordsFor(words: KanaWords, easy: boolean, seed: number, count: number): string[] {
+  const drawn = [kanaWordFor(words, easy, seed)];
+  while (drawn.length < count) {
+    const next = lowest(seed, easy ? words.easy : words.answers, (each) => !drawn.includes(each));
+    if (next === null) throw new Error(`A kana list of fewer than ${count} words.`);
+    drawn.push(next);
+  }
+  return drawn;
+}
+
 /** A Futago's second word (`futago.ts`): the one the seed would hide next, never the first again. */
 export function otherKanaWordFor(words: KanaWords, easy: boolean, seed: number, first: string): string {
   const word = lowest(seed, easy ? words.easy : words.answers, (each) => each !== first);

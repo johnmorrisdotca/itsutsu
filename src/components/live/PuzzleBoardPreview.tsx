@@ -76,12 +76,12 @@ export function PuzzleBoardPreview({
   level,
   appearance = DEFAULT_APPEARANCE,
   onFelt,
-  twins = false,
+  boards = 1,
 }: {
   kind: PuzzleKind;
   size: number;
-  /** A Gomoji's Futago (`futago.ts`): its two boards side by side, in the same box, so choosing it moves nothing. */
-  twins?: boolean;
+  /** A Gomoji's Futago (`futago.ts`): its two boards side by side, or a Yotsugo's four in quarters (`yotsugo.ts`), in the same box, so choosing it moves nothing. */
+  boards?: 1 | 2 | 4;
   /** The level chosen, where it changes the board: a Gomoji's guesses are its rows. The kind's own level when left out. */
   level?: PuzzleLevel;
   /** The reader's board, so a puzzle drawn on the board itself shows the colour they chose. */
@@ -104,7 +104,7 @@ export function PuzzleBoardPreview({
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
-          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} boards={twins ? 2 : 1} />
+          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} boards={words === undefined ? 1 : boards} />
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
@@ -141,8 +141,8 @@ function WordGridPreview({
   level: PuzzleLevel;
   style: WordStyle;
   appearance: Appearance;
-  /** One board, or a Futago's two side by side. */
-  boards: 1 | 2;
+  /** One board, a Futago's two side by side, or a Yotsugo's four, two over two. */
+  boards: 1 | 2 | 4;
 }) {
   const free = layout === "gomojiKana" && level !== "hard" ? 1 : 0;
   const grid = (
@@ -159,6 +159,16 @@ function WordGridPreview({
     />
   );
   if (boards === 1) return grid;
+  if (boards === 4) {
+    return (
+      <div className="grid aspect-square h-full grid-cols-2 grid-rows-2 place-items-center gap-1" data-testid="set-up-yotsugo-preview">
+        {grid}
+        {grid}
+        {grid}
+        {grid}
+      </div>
+    );
+  }
   return (
     <div className="grid h-full w-full grid-cols-2 items-center gap-1.5" data-testid="set-up-futago-preview">
       {grid}

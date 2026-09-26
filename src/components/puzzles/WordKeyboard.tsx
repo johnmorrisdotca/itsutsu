@@ -44,8 +44,8 @@ export function WordKeyboard({
   onBack,
 }: {
   known: ReadonlyMap<string, LetterMark>;
-  /** A Futago's two boards' marks, the first board's on the left half of each key and the second's on the right; null for one word. */
-  split?: readonly [ReadonlyMap<string, LetterMark>, ReadonlyMap<string, LetterMark>] | null;
+  /** Each board's marks for a Futago's two (left half, right half) or a Yotsugo's four (quarters, the first two over the last two); null for one word. */
+  split?: readonly ReadonlyMap<string, LetterMark>[] | null;
   /** How many of each letter the guesses prove the word holds (`knownCounts`): a count on the letter from two. */
   counted?: ReadonlyMap<string, number>;
   /** How often each letter is in the row being typed (`typedCounts`): its key is ringed, and counted from two. */
@@ -76,7 +76,7 @@ export function WordKeyboard({
             const mark = known.get(letter);
             const count = typed.get(letter) ?? 0;
             const proven = counted.get(letter) ?? 0;
-            const halves = split === null ? null : ([split[0].get(letter), split[1].get(letter)] as const);
+            const halves = split === null ? null : split.map((board) => board.get(letter));
             const face = halves !== null ? FUTAGO_KEY : mark === undefined ? WORD_KEY_PLAIN : marked[mark];
             return (
               <button
@@ -93,7 +93,7 @@ export function WordKeyboard({
                 aria-label={halves === null ? keyLabel(letter, proven, count) : `${keyLabel(letter, proven, count) ?? letter.toUpperCase()}, ${futagoKeyWords(halves, MARK_WORDS)}`}
               >
                 {halves === null ? null : <FutagoKeyHalves marks={halves} marked={marked} />}
-                {halves === null || (halves[0] === undefined && halves[1] === undefined) ? (
+                {halves === null || halves.every((each) => each === undefined) ? (
                   <KeyFace letter={letter} known={proven} />
                 ) : (
                   <span className={FUTAGO_KEY_LETTER}>

@@ -18,8 +18,9 @@ import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
-import { isFutagoGivens } from "@/lib/puzzles/gomoji/futago";
+import { isFutagoGivens, isYotsugoGivens } from "@/lib/puzzles/gomoji/futago";
 import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
+import { freshYotsugoSeed } from "@/lib/puzzles/gomoji/yotsugoSeed";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { PuzzleWayBack } from "./PuzzleWayBack";
@@ -385,9 +386,12 @@ export function SolveDone({
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    // A Futago's Another is two more words (`futago.ts`): its seed says so.
-    const twins = PUZZLE_SPECS[puzzle.kind].wordGrid !== undefined && isFutagoGivens(puzzle.givens);
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, strict, headStart, twins })}`);
+    // A Futago's Another is two more words (`futago.ts`), a Yotsugo's four more (`yotsugo.ts`): its seed says so.
+    const words = PUZZLE_SPECS[puzzle.kind].wordGrid !== undefined;
+    const twins = words && isFutagoGivens(puzzle.givens);
+    const four = words && isYotsugoGivens(puzzle.givens);
+    const seed = four ? freshYotsugoSeed() : twins ? freshFutagoSeed() : freshSeed();
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed, checks, strict, headStart, twins, four })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">

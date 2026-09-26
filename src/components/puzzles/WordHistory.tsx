@@ -6,7 +6,8 @@ import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
 import { markGuess } from "@/lib/puzzles/gomoji/code";
-import { FUTAGO_DISPLAY, boardGuesses, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { boardGuesses, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { wordModeDisplay } from "@/lib/puzzles/gomoji/yotsugo";
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
@@ -36,7 +37,7 @@ function readWord(kind: WordKind, word: OwnWord): { hidden: string; boards: { gu
   const marksAgainst = (hidden: string) => (guess: string) =>
     kind === "gomojiKana" ? markKanaGuess([...guess], [...hidden]).map((each) => each.mark) : markGuess(guess, hidden);
   return {
-    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${FUTAGO_DISPLAY.kanji}` : words[0]!,
+    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${wordModeDisplay(words.length)?.kanji ?? ""}` : words[0]!,
     boards: guesses === null ? null : words.map((hidden) => ({ guesses: boardGuesses(guesses, hidden), marks: marksAgainst(hidden) })),
   };
 }

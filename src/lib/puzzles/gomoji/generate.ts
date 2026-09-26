@@ -1,8 +1,9 @@
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom } from "../random";
-import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { dailyFutagoWordsOfSeed, dailyWordOfSeed, dailyYotsugoWordsOfSeed } from "../dailyWords/dailyPools";
 import { encodeFutagoGivens } from "./futago";
 import { isFutagoSeed } from "./futagoSeed";
+import { isYotsugoSeed } from "./yotsugoSeed";
 import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
 
 /**
@@ -24,11 +25,16 @@ import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
  * (`dailyWords/`), never from the live list.
  *
  * A FUTAGO'S SEED (`futagoSeed.ts`) hides two words, never one twice: two
- * drawn from the level's list, or a day's two from the pool.
+ * drawn from the level's list, or a day's two from the pool. A YOTSUGO'S
+ * (`yotsugoSeed.ts`) hides four, all different, the same two ways.
  */
 export function generateGomoji(size: number, level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "gomoji"): Puzzle {
   const words = answersFor(size, level === "easy", lang);
   if (words.length === 0) throw new Error(`No ${size}-letter words.`);
+  if (isYotsugoSeed(seed)) {
+    const four = dailyYotsugoWordsOfSeed(kind, size, seed) ?? drawDifferent(words, seed, 4);
+    return { kind, size, level, seed, givens: encodeFutagoGivens(four), solution: four.join("") };
+  }
   if (isFutagoSeed(seed)) {
     const pair = dailyFutagoWordsOfSeed(kind, size, seed) ?? drawTwo(words, seed);
     // Found when both are: the first guessed, then the second (`futago.ts`).
@@ -44,4 +50,16 @@ function drawTwo(words: readonly string[], seed: number): [string, string] {
   const first = Math.floor(random() * words.length);
   const second = Math.floor(random() * (words.length - 1));
   return [words[first]!, words[second >= first ? second + 1 : second]!];
+}
+
+/** A number of different words from a list, the seed deciding which: a Yotsugo's four. */
+function drawDifferent(words: readonly string[], seed: number, count: number): string[] {
+  if (words.length < count) throw new Error(`Fewer than ${count} words.`);
+  const random = seededRandom(seed);
+  const drawn: string[] = [];
+  while (drawn.length < count) {
+    const word = words[Math.floor(random() * words.length)]!;
+    if (!drawn.includes(word)) drawn.push(word);
+  }
+  return drawn;
 }

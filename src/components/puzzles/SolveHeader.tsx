@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { clockText } from "@/lib/puzzles/clockText";
-import { FUTAGO_DISPLAY, isFutagoGivens } from "@/lib/puzzles/gomoji/futago";
+import { wordCountOfGivens } from "@/lib/puzzles/gomoji/futago";
+import { YOTSUGO_DISPLAY, wordModeDisplay } from "@/lib/puzzles/gomoji/yotsugo";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
@@ -39,11 +40,15 @@ export function SolveHeader({
                 {" "}· {PUZZLE_LEVEL_DISPLAY[puzzle.level].label} <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
               </>
             )}
-            {isFutagoGivens(puzzle.givens) && PUZZLE_SPECS[puzzle.kind].wordGrid !== undefined ? (
-              <span data-testid="puzzle-asked-futago">
-                {" "}· {FUTAGO_DISPLAY.words} <span className="font-mincho">{FUTAGO_DISPLAY.kanji}</span>
-              </span>
-            ) : null}
+            {(() => {
+              // A Futago's two words or a Yotsugo's four (`yotsugo.ts`), said beside the level.
+              const mode = PUZZLE_SPECS[puzzle.kind].wordGrid === undefined ? null : wordModeDisplay(wordCountOfGivens(puzzle.givens));
+              return mode === null ? null : (
+                <span data-testid={mode === YOTSUGO_DISPLAY ? "puzzle-asked-yotsugo" : "puzzle-asked-futago"}>
+                  {" "}· {mode.words} <span className="font-mincho">{mode.kanji}</span>
+                </span>
+              );
+            })()}
             {headStart ? (
               <span data-testid="puzzle-asked-head-start">
                 {" "}· {HEAD_START_DISPLAY.label} <span className="font-mincho">{HEAD_START_DISPLAY.kanji}</span>

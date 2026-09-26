@@ -12,6 +12,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
 import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
+import { freshYotsugoSeed } from "@/lib/puzzles/gomoji/yotsugoSeed";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
@@ -55,6 +56,7 @@ export function PuzzlePlay({
   strict = false,
   headStart = false,
   twins = false,
+  four = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
@@ -63,6 +65,8 @@ export function PuzzlePlay({
   headStart?: boolean;
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
   twins?: boolean;
+  /** Whether a Gomoji's Yotsugo was asked for, four words at once (`yotsugo.ts`): read, as `twins` is, only to draw a seed. */
+  four?: boolean;
   /** Tsunagi's levels already solved at this size on the account, and whether it is played by colours or numbers. */
   tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null } | null;
   kind: PuzzleKind;
@@ -96,8 +100,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: four ? freshYotsugoSeed() : twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, four })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, four, router]);
 
   /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji) waits for them; every other kind is ready at once. */
   const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" ? null : `${kind}:${size}`);

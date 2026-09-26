@@ -3,6 +3,7 @@ import type { PuzzleKind } from "../puzzles.types";
 import { wordOfDay } from "./dailyCycle";
 import { dayIndexOf, dayOfDailyWordSeed } from "./dailyDay";
 import { dayOfFutagoSeed } from "../gomoji/futagoSeed";
+import { dayOfYotsugoSeed } from "../gomoji/yotsugoSeed";
 import type { DailyLanguage, DailyPool, DayWord, PackedDailyPool } from "./dailyWords.types";
 import { DAILY_POOL_DE } from "./pool.de.data";
 import { DAILY_POOL_EN } from "./pool.en.data";
@@ -133,6 +134,31 @@ export function dailyFutagoWordsOf(kind: PuzzleKind, size: number, day: string):
 export function dailyFutagoWordsOfSeed(kind: PuzzleKind, size: number, seed: number): readonly [string, string] | null {
   const day = dayOfFutagoSeed(seed);
   return day === null ? null : dailyFutagoWordsOf(kind, size, day);
+}
+
+/**
+ * A DAY'S YOTSUGO (`yotsugo.ts`): four words a day at every length, from the
+ * same pool in an order of its own, four places at a time as a Futago's are
+ * two — day N is places 4N to 4N + 3 of the Yotsugo's cycles, so the four
+ * words of a day are four different words. Null for a day or a length with no
+ * words.
+ */
+export function dailyYotsugoWordsOf(kind: PuzzleKind, size: number, day: string): readonly string[] | null {
+  const pools = dailyPoolsOf(kind, size);
+  if (pools === null) return null;
+  const key = `${dailyLanguageOf(kind)}:${size}:yotsugo`;
+  const index = dayIndexOf(day);
+  const words = [0, 1, 2, 3].map((at) => wordOfDay(key, pools, 4 * index + at));
+  if (words.some((word) => word === null)) return null;
+  const four = words.map((word) => word!.word);
+  // Where a cycle turns inside a day, one word could come round twice; null then, and the seed draws the day's four instead.
+  return new Set(four).size === four.length ? four : null;
+}
+
+/** The four words a seed hides when it is a day's Yotsugo seed (`yotsugoDailySeed`), or null for every other seed. */
+export function dailyYotsugoWordsOfSeed(kind: PuzzleKind, size: number, seed: number): readonly string[] | null {
+  const day = dayOfYotsugoSeed(seed);
+  return day === null ? null : dailyYotsugoWordsOf(kind, size, day);
 }
 
 /**

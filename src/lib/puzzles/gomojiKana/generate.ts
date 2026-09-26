@@ -1,9 +1,10 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
-import { encodeKanaGivens, greyWordFor, kanaWordFor, otherKanaWordFor } from "./kanaCode";
+import { encodeKanaGivens, greyWordFor, kanaWordFor, kanaWordsFor, otherKanaWordFor } from "./kanaCode";
 import { encodeKanaFutagoGivens } from "../gomoji/futago";
 import { isFutagoSeed } from "../gomoji/futagoSeed";
+import { isYotsugoSeed } from "../gomoji/yotsugoSeed";
 import { kanaWordsOf } from "./kanaWords";
-import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { dailyFutagoWordsOfSeed, dailyWordOfSeed, dailyYotsugoWordsOfSeed } from "../dailyWords/dailyPools";
 
 /**
  * Making a kana Gomoji puzzle from a seed: the word, and on easy and medium
@@ -15,6 +16,13 @@ import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPool
  */
 export function generateGomojiKana(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const words = kanaWordsOf(size);
+  /* A Yotsugo's four words (`yotsugo.ts`), the seed's word and the three it would hide next, and a free grey word grey against all four. */
+  if (isYotsugoSeed(seed)) {
+    const easy = level === "easy";
+    const four = dailyYotsugoWordsOfSeed("gomojiKana", size, seed) ?? kanaWordsFor(words, easy, seed, 4);
+    const grey = level === "hard" ? null : greyWordFor(words, four, seed);
+    return { kind: "gomojiKana", size, level, seed, givens: encodeKanaFutagoGivens(four, grey), solution: four.join("") };
+  }
   /* A Futago's two words (`futago.ts`), and a free grey word grey against both of them. */
   if (isFutagoSeed(seed)) {
     const easy = level === "easy";
@@ -27,3 +35,4 @@ export function generateGomojiKana(size: number, level: PuzzleLevel, seed: numbe
   const grey = level === "hard" ? null : greyWordFor(words, word, seed);
   return { kind: "gomojiKana", size, level, seed, givens: encodeKanaGivens(word, grey), solution: word };
 }
+

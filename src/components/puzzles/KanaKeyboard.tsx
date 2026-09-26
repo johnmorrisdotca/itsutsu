@@ -56,8 +56,8 @@ export function KanaKeyboard({
 }: {
   /** The best each base kana has been marked, by `kanaBase`. */
   known: ReadonlyMap<string, KanaMark>;
-  /** A Futago's two boards' marks by base kana, the first board's on the left half of each key; null for one word. */
-  split?: readonly [ReadonlyMap<string, KanaMark>, ReadonlyMap<string, KanaMark>] | null;
+  /** Each board's marks by base kana, a Futago's two in halves or a Yotsugo's four in quarters; null for one word. */
+  split?: readonly ReadonlyMap<string, KanaMark>[] | null;
   /** How many of each base kana the guesses prove the word holds (`knownCounts` by `kanaBase`): a count on the kana from two. */
   counted?: ReadonlyMap<string, number>;
   /** How often each kana is in the row being typed, by base (`typedCounts`): its key is ringed, and counted from two; ぱ rings は. */
@@ -98,7 +98,7 @@ export function KanaKeyboard({
             const mark = known.get(kana);
             const count = typed.get(kana) ?? 0;
             const proven = counted.get(kana) ?? 0;
-            const halves = split === null ? null : ([split[0].get(kana), split[1].get(kana)] as const);
+            const halves = split === null ? null : split.map((board) => board.get(kana));
             const face = halves !== null ? FUTAGO_KEY : mark === undefined ? WORD_KEY_PLAIN : marked[mark];
             return (
               <button
@@ -115,7 +115,7 @@ export function KanaKeyboard({
                 aria-label={halves === null ? keyLabel(kana, proven, count) : `${keyLabel(kana, proven, count) ?? kana}, ${futagoKeyWords(halves, MARK_WORDS)}`}
               >
                 {halves === null ? null : <FutagoKeyHalves marks={halves} marked={marked} />}
-                {halves === null || (halves[0] === undefined && halves[1] === undefined) ? (
+                {halves === null || halves.every((each) => each === undefined) ? (
                   <KeyFace letter={kana} known={proven} />
                 ) : (
                   <span className={FUTAGO_KEY_LETTER}>

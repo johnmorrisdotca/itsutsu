@@ -8,6 +8,7 @@ import { givensOfWord } from "../dailyWords/dailyAddress";
 import { dailyWordSeed, dayAfter, dayStart } from "../dailyWords/dailyDay";
 import { hiddenWordsOf } from "../gomoji/futago";
 import { futagoDailySeed } from "../gomoji/futagoSeed";
+import { yotsugoDailySeed } from "../gomoji/yotsugoSeed";
 import type { DailyFastest, DailyStatus } from "../dailyWords/dailyWords.types";
 
 /**
@@ -25,7 +26,8 @@ import type { DailyFastest, DailyStatus } from "../dailyWords/dailyWords.types";
  * finished today of this kind (on `[memberId, finishedAt]`), matched to the
  * words by what they hid, and the runs they left at today's seed — and the
  * same of today's Futago, two words a length (`futago.ts`), from the same two
- * reads, its runs at the day's Futago seed.
+ * reads, its runs at the day's Futago seed; and of today's Yotsugo, four words
+ * a length (`yotsugo.ts`), at the day's Yotsugo seed.
  */
 export async function dailyStatusesOf(
   memberId: string,
@@ -33,14 +35,15 @@ export async function dailyStatusesOf(
   day: string,
   words: ReadonlyMap<number, string>,
   pairs: ReadonlyMap<number, readonly string[]> = new Map(),
-): Promise<{ one: Map<number, DailyStatus>; two: Map<number, DailyStatus> }> {
+  fours: ReadonlyMap<number, readonly string[]> = new Map(),
+): Promise<{ one: Map<number, DailyStatus>; two: Map<number, DailyStatus>; four: Map<number, DailyStatus> }> {
   const [solves, runs] = await Promise.all([
     prisma.puzzleSolve.findMany({
       where: { memberId, kind, finishedAt: { gte: dayStart(day), lt: dayStart(dayAfter(day)) } },
       orderBy: { finishedAt: "asc" },
       select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, elapsedMs: true },
     }),
-    prisma.puzzleRun.findMany({ where: { memberId, kind, seed: { in: [dailyWordSeed(day), futagoDailySeed(day)] } }, select: { size: true, seed: true } }),
+    prisma.puzzleRun.findMany({ where: { memberId, kind, seed: { in: [dailyWordSeed(day), futagoDailySeed(day), yotsugoDailySeed(day)] } }, select: { size: true, seed: true } }),
   ]);
   const standing = (sought: ReadonlyMap<number, readonly string[]>, seed: number) => {
     const statuses = new Map<number, DailyStatus>();
@@ -60,6 +63,7 @@ export async function dailyStatusesOf(
   return {
     one: standing(new Map([...words].map(([size, word]) => [size, [word]])), dailyWordSeed(day)),
     two: standing(pairs, futagoDailySeed(day)),
+    four: standing(fours, yotsugoDailySeed(day)),
   };
 }
 

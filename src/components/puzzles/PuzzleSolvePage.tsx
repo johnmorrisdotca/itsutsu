@@ -17,7 +17,8 @@ import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
-import { FUTAGO_DISPLAY, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { wordModeDisplay } from "@/lib/puzzles/gomoji/yotsugo";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
@@ -28,7 +29,8 @@ import { GameTrail } from "@/components/games/GameTrail";
 /** A word puzzle's hidden word, or a Futago's two (`futago.ts`), in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
   const words = hiddenWordsOf(kind, size, givens)?.words ?? [];
-  return words.length > 1 ? `${wordsShown(kind, words)} (${FUTAGO_DISPLAY.label} ${FUTAGO_DISPLAY.kanji})` : wordsShown(kind, words);
+  const mode = wordModeDisplay(words.length);
+  return mode === null ? wordsShown(kind, words) : `${wordsShown(kind, words)} (${mode.label} ${mode.kanji})`;
 }
 
 /** Whether a moment falls on today's date in UTC, the day today's puzzle is everybody's (`dailySeed`). */

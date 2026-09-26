@@ -21,6 +21,10 @@ export type FutagoBoard = {
  * guesses that found it, stops taking the row being typed, and says it is
  * found beneath, while the other plays on. Both have every row the level
  * gives, so the two stand level with each other throughout.
+ *
+ * A YOTSUGO'S FOUR (`yotsugo.ts`) are the same boards two over two, the four
+ * quarters of one square, as Quordle draws its four; its keys are split into
+ * the same quarters (`FutagoKey`).
  */
 export function FutagoBoards({
   size,
@@ -46,7 +50,7 @@ export function FutagoBoards({
   appearance: Appearance;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-1.5 sm:gap-3" data-testid="futago-boards">
+    <div className="grid grid-cols-2 gap-1.5 sm:gap-3" data-testid="futago-boards" data-boards={boards.length}>
       {boards.map((board, at) => (
         <div key={at} className="flex min-w-0 flex-col gap-1" data-testid="futago-board" data-board={at} data-found={board.found ? "true" : "false"}>
           <GomojiGrid

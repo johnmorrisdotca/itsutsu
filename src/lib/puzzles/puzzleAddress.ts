@@ -3,6 +3,7 @@ import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 import { isFutagoSeed } from "./gomoji/futagoSeed";
+import { isYotsugoSeed } from "./gomoji/yotsugoSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 
 /**
@@ -42,9 +43,11 @@ export type PuzzleAsked = {
    * address, for one word and for any puzzle that is not a word.
    */
   twins?: boolean;
+  /** A Gomoji's Yotsugo: four words at once (`yotsugo.ts`), asked for and then said by its seed as a Futago is; never with `twins`. */
+  four?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", four: "four" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -71,8 +74,9 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const hints = one(PUZZLE_PARAMS.hints) === "1";
   const strict = one(PUZZLE_PARAMS.strict) === "1";
   const headStart = one(PUZZLE_PARAMS.headStart) === "1" && offersHeadStart(kind, level);
-  const twins = spec.wordGrid !== undefined && (seed === null ? one(PUZZLE_PARAMS.twins) === "1" : isFutagoSeed(seed));
-  return { size, level, seed, checks, hints, strict, headStart, twins };
+  const four = spec.wordGrid !== undefined && (seed === null ? one(PUZZLE_PARAMS.four) === "1" : isYotsugoSeed(seed));
+  const twins = spec.wordGrid !== undefined && !four && (seed === null ? one(PUZZLE_PARAMS.twins) === "1" : isFutagoSeed(seed));
+  return { size, level, seed, checks, hints, strict, headStart, twins, ...(four ? { four } : {}) };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -83,7 +87,8 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");
   if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");
   if (asked.headStart === true && asked.level === "easy") params.set(PUZZLE_PARAMS.headStart, "1");
-  if (asked.twins === true) params.set(PUZZLE_PARAMS.twins, "1");
+  if (asked.four === true) params.set(PUZZLE_PARAMS.four, "1");
+  else if (asked.twins === true) params.set(PUZZLE_PARAMS.twins, "1");
   return `?${params.toString()}`;
 }
 
@@ -102,5 +107,6 @@ export function keptRunAsked(
     strict: run.strict,
     headStart,
     twins: isFutagoSeed(run.seed),
+    ...(isYotsugoSeed(run.seed) ? { four: true } : {}),
   };
 }

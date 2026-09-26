@@ -13,10 +13,10 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
-import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { YOTSUGO_BOARDS, boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { futagoKanaScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { breaksKanaHardRule, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
-import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMark, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
 import { kanaWordsOf } from "@/lib/puzzles/gomojiKana/kanaWords";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
 import { finishRomaji, readRomaji } from "@/lib/puzzles/gomojiKana/romaji";
@@ -99,7 +99,9 @@ export function GomojiKanaSolve({
   // One word, or a Futago's two (`futago.ts`), and the free grey word.
   const given = useMemo(() => hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null }, [kind, size, puzzle.givens]);
   const hidden = given.words[0]!;
+  // More than one board: "twins" here is any of them, a Futago or a Yotsugo (`yotsugo.ts`), and `four` the Yotsugo.
   const twins = given.words.length > 1;
+  const four = given.words.length === YOTSUGO_BOARDS;
   const free = given.grey === null ? 0 : 1;
   const rows = wordRowsOf(kind, size, level, given);
   const words = useMemo(() => kanaWordsOf(size), [size]);
@@ -129,7 +131,7 @@ export function GomojiKanaSolve({
     [given, guesses],
   );
   const split = useMemo(
-    () => (twins ? ([0, 1] as const).map((at) => withHeadStart(kanaKeyMarks(boards[at]!.rows, boards[at]!.word), started, "miss")) as [Map<string, KanaMark>, Map<string, KanaMark>] : null),
+    () => (twins ? boards.map((board) => withHeadStart(kanaKeyMarks(board.rows, board.word), started, "miss")) : null),
     [twins, boards, started],
   );
   // How many of a kana the marks on the board prove, by base as the keys are: a count on its key from two.
@@ -291,7 +293,7 @@ export function GomojiKanaSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `${free === 1 ? `The first word is free, grey everywhere${twins ? " on both boards" : ""}. ` : ""}${twins ? "Every guess goes to both boards. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
+            {said ?? `${free === 1 ? `The first word is free, grey everywhere${four ? " on every board" : twins ? " on both boards" : ""}. ` : ""}${four ? "Every guess goes to every board. " : twins ? "Every guess goes to both boards. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
             {romaji === "" ? null : (
               <span className="ml-2 font-mono text-ink" data-testid="kana-romaji">
                 {romaji}…
@@ -339,11 +341,11 @@ export function GomojiKanaSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins: twins && !four, four })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
-              {twins ? "Two more words →" : "Another word →"}
+              {four ? "Four more words →" : twins ? "Two more words →" : "Another word →"}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>

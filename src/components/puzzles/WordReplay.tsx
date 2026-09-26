@@ -74,7 +74,7 @@ export function WordReplay({
   const kana = kind === "gomojiKana";
   const lang = languageOf(kind);
 
-  // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours — for each board of a Futago (`futago.ts`).
+  // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours — for each board of a Futago (`futago.ts`) or a Yotsugo (`yotsugo.ts`).
   const hidden = hiddenWordsOf(kind, size, givens) ?? { words: [""], grey: null };
   const grey = kana ? hidden.grey : null;
   const free = grey !== null ? 1 : 0;
@@ -120,7 +120,7 @@ export function WordReplay({
       {kana ? (
         <KanaKeyboard
           known={withHeadStart(kanaKeyMarks(rows, word), started, "miss")}
-          split={twins ? [kanaOf(boards[0]!), kanaOf(boards[1]!)] : null}
+          split={twins ? boards.map(kanaOf) : null}
           counted={counted}
           typed={NONE}
           style={style}
@@ -135,7 +135,7 @@ export function WordReplay({
       ) : (
         <WordKeyboard
           known={withHeadStart(letterKeyMarks(played, word), started, "miss")}
-          split={twins ? [lettersOf(boards[0]!), lettersOf(boards[1]!)] : null}
+          split={twins ? boards.map(lettersOf) : null}
           counted={counted} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
       )}
     </div>

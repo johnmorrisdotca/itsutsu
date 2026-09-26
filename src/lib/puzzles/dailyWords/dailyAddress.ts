@@ -7,6 +7,7 @@ import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { dailyWordSeed } from "./dailyDay";
 import { futagoDailySeed } from "../gomoji/futagoSeed";
+import { yotsugoDailySeed } from "../gomoji/yotsugoSeed";
 
 /**
  * WHERE THE DAILY WORDS ARE, and how a kept solve is matched to a day's word.
@@ -60,4 +61,14 @@ export function givensOfWord(kind: PuzzleKind, word: string): { exactly: string;
 /** A day's word as the page prints it: capitals, as the grid draws letters; kana as it is. */
 export function shownWord(kind: PuzzleKind, word: string): string {
   return kind === "gomojiKana" ? word : word.toUpperCase();
+}
+
+/** The address a day's Yotsugo is played at, at a length: its four words, at the day's Yotsugo seed (`yotsugoDailySeed`). */
+export function dailyYotsugoPlayPath(kind: PuzzleKind, size: number, day: string): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: yotsugoDailySeed(day), four: true })}`;
+}
+
+/** Today's Yotsugo at a length, for a page drawn before anybody asked: `?daily=1` with `four=1` turns into today's Yotsugo seed. */
+export function todayYotsugoPlayPath(kind: PuzzleKind, size: number): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, four: true })}&${DAILY_PARAM}=1`;
 }

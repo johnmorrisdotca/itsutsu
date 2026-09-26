@@ -7,6 +7,7 @@ import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import type { DailyStatus } from "@/lib/puzzles/dailyWords/dailyWords.types";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { FUTAGO_DISPLAY } from "@/lib/puzzles/gomoji/futago";
+import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
 
 import type { DailyWordButtonsProps } from "./dailyWords.types";
 import { SolveTime } from "./SolveTime";
@@ -49,6 +50,18 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         )}
         prefix="futago-daily"
       />
+      {/* And a Yotsugo's four words at every length (`yotsugo.ts`), in a table of its own under the Futago's. */}
+      <ButtonTable
+        kind={kind}
+        rows={rows.map((row) => ({ size: row.size, ...row.yotsugo }))}
+        testId="yotsugo-daily-table"
+        label={(size) => (
+          <>
+            {YOTSUGO_DISPLAY.label} {size} <span className="font-mincho opacity-70">{YOTSUGO_DISPLAY.kanji}の{size}</span>
+          </>
+        )}
+        prefix="yotsugo-daily"
+      />
     </div>
   );
   const links = (
@@ -69,7 +82,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         <h2 className={SECTION_TITLE}>
           Today&apos;s words <span className="font-mincho normal-case tracking-normal">今日の言葉</span>
         </h2>
-        <p className="text-xs text-muted">The same word for everybody today at each length, and the same two for a {FUTAGO_DISPLAY.label}, new at midnight UTC.</p>
+        <p className="text-xs text-muted">The same word for everybody today at each length, the same two for a {FUTAGO_DISPLAY.label} and four for a {YOTSUGO_DISPLAY.label}, new at midnight UTC.</p>
         {table}
         {links}
       </section>
@@ -112,7 +125,7 @@ function ButtonTable({
   rows: readonly { size: number; href: string; status: DailyStatus | null }[];
   testId: string;
   label: (size: number) => ReactNode;
-  /** The test ids' start: "daily" for the words, "futago-daily" for the Futagos. */
+  /** The test ids' start: "daily" for the words, "futago-daily" and "yotsugo-daily" for the Futagos and Yotsugos. */
   prefix: string;
 }) {
   const showStatus = rows.some((row) => row.status !== null);

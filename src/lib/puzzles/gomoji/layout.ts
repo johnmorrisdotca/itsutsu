@@ -85,6 +85,12 @@ export type GomojiLayout = {
  */
 export function gomojiLayout(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards = 1): GomojiLayout {
   const more = boards - 1;
+  if (boards > 2) {
+    /* YOTSUGO, FOUR WORDS AT ONCE (`yotsugo.ts`): three guesses more than one word on hard, nine for five letters as Quordle gives,
+       and one more on medium and easy — never every row of a board this tall, which would be a guess for nearly every square. */
+    const guesses = Math.min(baseGuesses(kind, size) + more + (level === "hard" ? 0 : 1), MOST_GUESSES);
+    return { ...playPlace(size, free + guesses), guesses, free };
+  }
   const base = baseGuesses(kind, size) + more;
   const room = boardSpan(size, Math.max(LEAST_SPAN, base + free + 2 * more)) - free;
   const guesses = level === "easy" ? room : level === "medium" ? Math.min(base + 1, room) : base;
@@ -96,7 +102,7 @@ export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: P
   return gomojiLayout(kind, size, level, free, boards).guesses;
 }
 
-/** The most guesses any Gomoji can have — a Futago of six letters at easy — what a kept run's guesses are checked against before its level is known. */
+/** The most guesses any Gomoji can have — a Futago of six letters at easy, a Yotsugo below hard — what a kept run's guesses are checked against before its level is known. */
 export const MOST_GUESSES = 10;
 
 /** The longest word any Gomoji hides, in letters or kana: six, for Gomoji 6. */

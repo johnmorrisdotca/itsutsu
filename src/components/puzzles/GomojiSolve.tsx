@@ -11,9 +11,8 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import type { LetterMark } from "@/lib/puzzles/gomoji/code";
 import { breaksHardRule, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
-import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { YOTSUGO_BOARDS, boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { futagoScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
@@ -82,10 +81,12 @@ export function GomojiSolve({
   const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
   const lang = useMemo(() => languageOf(kind), [kind]);
-  // One word, or a Futago's two (`futago.ts`).
+  // One word, a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`).
   const words = useMemo(() => hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null }, [kind, size, puzzle.givens]);
   const hidden = words.words[0]!;
+  // More than one board: "twins" here is any of them, a Futago or a Yotsugo, and `four` the Yotsugo.
   const twins = words.words.length > 1;
+  const four = words.words.length === YOTSUGO_BOARDS;
   // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a Futago gives a guess more.
   const rows = wordRowsOf(kind, size, level, words);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size, lang)) ?? []);
@@ -117,7 +118,7 @@ export function GomojiSolve({
   const given = useMemo(() => (headStart ? headStartKeys(kind, size, puzzle.givens) : []), [headStart, kind, size, puzzle.givens]);
   const known = useMemo(() => withHeadStart(letterKeyMarks(guesses, hidden), given, "miss"), [guesses, hidden, given]);
   const split = useMemo(
-    () => (twins ? ([0, 1] as const).map((at) => withHeadStart(letterKeyMarks(boards[at]!.rows, boards[at]!.word), given, "miss")) as [Map<string, LetterMark>, Map<string, LetterMark>] : null),
+    () => (twins ? boards.map((board) => withHeadStart(letterKeyMarks(board.rows, board.word), given, "miss")) : null),
     [twins, boards, given],
   );
   // How many of a letter the marks on the board prove, never the hidden word: a count on its key from two. Not for a Futago, whose two words hold different counts.
@@ -237,7 +238,7 @@ export function GomojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `Type a ${size}-letter word and press Enter${twins ? ": it goes to both boards" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
+            {said ?? `Type a ${size}-letter word and press Enter${four ? ": it goes to every board" : twins ? ": it goes to both boards" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} split={split} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
@@ -268,11 +269,11 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins: twins && !four, four })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
-              {twins ? "Two more words →" : "Another word →"}
+              {four ? "Four more words →" : twins ? "Two more words →" : "Another word →"}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>

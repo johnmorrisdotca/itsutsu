@@ -45,6 +45,12 @@ export function futagoRule(grid: WordGrid): string {
 /** How many boards a Futago has. */
 export const FUTAGO_BOARDS = 2;
 
+/** How many boards a Yotsugo has (`yotsugo.ts`): four words at once, the most any Gomoji hides. */
+export const YOTSUGO_BOARDS = 4;
+
+/** How many words givens may hide: one, a Futago's two or a Yotsugo's four, and never three. */
+const WORD_COUNTS: readonly number[] = [1, FUTAGO_BOARDS, YOTSUGO_BOARDS];
+
 const JOIN = "+";
 
 /** The grid a Gomoji kind's rows are laid out by: kana, or the letters every other language shares. */
@@ -54,41 +60,53 @@ export function wordGridOf(kind: PuzzleKind): WordGrid {
   return kind === "gomojiKana" ? "gomojiKana" : "gomoji";
 }
 
-/** Whether a word puzzle's givens are a Futago's two words. */
-export function isFutagoGivens(givens: string): boolean {
-  return givens.includes(JOIN);
+/** How many words a word puzzle's givens hide, read from how they are joined: one, a Futago's two, a Yotsugo's four. */
+export function wordCountOfGivens(givens: string): number {
+  const bar = givens.indexOf("|");
+  return (bar === -1 ? givens : givens.slice(0, bar)).split(JOIN).length;
 }
 
-/** The words a Gomoji's givens hide — one, or a Futago's two — lower case or hiragana, and the kana version's free grey word. */
+/** Whether a word puzzle's givens are a Futago's two words. */
+export function isFutagoGivens(givens: string): boolean {
+  return wordCountOfGivens(givens) === FUTAGO_BOARDS;
+}
+
+/** Whether a word puzzle's givens are a Yotsugo's four words (`yotsugo.ts`). */
+export function isYotsugoGivens(givens: string): boolean {
+  return wordCountOfGivens(givens) === YOTSUGO_BOARDS;
+}
+
+/** The words a Gomoji's givens hide — one, a Futago's two or a Yotsugo's four — lower case or hiragana, and the kana version's free grey word. */
 export type HiddenWords = { words: readonly string[]; grey: string | null };
 
 /**
- * The words any Gomoji's givens hide, one or two, or null for givens that are
- * not a word puzzle of this kind and size. A Futago's two must differ: two
- * boards with one word would be one board drawn twice.
+ * The words any Gomoji's givens hide, one, two or four, or null for givens
+ * that are not a word puzzle of this kind and size. A Futago's two and a
+ * Yotsugo's four must all differ: two boards with one word would be one board
+ * drawn twice.
  */
 export function hiddenWordsOf(kind: PuzzleKind, size: number, givens: string): HiddenWords | null {
   if (kind === "gomojiKana") {
     const bar = givens.indexOf("|");
     const [head, tail] = bar === -1 ? [givens, ""] : [givens.slice(0, bar), givens.slice(bar)];
     const parts = head.split(JOIN).map((part) => decodeKanaGivens(`${part}${tail}`, size));
-    if (parts.length > FUTAGO_BOARDS || parts.some((part) => part === null)) return null;
+    if (!WORD_COUNTS.includes(parts.length) || parts.some((part) => part === null)) return null;
     const words = parts.map((part) => part!.word);
     return new Set(words).size === words.length ? { words, grey: parts[0]!.grey } : null;
   }
   const lang = languageOf(kind);
   const words = givens.split(JOIN).map((part) => decodeHidden(part, size, lang));
-  if (words.length > FUTAGO_BOARDS || words.some((word) => word === null)) return null;
+  if (!WORD_COUNTS.includes(words.length) || words.some((word) => word === null)) return null;
   return new Set(words).size === words.length ? { words: words as string[], grey: null } : null;
 }
 
-/** A lettered Futago's givens: its two words in capitals, joined. */
-export function encodeFutagoGivens(words: readonly [string, string]): string {
+/** A lettered Futago's givens: its two words in capitals, joined — or a Yotsugo's four. */
+export function encodeFutagoGivens(words: readonly string[]): string {
   return words.map(encodeHidden).join(JOIN);
 }
 
-/** A kana Futago's givens: its two words in katakana, joined, and the free grey word after them where there is one. */
-export function encodeKanaFutagoGivens(words: readonly [string, string], grey: string | null): string {
+/** A kana Futago's givens: its two words (or a Yotsugo's four) in katakana, joined, and the free grey word after them where there is one. */
+export function encodeKanaFutagoGivens(words: readonly string[], grey: string | null): string {
   const joined = words.map(toKatakana).join(JOIN);
   return grey === null ? joined : `${joined}|${toKatakana(grey)}`;
 }
@@ -98,7 +116,7 @@ export function guessesOf(kind: PuzzleKind, size: number, code: string): string[
   return kind === "gomojiKana" ? decodeKanaGuesses(code, size) : decodeGuesses(code, size, languageOf(kind));
 }
 
-/** The guesses a puzzle with these givens allows at this level: one word's count or a Futago's (`layout.ts`). */
+/** The guesses a puzzle with these givens allows at this level: one word's count, a Futago's or a Yotsugo's (`layout.ts`). */
 export function wordRowsOf(kind: PuzzleKind, size: number, level: PuzzleLevel, hidden: HiddenWords): number {
   return guessesFor(wordGridOf(kind), size, level, hidden.grey === null ? 0 : 1, hidden.words.length);
 }
@@ -114,8 +132,9 @@ export function everyWordFound(guesses: readonly string[], words: readonly strin
   return words.every((word) => guesses.includes(word));
 }
 
-/** The words as a page prints them: "CRANE and SLATE", in capitals for letters and as they are for kana. */
+/** The words as a page prints them: "CRANE and SLATE", "CRANE, SLATE, PLUMB and HOIST", in capitals for letters and as they are for kana. */
 export function wordsShown(kind: PuzzleKind, words: readonly string[]): string {
   const shown = words.map((word) => (kind === "gomojiKana" ? word : word.toUpperCase()));
-  return shown.join(" and ");
+  return shown.length < 3 ? shown.join(" and ") : `${shown.slice(0, -1).join(", ")} and ${shown.at(-1)}`;
 }
+
