@@ -235,7 +235,7 @@ export const PICK_BOARD_ROW = "flex flex-col items-center gap-3 md:flex-row md:i
 
 /**
  * The preview's place in that row. `w-full` under a laptop so `BoardPreview`'s
- * own caps decide — 15rem on a phone, 22rem from a tablet — and a fixed 22rem
+ * own caps decide — the full width on a phone, 22rem from a tablet — and a fixed 22rem
  * at a desk so the sizes sit against the board rather than against the panel.
  */
 export const PICK_BOARD_PREVIEW = "w-full min-w-0 md:w-[22rem] md:shrink-0";

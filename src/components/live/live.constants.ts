@@ -578,9 +578,11 @@ export const MOVE_NOTE_COPY = {
  * and the grid of a puzzle (`PuzzleBoardPreview`) alike, so choosing Numbers
  * after a board game leaves the page where it was. John, 2026-09-24: "The
  * effect of having the same size and look is that when the user clicks at
- * anything the board and page doesn't shift and move up."
+ * anything the board and page doesn't shift and move up." Full width on a
+ * phone (John, 2026-09-26: "Board Sizes shouldn't be small on Mobile! … Why
+ * aren't we using full width in mobile?"), capped beside the sizes from sm up.
  */
-export const SET_UP_PREVIEW_BOX = "pointer-events-none w-full max-w-[15rem] sm:max-w-[22rem]";
+export const SET_UP_PREVIEW_BOX = "pointer-events-none w-full sm:max-w-[22rem]";
 
 /**
  * The line under that box, with the room its longest wording takes kept for
