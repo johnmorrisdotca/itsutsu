@@ -121,11 +121,13 @@ export function ConfirmButton({
 
   return (
     <div
-      className="flex flex-col gap-2 rounded-xl border border-moss/40 bg-moss-soft px-3 py-2.5 text-ink"
+      // Never wider than what holds it: the question wraps and the answers go
+      // under each other, so both stay on a phone's screen wherever this is drawn.
+      className="flex max-w-full min-w-0 flex-col gap-2 rounded-xl border border-moss/40 bg-moss-soft px-3 py-2.5 text-ink"
       role="alertdialog"
       data-testid={`${testId}-confirm`}
     >
-      <p className="text-sm font-semibold">{question}</p>
+      <p className="text-sm font-semibold break-words">{question}</p>
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => {
