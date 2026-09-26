@@ -40,14 +40,14 @@ const SHORTEST_LINE = 3;
 const BLOCKED_MARK = 32_000;
 
 /** What a board has besides its lines: the cells no line enters, the bridges two lines cross, and the walls between cells. */
-export type LinkExtras = { blocked?: ReadonlySet<number>; bridges?: ReadonlySet<number>; walls?: ReadonlySet<string>; waypoints?: ReadonlySet<number>; wrap?: boolean; hex?: boolean };
+export type LinkExtras = { blocked?: ReadonlySet<number>; bridges?: ReadonlySet<number>; walls?: ReadonlySet<string>; waypoints?: ReadonlySet<number>; wrap?: boolean; hex?: boolean; sparse?: boolean };
 
 /** Grid lines that fill every cell, as lists of cells; null when this attempt painted itself into a corner. */
 export function randomFilling(size: number, random: Random, longest: number, blocked: ReadonlySet<number> = new Set(), wrap = false, hex = false): number[][] | null {
   const total = size * size;
   // On a board that wraps, the lines may run off one edge and on at the other.
   // On a board that wraps, the lines may run off one edge and on at the other; on a hexagon, a cell has six neighbours.
-  const around = hex ? hexNeighbourTable(size) : wrap ? layoutNeighbours({ size, cells: [], ends: [], walls: new Set(), waypoints: new Map(), wrap: true, hex: false, explosions: null }) : neighbourTable(size);
+  const around = hex ? hexNeighbourTable(size) : wrap ? layoutNeighbours({ size, cells: [], ends: [], walls: new Set(), waypoints: new Map(), wrap: true, hex: false, sparse: false, strokes: null, explosions: null }) : neighbourTable(size);
   const owner = new Int16Array(total).fill(-1);
   // A blocked cell belongs to no line, ever: marked as one nothing can be.
   for (const cell of blocked) owner[cell] = BLOCKED_MARK;
@@ -143,7 +143,7 @@ export function layoutOf(size: number, paths: readonly number[][], extras: LinkE
   // A waypoint is kept for the pair whose line runs through it in the answer.
   const waypoints = new Map([...(extras.waypoints ?? [])].map((cell) => [cell, owners[cell]!] as const));
   // Relabel in reading order of first stone, which `byFirst`'s order already is.
-  return { layout: encodeLayout(cells, extras.walls ?? [], { waypoints, wrap: extras.wrap, hex: extras.hex }), answer: encodeAnswer(owners) };
+  return { layout: encodeLayout(cells, extras.walls ?? [], { waypoints, wrap: extras.wrap, hex: extras.hex, sparse: extras.sparse }), answer: encodeAnswer(owners) };
 }
 
 /** Where cell `at` goes when a board is given `turn` quarter turns and then mirrored across the vertical when `mirror`. */

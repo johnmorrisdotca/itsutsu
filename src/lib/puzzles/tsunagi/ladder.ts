@@ -16,7 +16,7 @@ export type { Challenge, TwistRole };
  * Imports carry their `.ts` so the level script can read the same rules.
  */
 
-export const CHALLENGES: readonly Challenge[] = ["bridges", "walls", "waypoints", "wrap", "explosions", "hexagon"];
+export const CHALLENGES: readonly Challenge[] = ["bridges", "walls", "waypoints", "wrap", "explosions", "strokes", "hexagon", "sparse"];
 
 /** The challenges on a board, in the order the ladder teaches them. */
 export function challengesOf(layout: string): Challenge[] {
@@ -33,7 +33,9 @@ export function challengesOf(layout: string): Challenge[] {
   if (/[a-p]/.test(cells)) out.push("waypoints");
   if (words.some((word) => word?.word === "wrap")) out.push("wrap");
   if (words.some((word) => word?.word === "explosion")) out.push("explosions");
+  if (words.some((word) => word?.word === "strokes")) out.push("strokes");
   if (hex) out.push("hexagon");
+  if (words.some((word) => word?.word === "sparse")) out.push("sparse");
   return out;
 }
 

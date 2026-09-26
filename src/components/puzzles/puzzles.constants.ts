@@ -350,6 +350,16 @@ export const TSUNAGI_CHIPS = {
     kanji: "爆",
     says: "Every few strokes, a drawn line is broken: cut back to half, or on the hardest boards wiped with a line beside it cut too. The count under the board says when the next one goes off. The same strokes always break the same line, and the stroke that solves the level sets nothing off.",
   },
+  strokes: {
+    label: "Stroke limit",
+    kanji: "筆",
+    says: "Only so many strokes: every time you lift your finger having changed the board, one is spent, and Undo gives none back. Run out before it is solved and Restart gives you them all again.",
+  },
+  sparse: {
+    label: "Few lines",
+    kanji: "疎",
+    says: "Fewer pairs than a board this size usually has, so each line is long and has far to go. No new rule: the distance is the difficulty.",
+  },
   hexagon: {
     label: "Hexagon",
     kanji: "六角",
