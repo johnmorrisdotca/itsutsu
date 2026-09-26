@@ -1035,9 +1035,21 @@ all of which are tested in `src/lib/api/rateLimit.test.ts` and beside it.
 
 **The same relief also shortens a live board's poll outside production.**
 `next.config.ts` hands it to the browser as `LIVE_POLL_RELIEF`, and `pollEvery`
-divides the fifteen-second cadence by it, never faster than every two and a half seconds, so
-the two-seat specs do not wait out a production poll for every move the other
-seat makes. It never applies on the live site — `pollEvery` refuses it in
+divides whichever cadence the board is on by it, never faster than every two
+and a half seconds, so the two-seat specs do not wait out a production poll for
+every move the other seat makes. There are two cadences since 2026-09-26:
+fifteen seconds (`POLL_MS`), and three (`POLL_FAST_MS`) while the player the
+board waits on was seen on the site in the last two minutes — John, playing a
+friend phone to phone: "Waiting 15 seconds is too long", then "don't you know
+if they've accessed the site within the past minute or two? That tells you
+they are active", then "Ok 3". It is the one exception to "no client polling
+faster than about fifteen seconds", and it is kept that narrow: a game in play,
+a board looked at and awake, the other seat's member present, never a
+computer player. At the suite's relief both come out at the floor, so a spec
+that needs to see the choice reads `data-poll-hurrying` on the board. Both
+numbers are defaults the operator can change on Admin's site panel ("Live
+board, other player here", 2 to 15 seconds; "Live board, ordinary", never under
+15), read once per board page through a tagged cache and never on the poll. It never applies on the live site — `pollEvery` refuses it in
 production before reading it, the suite's own build excepted, because every
 ask is a paid function call — and
 `src/components/live/pollCadence.test.ts` fails if that refusal goes.

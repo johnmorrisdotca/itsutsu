@@ -7,6 +7,7 @@ import {
 } from "./site.constants";
 import type { RemoteSetting } from "./siteSettingsRemote.types";
 import type {
+  LiveBoardIntervals,
   SiteSettingKey,
   SiteSettingState,
   SiteSettings,
@@ -55,6 +56,11 @@ export function valueFor<K extends SiteSettingKey>(
       ? (stored as SiteSettings[K])
       : DEFAULT_SITE_SETTINGS[key];
   }
+  if (spec.kind === "seconds") {
+    // Out of bounds or not a whole number reads as the default, never as the nearest bound: "1" is not a request for 2.
+    const seconds = wholeSecondsWithin(stored, spec.min, spec.max);
+    return (seconds ?? DEFAULT_SITE_SETTINGS[key]) as SiteSettings[K];
+  }
   // A note is measured, not enumerated. Something longer than the registry
   // allows was never accepted by `acceptSiteSetting`, so it got there by hand
   // or by an older version; it reads as nothing rather than being shown cut in
@@ -62,6 +68,19 @@ export function valueFor<K extends SiteSettingKey>(
   return (stored.length <= spec.maxLength
     ? stored
     : DEFAULT_SITE_SETTINGS[key]) as SiteSettings[K];
+}
+
+/**
+ * A stored or offered count of seconds, if it is whole digits between the two
+ * bounds, both allowed — or null. Digits only, so "3.5", "-2", "3s", "" and
+ * "abc" are all null rather than whatever `Number` or `parseInt` would make of
+ * them.
+ */
+function wholeSecondsWithin(value: string, min: number, max: number): number | null {
+  const trimmed = value.trim();
+  if (!/^\d{1,4}$/.test(trimmed)) return null;
+  const seconds = Number(trimmed);
+  return seconds >= min && seconds <= max ? seconds : null;
 }
 
 /** One stored row, as the store hands it over. */
@@ -174,6 +193,14 @@ export function acceptSiteSetting(key: string, value: unknown): Accepted {
     return { ok: true, key, value };
   }
 
+  if (spec.kind === "seconds") {
+    const seconds = wholeSecondsWithin(value, spec.min, spec.max);
+    if (seconds === null) {
+      return { ok: false, problem: `${key} is a whole number of seconds from ${spec.min} to ${spec.max}.` };
+    }
+    return { ok: true, key, value: String(seconds) };
+  }
+
   if (value.length > spec.maxLength) {
     return {
       ok: false,
@@ -188,6 +215,11 @@ export function acceptSiteSetting(key: string, value: unknown): Accepted {
    */
   const trimmed = value.trim();
   return { ok: true, key, value: trimmed.length === 0 ? null : trimmed };
+}
+
+/** The two live-board settings as the board spends them: milliseconds. */
+export function liveBoardIntervalsFrom(settings: SiteSettings): LiveBoardIntervals {
+  return { fastMs: settings.livePollFast * 1000, ordinaryMs: settings.livePollOrdinary * 1000 };
 }
 
 /**

@@ -17,6 +17,8 @@ describe("the cut-over copy, as a report", () => {
     expect(plan.steps).toEqual([
       { key: "registration", remoteKey: "registration", action: "put", value: "open", was: null, by: "operator@example.test" },
       { key: "joinNotice", remoteKey: "join_notice", action: "put", value: "Beta — ask John", was: null, by: "nobody recorded" },
+      { key: "livePollFast", remoteKey: "live_poll_fast", action: "none" },
+      { key: "livePollOrdinary", remoteKey: "live_poll_ordinary", action: "none" },
     ]);
   });
 
@@ -28,7 +30,7 @@ describe("the cut-over copy, as a report", () => {
       ],
       [remote("registration", "closed"), remote("join_notice", "Old words")],
     );
-    expect(plan.steps.map((step) => step.action)).toEqual(["refused", "delete"]);
+    expect(plan.steps.map((step) => step.action)).toEqual(["refused", "delete", "none", "none"]);
     expect(plan.ignored).toEqual(["maintenance"]);
     expect(copyPlan([{ key: "registration", value: "closed" }], [remote("registration", "closed")]).steps[0]).toMatchObject({ action: "same" });
     expect(copyPlan([{ key: "joinNotice", value: "   " }], []).steps[1]).toMatchObject({ action: "none" });
@@ -39,6 +41,8 @@ describe("the cut-over copy, as a report", () => {
     expect(lines).toEqual([
       'DELETE settings/registration (the target holds "open"; this database holds nothing)',
       'PUT settings/join_notice "Hi" (the target holds nothing; last set here by op)',
+      "nothing to do: live_poll_fast is unset on both",
+      "nothing to do: live_poll_ordinary is unset on both",
       "not copied, not a setting this site declares: maintenance",
     ]);
   });

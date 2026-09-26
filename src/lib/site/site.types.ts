@@ -25,6 +25,17 @@ export type SiteSettingSpec =
       /** Longest the operator may type. Anything longer is refused, not cut. */
       readonly maxLength: number;
       readonly fallback: "";
+    }
+  | {
+      /**
+       * A whole number of seconds between two bounds, both allowed. Stored as
+       * the digits, read back as a number; anything that is not whole digits
+       * inside the bounds reads as the fallback and is refused on the way in.
+       */
+      readonly kind: "seconds";
+      readonly min: number;
+      readonly max: number;
+      readonly fallback: number;
     };
 
 /** The name of a setting the registry knows. */
@@ -45,8 +56,17 @@ export type SiteSettings = {
     readonly options: readonly (infer V)[];
   }
     ? V
-    : string;
+    : (typeof SITE_SETTING_SPECS)[K] extends { readonly kind: "seconds" }
+      ? number
+      : string;
 };
+
+/**
+ * How often a live board asks, in milliseconds, as the operator has set it:
+ * `fastMs` while the player it waits on is on the site, `ordinaryMs` otherwise.
+ * Read on the board's page and handed to the board — see `liveBoardIntervals`.
+ */
+export type LiveBoardIntervals = { fastMs: number; ordinaryMs: number };
 
 /** How a Google identity with no member row is treated. */
 export type RegistrationMode = SiteSettings["registration"];

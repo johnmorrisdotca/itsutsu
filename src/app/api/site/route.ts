@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
@@ -5,6 +6,7 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { MAINTENANCE_ENV } from "@/lib/site/site.constants";
 import { acceptSiteSetting, maintenanceIsOn } from "@/lib/site/site";
+import { SITE_SETTINGS_TAG } from "@/lib/site/liveBoardIntervals";
 import { fetchSiteSettingStates, writeSiteSetting } from "@/lib/site/siteStore";
 
 /**
@@ -75,6 +77,8 @@ export async function PUT(request: Request) {
     if (!accepted.ok) return unprocessable(accepted.problem);
 
     await writeSiteSetting(accepted.key, accepted.value, admin.email ?? "operator");
+    // The boards read their intervals through a cache (`liveBoardIntervals`); the next board page reads this write.
+    revalidateTag(SITE_SETTINGS_TAG, { expire: 0 });
     return NextResponse.json(
       { settings: await fetchSiteSettingStates() },
       { headers: NO_STORE },

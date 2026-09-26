@@ -1,7 +1,11 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { NO_STORE, REVALIDATE, notFound, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
+import { memberKeyOf } from "@/lib/auth/memberKey";
+import { touchMemberFromPoll } from "@/lib/auth/memberRow";
+import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { deleteGame, fetchGameDetail } from "@/lib/history/gameHistory";
 import { gameVersion, holdsVersion } from "@/lib/history/gameVersion";
 
@@ -28,17 +32,30 @@ export async function GET(request: Request, ctx: RouteContext<"/api/games/[id]">
      * rest itself, because `no-cache` with a tag means "keep it, but ask
      * first": it sends the tag back, takes a 304 as the copy it already has,
      * and `useLiveGame` never learns the difference.
+     *
+     * BESIDE IT, AND AT THE SAME TIME, the reader is marked as seen — at most
+     * once a minute, by a condition in the write, so almost every ask writes
+     * nothing (`touchMemberFromPoll`). A player sitting on a board is on the
+     * site, and their opponent's board asks faster for it (`POLL_FAST_MS`).
+     * Who the reader is comes off the signed cookie with no query, and the two
+     * statements run side by side, so an ask is still one round trip of wall
+     * time. A stamp that fails costs the stamp, never the answer.
      */
-    const version = await gameVersion(id);
+    const now = new Date();
+    const reader = memberKeyOf(await verifySession((await cookies()).get(SESSION_COOKIE)?.value));
+    const [version] = await Promise.all([
+      gameVersion(id, now),
+      reader === null ? null : touchMemberFromPoll(reader, now).catch((error: unknown) => console.error(error)),
+    ]);
     if (version === null) return notFound("No such game.");
-    const headers = { ...REVALIDATE, ETag: version };
-    if (holdsVersion(request.headers.get("if-none-match"), version)) {
+    const headers = { ...REVALIDATE, ETag: version.tag };
+    if (holdsVersion(request.headers.get("if-none-match"), version.tag)) {
       return new NextResponse(null, { status: 304, headers });
     }
 
     const game = await fetchGameDetail(id);
     if (game === null) return notFound("No such game.");
-    return NextResponse.json(game, { status: 200, headers });
+    return NextResponse.json({ ...game, here: version.here }, { status: 200, headers });
   } catch (error) {
     console.error(error);
     return serverError("Could not load that game.");

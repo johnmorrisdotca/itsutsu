@@ -1,15 +1,28 @@
 import "server-only";
 
+import { PRESENT_WITHIN_MS } from "@/components/live/live.constants";
 import { prisma } from "@/lib/prisma";
 
+import type { SeatsHere } from "./gameHistory.types";
+
+/** What the one read below brings back. */
+type VersionRow = {
+  updatedAt: Date;
+  moveCount: number;
+  remarks: number;
+  blackHere: boolean;
+  whiteHere: boolean;
+};
+
 /**
- * Which version of a game a live board is holding, as an HTTP entity tag.
+ * Which version of a game a live board is holding, as an HTTP entity tag, and
+ * which seats' players are on the site.
  *
- * A board polls every fifteen seconds, and most of those asks come back to a
- * game where nothing has happened. Each one used to read the whole game —
- * every move, the last thirty remarks, both players' names — and send it all
- * again. This is the small read that lets the route answer "nothing changed"
- * instead: one row, three numbers.
+ * A board polls, and most of those asks come back to a game where nothing has
+ * happened. Each one used to read the whole game — every move, the last thirty
+ * remarks, both players' names — and send it all again. This is the small
+ * read that lets the route answer "nothing changed" instead: one row, three
+ * numbers and two yes-or-noes.
  *
  * WHAT THE THREE NUMBERS COVER, and why nothing else is needed:
  *
@@ -23,23 +36,50 @@ import { prisma } from "@/lib/prisma";
  *   count is read beside it. Remarks are only ever added, never removed or
  *   edited, so a count cannot come back to a number it has held before.
  *
+ * AND WHO IS HERE, because the board asks faster while the player it waits on
+ * is on the site (`POLL_FAST_MS`). A seat's player is here when their member
+ * row was seen within `PRESENT_WITHIN_MS`, the game is still being played, and
+ * they are not a computer player — a program is never "on the site", and its
+ * moves come from the browser that asked for them. A seat with no member
+ * behind it (a name, a link nobody signed in to take) is never here either.
+ * It is part of the tag, so an arrival or a departure is a full answer that
+ * says so, and while nobody comes or goes the answer stays a 304.
+ *
+ * ONE QUERY, NOT TWO. The seats' `lastSeenAt` rides the same read through two
+ * joins on the member's primary key. Raw SQL because `Game` has no relation to
+ * `Member` in the schema — the seat columns are plain ids — and adding one is
+ * a migration for the sake of a join.
+ *
  * What it does NOT cover is a player renaming themselves mid-game: the name is
  * read from the member, and the board shows the new one at the next move
  * rather than the next poll. That is the one staleness allowed, and it is a
  * name, not the position.
  */
-export async function gameVersion(id: string): Promise<string | null> {
-  const row = await prisma.game.findUnique({
-    where: { id },
-    select: { updatedAt: true, moveCount: true, _count: { select: { reactions: true } } },
-  });
-  if (row === null) return null;
-  return versionTag(row.updatedAt, row.moveCount, row._count.reactions);
+export async function gameVersion(
+  id: string,
+  now: Date = new Date(),
+): Promise<{ tag: string; here: SeatsHere } | null> {
+  const since = new Date(now.getTime() - PRESENT_WITHIN_MS);
+  const rows = await prisma.$queryRaw<VersionRow[]>`
+    SELECT g."updatedAt", g."moveCount",
+      (SELECT COUNT(*)::int FROM "Reaction" r WHERE r."gameId" = g.id) AS remarks,
+      (g.status = 'active' AND b."botTier" IS NULL AND b."lastSeenAt" >= ${since}) IS TRUE AS "blackHere",
+      (g.status = 'active' AND w."botTier" IS NULL AND w."lastSeenAt" >= ${since}) IS TRUE AS "whiteHere"
+    FROM "Game" g
+    LEFT JOIN "Member" b ON b.id = g."blackMemberId"
+    LEFT JOIN "Member" w ON w.id = g."whiteMemberId"
+    WHERE g.id = ${id}
+  `;
+  const row = rows[0];
+  if (row === undefined) return null;
+  const here = { black: row.blackHere, white: row.whiteHere };
+  return { tag: versionTag(row.updatedAt, row.moveCount, row.remarks, here), here };
 }
 
 /** The tag itself, quoted as HTTP wants an entity tag to be. */
-export function versionTag(updatedAt: Date, moveCount: number, remarks: number): string {
-  return `"g${updatedAt.getTime().toString(36)}-${moveCount}-${remarks}"`;
+export function versionTag(updatedAt: Date, moveCount: number, remarks: number, here: SeatsHere): string {
+  const present = `${here.black ? "b" : ""}${here.white ? "w" : ""}` || "n";
+  return `"g${updatedAt.getTime().toString(36)}-${moveCount}-${remarks}-${present}"`;
 }
 
 /**

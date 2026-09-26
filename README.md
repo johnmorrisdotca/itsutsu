@@ -722,7 +722,9 @@ rather than open the site.
 
 Two switches sit in front of all of that. Who may sign up (invite only, open,
 or closed) and a notice on the join page are site settings, kept on Sumilabu
-and changed from `/admin`. `SITE_MAINTENANCE=on` shows everybody but the
+and changed from `/admin`, beside how often a live board asks for the other
+side's move (three seconds while that player is on the site, fifteen
+otherwise, by default). `SITE_MAINTENANCE=on` shows everybody but the
 operator a 503 from the gate itself.
 
 ### Invite codes

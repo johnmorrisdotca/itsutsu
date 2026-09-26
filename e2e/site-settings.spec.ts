@@ -1,6 +1,7 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
 import { ready } from "./support";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
  * The operator's site-level controls, driven the way the operator drives them.
@@ -39,10 +40,14 @@ test.describe.configure({ mode: "serial" });
 
 const SETTINGS = "/api/site";
 
+/** The one board this file opens, and the names it is played under, taken away after. */
+const boardsMade = gamesMade();
+const underBoards = namesPlayedUnder();
+
 test.afterEach(async ({ request }) => {
   // Null, not "invite-only": back to nobody having said anything, which is the
   // state this file found the site in and the one a fresh database is in.
-  for (const key of ["registration", "joinNotice"]) {
+  for (const key of ["registration", "joinNotice", "livePollFast", "livePollOrdinary"]) {
     const put = await request.put(SETTINGS, { data: { key, value: null } });
     expect(put.ok(), `could not put ${key} back`).toBe(true);
   }
@@ -238,4 +243,58 @@ test("refuses a mode this site does not offer, and a setting it has never heard 
   const registration = settings.find((one) => one.key === "registration");
   expect(registration?.value).toBe("invite-only");
   expect(registration?.chosen).toBe(false);
+});
+
+/*
+ * HOW OFTEN A LIVE BOARD ASKS, set here and read by a board. John, 2026-09-26:
+ * "Can we make that an admin site level config tweak? So have a default that
+ * admin can change live?" Typed and saved on the panel, as the operator does,
+ * and seen on a board page loaded afterwards — which is when a board picks a
+ * change up, as the panel says. `afterEach` puts it back.
+ */
+test("changes how often a live board asks while the other player is here, and a board page loaded after says so", async ({
+  page,
+  request,
+}) => {
+  await openThePanel(page);
+  await expect(page.getByTestId("provenance-livePollFast")).toContainText("Nobody has changed this");
+  await expect(page.getByRole("spinbutton", { name: "Seconds between asks, 2 to 15", exact: true })).toHaveValue("3");
+
+  await page.getByRole("spinbutton", { name: "Seconds between asks, 2 to 15", exact: true }).fill("4");
+  await page.getByTestId("livePollFast-save").click();
+  await expect(page.getByTestId("provenance-livePollFast")).toContainText("Set by");
+  await expect(page.getByRole("spinbutton", { name: "Seconds between asks, 2 to 15", exact: true })).toHaveValue("4");
+
+  // A board of the operator's own, opened after the save.
+  const stamp = Date.now().toString(36);
+  const made = await request.post("/api/games/live", {
+    data: { variant: "freestyle", size: 9, moveTimeMs: null, rated: false, blackName: underBoards(`Hayai ${stamp}`), whiteName: underBoards(`Osoi ${stamp}`) },
+  });
+  expect(made.status(), await made.text()).toBe(201);
+  const game = (await made.json()) as { id: string; blackToken: string };
+  boardsMade(game.id);
+  const board = await page.context().newPage();
+  await board.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+  await ready(board, "shared-game");
+  await expect(board.getByTestId("shared-game")).toHaveAttribute("data-poll-fast-ms", "4000");
+  await expect(board.getByTestId("shared-game")).toHaveAttribute("data-poll-ordinary-ms", "15000");
+
+  // Back to the default from the panel — the way out as well as the way in.
+  await page.getByTestId("livePollFast-clear").click();
+  await expect(page.getByTestId("provenance-livePollFast")).toContainText("Nobody has changed this");
+  const again = await page.context().newPage();
+  await again.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+  await ready(again, "shared-game");
+  await expect(again.getByTestId("shared-game")).toHaveAttribute("data-poll-fast-ms", "3000");
+});
+
+test("refuses a live board interval out of its bounds, and one that is not a number", async ({ request }) => {
+  for (const [key, value] of [
+    ["livePollFast", "1"],
+    ["livePollFast", "abc"],
+    ["livePollOrdinary", "14"],
+  ] as const) {
+    const refused = await request.put(SETTINGS, { data: { key, value } });
+    expect(refused.status(), `${key}=${value}`).toBe(422);
+  }
 });

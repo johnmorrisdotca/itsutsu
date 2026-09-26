@@ -17,18 +17,76 @@ import { BOARD_SIZES, type BoardSize } from "@/lib/preferences/boardSize";
  * last move — one board left open made 1,440 asks an hour while looked at and
  * 120 while hidden, counted by `e2e/live-poll-cadence.spec.ts`. John,
  * 2026-09-15: "we have to stop doing things like that that will eat up CPU
- * time."
+ * time." Since 2026-09-26 there are two cadences rather than one — see
+ * `POLL_FAST_MS`, which is John's own narrow exception.
  */
 
 /**
  * How often a board somebody is looking at asks whether the other side has
- * moved.
+ * moved, when the other side is NOT known to be on the site.
  *
- * Fifteen seconds is the floor the site owner set, and it is enough: a move
- * arriving a few seconds late cannot be told apart from the other side
- * thinking. A hidden tab does not ask at all — see `pollInterval`.
+ * Fifteen seconds is the floor the site owner set on 2026-09-15, and for a
+ * board whose opponent is elsewhere it is still enough: a move arriving a few
+ * seconds late cannot be told apart from somebody thinking in another tab, or
+ * not at their phone at all. A hidden tab does not ask at all — see
+ * `pollInterval`. When the player to move IS here, the board asks every
+ * `POLL_FAST_MS` instead.
  */
 export const POLL_MS = 15_000;
+
+/**
+ * How often a board asks while the player it is waiting on is on the site —
+ * the one exception to "no polling faster than about fifteen seconds".
+ *
+ * John, 2026-09-26, playing a friend phone to phone: "Waiting 15 seconds is too
+ * long." Then, having seen what a faster board costs: "don't you know if
+ * they've accessed the site within the past minute or two? That tells you they
+ * are active." So the fast cadence is for exactly that case and nothing wider:
+ * a game in play, a board being looked at and awake, and the seat it is
+ * waiting on held by a member seen within `PRESENT_WITHIN_MS`. Two people
+ * playing across a table see a move within three seconds, a second and a half
+ * on average; a board waiting on somebody who is not here asks at `POLL_MS`,
+ * as before.
+ *
+ * THREE SECONDS, John's number: offered five, and shown that three is about a
+ * second and a half's wait on average for about 1,200 asks an hour from a board
+ * that waits the whole hour, he said "Ok 3". Every ask is still a paid function
+ * call, though almost all of them answer 304 — one small read. A board asks
+ * fast only while it waits on the OTHER seat; on its own reader's turn nothing
+ * can arrive but a remark, and it asks at `POLL_MS`. So a 20-minute game
+ * between two present players is about 480 asks from the two boards, where
+ * fifteen seconds made 160.
+ *
+ * Above SWR's two-second dedupe, so the board keeps the cadence it states, and
+ * above `POLL_RELIEF_FLOOR_MS`, so the suite's relief can only bring it down
+ * to the floor — `pollCadence.test.ts` holds both.
+ *
+ * A DEFAULT, like `POLL_MS`: John again, the same day, "Can we make that an
+ * admin site level config tweak? So have a default that admin can change
+ * live?" The operator sets both on the site panel (`livePollFast`, 2 to 15
+ * seconds, and `livePollOrdinary`, 15 to 60, in `site.constants.ts`); a board
+ * reads them when its page loads (`liveBoardIntervals`), and these two numbers
+ * are what it uses when nobody has said, or the settings cannot be read.
+ */
+export const POLL_FAST_MS = 3_000;
+
+/**
+ * How recently a seat's member must have been seen for their opponent's board
+ * to count them as here — see `POLL_FAST_MS`.
+ *
+ * TWO MINUTES, from John's "within the past minute or two". "Seen" is
+ * `Member.lastSeenAt`, stamped at most once a minute (`TOUCH_EVERY_MS` in
+ * `memberRow.ts`) by any page they load and by their own board's asks — so
+ * somebody sitting on a board asking every fifteen seconds is stamped every
+ * minute and a quarter at worst, well inside the window, and stays here for as
+ * long as they sit there. Somebody who puts the phone down stops asking, and
+ * two minutes later is not here: the next answer to their opponent's board
+ * says so, because presence is part of the game's version (`gameVersion.ts`).
+ *
+ * A computer player is never here — its moves are made in the browser that
+ * asked for them — and nor is a seat with no member behind it.
+ */
+export const PRESENT_WITHIN_MS = 2 * 60 * 1000;
 
 /**
  * How long a board keeps asking with nothing happening — no change arriving
@@ -46,6 +104,12 @@ export const POLL_MS = 15_000;
  * (`LIVE_PAUSED_COPY`), and a press, a key, focus or the tab being shown wakes
  * it, and it asks at once. `pollCadence.test.ts` holds it above the fastest
  * clock and under ten minutes.
+ *
+ * The same six minutes at the fast cadence (`POLL_FAST_MS`): at most a hundred
+ * and twenty asks after the last sign of life, and only while the other player is on the
+ * site. A person arriving or leaving is not a sign of life on the board — the
+ * board's own content is compared without it — so presence alone never keeps a
+ * board awake.
  */
 export const IDLE_STOP_MS = 6 * 60 * 1000;
 
@@ -59,7 +123,8 @@ export const IDLE_STOP_MS = 6 * 60 * 1000;
  * the suite's relief of 20 that is exactly what happened, and the cadence spec
  * caught the page claiming a number it did not keep. Above the dedupe, the
  * cadence a board states is the cadence it runs — and it is the two and a half
- * seconds the two-seat specs were written against.
+ * seconds the two-seat specs were written against. It holds for either cadence:
+ * at the suite's relief both `POLL_MS` and `POLL_FAST_MS` come out at the floor.
  */
 export const POLL_RELIEF_FLOOR_MS = 2_500;
 

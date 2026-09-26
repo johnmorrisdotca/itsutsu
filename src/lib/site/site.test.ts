@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { POLL_FAST_MS, POLL_MS } from "@/components/live/live.constants";
 import {
   DEFAULT_SITE_SETTINGS,
   REGISTRATION_MODES,
@@ -11,6 +12,7 @@ import {
 import {
   acceptSiteSetting,
   isSiteSettingKey,
+  liveBoardIntervalsFrom,
   maintenanceIsOn,
   mayJoin,
   siteSettingStates,
@@ -366,6 +368,82 @@ describe("the registry is complete", () => {
       const copy = SITE_SETTING_COPY[key];
       expect(copy.fieldLabel?.length ?? 0, `${key}'s box has no label`).toBeGreaterThan(0);
       expect(copy.fieldLabel, `${key}'s label is only its placeholder`).not.toBe(copy.placeholder);
+    }
+  });
+});
+
+/*
+ * How often a live board asks, set on the panel. John, 2026-09-26: "Can we make
+ * that an admin site level config tweak? So have a default that admin can
+ * change live?" A value that cannot be used falls back to THAT setting's
+ * default, never to a bound — "1" is not a request for two seconds.
+ */
+describe("the live board's two intervals", () => {
+  it("default to the site's own numbers, three seconds and fifteen", () => {
+    expect(DEFAULT_SITE_SETTINGS.livePollFast).toBe(POLL_FAST_MS / 1000);
+    expect(DEFAULT_SITE_SETTINGS.livePollOrdinary).toBe(POLL_MS / 1000);
+    expect(liveBoardIntervalsFrom(siteSettingsFrom([]))).toEqual({ fastMs: POLL_FAST_MS, ordinaryMs: POLL_MS });
+  });
+
+  it("read a whole number of seconds inside the bounds, and hand it over in milliseconds", () => {
+    const settings = siteSettingsFrom([
+      { key: "livePollFast", value: "4" },
+      { key: "livePollOrdinary", value: "30" },
+    ]);
+    expect(settings.livePollFast).toBe(4);
+    expect(settings.livePollOrdinary).toBe(30);
+    expect(liveBoardIntervalsFrom(settings)).toEqual({ fastMs: 4000, ordinaryMs: 30_000 });
+    expect(valueFor("livePollFast", "2")).toBe(2);
+    expect(valueFor("livePollFast", "15")).toBe(15);
+    expect(valueFor("livePollOrdinary", "60")).toBe(60);
+  });
+
+  it("read anything missing, unparseable or out of bounds as that one setting's default", () => {
+    for (const stored of [undefined, "1", "0", "16", "abc", "", " ", "3.5", "-3", "3s", "1e1", "0x3", "99999"]) {
+      expect(valueFor("livePollFast", stored), `"${stored}"`).toBe(3);
+    }
+    for (const stored of [undefined, "1", "14", "61", "abc", "15.5", "fifteen"]) {
+      expect(valueFor("livePollOrdinary", stored), `"${stored}"`).toBe(15);
+    }
+    const settings = siteSettingsFrom([
+      { key: "livePollFast", value: "1" },
+      { key: "livePollOrdinary", value: "45" },
+      { key: "registration", value: "open" },
+    ]);
+    expect(settings).toEqual({ ...DEFAULT_SITE_SETTINGS, livePollOrdinary: 45, registration: "open" });
+  });
+
+  it("never lets the ordinary board ask faster than every fifteen seconds, John's standing cost rule", () => {
+    expect(SITE_SETTING_SPECS.livePollOrdinary.min).toBe(15);
+    expect(acceptSiteSetting("livePollOrdinary", "14")).toEqual({ ok: false, problem: expect.stringContaining("15 to 60") });
+  });
+
+  it("never lets the fast board ask inside SWR's two-second dedupe", () => {
+    expect(SITE_SETTING_SPECS.livePollFast.min).toBeGreaterThanOrEqual(2);
+    expect(acceptSiteSetting("livePollFast", "1").ok).toBe(false);
+  });
+
+  it("take a whole number in bounds, stored as its digits, and refuse the rest with the bounds named", () => {
+    expect(acceptSiteSetting("livePollFast", "4")).toEqual({ ok: true, key: "livePollFast", value: "4" });
+    expect(acceptSiteSetting("livePollFast", " 05 ")).toEqual({ ok: true, key: "livePollFast", value: "5" });
+    expect(acceptSiteSetting("livePollOrdinary", "20")).toEqual({ ok: true, key: "livePollOrdinary", value: "20" });
+    for (const value of ["1", "abc", "16", "3.5", "", "-2"]) {
+      const accepted = acceptSiteSetting("livePollFast", value);
+      expect(accepted.ok, `"${value}"`).toBe(false);
+      if (!accepted.ok) expect(accepted.problem).toContain("2 to 15");
+    }
+    expect(acceptSiteSetting("livePollFast", 4).ok).toBe(false);
+    expect(acceptSiteSetting("livePollFast", null)).toEqual({ ok: true, key: "livePollFast", value: null });
+  });
+
+  it("name their boxes, and keep their defaults inside their own bounds", () => {
+    for (const key of SITE_SETTING_KEYS) {
+      const spec = SITE_SETTING_SPECS[key];
+      if (spec.kind !== "seconds") continue;
+      expect(spec.fallback).toBeGreaterThanOrEqual(spec.min);
+      expect(spec.fallback).toBeLessThanOrEqual(spec.max);
+      expect(SITE_SETTING_COPY[key].fieldLabel?.length ?? 0, `${key}'s box has no label`).toBeGreaterThan(0);
+      expect(SITE_SETTING_COPY[key].blurb, `${key} must say when a board picks it up`).toContain("next time its page loads");
     }
   });
 });

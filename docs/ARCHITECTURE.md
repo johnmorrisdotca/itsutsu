@@ -44,8 +44,8 @@ Three services beyond the database:
 
 - **Sumilabu** is a companion service (`api.sumilabu.com`) shared with the
   owner's other sites, UmaKuma among them. It holds the features board behind
-  `/backlog` and `pnpm task`, and the site settings (who may sign up, whether
-  the site is in maintenance). The clients are `src/lib/sumilabu/boardClient.ts`
+  `/backlog` and `pnpm task`, and the site settings (who may sign up, the
+  join page's notice, how often a live board asks). The clients are `src/lib/sumilabu/boardClient.ts`
   and `src/lib/site/siteStore.ts`. Everything reaches the development project
   (`itsutsu-dev`) unless it is told otherwise by name.
 - **Resend** sends email, in production only and only with `RESEND_API_KEY`
@@ -147,10 +147,16 @@ the ratings (`recordResult`), updates the played tallies (`recordPlayed`) and
 pays XP (`awardXp`). The other ending paths call the same three.
 
 The other device finds out by polling. `useLiveGame` asks every fifteen seconds
-while the board is visible, stops when the tab is hidden, and stops after six
-quiet minutes until somebody presses, types or brings the tab back (`src/components/live/pollCadence.ts`).
-There are no websockets and no push: a poll is one small read, and a board
-nobody is looking at asks nothing.
+while the board is visible, and every three while the player it is waiting on
+has been seen on the site in the last two minutes (John, 2026-09-26: "Waiting
+15 seconds is too long", then "Ok 3"). Both are defaults the operator can
+change on Admin's site panel, and a board reads them when its page loads
+(`src/lib/site/liveBoardIntervals.ts`). It stops when the tab is hidden, and
+stops after six quiet minutes until somebody presses, types or brings the tab
+back (`src/components/live/pollCadence.ts`). Who is here rides the game's
+version (`gameVersion.ts`), so it costs no extra query, and each ask marks its
+reader as seen at most once a minute. There are no websockets and no push: a
+poll is one small read, and a board nobody is looking at asks nothing.
 
 ## Where the gate is
 

@@ -237,10 +237,24 @@ export type GameReaction = {
   createdAt: string;
 };
 
+/**
+ * Which seats' players are on the site right now: each seat's member seen
+ * within `PRESENT_WITHIN_MS`. False for a seat with no member behind it and for
+ * a computer player — see `gameVersion.ts`, which reads it.
+ */
+export type SeatsHere = { black: boolean; white: boolean };
+
 export type GameDetail = GameSummary & {
   moves: GameMove[];
   /** The most recent reactions, newest last. */
   reactions: GameReaction[];
+  /**
+   * Which seats' players are here, on the answer a live board polls
+   * (`GET /api/games/[id]`) and nowhere else. ABSENT rather than both-false
+   * where nothing has asked: a page's first render and a move's own answer do
+   * not say, and a board that has not been told keeps what it last knew.
+   */
+  here?: SeatsHere;
 };
 
 /** The envelope every paged endpoint returns. */

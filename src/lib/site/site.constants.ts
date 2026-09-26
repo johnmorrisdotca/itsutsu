@@ -82,6 +82,24 @@ export const SITE_SETTING_SPECS = {
    * nothing about why it is asking.
    */
   joinNotice: { kind: "note", maxLength: 280, fallback: "" },
+  /*
+   * HOW OFTEN A LIVE BOARD ASKS FOR THE OTHER SIDE'S MOVE, in seconds — John,
+   * 2026-09-26: "Can we make that an admin site level config tweak? So have a
+   * default that admin can change live?" The defaults are `POLL_FAST_MS` and
+   * `POLL_MS` in `live.constants.ts`, whose notes carry the reasoning;
+   * `site.test.ts` holds these two to them.
+   *
+   * The fast one is used only while the player a board waits on is on the site.
+   * Two seconds is its floor because SWR drops an ask made within two seconds
+   * of the last, so a board set faster would say one number and keep another;
+   * fifteen is its ceiling because past that it is no longer the fast one.
+   *
+   * The ordinary one is never under fifteen, which is John's standing cost rule
+   * ("no client polling faster than about 15 s") and not a number this panel
+   * may undo; a minute is as slow as a board can be and still look live.
+   */
+  livePollFast: { kind: "seconds", min: 2, max: 15, fallback: 3 },
+  livePollOrdinary: { kind: "seconds", min: 15, max: 60, fallback: 15 },
 } as const satisfies Record<string, SiteSettingSpec>;
 
 /** Every declared key, in registry order — which is the order the panel shows. */
@@ -98,6 +116,8 @@ export const SITE_SETTING_KEYS = Object.keys(SITE_SETTING_SPECS) as readonly Sit
 export const SITE_SETTING_REMOTE_KEYS = {
   registration: "registration",
   joinNotice: "join_notice",
+  livePollFast: "live_poll_fast",
+  livePollOrdinary: "live_poll_ordinary",
 } as const satisfies Record<SiteSettingKey, string>;
 
 /** How the site behaves when nothing at all has been written: each setting at its fallback. */
@@ -144,7 +164,8 @@ export const MAINTENANCE_ON = "on";
 
 /**
  * THE GROUPS OF THE ADMIN'S SITE PANEL, in the order they are drawn: who may
- * get in, what the door says, and the modes the whole site can be in. John,
+ * get in, what the door says, how often a live board asks, and the modes the
+ * whole site can be in. John,
  * 2026-09-25: a "vertical and more condensed control panel type of look",
  * after WazaDB's grouped settings. `modes` holds the shutter today; Test mode
  * joins it.
@@ -152,6 +173,7 @@ export const MAINTENANCE_ON = "on";
 export const SITE_PANEL_GROUPS = [
   { key: "access", label: "Access", kanji: "入口" },
   { key: "notices", label: "Notices", kanji: "掲示" },
+  { key: "boards", label: "Live boards", kanji: "対局" },
   { key: "modes", label: "Modes", kanji: "状態" },
 ] as const;
 
@@ -169,7 +191,7 @@ export const SITE_SETTING_COPY: Record<
     group: SitePanelGroup;
     /** What the setting is, in one sentence, above the control. */
     blurb: string;
-    /** One per option, for a `choice`. Empty for a `note`. */
+    /** One per option, for a `choice`. Empty for a `note` and for `seconds`. */
     options: Record<string, { label: string; blurb: string; confirm?: string }>;
     /**
      * The NAME of a `note`'s box, shown above it. The legend names the
@@ -218,5 +240,23 @@ export const SITE_SETTING_COPY: Record<
     options: {},
     fieldLabel: "What the door says",
     placeholder: "Beta — ask John for a code",
+  },
+  livePollFast: {
+    label: "Live board, other player here",
+    kanji: "速",
+    group: "boards",
+    blurb:
+      "How often, in seconds, a board being looked at asks for the other side's move while that player has been on the site in the last two minutes. Each ask is a paid call. A board picks up a change the next time its page loads.",
+    options: {},
+    fieldLabel: "Seconds between asks, 2 to 15",
+  },
+  livePollOrdinary: {
+    label: "Live board, ordinary",
+    kanji: "常",
+    group: "boards",
+    blurb:
+      "How often, in seconds, a board being looked at asks when the other player is not on the site. Never under fifteen, to keep the cost down. A board picks up a change the next time its page loads.",
+    options: {},
+    fieldLabel: "Seconds between asks, 15 to 60",
   },
 };

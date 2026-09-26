@@ -51,6 +51,7 @@ import { AFTER_MOVE, MOVE_CONFIRM, type MoveConfirm } from "@/lib/preferences/tu
 import { botInSeat } from "@/lib/bots/bots";
 import { otherStone } from "@/lib/gomoku/rules/board";
 import { ConfirmMovesSwitch } from "./ConfirmMovesSwitch";
+import { POLL_FAST_MS, POLL_MS } from "./live.constants";
 import { MOVE_KINDS } from "@/lib/gomoku/gomoku.constants";
 
 /**
@@ -68,6 +69,9 @@ const DEFAULT_TURN_FLOW = {
   afterMove: AFTER_MOVE.nextWaiting,
 } as const;
 
+/** How often a board asks when the page did not say: the site's own defaults. */
+const DEFAULT_POLL = { fastMs: POLL_FAST_MS, ordinaryMs: POLL_MS } as const;
+
 export function SharedGame({
   initial,
   token,
@@ -78,6 +82,7 @@ export function SharedGame({
   offer = null,
   appearance = DEFAULT_APPEARANCE,
   turnFlow = DEFAULT_TURN_FLOW,
+  poll = DEFAULT_POLL,
 }: SharedGameProps) {
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
@@ -86,7 +91,7 @@ export function SharedGame({
     () => readQuiet(initial.id),
     () => false,
   );
-  const { game: detail, mutate, paused, resume, pollEvery, asking, answeredAt } = useLiveGame(initial);
+  const { game: detail, mutate, paused, resume, pollEvery, hurrying, asking, answeredAt } = useLiveGame(initial, seat, poll);
   const state = settleFromRecord(replayGame(detail), detail);
   // Which way up, and a Reversi board's felt: this reader's own, reaching neither the game nor the other seat.
   const { board, turned, chooseFelt } = useSharedBoard(initial.id, appearance, state.settings, seat);
@@ -333,6 +338,11 @@ export function SharedGame({
       data-testid="shared-game"
       // The cadence this board asks at while awake, said for the spec that counts its asks.
       data-poll-every={pollEvery}
+      // Whether that is the fast cadence, because the player it waits on is on the site (`POLL_FAST_MS`).
+      data-poll-hurrying={hurrying}
+      // The operator's two intervals as this page was handed them (`liveBoardIntervals`), before any relief.
+      data-poll-fast-ms={poll.fastMs}
+      data-poll-ordinary-ms={poll.ordinaryMs}
       {...readyMark(useHydrated())}
     >
       <TurnBanner

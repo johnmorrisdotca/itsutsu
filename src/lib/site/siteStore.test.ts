@@ -94,17 +94,17 @@ describe("the door", () => {
     let words = "Beta — ask John";
     answerWith((_url, method) => (method === "PUT" ? setting("join_notice", "Open this weekend") : every({ key: "registration", value: "open" }, { key: "join_notice", value: words })));
     const { fetchSiteSettings, writeSiteSetting } = await store();
-    expect(await fetchSiteSettings()).toEqual({ registration: "open", joinNotice: "Beta — ask John" });
+    expect(await fetchSiteSettings()).toEqual({ registration: "open", joinNotice: "Beta — ask John", livePollFast: 3, livePollOrdinary: 15 });
 
     await writeSiteSetting("joinNotice", "Open this weekend", "operator@example.test");
     words = "Open this weekend";
-    expect(await fetchSiteSettings()).toEqual({ registration: "open", joinNotice: "Open this weekend" });
+    expect(await fetchSiteSettings()).toEqual({ registration: "open", joinNotice: "Open this weekend", livePollFast: 3, livePollOrdinary: 15 });
     expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([`GET ${DEV}`, `PUT ${DEV}/join_notice`, `GET ${DEV}`]);
   });
 
   it("asks for a code and shows no notice when the store cannot answer", async () => {
     answerWith(() => new TypeError("fetch failed"));
-    expect(await (await store()).fetchSiteSettings()).toEqual({ registration: "invite-only", joinNotice: "" });
+    expect(await (await store()).fetchSiteSettings()).toEqual({ registration: "invite-only", joinNotice: "", livePollFast: 3, livePollOrdinary: 15 });
     expect(vi.mocked(console.error)).toHaveBeenCalledTimes(1);
   });
 });
@@ -116,6 +116,8 @@ describe("the panel and its writes", () => {
     expect(await fetchSiteSettingStates()).toEqual([
       { key: "registration", value: "invite-only", chosen: false, updatedAt: null, updatedBy: "" },
       { key: "joinNotice", value: "Beta", chosen: true, updatedAt: at, updatedBy: "operator@example.test" },
+      { key: "livePollFast", value: 3, chosen: false, updatedAt: null, updatedBy: "" },
+      { key: "livePollOrdinary", value: 15, chosen: false, updatedAt: null, updatedBy: "" },
     ]);
     expect(calls[0]!.url).toBe(DEV);
 

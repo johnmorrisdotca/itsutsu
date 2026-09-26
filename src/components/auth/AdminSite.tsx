@@ -82,7 +82,7 @@ export function AdminSite({ modes = null }: { /** Server-rendered rows for the M
     const spec = SITE_SETTING_SPECS[key];
     const copy = SITE_SETTING_COPY[key];
     const state = states.get(key);
-    const chosen = spec.kind === "choice" ? (state?.value ?? spec.fallback) : null;
+    const chosen = spec.kind === "choice" ? String(state?.value ?? spec.fallback) : null;
     return (
       <PanelRow
         key={key}
@@ -109,10 +109,24 @@ export function AdminSite({ modes = null }: { /** Server-rendered rows for the M
               onPick={(value) => void save(key, value)}
               testId={key}
             />
+          ) : spec.kind === "seconds" ? (
+            <SecondsRow
+              // Keyed by what is stored, so a saved value (or the default coming back) resets the box to it.
+              key={`${key}-${String(state?.value ?? spec.fallback)}`}
+              label={copy.fieldLabel ?? copy.label}
+              value={Number(state?.value ?? spec.fallback)}
+              chosen={state?.chosen ?? false}
+              fallback={spec.fallback}
+              min={spec.min}
+              max={spec.max}
+              busy={busy === key}
+              onSave={(value) => void save(key, value)}
+              testId={key}
+            />
           ) : (
             <NoteRow
               label={copy.fieldLabel ?? copy.label}
-              value={state?.value ?? ""}
+              value={String(state?.value ?? "")}
               maxLength={spec.maxLength}
               placeholder={copy.placeholder ?? ""}
               busy={busy === key}
@@ -311,6 +325,79 @@ function NoteRow({
           data-testid={`${testId}-clear`}
         >
           Take it down
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * A number of seconds, typed and saved. The box refuses nothing by itself — the
+ * route answers a value out of bounds with the reason, shown above the panel —
+ * but Save stays off until the box holds a whole number that differs from what
+ * is stored. Once somebody has chosen, "Back to N s" forgets it, which puts the
+ * site back on the default rather than pinning today's number.
+ */
+function SecondsRow({
+  label,
+  value,
+  chosen,
+  fallback,
+  min,
+  max,
+  busy,
+  onSave,
+  testId,
+}: {
+  label: string;
+  value: number;
+  chosen: boolean;
+  fallback: number;
+  min: number;
+  max: number;
+  busy: boolean;
+  onSave: (value: string | null) => void;
+  testId: string;
+}) {
+  const [draft, setDraft] = useState(String(value));
+  const inputId = useId();
+  const whole = /^\d+$/.test(draft.trim());
+  return (
+    <div className="flex w-full flex-col gap-1 md:w-[16rem]">
+      <label htmlFor={inputId} className="text-xs text-ink-soft">
+        {label}
+      </label>
+      <div className="flex gap-2">
+        <input
+          id={inputId}
+          className={INPUT_CLASS}
+          type="number"
+          inputMode="numeric"
+          min={min}
+          max={max}
+          step={1}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          data-testid={`${testId}-input`}
+        />
+        <Button
+          onClick={() => onSave(draft.trim())}
+          disabled={busy || !whole || Number(draft) === value}
+          strong
+          data-testid={`${testId}-save`}
+        >
+          Save
+        </Button>
+      </div>
+      {chosen ? (
+        <button
+          type="button"
+          onClick={() => onSave(null)}
+          disabled={busy}
+          className="self-start text-xs text-muted underline underline-offset-4"
+          data-testid={`${testId}-clear`}
+        >
+          Back to {fallback} s, the default
         </button>
       ) : null}
     </div>

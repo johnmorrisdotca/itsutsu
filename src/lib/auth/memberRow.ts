@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { awardDailyVisit } from "@/lib/xp/dailyVisit";
@@ -97,6 +98,54 @@ export const touchMember = cache(async (by: MemberKey["by"], value: string): Pro
   }
   return { banned: false };
 });
+
+/** What the stamp below hands back: the row as it was before "seen" was written over it. */
+type SeenBefore = {
+  id: string;
+  lastSeenAt: Date;
+  timeZone: string;
+  awayUntil: Date | null;
+  createdAt: Date;
+  played: number;
+};
+
+/**
+ * Marks a member as seen from a live board's ask, in ONE statement and with no
+ * read before it — the poll route's version of `touchMember`.
+ *
+ * A player sitting on a board loads no page, so without this their
+ * `lastSeenAt` went stale while they were plainly here, and the other seat's
+ * board could not know to ask faster (`POLL_FAST_MS`). The board asks every
+ * three or fifteen seconds; the stamp is still at most once a minute, by the
+ * same `TOUCH_EVERY_MS`, because the condition is in the WHERE: an ask inside
+ * the minute matches no row and writes nothing.
+ *
+ * NOT a bare `updateMany`, because the day's XP rides the stamp
+ * (`awardDailyVisit`) and is decided from the stamp being REPLACED. A player on
+ * a board across their midnight would otherwise have the new day stamped here
+ * with nobody asking whether it was a new day, and the next page they loaded
+ * would see "already seen today" and pay nothing — a lost day and a broken run.
+ * So the statement hands back the row as it was (the self-join reads the
+ * statement's own snapshot, before the update), and the visit is judged
+ * exactly as `touchMember` judges it: one comparison, and nothing more unless
+ * it opens a new day. A race with a page's own touch can only ask twice for the
+ * same day, which the ledger's unique index answers once.
+ *
+ * A banned member is not stamped, as `touchMember` does not stamp one.
+ */
+export async function touchMemberFromPoll(key: MemberKey, now: Date = new Date()): Promise<void> {
+  const cutoff = new Date(now.getTime() - TOUCH_EVERY_MS);
+  const which =
+    key.by === "id" ? Prisma.sql`m.id = ${key.value}` : Prisma.sql`m.email = ${foldEmail(key.value)}`;
+  const rows = await prisma.$queryRaw<SeenBefore[]>`
+    UPDATE "Member" AS m SET "lastSeenAt" = ${now}
+    FROM "Member" AS was
+    WHERE was.id = m.id AND ${which} AND m."lastSeenAt" < ${cutoff} AND m."bannedAt" IS NULL
+    RETURNING m.id, was."lastSeenAt", m."timeZone", m."awayUntil", m."createdAt", m.played
+  `;
+  const was = rows[0];
+  if (was !== undefined) await awardDailyVisit(was, now);
+}
 
 /**
  * Whether this address is shut out, for the places that have not read the row

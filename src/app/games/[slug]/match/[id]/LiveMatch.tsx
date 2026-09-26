@@ -35,6 +35,7 @@ import { forkOffered } from "@/lib/history/fork";
 import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { BoardColumn } from "@/components/live/BoardColumn";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -183,6 +184,8 @@ export async function LiveMatch({
    * a client component and cannot see an account.
    */
   const preferences = await preferencesFor();
+  // How often the board asks, as the operator set it — read here, once per page, never on the poll.
+  const poll = await liveBoardIntervals();
   const turnFlow = {
     moveConfirm: preferences.moveConfirm,
     moveConfirmComputer: preferences.moveConfirmComputer,
@@ -303,6 +306,7 @@ export async function LiveMatch({
               offer={offer}
               appearance={appearance}
               turnFlow={turnFlow}
+              poll={poll}
             />
           </BoardColumn>
         </div>

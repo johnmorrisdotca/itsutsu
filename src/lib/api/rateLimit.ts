@@ -263,10 +263,11 @@ export const RATE_LIMITS = {
   /**
    * A board asking whether the other side has moved: the one read a page
    * makes on a timer. One watching tab spends four of these a minute
-   * (`POLL_MS`), and none once hidden or idle, so the allowance is sixty
-   * watching tabs from one address — a household on one connection, the
-   * burst of boards waking together, and the suite's relief — and still a
-   * ceiling on a script.
+   * (`POLL_MS`), twenty while the player it waits on is on the site
+   * (`POLL_FAST_MS`), and none once hidden or idle, so the allowance is sixty
+   * watching tabs from one address, or twelve hurrying ones — a household on
+   * one connection, the burst of boards waking together, and the suite's
+   * relief — and still a ceiling on a script.
    */
   pollGame: { windowMs: 60_000, maxRequests: 240 },
 } as const satisfies Record<string, RateLimitConfig>;

@@ -6,6 +6,7 @@ import type { AfterMove, MoveConfirm } from "@/lib/preferences/turnFlow";
 import type { ResignButton } from "@/components/mine/ResignButton";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import type { LiveBoardIntervals } from "@/lib/site/site.types";
 
 import type { ReactionBar } from "./Reactions";
 
@@ -48,6 +49,12 @@ export type SharedGameProps = {
    * read. Absent is the site's default, which is preview on and carry onward.
    */
   turnFlow?: TurnFlow;
+  /**
+   * How often this board asks, as the operator has set it on the site panel
+   * (`liveBoardIntervals`), read by the page. Absent is the site's defaults,
+   * `POLL_FAST_MS` and `POLL_MS`.
+   */
+  poll?: LiveBoardIntervals;
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
