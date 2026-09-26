@@ -485,9 +485,9 @@ export const DOORSTEP_FIGURE_NAME = "text-center text-xs leading-snug text-ink-s
 
 /** The tile for a computer player drawn at random, under the programs it is drawn from. */
 export const RANDOM_COMPUTER_WORDS = {
-  name: "A random computer player",
+  name: "A random bot",
   /** How the line over Continue names it. */
-  against: "Against a random computer player",
+  against: "Against a random bot",
   /** The mark on its black stone, where a program carries its own script. */
   mark: "?",
   means: "One of the programs above, drawn once, when you press Start.",

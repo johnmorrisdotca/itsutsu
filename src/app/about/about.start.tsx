@@ -48,7 +48,7 @@ const A_GAME = (
         body: (
           <>
             Send the other seat as a link or a QR code, pass one device across the table, or play one of the{" "}
-            {BOT_TIER_LIST.length} graded computer players.
+            {BOT_TIER_LIST.length} graded bots.
           </>
         ),
       },
@@ -71,7 +71,7 @@ const A_GAME = (
     caption={
       <>
         A game here, start to finish. Up to {ACTIVE_GAME_LIMIT} can be open at once against people, and as many
-        as you like against the computer players; nothing about any of it is metered.
+        as you like against the bots; nothing about any of it is metered.
       </>
     }
   />
@@ -111,7 +111,7 @@ const THE_TERMS = (
       ["Getting in", "By invite code, from a member or from us"],
       ["Games", `${RULE_VARIANT_LIST.length}, all of them free to play`],
       ["Open at once", `up to ${ACTIVE_GAME_LIMIT} games against people; no limit against programs`],
-      ["Computer players", `${BOT_TIER_LIST.length} graded, thinking in your own browser`],
+      ["Bots", `${BOT_TIER_LIST.length} graded, thinking in your own browser`],
     ]}
     caption={<>What you are signing up for. The game count and the limits are read from the site itself.</>}
   />

@@ -155,7 +155,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.razryad.name,
     country: "Russia",
     bio:
-      "разряд — a computer player, and the gentlest of the five. The word is " +
+      "разряд — a bot, and the gentlest of the five. The word is " +
       "the classification a Russian amateur holds in a sport, and renju is a " +
       "sport there. Razryad sees a win about a third of the time it has one, " +
       "and throws a turn away now and then. Games against it are rated, and " +
@@ -167,7 +167,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.kyu.name,
     country: "Japan",
     bio:
-      "級 — a computer player, and the second gentlest of the five. Kyu looks one " +
+      "級 — a bot, and the second gentlest of the five. Kyu looks one " +
       "move ahead: it will finish a line that is already there, and it will " +
       "miss a good deal of what you are building. Games against Kyu are rated, " +
       "and so is its own record.",
@@ -178,7 +178,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.dan.name,
     country: "Japan",
     bio:
-      "段 — a computer player, and the middle of the five. Dan checks every " +
+      "段 — a bot, and the middle of the five. Dan checks every " +
       "move against what you could do in reply, so it will not let you finish " +
       "a line in front of it. It does not look further than that. Games " +
       "against Dan are rated, and so is its own record.",
@@ -189,7 +189,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.meijin.name,
     country: "Japan",
     bio:
-      "名人 — a computer player, and the second strongest of the five. Meijin reads " +
+      "名人 — a bot, and the second strongest of the five. Meijin reads " +
       "several moves ahead in the games where lines can be read, and answers " +
       "a threat before it lands. Games against Meijin are rated, and so is " +
       "its own record.",
@@ -200,7 +200,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.guoshou.name,
     country: "China",
     bio:
-      "国手 — a computer player, and the strongest of the graded five. The word " +
+      "国手 — a bot, and the strongest of the graded five. The word " +
       "means the nation's hand, and is the title China gave its finest player " +
       "of the board games five-in-a-row grew up beside. Guoshou reads further " +
       "than Meijin and weighs more of the board before it moves, and it will " +
@@ -219,7 +219,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.tamenoki.name,
     country: "Japan",
     bio:
-      "為乃木秀正 — a computer player, and the only one here that plays one " +
+      "為乃木秀正 — a bot, and the only one here that plays one " +
       "game. Tamenoki plays Reversi, and reads it as a Reversi player does: " +
       "corners first, then what each side has left to play, then the front " +
       "line, and the discs last of all — until the end, where he counts the " +
@@ -234,7 +234,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.meritalu.name,
     country: "Estonia",
     bio:
-      "A computer player, and the only one here that plays five in a row and " +
+      "A bot, and the only one here that plays five in a row and " +
       "little else. Meritalu counts threats rather than shape: the four that " +
       "has to be answered, the open four that cannot be, and the stone that " +
       "makes two threats at once. The name is an homage to Ando Meritee, " +
@@ -247,7 +247,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.monkton.name,
     country: "United States",
     bio:
-      "A computer player, and the only one here that plays the race games. " +
+      "A bot, and the only one here that plays the race games. " +
       "Monkton plays Halma and Chinese Checkers, and reads them the way a " +
       "race player does: how many steps each piece has left, counted on the " +
       "lattice the board is really drawn on, with a square of the far camp " +
@@ -269,7 +269,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.tinsdale.name,
     country: "United States",
     bio:
-      "A computer player, and the only one here that plays checkers and " +
+      "A bot, and the only one here that plays checkers and " +
       "draughts. Tinsdale plays English checkers and the international, " +
       "Brazilian, Canadian, Russian and pool games, and reads them as a " +
       "draughts player does: material first, then the back row he keeps " +
@@ -285,7 +285,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.hondo.name,
     country: "Japan",
     bio:
-      "本堂秀策 — a computer player, and the only one here that plays Go and " +
+      "本堂秀策 — a bot, and the only one here that plays Go and " +
       "nothing else. Hondō reads the board as a club player does: whose ground " +
       "each empty point is, by whose stones are nearer to it, and which groups " +
       "are short of liberties — the one in atari is taken or saved before " +
@@ -300,7 +300,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.wuyi.name,
     country: "Taiwan",
     bio:
-      "吳一辰 — a computer player, and the only one here that plays Connect6 " +
+      "吳一辰 — a bot, and the only one here that plays Connect6 " +
       "and nothing else. Wuyi reads it as the game's own theory does: a threat " +
       "is six with two stones missing, one stone blocks it, and a turn is two " +
       "stones — so what matters is how many stones it would take to block every " +

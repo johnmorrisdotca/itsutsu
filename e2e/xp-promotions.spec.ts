@@ -7,6 +7,7 @@ import { suiteOperator } from "./operator";
 import { removeVisitors } from "./xpLedger";
 import { standingData } from "./xpStanding";
 import { seedProgram, seedXpMember, type SeededXpMember } from "./xpMembers";
+import { countScope } from "./support";
 
 /**
  * RECENT PROMOTIONS 昇級 — WHO WENT UP A LEVEL, READ FROM THE LEDGER.
@@ -106,8 +107,7 @@ async function chip(page: Page, who: string) {
 }
 
 async function scopeChip(page: Page, scope: "everywhere" | "here") {
-  await page.getByTestId("record-scope").getByTestId(`scope-${scope}`).click();
-  await expect(page.getByTestId("record-scope").getByTestId(`scope-${scope}`)).toHaveAttribute("aria-current", "true");
+  await countScope(page, scope);
   await expect(page.getByTestId("promotions-scope-said")).toHaveAttribute("data-scope", scope);
 }
 

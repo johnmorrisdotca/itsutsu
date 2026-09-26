@@ -82,7 +82,7 @@ test.describe("who the XP board is about", () => {
     await expect(page.getByTestId("who-computers")).toHaveAttribute("aria-current", "true");
     await expect(rankOf(rowFor(board, program))).toHaveText("1");
     await expect(rowFor(board, person)).toHaveCount(0);
-    await expect(page.getByTestId("xp-narrowed")).toContainText("the computer players");
+    await expect(page.getByTestId("xp-narrowed")).toContainText("the bots");
     // The reader is a person, so the board says they are not among these rather than ranking them.
     await expect(page.getByTestId("your-xp")).toContainText("not among them");
 

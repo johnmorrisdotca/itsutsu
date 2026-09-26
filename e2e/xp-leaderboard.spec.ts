@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { removeXpMembers, seedXpMember, type SeededXpMember } from "./xpMembers";
 import { removeLedgerFor, seedLedgerFor } from "./xpGains";
-import { watchForCrashes } from "./support";
+import { watchForCrashes, countScope } from "./support";
 
 /**
  * THE XP LEADERBOARD, SORTED BY PRESSING ITS HEADINGS.
@@ -309,20 +309,20 @@ test("each row says what it earned here today and over seven days, never importe
     await page.goto("/xp?who=everyone");
     await expect(page.getByTestId("xp-leaderboard")).toBeVisible();
 
-    await page.getByTestId("scope-everywhere").click();
+    await countScope(page, "everywhere");
     await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "everywhere");
     let row = await rowFor(page, gainer.name);
     await expect(row.getByTestId("xp-board-today")).toHaveText("+20");
     await expect(row.getByTestId("xp-board-week")).toHaveText("+120");
 
-    await page.getByTestId("scope-here").click();
+    await countScope(page, "here");
     await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "here");
     row = await rowFor(page, gainer.name);
     await expect(row.getByTestId("xp-board-today")).toHaveText("+20");
     await expect(row.getByTestId("xp-board-week")).toHaveText("+120");
 
     // And the way back, which also leaves the remembered scope where it was.
-    await page.getByTestId("scope-everywhere").click();
+    await countScope(page, "everywhere");
     await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "everywhere");
     row = await rowFor(page, gainer.name);
     await expect(row.getByTestId("xp-board-today")).toHaveText("+20");

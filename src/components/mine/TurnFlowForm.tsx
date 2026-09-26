@@ -83,7 +83,7 @@ export function TurnFlowForm({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Playing a move against the computer</span>
+        <span className="text-sm font-medium">Playing a move against a bot</span>
         <Select
           value={fields.moveConfirmComputer}
           aria-describedby={computerHint}

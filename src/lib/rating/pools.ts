@@ -44,7 +44,7 @@ export const RATING_POOL_DISPLAY: Record<
     blurb: "Rated games against other members. This is the ladder.",
   },
   computer: {
-    label: "Against the computer",
+    label: "Against bots",
     kanji: "対コンピュータ",
     blurb: "Rated games against Kyu, Dan and Meijin, kept apart from the ladder.",
   },

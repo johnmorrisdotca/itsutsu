@@ -33,7 +33,7 @@ function scopeWords(of: RecordOf): { games: string; pool: string; rated: string 
     games: of.variant === undefined ? "games" : "games of this one game",
     pool:
       of.pool === "computer"
-        ? " against the computer players"
+        ? " against the bots"
         : of.pool === "people"
           ? " against other people"
           : "",

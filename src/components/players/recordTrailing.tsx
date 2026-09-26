@@ -74,7 +74,7 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
       {rating.pool === RATING_POOLS.computer ? (
         <span
           className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-          title="Earned against the computer players, which are rated in a pool of their own."
+          title="Earned against the bots, which are rated in a pool of their own."
           data-testid="rating-pool-computer"
         >
           機械

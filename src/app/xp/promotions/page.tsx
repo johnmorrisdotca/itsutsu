@@ -107,9 +107,9 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
           more than one is a single line, from where they stood to where they arrived. Games
           finished before the ladder was built were paid for by a backfill on 13 September 2026; a
           promotion that came from it is dated by the backfill and says which day&rsquo;s play it
-          was for. A record kept from another site is credited too: Everywhere counts it, and a
-          promotion the credit paid is dated by the payment and says where the play was; Itsutsu
-          only leaves it out.
+          was for. A record kept from another site is credited too: Include worldwide counts it, and
+          a promotion the credit paid is dated by the payment and says where the play was; unticking
+          it leaves it out.
         </p>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

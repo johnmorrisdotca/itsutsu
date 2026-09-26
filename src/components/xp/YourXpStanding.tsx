@@ -40,7 +40,7 @@ export async function YourXpStanding({
   if (who === DIRECTORY_WHO.computers) {
     return (
       <p className="text-sm" data-testid="your-xp">
-        This board is narrowed to the computer players, so you are not among them.
+        This board is narrowed to the bots, so you are not among them.
       </p>
     );
   }

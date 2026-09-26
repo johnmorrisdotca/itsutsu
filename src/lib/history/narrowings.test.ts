@@ -84,7 +84,7 @@ describe("appliedNarrowings", () => {
 
   it("still shows pool and rated with no player, unaffected by any of this", () => {
     expect(appliedNarrowings({ ...NONE, pool: "computer" })).toEqual([
-      { key: "pool", label: "Against the computer" },
+      { key: "pool", label: "Against bots" },
     ]);
     expect(appliedNarrowings({ ...NONE, rated: "yes" })).toEqual([{ key: "rated", label: "Rated" }]);
   });

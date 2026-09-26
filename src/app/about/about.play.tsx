@@ -49,7 +49,7 @@ export const BOARD_SECTION: AboutSection = {
       The board is the same on a desk and on a phone. You put a stone down, look at it, and then send it. On a phone
       the stone says which point it landed on, four arrows move it one point at a time before you send it, and the
       Send button stays at the bottom of the screen. Every button and list is big enough for a thumb. Against a
-      computer player, a switch on the board lets a touch play the move straight away, and the site remembers
+      bot, a switch on the board lets a touch play the move straight away, and the site remembers
       your choice.
     </>,
     <>
@@ -75,7 +75,7 @@ export const BOARD_SECTION: AboutSection = {
     </>,
     <>
       Starting a game takes one screen. It shows the game, the board, who you are playing, every rule and which
-      colour you take, and one press begins it. The computer players are listed there by name and grade, each
+      colour you take, and one press begins it. The bots are listed there by name and grade, each
       with a note saying how it actually did against the grades on either side of it.
     </>,
   ],
@@ -97,7 +97,7 @@ export const BOARD_SECTION: AboutSection = {
         caption={
           <>
             Eight moves into a game of <Game variant="freestyle">Gomoku</Game> against Rafa Duarte, one
-            of the named computer players. The notes and emoji under the board go with your next move.
+            of the named bots. The notes and emoji under the board go with your next move.
           </>
         }
       />
@@ -105,7 +105,7 @@ export const BOARD_SECTION: AboutSection = {
     4: (
       <Screenshot
         {...SHOTS.setUp}
-        caption="Choosing who to play. The named computer players have styles as well as grades: attacking, defensive, or changeable."
+        caption="Choosing who to play. The named bots have styles as well as grades: attacking, defensive, or changeable."
       />
     ),
   },
@@ -152,7 +152,7 @@ export const REPLAY_SECTION: AboutSection = {
         shots={[SHOTS.replayDesk, SHOTS.replayPhone]}
         caption={
           <>
-            A finished game of <Game variant="reversi">Reversi</Game> between two computer players, with the
+            A finished game of <Game variant="reversi">Reversi</Game> between two bots, with the
             slider dragged back to move 33 of 60. The head-to-head card sits above the board.
           </>
         }
@@ -265,7 +265,7 @@ export const PEOPLE_SECTION: AboutSection = {
     </>,
     <>
       The table above says where each of these lives. The <Inside href="/players">players</Inside> page lists
-      everyone, sortable by every column, and the computer players are listed with everybody else. The{" "}
+      everyone, sortable by every column, and the bots are listed with everybody else. The{" "}
       <Inside href="/xp">XP board</Inside> ranks everyone by experience, and can count people, computers or
       both.
     </>,
@@ -275,7 +275,7 @@ export const PEOPLE_SECTION: AboutSection = {
     1: (
       <ScreenshotRow
         shots={[SHOTS.computerPlayer, SHOTS.xpBoard]}
-        caption="A computer player's page, showing how it measured against the grades beside it at each game, and the XP board. Both are from the local copy the screenshots were taken on, which held only a handful of players."
+        caption="A bot's page, showing how it measured against the grades beside it at each game, and the XP board. Both are from the local copy the screenshots were taken on, which held only a handful of players."
       />
     ),
   },

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { AWAY_AFTER_DAYS, filterBarHref, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 
 import { ToggleLink } from "@/components/ui/ViewTabs";
@@ -21,6 +23,7 @@ export function DirectoryFilters({
   query,
   shown,
   total,
+  worldwide,
 }: {
   filter: DirectoryFilter;
   /**
@@ -37,6 +40,12 @@ export function DirectoryFilters({
   /** How many members match the narrowing, and how many there are at all. */
   shown: number;
   total: number;
+  /**
+   * "Include worldwide", when the list has a kept record for it to change: a
+   * third box beside these two, never a row of its own under them (John,
+   * 2026-09-26: "we have tabs below tabs").
+   */
+  worldwide?: ReactNode;
 }) {
   /*
    * Every link here says who outright, including when who is the default.
@@ -50,7 +59,7 @@ export function DirectoryFilters({
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="directory-filters">
       <WhoFilter who={filter.who} hrefFor={(who) => to({ ...filter, who })} />
 
-      {/* Two switches, each on or off over the list: ticked boxes, not tabs (`ToggleLink`). */}
+      {/* Switches, each on or off over the list: ticked boxes, not tabs (`ToggleLink`). */}
       <nav className="flex flex-wrap items-center gap-x-3 gap-y-1" aria-label="Which of them to leave out">
         <ToggleLink
           href={to({ ...filter, settled: !filter.settled })}
@@ -64,10 +73,11 @@ export function DirectoryFilters({
           href={to({ ...filter, active: !filter.active })}
           on={filter.active}
           testId="only-active"
-          title={`Seen in the last ${AWAY_AFTER_DAYS} days. A computer player is always about.`}
+          title={`Seen in the last ${AWAY_AFTER_DAYS} days. A bot is always about.`}
         >
           Seen lately
         </ToggleLink>
+        {worldwide}
       </nav>
 
       <p className="text-xs text-muted" data-testid="directory-count">

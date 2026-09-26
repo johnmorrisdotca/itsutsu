@@ -11,11 +11,11 @@ export const CLAIM_REFUSAL_COPY: Record<ClaimRefusal, string> = {
   "no-name": "Say the name the games were played under.",
   "no-member": "No such member.",
   "member-unclaimable":
-    "That row is a kept record, a seeded row or a computer player. It stands as it is, so nothing is attached to it.",
+    "That row is a kept record, a seeded row or a bot. It stands as it is, so nothing is attached to it.",
   "member-nameless":
     "That member has no name yet. A claimed rating is shown under the member's name, so give them one first.",
   "record-unclaimable":
-    "That name belongs to a kept record, a seeded row or a computer player, and a row marked that way can never be claimed by anybody.",
+    "That name belongs to a kept record, a seeded row or a bot, and a row marked that way can never be claimed by anybody.",
   "name-held":
     "Another member goes by that name now, so the site already counts its results as theirs. It is not an unclaimed record.",
   "already-claimed": "Some of what stands under that name already belongs to a member, so it is not an unclaimed record.",

@@ -1,30 +1,21 @@
-import { Paired } from "@/components/i18n/Paired";
-import { ViewTabs } from "@/components/ui/ViewTabs";
+import { ToggleLink } from "@/components/ui/ViewTabs";
 
 import {
   RECORD_SCOPES,
-  RECORD_SCOPE_LIST,
   scopeHref,
   scopeHrefFrom,
   type RecordScope,
 } from "@/lib/rating/recordScope";
 
-const COPY: Record<RecordScope, { label: string; kanji: string; note: string }> = {
-  [RECORD_SCOPES.everywhere]: {
-    label: "Everywhere",
-    kanji: "通算",
-    note: "Every site this player played on, counted together.",
-  },
-  [RECORD_SCOPES.here]: {
-    label: "Itsutsu only",
-    kanji: "五",
-    note: "Only the games played on this site.",
-  },
-};
-
-
 /**
- * Which of somebody's playing the figures above are counting.
+ * Which of somebody's playing the figures above are counting: ONE BOX,
+ * "Include worldwide", ticked by default. Ticked counts the credit for games
+ * played on other sites (the `everywhere` scope); unticked counts this site
+ * only (`here`). John, 2026-09-26, on /players: "Bad design - we have tabs
+ * below tabs... seems like Everywhere / Itsutsu Only under Everyone should
+ * just be a checkbox filter called 'Include Worldwide'." It was two tabs, which
+ * read as a second choice of view under the first; it is a switch over the
+ * same list, like "Settled ratings" and "Seen lately" (`ToggleLink`).
  *
  * Links rather than buttons, the same choice the directory's bar made for the
  * same reason: a narrowed page is an address somebody can send, and the page
@@ -56,8 +47,8 @@ export function RecordScopeBar({
   scope: RecordScope;
   label?: string;
   /**
-   * The address each chip leads to, for a page that keeps its own rules about
-   * it. The XP board does: its chips always name the scope, so following one is
+   * The address the box leads to, for a page that keeps its own rules about
+   * it. The XP board does: its box always names the scope, so following it is
    * what gets it remembered on the account, and they drop the board's cursor.
    */
   hrefFor?: (scope: RecordScope) => string;
@@ -68,19 +59,21 @@ export function RecordScopeBar({
       : query === undefined
         ? scopeHref(base, view, one)
         : scopeHrefFrom(base, new URLSearchParams(query), one);
-  // Tabs, as every choice of what a page lists is (`ViewTabs`).
+  const on = scope === RECORD_SCOPES.everywhere;
   return (
-    <ViewTabs
-      label={label}
-      testId="record-scope"
-      items={RECORD_SCOPE_LIST.map((one) => ({
-        key: one,
-        href: href(one),
-        current: scope === one,
-        title: COPY[one].note,
-        testId: `scope-${one}`,
-        label: <Paired en={COPY[one].label} kanji={COPY[one].kanji} kanjiClassName="opacity-70" />,
-      }))}
-    />
+    <span data-testid="record-scope" data-scope={scope} aria-label={label} role="group">
+      <ToggleLink
+        href={href(on ? RECORD_SCOPES.here : RECORD_SCOPES.everywhere)}
+        on={on}
+        testId="include-worldwide"
+        title={
+          on
+            ? "Counting every site played on, this one included. Untick for this site only."
+            : "Counting this site only. Tick to add the games played on other sites."
+        }
+      >
+        Include worldwide
+      </ToggleLink>
+    </span>
   );
 }

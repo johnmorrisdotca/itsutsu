@@ -52,7 +52,7 @@ const PITCH = [
   {
     title: "Always somebody to play",
     kanji: "対戦相手",
-    body: "Five graded computer players, gentlest first, play every game here, and two specialists play only Reversi or only five in a row. Games against them are rated, and their records are kept like anybody's.",
+    body: "Five graded bots, gentlest first, play every game here, and two specialists play only Reversi or only five in a row. Games against them are rated, and their records are kept like anybody's.",
   },
   {
     title: "A ladder for every game",

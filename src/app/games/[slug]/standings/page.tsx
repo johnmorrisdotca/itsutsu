@@ -157,7 +157,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
         */}
         <section className="flex flex-col gap-3" data-testid="computer-standings">
             <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
-              Against the computer players{" "}
+              Against the bots{" "}
               <span className="font-mincho text-[0.8rem] font-normal tracking-normal">機械</span>
             </h2>
             <p className="text-xs text-muted">
