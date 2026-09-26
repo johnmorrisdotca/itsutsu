@@ -118,12 +118,14 @@ test("Gomoji's fastest table has a column each for time, guesses and points, and
   try {
     const puzzle = generatePuzzle("gomoji", 5, "easy", freshPuzzleSeed());
     const first = ["slate", "irony", "chump", "gawky", "fjord", "crane"].find((word) => word !== puzzle.solution && isWord(word, 5))!;
-    // Faster than anything a real game keeps, so it tops the easy five-letter row.
-    const elapsedMs = 500 + Math.floor(Math.random() * 400);
+    /* As fast as a time can be, and older than any other row, so it tops the
+       easy five-letter row whatever other specs have kept there: equal times
+       rank by when they were finished. */
+    const elapsedMs = 0;
     const solve = await prisma.puzzleSolve.create({
       data: {
         memberId: ann.id, kind: "gomoji", size: 5, level: "easy", givens: puzzle.givens, answer: first + puzzle.solution,
-        elapsedMs, points: 1234, checksUsed: 0, hintsUsed: 0, pausedMs: 0, finishedAt: new Date(Date.now() - DAY_MS),
+        elapsedMs, points: 1234, checksUsed: 0, hintsUsed: 0, pausedMs: 0, finishedAt: new Date(Date.now() - 3650 * DAY_MS),
       },
       select: { id: true },
     });
