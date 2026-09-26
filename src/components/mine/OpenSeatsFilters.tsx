@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ViewTabs } from "@/components/ui/ViewTabs";
 
 import { penaltyName } from "@/components/live/penalty";
 import { describeMoveTime } from "@/lib/history/deadline";
@@ -14,10 +14,6 @@ import {
 } from "@/lib/history/openSeatsFilter";
 import { OPEN_SEATS_FILTER_COPY } from "./mine.constants";
 
-const BUTTON =
-  "rounded-md border px-2.5 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss";
-const ON = "border-ink bg-ink text-paper";
-const OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
 
 const RATING_DISPLAY: Record<SeatRatingBand, string> = {
   [SEAT_RATING.any]: OPEN_SEATS_FILTER_COPY.anyRating,
@@ -60,56 +56,41 @@ export function OpenSeatsFilters({
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="open-seats-filters">
-      <nav className="flex flex-wrap gap-1" aria-label={OPEN_SEATS_FILTER_COPY.paceLabel}>
-        <Link
-          href={to({ ...filter, pace: undefined })}
-          aria-current={filter.pace === undefined ? "true" : undefined}
-          className={`${BUTTON} ${filter.pace === undefined ? ON : OFF}`}
-          data-testid="seat-pace-any"
-        >
-          {OPEN_SEATS_FILTER_COPY.anyPace}
-        </Link>
-        {MOVE_TIME_OPTIONS.map((ms) => (
-          <Link
-            key={ms ?? "none"}
-            href={to({ ...filter, pace: ms })}
-            aria-current={filter.pace === ms ? "true" : undefined}
-            className={`${BUTTON} ${filter.pace === ms ? ON : OFF}`}
-            data-testid={`seat-pace-${ms ?? "none"}`}
-          >
-            {describeMoveTime(ms)}
-          </Link>
-        ))}
-      </nav>
-
-      <nav className="flex flex-wrap gap-1" aria-label={OPEN_SEATS_FILTER_COPY.ratingLabel}>
-        {SEAT_RATING_LIST.map((rating) => (
-          <Link
-            key={rating}
-            href={to({ ...filter, rating })}
-            aria-current={filter.rating === rating ? "true" : undefined}
-            className={`${BUTTON} ${filter.rating === rating ? ON : OFF}`}
-            data-testid={`seat-rating-${rating}`}
-            title={rating === SEAT_RATING.unrated ? OPEN_SEATS_FILTER_COPY.unratedHint : undefined}
-          >
-            {RATING_DISPLAY[rating]}
-          </Link>
-        ))}
-      </nav>
-
-      <nav className="flex flex-wrap gap-1" aria-label={OPEN_SEATS_FILTER_COPY.penaltyLabel}>
-        {SEAT_PENALTY_LIST.map((penalty) => (
-          <Link
-            key={penalty}
-            href={to({ ...filter, penalty })}
-            aria-current={filter.penalty === penalty ? "true" : undefined}
-            className={`${BUTTON} ${filter.penalty === penalty ? ON : OFF}`}
-            data-testid={`seat-penalty-${penalty}`}
-          >
-            {penaltyLabel(penalty)}
-          </Link>
-        ))}
-      </nav>
+      {/* Three choices of what the noticeboard lists, each a row of tabs (`ViewTabs`). */}
+      <ViewTabs
+        label={OPEN_SEATS_FILTER_COPY.paceLabel}
+        items={[
+          { key: "any", href: to({ ...filter, pace: undefined }), current: filter.pace === undefined, testId: "seat-pace-any", label: OPEN_SEATS_FILTER_COPY.anyPace },
+          ...MOVE_TIME_OPTIONS.map((ms) => ({
+            key: String(ms ?? "none"),
+            href: to({ ...filter, pace: ms }),
+            current: filter.pace === ms,
+            testId: `seat-pace-${ms ?? "none"}`,
+            label: describeMoveTime(ms),
+          })),
+        ]}
+      />
+      <ViewTabs
+        label={OPEN_SEATS_FILTER_COPY.ratingLabel}
+        items={SEAT_RATING_LIST.map((rating) => ({
+          key: rating,
+          href: to({ ...filter, rating }),
+          current: filter.rating === rating,
+          testId: `seat-rating-${rating}`,
+          title: rating === SEAT_RATING.unrated ? OPEN_SEATS_FILTER_COPY.unratedHint : undefined,
+          label: RATING_DISPLAY[rating],
+        }))}
+      />
+      <ViewTabs
+        label={OPEN_SEATS_FILTER_COPY.penaltyLabel}
+        items={SEAT_PENALTY_LIST.map((penalty) => ({
+          key: penalty,
+          href: to({ ...filter, penalty }),
+          current: filter.penalty === penalty,
+          testId: `seat-penalty-${penalty}`,
+          label: penaltyLabel(penalty),
+        }))}
+      />
 
       <p className="text-xs text-muted" data-testid="open-seats-count">
         {shown === total ? `${total} waiting` : `${shown} of ${total} waiting`}

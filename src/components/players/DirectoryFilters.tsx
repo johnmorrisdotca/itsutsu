@@ -1,12 +1,8 @@
-import Link from "next/link";
-
 import { AWAY_AFTER_DAYS, filterBarHref, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 
-import { FILTER_CHIP, FILTER_CHIP_OFF, FILTER_CHIP_ON, WhoFilter } from "./WhoFilter";
+import { ToggleLink } from "@/components/ui/ViewTabs";
 
-const BUTTON = FILTER_CHIP;
-const ON = FILTER_CHIP_ON;
-const OFF = FILTER_CHIP_OFF;
+import { WhoFilter } from "./WhoFilter";
 
 /**
  * The three questions people ask of a directory: who is a person, whose
@@ -54,25 +50,24 @@ export function DirectoryFilters({
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="directory-filters">
       <WhoFilter who={filter.who} hrefFor={(who) => to({ ...filter, who })} />
 
-      <nav className="flex flex-wrap gap-1" aria-label="Which of them to leave out">
-        <Link
+      {/* Two switches, each on or off over the list: ticked boxes, not tabs (`ToggleLink`). */}
+      <nav className="flex flex-wrap items-center gap-x-3 gap-y-1" aria-label="Which of them to leave out">
+        <ToggleLink
           href={to({ ...filter, settled: !filter.settled })}
-          aria-pressed={filter.settled}
-          className={`${BUTTON} ${filter.settled ? ON : OFF}`}
-          data-testid="only-settled"
+          on={filter.settled}
+          testId="only-settled"
           title="A rating is unrated for the first few games and provisional while it settles."
         >
           Settled ratings
-        </Link>
-        <Link
+        </ToggleLink>
+        <ToggleLink
           href={to({ ...filter, active: !filter.active })}
-          aria-pressed={filter.active}
-          className={`${BUTTON} ${filter.active ? ON : OFF}`}
-          data-testid="only-active"
+          on={filter.active}
+          testId="only-active"
           title={`Seen in the last ${AWAY_AFTER_DAYS} days. A computer player is always about.`}
         >
           Seen lately
-        </Link>
+        </ToggleLink>
       </nav>
 
       <p className="text-xs text-muted" data-testid="directory-count">

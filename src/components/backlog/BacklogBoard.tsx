@@ -12,7 +12,7 @@ import { countFor, covers, hrefFor } from "@/lib/backlog/boardScope";
 
 import { AddBacklogItem } from "./AddBacklogItem";
 import { BacklogRow } from "./BacklogRow";
-import { FilterChip } from "./FilterChip";
+import { ViewTabs } from "@/components/ui/ViewTabs";
 import type { BacklogBoardProps, BoardView } from "./backlogBoard.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -71,26 +71,35 @@ export function BacklogBoard({ items, scope, initial, base, who }: BacklogBoardP
   }, [shown, view.sort, view.status]);
   const change = (part: Partial<BoardView>) => setView((current) => ({ ...current, ...part }));
 
-  /** One chip's parts: its count where its rows were read, and a link to the view that reads them where not. */
-  const chip = (status: StatusFilter) => ({
-    count: countFor(items, scope, status),
-    current: view.status === status,
-    href: covers(scope, status) ? null : hrefFor(base, status),
-    onPick: () => change({ status }),
-    testId: `filter-${status}`,
-  });
+  /** One tab's parts: its count where its rows were read, and a link to the view that reads them where not. */
+  const tab = (status: StatusFilter) => {
+    const elsewhere = covers(scope, status) ? null : hrefFor(base, status);
+    return {
+      count: countFor(items, scope, status),
+      current: view.status === status,
+      ...(elsewhere === null ? { onClick: () => change({ status }) } : { href: elsewhere }),
+      testId: `filter-${status}`,
+    };
+  };
   const stale = countFor(items, scope, "stale");
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2" data-testid="backlog-filters" {...readyMark(useHydrated())}>
-        <FilterChip label="Unfinished" kanji="未了" {...chip("unfinished")} />
-        <FilterChip label="All" {...chip("all")} />
-        <span className="h-4 w-px bg-rule-strong" aria-hidden />
-        {STATUS_ORDER.map((status) => (
-          <FilterChip key={status} label={STATUS_DISPLAY[status].label} kanji={STATUS_DISPLAY[status].kanji} {...chip(status)} />
-        ))}
-        {stale === null || stale === 0 ? null : <FilterChip label="Stale" {...chip("stale")} />}
+      {/* Which rows the board lists: tabs, as every such choice is (`ViewTabs`). */}
+      <div data-testid="backlog-filters" {...readyMark(useHydrated())}>
+        <ViewTabs
+          label="Which rows to list"
+          items={[
+            { key: "unfinished", label: <Paired en="Unfinished" kanji="未了" kanjiClassName="opacity-70" />, ...tab("unfinished") },
+            { key: "all", label: "All", ...tab("all") },
+            ...STATUS_ORDER.map((status) => ({
+              key: status,
+              label: <Paired en={STATUS_DISPLAY[status].label} kanji={STATUS_DISPLAY[status].kanji} kanjiClassName="opacity-70" />,
+              ...tab(status),
+            })),
+            ...(stale === null || stale === 0 ? [] : [{ key: "stale", label: "Stale", ...tab("stale") }]),
+          ]}
+        />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

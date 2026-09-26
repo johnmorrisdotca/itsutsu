@@ -35,14 +35,14 @@ test("the record switches format, keeps the choice, and switches back", async ({
   // Kept on the account: a fresh visit opens in the same format.
   await page.goto("/games/gomoku/play");
   await ready(page, "game-view");
-  await expect(page.getByTestId("move-format-itsYourTurn")).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("move-format-itsYourTurn")).toHaveAttribute("aria-pressed", "true");
 
   // And back to ours, which is also what the next spec expects to find.
   const savedOurs = page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
   await page.getByTestId("move-format-itsutsu").click();
   expect((await savedOurs).ok()).toBe(true);
-  await expect(page.getByTestId("move-format-itsutsu")).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("move-format-itsutsu")).toHaveAttribute("aria-pressed", "true");
   await page.goto("/games/gomoku/play");
   await ready(page, "game-view");
-  await expect(page.getByTestId("move-format-itsutsu")).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("move-format-itsutsu")).toHaveAttribute("aria-pressed", "true");
 });

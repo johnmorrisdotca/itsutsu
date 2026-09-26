@@ -1,12 +1,11 @@
-import Link from "next/link";
-
 import { Paired } from "@/components/i18n/Paired";
+import { ViewTabs } from "@/components/ui/ViewTabs";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, type DirectoryWho } from "@/lib/rating/directoryFilter";
 
 /**
- * Everyone 全員 · People 人 · Computers 機械: the one set of chips for the one
+ * Everyone 全員 · People 人 · Computers 機械: the one set of tabs for the one
  * three-way question the site asks about players — on the members list, on
- * the XP board and on the level pages. The chips are LINKS, so a choice is an
+ * the XP board and on the level pages. The tabs are LINKS, so a choice is an
  * address a reader can share and the page renders it on the server; which
  * address each leads to is the page's own decision (`hrefFor`), since the
  * members list carries two other switches beside these and the board carries
@@ -20,7 +19,6 @@ export const WHO_DISPLAY: Record<DirectoryWho, { label: string; kanji: string }>
 
 export const FILTER_CHIP =
   "rounded-md border px-2.5 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss";
-export const FILTER_CHIP_ON = "border-ink bg-ink text-paper";
 export const FILTER_CHIP_OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
 
 export function WhoFilter({
@@ -32,19 +30,18 @@ export function WhoFilter({
   hrefFor: (who: DirectoryWho) => string;
   label?: string;
 }) {
+  // Tabs, as every choice of what a page lists is (`ViewTabs`).
   return (
-    <nav className="flex flex-wrap gap-1" aria-label={label} data-testid="who-filter">
-      {DIRECTORY_WHO_LIST.map((one) => (
-        <Link
-          key={one}
-          href={hrefFor(one)}
-          aria-current={who === one ? "true" : undefined}
-          className={`${FILTER_CHIP} ${who === one ? FILTER_CHIP_ON : FILTER_CHIP_OFF}`}
-          data-testid={`who-${one}`}
-        >
-          <Paired en={WHO_DISPLAY[one].label} kanji={WHO_DISPLAY[one].kanji} kanjiClassName="opacity-70" />
-        </Link>
-      ))}
-    </nav>
+    <ViewTabs
+      label={label}
+      testId="who-filter"
+      items={DIRECTORY_WHO_LIST.map((one) => ({
+        key: one,
+        href: hrefFor(one),
+        current: who === one,
+        testId: `who-${one}`,
+        label: <Paired en={WHO_DISPLAY[one].label} kanji={WHO_DISPLAY[one].kanji} kanjiClassName="opacity-70" />,
+      }))}
+    />
   );
 }

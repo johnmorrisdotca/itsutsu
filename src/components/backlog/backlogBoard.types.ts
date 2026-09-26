@@ -31,19 +31,6 @@ export type BacklogBoardProps = {
   who: string;
 };
 
-export type FilterChipProps = {
-  label: string;
-  kanji?: string;
-  /** How many rows stand here, or null where this view did not read them. */
-  count: number | null;
-  current: boolean;
-  /** Narrows in place, for a filter whose rows this view holds. */
-  onPick: () => void;
-  /** The view that reads this filter's rows, or null where they are already here. */
-  href: string | null;
-  testId: string;
-};
-
 export type BacklogRowProps = {
   item: BacklogItem;
   /** Called once the server has accepted a move, so the page can be re-read. */

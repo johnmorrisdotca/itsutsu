@@ -2,6 +2,8 @@
 
 import { MOVE_FORMAT_CHOICES, MOVE_FORMAT_DISPLAY } from "@/lib/record/moveFormats";
 
+import { ViewTabs } from "@/components/ui/ViewTabs";
+
 import { useMoveFormat } from "./MoveFormatContext";
 
 /**
@@ -16,24 +18,19 @@ import { useMoveFormat } from "./MoveFormatContext";
  */
 export function MoveFormatPicker() {
   const { format, setFormat } = useMoveFormat();
+  // A choice of how the record reads: tabs, as every such choice is (`ViewTabs`).
   return (
-    <div className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label="How the moves are written" data-testid="move-format">
-      {MOVE_FORMAT_CHOICES.map((choice) => (
-        <button
-          key={choice}
-          type="button"
-          role="radio"
-          aria-checked={format === choice}
-          onClick={() => setFormat(choice)}
-          title={MOVE_FORMAT_DISPLAY[choice].example}
-          className={`rounded-full border px-2 py-0.5 text-[0.7rem] transition-colors ${
-            format === choice ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-rule-strong hover:text-ink"
-          }`}
-          data-testid={`move-format-${choice}`}
-        >
-          {MOVE_FORMAT_DISPLAY[choice].label}
-        </button>
-      ))}
-    </div>
+    <ViewTabs
+      label="How the moves are written"
+      testId="move-format"
+      items={MOVE_FORMAT_CHOICES.map((choice) => ({
+        key: choice,
+        onClick: () => setFormat(choice),
+        current: format === choice,
+        title: MOVE_FORMAT_DISPLAY[choice].example,
+        testId: `move-format-${choice}`,
+        label: MOVE_FORMAT_DISPLAY[choice].label,
+      }))}
+    />
   );
 }

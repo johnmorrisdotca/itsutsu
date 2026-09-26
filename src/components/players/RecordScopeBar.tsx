@@ -1,5 +1,5 @@
 import { Paired } from "@/components/i18n/Paired";
-import Link from "next/link";
+import { ViewTabs } from "@/components/ui/ViewTabs";
 
 import {
   RECORD_SCOPES,
@@ -22,10 +22,6 @@ const COPY: Record<RecordScope, { label: string; kanji: string; note: string }> 
   },
 };
 
-const BUTTON =
-  "rounded-md border px-2.5 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss";
-const ON = "border-ink bg-ink text-paper";
-const OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
 
 /**
  * Which of somebody's playing the figures above are counting.
@@ -72,24 +68,19 @@ export function RecordScopeBar({
       : query === undefined
         ? scopeHref(base, view, one)
         : scopeHrefFrom(base, new URLSearchParams(query), one);
+  // Tabs, as every choice of what a page lists is (`ViewTabs`).
   return (
-    <nav
-      className="flex flex-wrap items-center gap-1"
-      aria-label={label}
-      data-testid="record-scope"
-    >
-      {RECORD_SCOPE_LIST.map((one) => (
-        <Link
-          key={one}
-          href={href(one)}
-          aria-current={scope === one ? "true" : undefined}
-          title={COPY[one].note}
-          className={`${BUTTON} ${scope === one ? ON : OFF}`}
-          data-testid={`scope-${one}`}
-        >
-          <Paired en={COPY[one].label} kanji={COPY[one].kanji} kanjiClassName="opacity-70" />
-        </Link>
-      ))}
-    </nav>
+    <ViewTabs
+      label={label}
+      testId="record-scope"
+      items={RECORD_SCOPE_LIST.map((one) => ({
+        key: one,
+        href: href(one),
+        current: scope === one,
+        title: COPY[one].note,
+        testId: `scope-${one}`,
+        label: <Paired en={COPY[one].label} kanji={COPY[one].kanji} kanjiClassName="opacity-70" />,
+      }))}
+    />
   );
 }

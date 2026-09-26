@@ -16,6 +16,7 @@ import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import { CARD_LETTERS, GAME_CARD_KINDS } from "./games.constants";
 import type { GameCard } from "./games.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { ViewTabs } from "@/components/ui/ViewTabs";
 
 /** The letter a name files under: its first letter, accents folded, so Misère sits at M. */
 function initial(label: string): string {
@@ -72,42 +73,39 @@ export function GameCards({
 
   return (
     <div className="flex flex-col gap-4">
-      <nav
-        className="flex flex-wrap gap-1"
-        aria-label="Games by first letter"
-        data-testid="letter-filter"
-        {...readyMark(useHydrated())}
-      >
-        <LetterButton letter="All" active={chosen === ""} disabled={false} onClick={() => choose("")} />
-        {CARD_LETTERS.map((letter) => (
-          <LetterButton
-            key={letter}
-            letter={letter}
-            active={chosen === letter}
-            disabled={!available.has(letter)}
-            onClick={() => choose(letter)}
-          />
-        ))}
-      </nav>
+      {/* Both are choices of what the page lists, so both are tabs (`ViewTabs`); the hydration mark stays on the letters' box, which the specs wait on. */}
+      <div data-testid="letter-filter" {...readyMark(useHydrated())}>
+        <ViewTabs
+          label="Games by first letter"
+          items={[
+            { key: "all", onClick: () => choose(""), current: chosen === "", testId: "letter-All", label: "All" },
+            ...CARD_LETTERS.map((letter) => ({
+              key: letter,
+              onClick: () => choose(letter),
+              current: chosen === letter,
+              disabled: !available.has(letter),
+              testId: `letter-${letter}`,
+              label: <span className="font-mono">{letter}</span>,
+            })),
+          ]}
+        />
+      </div>
 
-      <nav className="flex flex-wrap gap-1" aria-label="Games by what wins" data-testid="kind-filter">
-        <LetterButton letter="Any" active={kind === ""} disabled={false} onClick={() => chooseKind("")} />
-        {GAME_CARD_KINDS.map((option) => (
-          <button
-            key={option.kind}
-            type="button"
-            onClick={() => chooseKind(option.kind)}
-            disabled={!kindsAvailable.has(option.kind)}
-            aria-pressed={kind === option.kind}
-            className={`rounded-md border px-2.5 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-30 ${
-              kind === option.kind ? "border-ink bg-ink text-paper" : "border-rule bg-ivory/70 hover:border-rule-strong"
-            }`}
-            data-testid={`kind-${option.kind}`}
-          >
-            <Paired en={option.label} kanji={option.kanji} kanjiClassName="opacity-70" />
-          </button>
-        ))}
-      </nav>
+      <ViewTabs
+        label="Games by what wins"
+        testId="kind-filter"
+        items={[
+          { key: "any", onClick: () => chooseKind(""), current: kind === "", testId: "letter-Any", label: "Any" },
+          ...GAME_CARD_KINDS.map((option) => ({
+            key: option.kind,
+            onClick: () => chooseKind(option.kind),
+            current: kind === option.kind,
+            disabled: !kindsAvailable.has(option.kind),
+            testId: `kind-${option.kind}`,
+            label: <Paired en={option.label} kanji={option.kanji} kanjiClassName="opacity-70" />,
+          })),
+        ]}
+      />
 
       {shown.length === 0 ? (
         <p className="text-sm text-muted">No game matches.</p>
@@ -154,32 +152,5 @@ export function GameCards({
         ))}
       </ul>
     </div>
-  );
-}
-
-function LetterButton({
-  letter,
-  active,
-  disabled,
-  onClick,
-}: {
-  letter: string;
-  active: boolean;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={active}
-      className={`min-w-8 rounded-md border px-2 py-1 font-mono text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-30 ${
-        active ? "border-ink bg-ink text-paper" : "border-rule bg-ivory/70 hover:border-rule-strong"
-      }`}
-      data-testid={`letter-${letter}`}
-    >
-      {letter}
-    </button>
   );
 }

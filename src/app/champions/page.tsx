@@ -20,6 +20,7 @@ import { standingsPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchChampions, type VariantChampion } from "@/lib/rating/variantRatings";
 import { SimpleChampions } from "@/components/players/SimpleChampions";
+import { ViewTabs } from "@/components/ui/ViewTabs";
 
 export const metadata = { title: "Champions" };
 
@@ -134,22 +135,18 @@ export default async function ChampionsPage({ searchParams }: PageProps<"/champi
           The best-rated player at each game today. Each game keeps its own rating; the{" "}
           <Link href="/players?view=ladder" className="underline underline-offset-4">ladder</Link> counts everything together.
         </p>
-        <nav className="flex gap-2 text-sm" aria-label="How to read the champions" data-testid="champions-views">
-          {(["simple", "full"] as const).map((view) => {
-            const here = (view === "full") === full;
-            return (
-              <Link
-                key={view}
-                href={view === "full" ? "/champions?view=full" : "/champions"}
-                aria-current={here ? "page" : undefined}
-                className={`rounded-full border px-3 py-1 ${here ? "border-ink bg-ink text-paper" : "border-rule-strong hover:border-ink"}`}
-                data-testid={`champions-view-${view}`}
-              >
-                {view === "full" ? "In full" : "Simple"}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Two ways to read the same table: tabs, as every choice of what a page lists is (`ViewTabs`). */}
+        <ViewTabs
+          label="How to read the champions"
+          testId="champions-views"
+          items={(["simple", "full"] as const).map((view) => ({
+            key: view,
+            href: view === "full" ? "/champions?view=full" : "/champions",
+            current: (view === "full") === full,
+            testId: `champions-view-${view}`,
+            label: view === "full" ? "In full" : "Simple",
+          }))}
+        />
         {full ? null : <SimpleChampions champions={champions} />}
         {/* Six columns of record. Unwrapped, this made /champions 570 pixels wide on a 390-pixel phone. */}
         {full ? (
