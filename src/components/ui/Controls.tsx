@@ -265,6 +265,11 @@ export function SectionTitle({
  */
 export function RowActions({ children, wrap = false }: { children?: ReactNode; wrap?: boolean }) {
   return (
-    <span className={`flex min-h-8 items-center justify-end gap-1 ${wrap ? "max-w-full flex-wrap" : ""}`}>{children}</span>
+    <span
+      className={`flex min-h-8 items-center justify-end gap-1 ${wrap ? "max-w-full flex-wrap" : ""}`}
+      data-width-reason={wrap ? "a row's own controls; max-w-full only lets them wrap under the name on a phone" : undefined}
+    >
+      {children}
+    </span>
   );
 }
