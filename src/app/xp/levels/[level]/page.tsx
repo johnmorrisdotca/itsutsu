@@ -22,6 +22,7 @@ import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
 import { ladderRung, levelXpRange } from "@/lib/xp/levelLadder";
 import { LEVEL_ROLL, membersAtLevel, type LevelRoll } from "@/lib/xp/levelMembers";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS } from "@/lib/xp/xpCurve";
@@ -85,7 +86,8 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
      same memory: one board, one answer. */
   const asked = await searchParams;
   const [who, scope, say] = await Promise.all([xpWhoFor(asked), xpScopeFor(asked), currentSpeaker()]);
-  const [roll, viewer] = await Promise.all([membersAtLevel(level, who, scope), viewerXp()]);
+  const reader = await currentTestModeReader();
+  const [roll, viewer] = await Promise.all([membersAtLevel(level, who, scope, reader), viewerXp()]);
   // The flag and badge beside each name, one read for the rung (`nameTagsOf`).
   const tags = await nameTagsOf(roll.members.map((member) => member.id));
   const query = new URLSearchParams({ who, scope }).toString();

@@ -9,6 +9,7 @@ import { xpRankOf, type XpBoardPage } from "@/lib/xp/xpBoard";
 import { xpLevelFor } from "@/lib/xp/xpCurve";
 import { xpTotalIn } from "@/lib/xp/xpScope";
 import type { ViewerXp } from "@/lib/xp/xpViewer";
+import type { TestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * Where the reader stands, above the XP leaderboard on /xp.
@@ -24,11 +25,13 @@ export async function YourXpStanding({
   board,
   who,
   scope,
+  reader,
 }: {
   viewer: ViewerXp | null;
   board: XpBoardPage;
   who: DirectoryWho;
   scope: RecordScope;
+  reader: TestModeReader;
 }) {
   if (viewer === null) return null;
 
@@ -62,7 +65,7 @@ export async function YourXpStanding({
     );
   }
 
-  const rank = shown ? null : await xpRankOf(total, who, scope);
+  const rank = shown ? null : await xpRankOf(total, who, scope, reader);
 
   return (
     <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
