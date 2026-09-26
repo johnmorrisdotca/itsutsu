@@ -1,4 +1,4 @@
-import type { SITE_SETTING_SPECS } from "./site.constants";
+import type { SITE_PANEL_GROUPS, SITE_SETTING_SPECS } from "./site.constants";
 
 /**
  * One row of the registry: everything a setting may be, and what it is when
@@ -29,6 +29,9 @@ export type SiteSettingSpec =
 
 /** The name of a setting the registry knows. */
 export type SiteSettingKey = keyof typeof SITE_SETTING_SPECS;
+
+/** A group of the Admin's site panel (`SITE_PANEL_GROUPS`). */
+export type SitePanelGroup = (typeof SITE_PANEL_GROUPS)[number]["key"];
 
 /**
  * Every setting, each holding one of its own values.

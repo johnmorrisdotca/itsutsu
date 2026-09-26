@@ -102,7 +102,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       ) : null}
 
       {open === "site" ? (
-        <div className={PANEL_CLASS} data-testid="admin-site-tab">
+        <div data-testid="admin-site-tab">
           <AdminSite />
         </div>
       ) : null}

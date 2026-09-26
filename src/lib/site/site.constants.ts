@@ -1,4 +1,4 @@
-import type { SiteSettingKey, SiteSettingSpec, SiteSettings } from "./site.types";
+import type { SitePanelGroup, SiteSettingKey, SiteSettingSpec, SiteSettings } from "./site.types";
 
 /**
  * The registry: every site-level setting the operator can change from the
@@ -143,6 +143,19 @@ export const MAINTENANCE_ENV = "SITE_MAINTENANCE";
 export const MAINTENANCE_ON = "on";
 
 /**
+ * THE GROUPS OF THE ADMIN'S SITE PANEL, in the order they are drawn: who may
+ * get in, what the door says, and the modes the whole site can be in. John,
+ * 2026-09-25: a "vertical and more condensed control panel type of look",
+ * after WazaDB's grouped settings. `modes` holds the shutter today; Test mode
+ * joins it.
+ */
+export const SITE_PANEL_GROUPS = [
+  { key: "access", label: "Access", kanji: "入口" },
+  { key: "notices", label: "Notices", kanji: "掲示" },
+  { key: "modes", label: "Modes", kanji: "状態" },
+] as const;
+
+/**
  * The words. Separate from the rules above, the way `RULE_VARIANT_DISPLAY` is
  * separate from `VARIANT_SPECS`: the panel is built from this, so a setting
  * with no copy has no control, and a control never invents its own labels.
@@ -152,6 +165,8 @@ export const SITE_SETTING_COPY: Record<
   {
     label: string;
     kanji: string;
+    /** Which group of the Admin panel it sits in (`SITE_PANEL_GROUPS`). */
+    group: SitePanelGroup;
     /** What the setting is, in one sentence, above the control. */
     blurb: string;
     /** One per option, for a `choice`. Empty for a `note`. */
@@ -169,6 +184,7 @@ export const SITE_SETTING_COPY: Record<
   registration: {
     label: "Signing up",
     kanji: "登録",
+    group: "access",
     blurb:
       "What happens when somebody Google knows, and this site does not, arrives at the door. Members already here are unaffected by all three, and so are the codes in circulation.",
     options: {
@@ -196,6 +212,7 @@ export const SITE_SETTING_COPY: Record<
   joinNotice: {
     label: "A line on the door",
     kanji: "掲示",
+    group: "notices",
     blurb:
       "Shown on the join page, above the buttons. Leave it empty and the door says only what it always says.",
     options: {},

@@ -3,11 +3,13 @@
 import { useId, useState } from "react";
 import useSWR from "swr";
 
+import { PanelFrame, PanelGroup, PanelRow, PanelState } from "@/components/admin/ControlPanel";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { Button } from "@/components/ui/Controls";
 import { INPUT_CLASS, TONE_CLASS } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import {
+  SITE_PANEL_GROUPS,
   SITE_SETTING_COPY,
   SITE_SETTING_KEYS,
   SITE_SETTING_SPECS,
@@ -75,13 +77,60 @@ export function AdminSite() {
 
   const states = new Map((data?.settings ?? []).map((state) => [state.key, state]));
 
+  /** One setting as a row of the panel: its name and line on the left, its control on the right. */
+  const row = (key: SiteSettingKey) => {
+    const spec = SITE_SETTING_SPECS[key];
+    const copy = SITE_SETTING_COPY[key];
+    const state = states.get(key);
+    const chosen = spec.kind === "choice" ? (state?.value ?? spec.fallback) : null;
+    return (
+      <PanelRow
+        key={key}
+        label={copy.label}
+        kanji={copy.kanji}
+        busy={busy === key}
+        testId={`site-setting-${key}`}
+        blurb={
+          chosen === null ? (
+            copy.blurb
+          ) : (
+            // The line under a choice says what the one in force does; the setting's own sentence is its title.
+            <span title={copy.blurb}>{copy.options[chosen]?.blurb ?? copy.blurb}</span>
+          )
+        }
+        note={<Provenance state={state} />}
+        control={
+          spec.kind === "choice" ? (
+            <ChoiceRow
+              options={spec.options}
+              copy={copy.options}
+              chosen={chosen ?? spec.fallback}
+              busy={busy === key}
+              onPick={(value) => void save(key, value)}
+              testId={key}
+            />
+          ) : (
+            <NoteRow
+              label={copy.fieldLabel ?? copy.label}
+              value={state?.value ?? ""}
+              maxLength={spec.maxLength}
+              placeholder={copy.placeholder ?? ""}
+              busy={busy === key}
+              onSave={(value) => void save(key, value)}
+              testId={key}
+            />
+          )
+        }
+      />
+    );
+  };
+
   return (
     <section
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-3"
       data-testid="admin-site"
       {...readyMark(hydrated && (data !== undefined || unreadable))}
     >
-      <SectionTitle kanji="設定">The site</SectionTitle>
       <p className="text-xs text-muted">
         How this site behaves for everybody. Nothing here touches a member
         already signed up, or a code already handed out.
@@ -100,49 +149,25 @@ export function AdminSite() {
         </p>
       ) : null}
 
-      {(unreadable ? [] : SITE_SETTING_KEYS).map((key) => {
-        const spec = SITE_SETTING_SPECS[key];
-        const copy = SITE_SETTING_COPY[key];
-        const state = states.get(key);
-        return (
-          <fieldset
-            key={key}
-            className={`flex flex-col gap-2 ${busy === key ? "opacity-60" : ""}`}
-            data-testid={`site-setting-${key}`}
-          >
-            <legend className="flex items-baseline gap-2 text-sm font-semibold">
-              {copy.label}
-              <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
-            </legend>
-            <p className="text-xs text-muted">{copy.blurb}</p>
-
-            {spec.kind === "choice" ? (
-              <ChoiceRow
-                options={spec.options}
-                copy={copy.options}
-                chosen={state?.value ?? spec.fallback}
-                busy={busy === key}
-                onPick={(value) => void save(key, value)}
-                testId={key}
-              />
-            ) : (
-              <NoteRow
-                label={copy.fieldLabel ?? copy.label}
-                value={state?.value ?? ""}
-                maxLength={spec.maxLength}
-                placeholder={copy.placeholder ?? ""}
-                busy={busy === key}
-                onSave={(value) => void save(key, value)}
-                testId={key}
-              />
-            )}
-
-            <Provenance state={state} />
-          </fieldset>
-        );
-      })}
-
-      <Shutter maintenance={data?.maintenance} />
+      {/*
+        ONE PANEL, GROUPED, A LINE A CONTROL. John, 2026-09-25: "We need vertical
+        and more condensed control panel type of look", after WazaDB's settings.
+        The settings come from the registry, each in the group its copy names;
+        the modes group holds the shutter, and Test mode joins it.
+      */}
+      <PanelFrame testId="site-panel">
+        {SITE_PANEL_GROUPS.map((group) => {
+          const keys = unreadable ? [] : SITE_SETTING_KEYS.filter((key) => SITE_SETTING_COPY[key].group === group.key);
+          const shutter = group.key === "modes" ? <Shutter maintenance={data?.maintenance} /> : null;
+          if (keys.length === 0 && shutter === null) return null;
+          return (
+            <PanelGroup key={group.key} label={group.label} kanji={group.kanji} testId={`site-group-${group.key}`}>
+              {keys.map(row)}
+              {shutter}
+            </PanelGroup>
+          );
+        })}
+      </PanelFrame>
     </section>
   );
 }
@@ -171,44 +196,49 @@ function ChoiceRow({
   onPick: (value: string) => void;
   testId: string;
 }) {
+  // Every option one segment of one bar; the one in force filled, the others each a button that asks where it must.
+  // Stacked on a phone, one bar from a small tablet up.
+  const segment = "block w-full px-2.5 py-1.5 text-left text-xs font-semibold whitespace-nowrap sm:py-1 sm:text-center";
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex w-full flex-col overflow-hidden rounded-lg border border-rule-strong/70 sm:w-auto sm:flex-row" role="list">
       {options.map((option) => {
         const words = copy[option];
         const isChosen = option === chosen;
+        const label = words?.label ?? option;
         return (
           <li
             key={option}
-            className={`flex flex-col gap-1.5 rounded-xl border px-3 py-2.5 ${isChosen ? TONE_CLASS.great : TONE_CLASS.calm}`}
+            className="border-rule-strong/70 [&:not(:first-child)]:border-t sm:[&:not(:first-child)]:border-t-0 sm:[&:not(:first-child)]:border-l"
             data-testid={`${testId}-${option}`}
             data-chosen={isChosen ? "true" : "false"}
+            title={words?.blurb}
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold">{words?.label ?? option}</span>
-              {isChosen ? (
-                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
-                  In force
-                </span>
-              ) : words?.confirm !== undefined ? (
-                <ConfirmButton
-                  label="Use this"
-                  question={words.confirm}
-                  confirm={words.label}
-                  onConfirm={() => onPick(option)}
-                  disabled={busy}
-                  testId={`${testId}-${option}-use`}
-                />
-              ) : (
-                <Button
-                  onClick={() => onPick(option)}
-                  disabled={busy}
-                  data-testid={`${testId}-${option}-use`}
-                >
-                  Use this
-                </Button>
-              )}
-            </div>
-            <p className="text-xs opacity-80">{words?.blurb ?? ""}</p>
+            {isChosen ? (
+              <span className={`${segment} bg-ink text-paper`} aria-current="true">
+                {label}
+                <span className="sr-only"> (in force)</span>
+              </span>
+            ) : words?.confirm !== undefined ? (
+              <ConfirmButton
+                label={label}
+                question={words.confirm}
+                confirm={words.label}
+                onConfirm={() => onPick(option)}
+                disabled={busy}
+                className={`${segment} bg-ivory text-ink-soft transition-colors hover:bg-rule/60`}
+                testId={`${testId}-${option}-use`}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => onPick(option)}
+                disabled={busy}
+                className={`${segment} bg-ivory text-ink-soft transition-colors hover:bg-rule/60`}
+                data-testid={`${testId}-${option}-use`}
+              >
+                {label}
+              </button>
+            )}
           </li>
         );
       })}
@@ -245,8 +275,8 @@ function NoteRow({
   const [draft, setDraft] = useState(value);
   const inputId = useId();
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-sm text-ink-soft">
+    <div className="flex w-full flex-col gap-1 md:w-[26rem]">
+      <label htmlFor={inputId} className="text-xs text-ink-soft">
         {label}
       </label>
       <div className="flex gap-2">
@@ -323,32 +353,31 @@ function Shutter({ maintenance }: { maintenance: Loaded["maintenance"] | undefin
   if (maintenance === undefined) return null;
   const { on, variable } = maintenance;
   return (
-    <section
-      className={`flex flex-col gap-2 rounded-xl border px-3 py-2.5 ${on ? TONE_CLASS.alarm : TONE_CLASS.calm}`}
-      data-testid="site-maintenance"
-      data-maintenance={on ? "on" : "off"}
-    >
-      <h3 className="flex items-baseline gap-2 text-sm font-semibold">
-        Being worked on
-        <span className="font-mincho text-xs font-normal opacity-70">整備</span>
-      </h3>
-      <p className="text-xs opacity-85">
-        {on
+    <PanelRow
+      label="Being worked on"
+      kanji="整備"
+      tone={on ? "alarm" : "plain"}
+      testId="site-maintenance"
+      data={{ "data-maintenance": on ? "on" : "off" }}
+      blurb={
+        on
           ? "The site is shut. Everybody but you is being shown a notice, and nobody new can get in. You are seeing the site normally, which is how you take it back out."
-          : "The site is up. Nothing is being held back from anybody."}
-      </p>
-      <p className="text-xs opacity-85">
-        This one is a deployment setting rather than a switch, because the gate
-        reads it on every single request and has to be able to answer even when
-        the database is the thing being worked on.
-      </p>
-      <pre className="overflow-x-auto rounded-lg bg-ink/5 px-2.5 py-2 font-mono text-xs">
-        {on ? `${variable}=off  # or remove it entirely` : `${variable}=on`}
-      </pre>
-      <p className="text-xs opacity-70">
-        To stop new members without shutting the site, use “Nobody new” above —
-        that takes effect at once.
-      </p>
-    </section>
+          : "The site is up. Nothing is being held back from anybody."
+      }
+      note={
+        <>
+          A deployment setting, not a switch: the gate reads it on every request, even while the database is the thing
+          being worked on. To stop new members without shutting the site, use “Nobody new” above.
+        </>
+      }
+      control={
+        <>
+          <PanelState tone={on ? "alarm" : "plain"}>{on ? "On" : "Off"}</PanelState>
+          <code className="rounded-md bg-ink/5 px-2 py-1 font-mono text-[0.7rem]">
+            {on ? `${variable}=off` : `${variable}=on`}
+          </code>
+        </>
+      }
+    />
   );
 }
