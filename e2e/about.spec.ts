@@ -59,7 +59,7 @@ test.describe("about", () => {
     await page.goto("/about");
     await expect(page.getByRole("heading", { name: "Where this comes from" })).toBeVisible();
     await ready(page, "tabs");
-    await page.getByRole("link", { name: /The programs/ }).click();
+    await page.getByTestId("tabs").getByRole("link", { name: /Programs/ }).click();
     await expect(page.getByRole("heading", { name: "The players that are not people" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Where this comes from" })).toHaveCount(0);
   });
