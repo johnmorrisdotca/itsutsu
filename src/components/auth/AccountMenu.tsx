@@ -56,11 +56,36 @@ const DIVIDER = "my-1.5 border-t border-rule";
  * It closes on a click outside, on Escape (handing focus back to the button),
  * and on arriving at another address.
  */
-export function AccountMenu({ initial, languages, version }: { initial: Who; languages: MenuLanguages; version: MenuVersion }) {
+export function AccountMenu({
+  initial,
+  admit,
+  languages,
+  version,
+}: {
+  initial: Who;
+  /** A session from before accounts, which `/api/session` turns into a member when asked (`admitsOnArrival`). */
+  admit: boolean;
+  languages: MenuLanguages;
+  version: MenuVersion;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  // The server already knows who is here; the first paint uses that, so nothing flashes in.
-  const { data, mutate } = useSWR("/api/session", fetcher, { fallbackData: initial });
+  /*
+   * The server already knows who is here; the first paint uses that, so nothing
+   * flashes in. And it asks again as it arrives ONLY where the asking does
+   * something: a session from before accounts, which the route makes a member
+   * and signs afresh — a cookie only a request can set. Everybody else was
+   * already seen by this page's own render (`currentSession` → `touchMember`,
+   * with the day's XP), so the question was a paid request that told the
+   * browser nothing new, on every page view. The menu's own actions still
+   * `mutate()`, and signing in or out reloads the page.
+   */
+  const { data, mutate } = useSWR("/api/session", fetcher, {
+    fallbackData: initial,
+    revalidateOnMount: admit,
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  });
   const say = useSpeaker();
   /*
    * Read here rather than at the element, because there are early returns
