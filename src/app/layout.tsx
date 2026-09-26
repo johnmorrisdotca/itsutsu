@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { BARE_HEAD_SCRIPT } from "@/components/layout/bare";
+import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { currentLocale } from "@/lib/i18n/currentLocale";
 import { LOCALES } from "@/lib/i18n/i18n.constants";
 
@@ -68,6 +69,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           the site React draws in the browser. One reading of the request, used
           twice, so the two cannot disagree at hydration.
         */}
+        <TestModeBanner />
         <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>
     </html>
