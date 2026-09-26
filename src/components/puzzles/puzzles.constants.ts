@@ -345,6 +345,11 @@ export const TSUNAGI_CHIPS = {
   walls: { label: "Walls", kanji: "壁", says: "No line may cross a wall, or go into a blocked cell." },
   waypoints: { label: "Waypoints", kanji: "経由", says: "A ring on a cell is a waypoint: the line of its colour must pass through it, and no other line may." },
   wrap: { label: "Wrap", kanji: "巡", says: "The edges join: a line leaving one side comes back in on the other. Drag off an edge onto its faded copy, then carry on from the line's end on the far side." },
+  explosions: {
+    label: "Explosions",
+    kanji: "爆",
+    says: "Every few strokes, a drawn line is broken: cut back to half, or on the hardest boards wiped with a line beside it cut too. The count under the board says when the next one goes off. The same strokes always break the same line, and the stroke that solves the level sets nothing off.",
+  },
   teaches: { label: (what: string) => `New: ${what}`, says: "This block's new idea: its 15th level shows it gently." },
   tests: { label: "Block's test", kanji: "試", says: "This block's test: its 16th level uses its twist hard." },
 } as const;

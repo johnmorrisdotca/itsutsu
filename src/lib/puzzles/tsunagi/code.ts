@@ -60,7 +60,25 @@ export type LinkLayout = {
   waypoints: ReadonlyMap<number, number>;
   /** Whether the edges join: left to right and top to bottom. */
   wrap: boolean;
+  /** Explosions: every `every` strokes a drawn line is broken — cut back by half, or, with `blast`, wiped with a neighbour cut too. Null for none. */
+  explosions: { every: number; blast: boolean } | null;
 };
+
+/**
+ * The words that may follow the cells (and walls), each at most once and in
+ * this order, so one board has one spelling: `wrap`, then an explosion —
+ * `boom<N>` (a line cut back every N strokes) or `blast<N>` (a line wiped and
+ * its neighbour cut).
+ */
+const TAIL_ORDER = ["wrap", "explosion"] as const;
+
+/** Which of the tail's words a segment is, and what it says; null for none of them (the walls list). */
+export function tailWord(segment: string): { word: (typeof TAIL_ORDER)[number]; every?: number; blast?: boolean } | null {
+  if (segment === LINK_WRAP) return { word: "wrap" };
+  const boom = /^(boom|blast)([1-9][0-9]?)$/.exec(segment);
+  if (boom !== null) return { word: "explosion", every: Number(boom[2]), blast: boom[1] === "blast" };
+  return null;
+}
 
 /** The segment after the cells that makes a board wrap. */
 export const LINK_WRAP = "wrap";
@@ -80,13 +98,23 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
   if (typeof code !== "string") return null;
   const [grid, ...tail] = code.split(LINK_WALLS);
   if (grid === undefined || grid.length !== size * size) return null;
-  // After the cells: the walls, then `wrap`, each at most once and in that order.
+  // After the cells: the walls, then the tail's words (`TAIL_ORDER`), each at most once and in that order.
   let wallList: string | null = null;
   let wrap = false;
+  let explosions: LinkLayout["explosions"] = null;
+  let rank = -1;
   for (const [at, segment] of tail.entries()) {
-    if (segment === LINK_WRAP && at === tail.length - 1) wrap = true;
-    else if (at === 0 && segment !== LINK_WRAP) wallList = segment;
-    else return null;
+    const word = tailWord(segment);
+    if (word === null) {
+      if (at !== 0) return null;
+      wallList = segment;
+      continue;
+    }
+    const place = TAIL_ORDER.indexOf(word.word);
+    if (place <= rank) return null;
+    rank = place;
+    if (word.word === "wrap") wrap = true;
+    else explosions = { every: word.every!, blast: word.blast! };
   }
   const cells: number[] = [];
   const seen: number[][] = [];
@@ -127,7 +155,7 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
     if (row === 0 || col === 0 || row === size - 1 || col === size - 1) return null;
     for (const beside of neighboursOf(size, at)) if (cells[beside] === CELL_BRIDGE || walls.has(edgeKey(at, beside))) return null;
   }
-  return { size, cells, ends: seen.map((stones) => [stones[0]!, stones[1]!]), walls, waypoints: marked, wrap };
+  return { size, cells, ends: seen.map((stones) => [stones[0]!, stones[1]!]), walls, waypoints: marked, wrap, explosions };
 }
 
 /** The walls after a layout's `|`, or null for a list that is not one: an edge that is not two neighbouring cells, out of order, or twice. */
@@ -163,7 +191,7 @@ export function encodeWalls(walls: Iterable<string>): string {
 }
 
 /** A layout's code, from its cells, walls, waypoints and whether it wraps: the inverse of `decodeLayout`. */
-export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean } = {}): string {
+export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean; explosions?: LinkLayout["explosions"] } = {}): string {
   const grid = cells
     .map((cell, at) => {
       const waypoint = more.waypoints?.get(at);
@@ -171,7 +199,8 @@ export function encodeLayout(cells: readonly number[], walls: Iterable<string> =
       return cell === CELL_EMPTY ? LINK_EMPTY : cell === CELL_BLOCKED ? LINK_BLOCKED : cell === CELL_BRIDGE ? LINK_BRIDGE : PAIR_LETTERS[cell]!;
     })
     .join("");
-  return grid + encodeWalls(walls) + (more.wrap === true ? `${LINK_WALLS}${LINK_WRAP}` : "");
+  const boom = more.explosions == null ? "" : `${LINK_WALLS}${more.explosions.blast ? "blast" : "boom"}${more.explosions.every}`;
+  return grid + encodeWalls(walls) + (more.wrap === true ? `${LINK_WALLS}${LINK_WRAP}` : "") + boom;
 }
 
 /** A finished grid's code: the letter of the line through each cell, `#` where blocked, `+` on a bridge. */

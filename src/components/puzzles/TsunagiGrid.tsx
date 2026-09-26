@@ -40,6 +40,7 @@ export function TsunagiGrid({
   done = false,
   readOnly = false,
   flagged = null,
+  blasted = null,
   onPress,
   onDrag,
   onLift,
@@ -55,6 +56,8 @@ export function TsunagiGrid({
   readOnly?: boolean;
   /** The pairs Check found not joined: their two marbles flash, and nothing else is said about them. */
   flagged?: ReadonlySet<number> | null;
+  /** The cells an explosion has just taken a line out of: each bursts a moment, in vermilion. */
+  blasted?: ReadonlySet<number> | null;
   onPress?: (cell: number) => void;
   onDrag?: (cell: number) => void;
   onLift?: () => void;
@@ -231,6 +234,10 @@ export function TsunagiGrid({
                       {marks === "numbers" && owner < 0 ? waypoint + 1 : null}
                     </span>
                   )}
+                  {blasted?.has(at) ? (
+                    // AN EXPLOSION: where a line was, a burst that spreads and fades; held still for a reader who asked for less motion.
+                    <span className="pointer-events-none absolute inset-[12%] rounded-full border-4 border-shu bg-shu/40 motion-safe:animate-ping" data-testid="tsunagi-blast" data-cell={at} />
+                  ) : null}
                   {cell >= 0 && flagged?.has(cell) ? (
                     <span
                       className="pointer-events-none absolute inset-[8%] animate-ping rounded-full border-4"

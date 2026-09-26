@@ -11,6 +11,7 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { explosionAfter, strokesToExplosion } from "@/lib/puzzles/tsunagi/explosions";
 import { blockOf, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
 import { challengesOf } from "@/lib/puzzles/tsunagi/ladder";
 import { firstUnsolvedTsunagiLevel, nextLevelLabel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
@@ -33,6 +34,9 @@ import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 /** How long Check's flashing lasts; its words stay until the board changes. */
 const CHECK_FLASH_MS = 2400;
 
+/** How long an explosion's burst shows; its words stay until the next stroke. */
+const BLAST_MS = 1200;
+
 /** The board of levels at a size: the set-up, opened on that size. */
 export function tsunagiLevelsPath(size: number): string {
   return `${setUpPath("tsunagi")}?size=${size}`;
@@ -44,6 +48,12 @@ export function tsunagiLevelsPath(size: number): string {
  * undo, the clock (`useSolve`, as every puzzle), and the end: when every pair
  * is joined and every cell has a line through it, the answer is handed in and
  * the done card offers the next level and the board of levels.
+ *
+ * On a board with explosions (`tsunagi/explosions.ts`) every stroke is counted,
+ * the count to the next one is shown under the board and turns to a warning a
+ * stroke before, and the stroke that sets one off breaks a line, bursts where
+ * it was, and leaves nothing to undo: an explosion is not taken back. Restart
+ * starts the count again; a kept run picks up with a fresh count.
  *
  * A level past the open blocks is shut, and says which block opens it. A member's
  * solved levels come from the page (`tsunagiSolvedBy`); anybody's are also in
@@ -112,6 +122,16 @@ export function TsunagiSolve({
   // Check: the pairs not joined yet, their marbles flashing a moment; the words stay until the board changes.
   const [flagged, setFlagged] = useState<ReadonlySet<number> | null>(null);
   const [checkSays, setCheckSays] = useState<string | null>(null);
+  // Explosions: the strokes so far, the cells the last one burst, and what it did.
+  const strokes = useRef(0);
+  const [strokeCount, setStrokeCount] = useState(0);
+  const [blasted, setBlasted] = useState<ReadonlySet<number> | null>(null);
+  const [blastSays, setBlastSays] = useState<string | null>(null);
+  useEffect(() => {
+    if (blasted === null) return;
+    const off = window.setTimeout(() => setBlasted(null), BLAST_MS);
+    return () => window.clearTimeout(off);
+  }, [blasted]);
   useEffect(() => {
     if (flagged === null) return;
     const off = window.setTimeout(() => setFlagged(null), CHECK_FLASH_MS);
@@ -144,6 +164,7 @@ export function TsunagiSolve({
       before.current = now.current;
       drawing.current = pressed.drawing;
       show(pressed.lines);
+      setBlastSays(null);
     },
     [idle, layout, begin, show, countOne],
   );
@@ -161,16 +182,30 @@ export function TsunagiSolve({
     show(next);
     const was = before.current;
     before.current = null;
-    if (was !== null && JSON.stringify(was) !== JSON.stringify(next)) setUndo((stack) => [...stack.slice(-199), was]);
+    if (was === null || JSON.stringify(was) === JSON.stringify(next)) return;
+    const stroke = strokes.current + 1;
+    strokes.current = stroke;
+    setStrokeCount(stroke);
     if (allJoined(layout, next)) {
       const answer = answerOf(layout, next);
       // Every level has one answer, so a board joined and full is it; compared all the same, never assumed.
       if (answer === puzzle.solution) {
         const at = Date.now();
         void finish(answer, at).then(() => undefined);
+        return;
       }
     }
-  }, [layout, show, finish, puzzle.solution]);
+    // A stroke that solves the level sets nothing off; any other may.
+    const blown = explosionAfter(layout, puzzle.givens, next, stroke);
+    if (blown === null) {
+      setUndo((stack) => [...stack.slice(-199), was]);
+      return;
+    }
+    show(blown.lines);
+    setUndo([]);
+    setBlasted(new Set(blown.cells));
+    setBlastSays(blown.hit.length > 1 ? "Blast! A line was wiped, and the one beside it cut back to half." : "Boom! A line was cut back to half.");
+  }, [layout, show, finish, puzzle.solution, puzzle.givens]);
 
   // Kept in this browser as soon as it is solved, so the board of levels opens the next row with or without an account.
   useEffect(() => {
@@ -187,12 +222,17 @@ export function TsunagiSolve({
     setUndo((stack) => [...stack.slice(-199), now.current]);
     show(noLines(layout));
     counted.current = false;
+    strokes.current = 0;
+    setStrokeCount(0);
+    setBlastSays(null);
   };
   const playAgain = () => {
     setReviewing(false);
     setUndo([]);
     show(noLines(layout));
     counted.current = false;
+    strokes.current = 0;
+    setStrokeCount(0);
   };
   const check = () => {
     if (idle) return;
@@ -209,6 +249,7 @@ export function TsunagiSolve({
   const pairs = layout.ends.length;
   const pairsJoined = layout.ends.filter((_, pair) => joined(layout, lines, pair)).length;
   const cover = filled(layout, lines);
+  const boomIn = strokesToExplosion(layout, strokeCount);
   const asked = (
     <>
       {size}×{size} · Level {level} <span className="text-xs">of {count}</span>{" "}
@@ -278,7 +319,7 @@ export function TsunagiSolve({
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
         <TsunagiViewport size={size}>
-          <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} flagged={flagged} onPress={press} onDrag={drag} onLift={lift} />
+          <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} flagged={flagged} blasted={blasted} onPress={press} onDrag={drag} onLift={lift} />
         </TsunagiViewport>
       </SolvePaused>
       {chips}
@@ -306,6 +347,12 @@ export function TsunagiSolve({
                 : `${pairsJoined} of ${pairs} joined · ${Math.round((100 * cover.done) / cover.of)}% of the board`}
             </span>
           </div>
+          {boomIn === null ? null : (
+            <p className={`text-sm ${boomIn === 1 ? "font-semibold text-shu" : "text-muted"}`} data-testid="tsunagi-boom-countdown" data-left={boomIn} data-strokes={strokeCount} aria-live="polite">
+              {blastSays === null ? "" : `${blastSays} `}
+              {boomIn === 1 ? "The next stroke sets off an explosion." : `An explosion in ${boomIn} strokes.`}
+            </p>
+          )}
           {checkSays === null ? null : (
             <p className="text-sm" data-testid="tsunagi-check-says" data-missing={flagged?.size ?? undefined} aria-live="polite">
               {checkSays}

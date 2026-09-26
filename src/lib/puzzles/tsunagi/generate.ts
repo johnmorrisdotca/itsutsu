@@ -1,4 +1,4 @@
-import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, stepBetween, compareEdges, decodeLayout, edgeKey, encodeAnswer, encodeLayout, layoutCells, layoutNeighbours, type LinkLayout, LINK_WALLS, LINK_WRAP, neighbourTable, PAIR_LETTERS } from "./code.ts";
+import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, stepBetween, compareEdges, decodeLayout, edgeKey, encodeAnswer, encodeLayout, layoutCells, layoutNeighbours, type LinkLayout, LINK_WALLS, neighbourTable, PAIR_LETTERS, tailWord } from "./code.ts";
 import { countSolutions } from "./solve.ts";
 import { stepTable } from "./steps.ts";
 import type { Random } from "../random.ts";
@@ -46,7 +46,7 @@ export type LinkExtras = { blocked?: ReadonlySet<number>; bridges?: ReadonlySet<
 export function randomFilling(size: number, random: Random, longest: number, blocked: ReadonlySet<number> = new Set(), wrap = false): number[][] | null {
   const total = size * size;
   // On a board that wraps, the lines may run off one edge and on at the other.
-  const around = wrap ? layoutNeighbours({ size, cells: [], ends: [], walls: new Set(), waypoints: new Map(), wrap: true }) : neighbourTable(size);
+  const around = wrap ? layoutNeighbours({ size, cells: [], ends: [], walls: new Set(), waypoints: new Map(), wrap: true, explosions: null }) : neighbourTable(size);
   const owner = new Int16Array(total).fill(-1);
   // A blocked cell belongs to no line, ever: marked as one nothing can be.
   for (const cell of blocked) owner[cell] = BLOCKED_MARK;
@@ -159,10 +159,10 @@ export function transformed(code: string, size: number, turn: number, mirror: bo
   const cells = layoutCells(code);
   const out = new Array<string>(size * size);
   for (let at = 0; at < size * size; at += 1) out[movedTo(size, at, turn, mirror)] = cells[at]!;
-  // After the cells: the walls turn with the board; `wrap` is the same however it is turned.
+  // After the cells: the walls turn with the board; the tail's words (`wrap`, an explosion) are the same however it is turned.
   const tail = code.slice(cells.length).split(LINK_WALLS).filter(Boolean);
   const segments = tail.map((segment) =>
-    segment === LINK_WRAP
+    tailWord(segment) !== null
       ? segment
       : segment
           .split(",")

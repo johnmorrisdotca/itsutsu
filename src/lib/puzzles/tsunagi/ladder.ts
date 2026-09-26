@@ -1,4 +1,4 @@
-import { layoutCells, LINK_BLOCKED, LINK_BRIDGE, LINK_WALLS, LINK_WRAP } from "./code.ts";
+import { layoutCells, LINK_BLOCKED, LINK_BRIDGE, LINK_WALLS, tailWord } from "./code.ts";
 import { TSUNAGI_BLOCK } from "./levelBlocks.ts";
 import type { Challenge, TwistRole } from "./ladder.types.ts";
 import { TSUNAGI_MARKS, TSUNAGI_ROLES } from "./levels/marks.data.ts";
@@ -16,7 +16,7 @@ export type { Challenge, TwistRole };
  * Imports carry their `.ts` so the level script can read the same rules.
  */
 
-export const CHALLENGES: readonly Challenge[] = ["bridges", "walls", "waypoints", "wrap"];
+export const CHALLENGES: readonly Challenge[] = ["bridges", "walls", "waypoints", "wrap", "explosions"];
 
 /** The challenges on a board, in the order the ladder teaches them. */
 export function challengesOf(layout: string): Challenge[] {
@@ -24,9 +24,11 @@ export function challengesOf(layout: string): Challenge[] {
   const tail = layout.slice(cells.length).split(LINK_WALLS).filter(Boolean);
   const out: Challenge[] = [];
   if (cells.includes(LINK_BRIDGE)) out.push("bridges");
-  if (tail.some((segment) => segment !== LINK_WRAP) || cells.includes(LINK_BLOCKED)) out.push("walls");
+  const words = tail.map(tailWord);
+  if (words.some((word) => word === null) || cells.includes(LINK_BLOCKED)) out.push("walls");
   if (/[a-p]/.test(cells)) out.push("waypoints");
-  if (tail.includes(LINK_WRAP)) out.push("wrap");
+  if (words.some((word) => word?.word === "wrap")) out.push("wrap");
+  if (words.some((word) => word?.word === "explosion")) out.push("explosions");
   return out;
 }
 
