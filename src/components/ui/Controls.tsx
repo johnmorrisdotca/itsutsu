@@ -257,9 +257,14 @@ export function SectionTitle({
  * one of these small controls, reserved whether anything is rendered into it
  * or not. Using this is what makes a row the same height as its neighbours;
  * there is nothing to remember per table.
+ *
+ * `wrap` is for a row with more controls than a phone's width holds (Admin's
+ * members, six to a row): they go onto a second line inside the row rather
+ * than past the page's edge. A row that fits never wraps, so its height is
+ * the same as without it.
  */
-export function RowActions({ children }: { children?: ReactNode }) {
+export function RowActions({ children, wrap = false }: { children?: ReactNode; wrap?: boolean }) {
   return (
-    <span className="flex min-h-8 items-center justify-end gap-1">{children}</span>
+    <span className={`flex min-h-8 items-center justify-end gap-1 ${wrap ? "max-w-full flex-wrap" : ""}`}>{children}</span>
   );
 }

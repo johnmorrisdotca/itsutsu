@@ -179,11 +179,13 @@ export function AdminInvites() {
           {shown.map((invite) => (
             <li
               key={invite.code}
-              className="flex items-center gap-2 rounded-lg border border-rule px-2.5 py-1.5"
+              // Wraps on a phone: the code, its note, the count and Revoke — and Revoke's question, which takes a line of its own.
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-rule px-2.5 py-1.5"
+              data-testid="active-invite"
             >
-              <span className="font-mono text-xs">{invite.code}</span>
+              <span className="font-mono text-xs break-all">{invite.code}</span>
               {invite.note ? (
-                <span className="truncate text-xs text-muted">{invite.note}</span>
+                <span className="min-w-0 truncate text-xs text-muted">{invite.note}</span>
               ) : null}
               <span className="ml-auto text-xs text-muted tabular-nums">
                 {invite.maxUses > 0 ? `${invite.uses} of ${invite.maxUses} used` : `${invite.uses} used`}
