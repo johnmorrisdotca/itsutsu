@@ -9,7 +9,7 @@ import { kanaWordsOf } from "../gomojiKana/kanaWords";
 import { puzzleAsked, puzzleQuery } from "../puzzleAddress";
 import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
 import { pointsFor } from "../puzzlePoints";
-import { decodeGomojiProgress, progressFits } from "../puzzleProgress";
+import { decodeGomojiProgress, progressFits, runGuessesFit } from "../puzzleProgress";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { freshSeed } from "../random";
@@ -232,5 +232,25 @@ describe("a Futago's address", () => {
     // A puzzle that is not a word has no Futago.
     expect(puzzleAsked("numberPlace", { size: "9", level: "medium", twins: "1" }).twins).toBe(false);
     expect(puzzleQuery({ size: 5, level: "medium", seed: null, twins: true })).toBe("?size=5&level=medium&twins=1");
+  });
+});
+
+describe("a kept run holds no more guesses than its own puzzle has", () => {
+  it("allows ten guesses only to a Futago that has ten, and counts the kana free word", () => {
+    const one = freshSeed();
+    const twins = freshFutagoSeed();
+    // Five letters at easy: nine for one word, nine for a Futago too; six letters at easy: eight, and ten.
+    expect(runGuessesFit("gomoji", 5, "easy", one, "slate".repeat(9))).toBe(true);
+    expect(runGuessesFit("gomoji", 5, "easy", one, "slate".repeat(10))).toBe(false);
+    expect(runGuessesFit("gomoji", 6, "easy", twins, "planet".repeat(10))).toBe(true);
+    expect(runGuessesFit("gomoji", 6, "easy", one, "planet".repeat(10))).toBe(false);
+    expect(runGuessesFit("gomojiMot", 5, "hard", one, "salut".repeat(7))).toBe(false);
+    expect(runGuessesFit("gomojiMot", 5, "hard", twins, "salut".repeat(7))).toBe(true);
+    // Kana: the free grey word takes a row below hard, so easy's guesses are the board less one.
+    const kana = guessesFor("gomojiKana", 3, "easy", 1, 1);
+    expect(runGuessesFit("gomojiKana", 3, "easy", one, "さくら".repeat(kana))).toBe(true);
+    expect(runGuessesFit("gomojiKana", 3, "easy", one, "さくら".repeat(kana + 1))).toBe(false);
+    // Not a word puzzle: nothing to count.
+    expect(runGuessesFit("numberPlace", 9, "easy", one, "")).toBe(true);
   });
 });

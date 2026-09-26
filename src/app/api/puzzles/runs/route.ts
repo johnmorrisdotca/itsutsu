@@ -5,7 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
-import { progressFits } from "@/lib/puzzles/puzzleProgress";
+import { progressFits, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
 import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -63,6 +63,7 @@ export async function POST(request: Request) {
     if (!PUZZLE_SPECS[kind].sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
     if (!isSeed(seed)) return badRequest("Not a seed.");
     if (!progressFits(kind, size, progress)) return unprocessable("Not a grid of that size.");
+    if (!runGuessesFit(kind, size, parsed.data.level as PuzzleLevel, seed, progress)) return unprocessable("More guesses than that puzzle has.");
     const checksAllowed = parsed.data.checksAllowed ?? null;
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
 
