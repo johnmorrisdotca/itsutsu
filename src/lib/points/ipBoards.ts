@@ -47,13 +47,13 @@ export function scopeOfFamily(familyKey: string): IpScope | null {
 /** The site's board: everything. */
 export const SITE_SCOPE: IpScope = { variants: RULE_VARIANT_LIST, puzzles: PUZZLE_KIND_LIST };
 
-export async function ipBoardOf(
-  scope: IpScope,
-  since: Date | null,
-  take: number,
-  /** Whether this reader may see the simulated test members (`testMode.ts`): nobody but the operator in Test mode. */
-  reader: TestModeReader = HIDES_TEST_MEMBERS,
-): Promise<IpRow[]> {
+/**
+ * Every member's IP in a scope since a moment, as one SQL fragment of
+ * (memberId, ip) rows: the query both a board and one player's place on it
+ * read, so the two can never count differently. Null when the scope holds
+ * nothing to count.
+ */
+function totalsOf(scope: IpScope, since: Date | null, reader: TestModeReader): Prisma.Sql | null {
   const parts: Prisma.Sql[] = [];
   if (scope.variants.length > 0) {
     const variants = Prisma.join(scope.variants.map((variant) => Prisma.sql`${variant}`));
@@ -80,19 +80,59 @@ export async function ipBoardOf(
         GROUP BY "memberId", "kind", "givens"
       ) AS best_of_each`);
   }
-  if (parts.length === 0) return [];
+  if (parts.length === 0) return null;
   // Members who still exist only: a row a removed member left behind names nobody, and a board of "A member" says nothing.
   // And no simulated test member unless this reader asked to see them — the rule `hiddenMembersWhere` keeps, in SQL.
   const tests = reader.showsTestMembers ? Prisma.empty : Prisma.sql`WHERE "Member"."unclaimableBecause" IS DISTINCT FROM ${UNCLAIMABLE_REASONS.test}`;
-  const rows = await prisma.$queryRaw<{ memberId: string; ip: number }[]>`
+  return Prisma.sql`
     SELECT earned."memberId", ROUND(SUM(earned.ip))::int AS ip
     FROM (${Prisma.join(parts, " UNION ALL ")}) AS earned
     JOIN "Member" ON "Member"."id" = earned."memberId"
     ${tests}
     GROUP BY earned."memberId"
-    HAVING ROUND(SUM(earned.ip)) > 0
-    ORDER BY ip DESC, earned."memberId" ASC
+    HAVING ROUND(SUM(earned.ip)) > 0`;
+}
+
+export async function ipBoardOf(
+  scope: IpScope,
+  since: Date | null,
+  take: number,
+  /** Whether this reader may see the simulated test members (`testMode.ts`): nobody but the operator in Test mode. */
+  reader: TestModeReader = HIDES_TEST_MEMBERS,
+): Promise<IpRow[]> {
+  const totals = totalsOf(scope, since, reader);
+  if (totals === null) return [];
+  const rows = await prisma.$queryRaw<{ memberId: string; ip: number }[]>`
+    SELECT "memberId", ip FROM (${totals}) AS totals
+    ORDER BY ip DESC, "memberId" ASC
     LIMIT ${take}
   `;
   return rows.map((row) => ({ memberId: row.memberId, ip: Number(row.ip) }));
+}
+
+/** One member's IP on a board, and their place on it: null where they have none. */
+export type IpStanding = { ip: number; place: number } | null;
+
+/**
+ * Where one member stands on a board: their IP, and one more than the members
+ * with more. Counted over the same totals the board lists (`totalsOf`), so a
+ * player's page and the board agree; members level with them share the place.
+ * One query, for the one page that asks.
+ */
+export async function ipStandingOf(
+  memberId: string,
+  scope: IpScope,
+  since: Date | null,
+  reader: TestModeReader = HIDES_TEST_MEMBERS,
+): Promise<IpStanding> {
+  const totals = totalsOf(scope, since, reader);
+  if (totals === null) return null;
+  const rows = await prisma.$queryRaw<{ ip: number | null; above: number }[]>`
+    WITH totals AS (${totals})
+    SELECT (SELECT ip FROM totals WHERE "memberId" = ${memberId}) AS ip,
+           (SELECT COUNT(*) FROM totals WHERE ip > (SELECT ip FROM totals WHERE "memberId" = ${memberId}))::int AS above
+  `;
+  const row = rows[0];
+  if (row === undefined || row.ip === null) return null;
+  return { ip: Number(row.ip), place: Number(row.above) + 1 };
 }
