@@ -113,6 +113,14 @@ export const UNCLAIMABLE_REASONS = {
    * why a member cannot be claimed would have to guess which kind it had.
    */
   computer: "computer",
+  /*
+   * A simulated player, made on the owner's own machines to see how the site
+   * behaves with a thousand people on it (`src/lib/sim/`). Hidden from every
+   * reader but the operator in Test mode (`src/lib/testMode/testMode.ts`).
+   * A reason like the others rather than a column of its own: what kind of
+   * row this is already lives here, and a test player is one more kind.
+   */
+  test: "test",
 } as const;
 
 export type UnclaimableReason = (typeof UNCLAIMABLE_REASONS)[keyof typeof UNCLAIMABLE_REASONS];

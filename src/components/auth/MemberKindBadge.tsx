@@ -24,6 +24,7 @@ const TONE: Record<MemberKind, string> = {
   [MEMBER_KINDS.honorary]: "border-rule-strong bg-ivory text-muted",
   [MEMBER_KINDS.keptRecord]: "border-rule-strong bg-ivory text-muted",
   [MEMBER_KINDS.seed]: "border-rule bg-ivory text-muted",
+  [MEMBER_KINDS.test]: "border-ochre/50 bg-ivory text-ochre",
   [MEMBER_KINDS.member]: "border-rule bg-ivory text-muted",
 };
 

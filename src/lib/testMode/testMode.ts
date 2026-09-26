@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 
+import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 
@@ -16,7 +17,8 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
  *
  * Three things follow from that sentence, and they are the whole design:
  *
- * 1. **A test member (`Member.isTest`) is invisible by default, everywhere.**
+ * 1. **A test member (`unclaimableBecause: "test"`, the Test kind in
+ *    `memberKind.ts`) is invisible by default, everywhere.**
  *    Not banned, not filtered by a page's own judgement call — hidden at the
  *    one place every surface already asks the database, the same way a
  *    banned member or a kept record is handled today.
@@ -74,11 +76,15 @@ export async function showsTestMembers(): Promise<boolean> {
 
 /**
  * The `Member` filter every query reads through: nothing extra when the
- * reader may see test members, `{ isTest: false }` otherwise. Pure and
+ * reader may see test members, every row that is not the Test kind otherwise
+ * — written with the null spelled out, because `NOT (col = 'test')` is NULL
+ * for an ordinary member and would hide everybody. Pure and
  * synchronous, so it can be called from anywhere — `AND` it into whatever the
  * caller was already filtering by, never as the only condition, the way
  * `botTier` and `unclaimableBecause` filters already are not.
  */
 export function hiddenMembersWhere(reader: TestModeReader): Prisma.MemberWhereInput {
-  return reader.showsTestMembers ? {} : { isTest: false };
+  return reader.showsTestMembers
+    ? {}
+    : { OR: [{ unclaimableBecause: null }, { unclaimableBecause: { not: UNCLAIMABLE_REASONS.test } }] };
 }

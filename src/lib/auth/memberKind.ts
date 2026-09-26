@@ -26,6 +26,8 @@ export const MEMBER_KINDS = {
   keptRecord: "kept-record",
   /** Written by the seed, not by anybody signing up. */
   seed: "seed",
+  /** A simulated player, seen only by the operator in Test mode. */
+  test: "test",
   /** Everybody else, which is nearly everybody. */
   member: "member",
 } as const;
@@ -39,6 +41,7 @@ export const MEMBER_KIND_DISPLAY: Record<MemberKind, { label: string; kanji: str
   honorary: { label: "Honorary", kanji: "名誉", note: "Never played here, kept in their own right." },
   "kept-record": { label: "Kept record", kanji: "記録", note: "A record from before this site, with no account behind it." },
   seed: { label: "Seeded", kanji: "種", note: "Written when the site was set up, not by anybody joining." },
+  test: { label: "Test", kanji: "試験", note: "A simulated player, shown only to the operator in Test mode." },
   member: { label: "Member", kanji: "会員", note: "An ordinary account." },
 };
 
@@ -73,6 +76,7 @@ export function memberKind(facts: KindFacts): MemberKind {
     return MEMBER_KINDS.keptRecord;
   }
   if (facts.unclaimableBecause === UNCLAIMABLE_REASONS.seed) return MEMBER_KINDS.seed;
+  if (facts.unclaimableBecause === UNCLAIMABLE_REASONS.test) return MEMBER_KINDS.test;
   return MEMBER_KINDS.member;
 }
 

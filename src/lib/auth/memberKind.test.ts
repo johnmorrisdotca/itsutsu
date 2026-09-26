@@ -24,6 +24,7 @@ describe("what kind of member somebody is", () => {
 
   it("knows a seeded row from a person", () => {
     expect(memberKind({ email: null, unclaimableBecause: UNCLAIMABLE_REASONS.seed })).toBe(MEMBER_KINDS.seed);
+    expect(memberKind({ email: null, unclaimableBecause: UNCLAIMABLE_REASONS.test })).toBe(MEMBER_KINDS.test);
   });
 
   it("calls a program a robot before anything else", () => {
