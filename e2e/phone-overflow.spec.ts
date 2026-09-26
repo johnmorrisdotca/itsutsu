@@ -13,7 +13,9 @@ import { namesPlayedUnder, removeGame } from "./tidy";
  * green panel wider than the card, cut off at the screen's edge. Both are
  * measured here as boxes at 390×844, since a picture that overlaps still has
  * every element present and visible: each cell's content inside its own cell,
- * and the question inside its card and the screen, with both answers on it.
+ * and the question on the screen with both answers on it. Resign has since
+ * moved into the row's "⋯" (John, the same day: the biggest button on a row
+ * was Resign), so the row's way in is measured too.
  */
 const PHONE = { width: 390, height: 844 };
 const under = namesPlayedUnder();
@@ -122,7 +124,7 @@ test.describe("My games on a phone", () => {
     }
   });
 
-  test("Resign's question wraps inside its card, with both answers on the screen", async ({ browser, request }) => {
+  test("a row's one prominent button is Your move; Resign is in its ⋯, and its question wraps on the screen", async ({ browser, request }) => {
     const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
       data: { blackName: under(`Narrow ${stamp}`), whiteName: under(`Phone ${stamp}`), size: 9 },
@@ -138,26 +140,41 @@ test.describe("My games on a phone", () => {
       await page.goto("/play");
 
       const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
-      await readyHere(row.getByTestId("resign"));
+      const screen: Box = { left: 0, right: PHONE.width, top: 0, bottom: PHONE.height };
+      const more = row.getByTestId("my-game-more");
+      await readyHere(more);
+      const card = await boxOf(row);
+      expectInside(card, screen, "the card");
+
+      // The way in is the row's button, and it is the biggest thing on it; Resign is not on the row at all.
+      const open = row.getByTestId("my-game-open");
+      await expect(open).toHaveText("Your move →");
+      const openBox = await boxOf(open);
+      expectInside(openBox, card, "Your move");
+      expect(openBox.right - openBox.left, "Your move is wider than the ⋯").toBeGreaterThan((await boxOf(more)).right - (await boxOf(more)).left);
+      await expect(row.getByTestId("resign")).toBeHidden();
+
+      // Resign: the ⋯, then Resign, then the question — three presses, never one.
+      await more.click();
+      await expect(more).toHaveAttribute("aria-expanded", "true");
       await row.getByTestId("resign").click();
       const asking = row.getByTestId("resign-confirm");
       await expect(asking).toContainText("The other side wins");
-
-      const card = await boxOf(row);
-      const screen: Box = { left: 0, right: PHONE.width, top: 0, bottom: PHONE.height };
-      expectInside(card, screen, "the card");
-      expectInside(await boxOf(asking), card, "the question");
-      for (const answer of ["resign-yes", "resign-no"]) {
-        const box = await boxOf(row.getByTestId(answer));
-        expectInside(box, card, answer);
-        expectInside(box, screen, answer);
-      }
+      // On the screen with a margin: 8px clear of either edge.
+      expectInside(await boxOf(asking), { ...screen, left: 8, right: PHONE.width - 8 }, "the question");
+      for (const answer of ["resign-yes", "resign-no"]) expectInside(await boxOf(row.getByTestId(answer)), screen, answer);
       await noSidewaysScroll(page);
 
       // Still a question that can be refused: no leaves the game going.
       await row.getByTestId("resign-no").click();
       await expect(asking).toHaveCount(0);
       expect((await (await request.get(`/api/games/${game.id}`)).json()).status).toBe("active");
+
+      // And the button goes where it says: into the game.
+      await page.keyboard.press("Escape");
+      await expect(more).toHaveAttribute("aria-expanded", "false");
+      await open.click();
+      await expect(page).toHaveURL(new RegExp(`/match/${game.id}`));
     } finally {
       await context.close();
       await removeGame(game.id);

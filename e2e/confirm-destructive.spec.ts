@@ -41,7 +41,9 @@ test.describe("asking before something cannot be undone", () => {
      * raises no question — which would read here as the confirmation being
      * absent, in the one file whose job is to prove it is there.
      */
-    await readyHere(row.getByTestId("resign"));
+    // Resign is in the row's "⋯", never one press from the list: opened first.
+    await readyHere(row.getByTestId("my-game-more"));
+    await row.getByTestId("my-game-more").click();
     await row.getByTestId("resign").click();
 
     // It asks, in the site's own words rather than the browser's.

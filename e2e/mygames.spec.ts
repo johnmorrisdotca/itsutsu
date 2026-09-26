@@ -70,7 +70,9 @@ test.describe("your games", () => {
      * the trigger is server-rendered, so an early press puts no question up
      * and the line below then fails on a `-yes` button that never existed.
      */
-    await readyHere(row.getByTestId("resign"));
+    // Resign is in the row's "⋯", never one press from the list: opened first.
+    await readyHere(row.getByTestId("my-game-more"));
+    await row.getByTestId("my-game-more").click();
     await row.getByTestId("resign").click();
     // Stored before the page is left: leaving at once could beat the resignation to the server.
     const resigned = page.waitForResponse((answer) => answer.url().endsWith(`/api/games/${game.id}/resign`) && answer.request().method() === "POST");

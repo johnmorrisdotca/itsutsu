@@ -1,8 +1,8 @@
 import { PlayerName } from "@/components/players/PlayerName";
 import Link from "@/components/ui/Link";
 
-import { CardArrow } from "@/components/ui/CardArrow";
-import { RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
+import { RowMenu } from "@/components/ui/RowMenu";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { STALE_AFTER_DAYS, type MyGame } from "@/lib/history/myGames";
@@ -125,9 +125,9 @@ export function Row({
         The row leads to the game and the names lead to the people, so the
         row's link is stretched under the card and the names sit above it —
         the same construction the record table uses, because a link inside a
-        link is not a thing a browser will render. The arrow at the far end is
-        the sign that the row opens: John's "you play your move, then the next
-        game opens up" starts with seeing which rows are doors.
+        link is not a thing a browser will render. The button at the far end
+        says so in words — Your move, or Open: John's "you play your move, then
+        the next game opens up" starts with seeing which rows are doors.
       */}
       <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`${black} vs ${white}`} />
       {/*
@@ -200,11 +200,8 @@ export function Row({
       </span>
       {/*
         THE CONTROLS KEEP TOGETHER, at the row's far end: on a phone they drop
-        under the words as one line, Resign beside the arrow, rather than Resign
-        squeezing the words and the arrow wrapping on its own (John, 2026-09-25:
-        "you didn't think of MOBILE!!!"). Never wider than the card: Resign's
-        question is drawn in this line, and at its full width it ran off the
-        right of a phone (John, 2026-09-26), so it wraps inside instead.
+        under the words as one line rather than squeezing the words (John,
+        2026-09-25: "you didn't think of MOBILE!!!"). Never wider than the card.
       */}
       <span className="ml-auto flex max-w-full min-w-0 shrink-0 items-center gap-2" data-width-reason="the row's own controls, at the end of the line; max-w-full only keeps a question opened here (Resign) inside the card on a phone">
         {/*
@@ -244,22 +241,7 @@ export function Row({
             {MY_GAMES_COPY.stale}
           </span>
         ) : null}
-        {/*
-          Above the stretched row link, or the link swallows the click. Anything
-          added to a row from here on needs the same, which is the cost of the
-          row being a link at all.
-        */}
-        {/*
-          Calling off an empty board is offered even where resigning is not. A
-          host who says nobody may walk away means a game in progress, and there
-          is nothing to walk away from before the first stone — leaving somebody
-          stuck with an empty board for ever would be a rule protecting nothing.
-        */}
-        {running && (game.allowResign || game.moveCount === 0) ? (
-          <span className={RAISED_LINK}>
-            <ResignButton id={game.id} moves={game.moveCount} />
-          </span>
-        ) : null}
+
         {/*
           Accept and Decline where the offer is, so answering does not need the
           board first. Above the stretched row link — see the note on the resign
@@ -273,7 +255,36 @@ export function Row({
         ) : null}
         {/* The star, on a finished game a member played: pressed, it moves to the top of the Completed tab. */}
         {starred === null ? null : <FavouriteStar gameId={game.id} starred={starred} regroup />}
-        <CardArrow />
+        {/*
+          THE WAY INTO THE GAME, the row's one prominent button: "Your move" on
+          a game waiting on you, "Open" on any other. The same address as the
+          row's own link, drawn as a button so the row says what pressing it does.
+          Everything here sits above the stretched row link, or the link would
+          swallow the press — the cost of the row being a link at all.
+        */}
+        <Link
+          href={href}
+          className={`${RAISED_LINK} ${BUTTON_BASE} ${group === "yourMove" ? BUTTON_STRONG : BUTTON_QUIET} px-3 py-1 text-sm whitespace-nowrap`}
+          data-testid="my-game-open"
+        >
+          {group === "yourMove" ? MY_GAMES_COPY.rowOpen.yourMove : MY_GAMES_COPY.rowOpen.open}
+        </Link>
+        {/*
+          RESIGN IS NEVER ONE PRESS FROM THE LIST: it is in the row's "⋯", and
+          still asks (`ConfirmButton`, whose question wraps inside the menu). John,
+          2026-09-26: "That is a bad experience… Resignation and any other button
+          should be in a Settings menu." Calling off an empty board is offered even
+          where resigning is not: a host who says nobody may walk away means a
+          game in progress, and there is nothing to walk away from before the
+          first stone. A row with nothing to offer has no "⋯" at all.
+        */}
+        {running && (game.allowResign || game.moveCount === 0) ? (
+          <span className={RAISED_LINK}>
+            <RowMenu label={MY_GAMES_COPY.rowMore.label(`${black} vs ${white}`)} title={MY_GAMES_COPY.rowMore.title} testId="my-game-more">
+              <ResignButton id={game.id} moves={game.moveCount} />
+            </RowMenu>
+          </span>
+        ) : null}
       </span>
     </li>
   );
