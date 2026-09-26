@@ -67,7 +67,10 @@ export function TsunagiLevelBoard({
               "data-level": level,
               "data-state": solved ? "solved" : locked ? "locked" : "open",
             };
-            const rules = "relative flex flex-col items-center justify-center border-r border-b text-xs font-semibold tabular-nums leading-none sm:text-sm";
+            // Each cell rules its right and bottom; the first row and column rule their top and left too, so the grid is closed
+            // on all four sides (John, 2026-09-26: "missing the TOP and LEFT borders").
+            const edges = `${row === 0 ? "border-t" : ""} ${(level - 1) % TSUNAGI_ROW === 0 ? "border-l" : ""}`;
+            const rules = `relative flex flex-col items-center justify-center border-r border-b ${edges} text-xs font-semibold tabular-nums leading-none sm:text-sm`;
             const ruled = { borderColor: `color-mix(in srgb, ${theme.line} 45%, transparent)` };
             if (locked) {
               return (

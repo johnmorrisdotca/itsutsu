@@ -34,13 +34,13 @@ test("Hidden Stones' set-up opens on the board and level chosen before a reload"
   await expect(page.getByTestId("puzzle-level-hard")).toHaveAttribute("aria-checked", "true");
 
   // The way back: another board, kept over the last.
-  await tile(5).click();
-  await expect(page).toHaveURL(/size=5/);
+  await tile(12).click();
+  await expect(page).toHaveURL(/size=12/);
   await page.reload();
   await ready(page, "puzzle-set-up");
-  await expect(tile(5)).toHaveAttribute("data-chosen", "true");
+  await expect(tile(12)).toHaveAttribute("data-chosen", "true");
   await expect(tile(9)).toHaveAttribute("data-chosen", "false");
 
   // And Play takes the board shown, not the default.
-  await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /size=5/);
+  await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /size=12/);
 });
