@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 
 import { NO_CURRENT_NAMES, seatName, type CurrentNames } from "@/lib/history/currentNames";
 import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
+import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { prisma } from "@/lib/prisma";
 import { buddyMemberIds } from "@/lib/social/buddies";
 import { ignoredMemberIds } from "@/lib/social/ignores";
@@ -83,7 +84,7 @@ function feedRow(row: GameRow, names: CurrentNames): FeedGameRow {
   };
 }
 
-type Standing = { id: string; name: string; ageBand: string | null; botTier: string | null; bannedAt: Date | null; isTest: boolean };
+type Standing = { id: string; name: string; ageBand: string | null; botTier: string | null; bannedAt: Date | null; unclaimableBecause: string | null };
 
 /** The members a page names, in one read: current names, and what the Everyone tab asks of each. */
 async function membersOf(ids: Iterable<string>): Promise<Map<string, Standing>> {
@@ -91,7 +92,7 @@ async function membersOf(ids: Iterable<string>): Promise<Map<string, Standing>> 
   if (wanted.length === 0) return new Map();
   const rows = await prisma.member.findMany({
     where: { id: { in: wanted } },
-    select: { id: true, name: true, ageBand: true, botTier: true, bannedAt: true, isTest: true },
+    select: { id: true, name: true, ageBand: true, botTier: true, bannedAt: true, unclaimableBecause: true },
   });
   return new Map(rows.map((row) => [row.id, row]));
 }
@@ -242,7 +243,7 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
      operator's Test Mode yet — and neither is a member the games would leave out. */
   const told = newsEntries(news.rows, news.games(names), {
     nameOf: (id) => members.get(id)?.name.trim() ?? "",
-    mayName: (id) => id !== null && mayBeNamed(standing(id)) && welcome(id) && members.get(id)?.isTest !== true,
+    mayName: (id) => id !== null && mayBeNamed(standing(id)) && welcome(id) && members.get(id)?.unclaimableBecause !== UNCLAIMABLE_REASONS.test,
   });
   const alreadyTold = gamesToldByNews(told);
 
