@@ -153,6 +153,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * or Hint: a line is joined or it is not, and the board shows which.
    */
   tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true },
+  /*
    * A size is the hand a game opens with (`KUMIMOJI_HANDS`), and the bag it is
    * played from follows from it (`KUMIMOJI_BAG`). One level: the bag is the
    * whole of a game's difficulty. The hand of three is the browser tests' own,
@@ -264,6 +265,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     7: { label: "Usual", kanji: "定番" },
     8: { label: "Long", kanji: "長" },
     9: { label: "Longest", kanji: "最長" },
+  },
   kumimoji: {
     [KUMIMOJI_HANDS.tiny]: { label: "Tiny", kanji: "極小" },
     [KUMIMOJI_HANDS.quick]: { label: "Quick", kanji: "速" },
@@ -288,6 +290,7 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     easy: "The first third of a size's hundred levels: every line can be found by looking.",
     medium: "The middle third: longer lines, and somewhere one has to be tried.",
     hard: "The last third: winding lines, and more than one place to try something and see.",
+  },
   kumimoji: {
     medium: `Every tile of the bag goes down before the clock stops: ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} in a Quick game, ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]} in a Classic one.`,
   },
@@ -534,6 +537,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "4×4 is where to start, and 9×9 is the long one. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",
+  },
   /*
    * OUR OWN GAME, UNDER OUR OWN NAME. The anagram-grid race games are sold
    * under trademarks this site does not use, in its copy, its pictures or its
