@@ -236,6 +236,32 @@ test.describe("the word puzzle", () => {
     }
   });
 
+  /*
+   * JOHN'S MUSTY, 2026-09-26: a five-letter word at medium, found on the
+   * seventh guess — the one medium gives beyond hard — answered "Not a grid of
+   * that size." and was never kept. The solved route capped an answer at six
+   * guesses of five letters. Played the way he played it, by typing.
+   */
+  test("a word found on medium's last guess is kept and paid, not refused", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    const puzzle = generatePuzzle(KIND, 5, "medium", seed);
+    const allowed = guessesFor(KIND, 5, "medium", 0);
+    expect(allowed, "medium gives a guess beyond hard's six").toBeGreaterThan(6);
+    const wrong = ["slate", "irony", "chump", "gawky", "fjord", "crane", "blimp", "dwelt", "quack"]
+      .filter((word) => word !== puzzle.solution && isWord(word, 5))
+      .slice(0, allowed - 1);
+    expect(wrong).toHaveLength(allowed - 1);
+    await page.goto(`${AT}/play?size=5&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    for (const word of [...wrong, puzzle.solution]) {
+      await page.keyboard.type(word);
+      await page.keyboard.press("Enter");
+    }
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    // Paid, or already paid for: those two, and never a refusal.
+    await expect(page.getByTestId("puzzle-paid")).toHaveText(/XP|Already paid/);
+  });
+
   test("Strict, chosen at any level, refuses a guess that drops a letter already found", async ({ page }) => {
     const words = ["slate", "irony", "chump", "gawky", "fjord", "blitz", "crane", "mound", "house", "plant"].filter((word) => isWord(word, 5));
     // A seed whose word one of these finds a letter of and another then drops.
