@@ -82,7 +82,7 @@ export function PuzzleBoardPreview({
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="set-up-puzzle-preview" data-kind={kind} data-size={size}>
       <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
-        {words === undefined ? <PaperGrid kind={kind} size={size} /> : <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} />}
+        {words === undefined ? <PaperGrid kind={kind} size={size} /> : <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} />}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
         {SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
@@ -102,9 +102,22 @@ export function PuzzleBoardPreview({
  * is typed: its rows at this length and level — the kana version's free grey
  * word among them where the level gives one — in the style the reader plays
  * it in. Nothing on it can be pressed: `done` is the grid's readOnly, drawing
- * no row as the one being typed, so no place on it is a button.
+ * no row as the one being typed, so no place on it is a button. In the board
+ * colour chosen under it, as the solve will be.
  */
-function WordGridPreview({ layout, size, level, style }: { layout: "gomoji" | "gomojiKana"; size: number; level: PuzzleLevel; style: WordStyle }) {
+function WordGridPreview({
+  layout,
+  size,
+  level,
+  style,
+  appearance,
+}: {
+  layout: "gomoji" | "gomojiKana";
+  size: number;
+  level: PuzzleLevel;
+  style: WordStyle;
+  appearance: Appearance;
+}) {
   const free = layout === "gomojiKana" && level !== "hard" ? 1 : 0;
   return (
     <GomojiGrid
@@ -115,6 +128,7 @@ function WordGridPreview({ layout, size, level, style }: { layout: "gomoji" | "g
       typing={emptyRow(size)}
       done
       style={style}
+      appearance={appearance}
       onChoose={NOTHING}
     />
   );
