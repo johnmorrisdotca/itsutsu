@@ -24,6 +24,7 @@ import { describe, expect, it } from "vitest";
 /** Drawn but not played on, each with the reason. A file here must say `readOnly`, so the reason stays true. */
 const NOT_PLAYED_ON: Record<string, string> = {
   "src/components/live/BoardPreview.tsx": "the set-up screen's picture of a board; nothing on it is a move",
+  "src/components/live/PuzzleBoardPreview.tsx": "the set-up screen's picture of a puzzle's board; a Gomoji's is drawn done, with no row to type in",
   "src/components/history/GameReplay.tsx": "a finished game played back; nobody is at it to be asked",
   "src/components/famous/FamousReplay.tsx": "a famous game from a published record, stepped through; nobody is playing it",
   "src/components/puzzles/FinishedPuzzle.tsx": "a puzzle already finished, drawn as it ended; nobody is solving it",

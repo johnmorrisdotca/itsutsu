@@ -45,7 +45,7 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
   const reader = await currentReader();
   // A puzzle is set up with a size and a level, and nothing a game asks: see `PuzzleSetUp`.
   const puzzle = puzzleFor(slug);
-  if (puzzle !== null) return <PuzzleSetUpPage kind={puzzle} hasAccount={reader.hasAccount} />;
+  if (puzzle !== null) return <PuzzleSetUpPage kind={puzzle} hasAccount={reader.hasAccount} memberId={reader.memberId} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
 

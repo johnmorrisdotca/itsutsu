@@ -57,6 +57,13 @@ export type PuzzleSpec = {
    * green in its place. A Gomoji's, at any level; absent is no.
    */
   strict?: true;
+  /**
+   * Whether the puzzle is drawn on the board itself, as a Gomoji's rows of
+   * stones are, rather than on white paper inside the wood — and so whether
+   * the board's colour is chosen for it (`FeltPatches`), as a Reversi's is.
+   * Names the layout its rows follow (`gomojiLayout`); absent is paper.
+   */
+  wordGrid?: "gomoji" | "gomojiKana";
 };
 
 /**
