@@ -41,9 +41,11 @@ test.describe("a grade's measured strength", () => {
 
     const panel = page.getByTestId("ladder-strength");
     if (measurement === null) {
-      // Nothing current has been measured, so the page says nothing — which is
-      // the promise, not a gap: a stale strength is worse than none.
-      await expect(panel).toHaveCount(0);
+      // Reversi has nothing current measured, so the page says nothing about it —
+      // which is the promise, not a gap: a stale strength is worse than none. The
+      // promise is per game: another game measured since (the ladder is re-measured
+      // a board at a time) may still draw the panel, so this asks about Reversi alone.
+      await expect(panel.locator(`[data-variant="${REVERSI}"]`)).toHaveCount(0);
       return;
     }
 
