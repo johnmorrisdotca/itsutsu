@@ -86,6 +86,8 @@ export function gamesHref(options: {
   ip?: GameIpFilter;
   /** "2026-09": the games finished in that month, when the number came from a monthly board. */
   month?: string | null;
+  /** "2026-09-21": the games finished in the week starting that Monday, when the number came from a weekly board. */
+  week?: string | null;
 }): string {
   const base = options.variant === undefined ? "/history" : historyPath(options.variant);
   const query = new URLSearchParams();
@@ -112,6 +114,7 @@ export function gamesHref(options: {
   if (options.verdict !== undefined && options.verdict !== "all") query.set("verdict", options.verdict);
   if (options.ip !== undefined && options.ip !== "all") query.set("ip", options.ip);
   if (options.month) query.set("month", options.month);
+  if (options.week) query.set("week", options.week);
   const search = query.toString();
   return search === "" ? base : `${base}?${search}`;
 }

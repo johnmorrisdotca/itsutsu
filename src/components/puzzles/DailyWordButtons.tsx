@@ -9,6 +9,8 @@ import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { FUTAGO_DISPLAY } from "@/lib/puzzles/gomoji/futago";
 
 import type { DailyWordButtonsProps } from "./dailyWords.types";
+import { SolveTime } from "./SolveTime";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /**
  * TODAY'S WORDS, ONE BUTTON A LENGTH: "Today's 4", "Today's 5" — in kana
@@ -35,8 +37,9 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
    */
   const table = (
     <div className="flex flex-col gap-2">
-      <ButtonTable rows={rows} testId="daily-words-table" label={(size) => <>Today&apos;s {size} <span className="font-mincho opacity-70">今日の{size}</span></>} prefix="daily" />
+      <ButtonTable kind={kind} rows={rows} testId="daily-words-table" label={(size) => <>Today&apos;s {size} <span className="font-mincho opacity-70">今日の{size}</span></>} prefix="daily" />
       <ButtonTable
+        kind={kind}
         rows={rows.map((row) => ({ size: row.size, ...row.futago }))}
         testId="futago-daily-table"
         label={(size) => (
@@ -83,11 +86,11 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
   );
 }
 
-function StatusText({ status }: { status: DailyStatus }) {
+function StatusText({ kind, status }: { kind: PuzzleKind; status: DailyStatus }) {
   if (status.state === "found") {
     return (
       <span className="text-moss">
-        ✓ {clockText(status.elapsedMs)}
+        ✓ <SolveTime kind={kind} solveId={status.solveId} elapsedMs={status.elapsedMs} mine />
         {status.guesses === null ? null : <span className="text-muted"> · {guessesText(status.guesses)}</span>}
       </span>
     );
@@ -99,11 +102,13 @@ function StatusText({ status }: { status: DailyStatus }) {
 
 /** One table of today's buttons, a row a length: the button, and where the reader stands with it where anybody is signed in to say. */
 function ButtonTable({
+  kind,
   rows,
   testId,
   label,
   prefix,
 }: {
+  kind: PuzzleKind;
   rows: readonly { size: number; href: string; status: DailyStatus | null }[];
   testId: string;
   label: (size: number) => ReactNode;
@@ -124,7 +129,7 @@ function ButtonTable({
               </td>
               {showStatus ? (
                 <td className="py-0.5 text-xs whitespace-nowrap tabular-nums" data-testid={`${prefix}-status`} data-state={row.status?.state ?? "unknown"}>
-                  {row.status === null ? null : <StatusText status={row.status} />}
+                  {row.status === null ? null : <StatusText kind={kind} status={row.status} />}
                 </td>
               ) : null}
             </tr>

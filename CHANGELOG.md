@@ -10,6 +10,37 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.370.1 — 2026-09-26
+- A game's Fastest solves panel fits its narrow desktop column: names stay on one line and nothing runs off the edge.
+
+## 0.370.0 — 2026-09-26
+- This week's points open exactly that week's games and solves, with a chip saying which week.
+
+## 0.369.1 — 2026-09-26
+- Gomoji's picture spells GOMOJI on every row, going green a row at a time.
+
+## 0.369.0 — 2026-09-26
+- Every table that shows a player's XP now shows their IP beside it: the members list, the ladders, each game's standings, the bots, the champions, open seats and the level rungs.
+
+## 0.368.1 — 2026-09-26
+- Players and XP: 'Include worldwide' is one checkbox instead of a second row of tabs, and computer players are called bots.
+- The Players tabs read Champs, Bots and Honors, short enough for a phone.
+- Every tab shows the pointer on hover.
+- A finished Kumimoji keeps showing where each tile stands.
+- Times on the daily-word and Tsunagi tables open the solve they came from.
+
+## 0.368.0 — 2026-09-26
+- A Gomoji word a day at every length, with a Today's button for each on the game's page, and a page of past days' words by week and month that can be searched.
+
+## 0.367.0 — 2026-09-26
+- Gomoji 6: six-letter words in English, French and German.
+
+## 0.366.0 — 2026-09-26
+- Every puzzle's fastest solves are a proper table: rank, player, time, guesses for a word, points, and a Replay.
+
+## 0.365.0 — 2026-09-26
+- Played games and puzzles can be opened from everywhere they are counted, and a finished puzzle replays from its first step to its answer, with a scrubber and a window of its own.
+
 ## 0.364.2 — 2026-09-26
 - Gomoji's keyboard shows a small count on a letter the guesses prove is in the word more than once
 

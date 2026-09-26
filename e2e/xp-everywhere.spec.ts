@@ -114,11 +114,12 @@ test.describe("XP on every stats table, and on a person's page", () => {
     await expect(botRow, "the seeded program is not on the Computers tab").toHaveCount(1);
     await expect(botRow.getByTestId("record-xp")).toHaveText(botShown());
     await expect(botRow.getByTestId("record-level")).toHaveAttribute("data-level", String(PROGRAM_LEVEL));
-    // And in its place: directly after the rating, before the tier.
+    // And in its place: directly after the rating, then IP beside it (0.369.0), then the tier.
     const headings = await computers.locator("thead th").allInnerTexts();
     const rating = headings.findIndex((one) => /^rating/i.test(one.trim()));
     expect(headings[rating + 1]?.trim(), `headings: ${headings.join(" | ")}`).toMatch(/^xp/i);
-    expect(headings[rating + 2]?.trim()).toMatch(/^tier/i);
+    expect(headings[rating + 2]?.trim(), `headings: ${headings.join(" | ")}`).toMatch(/^ip/i);
+    expect(headings[rating + 3]?.trim(), `headings: ${headings.join(" | ")}`).toMatch(/^tier/i);
 
     // The ladder, by its tab, once the browser has taken it over.
     await openTab(page, "Ladder");

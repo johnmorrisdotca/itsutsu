@@ -9,8 +9,12 @@ import { SortableHead, type RecordSort } from "./recordSort";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText } from "@/lib/rating/figures";
 
+import { IpFigure } from "@/components/points/IpFigure";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { SITE_SCOPE, scopeOfGame } from "@/lib/points/ipScope";
+
 import { XP_BLANK_BECAUSE } from "./players.constants";
-import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.types";
+import type { IpShown, RecordColumns, RecordTableRow, ShownRating } from "./recordTable.types";
 
 /**
  * THE COLUMNS A TABLE OF RECORDS MAY SWITCH ON — HEADINGS AND CELLS TOGETHER.
@@ -169,6 +173,41 @@ export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?:
 }
 
 /**
+ * WHAT THIS MEMBER HAS WON, BESIDE WHAT THEY HAVE EARNED. John, 2026-09-26:
+ * "Entire Site, tables where we show XP should probably also show IP." XP is
+ * taking part and IP is winning, so every table of people carries both, IP
+ * directly after XP.
+ *
+ * On one game's table the figure is that game's, and leads to exactly the
+ * games that paid it; on any other it is the whole site's, games and puzzles
+ * together, which no one page lists, so it is printed plain and says so on
+ * hover (`IpFigure`). A dash is a name nobody has claimed, as in the XP cell.
+ */
+export function IpCell({ ip }: { ip: IpShown | null }) {
+  if (ip === null) {
+    return (
+      <td className={CELL} title={XP_BLANK_BECAUSE.unclaimedName} data-testid="record-ip">
+        –
+      </td>
+    );
+  }
+  return (
+    <td className={CELL} data-testid="record-ip" data-ip={ip.ip}>
+      <IpFigure scope={ip.game === null ? SITE_SCOPE : scopeOfGame(ip.game)} memberId={ip.memberId} ip={ip.ip} testId="record-ip-figure" />
+    </td>
+  );
+}
+
+/** A champion's IP cell: what the leader has won at the one game their row is. */
+export function championIp(champion: { variant: string; ip: number | null; leader: { memberId: string | null } }): IpShown | null {
+  const { memberId } = champion.leader;
+  return champion.ip === null || memberId === null ? null : { ip: champion.ip, memberId, game: champion.variant as RuleVariant };
+}
+
+/** The IP heading, for a table built by hand as for this one: the same words everywhere. */
+export const IP_HEAD_TITLE = "Itsutsu Points — what this member has won: the site's, or on one game's table that game's";
+
+/**
  * How many columns these switches come to, for the span of the empty row.
  *
  * Counted from the same object the cells read rather than written down, so a
@@ -179,6 +218,7 @@ export function trailingWidth(columns: RecordColumns): number {
   return (
     (columns.rating !== false ? 1 : 0) +
     (columns.xp !== false ? 1 : 0) +
+    (columns.ip !== false ? 1 : 0) +
     (columns.tier === true ? 1 : 0) +
     (columns.joined === true ? 1 : 0) +
     (columns.actions === undefined ? 0 : 1)
@@ -227,6 +267,12 @@ export function trailingHeadings({
         >
           XP
         </SortableHead>
+      ) : null}
+      {columns.ip !== false ? (
+        /* Directly after XP, and not sortable: see `IpCell`. */
+        <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
+          IP
+        </th>
       ) : null}
       {columns.tier === true ? (
         <SortableHead sort={sort} slot="tier">
@@ -279,6 +325,7 @@ export function TrailingCells({
     <>
       {columns.rating !== false ? <RatingCell rating={row.rating ?? null} /> : null}
       {columns.xp !== false ? <XpCell xp={row.xp ?? null} blankBecause={row.xpBlankBecause} /> : null}
+      {columns.ip !== false ? <IpCell ip={row.ip ?? null} /> : null}
       {columns.tier === true ? (
         <td className="py-1.5 pr-3" data-testid="record-tier">
           {row.tier === undefined ? (

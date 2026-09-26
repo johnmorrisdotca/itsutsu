@@ -3,12 +3,13 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { toProfile } from "@/lib/rating/players";
+import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
 
 import { posterKeyOf, posterRow, standingOf } from "./posterStanding";
 import type { PosterRef, PosterStanding } from "./posterStanding.types";
 
 /**
- * Every poster's standing on a board, keyed by `posterKeyOf`, in two queries
+ * Every poster's standing on a board, keyed by `posterKeyOf`, in three queries
  * whatever the board holds: the rating rows for all their ids and names, and the
  * member rows for their totals and countries. Never one read per seat.
  *
@@ -20,13 +21,15 @@ export async function fetchPosterStandings(posters: readonly PosterRef[]): Promi
   const ids = [...new Set(posters.map((poster) => poster.memberId).filter((id): id is string => id !== null))];
   const keys = [...new Set(posters.map((poster) => playerKey(poster.name)).filter((key) => key !== ""))];
 
-  const [rows, members] = await Promise.all([
+  const [rows, members, ip] = await Promise.all([
     prisma.player.findMany({ where: { OR: [{ memberId: { in: ids } }, { key: { in: keys } }] } }),
     ids.length === 0
       ? Promise.resolve([])
       : prisma.member.findMany({ where: { id: { in: ids } }, select: { id: true, xp: true, country: true } }),
+    // What each has won, for the IP column after XP: one more query, never one per seat.
+    ipTotalsOf(ids, LISTED_ALREADY),
   ]);
-  const memberById = new Map(members.map((member) => [member.id, member]));
+  const memberById = new Map(members.map((member) => [member.id, { ...member, ip: ip.get(member.id) ?? 0 }]));
 
   return new Map(
     posters.map((poster) => {

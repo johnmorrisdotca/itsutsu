@@ -25,13 +25,13 @@ type Guesses = GuessesTaken;
  * way (kept, and resumed by the same link), or not started.
  */
 export type DailyStatus =
-  | { state: "found"; elapsedMs: number; guesses: Guesses | null }
+  | { state: "found"; elapsedMs: number; guesses: Guesses | null; solveId: string }
   | { state: "missed"; guesses: Guesses | null }
   | { state: "going" }
   | { state: "notYet" };
 
 /** One of the fastest finds of a day's word. */
-export type DailyFastest = { memberId: string; elapsedMs: number; level: string; guesses: Guesses | null; hintsUsed: number | null };
+export type DailyFastest = { solveId: string; memberId: string; elapsedMs: number; level: string; guesses: Guesses | null; hintsUsed: number | null };
 
 /** One past day of the archive: the date, each length's word as the page prints it and where it is played, and the day's own page. */
 export type ArchiveDay = { day: string; words: readonly { size: number; word: string; href: string }[]; dayHref: string };

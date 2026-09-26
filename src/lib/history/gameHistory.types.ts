@@ -120,6 +120,8 @@ export type GameHistoryQuery = {
    * board counts them. Not `from`, which reads when a game was set up.
    */
   month: string | null;
+  /** "2026-09-21": the games finished in the week starting that Monday, UTC, as a weekly board counts them. */
+  week: string | null;
   /** What `player` thought of their own play. Read against that name, and ignored without one. */
   verdict: GameVerdictFilter;
   variant: GameVariantFilter;

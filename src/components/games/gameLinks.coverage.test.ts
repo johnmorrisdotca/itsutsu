@@ -516,6 +516,10 @@ const POINTS_FIGURE =
 const TIME_EXCEPTIONS: Record<string, string> = {
   // The puzzle being played: its running clock and the line that says it is solved. The solve IS the page.
   "src/components/puzzles/solveShared.tsx": "the clock of the puzzle in front of the reader, and its own finishing line",
+  // The same running clock, split out of solveShared.tsx to keep that file under the size gate.
+  "src/components/puzzles/SolveHeader.tsx": "the running clock of the puzzle being played: there is no finished solve to open yet",
+  // A level's cell is itself a link to that level, whose page lists its fastest solves, each one opening.
+  "src/components/puzzles/TsunagiLevelBoard.tsx": "the level cell is already a link, to the level whose page opens its solves",
   // One finished puzzle's own page: its time is a fact about the page the reader is on.
   "src/components/puzzles/PuzzleSolvePage.tsx": "the solve's own page: a link would lead where the reader already is",
   // A race's page saying how each seat finished it: the race is the page, and each seat's solve is on its solver's list.
@@ -591,7 +595,7 @@ describe("a puzzle's time and a score lead to what they were made of", () => {
     expect(time).toContain("solvePath(");
     expect(time).toContain("mySolvePath(");
     const points = readFileSync("src/components/puzzles/SolvePoints.tsx", "utf8");
-    expect(points).toMatch(/puzzleRecordHref\(kind, \{ member: memberId, month \}\)/);
+    expect(points).toMatch(/puzzleRecordHref\(kind, \{ member: memberId, month, week \}\)/);
     expect(points).toContain("mySolvePath(kind, solveId) : solvePath(kind, solveId)");
     const ip = readFileSync("src/components/points/IpFigure.tsx", "utf8");
     expect(ip).toContain('ip: "paid"');

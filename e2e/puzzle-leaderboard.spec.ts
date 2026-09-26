@@ -40,6 +40,19 @@ test("a solve puts its solver on the puzzle's boards, all time and this month", 
     await expect(rows.first()).toBeVisible();
     expect(await rows.count()).toBeGreaterThan(0);
   }
+  /*
+   * A week's total opens that week's solves, never the month around it, which
+   * would be a larger set than the figure counted. Followed, the record says so
+   * in a chip and adds up to the same figure.
+   */
+  const weekly = board.getByTestId("puzzle-points-week").getByTestId("puzzle-points-figure").first();
+  const figure = (await weekly.innerText()).trim();
+  await expect(weekly).toHaveAttribute("href", /[?&]week=\d{4}-\d{2}-\d{2}(&|$)/);
+  await expect(weekly).not.toHaveAttribute("href", /month=/);
+  await weekly.click();
+  await expect(page.getByTestId("record-tally")).toContainText(`${figure} points`);
+  await expect(page.getByTestId("record-tally")).toContainText("in the week of");
+  await page.goto(AT);
   await board.getByTestId("puzzle-points-whole").click();
   await expect(page).toHaveURL(/\/standings$/);
   await expect(page.getByTestId("puzzle-points-all").getByTestId("puzzle-points-row").first()).toBeVisible();

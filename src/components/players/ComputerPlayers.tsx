@@ -5,6 +5,7 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
+import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
 import { RowActions } from "@/components/ui/Controls";
 import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
 import { gamesPlayed, ratingShown, tierShown } from "@/lib/rating/shownRecord";
@@ -66,7 +67,11 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
    * was 0.147.1's bug again: a computer player with 36 finished games and 35
    * unrated bot-series runs showed 1.
    */
-  const tallies = await fetchPlayedTallies(shown.map((entry) => entry.id));
+  const [tallies, ip] = await Promise.all([
+    fetchPlayedTallies(shown.map((entry) => entry.id)),
+    // What each has won, for the IP column after XP: a bot wins IP like anyone, from its results.
+    ipTotalsOf(shown.map((entry) => entry.id), LISTED_ALREADY),
+  ]);
 
   const rows: RecordTableRow[] = shown.map((entry) => {
     /*
@@ -145,6 +150,7 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
        */
       level: levelShown(entry),
       xp: xpShown(entry),
+      ip: { ip: ip.get(entry.id) ?? 0, memberId: entry.id, game: null },
       actions: (
         <RowActions>
           {/*

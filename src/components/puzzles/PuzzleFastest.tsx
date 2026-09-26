@@ -116,18 +116,27 @@ export function FastestTable({
       </p>
     );
   }
-  const cell = "py-1 pr-3";
+  /*
+   * FITS THE COLUMN IT IS IN, not the screen. On a desktop the front door puts
+   * this in a side column under 300px wide, where six columns overran it: names
+   * broke over two lines and Replay fell off the edge (John, 2026-09-26, "renders
+   * badly in Desktop"). So the table asks its own width (`@container`): narrow, it
+   * drops Replay — the time and the points already open the same solve — and
+   * tightens its spacing; wide, as on the standings page, it has all six.
+   */
+  const cell = "py-1 pr-2 @sm:pr-3";
+  const replay = "hidden @sm:table-cell";
   return (
-    <div className={TABLE_SCROLL}>
+    <div className={`${TABLE_SCROLL} @container`}>
       <table className="w-full text-sm" data-testid="puzzle-fastest-table" data-words={words ? "true" : "false"}>
-        <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
+        <thead className="text-[0.62rem] font-semibold tracking-normal text-muted uppercase @sm:tracking-[0.12em]">
           <tr>
             <th className={`${cell} w-6 text-right`}>#</th>
             <th className={`${cell} w-full text-left`}>Player</th>
             <th className={`${cell} text-right`}>Time</th>
             {words ? <th className={`${cell} text-right`}>Guesses</th> : null}
             <th className={`${cell} text-right`}>Points</th>
-            <th className="py-1 text-right">
+            <th className={`${replay} py-1 text-right`}>
               <span className="sr-only">Replay</span>
             </th>
           </tr>
@@ -174,7 +183,7 @@ export function FastestTable({
                   return (
                     <tr key={solve.id} className="border-t border-rule align-baseline" data-testid="puzzle-fastest-rank" data-solve={solve.id} data-member={solve.memberId}>
                       <td className={`${cell} text-right text-muted tabular-nums`}>{index + 1}</td>
-                      <td className={cell}>
+                      <td className={`${cell} whitespace-nowrap`}>
                         <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />
                         {help.length === 0 ? null : (
                           <span className="block text-xs text-muted" data-testid="puzzle-fastest-help">
@@ -194,7 +203,7 @@ export function FastestTable({
                       <td className={`${cell} text-right whitespace-nowrap`}>
                         <OneSolvePoints kind={kind} solveId={solve.id} points={solve.points} mine={mine} testId="puzzle-fastest-points" />
                       </td>
-                      <td className="py-1 text-right whitespace-nowrap">
+                      <td className={`${replay} py-1 text-right whitespace-nowrap`}>
                         <Link
                           href={mine ? mySolvePath(kind, solve.id) : solvePath(kind, solve.id)}
                           className="text-xs underline-offset-2 hover:underline"

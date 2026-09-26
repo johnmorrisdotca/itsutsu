@@ -57,7 +57,7 @@ test.describe("the waiting room", () => {
       await expect(seat).toBeVisible();
 
       // One table, with the columns a waiting room reads by.
-      for (const heading of ["Game", "Time limit", "Player", "Rating", "XP", "Location"]) {
+      for (const heading of ["Game", "Time limit", "Player", "Rating", "XP", "IP", "Location"]) {
         await expect(room.locator("thead th").filter({ hasText: heading })).toHaveCount(1);
       }
 

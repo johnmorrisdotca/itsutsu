@@ -134,7 +134,7 @@ export function ItsutsuRecord({
             be a figure about the page's subject rather than about the row. It
             is in the header of this page, where the person is.
           */
-          columns={{ rating: false, xp: false }}
+          columns={{ rating: false, xp: false, ip: false }}
           testId="player-by-variant"
           empty={<>No finished games here yet.</>}
         />

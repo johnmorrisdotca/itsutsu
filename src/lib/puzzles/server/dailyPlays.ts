@@ -38,7 +38,7 @@ export async function dailyStatusesOf(
     prisma.puzzleSolve.findMany({
       where: { memberId, kind, finishedAt: { gte: dayStart(day), lt: dayStart(dayAfter(day)) } },
       orderBy: { finishedAt: "asc" },
-      select: { size: true, level: true, givens: true, answer: true, solved: true, elapsedMs: true },
+      select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, elapsedMs: true },
     }),
     prisma.puzzleRun.findMany({ where: { memberId, kind, seed: { in: [dailyWordSeed(day), futagoDailySeed(day)] } }, select: { size: true, seed: true } }),
   ]);
@@ -51,7 +51,7 @@ export async function dailyStatusesOf(
       const any = found ?? played[0];
       if (any !== undefined) {
         const guesses = guessesTaken(kind, size, any.level, any.givens, any.answer);
-        statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses } : { state: "missed", guesses });
+        statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses, solveId: any.id } : { state: "missed", guesses });
       } else if (runs.some((run) => run.size === size && run.seed === seed)) statuses.set(size, { state: "going" });
       else statuses.set(size, { state: "notYet" });
     }
@@ -87,9 +87,10 @@ export async function fastestOfWord(kind: PuzzleKind, size: number, word: string
     },
     orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
     take: DAILY_FASTEST_SHOWN,
-    select: { memberId: true, elapsedMs: true, level: true, givens: true, answer: true, hintsUsed: true },
+    select: { id: true, memberId: true, elapsedMs: true, level: true, givens: true, answer: true, hintsUsed: true },
   });
   return rows.map((row) => ({
+    solveId: row.id,
     memberId: row.memberId,
     elapsedMs: row.elapsedMs,
     level: row.level,

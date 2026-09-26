@@ -13,6 +13,7 @@ import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
+import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
 import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
 import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
@@ -49,8 +50,9 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "towers", size: 5, level: "medium", seed: 20260924, fill: 3 },
   // An 8×8 Black and White a third filled: printed stones on their shaded cells, and the solver's beside them.
   { kind: "blackAndWhite", size: 8, level: "medium", seed: 20260924, fill: 3 },
-  // A five-letter Gomoji two guesses in, with the word's first letters typed on the third row: the colours are the picture.
-  { kind: "gomoji", size: 5, level: "easy", seed: 20260924, fill: 2 },
+  // Gomoji's own picture says its name on every row, G O M O J I, going green a row at a time until the last is all
+  // green. John, 2026-09-26: "Update the GOMOJI image to say GOMOJI a bunch of times." Played first, then relettered.
+  { kind: "gomoji", size: 6, level: "medium", seed: 20260924, fill: 0 },
   { kind: "gomojiKana", size: 4, level: "easy", seed: 20260925, fill: 2 },
   // Gomoji Mot and Gomoji Wort: the same shape of picture, French's and German's own words.
   { kind: "gomojiMot", size: 5, level: "easy", seed: 20260925, fill: 2 },
@@ -126,9 +128,42 @@ test.describe("puzzle screenshots", () => {
           await cells.nth(row * scene.size + col).click();
           await cells.nth(row * scene.size + col).click();
         }
-      } else if (scene.kind === "gomoji" || scene.kind === "gomojiMot") {
+      } else if (scene.kind === "gomoji") {
+        /*
+         * Every row played as a person plays it, so every place holds a real stone
+         * drawn by the grid itself — then each stone is relettered GOMOJI and
+         * given the look of the mark its row's story needs. Only the letters and
+         * the colours change: the board, the stones and their sizes are the game's.
+         */
+        const rows = await page.locator('[data-testid="word-tile"][data-row]').evaluateAll((tiles) => new Set(tiles.map((tile) => tile.getAttribute("data-row"))).size);
+        const fillers = answersFor(scene.size, false).filter((word) => word !== puzzle.solution);
+        for (const guess of fillers.slice(0, rows - 1)) {
+          await page.keyboard.type(guess);
+          await page.keyboard.press("Enter");
+          filled += 1;
+        }
+        await page.keyboard.type(fillers[rows - 1]!);
+        await expect(page.locator('[data-testid="word-tile"] span')).toHaveCount(rows * scene.size);
+        await page.evaluate(
+          ({ looks, rows }) => {
+            const name = "GOMOJI";
+            // The order places turn green in, so the greens gather from both ends rather than in a line.
+            const greenOrder = [0, 5, 2, 3, 1, 4];
+            for (const tile of document.querySelectorAll<HTMLElement>('[data-testid="word-tile"]')) {
+              const row = Number(tile.dataset.row);
+              const at = [...tile.parentElement!.children].filter((each) => (each as HTMLElement).dataset.row === tile.dataset.row).indexOf(tile);
+              const greens = Math.round((name.length * row) / (rows - 1));
+              const mark = greenOrder.indexOf(at) < greens ? "hit" : (row + at) % 2 === 0 ? "near" : "miss";
+              const stone = tile.querySelector("span")!;
+              stone.textContent = name[at]!.toLowerCase();
+              Object.assign(stone.style, looks[mark]);
+            }
+          },
+          { looks: WORD_STONE_LOOK, rows },
+        );
+      } else if (scene.kind === "gomojiMot") {
         // Two words that are not the answer, then the answer's first letters, typed as a person types them.
-        const fillers = scene.kind === "gomojiMot" ? ["porte", "table"] : ["slate", "irony"];
+        const fillers = ["porte", "table"];
         for (const guess of fillers.filter((word) => word !== puzzle.solution).slice(0, scene.fill)) {
           await page.keyboard.type(guess);
           await page.keyboard.press("Enter");

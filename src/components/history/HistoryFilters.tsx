@@ -126,6 +126,7 @@ export function HistoryFilters({
     verdict: value("verdict"),
     ip: value("ip"),
     month: value("month"),
+    week: value("week"),
   });
 
   return (

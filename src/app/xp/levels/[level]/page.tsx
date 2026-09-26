@@ -22,6 +22,8 @@ import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
 import { ladderRung, levelXpRange } from "@/lib/xp/levelLadder";
 import { LEVEL_ROLL, membersAtLevel, type LevelRoll } from "@/lib/xp/levelMembers";
+import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
+import { IP_HEAD_TITLE, IpCell } from "@/components/players/recordTrailing";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -89,7 +91,11 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   const reader = await currentTestModeReader();
   const [roll, viewer] = await Promise.all([membersAtLevel(level, who, scope, reader), viewerXp()]);
   // The flag and badge beside each name, one read for the rung (`nameTagsOf`).
-  const tags = await nameTagsOf(roll.members.map((member) => member.id));
+  // And what each has won, for the IP column after XP: one more read for the rung, never one per row.
+  const [tags, ip] = await Promise.all([
+    nameTagsOf(roll.members.map((member) => member.id)),
+    ipTotalsOf(roll.members.map((member) => member.id), LISTED_ALREADY),
+  ]);
   const query = new URLSearchParams({ who, scope }).toString();
   // The reader's own rung, by the total this page is counting.
   const mine = viewer === null ? null : xpLevelFor(xpTotalIn(viewer, scope));
@@ -217,7 +223,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
             </Link>
           </p>
         ) : null}
-        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} />
+        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} ip={ip} />
       </section>
     </Page>
   );
@@ -239,9 +245,12 @@ function WhoIsHere({
   who,
   notes,
   tags,
+  ip,
 }: {
   level: number;
   roll: LevelRoll;
+  /** What each member on the rung has won across the site, by member id (`ipTotalsOf`). */
+  ip: ReadonlyMap<string, number>;
   /** The flag and badge beside each name (`nameTagsOf`). */
   tags: ReadonlyMap<string, NameTag>;
   viewerId: string | null;
@@ -261,12 +270,15 @@ function WhoIsHere({
               <th className={HEAD} scope="col">
                 XP
               </th>
+              <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
+                IP
+              </th>
             </tr>
           </thead>
           <tbody>
             {roll.members.length === 0 ? (
               <tr className={ROW_CLASS}>
-                <td className="py-3 pr-3 text-sm text-muted" colSpan={2} data-testid="level-empty">
+                <td className="py-3 pr-3 text-sm text-muted" colSpan={3} data-testid="level-empty">
                   {who === DIRECTORY_WHO.everyone
                     ? `Nobody is standing on level ${level} yet.`
                     : `None of ${XP_WHO_SAID[who]} is standing on level ${level} yet.`}
@@ -294,6 +306,7 @@ function WhoIsHere({
                     {notes.get(member.id) ?? null}
                   </td>
                   <td className={CELL}>{countText(member.xp)}</td>
+                  <IpCell ip={{ ip: ip.get(member.id) ?? 0, memberId: member.id, game: null }} />
                 </tr>
               ))
             )}

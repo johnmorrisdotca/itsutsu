@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { makeMemberId } from "../src/lib/auth/memberId";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
 import { clockText } from "../src/lib/puzzles/clockText";
 import { freshPuzzleSeed, ready } from "./support";
 
@@ -63,14 +64,27 @@ async function unmakeWorld(world: World): Promise<void> {
   await prisma.member.deleteMany({ where: { id: { in: [world.ann.id, world.kim.id] } } });
 }
 
+/**
+ * A size Hidden Stones is still made at but no longer offered (`PUZZLE_SPECS`),
+ * so nobody can play one: the fastest board shows its row only while somebody
+ * holds a time there, and the only times there are this file's. A spec that
+ * reads a rank on the board brings its own board this way — on 5×5, another
+ * spec's solve in 300 ms pushed this file's off the top ten.
+ */
+const OWN_SIZE = 6;
+
 /** A kept Hidden Stones solve of a real grid, as `/api/puzzles/solved` keeps one. */
-async function solveOf(world: World, memberId: string, { elapsedMs, points, daysAgo, seed = freshPuzzleSeed() }: { elapsedMs: number; points: number; daysAgo: number; seed?: number }) {
-  const puzzle = generatePuzzle("hiddenStones", 5, "easy", seed);
+async function solveOf(
+  world: World,
+  memberId: string,
+  { elapsedMs, points, daysAgo, seed = freshPuzzleSeed(), size = 5 }: { elapsedMs: number; points: number; daysAgo: number; seed?: number; size?: number },
+) {
+  const puzzle = generatePuzzle("hiddenStones", size, "easy", seed);
   const row = await prisma.puzzleSolve.create({
     data: {
       memberId,
       kind: "hiddenStones",
-      size: 5,
+      size,
       level: "easy",
       givens: puzzle.givens,
       answer: puzzle.solution,
@@ -90,11 +104,14 @@ async function solveOf(world: World, memberId: string, { elapsedMs, points, days
 test("a puzzle's standings lead to each solve, to the solves a score was made of, and to every solve at a size", async ({ page }) => {
   const world = await makeWorld();
   try {
-    // Faster than anything a real run keeps, so both sit on the fastest board.
+    // Still made and never offered: if that changes, pick another size nobody can play.
+    expect(PUZZLE_SPECS.hiddenStones.sizes).toContain(OWN_SIZE);
+    expect(PUZZLE_SPECS.hiddenStones.offered).not.toContain(OWN_SIZE);
+    // On a board of their own (`OWN_SIZE`), so both are on it whatever other specs have solved.
     const fast = 1_000 + Math.floor(Math.random() * 400);
-    const best = await solveOf(world, world.ann.id, { elapsedMs: fast, points: 12_000, daysAgo: 1 });
-    await solveOf(world, world.ann.id, { elapsedMs: 90_000, points: 11_000, daysAgo: 2 });
-    const child = await solveOf(world, world.kim.id, { elapsedMs: fast + 1, points: 1, daysAgo: 1 });
+    const best = await solveOf(world, world.ann.id, { elapsedMs: fast, points: 12_000, daysAgo: 1, size: OWN_SIZE });
+    await solveOf(world, world.ann.id, { elapsedMs: 90_000, points: 11_000, daysAgo: 2, size: OWN_SIZE });
+    const child = await solveOf(world, world.kim.id, { elapsedMs: fast + 1, points: 1, daysAgo: 1, size: OWN_SIZE });
 
     // The time on the fastest board opens that solve, as it ended, and says whose it was.
     await page.goto(`/games/${SLUG}/standings`);
@@ -136,8 +153,8 @@ test("a puzzle's standings lead to each solve, to the solves a score was made of
 
     // A size and level on the fastest board opens every solve at it, fastest first.
     await page.goto(`/games/${SLUG}/standings`);
-    await page.locator('[data-testid="puzzle-fastest-row"][data-size="5"][data-level="easy"] [data-testid="puzzle-fastest-every"]').click();
-    await expect(page).toHaveURL(/size=5&level=easy&sort=fastest/);
+    await page.locator(`[data-testid="puzzle-fastest-row"][data-size="${OWN_SIZE}"][data-level="easy"] [data-testid="puzzle-fastest-every"]`).click();
+    await expect(page).toHaveURL(new RegExp(`size=${OWN_SIZE}&level=easy&sort=fastest`));
     await expect(page.locator('[data-testid="record-narrowing"][data-narrowing="sort"]')).toContainText("fastest first");
     await expect(page.locator('[data-testid="record-narrowing"][data-narrowing="size"]')).toBeVisible();
 
@@ -288,6 +305,15 @@ test("a best time on the feed opens the solve it was, and a game's IP opens the 
     await expect(page).toHaveURL(new RegExp(`/games/gomoku/history\\?member=${world.ann.id}&ip=paid&month=\\d{4}-\\d{2}$`));
     await expect(page.locator('[data-testid="history-narrowing"][data-narrowing="ip"]')).toHaveText(/Paid IP/);
     await expect(page.locator('[data-testid="history-narrowing"][data-narrowing="month"]')).toHaveText(/Finished in/);
+    await expect(page.locator(`a[href$="/match/${id}"]`).first()).toBeVisible();
+
+    // And this week's board: the same figure opens the games of this week alone, never the whole month's.
+    await page.goto("/games/gomoku");
+    const weekly = page.locator(`[data-testid="ip-board-week"] [data-testid="ip-row"][data-member="${world.ann.id}"] [data-testid="ip-row-figure"]`);
+    await expect(weekly).toHaveText("900,000");
+    await weekly.click();
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/history\\?member=${world.ann.id}&ip=paid&week=\\d{4}-\\d{2}-\\d{2}$`));
+    await expect(page.locator('[data-testid="history-narrowing"][data-narrowing="week"]')).toHaveText(/Finished in the week of/);
     await expect(page.locator(`a[href$="/match/${id}"]`).first()).toBeVisible();
   } finally {
     await unmakeWorld(world);

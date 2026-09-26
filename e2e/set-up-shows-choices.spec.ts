@@ -182,9 +182,10 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       const computerName = (await computerTile.getAttribute("data-name")) as string;
       const programs = (
         await page
-          .locator('[data-testid="set-up-opponent"][data-computer="true"]')
+          // The random tile is found by what it is, not by its words: "A random computer player" became "A random bot".
+          .locator('[data-testid="set-up-opponent"][data-computer="true"]:not([data-opponent="random-computer"])')
           .evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute("data-name") ?? ""))
-      ).filter((name) => name !== "A random computer player");
+      );
       await expect(page.locator('[data-testid="set-up-opponent"][data-opponent="random-computer"]')).toBeVisible();
 
       // A clock and Friendly, and no press asks the server anything.
