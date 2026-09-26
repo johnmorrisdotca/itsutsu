@@ -15,6 +15,10 @@ test("a Gomoji board offers the board colour picker, and its Gomoku style marks 
   await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/play?size=5&level=easy&seed=${seed}`);
   await ready(page, "puzzle-play");
 
+  // Neither the board's letters nor the keys can be selected as text (John, 2026-09-26).
+  await expect(page.getByTestId("puzzle-grid")).toHaveCSS("user-select", "none");
+  await expect(page.getByTestId("word-keyboard")).toHaveCSS("user-select", "none");
+
   // Every style offers the same picker Reversi and Gomoku boards do.
   const patches = page.getByTestId("felt-patches");
   await expect(patches).toBeVisible();

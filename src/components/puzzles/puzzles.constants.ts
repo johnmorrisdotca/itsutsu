@@ -144,9 +144,11 @@ export const WORD_KEY =
  * It was capped on phones (17rem, 13.5rem for kana) so Enter stayed on one
  * screen; John, 2026-09-25, on an iPhone: "the board looks bad. Should fill
  * screen too like the other boards." The board comes first; the keys sit
- * under it and the page scrolls to them.
+ * under it and the page scrolls to them. Its letters are never selectable
+ * (John, 2026-09-26: "board letters should never be selectable"), nor are the
+ * keys under it: a drag or a double-click there is play, not text to copy.
  */
-export const WORD_GRID_BOX = "w-full";
+export const WORD_GRID_BOX = "w-full select-none";
 
 /*
  * GOMOJI IN STONES: the Reversi and Gomoku styles (`wordStyles.ts`). A letter

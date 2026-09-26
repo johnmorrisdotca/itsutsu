@@ -74,7 +74,7 @@ export function KanaKeyboard({
   // Read-only, the keys keep their colours and take no press: `disabled` would dim the colours being read.
   const inert = readOnly ? { tabIndex: -1, "aria-disabled": true as const } : {};
   return (
-    <div className={`flex flex-col gap-1.5 ${readOnly ? "pointer-events-none" : ""}`} data-testid="kana-keyboard" data-read-only={readOnly ? "true" : undefined}>
+    <div className={`flex select-none flex-col gap-1.5 ${readOnly ? "pointer-events-none" : ""}`} data-testid="kana-keyboard" data-read-only={readOnly ? "true" : undefined}>
       <div className="grid grid-cols-10 gap-1">
         {[0, 1, 2, 3, 4].flatMap((row) =>
           COLUMNS.map((column, at) => {
