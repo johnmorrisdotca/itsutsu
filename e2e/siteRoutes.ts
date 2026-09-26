@@ -47,6 +47,8 @@ export const ROUTES: Record<string, Route> = {
   "/games/[slug]": { url: () => "/games/gomoku", also: ["/games/number-place"] },
   "/games/[slug]/background": { url: () => "/games/gomoku/background", also: ["/games/number-place/background"] },
   "/games/[slug]/begin": { url: () => "/games/gomoku/begin" },
+  "/games/[slug]/daily": { url: () => "/games/gomoji/daily", also: ["/games/gomoji-kana/daily?month=all"] },
+  "/games/[slug]/daily/[day]": { url: () => `/games/gomoji/daily/${new Date().toISOString().slice(0, 10)}` },
   "/games/[slug]/family": { url: () => "/games/hex/family", also: ["/games/number-place/family"] },
   "/games/[slug]/history": { url: () => "/games/gomoku/history" },
   "/games/[slug]/match/[id]": { url: (made) => `/games/gomoku/match/${made.live}` },
