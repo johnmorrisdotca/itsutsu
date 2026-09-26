@@ -200,6 +200,8 @@ test.describe("the kana word puzzle", () => {
     }
     await expect(page.getByTestId("word-out")).toBeVisible();
     await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution);
+    // The line says how many guesses there were (John, 2026-09-26: "Text is missing numbers").
+    await expect(page.getByTestId("word-was").locator("..")).toContainText(/Out of \d+ guesses\./);
     await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(kanaScore(puzzle.solution, wrong, KANA_ROWS, 0).total));
     // Replayed with its keyboard: all six guesses, and at the start nothing guessed yet (hard has no free word).
     const replay = page.getByTestId("word-replay");

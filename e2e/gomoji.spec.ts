@@ -335,6 +335,8 @@ test.describe("the word puzzle", () => {
     }
     await expect(page.getByTestId("word-out")).toBeVisible();
     await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution);
+    // The line says how many guesses there were (John, 2026-09-26: "Text is missing numbers").
+    await expect(page.getByTestId("word-was").locator("..")).toContainText(/Out of \d+ guesses\./);
     // A word not found still scores the letters it found, and says where it is kept.
     const scored = wordScore(puzzle.solution, wrong, guessesFor(KIND, 4, "hard", 0), 0).total;
     await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(scored));

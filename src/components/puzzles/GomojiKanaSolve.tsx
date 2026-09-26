@@ -266,7 +266,7 @@ export function GomojiKanaSolve({
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
           <p className="text-base">
-            Out of guesses. The word was <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>.
+            Out of {rows} guesses. The word was <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
           <WordScoreLine score={score!} />
           {hasAccount && race === null ? (
