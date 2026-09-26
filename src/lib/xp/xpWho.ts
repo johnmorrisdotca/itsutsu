@@ -60,5 +60,5 @@ export function xpWhoHref(at: string, query: string, who: DirectoryWho): string 
 export const XP_WHO_SAID: Record<DirectoryWho, string> = {
   [DIRECTORY_WHO.everyone]: "everyone",
   [DIRECTORY_WHO.people]: "the people",
-  [DIRECTORY_WHO.computers]: "the computer players",
+  [DIRECTORY_WHO.computers]: "the bots",
 };

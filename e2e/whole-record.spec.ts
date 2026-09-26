@@ -6,6 +6,7 @@ import { playerSlug } from "../src/lib/rating/playerKey";
 
 import { keptPreferences, putPreferencesBack, removeMember, seedMember } from "./members";
 import { suiteOperator } from "./operator";
+import { countScope } from "./support";
 
 /**
  * Whose account this file's visits are remembered on.
@@ -288,14 +289,14 @@ test.describe("how much of a record the page leads with", () => {
     try {
       await page.goto(LINKED_PAGE);
 
-      await expect(page.getByTestId("scope-everywhere")).toHaveAttribute("aria-current", "true");
+      await expect(page.getByTestId("record-scope")).toHaveAttribute("data-scope", "everywhere");
       const everywhere = await played(page);
 
-      await page.getByTestId("scope-here").click();
+      await countScope(page, "here");
       await expect(page).toHaveURL(/scope=here/);
       // The control saying so, not only the address: the address moves before
       // the figures under it are drawn again.
-      await expect(page.getByTestId("scope-here")).toHaveAttribute("aria-current", "true");
+      await expect(page.getByTestId("record-scope")).toHaveAttribute("data-scope", "here");
       const here = await played(page);
 
       // The game this case played is counted, and is on the page it is counted on.
@@ -416,7 +417,7 @@ test.describe("one page shape", () => {
     const everywhere = Number((await page.getByTestId("player-played").innerText()).replace(/[^0-9]/g, ""));
     expect(everywhere).toBeGreaterThan(4000);
 
-    await page.getByTestId("scope-here").click();
+    await countScope(page, "here");
     await expect(page.getByTestId("player-played")).toHaveText("0");
   });
 

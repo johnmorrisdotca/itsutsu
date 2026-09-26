@@ -233,7 +233,7 @@ test.describe("the bots have a tab of their own", () => {
     if (count === 0) {
       // Said out loud rather than skipped silently: a skip that reports green
       // is the quietest way for a test to say nothing at all.
-      await expect(page.getByTestId("admin-bots-table-empty")).toContainText("No computer players");
+      await expect(page.getByTestId("admin-bots-table-empty")).toContainText("No bots");
       return;
     }
 

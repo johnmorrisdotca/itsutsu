@@ -388,7 +388,7 @@ export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
  * link there from here would be a press that lands on this same page.
  */
 export const ASK_NEEDS_ACCOUNT =
-  "Naming a member or a computer player offers them a game, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are.";
+  "Naming a member or a bot offers them a game, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are.";
 
 /**
  * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
@@ -413,7 +413,7 @@ export const DOORSTEP_COPY = {
   change: "Change something 変更",
   /** Who a game against a computer player drawn at random is against, before the draw. */
   drawnFrom: (names: readonly string[]) =>
-    `a computer player drawn at random from ${names.join(", ")} when you press Start`,
+    `a bot drawn at random from ${names.join(", ")} when you press Start`,
   /** Once this doorstep has made its game, the same control opens its board. */
   board: "Open the board 対局へ",
   made: "You have already begun this game. The button below opens its board rather than making a second one.",

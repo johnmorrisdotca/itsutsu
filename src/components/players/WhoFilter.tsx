@@ -13,7 +13,7 @@ import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, type DirectoryWho } from "@/lib/rati
  */
 export const WHO_DISPLAY: Record<DirectoryWho, { label: string; kanji: string }> = {
   [DIRECTORY_WHO.people]: { label: "People", kanji: "人" },
-  [DIRECTORY_WHO.computers]: { label: "Computers", kanji: "機械" },
+  [DIRECTORY_WHO.computers]: { label: "Bots", kanji: "機械" },
   [DIRECTORY_WHO.everyone]: { label: "Everyone", kanji: "全員" },
 };
 

@@ -109,7 +109,7 @@ export const MY_GAMES_COPY = {
     kanji: "対局募集",
     hint: "Games somebody has posted for anyone. Sit down and it is yours.",
     /** The hover on a poster's rating that the computer players earned, which is not a place on the ladder. */
-    computerPool: "Earned against the computer players, which are rated in a pool of their own.",
+    computerPool: "Earned against the bots, which are rated in a pool of their own.",
     /** Beside every row's game: the way to what it is and how a turn goes. */
     rules: "Rules",
     /** The press on a row. It leads to the page that states the seat's game, and takes the seat from there. */
@@ -246,7 +246,7 @@ export const START_COPY = {
     fewer: "fewer",
   },
   buddies: { label: "Buddies", kanji: "仲間" },
-  computer: { label: "The computer", kanji: "コンピュータ" },
+  computer: { label: "Bots", kanji: "コンピュータ" },
   post: "Post the seat",
   sitWith: (who: string) => `Sit down with ${who}`,
   setUp: "Set up the board",
@@ -266,7 +266,7 @@ export const START_COPY = {
    */
   computerHint: (who: string, strength: string) =>
     `${who} plays at once, so you are never waiting and the clock never runs against it. ` +
-    `${strength}. The game is rated, for both of you, against the computer rather than on the ladder of people.`,
+    `${strength}. The game is rated, for both of you, against the bots rather than on the ladder of people.`,
   /*
    * "THERE IS NOTHING TO ACCEPT" WAS TRUE AND IS NOT ANY MORE, which is
    * exactly the kind of sentence that outlives the thing it described. A game

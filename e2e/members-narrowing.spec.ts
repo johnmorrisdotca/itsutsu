@@ -233,7 +233,7 @@ test.describe("the kind of player the list opens with", () => {
     await expect(page).toHaveURL(/\/players$/);
     await expect(page.getByTestId("who-computers")).toHaveAttribute("aria-current", "true");
     const narrowed = page.getByTestId("directory-narrowed");
-    await expect(narrowed).toContainText("Computers");
+    await expect(narrowed).toContainText("Bots");
     await expect(narrowed.getByTestId("narrowed-remembered")).toBeVisible();
     await expect(named(page, NEW_HERE)).toHaveCount(0);
 

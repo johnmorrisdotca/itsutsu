@@ -22,7 +22,7 @@ const HEAD = "text-sm font-semibold text-ink";
 const ASKERS = [
   { title: "The board", kanji: "盤", body: "Which points are legal, what is threatened, and a hint when you ask for one." },
   { title: "The server", kanji: "記録係", body: "Plays each move again before keeping it, so a game cannot be won by a move the rules refuse." },
-  { title: "The computer players", kanji: "棋士", body: "Search the moves the rules allow, in a worker thread in your own browser." },
+  { title: "The bots", kanji: "棋士", body: "Search the moves the rules allow, in a worker thread in your own browser." },
   { title: "The record", kanji: "棋譜", body: "Replays a game from its first move to draw any position, and writes SGF where a game has a number in it." },
 ];
 
@@ -31,7 +31,7 @@ const ONE_ENGINE = (
     <div
       className="flex flex-col items-stretch gap-2"
       role="img"
-      aria-label={`${RULE_VARIANT_LIST.length} rows of rules feed one engine, which the board, the server, the computer players and the record all ask.`}
+      aria-label={`${RULE_VARIANT_LIST.length} rows of rules feed one engine, which the board, the server, the bots and the record all ask.`}
     >
       <div className={`${BOX} bg-moss-soft`}>
         <span className={HEAD}>
@@ -77,7 +77,7 @@ const STACK = (
       ["Pages", "Next.js 16 and React 19, written in TypeScript, drawn on the server where they can be"],
       ["Rules", "one pure engine with a module per rule, each tested beside its source"],
       ["Games and players", "Postgres, through Prisma"],
-      ["Computer players", "a Web Worker in the reader’s browser, never the server"],
+      ["Bots", "a Web Worker in the reader’s browser, never the server"],
       ["Game files", <Out key="sgf" href="https://www.red-bean.com/sgf/">SGF</Out>],
       ["Tests", "Vitest for the rules and pages, Playwright for a browser playing every game"],
     ]}

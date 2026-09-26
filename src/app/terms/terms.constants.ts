@@ -38,7 +38,7 @@ export const TERMS_SECTIONS: readonly DocumentSection[] = [
     heading: "Play your own moves",
     kanji: "自力",
     paragraphs: [
-      "The computer players are the site's own, named as programs and rated among programs. We ask that a game against a person is played by the person: choosing moves with an engine of your own is not playing, and it takes something from the person across the board.",
+      "The bots are the site's own, named as programs and rated among programs. We ask that a game against a person is played by the person: choosing moves with an engine of your own is not playing, and it takes something from the person across the board.",
     ],
   },
   {

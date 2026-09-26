@@ -87,7 +87,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
     if (target === null) return notFound("No such member.");
     if (!target.mayHavePhrase) {
       return unprocessable(
-        "That row is not an account anybody signs in to — a kept record, a seeded row or a computer player — so four words would be a way into nobody's account.",
+        "That row is not an account anybody signs in to — a kept record, a seeded row or a bot — so four words would be a way into nobody's account.",
       );
     }
 

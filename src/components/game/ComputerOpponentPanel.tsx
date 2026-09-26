@@ -103,7 +103,7 @@ export function ComputerOpponentPanel({ session, actions }: GamePanelProps) {
          * here, and the player would wait for a move that is never coming.
          */
         <p className="text-xs text-shu" role="alert" data-testid="computer-failed">
-          The computer player stopped: {failed}. Choose “Nobody” and back again to restart it.
+          The bot stopped: {failed}. Choose “Nobody” and back again to restart it.
         </p>
       )}
     </div>

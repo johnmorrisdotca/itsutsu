@@ -168,8 +168,8 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           own days — credit from other sites counts in the total, never as a gain; Behind next is how
           far a row trails the one above it. The games finished here before the ladder existed were
           paid for when it was built, so it reaches back to the first game on the site — and a
-          record kept from another site is credited too, which Everywhere counts and Itsutsu only
-          leaves out.
+          record kept from another site is credited too, which Include worldwide counts and unticking
+          it leaves out.
         </p>
 
         {refused ? (

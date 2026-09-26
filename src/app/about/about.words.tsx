@@ -40,7 +40,7 @@ const GLOSSARY = (
       [<M key="11">棋譜</M>, "kifu", "a written game record", <Inside key="p11" href="/history">the record</Inside>],
       [<M key="12">名局</M>, "meikyoku", "a celebrated game", <Inside key="p12" href="/famous">famous games</Inside>],
       [<M key="13">番付</M>, "banzuke", "a ranking list, from sumo", "the ladder"],
-      [<M key="14">級 · 段 · 名人</M>, "kyū · dan · meijin", "student grade · master grade · master", "the computer players, gentlest to strongest"],
+      [<M key="14">級 · 段 · 名人</M>, "kyū · dan · meijin", "student grade · master grade · master", "the bots, gentlest to strongest"],
       [<M key="15">間</M>, "ma", "the space between things", "how these pages are laid out"],
     ]}
     caption={

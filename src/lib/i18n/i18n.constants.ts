@@ -162,7 +162,7 @@ export const PHRASES = {
   "setup.askedFor": "Asked for",
   "setup.hereNow": "Here now",
   "setup.playersYouKnow": "Players you know",
-  "setup.theComputer": "The computer",
+  "setup.theComputer": "Bots",
   "setup.showAll": "Show all {count}",
   "setup.showFewer": "Show fewer",
   /*
@@ -208,7 +208,7 @@ export const PHRASES = {
   "xp.imported.listLast": "{list} and {last}",
   "xp.scope.everywhere": "Counting everywhere: experience earned here, plus credit for games played on other sites.",
   "xp.scope.here": "Counting this site only: experience earned here, and nothing credited from elsewhere.",
-  "xp.scope.countEverywhere": "Count everywhere",
+  "xp.scope.countEverywhere": "Include worldwide",
 
   /*
    * The replay's download. SGF stays as the letters in every language: it is
@@ -292,11 +292,11 @@ export const PHRASES = {
   "catalogue.beFirstStranger": "Reading is free — join to be the first to play it →",
   "catalogue.topPlayer": "Top player",
   "catalogue.poolPeople": "among people",
-  "catalogue.poolComputer": "against the computer",
+  "catalogue.poolComputer": "against bots",
   "catalogue.topMeansPeople":
     "The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder.",
   "catalogue.topMeansComputer":
-    "Nobody holds a standing among people yet, so this is the top of the ladder against the computer players — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder.",
+    "Nobody holds a standing among people yet, so this is the top of the ladder against the bots — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder.",
   "catalogue.noStanding": "No rated games yet",
   "catalogue.joinToSeeWho": "Join to see who →",
   /** The way into a game of it, from its card on the catalogue. */
@@ -329,7 +329,7 @@ export const PHRASES = {
   "feed.homeLink": "Your feed",
   "feed.lead": "What you and your buddies have been playing lately, newest first.",
   "feed.leadEveryone":
-    "Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only computer players and members who have said they are 18 or over are named.",
+    "Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named.",
   "feed.tabMine": "You and your buddies",
   "feed.tabEveryone": "Everyone",
   "feed.tabsLabel": "Whose activity to show",

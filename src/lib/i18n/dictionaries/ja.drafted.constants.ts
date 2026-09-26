@@ -292,8 +292,8 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Counting this site only: only the experience points earned here; the credit from other sites is not included.",
   },
   "xp.scope.countEverywhere": {
-    text: "通算で数える",
-    back: "Count in total.",
+    text: "他のサイトも含める",
+    back: "Include other sites.",
   },
 
   /*

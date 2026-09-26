@@ -44,7 +44,7 @@ describe("what the set-up screen's own fields say", () => {
 
   it("says a computer player is still to be drawn, rather than naming one or posting the seat", () => {
     const words = recapWords({ game: even, opponent: null, fork: null, handicap: NO_HANDICAP, random: true });
-    expect(texts(words)).toEqual(["Against a random computer player"]);
+    expect(texts(words)).toEqual(["Against a random bot"]);
     expect(words[0].notable).toBe(true);
   });
 

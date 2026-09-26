@@ -123,7 +123,7 @@ export const GAME_POOL_FILTERS = ["all", "people", "computer"] as const;
 
 export const GAME_POOL_DISPLAY: Record<string, { label: string }> = {
   people: { label: "Against people" },
-  computer: { label: "Against the computer" },
+  computer: { label: "Against bots" },
 };
 
 /** Whether the game moved a rating. The address says yes or no, not true or false. */

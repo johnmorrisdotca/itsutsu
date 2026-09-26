@@ -27,7 +27,7 @@ export function BetaAsk({ signedIn, testId }: { signedIn: boolean; testId: strin
         We need beta testers, and a tester needs no skill at any of these games. What helps most:
       </p>
       <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-ink-soft">
-        <li>Play a few games, against a person or one of the computer players, on a phone as well as a computer.</li>
+        <li>Play a few games, against a person or one of the bots, on a phone as well as a computer.</li>
         <li>Tell us where a rule looked wrong, a page was confusing, or a move did not go where you put it.</li>
         <li>Say which games you would like to see here next, and which ones you played on the older sites.</li>
       </ul>

@@ -268,7 +268,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "乱石五目",
     tagline: "Five in a row around twelve rocks and two hotspots, all there from the first move.",
     origin:
-      "Our own game, not a version of a published one. Obstacle Five's rocks and hotspots, twice as many rocks and anywhere on the board, chosen because two equal computer players split sixty games 34 to 24 on it where plain five in a row went 60 to 0 to black.",
+      "Our own game, not a version of a published one. Obstacle Five's rocks and hotspots, twice as many rocks and anywhere on the board, chosen because two equal bots split sixty games 34 to 24 on it where plain five in a row went 60 to 0 to black.",
     rules: [
       "Five in a row wins.",
       "Twelve points are rocks: no stone may be played there, and no line runs through one.",
@@ -282,7 +282,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "落石五目",
     tagline: "Five in a row on an open board, until twenty rocks and two hotspots fall after the eighth stone.",
     origin:
-      "Our own game, not a version of a published one. Chosen from the same playtest as Scattered Rocks: over sixty games between two equal computer players it went 23 to 21 with sixteen drawn, the closest to even of every board tried.",
+      "Our own game, not a version of a published one. Chosen from the same playtest as Scattered Rocks: over sixty games between two equal bots it went 23 to 21 with sixteen drawn, the closest to even of every board tried.",
     rules: [
       "Five in a row wins, and the board starts empty.",
       "When the eighth stone has been played, twenty rocks and two hotspots fall onto the board, laid from the game's seed.",

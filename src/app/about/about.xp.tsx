@@ -81,7 +81,7 @@ export const XP_SECTION: AboutSection = {
       {thousands(xpForLevel(XP_LEVELS))} XP. The first ten come quickly, so a new member has something to
       hold on to; the climb hardens after ten and again after twenty, and the last ten levels alone cost{" "}
       {Math.round(LAST_TEN_SHARE * 100)}% of the whole ladder. It is meant to be a lifetime’s standing. The
-      computer players climb it on the same terms as people, from the games they finish, and are held back only
+      bots climb it on the same terms as people, from the games they finish, and are held back only
       from the awards a program cannot earn, like making a buddy or setting a profile.
     </>,
     <>

@@ -55,7 +55,7 @@ function nobodyWho(filter: DirectoryFilter): string {
     filter.who === DIRECTORY_WHO.people
       ? "No person here"
       : filter.who === DIRECTORY_WHO.computers
-        ? "No computer player here"
+        ? "No bot here"
         : "Nobody here";
   const clauses = [
     ...(filter.settled ? [NARROWING_WORDS.settled.clause] : []),
