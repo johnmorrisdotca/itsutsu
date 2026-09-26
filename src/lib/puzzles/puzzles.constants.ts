@@ -178,7 +178,9 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * Check or Hint in the puzzle sense: Tsunagi's own Check only names the pairs
    * not joined yet, and the board already shows which.
    */
-  tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true, shelves: true },
+  // A layout is a cell a character and then its walls and `wrap` (`tsunagi/code.ts`): 81 cells and a wall list came to 109 characters
+  // at 9×9, past the 81 the route once allowed, and every solve of those levels was refused. `levels.test.ts` holds every level to this.
+  tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true },
   /*
    * A size is the hand a game opens with (`KUMIMOJI_HANDS`), and the bag it is
    * played from follows from it (`KUMIMOJI_BAG`). One level: the bag is the
