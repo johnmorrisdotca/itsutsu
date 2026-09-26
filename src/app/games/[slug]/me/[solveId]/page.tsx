@@ -18,5 +18,5 @@ export default async function MySolvePage({ params }: PageProps<"/games/[slug]/m
   const { slug, solveId } = await params;
   const puzzle = puzzleFor(slug);
   if (puzzle === null) notFound();
-  return <PuzzleSolvePage kind={puzzle} solveId={solveId} />;
+  return <PuzzleSolvePage kind={puzzle} solveId={solveId} whose="mine" />;
 }

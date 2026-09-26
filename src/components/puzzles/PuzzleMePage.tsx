@@ -5,14 +5,14 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { gamePath, matchPath, mySolvePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, matchPath, mySolvePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { racesOf, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 import { ownSolvesOf, ownWordsOf } from "@/lib/puzzles/server/puzzleSolves";
 
 import { sizeWord } from "./puzzles.constants";
-import { clockText } from "@/lib/puzzles/clockText";
+import { SolveTime } from "./SolveTime";
 import { WordHistory } from "./WordHistory";
 import { GameTrail } from "@/components/games/GameTrail";
 
@@ -45,6 +45,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">fastest here</Link>
+          <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="me-everybody">everybody&apos;s solves</Link>
           <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">play one</Link>
         </p>
       </PageTitle>
@@ -86,7 +87,9 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
                       </Link>
                     ) : null}
                   </td>
-                  <td className="py-1 pr-2 font-mono tabular-nums">{clockText(solve.elapsedMs)}</td>
+                  <td className="py-1 pr-2">
+                    <SolveTime kind={kind} solveId={solve.id} elapsedMs={solve.elapsedMs} mine testId="puzzle-own-solve-time" />
+                  </td>
                   <td className="py-1 text-muted">{solve.finishedAt.toISOString().slice(0, 10)}</td>
                 </tr>
               ))}

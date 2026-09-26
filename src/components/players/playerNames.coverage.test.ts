@@ -65,6 +65,9 @@ const ALLOWED: Record<string, Partial<Record<Piece, { times: number; why: string
   "src/components/live/OpponentChoice.tsx": {
     shownName: { times: 2, why: "a set-up tile's label, inside the tile that is the choice; the tile marks a program itself" },
   },
+  "src/components/puzzles/PuzzleRecordPage.tsx": {
+    shownName: { times: 1, why: "the chip saying whose solves the record was narrowed to, as a game record's chip does (narrowings.ts)" },
+  },
   "src/components/mine/OpenGamesBoard.tsx": {
     CountryMark: { times: 1, why: "the Location column, beside a name column drawn by PlayerName" },
   },

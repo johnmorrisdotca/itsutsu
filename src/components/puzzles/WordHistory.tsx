@@ -2,7 +2,6 @@ import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { mySolvePath, setUpPath } from "@/lib/gomoku/slugs";
-import { clockText } from "@/lib/puzzles/clockText";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
@@ -11,6 +10,7 @@ import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/ka
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
+import { SolveTime } from "./SolveTime";
 import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 
 /**
@@ -77,11 +77,12 @@ function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
           {outcome}
         </span>
         <span className="text-xs text-muted">
-          {PUZZLE_LEVEL_DISPLAY[word.level as PuzzleLevel]?.label ?? word.level} · {clockText(word.elapsedMs)} · {word.finishedAt.toISOString().slice(0, 10)}
+          {PUZZLE_LEVEL_DISPLAY[word.level as PuzzleLevel]?.label ?? word.level} · <SolveTime kind={kind} solveId={word.id} elapsedMs={word.elapsedMs} mine testId="word-history-time" /> · {word.finishedAt.toISOString().slice(0, 10)}
         </span>
-        <span className="ml-auto text-right leading-none" data-testid="word-history-points">
+        {/* This one word's points, and so the way into it, like its time and the word itself. */}
+        <Link href={mySolvePath(kind, word.id)} className="ml-auto text-right leading-none underline-offset-2 hover:underline" data-testid="word-history-points">
           <span className="font-semibold tabular-nums">{word.points}</span> <span className="text-[0.65rem] tracking-wide text-muted uppercase">points</span>
-        </span>
+        </Link>
       </div>
       {guesses === null ? (
         <p className="text-xs text-muted">Its guesses were not kept: it was played before they were.</p>

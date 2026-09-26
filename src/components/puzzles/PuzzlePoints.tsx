@@ -2,16 +2,18 @@ import { connection } from "next/server";
 import Link from "@/components/ui/Link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
-import { thousands } from "@/components/about/XpCurve";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
+import { monthOf } from "@/lib/history/recordMonth";
 import { setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { POINTS_A_CELL, POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { POINTS_SHOWN, POINTS_WHOLE, type PointsRow, pointsBoardOf, startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
+
+import { SolvePoints } from "./SolvePoints";
 
 /**
  * A PUZZLE'S LEADERBOARDS, ALL TIME AND THIS MONTH, PLAIN AND FIRST.
@@ -66,9 +68,10 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
       </h2>
       {/* Three columns where the board has the page's width (its standings page), one under another beside a puzzle and on a phone. */}
       <div className={`grid gap-4 ${whole ? "md:grid-cols-3" : ""}`}>
-        <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} testId="puzzle-points-all" />
-        <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} testId="puzzle-points-month" />
-        <PointsTable label="This week" kanji="今週" rows={thisWeek} names={names} kind={kind} testId="puzzle-points-week" />
+        <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} month={null} testId="puzzle-points-all" />
+        <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} month={monthOf(startOfMonth())} testId="puzzle-points-month" />
+        {/* The record has no week filter yet, so a week's total opens that month's solves (a row is filed to add one). */}
+        <PointsTable label="This week" kanji="今週" rows={thisWeek} names={names} kind={kind} month={monthOf(startOfMonth())} testId="puzzle-points-week" />
       </div>
       <p className="text-xs text-muted">
         {kind === "gomoji"
@@ -92,6 +95,7 @@ function PointsTable({
   rows,
   names,
   kind,
+  month,
   testId,
 }: {
   label: string;
@@ -99,6 +103,8 @@ function PointsTable({
   rows: readonly PointsRow[];
   names: Map<string, string>;
   kind: PuzzleKind;
+  /** "2026-09" for this month's board, null for all time: which solves a figure leads to. */
+  month: string | null;
   testId: string;
 }) {
   return (
@@ -131,8 +137,9 @@ function PointsTable({
                   <td className="py-1">
                     <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" />
                   </td>
-                  <td className="py-1 text-right font-mono tabular-nums" title={`${row.puzzles} ${row.puzzles === 1 ? "puzzle" : "puzzles"}`}>
-                    {thousands(row.points)}
+                  <td className="py-1 text-right" title={`${row.puzzles} ${row.puzzles === 1 ? "puzzle" : "puzzles"}`}>
+                    {/* The sum, leading to the solves it is the sum of: that member's, in that month or ever. */}
+                    <SolvePoints kind={kind} memberId={row.memberId} points={row.points} month={month} testId="puzzle-points-figure" />
                   </td>
                 </tr>
               ))}

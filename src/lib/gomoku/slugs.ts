@@ -159,6 +159,16 @@ export function mySolvePath(kind: string, solveId: string): string {
   return `${myGamePath(kind)}/${solveId}`;
 }
 
+/**
+ * One finished puzzle, ANYBODY'S, under the puzzle's record: /games/<slug>/history/<id>.
+ * The address every time on a board of solves leads to; a member's own solve
+ * also has its place under their solves (`mySolvePath`), and both draw the
+ * same page. Members only, like the record it sits under (`src/proxy.ts`).
+ */
+export function solvePath(kind: string, solveId: string): string {
+  return `${historyPath(kind)}/${solveId}`;
+}
+
 /** /games/<slug>/standings — this game's own ladder, in full. */
 export function standingsPath(variant: string): string {
   return `${gamePath(variant)}/standings`;

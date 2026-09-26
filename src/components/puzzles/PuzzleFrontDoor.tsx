@@ -11,7 +11,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { Suspense } from "react";
 
-import { backgroundPath, familyPath, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { backgroundPath, familyPath, historyPath, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { DAILY_PARAM } from "@/lib/puzzles/daily";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -148,6 +148,9 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               </Facet>
               <Facet href={standingsPath(kind)} testId="facet-standings">
                 Fastest solves <span className="font-mincho opacity-70">最速</span>
+              </Facet>
+              <Facet href={historyPath(kind)} testId="facet-record">
+                Every solve here <span className="font-mincho opacity-70">棋譜</span>
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
                 {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? (

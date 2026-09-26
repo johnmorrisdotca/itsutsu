@@ -5,7 +5,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { gamePath, myGamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
+import { currentMemberId } from "@/lib/auth/currentSession";
+import { gamePath, historyPath, myGamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { fastestSolvesOf, memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
@@ -21,7 +22,7 @@ import { GameTrail } from "@/components/games/GameTrail";
  */
 export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
-  const board = await fastestSolvesOf(kind);
+  const [board, me] = await Promise.all([fastestSolvesOf(kind), currentMemberId()]);
   const names = await memberNamesOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
   return (
     <Page>
@@ -34,6 +35,7 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={rulesPath(kind)} className="text-muted underline-offset-2 hover:underline">rules</Link>
+          <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="standings-record">everybody&apos;s solves</Link>
           <Link href={myGamePath(kind)} className="text-muted underline-offset-2 hover:underline">your solves</Link>
           <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">play one</Link>
         </p>
@@ -42,7 +44,7 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
         <PuzzlePoints kind={kind} title={copy.label} whole />
       </Suspense>
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-standings">
-        <FastestTable kind={kind} board={board} names={names} whole />
+        <FastestTable kind={kind} board={board} names={names} whole me={me} />
       </section>
     </Page>
   );
