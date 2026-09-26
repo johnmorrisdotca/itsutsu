@@ -59,8 +59,20 @@ const DIVIDER = "my-1.5 border-t border-rule";
 export function AccountMenu({ initial, languages, version }: { initial: Who; languages: MenuLanguages; version: MenuVersion }) {
   const router = useRouter();
   const pathname = usePathname();
-  // The server already knows who is here; the first paint uses that, so nothing flashes in.
-  const { data, mutate } = useSWR("/api/session", fetcher, { fallbackData: initial });
+  /*
+   * The server already knows who is here; the first paint uses that, so nothing
+   * flashes in — and nothing asks again. With `fallbackData` alone SWR still
+   * fetched `/api/session` as the menu mounted, on every page view, for the
+   * answer the page had just been rendered with: a paid request per view that
+   * told the browser nothing new. The menu's own actions still `mutate()`, and
+   * signing in or out reloads the page, so the answer is never left stale.
+   */
+  const { data, mutate } = useSWR("/api/session", fetcher, {
+    fallbackData: initial,
+    revalidateOnMount: false,
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+  });
   const say = useSpeaker();
   /*
    * Read here rather than at the element, because there are early returns
