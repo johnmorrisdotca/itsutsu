@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MY_GAMES_COPY } from "./mine.constants";
+import { MINE_KEY } from "./mine.constants";
 
 const fetcher = async (url: string): Promise<{ yourMove: number; offered?: number } | null> => {
   const response = await fetch(url);
@@ -74,10 +75,12 @@ const fetcher = async (url: string): Promise<{ yourMove: number; offered?: numbe
  *
  * So it is read when there is a reason to read it:
  *
- * - **On mount**, which is on every page. `SiteHeader` is mounted by each
- *   PAGE rather than by the layout, and a page re-renders on navigation —
- *   the same mechanism the XP toasts rely on, and it is why moving around the
- *   site keeps the count current for free.
+ * - **With every page**, and without a request of its own. `SiteHeader` is
+ *   rendered by each PAGE rather than by the layout, and it works the count
+ *   out in that render (`headerCounts`) and hands it over (`HeaderCountsSeed`),
+ *   so a page arriving or a navigation keeps it current and asks nothing. It
+ *   used to read the route on mount instead — a second paid request on every
+ *   page view (measured 2026-09-26).
  * - **On focus**, so a tab left open behind other work is right again the
  *   moment somebody comes back to it. That is the one case an interval was
  *   really serving, and coming back to the tab is a better signal than a
@@ -98,8 +101,10 @@ const fetcher = async (url: string): Promise<{ yourMove: number; offered?: numbe
  * for on a bill nobody wants.
  */
 export function YourTurnBadge() {
-  const { data } = useSWR("/api/games/mine", fetcher, {
+  const { data } = useSWR(MINE_KEY, fetcher, {
     refreshInterval: 0,
+    // The page's own render hands the count over (`HeaderCountsSeed`): nothing is asked as the page arrives.
+    revalidateOnMount: false,
     revalidateOnFocus: true,
     dedupingInterval: 2_000,
   });

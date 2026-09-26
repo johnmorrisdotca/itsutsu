@@ -4,6 +4,7 @@ import Link from "@/components/ui/Link";
 import useSWR from "swr";
 
 import { GameCount } from "@/components/games/GameCount";
+import { MINE_KEY } from "@/components/mine/mine.constants";
 import type { RatedRecord } from "@/lib/rating/ratedRecord";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -27,7 +28,8 @@ const ITEM = "whitespace-nowrap underline-offset-4 hover:text-ink hover:underlin
  */
 export function StripGames({ memberId }: { memberId: string }) {
   const hydrated = useHydrated();
-  const { data } = useSWR("/api/games/mine", fetcher, { refreshInterval: 0, revalidateOnFocus: true, dedupingInterval: 2_000 });
+  // Seeded by the page's own render (`HeaderCountsSeed`), so nothing is asked as the page arrives; a tab coming back into focus asks.
+  const { data } = useSWR(MINE_KEY, fetcher, { refreshInterval: 0, revalidateOnMount: false, revalidateOnFocus: true, dedupingInterval: 2_000 });
   const moves = data?.yourMove ?? 0;
   const offers = data?.offered ?? 0;
   const going = data?.going ?? 0;
