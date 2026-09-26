@@ -38,7 +38,7 @@ export async function tsunagiSolvedBy(memberId: string): Promise<TsunagiSolved> 
 }
 
 /** A fastest time on one level, by anybody. */
-export type LevelFastest = { memberId: string; elapsedMs: number; finishedAt: Date };
+export type LevelFastest = { id: string; memberId: string; elapsedMs: number; finishedAt: Date };
 
 export const LEVEL_FASTEST_SHOWN = 5;
 
@@ -56,7 +56,7 @@ export async function tsunagiLevelFastest(size: number, level: number): Promise<
     where: { kind: "tsunagi", size, level: tsunagiBand(size, level), givens, solved: true },
     orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
     take: LEVEL_FASTEST_SHOWN * 4,
-    select: { memberId: true, elapsedMs: true, finishedAt: true },
+    select: { id: true, memberId: true, elapsedMs: true, finishedAt: true },
   });
   const seen = new Set<string>();
   return rows.filter((row) => (seen.has(row.memberId) ? false : (seen.add(row.memberId), true))).slice(0, LEVEL_FASTEST_SHOWN);

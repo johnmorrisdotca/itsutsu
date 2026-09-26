@@ -3,6 +3,7 @@ import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.con
 import { clockText } from "@/lib/puzzles/clockText";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { tsunagiLevelFastest } from "@/lib/puzzles/server/tsunagiRecords";
+import { SolveTime } from "./SolveTime";
 
 /**
  * THE FASTEST ON THIS LEVEL, under the board. A Tsunagi level is one board for
@@ -39,7 +40,10 @@ export async function TsunagiLevelFastest({ size, level }: { size: number; level
               rows.map((row, at) => (
                 <tr key={row.memberId} className="border-t border-rule" data-testid="tsunagi-level-fastest-row">
                   <td className="py-1 pr-2 tabular-nums">{at + 1}</td>
-                  <td className="py-1 pr-2 font-mono tabular-nums">{clockText(row.elapsedMs)}</td>
+                  <td className="py-1 pr-2 font-mono tabular-nums">
+                    {/* The time opens that solve, as every puzzle time does (`SolveTime`). */}
+                    <SolveTime kind="tsunagi" solveId={row.id} elapsedMs={row.elapsedMs} />
+                  </td>
                   <td className="py-1">
                     <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" />
                   </td>

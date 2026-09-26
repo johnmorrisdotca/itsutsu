@@ -259,8 +259,15 @@ export function KumimojiTable({
             const mark = misspelt.has(square) ? "misspelt" : apart.has(square) ? "apart" : "ok";
             const look = `${TILE} ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typing ? "outline-2 outline-offset-1 outline-moss" : ""}`;
             const face = { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) };
+            /*
+             * A table nobody presses still says where each tile stands. The last
+             * tile of a game finishes it, and the table turns read-only in the
+             * same moment: a tile that lost its square then read as never laid,
+             * to anything asking where it went (the browser test did, about one
+             * run in fifteen on the production build).
+             */
             return readOnly ? (
-              <div key={square} className="absolute flex items-center justify-center" style={place} data-testid="kumimoji-tile" data-letter={letter}>
+              <div key={square} className="absolute flex items-center justify-center" style={place} data-testid="kumimoji-tile" data-square={square} data-letter={letter} data-mark={mark}>
                 <span className={look} style={face}>
                   {letter}
                 </span>

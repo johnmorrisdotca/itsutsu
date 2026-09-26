@@ -228,8 +228,15 @@ const OPEN_EXACTLY = [
  *    twelve-year-old's surname on a page with no invite in front of it. When
  *    `playerPath` stops carrying the whole name, they belong in the pattern
  *    below and nothing else needs to change.
+ *
+ * `/daily` is open too, and only `/daily` itself: a word puzzle's past days
+ * and each day's words (John, 2026-09-26: "publish the daily words in a
+ * page"). Dates and words are what the game IS — made in this repository,
+ * naming nobody — and the page stops at yesterday, so nothing open says what
+ * today's word is. `/daily/<day>` stays shut: it lists who found each word
+ * fastest, by name, which is the ladder's reason above.
  */
-const OPEN_PATTERNS = [/^\/games\/[^/]+(?:\/(?:rules|family|background))?$/];
+const OPEN_PATTERNS = [/^\/games\/[^/]+(?:\/(?:rules|family|background|daily))?$/];
 
 function isOpenPath(pathname: string): boolean {
   // The front page says what the site is; it shows no game and needs no key.
