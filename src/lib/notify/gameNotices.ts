@@ -5,6 +5,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { recordInbox } from "@/lib/inbox/inbox";
 import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
+import { gameBookOnce } from "@/lib/mail/gameOverSummary";
 import { sendNotice } from "@/lib/mail/sendNotice";
 
 /**
@@ -68,9 +69,11 @@ export async function noticeGameOver(
   /** False where this "ending" is a refused offer, which the inbox says in its own words. */
   { inbox = true }: { inbox?: boolean } = {},
 ): Promise<void> {
+  // One read of the game for both seats' emails, and none at all while notices are off (`sendNotice`).
+  const games = gameBookOnce();
   for (const stone of [STONES.black, STONES.white]) {
     const memberId = noticeRecipient(game, stone);
-    if (memberId !== null) await sendNotice({ kind: "game-over", gameId, winner, stone, memberId });
+    if (memberId !== null) await sendNotice({ kind: "game-over", gameId, winner, stone, memberId }, { games });
   }
   if (!inbox) return;
   // The same people, told in the inbox how it went for them — see `inbox.ts`.
