@@ -271,6 +271,27 @@ export const PICK_BLOCKS_ASIDE = `${PICK_BLOCKS} md:grid-cols-[repeat(2,6.75rem)
 export const SET_UP_SUMMARY = "line-clamp-2 h-10 text-sm leading-5 font-semibold sm:line-clamp-1 sm:h-5";
 
 /**
+ * OPTIONS ON THE LEFT, THE PLAY COLUMN ON THE RIGHT, from a tablet up; one
+ * column on a phone, the play column under the options in the same order it
+ * always was. `md:items-stretch` keeps the two the same height, so the play
+ * column can be aligned within it — see `SET_UP_PLAY_COLUMN`, the shared
+ * place that alignment is decided, so a page reaching for this row never has
+ * to decide it again.
+ */
+export const SET_UP_OPTIONS_AND_PLAY = "grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch";
+
+/**
+ * THE SET-UP SCREEN'S PLAY COLUMN, TOP ALIGNED — never centred, never left to
+ * drift to the bottom. John, 2026-09-25, on Gomoji Mot's two big buttons
+ * sitting centred at the right, low beside Options: "probably best to always
+ * TOP ALIGN TOP RIGHT the PLAY buttons. So they are not near the bottom." It
+ * starts level with the board choice on a desk, in the taller of the two
+ * columns `SET_UP_OPTIONS_AND_PLAY` stretches to match; a phone keeps its own
+ * order, the buttons stacked under the options as they always were.
+ */
+export const SET_UP_PLAY_COLUMN = "flex flex-col justify-start gap-3";
+
+/**
  * A setting stated rather than offered — the one opening a game has, or a
  * rating the game could never move. The card's frame without anything that
  * says "press me": no pointer, no hover, no check, no ring.

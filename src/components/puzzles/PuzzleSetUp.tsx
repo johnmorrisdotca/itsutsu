@@ -16,6 +16,8 @@ import {
   PICK_CHIP_OPEN,
   PICK_CHIP_SHUT,
   PICK_WORD_CHIP,
+  SET_UP_OPTIONS_AND_PLAY,
+  SET_UP_PLAY_COLUMN,
 } from "@/components/live/picker.constants";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
@@ -129,9 +131,12 @@ export function PuzzleSetUp({
         tablet up; one column on a phone, the buttons under the options. John,
         2026-09-25: "we have the 3 rows of options... and 2 rows of Play
         buttons... and the RHS is empty. LHS could be options... and RHS could
-        be LARGER play buttons."
+        be LARGER play buttons." Then, the same day, finding the buttons
+        centred in that column rather than starting at its top: "probably best
+        to always TOP ALIGN TOP RIGHT the PLAY buttons" — `SET_UP_PLAY_COLUMN`,
+        shared rather than a class typed here, so the alignment is decided once.
       */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
+      <div className={SET_UP_OPTIONS_AND_PLAY}>
       <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
         <p className="text-xs text-muted" data-testid="puzzle-size-note">
           {copy.board}
@@ -244,7 +249,7 @@ export function PuzzleSetUp({
         saying Begin beside these: "it should always be PLAY and START" — so
         they read Start alone and Start with a friend (`START_PRESS`).
       */}
-      <div className="flex flex-col justify-center gap-3" data-testid="puzzle-play-buttons">
+      <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
           href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict })}`}
           className={PLAY_BUTTON}
