@@ -150,7 +150,13 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
   return (
     <tr className={ROW_CLASS} data-testid="open-game" data-member={poster.memberId ?? undefined}>
       <td className="py-1.5 pr-3">
-        <span className="flex items-center gap-2">
+        {/*
+          * The name and the time limit never wrap: on an iPhone WebKit gave this
+          * cell less room than its words, "Gomoku" ran under "1 day a move" and
+          * "Tic-tac-toe" took three lines. Kept whole, each column is as wide as
+          * what it says and the table scrolls sideways inside its panel.
+          */}
+        <span className="flex w-max items-center gap-2 whitespace-nowrap">
           {/* Which game the seat is in, at a glance — the same board /play shows. */}
           <GameThumb variant={game.variant} size="small" />
           <span className="flex flex-col">
@@ -161,7 +167,7 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
           </span>
         </span>
       </td>
-      <td className="py-1.5 pr-3 text-xs" data-testid="open-game-clock">
+      <td className="py-1.5 pr-3 text-xs whitespace-nowrap" data-testid="open-game-clock">
         {describeClock(game.clockMode, game.moveTimeMs)}
         <span className="block text-muted">
           {boardWords(game.variant as RuleVariant, game.size)}
