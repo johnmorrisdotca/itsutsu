@@ -21,6 +21,7 @@ import { feltOrWoodTheme } from "./GomojiGrid";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { TsunagiGrid } from "./TsunagiGrid";
 import { TsunagiLevelChips } from "./TsunagiLevelChips";
+import { TsunagiViewport } from "./TsunagiViewport";
 import { TsunagiSolvedView } from "./TsunagiSolvedView";
 import { tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
@@ -276,7 +277,9 @@ export function TsunagiSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
-        <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} flagged={flagged} onPress={press} onDrag={drag} onLift={lift} />
+        <TsunagiViewport size={size}>
+          <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} flagged={flagged} onPress={press} onDrag={drag} onLift={lift} />
+        </TsunagiViewport>
       </SolvePaused>
       {chips}
       {done === null ? (

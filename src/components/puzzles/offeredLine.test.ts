@@ -29,7 +29,7 @@ describe("the line under a puzzle's description", () => {
       expect(sizesOffered(kind)).toEqual(spec.shelves === true ? spec.sizes : spec.offered);
       for (const side of spec.offered) expect(sizesOffered(kind)).toContain(side);
     }
-    expect(offeredLine("tsunagi")).toMatch(/^4×4, 5×5, 6×6, 7×7, 8×8, 9×9 · /);
+    expect(offeredLine("tsunagi")).toMatch(/^4×4, 5×5, 6×6, 7×7, 8×8, 9×9, 10×10, 11×11 · /);
   });
 
   it("is what the front door prints, and a shelved set-up turns through the same list", () => {

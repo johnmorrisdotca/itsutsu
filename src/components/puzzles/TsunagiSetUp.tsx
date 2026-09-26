@@ -41,8 +41,8 @@ const TILES = 4;
  * plays the next one not yet solved. The options are how the pairs are told
  * apart (colours or numbers) and the board's colour.
  *
- * SIX SIZES, FOUR TILES. The set-up screen keeps room for four boards and no
- * more, so the tiles show four at a time, 4 to 7 or 6 to 9, and one press
+ * EIGHT SIZES, FOUR TILES. The set-up screen keeps room for four boards and no
+ * more, so the tiles show four at a time, 4 to 7 or 8 to 11, and one press
  * beside them turns to the other four. The press is always there, so choosing
  * never moves the page.
  */

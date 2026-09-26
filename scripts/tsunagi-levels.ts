@@ -1,5 +1,5 @@
 /**
- * THE TSUNAGI LEVELS, MADE ON A DESK: `node scripts/tsunagi-levels.ts [size…] [--keep <size:level,…>] [--grow [--migration <dir>]]`.
+ * THE TSUNAGI LEVELS, MADE ON A DESK: `node scripts/tsunagi-levels.ts [size…] [--keep <size:level,…>] [--grow <size,…> [--migration <dir>]]`.
  *
  * For each size asked (all six when none is), fills grids with random lines
  * (`randomFilling`), keeps a layout only when the solver proves it has exactly
@@ -34,25 +34,33 @@
  *
  * A SIZE IS NEVER REORDERED UNLESS ASKED. A run keeps the order of the levels
  * it finds, so a board with play on it stays at its number; only `--grow` adds
- * boards (to whole blocks, up to `WANTED`) and reorders the size, and that run
- * must ship with its migration. What a run may
+ * boards (to whole blocks, up to `WANTED`) and reorders the size — only the
+ * sizes it names, `--grow 10,11` — and a run that reorders a size with play on
+ * it must ship with its migration. What a run may
  * still change is a block's 15th and 16th slot, given a twist where nobody has
  * played it (`tsunagi-twists.ts`, `--keep <size:level,…>` naming the slots
  * with play, read from production first), and the difficulty marks every level
  * shows (`levels/marks.data.ts`).
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 
 import { candidate, symmetryKey, type LinkCandidate } from "../src/lib/puzzles/tsunagi/generate.ts";
 import { difficultyScores, measureLevel, orderByDifficulty } from "../src/lib/puzzles/tsunagi/difficulty.ts";
 import { withTwists } from "./tsunagi-twists.ts";
 import { twistRole } from "../src/lib/puzzles/tsunagi/ladder.ts";
+import { TSUNAGI_MARKS, TSUNAGI_ROLES } from "../src/lib/puzzles/tsunagi/levels/marks.data.ts";
 import type { TwistRole } from "../src/lib/puzzles/tsunagi/ladder.types.ts";
 import { seededRandom } from "../src/lib/puzzles/random.ts";
 import { TSUNAGI_BLOCK } from "../src/lib/puzzles/tsunagi/levelBlocks.ts";
 
 /** Levels a size aims for: sixteen blocks of sixteen. */
-const WANTED = 256;
+/**
+ * Levels each size aims for: sixteen blocks of sixteen, and fewer at the big
+ * sizes, whose boards take the solver longer to prove on every build and the
+ * generator far longer to find (2026-09-26: about a thousand distinct 10×10
+ * boards in four minutes, seventy 11×11, none at 15×15).
+ */
+const WANTED: Record<number, number> = { 4: 256, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64 };
 
 /** Per size: the longest a line may be drawn, how many grids to try, and the most solver positions a kept level may take. */
 const PLAN: Record<number, { longest: number; tries: number; ceiling: number }> = {
@@ -62,6 +70,8 @@ const PLAN: Record<number, { longest: number; tries: number; ceiling: number }> 
   7: { longest: 21, tries: 60_000, ceiling: 20_000 },
   8: { longest: 24, tries: 80_000, ceiling: 30_000 },
   9: { longest: 27, tries: 120_000, ceiling: 40_000 },
+  10: { longest: 30, tries: 400_000, ceiling: 60_000 },
+  11: { longest: 33, tries: 2_000_000, ceiling: 80_000 },
 };
 
 /** Per size, for the twist boards: grids to try for each kind, the longest line, and the solver's budget. */
@@ -72,6 +82,8 @@ const PLAN_TWISTS: Record<number, { tries: number; longest: number; budget: numb
   7: { tries: 8_000, longest: 21, budget: 20_000 },
   8: { tries: 12_000, longest: 24, budget: 30_000 },
   9: { tries: 12_000, longest: 27, budget: 40_000 },
+  10: { tries: 6_000, longest: 30, budget: 60_000 },
+  11: { tries: 30_000, longest: 33, budget: 80_000 },
 };
 
 /** The most pairs a level may have: as many colours as the stones come in (`TSUNAGI_COLOURS`). */
@@ -80,6 +92,8 @@ const MOST_PAIRS = 12;
 type Level = readonly [string, string];
 
 async function levelsNow(size: number): Promise<readonly Level[]> {
+  // A size with no file yet has no levels: the first run to grow it writes one.
+  if (!existsSync(`src/lib/puzzles/tsunagi/levels/size${size}.data.ts`)) return [];
   const file = (await import(`../src/lib/puzzles/tsunagi/levels/size${size}.data.ts`)) as Record<string, readonly Level[]>;
   return file[`TSUNAGI_${size}`]!;
 }
@@ -96,7 +110,7 @@ function grown(size: number, now: readonly Level[]): Level[] {
     fresh.set(made.key, made);
   }
   const pool = [...fresh.values()].sort((a, b) => a.branches - b.branches || a.nodes - b.nodes || a.turns - b.turns || (a.key < b.key ? -1 : 1));
-  const target = Math.min(WANTED, Math.floor((now.length + pool.length) / TSUNAGI_BLOCK) * TSUNAGI_BLOCK);
+  const target = Math.min(WANTED[size]!, Math.floor((now.length + pool.length) / TSUNAGI_BLOCK) * TSUNAGI_BLOCK);
   const need = Math.max(0, target - now.length);
   const picked: Level[] = [];
   for (let at = 0; at < need; at += 1) {
@@ -224,10 +238,13 @@ for (const each of keepList.split(",").filter(Boolean)) {
   if (!keep.has(size)) keep.set(size, new Set());
   keep.get(size)!.add(level);
 }
-const growing = args.includes("--grow");
-const asked = args.filter((arg, at) => args[at - 1] !== "--keep" && args[at - 1] !== "--migration").map(Number).filter((size) => PLAN[size] !== undefined);
-const marks: Record<number, string> = {};
-const roles: Record<number, Record<number, TwistRole>> = {};
+// The sizes a run may add boards to, named: `--grow 10,11`. Never all of them by default.
+const growList = args.includes("--grow") ? (args[args.indexOf("--grow") + 1] ?? "") : "";
+const growing = new Set(growList.split(",").filter(Boolean).map(Number));
+const asked = args.filter((arg, at) => !["--keep", "--migration", "--grow"].includes(args[at - 1] ?? "")).map(Number).filter((size) => PLAN[size] !== undefined);
+// A run over some sizes keeps the marks and roles of the rest as they were.
+const marks: Record<number, string> = { ...TSUNAGI_MARKS };
+const roles: Record<number, Record<number, TwistRole>> = { ...TSUNAGI_ROLES };
 const moves: Record<number, number[]> = {};
 const moved: Moved[] = [];
 const bands: { size: number; layout: string; band: string }[] = [];
@@ -236,7 +253,7 @@ for (const size of asked.length > 0 ? asked : Object.keys(PLAN).map(Number)) {
   const now = await levelsNow(size);
   // Boards are added only when asked (`--grow`), and adding reorders the size, which needs a migration:
   // a rerun that grew on its own once reordered 149 4×4 boards with play on them.
-  const all = growing ? grown(size, now) : [...now];
+  const all = growing.has(size) ? grown(size, now) : [...now];
   // Ordered only when boards were added; a full size keeps its order, every board at its number.
   const order = all.length > now.length ? orderByDifficulty(all, size) : all.map((_, at) => at);
   const ordered = order.map((at) => all[at]!);

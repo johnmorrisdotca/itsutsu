@@ -4,12 +4,12 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 
 import { BOARD_THEMES, FELTS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { placeOf, squareAt, type Tiles } from "@/lib/puzzles/kumimoji/grid";
 import { TABLE, edgePan, fitView, keepInReach, panView, tableArea, zoomView, type View } from "@/lib/puzzles/kumimoji/tableView";
 
-import { TABLE_BOX, TABLE_CURSOR, TABLE_PAD, TABLE_PAD_KEY, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, tileLetterPx } from "./kumimoji.constants";
+import { ViewPad, type PadKey } from "./ViewPad";
+import { TABLE_BOX, TABLE_CURSOR, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, tileLetterPx } from "./kumimoji.constants";
 import { useWordStyle } from "./WordStyleContext";
 
 /** What the solve asks of the table while a tile is dragged: pan toward the edge it is held near. */
@@ -50,20 +50,6 @@ function ruling(board: TableBoard, tile: number, x: number, y: number, line: str
     opacity: 0.5,
   };
 }
-
-/** The pad's keys, three to a row: zoom in, up, zoom out; left, right; down. */
-const PAD = [
-  { key: "in", glyph: "+", label: "Zoom in" },
-  { key: "up", glyph: "↑", label: "Move the view up" },
-  { key: "out", glyph: "−", label: "Zoom out" },
-  { key: "left", glyph: "←", label: "Move the view left" },
-  null,
-  { key: "right", glyph: "→", label: "Move the view right" },
-  null,
-  { key: "down", glyph: "↓", label: "Move the view down" },
-  null,
-] as const;
-type PadKey = "in" | "out" | "up" | "down" | "left" | "right";
 
 /** How far one press of the pad moves the view: a quarter of the box, and never less than two tiles. */
 function padStep(tile: number, width: number, height: number): number {
@@ -364,35 +350,13 @@ export function KumimojiTable({
         </>
       )}
       {readOnly ? null : (
-        <button
-          type="button"
-          className={`${BUTTON_BASE} ${BUTTON_QUIET} absolute top-2 right-2 z-10 min-h-9 px-3 py-1 text-xs shadow-sm`}
-          onClick={() => setFitted(true)}
-          aria-pressed={fitted}
-          data-fit="true"
-          data-testid="kumimoji-fit"
-        >
-          Fit <span className="font-mincho opacity-70">全体</span>
-        </button>
-      )}
-      {readOnly ? null : (
         /*
-         * THE PAD, under Fit. John, 2026-09-26: "the mouse wheel zooms the table
-         * nicely, but there are no controls on the page". Buttons, so a finger
-         * and a keyboard both reach them; a press is a gesture like any other,
-         * so the view is the player's own until Fit.
+         * FIT AND THE PAD (`ViewPad`, shared with Tsunagi's big boards). John,
+         * 2026-09-26: "the mouse wheel zooms the table nicely, but there are no
+         * controls on the page". A press is a gesture like any other, so the
+         * view is the player's own until Fit.
          */
-        <div className={TABLE_PAD} role="group" aria-label="Move and zoom the table" data-pad="true" data-testid="kumimoji-pad">
-          {PAD.map((each, at) =>
-            each === null ? (
-              <span key={at} aria-hidden="true" />
-            ) : (
-              <button key={each.key} type="button" className={TABLE_PAD_KEY} onClick={() => press(each.key)} aria-label={each.label} title={each.label} data-testid={`kumimoji-pad-${each.key}`}>
-                {each.glyph}
-              </button>
-            ),
-          )}
-        </div>
+        <ViewPad fitted={fitted} onFit={() => setFitted(true)} onPress={press} label="Move and zoom the table" testId="kumimoji" />
       )}
     </div>
   );

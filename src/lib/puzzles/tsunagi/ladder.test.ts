@@ -37,6 +37,18 @@ describe("a board's challenges", () => {
 describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("the %i×%i ladder", (size) => {
   const layouts = () => tsunagiLevelsOf(size).map(([layout]) => layout);
 
+  it("never has a level use a twist before the 15th that teaches it", () => {
+    const all = layouts();
+    const taught = new Set<string>();
+    all.forEach((layout, at) => {
+      const role = twistRole(all, at + 1);
+      for (const twist of challengesOf(layout)) {
+        if (!taught.has(twist)) expect(role?.role, `level ${at + 1} uses ${twist} before it is taught`).toBe("teaches");
+        taught.add(twist);
+      }
+    });
+  });
+
   it("has twists only at a block's 15th and 16th, always the two together", () => {
     const all = layouts();
     all.forEach((layout, at) => {
@@ -50,9 +62,11 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("the %i×%i ladder", (s
 
   it("teaches bridges, walls, waypoints and wrap in that order, each first at a 15th that says it is new", () => {
     const all = layouts();
-    const firsts = (["bridges", "walls", "waypoints", "wrap"] as const).map((twist) => ({ twist, at: all.findIndex((layout) => challengesOf(layout).includes(twist)) }));
+    // Bridges and walls at every size; waypoints and wrap wherever their generators could make a lesson (not wrap at 10×10).
+    const found = (["bridges", "walls", "waypoints", "wrap"] as const).map((twist) => ({ twist, at: all.findIndex((layout) => challengesOf(layout).includes(twist)) }));
+    for (const { twist, at } of found.slice(0, 2)) expect(at, `a ${twist} lesson`).toBeGreaterThanOrEqual(0);
+    const firsts = found.filter(({ at }) => at >= 0);
     for (const { twist, at } of firsts) {
-      expect(at, `a ${twist} lesson`).toBeGreaterThanOrEqual(0);
       expect(twistRole(all, at + 1)!.role, twist).toBe("teaches");
       expect(twistRole(all, at + 1)!.newOnes, twist).toContain(twist);
     }

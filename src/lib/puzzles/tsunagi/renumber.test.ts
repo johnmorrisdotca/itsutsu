@@ -25,7 +25,14 @@ function migrationMoves(): { size: number; from: number; to: number; band: strin
 }
 
 describe("the renumbering", () => {
-  it.each(TSUNAGI_SIZES.map((size) => [size]))("moves each of the hundred old %i×%i levels to its own new number, no two to one", (size) => {
+  // The sizes that had levels before the renumbering: 10×10 and 11×11 came after it, with nothing to move.
+  const RENUMBERED = TSUNAGI_SIZES.filter((size) => TSUNAGI_RENUMBERED[size] !== undefined);
+
+  it("covers every size that had levels then, 4×4 to 9×9", () => {
+    expect(RENUMBERED).toEqual([4, 5, 6, 7, 8, 9]);
+  });
+
+  it.each(RENUMBERED.map((size) => [size]))("moves each of the hundred old %i×%i levels to its own new number, no two to one", (size) => {
     const to = TSUNAGI_RENUMBERED[size]!;
     expect(to).toHaveLength(100);
     expect(new Set(to).size).toBe(100);
@@ -51,7 +58,7 @@ describe("the renumbering", () => {
 
   it("gave every plain level's board its band in the migration, for the solves kept by board", () => {
     // A twist board came after the renumbering, into a 15th or 16th nobody had played, so nothing stored needed its band.
-    for (const size of TSUNAGI_SIZES) {
+    for (const size of TSUNAGI_SIZES.filter((each) => TSUNAGI_RENUMBERED[each] !== undefined)) {
       tsunagiLevelsOf(size).forEach(([layout], at) => {
         if (isTwist(layout)) return;
         expect(MIGRATION, `${size}×${size} level ${at + 1}`).toContain(`(${size}, '${layout}', '${tsunagiBand(size, at + 1)}')`);

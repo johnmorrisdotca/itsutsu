@@ -107,15 +107,20 @@ export function withTwists(size: number, levels: readonly Level[], keep: Readonl
     else free.push(block);
   }
   const planned = lessons(free.length);
-  const has = (layout: string, twist: Challenge) => challengesOf(layout).includes(twist);
+  // What each lesson may use: its own twist and every twist taught before it, never one still to come.
+  const allowed = planned.map((_, at) => new Set(planned.slice(0, at + 1).map((lesson) => lesson.twist)));
+  const fits = (layout: string, at: number) => {
+    const on = challengesOf(layout);
+    return on.includes(planned[at]!.twist) && on.every((twist) => allowed[at]!.has(twist));
+  };
   // Which free blocks already hold their lesson, and which need boards made.
-  const needed = free.filter((block, at) => !(has(levels[block * TSUNAGI_BLOCK - 2]![0], planned[at]!.twist) && has(levels[block * TSUNAGI_BLOCK - 1]![0], planned[at]!.twist)));
+  const needed = free.filter((block, at) => !(fits(levels[block * TSUNAGI_BLOCK - 2]![0], at) && fits(levels[block * TSUNAGI_BLOCK - 1]![0], at)));
   if (needed.length === 0) return { levels: out, placed, kept };
   const pool = pools(size, plan.tries, plan.longest, plan.budget);
   const used = new Set<string>(levels.map(([layout]) => symmetryKey(layout, size)));
-  const take = (kinds: Kind[], at: number): { made: TwistCandidate; kind: Kind } | null => {
+  const take = (kinds: Kind[], at: number, lesson: number): { made: TwistCandidate; kind: Kind } | null => {
     for (const kind of kinds) {
-      const list = pool[kind].filter((made) => !used.has(made.key));
+      const list = pool[kind].filter((made) => !used.has(made.key) && fits(made.layout, lesson));
       if (list.length === 0) continue;
       const made = list[Math.round(Math.min(1, Math.max(0, at)) * (list.length - 1))]!;
       used.add(made.key);
@@ -126,8 +131,8 @@ export function withTwists(size: number, levels: readonly Level[], keep: Readonl
   free.forEach((block, at) => {
     if (!needed.includes(block)) return;
     const lesson = planned[at]!;
-    const teach = take(lesson.teach, lesson.teachAt);
-    const test = take(lesson.test, lesson.testAt);
+    const teach = take(lesson.teach, lesson.teachAt, at);
+    const test = take(lesson.test, lesson.testAt, at);
     // A lesson needs both its levels: where either cannot be made, the block keeps what it has.
     if (teach === null || test === null) {
       kept.push(block);

@@ -103,8 +103,18 @@ export function forcedShare(code: string, size: number): number {
 export function measureLevel(layout: string, answer: string, size: number): LevelMeasure | null {
   const decoded = decodeLayout(layout, size);
   if (decoded === null) return null;
+  return measureSolved(layout, answer, size, countSolutions(decoded, 2));
+}
+
+/**
+ * The same measures from a solve already made — how many positions and
+ * branches the solver took — so a caller that has just proved a level (the
+ * level tests) does not solve it a second time to measure it.
+ */
+export function measureSolved(layout: string, answer: string, size: number, solved: { nodes: number; branches: number }): LevelMeasure | null {
+  const decoded = decodeLayout(layout, size);
+  if (decoded === null) return null;
   const lengths = decoded.ends.map((_, pair) => [...answer].filter((char) => char === PAIR_LETTERS[pair]).length);
-  const solved = countSolutions(decoded, 2);
   return {
     pairs: decoded.ends.length,
     turns: turnsIn(answer, decoded),

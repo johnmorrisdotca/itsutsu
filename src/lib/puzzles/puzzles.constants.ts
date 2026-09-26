@@ -172,15 +172,16 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    */
   gomojiPop: { sizes: [3, 4, 5, 6, 7], offered: [3, 4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji", shelves: true },
   /*
-   * Six sizes of fixed levels, 256 each (192 at 4×4), and room for four size
-   * tiles: they show four at a time, 4 to 7 or 6 to 9 (`TsunagiSizes`). A
+   * Eight sizes of fixed levels, 256 each (192 at 4×4, 128 at 10×10, 64 at
+   * 11×11), and room for four size tiles: they show four at a time, 4 to 7 or
+   * 8 to 11 (`TsunagiSizes`). A
    * level's band (the first third easy, the last hard) is its level here. No
    * Check or Hint in the puzzle sense: Tsunagi's own Check only names the pairs
    * not joined yet, and the board already shows which.
    */
   // A layout is a cell a character and then its walls and `wrap` (`tsunagi/code.ts`): 81 cells and a wall list came to 109 characters
   // at 9×9, past the 81 the route once allowed, and every solve of those levels was refused. `levels.test.ts` holds every level to this.
-  tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true },
+  tsunagi: { sizes: [4, 5, 6, 7, 8, 9, 10, 11], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true },
   /*
    * A size is the hand a game opens with (`KUMIMOJI_HANDS`), and the bag it is
    * played from follows from it (`KUMIMOJI_BAG`). One level: the bag is the
@@ -324,7 +325,9 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     6: { label: "Short", kanji: "短" },
     7: { label: "Usual", kanji: "定番" },
     8: { label: "Long", kanji: "長" },
-    9: { label: "Longest", kanji: "最長" },
+    9: { label: "Longer", kanji: "長大" },
+    10: { label: "Big", kanji: "大" },
+    11: { label: "Biggest", kanji: "特大" },
   },
   kumimoji: {
     [KUMIMOJI_HANDS.tiny]: { label: "Tiny", kanji: "極小" },

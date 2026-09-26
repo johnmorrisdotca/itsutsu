@@ -15,15 +15,16 @@ import { TSUNAGI_BLOCK } from "./levelBlocks";
  * (as the kana Gomoji's word lists are), so a phone playing 5×5 never carries
  * the other five sizes.
  */
-export const TSUNAGI_SIZES = [4, 5, 6, 7, 8, 9] as const;
+export const TSUNAGI_SIZES = [4, 5, 6, 7, 8, 9, 10, 11] as const;
 
 /**
  * How many levels each size has: read without loading the size, for the board
  * of levels. `levels.test.ts` holds it to the files. Sixteen blocks of sixteen
- * (`levelBlocks.ts`), and twelve at 4×4, where the generator runs out of
- * distinct boards with one answer before two hundred.
+ * (`levelBlocks.ts`); twelve at 4×4, where the generator runs out of distinct
+ * boards with one answer before two hundred; eight at 10×10 and four at
+ * 11×11, whose boards are slow to find and to prove on every build.
  */
-export const TSUNAGI_LEVEL_COUNTS: Record<number, number> = { 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256 };
+export const TSUNAGI_LEVEL_COUNTS: Record<number, number> = { 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64 };
 
 type LevelRow = readonly [string, string];
 
@@ -37,6 +38,8 @@ async function importSize(size: number): Promise<readonly LevelRow[]> {
   if (size === 7) return (await import("./levels/size7.data")).TSUNAGI_7;
   if (size === 8) return (await import("./levels/size8.data")).TSUNAGI_8;
   if (size === 9) return (await import("./levels/size9.data")).TSUNAGI_9;
+  if (size === 10) return (await import("./levels/size10.data")).TSUNAGI_10;
+  if (size === 11) return (await import("./levels/size11.data")).TSUNAGI_11;
   throw new Error(`No Tsunagi at ${size}×${size}.`);
 }
 

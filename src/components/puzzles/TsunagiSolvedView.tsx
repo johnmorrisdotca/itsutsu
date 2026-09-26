@@ -11,6 +11,7 @@ import type { Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { SolveTime } from "./SolveTime";
 import { TsunagiGrid } from "./TsunagiGrid";
+import { TsunagiViewport } from "./TsunagiViewport";
 import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 
 /**
@@ -51,7 +52,9 @@ export function TsunagiSolvedView({
 }) {
   return (
     <>
-      <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done readOnly />
+      <TsunagiViewport size={layout.size}>
+        <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done readOnly />
+      </TsunagiViewport>
       {under}
       <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="tsunagi-solved-already">
         <p className="text-sm">
