@@ -13,6 +13,9 @@ import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
+import { answersFor } from "../src/lib/puzzles/gomoji/code";
+import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
+import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
@@ -54,7 +57,40 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "gomojiWort", size: 5, level: "easy", seed: 20260925, fill: 2 },
   // A 6×6 Tsunagi, level 8 (in the first row, open to anybody), all but two of its lines drawn and one of those begun: marbles, lines and washed cells.
   { kind: "tsunagi", size: 6, level: "easy", seed: 8, fill: 2 },
+  // A Classic Kumimoji's first hand, most of it laid: a word across and words down from it, on the table's own colour.
+  { kind: "kumimoji", size: 11, level: "medium", seed: 20260926, fill: 2 },
 ];
+
+/**
+ * A small crossword out of a Kumimoji hand, as a player would lay it: the
+ * longest everyday word the hand makes, across, and then up to `downs` words
+ * hanging down from its letters, two columns apart so they never touch. The
+ * everyday words are Gomoji's easy answers, so the picture does not spell a
+ * word nobody knows.
+ */
+function crosswordFrom(hand: string, downs: number): { letter: string; square: string }[] {
+  const fits = (word: string, letters: string) => [...lettersOf(word)].every(([letter, count]) => (lettersOf(letters).get(letter) ?? 0) >= count);
+  const everyday = (length: number) => (length === 4 || length === 5 ? answersFor(length, true) : tileWords().byLength.get(length)!);
+  const across = [5, 4].map((length) => everyday(length).find((word) => fits(word, hand))).find((word) => word !== undefined)!;
+  const laid = [...across].map((letter, col) => ({ letter, square: `0,${col}` }));
+  let left = hand;
+  for (const letter of across) left = left.replace(letter, "");
+  let from = -2;
+  for (let col = 0; col < across.length && laid.length < hand.length; col += 1) {
+    if (col - from < 2 || downs === 0) continue;
+    const down = [5, 4]
+      .map((length) => everyday(length).find((word) => word[0] === across[col] && fits(word.slice(1), left)))
+      .find((word) => word !== undefined);
+    if (down === undefined) continue;
+    for (const [row, letter] of [...down.slice(1)].entries()) {
+      laid.push({ letter, square: `${row + 1},${col}` });
+      left = left.replace(letter, "");
+    }
+    from = col;
+    downs -= 1;
+  }
+  return laid;
+}
 
 test.describe("puzzle screenshots", () => {
   test.skip(process.env.GAME_SCREENSHOTS !== "1", "Set GAME_SCREENSHOTS=1 to write them.");
@@ -142,6 +178,14 @@ test.describe("puzzle screenshots", () => {
           await page.mouse.up();
           filled += 1;
         }
+      } else if (scene.kind === "kumimoji") {
+        // Tapped from the hand onto the table, as a player lays them; Fit is a control, not part of the picture.
+        await page.addStyleTag({ content: '[data-testid="kumimoji-fit"] { display: none !important; }' });
+        for (const tile of crosswordFrom(puzzle.givens.slice(0, scene.size), scene.fill)) {
+          await page.locator(`[data-testid="kumimoji-hand-tile"][data-letter="${tile.letter}"]`).first().click();
+          await page.locator(`[data-testid="kumimoji-square"][data-square="${tile.square}"]`).click();
+          filled += 1;
+        }
       } else if (scene.kind === "blackAndWhite") {
         const givens = decodeBlackAndWhite(puzzle.givens, scene.size)!;
         const solution = decodeBlackAndWhite(puzzle.solution, scene.size)!;
@@ -178,6 +222,11 @@ test.describe("puzzle screenshots", () => {
       await expect(page.locator('[data-testid="puzzle-cell"][aria-pressed="true"]')).toHaveCount(0);
       // And no focus ring on the last cell pressed, which Hidden Stones' pictures carried round a cross.
       await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+      // A Kumimoji has no board: its picture is the table under its tiles, fitted to them.
+      if (scene.kind === "kumimoji") {
+        await page.getByTestId("kumimoji-area").screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
       const grid = page.getByTestId("puzzle-grid");
       await expect(grid).toBeVisible();
       // The board in its wood and nothing round it, as a game's picture is taken (game-screenshots.spec.ts):
