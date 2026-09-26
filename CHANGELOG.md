@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.356.0 — 2026-09-26
+- The Everyone feed tells the site's news: each day's new games, a game's first player, a new first place, a top computer player beaten, first wins and losses, and new best times, naming only players 18 or over
+
 ## 0.355.1 — 2026-09-26
 - The board preview on every set-up screen is the full width of a phone
 - Member.isTest stays one more release, read by nothing, so the deploy can drop it safely next time
