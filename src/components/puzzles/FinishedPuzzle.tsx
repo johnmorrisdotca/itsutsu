@@ -12,6 +12,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { decodeGuesses, languageOf } from "@/lib/puzzles/gomoji/code";
 import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { decodeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { linesOfAnswer, noLines } from "@/lib/puzzles/tsunagi/lines";
 import { readKoushi } from "@/lib/puzzles/koushi/check";
 import { decodeGivens, markLattice } from "@/lib/puzzles/koushi/lattice";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -20,6 +22,7 @@ import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { HiddenStonesGrid } from "./HiddenStonesGrid";
 import { KoushiGrid } from "./KoushiGrid";
 import { KumimojiTable } from "./KumimojiTable";
+import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PuzzleSteps } from "./PuzzleSteps";
@@ -103,6 +106,25 @@ export function FinishedPuzzle({
   }
 
   // A Kumimoji is its crossword, laid out on its table and fitted to the box; it keeps no steps to replay.
+  /*
+   * A Tsunagi board drawn as Tsunagi draws it, never as paper: its marbles, and its
+   * lines where the answer is shown; the marbles alone where it is kept back.
+   * It had no branch here, so a solve's page drew an empty white square (John,
+   * 2026-09-26: "How is this a solved puzzle?").
+   */
+  if (kind === "tsunagi") {
+    const layout = decodeLayout(givens, size);
+    if (layout !== null) {
+      const lines = (answer === null ? null : linesOfAnswer(layout, answer)) ?? noLines(layout);
+      return (
+        <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "finished"}>
+          <div className="mx-auto w-full" data-focus-board>
+            <TsunagiGrid layout={layout} lines={lines} marks="colours" fill="marbles" theme={BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} done readOnly />
+          </div>
+        </Focused>
+      );
+    }
+  }
   if (kind === "kumimoji") {
     const tiles = (answer === null ? null : decodeGrid(answer)) ?? new Map<string, string>();
     return (

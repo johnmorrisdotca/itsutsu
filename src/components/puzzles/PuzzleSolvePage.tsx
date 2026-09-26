@@ -14,7 +14,7 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { clockText } from "@/lib/puzzles/clockText";
 import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
 import { FUTAGO_DISPLAY, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
@@ -63,7 +63,14 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   if (found === null) notFound();
   const solverId = "memberId" in found ? (found.memberId as string) : me!;
   const own = solverId === me;
-  const kept = own || !isTodayUtc(found.finishedAt) || (await finishedSameGrid(me, kind, found.givens));
+  /*
+   * Somebody else's answer to a board the reader may still play is kept back. A
+   * day's puzzle opens the next day; a fixed level (Tsunagi's) is the same board
+   * for good, so it stays kept back until the reader has solved that level
+   * themselves (John, 2026-09-26: "How is this a solved puzzle?").
+   */
+  const fixed = PUZZLE_SPECS[kind].fixedLevels === true;
+  const kept = own || (!fixed && !isTodayUtc(found.finishedAt)) || (await finishedSameGrid(me, kind, found.givens));
   const solve = kept ? found : { ...found, answer: null, steps: null };
   const solver = (await memberNamesOf([solverId])).get(solverId) ?? "";
   const copy = PUZZLE_DISPLAY[kind];
@@ -134,10 +141,11 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
         </WordStyleProvider>
         {!kept ? (
           <p className="text-sm text-muted" data-testid="solve-kept-back">
-            Today&apos;s puzzle is the same for everybody, so how it was solved is kept back until tomorrow, or until you have
-            finished it yourself.{" "}
+            {fixed
+              ? "This level is the same board for everybody, so how it was solved is kept back until you have solved it yourself. Here it is as it is dealt."
+              : "Today's puzzle is the same for everybody, so how it was solved is kept back until tomorrow, or until you have finished it yourself."}{" "}
             <Link href={setUpPath(kind)} className="font-semibold text-ink underline underline-offset-2">
-              Play today&apos;s
+              {fixed ? "Play it" : "Play today's"}
             </Link>
           </p>
         ) : null}
