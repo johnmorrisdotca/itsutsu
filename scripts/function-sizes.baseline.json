@@ -2,39 +2,39 @@
   "functions": [
     {
       "name": "_not-found",
-      "mb": 30,
+      "mb": 36.2,
       "sample": [
         "_not-found",
         "about",
+        "about/[view]",
         "admin",
+        "admin/[view]",
+        "admin/player-journeys",
         "backlog",
         "champions",
         "embed",
-        "famous",
-        "games",
-        "games/[slug]",
-        "games/[slug]/background"
+        "famous"
       ]
     },
     {
       "name": "api/admin/members/[id]/claim",
-      "mb": 24.4,
+      "mb": 28.6,
       "sample": [
         "api/admin/members/[id]/claim",
         "api/admin/members/[id]/phrase",
         "api/admin/members/[id]/phrase/draw",
+        "api/admin/members/[id]/remove",
         "api/admin/reports/[id]/image",
         "api/auth/[...nextauth]",
         "api/buddies",
         "api/embed-tokens",
         "api/embed/summary",
-        "api/games",
-        "api/games/[id]"
+        "api/games"
       ]
     },
     {
       "name": "apple-icon.png.rsc",
-      "mb": 22,
+      "mb": 23,
       "sample": [
         "apple-icon.png",
         "favicon.ico",
@@ -46,7 +46,7 @@
     },
     {
       "name": "_global-error.rsc",
-      "mb": 21.3,
+      "mb": 22.4,
       "sample": [
         "_global-error"
       ]
