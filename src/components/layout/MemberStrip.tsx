@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { levelShown } from "@/lib/xp/levelShown";

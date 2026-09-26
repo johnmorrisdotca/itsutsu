@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { LocalTime } from "@/components/ui/LocalTime";
 import { SECTION_HEADING, TONE_CLASS } from "@/components/ui/ui.constants";

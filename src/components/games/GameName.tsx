@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RAISED_LINK, STRETCHED_LINK } from "@/components/ui/ui.constants";

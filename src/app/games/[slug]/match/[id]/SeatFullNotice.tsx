@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { ACTIVE_GAME_LIMIT, activeGameCount } from "@/lib/history/activeGames";

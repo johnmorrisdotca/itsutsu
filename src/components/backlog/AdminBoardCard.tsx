@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { StatusPill } from "@/components/backlog/BacklogRow";
 import { SECTION_HEADING, SECTION_TITLE } from "@/components/ui/ui.constants";

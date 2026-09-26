@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { LadderMore } from "./LadderMore";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import useSWR from "swr";

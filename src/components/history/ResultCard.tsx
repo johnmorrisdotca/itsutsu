@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useId, useRef } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";

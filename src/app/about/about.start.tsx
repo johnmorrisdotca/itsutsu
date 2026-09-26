@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { FigureTable } from "@/components/about/FigureTable";
 import { StepFlow } from "@/components/about/StepFlow";

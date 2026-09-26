@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 

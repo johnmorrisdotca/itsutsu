@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { levelNameRow, levelPath, xpLevelKanji, xpLevelName } from "@/lib/xp/levelNames";
 

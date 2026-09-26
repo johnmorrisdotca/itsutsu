@@ -38,7 +38,7 @@ import { ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { xpForBadge } from "@/lib/xp/xpScope";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { XP_HISTORY_TAB_ENTRY, xpHistoryHref } from "@/lib/xp/xpHistoryDays";
 import { LadderStrength } from "@/components/players/LadderStrength";
 import { builtLadderFingerprint } from "@/lib/gomoku/ladderFingerprint.built";

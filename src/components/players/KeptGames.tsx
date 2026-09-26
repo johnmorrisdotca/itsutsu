@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { GameReplay } from "@/components/history/GameReplay";
 import { appearanceFrom } from "@/components/board/appearance";

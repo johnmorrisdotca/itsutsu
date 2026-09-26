@@ -5,6 +5,21 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  /*
+   * ONE LINK, WITH PREFETCHING OFF BY DEFAULT: `src/components/ui/Link.tsx`.
+   * Next's own prefetches every link in view, and on this site each one is a
+   * server request nobody asked for (about twenty a page view, 2026-09-26).
+   */
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/components/ui/Link.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: [{ name: "next/link", message: "Import Link from \"@/components/ui/Link\", which leaves prefetching off unless a link asks for it." }] },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

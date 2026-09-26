@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { rulesPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";

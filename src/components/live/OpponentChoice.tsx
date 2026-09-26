@@ -8,7 +8,7 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { shownName } from "@/lib/rating/shownName";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { ASK_NEEDS_ACCOUNT, SET_UP_COPY } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";

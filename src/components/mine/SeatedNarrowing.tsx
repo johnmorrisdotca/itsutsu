@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { MY_GAMES_COPY } from "./mine.constants";

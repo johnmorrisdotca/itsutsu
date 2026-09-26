@@ -1,5 +1,5 @@
 import { PlayerName } from "@/components/players/PlayerName";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { CardArrow } from "@/components/ui/CardArrow";
 import { RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";

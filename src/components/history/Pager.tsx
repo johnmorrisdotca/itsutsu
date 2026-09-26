@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import type { Pagination } from "@/lib/history/gameHistory.types";

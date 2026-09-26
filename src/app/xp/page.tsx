@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";

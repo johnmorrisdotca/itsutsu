@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { MEMBER_KINDS, type MemberKind } from "@/lib/auth/memberKind";

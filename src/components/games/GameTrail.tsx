@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Fragment, type ReactNode } from "react";
 
 import type { TrailStep } from "./games.types";

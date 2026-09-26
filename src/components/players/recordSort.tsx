@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { ariaSort, sortHref } from "@/lib/api/paging";
 import type { SortChoice, SortColumn, SortSpec } from "@/lib/api/paging.types";

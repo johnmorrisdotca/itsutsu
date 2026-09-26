@@ -1,7 +1,7 @@
 import { INBOX_COPY } from "@/components/inbox/inbox.constants";
 import { unreadInbox } from "@/lib/inbox/inbox";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";

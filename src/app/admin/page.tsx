@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { AdminBoardCard } from "@/components/backlog/AdminBoardCard";
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";

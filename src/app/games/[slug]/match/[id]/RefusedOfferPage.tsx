@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
 import { PageTitle } from "@/components/layout/Headings";

@@ -1,6 +1,6 @@
 import { RecordLine, type RecordOf, type WonLostDrawn } from "@/components/players/PlayerRecord";
 import { RecordTable } from "@/components/players/RecordTable";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
 import { GameCount } from "@/components/games/GameCount";

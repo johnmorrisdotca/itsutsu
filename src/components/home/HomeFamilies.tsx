@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { CardArrow } from "@/components/ui/CardArrow";

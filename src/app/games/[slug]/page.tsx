@@ -1,7 +1,7 @@
 import { RealGamesMosaic } from "@/components/games/RealGamesMosaic";
 import { GAME_PICTURE_BOX, GAME_SIDE_COLUMN } from "@/components/games/games.constants";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 

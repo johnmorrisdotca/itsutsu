@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";

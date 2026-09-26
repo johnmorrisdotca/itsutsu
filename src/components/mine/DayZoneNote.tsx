@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { ZONE_FROM, zoneSourceFrom, zoneStanding } from "@/lib/auth/zoneGuess";
 
