@@ -464,9 +464,9 @@ test.describe("the word puzzle", () => {
 });
 
 test("today's word is one address for the day, reached from Gomoji's own page", async ({ page }) => {
-  const { dailySeed } = await import("../src/lib/puzzles/daily");
+  const { dailyWordSeed, dayKeyOf } = await import("../src/lib/puzzles/dailyWords/dailyDay");
   await page.goto("/games/gomoji");
-  await page.getByTestId("game-daily").click();
+  await page.locator('[data-testid="daily-row"][data-size="5"]').getByTestId("daily-play").click();
   // The same seed for everybody today, on an ordinary address that can be shared and kept.
-  await expect(page).toHaveURL(new RegExp(`/games/gomoji/play\\?.*seed=${dailySeed(new Date())}`));
+  await expect(page).toHaveURL(new RegExp(`/games/gomoji/play\\?.*seed=${dailyWordSeed(dayKeyOf(new Date()))}`));
 });

@@ -164,6 +164,19 @@ of forty or fifty is used. The bag is drawn from the 144-tile letter mix
 game can be finished; any SCOWL word of two to fifteen letters counts
 (`scripts/tile-words.mjs`), and the list is fetched only when a game opens.
 
+Every Gomoji has a word a day at each length it offers, the same for everybody
+and new at midnight UTC: "Today's 4", "Today's 5" and, in kana, "Today's 3", a
+button each on its page and its set-up, and the past days at
+`/games/<slug>/daily` (open to anybody; a day's fastest finds, at
+`/daily/<day>`, are for members). A day's word is drawn from a frozen copy of
+that length's answer list (`src/lib/puzzles/dailyWords/pool.*.data.ts`),
+every word once in a shuffled cycle before any comes round again, and no word
+twice inside a year across the seam between cycles. A pool is never edited, so
+a later word list can never rewrite a day already played: a new length's pool,
+or a newer list from a cycle yet to begin, is written by
+`node scripts/daily-pools.ts`, and `dailyPools.test.ts` fails the build for a
+length with no pool and for a pool that has changed.
+
 Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's
 page shows the fastest solves at each size and level (`/standings`) and a
 member their own (`/me`). Two members can race one grid (`PuzzleRace`, at
