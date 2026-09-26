@@ -254,3 +254,44 @@ test.describe("Tsunagi on a phone", () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 });
+
+/*
+ * THE SIZES FIT THE PAGE AT EVERY WIDTH. John, 2026-09-26: beside the board of
+ * levels, at narrower desk widths, the size tiles ran off the right edge and
+ * "Bigger boards" was cut in half. Measured on both shelves at a phone, the
+ * narrow desk widths he named, and a wide one: no sideways scroll, and every
+ * tile and the shelf button inside the page and inside the set-up.
+ */
+for (const width of [390, 820, 1024, 1280]) {
+  test(`the set-up's sizes fit the page at ${width}px, on both shelves`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    const fits = async (shelf: string) => {
+      const drawn = await page.evaluate(() => {
+        const box = (element: Element) => element.getBoundingClientRect();
+        const setUp = box(document.querySelector('[data-testid="puzzle-set-up"]')!);
+        const parts = [...document.querySelectorAll('[data-testid="tsunagi-sizes"] [data-testid="set-up-size"], [data-testid="tsunagi-more-sizes"]')].map(box);
+        return {
+          scroll: document.documentElement.scrollWidth,
+          client: document.documentElement.clientWidth,
+          right: Math.max(...parts.map((part) => part.right)),
+          left: Math.min(...parts.map((part) => part.left)),
+          setUpRight: setUp.right,
+          tiles: parts.length - 1,
+        };
+      });
+      expect(drawn.tiles, `${shelf}: four size tiles`).toBe(4);
+      expect(drawn.scroll, `${shelf}: the page scrolls sideways at ${width}px`).toBeLessThanOrEqual(drawn.client);
+      expect(drawn.right, `${shelf}: a size runs off the right edge at ${width}px`).toBeLessThanOrEqual(Math.min(drawn.client, drawn.setUpRight) + 0.5);
+      expect(drawn.left).toBeGreaterThanOrEqual(0);
+    };
+    await fits("4×4 to 7×7");
+    // The other shelf, whose button reads the other way, and back: the way there and the way back.
+    await page.getByTestId("tsunagi-more-sizes").click();
+    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Smaller boards");
+    await fits("the bigger boards");
+    await page.getByTestId("tsunagi-more-sizes").click();
+    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Bigger boards");
+  });
+}

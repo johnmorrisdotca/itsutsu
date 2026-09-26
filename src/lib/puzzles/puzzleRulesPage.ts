@@ -3,7 +3,7 @@ import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
 import { futagoRule } from "./gomoji/futago";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb } from "./puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -19,7 +19,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
   // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
-  const sizes = spec.offered.map((size) => (spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`)).join(", ");
+  const sizes = sizesOffered(kind).map((size) => (spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`)).join(", ");
   const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];

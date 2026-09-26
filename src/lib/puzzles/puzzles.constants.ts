@@ -168,7 +168,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * band (the first third easy, the last hard) is its level here. No Check
    * or Hint: a line is joined or it is not, and the board shows which.
    */
-  tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true },
+  tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true, shelves: true },
   /*
    * A size is the hand a game opens with (`KUMIMOJI_HANDS`), and the bag it is
    * played from follows from it (`KUMIMOJI_BAG`). One level: the bag is the
@@ -190,6 +190,18 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
+/**
+ * EVERY BOARD A PUZZLE'S SET-UP OFFERS: its tiles, or, for a puzzle whose
+ * tiles are a shelf, every size the shelves turn to. John, 2026-09-26: Tsunagi's
+ * front door said "4×4, 5×5, 6×6, 7×7" while its set-up offered 8×8 and 9×9
+ * behind "Bigger boards". The front door, the rules page and the set-up read
+ * this one list, and `sizesOffered.test.ts` holds them to it.
+ */
+export function sizesOffered(kind: PuzzleKind): readonly number[] {
+  const spec = PUZZLE_SPECS[kind];
+  return spec.shelves === true ? spec.sizes : spec.offered;
+}
+
 export function drawnOnBoard(kind: PuzzleKind): boolean {
   const spec = PUZZLE_SPECS[kind];
   return spec.wordGrid !== undefined || spec.onBoard === true || spec.lattice === true;
