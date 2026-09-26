@@ -54,3 +54,8 @@ export async function mySolvesPage(memberId: string, cursor: string | null): Pro
     .map(({ givens, answer, ...row }) => ({ ...row, guesses: guessesTaken(row.kind as PuzzleKind, row.size, row.level, givens, answer) })) as MySolve[];
   return { solves: page, total, next: rows.length > MY_SOLVES_PAGE ? page.at(-1)!.id : null };
 }
+
+/** How many puzzles a member has finished: the Completed tab's share of its count, read on the tabs that do not list them. */
+export async function mySolvesCount(memberId: string): Promise<number> {
+  return prisma.puzzleSolve.count({ where: { memberId } });
+}

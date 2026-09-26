@@ -22,7 +22,7 @@ import { FavouritesPanel } from "./FavouritesPanel";
 import { Group } from "./MyGamesGroup";
 import { MyPuzzleRuns } from "./MyPuzzleRuns";
 import { MyPuzzleSolves } from "./MyPuzzleSolves";
-import { mySolvesPage } from "@/lib/puzzles/server/mySolves";
+import { mySolvesCount, mySolvesPage } from "@/lib/puzzles/server/mySolves";
 import { SEATED_ONLY } from "@/lib/history/myFinished";
 import { favouriteGamesOf, favouritesAmong } from "@/lib/history/favourites";
 import { SeatedNarrowing } from "./SeatedNarrowing";
@@ -119,6 +119,7 @@ const SHOWN: Record<MyGameGroup, number> = {
 export async function MyGamesList({
   showAll = null,
   cursor = null,
+  puzzleCursor = null,
   withMember = null,
   viewAsked,
   local = null,
@@ -150,6 +151,8 @@ export async function MyGamesList({
    * carrying on rather than by a refusal.
    */
   cursor?: string | null;
+  /** Where the solved puzzles' list on Completed was paged to (`?puzzle-cursor=`), its own place beside the games'. */
+  puzzleCursor?: string | null;
   /** The tab the address asks for (`?view=`), unchecked: `myGamesView` decides. */
   viewAsked?: string | string[];
   /** The board kept in this browser (`LocalGameCardClient`), drawn on Pass and play. */
@@ -204,14 +207,17 @@ export async function MyGamesList({
    */
   const stuck = await catchUpSeats(groups, claims, memberId, now);
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
-  // The puzzles left unfinished, kept on the account: one indexed read, for the Puzzles tab and its count.
+  // The puzzles left unfinished, kept on the account: one indexed read, for Going and its count.
   // And the flag and badge beside every name in the queue, one read for all of them (`nameTagsOf`).
   // And, on the Completed tab, what each finished game on the page earned the reader (`xpEarnedIn`).
   // And on the Completed tab, the starred games for the panel above the list (first page only) and which of the page's rows are starred.
   const completed = view === "completed" && memberId !== null;
-  const [favourites, starred] = await Promise.all([
+  const [favourites, starred, solves, solvedCount] = await Promise.all([
     completed && cursor === null ? favouriteGamesOf(memberId) : { rows: [], total: 0 },
     completed ? favouritesAmong(memberId, groups.finished.map((item) => item.game.id)) : null,
+    // The finished puzzles, listed only on Completed, a page at a time; counted on the other tabs for Completed's number.
+    completed ? mySolvesPage(memberId, puzzleCursor) : null,
+    !completed && memberId !== null ? mySolvesCount(memberId) : 0,
   ]);
   const listed = [...MY_GAME_GROUPS.flatMap((group) => groups[group]), ...favourites.rows];
   const [runs, tags, earned] = await Promise.all([
@@ -297,11 +303,11 @@ export async function MyGamesList({
   }
 
   const going = gamesGoing(groups);
+  // Each tab counts what it holds: Going its games and the puzzles left part way, Completed its games and the puzzles finished.
   const counts: Record<MyGamesView, number> = {
-    going,
-    completed: queue.finished.total,
+    going: going + runs.length,
+    completed: queue.finished.total + (solves?.total ?? solvedCount),
     "pass-and-play": groups.hotSeat.length,
-    puzzles: runs.length,
   };
   const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, count: counts[key] }));
   const goingShown = VIEW_GROUPS.going.reduce((n, group) => n + groups[group].length, 0);
@@ -350,21 +356,32 @@ export async function MyGamesList({
           </>
         )
       ) : null}
+      {/* The puzzles left part way, under Going with the games (John: "not two areas"). */}
+      {view === "going" && runs.length > 0 ? <MyPuzzleRuns runs={runs} /> : null}
       {view === "going" ? openSeats : null}
       {/* The starred games first, on the first page: John, "favourite your game, it moves to the top". */}
-      {completed && cursor === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
-      {view === "completed" ? panel("finished", MY_GAMES_COPY.empty.completed) : null}
+      {/*
+        GAMES ON THE LEFT, PUZZLES ON THE RIGHT, as Going puts your move beside
+        theirs. John, 2026-09-26: "maybe 2 columns Left and Right for games and
+        puzzles... but not two areas." One column on a phone, the games first.
+      */}
+      {view === "completed" ? (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start" data-testid="completed-columns">
+          <div className="flex min-w-0 flex-col gap-4" data-testid="completed-games">
+            {completed && cursor === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
+            {panel("finished", MY_GAMES_COPY.empty.completed)}
+          </div>
+          {solves === null ? null : (
+            <div className="flex min-w-0 flex-col gap-4" data-testid="completed-puzzles">
+              <MyPuzzleSolves page={solves} now={now} paged={puzzleCursor !== null} />
+            </div>
+          )}
+        </div>
+      ) : null}
       {view === "pass-and-play" ? (
         <>
           {local}
           {panel("hotSeat", MY_GAMES_COPY.empty.passAndPlay)}
-        </>
-      ) : null}
-      {view === "puzzles" ? (
-        <>
-          <MyPuzzleRuns runs={runs} />
-          {/* Read only on this tab, a page at a time: the cursor, which names the finished games' page on Completed, names the solves' page here. */}
-          {memberId === null ? null : <MyPuzzleSolves page={await mySolvesPage(memberId, cursor)} now={now} paged={cursor !== null} />}
         </>
       ) : null}
     </section>

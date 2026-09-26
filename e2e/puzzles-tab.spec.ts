@@ -6,12 +6,14 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * MY GAMES' PUZZLES TAB, in the panels every group of games has: the puzzles
- * going, and the puzzles solved with their scores. John, 2026-09-25: "where
- * will the completed puzzles go… where are the scores?!" This solves one, then
- * finds it on the tab with its points, its time and the help it took.
+ * MY GAMES' SOLVED PUZZLES, on Completed beside the finished games. John,
+ * 2026-09-25: "where will the completed puzzles go… where are the scores?!",
+ * and 2026-09-26: "All completed should be in ONE tab… maybe 2 columns Left
+ * and Right for games and puzzles… but not two areas." This solves one, then
+ * finds it on Completed with its points, its time and the help it took, and
+ * checks there is no Puzzles tab left to find it in twice.
  */
-test("a solved puzzle is on the Puzzles tab with its points, its time and its help", async ({ page }) => {
+test("a solved puzzle is on Completed beside the games, with its points, its time and its help", async ({ page }) => {
   const seed = freshPuzzleSeed();
   const puzzle = generateNumberPlace(4, "easy", seed);
   const givens = decodeCells(puzzle.givens, 4)!;
@@ -26,10 +28,13 @@ test("a solved puzzle is on the Puzzles tab with its points, its time and its he
   }
   await expect(page.getByTestId("puzzle-paid")).toBeVisible();
 
-  await page.goto("/play?view=puzzles");
-  // Both panels, headed and counted as the games' are, whether or not anything is going.
-  await expect(page.getByTestId("puzzles-going-count")).toBeVisible();
-  const solved = page.getByTestId("puzzles-solved");
+  await page.goto("/play");
+  await ready(page, "tabs");
+  // The Completed tab, by its tab, and no Puzzles tab beside it.
+  await expect(page.getByRole("link", { name: /^Puzzles/ })).toHaveCount(0);
+  await page.getByRole("link", { name: /^Completed/ }).click();
+  await expect(page.getByTestId("completed-games")).toBeVisible();
+  const solved = page.getByTestId("completed-puzzles").getByTestId("puzzles-solved");
   await expect(solved.getByTestId("puzzles-solved-count")).not.toHaveText(/^0/);
   const newest = solved.getByTestId("puzzle-solved").first();
   await expect(newest).toHaveAttribute("data-kind", "numberPlace");

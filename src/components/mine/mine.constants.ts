@@ -9,7 +9,6 @@ export const MY_GAMES_COPY = {
     going: { label: "Going", kanji: "対局中" },
     completed: { label: "Completed", kanji: "終局" },
     "pass-and-play": { label: "Pass and play", kanji: "対面" },
-    puzzles: { label: "Puzzles", kanji: "解きかけ" },
   },
   /** What an empty column or tab says, with the way in beside it where there is one. */
   empty: {
@@ -486,7 +485,7 @@ export const REMOVE_COPY = {
 /**
  * A puzzle's row on /play, in the game rows' own card (`MyGameRow`): a bordered
  * card the whole of which opens, with its thumbnail, a name line and a line of
- * detail, so the Puzzles tab reads like the rest of the page.
+ * detail, so the puzzles read like the games beside them.
  */
 export const MY_PUZZLE_ROW = "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule px-3 py-2 text-sm";
 

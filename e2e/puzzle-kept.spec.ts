@@ -37,7 +37,7 @@ test("paused and left by a link, it is in My games, opens where it was left, and
   await expect(page).toHaveURL(/\/play$/);
   // The puzzles have a tab of their own on My games, with its count on it.
   await ready(page, "tabs");
-  await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+  await page.locator('[data-testid="tab"][data-tab="going"]').click();
   const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
   await expect(row, "the puzzle left unfinished is not in My games").toBeVisible();
   await expect(row).toContainText("so far");
@@ -57,9 +57,12 @@ test("paused and left by a link, it is in My games, opens where it was left, and
   await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
 
-  await page.goto("/play?view=puzzles");
-  // The tab's own panel first, so the absence below is about a drawn list.
-  await expect(page.getByTestId("puzzles-going")).toBeVisible();
+  // Solved, it is on Completed beside the games; and never still listed as going, under Going.
+  await page.goto("/play?view=completed");
+  await expect(page.getByTestId("completed-puzzles")).toBeVisible();
+  await page.goto("/play");
+  // The page's own list first, so the absence below is about a drawn page.
+  await expect(page.getByTestId("my-games")).toBeVisible();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`), "a solved puzzle is still listed as going").toHaveCount(0);
 });
 
@@ -78,7 +81,7 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await expect(page).toHaveURL(/\/play$/);
   // The puzzles have a tab of their own on My games, with its count on it.
   await ready(page, "tabs");
-  await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+  await page.locator('[data-testid="tab"][data-tab="going"]').click();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`)).toBeVisible();
 
   // And the puzzle's own page says Resume, which opens that very grid (John, 2026-09-25).

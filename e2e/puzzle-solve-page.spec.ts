@@ -12,7 +12,7 @@ import { PLAYER_STATE, freshPuzzleSeed, ready } from "./support";
  * Puzzles tab led to the list it was in; now it opens the puzzle itself, its
  * grid as it was finished and how it went — and only for its solver.
  */
-test("a solve on the Puzzles tab opens its own finished grid, its time and its points, and nobody else's eyes", async ({ page, browser }) => {
+test("a solve on Completed opens its own finished grid, its time and its points, and nobody else's eyes", async ({ page, browser }) => {
   const seed = freshPuzzleSeed();
   const puzzle = generatePuzzle("numberPlace", 4, "easy", seed);
   const handed = await page.request.post("/api/puzzles/solved", {
@@ -20,7 +20,7 @@ test("a solve on the Puzzles tab opens its own finished grid, its time and its p
   });
   expect(handed.ok()).toBe(true);
 
-  await page.goto("/play?view=puzzles");
+  await page.goto("/play?view=completed");
   await ready(page, "tabs");
   await page.getByTestId("puzzle-solved").first().getByTestId("puzzle-solved-open").click();
   await expect(page).toHaveURL(new RegExp(`/games/${PUZZLE_SLUGS.numberPlace}/me/[^/]+$`));

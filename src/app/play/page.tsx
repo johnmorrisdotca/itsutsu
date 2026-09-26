@@ -117,6 +117,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           in a list nobody asked to see, and opens nothing.
         */
         cursor={typeof asked.cursor === "string" ? asked.cursor : null}
+        // The solved puzzles' own page on Completed, beside the games' (`MyPuzzleSolves`).
+        puzzleCursor={typeof asked["puzzle-cursor"] === "string" ? asked["puzzle-cursor"] : null}
         /*
           THE TABS: Going, Completed, Pass and play, Puzzles (`myGamesViews.ts`).
           The board kept in this browser goes on Pass and play; the seats other

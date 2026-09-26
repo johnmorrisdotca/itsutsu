@@ -334,7 +334,7 @@ test.describe("the word puzzle", () => {
     // Left by the site's own navigation, and opened again from My games: still Strict.
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await ready(page, "tabs");
-    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+    await page.locator('[data-testid="tab"][data-tab="going"]').click();
     const row = page.locator(`[data-testid="puzzle-going"][data-kind="${KIND}"][data-seed="${seed}"]`);
     await expect(row).toContainText("strict");
     await expect(row.getByTestId("puzzle-going-continue")).toHaveAttribute("href", /strict=1/);
@@ -369,7 +369,7 @@ test.describe("the word puzzle", () => {
     await expect(wayOn.getByTestId("puzzle-way-game")).toHaveAttribute("href", AT);
     await expect(wayOn.getByTestId("puzzle-way-family")).toHaveAttribute("href", `${AT}/family`);
 
-    // Kept on the Puzzles tab, marked as not found.
+    // Kept on Completed beside the games, marked as not found.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
     await expect(page.locator('[data-testid="puzzle-solved"][data-kind="gomoji"][data-solved="false"]').first()).toContainText("Not found");
 

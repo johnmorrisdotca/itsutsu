@@ -37,7 +37,8 @@ function helpWords(solve: MySolve): string | null {
  */
 export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: Date; paged: boolean }) {
   const copy = MY_GAMES_COPY.puzzlesSolved;
-  const older = page.next === null ? null : `${viewHref("puzzles")}&cursor=${encodeURIComponent(page.next)}`;
+  // Its own place in the address, so paging the puzzles never moves the games beside them on Completed.
+  const older = page.next === null ? null : `${viewHref("completed")}&puzzle-cursor=${encodeURIComponent(page.next)}`;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzles-solved">
       <GroupHeading
@@ -95,7 +96,7 @@ export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: 
       {paged || older !== null ? (
         <div className="flex flex-wrap items-center gap-4">
           {paged ? (
-            <Link href={viewHref("puzzles")} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3`} data-testid="puzzles-solved-newest">
+            <Link href={viewHref("completed")} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3`} data-testid="puzzles-solved-newest">
               ← {MY_GAMES_COPY.newest}
             </Link>
           ) : null}

@@ -228,7 +228,7 @@ export function GomojiSolve({
             <p className="text-xs text-muted" data-testid="word-kept">
               {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
               Kept in{" "}
-              <Link href={viewHref("puzzles")} className="underline">
+              <Link href={viewHref("completed")} className="underline">
                 My games
               </Link>{" "}
               with your guesses.
