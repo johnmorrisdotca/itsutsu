@@ -4,6 +4,7 @@
  */
 export const MOSAIC_PICKS = {
   every: "every",
+  opening: "opening",
   spread: "spread",
   ending: "ending",
 } as const;
@@ -56,7 +57,8 @@ export const MOSAIC_ART = {
 
 /** The words on the panel that makes one. */
 export const MOSAIC_COPY = {
-  heading: "The game as one picture",
+  /** The window's name. John, 2026-09-26: "call it Game Background Viewer or something better": the picture is sized to be a screen's background. */
+  heading: "Game wallpaper",
   /** The quiet button beside a move list that opens the picture in a window. */
   openLabel: "Every position",
   kanji: "棋譜絵",
@@ -67,6 +69,7 @@ export const MOSAIC_COPY = {
   again: "Make it again",
   pickLabel: "More positions than the picture holds. Show",
   picks: {
+    opening: "the opening, counted from the first move",
     spread: "the whole game, skipping evenly",
     ending: "the ending, counted back from the last move",
   },

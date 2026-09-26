@@ -86,9 +86,12 @@ export function framesOf(timeline: readonly GameState[]): MosaicFrame[] {
  *   or three moves in between.
  * - `ending`: the last ones, counted back from the end — the part of a long
  *   game where it was decided.
+ * - `opening`: the first ones, from the empty board on — how the game was
+ *   set up (John, 2026-09-26: "maybe we want to see opening moves").
  */
 export function pickFrames<T>(frames: readonly T[], pick: MosaicPick, most: number): T[] {
   if (frames.length <= most || pick === MOSAIC_PICKS.every) return [...frames];
+  if (pick === MOSAIC_PICKS.opening) return frames.slice(0, most);
   if (most <= 1) return frames.slice(-most);
   if (pick === MOSAIC_PICKS.ending) return frames.slice(frames.length - most);
   const chosen: T[] = [];

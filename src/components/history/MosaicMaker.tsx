@@ -144,65 +144,72 @@ export function MosaicMaker({
 
   return (
     <div className="flex flex-col gap-3">
-      <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm" data-testid="mosaic-shape">
-        <legend className="sr-only">{MOSAIC_COPY.shapeLabel}</legend>
-        {(Object.keys(MOSAIC_SHAPES) as MosaicShape[]).map((choice) => (
-          <label key={choice} className="flex min-h-11 items-center gap-2">
-            <input
-              type="radio"
-              name={`mosaic-shape-${id}`}
-              checked={shape === choice}
-              onChange={() => setShape(choice)}
-              data-testid={`mosaic-shape-${choice}`}
-            />
-            <span>
-              {MOSAIC_SHAPES[choice].label} <span className="text-muted">{MOSAIC_SHAPES[choice].note}</span>
-            </span>
-          </label>
-        ))}
-      </fieldset>
-      {count > holds ? (
-        <fieldset className="flex flex-col gap-1 text-sm">
-          <legend className="mb-1">
-            {MOSAIC_COPY.pickLabel} ({count} positions, {holds} tiles):
-          </legend>
-          {([MOSAIC_PICKS.spread, MOSAIC_PICKS.ending] as const).map((choice) => (
-            <label key={choice} className="flex items-center gap-2">
-              <input
-                type="radio"
-                name={`mosaic-pick-${id}`}
-                checked={pick === choice}
-                onChange={() => setPick(choice)}
-                data-testid={`mosaic-pick-${choice}`}
-              />
-              {MOSAIC_COPY.picks[choice]}
-            </label>
-          ))}
-        </fieldset>
-      ) : null}
-      <span className="flex flex-wrap items-center gap-2">
-        {auto ? null : (
-          <Button onClick={() => void make(false)} disabled={busy} data-testid="make-mosaic">
-            {busy ? MOSAIC_COPY.making : shown === null ? MOSAIC_COPY.make : MOSAIC_COPY.again}
-          </Button>
-        )}
-        {auto || shown !== null ? (
-          <Button onClick={() => void make(true)} disabled={busy} data-testid="download-mosaic">
-            {busy && auto ? MOSAIC_COPY.making : MOSAIC_COPY.download}
-          </Button>
-        ) : null}
-      </span>
-      {failed ? <p className="text-sm text-red-700">{MOSAIC_COPY.failed}</p> : null}
+      {/*
+        The picture first, in the middle of the window, and what to change about
+        it underneath — John, 2026-09-26: "Move the image to the middle of the
+        Modal. Move the landscape, portrait and download buttons below the image."
+      */}
       {shown !== null ? (
         // eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise
         <img
           src={shown.url}
           alt={alt}
-          className="mx-auto h-auto max-h-[75dvh] w-auto max-w-full rounded-lg border border-rule"
+          className="mx-auto h-auto max-h-[70dvh] w-auto max-w-full rounded-lg border border-rule"
           data-testid="mosaic-picture"
           data-shape={shown.shape}
         />
       ) : null}
+      {failed ? <p className="text-center text-sm text-red-700">{MOSAIC_COPY.failed}</p> : null}
+      <div className="flex flex-col items-center gap-2" data-testid="mosaic-controls">
+        <fieldset className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm" data-testid="mosaic-shape">
+          <legend className="sr-only">{MOSAIC_COPY.shapeLabel}</legend>
+          {(Object.keys(MOSAIC_SHAPES) as MosaicShape[]).map((choice) => (
+            <label key={choice} className="flex min-h-11 cursor-pointer items-center gap-2">
+              <input
+                type="radio"
+                name={`mosaic-shape-${id}`}
+                checked={shape === choice}
+                onChange={() => setShape(choice)}
+                data-testid={`mosaic-shape-${choice}`}
+              />
+              <span>
+                {MOSAIC_SHAPES[choice].label} <span className="text-muted">{MOSAIC_SHAPES[choice].note}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+        {count > holds ? (
+          <fieldset className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
+            <legend className="mb-1 w-full text-center">
+              {MOSAIC_COPY.pickLabel} ({count} positions, {holds} tiles):
+            </legend>
+            {([MOSAIC_PICKS.opening, MOSAIC_PICKS.spread, MOSAIC_PICKS.ending] as const).map((choice) => (
+              <label key={choice} className="flex min-h-11 cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name={`mosaic-pick-${id}`}
+                  checked={pick === choice}
+                  onChange={() => setPick(choice)}
+                  data-testid={`mosaic-pick-${choice}`}
+                />
+                {MOSAIC_COPY.picks[choice]}
+              </label>
+            ))}
+          </fieldset>
+        ) : null}
+        <span className="flex flex-wrap items-center justify-center gap-2">
+          {auto ? null : (
+            <Button onClick={() => void make(false)} disabled={busy} data-testid="make-mosaic">
+              {busy ? MOSAIC_COPY.making : shown === null ? MOSAIC_COPY.make : MOSAIC_COPY.again}
+            </Button>
+          )}
+          {auto || shown !== null ? (
+            <Button onClick={() => void make(true)} disabled={busy} data-testid="download-mosaic">
+              {busy && auto ? MOSAIC_COPY.making : MOSAIC_COPY.download}
+            </Button>
+          ) : null}
+        </span>
+      </div>
     </div>
   );
 }

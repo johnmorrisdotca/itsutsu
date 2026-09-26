@@ -8,6 +8,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MosaicMaker } from "./MosaicMaker";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BrandWordmark } from "@/components/layout/BrandMarks";
 
 /** A small picture that opens the window: the picture itself is the press, with room for the icon over its corner. */
 const MOSAIC_THUMB_BUTTON = "group relative shrink-0 rounded-md focus-visible:ring-2 focus-visible:ring-moss focus-visible:outline-none";
@@ -66,6 +67,8 @@ export function MosaicDialog({
   }, [open]);
 
   if (count === 0) return null;
+  // Whose game it is, read from the picture's own title only while the window is open.
+  const named = open ? title().name : "";
 
   return (
     <>
@@ -103,10 +106,19 @@ export function MosaicDialog({
           data-testid="mosaic-dialog"
         >
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id={`mosaic-title-${id}`} className={SECTION_TITLE}>
-                {MOSAIC_COPY.heading} <span className="font-mincho normal-case tracking-normal">{MOSAIC_COPY.kanji}</span>
-              </h2>
+            {/* Headed as ours, simply: the logo, what this window is, and whose game it is (John, 2026-09-26: "Have a title for this Modal. also the Itsutsu branding"). */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-1" data-testid="mosaic-masthead">
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <BrandWordmark className="h-5 w-auto" />
+                  <h2 id={`mosaic-title-${id}`} className={SECTION_TITLE}>
+                    {MOSAIC_COPY.heading} <span className="font-mincho normal-case tracking-normal">{MOSAIC_COPY.kanji}</span>
+                  </h2>
+                </span>
+                <p className="truncate text-base font-semibold" data-testid="mosaic-game-name">
+                  {named}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

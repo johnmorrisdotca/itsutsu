@@ -44,6 +44,19 @@ test("on a wide screen the picture starts landscape at 1920×1080's shape, and t
   // 211 moves are more than one picture holds, so the choice of which is offered.
   await expect(dialog.getByTestId("mosaic-pick-spread")).toBeChecked();
 
+  // Headed as ours, with its name and the game's (John, 2026-09-26), and the picture above what changes it.
+  await expect(dialog.getByTestId("mosaic-masthead")).toContainText("Game wallpaper");
+  await expect(dialog.getByTestId("mosaic-game-name")).toContainText("AlphaGo");
+  const pictureBottom = (await picture.boundingBox())!;
+  const controlsTop = (await dialog.getByTestId("mosaic-controls").boundingBox())!;
+  expect(pictureBottom.y + pictureBottom.height).toBeLessThanOrEqual(controlsTop.y + 1);
+
+  // The opening is a choice too, and choosing it draws the picture again; then back to the whole game.
+  const before = await picture.getAttribute("src");
+  await dialog.getByTestId("mosaic-pick-opening").check();
+  await expect(picture).not.toHaveAttribute("src", before!);
+  await dialog.getByTestId("mosaic-pick-spread").check();
+
   await dialog.getByTestId("mosaic-shape-portrait").check();
   await expect(picture).toHaveAttribute("data-shape", "portrait");
   const tall = await pixels(picture);

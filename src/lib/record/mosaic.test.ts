@@ -67,6 +67,13 @@ describe("pickFrames", () => {
     expect(picked[0]).toBe(181);
     expect(picked[119]).toBe(300);
   });
+
+  it("or the opening, counted from the first move", () => {
+    const picked = pickFrames(frames, MOSAIC_PICKS.opening, 120);
+    expect(picked[0]).toBe(1);
+    expect(picked[119]).toBe(120);
+    expect(pickFrames(frames, MOSAIC_PICKS.opening, 1)).toEqual([1]);
+  });
 });
 
 describe("mosaicLayout", () => {
