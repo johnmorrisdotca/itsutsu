@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance } from "@/components/board/board.types";
 import { letterKeyMarks, kanaKeyMarks } from "@/lib/puzzles/keyMarks";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
@@ -40,6 +42,7 @@ export function WordReplay({
   guesses,
   level,
   style,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
   size: number;
@@ -48,6 +51,8 @@ export function WordReplay({
   /** The level it was played at, which decided its guesses (`layout.ts`). */
   level: PuzzleLevel;
   style: WordStyle;
+  /** The reader's board colour; the default wood where nobody has asked for it. */
+  appearance?: Appearance;
 }) {
   const last = guesses.length;
   const [at, setAt] = useState(last);
@@ -80,6 +85,7 @@ export function WordReplay({
         done
         style={style}
         onChoose={NOTHING}
+        appearance={appearance}
       />
       <ReplayScrubber index={Math.min(at, last)} last={last} onGo={setAt} testId="word-replay" />
       {kana ? (

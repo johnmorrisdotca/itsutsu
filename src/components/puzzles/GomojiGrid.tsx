@@ -1,6 +1,7 @@
 "use client";
 
-import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { BOARD_THEMES, DEFAULT_APPEARANCE, EDGE_LINE_WIDTH, FELTS, LINE_WIDTH, STAR_RADIUS } from "@/components/board/Board.constants";
+import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
 import type { LetterMark } from "@/lib/puzzles/gomoji/code";
 import { playPlace } from "@/lib/puzzles/gomoji/layout";
 import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
@@ -27,6 +28,20 @@ export type CellArrow = "" | "↓" | "↑" | "↓↑";
 
 const MARK_WORDS: Record<CellMark, string> = { hit: "in its place", near: "in the word elsewhere", kin: "the word has another kana of its column here", miss: "not in the word" };
 const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size", "↑": "wrong mark", "↓↑": "wrong size and mark" };
+
+/**
+ * The surface a GOMOJI board is drawn on. Gomoji is not a gomoku variant — it
+ * has no `VariantSpec` to ask `boardThemeFor`'s `wearsFelt` about — and its
+ * felt or wood choice is the one board colour picker every style of its grid
+ * shares, so this reads the reader's felt choice regardless of which style
+ * (Reversi, Gomoku, Tiles) the grid is drawn in. Kept local to this file
+ * rather than in `components/board/appearance.ts`: that module is one of the
+ * files a real game's board picture is fingerprinted against
+ * (`boardArtFingerprint.ts`), and this rule has nothing to do with any of them.
+ */
+function feltOrWoodTheme(appearance: Appearance): BoardThemeTokens {
+  return appearance.felt !== "wood" ? FELTS[appearance.felt] : BOARD_THEMES[appearance.boardTheme];
+}
 
 /**
  * THE GOMOJI GRID: a row for every guess the word allows, on the wood every
@@ -60,6 +75,7 @@ export function GomojiGrid({
   onChoose,
   arrows = [],
   free = 0,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   size: number;
   rows: number;
@@ -74,15 +90,18 @@ export function GomojiGrid({
   arrows?: readonly (readonly CellArrow[])[];
   /** How many of the first rows were played for the player, not by them: the kana version's grey word. */
   free?: number;
+  /** The reader's board colour, chosen on the same felt patches a Reversi or Gomoku board offers (`feltOrWoodTheme`). */
+  appearance?: Appearance;
 }) {
   const tiles = style === WORD_STYLES.tiles;
   // A board of stones is a whole board, play centred across on whole squares and a spare row over to the top (`playPlace`); tiles are paper.
   const { span, top, left } = tiles ? { span: rows, top: 0, left: 0 } : playPlace(size, rows);
+  const theme = feltOrWoodTheme(appearance);
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
-      <PuzzleBoard size={span}>
+      <PuzzleBoard size={span} theme={theme}>
         <div className={`relative flex h-full w-full items-center justify-center ${tiles ? "bg-white" : ""}`}>
-          {tiles ? null : <GridLines span={span} size={size} rows={rows} left={left} top={top} style={style} />}
+          {tiles ? null : <GridLines span={span} size={size} rows={rows} left={left} top={top} style={style} theme={theme} />}
           <div
             className={tiles ? "relative grid h-full gap-1 p-1" : "absolute grid"}
             style={{
@@ -179,13 +198,28 @@ function ArrowMark({ arrow }: { arrow: Exclude<CellArrow, ""> }) {
 const OUT_OF_PLAY = 0.3;
 
 /**
+ * How much heavier a Gomoku board's outer line is drawn than the grid inside
+ * it — the same ratio a real Gomoku board draws its edge at (`EDGE_LINE_WIDTH`
+ * over `LINE_WIDTH`), carried over to the play area's own border here.
+ */
+const GOMOKU_EDGE_WEIGHT = EDGE_LINE_WIDTH / LINE_WIDTH;
+
+/**
  * The lines on the wood, in the board's own ink, over the whole board: an
  * Reversi board's squares (every cell ruled, the edge included), or a Gomoku
  * board's lines through the middle of every cell, where its stones sit on the
  * crossings. Faint everywhere, and at full ink over the places in play.
+ *
+ * IN THE GOMOKU STYLE ONLY, the play area gets what a real Gomoku board has
+ * and this one lacked: its own dark border, as heavy as a real board's outer
+ * line, and the star-point dots real boards mark their bearings with — here at
+ * the four corners of play, the first guess row's two and the last guess
+ * row's two, so a player can see at a glance where the word starts and where
+ * the guesses run out. John, 2026-09-25, comparing a Gomoji board drawn this
+ * way with a real Gomoku board beside it.
  */
-function GridLines({ span, size, rows, left, top, style }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle }) {
-  const ink = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme].line;
+function GridLines({ span, size, rows, left, top, style, theme }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
+  const ink = theme.line;
   const reversi = style === WORD_STYLES.reversi;
   const width = reversi ? 2 : 1.25;
   const at = reversi ? 0 : 0.5;
@@ -200,10 +234,35 @@ function GridLines({ span, size, rows, left, top, style }: { span: number; size:
       ))}
     </g>
   );
+  /* The play area's four corners, in the Gomoku style, at the crossings the stones sit on (`at`, the same offset the lines above use). */
+  const corners: readonly [number, number][] = [
+    [left, top],
+    [left + size - 1, top],
+    [left, top + rows - 1],
+    [left + size - 1, top + rows - 1],
+  ];
   return (
     <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
       {ruled(0, 0, span, span, OUT_OF_PLAY, "board")}
       {ruled(left, top, size, rows, 1, "play")}
+      {reversi ? null : (
+        <>
+          <rect
+            x={left + at}
+            y={top + at}
+            width={size - 1}
+            height={rows - 1}
+            fill="none"
+            stroke={ink}
+            strokeWidth={width * GOMOKU_EDGE_WEIGHT}
+            vectorEffect="non-scaling-stroke"
+            data-testid="word-play-border"
+          />
+          {corners.map(([col, row]) => (
+            <circle key={`star-${col}-${row}`} cx={col + at} cy={row + at} r={STAR_RADIUS} fill={theme.star} data-testid="word-star-point" />
+          ))}
+        </>
+      )}
     </svg>
   );
 }

@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { FeltPatches } from "@/components/board/FeltPatches";
+import { useFeltChoice } from "@/components/board/useFeltChoice";
+import type { Appearance } from "@/components/board/board.types";
 import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
@@ -46,6 +50,7 @@ export function GomojiSolve({
   hasAccount,
   race = null,
   resumed = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   /** Whether Strict was chosen: every letter found must be played again, a green in its place. */
   strict?: boolean;
@@ -54,10 +59,15 @@ export function GomojiSolve({
   race?: SolveRace | null;
   /** What was written on this puzzle when it was last left, to start from; null for a fresh start. */
   resumed?: ResumedRun | null;
+  /** The reader's board, so the board colour picker starts where they left it (`useFeltChoice`). */
+  appearance?: Appearance;
 }) {
   const hydrated = useHydrated();
   const { style } = useWordStyle();
   const keys = useWordKeys();
+  // The same board colour picker a Reversi or Gomoku board offers (`useFeltChoice`); every Gomoji style shares it.
+  const { felt, chooseFelt } = useFeltChoice(appearance);
+  const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
   const lang = useMemo(() => languageOf(kind), [kind]);
   const hidden = useMemo(() => decodeHidden(puzzle.givens, size, lang) ?? "", [puzzle.givens, size, lang]);
@@ -172,6 +182,7 @@ export function GomojiSolve({
             done={false}
             style={style}
             onChoose={(place) => edit((row) => choose(row, place))}
+            appearance={dressed}
           />
         </SolvePaused>
       ) : (
@@ -182,6 +193,7 @@ export function GomojiSolve({
           guesses={guesses}
           level={level}
           style={style}
+          appearance={dressed}
         />
       )}
       {done === null ? (
@@ -194,6 +206,7 @@ export function GomojiSolve({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <WordStylePicker />
+            <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
             <WordKeysToggle shown={keys.shown} onToggle={keys.toggle} />
           </div>
         </>

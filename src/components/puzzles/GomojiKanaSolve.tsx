@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { FeltPatches } from "@/components/board/FeltPatches";
+import { useFeltChoice } from "@/components/board/useFeltChoice";
+import type { Appearance } from "@/components/board/board.types";
 import { playPath } from "@/lib/gomoku/slugs";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -64,6 +68,7 @@ export function GomojiKanaSolve({
   hasAccount,
   race = null,
   resumed = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   puzzle: Puzzle;
   /** Whether Strict was chosen: every kana found must be played again, a green in its place. */
@@ -71,10 +76,15 @@ export function GomojiKanaSolve({
   hasAccount: boolean;
   race?: SolveRace | null;
   resumed?: ResumedRun | null;
+  /** The reader's board, so the board colour picker starts where they left it (`useFeltChoice`). */
+  appearance?: Appearance;
 }) {
   const hydrated = useHydrated();
   const { style } = useWordStyle();
   const keys = useWordKeys();
+  // The same board colour picker a Reversi or Gomoku board offers (`useFeltChoice`); every Gomoji style shares it.
+  const { felt, chooseFelt } = useFeltChoice(appearance);
+  const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
   const given = useMemo(() => decodeKanaGivens(puzzle.givens, size) ?? { word: "", grey: null }, [puzzle.givens, size]);
   const hidden = given.word;
@@ -217,10 +227,11 @@ export function GomojiKanaSolve({
               done={false}
               style={style}
               onChoose={(place) => edit((row) => choose(row, place))}
+              appearance={dressed}
             />
         </SolvePaused>
       ) : (
-        <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} style={style} />
+        <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} style={style} appearance={dressed} />
       )}
       {done === null ? (
         <>
@@ -248,6 +259,7 @@ export function GomojiKanaSolve({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <WordStylePicker />
+            <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
             <WordKeysToggle shown={keys.shown} onToggle={keys.toggle} />
           </div>
         </>

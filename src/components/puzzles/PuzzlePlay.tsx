@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance } from "@/components/board/board.types";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -46,6 +48,7 @@ export function PuzzlePlay({
   hints = false,
   strict = false,
   resumed = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -63,6 +66,8 @@ export function PuzzlePlay({
   hasAccount: boolean;
   /** The race this solve is a seat of, with the givens the server kept, or null for a solve on one's own. */
   race?: (SolveRace & { givens: string }) | null;
+  /** The reader's board, read only for Gomoji's board colour picker (`GomojiSolve`, `GomojiKanaSolve`). */
+  appearance?: Appearance;
 }) {
   const router = useRouter();
 
@@ -121,9 +126,9 @@ export function PuzzlePlay({
     case "gomoji":
     case "gomojiMot":
     case "gomojiWort":
-      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "gomojiKana":
-      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} />;
+      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

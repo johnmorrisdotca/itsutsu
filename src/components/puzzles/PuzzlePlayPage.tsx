@@ -1,7 +1,9 @@
 import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { currentReader } from "@/lib/auth/currentReader";
+import { appearanceFor } from "@/lib/auth/members";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
@@ -32,9 +34,11 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
-  /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the two Gomojis. */
-  const { wordStyle } =
-    kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" ? await preferencesFor() : { wordStyle: undefined };
+  /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis. */
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
+  const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
+  /* The reader's board colour, so Gomoji's picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for the four Gomojis. */
+  const appearance = words ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
   return (
     <Page>
       <SiteHeader />
@@ -49,7 +53,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} resumed={resumed} hasAccount={reader.hasAccount} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} />
         </WordStyleProvider>
       </div>
       <footer className="border-t border-rule pt-5 text-sm text-muted">
