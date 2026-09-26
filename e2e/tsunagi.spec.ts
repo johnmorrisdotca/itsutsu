@@ -212,7 +212,7 @@ test.describe("Tsunagi", () => {
     await expect(page.getByTestId("puzzle-paused")).toBeVisible();
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await ready(page, "tabs");
-    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+    await page.locator('[data-testid="tab"][data-tab="going"]').click();
     const row = page.locator('[data-testid="puzzle-going"][data-kind="tsunagi"][data-seed="7"]');
     await expect(row).toBeVisible();
     await row.getByTestId("puzzle-going-continue").click();

@@ -228,7 +228,7 @@ test.describe("Kumimoji", () => {
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await expect(page).toHaveURL(/\/play$/);
     await ready(page, "tabs");
-    await page.locator('[data-testid="tab"][data-tab="puzzles"]').click();
+    await page.locator('[data-testid="tab"][data-tab="going"]').click();
     const row = page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`);
     await expect(row, "the game left half built is not in My games").toBeVisible();
 
