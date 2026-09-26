@@ -229,6 +229,41 @@ html[data-bare="true"] [data-strippable] [data-testid="review-banner"][data-revi
   max-width: none;
 }
 
+/*
+ * A PLAYED GAME'S REVIEW, OPENED ON ITS OWN, IS THE MINIMUM. John, 2026-09-26,
+ * on a phone: "The full screen view should not have so much stuff on it. We
+ * don't need the move list below, just the scrubber is OK. Remember, it's a
+ * minimum view. It should also be centered." So in the window: the header
+ * line (`BoardMasthead`), the board, the move it is at and the scrubber with
+ * its five buttons — the same line and scrubber "Just the board" draws under
+ * the board (`data-bare-only`) — and nothing from the column beside it, whose
+ * move list, its styles and its buttons stay on the game's own page. The window
+ * is as narrow as the board, so all of it is one column in the middle of the
+ * screen, and the board leaves room under it for the scrubber.
+ */
+[data-board-focus="open"] [data-testid="game-replay"] > aside {
+  display: none;
+}
+[data-board-focus="open"] [data-testid="game-replay"] [data-bare-only] {
+  display: block;
+}
+[data-board-focus="open"] [data-testid="game-replay"] [data-focus-board],
+[data-board-focus="open"] [data-testid="game-replay"] [data-bare-only] {
+  width: min(100%, calc(100dvh - 17rem));
+  max-width: none;
+  margin-inline: auto;
+}
+[data-board-focus="open"] [data-testid="game-replay"] [data-bare-only] {
+  text-align: center;
+}
+[data-board-focus="open"] [data-testid="game-replay"] [data-testid="bare-replay-buttons"] {
+  justify-content: center;
+}
+[data-board-focus="open"] > [role="dialog"]:has([data-testid="game-replay"]) {
+  width: min(100%, calc(100dvh - 17rem + 2.5rem));
+  max-width: 100%;
+}
+
 /* Just the board is already the board alone, so the button that opens one board on its own is not drawn inside it. */
 html[data-bare="true"] [data-strippable] [data-testid="board-focus-toggle"] {
   display: none;

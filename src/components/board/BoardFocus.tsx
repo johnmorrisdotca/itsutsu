@@ -69,12 +69,13 @@ export function BoardFocus({
 
   const box = (
     <div
-      className={open ? "fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-ink/60 p-2 sm:p-6" : `group/focus relative ${layout}`.trim()}
+      // Open, a column the panel sits in the middle of (`my-auto`), which still scrolls when a phone is shorter than the panel.
+      className={open ? "fixed inset-0 z-50 flex flex-col overflow-y-auto overscroll-contain bg-ink/60 p-2 sm:p-6" : `group/focus relative ${layout}`.trim()}
       data-board-focus={open ? "open" : "closed"}
       data-testid="board-focus"
     >
       <div
-        className={open ? `relative mx-auto flex w-full ${PAGE_WIDTH} flex-col gap-3 rounded-xl bg-paper p-3 shadow-2xl sm:p-5` : "contents"}
+        className={open ? `relative mx-auto my-auto flex w-full ${PAGE_WIDTH} flex-col gap-3 rounded-xl bg-paper p-3 shadow-2xl sm:p-5` : "contents"}
         role={open ? "dialog" : undefined}
         aria-modal={open ? true : undefined}
         aria-label={open ? `${label}, on its own` : undefined}
