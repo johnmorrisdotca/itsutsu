@@ -1,6 +1,6 @@
 "use client";
 
-import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
+import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { useWordStyle } from "./WordStyleContext";
 
@@ -9,12 +9,17 @@ import { useWordStyle } from "./WordStyleContext";
  * Gomoku, Tiles. One press redraws the grid and is kept on the account
  * (`WordStyleProvider`). Every chip is the same width whichever is chosen, so
  * the row never moves.
+ *
+ * `styles` narrows the chips: a Kumimoji's table offers Reversi and Gomoku
+ * only, its tiles being Tiles already (`TABLE_BOARDS`). A style chosen that
+ * is not offered here reads as the first.
  */
-export function WordStylePicker() {
-  const { style, setStyle } = useWordStyle();
+export function WordStylePicker({ styles = WORD_STYLE_LIST }: { styles?: readonly WordStyle[] } = {}) {
+  const { style: chosenStyle, setStyle } = useWordStyle();
+  const style = styles.includes(chosenStyle) ? chosenStyle : styles[0];
   return (
     <div className="flex items-center gap-1.5" role="group" aria-label="How the grid is drawn" data-testid="word-style">
-      {WORD_STYLE_LIST.map((each) => {
+      {styles.map((each) => {
         const chosen = each === style;
         return (
           <button

@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type Ref } from "react";
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type Ref } from "react";
 
 import { BOARD_THEMES, FELTS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { placeOf, squareAt, type Tiles } from "@/lib/puzzles/kumimoji/grid";
 import { TABLE, edgePan, fitView, keepInReach, panView, tableArea, zoomView, type View } from "@/lib/puzzles/kumimoji/tableView";
 
-import { TABLE_BOX, TABLE_CURSOR, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, tileLetterPx } from "./kumimoji.constants";
+import { TABLE_BOX, TABLE_CURSOR, TABLE_PAD, TABLE_PAD_KEY, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, tileLetterPx } from "./kumimoji.constants";
+import { useWordStyle } from "./WordStyleContext";
 
 /** What the solve asks of the table while a tile is dragged: pan toward the edge it is held near. */
 export type TableHandle = { nudge: (clientX: number, clientY: number) => void };
@@ -22,6 +24,50 @@ const NONE: ReadonlySet<string> = new Set();
  */
 export function tableTheme(appearance: Appearance): BoardThemeTokens {
   return appearance.felt !== "wood" ? FELTS[appearance.felt] : BOARD_THEMES[appearance.boardTheme];
+}
+
+/**
+ * WHICH BOARD THE TABLE IS. John, 2026-09-26: the table was "a Gomoku board of
+ * dots"; he wants "the Reversi board (squares) as the default, with Gomoku a
+ * choice, as Gomoji offers board styles". So it reads the same choice Gomoji's
+ * grid does (`useWordStyle`, kept on the account): Gomoku rules lines through
+ * the squares' middles, so a tile sits on a crossing; anything else is the
+ * Reversi board, ruled on the squares' edges. Gomoji's third style, Tiles, is
+ * what every Kumimoji tile already is, so it reads as Reversi here.
+ */
+export type TableBoard = "reversi" | "gomoku";
+
+/** The two boards a Kumimoji offers, for its picker (`WordStylePicker`). */
+export const TABLE_BOARDS = [WORD_STYLES.reversi, WORD_STYLES.gomoku] as const;
+
+/** The board lines as one repeating layer, moved with the view: on the squares' edges, or through their middles for Gomoku. */
+function ruling(board: TableBoard, tile: number, x: number, y: number, line: string): CSSProperties {
+  const shift = board === "gomoku" ? tile / 2 : 0;
+  return {
+    backgroundImage: `linear-gradient(to right, ${line} 1px, transparent 1px), linear-gradient(to bottom, ${line} 1px, transparent 1px)`,
+    backgroundSize: `${tile}px ${tile}px`,
+    backgroundPosition: `${x + shift}px ${y + shift}px`,
+    opacity: 0.5,
+  };
+}
+
+/** The pad's keys, three to a row: zoom in, up, zoom out; left, right; down. */
+const PAD = [
+  { key: "in", glyph: "+", label: "Zoom in" },
+  { key: "up", glyph: "↑", label: "Move the view up" },
+  { key: "out", glyph: "−", label: "Zoom out" },
+  { key: "left", glyph: "←", label: "Move the view left" },
+  null,
+  { key: "right", glyph: "→", label: "Move the view right" },
+  null,
+  { key: "down", glyph: "↓", label: "Move the view down" },
+  null,
+] as const;
+type PadKey = "in" | "out" | "up" | "down" | "left" | "right";
+
+/** How far one press of the pad moves the view: a quarter of the box, and never less than two tiles. */
+function padStep(tile: number, width: number, height: number): number {
+  return Math.max(tile * 2, Math.round(Math.min(width, height) / 4));
 }
 
 /** The least a tile is drawn on a table nobody presses: a whole finished grid fits its box. */
@@ -72,6 +118,7 @@ export function KumimojiTable({
   handle?: Ref<TableHandle>;
 }) {
   const box = useRef<HTMLDivElement>(null);
+  const board: TableBoard = useWordStyle().style === WORD_STYLES.gomoku ? "gomoku" : "reversi";
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [fitted, setFitted] = useState(true);
   const [free, setFree] = useState<View | null>(null);
@@ -146,7 +193,7 @@ export function KumimojiTable({
       moved.current = false;
       travel.current = 0;
     }
-    if (readOnly || (event.target instanceof Element && event.target.closest("[data-tile], button[data-fit]") !== null)) return;
+    if (readOnly || (event.target instanceof Element && event.target.closest("[data-tile], button[data-fit], [data-pad]") !== null)) return;
     const rect = box.current!.getBoundingClientRect();
     const at = (e: PointerEvent | ReactPointerEvent) => ({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     const id = event.pointerId;
@@ -200,6 +247,20 @@ export function KumimojiTable({
     return () => element.removeEventListener("wheel", wheel);
   }, [readOnly, change]);
 
+  /* The pad: a pan by a step, or a zoom about the middle of the box, as the wheel zooms about the pointer. */
+  const press = (key: PadKey) => {
+    const step = padStep(shown.current?.tile ?? TABLE.tileLeast, size.width, size.height);
+    const moves: Record<PadKey, (view: View) => View> = {
+      in: (view) => zoomView(view, 1.25, size.width / 2, size.height / 2),
+      out: (view) => zoomView(view, 0.8, size.width / 2, size.height / 2),
+      up: (view) => panView(view, 0, step),
+      down: (view) => panView(view, 0, -step),
+      left: (view) => panView(view, step, 0),
+      right: (view) => panView(view, -step, 0),
+    };
+    change(moves[key]);
+  };
+
   const squares = useMemo(() => {
     const all: string[] = [];
     for (let row = area.top; row < area.top + area.rows; row += 1) for (let col = area.left; col < area.left + area.cols; col += 1) all.push(squareAt(row, col));
@@ -210,10 +271,11 @@ export function KumimojiTable({
     <div
       ref={box}
       className={boxClass}
+      style={{ background: theme.surface }}
       onPointerDown={down}
       // A pan that ends over a square is not a tap on it.
       onClickCapture={(event) => {
-        if (moved.current && pointers.current.size === 0 && !(event.target instanceof Element && event.target.closest("button[data-fit]"))) {
+        if (moved.current && pointers.current.size === 0 && !(event.target instanceof Element && event.target.closest("button[data-fit], [data-pad]"))) {
           moved.current = false;
           event.stopPropagation();
         }
@@ -223,12 +285,15 @@ export function KumimojiTable({
       data-tile-px={view?.tile ?? 0}
       data-cols={area.cols}
       data-rows={area.rows}
+      data-board={board}
     >
       {view === null ? null : (
         <>
+          <div className={TABLE_RULING} style={ruling(board, view.tile, view.x, view.y, theme.line)} data-testid="kumimoji-ruling" />
+          {/* The tiles' extent and its margin: drawn as nothing, since the board is everywhere, and kept for the catalogue's picture of it. */}
           <div
-            className="pointer-events-none absolute shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
-            style={{ left: view.x + area.left * view.tile, top: view.y + area.top * view.tile, width: area.cols * view.tile, height: area.rows * view.tile, background: theme.surface, borderRadius: view.tile * 0.25 }}
+            className="pointer-events-none absolute"
+            style={{ left: view.x + area.left * view.tile, top: view.y + area.top * view.tile, width: area.cols * view.tile, height: area.rows * view.tile }}
             data-testid="kumimoji-area"
           />
           {squares.map((square) => {
@@ -250,9 +315,11 @@ export function KumimojiTable({
                   data-testid="kumimoji-square"
                   aria-label={`empty square${typing ? `, typing ${cursor!.across ? "across" : "down"}` : ""}`}
                 >
-                  <span className={typing ? `${TABLE_CURSOR} flex size-[88%] items-center justify-center text-ink/60` : "size-[10%] rounded-full"} style={typing ? { fontSize: view.tile * 0.4 } : { background: theme.line, opacity: 0.35 }}>
-                    {typing ? (cursor!.across ? "→" : "↓") : null}
-                  </span>
+                  {typing ? (
+                    <span className={`${TABLE_CURSOR} flex size-[88%] items-center justify-center text-ink/60`} style={{ fontSize: view.tile * 0.4 }}>
+                      {cursor!.across ? "→" : "↓"}
+                    </span>
+                  ) : null}
                 </button>
               );
             }
@@ -307,6 +374,25 @@ export function KumimojiTable({
         >
           Fit <span className="font-mincho opacity-70">全体</span>
         </button>
+      )}
+      {readOnly ? null : (
+        /*
+         * THE PAD, under Fit. John, 2026-09-26: "the mouse wheel zooms the table
+         * nicely, but there are no controls on the page". Buttons, so a finger
+         * and a keyboard both reach them; a press is a gesture like any other,
+         * so the view is the player's own until Fit.
+         */
+        <div className={TABLE_PAD} role="group" aria-label="Move and zoom the table" data-pad="true" data-testid="kumimoji-pad">
+          {PAD.map((each, at) =>
+            each === null ? (
+              <span key={at} aria-hidden="true" />
+            ) : (
+              <button key={each.key} type="button" className={TABLE_PAD_KEY} onClick={() => press(each.key)} aria-label={each.label} title={each.label} data-testid={`kumimoji-pad-${each.key}`}>
+                {each.glyph}
+              </button>
+            ),
+          )}
+        </div>
       )}
     </div>
   );

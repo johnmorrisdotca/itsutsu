@@ -8,6 +8,9 @@ import { wearsFelt } from "./appearance";
 import { BOARD_THEMES, FELT_LIST, FELTS } from "./Board.constants";
 import type { Appearance, BoardTheme, BoardThemeTokens, Felt } from "./board.types";
 
+/** The patches in the order they are shown: the reader's own board first, then the felts. */
+const PATCH_ORDER: readonly Felt[] = ["wood", ...FELT_LIST.filter((each) => each !== "wood")];
+
 /**
  * THE COLOUR OF A REVERSI BOARD, CHOSEN BY LOOKING. John, 2026-09-25: "a very
  * subtle colour picker. like one component or element with just some colour
@@ -16,9 +19,16 @@ import type { Appearance, BoardTheme, BoardThemeTokens, Felt } from "./board.typ
  *
  * A row of small square patches of the board itself, the chosen one ringed,
  * and no words on the page: each says its name to a screen reader and on
- * hover. The last patch is the reader's own board surface (`wood`), for a
- * Reversi drawn like every other board. One component, on the set-up screen
- * and beside a game's board, so the two cannot drift apart.
+ * hover. The first patch is the reader's own board surface (`wood`, the gold
+ * board a new member's boards are drawn on), for a Reversi drawn like every
+ * other board. One component, on every set-up screen and beside every board
+ * that offers a colour, so they cannot drift apart.
+ *
+ * GOLD FIRST. John, 2026-09-26, at Kumimoji's picker reading green, blue, red,
+ * black, gold: "the default gold board should come first, not last." The order
+ * is set here, where the patches are drawn, rather than in `FELT_LIST`, which
+ * the pictures of every game are fingerprinted against and says only which
+ * felts there are.
  *
  * SQUARE, BECAUSE IT IS A BOARD. John, 2026-09-25, at the first row of round
  * patches: "When presenting a set of Board Colours to pick... don't use
@@ -30,7 +40,7 @@ import type { Appearance, BoardTheme, BoardThemeTokens, Felt } from "./board.typ
 export function FeltPatches({ felt, wood, onChoose }: { felt: Felt; wood: BoardTheme; onChoose: (felt: Felt) => void }) {
   return (
     <div className="flex items-center justify-center gap-2" role="radiogroup" aria-label="Board colour" data-testid="felt-patches">
-      {FELT_LIST.map((each) => {
+      {PATCH_ORDER.map((each) => {
         const look = each === "wood" ? BOARD_THEMES[wood] : FELTS[each];
         const chosen = felt === each;
         return (

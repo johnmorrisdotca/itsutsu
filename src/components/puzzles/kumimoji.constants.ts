@@ -30,13 +30,27 @@ export function tileLetterPx(side: number): number {
  * (`bringTableIntoView`); on a desk, as tall as leaves the tray room under
  * it, and never taller than a comfortable board.
  */
-export const TABLE_BOX = "relative h-[calc(100dvh-18rem)] min-h-72 w-full touch-none overflow-hidden rounded-xl bg-shade/60 select-none sm:h-[min(34rem,calc(100dvh-16rem))] sm:min-h-80";
+export const TABLE_BOX = "relative h-[calc(100dvh-18rem)] min-h-72 w-full touch-none overflow-hidden rounded-xl select-none sm:h-[min(34rem,calc(100dvh-16rem))] sm:min-h-80";
 
 /** A table nobody presses — a finished grid, the set-up preview — in a square box of its own. */
-export const TILE_PICTURE_BOX = "relative aspect-square w-full overflow-hidden rounded-xl bg-shade/60";
+export const TILE_PICTURE_BOX = "relative aspect-square w-full overflow-hidden rounded-xl";
 
-/** An empty square on the table, a press waiting for a tile: a faint dot in its middle, and nothing drawn round it. */
+/** An empty square on the table, a press waiting for a tile: the board's own ruling shows it, so nothing is drawn in it. */
 export const TABLE_SQUARE = "absolute flex items-center justify-center outline-none focus-visible:bg-moss-soft/50";
+
+/**
+ * THE BOARD UNDER THE TILES, ruled to the edge of the box at every pan and
+ * zoom. John, 2026-09-26, on a table zoomed out past the tiles: "we want the
+ * board to grow… we shouldn't see the white part in the background." So the
+ * board's colour is the whole box, and its lines are one layer over it,
+ * repeated a tile apart and moved with the view (`tableRuling`).
+ */
+export const TABLE_RULING = "pointer-events-none absolute inset-0";
+
+/** The pad beside Fit: up, down, left, right, zoom in and out, a fingertip each and small enough for a phone's corner. */
+export const TABLE_PAD = "absolute top-14 right-2 z-10 grid grid-cols-3 gap-1";
+export const TABLE_PAD_KEY =
+  "flex size-9 items-center justify-center rounded-lg border border-rule-strong/80 bg-ivory/90 text-base leading-none text-ink shadow-sm hover:bg-ivory focus-visible:ring-2 focus-visible:ring-moss focus-visible:outline-none";
 
 /** The square a typed letter goes to. */
 export const TABLE_CURSOR = "rounded-[14%] bg-moss-soft/70 ring-2 ring-inset ring-moss";

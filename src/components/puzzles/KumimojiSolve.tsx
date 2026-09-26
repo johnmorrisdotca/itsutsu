@@ -29,7 +29,8 @@ import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { KumimojiTable, tableTheme, type TableHandle } from "./KumimojiTable";
+import { KumimojiTable, TABLE_BOARDS, tableTheme, type TableHandle } from "./KumimojiTable";
+import { WordStylePicker } from "./WordStylePicker";
 import { KumimojiTray } from "./KumimojiTray";
 import { HAND_TILE_PX, TILE, TRAY_ROOM, tileLetterPx } from "./kumimoji.constants";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
@@ -205,6 +206,8 @@ export function KumimojiSolve({
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
+            {/* The board under the tiles, as Gomoji's grid chooses it: Reversi's squares, or Gomoku's crossings. */}
+            <WordStylePicker styles={TABLE_BOARDS} />
           </div>
           {pausing.paused ? null : (
             <KumimojiTray
