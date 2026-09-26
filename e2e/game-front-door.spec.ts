@@ -122,11 +122,12 @@ test.describe("a game's page answers the whole errand", () => {
     /*
      * Nothing is a dead end. Every link inside a panel of people and counts
      * goes to those people or to exactly those games — and "those games" is
-     * an address under the game now, which is what changed here.
+     * an address under the game now, which is what changed here. A name's
+     * level leads to its rung, the people standing there.
      */
     const links = ladder.locator("a");
     for (let i = 0; i < (await links.count()); i += 1) {
-      await expect(links.nth(i)).toHaveAttribute("href", /^\/(games|players)\//);
+      await expect(links.nth(i)).toHaveAttribute("href", /^\/(games\/|players\/|xp\/levels\/\d+$)/);
     }
 
     // Which of these two shows depends on rows this spec did not create, so it
