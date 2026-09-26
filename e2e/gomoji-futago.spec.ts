@@ -80,7 +80,9 @@ test.describe("Gomoji Futago", () => {
     await page.keyboard.type(second);
     await page.keyboard.press("Enter");
     await expect(boards.nth(1)).toHaveAttribute("data-found", "true");
-    await expect(boards.nth(0).locator('[data-testid="word-tile"][data-row="2"]')).toHaveCount(0);
+    // The found board took nothing more: its third row is drawn, and empty, while the other's holds the word.
+    await expect(boards.nth(1).locator('[data-testid="word-tile"][data-row="2"][data-mark="hit"]')).toHaveCount(5);
+    await expect(boards.nth(0).locator('[data-testid="word-tile"][data-row="2"]:not([data-mark="empty"])')).toHaveCount(0);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   });
 

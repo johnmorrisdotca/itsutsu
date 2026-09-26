@@ -424,7 +424,8 @@ test.describe("the word puzzle", () => {
       await page.keyboard.press("Enter");
     }
     await expect(page.getByTestId("word-out")).toBeVisible();
-    await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution);
+    // Printed in capitals since Futago, which names two words the same way ("DART and SNOW").
+    await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution, { ignoreCase: true });
     // The line says how many guesses there were (John, 2026-09-26: "Text is missing numbers").
     await expect(page.getByTestId("word-was").locator("..")).toContainText(/Out of \d+ guesses\./);
     // A word not found still scores the letters it found, and says where it is kept.
