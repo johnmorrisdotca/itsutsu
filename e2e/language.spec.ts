@@ -57,6 +57,18 @@ test.describe("the language a reader chooses", () => {
    */
   test.use({ storageState: PLAYER_STATE });
 
+  /*
+   * AND PUT BACK AFTERWARDS. An invite-only browser is a member now, by id
+   * (`languageOnAccount` reads the member id, not an address), so a case that
+   * ends on Japanese leaves the player's account on Japanese, and the next run
+   * on the same database starts there and fails its first line. A fresh CI
+   * database never shows it; every local rerun did. Each case ends back on
+   * English, so the next one starts where it says it does.
+   */
+  test.afterEach(async ({ page }) => {
+    await page.goto("/about?lang=en");
+  });
+
   test("goes to Japanese and back to English, by clicking and nothing else", async ({ page }) => {
     await page.goto("/about");
     await expect(current(page)).toHaveAttribute("data-locale", "en");
