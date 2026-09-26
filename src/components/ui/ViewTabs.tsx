@@ -53,7 +53,8 @@ export function ViewTabs({
     <nav aria-label={label} data-testid={testId} className="flex min-w-0 flex-wrap items-end gap-x-1 border-b border-rule">
       {lead === undefined ? null : <span className="self-center pr-1 text-xs text-muted">{lead}</span>}
       {items.map((item) => {
-        const className = `${FOCUS_RING} -mb-px inline-flex items-baseline gap-1.5 border-b-2 px-2.5 py-1 text-xs whitespace-nowrap transition-colors sm:text-sm ${
+        // A tab drawn as a button shows the hand as a link does (John, 2026-09-26: "some of the Sub-tabs have no pointer on hover.. BUG!!!").
+        const className = `${FOCUS_RING} -mb-px inline-flex cursor-pointer items-baseline gap-1.5 border-b-2 px-2.5 py-1 text-xs whitespace-nowrap transition-colors sm:text-sm ${
           item.current ? "border-ink font-semibold text-ink" : "border-transparent text-muted hover:border-rule-strong hover:text-ink-soft"
         } ${item.disabled ? "pointer-events-none opacity-30" : ""}`;
         const inside = (
