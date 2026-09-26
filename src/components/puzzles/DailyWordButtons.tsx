@@ -38,7 +38,8 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
   const table = (
     <div className="flex flex-col gap-2">
       <ButtonTable kind={kind} rows={rows} testId="daily-words-table" label={(size) => <>Today&apos;s {size} <span className="font-mincho opacity-70">今日の{size}</span></>} prefix="daily" />
-      <ButtonTable kind={kind}
+      <ButtonTable
+        kind={kind}
         rows={rows.map((row) => ({ size: row.size, ...row.futago }))}
         testId="futago-daily-table"
         label={(size) => (
