@@ -52,7 +52,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `WEB_PORT=${PORT} pnpm dev`,
+    /*
+     * E2E_SERVER=start runs the production build (`pnpm build` first), as
+     * Next.js recommends and CI does: no page compiles on its first request.
+     * It is the suite's own server, so it says so (`suiteServer.ts`), which is
+     * what lets its relief apply under NODE_ENV=production. Unset, the dev
+     * server, for a person working locally.
+     */
+    command: process.env.E2E_SERVER === "start" ? `WEB_PORT=${PORT} ITSUTSU_SUITE_SERVER=1 pnpm start` : `WEB_PORT=${PORT} pnpm dev`,
     url: baseURL,
     reuseExistingServer: true,
     timeout: 120_000,

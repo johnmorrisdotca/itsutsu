@@ -4,6 +4,7 @@ import { adminEmails } from "@/lib/auth/admin";
 import { isBotId } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
 import { seatedLive } from "./myFinished";
+import { reliefAllowed } from "@/lib/suiteServer";
 
 /**
  * How many games in progress is too many for one member to be holding at
@@ -50,7 +51,7 @@ export const ACTIVE_GAME_LIMIT = 20;
  * seats a door binds, and none when no operator is configured.
  */
 async function operatorsLetPast(memberIds: readonly string[]): Promise<Set<string>> {
-  if (process.env.NODE_ENV === "production") return new Set();
+  if (!reliefAllowed()) return new Set();
   const operators = adminEmails();
   if (operators.length === 0 || memberIds.length === 0) return new Set();
   const rows = await prisma.member.findMany({

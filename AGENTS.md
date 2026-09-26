@@ -775,11 +775,15 @@ below before trusting it — these numbers move):
 7. **Follow the tools' own advice** rather than folklore: one Playwright worker
    per shard in CI and no caching of Playwright's browser download (both
    Playwright's CI guidance), package installs cached (`setup-node`'s `cache`).
-8. **The next known win** is running the suite against a production build
-   instead of the dev server, as Next.js recommends — every page answers
-   faster. It is blocked by design, not by effort: the suite's relief (looser
-   cost limits, faster polling) is refused in production mode on purpose, so it
-   needs its own ticket and its own thinking, not a flag flipped.
+8. **The suite runs against the production build**, as Next.js recommends
+   (2026-09-26): each shard builds while its browser downloads, and
+   `E2E_SERVER=start` points Playwright at `next start`. One shard's files
+   took 177 seconds on the dev server and 97 on the build. The reliefs the
+   suite needs are refused in production except on a server started with
+   `ITSUTSU_SUITE_SERVER=1`, which only `e2e.yml` sets and which Vercel
+   ignores outright (`src/lib/suiteServer.ts` and its test). Locally,
+   `pnpm dev` is still the server a spec runs against unless you build and
+   set `E2E_SERVER=start` yourself.
 
 ### Fewer Pushes
 
@@ -1021,15 +1025,17 @@ stuff"). Postgres stays on 55434. A `next dev` without a port is a bug — pass
 dozen tests with 429s: it drives the whole site from one address and creates a
 game in most of its three hundred tests, which trips a limit meant for one
 household. The relief multiplies only the limits that exist to bound a cost —
-never the guessing paths, and never in production, both of which are tested in
-`src/lib/api/rateLimit.test.ts`.
+never the guessing paths, and never in production except the suite's own
+build (`ITSUTSU_SUITE_SERVER=1`, never on Vercel — `src/lib/suiteServer.ts`),
+all of which are tested in `src/lib/api/rateLimit.test.ts` and beside it.
 
 **The same relief also shortens a live board's poll outside production.**
 `next.config.ts` hands it to the browser as `LIVE_POLL_RELIEF`, and `pollEvery`
 divides the fifteen-second cadence by it, never faster than every two and a half seconds, so
 the two-seat specs do not wait out a production poll for every move the other
-seat makes. It never applies in production — `pollEvery` refuses it there
-before reading it, because every ask is a paid function call — and
+seat makes. It never applies on the live site — `pollEvery` refuses it in
+production before reading it, the suite's own build excepted, because every
+ask is a paid function call — and
 `src/components/live/pollCadence.test.ts` fails if that refusal goes.
 
 **It does not touch the twenty-game cap.** It used to — one knob for both —

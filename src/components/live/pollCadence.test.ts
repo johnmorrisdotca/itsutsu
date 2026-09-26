@@ -53,6 +53,11 @@ describe("the end-to-end suite's relief on the cadence", () => {
   it("is ignored in production, whatever it is set to", () => {
     expect(pollEvery({ nodeEnv: "production", relief: "6" })).toBe(POLL_MS);
     expect(pollEvery({ nodeEnv: "production", relief: "1000" })).toBe(POLL_MS);
+    expect(pollEvery({ nodeEnv: "production", relief: "6", suite: "" })).toBe(POLL_MS);
+  });
+
+  it("applies on the suite's own production build, which says so (`suiteServer.ts`)", () => {
+    expect(pollEvery({ nodeEnv: "production", relief: "6", suite: "1" })).toBeLessThan(POLL_MS);
   });
 
   it("divides the cadence where it is asked for", () => {

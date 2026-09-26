@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
    */
   env: {
     LIVE_POLL_RELIEF: process.env.RATE_LIMIT_RELIEF ?? "",
+    // The suite's own production build says so to the browser too (`suiteServer.ts`); never on a Vercel build.
+    SUITE_SERVER: process.env.VERCEL === undefined ? (process.env.ITSUTSU_SUITE_SERVER ?? "") : "",
     LADDER_FINGERPRINT: readLadderFingerprint() ?? "",
   },
   /*
