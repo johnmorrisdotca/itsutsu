@@ -17,7 +17,7 @@ import type { PuzzleCheck } from "../puzzles.types";
  * with two, all of them joined. A line that ran beside itself would show a cell
  * with three, and is refused; no level's one answer does that, which the level
  * test proves. Each bridge must be crossed straight across by one line and
- * straight down by a different one.
+ * straight down by a different one, and each waypoint passed by its own line.
  */
 export function checkTsunagi(size: number, givens: string, answer: string): PuzzleCheck {
   const layout = decodeLayout(givens, size);
@@ -38,6 +38,8 @@ export function checkTsunagi(size: number, givens: string, answer: string): Puzz
     const pair = PAIR_LETTERS.indexOf(char);
     if (pair === -1 || pair >= pairs) return { ok: false, reason: "a cell has no line through it" };
     if (cell !== CELL_EMPTY && cell !== pair) return { ok: false, reason: "a stone is moved" };
+    const waypoint = layout.waypoints.get(at);
+    if (waypoint !== undefined && waypoint !== pair) return { ok: false, reason: "a waypoint is passed by another line" };
     owners.push(pair);
   }
   // Each bridge: one line straight across it, a different one straight down.

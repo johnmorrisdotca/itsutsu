@@ -3,7 +3,7 @@
 import { useRef, type PointerEvent } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
-import { CELL_BLOCKED, CELL_BRIDGE, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
+import { CELL_BLOCKED, CELL_BRIDGE, stepBetween, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
 import { ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { PuzzleBoard } from "./PuzzleBoard";
@@ -23,6 +23,13 @@ import { TSUNAGI_BEAD, TSUNAGI_MARBLE, tsunagiBeadLook, tsunagiLineColour, tsuna
  * finger alike: pointer events, captured on the press so a drag that leaves
  * the board still ends, and `touch-action: none` so a finger drawing a line
  * never scrolls the page. `TsunagiSolve` decides what each report means.
+ *
+ * A WAYPOINT is drawn as a ring of its line's colour. A board that WRAPS is
+ * drawn with a ghost of the far edge all round it, faded (John: "a ghost of the
+ * far edge"): the cell beyond the right edge shows the left edge's, and so on.
+ * A finger dragged onto a ghost cell is on the real one it shows, and a line
+ * across the join is drawn out through one edge into the ghost and in through
+ * the other.
  */
 export function TsunagiGrid({
   layout,
@@ -54,14 +61,20 @@ export function TsunagiGrid({
 }) {
   const { size } = layout;
   const owners = ownersOf(layout, lines);
+  // A wrapping board is drawn one ghost cell wider all round.
+  const ring = layout.wrap ? 1 : 0;
+  const span = size + 2 * ring;
   const pressing = useRef<{ pointer: number; cell: number } | null>(null);
   const live = !readOnly && !done;
 
   const cellAt = (event: PointerEvent<HTMLDivElement>): number | null => {
     const box = event.currentTarget.getBoundingClientRect();
-    const col = Math.floor(((event.clientX - box.left) / box.width) * size);
-    const row = Math.floor(((event.clientY - box.top) / box.height) * size);
-    if (col < 0 || row < 0 || col >= size || row >= size) return null;
+    const across = Math.floor(((event.clientX - box.left) / box.width) * span);
+    const down = Math.floor(((event.clientY - box.top) / box.height) * span);
+    if (across < 0 || down < 0 || across >= span || down >= span) return null;
+    // A ghost cell is the real one it shows.
+    const col = (across - ring + size) % size;
+    const row = (down - ring + size) % size;
     return row * size + col;
   };
 
@@ -91,7 +104,7 @@ export function TsunagiGrid({
 
   return (
     <div className="w-full select-none" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"} data-marks={marks} data-fill={fill}>
-      <PuzzleBoard size={size} theme={theme}>
+      <PuzzleBoard size={span} theme={theme} coordinates={!layout.wrap}>
         <div
           className={`relative h-full w-full ${live ? "cursor-pointer" : ""}`}
           style={{ touchAction: "none" }}
@@ -101,7 +114,12 @@ export function TsunagiGrid({
           onPointerCancel={up}
           data-testid="tsunagi-board"
         >
-          <svg viewBox={`0 0 ${size} ${size}`} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+          <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true" data-wrap={layout.wrap ? "true" : undefined}>
+            {layout.wrap ? (
+              // Where the edges join: the real board marked off from its ghost.
+              <rect x={ring} y={ring} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" data-testid="tsunagi-wrap-edge" />
+            ) : null}
+            <g transform={`translate(${ring} ${ring})`}>
             {owners.map((owner, at) =>
               owner >= 0 && layout.cells[at]! < 0 ? (
                 <rect key={`wash-${at}`} x={at % size} y={Math.floor(at / size)} width={1} height={1} fill={tsunagiWash(owner, marks)} />
@@ -115,7 +133,7 @@ export function TsunagiGrid({
                 <line x1={0} y1={at} x2={size} y2={at} vectorEffect="non-scaling-stroke" />
               </g>
             ))}
-            <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
+            {layout.wrap ? null : <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />}
             {/* A BRIDGE: a deck with a rail each side, the way across it; one line goes over it across and another down (`steps.ts`). */}
             {layout.cells.map((cell, at) =>
               cell === CELL_BRIDGE ? (
@@ -150,25 +168,47 @@ export function TsunagiGrid({
             })}
             {lines.map((line, pair) =>
               line.length < 2 ? null : (
-                <polyline
-                  key={`line-${pair}`}
-                  points={line.map((cell) => `${(cell % size) + 0.5},${Math.floor(cell / size) + 0.5}`).join(" ")}
-                  fill="none"
-                  stroke={tsunagiLineColour(pair, marks)}
-                  strokeWidth={0.3}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  data-testid="tsunagi-line"
-                  data-pair={pair}
-                  data-cells={line.length}
-                />
+                <g key={`line-${pair}`} data-testid="tsunagi-line" data-pair={pair} data-cells={line.length}>
+                  {runsOf(line, size, layout.wrap).map((points, at) => (
+                    <polyline
+                      key={at}
+                      points={points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(" ")}
+                      fill="none"
+                      stroke={tsunagiLineColour(pair, marks)}
+                      strokeWidth={0.3}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  ))}
+                </g>
               ),
             )}
+            </g>
           </svg>
-          <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${size}, minmax(0, 1fr))` }}>
-            {layout.cells.map((cell, at) => {
+          <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${span}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${span}, minmax(0, 1fr))` }}>
+            {Array.from({ length: span * span }, (_, place) => {
+              const across = place % span;
+              const down = Math.floor(place / span);
+              const at = ((down - ring + size) % size) * size + ((across - ring + size) % size);
+              const ghost = across < ring || down < ring || across >= size + ring || down >= size + ring;
+              const cell = layout.cells[at]!;
               const owner = owners[at]!;
-              const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : cell === CELL_BRIDGE ? ", bridge" : ", empty"}`;
+              const waypoint = layout.waypoints.get(at);
+              if (ghost) {
+                // A ghost of the far edge: what is there, faded, and nothing to find in a test's count.
+                return (
+                  <div key={`ghost-${place}`} className="relative flex items-center justify-center opacity-35" data-ghost={at} aria-hidden="true">
+                    {cell >= 0 ? (
+                      <span className={`${TSUNAGI_MARBLE} ${size >= 8 ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`} style={tsunagiMarbleLook(cell, marks)}>
+                        {marks === "numbers" ? cell + 1 : null}
+                      </span>
+                    ) : fill === "marbles" && owner >= 0 ? (
+                      <span className={TSUNAGI_BEAD} style={tsunagiBeadLook(owner, marks)} />
+                    ) : null}
+                  </div>
+                );
+              }
+              const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : cell === CELL_BRIDGE ? ", bridge" : ", empty"}${waypoint === undefined ? "" : `, waypoint for line ${waypoint + 1}`}`;
               return (
                 <div
                   key={at}
@@ -180,6 +220,17 @@ export function TsunagiGrid({
                   aria-label={label}
                   role="img"
                 >
+                  {waypoint === undefined ? null : (
+                    // A WAYPOINT: a ring of its line's colour on a cell only that line may pass.
+                    <span
+                      className="pointer-events-none absolute inset-[18%] flex items-center justify-center rounded-full border-[3px] text-[0.6rem] font-bold"
+                      style={{ borderColor: tsunagiLineColour(waypoint, marks), color: tsunagiLineColour(waypoint, marks) }}
+                      data-testid="tsunagi-waypoint"
+                      data-pair={waypoint}
+                    >
+                      {marks === "numbers" && owner < 0 ? waypoint + 1 : null}
+                    </span>
+                  )}
                   {cell >= 0 && flagged?.has(cell) ? (
                     <span
                       className="pointer-events-none absolute inset-[8%] animate-ping rounded-full border-4"
@@ -203,4 +254,31 @@ export function TsunagiGrid({
       </PuzzleBoard>
     </div>
   );
+}
+
+/**
+ * A line as the runs it is drawn in, each a list of [column, row] points. On a
+ * board that wraps, a step across the join ends one run a cell out beyond the
+ * edge (in the ghost) and starts the next a cell out beyond the other edge, so
+ * the line is seen to leave and come back.
+ */
+function runsOf(line: readonly number[], size: number, wrap: boolean): [number, number][][] {
+  const point = (cell: number): [number, number] => [cell % size, Math.floor(cell / size)];
+  const runs: [number, number][][] = [[point(line[0]!)]];
+  for (let at = 1; at < line.length; at += 1) {
+    const from = line[at - 1]!;
+    const to = line[at]!;
+    const plain = stepBetween(size, from, to, false) !== 0 || Math.abs(to - from) === 2 || Math.abs(to - from) === 2 * size;
+    if (plain || !wrap) {
+      runs[runs.length - 1]!.push(point(to));
+      continue;
+    }
+    const by = stepBetween(size, from, to, true);
+    const [dx, dy] = Math.abs(by) === 1 ? [Math.sign(by), 0] : [0, Math.sign(by)];
+    const [fx, fy] = point(from);
+    const [tx, ty] = point(to);
+    runs[runs.length - 1]!.push([fx + dx, fy + dy]);
+    runs.push([[tx - dx, ty - dy], [tx, ty]]);
+  }
+  return runs;
 }

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { checkTsunagi } from "./check";
-import { CELL_BRIDGE, decodeLayout, encodeLayout } from "./code";
+import { CELL_BRIDGE, decodeLayout, encodeLayout, stepBetween, wrappedStep } from "./code";
 import { isTwist } from "./ladder";
 import { loadEveryTsunagiLevel, TSUNAGI_SIZES, tsunagiLevelsOf } from "./levels";
 import { allJoined, answerOf, decodeLines, dragTo, encodeLines, letGo, linesOfAnswer, noLines, overBridge, pressAt, type Lines } from "./lines";
@@ -130,5 +130,58 @@ describe("the rules of a wall", () => {
     const board = "....A.......+...B....B..A";
     expect(decodeLayout(board, 5), "the board is one without the wall").not.toBeNull();
     expect(decodeLayout(`${board}|7-12`, 5)).toBeNull();
+  });
+});
+
+describe("the rules of a waypoint", () => {
+  // 3×3: A's stones at the top corners, B's at the bottom ones; a waypoint for A in the middle.
+  const layout = decodeLayout("A.A.a.B.B", 3)!;
+
+  it("reads a lower-case letter as its pair's waypoint, and refuses one for a pair the board lacks", () => {
+    expect(layout.waypoints.get(4)).toBe(0);
+    expect(decodeLayout("A.A.c.B.B", 3)).toBeNull();
+  });
+
+  it("lets only its own pair's line onto it", () => {
+    const b = pressAt(layout, noLines(layout), 6);
+    expect(dragTo(layout, dragTo(layout, b.lines, 1, 3), 1, 4)[1]).toEqual([6, 3]);
+    const a = pressAt(layout, noLines(layout), 0);
+    expect(dragTo(layout, dragTo(layout, a.lines, 0, 3), 0, 4)[0]).toEqual([0, 3, 4]);
+  });
+
+  it("is refused by the check when another line passes it", () => {
+    const { size, layout: code, answer } = twistLevels().find((each) => /[a-p]/.test(each.layout.split("|")[0]!))!;
+    const layout = decodeLayout(code, size)!;
+    const [cell, pair] = [...layout.waypoints][0]!;
+    const other = pair === 0 ? "B" : "A";
+    const doctored = answer.slice(0, cell) + other + answer.slice(cell + 1);
+    expect(checkTsunagi(size, code, doctored)).toEqual({ ok: false, reason: "a waypoint is passed by another line" });
+  });
+});
+
+describe("the rules of a board that wraps", () => {
+  it("steps off one edge and on at the other, and names that step as the step it is", () => {
+    expect(wrappedStep(5, 4, 1)).toBe(0);
+    expect(wrappedStep(5, 0, -1)).toBe(4);
+    expect(wrappedStep(5, 2, -5)).toBe(22);
+    expect(stepBetween(5, 4, 0, true)).toBe(1);
+    expect(stepBetween(5, 4, 0, false)).toBe(0);
+    expect(stepBetween(5, 22, 2, true)).toBe(5);
+  });
+
+  it("reads `wrap` last, after any walls, and nowhere else", () => {
+    expect(decodeLayout("A.A......|wrap", 3)!.wrap).toBe(true);
+    expect(decodeLayout("A.A......|3-4|wrap", 3)!.wrap).toBe(true);
+    expect(decodeLayout("A.A......|wrap|3-4", 3)).toBeNull();
+    expect(decodeLayout("A.A......", 3)!.wrap).toBe(false);
+  });
+
+  it("lets a line be dragged across the join, and not on a board that does not wrap", () => {
+    const wrapped = decodeLayout("A...A....|wrap", 3)!;
+    const flat = decodeLayout("A...A....", 3)!;
+    const onWrapped = pressAt(wrapped, noLines(wrapped), 0);
+    expect(dragTo(wrapped, onWrapped.lines, 0, 2)[0]).toEqual([0, 2]);
+    const onFlat = pressAt(flat, noLines(flat), 0);
+    expect(dragTo(flat, onFlat.lines, 0, 2)).toBe(onFlat.lines);
   });
 });

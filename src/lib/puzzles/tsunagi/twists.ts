@@ -1,4 +1,4 @@
-import { decodeLayout, edgeKey, encodeAnswer, type LinkLayout } from "./code.ts";
+import { decodeLayout, edgeKey, encodeAnswer, stepBetween, type LinkLayout } from "./code.ts";
 import { layoutOf, randomFilling, symmetryKey, turnsIn, type LinkCandidate } from "./generate.ts";
 import { countSolutions } from "./solve.ts";
 import { stepTable } from "./steps.ts";
@@ -175,4 +175,56 @@ export function bridgeAndWallCandidate(size: number, random: Random, longest: nu
   if (walls === null || walls.size === 0) return null;
   const { layout } = layoutOf(size, made.paths, { bridges: made.bridges, walls });
   return proved(layout, answer, size, budget, { bridges: made.bridges.size, walls: walls.size, blocked: 0 });
+}
+
+/**
+ * WAYPOINTS. A plain filling whose layout has more than one answer, given
+ * waypoints — cells in the middle of the answer's lines, each kept for the line
+ * through it — until it has one, and then each taken away again where it is not
+ * needed: every waypoint left is one a player has to use. At most `most`.
+ */
+export function waypointCandidate(size: number, random: Random, longest: number, budget: number, most: number): TwistCandidate | null {
+  const filling = randomFilling(size, random, longest);
+  if (filling === null) return null;
+  const middles = filling.flatMap((path) => path.slice(1, -1));
+  if (middles.length === 0) return null;
+  const unique = (marked: ReadonlySet<number>) => {
+    const { layout } = layoutOf(size, filling, { waypoints: marked });
+    const decoded = decodeLayout(layout, size);
+    if (decoded === null) return false;
+    const counted = countSolutions(decoded, 2, budget);
+    return !counted.gaveUp && counted.count === 1;
+  };
+  // A layout already unique without one teaches nothing about waypoints.
+  if (unique(new Set())) return null;
+  let marked = new Set<number>();
+  const order = middles.map((cell) => [random(), cell] as const).sort((x, y) => x[0] - y[0]).map(([, cell]) => cell);
+  for (const cell of order) {
+    if (unique(marked)) break;
+    if (marked.size >= most) return null;
+    marked.add(cell);
+  }
+  if (!unique(marked)) return null;
+  for (const cell of [...marked]) {
+    const without = new Set([...marked].filter((each) => each !== cell));
+    if (unique(without)) marked = without;
+  }
+  if (marked.size === 0) return null;
+  const { layout, answer } = layoutOf(size, filling, { waypoints: marked });
+  return proved(layout, answer, size, budget, { bridges: 0, walls: 0, blocked: 0 });
+}
+
+/**
+ * WRAP. A grid filled on a torus — a line may run off one edge and on at the
+ * other — kept only where at least one line of the answer does, so the wrap is
+ * a thing the board asks for, and only with exactly one answer under the wrap
+ * rules.
+ */
+export function wrapCandidate(size: number, random: Random, longest: number, budget: number): TwistCandidate | null {
+  const filling = randomFilling(size, random, longest, new Set(), true);
+  if (filling === null) return null;
+  const crosses = filling.some((path) => path.some((cell, at) => at > 0 && stepBetween(size, path[at - 1]!, cell, false) === 0));
+  if (!crosses) return null;
+  const { layout, answer } = layoutOf(size, filling, { wrap: true });
+  return proved(layout, answer, size, budget, { bridges: 0, walls: 0, blocked: 0 });
 }

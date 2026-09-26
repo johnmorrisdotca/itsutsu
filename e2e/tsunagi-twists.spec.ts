@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { decodeLayout } from "../src/lib/puzzles/tsunagi/code";
+import { decodeLayout, stepBetween, type LinkLayout } from "../src/lib/puzzles/tsunagi/code";
 import { challengesOf, tsunagiRole } from "../src/lib/puzzles/tsunagi/ladder";
 import { linesOfAnswer } from "../src/lib/puzzles/tsunagi/lines";
 import { TSUNAGI_6 } from "../src/lib/puzzles/tsunagi/levels/size6.data";
@@ -17,7 +17,7 @@ const AT = "/games/tsunagi";
 const SIZE = 6;
 
 /** The first 6×6 level that teaches a challenge, and its partner that tests it. */
-function lesson(challenge: "bridges" | "walls"): number {
+function lesson(challenge: "bridges" | "walls" | "waypoints" | "wrap"): number {
   const at = TSUNAGI_6.findIndex(([layout], index) => challengesOf(layout).includes(challenge) && tsunagiRole(SIZE, index + 1)?.role === "teaches");
   return at + 1;
 }
@@ -52,6 +52,41 @@ async function openTo(page: Page, level: number) {
     ([size, last]) => window.localStorage.setItem(`itsutsu.tsunagi.solved.${size}@2026-09-26`, JSON.stringify(Object.fromEntries(Array.from({ length: last }, (_, at) => [at + 1, 60_000])))),
     [SIZE, level - 1],
   );
+}
+
+/**
+ * A line on a board that wraps, as a finger draws it: along the board, and at
+ * each step across the join off the edge onto the ghost of the far side, then
+ * lifted and pressed again on the line's end over there to carry on.
+ */
+async function dragWrapped(page: Page, layout: LinkLayout, cells: readonly number[]) {
+  const box = (await page.getByTestId("tsunagi-board").boundingBox())!;
+  const span = SIZE + 2;
+  const at = (col: number, row: number) => ({ x: box.x + ((col + 1.5) * box.width) / span, y: box.y + ((row + 1.5) * box.height) / span });
+  const real = (cell: number) => at(cell % SIZE, Math.floor(cell / SIZE));
+  let from = real(cells[0]!);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  for (let each = 1; each < cells.length; each += 1) {
+    const [a, b] = [cells[each - 1]!, cells[each]!];
+    if (stepBetween(SIZE, a, b, false) !== 0) {
+      from = real(b);
+      await page.mouse.move(from.x, from.y, { steps: 4 });
+      continue;
+    }
+    // Across the join: onto the ghost beyond a's edge, let go, and press again on b, the line's end now.
+    const by = stepBetween(SIZE, a, b, true);
+    const ghost = at((a % SIZE) + (Math.abs(by) === 1 ? Math.sign(by) : 0), Math.floor(a / SIZE) + (Math.abs(by) === SIZE ? Math.sign(by) : 0));
+    await page.mouse.move(ghost.x, ghost.y, { steps: 4 });
+    await page.mouse.up();
+    // Landed on its far marble: joined, and pressing that marble again would start the line afresh.
+    if (each === cells.length - 1) return;
+    from = real(b);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+  }
+  await page.mouse.up();
+  void layout;
 }
 
 test.describe("Tsunagi's twists", () => {
@@ -109,6 +144,35 @@ test.describe("Tsunagi's twists", () => {
     await drag(page, [a, b]);
     await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
     for (const line of lines) await drag(page, line);
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+  });
+
+  test("a waypoint is a ring only its own line may pass, and the level is solved through it", async ({ page }) => {
+    const level = lesson("waypoints");
+    const [layoutCode, answer] = TSUNAGI_6[level - 1]!;
+    const layout = decodeLayout(layoutCode, SIZE)!;
+    const lines = linesOfAnswer(layout, answer)!;
+    await openTo(page, level);
+    await playLevel(page, level);
+    await expect(page.getByTestId("tsunagi-chip-teaches")).toHaveText("New: Waypoints");
+    await expect(page.getByTestId("tsunagi-waypoint")).toHaveCount(layout.waypoints.size);
+    for (const line of lines) await drag(page, line);
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+  });
+
+  test("a board that wraps shows the far edges as ghosts, and a line is drawn off one side and on at the other", async ({ page }) => {
+    const level = lesson("wrap");
+    const [layoutCode, answer] = TSUNAGI_6[level - 1]!;
+    const layout = decodeLayout(layoutCode, SIZE)!;
+    const lines = linesOfAnswer(layout, answer)!;
+    // The lesson's answer does cross the join, or it would teach nothing.
+    expect(lines.some((line) => line.some((cell, at) => at > 0 && stepBetween(SIZE, line[at - 1]!, cell, false) === 0))).toBe(true);
+    await openTo(page, level);
+    await playLevel(page, level);
+    await expect(page.getByTestId("tsunagi-chip-teaches")).toHaveText("New: Wrap");
+    await expect(page.getByTestId("tsunagi-wrap-edge")).toHaveCount(1);
+    await expect(page.locator("[data-ghost]")).toHaveCount((SIZE + 2) * (SIZE + 2) - SIZE * SIZE);
+    for (const line of lines) await dragWrapped(page, layout, line);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   });
 });

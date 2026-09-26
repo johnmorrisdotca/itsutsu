@@ -13,8 +13,10 @@ import { bridgesOf, stepTable, type Step } from "./steps.ts";
  * The rules it counts under are the published ones, and no more: a line runs
  * cell to cell across and down, never through a wall (`steps.ts`), lines never
  * cross or share a cell except on a bridge — where one goes straight across
- * and a different one straight down — and every open cell and both ways over
- * every bridge are used. A line MAY run beside itself; the solver counts those
+ * and a different one straight down — a waypoint is taken by its own pair's
+ * line and no other, on a board that wraps a line may leave one edge and come
+ * back at the other, and every open cell and both ways over every bridge are
+ * used. A line MAY run beside itself; the solver counts those
  * answers too, so "exactly one" is a claim about every answer the rules
  * allow, not only the tidy ones.
  *
@@ -56,6 +58,11 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
   // A bridge's two slots: the pair going across it and the pair going down it, -1 while free.
   const across = new Int16Array(total).fill(-1);
   const down = new Int16Array(total).fill(-1);
+  // A waypoint's pair, or -1: an empty cell only that pair's line may take.
+  const kept = new Int16Array(total).fill(-1);
+  for (const [cell, pair] of layout.waypoints) kept[cell] = pair;
+  /** Whether `pair`'s line may take the empty cell `at`. */
+  const mayTake = (at: number, pair: number) => grid[at] === CELL_EMPTY && (kept[at] === -1 || kept[at] === pair);
   let openPairs = pairs;
   // Every empty cell, and both slots of every bridge, must be used.
   let empties = cells.filter((cell) => cell === CELL_EMPTY).length + 2 * bridges.length;
@@ -184,7 +191,7 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
     for (let pair = 0; pair < pairs; pair += 1) {
       if (closed[pair] === 1) continue;
       let ways = 0;
-      for (const step of steps[head[pair]!]!) if (free(step, pair) && (grid[step.to] === CELL_EMPTY || step.to === goal[pair])) ways += 1;
+      for (const step of steps[head[pair]!]!) if (free(step, pair) && (mayTake(step.to, pair) || step.to === goal[pair])) ways += 1;
       if (ways < bestWays) {
         best = pair;
         bestWays = ways;
@@ -210,7 +217,7 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
         openPairs += 1;
         closed[best] = 0;
         untake(step);
-      } else if (grid[next] === CELL_EMPTY) {
+      } else if (mayTake(next, best)) {
         take(step, best);
         grid[next] = best;
         empties -= 1;

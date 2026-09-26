@@ -1,4 +1,4 @@
-import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, edgeOpen, encodeAnswer, PAIR_LETTERS, type LinkLayout } from "./code";
+import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, edgeOpen, encodeAnswer, PAIR_LETTERS, stepBetween, wrappedStep, type LinkLayout } from "./code";
 import { stepTable } from "./steps";
 
 /**
@@ -131,14 +131,9 @@ export function answerOf(layout: LinkLayout, lines: Lines): string {
   return encodeAnswer(ownersOf(layout, lines));
 }
 
-function adjacent(size: number, a: number, b: number): boolean {
-  const same = Math.floor(a / size) === Math.floor(b / size);
-  return (same && Math.abs(a - b) === 1) || Math.abs(a - b) === size;
-}
-
-/** Neighbours with no wall between them. */
+/** Neighbours with no wall between them: across a joined edge too, on a board that wraps. */
 function stepOpen(layout: LinkLayout, a: number, b: number): boolean {
-  return adjacent(layout.size, a, b) && edgeOpen(layout, a, b);
+  return stepBetween(layout.size, a, b, layout.wrap) !== 0 && edgeOpen(layout, a, b);
 }
 
 function replaced(lines: Lines, pair: number, line: readonly number[]): Lines {
@@ -172,6 +167,9 @@ export function dragTo(layout: LinkLayout, lines: Lines, pair: number, cell: num
   if (layout.cells[tip] === CELL_BRIDGE && line.length >= 2 && cell - tip !== tip - line[line.length - 2]!) return lines;
   const what = layout.cells[cell]!;
   if (what === CELL_BLOCKED || (what >= 0 && what !== pair)) return lines;
+  // A waypoint is its own pair's alone.
+  const waypoint = layout.waypoints.get(cell);
+  if (waypoint !== undefined && waypoint !== pair) return lines;
   if (what === CELL_BRIDGE) {
     const acrossNow = Math.abs(cell - tip) === 1;
     const over = overBridge(lines, cell);
@@ -206,7 +204,8 @@ export function dragThrough(layout: LinkLayout, lines: Lines, pair: number, cell
     const line = now[pair]!;
     if (line.length === 0) return now;
     const tip = line[line.length - 1]!;
-    if (tip === cell || line.includes(cell)) return dragTo(layout, now, pair, cell);
+    // Already there, or one step away (across a joined edge counts): straight to it.
+    if (tip === cell || line.includes(cell) || stepBetween(size, tip, cell, layout.wrap) !== 0) return dragTo(layout, now, pair, cell);
     const [tr, tc] = [Math.floor(tip / size), tip % size];
     const [cr, cc] = [Math.floor(cell / size), cell % size];
     const step = tc !== cc ? tip + Math.sign(cc - tc) : tip + Math.sign(cr - tr) * size;
@@ -248,7 +247,9 @@ export function encodeLines(layout: LinkLayout, lines: Lines): string {
         return;
       }
       const came = line[at - 1]!;
-      out[cell] = came === cell - size ? "n" : came === cell + 1 ? "e" : came === cell + size ? "s" : "w";
+      // Which side it came in from, across a joined edge too: the step from here back to where it came from.
+      const by = stepBetween(size, cell, came, layout.wrap);
+      out[cell] = by === -size ? "n" : by === 1 ? "e" : by === size ? "s" : "w";
     });
   }
   return out.join("");
@@ -273,8 +274,9 @@ export function decodeLines(layout: LinkLayout, code: string): Lines | null {
     const char = code[cell]!;
     if (char === "." || char === "*") continue;
     const dir = FROM[char]!;
-    let came = [cell - size, cell + 1, cell + size, cell - 1][dir]!;
-    if (came < 0 || came >= size * size || !adjacent(size, came, cell)) return null;
+    const by = [-size, 1, size, -1][dir]!;
+    let came = layout.wrap ? wrappedStep(size, cell, by) : cell + by;
+    if (came < 0 || came >= size * size || stepBetween(size, cell, came, layout.wrap) === 0) return null;
     // From a bridge: from the cell on its far side, over it.
     if (layout.cells[came] === CELL_BRIDGE) came = came - (cell - came);
     if (came < 0 || came >= size * size || code[came] === "." || next.has(came)) return null;
@@ -292,7 +294,7 @@ export function decodeLines(layout: LinkLayout, code: string): Lines | null {
     while (next.has(at)) {
       const after = next.get(at)!;
       // Two cells apart: the bridge between them is in the line.
-      if (!adjacent(size, at, after)) {
+      if (stepBetween(size, at, after, layout.wrap) === 0) {
         const bridge = (at + after) / 2;
         if (layout.cells[bridge] !== CELL_BRIDGE) return null;
         line.push(bridge);

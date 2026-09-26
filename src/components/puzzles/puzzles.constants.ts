@@ -343,6 +343,8 @@ export const TSUNAGI_CHIPS = {
   },
   bridges: { label: "Bridges", kanji: "橋", says: "A bridge is crossed by two lines: one straight across, a different one straight down. Neither may turn on it, and both must cross." },
   walls: { label: "Walls", kanji: "壁", says: "No line may cross a wall, or go into a blocked cell." },
+  waypoints: { label: "Waypoints", kanji: "経由", says: "A ring on a cell is a waypoint: the line of its colour must pass through it, and no other line may." },
+  wrap: { label: "Wrap", kanji: "巡", says: "The edges join: a line leaving one side comes back in on the other. Drag off an edge onto its faded copy, then carry on from the line's end on the far side." },
   teaches: { label: (what: string) => `New: ${what}`, says: "This block's new idea: its 15th level shows it gently." },
   tests: { label: "Block's test", kanji: "試", says: "This block's test: its 16th level uses its twist hard." },
 } as const;

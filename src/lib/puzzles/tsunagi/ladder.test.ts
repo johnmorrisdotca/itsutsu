@@ -11,6 +11,12 @@ import { loadEveryTsunagiLevel, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES, tsunagiLeve
 beforeAll(loadEveryTsunagiLevel);
 
 describe("a board's challenges", () => {
+  it("reads waypoints from a lower-case letter and wrap from its segment, and never wrap as a wall", () => {
+    expect(challengesOf("A.a.A")).toEqual(["waypoints"]);
+    expect(challengesOf("A..A|wrap")).toEqual(["wrap"]);
+    expect(challengesOf("A..A|1-2|wrap")).toEqual(["walls", "wrap"]);
+  });
+
   it("reads bridges from a `+`, and walls from a wall list or a blocked cell", () => {
     expect(challengesOf("A..A")).toEqual([]);
     expect(challengesOf("A.+.A")).toEqual(["bridges"]);
@@ -42,16 +48,15 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("the %i×%i ladder", (s
     });
   });
 
-  it("teaches bridges before walls, each first at a 15th that says it is new", () => {
+  it("teaches bridges, walls, waypoints and wrap in that order, each first at a 15th that says it is new", () => {
     const all = layouts();
-    const firstBridge = all.findIndex((layout) => challengesOf(layout).includes("bridges"));
-    const firstWall = all.findIndex((layout) => challengesOf(layout).includes("walls"));
-    expect(firstBridge, "a bridge lesson").toBeGreaterThanOrEqual(0);
-    expect(firstWall, "a wall lesson").toBeGreaterThanOrEqual(0);
-    expect(firstBridge).toBeLessThan(firstWall);
-    for (const first of [firstBridge, firstWall]) expect(twistRole(all, first + 1)!.role).toBe("teaches");
-    expect(twistRole(all, firstBridge + 1)!.newOnes).toContain("bridges");
-    expect(twistRole(all, firstWall + 1)!.newOnes).toContain("walls");
+    const firsts = (["bridges", "walls", "waypoints", "wrap"] as const).map((twist) => ({ twist, at: all.findIndex((layout) => challengesOf(layout).includes(twist)) }));
+    for (const { twist, at } of firsts) {
+      expect(at, `a ${twist} lesson`).toBeGreaterThanOrEqual(0);
+      expect(twistRole(all, at + 1)!.role, twist).toBe("teaches");
+      expect(twistRole(all, at + 1)!.newOnes, twist).toContain(twist);
+    }
+    for (let each = 1; each < firsts.length; each += 1) expect(firsts[each]!.at, firsts[each]!.twist).toBeGreaterThan(firsts[each - 1]!.at);
   });
 
   it("marks every level 1 to 5", () => {
