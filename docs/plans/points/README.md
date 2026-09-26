@@ -22,6 +22,21 @@ towards IP", the puzzles included.
 
 Nothing in IP pays for turning up. Anything that does belongs to XP.
 
+**Every game has an IP leaderboard.** John, 2026-09-25: "EVERY game in every
+family is also going to have a Leaderboard. So IP matters." Three levels, each
+all time and this month, as each puzzle's points board is today:
+
+- **Each game's own board**, on its page beside its ratings: who has won the
+  most IP at Gomoku, at Reversi, at Number Place.
+- **Each family's board**: Five in a row, Drops, Checkers, Numbers and the rest,
+  the sum of their games.
+- **The site's board**, `/points`: every game together, with the weights
+  keeping a Go win worth more than a tic-tac-toe one.
+
+A game's board is where IP is most seen, so it is where a player learns what
+it is: each board says in one line that IP is won by results, and links to how
+a game is priced.
+
 ## What there is today (read 2026-09-25, at 0.340.1)
 
 - **Every puzzle has its own points board.** `pointsFor` (`src/lib/puzzles/puzzlePoints.ts`)
@@ -95,6 +110,7 @@ who plays a few words a day.
 | PTS-01 Site points for puzzles, and the /points page | `PTS-01-site-points-page.md` | John's yes on the weights |
 | PTS-02 Points for games | `PTS-02-game-points.md` | John's yes on the prices; **a migration**, a Neon branch and a dump first |
 | PTS-03 A player's points on their page | `PTS-03-points-on-the-player-page.md` | PTS-01 |
+| PTS-04 An IP board on every game's page, and every family's | this README, "Every game has an IP leaderboard" | PTS-02 |
 
 ## What not to do
 
