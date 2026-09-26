@@ -241,4 +241,94 @@ test.describe("Kumimoji", () => {
     expect(letters).toBe(word);
     await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(CLASSIC - word.length);
   });
+
+  /*
+   * THE TABLE IS A BOARD TO ITS EDGES, AND THE PAD MOVES IT. John, 2026-09-26:
+   * the table was "a Gomoku board of dots" on a pale ground that showed when
+   * it was panned or zoomed out; he wants the Reversi board by default, Gomoku
+   * as a choice, the board filling the view at any pan or zoom, and buttons to
+   * move and zoom it beside Fit.
+   */
+  test("the table is a Reversi board to its edges, Gomoku by choice, and the pad beside Fit moves and zooms it", async ({ page }) => {
+    const { seed, word } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    for (const [at, letter] of [...word].entries()) await lay(page, letter, `0,${at}`);
+    const table = page.getByTestId("kumimoji-table");
+    const ruling = page.getByTestId("kumimoji-ruling");
+    await expect(table).toHaveAttribute("data-board", "reversi");
+    await expect(page.getByTestId("word-style-reversi")).toHaveAttribute("aria-pressed", "true");
+    // Gomoji's third style is not a Kumimoji board.
+    await expect(page.getByTestId("word-style-tiles")).toHaveCount(0);
+
+    /** Whether the board covers the whole box: the ruling's box is the table's, and the table itself is painted. */
+    const fills = async () => {
+      const [outer, lines] = [await table.boundingBox(), await ruling.boundingBox()];
+      expect(lines, "the board's lines are not drawn").not.toBeNull();
+      for (const side of ["x", "y", "width", "height"] as const) expect(Math.abs(lines![side] - outer![side]), `the board stops short of the table's ${side}`).toBeLessThan(1);
+      const painted = await table.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return style.backgroundImage !== "none" || style.backgroundColor !== "rgba(0, 0, 0, 0)";
+      });
+      expect(painted, "the table's own ground shows").toBe(true);
+    };
+    const place = () => ruling.evaluate((element) => getComputedStyle(element).backgroundPosition);
+    const tilePx = async () => Number(await table.getAttribute("data-tile-px"));
+    await fills();
+
+    // Each arrow moves the view, and the board goes with it.
+    for (const key of ["right", "down", "left", "up"] as const) {
+      const before = await place();
+      await page.getByTestId(`kumimoji-pad-${key}`).click();
+      await expect.poll(place, `${key} did not move the board`).not.toBe(before);
+      await fills();
+    }
+    await expect(table).toHaveAttribute("data-fitted", "false");
+
+    // Zoomed out as far as it goes, then panned: still a board to the edges.
+    const fitTile = await tilePx();
+    for (let press = 0; press < 6; press += 1) await page.getByTestId("kumimoji-pad-out").click();
+    await expect.poll(tilePx).toBeLessThan(fitTile + 1);
+    await page.getByTestId("kumimoji-pad-left").click();
+    await page.getByTestId("kumimoji-pad-left").click();
+    await fills();
+
+    // And in again, from the keyboard.
+    const small = await tilePx();
+    await page.getByTestId("kumimoji-pad-in").focus();
+    await page.keyboard.press("Enter");
+    await expect.poll(tilePx).toBeGreaterThan(small);
+    await page.getByTestId("kumimoji-fit").click();
+    await expect(table).toHaveAttribute("data-fitted", "true");
+
+    // Gomoku: the lines through the squares' middles, half a tile from Reversi's; and back again.
+    const reversiAt = await place();
+    await page.getByTestId("word-style-gomoku").click();
+    await expect(table).toHaveAttribute("data-board", "gomoku");
+    await expect.poll(place).not.toBe(reversiAt);
+    await fills();
+    await page.getByTestId("word-style-reversi").click();
+    await expect(table).toHaveAttribute("data-board", "reversi");
+    await expect.poll(place).toBe(reversiAt);
+  });
+
+  test.describe("on a phone", () => {
+    test.use({ viewport: { width: 390, height: 844 } });
+
+    test("the pad sits inside the table beside Fit, and the page does not scroll sideways", async ({ page }) => {
+      const { seed } = classicGame(freshPuzzleSeed());
+      await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+      await ready(page, "puzzle-play");
+      const outer = (await page.getByTestId("kumimoji-table").boundingBox())!;
+      for (const id of ["kumimoji-fit", "kumimoji-pad"]) {
+        const inner = (await page.getByTestId(id).boundingBox())!;
+        expect(inner.x).toBeGreaterThanOrEqual(outer.x);
+        expect(inner.x + inner.width).toBeLessThanOrEqual(outer.x + outer.width + 0.5);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      const before = await page.getByTestId("kumimoji-ruling").evaluate((element) => getComputedStyle(element).backgroundPosition);
+      await page.getByTestId("kumimoji-pad-down").click();
+      await expect.poll(() => page.getByTestId("kumimoji-ruling").evaluate((element) => getComputedStyle(element).backgroundPosition)).not.toBe(before);
+    });
+  });
 });

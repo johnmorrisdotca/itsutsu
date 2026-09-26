@@ -115,6 +115,8 @@ test.describe("puzzle screenshots", () => {
       const puzzle = generatePuzzle(scene.kind, scene.size, scene.level, scene.seed);
       const cells = page.getByTestId("puzzle-cell");
       let filled = 0;
+      // The board colour a Kumimoji scene found, to put back after its picture.
+      let feltBefore: string | null = null;
       if (scene.kind === "hiddenStones") {
         const stones = decodeStones(puzzle.solution, scene.size)!;
         for (const [row, col] of stones.entries()) {
@@ -214,8 +216,14 @@ test.describe("puzzle screenshots", () => {
           filled += 1;
         }
       } else if (scene.kind === "kumimoji") {
-        // Tapped from the hand onto the table, as a player lays them; Fit is a control, not part of the picture.
-        await page.addStyleTag({ content: '[data-testid="kumimoji-fit"] { display: none !important; }' });
+        // Tapped from the hand onto the table, as a player lays them; Fit and the pad are controls, not part of the picture.
+        await page.addStyleTag({ content: '[data-testid="kumimoji-fit"], [data-testid="kumimoji-pad"] { display: none !important; }' });
+        // On the default board, ruled as the default Reversi board is: John, 2026-09-26, "grid lines, and the default light brown board".
+        // The operator's colour is put back after the picture, since it is kept on the account every other scene reads.
+        feltBefore = await page.locator('[data-testid="felt-patches"] [aria-checked="true"]').first().getAttribute("data-testid");
+        await page.getByTestId("felt-wood").click();
+        await page.getByTestId("word-style-reversi").click();
+        await expect(page.getByTestId("kumimoji-table")).toHaveAttribute("data-board", "reversi");
         for (const tile of crosswordFrom(puzzle.givens.slice(0, scene.size), scene.fill)) {
           await page.locator(`[data-testid="kumimoji-hand-tile"][data-letter="${tile.letter}"]`).first().click();
           await page.locator(`[data-testid="kumimoji-square"][data-square="${tile.square}"]`).click();
@@ -260,6 +268,7 @@ test.describe("puzzle screenshots", () => {
       // A Kumimoji has no board: its picture is the table under its tiles, fitted to them.
       if (scene.kind === "kumimoji") {
         await page.getByTestId("kumimoji-area").screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        if (feltBefore !== null && feltBefore !== "felt-wood") await page.getByTestId(feltBefore).click();
         return;
       }
       const grid = page.getByTestId("puzzle-grid");
