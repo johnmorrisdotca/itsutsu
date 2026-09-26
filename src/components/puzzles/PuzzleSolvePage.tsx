@@ -9,6 +9,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, matchPath, myGamePath, setUpPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { clockText } from "@/lib/puzzles/clockText";
+import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
@@ -43,6 +44,7 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const outcome = solve.solved ? (words ? "Found" : "Solved") : "Not found";
+  const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, solve.answer);
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,
     solve.hintsUsed ? `${solve.hintsUsed} ${solve.hintsUsed === 1 ? "hint" : "hints"}` : null,
@@ -53,6 +55,8 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
     ...(words ? [{ label: "The word", value: wordOf(kind, solve.givens, solve.size), testId: "solve-word" }] : []),
     { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
+    // A word's guesses, out of the level's allowance: the other half of how it went.
+    ...(taken === null ? [] : [{ label: "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
     { label: "Points", value: String(solve.points), testId: "solve-points" },
     { label: "Help", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
     { label: "Finished", value: solve.finishedAt.toISOString().slice(0, 10), testId: "solve-date" },

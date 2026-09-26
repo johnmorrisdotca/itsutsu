@@ -65,3 +65,33 @@ test("a word not found opens from Your words with its guesses on the grid", asyn
   await expect(page.getByTestId("word-replay")).toHaveAttribute("data-last", "5");
   await expect(page.getByTestId("word-keyboard")).toBeVisible();
 });
+
+/*
+ * John, 2026-09-25: "The Gomoji leaderboards do not mention how many guesses a
+ * time took... show a time but also the number (like 3/6 guesses, 4/7)." A word
+ * found on its second guess at hard, five letters, reads 2/6 wherever its time
+ * is shown: the member's own list, the solve's page, and the fastest board's
+ * rows at that size and level say how many guesses each time took.
+ */
+test("a word found says how many guesses it took beside its time, out of the level's allowance", async ({ page }) => {
+  const seed = freshPuzzleSeed();
+  const puzzle = generatePuzzle("gomoji", 5, "hard", seed);
+  const first = ["slate", "irony", "chump", "gawky", "fjord", "crane"].find((word) => word !== puzzle.solution && isWord(word, 5))!;
+  const handed = await page.request.post("/api/puzzles/solved", {
+    data: { kind: "gomoji", size: 5, level: "hard", seed, givens: puzzle.givens, answer: first + puzzle.solution, elapsedMs: 29_000 },
+  });
+  expect(handed.ok(), await handed.text()).toBe(true);
+
+  await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/me`);
+  // A word's own page lists it in the history of words, found in two of the six hard gives.
+  const mine = page.getByTestId("word-history-row").filter({ hasText: puzzle.solution.toUpperCase() }).filter({ hasText: "0:29" }).first();
+  await expect(mine.getByTestId("word-history-outcome")).toHaveText("Found in 2/6");
+
+  await mine.getByTestId("word-history-word").click();
+  await expect(page.getByTestId("solve-guesses")).toHaveText("2/6");
+
+  // The fastest board: every word time at five letters, hard, says its guesses out of six.
+  await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/standings`);
+  const row = page.locator('[data-testid="puzzle-fastest-row"][data-size="5"][data-level="hard"]');
+  await expect(row.getByTestId("puzzle-fastest-guesses").first()).toHaveText(/^[1-6]\/6 guesses$/);
+});

@@ -11,6 +11,7 @@ import { decodeKanaGivens, decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/ka
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
+import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 
 /**
  * EVERY GOMOJI WORD A MEMBER HAS PLAYED, newest first: the word, whether it
@@ -63,14 +64,18 @@ export function WordHistory({ words, total, kind = "gomoji" }: { words: readonly
 
 function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
   const { hidden, guesses, marks: marksOf } = readWord(kind, word);
-  const outcome = word.solved ? `Found in ${guesses?.length ?? "?"}` : "Not found";
+  // Found in 3 of the 6 guesses the level gave (`guessesTaken`), as the boards say it.
+  const taken = guessesTaken(kind, word.size, word.level, word.givens, word.answer);
+  const outcome = word.solved ? (taken === null ? `Found in ${guesses?.length ?? "?"}` : `Found in ${guessesText(taken)}`) : "Not found";
   return (
     <li className="flex flex-col gap-2 py-2" data-testid="word-history-row" data-solved={word.solved ? "true" : "false"}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <Link href={mySolvePath(kind, word.id)} className="font-semibold tracking-wide uppercase underline-offset-2 hover:underline" data-testid="word-history-word">
           {hidden}
         </Link>
-        <span className={`text-xs ${word.solved ? "text-moss" : "text-muted"}`}>{outcome}</span>
+        <span className={`text-xs ${word.solved ? "text-moss" : "text-muted"}`} data-testid="word-history-outcome">
+          {outcome}
+        </span>
         <span className="text-xs text-muted">
           {PUZZLE_LEVEL_DISPLAY[word.level as PuzzleLevel]?.label ?? word.level} · {clockText(word.elapsedMs)} · {word.finishedAt.toISOString().slice(0, 10)}
         </span>

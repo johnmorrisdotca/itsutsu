@@ -12,6 +12,7 @@ import { type FastestBoard, fastestSolvesOf, memberNamesOf } from "@/lib/puzzles
 
 import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
+import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 
 /**
  * The fastest solves of a puzzle, on its front door: the puzzle's ladder.
@@ -109,6 +110,12 @@ export function FastestTable({ kind, board, names, whole }: { kind: PuzzleKind; 
                   {row.at.fastest.map((solve, index) => (
                     <span key={`${solve.memberId}-${index}`} className="flex items-baseline gap-2">
                       <span className="font-mono tabular-nums">{clockText(solve.elapsedMs)}</span>
+                      {/* A word's time says half of how it went; the guesses it needed say the rest (John: "like 3/6 guesses"). */}
+                      {solve.guesses === null ? null : (
+                        <span className="text-xs text-muted tabular-nums" data-testid="puzzle-fastest-guesses">
+                          {guessesText(solve.guesses)} guesses
+                        </span>
+                      )}
                       <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />
                       {solve.hintsUsed !== null && solve.hintsUsed > 0 ? (
                         <span className="text-xs text-muted" data-testid="puzzle-fastest-hints">

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { pointsFor } from "../puzzlePoints";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
+import { guessesTaken, type GuessesTaken } from "../gomoji/guessesTaken";
 
 /**
  * The solves the site keeps: one row per finished puzzle per member.
@@ -52,7 +53,15 @@ export async function keepSolve(solve: KeptSolve): Promise<void> {
 }
 
 /** A fastest solve, with the Check allowance it was made under — so a one-check time is never shown as a free one. */
-export type FastestSolve = { memberId: string; elapsedMs: number; finishedAt: Date; checksAllowed: number | null; hintsUsed: number | null };
+export type FastestSolve = {
+  memberId: string;
+  elapsedMs: number;
+  finishedAt: Date;
+  checksAllowed: number | null;
+  hintsUsed: number | null;
+  /** A word's guesses, 3 of 6, beside its time (`guessesTaken`); null for every other puzzle. */
+  guesses: GuessesTaken | null;
+};
 
 /** The fastest solve at each size and level of a kind, as a map keyed `${size}:${level}`, and how many solves each has. */
 export type FastestBoard = Map<string, { fastest: FastestSolve[]; solves: number }>;
@@ -78,9 +87,9 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
         where: { kind, size: Number(size), level, solved: true },
         orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,
-        select: { memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true, hintsUsed: true },
+        select: { memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true, hintsUsed: true, givens: true, answer: true },
       });
-      board.get(key)!.fastest = rows;
+      board.get(key)!.fastest = rows.map(({ givens, answer, ...row }) => ({ ...row, guesses: guessesTaken(kind, Number(size), level, givens, answer) }));
     }),
   );
   return board;
