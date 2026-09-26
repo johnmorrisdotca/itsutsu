@@ -24,6 +24,7 @@ import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
+import { unsolvedWords } from "@/lib/puzzles/countdown";
 
 /** A word puzzle's hidden word, or a Futago's two (`futago.ts`), in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
@@ -69,7 +70,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const copy = PUZZLE_DISPLAY[kind];
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
-  const outcome = solve.solved ? (words ? "Found" : "Solved") : "Not found";
+  const outcome = solve.solved ? (words ? "Found" : "Solved") : unsolvedWords(solve);
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, found.answer);
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,

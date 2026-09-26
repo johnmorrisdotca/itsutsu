@@ -224,9 +224,11 @@ export function KumimojiSolve({
         </>
       ) : (
         <>
+          {done.outOfTime ? null : (
           <p className="text-sm" data-testid="kumimoji-score">
             All {puzzle.givens.length} tiles in one crossword. <strong>{kumimojiPoints(puzzle.givens, done.elapsedMs)}</strong> points: ten a tile, and the rest for speed.
           </p>
+          )}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
         </>
       )}

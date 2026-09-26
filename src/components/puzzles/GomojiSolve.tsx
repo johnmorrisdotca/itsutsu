@@ -279,6 +279,12 @@ export function GomojiSolve({
         </div>
       ) : (
         <>
+          {/* A countdown run out (`countdown.ts`): the word it did not reach, as a word out of guesses says it. */}
+          {done.outOfTime ? (
+            <p className="text-base" data-testid="word-out-of-time">
+              {twins ? "The words were" : "The word was"} <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
+            </p>
+          ) : null}
           <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>

@@ -4,6 +4,7 @@ import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 import { isFutagoSeed } from "./gomoji/futagoSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
+import { countdownOfMs, isCountdownKey, type CountdownKey } from "./countdown";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.
@@ -42,9 +43,15 @@ export type PuzzleAsked = {
    * address, for one word and for any puzzle that is not a word.
    */
   twins?: boolean;
+  /**
+   * A countdown, on any puzzle (`countdown.ts`): the Tortoise, the Fox or the
+   * Rabbit, by name. Left out of the address, and of what is read back, for
+   * none, which is the default.
+   */
+  countdown?: CountdownKey;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", countdown: "countdown" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -60,10 +67,13 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const levels = levelsFor(kind, size);
   const level = levelAsked !== undefined && levels.includes(levelAsked) ? levelAsked : levels.includes(spec.defaultLevel) ? spec.defaultLevel : levels[0]!;
   const seedAsked = Number(one(PUZZLE_PARAMS.seed));
+  const countdownAsked = one(PUZZLE_PARAMS.countdown);
+  // Named only when one was asked: every other address reads back as it always has.
+  const countdown = isCountdownKey(countdownAsked) ? { countdown: countdownAsked } : {};
   /* A fixed level's seed is its number, and its band follows from it, whatever the address said (`tsunagi/levels.ts`). */
   if (spec.fixedLevels === true) {
     const number = isTsunagiLevel(size, seedAsked) ? seedAsked : null;
-    return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false };
+    return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false, ...countdown };
   }
   const seed = isSeed(seedAsked) ? seedAsked : null;
   const checksAsked = Number(one(PUZZLE_PARAMS.checks));
@@ -72,7 +82,7 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const strict = one(PUZZLE_PARAMS.strict) === "1";
   const headStart = one(PUZZLE_PARAMS.headStart) === "1" && offersHeadStart(kind, level);
   const twins = spec.wordGrid !== undefined && (seed === null ? one(PUZZLE_PARAMS.twins) === "1" : isFutagoSeed(seed));
-  return { size, level, seed, checks, hints, strict, headStart, twins };
+  return { size, level, seed, checks, hints, strict, headStart, twins, ...countdown };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -84,13 +94,14 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");
   if (asked.headStart === true && asked.level === "easy") params.set(PUZZLE_PARAMS.headStart, "1");
   if (asked.twins === true) params.set(PUZZLE_PARAMS.twins, "1");
+  if (asked.countdown !== undefined) params.set(PUZZLE_PARAMS.countdown, asked.countdown);
   return `?${params.toString()}`;
 }
 
 /** What a kept run was asked as, for Continue and Resume, its Head start read back from where it is kept (`hadHeadStart`). */
 export function keptRunAsked(
   kind: PuzzleKind,
-  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean },
+  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean; countdownMs?: number | null },
 ): PuzzleAsked {
   const headStart = hadHeadStart(kind, run.level, run.hintsAllowed);
   return {
@@ -102,5 +113,6 @@ export function keptRunAsked(
     strict: run.strict,
     headStart,
     twins: isFutagoSeed(run.seed),
+    ...(countdownOfMs(run.countdownMs) === null ? {} : { countdown: countdownOfMs(run.countdownMs)! }),
   };
 }

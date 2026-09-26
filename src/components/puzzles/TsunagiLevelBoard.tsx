@@ -6,14 +6,15 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
 import { playPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import type { CountdownKey } from "@/lib/puzzles/countdown";
 import { TSUNAGI_LEVEL_COUNTS, TSUNAGI_ROW, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { TSUNAGI_MARBLE, tsunagiMarbleLook, type TsunagiMarks } from "./puzzles.constants";
 
-/** The address of one level: the solve's own, its number the seed. */
-export function tsunagiLevelPath(size: number, level: number): string {
-  return `${playPath("tsunagi")}${puzzleQuery({ size, level: tsunagiBand(size, level), seed: level })}`;
+/** The address of one level: the solve's own, its number the seed, and the countdown it is played against if one was chosen (`countdown.ts`). */
+export function tsunagiLevelPath(size: number, level: number, countdown: CountdownKey | null = null): string {
+  return `${playPath("tsunagi")}${puzzleQuery({ size, level: tsunagiBand(size, level), seed: level, ...(countdown === null ? {} : { countdown }) })}`;
 }
 
 /**
@@ -37,6 +38,7 @@ export function TsunagiLevelBoard({
   next,
   marks,
   theme,
+  countdown = null,
 }: {
   size: number;
   /** The levels solved, each with its best time. */
@@ -47,6 +49,8 @@ export function TsunagiLevelBoard({
   next: number;
   marks: TsunagiMarks;
   theme: BoardThemeTokens;
+  /** The countdown chosen at set-up, which every level's link carries (`countdown.ts`). */
+  countdown?: CountdownKey | null;
 }) {
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
   const side = Math.ceil(count / TSUNAGI_ROW);
@@ -86,7 +90,7 @@ export function TsunagiLevelBoard({
             return (
               <Link
                 key={level}
-                href={tsunagiLevelPath(size, level)}
+                href={tsunagiLevelPath(size, level, countdown)}
                 className={`${rules} hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-moss ${level === next ? "ring-2 ring-inset ring-ochre" : ""}`}
                 style={{ ...ruled, color: theme.dark ? "#f7f3ea" : "#2a1d0e" }}
                 aria-label={solved ? `Level ${level}, solved in ${clockText(time)}` : `Level ${level}${level === next ? ", next" : ""}`}

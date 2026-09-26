@@ -27,6 +27,7 @@ import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordSt
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
+import type { CountdownKey } from "@/lib/puzzles/countdown";
 import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -35,6 +36,7 @@ import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
 import { FutagoChips } from "./FutagoChips";
+import { CountdownChips } from "./CountdownChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { useWordStyle } from "./WordStyleContext";
 
@@ -93,6 +95,9 @@ export function PuzzleSetUp({
   const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
   // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
   const [twins, setTwins] = useState(asked?.twins ?? false);
+  // A countdown (`countdown.ts`), none unless chosen, on every puzzle; not carried into a race, whose clock is the server's.
+  const [countdown, setCountdown] = useState<CountdownKey | null>(asked?.countdown ?? null);
+  const timed = countdown === null ? {} : { countdown };
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -104,7 +109,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, ...timed });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -201,6 +206,12 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
           {levelBlurb(kind, level)}
         </p>
+        {/*
+          A COUNTDOWN, on every puzzle. The ticket, 2026-09-26: "an optional
+          countdown on every puzzle, chosen at set-up (Tortoise 5 min, Fox 3
+          min, Rabbit 1 min, or none), off by default."
+        */}
+        <CountdownChips chosen={countdown} onChoose={setCountdown} />
         {/*
           ONE WORD OR TWO: a Gomoji's Futago (`futago.ts`). John, 2026-09-26:
           "a Gomoji mode with two hidden words at once… Use our own name."
@@ -337,7 +348,7 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, ...timed })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

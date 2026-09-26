@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -10,19 +9,12 @@ import { useIdleWatch } from "@/components/game/useIdleWatch";
 
 import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
+import { useCountdownMs } from "./countdownContext";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
-import { mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { clockText } from "@/lib/puzzles/clockText";
-import { freshSeed } from "@/lib/puzzles/random";
-import { isFutagoGivens } from "@/lib/puzzles/gomoji/futago";
-import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
-import { PuzzleWayBack } from "./PuzzleWayBack";
 
 /**
  * What every kind of solve shares: the clock, handing the answer in, and the
@@ -40,6 +32,8 @@ export type Done = {
   problem: string | null;
   /** Ended without being solved: a word whose guesses ran out. Nothing is paid and nothing kept. */
   outOfGuesses?: true;
+  /** Ended without being solved: its countdown ran out (`countdown.ts`). Kept in My games, as a word run out is. */
+  outOfTime?: true;
   /** The kept solve, once the site has said which it is: the card opens it again, replay and all. */
   solveId?: string | null;
 };
@@ -77,6 +71,9 @@ export function useSolve(
   typesLetters = false,
 ) {
   const router = useRouter();
+  /* A COUNTDOWN, where one was chosen (`countdown.ts`): never in a race, whose clock is the server's. */
+  const chosenCountdown = useCountdownMs();
+  const countdownMs = race === null ? chosenCountdown : null;
   /*
    * A RUN OPENED WHERE IT WAS LEFT is running the moment it opens, with its
    * time so far carried in. It used to open covered and paused, waiting for a
@@ -144,6 +141,7 @@ export function useSolve(
       ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
       ...(keeping.strict === undefined ? {} : { strict: keeping.strict }),
       ...(keeping.headStart === true ? { headStart: true } : {}),
+      ...(countdownMs === null ? {} : { countdownMs }),
       elapsedMs,
     };
   });
@@ -225,6 +223,7 @@ export function useSolve(
               ? {
                   kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs,
                   checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs, headStart: keeping.headStart === true,
+                  ...(countdownMs === null ? {} : { countdownMs }),
                   // The grids on the way, for the replay on the solve's page: up to the one before the last entry, which the answer is.
                   ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
                 }
@@ -243,7 +242,7 @@ export function useSolve(
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping],
+    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping, countdownMs],
   );
 
   /**
@@ -262,7 +261,7 @@ export function useSolve(
         const answered = await fetch("/api/puzzles/solved", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true }),
+          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true, ...(countdownMs === null ? {} : { countdownMs }) }),
         });
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[] } | null;
         if (answered.ok) setDone({ elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, outOfGuesses: true });
@@ -270,10 +269,50 @@ export function useSolve(
         // Nothing is owed that cannot wait: a run left kept is opened again as it was and can be ended again.
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, keeping.headStart],
+    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, keeping.headStart, countdownMs],
   );
 
+  /**
+   * TIME'S UP: the countdown ran out before the puzzle was done. It ends
+   * unsolved at the moment it ran out, with what was written on it then, and
+   * is kept in My games as a word run out of guesses is (`outOfTime` on the
+   * solved route), its kept run taken off the member's games. Once only: the
+   * card that says so is what `done` becomes.
+   */
+  const timeUp = useCallback(async () => {
+    if (countdownMs === null) return;
+    setDone({ elapsedMs: countdownMs, paid: null, problem: null, outOfTime: true });
+    if (!hasAccount) return;
+    try {
+      const answered = await fetch("/api/puzzles/solved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer: keeping.progress,
+          elapsedMs: countdownMs, pausedMs, checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, headStart: keeping.headStart === true,
+          outOfTime: true, countdownMs,
+          ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
+        }),
+      });
+      const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; error?: string; solveId?: string | null } | null;
+      setDone(
+        answered.ok
+          ? { elapsedMs: countdownMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, outOfTime: true, solveId: body?.solveId ?? null }
+          : { elapsedMs: countdownMs, paid: null, problem: body?.error ?? "The site could not keep this puzzle.", outOfTime: true },
+      );
+    } catch {
+      setDone({ elapsedMs: countdownMs, paid: null, problem: "The site could not be reached to keep this puzzle.", outOfTime: true });
+    }
+  }, [countdownMs, hasAccount, puzzle, keeping, pausedMs, allowed, used, hinting.used]);
+
   const elapsedMs = done !== null ? done.elapsedMs : carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs));
+  /* The countdown runs out at a moment known in advance, so a timer is set for it while the clock runs; a pause clears it and Resume sets it again for what is left. A run opened with its time already spent ends at once. */
+  useEffect(() => {
+    if (countdownMs === null || startedAt === null || done !== null || pausedAt !== null) return;
+    const left = countdownMs - (carriedMs + Date.now() - startedAt - pausedMs);
+    const timer = window.setTimeout(() => void timeUp(), Math.max(0, left));
+    return () => window.clearTimeout(timer);
+  }, [countdownMs, startedAt, done, pausedAt, carriedMs, pausedMs, timeUp]);
   const pausing: Pausing = {
     paused: pausedAt !== null,
     canPause,
@@ -282,6 +321,7 @@ export function useSolve(
     here,
     racing: race !== null,
     keptOnLeaving: hasAccount && race === null,
+    countdownMs,
   };
   return { startedAt, elapsedMs, done, begin, finish, runOut, pausing, checking, hinting };
 }
@@ -298,6 +338,8 @@ export type Pausing = {
   racing: boolean;
   /** Whether leaving keeps this run: a member's own puzzle does; a visitor's lasts the page. */
   keptOnLeaving: boolean;
+  /** The countdown it is played against, for the line over the grid to count down; null for none. */
+  countdownMs: number | null;
 };
 
 // The line over the grid lives in its own file; re-exported here for the solves that import it from this one.
@@ -358,98 +400,5 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
   );
 }
 
-/** The card at the end: the time, what was paid, another puzzle or a different size, and the way back to the puzzle's page and its family. */
-export function SolveDone({
-  puzzle,
-  done,
-  hasAccount,
-  race = null,
-  checks = null,
-  strict = false,
-  headStart = false,
-  onward,
-}: {
-  /** Where a puzzle of fixed levels goes on to, in place of Another and the set-up: Tsunagi's next level, and its board of levels. */
-  onward?: { next: { href: string; label: string } | null; all: { href: string; label: string } };
-  puzzle: Puzzle;
-  done: Done;
-  hasAccount: boolean;
-  race?: SolveRace | null;
-  /** The allowance this one was solved under, which Another keeps. */
-  checks?: number | null;
-  /** Gomoji's Strict, which Another keeps too. */
-  strict?: boolean;
-  /** Gomoji's Head start, which Another keeps as well. */
-  headStart?: boolean;
-}) {
-  const router = useRouter();
-  const copy = PUZZLE_DISPLAY[puzzle.kind];
-  const another = () => {
-    // A Futago's Another is two more words (`futago.ts`): its seed says so.
-    const twins = PUZZLE_SPECS[puzzle.kind].wordGrid !== undefined && isFutagoGivens(puzzle.givens);
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, strict, headStart, twins })}`);
-  };
-  return (
-    <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">
-      <p className="text-lg font-semibold">
-        Solved <span className="font-mincho text-base font-normal opacity-70">解決</span> in {clockText(done.elapsedMs)}.
-      </p>
-      <p className="text-sm text-muted" data-testid="puzzle-paid">
-        {!hasAccount
-          ? "A member is paid XP for a solve. Join, and the next one counts."
-          : done.paid !== null
-            ? done.paid.points > 0
-              ? `+${done.paid.points} XP, for ${awardWords(done.paid.awards)}.`
-              : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
-            : (done.problem ?? "Recording your solve…")}
-      </p>
-      {race === null ? null : <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>}
-      <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
-        {race === null && onward !== undefined ? (
-          <>
-            {onward.next === null ? null : (
-              <Link href={onward.next.href} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="puzzle-next-level">
-                {onward.next.label}
-              </Link>
-            )}
-            <Link href={onward.all.href} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-all-levels">
-              {onward.all.label}
-            </Link>
-          </>
-        ) : race === null ? (
-          <>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
-              Another {copy.label} →
-            </button>
-            <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-              Change the size or level
-            </Link>
-            {/* The solve just kept, to watch again step by step, as every past solve opens. */}
-            {done.solveId ? (
-              <Link href={mySolvePath(puzzle.kind, done.solveId)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-see-solve">
-                Replay this solve
-              </Link>
-            ) : null}
-          </>
-        ) : null}
-        <PuzzleWayBack kind={puzzle.kind} />
-      </div>
-    </div>
-  );
-}
-
-const AWARD_WORDS: Record<string, string> = {
-  puzzleSolved: "the solve",
-  puzzleEnded: "playing it out",
-  firstOfVariant: "your first of this puzzle",
-  firstOfFamily: "your first puzzle at all",
-  everyVariantPlayed: "every game on the site played",
-  everyFamilyPlayed: "every family met",
-  raceWon: "winning the race",
-};
-
-function awardWords(awards: readonly string[]): string {
-  const words = awards.map((award) => AWARD_WORDS[award] ?? award);
-  if (words.length <= 1) return words[0] ?? "the solve";
-  return `${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
-}
+// The card at the end lives in its own file; re-exported here for the solves that import it from this one.
+export { SolveDone } from "./SolveDone";

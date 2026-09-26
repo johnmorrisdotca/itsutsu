@@ -518,6 +518,8 @@ const TIME_EXCEPTIONS: Record<string, string> = {
   "src/components/puzzles/solveShared.tsx": "the clock of the puzzle in front of the reader, and its own finishing line",
   // The same running clock, split out of solveShared.tsx to keep that file under the size gate.
   "src/components/puzzles/SolveHeader.tsx": "the running clock of the puzzle being played: there is no finished solve to open yet",
+  // The finishing line, split out of solveShared.tsx with the countdown's time's-up card; its Replay button opens the solve.
+  "src/components/puzzles/SolveDone.tsx": "the finishing line of the puzzle just played, beside its own Replay this solve",
   // A level's cell is itself a link to that level, whose page lists its fastest solves, each one opening.
   "src/components/puzzles/TsunagiLevelBoard.tsx": "the level cell is already a link, to the level whose page opens its solves",
   // One finished puzzle's own page: its time is a fact about the page the reader is on.

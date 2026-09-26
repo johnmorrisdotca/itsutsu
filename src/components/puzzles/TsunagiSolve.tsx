@@ -22,6 +22,8 @@ import { tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import type { TsunagiMarks } from "./puzzles.constants";
 import { keepSolveHere, keptSolves } from "./tsunagiKept";
+import { useCountdownMs } from "./countdownContext";
+import { countdownOfMs } from "@/lib/puzzles/countdown";
 import { useTsunagiMarks } from "./useTsunagiMarks";
 
 /** The board of levels at a size: the set-up, opened on that size. */
@@ -78,6 +80,8 @@ export function TsunagiSolve({
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
   const shut = race === null && resumed === null && level > open;
 
+  // The countdown this level is played against, which its Next carries on to the next (`countdown.ts`).
+  const countdownMs = useCountdownMs();
   const { startedAt, elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race, null, {
     progress: encodeLines(layout, lines),
     resumed,
@@ -128,7 +132,8 @@ export function TsunagiSolve({
 
   // Kept in this browser as soon as it is solved, so the board of levels opens the next row with or without an account.
   useEffect(() => {
-    if (done !== null && race === null) keepSolveHere(size, level, done.elapsedMs);
+    // A countdown run out is no solve: nothing to keep as one (`countdown.ts`).
+    if (done !== null && race === null && done.outOfTime !== true) keepSolveHere(size, level, done.elapsedMs);
   }, [done, race, size, level]);
 
   const takeBack = () => {
@@ -206,7 +211,7 @@ export function TsunagiSolve({
           hasAccount={hasAccount}
           race={race}
           onward={{
-            next: level < count ? { href: tsunagiLevelPath(size, level + 1), label: `Level ${level + 1} →` } : null,
+            next: level < count ? { href: tsunagiLevelPath(size, level + 1, countdownOfMs(countdownMs)), label: `Level ${level + 1} →` } : null,
             all: { href: tsunagiLevelsPath(size), label: "All levels" },
           }}
         />

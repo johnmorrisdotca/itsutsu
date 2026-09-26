@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { countdownOfMs } from "@/lib/puzzles/countdown";
 import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
@@ -44,6 +45,8 @@ const bodySchema = z.object({
   steps: z.string().max(STEP_LOG_LONGEST).optional(),
   /** The time so far; a month is more than anybody spends on one grid. */
   elapsedMs: z.number().int().nonnegative().max(31 * 24 * 60 * 60 * 1000),
+  /** The countdown it is solved against (`countdown.ts`); left out for none. */
+  countdownMs: z.number().int().positive().optional(),
 });
 
 export async function POST(request: Request) {
@@ -83,6 +86,8 @@ export async function POST(request: Request) {
       progress,
       steps: stepsFor(parsed.data.steps, progress),
       elapsedMs: parsed.data.elapsedMs,
+      // One of the three, or none: a length that is not a countdown of ours is kept as none.
+      countdownMs: countdownOfMs(parsed.data.countdownMs) === null ? null : parsed.data.countdownMs!,
     });
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (error) {

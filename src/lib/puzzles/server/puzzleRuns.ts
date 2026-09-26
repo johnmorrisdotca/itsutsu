@@ -32,6 +32,8 @@ export type KeptRun = {
   /** Every grid it has been, for the scrubber (`stepLog.ts`), or null when none could be read. */
   steps: string | null;
   elapsedMs: number;
+  /** The countdown it is solved against (`countdown.ts`), or null for none. */
+  countdownMs: number | null;
 };
 
 export async function keepRun(run: KeptRun): Promise<void> {
@@ -64,7 +66,7 @@ export async function runsOf(memberId: string) {
     where: { memberId },
     orderBy: { updatedAt: "desc" },
     take: RUNS_KEPT,
-    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, hintsUsed: true, strict: true, elapsedMs: true, updatedAt: true },
+    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, hintsUsed: true, strict: true, countdownMs: true, elapsedMs: true, updatedAt: true },
   });
 }
 
@@ -73,7 +75,7 @@ export async function latestRunOf(memberId: string, kind: PuzzleKind) {
   return prisma.puzzleRun.findFirst({
     where: { memberId, kind },
     orderBy: { updatedAt: "desc" },
-    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true },
+    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, countdownMs: true },
   });
 }
 

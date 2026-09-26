@@ -11,6 +11,7 @@ import type { RecordSolve } from "@/lib/puzzles/server/puzzleRecord";
 import { sizeWord } from "./puzzles.constants";
 import { OneSolvePoints } from "./SolvePoints";
 import { SolveTime } from "./SolveTime";
+import { unsolvedWords } from "@/lib/puzzles/countdown";
 
 /**
  * The rows of a puzzle's record: who, which size and level, the time (the way
@@ -71,7 +72,7 @@ export function RecordSolvesTable({
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
                     <SolveTime kind={kind} solveId={solve.id} elapsedMs={solve.elapsedMs} mine={mine} testId="record-solve-time" />
-                    {solve.solved ? null : <span className="ml-1 text-xs text-muted">not found</span>}
+                    {solve.solved ? null : <span className="ml-1 text-xs text-muted">{unsolvedWords(solve).toLowerCase()}</span>}
                     {solve.guesses === null || !solve.solved ? null : <span className="ml-1 text-xs text-muted tabular-nums">{guessesText(solve.guesses)}</span>}
                     {solve.raceId === null ? null : <span className="ml-1 text-xs text-muted">race</span>}
                   </td>

@@ -12,6 +12,7 @@ import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 import { WORD_STONE_LOOK } from "./puzzles.constants";
 import { SolveTime } from "./SolveTime";
 import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
+import { unsolvedWords } from "@/lib/puzzles/countdown";
 
 /**
  * EVERY GOMOJI WORD A MEMBER HAS PLAYED, newest first: the word, whether it
@@ -71,7 +72,7 @@ function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
   const { hidden, boards } = readWord(kind, word);
   // Found in 3 of the 6 guesses the level gave (`guessesTaken`), as the boards say it.
   const taken = guessesTaken(kind, word.size, word.level, word.givens, word.answer);
-  const outcome = word.solved ? (taken === null ? `Found in ${boards?.[0] === undefined ? "?" : Math.max(...boards.map((board) => board.guesses.length))}` : `Found in ${guessesText(taken)}`) : "Not found";
+  const outcome = word.solved ? (taken === null ? `Found in ${boards?.[0] === undefined ? "?" : Math.max(...boards.map((board) => board.guesses.length))}` : `Found in ${guessesText(taken)}`) : unsolvedWords(word);
   return (
     <li className="flex flex-col gap-2 py-2" data-testid="word-history-row" data-solved={word.solved ? "true" : "false"}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">

@@ -11,6 +11,9 @@ import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { SetUpSection } from "@/components/live/SetUpSection";
+import type { CountdownKey } from "@/lib/puzzles/countdown";
+
+import { CountdownChips } from "./CountdownChips";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -60,6 +63,8 @@ export function TsunagiSetUp({
   const spec = PUZZLE_SPECS.tsunagi;
   const copy = PUZZLE_DISPLAY.tsunagi;
   const [size, setSize] = useState(initialSize);
+  // A countdown (`countdown.ts`), none unless chosen: every level's link carries it.
+  const [countdown, setCountdown] = useState<CountdownKey | null>(null);
   const [shelf, setShelf] = useState(initialSize > spec.sizes[TILES - 1]! ? spec.sizes.length - TILES : 0);
   const shown = spec.sizes.slice(shelf, shelf + TILES);
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -92,7 +97,7 @@ export function TsunagiSetUp({
     <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" {...readyMark(hydrated)}>
       <div className={`${PICK_BOARD_ROW} py-2`}>
         <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
-          <TsunagiLevelBoard size={size} best={best} open={open} next={next} marks={marks} theme={theme} />
+          <TsunagiLevelBoard size={size} best={best} open={open} next={next} marks={marks} theme={theme} countdown={countdown} />
           <p className="text-xs text-muted" data-testid="tsunagi-levels-caption">
             {size}×{size}: {done.size} of {count} solved. Rows open ten at a time.
           </p>
@@ -110,11 +115,12 @@ export function TsunagiSetUp({
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
             {copy.board}
           </p>
+          <CountdownChips chosen={countdown} onChoose={setCountdown} />
           <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
           <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-          <Link href={tsunagiLevelPath(size, next)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={next}>
+          <Link href={tsunagiLevelPath(size, next, countdown)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={next}>
             <PressLabel words={`${START_PRESS.start.words} level ${next}`} kanji={START_PRESS.start.kanji} />
           </Link>
           <p className="text-xs text-muted" data-testid="tsunagi-kept-where">

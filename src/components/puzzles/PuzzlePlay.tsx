@@ -12,6 +12,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
 import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
+import { COUNTDOWNS, type CountdownKey } from "@/lib/puzzles/countdown";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
@@ -23,6 +24,7 @@ import { NumberSolve } from "./NumberSolve";
 import type { TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
+import { CountdownContext } from "./countdownContext";
 
 /**
  * Solving a puzzle: the whole of it, in the browser.
@@ -55,6 +57,7 @@ export function PuzzlePlay({
   strict = false,
   headStart = false,
   twins = false,
+  countdown = null,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
@@ -63,6 +66,8 @@ export function PuzzlePlay({
   headStart?: boolean;
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
   twins?: boolean;
+  /** The countdown chosen at set-up (`countdown.ts`), or null for none; never in a race. */
+  countdown?: CountdownKey | null;
   /** Tsunagi's levels already solved at this size on the account, and whether it is played by colours or numbers. */
   tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null } | null;
   kind: PuzzleKind;
@@ -96,8 +101,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, ...(countdown === null ? {} : { countdown }) })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, countdown, router]);
 
   /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji) waits for them; every other kind is ready at once. */
   const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" ? null : `${kind}:${size}`);
@@ -136,39 +141,43 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}`;
-  // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
-  const seat = race ?? null;
-  const headStarted = seat === null && headStart;
-  switch (kind) {
-    case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
-    case "blackAndWhite":
-      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
-    case "gomoji":
-    case "gomojiMot":
-    case "gomojiWort":
-      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    case "tsunagi":
-      return (
-        <TsunagiSolve
-          key={key}
-          puzzle={puzzle}
-          hasAccount={hasAccount}
-          race={seat}
-          resumed={race === null ? resumed : null}
-          appearance={appearance}
-          known={tsunagi?.known}
-          marksChosen={tsunagi?.marks ?? null}
-        />
-      );
-    case "kumimoji":
-      return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    case "gomojiKana":
-      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    case "koushi":
-      return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    default:
-      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
-  }
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${countdown ?? "none"}`;
+  const solve = (() => {
+    // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
+    const seat = race ?? null;
+    const headStarted = seat === null && headStart;
+    switch (kind) {
+      case "hiddenStones":
+        return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+      case "blackAndWhite":
+        return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+      case "gomoji":
+      case "gomojiMot":
+      case "gomojiWort":
+        return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "tsunagi":
+        return (
+          <TsunagiSolve
+            key={key}
+            puzzle={puzzle}
+            hasAccount={hasAccount}
+            race={seat}
+            resumed={race === null ? resumed : null}
+            appearance={appearance}
+            known={tsunagi?.known}
+            marksChosen={tsunagi?.marks ?? null}
+          />
+        );
+      case "kumimoji":
+        return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "gomojiKana":
+        return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "koushi":
+        return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      default:
+        return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+    }
+  })();
+  // The countdown chosen, for the one clock every kind shares (`useSolve`); none in a race.
+  return <CountdownContext.Provider value={race === null && countdown !== null ? COUNTDOWNS[countdown].ms : null}>{solve}</CountdownContext.Provider>;
 }

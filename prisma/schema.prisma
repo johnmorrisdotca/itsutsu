@@ -1327,6 +1327,10 @@ model PuzzleSolve {
   /// its steps, and for a solve kept before steps were: that page shows the
   /// finished grid and says so, never a replay made up.
   steps         String?
+  /// The countdown it was played against, in milliseconds (`countdown.ts`), or
+  /// null for none. With `solved` false on a grid, or on a word with guesses
+  /// left, the time ran out: a solve kept "Time's up" rather than "Not found".
+  countdownMs   Int?
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])
@@ -1362,6 +1366,10 @@ model PuzzleRun {
   /// a run kept before steps were, which opens with the one step it has.
   steps         String?
   elapsedMs     Int
+  /// The countdown it is being solved against, in milliseconds (`countdown.ts`):
+  /// 300000, 180000 or 60000, or null for none. Kept so Continue opens it
+  /// against the same one, with only what was left of it.
+  countdownMs   Int?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

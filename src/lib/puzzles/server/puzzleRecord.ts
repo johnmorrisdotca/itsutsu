@@ -32,6 +32,8 @@ export type RecordSolve = {
   elapsedMs: number;
   points: number;
   solved: boolean;
+  /** The countdown it was played against (`countdown.ts`), or null: with `solved` false, how "Time's up" is told from "Not found". */
+  countdownMs: number | null;
   finishedAt: Date;
   raceId: string | null;
   checksUsed: number | null;
@@ -84,7 +86,7 @@ export async function puzzleRecordOf(kind: PuzzleKind, asked: PuzzleRecordAsked)
       take: PUZZLE_RECORD_PAGE,
       select: {
         id: true, memberId: true, size: true, level: true, elapsedMs: true, points: true, solved: true, finishedAt: true,
-        raceId: true, checksUsed: true, hintsUsed: true, givens: true, answer: true,
+        raceId: true, checksUsed: true, hintsUsed: true, givens: true, answer: true, countdownMs: true,
       },
     }),
     prisma.puzzleSolve.count({ where }),
@@ -132,7 +134,7 @@ export async function anySolveOf(kind: PuzzleKind, id: string): Promise<(Finishe
     where: { id },
     select: {
       id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, steps: true, solved: true, points: true,
-      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true,
+      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, countdownMs: true,
     },
   });
   return row === null || row.kind !== kind ? null : row;

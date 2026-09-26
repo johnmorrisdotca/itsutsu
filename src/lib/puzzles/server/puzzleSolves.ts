@@ -38,20 +38,24 @@ export type KeptSolve = {
   solved?: boolean;
   /** Every grid it was on the way (`stepLog.ts`), for the replay on its page; none for a word, whose answer is its steps. */
   steps?: string | null;
+  /** The countdown it was played against (`countdown.ts`), or null for none. */
+  countdownMs?: number | null;
 };
 
 /** Keeps a checked solve, and says which row it became — null when it could not be kept. */
 export async function keepSolve(solve: KeptSolve): Promise<string | null> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
-    const { answer, solved = true, steps = null, ...kept } = solve;
-    const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
+    const { answer, solved = true, steps = null, countdownMs = null, ...kept } = solve;
+    /* A grid left unsolved when its countdown ran out (`countdown.ts`) is no answer, so it scores nothing; a word scores what its guesses found either way, and every other ending scores as it always has. */
+    const scored = solved || countdownMs === null || PUZZLE_SPECS[solve.kind].wordGrid !== undefined;
+    const points = scored ? pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level) : 0;
     /* The fastest time before this one, for the Everyone feed's "a new best
        time" — read first, since afterwards this solve is in the answer. */
     const news = { memberId: solve.memberId, kind: solve.kind, size: solve.size, level: solve.level, elapsedMs: solve.elapsedMs, solved };
     const best = await bestBefore(news);
     const row = await prisma.puzzleSolve.create({
-      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null, steps },
+      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null, steps, countdownMs },
       select: { id: true },
     });
     await tellSolve(news, best);
@@ -149,6 +153,8 @@ export type OwnWord = {
   points: number;
   elapsedMs: number;
   finishedAt: Date;
+  /** The countdown it was played against (`countdown.ts`), or null: with `solved` false, how "Time's up" is told from "Not found". */
+  countdownMs: number | null;
 };
 
 export const OWN_WORDS_SHOWN = 50;
@@ -167,7 +173,7 @@ export async function ownWordsOf(
       where: { memberId, kind },
       orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
       take: OWN_WORDS_SHOWN,
-      select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, points: true, elapsedMs: true, finishedAt: true },
+      select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, points: true, elapsedMs: true, finishedAt: true, countdownMs: true },
     }),
     prisma.puzzleSolve.count({ where: { memberId, kind } }),
   ]);
@@ -192,6 +198,8 @@ export type FinishedSolve = {
   hintsUsed: number | null;
   raceId: string | null;
   finishedAt: Date;
+  /** The countdown it was played against (`countdown.ts`), or null: with `solved` false, how "Time's up" is told from "Not found". */
+  countdownMs: number | null;
 };
 
 /**
@@ -204,12 +212,13 @@ export async function ownSolveOf(memberId: string, kind: PuzzleKind, id: string)
     where: { id },
     select: {
       id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, steps: true, solved: true, points: true,
-      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true,
+      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, countdownMs: true,
     },
   });
   if (row === null || row.memberId !== memberId || row.kind !== kind) return null;
   return {
     id: row.id, kind: row.kind, size: row.size, level: row.level, givens: row.givens, answer: row.answer, steps: row.steps, solved: row.solved, points: row.points,
     elapsedMs: row.elapsedMs, checksAllowed: row.checksAllowed, checksUsed: row.checksUsed, hintsUsed: row.hintsUsed, raceId: row.raceId, finishedAt: row.finishedAt,
+    countdownMs: row.countdownMs,
   };
 }

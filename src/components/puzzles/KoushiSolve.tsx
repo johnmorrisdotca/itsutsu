@@ -161,7 +161,7 @@ export function KoushiSolve({
         </div>
       ) : (
         <>
-          <KoushiMarks spare={sparesOf(level, swaps.length).spare} used={swaps.length} />
+          {done.outOfTime ? null : <KoushiMarks spare={sparesOf(level, swaps.length).spare} used={swaps.length} />}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} />
         </>
       )}

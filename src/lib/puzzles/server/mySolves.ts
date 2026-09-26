@@ -32,6 +32,8 @@ export type MySolve = {
   raceId: string | null;
   /** False for a word whose guesses ran out: kept, scored for what it found, and shown as not found. */
   solved: boolean;
+  /** The countdown it was played against (`countdown.ts`), or null: with `solved` false, how "Time's up" is told from "Not found". */
+  countdownMs: number | null;
   /** A word's guesses beside its time, 3 of 6 (`guessesTaken`); null for every other puzzle. */
   guesses: GuessesTaken | null;
 };
@@ -45,7 +47,7 @@ export async function mySolvesPage(memberId: string, cursor: string | null): Pro
       orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
       take: MY_SOLVES_PAGE + 1,
       ...(cursor === null ? {} : { cursor: { id: cursor }, skip: 1 }),
-      select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true, solved: true, givens: true, answer: true },
+      select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true, solved: true, countdownMs: true, givens: true, answer: true },
     }),
     prisma.puzzleSolve.count({ where: { memberId } }),
   ]);

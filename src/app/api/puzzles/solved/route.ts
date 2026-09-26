@@ -7,6 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { preparePuzzle } from "@/lib/puzzles/generate";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
+import { countdownOfMs, isTimeUp } from "@/lib/puzzles/countdown";
 import { progressFits } from "@/lib/puzzles/puzzleProgress";
 import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
@@ -86,6 +87,16 @@ const bodySchema = z.object({
    * its guesses being its steps.
    */
   steps: z.string().max(STEP_LOG_LONGEST).optional(),
+  /** The countdown it was played against (`countdown.ts`), kept with the solve; left out for none. */
+  countdownMs: z.number().int().positive().optional(),
+  /**
+   * Its countdown ran out first: ended, not solved. The answer is what was
+   * written when it did (a grid in its kind's code, or a word's guesses),
+   * checked only to be one this puzzle could hold; kept with `solved` false,
+   * paid `puzzleEnded` as a word run out is, and its kept run comes off the
+   * member's games.
+   */
+  outOfTime: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -117,8 +128,47 @@ export async function POST(request: Request) {
     const headStart = parsed.data.headStart === true && offersHeadStart(kind, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
     const hintsUsed = words ? (headStart ? HEAD_START_HINTS : 0) : (parsed.data.hintsUsed ?? 0);
 
+    // A countdown is one of the three, or none: any other length is refused rather than kept as though it were one.
+    const countdownMs = parsed.data.countdownMs ?? null;
+    if (countdownMs !== null && countdownOfMs(countdownMs) === null) return unprocessable("No such countdown.");
+
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     await preparePuzzle(kind, size);
+
+    if (parsed.data.outOfTime === true) {
+      const level = parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number];
+      const elapsedMs = parsed.data.elapsedMs ?? 0;
+      if (countdownMs === null || !isTimeUp(countdownMs, elapsedMs)) return unprocessable("Not over: its countdown has not run out.");
+      if (!progressFits(kind, size, answer)) return unprocessable("Not a grid of that size.");
+      /* Kept, not solved, as a word run out of guesses is: it waits in the
+         member's own list as "Time's up", and nothing that counts solves ever
+         sees it. The ticket, 2026-09-26: "When time runs out the puzzle ends
+         unsolved and is kept in My games." */
+      const solveId = await keepSolve({
+        memberId,
+        kind,
+        size,
+        level,
+        givens,
+        elapsedMs: countdownMs,
+        checksAllowed,
+        checksUsed,
+        pausedMs: parsed.data.pausedMs ?? 0,
+        hintsUsed,
+        answer,
+        solved: false,
+        steps: stepsOfSolve(kind, size, parsed.data.steps),
+        countdownMs,
+      });
+      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed);
+      const now = new Date();
+      const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
+      await awardTourBonuses({ memberId, paid, variant: kind, now });
+      return NextResponse.json(
+        { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type), solveId },
+        { headers: NO_STORE },
+      );
+    }
 
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
@@ -141,6 +191,7 @@ export async function POST(request: Request) {
         hintsUsed,
         answer,
         solved: false,
+        countdownMs,
       });
       if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed);
       const now = new Date();
@@ -172,6 +223,7 @@ export async function POST(request: Request) {
       hintsUsed,
       answer,
       steps: stepsOfSolve(kind, size, parsed.data.steps),
+      countdownMs,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
     if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);

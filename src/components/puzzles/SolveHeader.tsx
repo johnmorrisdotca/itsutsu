@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { clockText } from "@/lib/puzzles/clockText";
+import { COUNTDOWNS, countdownOfMs, timeLeft } from "@/lib/puzzles/countdown";
 import { FUTAGO_DISPLAY, isFutagoGivens } from "@/lib/puzzles/gomoji/futago";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -62,6 +63,18 @@ export function SolveHeader({
         whose clock nothing here can stop.
       */}
       <div className="flex items-center gap-2">
+        {/* A countdown, where one was chosen (`countdown.ts`): its animal and the time left, beside the time taken. */}
+        {pausing === undefined || pausing.countdownMs === null ? null : (
+          <p
+            className={`text-sm tabular-nums ${timeLeft(pausing.countdownMs, elapsedMs) <= 10_000 ? "font-semibold text-shu" : "text-muted"}`}
+            data-testid="puzzle-countdown"
+            data-left-ms={timeLeft(pausing.countdownMs, elapsedMs)}
+            aria-label="time left"
+          >
+            {COUNTDOWNS[countdownOfMs(pausing.countdownMs) ?? "fox"].label} <span className="font-mincho">{COUNTDOWNS[countdownOfMs(pausing.countdownMs) ?? "fox"].kanji}</span>{" "}
+            {clockText(timeLeft(pausing.countdownMs, elapsedMs))} left
+          </p>
+        )}
         <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
           {clockText(elapsedMs)}
         </p>

@@ -16,6 +16,7 @@ import type { MySolve, MySolvesPage } from "@/lib/puzzles/server/mySolves";
 import { GroupHeading } from "./GroupHeading";
 import { ago } from "./MyGameRow";
 import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
+import { unsolvedWords } from "@/lib/puzzles/countdown";
 
 /** The help a solve took, in words: "no help", "2 checks", "1 check, 1 hint". Nothing where it was never recorded. */
 function helpWords(solve: MySolve): string | null {
@@ -74,7 +75,7 @@ export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: 
                 </span>
                 <span className="text-xs text-muted">
                   {/* A word whose guesses ran out is kept too, scored for the letters it found; it says so first. */}
-                  {solve.solved ? "" : "Not found · "}
+                  {solve.solved ? "" : `${unsolvedWords(solve)} · `}
                   {sizeWord(solve.size, solve.kind)} · {PUZZLE_LEVEL_DISPLAY[solve.level].label} · {clockText(solve.elapsedMs)}
                   {solve.guesses === null || !solve.solved ? "" : ` · ${guessesText(solve.guesses)} guesses`}
                   {help === null ? "" : ` · ${help}`}
