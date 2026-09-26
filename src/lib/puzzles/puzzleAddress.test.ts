@@ -37,3 +37,11 @@ describe("hints in a puzzle's address", () => {
     expect(puzzleAsked("gomoji", { size: "5", level: "easy" }).strict).toBe(false);
   });
 });
+
+describe("a level the size cannot be made at", () => {
+  it("is the first level it can: a 4×4 Hidden Stones asked for hard is easy, and the other sizes keep hard", () => {
+    expect(puzzleAsked("hiddenStones", { size: "4", level: "hard", seed: "9" })).toMatchObject({ size: 4, level: "easy", seed: 9 });
+    expect(puzzleAsked("hiddenStones", { size: "12", level: "hard" })).toMatchObject({ size: 12, level: "hard" });
+    expect(puzzleAsked("hiddenStones", { size: "7", level: "hard" }).level).toBe("hard");
+  });
+});

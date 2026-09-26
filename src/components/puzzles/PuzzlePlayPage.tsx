@@ -12,7 +12,7 @@ import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
@@ -37,8 +37,9 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis. */
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
-  /* The reader's board colour, so Gomoji's picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for the four Gomojis. */
-  const appearance = words ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
+  /* The reader's board colour, so Gomoji's picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`), and their stone set for a
+     puzzle played with stones; read only for those, one indexed read. */
+  const appearance = words || PUZZLE_SPECS[kind].stones === true ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
   return (
     <Page>
       <SiteHeader />

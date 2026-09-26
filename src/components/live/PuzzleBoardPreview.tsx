@@ -2,10 +2,13 @@
 
 import { useMemo } from "react";
 
-import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { BOARD_THEMES, DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import { playingAreaInset } from "@/components/board/margin";
-import { REGION_FILLS } from "@/components/puzzles/puzzles.constants";
+import { StoneMark } from "@/components/board/StoneMark";
+import { PUZZLE_STONE_BOX, REGION_FILLS } from "@/components/puzzles/puzzles.constants";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { growRegions, placeStones } from "@/lib/puzzles/hiddenStones/generate";
 import { shakeRegions } from "@/lib/puzzles/jigsaw/generate";
 import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
 import { generateSumCages } from "@/lib/puzzles/killer/generate";
@@ -18,7 +21,7 @@ import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { FeltPatches } from "@/components/board/FeltPatches";
-import type { Appearance, Felt } from "@/components/board/board.types";
+import type { Appearance, Felt, StoneSetTokens } from "@/components/board/board.types";
 import { GomojiGrid } from "@/components/puzzles/GomojiGrid";
 import { useWordStyle } from "@/components/puzzles/WordStyleContext";
 import { seededRandom } from "@/lib/puzzles/random";
@@ -47,12 +50,14 @@ const PAPER = "#ffffff";
  * caption, and only the playing area differs: white paper, ruled at the chosen
  * size, with what makes this puzzle this puzzle drawn on it — the boxes, a
  * Jigsaw's regions, Diagonal's two diagonals, Hidden Stones' tinted regions,
- * the ring of clues around a Towers square, Black and White's printed stones. A Towers board is two cells wider
+ * the ring of clues around a Towers square, Black and White's printed stones, Hidden Stones' stones in every other row — the game
+ * boards' own stones (`StoneMark`), in the reader's set. A Towers board is two cells wider
  * than its square, as the solve draws it (`TowerRing`), and has no letters and
  * numbers along its edges: its clues stand where they would.
  *
- * A Jigsaw's and Hidden Stones' regions are a fixed example, shaken from one
- * seed: every puzzle has its own, and the caption does not promise these.
+ * A Jigsaw's and Hidden Stones' regions are a fixed example from one seed —
+ * Hidden Stones' grown from its stones, so each region holds one: every
+ * puzzle has its own, and the caption does not promise these.
  *
  * A Gomoji is written on the board itself, not on paper, so its preview is its
  * own board with nothing typed (`GomojiGrid`), and the board's colour is chosen
@@ -82,7 +87,7 @@ export function PuzzleBoardPreview({
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="set-up-puzzle-preview" data-kind={kind} data-size={size}>
       <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
-        {words === undefined ? <PaperGrid kind={kind} size={size} /> : <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} />}
+        {words === undefined ? <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} /> : <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} />}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
         {SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
@@ -137,7 +142,7 @@ function WordGridPreview({
 const NOTHING = () => undefined;
 
 /** A puzzle written on paper: the grid, ruled at this size, inside the wood every board has. */
-function PaperGrid({ kind, size }: { kind: PuzzleKind; size: number }) {
+function PaperGrid({ kind, size, stones }: { kind: PuzzleKind; size: number; stones: StoneSetTokens }) {
   const theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
   /* Towers: the clues of a real easy puzzle at this size, from a fixed seed, in a ring one cell deep around the square. */
   const clues = useMemo<TowerClues | null>(
@@ -153,12 +158,27 @@ function PaperGrid({ kind, size }: { kind: PuzzleKind; size: number }) {
   const span = size + 2 * ring;
   const inset = playingAreaInset(span, true);
 
+  /* Hidden Stones: stones placed as the rules allow and regions grown from them, from a fixed seed — no solver, only a picture. */
+  const hidden = useMemo<{ stones: number[]; regions: number[] } | null>(() => {
+    if (kind !== "hiddenStones") return null;
+    const random = seededRandom(size * 7919);
+    const placed = placeStones(size, random);
+    return placed === null ? null : { stones: placed, regions: growRegions(size, placed, random) };
+  }, [kind, size]);
+
   /* The region every cell is drawn in, or null for a plain square (More or Less). */
   const region = useMemo<number[] | null>(() => {
     if ((kind === "numberPlace" || kind === "diagonal" || kind === "sumCages") && NUMBER_PLACE_BOXES[size] !== undefined) return boxedLayout(size).region;
-    if (kind === "jigsaw" || kind === "hiddenStones") return shakeRegions(size, seededRandom(size * 7919));
+    if (kind === "jigsaw") return shakeRegions(size, seededRandom(size * 7919));
+    if (kind === "hiddenStones") return hidden?.regions ?? null;
     return null;
-  }, [kind, size]);
+  }, [kind, size, hidden]);
+
+  /* The stones drawn on the paper, a cell and a colour each: Black and White's printed ones, and every other row's of Hidden Stones'. */
+  const drawn: { index: number; black: boolean }[] = [
+    ...(printed ?? []).flatMap((stone, index) => (stone === EMPTY ? [] : [{ index, black: stone === BLACK }])),
+    ...(hidden?.stones ?? []).flatMap((col, row) => (row % 2 === 0 ? [{ index: row * size + col, black: true }] : [])),
+  ];
 
   /* Sum Cages: the cages of a real easy puzzle at this size, from a fixed seed — a few milliseconds, and only a picture. */
   const cages = useMemo<Cage[] | null>(
@@ -257,22 +277,30 @@ function PaperGrid({ kind, size }: { kind: PuzzleKind; size: number }) {
             </text>
           );
         })}
-        {(printed ?? []).map((stone, index) =>
-          stone === EMPTY ? null : (
-            <circle
-              key={`stone-${index}`}
-              cx={(index % size) + 0.5}
-              cy={Math.floor(index / size) + 0.5}
-              r={0.33}
-              fill={stone === BLACK ? theme.line : PAPER}
-              stroke={theme.line}
-              strokeWidth={0.06}
-            />
-          ),
-        )}
         <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={heavy} />
         </g>
       </svg>
+      {/* The stones over the paper, cell for cell with the grid under them: the game boards' own, which are HTML and not a drawing. */}
+      {drawn.length > 0 ? (
+        <div
+          className="pointer-events-none absolute inset-0 grid"
+          style={{ gridTemplateColumns: `repeat(${span}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${span}, minmax(0, 1fr))` }}
+          data-testid="puzzle-preview-stones"
+        >
+          {drawn.map(({ index, black }) => (
+            <span
+              key={index}
+              className="flex items-center justify-center"
+              style={{ gridRow: Math.floor(index / size) + ring + 1, gridColumn: (index % size) + ring + 1 }}
+              data-testid="puzzle-preview-stone"
+            >
+              <span className={PUZZLE_STONE_BOX}>
+                <StoneMark stone={black ? STONES.black : STONES.white} stones={stones} />
+              </span>
+            </span>
+          ))}
+        </div>
+      ) : null}
     </BoardFrame>
   );
 }

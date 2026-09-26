@@ -1,22 +1,20 @@
 "use client";
 
+import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
+import { StoneMark } from "@/components/board/StoneMark";
+import type { StoneSetTokens } from "@/components/board/board.types";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { BLACK, EMPTY, WHITE } from "@/lib/puzzles/blackAndWhite/code";
 
 import { PuzzleBoard } from "./PuzzleBoard";
-import {
-  PUZZLE_CELL_WRONG,
-  PUZZLE_GRID,
-  PUZZLE_STONE_BLACK,
-  PUZZLE_STONE_CELL,
-  PUZZLE_STONE_PRINTED,
-  PUZZLE_STONE_WHITE,
-} from "./puzzles.constants";
+import { PUZZLE_CELL_WRONG, PUZZLE_GRID, PUZZLE_STONE_BOX, PUZZLE_STONE_CELL, PUZZLE_STONE_PRINTED } from "./puzzles.constants";
 
 const WORDS: Record<number, string> = { [EMPTY]: "empty", [BLACK]: "black", [WHITE]: "white" };
 
 /**
  * The Black and White grid: white paper ruled into cells, and in each cell a
- * black stone, a white one, or nothing.
+ * black stone, a white one, or nothing — the game boards' own stones
+ * (`StoneMark`), in the reader's stone set.
  *
  * A printed stone sits on a shaded cell and cannot be pressed, so what the
  * puzzle gave and what the solver put down read apart at a glance. Buttons,
@@ -33,6 +31,7 @@ export function BlackAndWhiteGrid({
   done,
   onPress,
   wrong = NO_CELLS,
+  set = STONE_SETS[DEFAULT_APPEARANCE.stoneSet],
 }: {
   size: number;
   givens: readonly number[];
@@ -40,6 +39,8 @@ export function BlackAndWhiteGrid({
   done: boolean;
   /** The cells Hint marked wrong (`useHints`); none by default. */
   wrong?: ReadonlySet<number>;
+  /** The stones to draw with: the reader's own set, as their game boards draw it; the site's by default. */
+  set?: StoneSetTokens;
   onPress: (index: number) => void;
 }) {
   return (
@@ -64,8 +65,11 @@ export function BlackAndWhiteGrid({
                 data-given={printed ? "true" : "false"}
                 data-stone={WORDS[stone]}
               >
-                {stone === BLACK ? <span className={PUZZLE_STONE_BLACK} aria-hidden="true" /> : null}
-                {stone === WHITE ? <span className={PUZZLE_STONE_WHITE} aria-hidden="true" /> : null}
+                {stone === BLACK || stone === WHITE ? (
+                  <span className={PUZZLE_STONE_BOX} aria-hidden="true">
+                    <StoneMark stone={stone === BLACK ? STONES.black : STONES.white} stones={set} />
+                  </span>
+                ) : null}
               </button>
             );
           })}

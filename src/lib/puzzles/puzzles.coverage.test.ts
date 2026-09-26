@@ -14,7 +14,7 @@ import { generatePuzzle, prepareEveryPuzzle } from "./generate";
 beforeAll(prepareEveryPuzzle);
 import { checkSolution } from "./puzzleCheck";
 import { puzzleRulesPage } from "./puzzleRulesPage";
-import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS, levelsFor } from "./puzzles.constants";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -74,7 +74,7 @@ describe("every puzzle is finished, not just declared", () => {
     if (make === null) return;
     const spec = PUZZLE_SPECS[kind];
     for (const size of spec.sizes) {
-      for (const level of spec.levels) {
+      for (const level of levelsFor(kind, size)) {
         const started = performance.now();
         const puzzle = make(size, level, 5);
         const took = performance.now() - started;
@@ -157,6 +157,12 @@ describe("every puzzle is finished, not just declared", () => {
       expect(spec.sizes).toContain(spec.defaultSize);
       expect(spec.levels).toContain(spec.defaultLevel);
       expect(Math.max(...spec.sizes) ** 2).toBeLessThanOrEqual(spec.mostCells);
+      // A size's own levels only narrow the kind's, name a size it has, and leave it at least one.
+      for (const [size, levels] of Object.entries(spec.levelsAt ?? {})) {
+        expect(spec.sizes, `${kind} names levels for a size it does not have`).toContain(Number(size));
+        expect(levels.length).toBeGreaterThan(0);
+        for (const level of levels) expect(spec.levels).toContain(level);
+      }
     }
   });
 });

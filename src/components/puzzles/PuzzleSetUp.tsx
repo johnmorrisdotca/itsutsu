@@ -26,7 +26,7 @@ import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
-import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
@@ -71,7 +71,12 @@ export function PuzzleSetUp({
   const copy = PUZZLE_DISPLAY[kind];
   const [ownSize, setOwnSize] = useState(spec.defaultSize);
   const size = sized?.size ?? ownSize;
-  const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
+  const [chosenLevel, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
+  /* The level asked for, unless this size cannot be made at it (a 4×4 Hidden
+     Stones is easy only): then the first it can, and the choice comes back
+     when a size that has it is chosen again. */
+  const sizeLevels = levelsFor(kind, size);
+  const level = sizeLevels.includes(chosenLevel) ? chosenLevel : sizeLevels[0]!;
   const [checks, setChecks] = useState<number | null>(null);
   // Hint, off unless chosen: see `useHints`. Not carried into a race, which allows none.
   const [hints, setHints] = useState(false);
@@ -154,6 +159,8 @@ export function PuzzleSetUp({
               aria-checked={level === each}
               className={`${PICK_WORD_CHIP} ${level === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
               onClick={() => setLevel(each)}
+              disabled={!sizeLevels.includes(each)}
+              title={sizeLevels.includes(each) ? undefined : `A ${size}×${size} has no ${PUZZLE_LEVEL_DISPLAY[each].label.toLowerCase()} puzzle to make`}
               data-testid={`puzzle-level-${each}`}
             >
               {PUZZLE_LEVEL_DISPLAY[each].label} <span className="font-mincho opacity-70">{PUZZLE_LEVEL_DISPLAY[each].kanji}</span>

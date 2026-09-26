@@ -42,6 +42,12 @@ export type PuzzleSpec = {
   defaultSize: number;
   /** The levels the set-up offers; a kind with one kind of reasoning offers fewer. */
   levels: readonly PuzzleLevel[];
+  /**
+   * The levels a size can be made at, where that is fewer than `levels`: a
+   * 4×4 Hidden Stones has two possible answers and looking always tells them
+   * apart, so it has no hard puzzle to make. Read through `levelsFor`.
+   */
+  levelsAt?: Readonly<Record<number, readonly PuzzleLevel[]>>;
   /** The level the set-up opens on. */
   defaultLevel: PuzzleLevel;
   /** The most characters a puzzle's code or answer may hold, for the route to refuse anything larger. */
@@ -64,6 +70,11 @@ export type PuzzleSpec = {
    * Names the layout its rows follow (`gomojiLayout`); absent is paper.
    */
   wordGrid?: "gomoji" | "gomojiKana";
+  /**
+   * Whether the puzzle is played with stones, drawn as the game boards draw
+   * theirs (`StoneMark`) in the reader's own stone set. Absent is no.
+   */
+  stones?: true;
 };
 
 /**

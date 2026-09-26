@@ -93,15 +93,28 @@ export function isCheckAllowance(value: unknown): value is number | null {
 }
 
 /**
- * Hidden Stones is made at six sides and offered at four — Quick, Usual, Long
- * and Longest — because the set-up screen keeps room for four boards and no
- * more (see `offered`). 6×6 and 8×8 stay in `sizes` for anything already made
- * at them.
+ * Hidden Stones is made at eight sides and offered at four — Beginner, Usual,
+ * Long and Longest — because the set-up screen keeps room for four boards and
+ * no more (see `offered`). John, 2026-09-26: "is it possible to add a 12x12
+ * game? and a beginner 4x4 game?" The two new ones took the ends, and 9×9
+ * stayed between the everyday 7×7 and the 12×12 as the step up; 5×5, 6×6,
+ * 8×8 and 10×10 stay in `sizes` for anything already made at them. A 4×4 is
+ * made easy only (`levelsAt`): it has two possible answers, and looking
+ * always tells them apart.
  */
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 256: a 16×16's cells, one character each, 1–9 then A–G.
   numberPlace: { sizes: [4, 6, 9, 16], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 256 },
-  hiddenStones: { sizes: [5, 6, 7, 8, 9, 10], offered: [5, 7, 9, 10], defaultSize: 7, levels: ["easy", "hard"], defaultLevel: "easy", mostCells: 100 },
+  hiddenStones: {
+    sizes: [4, 5, 6, 7, 8, 9, 10, 12],
+    offered: [4, 7, 9, 12],
+    defaultSize: 7,
+    levels: ["easy", "hard"],
+    levelsAt: { 4: ["easy"] },
+    defaultLevel: "easy",
+    mostCells: 144,
+    stones: true,
+  },
   // 133: the 49 cells of a 7×7 and the 84 edges between them, which its code writes after the cells.
   moreOrLess: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 133 },
   // 162: a 9×9's 81 cells and then its 81 region letters, which its code writes after the cells.
@@ -112,7 +125,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 77: a 7×7's 49 cells and then the 28 places around its edge where a clue can stand.
   towers: { sizes: [4, 5, 6, 7], offered: [4, 5, 6, 7], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 77 },
   // Even sides only: a line holds as many black stones as white.
-  blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
+  blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144, stones: true },
   // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
   gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
   /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
@@ -132,6 +145,12 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
  */
 export const PUZZLE_CODE_LONGEST = Math.max(...Object.values(PUZZLE_SPECS).map((spec) => spec.mostCells));
 
+/** The levels a puzzle can be made at, at this size: the kind's levels, less any this size cannot have (`levelsAt`). */
+export function levelsFor(kind: PuzzleKind, size: number): readonly PuzzleLevel[] {
+  const spec = PUZZLE_SPECS[kind];
+  return spec.levelsAt?.[size] ?? spec.levels;
+}
+
 
 /**
  * WHAT EACH SIZE IS FOR, under its picture on the size tiles — the board
@@ -148,12 +167,14 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     16: { label: "Giant", kanji: "特大" },
   },
   hiddenStones: {
+    4: { label: "Beginner", kanji: "入門" },
     5: { label: "Quick", kanji: "速" },
     6: { label: "Short", kanji: "短" },
     7: { label: "Usual", kanji: "定番" },
     8: { label: "Longer", kanji: "長め" },
     9: { label: "Long", kanji: "長" },
-    10: { label: "Longest", kanji: "最長" },
+    10: { label: "Evening", kanji: "夜長" },
+    12: { label: "Longest", kanji: "最長" },
   },
   moreOrLess: {
     4: { label: "Quick", kanji: "速" },
@@ -261,7 +282,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Every puzzle has exactly one answer. Tap a cell once for a stone, again for a cross to mark a cell you have ruled out, and again to clear it; the puzzle is done when every row's stone is right.",
       "Easy puzzles yield to looking alone; hard ones ask you to try a stone somewhere and see.",
     ],
-    board: "7×7 is the everyday size. 5×5 is a first puzzle; 10×10 is an evening.",
+    board: "7×7 is the everyday size. 4×4 is a first puzzle, easy only; 12×12 is an evening.",
   },
   moreOrLess: {
     label: "Futoshiki",
