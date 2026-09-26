@@ -22,3 +22,10 @@ export type RockRules = {
 
 /** Where one game's rocks and hotspots are, all distinct. */
 export type RockLayout = { dead: Point[]; hot: Point[] };
+
+/**
+ * How a named rock game lays its furniture: the placement and when it lands.
+ * The counts are the spec's own `deadSquares` and `hotSquares`, so a game's
+ * `RockRules` is those two with this beside them (`rockRulesOf`).
+ */
+export type RockSpec = Pick<RockRules, "placement" | "arriveAfter">;

@@ -10,6 +10,7 @@ import type { Cell, GameSettings, Point } from "./gomoku.types";
 import { drawDistinct, seededRandom } from "./rules/random";
 import { inStar, STAR_RADIUS } from "./rules/chineseCheckers";
 import { hexagonSealed, inHexagon } from "./rules/hexagon";
+import { landRocks, rockLayoutFor } from "./rules/rocks";
 
 /** The centre intersection — tengen (天元) — which never carries an obstacle. */
 export function tengen(size: number): Point {
@@ -36,9 +37,13 @@ export function obstaclePoints(settings: GameSettings): Point[] {
  * the game's seed so a replay lands them in the same places. Dead squares
  * come first, then hotspots, all distinct, and never on the bottom row of a
  * drop game, where they would only ever be a wall.
+ *
+ * None for a rock game: its squares are laid by `rules/rocks.ts`, across the
+ * whole board, and may not be there at the start at all.
  */
 export function randomSquares(settings: GameSettings): { dead: Point[]; hot: Point[]; worm: Point[] } {
   const spec = VARIANT_SPECS[settings.variant];
+  if (spec.rocks !== null) return { dead: [], hot: [], worm: [] };
   const total = spec.deadSquares + spec.hotSquares + spec.wormholes;
   if (total === 0) return { dead: [], hot: [], worm: [] };
 
@@ -84,11 +89,15 @@ export function emptyBoard(settings: GameSettings): Cell[] {
   for (const point of dead) board[point.row * settings.size + point.col] = BLOCKED;
   for (const point of hot) board[point.row * settings.size + point.col] = HOT;
   for (const point of worm) board[point.row * settings.size + point.col] = WORM;
+  // A rock game whose rocks are there from the start; the ones that fall later land in the engine (`rules/rockfall.ts`).
+  const rocks = VARIANT_SPECS[settings.variant].rocks;
+  const layout = rocks !== null && rocks.arriveAfter === null ? rockLayoutFor(settings) : null;
+  const laid = layout === null ? board : landRocks(board, settings.size, layout);
   // The hexagram: everything outside the star is sealed off, once, by shape — not drawn from the seed.
   if (VARIANT_SPECS[settings.variant].chineseCheckers) {
     for (let row = 0; row < settings.size; row += 1) {
       for (let col = 0; col < settings.size; col += 1) {
-        if (!inStar(STAR_RADIUS, { row, col })) board[row * settings.size + col] = BLOCKED;
+        if (!inStar(STAR_RADIUS, { row, col })) laid[row * settings.size + col] = BLOCKED;
       }
     }
   }
@@ -106,10 +115,10 @@ export function emptyBoard(settings: GameSettings): Cell[] {
       for (let col = 0; col < settings.size; col += 1) {
         const point = { row, col };
         if (!inHexagon(settings.size, point) || (sealsCentre && hexagonSealed(settings.size, point))) {
-          board[row * settings.size + col] = BLOCKED;
+          laid[row * settings.size + col] = BLOCKED;
         }
       }
     }
   }
-  return board;
+  return laid;
 }

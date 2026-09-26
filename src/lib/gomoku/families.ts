@@ -94,9 +94,15 @@ export const GAME_FAMILIES: GameFamily[] = [
      * not behave in exactly the sense this shelf means. `strange-boards` keeps
      * the key — `pieces-and-twists` has no rows at all on the live XP ledger,
      * so nothing is paid twice either way and the busier key is the safer one.
+     *
+     * AND THE ROCK GAMES, 2026-09-26: Scattered Rocks and Rockfall, the two
+     * the obstacle playtest named, sit beside Obstacle Five. The shelf was
+     * full, so the two hexagon boards stopped being listed here as guests —
+     * see `ALSO_LISTED_IN` for why and how to put them back — and the blurb
+     * says rocks where it used to say hexagons.
      */
-    blurb: "Boards that do not behave: edges that join, squares you cannot use, pieces laid from a queue, quarters that turn, and two boards drawn on hexagons rather than squares.",
-    games: ["toroidalFive", "obstacleFive", "dominoFive", "blockFive", "twistFive", "twistFour"],
+    blurb: "Boards that do not behave: edges that join, rocks in the way from the start or falling part way through, pieces laid from a queue, and quarters that turn.",
+    games: ["toroidalFive", "obstacleFive", "scatteredRocks", "dominoFive", "blockFive", "twistFive", "twistFour"],
   },
   {
     key: "checkers",
@@ -283,25 +289,24 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
     },
   ],
   /*
-   * THE BOARDS DRAWN ON HEXAGONS, on the shelf somebody would look for a
-   * strange board on. Each keeps its home, because a home is the family a game
-   * is SCORED by: Hex claims ground, Hexversi turns stones. Neither of those
-   * shelves is where a reader goes when what caught their eye was the shape of
-   * the board. (Chinese Checkers was here too, until the eight-game cap — see
-   * its own entry below.)
+   * THE BOARDS DRAWN ON HEXAGONS were listed here on Strange boards from
+   * 2026-09-22 (John: "shouldn't Strange boards also include all Hex boards,
+   * Rhombus?"), each keeping its home — Hex under Territory and races,
+   * Hexversi under Turn and take. They came off on 2026-09-26 to make room
+   * under the eight-game cap for the two rock games, Scattered Rocks and
+   * Rockfall, whose home is Strange boards beside Obstacle Five: a guest adds
+   * no game to a shelf, and these two are found at home. Putting them back is
+   * two entries here, once the shelf has room for them again:
+   *
+   *   hex: family "strange-boards", "A rhombus of hexagons, and the only board
+   *     here you win by crossing rather than by lining up."
+   *   honeycomb: family "strange-boards", "Reversi on a hexagon of hexagons,
+   *     where a stone has six neighbours instead of eight and the middle is
+   *     sealed."
+   *
+   * (Chinese Checkers left the same shelf for the same cap — see its own
+   * entry below.)
    */
-  hex: [
-    {
-      family: "strange-boards",
-      why: "A rhombus of hexagons, and the only board here you win by crossing rather than by lining up.",
-    },
-  ],
-  honeycomb: [
-    {
-      family: "strange-boards",
-      why: "Reversi on a hexagon of hexagons, where a stone has six neighbours instead of eight and the middle is sealed.",
-    },
-  ],
   chineseCheckers: [
     /*
      * NOT ON STRANGE BOARDS ANY MORE, though its star is the strangest board

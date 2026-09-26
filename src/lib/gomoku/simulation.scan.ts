@@ -101,10 +101,11 @@ export function runWinsIndependently(
     case "wildTicTacToe":
     case "notakto":
       return length >= winLength;
-    // Five or more in a row, as freestyle. The torus and the obstacle board
+    // Five or more in a row, as freestyle. The torus and the rock boards
     // change where a line may run, not how long it has to be.
     case "toroidalFive":
     case "obstacleFive":
+    case "scatteredRocks":
     case "ninuki":
     case "freestyle":
     default:

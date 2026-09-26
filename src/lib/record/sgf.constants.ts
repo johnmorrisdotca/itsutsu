@@ -101,6 +101,10 @@ export const SGF_TYPES: Record<RuleVariant, SgfTypeRow> = {
     gm: null,
     why: `Dead squares and hotspots are scattered by the seed, and a hotspot counts for either colour. ${NO_NUMBER}, and SGF cannot put either on a Gomoku board.`,
   },
+  scatteredRocks: {
+    gm: null,
+    why: `Twelve rocks and two hotspots are laid by the seed, and a hotspot counts for either colour. ${NO_NUMBER}, and SGF cannot put either on a Gomoku board.`,
+  },
   makerBreaker: { gm: null, why: `One side builds a line of either colour and the other fills the board. ${NO_NUMBER}.` },
   wildTicTacToe: { gm: null, why: `Either player may place either mark. ${NO_NUMBER}.` },
   notakto: { gm: null, why: `Both players place the same mark, and completing a line loses. ${NO_NUMBER}.` },

@@ -263,6 +263,20 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "15×15 by default; the same eight squares are scattered whatever the size.",
   },
+  scatteredRocks: {
+    label: "Scattered Rocks",
+    kanji: "乱石五目",
+    tagline: "Five in a row around twelve rocks and two hotspots, all there from the first move.",
+    origin:
+      "Our own game, not a version of a published one. Obstacle Five's rocks and hotspots, twice as many rocks and anywhere on the board, chosen because two equal computer players split sixty games 34 to 24 on it where plain five in a row went 60 to 0 to black.",
+    rules: [
+      "Five in a row wins.",
+      "Twelve points are rocks: no stone may be played there, and no line runs through one.",
+      "Two points are hotspots, which count as a stone of either colour: a line of either colour may run through one, so the same hotspot can serve both players at once.",
+      "The rocks and hotspots are laid from the game's seed anywhere but the centre point, so both players see the same board and a replay puts them in the same places.",
+    ],
+    board: "15×15 only: the board the rocks were tried on. Look at where the rocks cut the long lines before placing the first stone.",
+  },
   dropFour: {
     label: "Drop Four",
     kanji: "落とし四目",

@@ -1,5 +1,5 @@
-import { BLOCKED, HOT } from "../gomoku.constants";
-import type { Cell, Point } from "../gomoku.types";
+import { BLOCKED, HOT, VARIANT_SPECS } from "../gomoku.constants";
+import type { Cell, GameSettings, Point, VariantSpec } from "../gomoku.types";
 import { ROCK_PLACEMENTS } from "./rocks.constants";
 import type { RockLayout, RockRules } from "./rocks.types";
 import { drawDistinct, seededRandom } from "./random";
@@ -13,8 +13,25 @@ import { drawDistinct, seededRandom } from "./random";
  * that play well. So this module lays out rocks from a `RockRules` and a seed,
  * and lands them on a board — at the start or partway through — and decides
  * nothing about which combinations are games. `obstacles.playtest.test.ts`
- * is what asks that.
+ * is what asks that, and the two it named are rows in `VARIANT_SPECS` with a
+ * `rocks` field: Scattered Rocks and Rockfall.
  */
+
+/** A rock game's rules, read off its spec, or null for a game with no rocks. */
+export function rockRulesOf(spec: VariantSpec): RockRules | null {
+  if (spec.rocks === null) return null;
+  return { rocks: spec.deadSquares, hot: spec.hotSquares, ...spec.rocks };
+}
+
+/**
+ * Where this game's rocks and hotspots go, from its own seed, or null for a
+ * game with no rocks — or rules its board cannot hold, which
+ * `rocks.test.ts` refuses for every board a rock game is offered on.
+ */
+export function rockLayoutFor(settings: GameSettings): RockLayout | null {
+  const rules = rockRulesOf(VARIANT_SPECS[settings.variant]);
+  return rules === null ? null : rockLayout(rules, settings.size, settings.seed);
+}
 
 /** Turns a point a quarter turn clockwise about the board's centre. */
 function quarterTurn(point: Point, size: number): Point {

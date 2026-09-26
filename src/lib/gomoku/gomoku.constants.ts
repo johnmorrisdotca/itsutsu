@@ -35,6 +35,7 @@ import type {
   VariantSpec,
   WinReason,
 } from "./gomoku.types";
+import { ROCK_PLACEMENTS } from "./rules/rocks.constants";
 
 export const STONES = {
   black: "black",
@@ -85,6 +86,7 @@ export const RULE_VARIANTS = {
   notakto: "notakto",
   toroidalFive: "toroidalFive",
   obstacleFive: "obstacleFive",
+  scatteredRocks: "scatteredRocks",
   reversi: "reversi",
   classicReversi: "classicReversi",
   antiReversi: "antiReversi",
@@ -134,6 +136,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.misereFive,
   RULE_VARIANTS.toroidalFive,
   RULE_VARIANTS.obstacleFive,
+  RULE_VARIANTS.scatteredRocks,
   RULE_VARIANTS.makerBreaker,
   RULE_VARIANTS.dominoFive,
   RULE_VARIANTS.blockFive,
@@ -619,6 +622,7 @@ function plain(overrides: SpecOverrides): VariantSpec {
     wrap: WRAP_MODES.none,
     deadSquares: 0,
     hotSquares: 0,
+    rocks: null,
     lineClear: false,
     misere: false,
     queue: null,
@@ -796,6 +800,28 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     deadSquares: 6,
     headStartTurns: 1, // 2 free turns decide where the squares fall kindly.
     hotSquares: 2,
+  }),
+  /*
+   * The two rock games, named from the obstacle playtest
+   * (`obstacles.playtest.test.ts`): sixty games a board between two equal
+   * computer players, where plain five in a row went 60-0 to black. Both keep
+   * to the board they were measured on.
+   *
+   * Scattered Rocks: twelve rocks and two hotspots from the first move, 34-24
+   * with two drawn. Rockfall: an empty board for eight stones, then twenty
+   * rocks and two hotspots land on whatever is still open — 23-21 with sixteen
+   * drawn, the closest to even of every board tried.
+   */
+  scatteredRocks: plain({
+    grid: BOARD_GRIDS.lines,
+    winLength: null,
+    allowFirstPlayerChoice: true,
+    openings: FREE_ONLY,
+    boardSizes: [15],
+    deadSquares: 12,
+    hotSquares: 2,
+    rocks: { placement: ROCK_PLACEMENTS.scattered, arriveAfter: null },
+    headStartTurns: 1, // As Obstacle Five: 2 free turns choose where the rocks help.
   }),
   dropFour: drop({ headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
   ringDrop: drop({ wrap: WRAP_MODES.columns, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.

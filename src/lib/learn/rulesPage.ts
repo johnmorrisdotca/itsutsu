@@ -173,8 +173,17 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.quadrantSize !== null) {
     board.push(`It is divided into four ${spec.quadrantSize}×${spec.quadrantSize} quadrants, each of which can be turned.`);
   }
-  if (spec.deadSquares > 0) board.push(`${spec.deadSquares === 1 ? "One square" : `${spec.deadSquares} squares`}, chosen at random when the game starts, ${spec.deadSquares === 1 ? "is" : "are"} dead: nothing can land there and no line runs through.`);
-  if (spec.hotSquares > 0) board.push(`${spec.hotSquares === 1 ? "One square" : `${spec.hotSquares} squares`}, chosen at random, ${spec.hotSquares === 1 ? "is" : "are"} a hotspot that counts as either colour's stone.`);
+  if (spec.rocks !== null && spec.rocks.arriveAfter !== null) {
+    board.push(
+      `It starts empty. Once ${spec.rocks.arriveAfter} stones have been played, ${spec.deadSquares} rocks and ${spec.hotSquares} hotspots fall onto it, laid from the game's seed: a rock is a point nothing can land on and no line runs through, and a hotspot counts as either colour's stone. One that falls on a stone is lost, and so is a hotspot that would finish a line by itself.`,
+    );
+  } else if (spec.rocks !== null) {
+    board.push(`${spec.deadSquares} points, laid from the game's seed anywhere but the centre, are rocks: nothing can land there and no line runs through.`);
+    board.push(`${spec.hotSquares} more are hotspots, which count as either colour's stone.`);
+  } else {
+    if (spec.deadSquares > 0) board.push(`${spec.deadSquares === 1 ? "One square" : `${spec.deadSquares} squares`}, chosen at random when the game starts, ${spec.deadSquares === 1 ? "is" : "are"} dead: nothing can land there and no line runs through.`);
+    if (spec.hotSquares > 0) board.push(`${spec.hotSquares === 1 ? "One square" : `${spec.hotSquares} squares`}, chosen at random, ${spec.hotSquares === 1 ? "is" : "are"} a hotspot that counts as either colour's stone.`);
+  }
   if (spec.wrap === "columns") {
     board.push("The left and right edges join, so a line may run off one side and onto the other.");
   }

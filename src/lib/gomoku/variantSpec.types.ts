@@ -1,4 +1,5 @@
 import type { OpeningRule, PieceQueue, Stone } from "./gomoku.types";
+import type { RockSpec } from "./rules/rocks.types";
 import type {
   BoardGrid,
   CheckersRules,
@@ -87,10 +88,20 @@ export type VariantSpec = {
    * side, and there is no reason for the type to allow two ways to say it.
    */
   wrap: WrapMode;
-  /** Squares taken out of play at random when the game starts. */
+  /** Squares taken out of play at random when the game starts, or when the rocks fall (see `rocks`). */
   deadSquares: number;
-  /** Squares that count as either colour's stone, placed at random when the game starts. */
+  /** Squares that count as either colour's stone, placed at random when the game starts, or when the rocks fall. */
   hotSquares: number;
+  /**
+   * The rock games' way of laying the dead squares and hotspots above, or null
+   * for the older way (`randomSquares`). When set, `rules/rocks.ts` lays them
+   * from the seed across the whole board, never on the centre, and they land
+   * when the game starts or, with `arriveAfter`, once that many stones have
+   * been played — on the empty points only. The counts stay in `deadSquares`
+   * and `hotSquares`, so everything that asks whether a game has either still
+   * reads one field.
+   */
+  rocks: RockSpec | null;
   /** A full bottom row disappears and everything above it drops, as in the falling-block game. */
   lineClear: boolean;
   /** Making the winning line loses, and a full board goes to the player who opened. */

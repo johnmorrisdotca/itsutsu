@@ -84,7 +84,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Five in a row | 7 |
 | Drops | 8 |
 | Turn and take | 8 |
-| Strange boards | 6 |
+| Strange boards | 7 |
 | Checkers | 6 |
 | Territory and races | 4 |
 | Small boards | 6 |
@@ -184,6 +184,7 @@ changed.
 | **Misère Five** 逆五目 | Five in a row loses. A full board goes to the opener. |  |
 | **Toroidal Five** 輪王五目 | Five in a row on a board with no edges: left joins right and top joins bottom, so a line may run off any side and continue from the far one. Every intersection is a centre one. |  |
 | **Obstacle Five** 石場五目 | Five in a row across six dead squares nothing can use and two hotspots that count as either colour. Drawn from the game's seed, so both players see the same board. |  |
+| **Scattered Rocks** 乱石五目 | Five in a row around twelve rocks and two hotspots, laid from the game's seed anywhere but the centre and there from the first move. 15×15 only. |  |
 
 Each is a row of data in `VARIANT_SPECS` — the line rule per colour, the
 shapes each colour is forbidden, whether stones capture, stones per turn, a

@@ -28,6 +28,7 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   connect6: "connect-six",
   toroidalFive: "toroidal-five",
   obstacleFive: "obstacle-five",
+  scatteredRocks: "scattered-rocks",
   dropFour: "drop-four",
   dominoFive: "domino-five",
   blockFive: "block-five",
