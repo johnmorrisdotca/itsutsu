@@ -29,7 +29,13 @@ describe("simulated games", () => {
     }
   });
 
-  it("plays full games under every rule variant", () => {
+  /*
+   * Its own time allowance: 25 games of every variant grows with every game
+   * added (Scattered Rocks and Rockfall took it from about 42 s to 50 s alone),
+   * and the pre-push gate runs it beside the build, where it passed 60 s. The
+   * work is the point of it, so the allowance moves rather than the games.
+   */
+  it("plays full games under every rule variant", { timeout: 180_000 }, () => {
     for (const variant of Object.values(RULE_VARIANTS)) {
       for (let seed = 1; seed <= 25; seed += 1) {
         playOut({ size: 9, variant }, seed * 7 + variant.length);
