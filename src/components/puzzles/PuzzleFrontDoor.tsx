@@ -17,6 +17,10 @@ import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
+import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
+import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
+
+import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsLive";
 import { PuzzleFastest } from "./PuzzleFastest";
 import { PuzzlePlayOrResume } from "./PuzzlePlayOrResume";
 import { PuzzlePoints } from "./PuzzlePoints";
@@ -69,14 +73,21 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               <Suspense fallback={<PlayButton href={setUpPath(kind)} />}>
                 <PuzzlePlayOrResume kind={kind} />
               </Suspense>
-              {/* The same puzzle for everybody today (`daily.ts`), at the usual size and level. */}
-              <Link
-                href={`${playPath(kind)}?size=${spec.defaultSize}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`}
-                className="text-center text-sm font-medium underline underline-offset-4"
-                data-testid="game-daily"
-              >
-                {kind === "gomoji" ? "Today's word" : "Today's puzzle"} →
-              </Link>
+              {dailyLanguageOf(kind) !== null ? (
+                /* A word puzzle's word of the day at every length it offers, a button each (`DailyWordButtons`). */
+                <Suspense fallback={<DailyWordButtonsShell kind={kind} framed={false} />}>
+                  <DailyWordButtonsLive kind={kind} framed={false} />
+                </Suspense>
+              ) : (
+                /* The same puzzle for everybody today (`daily.ts`), at the usual size and level. */
+                <Link
+                  href={`${playPath(kind)}?size=${spec.defaultSize}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`}
+                  className="text-center text-sm font-medium underline underline-offset-4"
+                  data-testid="game-daily"
+                >
+                  Today&apos;s puzzle →
+                </Link>
+              )}
             </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>
@@ -160,6 +171,11 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                   </>
                 )}
               </Facet>
+              {dailyLanguageOf(kind) !== null ? (
+                <Facet href={dailyWordsPath(kind)} testId="facet-daily">
+                  Past daily words <span className="font-mincho opacity-70">過去の言葉</span>
+                </Facet>
+              ) : null}
               <Facet href={familyPath(kind)} testId="facet-family">
                 Its family <span className="font-mincho opacity-70">同族</span>
               </Facet>

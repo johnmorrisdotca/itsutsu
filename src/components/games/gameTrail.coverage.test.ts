@@ -47,6 +47,8 @@ const TRAIL_DRAWN_BY: Record<string, readonly string[]> = {
   "/games/[slug]/family": ["src/app/games/[slug]/family/page.tsx"],
   "/games/[slug]/background": ["src/app/games/[slug]/background/page.tsx"],
   "/games/[slug]/standings": ["src/app/games/[slug]/standings/page.tsx", "src/components/puzzles/PuzzleStandingsPage.tsx"],
+  "/games/[slug]/daily": ["src/components/puzzles/DailyArchivePage.tsx"],
+  "/games/[slug]/daily/[day]": ["src/components/puzzles/DailyDayPage.tsx"],
   "/games/[slug]/new": ["src/components/live/SetUpHeading.tsx", "src/components/puzzles/PuzzleSetUpPage.tsx"],
   "/games/[slug]/begin": ["src/app/games/[slug]/begin/page.tsx"],
   "/games/[slug]/play": ["src/app/games/[slug]/play/page.tsx", "src/components/puzzles/PuzzlePlayPage.tsx"],

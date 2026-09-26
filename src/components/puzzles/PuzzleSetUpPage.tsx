@@ -11,6 +11,10 @@ import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzle
 import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
+import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
+import { Suspense } from "react";
+
+import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsLive";
 import { PuzzleSetUp } from "./PuzzleSetUp";
 import { TsunagiSetUp } from "./TsunagiSetUp";
 import { WordStyleProvider } from "./WordStyleContext";
@@ -74,6 +78,12 @@ export async function PuzzleSetUpPage({
           <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} />
         </WordStyleProvider>
       )}
+      {dailyLanguageOf(kind) !== null ? (
+        /* Today's word at each length, a button each, under the choosing of any other, so the chooser above never moves (`DailyWordButtons`). */
+        <Suspense fallback={<DailyWordButtonsShell kind={kind} framed />}>
+          <DailyWordButtonsLive kind={kind} framed />
+        </Suspense>
+      ) : null}
     </Page>
   );
 }
