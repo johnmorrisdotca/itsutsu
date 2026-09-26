@@ -44,10 +44,10 @@ test("a game won puts the winner on the IP boards, and a stranger sees them shut
     const mine = await memberIdFor(me.email);
 
     const page = await context.newPage();
-    // The site's board: this month and all time, the winner on both with what the game paid.
+    // The site's board: all time, this month and this week, the winner on all three with what the game paid.
     await page.goto("/points");
     const site = page.getByTestId("site-ip-board");
-    for (const table of ["site-ip-board-month", "site-ip-board-all"]) {
+    for (const table of ["site-ip-board-all", "site-ip-board-month", "site-ip-board-week"]) {
       await expect(site.getByTestId(table).locator(`[data-testid="ip-row"][data-member="${mine}"]`)).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));
     }
     // The winner's own page says the IP they won and where it puts them; the loser's says none yet.
@@ -55,6 +55,7 @@ test("a game won puts the winner on the IP boards, and a stranger sees them shut
     await expect(page.getByTestId("player-ip")).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));
     await expect(page.getByTestId("player-ip-all")).toHaveAttribute("data-place", /^[1-9]\d*$/);
     await expect(page.getByTestId("player-ip-month")).toHaveAttribute("href", "/points");
+    await expect(page.getByTestId("player-ip-week")).toHaveAttribute("data-place", /^[1-9]\d*$/);
     // And the strip under the masthead, on every page they open, beside their XP: their IP, leading to the board.
     const stripIp = page.getByTestId("member-strip").getByTestId("strip-ip");
     await expect(stripIp).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));

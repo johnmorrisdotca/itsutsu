@@ -2,7 +2,7 @@ import Link from "@/components/ui/Link";
 
 import { thousands } from "@/components/about/XpCurve";
 import { SITE_SCOPE, type IpStanding, ipStandingOf } from "@/lib/points/ipBoards";
-import { startOfMonth } from "@/lib/puzzles/server/puzzleBoards";
+import { startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
@@ -17,9 +17,10 @@ import { currentTestModeReader } from "@/lib/testMode/testMode";
  */
 export async function PlayerIp({ memberId }: { memberId: string }) {
   const reader = await currentTestModeReader();
-  const [all, month] = await Promise.all([
+  const [all, month, week] = await Promise.all([
     ipStandingOf(memberId, SITE_SCOPE, null, reader),
     ipStandingOf(memberId, SITE_SCOPE, startOfMonth(), reader),
+    ipStandingOf(memberId, SITE_SCOPE, startOfWeek(), reader),
   ]);
   return (
     <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="player-ip" data-ip={all?.ip ?? 0}>
@@ -32,6 +33,7 @@ export async function PlayerIp({ memberId }: { memberId: string }) {
         <>
           <Place standing={all} when="all time" testId="player-ip-all" />
           <Place standing={month} when="this month" testId="player-ip-month" />
+          <Place standing={week} when="this week" testId="player-ip-week" />
         </>
       )}
     </p>

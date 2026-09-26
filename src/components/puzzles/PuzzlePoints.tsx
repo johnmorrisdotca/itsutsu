@@ -9,8 +9,9 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { POINTS_A_CELL, POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { POINTS_SHOWN, POINTS_WHOLE, type PointsRow, pointsBoardOf, startOfMonth } from "@/lib/puzzles/server/puzzleBoards";
+import { POINTS_SHOWN, POINTS_WHOLE, type PointsRow, pointsBoardOf, startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * A PUZZLE'S LEADERBOARDS, ALL TIME AND THIS MONTH, PLAIN AND FIRST.
@@ -50,15 +51,25 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
       </section>
     );
   }
-  const [allTime, thisMonth] = await Promise.all([pointsBoardOf(kind, null, take), pointsBoardOf(kind, startOfMonth(), take)]);
-  const names = await memberNamesOf([...allTime, ...thisMonth].map((row) => row.memberId));
+  // All time, this month and this week, one query a table (`pointsBoardOf`), side by side on the whole board's page.
+  const reader = await currentTestModeReader();
+  const [allTime, thisMonth, thisWeek] = await Promise.all([
+    pointsBoardOf(kind, null, take, reader),
+    pointsBoardOf(kind, startOfMonth(), take, reader),
+    pointsBoardOf(kind, startOfWeek(), take, reader),
+  ]);
+  const names = await memberNamesOf([...allTime, ...thisMonth, ...thisWeek].map((row) => row.memberId));
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-points">
       <h2 className={SECTION_TITLE}>
         Leaderboard <span className="font-mincho normal-case tracking-normal">番付</span>
       </h2>
-      <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} testId="puzzle-points-all" />
-      <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} testId="puzzle-points-month" />
+      {/* Three columns where the board has the page's width (its standings page), one under another beside a puzzle and on a phone. */}
+      <div className={`grid gap-4 ${whole ? "md:grid-cols-3" : ""}`}>
+        <PointsTable label="All time" kanji="通算" rows={allTime} names={names} kind={kind} testId="puzzle-points-all" />
+        <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} kind={kind} testId="puzzle-points-month" />
+        <PointsTable label="This week" kanji="今週" rows={thisWeek} names={names} kind={kind} testId="puzzle-points-week" />
+      </div>
       <p className="text-xs text-muted">
         {kind === "gomoji"
           ? `Every letter you find scores, more the sooner and more in its place; the word itself more the bigger the board, and more for guesses left and speed. A word not found still scores its letters, and a head start costs ${POINTS_A_HELP}. Your best of each word counts.`

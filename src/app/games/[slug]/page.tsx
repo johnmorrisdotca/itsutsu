@@ -228,8 +228,8 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           </Suspense>
 
           {/*
-            AND WHO HAS WON THE MOST HERE: this game's IP board, this month and
-            all time. John, 2026-09-25: "EVERY game in every family is also going
+            AND WHO HAS WON THE MOST HERE: this game's IP board, all time, this
+            month and this week, one under another in this column. John, 2026-09-25: "EVERY game in every family is also going
             to have a Leaderboard. So IP matters." The ladder is who is best; this
             is who has won most, and the two need not agree.
           */}

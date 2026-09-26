@@ -8,14 +8,19 @@ import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.con
 import { currentSession } from "@/lib/auth/currentSession";
 import { IP_SHOWN, IP_WHOLE } from "@/lib/points/points.constants";
 import { type IpRow, type IpScope, ipBoardOf } from "@/lib/points/ipBoards";
-import { startOfMonth } from "@/lib/puzzles/server/puzzleBoards";
+import { startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 
 /**
- * AN IP LEADERBOARD: who has won the most Itsutsu Points here, this month and
- * all time. John, 2026-09-25: "EVERY game in every family is also going to have
+ * AN IP LEADERBOARD: who has won the most Itsutsu Points here, all time, this
+ * month and this week — three tables side by side where the board has the
+ * page's width, one under another in a side column and on a phone. John,
+ * 2026-09-26: "For leaderboards, show ALL TIME and Weekly and Monthly boards…
+ * Could be 3 columns in Desktop and responsive in Mobile." The week and the
+ * month both start in UTC (`startOfWeek`, `startOfMonth`), so everybody reads
+ * one board. John, 2026-09-25: "EVERY game in every family is also going to have
  * a Leaderboard. So IP matters." IP is results only, and XP is taking part, so
  * each row shows both: a reader sees at once that they are two different
  * things. The same board serves a game, a family and the whole site
@@ -33,7 +38,7 @@ export async function IpBoard({
   stacked = false,
   testId = "ip-board",
 }: {
-  /** One table under the other, for a side column; side by side otherwise. */
+  /** One table under another, for a side column; three side by side otherwise. */
   stacked?: boolean;
   scope: IpScope;
   /** What the board is of, for the heading and the shut state: "Gomoku", "Five in a row", "every game". */
@@ -71,15 +76,21 @@ export async function IpBoard({
   }
   const take = whole ? IP_WHOLE : IP_SHOWN;
   const reader = await currentTestModeReader();
-  const [thisMonth, allTime] = await Promise.all([ipBoardOf(scope, startOfMonth(), take, reader), ipBoardOf(scope, null, take, reader)]);
-  const ids = [...thisMonth, ...allTime].map((row) => row.memberId);
+  // One query a table, over the same totals (`ipBoardOf`); the three run side by side.
+  const [allTime, thisMonth, thisWeek] = await Promise.all([
+    ipBoardOf(scope, null, take, reader),
+    ipBoardOf(scope, startOfMonth(), take, reader),
+    ipBoardOf(scope, startOfWeek(), take, reader),
+  ]);
+  const ids = [...allTime, ...thisMonth, ...thisWeek].map((row) => row.memberId);
   const [names, xp] = await Promise.all([memberNamesOf(ids), xpByMemberId(ids)]);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid={testId}>
       {heading}
-      <div className={`grid gap-4 ${stacked ? "" : "md:grid-cols-2"}`}>
-        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} xp={xp} playHref={playHref} testId={`${testId}-month`} />
+      <div className={`grid gap-4 ${stacked ? "" : "md:grid-cols-3"}`}>
         <IpTable label="All time" kanji="通算" rows={allTime} names={names} xp={xp} playHref={playHref} testId={`${testId}-all`} />
+        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} xp={xp} playHref={playHref} testId={`${testId}-month`} />
+        <IpTable label="This week" kanji="今週" rows={thisWeek} names={names} xp={xp} playHref={playHref} testId={`${testId}-week`} />
       </div>
       <p className="text-xs text-muted">
         IP, Itsutsu Points, is won by results alone: a win pays the most the game is worth, a draw half, and a close loss

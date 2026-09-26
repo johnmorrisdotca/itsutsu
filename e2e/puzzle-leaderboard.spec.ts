@@ -34,8 +34,8 @@ test("a solve puts its solver on the puzzle's boards, all time and this month", 
   await page.goto(AT);
   const board = page.getByTestId("puzzle-points");
   await expect(board).toBeVisible();
-  // The operator solved one just now, so is on both boards, with a positive total.
-  for (const which of ["puzzle-points-all", "puzzle-points-month"]) {
+  // The operator solved one just now, so is on all three boards, with a positive total.
+  for (const which of ["puzzle-points-all", "puzzle-points-month", "puzzle-points-week"]) {
     const rows = board.getByTestId(which).getByTestId("puzzle-points-row");
     await expect(rows.first()).toBeVisible();
     expect(await rows.count()).toBeGreaterThan(0);
