@@ -4,6 +4,7 @@ import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { MOST_GUESSES } from "./gomoji/layout";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
+import { linesCodeFits } from "./tsunagi/lines";
 
 /**
  * What has been written on an unfinished puzzle, as one character a cell — what
@@ -80,5 +81,7 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "gomojiMot") return decodeGomojiProgress(code, size, "fr") !== null;
   if (kind === "gomojiWort") return decodeGomojiProgress(code, size, "de") !== null;
   if (kind === "gomojiKana") return decodeKanaProgress(code, size) !== null;
+  // Tsunagi keeps its lines, one character a cell (`encodeLines`); read against its layout when opened.
+  if (kind === "tsunagi") return linesCodeFits(code, size);
   return decodeNumberProgress(code, size) !== null;
 }

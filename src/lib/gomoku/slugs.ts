@@ -83,6 +83,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   gomojiKana: "gomoji-kana",
   gomojiMot: "gomoji-mot",
   gomojiWort: "gomoji-wort",
+  tsunagi: "tsunagi",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

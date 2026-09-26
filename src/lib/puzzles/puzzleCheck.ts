@@ -10,6 +10,7 @@ import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
+import { checkTsunagi } from "./tsunagi/check";
 import { PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
@@ -55,6 +56,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkGomoji(size, givens, answer, "found", level, "de");
     case "gomojiKana":
       return checkGomojiKana(size, givens, answer, "found", level);
+    case "tsunagi":
+      return checkTsunagi(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

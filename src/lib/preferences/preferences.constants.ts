@@ -185,6 +185,14 @@ export const PREFERENCE_SPECS = {
   wordStyle: { options: WORD_STYLE_LIST, fallback: WORD_STYLES.reversi },
 
   /*
+   * How Tsunagi's marbles tell their pairs apart: by colour, or by a number on
+   * a plain stone. John, 2026-09-26: "allowing the user to play by connecting
+   * numbers or by connecting colors. All depends on what they prefer." The
+   * level is the same either way. Colours until chosen otherwise.
+   */
+  tsunagiMarks: { options: ["colours", "numbers"] as const, fallback: "colours" },
+
+  /*
    * Whether a finished game's list of moves is open or folded. John,
    * 2026-09-25: "Moves might be collapsed or hidden naturally as some people
    * might not want it." Open until somebody folds it; folded once, it stays

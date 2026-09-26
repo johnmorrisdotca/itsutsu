@@ -37,6 +37,7 @@ export const PUZZLE_KINDS = {
   gomojiKana: "gomojiKana",
   gomojiMot: "gomojiMot",
   gomojiWort: "gomojiWort",
+  tsunagi: "tsunagi",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -53,6 +54,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.gomojiKana,
   PUZZLE_KINDS.gomojiMot,
   PUZZLE_KINDS.gomojiWort,
+  PUZZLE_KINDS.tsunagi,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -132,7 +134,20 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
   gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  /*
+   * Six sizes of a hundred fixed levels each, and room for four size tiles:
+   * they show four at a time, 4 to 7 or 6 to 9 (`TsunagiSizes`). A level's
+   * band (the first third easy, the last hard) is its level here. No Check
+   * or Hint: a line is joined or it is not, and the board shows which.
+   */
+  tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true },
 };
+
+/** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
+export function drawnOnBoard(kind: PuzzleKind): boolean {
+  const spec = PUZZLE_SPECS[kind];
+  return spec.wordGrid !== undefined || spec.onBoard === true;
+}
 
 /**
  * THE LONGEST CODE ANY PUZZLE HAS — a 9×9 Jigsaw's cells and regions, 162
@@ -215,6 +230,14 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     4: { label: "Four letters", kanji: "四文字" },
     5: { label: "Five letters", kanji: "五文字" },
   },
+  tsunagi: {
+    4: { label: "First", kanji: "初" },
+    5: { label: "Quick", kanji: "速" },
+    6: { label: "Short", kanji: "短" },
+    7: { label: "Usual", kanji: "定番" },
+    8: { label: "Long", kanji: "長" },
+    9: { label: "Longest", kanji: "最長" },
+  },
 };
 
 /**
@@ -230,6 +253,11 @@ const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Record<PuzzleLevel, string>>> = {
   gomoji: WORD_LEVEL_BLURBS,
   gomojiKana: WORD_LEVEL_BLURBS,
+  tsunagi: {
+    easy: "The first third of a size's hundred levels: every line can be found by looking.",
+    medium: "The middle third: longer lines, and somewhere one has to be tried.",
+    hard: "The last third: winding lines, and more than one place to try something and see.",
+  },
 };
 
 /** The line under the level chips on the set-up screen, for this puzzle. */
@@ -453,5 +481,25 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "Five letters and six guesses, or four letters and five. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
+  },
+  tsunagi: {
+    label: "Tsunagi",
+    kanji: "繋ぎ",
+    tagline: "Join each pair of marbles with a line, and fill the board.",
+    inspiredBy: "Numberlink",
+    origin:
+      "Our version of Numberlink, the joining puzzle Nikoli made famous in Japan in the 1980s and printed as Arukone. Tsunagi 繋ぎ is Japanese for a joining: the line between two things that belong together. The levels, the marbles and the name are our own.",
+    alsoKnownAs: ["Numberlink", "Arukone"],
+    country: "JP",
+    wikipedia: "Numberlink",
+    rules: [
+      "Every marble has a partner of the same colour and number. Join each pair with one line, drawn from cell to cell across and down, never on a slant.",
+      "Lines may not cross, and no two lines may share a cell.",
+      "The level is solved when every pair is joined and every cell of the board has a line through it. Every level has exactly one way to do that.",
+      "Press on a marble, or on the end of a line, and drag. Drag back over your own line to shorten it; drag into another line to cut it back. Tap a marble to clear its line.",
+      "A hundred levels at every size, the same for everybody. They open ten at a time: solve all ten in a row of the board of levels and the next row opens.",
+    ],
+    board:
+      "4×4 is where to start, and 9×9 is the long one. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",
   },
 };

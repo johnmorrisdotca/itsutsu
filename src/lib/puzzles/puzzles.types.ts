@@ -20,7 +20,8 @@ export type PuzzleKind =
   | "gomoji"
   | "gomojiKana"
   | "gomojiMot"
-  | "gomojiWort";
+  | "gomojiWort"
+  | "tsunagi";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -64,6 +65,18 @@ export type PuzzleSpec = {
    * Names the layout its rows follow (`gomojiLayout`); absent is paper.
    */
   wordGrid?: "gomoji" | "gomojiKana";
+  /**
+   * Drawn on the board itself in the board colour the player chooses, as a
+   * Gomoji is, without a Gomoji's rows: Tsunagi's marbles and lines. Absent
+   * is paper. `drawnOnBoard` asks both.
+   */
+  onBoard?: true;
+  /**
+   * Played as fixed levels, the same for everybody, chosen on a board of
+   * levels rather than made from a seed: Tsunagi. The address's seed is the
+   * level's number (`tsunagi/levels.ts`). Absent is a new puzzle each time.
+   */
+  fixedLevels?: true;
 };
 
 /**

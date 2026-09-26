@@ -2,6 +2,7 @@ import { PUZZLE_SPECS, isCheckAllowance } from "./puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
+import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.
@@ -49,6 +50,11 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const levelAsked = one(PUZZLE_PARAMS.level) as PuzzleLevel | undefined;
   const level = levelAsked !== undefined && spec.levels.includes(levelAsked) ? levelAsked : spec.defaultLevel;
   const seedAsked = Number(one(PUZZLE_PARAMS.seed));
+  /* A fixed level's seed is its number, and its band follows from it, whatever the address said (`tsunagi/levels.ts`). */
+  if (spec.fixedLevels === true) {
+    const number = isTsunagiLevel(size, seedAsked) ? seedAsked : null;
+    return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false };
+  }
   const seed = isSeed(seedAsked) ? seedAsked : null;
   const checksAsked = Number(one(PUZZLE_PARAMS.checks));
   const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;

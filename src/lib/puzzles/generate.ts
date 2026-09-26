@@ -8,6 +8,7 @@ import { generateBlackAndWhite } from "./blackAndWhite/generate";
 import { generateGomoji } from "./gomoji/generate";
 import { generateGomojiKana } from "./gomojiKana/generate";
 import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
+import { loadEveryTsunagiLevel, loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -43,6 +44,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "gomojiKana":
       // Its list is loaded by length first (`loadKanaWords`); see its generator.
       return generateGomojiKana(size, level, seed);
+    case "tsunagi":
+      // Not made at all: a fixed level, its number the seed, read from its size's list (`preparePuzzle` loads it).
+      return tsunagiPuzzle(size, seed);
   }
 }
 
@@ -54,8 +58,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
  */
 export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<void> {
   if (kind === "gomojiKana") await loadKanaWords(size);
+  if (kind === "tsunagi") await loadTsunagiLevels(size);
 }
 
 export async function prepareEveryPuzzle(): Promise<void> {
-  await Promise.all(KANA_SIZES.map((size) => loadKanaWords(size)));
+  await Promise.all([...KANA_SIZES.map((size) => loadKanaWords(size)), loadEveryTsunagiLevel()]);
 }
