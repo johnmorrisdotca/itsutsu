@@ -183,7 +183,7 @@ export function WholeRecordPanel({
           person played on, and experience is earned on this one only — it is
           in the header of this page, where the person is.
         */
-        columns={{ rating: false, xp: false }}
+        columns={{ rating: false, xp: false, ip: false }}
         testId="whole-record-sources"
         empty={<>Nothing has been recorded under this name anywhere yet.</>}
       />

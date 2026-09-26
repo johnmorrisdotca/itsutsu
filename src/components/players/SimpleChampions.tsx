@@ -4,7 +4,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { Paired } from "@/components/i18n/Paired";
 import { PlayerLink } from "@/components/players/Standings";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
-import { XpCell } from "@/components/players/recordTrailing";
+import { IP_HEAD_TITLE, IpCell, XpCell, championIp } from "@/components/players/recordTrailing";
 import { LevelName } from "@/components/xp/LevelName";
 import { levelShown } from "@/lib/xp/levelShown";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
@@ -37,6 +37,9 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
             <th className="py-1 pr-3" title="Experience 経験 — what this member has earned on Itsutsu">
               XP
             </th>
+            <th className="py-1 pr-3" title={IP_HEAD_TITLE}>
+              IP
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -54,7 +57,7 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
                   </span>
                 </td>
                 {champion === undefined ? (
-                  <td className="py-1.5 pr-3 text-xs text-muted" colSpan={3}>
+                  <td className="py-1.5 pr-3 text-xs text-muted" colSpan={4}>
                     No rated games yet
                   </td>
                 ) : (
@@ -73,6 +76,7 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
                       xp={champion.leader.xp}
                       blankBecause={champion.leader.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined}
                     />
+                    <IpCell ip={championIp(champion)} />
                   </>
                 )}
               </tr>

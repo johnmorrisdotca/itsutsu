@@ -56,13 +56,14 @@ export function standingOf({
   member,
 }: {
   profile: PlayerProfile | null;
-  /** Their member row's total and country, or null for a poster with no account. */
-  member: { xp: number; country: string } | null;
+  /** Their member row's total and country, and the IP they have won where it was read, or null for a poster with no account. */
+  member: { xp: number; country: string; ip?: number } | null;
 }): PosterStanding {
   return {
     rating: ratingShown(profile),
     level: member === null ? null : levelShown({ xp: member.xp }),
     xp: member === null ? null : xpShown({ xp: member.xp }),
+    ip: member === null ? null : (member.ip ?? 0),
     country: member === null || member.country === "" ? null : member.country,
   };
 }

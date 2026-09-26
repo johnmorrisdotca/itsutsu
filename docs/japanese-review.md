@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (172)
+## 1. Written by a machine — please check these (173)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -161,6 +161,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | See the fastest times | **最速記録を見る** | See the fastest records. |  |
 | — — — | See the game | **対局を見る** | See the game. |  |
 | — — — | See the ladder | **順位表を見る** | See the ladder. |  |
+| — — — | See their solves | **解いた記録を見る** | See the records of what was solved. |  |
 | — — — | somebody | **誰か** | Somebody. |  |
 | — — — | {who} started a game of {game} against {other} | **{who}が{other}と{game}の対局を始めました** | {who} started a game of {game} with {other}. |  |
 | — — — | You started a game of {game} against {other} | **{other}と{game}の対局を始めました** | You started a game of {game} with {other}. |  |

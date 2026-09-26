@@ -3,7 +3,7 @@ import Link from "@/components/ui/Link";
 
 import { CountryMark } from "@/components/players/CountryMark";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
-import { XpCell } from "@/components/players/recordTrailing";
+import { IP_HEAD_TITLE, IpCell, XpCell } from "@/components/players/recordTrailing";
 import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { LevelName } from "@/components/xp/LevelName";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
@@ -25,7 +25,7 @@ import { boardWords } from "@/lib/gomoku/boardWords";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /** How many columns the table has, for the span of its one empty row. */
-const COLUMNS = 7;
+const COLUMNS = 8;
 
 /**
  * THE WAITING ROOM: every seat somebody has posted, across every game, in one
@@ -94,6 +94,9 @@ export function OpenGamesBoard({
               </th>
               <th className={HEAD} scope="col">
                 XP
+              </th>
+              <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
+                IP
               </th>
               <th className={HEAD} scope="col">
                 Location
@@ -187,6 +190,7 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
         ) : null}
       </td>
       <XpCell xp={standing?.xp ?? null} />
+      <IpCell ip={standing?.ip == null || poster.memberId === null ? null : { ip: standing.ip, memberId: poster.memberId, game: null }} />
       <td className="py-1.5 pr-3 text-xs" data-testid="open-game-location">
         {standing?.country != null ? <CountryMark country={standing.country} showName /> : <span className="text-muted">—</span>}
       </td>

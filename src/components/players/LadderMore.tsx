@@ -63,6 +63,8 @@ function ladderRow(player: LadderEntry): RecordTableRow {
     */
     level: player.xp === null ? null : levelShown({ xp: player.xp }),
     xp: player.xp,
+    // The site's IP, read with the XP for the page; a name with no member is a dash.
+    ip: player.ip === null || player.memberId === null ? null : { ip: player.ip, memberId: player.memberId, game: null },
     /*
       A NAME WITH NOBODY BEHIND IT IS THE DASH THE MEMBERS LIST CANNOT HAVE. A
       name typed into a game at one screen earns a rating row and no member, so

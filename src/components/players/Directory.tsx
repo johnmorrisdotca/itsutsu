@@ -16,6 +16,7 @@ import {
 } from "@/lib/rating/directoryPage";
 import { isRefusal } from "@/lib/api/paging";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
+import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
 import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "./RecordScopeBar";
@@ -63,6 +64,7 @@ function directoryRow(
   entry: DirectoryEntry,
   scope: RecordScope,
   actions: ReturnType<typeof directoryActions>,
+  ip: ReadonlyMap<string, number>,
 ): RecordTableRow {
   /*
    * EVERY GAME PLAYED HERE, off the member's own row. It was 0.147.1's fix that
@@ -184,6 +186,9 @@ function directoryRow(
      */
     level: levelShown(entry),
     xp: xpShown(entry),
+    // The site's IP, read for the whole page in one query (`ipTotalsOf`); none won is a nought.
+    ip: { ip: ip.get(entry.id) ?? 0, memberId: entry.id, game: null },
+    attributes: { "data-member": entry.id },
     joined: { at: entry.joinedAt },
     note: kept ? (
       /*
@@ -276,7 +281,10 @@ export async function Directory({
     mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
   const people = page.items;
-  const closed = await closedToReader(mine, people.map((entry) => entry.id));
+  const [closed, ip] = await Promise.all([
+    closedToReader(mine, people.map((entry) => entry.id)),
+    ipTotalsOf(people.map((entry) => entry.id), LISTED_ALREADY),
+  ]);
   const actions = directoryActions(reader, buddies, ignored, now, closed);
   const anyKept = people.some(
     (entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0,
@@ -365,7 +373,7 @@ export async function Directory({
       ) : null}
       <RecordTable
         subject="Member"
-        rows={people.map((entry) => directoryRow(entry, scope, actions))}
+        rows={people.map((entry) => directoryRow(entry, scope, actions, ip))}
         // XP is on by default on every table of people; only `joined` and the
         // controls are this table's own.
         columns={{ joined: true, actions: "" }}
