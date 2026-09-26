@@ -1,4 +1,5 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
+import { TSUNAGI_BLOCK } from "./levelBlocks";
 
 /**
  * TSUNAGI'S LEVELS: fixed, the same for everybody, made once on a desk
@@ -16,11 +17,13 @@ import type { Puzzle, PuzzleLevel } from "../puzzles.types";
  */
 export const TSUNAGI_SIZES = [4, 5, 6, 7, 8, 9] as const;
 
-/** How many levels each size has: read without loading the size, for the board of levels. `levels.test.ts` holds it to the files. */
-export const TSUNAGI_LEVEL_COUNTS: Record<number, number> = { 4: 100, 5: 100, 6: 100, 7: 100, 8: 100, 9: 100 };
-
-/** Levels open a row of ten at a time: all of one row solved opens the next. */
-export const TSUNAGI_ROW = 10;
+/**
+ * How many levels each size has: read without loading the size, for the board
+ * of levels. `levels.test.ts` holds it to the files. Sixteen blocks of sixteen
+ * (`levelBlocks.ts`), and twelve at 4×4, where the generator runs out of
+ * distinct boards with one answer before two hundred.
+ */
+export const TSUNAGI_LEVEL_COUNTS: Record<number, number> = { 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256 };
 
 type LevelRow = readonly [string, string];
 
@@ -68,7 +71,7 @@ export function isTsunagiLevel(size: number, level: number): boolean {
  * all speak in those words, and a level's band is what they say about it.
  */
 export function tsunagiBand(size: number, level: number): PuzzleLevel {
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 100;
+  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 256;
   const third = (level - 1) / count;
   return third < 1 / 3 ? "easy" : third < 2 / 3 ? "medium" : "hard";
 }
@@ -89,18 +92,19 @@ export function tsunagiLevelOf(size: number, givens: string): number | null {
 }
 
 /**
- * The levels that are open, given the ones solved: the first row of ten
- * always, and each row after it once every level of the row before is solved.
- * John, 2026-09-26: "you have to finish 10 before you open up the next 10".
+ * The levels that are open, given the ones solved: the first block of sixteen
+ * always, and each block after it once every level of the block before is
+ * solved. John, 2026-09-26: "you have to finish 10 before you open up the next
+ * 10", then sixteen to a block.
  */
 export function openTsunagiLevels(size: number, solved: ReadonlySet<number>): number {
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
-  let open = Math.min(TSUNAGI_ROW, count);
+  let open = Math.min(TSUNAGI_BLOCK, count);
   while (open < count) {
-    let rowDone = true;
-    for (let level = open - TSUNAGI_ROW + 1; level <= open; level += 1) if (!solved.has(level)) rowDone = false;
-    if (!rowDone) break;
-    open = Math.min(open + TSUNAGI_ROW, count);
+    let blockDone = true;
+    for (let level = open - TSUNAGI_BLOCK + 1; level <= open; level += 1) if (!solved.has(level)) blockDone = false;
+    if (!blockDone) break;
+    open = Math.min(open + TSUNAGI_BLOCK, count);
   }
   return open;
 }

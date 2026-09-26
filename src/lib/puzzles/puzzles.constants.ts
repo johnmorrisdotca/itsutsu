@@ -172,10 +172,11 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    */
   gomojiPop: { sizes: [3, 4, 5, 6, 7], offered: [3, 4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji", shelves: true },
   /*
-   * Six sizes of a hundred fixed levels each, and room for four size tiles:
-   * they show four at a time, 4 to 7 or 6 to 9 (`TsunagiSizes`). A level's
-   * band (the first third easy, the last hard) is its level here. No Check
-   * or Hint: a line is joined or it is not, and the board shows which.
+   * Six sizes of fixed levels, 256 each (192 at 4×4), and room for four size
+   * tiles: they show four at a time, 4 to 7 or 6 to 9 (`TsunagiSizes`). A
+   * level's band (the first third easy, the last hard) is its level here. No
+   * Check or Hint in the puzzle sense: Tsunagi's own Check only names the pairs
+   * not joined yet, and the board already shows which.
    */
   tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true, shelves: true },
   /*
@@ -352,7 +353,7 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     hard: "The same list and clue, and the classic count of guesses.",
   },
   tsunagi: {
-    easy: "The first third of a size's hundred levels: every line can be found by looking.",
+    easy: "The first third of a size's levels: every line can be found by looking.",
     medium: "The middle third: longer lines, and somewhere one has to be tried.",
     hard: "The last third: winding lines, and more than one place to try something and see.",
   },
@@ -621,7 +622,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Lines may not cross, and no two lines may share a cell.",
       "The level is solved when every pair is joined and every cell of the board has a line through it. Every level has exactly one way to do that.",
       "Press on a marble, or on the end of a line, and drag. Drag back over your own line to shorten it; drag into another line to cut it back. Tap a marble to clear its line.",
-      "A hundred levels at every size, the same for everybody. They open ten at a time: solve all ten in a row of the board of levels and the next row opens.",
+      "256 levels at every size (192 at 4×4), the same for everybody and ordered easiest first. They come in blocks of 16: solve a whole block and the next one opens.",
     ],
     board:
       "4×4 is where to start, and 9×9 is the long one. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",

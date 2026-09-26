@@ -14,6 +14,7 @@ import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import { blockOf, blockRange, blocksIn } from "@/lib/puzzles/tsunagi/levelBlocks";
 import { firstUnsolvedTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@/lib/puzzles/tsunagi/levels";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -96,6 +97,16 @@ export function TsunagiSetUp({
   const gap = firstUnsolvedTsunagiLevel(size, done);
   const skippedPast = gap !== null && [...done].some((level) => level > gap);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
+  /*
+   * ONE BLOCK AT A TIME: the block the next level is in, until a reader turns
+   * to another with ‹ and ›. A size change goes back to following the next
+   * level. Locked blocks can be looked at; their levels show their locks.
+   */
+  const [turnedTo, setTurnedTo] = useState<{ size: number; block: number } | null>(null);
+  const blocks = blocksIn(count);
+  const block = turnedTo !== null && turnedTo.size === size ? turnedTo.block : blockOf(next);
+  const { first, last } = blockRange(block, count);
+  const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
 
   const turnShelf = () => {
     const other = shelf === 0 ? boards.length - TILES : 0;
@@ -115,9 +126,20 @@ export function TsunagiSetUp({
       */}
       <div className={`${PICK_BOARD_ROW} py-2 md:flex-wrap`}>
         <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
-          <TsunagiLevelBoard size={size} best={best} attempts={tries} open={open} next={next} marks={marks} theme={theme} />
+          <TsunagiLevelBoard size={size} block={block} best={best} attempts={tries} open={open} next={next} marks={marks} theme={theme} />
+          <div className="flex items-center gap-2" data-testid="tsunagi-blocks">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label="The block before" data-testid="tsunagi-block-back">
+              ‹
+            </button>
+            <span className="min-w-44 text-center text-sm tabular-nums" data-testid="tsunagi-block" data-block={block}>
+              Block {block} of {blocks} · levels {first}–{last}
+            </span>
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label="The block after" data-testid="tsunagi-block-on">
+              ›
+            </button>
+          </div>
           <p className="text-xs text-muted" data-testid="tsunagi-levels-caption">
-            {size}×{size}: {done.size} of {count} solved. Rows open ten at a time.
+            {size}×{size}: {done.size} of {count} solved. Each block of 16 opens when the one before it is all solved.
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="tsunagi-sizes">

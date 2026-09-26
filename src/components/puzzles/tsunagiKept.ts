@@ -1,5 +1,8 @@
 "use client";
 
+import { TSUNAGI_RENUMBERED_AT } from "@/lib/puzzles/tsunagi/levels/renumbered.data";
+import { renumberedRecord } from "@/lib/puzzles/tsunagi/renumber";
+
 import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 
 /**
@@ -14,17 +17,37 @@ import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
  * Every read and write is guarded: a private window or blocked storage reads
  * as nothing solved and remembers nothing, and the page still works.
  */
-const SOLVED_KEY = (size: number) => `itsutsu.tsunagi.solved.${size}`;
-const ATTEMPTS_KEY = (size: number) => `itsutsu.tsunagi.attempts.${size}`;
+/*
+ * BY LEVEL NUMBER, IN THE NUMBERING OF ITS DATE. The levels were renumbered on
+ * 2026-09-26, so a record under the old key names the old numbers: it is moved
+ * to the new ones the first time it is read (`renumberedRecord`), written under
+ * the new key, and the old one taken away.
+ */
+const SOLVED_KEY = (size: number) => `itsutsu.tsunagi.solved.${size}@${TSUNAGI_RENUMBERED_AT}`;
+const ATTEMPTS_KEY = (size: number) => `itsutsu.tsunagi.attempts.${size}@${TSUNAGI_RENUMBERED_AT}`;
+const BEFORE_RENUMBERING = { solved: (size: number) => `itsutsu.tsunagi.solved.${size}`, attempts: (size: number) => `itsutsu.tsunagi.attempts.${size}` };
+
+/** The record under `key`, moving one kept before the renumbering to it first. Throws where storage does; the callers guard. */
+function readRecord(key: string, before: string, size: number): unknown {
+  const raw = window.localStorage.getItem(key);
+  if (raw !== null) return JSON.parse(raw);
+  const old = window.localStorage.getItem(before);
+  if (old === null) return null;
+  const parsed: unknown = JSON.parse(old);
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const moved = renumberedRecord(size, parsed as Record<number, number>);
+  window.localStorage.setItem(key, JSON.stringify(moved));
+  window.localStorage.removeItem(before);
+  return moved;
+}
+
 const MARKS_KEY = "itsutsu.tsunagi.marks";
 const FILL_KEY = "itsutsu.tsunagi.fill";
 
 /** The levels this browser has solved at a size, each with its best time in milliseconds. */
 export function keptSolves(size: number): Record<number, number> {
   try {
-    const raw = window.localStorage.getItem(SOLVED_KEY(size));
-    if (raw === null) return {};
-    const parsed: unknown = JSON.parse(raw);
+    const parsed = readRecord(SOLVED_KEY(size), BEFORE_RENUMBERING.solved(size), size);
     if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const out: Record<number, number> = {};
     for (const [level, ms] of Object.entries(parsed as Record<string, unknown>)) {
@@ -51,9 +74,7 @@ export function keepSolveHere(size: number, level: number, elapsedMs: number): v
 /** How many times this browser has started each level of a size, for somebody with no account. */
 export function keptAttempts(size: number): Record<number, number> {
   try {
-    const raw = window.localStorage.getItem(ATTEMPTS_KEY(size));
-    if (raw === null) return {};
-    const parsed: unknown = JSON.parse(raw);
+    const parsed = readRecord(ATTEMPTS_KEY(size), BEFORE_RENUMBERING.attempts(size), size);
     if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const out: Record<number, number> = {};
     for (const [level, count] of Object.entries(parsed as Record<string, unknown>)) {

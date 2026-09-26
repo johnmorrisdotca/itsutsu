@@ -62,27 +62,36 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("tsunagi at %i×%i", (s
   });
 });
 
-describe("the levels open a row of ten at a time", () => {
-  it("opens the first row to a newcomer", () => {
-    expect(openTsunagiLevels(5, new Set())).toBe(10);
+describe("the levels open a block of sixteen at a time", () => {
+  const upTo = (last: number) => Array.from({ length: last }, (_, at) => at + 1);
+
+  it("opens the first block to a newcomer", () => {
+    expect(openTsunagiLevels(5, new Set())).toBe(16);
     expect(nextTsunagiLevel(5, new Set())).toBe(1);
   });
 
-  it("opens the next row only once every level of the one before is solved", () => {
-    const nine = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    expect(openTsunagiLevels(5, nine)).toBe(10);
-    expect(nextTsunagiLevel(5, nine)).toBe(10);
-    const ten = new Set([...nine, 10]);
-    expect(openTsunagiLevels(5, ten)).toBe(20);
-    expect(nextTsunagiLevel(5, ten)).toBe(11);
-    // Levels solved out of the open rows do not open anything past a row left unfinished.
-    expect(openTsunagiLevels(5, new Set([...nine, 11, 12]))).toBe(10);
+  it("opens the next block only once every level of the one before is solved", () => {
+    const fifteen = new Set(upTo(15));
+    expect(openTsunagiLevels(5, fifteen)).toBe(16);
+    expect(nextTsunagiLevel(5, fifteen)).toBe(16);
+    const sixteen = new Set(upTo(16));
+    expect(openTsunagiLevels(5, sixteen)).toBe(32);
+    expect(nextTsunagiLevel(5, sixteen)).toBe(17);
+    // Levels solved past the open blocks open nothing beyond a block left unfinished.
+    expect(openTsunagiLevels(5, new Set([...fifteen, 17, 18]))).toBe(16);
   });
 
-  it("opens every row when every level is solved, and offers the last", () => {
-    const all = new Set(Array.from({ length: 100 }, (_, at) => at + 1));
-    expect(openTsunagiLevels(6, all)).toBe(100);
-    expect(nextTsunagiLevel(6, all)).toBe(100);
+  it("opens every block when every level is solved, and offers the last", () => {
+    expect(openTsunagiLevels(6, new Set(upTo(256)))).toBe(256);
+    expect(nextTsunagiLevel(6, new Set(upTo(256)))).toBe(256);
+    // 4×4's twelve blocks.
+    expect(openTsunagiLevels(4, new Set(upTo(192)))).toBe(192);
+  });
+
+  it("has whole blocks at every size: 256 a size, 192 at 4×4", () => {
+    for (const size of TSUNAGI_SIZES) expect(TSUNAGI_LEVEL_COUNTS[size]! % 16, `${size}×${size}`).toBe(0);
+    expect(TSUNAGI_LEVEL_COUNTS[4]).toBe(192);
+    for (const size of TSUNAGI_SIZES.filter((each) => each !== 4)) expect(TSUNAGI_LEVEL_COUNTS[size]).toBe(256);
   });
 });
 
@@ -91,7 +100,7 @@ describe("the next level is the lowest one not yet solved", () => {
     // John's screenshot: level 10 solved on its own, and "Level 11 →" offered.
     const solved = new Set([10]);
     expect(firstUnsolvedTsunagiLevel(5, solved)).toBe(1);
-    expect(openTsunagiLevels(5, solved)).toBe(10);
+    expect(openTsunagiLevels(5, solved)).toBe(16);
     expect(nextLevelLabel(10, 1)).toBe("Level 1, the first one you have not finished →");
   });
 
@@ -102,10 +111,10 @@ describe("the next level is the lowest one not yet solved", () => {
     expect(nextLevelLabel(3, 4)).toBe("Level 4 →");
   });
 
-  it("goes on to the next row once a row is all solved, and to nothing once every level is", () => {
-    const row = new Set(Array.from({ length: 10 }, (_, at) => at + 1));
-    expect(firstUnsolvedTsunagiLevel(7, row)).toBe(11);
-    const all = new Set(Array.from({ length: 100 }, (_, at) => at + 1));
+  it("goes on to the next block once a block is all solved, and to nothing once every level is", () => {
+    const block = new Set(Array.from({ length: 16 }, (_, at) => at + 1));
+    expect(firstUnsolvedTsunagiLevel(7, block)).toBe(17);
+    const all = new Set(Array.from({ length: 256 }, (_, at) => at + 1));
     expect(firstUnsolvedTsunagiLevel(7, all)).toBeNull();
   });
 });

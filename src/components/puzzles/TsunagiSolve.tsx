@@ -11,6 +11,7 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { blockOf, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
 import { firstUnsolvedTsunagiLevel, nextLevelLabel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
 import { allJoined, answerOf, decodeLines, dragThrough, encodeLines, filled, joined, letGo, linesOfAnswer, noLines, pressAt, unjoinedPairs, type Lines } from "@/lib/puzzles/tsunagi/lines";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -41,7 +42,7 @@ export function tsunagiLevelsPath(size: number): string {
  * is joined and every cell has a line through it, the answer is handed in and
  * the done card offers the next level and the board of levels.
  *
- * A level past the open rows is shut, and says which row opens it. A member's
+ * A level past the open blocks is shut, and says which block opens it. A member's
  * solved levels come from the page (`tsunagiSolvedBy`); anybody's are also in
  * this browser (`tsunagiKept`), written the moment a level is solved.
  */
@@ -91,7 +92,8 @@ export function TsunagiSolve({
   const solvedSet = useMemo(() => new Set(Object.keys(solvedHere).map(Number)), [solvedHere]);
   const open = openTsunagiLevels(size, solvedSet);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
-  const shut = race === null && resumed === null && level > open;
+  // Past the open blocks is shut, except a level already solved: it opens on its finished board wherever it now sits.
+  const shut = race === null && resumed === null && level > open && !solvedSet.has(level);
   // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
   const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...solvedSet, level]));
   const onward = {
@@ -214,12 +216,12 @@ export function TsunagiSolve({
   );
 
   if (shut) {
-    const row = Math.ceil(level / 10);
+    const block = blockOf(level);
     const first = firstUnsolvedTsunagiLevel(size, solvedSet) ?? 1;
     return (
       <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
         <p className="text-sm" data-testid="tsunagi-shut">
-          Level {level} at {size}×{size} opens when every level in row {row - 1} of the board of levels is solved.
+          Level {level} at {size}×{size} opens when every level in block {block - 1} (levels {(block - 2) * TSUNAGI_BLOCK + 1}–{(block - 1) * TSUNAGI_BLOCK}) is solved.
         </p>
         <p className="flex flex-wrap gap-2">
           <Link href={tsunagiLevelPath(size, first)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tsunagi-shut-first">

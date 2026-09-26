@@ -6,10 +6,14 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
 import { playPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { TSUNAGI_LEVEL_COUNTS, TSUNAGI_ROW, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
+import { blockRange, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
+import { TSUNAGI_LEVEL_COUNTS, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { TSUNAGI_MARBLE, tsunagiMarbleLook, type TsunagiMarks } from "./puzzles.constants";
+
+/** A block's sixteen levels drawn four by four. */
+const SIDE = Math.sqrt(TSUNAGI_BLOCK);
 
 /** The address of one level: the solve's own, its number the seed. */
 export function tsunagiLevelPath(size: number, level: number): string {
@@ -17,21 +21,24 @@ export function tsunagiLevelPath(size: number, level: number): string {
 }
 
 /**
- * THE BOARD OF LEVELS: a size's hundred levels as a board of ten by ten, level
- * 1 at the top left and 100 at the bottom right. John, 2026-09-26: "the level
+ * THE BOARD OF LEVELS: one block of a size's levels, sixteen as a board of four
+ * by four, its first level at the top left. John, 2026-09-26: "the level
  * should probably just show up in a game board where the top left level is
- * level one". In the site's wood or felt (`PuzzleBoard`), with no letters or
- * numbers down its edges, since the cells carry their own.
+ * level one" — and then sixteen to a block, 256 a size, which a phone could
+ * never hold at once, so the set-up shows a block at a time (`TsunagiSetUp`).
+ * In the site's wood or felt (`PuzzleBoard`), with no letters or numbers down
+ * its edges, since the cells carry their own.
  *
  * A cell is a level, in one of three states:
- *  - SOLVED: a marble sits on it, its number on the marble and the best time
- *    under it. Still a link, which opens it solved (`TsunagiSolvedView`).
+ *  - SOLVED: a marble sits on it in the block's colour, its number on the
+ *    marble and the best time under it. Still a link, which opens it solved (`TsunagiSolvedView`).
  *  - OPEN: its number, a link to play it.
- *  - LOCKED: its number faint, a small lock, nothing to press. Rows open ten
- *    at a time (`openTsunagiLevels`).
+ *  - LOCKED: its number faint, a small lock, nothing to press. Blocks open
+ *    sixteen at a time (`openTsunagiLevels`).
  */
 export function TsunagiLevelBoard({
   size,
+  block,
   best,
   attempts = {},
   open,
@@ -40,6 +47,8 @@ export function TsunagiLevelBoard({
   theme,
 }: {
   size: number;
+  /** Which block of sixteen is drawn, from 1. */
+  block: number;
   /** The levels solved, each with its best time. */
   best: Record<number, number>;
   /** How many times each level has been started, where it has. */
@@ -52,21 +61,20 @@ export function TsunagiLevelBoard({
   theme: BoardThemeTokens;
 }) {
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
-  const side = Math.ceil(count / TSUNAGI_ROW);
+  const { first, last } = blockRange(block, count);
   return (
-    <div className="w-full select-none" data-testid="tsunagi-levels" data-size={size} data-open={open}>
-      <PuzzleBoard size={TSUNAGI_ROW} theme={theme} coordinates={false}>
-        <div
-          className="grid h-full w-full"
-          style={{ gridTemplateColumns: `repeat(${TSUNAGI_ROW}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${side}, minmax(0, 1fr))` }}
-        >
-          {Array.from({ length: count }, (_, at) => at + 1).map((level) => {
+    <div className="w-full select-none" data-testid="tsunagi-levels" data-size={size} data-open={open} data-block={block}>
+      <PuzzleBoard size={SIDE} theme={theme} coordinates={false}>
+        <div className="grid h-full w-full" style={{ gridTemplateColumns: `repeat(${SIDE}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${SIDE}, minmax(0, 1fr))` }}>
+          {Array.from({ length: last - first + 1 }, (_, at) => first + at).map((level) => {
             const time = best[level];
             const tries = attempts[level] ?? 0;
             const triesWords = tries === 0 ? "" : `, ${tries} ${tries === 1 ? "attempt" : "attempts"}`;
             const solved = time !== undefined;
-            const locked = level > open;
-            const row = Math.floor((level - 1) / TSUNAGI_ROW);
+            // A level solved is never locked: a board solved before the levels were renumbered may sit in a block not yet open, and it is still yours.
+            const locked = level > open && !solved;
+            const place = level - first;
+            const row = Math.floor(place / SIDE);
             const common = {
               "data-testid": "tsunagi-level",
               "data-level": level,
@@ -75,8 +83,8 @@ export function TsunagiLevelBoard({
             };
             // Each cell rules its right and bottom; the first row and column rule their top and left too, so the grid is closed
             // on all four sides (John, 2026-09-26: "missing the TOP and LEFT borders").
-            const edges = `${row === 0 ? "border-t" : ""} ${(level - 1) % TSUNAGI_ROW === 0 ? "border-l" : ""}`;
-            const rules = `relative flex flex-col items-center justify-center border-r border-b ${edges} text-xs font-semibold tabular-nums leading-none sm:text-sm`;
+            const edges = `${row === 0 ? "border-t" : ""} ${place % SIDE === 0 ? "border-l" : ""}`;
+            const rules = `relative flex flex-col items-center justify-center border-r border-b ${edges} text-sm font-semibold tabular-nums leading-none sm:text-base`;
             const ruled = { borderColor: `color-mix(in srgb, ${theme.line} 45%, transparent)` };
             if (locked) {
               return (
@@ -101,10 +109,10 @@ export function TsunagiLevelBoard({
               >
                 {solved ? (
                   <>
-                    <span className={`${TSUNAGI_MARBLE} size-[62%] text-[0.62rem] sm:text-xs`} style={tsunagiMarbleLook(row, marks)}>
+                    <span className={`${TSUNAGI_MARBLE} size-[50%] text-sm sm:text-base`} style={tsunagiMarbleLook(block - 1, marks)}>
                       {level}
                     </span>
-                    <span className="absolute bottom-[3%] hidden text-[0.5rem] font-normal sm:block" data-testid="tsunagi-level-time">
+                    <span className="mt-1 text-[0.6rem] font-normal sm:text-xs" data-testid="tsunagi-level-time">
                       {clockText(time)}
                     </span>
                   </>

@@ -180,31 +180,44 @@ test.describe("Tsunagi", () => {
     await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
   });
 
-  test("the board of levels opens a row of ten at a time, and an open level plays", async ({ page }) => {
-    // Nine of the first row solved in this browser: the row is not finished, so the second stays shut.
-    await page.addInitScript(() => window.localStorage.setItem("itsutsu.tsunagi.solved.6", JSON.stringify(Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => [level, 60_000])))));
+  test("the board of levels shows a block of sixteen, opens the next once a block is solved, and an open level plays", async ({ page }) => {
+    const kept = (levels: number[]) => JSON.stringify(Object.fromEntries(levels.map((level) => [level, 60_000])));
+    const upTo = (last: number) => Array.from({ length: last }, (_, at) => at + 1);
+    // Fifteen of the first block solved in this browser: the block is not finished, so the second stays shut.
+    await page.addInitScript((record) => window.localStorage.setItem("itsutsu.tsunagi.solved.6@2026-09-26", record), kept(upTo(15)));
     await page.goto(`${AT}/new?size=6`);
     await ready(page, "puzzle-set-up");
     const cell = (level: number) => page.locator(`[data-testid="tsunagi-level"][data-level="${level}"]`);
-    await expect(cell(9)).toHaveAttribute("data-state", "solved");
-    await expect(cell(10)).toHaveAttribute("data-state", "open");
-    await expect(cell(11)).toHaveAttribute("data-state", "locked");
-    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "10");
+    await expect(page.getByTestId("tsunagi-block")).toHaveText("Block 1 of 16 · levels 1–16");
+    await expect(page.getByTestId("tsunagi-level")).toHaveCount(16);
+    await expect(cell(15)).toHaveAttribute("data-state", "solved");
+    await expect(cell(16)).toHaveAttribute("data-state", "open");
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "16");
+    // The block after, looked at: every level locked, and the way back.
+    await page.getByTestId("tsunagi-block-on").click();
+    await expect(page.getByTestId("tsunagi-block")).toHaveText("Block 2 of 16 · levels 17–32");
+    await expect(cell(17)).toHaveAttribute("data-state", "locked");
+    await expect(cell(32)).toHaveAttribute("data-state", "locked");
+    await page.getByTestId("tsunagi-block-back").click();
+    await expect(page.getByTestId("tsunagi-block")).toHaveText("Block 1 of 16 · levels 1–16");
 
-    // The tenth solved as well: the second row opens, the third does not.
-    await page.addInitScript(() => window.localStorage.setItem("itsutsu.tsunagi.solved.6", JSON.stringify(Object.fromEntries(Array.from({ length: 10 }, (_, at) => [at + 1, 60_000])))));
+    // The sixteenth solved as well: the second block opens, and the set-up opens on it.
+    await page.addInitScript((record) => window.localStorage.setItem("itsutsu.tsunagi.solved.6@2026-09-26", record), kept(upTo(16)));
     await page.reload();
     await ready(page, "puzzle-set-up");
-    await expect(cell(11)).toHaveAttribute("data-state", "open");
-    await expect(cell(20)).toHaveAttribute("data-state", "open");
-    await expect(cell(21)).toHaveAttribute("data-state", "locked");
+    await expect(page.getByTestId("tsunagi-block")).toHaveText("Block 2 of 16 · levels 17–32");
+    await expect(cell(17)).toHaveAttribute("data-state", "open");
+    await expect(cell(32)).toHaveAttribute("data-state", "open");
+    await page.getByTestId("tsunagi-block-on").click();
+    await expect(cell(33)).toHaveAttribute("data-state", "locked");
+    await page.getByTestId("tsunagi-block-back").click();
 
-    await cell(11).click();
+    await cell(17).click();
     await ready(page, "puzzle-play");
-    await expect(page.getByTestId("puzzle-asked")).toContainText("Level 11");
+    await expect(page.getByTestId("puzzle-asked")).toContainText("Level 17");
 
     // A shut level asked for by address says so, and offers the way back.
-    await openLevelShut(page, 6, 31);
+    await openLevelShut(page, 6, 49);
   });
 
   test("Colours or Numbers: the marbles change, and the choice comes back after a reload", async ({ page }) => {
@@ -316,8 +329,8 @@ test.describe("Tsunagi's next level", () => {
     await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "1");
     await expect(page.getByTestId("tsunagi-first-unsolved")).toHaveText("Level 1 is the first one you have not finished.");
 
-    // Level 11 by its address stays shut, and its way back is level 1.
-    await openLevelShut(page, 8, 11);
+    // Level 17, in the next block, by its address stays shut, and its way back is level 1.
+    await openLevelShut(page, 8, 17);
     await expect(page.getByTestId("tsunagi-shut-first")).toHaveAttribute("href", /seed=1(&|$)/);
   });
 });
