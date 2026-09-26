@@ -61,7 +61,10 @@
     "site-settings:copy:prod": "node scripts/site-settings-copy-prod.mjs",
     "xp:backfill:prod": "node scripts/xp-backfill-prod.mjs",
     "ip:backfill": "IP_BACKFILL=1 vitest run src/lib/points/backfillGameIp.play.test.ts --disable-console-intercept",
-    "ip:backfill:prod": "node scripts/ip-backfill-prod.mjs"
+    "ip:backfill:prod": "node scripts/ip-backfill-prod.mjs",
+    "games:added": "node scripts/game-added.mjs",
+    "news:backfill": "SITE_NEWS=1 vitest run src/lib/feed/siteNewsBackfill.play.test.ts --disable-console-intercept",
+    "news:backfill:prod": "node scripts/news-backfill-prod.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

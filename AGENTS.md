@@ -236,6 +236,12 @@ that is missing any of them fails the build rather than shipping quietly.
 - **It has an end-to-end test.** One Playwright case that opens the game and plays the
   move that shows its rule working. Enforced since 2026-09-22: the gate greps `e2e/`
   for each game's key or address, and five games had none when it first ran.
+- **It says the day it arrived.** `pnpm games:added` dates every game from the day git
+  first added its picture, into `src/lib/catalogue/gameAdded.data.ts`, and the Everyone
+  feed announces each day's new games in one line (John, 2026-09-26: "post a message
+  when a new game is introduced to the site"). Run it once the picture is committed.
+  `gameAdded.coverage.test.ts` fails the build for a game with no date — and the
+  table is a `Record<GameKey, …>`, so a new key without one does not compile either.
 
 TypeScript already forces the `VARIANT_SPECS` and `RULE_VARIANT_DISPLAY` rows, because
 both are `Record<RuleVariant, …>`. The gate covers what types cannot see.
