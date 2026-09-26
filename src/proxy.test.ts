@@ -114,6 +114,17 @@ describe("the paths that stay open", () => {
     }
   });
 
+  /*
+   * A word puzzle's past daily words are open, and one day's page is not: it
+   * names who found each word fastest.
+   */
+  it("opens the daily words' archive and keeps a day's fastest shut", () => {
+    expect(wouldBeOpen("/games/gomoji/daily")).toBe(true);
+    for (const path of ["/games/gomoji/daily/2026-10-03", "/games/gomoji/daily/2026-10-03/x"]) {
+      expect(wouldBeOpen(path), `${path} names members and should need a session`).toBe(false);
+    }
+  });
+
   it("holds everything else shut", () => {
     for (const path of ["/history", "/players", "/admin", "/backlog", "/me", "/api/games"]) {
       expect(wouldBeOpen(path), `${path} should need a session`).toBe(false);

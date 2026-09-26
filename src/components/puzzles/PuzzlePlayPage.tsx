@@ -9,6 +9,8 @@ import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
+import { dailyWordSeed, dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
+import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
@@ -30,8 +32,13 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const copy = PUZZLE_DISPLAY[kind];
   const rules = puzzleRulesPage(kind);
   const asked = puzzleAsked(kind, query);
-  // Today's puzzle, asked for by `?daily=1`: resolved to the day's seed and an ordinary address (`daily.ts`).
-  if (query[DAILY_PARAM] === "1" && asked.seed === null) redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed: dailySeed(new Date()) })}`);
+  /* Today's puzzle, asked for by `?daily=1`: resolved to the day's seed and an ordinary address (`daily.ts`) —
+     for a Gomoji, the seed of today's word at the length asked (`dailyWords/dailyDay.ts`). */
+  if (query[DAILY_PARAM] === "1" && asked.seed === null) {
+    const today = new Date();
+    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : dailyWordSeed(dayKeyOf(today));
+    redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed })}`);
+  }
   const reader = await currentReader();
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
