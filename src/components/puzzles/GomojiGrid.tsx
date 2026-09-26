@@ -50,7 +50,8 @@ function feltOrWoodTheme(appearance: Appearance): BoardThemeTokens {
  *
  * Drawn in the style the player chose (`wordStyles.ts`): Reversi discs in
  * squares ruled on the wood, Gomoku stones on the crossings, or letter tiles
- * on white paper. Every style carries the same letters, marks and words.
+ * on the board's own colour. Every style carries the same letters, marks and
+ * words, and every style marks its play area with a dark border (`PlayAreaBorder`).
  *
  * The row being typed is a row of places: tapping one chooses it, and the one
  * waiting for a letter carries a faint ring (`WORD_FOCUS`).
@@ -100,8 +101,9 @@ export function GomojiGrid({
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={span} theme={theme}>
-        <div className={`relative flex h-full w-full items-center justify-center ${tiles ? "bg-white" : ""}`}>
+        <div className="relative flex h-full w-full items-center justify-center">
           {tiles ? null : <GridLines span={span} size={size} rows={rows} left={left} top={top} style={style} theme={theme} />}
+          <PlayAreaBorder span={span} size={size} rows={rows} left={left} top={top} style={style} theme={theme} />
           <div
             className={tiles ? "relative grid h-full gap-1 p-1" : "absolute grid"}
             style={{
@@ -198,25 +200,19 @@ function ArrowMark({ arrow }: { arrow: Exclude<CellArrow, ""> }) {
 const OUT_OF_PLAY = 0.3;
 
 /**
- * How much heavier a Gomoku board's outer line is drawn than the grid inside
- * it — the same ratio a real Gomoku board draws its edge at (`EDGE_LINE_WIDTH`
- * over `LINE_WIDTH`), carried over to the play area's own border here.
+ * How much heavier a board's outer line is drawn than the grid inside it —
+ * the same ratio a real board draws its edge at (`EDGE_LINE_WIDTH` over
+ * `LINE_WIDTH`), carried over to the play area's own border here.
  */
-const GOMOKU_EDGE_WEIGHT = EDGE_LINE_WIDTH / LINE_WIDTH;
+const EDGE_WEIGHT = EDGE_LINE_WIDTH / LINE_WIDTH;
 
 /**
  * The lines on the wood, in the board's own ink, over the whole board: an
  * Reversi board's squares (every cell ruled, the edge included), or a Gomoku
  * board's lines through the middle of every cell, where its stones sit on the
- * crossings. Faint everywhere, and at full ink over the places in play.
- *
- * IN THE GOMOKU STYLE ONLY, the play area gets what a real Gomoku board has
- * and this one lacked: its own dark border, as heavy as a real board's outer
- * line, and the star-point dots real boards mark their bearings with — here at
- * the four corners of play, the first guess row's two and the last guess
- * row's two, so a player can see at a glance where the word starts and where
- * the guesses run out. John, 2026-09-25, comparing a Gomoji board drawn this
- * way with a real Gomoku board beside it.
+ * crossings. Faint everywhere, and at full ink over the places in play. Not
+ * drawn for Tiles, whose letters sit on the board's plain colour with no
+ * ruling under them.
  */
 function GridLines({ span, size, rows, left, top, style, theme }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
   const ink = theme.line;
@@ -234,35 +230,66 @@ function GridLines({ span, size, rows, left, top, style, theme }: { span: number
       ))}
     </g>
   );
-  /* The play area's four corners, in the Gomoku style, at the crossings the stones sit on (`at`, the same offset the lines above use). */
-  const corners: readonly [number, number][] = [
-    [left, top],
-    [left + size - 1, top],
-    [left, top + rows - 1],
-    [left + size - 1, top + rows - 1],
-  ];
   return (
     <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
       {ruled(0, 0, span, span, OUT_OF_PLAY, "board")}
       {ruled(left, top, size, rows, 1, "play")}
-      {reversi ? null : (
-        <>
-          <rect
-            x={left + at}
-            y={top + at}
-            width={size - 1}
-            height={rows - 1}
-            fill="none"
-            stroke={ink}
-            strokeWidth={width * GOMOKU_EDGE_WEIGHT}
-            vectorEffect="non-scaling-stroke"
-            data-testid="word-play-border"
-          />
-          {corners.map(([col, row]) => (
-            <circle key={`star-${col}-${row}`} cx={col + at} cy={row + at} r={STAR_RADIUS} fill={theme.star} data-testid="word-star-point" />
-          ))}
-        </>
-      )}
     </svg>
   );
+}
+
+/**
+ * THE PLAY AREA'S OWN DARK BORDER, in every style — Reversi's squares, Tiles'
+ * letters on the board's own colour, Gomoku's crossings — as heavy as the
+ * outer line of a real board of that style. John, 2026-09-25, first about the
+ * Gomoku style beside a real Gomoku board, then: "Add the Border for the
+ * Reversi mode as well", with Tiles' own white box given up for the board's
+ * plain colour in the same finding — so the border is what marks the play
+ * area out on every style now, not a box.
+ *
+ * IN THE GOMOKU STYLE ONLY, its four corners also carry the star-point dots a
+ * real Gomoku board marks its bearings with — the first guess row's two
+ * corners and the last guess row's two — so a player can see at a glance
+ * where the word starts and where the guesses run out. Reversi and Tiles keep
+ * no star points, because neither game's own board has one.
+ */
+function PlayAreaBorder({ span, size, rows, left, top, style, theme }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
+  const gomoku = style === WORD_STYLES.gomoku;
+  // Gomoku's play area is bounded by its crossings (`at`, one short of the letter and guess counts); Reversi and Tiles by the cell edges (the counts themselves).
+  const at = gomoku ? 0.5 : 0;
+  const width = gomoku ? size - 1 : size;
+  const height = gomoku ? rows - 1 : rows;
+  // Reversi already rules every cell at this weight; Tiles rules nothing, so its border reads at the same weight a flat square style would.
+  const base = lineWeightFor(style);
+  const corners: readonly [number, number][] = gomoku
+    ? [
+        [left, top],
+        [left + size - 1, top],
+        [left, top + rows - 1],
+        [left + size - 1, top + rows - 1],
+      ]
+    : [];
+  return (
+    <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-play-area">
+      <rect
+        x={left + at}
+        y={top + at}
+        width={width}
+        height={height}
+        fill="none"
+        stroke={theme.line}
+        strokeWidth={base * EDGE_WEIGHT}
+        vectorEffect="non-scaling-stroke"
+        data-testid="word-play-border"
+      />
+      {corners.map(([col, row]) => (
+        <circle key={`star-${col}-${row}`} cx={col + at} cy={row + at} r={STAR_RADIUS} fill={theme.star} data-testid="word-star-point" />
+      ))}
+    </svg>
+  );
+}
+
+/** The line weight a style's own board rules at: Reversi's and Tiles' cell weight, or Gomoku's crossing weight. */
+function lineWeightFor(style: WordStyle): number {
+  return style === WORD_STYLES.gomoku ? 1.25 : 2;
 }
