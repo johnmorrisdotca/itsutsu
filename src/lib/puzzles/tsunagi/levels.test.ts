@@ -5,6 +5,7 @@ import { decodeLayout, encodeAnswer, neighboursOf } from "./code";
 import { symmetryKey } from "./generate";
 import { firstUnsolvedTsunagiLevel, loadEveryTsunagiLevel, nextLevelLabel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf, tsunagiPuzzle } from "./levels";
 import { countSolutions } from "./solve";
+import { PUZZLE_CODE_LONGEST, PUZZLE_SPECS } from "../puzzles.constants";
 
 /**
  * EVERY TSUNAGI LEVEL, PROVED AGAIN ON EVERY BUILD.
@@ -35,6 +36,16 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("tsunagi at %i×%i", (s
     }
     // About three seconds for the hundred 9×9s on a laptop; room for a slower runner.
   }, 30_000);
+
+  it("fits every level's layout and answer within what the solve and race routes accept", () => {
+    // A walled 9×9 layout ran to 109 characters when the route took 81, and every solve of it was refused (2026-09-26).
+    for (const [givens, answer] of tsunagiLevelsOf(size)) {
+      for (const code of [givens, answer]) {
+        expect(code.length, givens).toBeLessThanOrEqual(PUZZLE_SPECS.tsunagi.mostCells);
+        expect(code.length, givens).toBeLessThanOrEqual(PUZZLE_CODE_LONGEST);
+      }
+    }
+  });
 
   it("never sets a pair's two marbles side by side, and never a line shorter than three cells", () => {
     for (const [index, [givens, answer]] of tsunagiLevelsOf(size).entries()) {
