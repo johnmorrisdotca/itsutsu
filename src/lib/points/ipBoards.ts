@@ -43,12 +43,13 @@ function earnedOf(
   /** These members' rows only, by the member indexes; null for everybody's. */
   members: readonly string[] | null = null,
 ): Prisma.Sql | null {
+  // Nobody asked for is nothing to count — and checked first, because `Prisma.join` throws on an empty list.
+  if (members !== null && members.length === 0) return null;
   const parts: Prisma.Sql[] = [];
   const among = members === null ? null : Prisma.join(members.map((id) => Prisma.sql`${id}`));
   const black = among === null ? Prisma.empty : Prisma.sql` AND "blackMemberId" IN (${among})`;
   const white = among === null ? Prisma.empty : Prisma.sql` AND "whiteMemberId" IN (${among})`;
   const solver = among === null ? Prisma.empty : Prisma.sql` AND "memberId" IN (${among})`;
-  if (members !== null && members.length === 0) return null;
   if (scope.variants.length > 0) {
     const variants = Prisma.join(scope.variants.map((variant) => Prisma.sql`${variant}`));
     const when = since === null ? Prisma.empty : Prisma.sql` AND "lastMoveAt" >= ${since}`;
