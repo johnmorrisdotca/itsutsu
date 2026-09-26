@@ -74,8 +74,8 @@ describe("a view's address", () => {
   });
 
   it("keeps Admin's own tab in the address, and takes the filter off again on the way back", () => {
-    expect(hrefFor("/admin?view=tickets", "done")).toBe("/admin?view=tickets&show=done");
-    expect(hrefFor("/admin?view=tickets&show=done", "unfinished")).toBe("/admin?view=tickets");
+    expect(hrefFor("/admin/tickets", "done")).toBe("/admin/tickets?show=done");
+    expect(hrefFor("/admin/tickets?show=done", "unfinished")).toBe("/admin/tickets");
   });
 
   it("reads an absent, unknown or repeated word as the default view or the first word", () => {

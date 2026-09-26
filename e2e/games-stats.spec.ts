@@ -279,7 +279,7 @@ test.describe("a member reading the games index", () => {
 
     // PLAIN LIST, by its chip.
     await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
-    await expect(page).toHaveURL(/view=list/);
+    await expect(page).toHaveURL(/\/list(\?|$)/);
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
     await expect(strip.getByTestId("game-stats-last")).toHaveText("Last played today");
@@ -321,7 +321,7 @@ test.describe("a reader with no invite", () => {
   test("sees the figures and an invitation, and nobody's name", async ({ page }) => {
     await page.goto("/games");
     await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
-    await expect(page).toHaveURL(/view=list/);
+    await expect(page).toHaveURL(/\/list(\?|$)/);
 
     await showsTheSeededGame(await stripOf(page, seeded), false);
     const empty = await stripOf(page, unplayed);

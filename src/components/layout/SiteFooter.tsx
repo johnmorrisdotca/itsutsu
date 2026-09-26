@@ -39,7 +39,7 @@ import { LanguagePicker } from "./LanguagePicker";
  * game's rules are a facet of the game, at /games/<slug>/rules, and the way to
  * them is the game. Every game pointed at /games/all, which was a second index
  * of the same forty games laid out as text — it is a VIEW of /games now,
- * /games?view=list, reached from a switch on the page itself, because how a
+ * /games/list, reached from a switch on the page itself, because how a
  * list is arranged is a filter rather than a different collection.
  *
  * So what is left is four: the catalogue, the record, the people, and the

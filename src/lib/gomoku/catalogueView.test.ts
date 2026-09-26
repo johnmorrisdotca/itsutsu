@@ -11,30 +11,31 @@ import {
 
 describe("how the catalogue is laid out is a filter, not an address", () => {
   it("an address that says nothing gets the view that teaches", () => {
-    expect(readCatalogueView({})).toBe(CATALOGUE_VIEW_DEFAULT);
+    expect(readCatalogueView(undefined)).toBe(CATALOGUE_VIEW_DEFAULT);
     expect(CATALOGUE_VIEW_DEFAULT).toBe(CATALOGUE_VIEWS.families);
   });
 
   it("reads each view by name", () => {
     for (const view of CATALOGUE_VIEW_LIST) {
-      expect(readCatalogueView({ view })).toBe(view);
+      if (view !== CATALOGUE_VIEW_DEFAULT) expect(readCatalogueView(view)).toBe(view);
     }
   });
 
   it("the plain list is a view of /games, at the address the move promised", () => {
     // /games/all was a second page; it is one collection seen another way.
-    expect(cataloguePath(CATALOGUE_VIEWS.list)).toBe("/games?view=list");
-    expect(readCatalogueView({ view: "list" })).toBe(CATALOGUE_VIEWS.list);
+    expect(cataloguePath(CATALOGUE_VIEWS.list)).toBe("/games/list");
+    expect(readCatalogueView("list")).toBe(CATALOGUE_VIEWS.list);
   });
 
   it("the default view leaves the query alone, so /games stays /games", () => {
     expect(cataloguePath(CATALOGUE_VIEW_DEFAULT)).toBe("/games");
   });
 
-  it("a word nobody recognises still shows the games", () => {
-    // A mistyped query is a reader who wants the catalogue, not an error page.
-    expect(readCatalogueView({ view: "gallery" })).toBe(CATALOGUE_VIEW_DEFAULT);
-    expect(readCatalogueView({ view: ["list", "cards"] })).toBe(CATALOGUE_VIEW_DEFAULT);
+  it("a view this page does not have is not found, and the old ?view= query is ignored", () => {
+    // Tabs are paths now (John, 2026-09-26: "No backwards compatibility needed").
+    expect(readCatalogueView("gallery")).toBeNull();
+    expect(readCatalogueView(CATALOGUE_VIEW_DEFAULT)).toBeNull();
+    expect(readCatalogueView(undefined)).toBe(CATALOGUE_VIEW_DEFAULT);
   });
 
   it("every view can be named on a switch", () => {

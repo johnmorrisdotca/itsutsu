@@ -1,34 +1,45 @@
 import { describe, expect, it } from "vitest";
 
-import { activeTab, siteKey, tabHref, TAB_PARAM } from "./tabs";
+import { openTabOf, siteKey, tabHref, TAB_FROM_PATH, withTabFromPath } from "./tabs";
 
 const TABS = [
   { key: "itsutsu", label: "Itsutsu" },
   { key: "itsyourturn", label: "ItsYourTurn.com" },
   { key: "goldtoken", label: "GoldToken.com" },
+  { key: "champions", label: "Champions", href: "/champions" },
 ];
 
 describe("which tab is open", () => {
-  it("is the one the address asks for", () => {
-    expect(activeTab(TABS, "goldtoken")).toBe("goldtoken");
+  it("is the one the path names", () => {
+    expect(openTabOf(TABS, { [TAB_FROM_PATH]: "goldtoken" })).toBe("goldtoken");
   });
 
-  it("is the first one when the address says nothing", () => {
-    expect(activeTab(TABS, undefined)).toBe("itsutsu");
+  it("is the first one when the path names none", () => {
+    expect(openTabOf(TABS, {})).toBe("itsutsu");
   });
 
-  it("is the first one when the address asks for something that is not there", () => {
-    // A tab that has been renamed, or an address somebody typed. Landing on
-    // the person is better than landing on an empty page.
-    expect(activeTab(TABS, "myspace")).toBe("itsutsu");
+  it("is nobody's when the path names a tab this page does not have, which the page answers not found", () => {
+    expect(openTabOf(TABS, { [TAB_FROM_PATH]: "myspace" })).toBeNull();
   });
 
-  it("takes the first value when a key is repeated in the query", () => {
-    expect(activeTab(TABS, ["goldtoken", "itsyourturn"])).toBe("goldtoken");
+  it("is nobody's for the first tab by name, since the bare page is its one address", () => {
+    expect(openTabOf(TABS, { [TAB_FROM_PATH]: "itsutsu" })).toBeNull();
+  });
+
+  it("is nobody's for a tab that is a page elsewhere", () => {
+    expect(openTabOf(TABS, { [TAB_FROM_PATH]: "champions" })).toBeNull();
+  });
+
+  it("ignores the old ?view= query entirely", () => {
+    expect(openTabOf(TABS, { view: "goldtoken" })).toBe("itsutsu");
   });
 
   it("is nothing at all when there are no tabs", () => {
-    expect(activeTab([], "goldtoken")).toBe("");
+    expect(openTabOf([], { [TAB_FROM_PATH]: "goldtoken" })).toBe("");
+  });
+
+  it("is handed to the page by a path, beside whatever the query asked", async () => {
+    expect(await withTabFromPath("goldtoken", Promise.resolve({ scope: "here" }))).toEqual({ scope: "here", [TAB_FROM_PATH]: "goldtoken" });
   });
 });
 
@@ -37,8 +48,12 @@ describe("a tab's address", () => {
     expect(tabHref("/players/jmorris", TABS, "itsutsu")).toBe("/players/jmorris");
   });
 
-  it("names any other tab in the query", () => {
-    expect(tabHref("/players/jmorris", TABS, "goldtoken")).toBe(`/players/jmorris?${TAB_PARAM}=goldtoken`);
+  it("names any other tab as a segment of the path", () => {
+    expect(tabHref("/players/jmorris", TABS, "goldtoken")).toBe("/players/jmorris/goldtoken");
+  });
+
+  it("is a tab's own page where it has one", () => {
+    expect(tabHref("/players", TABS, "champions")).toBe("/champions");
   });
 
   it("is the plain page when there are no tabs", () => {

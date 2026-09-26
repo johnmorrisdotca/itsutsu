@@ -31,10 +31,10 @@ describe("how much of somebody's playing a page answers about", () => {
     // Two independent questions. Answering one by quietly resetting the other
     // is how a page loses somebody's place.
     expect(scopeHref("/players/john", "goldtoken", RECORD_SCOPES.here)).toBe(
-      "/players/john?view=goldtoken&scope=here",
+      "/players/john/goldtoken?scope=here",
     );
     expect(scopeHref("/players/john", "goldtoken", RECORD_SCOPES.everywhere)).toBe(
-      "/players/john?view=goldtoken",
+      "/players/john/goldtoken",
     );
   });
 

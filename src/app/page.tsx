@@ -30,7 +30,7 @@ const PITCH = [
     kanji: "五目",
     // The count is read off the same list the catalogue counts from, never
     // written down here a second time. This page once spelled out a number
-    // in plain words while /games?view=list computed a different one from
+    // in plain words while /games/list computed a different one from
     // the same catalogue, because prose does not know when a game is added.
     body: `Gomoku, renju, connect6 and the family of games that grew from a line of stones. ${RULE_VARIANT_LIST.length} of them, each with its rules a click away.`,
   },

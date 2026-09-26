@@ -1,4 +1,4 @@
-import { activeTab, TAB_PARAM, type Tab } from "@/lib/ui/tabs";
+import { type Tab } from "@/lib/ui/tabs";
 
 import type { MyGameGroup } from "./myGames";
 
@@ -39,16 +39,17 @@ export function viewOfGroup(group: MyGameGroup): MyGamesView {
 /**
  * The view an address asks for. `?all=<group>` opens that group where it now
  * lives, so every "Show all 48" link and bookmark made before the tabs still
- * lands on the list it promised; otherwise `?view=`, and Going for anything
- * else.
+ * lands on the list it promised; otherwise the path's tab, and Going for
+ * anything else (the page has already refused a tab it does not have).
  */
 export function myGamesView(tabs: readonly Tab[], view: string | string[] | undefined, all: string | null): MyGamesView {
   const group = all === null ? undefined : Object.values(VIEW_GROUPS).flat().find((each) => each === all);
   if (group !== undefined) return viewOfGroup(group);
-  return activeTab(tabs, view) as MyGamesView;
+  const wanted = Array.isArray(view) ? view[0] : view;
+  return tabs.some((tab) => tab.key === wanted) ? (wanted as MyGamesView) : "going";
 }
 
-/** The address of a view: /play for Going, /play?view=<key> for the rest. */
+/** The address of a view: /play for Going, /play/<key> for the rest (tabs are paths: `tabs.ts`). */
 export function viewHref(view: MyGamesView): string {
-  return view === "going" ? "/play" : `/play?${TAB_PARAM}=${view}`;
+  return view === "going" ? "/play" : `/play/${view}`;
 }

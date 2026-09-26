@@ -98,7 +98,7 @@ test.describe("the feed", () => {
     // Everyone: the game between two adults, and not the one with a teenager in it.
     await ready(page, "tabs");
     await page.locator('[data-testid="tab"][data-tab="everyone"]').click();
-    await expect(page).toHaveURL(/\/feed\?view=everyone$/);
+    await expect(page).toHaveURL(/\/feed\/everyone$/);
     await expect(page.getByTestId("feed-panel")).toHaveAttribute("data-tab", "everyone");
     /* The game's own line — or, when it was the first game of its kind on this
        database, the news that says so, which tells the same game with both

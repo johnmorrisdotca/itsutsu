@@ -14,7 +14,7 @@ export const FEED_KANJI = {
 /** Where a reader with an empty feed goes to make it less empty. */
 export const FEED_WAYS_IN = {
   play: "/games/new",
-  buddies: "/players?view=buddies",
+  buddies: "/players/buddies",
 } as const;
 
 /** How a day heading's date is written, in the reader's language. */

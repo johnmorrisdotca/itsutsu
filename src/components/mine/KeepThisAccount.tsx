@@ -54,7 +54,7 @@ export function KeepThisAccount({ days, googleReady, place = "welcome" }: KeepTh
         ) : null}
         <div className="flex flex-1 flex-col gap-1">
           <Link
-            href="/me?view=words"
+            href="/me/words"
             className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2 text-center`}
             data-testid={id("add-words")}
           >

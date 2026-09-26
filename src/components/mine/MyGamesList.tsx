@@ -153,7 +153,7 @@ export async function MyGamesList({
   cursor?: string | null;
   /** Where the solved puzzles' list on Completed was paged to (`?puzzle-cursor=`), its own place beside the games'. */
   puzzleCursor?: string | null;
-  /** The tab the address asks for (`?view=`), unchecked: `myGamesView` decides. */
+  /** The tab the path names (/play/<view>), already checked by the page: `myGamesView` decides. */
   viewAsked?: string | string[];
   /** The board kept in this browser (`LocalGameCardClient`), drawn on Pass and play. */
   local?: ReactNode;

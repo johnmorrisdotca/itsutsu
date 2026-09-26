@@ -327,7 +327,7 @@ test.describe("declining an offer", () => {
      * rendered before this absence is asked about.
      */
     // Completed is its own tab: drawn first, so the absence is about a rendered list.
-    await mine.goto("/play?view=completed");
+    await mine.goto("/play/completed");
     await expect(mine.getByTestId("my-games-finished")).toBeVisible();
     await expect(mine.getByTestId("my-games-finished").locator(`[data-id="${id}"]`)).toHaveCount(0);
     await mine.close();

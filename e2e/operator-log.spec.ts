@@ -33,7 +33,7 @@ test.describe("the operator log", () => {
     const rows = (action: string) =>
       page.locator(`[data-testid="operator-log-row"][data-subject="${id}"][data-action="${action}"]`);
 
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     await ready(page, "admin-members");
     const row = page.getByTestId("admin-member").filter({ hasText: member.name });
     await expect(row).toHaveCount(1);
@@ -45,7 +45,7 @@ test.describe("the operator log", () => {
     await expect(row.getByTestId("ban-member")).toHaveText(/Open it again/);
 
     await openTab(page, "Log");
-    await expect(page).toHaveURL(/\?view=log$/);
+    await expect(page).toHaveURL(/\/log$/);
     await expect(page.getByTestId("operator-log-table")).toBeVisible();
     await expect(rows("shut"), "the shut was not kept").toHaveCount(1);
     // Absent only after the table this row would be in has been drawn, and after the shut row is found.

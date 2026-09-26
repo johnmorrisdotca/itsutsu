@@ -91,7 +91,7 @@ test.describe("the computer players", () => {
   });
 
   test("are listed together, badged, and each leads to their own page", async ({ page }) => {
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const rows = page.getByTestId("computer-player");
     // Counted from the list rather than written down, so a new grade or a new
     // specialist does not fail a test whose subject is that they are listed.
@@ -126,7 +126,7 @@ test.describe("the computer players", () => {
      * newer than players who are always here. On production, with six
      * members, they are on both. The cap is its own ticket.
      */
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const robots = page.getByTestId("computer-player").filter({ has: page.locator('[data-kind="robot"]') });
     await expect(robots).toHaveCount(BOT_ALL_TIERS.length);
   });

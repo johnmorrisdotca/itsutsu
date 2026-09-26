@@ -52,7 +52,7 @@ test.describe("one tier per rating", () => {
   });
 
   test("the Computers tab, the Members tab and a program's own page agree", async ({ page }) => {
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const computers = page.getByTestId("computer-players-table");
     const settled = rowFor(computers, settling);
     const fresh = rowFor(computers, starting);
@@ -89,7 +89,7 @@ test.describe("one tier per rating", () => {
   });
 
   test("a program under four rated games reads a dash and Unrated on its page too", async ({ page }) => {
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const computers = page.getByTestId("computer-players-table");
     await expect(rowFor(computers, starting)).toHaveCount(1);
     await rowFor(computers, starting).getByTestId("computer-player-name").click();
@@ -100,7 +100,7 @@ test.describe("one tier per rating", () => {
   });
 
   test("the operator's Bots tab says it the same way", async ({ page }) => {
-    await page.goto("/admin?view=bots");
+    await page.goto("/admin/bots");
     // Server-rendered with nothing to hydrate, so the presence to wait for is the table.
     const bots = page.getByTestId("admin-bots-table");
     await expect(bots).toBeVisible();

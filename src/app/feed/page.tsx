@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { FeedList } from "@/components/feed/FeedList";
 import { FEED_KANJI, FEED_WAYS_IN } from "@/components/feed/feed.constants";
 import { PageTitle } from "@/components/layout/Headings";
@@ -10,7 +11,7 @@ import { DAY_MS, FEED_PATH, FEED_TABS } from "@/lib/feed/feed.constants";
 import { feedDays } from "@/lib/feed/feed";
 import { readEveryoneFeed, readMineFeed } from "@/lib/feed/feedRead";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
-import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { openTabOf, type Tab } from "@/lib/ui/tabs";
 import { xpDayKey } from "@/lib/xp/xpDay";
 
 export const metadata = { title: "Feed 近況" };
@@ -35,7 +36,8 @@ export default async function FeedPage({ searchParams }: PageProps<"/feed">) {
     { key: FEED_TABS.mine, label: say.say("feed.tabMine"), kanji: FEED_KANJI[FEED_TABS.mine] },
     { key: FEED_TABS.everyone, label: say.say("feed.tabEveryone"), kanji: FEED_KANJI[FEED_TABS.everyone] },
   ];
-  const open = activeTab(tabs, asked.view);
+  const open = openTabOf(tabs, asked);
+  if (open === null) notFound();
   const everyone = open === FEED_TABS.everyone;
 
   const now = new Date();

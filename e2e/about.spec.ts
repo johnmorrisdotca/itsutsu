@@ -42,7 +42,7 @@ test.describe("about", () => {
    */
   test("renders every section across its chapters, including go and the notation", async ({ page }) => {
     for (const [view, headings] of Object.entries(CHAPTERS)) {
-      await page.goto(view === "story" ? "/about" : `/about?view=${view}`);
+      await page.goto(view === "story" ? "/about" : `/about/${view}`);
       await expect(page.getByRole("heading", { name: "About", exact: false }).first()).toBeVisible();
       for (const heading of headings) {
         await expect(page.getByRole("heading", { name: heading }), `${heading} is missing from ${view}`).toBeVisible();
@@ -76,7 +76,7 @@ test.describe("about", () => {
     const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
     const { GAME_FAMILIES } = await import("../src/lib/gomoku/families");
 
-    await page.goto("/about?view=games");
+    await page.goto("/about/games");
     const section = page
       .getByTestId("about-section")
       .filter({ has: page.getByRole("heading", { name: "What is on the board here" }) });
@@ -95,7 +95,7 @@ test.describe("about", () => {
   });
 
   test("says what the computer players do, and what the measurement showed", async ({ page }) => {
-    await page.goto("/about?view=programs");
+    await page.goto("/about/programs");
     const section = page
       .getByTestId("about-section")
       .filter({ has: page.getByRole("heading", { name: "The players that are not people" }) });
@@ -120,7 +120,7 @@ test.describe("about", () => {
    * so the sentence is computed from the bars and this is what says so.
    */
   test("draws each step of the computer ladder, and says nothing its own bars deny", async ({ page }) => {
-    await page.goto("/about?view=programs");
+    await page.goto("/about/programs");
     const graph = page.getByTestId("about-grade-ladder");
     await expect(graph).toBeVisible();
 
@@ -151,7 +151,7 @@ test.describe("about", () => {
 
   test("a game named in the prose links to that game", async ({ page }) => {
     // The histories chapter, which is where the games are named and compared.
-    await page.goto("/about?view=roots");
+    await page.goto("/about/roots");
     // The names, and the page each one has to reach. Checked on the first
     // occurrence: a name that appears twice need only be a link once.
     const named: [string, string][] = [
@@ -169,13 +169,13 @@ test.describe("about", () => {
   });
 
   test("a linked game name really goes to the game", async ({ page }) => {
-    await page.goto("/about?view=roots");
+    await page.goto("/about/roots");
     await page.getByRole("link", { name: "Pente", exact: true }).first().click();
     await expect(page).toHaveURL(/\/games\/ninuki$/);
   });
 
   test("go is explained, with its diagrams and its numbers", async ({ page }) => {
-    await page.goto("/about?view=japan");
+    await page.goto("/about/japan");
     const go = page.getByTestId("about-section").filter({ hasText: "Go, the board underneath" });
     await expect(go).toHaveCount(1);
     // Liberties and a capture, then two eyes.
@@ -197,7 +197,7 @@ test.describe("about", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test("a signed-out reader sees how a game goes and how to get in", async ({ page }) => {
-      const response = await page.goto("/about?view=start");
+      const response = await page.goto("/about/start");
       expect(response?.status()).toBe(200);
 
       await expect(page.getByTestId("about-flow").locator("li")).toHaveCount(6);
@@ -213,7 +213,7 @@ test.describe("about", () => {
     });
 
     test("the way to ask for an invite really opens the request form", async ({ page }) => {
-      await page.goto("/about?view=start");
+      await page.goto("/about/start");
       await page.getByRole("link", { name: "ask for one on the join page" }).click();
       await expect(page).toHaveURL(/\/join\?ask=1$/);
     });
@@ -224,7 +224,7 @@ test.describe("about", () => {
 
     test("a signed-out reader sees the site in pictures, and every picture loads", async ({ page }) => {
       const { SHOTS } = await import("../src/app/about/about.shots");
-      const response = await page.goto("/about?view=play");
+      const response = await page.goto("/about/play");
       expect(response?.status()).toBe(200);
 
       const shots = page.getByTestId("about-shot").locator("img");
@@ -237,7 +237,7 @@ test.describe("about", () => {
     });
 
     test("names the move slider and the picture of every position", async ({ page }) => {
-      await page.goto("/about?view=play");
+      await page.goto("/about/play");
       const replay = page.getByTestId("about-section").filter({ hasText: "Every move, forwards and back" });
       await expect(replay).toContainText("slider");
       const picture = page.getByTestId("about-section").filter({ hasText: "The game as one picture" });
@@ -251,7 +251,7 @@ test.describe("about", () => {
     const { RULE_VARIANT_DISPLAY } = await import("../src/lib/gomoku/variants.constants");
     const countries = new Set(RULE_VARIANT_LIST.map((variant) => RULE_VARIANT_DISPLAY[variant].country).filter(Boolean));
 
-    await page.goto("/about?view=games");
+    await page.goto("/about/games");
     const charts = page.getByTestId("about-bars");
     await expect(charts).toHaveCount(3);
     // Every country once, and one more bar for the games that belong to none.
@@ -259,7 +259,7 @@ test.describe("about", () => {
   });
 
   test("the ratings section keeps our rules and another site's apart", async ({ page }) => {
-    await page.goto("/about?view=numbers");
+    await page.goto("/about/numbers");
     const ratings = page.getByTestId("about-section").filter({ hasText: "Ratings, in numbers" });
     await expect(ratings).toHaveCount(1);
     // The rule that is ours and was never written down: no farming beginners.
@@ -298,7 +298,7 @@ test.describe("about", () => {
   });
 
   test("the notation section says how a move is written, and names SGF", async ({ page }) => {
-    await page.goto("/about?view=numbers");
+    await page.goto("/about/numbers");
     const notation = page.getByTestId("about-section").filter({ hasText: "How a move is written down" });
     await expect(notation).toHaveCount(1);
     await expect(notation).toContainText("There is no column I");

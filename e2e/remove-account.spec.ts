@@ -73,7 +73,7 @@ test("a member reads what is held, removes their account, and the game stays for
   const member = await asMember(browser, baseURL!, world.memberId);
   try {
     const mine = await member.newPage();
-    await mine.goto("/me?view=profile");
+    await mine.goto("/me/profile");
 
     // What we hold: their name, and the one game counted and linked.
     const held = mine.getByTestId("what-we-hold");

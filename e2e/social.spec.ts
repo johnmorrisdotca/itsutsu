@@ -142,7 +142,7 @@ test.describe("notes, messages, deadlines and players", () => {
         RATING_START,
       );
 
-      await page.goto("/players?view=ladder");
+      await page.goto("/players/ladder");
       /*
        * By the name the ladder PRINTS, which is the first one. The address still
        * carries the whole of it — that is what playerSlug uses above — but a list

@@ -125,7 +125,7 @@ test.describe("a player who came in with an invite code", () => {
     await askFromTheirPage(page, personId, mine);
 
     // PLAY A COMPUTER PLAYER, from its page. The directory's Computers tab makes sure the programs exist.
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     await expect(page.getByTestId("computer-player-name").first()).toBeVisible();
     await askFromTheirPage(page, "dan", mine);
 
@@ -138,7 +138,7 @@ test.describe("a player who came in with an invite code", () => {
       },
       async () => expect(toggle).toHaveText(/★ Buddy/, { timeout: 3_000 }),
     );
-    await page.goto("/me?view=people");
+    await page.goto("/me/people");
     await expect(page.getByTestId("buddies")).toContainText(`Asked${stamp}`);
 
     // APPLAUD A FINISHED GAME: one this account starts and resigns, then marks on its page.
@@ -187,7 +187,7 @@ test.describe("a player who came in with an invite code", () => {
 
     // FOUR WORDS: one press from the welcome to the picker that sets them.
     await page.getByTestId("welcome-add-words").click();
-    await expect(page).toHaveURL(/\/me\?view=words$/);
+    await expect(page).toHaveURL(/\/me\/words$/);
     await ready(page, "phrase-setup");
     await page.getByTestId("phrase-set-button").click();
     await expect(page.getByTestId("phrase-picker")).toBeVisible();

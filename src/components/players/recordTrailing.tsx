@@ -109,7 +109,7 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
  *
  * The alternatives were real and each fails the promise a link makes:
  *
- * - **`/me?view=xp`**, the reader's own ledger, is the set this number is MADE
+ * - **`/me/xp`**, the reader's own ledger, is the set this number is MADE
  *   OF — every point, what earned it, when. It is the right answer for exactly
  *   one row on the page and there is no public version of it for anybody else,
  *   so as a rule it would be a link that keeps its promise for the reader and

@@ -258,7 +258,7 @@ test.describe("the ladder against the computer players", () => {
       await seedComputerPlayerFor(member.email, { rating: 1639, games: 5, wins: 3, losses: 2 });
 
       const page = await context.newPage();
-      await page.goto("/me?view=record");
+      await page.goto("/me");
       const rating = page.getByTestId("my-rating");
       await expect(rating).toContainText("1639");
       // Marked, because an unlabelled number there reads as a ladder place.
@@ -321,7 +321,7 @@ test.describe("the ladder against the computer players", () => {
       losses: 2,
     });
     try {
-      await page.goto("/me?view=record");
+      await page.goto("/me");
       const table = page.getByTestId("me-standings");
       await expect(table).toBeVisible();
       const row = table.locator("tr", { hasText: "Reversi" }).first();
@@ -364,7 +364,7 @@ test.describe("the ladder against the computer players", () => {
       losses: 3,
     });
     try {
-      await page.goto("/me?view=record");
+      await page.goto("/me");
       const rows = page.getByTestId("me-standings").locator("tr", { hasText: "Reversi" });
       await expect(rows).toHaveCount(2);
       // One mark, not two: the second was the contradiction.

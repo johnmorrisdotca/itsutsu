@@ -12,7 +12,7 @@
 /** Where the feed lives. Member-only: `src/proxy.ts` does not list it as open. */
 export const FEED_PATH = "/feed";
 
-/** The two tabs, as their `?view=` keys. The first is the default. */
+/** The two tabs, as their path segments (/feed/everyone). The first is the default. */
 export const FEED_TABS = {
   mine: "mine",
   everyone: "everyone",

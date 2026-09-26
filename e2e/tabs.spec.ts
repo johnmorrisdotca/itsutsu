@@ -21,20 +21,21 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
 
     await page.getByTestId("tab").filter({ hasText: "GoldToken" }).click();
-    await expect(page).toHaveURL(/\?view=goldtoken$/);
+    await expect(page).toHaveURL(/\/goldtoken$/);
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
 
     // The whole point: that address, opened cold, is the same page.
-    await page.goto("/players/chibi?view=goldtoken");
+    await page.goto("/players/chibi/goldtoken");
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
     await expect(page.getByTestId("tab").filter({ hasText: "GoldToken" })).toHaveAttribute("data-open", "true");
   });
 
-  test("an address naming a tab that is not there still lands on the person", async ({ page }) => {
-    // A renamed tab, or an address somebody typed. Better the first tab than
-    // an empty page.
-    await page.goto("/players/chibi?view=myspace");
-    await expect(page.getByTestId("player-profile")).toContainText("Chibi");
+  test("an address naming a tab that is not there is not found, and so is the first tab by name", async ({ page }) => {
+    // Tabs are paths (John, 2026-09-26): one page, one address, and no quiet fallback that keeps a dead link looking alive.
+    expect((await page.goto("/players/chibi/myspace"))?.status()).toBe(404);
+    expect((await page.goto("/admin/access"))?.status()).toBe(404);
+    // Nor does the old query open anything but the plain page.
+    await page.goto("/players/chibi?view=goldtoken");
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
   });
 
@@ -54,7 +55,7 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
 
     await page.getByTestId("tab").filter({ hasText: "Itsutsu" }).click();
-    await expect(page).toHaveURL(/\?view=itsutsu$/);
+    await expect(page).toHaveURL(/\/itsutsu$/);
     // And it says what an empty record means for somebody who never played
     // here, rather than telling her to wait for a rating.
     const empty = page.getByTestId("player-no-games");
@@ -64,7 +65,7 @@ test.describe("a page of many sections is tabs", () => {
 
   test("a remembered record is not told to wait for a first game", async ({ page }) => {
     // "No finished games yet" is the wrong word about somebody who has died.
-    await page.goto("/players/chibi?view=itsutsu");
+    await page.goto("/players/chibi/itsutsu");
     const empty = page.getByTestId("player-no-games");
     await expect(empty).toContainText("kept rather than added to");
     await expect(empty).not.toContainText("yet");
@@ -90,16 +91,16 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("here-now")).toBeVisible();
 
     await page.getByTestId("tab").filter({ hasText: "Ladder" }).click();
-    await expect(page).toHaveURL(/\?view=ladder$/);
+    await expect(page).toHaveURL(/\/ladder$/);
     await expect(page.getByTestId("ladder-section")).toBeVisible();
     await expect(page.getByTestId("directory-section")).toHaveCount(0);
     await expect(page.getByTestId("here-now")).toBeVisible();
 
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     await expect(page.getByTestId("computer-players")).toBeVisible();
     await expect(page.getByTestId("tab").filter({ hasText: "Bots" })).toHaveAttribute("data-open", "true");
 
-    await page.goto("/players?view=remembered");
+    await page.goto("/players/honors");
     await expect(page.getByTestId("legacy-roll-remembered")).toBeVisible();
 
     // Champions is its own page, and it draws the same strip with itself open, and the way back.
@@ -143,12 +144,12 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("name-form")).toBeVisible();
 
     await page.getByTestId("tab").filter({ hasText: "People" }).click();
-    await expect(page).toHaveURL(/\?view=people$/);
+    await expect(page).toHaveURL(/\/people$/);
     await expect(page.getByTestId("buddies")).toBeVisible();
     await expect(page.getByTestId("name-form")).toBeVisible();
     await expect(page.getByTestId("my-record")).toHaveCount(0);
 
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     await expect(page.getByTestId("game-defaults-panel")).toBeVisible();
     await expect(page.getByTestId("settings-form")).toBeVisible();
     await expect(page.getByTestId("tab").filter({ hasText: "Settings" })).toHaveAttribute("data-open", "true");
@@ -199,18 +200,18 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("admin-machines")).toHaveCount(0);
 
     await page.getByTestId("tab").filter({ hasText: "Tickets" }).click();
-    await expect(page).toHaveURL(/\?view=tickets$/);
+    await expect(page).toHaveURL(/\/tickets$/);
     await expect(page.getByTestId("admin-backlog")).toBeVisible();
     await expect(page.getByTestId("admin-door")).toHaveCount(0);
 
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     await expect(page.getByTestId("admin-people")).toBeVisible();
     await expect(page.getByTestId("tab").filter({ hasText: "Members" })).toHaveAttribute("data-open", "true");
     // And the programs are not in it: they are one tab along.
     await expect(page.getByTestId("admin-machines")).toHaveCount(0);
 
     await page.getByTestId("tab").filter({ hasText: "Bots" }).click();
-    await expect(page).toHaveURL(/\?view=bots$/);
+    await expect(page).toHaveURL(/\/bots$/);
     await expect(page.getByTestId("admin-bots-table")).toBeVisible();
     await expect(page.getByTestId("admin-people")).toHaveCount(0);
   });

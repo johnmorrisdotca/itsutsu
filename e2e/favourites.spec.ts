@@ -60,7 +60,7 @@ test("a starred game is listed first on the Completed tab, and unstarred from it
     const page = await context.newPage();
 
     // Nothing starred: the panel is there, empty, saying how a game gets into it; the newest game heads the list.
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await ready(page, "tabs");
     await expect(page.getByTestId("my-games-favourites-empty")).toBeVisible();
     await expect(page.getByTestId("my-games-finished").getByTestId("my-game").first()).toHaveAttribute("data-id", newer);
@@ -75,7 +75,7 @@ test("a starred game is listed first on the Completed tab, and unstarred from it
     await expect(star).toHaveAttribute("aria-pressed", "true");
 
     // First on the Completed tab now, in the Starred panel above the newest game, and starred in the list too.
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await ready(page, "tabs");
     const panel = page.getByTestId("my-games-favourites");
     await expect(panel.getByTestId("my-game")).toHaveCount(1);

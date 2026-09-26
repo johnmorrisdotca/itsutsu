@@ -93,7 +93,7 @@ test.describe("four words are how you get back to your games", () => {
     // STEP 1 — her own account gains a phrase, from her own session.
     const herContext = await memberContext(browser, baseURL!, her);
     const herPage = await herContext.newPage();
-    await herPage.goto("/me?view=words");
+    await herPage.goto("/me/words");
     await ready(herPage, "phrase-setup");
     await expect(herPage.getByTestId("phrase-status")).toContainText("No four words");
 
@@ -183,7 +183,7 @@ test.describe("four words are how you get back to your games", () => {
 
     const herContext = await memberContext(browser, baseURL!, her);
     const herPage = await herContext.newPage();
-    await herPage.goto("/me?view=words");
+    await herPage.goto("/me/words");
     await ready(herPage, "phrase-setup");
     await herPage.getByTestId("phrase-set-button").click();
     const words = await pickPhrase(herPage);

@@ -1,23 +1,31 @@
 /**
  * Tabs, as an address.
  *
- * A page that gathers several distinct sections shows one at a time. A tab is
- * a view of one page rather than a page of its own, so which one is open
- * belongs in the query rather than in the path — identity stays in the path
- * everywhere on this site, and the person is the identity here, not the
- * chapter of them being read.
+ * A page that gathers several distinct sections shows one at a time, and each
+ * section is a page of its own: so its tab is a PATH segment, never a query.
+ * John, 2026-09-26: "Should we be using paths or query strings?… Yes sweep to
+ * make Paths. No backwards compatibility needed." — his standing rule, identity
+ * in the path and filters in the query. /admin/settings, /me/profile,
+ * /players/bots, /players/<name>/goldtoken. What narrows one list (who, show,
+ * month, sort) stays in the query.
  *
- * It has to be in the address at all, though, or somebody's GoldToken record
- * cannot be linked to and a reload loses the reader's place. The first tab is
- * the page's plain address with nothing appended, so the ordinary link to a
- * player is still the ordinary link to a player.
+ * The first tab is the page's plain address with nothing appended, so the
+ * ordinary link to a player is still the ordinary link to a player; its own
+ * key as a segment is not an address, since one page has one address.
+ *
+ * HOW A SEGMENT REACHES THE PAGE. Each tabbed page keeps one body, in its
+ * `page.tsx`; a `[view]/page.tsx` beside it (or a folder per key, where the
+ * level already holds a `[slug]`) passes the segment in as `TAB_FROM_PATH`
+ * through `withTabFromPath`, and the body reads it with `openTabOf`. An address
+ * naming no tab of that page is not found: no quiet fallback to the first,
+ * which would give one page two addresses and keep dead links looking alive.
  */
 
-/** The query key that names the open tab. One word, so an address stays readable. */
-export const TAB_PARAM = "view";
+/** The key a path's tab segment is handed to the page's body under. Not a query anybody types. */
+export const TAB_FROM_PATH = "__tab";
 
 export type Tab = {
-  /** Kebab, and stable: it goes in an address people share. */
+  /** Kebab, and stable: it is a segment of an address people share. */
   key: string;
   label: string;
   /** The Japanese name, where the section has one. Shown small beside the label. */
@@ -36,28 +44,42 @@ export type Tab = {
   href?: string;
 };
 
+type Query = Record<string, string | string[] | undefined>;
+
 /**
- * Which tab a request is asking for.
- *
- * Anything unrecognised falls back to the first rather than showing an empty
- * page: an address someone typed, or one kept from before a tab was renamed,
- * should still land on the person it names.
+ * Which tab a request is for: the first when the path names none, the one it
+ * names when that is a tab of this page (other than the first, whose address
+ * is the bare page), and null for anything else — which the page answers with
+ * `notFound()`.
  */
-export function activeTab(tabs: readonly Tab[], asked: string | string[] | undefined): string {
+export function openTabOf(tabs: readonly Tab[], asked: Query): string | null {
   if (tabs.length === 0) return "";
-  const wanted = Array.isArray(asked) ? asked[0] : asked;
-  return tabs.some((tab) => tab.key === wanted) ? (wanted as string) : tabs[0].key;
+  const raw = asked[TAB_FROM_PATH];
+  const named = Array.isArray(raw) ? raw[0] : raw;
+  if (named === undefined) return tabs[0]!.key;
+  if (named === tabs[0]!.key) return null;
+  return tabs.some((tab) => tab.key === named && tab.href === undefined) ? named : null;
 }
 
 /**
- * The address of one tab. The first tab is the bare page, so a player's
- * address does not grow a query string just by being looked at.
+ * The query a `[view]` route hands its page's body: what the reader asked in
+ * the query, and the segment under `TAB_FROM_PATH`, which only a path can set.
+ */
+export async function withTabFromPath(view: string, searchParams: Promise<Query>): Promise<Query> {
+  const asked = { ...(await searchParams) };
+  asked[TAB_FROM_PATH] = view;
+  return asked;
+}
+
+/**
+ * The address of one tab: its own `href` where it has one, the bare page for
+ * the first, and the page with the tab's key as a segment for the rest.
  */
 export function tabHref(base: string, tabs: readonly Tab[], key: string): string {
   const own = tabs.find((tab) => tab.key === key)?.href;
   if (own !== undefined) return own;
-  if (tabs.length === 0 || key === tabs[0].key) return base;
-  return `${base}?${TAB_PARAM}=${encodeURIComponent(key)}`;
+  if (tabs.length === 0 || key === tabs[0]!.key) return base;
+  return `${base}/${encodeURIComponent(key)}`;
 }
 
 /**

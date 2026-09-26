@@ -35,12 +35,12 @@ export const START_RETURNING: readonly StartLink[] = [
     membersOnly: true,
   },
   {
-    href: `/about?view=${ABOUT_CHAPTERS.roots}`,
+    href: `/about/${ABOUT_CHAPTERS.roots}`,
     label: "Where the games came from",
     note: "a thousand years of five in a row, Othello, and the famous openings",
   },
   {
-    href: `/about?view=${ABOUT_CHAPTERS.programs}`,
+    href: `/about/${ABOUT_CHAPTERS.programs}`,
     label: "Meet the programs",
     note: "five graded bots and two specialists, and how they were measured",
   },

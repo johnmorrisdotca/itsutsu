@@ -218,7 +218,7 @@ export async function MyRecord({ name }: { name: string }) {
           <>
             No rated game of any one game yet. Rated games are shared games between two
             members, or a game against one of the{" "}
-            <Link href="/players?view=computers" className="underline underline-offset-4">
+            <Link href="/players/bots" className="underline underline-offset-4">
               bots
             </Link>
             .

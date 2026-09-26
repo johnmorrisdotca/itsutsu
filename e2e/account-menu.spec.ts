@@ -143,9 +143,9 @@ test.describe("the account menu", () => {
     await page.getByTestId("account-menu-button").click();
     const panel = page.getByTestId("account-menu-panel");
     await expect(panel.getByTestId("account-menu-caret")).toBeVisible();
-    await expect(panel.getByTestId("profile-link")).toHaveAttribute("href", "/me?view=profile");
+    await expect(panel.getByTestId("profile-link")).toHaveAttribute("href", "/me/profile");
     // Profile is who you are; Settings, right after it, is how the site behaves for you.
-    await expect(panel.getByTestId("settings-link")).toHaveAttribute("href", "/me?view=settings");
+    await expect(panel.getByTestId("settings-link")).toHaveAttribute("href", "/me/settings");
     await expect(panel.getByTestId("about-link")).toHaveAttribute("href", "/about");
     await panel.getByTestId("about-link").click();
     await expect(page).toHaveURL(/\/about$/);

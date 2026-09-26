@@ -337,7 +337,7 @@ test.describe("the ladder sorts and scrolls", () => {
     page,
   }) => {
     const crashes = watchForCrashes(page);
-    await page.goto("/players?view=ladder");
+    await page.goto("/players/ladder");
     await ready(page, "ladder-live");
 
     const byRating = await ladderNames(page);
@@ -353,7 +353,7 @@ test.describe("the ladder sorts and scrolls", () => {
     await page.getByTestId("sortable-head").filter({ hasText: "Played" }).click();
     await expect(page).toHaveURL(/sort=played(%3A|:)desc/);
     // It stayed on the tab it was pressed in.
-    await expect(page).toHaveURL(/view=ladder/);
+    await expect(page).toHaveURL(/\/ladder(\?|$)/);
     await ready(page, "ladder-live");
 
     const byPlayed = await ladderNames(page);
@@ -388,7 +388,7 @@ test.describe("the ladder sorts and scrolls", () => {
    * direction, expecting a Joined heading the ladder has never drawn.
    */
   test("the columns nothing can order by are headings, not links", async ({ page }) => {
-    await page.goto("/players?view=ladder");
+    await page.goto("/players/ladder");
     // Wait for a heading that IS a link before asserting the others are not.
     await expect(page.getByTestId("sortable-head").filter({ hasText: "Rating" })).toBeVisible();
 
@@ -409,7 +409,7 @@ test.describe("the ladder sorts and scrolls", () => {
   test("scrolling the ladder appends the next page, with no row twice", async ({ page, request }) => {
     await enoughRows(request);
     const crashes = watchForCrashes(page);
-    await page.goto(`/players?view=ladder&limit=${SMALL}`);
+    await page.goto(`/players/ladder?limit=${SMALL}`);
     await ready(page, "ladder-live");
 
     const first = await ladderNames(page);
@@ -438,7 +438,7 @@ test.describe("the ladder sorts and scrolls", () => {
   test("a sort the ladder does not have leaves the reader on the ladder, saying so", async ({
     page,
   }) => {
-    await page.goto("/players?view=ladder&sort=winRate");
+    await page.goto("/players/ladder?sort=winRate");
     await ready(page, "ladder-live");
     expect((await ladderNames(page)).length).toBeGreaterThan(0);
     await expect(page.getByTestId("ladder-sort-refused")).toBeVisible();
@@ -450,7 +450,7 @@ test.describe("the ladder without JavaScript", () => {
 
   test("a link carries the next page, and there is a way back to the top", async ({ page, request }) => {
     await enoughRows(request);
-    await page.goto(`/players?view=ladder&limit=${SMALL}`);
+    await page.goto(`/players/ladder?limit=${SMALL}`);
 
     const table = page.getByTestId("players-table");
     await expect(table).toBeVisible();

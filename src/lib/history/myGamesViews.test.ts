@@ -25,7 +25,7 @@ describe("My games views", () => {
     expect(myGamesView(TABS, undefined, "yourMove")).toBe("going");
   });
 
-  it("reads ?view=, and falls back to Going for anything else", () => {
+  it("reads the path's tab, and falls back to Going for anything else", () => {
     expect(myGamesView(TABS, "completed", null)).toBe("completed");
     // The Puzzles tab is gone: its puzzles are under Going and Completed now, and its old address opens Going.
     expect(myGamesView(TABS, "puzzles", null)).toBe("going");
@@ -35,6 +35,6 @@ describe("My games views", () => {
 
   it("gives Going the plain address", () => {
     expect(viewHref("going")).toBe("/play");
-    expect(viewHref("completed")).toBe("/play?view=completed");
+    expect(viewHref("completed")).toBe("/play/completed");
   });
 });

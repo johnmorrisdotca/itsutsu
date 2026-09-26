@@ -81,7 +81,7 @@ test.describe("where somebody is", () => {
      * caught its absence, and what catches a regression back to it.
      */
     const crashes = watchForCrashes(page);
-    await page.goto("/me?view=profile");
+    await page.goto("/me/profile");
     const country = page.getByTestId("profile-country");
     await expect(country).toBeVisible();
     // The profile is a server-rendered form: its selects and its day
@@ -160,7 +160,7 @@ test.describe("where somebody is", () => {
      * written against and stopped being true the day the ladder grew a
      * Russian rung and a Chinese one.
      */
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const rows = page.getByTestId("computer-player");
     await expect(rows).toHaveCount(BOT_ALL_TIERS.length);
     for (const [index, tier] of BOT_ALL_TIERS.entries()) {

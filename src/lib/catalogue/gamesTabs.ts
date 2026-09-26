@@ -8,9 +8,9 @@ import type { Tab } from "@/lib/ui/tabs";
  * John, 2026-09-25: "My Games and Players pages correctly use Tabs… but Games
  * page uses BUTTONS for Families, Cards and Plain List… they should be Tabs
  * too! Use consistent and simple patterns. Then move the Learning Shelf button
- * to another Tab. And Famous Games." The three views keep `?view=`, which is
- * the key every tab strip reads, so no address changes; /learn and /famous
- * draw this same strip with themselves open.
+ * to another Tab. And Famous Games." The three views are paths (/games,
+ * /games/cards, /games/list: `tabs.ts`); /learn and /famous draw this same
+ * strip with themselves open.
  */
 /*
  * ONE WORD EACH. John, 2026-09-26: "Rename the two word ones to List,

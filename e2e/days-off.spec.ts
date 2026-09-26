@@ -24,7 +24,7 @@ test.describe("days I do not play", () => {
       name: `Restful ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
 
     await expect(page.getByTestId("days-off")).toBeVisible();
     // Nobody starts with a day off: deadlines work as they always have.
@@ -56,7 +56,7 @@ test.describe("days I do not play", () => {
       name: `Hermit ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
 
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made

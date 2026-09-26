@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+import { TAB_FROM_PATH } from "@/lib/ui/tabs";
 
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -41,8 +43,9 @@ export const dynamic = "force-dynamic";
  */
 export default async function GamesPage({ searchParams }: PageProps<"/games">) {
   const asked = await searchParams;
-  // How the catalogue is laid out. A filter, so it lives in the query.
-  const view = readCatalogueView(asked);
+  // How the catalogue is laid out: a tab, so a path (/games/cards, /games/list). Anything else is not found.
+  const view = readCatalogueView(asked[TAB_FROM_PATH]);
+  if (view === null) notFound();
   const say = await currentSpeaker();
   const reader = await currentReader();
   if (!reader.signedIn) {

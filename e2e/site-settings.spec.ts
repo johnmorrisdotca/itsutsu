@@ -55,7 +55,7 @@ test.afterEach(async ({ request }) => {
 
 /** The panel, hydrated — never an element the server also renders. */
 async function openThePanel(page: Page) {
-  await page.goto("/admin?view=settings");
+  await page.goto("/admin/settings");
   await ready(page, "admin-site");
 }
 

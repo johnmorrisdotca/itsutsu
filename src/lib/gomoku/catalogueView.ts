@@ -4,7 +4,7 @@
  *
  * /games is every game there is. Families, cards and a plain list are three
  * ways of looking at that one collection, not three collections — so they live
- * in the query, `/games?view=list`, under John's standing rule for addresses:
+ * in the query, `/games/list`, under John's standing rule for addresses:
  * identity in the path, filters in the query. It was two pages before this,
  * /games and /games/all, which made "the plain list" a different resource from
  * "the games" and gave the site two indexes to keep in step.
@@ -52,18 +52,18 @@ export const CATALOGUE_VIEW_DISPLAY: Record<CatalogueView, { label: string; kanj
 };
 
 /**
- * The view an address asks for.
- *
- * A word nobody recognises falls back to the default rather than showing
- * nothing: a mistyped query is a reader who still wants the games.
+ * The view an address asks for: a tab, so a segment of the path (/games/cards,
+ * /games/list; `tabs.ts`), the segment its folder hands the page. Families, the default, is
+ * the bare /games; anything else is not found (null), never a quiet default.
  */
-export function readCatalogueView(params: Record<string, string | string[] | undefined>): CatalogueView {
-  const asked = params.view;
+export function readCatalogueView(asked: string | string[] | undefined): CatalogueView | null {
+  if (asked === undefined) return CATALOGUE_VIEW_DEFAULT;
   const word = typeof asked === "string" ? asked : undefined;
-  return CATALOGUE_VIEW_LIST.find((view) => view === word) ?? CATALOGUE_VIEW_DEFAULT;
+  if (word === CATALOGUE_VIEW_DEFAULT) return null;
+  return CATALOGUE_VIEW_LIST.find((view) => view === word) ?? null;
 }
 
 /** The address for one view of the catalogue. The default view says nothing at all. */
 export function cataloguePath(view: CatalogueView): string {
-  return view === CATALOGUE_VIEW_DEFAULT ? "/games" : `/games?view=${view}`;
+  return view === CATALOGUE_VIEW_DEFAULT ? "/games" : `/games/${view}`;
 }

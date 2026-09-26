@@ -53,7 +53,7 @@ test("Settings offers a row a kind under one switch, at the stated defaults, and
   const member = await asMember(browser, baseURL!, memberId);
   try {
     const page = await member.newPage();
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     await ready(page, "settings-form");
 
     // The defaults, as the row states them: all of it on, a finished game on, a your-turn off.
@@ -77,7 +77,7 @@ test("Settings offers a row a kind under one switch, at the stated defaults, and
     expect((await kept(memberId)).all).toBe(false);
 
     // And the way back, read from a fresh page as the next visit would.
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     await ready(page, "settings-form");
     await expect(box(page, "mail-all")).not.toBeChecked();
     await expect(box(page, "mail-kind-your-turn")).toBeChecked();
@@ -122,7 +122,7 @@ test("a member under 13 is offered no email at all, in Settings or the welcome",
   const member = await asMember(browser, baseURL!, memberId);
   try {
     const page = await member.newPage();
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     await ready(page, "settings-form");
     await expect(page.getByTestId("child-settings-note")).toBeVisible();
     await expect(page.getByTestId("mail-choices")).toHaveCount(0);

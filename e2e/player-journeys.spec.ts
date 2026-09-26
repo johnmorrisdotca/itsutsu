@@ -39,7 +39,7 @@ test.describe("player journeys projection", () => {
    * Ends off, so no other spec signed in as the operator sees test members.
    */
   test("the operator's Test mode switch shows the banner and takes it away again", async ({ page }) => {
-    await page.goto("/admin?view=settings");
+    await page.goto("/admin/settings");
     await ready(page, "test-mode-control");
     const row = page.getByTestId("site-test-mode");
     const toggle = page.getByTestId("test-mode-switch");

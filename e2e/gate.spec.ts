@@ -117,7 +117,7 @@ test.describe("the pages that stay open", () => {
      */
     for (const path of [
       "/games",
-      "/games?view=list",
+      "/games/list",
       "/games/gomoku",
       "/games/gomoku/family",
       "/games/gomoku/background",
@@ -169,7 +169,7 @@ test.describe("the pages that stay open", () => {
       "/games/tic-tac-toe/rules",
       "/games/connect-six/rules",
       "/games",
-      "/games?view=list",
+      "/games/list",
       // The GAME'S OWN PAGE, which is the one that grew. It is open now and it
       // mounts the ladder and the played-games panel — both of which ask who is
       // reading and draw nothing for a stranger. That is the whole reason this

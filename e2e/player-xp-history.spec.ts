@@ -182,7 +182,7 @@ test("a signed-out reader is sent to the door and shown none of it", async ({ pl
   const world = await seedWorld();
   const stranger = await playwright.request.newContext({ baseURL, storageState: { cookies: [], origins: [] } });
   try {
-    const response = await stranger.get(`/players/${world.memberId}?view=xp`, { maxRedirects: 0 });
+    const response = await stranger.get(`/players/${world.memberId}/xp`, { maxRedirects: 0 });
     expect(response.status()).toBe(307);
     expect(response.headers()["location"] ?? "").toContain("/join");
     expect(await response.text()).not.toContain("xp-history");

@@ -172,7 +172,7 @@ test.describe("every row in a table is the same height", () => {
     const context = await browser.newContext({ storageState: ".auth/admin.json" });
     try {
       const page = await context.newPage();
-      await page.goto("/admin?view=members");
+      await page.goto("/admin/members");
 
       const list = page.getByTestId("admin-members");
       const withAccount = list.locator(`li[data-email="${ordinary.email}"]`);

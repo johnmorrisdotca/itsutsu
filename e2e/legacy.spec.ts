@@ -29,7 +29,8 @@ test.describe("a legacy record's games link to what they are", () => {
   test("an aliased game name is a link; an unmapped one is plain text", async ({ page }) => {
     // One page per person: John's ItsYourTurn chapter, where he played as
     // Incognito, is a tab of his own page rather than a second address.
-    await page.goto("/players/john-morris?view=itsyourturn");
+    // ItsYourTurn is his page's first tab, so it is the bare address (`tabs.ts`).
+    await page.goto("/players/john-morris");
     const detail = page.getByTestId("legacy-detail").first();
 
     // Go-Moku maps to our Gomoku (internally still the "freestyle" variant) —
@@ -62,7 +63,7 @@ test.describe("a legacy record's games link to what they are", () => {
 
   test("a head-to-head record links each game the same way", async ({ page }) => {
     // His head-to-head with his father is GoldToken's, so it is that tab.
-    await page.goto("/players/john-morris?view=goldtoken");
+    await page.goto("/players/john-morris/goldtoken");
     const log = page.getByTestId("legacy-head-to-head-log");
     await expect(log.getByRole("link", { name: "Long Gammon" })).toHaveCount(0);
     await expect(log.getByText("Long Gammon").first()).toBeVisible();
@@ -119,7 +120,7 @@ test.describe("a legacy record's games link to what they are", () => {
 
     // A tab click stays on his address rather than bouncing back through it.
     await page.getByTestId("tab").filter({ hasText: "GoldToken" }).click();
-    await expect(page).toHaveURL(/\/players\/john-morris\?/);
+    await expect(page).toHaveURL(/\/players\/john-morris\/goldtoken$/);
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
   });
 

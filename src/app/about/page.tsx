@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { Fragment } from "react";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
@@ -5,7 +6,7 @@ import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
-import { activeTab } from "@/lib/ui/tabs";
+import { openTabOf } from "@/lib/ui/tabs";
 import { ABOUT_TABS } from "./about.chapters";
 import { ABOUT_SECTIONS } from "./about.constants";
 
@@ -23,13 +24,14 @@ export const metadata = {
  * written for readers who would never scroll that far. John's standing rule is
  * tabs rather than a long page, and this was the page that most needed it.
  *
- * The open chapter is in the address (`?view=`), so it can be linked to and
+ * The open chapter is in the address (a path: /about/<chapter>, `tabs.ts`), so it can be linked to and
  * survives a reload, and the first chapter is the bare /about — an ordinary
  * link to the page is still an ordinary link to its opening.
  */
 export default async function AboutPage({ searchParams }: PageProps<"/about">) {
   const asked = await searchParams;
-  const open = activeTab(ABOUT_TABS, asked.view);
+  const open = openTabOf(ABOUT_TABS, asked);
+  if (open === null) notFound();
   const shown = ABOUT_SECTIONS.filter((section) => section.chapter === open);
   return (
     <Page>

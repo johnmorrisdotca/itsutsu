@@ -60,7 +60,7 @@ test.describe("reporting a problem", () => {
   });
 
   test("the operator has a Reports tab, which shows the reports or says why it cannot", async ({ page }) => {
-    await page.goto("/admin?view=reports");
+    await page.goto("/admin/reports");
     const panel = page.getByTestId("admin-reports");
     await expect(panel).toBeVisible();
     const shown = panel.getByTestId("reports-unreadable").or(panel.getByTestId("reports-empty")).or(panel.getByTestId("reports-list"));

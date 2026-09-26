@@ -77,7 +77,7 @@ test.describe("your games", () => {
     await row.getByTestId("resign-yes").click();
     expect((await resigned).ok()).toBe(true);
     // Finished, it moves to the Completed tab.
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await expect(page.getByTestId("my-games-finished").locator(row)).toBeVisible();
 
     // Black won by resignation, and the record says so.

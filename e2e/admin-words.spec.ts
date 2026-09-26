@@ -72,7 +72,7 @@ test.describe("the operator sets a member's four words", () => {
     try {
       expect(await phraseSetOn(her.email), "the seeded account starts with no words").toBeNull();
 
-      await page.goto("/admin?view=members");
+      await page.goto("/admin/members");
       const row = page.getByTestId("admin-member").filter({ hasText: `Words${stamp}` });
       // The list arrives from the API, so wait for the row before reading
       // anything off it or asserting anything is absent from it.
@@ -121,7 +121,7 @@ test.describe("the operator sets a member's four words", () => {
       const herContext = await memberContext(browser, baseURL!, her);
       try {
         const herPage = await herContext.newPage();
-        await herPage.goto("/me?view=words");
+        await herPage.goto("/me/words");
         await expect(herPage.getByTestId("phrase-setup")).toHaveAttribute("data-ready", "true");
         await expect(herPage.getByTestId("phrase-status")).toContainText("Four words are set");
       } finally {
@@ -140,7 +140,7 @@ test.describe("the operator sets a member's four words", () => {
     try {
       // The first set, through the screen, so the second open has something
       // real to ask about.
-      await page.goto("/admin?view=members");
+      await page.goto("/admin/members");
       const row = page.getByTestId("admin-member").filter({ hasText: `Replace${stamp}` });
       await expect(row).toBeVisible();
       await row.getByTestId("member-words").click();
@@ -215,7 +215,7 @@ test.describe("the operator sets a member's four words", () => {
 
 test.describe("the bots have a tab of their own", () => {
   test("lists the computer players, and the members list does not", async ({ page }) => {
-    await page.goto("/admin?view=bots");
+    await page.goto("/admin/bots");
     const table = page.getByTestId("admin-bots-table");
     await expect(table).toBeVisible();
 
@@ -251,7 +251,7 @@ test.describe("the bots have a tab of their own", () => {
      * And they are not on the Members tab any more. Asserted after that tab's
      * own rows are on screen, so the absence is about a rendered list.
      */
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     await expect(page.getByTestId("admin-member").first()).toBeVisible();
     await expect(page.getByTestId("admin-members").locator('[data-testid="member-kind"][data-kind="robot"]')).toHaveCount(
       0,

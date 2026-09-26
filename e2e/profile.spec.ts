@@ -18,7 +18,7 @@ test.describe("people", () => {
    * run, and nothing was reading the log.
    *
    * ONE TAB OF THIS PAGE WAS WATCHED AND FIVE WERE NOT. `country-flags.spec.ts`
-   * put a watcher on `/me?view=profile` when the country picker's own mismatch
+   * put a watcher on `/me/profile` when the country picker's own mismatch
    * was fixed; the record, the XP ledger, the words, the game defaults and the
    * people are five more trees, three of them forms, and a mismatch in any of
    * them would have been reported by nobody.
@@ -58,12 +58,13 @@ test.describe("people", () => {
       const page = await context.newPage();
       // Before the navigation: a watcher attached after it can miss the message.
       const crashes = watchForCrashes(page);
-      await page.goto(`/me?view=${view}`);
+      // The first tab is the plain page; the rest are paths (`tabs.ts`).
+      await page.goto(view === views[0] ? "/me" : `/me/${view}`);
 
       // The server rendered the tab that was asked for…
       await expect(
         page.locator(`[data-testid="tab"][data-tab="${view}"]`),
-        `/me?view=${view} did not open that tab`,
+        `/me/${view} did not open that tab`,
       ).toHaveAttribute("data-open", "true");
       /*
        * …and the browser has taken the page over. Both halves matter: an
@@ -76,12 +77,12 @@ test.describe("people", () => {
       await ready(page, "account-menu");
       await expect(
         page.locator('[data-ready="false"]'),
-        `a panel on /me?view=${view} never hydrated`,
+        `a panel on /me/${view} never hydrated`,
       ).toHaveCount(0);
 
       expect(
         crashes,
-        `/me?view=${view} logged this while hydrating — a mismatch here means the reader saw one answer and then another:\n${crashes.join("\n")}`,
+        `/me/${view} logged this while hydrating — a mismatch here means the reader saw one answer and then another:\n${crashes.join("\n")}`,
       ).toEqual([]);
       await page.close();
     }
@@ -100,12 +101,12 @@ test.describe("people", () => {
     // above the tabs rather than behind one of them.
     await page.goto("/me");
     await expect(page.getByTestId("name-form")).toBeVisible();
-    await page.goto("/me?view=people");
+    await page.goto("/me/people");
     await expect(page.getByTestId("name-form")).toBeVisible();
   });
 
   test("the people a member has said something about are on one tab", async ({ page }) => {
-    await page.goto("/me?view=people");
+    await page.goto("/me/people");
     await expect(page.getByTestId("buddies")).toBeVisible();
     // And not stacked underneath the record, which is what the tabs are for.
     await expect(page.getByTestId("my-record")).toHaveCount(0);

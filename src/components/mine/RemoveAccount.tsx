@@ -12,7 +12,7 @@ import { REMOVE_COPY } from "./mine.constants";
 import type { RemoveAccountProps } from "./removeAccount.types";
 
 /** Back to this tab after Google, through the route that turns Google's answer into a session. */
-const AFTER_GOOGLE = `/api/session/google?next=${encodeURIComponent("/me?view=profile")}`;
+const AFTER_GOOGLE = `/api/session/google?next=${encodeURIComponent("/me/profile")}`;
 
 /**
  * REMOVE THIS ACCOUNT, at the foot of the Profile tab (PRIV-04).

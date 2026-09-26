@@ -20,7 +20,7 @@ test("a solve on Completed opens its own finished grid, its time and its points,
   });
   expect(handed.ok()).toBe(true);
 
-  await page.goto("/play?view=completed");
+  await page.goto("/play/completed");
   await ready(page, "tabs");
   await page.getByTestId("puzzle-solved").first().getByTestId("puzzle-solved-open").click();
   await expect(page).toHaveURL(new RegExp(`/games/${PUZZLE_SLUGS.numberPlace}/me/[^/]+$`));

@@ -24,7 +24,7 @@ test.describe("a member's row says what kind of member they are", () => {
     // The operator has a member row in production; give the dev database one
     // too, or there is nothing on this list that is them.
     await ensureMember(suiteOperator());
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
 
     const mine = page.getByTestId("admin-member").filter({ has: page.getByText(OPERATOR) });
     await expect(mine.getByTestId("member-kind")).toHaveAttribute("data-kind", "operator");
@@ -43,7 +43,7 @@ test.describe("a member's row says what kind of member they are", () => {
      */
     const stamp = Date.now().toString(36);
     await seedMember({ email: `plain-${stamp}@example.test`, name: `Plain ${stamp}` });
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     const plain = page.getByTestId("admin-member").filter({ hasText: `Plain ${stamp}` });
     await expect(plain).toBeVisible();
     await expect(plain.getByTestId("member-kind")).toHaveCount(0);
@@ -53,7 +53,7 @@ test.describe("a member's row says what kind of member they are", () => {
     // The standing rule: a row's height belongs to the table, not to what
     // happens to be in that row.
     await ensureMember(suiteOperator());
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     const rows = page.getByTestId("admin-member");
     // The list arrives from the API, so wait for it rather than counting an
     // empty page and calling that a pass.
@@ -81,7 +81,7 @@ test.describe("a member's row says what kind of member they are", () => {
 test.describe("shutting an account", () => {
   test("is not offered on the operator's own row", async ({ page }) => {
     await ensureMember(suiteOperator());
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     const mine = page.getByTestId("admin-member").filter({ has: page.getByText(OPERATOR) });
     await expect(mine.getByTestId("cannot-shut-yourself")).toBeVisible();
     await expect(mine.getByTestId("ban-member")).toHaveCount(0);
@@ -100,7 +100,7 @@ test.describe("shutting an account", () => {
     expect(await refused.text()).toContain("cannot shut your own account");
 
     // And the operator is still the operator, which is the whole point.
-    const still = await page.goto("/admin?view=members");
+    const still = await page.goto("/admin/members");
     expect(still?.status()).toBe(200);
   });
 

@@ -259,7 +259,7 @@ describe("the days, as arithmetic", () => {
 
   it("builds the next page's address on the XP tab, keeping everything else", () => {
     const params = new URLSearchParams("scope=here&xp-cursor=old");
-    expect(xpHistoryHref("/players/m1", params, "abc")).toBe("/players/m1?scope=here&xp-cursor=abc&view=xp#xp-history");
-    expect(xpHistoryHref("/players/m1", params, null)).toBe("/players/m1?scope=here&view=xp#xp-history");
+    expect(xpHistoryHref("/players/m1", params, "abc")).toBe("/players/m1/xp?scope=here&xp-cursor=abc#xp-history");
+    expect(xpHistoryHref("/players/m1", params, null)).toBe("/players/m1/xp?scope=here#xp-history");
   });
 });

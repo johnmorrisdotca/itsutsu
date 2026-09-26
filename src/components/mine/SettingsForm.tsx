@@ -44,7 +44,7 @@ export function SettingsForm({ initial, child = false, mailSending = false }: { 
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="settings-form" {...readyMark(useHydrated())}>
+    <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="settings-form" data-width-reason="a form of labelled fields and switches, kept to one column so each label sits beside its control" {...readyMark(useHydrated())}>
       <ProfileAway fields={fields} set={set} />
       <ProfileSends fields={fields} set={set} child={child} mailSending={mailSending} />
       <div className="flex items-center gap-3">

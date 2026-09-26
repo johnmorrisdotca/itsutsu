@@ -136,7 +136,7 @@ export default async function ChampionsPage({ searchParams }: PageProps<"/champi
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="champions">
         <p className="text-sm text-muted">
           The best-rated player at each game today. Each game keeps its own rating; the{" "}
-          <Link href="/players?view=ladder" className="underline underline-offset-4">ladder</Link> counts everything together.
+          <Link href="/players/ladder" className="underline underline-offset-4">ladder</Link> counts everything together.
         </p>
         {/* Two ways to read the same table: tabs, as every choice of what a page lists is (`ViewTabs`). */}
         <ViewTabs

@@ -72,7 +72,7 @@ test.describe("the opponents in a record", () => {
    * assuming one by name.
    */
   async function openAComputerPlayersRecord(page: Page): Promise<void> {
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const first = page.getByTestId("computer-player-name").first();
     /*
      * ASSERTED, not skipped. This used to be `test.skip(count === 0, "no

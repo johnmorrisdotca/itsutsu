@@ -35,7 +35,7 @@ import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { ratingShown, tierShown } from "@/lib/rating/shownRecord";
-import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { openTabOf, type Tab } from "@/lib/ui/tabs";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { xpForBadge } from "@/lib/xp/xpScope";
 import Link from "@/components/ui/Link";
@@ -55,7 +55,6 @@ export const metadata = { title: "Player" };
 export default async function PlayerPage({ params, searchParams }: PageProps<"/players/[slug]">) {
   const { slug } = await params;
   const asked = await searchParams;
-  const view = asked.view;
   const scope = readRecordScope(asked[SCOPE_PARAM]);
 
   const legacyBySlug = findLegacyPlayer(slug);
@@ -216,7 +215,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    */
   const earner = member?.id ?? null;
   const tabs: Tab[] = earner === null ? sites : [...sites, XP_HISTORY_TAB_ENTRY];
-  const open = activeTab(tabs, view);
+  const open = openTabOf(tabs, asked);
+  if (open === null) notFound();
   const shown = elsewhere.find((tab) => tab.key === open) ?? null;
 
   /*

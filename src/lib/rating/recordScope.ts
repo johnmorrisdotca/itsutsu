@@ -50,9 +50,9 @@ export function readRecordScope(asked: string | string[] | undefined): RecordSco
  * ordinary player page stays a bare address.
  */
 export function scopeHref(base: string, view: string | undefined, scope: RecordScope): string {
-  const params = new URLSearchParams();
-  if (view !== undefined && view !== "") params.set("view", view);
-  return scopeHrefFrom(base, params, scope);
+  // The open tab is a segment of the path (`tabs.ts`); only the scope is a query.
+  const at = view !== undefined && view !== "" ? `${base}/${encodeURIComponent(view)}` : base;
+  return scopeHrefFrom(at, new URLSearchParams(), scope);
 }
 
 /**

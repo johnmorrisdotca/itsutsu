@@ -67,7 +67,7 @@ test.describe("a control is named by its label", () => {
       name: `Named ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     /*
      * The form's own marker first. A name is computed from the rendered tree,
      * and the tree the server sent is replaced during hydration — asking
@@ -232,7 +232,7 @@ test.describe("a hand-written label names its control too", () => {
      * and `name: undefined` matches any box at all. Reading the tab saves
      * nothing.
      */
-    await page.goto("/admin?view=settings");
+    await page.goto("/admin/settings");
     await ready(page, "admin-site");
 
     const label = "What the door says";

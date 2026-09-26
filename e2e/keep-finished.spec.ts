@@ -44,7 +44,7 @@ test.describe("keeping finished games in your own list", () => {
       name: `Keeper ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
 
     const choice = page.getByTestId("keep-finished-days");
     await expect(choice).toBeVisible();
@@ -91,7 +91,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // The shortest window there is. The game was finished seconds ago, so it
     // is still inside it — the setting is about age, not about hiding.
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
@@ -144,10 +144,10 @@ test.describe("keeping finished games in your own list", () => {
     }
 
     // Keeping everything: it is in the list.
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await expect(page.getByTestId("my-games-finished")).toContainText(shownName(`Cloth${stamp} Tester`));
 
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
@@ -158,7 +158,7 @@ test.describe("keeping finished games in your own list", () => {
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // A month old, a week's window: gone from the queue.
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     // The Completed panel is drawn, even empty, so this is about a rendered list.
     await expect(page.getByTestId("my-games-finished")).toBeVisible();
     await expect(page.getByTestId("my-games-finished")).not.toContainText(shownName(`Cloth${stamp} Tester`));
@@ -234,12 +234,12 @@ test.describe("keeping finished games in your own list", () => {
      * This is the half that makes the rest mean anything — without it, "gone"
      * below could as easily be "never arrived".
      */
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await expect(page.getByTestId("my-games-finished")).toBeVisible();
     await expect(row(page, lately)).toBeVisible();
     await expect(row(page, ancient)).toBeVisible();
 
-    await page.goto("/me?view=settings");
+    await page.goto("/me/settings");
     // The profile is a server-rendered form: its selects and its day
     // buttons are real controls before React attaches, and a choice made
     // then is dropped — the state never hears it and the next render puts
@@ -251,7 +251,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // A week's window: the game from a month ago is not listed, and the one
     // from a moment ago still is — waited for before anything is called absent.
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await expect(page.getByTestId("my-games-finished")).toBeVisible();
     await expect(row(page, lately)).toBeVisible();
     await expect(row(page, ancient)).toHaveCount(0);
@@ -371,7 +371,7 @@ test.describe("keeping finished games in your own list", () => {
     const rows = panel.locator('[data-testid="my-game"]');
 
     // ── The Completed tab IS the list: a page of twenty of twenty-three, and it says so. ──
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await expect(panel).toBeVisible();
     await expect(rows).toHaveCount(OPENED);
     // The TRUE number over a page of twenty, not the page's own length.
@@ -411,7 +411,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // ── The way back, which is the half a one-directional test never finds. ──
     await page.getByTestId("my-games-finished-newest").click();
-    await expect(page).toHaveURL(/\/play\?view=completed$/);
+    await expect(page).toHaveURL(/\/play\/completed$/);
     await expect(rows).toHaveCount(OPENED);
     await expect(rows.first()).toHaveAttribute("data-id", made[0]);
 

@@ -21,7 +21,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { readBoard } from "@/lib/backlog/backlogStore";
 import { scopeOf, statusFromAddress } from "@/lib/backlog/boardScope";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
-import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { openTabOf, type Tab } from "@/lib/ui/tabs";
 import { TestModeControl } from "@/components/admin/TestModeControl";
 
 export const metadata = { title: "Admin", robots: { index: false, follow: false } };
@@ -46,7 +46,7 @@ export const dynamic = "force-dynamic";
 /*
  * Short, plain names (John, 2026-09-26: "more concise or tech friendly tab
  * titles. Some are weird.") — and the addresses say the same ("You should make
- * the URLs match though"): ?view=access, settings, tickets. No redirect from
+ * the URLs match though"): /admin/settings, /admin/tickets. No redirect from
  * the old ones, as this site keeps none. Access is the codes and tokens,
  * Tickets the board and the releases; not "Board", which here means a game's.
  */
@@ -87,7 +87,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   if (!(await isAdminRequest())) notFound();
   const [me, asked] = await Promise.all([currentSession(), searchParams]);
   const who = me?.name ?? me?.email ?? "";
-  const open = activeTab(TABS, asked.view);
+  const open = openTabOf(TABS, asked);
+  if (open === null) notFound();
   // The board's own view, in `?show=` beside the tab: the unfinished rows unless it asks for more (`boardScope.ts`).
   const status = statusFromAddress(asked.show);
   const board = open === "tickets" ? await readBoard(scopeOf(status)) : null;
@@ -157,7 +158,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
               </Link>
             </SectionHeading>
             {board.ok ? (
-              <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/admin?view=tickets" who={who} />
+              <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/admin/tickets" who={who} />
             ) : (
               <BoardUnreadable problem={board.problem} />
             )}

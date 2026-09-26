@@ -1,3 +1,4 @@
+import { TAB_FROM_PATH } from "@/lib/ui/tabs";
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { type GameKey, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
@@ -325,7 +326,8 @@ export function xpMoreHref(at: string, params: URLSearchParams, cursor: string):
 export function xpParamsFrom(record: Record<string, string | string[] | undefined>): URLSearchParams {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(record)) {
-    if (value === undefined) continue;
+    // A tab is the path (`tabs.ts`), handed in under its own key: never carried on as a query.
+    if (value === undefined || key === TAB_FROM_PATH) continue;
     if (Array.isArray(value)) for (const one of value) params.append(key, one);
     else params.set(key, value);
   }

@@ -1,4 +1,4 @@
-import { TAB_PARAM, type Tab } from "@/lib/ui/tabs";
+import { type Tab } from "@/lib/ui/tabs";
 
 import { isImportedXpType } from "./importedXp.constants";
 import type { XpHistoryDay, XpLedgerRow } from "./xpHistory.types";
@@ -84,8 +84,9 @@ export function xpHistoryDays(
  */
 export function xpHistoryHref(at: string, params: URLSearchParams, cursor: string | null): string {
   const next = new URLSearchParams(params.toString());
-  next.set(TAB_PARAM, XP_HISTORY_TAB);
+  // The XP tab is a segment of the path (`tabs.ts`); the scope and the cursor stay in the query.
   if (cursor === null) next.delete(XP_HISTORY_CURSOR_PARAM);
   else next.set(XP_HISTORY_CURSOR_PARAM, cursor);
-  return `${at}?${next.toString()}#${XP_HISTORY_ANCHOR}`;
+  const query = next.toString();
+  return `${at}/${XP_HISTORY_TAB}${query === "" ? "" : `?${query}`}#${XP_HISTORY_ANCHOR}`;
 }

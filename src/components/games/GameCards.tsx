@@ -26,7 +26,7 @@ function initial(label: string): string {
 /**
  * Every game, one card each, with two bars to narrow them: A–Z by first
  * letter, and by what wins — three, four, five or six in a row, or flips.
- * Both live in the query — /games?view=cards&letter=T&kind=4 — so a narrowed
+ * Both live in the query — /games/cards&letter=T&kind=4 — so a narrowed
  * list can be linked; a choice nothing matches is shown but cannot be
  * pressed, which tells the reader the shape of the list before they touch it.
  *

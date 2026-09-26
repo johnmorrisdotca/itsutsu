@@ -21,11 +21,11 @@ const fetcher = async (url: string): Promise<Who | null> => {
 
 /*
  * The operator's corners of the Admin page, one click nearer. Tabs of the one
- * page rather than pages of their own, so they are its `?view=` addresses.
+ * page rather than pages of their own, so they are its tab paths (/admin/tickets, /admin/members).
  */
 const ADMIN_SHORTCUTS = [
-  { href: "/admin?view=tickets", label: "Tickets", testId: "admin-tickets-link" },
-  { href: "/admin?view=members", label: "Members", testId: "admin-members-link" },
+  { href: "/admin/tickets", label: "Tickets", testId: "admin-tickets-link" },
+  { href: "/admin/members", label: "Members", testId: "admin-members-link" },
 ] as const;
 
 /** The popup's width, and what it needs to its left before it may open leftward. */
@@ -203,7 +203,7 @@ export function AccountMenu({
           className={`absolute top-full z-50 mt-2 rounded-2xl border border-rule-strong/70 bg-paper p-2 text-sm shadow-lg ${alignLeft ? "left-0" : "right-0"}`}
           style={{ width: MENU_WIDTH_PX, maxWidth: `calc(100vw - ${MENU_EDGE_PX * 2}px)` }}
           data-testid="account-menu-panel"
-          // Any link followed from here closes it — `/admin?view=tickets` from `/admin` keeps the path, so the address alone would not.
+          // Any link followed from here closes it — `/admin/tickets` from `/admin` keeps the path, so the address alone would not.
           onClick={(event) => {
             const target = event.target as HTMLElement;
             // A link is a departure and shuts the menu; a language is not, and does not.
@@ -241,11 +241,11 @@ export function AccountMenu({
           {named ? (
             <>
               {/* Who you are and what others see: the Profile tab. The name above opens the whole page. */}
-              <Link href="/me?view=profile" className={ITEM} data-testid="profile-link">
+              <Link href="/me/profile" className={ITEM} data-testid="profile-link">
                 Profile
               </Link>
               {/* How the site behaves for you: the Settings tab. The pair both sites' menus name. */}
-              <Link href="/me?view=settings" className={ITEM} data-testid="settings-link">
+              <Link href="/me/settings" className={ITEM} data-testid="settings-link">
                 Settings
               </Link>
             </>

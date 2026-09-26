@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
  * The home page must not hardcode a count the code already knows.
  *
  * `src/app/page.tsx` said "Thirty of them" in plain prose. `GameList.tsx`, one
- * click away at /games?view=list, computes the true count as
+ * click away at /games/list, computes the true count as
  * `{RULE_VARIANT_LIST.length} games in {GAME_FAMILIES.length} families` — 39
  * in 11, live. Two anonymous pages contradicting each other about the same
  * catalogue.

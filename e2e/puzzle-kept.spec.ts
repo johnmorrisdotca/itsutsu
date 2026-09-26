@@ -58,7 +58,7 @@ test("paused and left by a link, it is in My games, opens where it was left, and
   await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
 
   // Solved, it is on Completed beside the games; and never still listed as going, under Going.
-  await page.goto("/play?view=completed");
+  await page.goto("/play/completed");
   await expect(page.getByTestId("completed-puzzles")).toBeVisible();
   await page.goto("/play");
   // The page's own list first, so the absence below is about a drawn page.

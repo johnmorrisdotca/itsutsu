@@ -67,7 +67,7 @@ test.describe("the operator's members list", () => {
      */
     const before = ((await (await request.get("/api/members")).json()) as { people: number }).people;
 
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     await expect(page.getByTestId("admin-members")).toBeVisible();
     // The list arrives from the API, so wait for it rather than reading the
     // nought it shows first and calling that a count.

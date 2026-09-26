@@ -29,7 +29,7 @@ test.describe("the buddy list", () => {
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
 
-    await page.goto("/players?view=buddies");
+    await page.goto("/players/buddies");
     /*
      * AN EMPTY LIST IS A LIST, and it shows the way in rather than an apology.
      * Asserted after the tab strip has been seen, so the absence of rows is a
@@ -58,7 +58,7 @@ test.describe("the buddy list", () => {
     expect(starred.status(), await starred.text()).toBeLessThan(300);
 
     const page = await context.newPage();
-    await page.goto("/players?view=buddies");
+    await page.goto("/players/buddies");
 
     const row = page.locator(`[data-testid="buddy-row"][data-member="${theirId}"]`);
     await expect(row).toBeVisible();
@@ -91,7 +91,7 @@ test.describe("the buddy list", () => {
     expect((await context.request.post("/api/buddies", { data: { memberId: theirId } })).status()).toBeLessThan(300);
 
     const page = await context.newPage();
-    await page.goto("/players?view=buddies");
+    await page.goto("/players/buddies");
     const row = page.locator(`[data-testid="buddy-row"][data-member="${theirId}"]`);
     await expect(row).toBeVisible();
 
@@ -131,7 +131,7 @@ test.describe("the buddy list", () => {
     expect((await context.request.post("/api/buddies", { data: { memberId: theirId } })).status()).toBeLessThan(300);
 
     const page = await context.newPage();
-    await page.goto("/players?view=buddies");
+    await page.goto("/players/buddies");
     const row = page.locator(`[data-testid="buddy-row"][data-member="${theirId}"]`);
     await row.getByTestId("challenge").click();
     await ready(page, "set-up-game");
@@ -144,7 +144,7 @@ test.describe("the buddy list", () => {
     const accepted = await theirs.request.post(`/api/games/${id}/offer/accept`, {});
     expect(accepted.status(), await accepted.text()).toBeLessThan(300);
 
-    await page.goto("/players?view=buddies");
+    await page.goto("/players/buddies");
     const going = row.getByTestId("buddy-going-link");
     await expect(going).toContainText("1 going");
     await going.click();

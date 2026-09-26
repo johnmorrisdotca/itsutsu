@@ -48,11 +48,11 @@ test("a child keeps nothing that says where they are, and only their own buddies
 
     // The child's own page says why the fields are not there.
     const own = await context.newPage();
-    await own.goto("/me?view=profile");
+    await own.goto("/me/profile");
     await ready(own, "profile-form");
     await expect(own.getByTestId("child-profile-note")).toBeVisible();
     await expect(own.getByTestId("profile-city")).toHaveCount(0);
-    await own.goto("/me?view=settings");
+    await own.goto("/me/settings");
     await ready(own, "settings-form");
     await expect(own.getByTestId("child-settings-note")).toBeVisible();
     await expect(own.getByRole("checkbox", { name: "Show when I am here" })).toHaveCount(0);

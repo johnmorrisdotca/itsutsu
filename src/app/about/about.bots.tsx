@@ -109,7 +109,7 @@ export const BOTS_SECTION: AboutSection = {
       site’s own flagship is missing from the figures entirely — a round robin at{" "}
       <Game variant="freestyle">gomoku</Game> ran for over an hour without finishing, so there is no row for it,
       and no row is what a page shows when it does not know. You can meet any of them from{" "}
-      <Inside href="/players?view=computers">the players page</Inside>.
+      <Inside href="/players/bots">the players page</Inside>.
     </>,
   ],
   /*

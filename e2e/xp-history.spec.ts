@@ -258,7 +258,7 @@ test.describe("a member's own XP", () => {
     const page = await seeded.context.newPage();
     try {
       // Five at a time, so a dozen awards is three pages.
-      await page.goto("/me?view=xp&limit=5");
+      await page.goto("/me/xp?limit=5");
       const rows = page.getByTestId("my-xp-award");
       // `toHaveCount` retries; `allInnerTexts` does not, and a count taken
       // before the page has answered is a count of nothing that reads as a bug.
@@ -373,14 +373,14 @@ test.describe("a member's own XP", () => {
     });
     const page = await context.newPage();
     try {
-      await page.goto("/me?view=xp&sort=points");
+      await page.goto("/me/xp?sort=points");
       await expect(page.getByTestId("my-xp-refused")).toContainText("points");
       // The standing above it is still true, so it is still shown.
       await expect(page.getByTestId("my-xp-standing")).toBeVisible();
       // And the way back to a list that works is offered.
       await expect(page.getByTestId("my-xp-refused").getByRole("link")).toHaveAttribute(
         "href",
-        "/me?view=xp",
+        "/me/xp",
       );
     } finally {
       await context.close();

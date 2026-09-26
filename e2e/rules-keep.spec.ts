@@ -191,7 +191,7 @@ test.describe("a profile change keeps what it was not asked about", () => {
      * and the profile form is filled from the row, so what it shows is what
      * was stored. Which is also the thing a person would notice.
      */
-    const page = await request.get("/me?view=profile");
+    const page = await request.get("/me/profile");
     expect(page.status()).toBe(200);
     const shown = await page.text();
     expect(shown, "the field that was named should have changed").toContain(`Second ${stamp}`);

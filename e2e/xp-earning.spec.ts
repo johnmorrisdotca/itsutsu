@@ -200,7 +200,7 @@ test.describe("the zone a member's days are counted in", () => {
        and a device that agrees with the guess sends nothing of its own first. */
     const home = await visitorContext(browser, baseURL!, visitor, { timezoneId: "America/Toronto" });
     const profile = await home.newPage();
-    await profile.goto("/me?view=profile");
+    await profile.goto("/me/profile");
     await ready(profile, "profile-form");
     await profile.getByRole("button", { name: "use this device's" }).click();
     await expect(profile.getByTestId("profile-zone")).toHaveValue("America/Toronto");
@@ -229,7 +229,7 @@ test.describe("the zone a member's days are counted in", () => {
     expect((await standingFor(visitor.id))?.timeZone).toBe("America/Toronto");
 
     /* And the page says it is theirs rather than calling their choice a guess. */
-    await page.goto("/me?view=profile");
+    await page.goto("/me/profile");
     await ready(page, "profile-form");
     await expect(page.getByTestId("day-zone-known")).toBeVisible();
     await expect(page.getByTestId("day-zone-guessed")).toHaveCount(0);

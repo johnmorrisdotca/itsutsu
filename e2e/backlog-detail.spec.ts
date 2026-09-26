@@ -13,7 +13,7 @@ import { ready } from "./support";
  */
 test.describe("a long request on the board", () => {
   test("shows its opening, and the whole of it when asked", async ({ page }) => {
-    await page.goto("/admin?view=tickets");
+    await page.goto("/admin/tickets");
     // The fold is a button inside the board's client component. Waiting for
     // the mark also makes the assertion below a statement about a rendered
     // board rather than about how fast the request came back.
@@ -47,7 +47,7 @@ test.describe("a long request on the board", () => {
   });
 
   test("says whether it is open, for somebody not using a mouse", async ({ page }) => {
-    await page.goto("/admin?view=tickets");
+    await page.goto("/admin/tickets");
     await ready(page, "backlog-filters");
     const toggle = page.getByTestId("backlog-detail-toggle").first();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");

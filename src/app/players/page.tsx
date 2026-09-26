@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
 import { BuddyList } from "@/components/players/BuddyList";
 import { Directory } from "@/components/players/Directory";
@@ -14,13 +15,15 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { directoryFilterFor } from "@/lib/rating/memberFilter";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
-import { activeTab } from "@/lib/ui/tabs";
+import { openTabOf, TAB_FROM_PATH } from "@/lib/ui/tabs";
 import { PLAYERS_TABS as TABS, PLAYERS_OWN_TABS } from "./players.tabs";
 
 /** Everything the address already says, as a query string. */
 function addressOf(asked: Record<string, string | string[] | undefined>): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(asked)) {
+    // The tab is the path (`/players/ladder`), never part of the query a heading or a page carries on.
+    if (key === TAB_FROM_PATH) continue;
     if (typeof value === "string" && value !== "") params.set(key, value);
   }
   return params.toString();
@@ -48,7 +51,8 @@ async function ComputerTab() {
 export default async function PlayersPage({ searchParams }: PageProps<"/players">) {
   const now = new Date();
   const asked = await searchParams;
-  const open = activeTab(PLAYERS_OWN_TABS, asked.view);
+  const open = openTabOf(PLAYERS_OWN_TABS, asked);
+  if (open === null) notFound();
   /*
    * How this reader likes the directory narrowed, and whether the kind of
    * player came from their account — asked for only inside the tab that shows
@@ -133,8 +137,8 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
           )
         ) : null}
         {open === "ladder" ? <Ladder query={addressOf(asked)} /> : null}
-        {open === "computers" ? <ComputerTab /> : null}
-        {open === "remembered" ? (
+        {open === "bots" ? <ComputerTab /> : null}
+        {open === "honors" ? (
           <div className="flex flex-col gap-3" data-testid="remembered-section">
             <p className="text-sm text-muted">
               Players who never came here, whose record from elsewhere is kept under their name.

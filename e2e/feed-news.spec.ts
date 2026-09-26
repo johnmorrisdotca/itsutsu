@@ -102,7 +102,7 @@ test("the Everyone tab tells the site's news, and names nobody under 18", async 
     const botAnn = await tell("hardBotBeaten", ann.id, open1 as string, TOP_GRADE, null);
     const botKim = await tell("hardBotBeaten", kim.id, open2 as string, TOP_GRADE, null);
 
-    await page.goto("/feed?view=everyone");
+    await page.goto("/feed/everyone");
     await ready(page, "tabs");
     const panel = page.getByTestId("feed-panel");
     await expect(panel).toHaveAttribute("data-tab", "everyone");

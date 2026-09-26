@@ -53,7 +53,7 @@ test.describe("a game played only against the computer", () => {
   });
 
   test("is still on my record, and says which ladder it is from", async ({ page }) => {
-    await page.goto("/me?view=record");
+    await page.goto("/me");
     const table = page.getByTestId("me-standings");
     await expect(table).toBeVisible();
 
@@ -72,7 +72,7 @@ test.describe("a game played only against the computer", () => {
   });
 
   test("its counts lead to the games behind them, in the pool that counted them", async ({ page }) => {
-    await page.goto("/me?view=record");
+    await page.goto("/me");
     const row = page
       .getByTestId("me-standings")
       .locator("tr", { has: page.locator(`[data-variant="${VARIANT}"]`) });

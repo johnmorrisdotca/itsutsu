@@ -158,7 +158,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     const me = { email: `robots-${stamp}@example.test`, name: `Robots ${stamp}` };
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
 
     const rows = page.getByTestId("computer-player");
     /*
@@ -207,7 +207,7 @@ test.describe("every way into a game reaches the setup screen", () => {
       name: `Expert ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     await expect(page.getByTestId("computer-players-table")).toBeVisible();
 
     /*

@@ -120,7 +120,7 @@ export function ProfileForm({
    * line at the panel's full width, which is roughly twice a comfortable one.
    */
   return (
-    <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="profile-form" {...readyMark(useHydrated())}>
+    <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="profile-form" data-width-reason="a form of labelled fields and switches, kept to one column so each label sits beside its control" {...readyMark(useHydrated())}>
       {/* WHERE YOU ARE, AND A LINE ABOUT YOU. */}
       <div className="flex flex-col gap-3">
         {/*

@@ -32,7 +32,7 @@ import { SECTION_HEADING } from "@/components/ui/ui.constants";
  * It was a page of its own, /games/all, linked from the colophon. That made
  * the plain list a different RESOURCE from the games rather than a different
  * way of looking at them — two indexes to keep in step, and a footer link as
- * the only way to the second. It is a view now, at /games?view=list.
+ * the only way to the second. It is a view now, at /games/list.
  */
 export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn: boolean }) {
   return (

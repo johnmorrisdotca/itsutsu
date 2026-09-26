@@ -1,3 +1,6 @@
+import { notFound } from "next/navigation";
+import { MY_GAMES_VIEWS } from "@/lib/history/myGamesViews";
+import { openTabOf, TAB_FROM_PATH } from "@/lib/ui/tabs";
 import { INBOX_COPY } from "@/components/inbox/inbox.constants";
 import { unreadInbox } from "@/lib/inbox/inbox";
 import { currentMemberId } from "@/lib/auth/currentSession";
@@ -51,6 +54,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function MyGamesPage({ searchParams }: PageProps<"/play">) {
   const asked = await searchParams;
+  // A tab is a path (`/play/completed`); one this page does not have is not found.
+  if (openTabOf(MY_GAMES_VIEWS.map((key) => ({ key, label: key })), asked) === null) notFound();
   // The other member the address narrows to, by id, with a name to print — or null.
   const withMember = typeof asked.with === "string" ? await memberNamed(asked.with) : null;
   // The one page that says how much is new in the inbox: one count, here, not on every page's header.
@@ -126,7 +131,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           top of /games on 2026-09-24, when New game became the one place a game
           is set up and /games the library. See `OpenSeatsSection`.
         */
-        viewAsked={asked.view}
+        viewAsked={asked[TAB_FROM_PATH]}
         local={<LocalGameCardClient />}
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
       />

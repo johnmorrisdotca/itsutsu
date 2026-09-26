@@ -43,6 +43,18 @@ const HAND_WRITTEN_H1: Record<string, string> = {
 
 /** Pages whose title is drawn by a component they render, and which one. */
 const TITLE_DRAWN_BY: Record<string, { by: string; reason: string }> = {
+  "/about/[view]": { by: "src/app/about/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/admin/[view]": { by: "src/app/admin/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/feed/[view]": { by: "src/app/feed/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/games/cards": { by: "src/app/games/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/games/list": { by: "src/app/games/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/me/[view]": { by: "src/app/me/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/play/[view]": { by: "src/app/play/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/players/[slug]/[view]": { by: "src/app/players/[slug]/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/players/bots": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/players/buddies": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/players/honors": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/players/ladder": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
   "/history": { by: "src/components/history/RecordPage.tsx", reason: "the record is one page at three addresses" },
   "/games/[slug]/history": { by: "src/components/history/RecordPage.tsx", reason: "the record of one game" },
   "/games/new": { by: "src/components/live/SetUpHeading.tsx", reason: "the set-up screen's heading, shared with a game's own" },

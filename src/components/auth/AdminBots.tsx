@@ -33,7 +33,7 @@ import { BOT_NAME_COUNTRIES } from "@/lib/bots/botNames";
  * already tells them apart. The split John asked for is people from programs.
  *
  * SERVER-RENDERED, AND ONLY WHEN THE TAB IS OPEN. A tab here is an address
- * (`/admin?view=bots`), so nothing on this page is fetched while the operator
+ * (`/admin/bots`), so nothing on this page is fetched while the operator
  * is reading the Members list — which is what keeps the promise that the
  * Members list pays nothing for any of this. Three queries when it IS open:
  * the seven rows with their ratings, every finished game they have played, and

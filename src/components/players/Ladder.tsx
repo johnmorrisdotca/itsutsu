@@ -56,7 +56,7 @@ export async function Ladder({
   const page = await fetchLadderPage(paging);
 
   const sort: RecordSort = {
-    at: "/players",
+    at: "/players/ladder",
     // The address as a string: this crosses into a client component. See `RecordSort`.
     query,
     spec: LADDER_SORT_SPEC,

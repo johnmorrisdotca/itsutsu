@@ -200,7 +200,7 @@ const BASE_SECTIONS: AboutSection[] = [
       <>
         On this site every finished game is filed in the <Inside href="/history">record</Inside>,
         and every named player has a rating and a tier on the{" "}
-        <Inside href="/players?view=ladder">players</Inside> page that move with each result — the
+        <Inside href="/players/ladder">players</Inside> page that move with each result — the
         programs among them, on the same terms. There is a rating for each game as well as one across
         all of them, because being good at one of these is not being good at the next.
       </>,

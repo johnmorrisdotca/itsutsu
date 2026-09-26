@@ -52,7 +52,7 @@ test.describe("the name the site prints", () => {
     // The members are behind their own tab, so the address says so — asking
     // for /admin and counting what is on it was a skip that read as "no such
     // panel" and meant "I looked on the wrong tab".
-    await page.goto("/admin?view=members");
+    await page.goto("/admin/members");
     const members = page.getByTestId("admin-members");
     await expect(members).toBeVisible();
     await expect(members, "the operator cannot tell two people apart").toContainText(SURNAME);
@@ -60,7 +60,7 @@ test.describe("the name the site prints", () => {
 
   test("a computer player keeps its whole name", async ({ page }) => {
     // Nobody to protect, and the full name is the character.
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     await expect(page.getByTestId("computer-players")).toContainText("Tamenoki");
   });
 });

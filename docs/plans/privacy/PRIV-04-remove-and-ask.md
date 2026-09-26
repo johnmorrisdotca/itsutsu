@@ -34,12 +34,12 @@ records, which are NOT member rows and are removed by a commit.
 2. **Operator**: `OPERATOR_ACTIONS.remove`, a control on the member's Admin
    row with a typed confirmation of the member's name, the `blankSeats`
    choice, and a reason, logged with the count of games touched.
-3. **Member**: under `/me?view=profile`, `Remove this account`: a typed
+3. **Member**: under `/me/profile`, `Remove this account`: a typed
    confirmation, the same choice about the name on old games, then
    `removeMember` and sign-out. A words-only account is removed at once; a
    Google account is removed after re-signing in (fresh `signIn` with a
    `callbackUrl` back to the confirmation).
-4. **What we hold**: `/me?view=profile` gains a `What Itsutsu holds about you`
+4. **What we hold**: `/me/profile` gains a `What Itsutsu holds about you`
    panel, listing in plain words every column the privacy page names and
    the counts (games, messages, XP events) behind them, read in one query
    each. Not a download: a list a person can read.

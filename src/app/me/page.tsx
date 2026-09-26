@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 
 import { GameDefaultsForm } from "@/components/mine/GameDefaultsForm";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
@@ -31,7 +31,7 @@ import { PLAYER_SESSION_DAYS } from "@/lib/auth/session";
 import { gameDefaultsFrom } from "@/components/game/gameDefaults";
 import { phraseStatus } from "@/lib/phrase/phraseStore";
 import { safeDestination } from "@/lib/auth/redirect";
-import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { openTabOf, type Tab } from "@/lib/ui/tabs";
 import { allCountries } from "@/lib/social/countries";
 import { TurnFlowForm } from "@/components/mine/TurnFlowForm";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
@@ -143,7 +143,8 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const band = isAgeBand(age.band) ? age.band : null;
   const askAge = welcome && band === null;
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
-  const open = activeTab(TABS, params.view);
+  const open = openTabOf(TABS, params);
+  if (open === null) notFound();
   /* The stored answers both halves of the account start from: Profile's form and Settings'. */
   const profileFields: ProfileFields = {
     awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",

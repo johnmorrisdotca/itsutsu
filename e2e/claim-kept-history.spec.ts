@@ -73,7 +73,7 @@ test("the operator attaches a record kept under another name, and the member's p
   await page.goto(`/players/${MEMBER.id}`);
   await expect(page.getByTestId("player-no-games")).toBeVisible();
 
-  await page.goto("/admin?view=members");
+  await page.goto("/admin/members");
   await ready(page, "admin-members");
   const row = page.getByTestId("admin-member").filter({ hasText: MEMBER.name });
   await expect(row).toHaveCount(1);

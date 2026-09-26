@@ -54,7 +54,7 @@ export function DayZoneNote({
       <p className="text-xs text-ink-soft" data-testid="day-zone-guessed">
         Days are counted in {zone} — a guess from your country, not something you told us. If your
         day ends somewhere else,{" "}
-        <Link href="/me?view=profile" className="underline underline-offset-4">
+        <Link href="/me/profile" className="underline underline-offset-4">
           say where you are
         </Link>{" "}
         and this follows you.
@@ -66,7 +66,7 @@ export function DayZoneNote({
     <p className="text-xs text-ink-soft" data-testid="day-zone-floor">
       Days are counted in {zone}, because nothing here knows your time zone yet — so a day may end
       in the middle of your afternoon.{" "}
-      <Link href="/me?view=profile" className="underline underline-offset-4">
+      <Link href="/me/profile" className="underline underline-offset-4">
         Set your time zone
       </Link>{" "}
       and the run of days becomes your own.

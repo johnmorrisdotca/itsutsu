@@ -8,7 +8,7 @@ import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 test.describe("rules and learning", () => {
   test("every game has a rules page in the same template", async ({ page }) => {
     // The cards that were the /rules index are a VIEW of /games now.
-    await page.goto("/games?view=cards");
+    await page.goto("/games/cards");
     const index = page.getByTestId("game-cards");
     /*
      * One card per game, however many there are today — and each card one way
@@ -39,7 +39,7 @@ test.describe("rules and learning", () => {
     // /games/all was a page of its own; it is the plain-list view of /games.
     await page.goto("/games");
     await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
-    await expect(page).toHaveURL(/\/games\?view=list$/);
+    await expect(page).toHaveURL(/\/games\/list$/);
     await expect(page.getByTestId("every-game-family")).toHaveCount(GAME_FAMILIES.length);
     await expect(page.getByTestId("every-game").locator("dt")).toHaveCount(EVERY_GAME_KEY.length);
     await expect(page.getByTestId("every-game-freestyle")).toContainText("Also known as Go-Moku");
@@ -90,7 +90,7 @@ test.describe("rules and learning", () => {
   });
 
   test("the rules can be narrowed to a first letter", async ({ page }) => {
-    await page.goto("/games?view=cards");
+    await page.goto("/games/cards");
     const cards = page.getByTestId("game-cards").getByRole("listitem");
     const all = await cards.count();
     /*
@@ -102,7 +102,7 @@ test.describe("rules and learning", () => {
     // No game starts with X; the button says so by refusing.
     await expect(page.getByTestId("letter-X")).toBeDisabled();
     await page.getByTestId("letter-T").click();
-    await expect(page).toHaveURL(/\/games\?view=cards&letter=T$/);
+    await expect(page).toHaveURL(/\/games\/cards\?letter=T$/);
     await expect(cards.first()).toContainText(/^T/);
     expect(await cards.count()).toBeLessThan(all);
     for (const card of await cards.allTextContents()) expect(card.trim()).toMatch(/^T/);
@@ -111,16 +111,16 @@ test.describe("rules and learning", () => {
   });
 
   test("the rules can be narrowed by what wins, together with a letter", async ({ page }) => {
-    await page.goto("/games?view=cards");
+    await page.goto("/games/cards");
     const cards = page.getByTestId("game-cards").getByRole("listitem");
     await ready(page, "letter-filter");
     await page.getByTestId("kind-flips").click();
-    await expect(page).toHaveURL(/\/games\?view=cards&kind=flips$/);
+    await expect(page).toHaveURL(/\/games\/cards\?kind=flips$/);
     for (const card of await cards.allTextContents()) expect(card).toMatch(/Reversi/);
     // With flips chosen, a letter no flipping game starts with cannot be pressed.
     await expect(page.getByTestId("letter-T")).toBeDisabled();
     await page.getByTestId("letter-A").click();
-    await expect(page).toHaveURL(/\/games\?view=cards&kind=flips&letter=A$/);
+    await expect(page).toHaveURL(/\/games\/cards\?kind=flips&letter=A$/);
     await expect(cards).toHaveCount(1);
     await expect(cards.first()).toContainText("Anti-Reversi");
   });

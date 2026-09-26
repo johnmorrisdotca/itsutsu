@@ -139,7 +139,7 @@ test.describe("every way into a game is two presses", () => {
    * along; this pins it so it stays two.
    */
   test("from a person's own page", async () => {
-    await page.goto("/players?view=computers");
+    await page.goto("/players/bots");
     const first = page.getByTestId("computer-player-name").first();
     const href = await first.getAttribute("href");
     expect(href, "a computer player's name is not a link to their page").toMatch(/^\/players\//);

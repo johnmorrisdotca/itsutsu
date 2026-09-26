@@ -99,7 +99,7 @@ test.describe("a live page's own hand-backs keep the document", () => {
     try {
       // Her four words, set on her own account first, as she would.
       const herPage = await herContext.newPage();
-      await herPage.goto("/me?view=words");
+      await herPage.goto("/me/words");
       await ready(herPage, "phrase-setup");
       await herPage.getByTestId("phrase-set-button").click();
       const words = await pickPhrase(herPage);

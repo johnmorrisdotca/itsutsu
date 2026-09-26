@@ -280,7 +280,7 @@ test("a best time on the feed opens the solve it was, and a game's IP opens the 
     const told = await prisma.siteNews.create({ data: { kind: "bestTime", memberId: world.ann.id, variant: "hiddenStones", subject: `5:easy:${ms}` }, select: { id: true } });
     world.news.push(told.id);
 
-    await page.goto("/feed?view=everyone");
+    await page.goto("/feed/everyone");
     await ready(page, "tabs");
     const time = page.locator(`[data-testid="feed-entry"][data-id="news:${told.id}"] [data-testid="feed-time"]`);
     await expect(time).toHaveAttribute("data-solve", best.id);

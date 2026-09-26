@@ -43,7 +43,7 @@ test.describe("age band", () => {
       await expect(page.getByTestId("name-form")).toBeVisible();
       await expect(page.getByTestId("age-band-form")).toHaveCount(0);
 
-      await page.goto("/me?view=profile");
+      await page.goto("/me/profile");
       await ready(page, "age-band-form");
       await expect(page.getByTestId("age-band-shown")).toContainText("Under 13");
       await expect(page.getByTestId("age-band-shown")).toContainText("consent recorded");
@@ -81,7 +81,7 @@ test.describe("age band", () => {
       await expect(page.getByTestId("name-form")).toBeVisible();
       await expect(page.getByTestId("age-band-form")).toHaveCount(0);
 
-      await page.goto("/me?view=profile");
+      await page.goto("/me/profile");
       await ready(page, "age-band-form");
       await expect(page.getByTestId("age-band-shown")).toContainText("18 or over");
       await page.getByTestId("age-band-change").click();

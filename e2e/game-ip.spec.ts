@@ -58,7 +58,7 @@ test("a game won pays its IP to the winner, nothing to the loser, and the row sa
 
     // On the winner's Completed tab, the game's row shows the IP it won.
     const page = await context.newPage();
-    await page.goto("/play?view=completed");
+    await page.goto("/play/completed");
     await ready(page, "tabs");
     const won = page.locator(`[data-testid="my-games-finished"] [data-testid="my-game"][data-id="${id}"] [data-testid="game-ip-won"]`);
     await expect(won).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));

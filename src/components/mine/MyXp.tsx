@@ -259,7 +259,7 @@ export async function MyXp({
          */
         <p className="text-sm text-ink-soft" data-testid="my-xp-refused">
           {page.error}{" "}
-          <Link href="/me?view=xp" className="underline underline-offset-4">
+          <Link href="/me/xp" className="underline underline-offset-4">
             Start again
           </Link>
           .
@@ -350,7 +350,7 @@ export async function MyXp({
              */
             <p className="text-sm">
               <Link
-                href={xpMoreHref("/me", query, page.next)}
+                href={xpMoreHref("/me/xp", query, page.next)}
                 scroll={false}
                 className="underline underline-offset-4"
                 data-testid="my-xp-more"
