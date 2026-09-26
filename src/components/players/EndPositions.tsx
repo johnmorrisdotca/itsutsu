@@ -11,10 +11,10 @@ import { slugFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { ENDINGS_COPY, ENDINGS_OUTCOME_LIST, ENDINGS_OUTCOMES, type EndingsOutcome } from "@/lib/history/endings.constants";
-import { frameOf, mosaicSvg } from "@/lib/record/mosaic";
-import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
+import { frameOf, mosaicPlan, mosaicSvg } from "@/lib/record/mosaic";
+import { MOSAIC_COPY, MOSAIC_PICKS, MOSAIC_SHAPES } from "@/lib/record/mosaic.constants";
 import type { MosaicFrame } from "@/lib/record/mosaic.types";
-import { nextPaint, pngOf, screenPixels } from "@/lib/record/mosaicImage";
+import { nextPaint, pngOf, shapeForScreen } from "@/lib/record/mosaicImage";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /** The board size most of these games were played on: a picture has one size, and the rest are said to be left out. */
@@ -83,26 +83,29 @@ export function EndPositions({
         setNote(ENDINGS_COPY.none);
         return;
       }
-      const { width, height } = screenPixels();
+      const { width, height } = MOSAIC_SHAPES[shapeForScreen()];
       const svg = mosaicSvg({
         frames,
+        pick: MOSAIC_PICKS.spread,
         size,
         grid: VARIANT_SPECS[variant].grid,
         width,
         height,
-        fillSpare: true,
-        details: [
+        title: {
           name,
-          `${RULE_VARIANT_DISPLAY[variant].label} · ${size}×${size}`,
-          `${ENDINGS_COPY.outcomes[outcome]} · ${frames.length} ${frames.length === 1 ? "game" : "games"}`,
-          MOSAIC_COPY.site,
-        ],
+          details: [
+            `${RULE_VARIANT_DISPLAY[variant].label} ${size}×${size}`,
+            `${ENDINGS_COPY.outcomes[outcome]}, ${frames.length} ${frames.length === 1 ? "game" : "games"}`,
+            MOSAIC_COPY.site,
+          ],
+        },
       });
       const blob = await pngOf(svg, width, height);
       setMade({
         url: URL.createObjectURL(blob),
         name: `itsutsu-${slugFor(variant)}-${outcome}-endings.png`,
-        count: frames.length,
+        // The picture's full grid may hold a few fewer than were gathered; the bar says how many.
+        count: mosaicPlan(frames.length, width, height).shown,
         left: games.length - onBoard.length,
       });
     } catch (error) {

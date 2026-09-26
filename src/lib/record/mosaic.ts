@@ -3,8 +3,8 @@ import type { GameState, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { pointName } from "@/lib/gomoku/notation";
 import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 
-import { MOSAIC_ART, MOSAIC_PICKS, type MosaicPick } from "./mosaic.constants";
-import type { MosaicFrame, MosaicPicture } from "./mosaic.types";
+import { MOSAIC_ART, MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_PICKS, type MosaicPick } from "./mosaic.constants";
+import type { MosaicFrame, MosaicPicture, MosaicTitle } from "./mosaic.types";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 /**
@@ -88,6 +88,7 @@ export function framesOf(timeline: readonly GameState[]): MosaicFrame[] {
  */
 export function pickFrames<T>(frames: readonly T[], pick: MosaicPick, most: number): T[] {
   if (frames.length <= most || pick === MOSAIC_PICKS.every) return [...frames];
+  if (most <= 1) return frames.slice(-most);
   if (pick === MOSAIC_PICKS.ending) return frames.slice(frames.length - most);
   const chosen: T[] = [];
   const last = frames.length - 1;
@@ -98,6 +99,7 @@ export function pickFrames<T>(frames: readonly T[], pick: MosaicPick, most: numb
 /**
  * The grid that gives `count` tiles the most room in a picture of this shape:
  * every column count is tried and the one whose tiles come out biggest wins.
+ * Its last row may be short — see `mosaicGrid` for the grid a picture uses.
  */
 export function mosaicLayout(count: number, width: number, height: number): { columns: number; rows: number; side: number } {
   let best = { columns: 1, rows: Math.max(1, count), side: 0 };
@@ -107,6 +109,80 @@ export function mosaicLayout(count: number, width: number, height: number): { co
     if (side > best.side) best = { columns, rows, side };
   }
   return best;
+}
+
+/**
+ * How much smaller than the loosest layout's a full grid's tiles may come out.
+ * A full grid of nearly every position beats a bigger grid of far fewer.
+ */
+const FULL_GRID_SIDE = 0.85;
+
+/**
+ * A FULL GRID, ENDING ON ITS LAST TILE. John, 2026-09-25: "can we not end the
+ * screenshot at the final bottom right frame?" — a last row half empty read as
+ * a picture that stopped. So `shown` is always `columns × rows`, at most
+ * `count`, and the last position lands in the bottom right corner.
+ *
+ * Every column count is tried with as many whole rows as `count` fills. Of the
+ * grids whose tiles are nearly as big as the loosest layout's, the one showing
+ * the most positions wins, then the one with the bigger tiles. The loosest
+ * layout's own columns always qualify — one row fewer if its last is short —
+ * so there is always an answer. A count that is not a neat rectangle loses a
+ * few positions, skipped evenly by `pickFrames`, and the title bar says so.
+ */
+export function mosaicGrid(count: number, width: number, height: number): { columns: number; rows: number; side: number; shown: number } {
+  if (count <= 0) return { columns: 0, rows: 0, side: 0, shown: 0 };
+  const floor = mosaicLayout(count, width, height).side * FULL_GRID_SIDE;
+  let best = { columns: 1, rows: 1, side: Math.min(width, height), shown: 1 };
+  for (let columns = 1; columns <= count; columns += 1) {
+    const rows = Math.floor(count / columns);
+    const side = Math.min(width / columns, height / rows);
+    if (side < floor) continue;
+    const shown = columns * rows;
+    if (shown > best.shown || (shown === best.shown && side > best.side)) best = { columns, rows, side, shown };
+  }
+  return best;
+}
+
+/**
+ * The title bar's measures, as shares of the picture's shorter side so the
+ * type reads the same on both shapes: the name's line, then the details'.
+ * A portrait picture is narrow, so its details get a third line.
+ */
+const BAR = { top: 0.018, big: 0.03, small: 0.019, gap: 0.0275, step: 0.0255, bottom: 0.022 } as const;
+
+/** The bar's height in pixels, and how many lines of details it has room for. */
+function barOf(width: number, height: number): { bar: number; lines: number } {
+  const lines = height > width ? 3 : 2;
+  const share = BAR.top + BAR.big * 0.6 + BAR.gap + (lines - 1) * BAR.step + BAR.bottom;
+  return { bar: Math.round(Math.min(width, height) * share), lines };
+}
+
+/**
+ * A long game's grid, grown to fill its shape. `MOSAIC_MOST_TILES` sets how
+ * small a tile may get; a shape whose grid of that many leaves a band of
+ * ground — portrait's eight columns by fifteen rows leave room for a
+ * sixteenth — takes whole rows or columns more at the same tile size, while
+ * the game has positions for them.
+ */
+function grown(grid: ReturnType<typeof mosaicGrid>, count: number, width: number, height: number): ReturnType<typeof mosaicGrid> {
+  const { columns, side } = grid;
+  let { rows } = grid;
+  let across = columns;
+  while ((rows + 1) * side <= height + 1e-9 && across * (rows + 1) <= count) rows += 1;
+  while ((across + 1) * side <= width + 1e-9 && (across + 1) * rows <= count) across += 1;
+  return { columns: across, rows, side, shown: across * rows };
+}
+
+/**
+ * The picture's layout before anything is drawn: the bar across the top and
+ * the grid under it — so the panel can say, before drawing, whether a game has
+ * more positions than the picture will hold.
+ */
+export function mosaicPlan(count: number, width: number, height: number): { bar: number; columns: number; rows: number; side: number; shown: number } {
+  const { bar } = barOf(width, height);
+  const grid = mosaicGrid(Math.min(count, MOSAIC_MOST_TILES), width, height - bar);
+  return { bar, ...(count > grid.shown ? grown(grid, count, width, height - bar) : grid) };
 }
 
 /**
@@ -170,58 +246,88 @@ function tileSvg(frame: MosaicFrame, size: number, cells: boolean, x: number, y:
 }
 
 /**
- * The card after the last move: the game's own lines on a board's wood,
- * centred, as wide as every space the last row leaves over — so the lines have
- * room, and the picture ends on the game's name rather than a row of dark.
+ * Parts joined with " · " onto at most `most` lines of `wide` characters each,
+ * in order; whatever will not fit ends the last line with an ellipsis.
  */
-function detailsSvg(lines: readonly string[], x: number, y: number, width: number, side: number): string {
-  const art = MOSAIC_ART;
-  const pad = side * art.gap;
-  const tall = side - pad * 2;
-  const wide = width - pad * 2;
-  const font = Math.max(9, Math.min(tall * 0.1, (tall * 0.8) / (lines.length * 1.45)));
-  const gap = font * 1.45;
-  const top = y + side / 2 - ((lines.length - 1) * gap) / 2;
-  const most = Math.max(8, Math.floor(wide / (font * 0.55)));
-  const text = lines
-    .map(
-      (line, i) =>
-        `<text x="${x + width / 2}" y="${centredBaseline(top + i * gap, font)}" font-family="system-ui, sans-serif" font-size="${font}" font-weight="${i === 0 ? 600 : 400}" text-anchor="middle" fill="${art.line}">${escaped(fitted(line, most))}</text>`,
-    )
-    .join("");
-  return `<rect x="${x + pad}" y="${y + pad}" width="${wide}" height="${tall}" rx="${tall * 0.03}" fill="${art.wood}"/>${text}`;
+function wrapped(parts: readonly string[], wide: number, most: number): string[] {
+  const lines: string[] = [];
+  let line = "";
+  for (const [i, part] of parts.entries()) {
+    const joined = line === "" ? part : `${line} · ${part}`;
+    if (joined.length <= wide || line === "") {
+      line = joined;
+      continue;
+    }
+    if (lines.length === most - 1) {
+      lines.push(fitted(`${line} · ${parts.slice(i).join(" · ")}`, wide));
+      return lines;
+    }
+    lines.push(line);
+    line = part;
+  }
+  if (line !== "") lines.push(fitted(line, wide));
+  return lines.slice(0, most);
 }
 
 /**
- * The whole picture: the chosen positions as tiles, in order left to right and
- * top to bottom, centred on a dark ground the shape of the screen it was made for.
+ * THE BAR ACROSS THE TOP. John, 2026-09-25: "add a nice bar at the top of the
+ * image with the title... ITSUTSU GAME VIEWER: and then the title... and a
+ * date perhaps, and any other references or info. if we have a title there,
+ * then we don't need the title in the bottom right." So the brand and the
+ * game's name on one line, and under it everything else a caller knows —
+ * the date, the event, the result, the source — on one or two lines.
+ */
+function titleBarSvg(title: MosaicTitle, width: number, height: number): string {
+  const art = MOSAIC_ART;
+  const { bar, lines: room } = barOf(width, height);
+  const short = Math.min(width, height);
+  const pad = short * 0.025;
+  const big = short * BAR.big;
+  const small = short * BAR.small;
+  // An average character of the site's sans is a little over half its size across.
+  const wideAt = (font: number) => Math.max(8, Math.floor((width - pad * 2) / (font * 0.56)));
+  const name = fitted(title.name, Math.max(8, wideAt(big) - MOSAIC_COPY.brand.length - 3));
+  const lines = wrapped(title.details, wideAt(small), room);
+  // Fewer lines than there is room for sit in the middle of the bar, not at its top.
+  const shift = ((room - lines.length) * BAR.step * short) / 2;
+  const nameAt = shift + short * (BAR.top + BAR.big * 0.6);
+  const lineAt = (i: number) => nameAt + short * (BAR.gap + i * BAR.step);
+  const font = `font-family="system-ui, sans-serif"`;
+  const parts = [
+    `<rect width="${width}" height="${bar}" fill="${art.bar}"/>`,
+    `<rect y="${bar - short * 0.003}" width="${width}" height="${short * 0.003}" fill="${art.wood}"/>`,
+    `<text x="${pad}" y="${centredBaseline(nameAt, big)}" ${font} font-size="${big}">` +
+      `<tspan font-weight="700" letter-spacing="${big * 0.06}" fill="${art.barBrand}">${MOSAIC_COPY.brand}</tspan>` +
+      `<tspan fill="${art.barLine}"> · </tspan>` +
+      `<tspan font-weight="600" fill="${art.barTitle}">${escaped(name)}</tspan></text>`,
+    ...lines.map(
+      (line, i) =>
+        `<text x="${pad}" y="${centredBaseline(lineAt(i), small)}" ${font} font-size="${small}" fill="${art.barLine}">${escaped(line)}</text>`,
+    ),
+  ];
+  return parts.join("");
+}
+
+/**
+ * The whole picture: the title bar, and under it the chosen positions as a
+ * full grid of tiles, in order left to right and top to bottom, the last in
+ * the bottom right corner, centred on a dark ground of the picture's shape.
  */
 export function mosaicSvg(picture: MosaicPicture): string {
-  const { frames, size, grid, width, height } = picture;
+  const { frames, pick, size, grid, width, height, title } = picture;
   const cells = grid === BOARD_GRIDS.cells;
-  const { columns, rows, side } = mosaicLayout(frames.length, width, height);
+  const { bar, columns, rows, side, shown } = mosaicPlan(frames.length, width, height);
+  // A grid holds `shown` and no more, so "every" is only ever every one that fits.
+  const chosen = pickFrames(frames, pick === MOSAIC_PICKS.every ? MOSAIC_PICKS.spread : pick, shown);
   const left = (width - columns * side) / 2;
-  const top = (height - rows * side) / 2;
-  const place = (i: number) => ({ x: left + (i % columns) * side, y: top + Math.floor(i / columns) * side });
-  const tiles = frames.map((frame, i) => tileSvg(frame, size, cells, place(i).x, place(i).y, side));
-  /*
-   * The spaces the last row leaves over. With the game's details, one card as
-   * wide as all of them; with none, an empty board in each. Left unfilled,
-   * the dark ground.
-   */
-  const spare = columns * rows - frames.length;
-  if (picture.fillSpare && spare > 0) {
-    const { x, y } = place(frames.length);
-    if (picture.details.length > 0) {
-      tiles.push(detailsSvg(picture.details, x, y, spare * side, side));
-    } else {
-      const empty: MosaicFrame = { board: ".".repeat(size * size), move: 0, name: "" };
-      for (let i = frames.length; i < frames.length + spare; i += 1) tiles.push(tileSvg(empty, size, cells, place(i).x, place(i).y, side));
-    }
-  }
+  const top = bar + (height - bar - rows * side) / 2;
+  const tiles = chosen.map((frame, i) => tileSvg(frame, size, cells, left + (i % columns) * side, top + Math.floor(i / columns) * side, side));
+  // First, so a long line of details can never push it off the end.
+  const details = shown < frames.length ? [MOSAIC_COPY.shownOf(shown, frames.length), ...title.details] : title.details;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     `<rect width="${width}" height="${height}" fill="${MOSAIC_ART.ground}"/>` +
+    titleBarSvg({ name: title.name, details }, width, height) +
     tiles.join("") +
     `</svg>`
   );

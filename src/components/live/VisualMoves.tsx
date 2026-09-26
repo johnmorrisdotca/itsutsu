@@ -29,12 +29,14 @@ export function VisualMoves({ detail }: { detail: GameDetail }) {
       frames={() => framesOf(replayTimeline(detail))}
       size={detail.size}
       grid={VARIANT_SPECS[variant].grid}
-      details={() => [
-        `${detail.blackName || "Black"} vs ${detail.whiteName || "White"}`,
-        `${RULE_VARIANT_DISPLAY[variant].label} · ${detail.size}×${detail.size}`,
-        `${VISUAL_MOVES_COPY.soFar} · ${detail.moves.length} moves`,
-        MOSAIC_COPY.site,
-      ]}
+      title={() => ({
+        name: `${detail.blackName || "Black"} vs ${detail.whiteName || "White"}`,
+        details: [
+          `${RULE_VARIANT_DISPLAY[variant].label} ${detail.size}×${detail.size}`,
+          `${VISUAL_MOVES_COPY.soFar}, ${detail.moves.length} moves`,
+          MOSAIC_COPY.site,
+        ],
+      })}
       fileName={`itsutsu-${slugFor(variant)}-${detail.id}-move-${detail.moves.length}.png`}
       alt={`Every position of this game so far, ${detail.moves.length} moves`}
     />

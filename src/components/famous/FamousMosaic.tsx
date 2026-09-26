@@ -6,6 +6,7 @@ import { MosaicDialog } from "@/components/history/MosaicDialog";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { famousFrames } from "@/lib/famous/famous";
+import { FAMOUS_COPY, FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
 import type { FamousGame } from "@/lib/famous/famous.types";
 import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
 
@@ -27,13 +28,19 @@ export function FamousMosaic({ game, thumb }: { game: FamousGame; thumb: ReactNo
       frames={() => famousFrames(game)}
       size={game.size}
       grid={VARIANT_SPECS[game.variant].grid}
-      details={() => [
-        `${game.black} vs ${game.white}`,
-        game.round === null ? game.event : `${game.event} · ${game.round}`,
-        `${RULE_VARIANT_DISPLAY[game.variant].label} · ${game.result}`,
-        game.date,
-        MOSAIC_COPY.site,
-      ]}
+      title={() => ({
+        name: `${game.black} vs ${game.white}`,
+        details: [
+          game.date,
+          // A bare number is a round; anything else is printed as the source wrote it.
+          game.round === null ? game.event : `${game.event}, ${/^\d+$/.test(game.round) ? `round ${game.round}` : game.round}`,
+          ...(game.place === null ? [] : [game.place]),
+          `${RULE_VARIANT_DISPLAY[game.variant].label} ${game.size}×${game.size}`,
+          game.result,
+          `${FAMOUS_COPY.source} ${FAMOUS_SOURCES[game.source].name}`,
+          MOSAIC_COPY.site,
+        ],
+      })}
       fileName={`itsutsu-famous-${game.id}.png`}
       alt={`Every position of ${game.black} against ${game.white}, ${game.event}`}
       thumb={thumb}

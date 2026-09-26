@@ -1,4 +1,4 @@
-import { MOSAIC_LONGEST_SIDE } from "./mosaic.constants";
+import type { MosaicShape } from "./mosaic.constants";
 
 /*
  * The browser's half of a mosaic: how big to make it, and turning the SVG
@@ -12,18 +12,14 @@ export function nextPaint(): Promise<void> {
 }
 
 /**
- * The picture's size: this screen, in its own pixels, no bigger on its longer
- * side than `MOSAIC_LONGEST_SIDE`. Read in the handler, never while rendering —
- * the server has no screen, and a size worked out there would be a guess.
+ * The shape that suits this screen: portrait for a screen taller than it is
+ * wide, a phone held upright, and landscape for everything else. Read in the
+ * browser only — the server has no screen, and a shape guessed there would be
+ * a guess.
  */
-export function screenPixels(): { width: number; height: number } {
-  const ratio = window.devicePixelRatio || 1;
-  let width = Math.round((window.screen.width || 1920) * ratio);
-  let height = Math.round((window.screen.height || 1080) * ratio);
-  const scale = Math.min(1, MOSAIC_LONGEST_SIDE / Math.max(width, height));
-  width = Math.round(width * scale);
-  height = Math.round(height * scale);
-  return { width, height };
+export function shapeForScreen(): MosaicShape {
+  if (typeof window === "undefined") return "landscape";
+  return window.innerHeight > window.innerWidth ? "portrait" : "landscape";
 }
 
 /** Rasterises an SVG string to a PNG blob, in the browser. */

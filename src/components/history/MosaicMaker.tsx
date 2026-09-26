@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Controls";
-import { mosaicSvg, pickFrames } from "@/lib/record/mosaic";
-import { MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_PICKS, type MosaicPick } from "@/lib/record/mosaic.constants";
-import type { MosaicFrame } from "@/lib/record/mosaic.types";
-import { nextPaint, pngOf, screenPixels } from "@/lib/record/mosaicImage";
+import { mosaicPlan, mosaicSvg } from "@/lib/record/mosaic";
+import { MOSAIC_COPY, MOSAIC_PICKS, MOSAIC_SHAPES, type MosaicPick, type MosaicShape } from "@/lib/record/mosaic.constants";
+import type { MosaicFrame, MosaicTitle } from "@/lib/record/mosaic.types";
+import { nextPaint, pngOf, shapeForScreen } from "@/lib/record/mosaicImage";
 
-/** The widest picture drawn for the page itself; the full screen's worth is made only for a download. */
+/** The longer side of the picture drawn for the page itself; the full size is made only for a download. */
 const SHOWN_MOST_PX = 1600;
 
 /** Hands a picture to the reader as a file, then lets the browser forget it. */
@@ -41,6 +41,12 @@ function saveAs(blob: Blob, fileName: string): void {
  * Without `auto` — the famous games' gallery, where a page holds a dozen long
  * Go games and drawing them all on arrival would be work nobody asked for —
  * nothing is made until the press.
+ *
+ * TWO SHAPES, landscape and portrait (`MOSAIC_SHAPES`), starting on the one
+ * this screen is. The page's picture and the download are one drawing at the
+ * shape's own size, the page's only scaled down, so what is seen is what is
+ * saved. This panel mounts only once its window is opened, after hydration,
+ * so reading the screen as it starts cannot disagree with the server's HTML.
  */
 export function MosaicMaker({
   id,
@@ -48,7 +54,7 @@ export function MosaicMaker({
   frames,
   size,
   grid,
-  details,
+  title,
   fileName,
   alt,
   auto = false,
@@ -60,35 +66,34 @@ export function MosaicMaker({
   frames: () => MosaicFrame[];
   size: number;
   grid: string;
-  /** The card's lines, asked for when the picture is made, in the browser. */
-  details: () => string[];
+  /** The title bar's words, asked for when the picture is made, in the browser. */
+  title: () => MosaicTitle;
   fileName: string;
   alt: string;
   auto?: boolean;
 }) {
   const [pick, setPick] = useState<MosaicPick>(MOSAIC_PICKS.spread);
-  const [fillSpare, setFillSpare] = useState(true);
-  const [shown, setShown] = useState<string | null>(null);
+  const [shape, setShape] = useState<MosaicShape>(shapeForScreen);
+  // The picture on the page, and the shape it was drawn in — which lags the choice by a drawing.
+  const [shown, setShown] = useState<{ url: string; shape: MosaicShape } | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
   // The latest makers, read when a picture is drawn rather than written into the redraw's reasons.
-  const latest = useRef({ frames, details });
+  const latest = useRef({ frames, title });
   useEffect(() => {
-    latest.current = { frames, details };
+    latest.current = { frames, title };
   });
+  const { width, height } = MOSAIC_SHAPES[shape];
+  const holds = mosaicPlan(count, width, height).shown;
 
-  /** The picture as SVG at a given size, from the positions as they are now. */
-  function svgAt(width: number, height: number): string {
-    return mosaicSvg({
-      frames: pickFrames(latest.current.frames(), pick, MOSAIC_MOST_TILES),
-      size,
-      grid,
-      width,
-      height,
-      fillSpare,
-      details: latest.current.details(),
-    });
+  /** The picture as SVG at its shape's size, from the positions as they are now. */
+  function svgNow(): string {
+    return mosaicSvg({ frames: latest.current.frames(), pick, size, grid, width, height, title: latest.current.title() });
+  }
+
+  /** A PNG of the picture, scaled by `scale`. */
+  function pngAt(scale: number): Promise<Blob> {
+    return pngOf(svgNow(), Math.round(width * scale), Math.round(height * scale));
   }
 
   // The picture on the page, drawn by itself: on arrival and after every move.
@@ -99,13 +104,9 @@ export function MosaicMaker({
       await nextPaint();
       if (stale) return;
       try {
-        const screen = screenPixels();
-        const across = box.current?.clientWidth ?? 640;
-        const width = Math.min(SHOWN_MOST_PX, Math.max(480, Math.round(across * (window.devicePixelRatio || 1))));
-        const height = Math.round((width * screen.height) / screen.width);
-        const blob = await pngOf(svgAt(width, height), width, height);
+        const blob = await pngAt(Math.min(1, SHOWN_MOST_PX / Math.max(width, height)));
         if (stale) return;
-        setShown(URL.createObjectURL(blob));
+        setShown({ url: URL.createObjectURL(blob), shape });
         setFailed(false);
       } catch (error) {
         console.error("[mosaic] could not draw", error);
@@ -115,25 +116,24 @@ export function MosaicMaker({
     return () => {
       stale = true;
     };
-    // `svgAt` reads the positions through a ref; these are the reasons to draw again.
+    // `svgNow` reads the positions through a ref; these are the reasons to draw again.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auto, count, pick, fillSpare, size, grid]);
+  }, [auto, count, pick, shape, size, grid]);
 
   // A picture replaced, or a page left, gives its memory back.
   useEffect(() => () => {
-    if (shown !== null) URL.revokeObjectURL(shown);
+    if (shown !== null) URL.revokeObjectURL(shown.url);
   }, [shown]);
 
-  /** Without `auto`: the press that makes the picture. With it: the full screen's worth, as a file. */
+  /** Without `auto`: the press that makes the picture. With it: the full size, as a file. */
   async function make(download: boolean) {
     setBusy(true);
     setFailed(false);
     await nextPaint();
     try {
-      const { width, height } = screenPixels();
-      const blob = await pngOf(svgAt(width, height), width, height);
+      const blob = await pngAt(1);
       if (download) saveAs(blob, fileName);
-      else setShown(URL.createObjectURL(blob));
+      else setShown({ url: URL.createObjectURL(blob), shape });
     } catch (error) {
       console.error("[mosaic] could not draw", error);
       setFailed(true);
@@ -143,11 +143,28 @@ export function MosaicMaker({
   }
 
   return (
-    <div ref={box} className="flex flex-col gap-3">
-      {count > MOSAIC_MOST_TILES ? (
+    <div className="flex flex-col gap-3">
+      <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm" data-testid="mosaic-shape">
+        <legend className="sr-only">{MOSAIC_COPY.shapeLabel}</legend>
+        {(Object.keys(MOSAIC_SHAPES) as MosaicShape[]).map((choice) => (
+          <label key={choice} className="flex min-h-11 items-center gap-2">
+            <input
+              type="radio"
+              name={`mosaic-shape-${id}`}
+              checked={shape === choice}
+              onChange={() => setShape(choice)}
+              data-testid={`mosaic-shape-${choice}`}
+            />
+            <span>
+              {MOSAIC_SHAPES[choice].label} <span className="text-muted">{MOSAIC_SHAPES[choice].note}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
+      {count > holds ? (
         <fieldset className="flex flex-col gap-1 text-sm">
           <legend className="mb-1">
-            {MOSAIC_COPY.pickLabel} ({count} moves, {MOSAIC_MOST_TILES} tiles):
+            {MOSAIC_COPY.pickLabel} ({count} positions, {holds} tiles):
           </legend>
           {([MOSAIC_PICKS.spread, MOSAIC_PICKS.ending] as const).map((choice) => (
             <label key={choice} className="flex items-center gap-2">
@@ -163,10 +180,6 @@ export function MosaicMaker({
           ))}
         </fieldset>
       ) : null}
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={fillSpare} onChange={(event) => setFillSpare(event.target.checked)} data-testid="mosaic-fill" />
-        {MOSAIC_COPY.fill}
-      </label>
       <span className="flex flex-wrap items-center gap-2">
         {auto ? null : (
           <Button onClick={() => void make(false)} disabled={busy} data-testid="make-mosaic">
@@ -182,7 +195,13 @@ export function MosaicMaker({
       {failed ? <p className="text-sm text-red-700">{MOSAIC_COPY.failed}</p> : null}
       {shown !== null ? (
         // eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise
-        <img src={shown} alt={alt} className="w-full rounded-lg border border-rule" data-testid="mosaic-picture" />
+        <img
+          src={shown.url}
+          alt={alt}
+          className="mx-auto h-auto max-h-[75dvh] w-auto max-w-full rounded-lg border border-rule"
+          data-testid="mosaic-picture"
+          data-shape={shown.shape}
+        />
       ) : null}
     </div>
   );

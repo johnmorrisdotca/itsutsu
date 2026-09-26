@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
-import type { MosaicFrame } from "@/lib/record/mosaic.types";
+import type { MosaicFrame, MosaicTitle } from "@/lib/record/mosaic.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MosaicMaker } from "./MosaicMaker";
@@ -38,7 +38,7 @@ export function MosaicDialog({
   frames,
   size,
   grid,
-  details,
+  title,
   fileName,
   alt,
   thumb,
@@ -48,7 +48,7 @@ export function MosaicDialog({
   frames: () => MosaicFrame[];
   size: number;
   grid: string;
-  details: () => string[];
+  title: () => MosaicTitle;
   fileName: string;
   alt: string;
   /** A small picture to open the window from, with an expand icon over its corner. */
@@ -122,7 +122,7 @@ export function MosaicDialog({
               frames={frames}
               size={size}
               grid={grid}
-              details={details}
+              title={title}
               fileName={fileName}
               alt={alt}
               auto

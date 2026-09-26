@@ -190,12 +190,14 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
           frames={() => framesOf(session.timeline)}
           size={state.settings.size}
           grid={VARIANT_SPECS[state.settings.variant].grid}
-          details={() => [
-            `${session.names.one || "Player 1"} vs ${session.names.two || "Player 2"}`,
-            `${RULE_VARIANT_DISPLAY[state.settings.variant].label} · ${state.settings.size}×${state.settings.size}`,
-            `${record.length} ${record.length === 1 ? "move" : "moves"}`,
-            MOSAIC_COPY.site,
-          ]}
+          title={() => ({
+            name: `${session.names.one || "Player 1"} vs ${session.names.two || "Player 2"}`,
+            details: [
+              `${RULE_VARIANT_DISPLAY[state.settings.variant].label} ${state.settings.size}×${state.settings.size}`,
+              `${record.length} ${record.length === 1 ? "move" : "moves"}`,
+              MOSAIC_COPY.site,
+            ],
+          })}
           fileName={`itsutsu-${slugFor(state.settings.variant)}-${record.length}-moves.png`}
           alt={`Every position of this game, ${record.length} moves`}
         />

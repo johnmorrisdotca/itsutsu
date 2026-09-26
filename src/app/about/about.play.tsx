@@ -5,7 +5,7 @@ import { MATCH_SIZES } from "@/lib/history/liveMatch";
 import { MESSAGE_MAX } from "@/lib/history/reactions.constants";
 import { INBOX_KEEP_DAYS } from "@/lib/inbox/inbox.constants";
 import { MESSAGE_TEXT_MAX } from "@/lib/messages/messages.constants";
-import { MOSAIC_COPY, MOSAIC_LONGEST_SIDE, MOSAIC_MOST_TILES } from "@/lib/record/mosaic.constants";
+import { MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_SHAPES } from "@/lib/record/mosaic.constants";
 
 import { ABOUT_CHAPTERS } from "./about.chapters";
 import type { AboutSection } from "./about.constants";
@@ -169,18 +169,19 @@ export const PICTURE_SECTION: AboutSection = {
   paragraphs: [
     <>
       Beside every game&rsquo;s move list is a quiet button, <em>{MOSAIC_COPY.openLabel}</em>. It opens the game as
-      one picture: every position in order, one small board per move, laid out to fill an image the exact size of
-      your screen. Your desk&rsquo;s screen, a laptop or a phone, so the picture fits as a wallpaper.{" "}
+      one picture: every position in order, one small board per move, under a bar naming the game, when it was
+      played and how it ended. It comes in two shapes: {MOSAIC_SHAPES.landscape.label.toLowerCase()} at{" "}
+      {MOSAIC_SHAPES.landscape.note}, and {MOSAIC_SHAPES.portrait.label.toLowerCase()} at{" "}
+      {MOSAIC_SHAPES.portrait.note}. It starts on the one your screen is, so the picture fits as a wallpaper.{" "}
       <em>{MOSAIC_COPY.download}</em> saves it as a PNG. Your own browser draws it from the moves the page
       already has. Nothing is sent anywhere and nothing is stored, so a refresh simply draws it again.
     </>,
     <>
-      A long game has more moves than a picture has room for. Past {MOSAIC_MOST_TILES} boards, each one gets too
-      small to read as a game, so a long game offers a choice: the whole game with moves skipped evenly, or the
-      ending, counted back from the last move. The empty tiles after the last move can hold the game&rsquo;s
-      details: the players, the game, the result, the date and the site. The largest picture is{" "}
-      {MOSAIC_LONGEST_SIDE.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} pixels on its long side, which is a
-      4K screen.
+      The boards always make a full grid, so the picture ends on the last move in its bottom right corner. A long
+      game has more moves than a picture has room for. Past about {MOSAIC_MOST_TILES} boards, each one gets too
+      small to read as a game, so a long game offers a choice: the whole game with moves skipped evenly, or the ending,
+      counted back from the last move. A number of moves that does not make a rectangle skips a few, and the bar
+      says how many positions of how many the picture holds.
     </>,
     <>
       The same picture appears in four more places. A game in play shows every position so far and redraws after
@@ -197,8 +198,9 @@ export const PICTURE_SECTION: AboutSection = {
         {...SHOTS.pictureWindow}
         caption={
           <>
-            The picture window over a long game of <Game variant="go">Go</Game> on the 9×9 board. It has more
-            positions than {MOSAIC_MOST_TILES} tiles, so it offers the two ways of fitting it.
+            The picture window over AlphaGo against Lee Sedol, a long game of <Game variant="go">Go</Game> on the
+            19×19 board. It has more positions than a picture holds, so it offers the two ways of fitting it, and the
+            bar across the top says how many it shows.
           </>
         }
       />
@@ -208,9 +210,9 @@ export const PICTURE_SECTION: AboutSection = {
         shots={[SHOTS.wallDesk, SHOTS.wallPhone]}
         caption={
           <>
-            Two downloaded pictures, exactly as the button saves them. On the left, a{" "}
-            <Game variant="reversi">Reversi</Game> game of 60 moves sized for a 1920×1080 screen. On the right, a{" "}
-            <Game variant="connect6">Connect6</Game> game sized for a phone, with its details in the spare tiles.
+            Two downloaded pictures of the same game, exactly as the button saves them: AlphaGo against Lee Sedol,
+            the fourth game of their 2016 match, in <Game variant="go">Go</Game>. On the left, landscape for a 1920×1080
+            screen. On the right, portrait for a phone. Each ends on the last move in its bottom right corner.
           </>
         }
       />
