@@ -100,10 +100,13 @@ export function TsunagiLevelBoard({
             // on all four sides (John, 2026-09-26: "missing the TOP and LEFT borders").
             const edges = `${row === 0 ? "border-t" : ""} ${place % SIDE === 0 ? "border-l" : ""}`;
             const rules = `relative flex flex-col items-center justify-center border-r border-b ${edges} text-sm font-semibold tabular-nums leading-none sm:text-base`;
+            const levelInk = theme.dark ? "#f7f3ea" : "#2a1d0e";
             const ruled = { borderColor: `color-mix(in srgb, ${theme.line} 45%, transparent)` };
             if (locked) {
               return (
-                <div key={level} className={`${rules} opacity-45`} style={{ ...ruled, color: theme.coordinate }} aria-label={`Level ${level}, locked${roleWords}`} {...common}>
+                // In the open levels' own ink, dimmed: the coordinate colour at 45% vanished on a dark felt
+                // (John, 2026-09-26: "The numbers are almost invisible, we cannot see them.").
+                <div key={level} className={rules} style={{ ...ruled, color: levelInk, opacity: 0.6 }} aria-label={`Level ${level}, locked${roleWords}`} {...common}>
                   {badge}
                   <span>{level}</span>
                   <svg viewBox="0 0 10 12" className="mt-0.5 h-2 w-2 sm:h-2.5 sm:w-2.5" aria-hidden="true" data-testid="tsunagi-level-lock">
@@ -118,7 +121,7 @@ export function TsunagiLevelBoard({
                 key={level}
                 href={tsunagiLevelPath(size, level)}
                 className={`${rules} hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-moss ${level === next ? "ring-2 ring-inset ring-ochre" : ""}`}
-                style={{ ...ruled, color: theme.dark ? "#f7f3ea" : "#2a1d0e" }}
+                style={{ ...ruled, color: levelInk }}
                 aria-label={solved ? `Level ${level}, solved in ${clockText(time)}${roleWords}${triesWords}` : `Level ${level}${level === next ? ", next" : ""}${roleWords}${triesWords}`}
                 title={solved ? `Level ${level}: best ${clockText(time)}${roleWords}${triesWords}` : `Level ${level}${roleWords}${triesWords}`}
                 {...common}
