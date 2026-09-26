@@ -25,6 +25,9 @@ test.describe("a board opened on its own", () => {
     const open = page.locator('[data-board-focus="open"]');
     await expect(open).toBeVisible();
     await expect(open.getByRole("dialog")).toBeVisible();
+    // Headed as ours to show, and credited to the record it came from, never to this site.
+    await expect(open.getByTestId("board-masthead")).toBeVisible();
+    await expect(open.getByTestId("board-masthead-source")).toContainText("not played on Itsutsu");
     // Over the whole screen, not held inside the card.
     const shown = (await open.boundingBox())!;
     const view = page.viewportSize()!;

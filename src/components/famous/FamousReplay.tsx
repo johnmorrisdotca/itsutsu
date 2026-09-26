@@ -10,6 +10,7 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { famousTimeline } from "@/lib/famous/famous";
 import { famousMoveNames, famousMoves } from "@/lib/famous/famousMoves";
 import type { FamousGame } from "@/lib/famous/famous.types";
+import { FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardFocus } from "@/components/board/BoardFocus";
 
@@ -56,7 +57,23 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
   return (
     <>
       {/* The board, where it stands, its scrubber and its moves: openable on their own (`BoardFocus`). */}
-      <BoardFocus label="this game">
+      <BoardFocus
+        label="this game"
+        story={{
+          kind: "Game review",
+          kanji: "棋譜",
+          title: `${game.black} vs ${game.white} · ${game.event}${game.round === null ? "" : ` · ${game.round}`} · ${game.date}`,
+          // Not ours: a famous game is credited to the record it was taken from, never to this site.
+          source: (
+            <>
+              A famous game, not played on Itsutsu. Record:{" "}
+              <a href={FAMOUS_SOURCES[game.source].url} className="underline underline-offset-2" target="_blank" rel="noreferrer">
+                {FAMOUS_SOURCES[game.source].name}
+              </a>
+            </>
+          ),
+        }}
+      >
       <div className="mx-auto w-full max-w-[min(100%,30rem)]" data-focus-board>
         <Board state={timeline[index]!} appearance={DEFAULT_APPEARANCE} readOnly onPlay={() => {}} />
       </div>

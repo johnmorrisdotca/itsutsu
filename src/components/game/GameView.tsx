@@ -21,6 +21,8 @@ import { BranchPrompt, ReviewBanner } from "./ReviewControls";
 import { useGameRecording } from "./useGameRecording";
 import { useGameSession } from "./useGameSession";
 import { BoardFocus } from "@/components/board/BoardFocus";
+import { boardWords } from "@/lib/gomoku/boardWords";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export function GameView({
   variant,
@@ -175,7 +177,15 @@ export function GameView({
      */
     <div className="flex w-full flex-col gap-8" data-testid="game-view" {...readyMark(useHydrated())}>
       {/* The board and everything that plays it, openable on their own (`BoardFocus`). */}
-      <BoardFocus label="this board">
+      <BoardFocus
+        label="this board"
+        story={{
+          kind: match === null ? "Practice board" : "Pass and play",
+          kanji: match === null ? "試し打ち" : "対面",
+          title: `${RULE_VARIANT_DISPLAY[session.state.settings.variant].label}, ${boardWords(session.state.settings.variant, session.state.settings.size)}`,
+          source: match === null ? "On Itsutsu: both sides are yours, and nothing here is rated" : "Played on Itsutsu, at one screen",
+        }}
+      >
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
           <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3" data-focus-board>

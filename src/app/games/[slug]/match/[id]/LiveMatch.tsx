@@ -23,6 +23,8 @@ import { isHotSeat } from "@/lib/history/liveGame";
 import { gameRatingRefusal } from "@/lib/rating/rateable";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import { playedHereStory } from "@/components/board/boardStory";
+import { BoardMasthead } from "@/components/board/BoardMasthead";
 import { seatPickList } from "@/lib/phrase/seatPick";
 import { markSeatTaken, seatIsFree } from "@/lib/history/seats";
 import { currentMemberId } from "@/lib/auth/currentSession";
@@ -269,6 +271,10 @@ export async function LiveMatch({
         gets the page's whole width for it, and the panel moves below, as it does
         on a phone.
       */}
+      {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
+      <div data-bare-only>
+        <BoardMasthead story={playedHereStory(game, { label: "Live game", kanji: "対局" })} />
+      </div>
       <div
         className="group/match flex w-full flex-col items-start gap-8 lg:flex-row lg:has-[[data-board-size=medium]]:flex-col lg:has-[[data-board-size=large]]:flex-col"
       >
@@ -279,7 +285,7 @@ export async function LiveMatch({
             `BoardColumn`. It was a fixed 36rem, which on a 27-inch screen is a
             board a quarter of the width of the page.
           */}
-          <BoardColumn initial={preferences.boardSize} remember={reader !== null}>
+          <BoardColumn initial={preferences.boardSize} remember={reader !== null} story={playedHereStory(game, { label: "Live game", kanji: "対局" })}>
             <SharedGame
               initial={game}
               token={token}

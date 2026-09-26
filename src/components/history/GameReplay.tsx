@@ -25,6 +25,7 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { moveNumberAt, timelineIndexForMove } from "@/lib/history/replayIndex";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardFocus } from "@/components/board/BoardFocus";
+import type { BoardStory } from "@/components/board/board.types";
 
 /**
  * The whole game as text, the way a printed record or the elder sites give
@@ -114,8 +115,11 @@ export function GameReplay({
   overlay = null,
   savesToAccount = false,
   movesShown = "open",
+  story,
 }: {
   game: GameDetail;
+  /** What this replay is and where the game was played, for the header over the board opened on its own (`BoardMasthead`). A game kept from another site says so. */
+  story: BoardStory;
   /** Whether the reader has an account to keep their move numbers and folded moves on. */
   savesToAccount?: boolean;
   /** Whether the moves open or folded, as the reader last left them (`movesShown`). */
@@ -239,7 +243,7 @@ export function GameReplay({
   const current = game.moves[moveNumber - 1];
 
   return (
-    <BoardFocus label="this game">
+    <BoardFocus label="this game" story={story}>
     <div
       className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch"
       data-testid="game-replay"

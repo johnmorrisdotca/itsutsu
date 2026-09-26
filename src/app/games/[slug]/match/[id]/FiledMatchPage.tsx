@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { Applause } from "@/components/history/Applause";
 import { FavouriteStar } from "@/components/mine/FavouriteStar";
 import { GameReplay } from "@/components/history/GameReplay";
+import { playedHereStory } from "@/components/board/boardStory";
+import { BoardMasthead } from "@/components/board/BoardMasthead";
 import type { MovesShown } from "@/components/history/MovesFold";
 import { MoveFormatProvider } from "@/components/game/MoveFormatContext";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
@@ -307,6 +309,10 @@ function FiledMatch({
         conversation are all furniture around it (globals.css). John: "We don't
         need the header and applause and chat probably."
       */}
+      {/* Just the board's header: what this is and where it was played (`BoardMasthead`), drawn only in that mode. */}
+      <div data-bare-only>
+        <BoardMasthead story={playedHereStory(game, { label: "Game review", kanji: "棋譜" })} />
+      </div>
       <div data-chrome className="contents">
       <PageTitle
         title={
@@ -431,6 +437,7 @@ function FiledMatch({
         overlay={card === null ? null : <ResultCard {...card} />}
         savesToAccount={hasAccount}
         movesShown={movesShown}
+        story={playedHereStory(game, { label: "Game review", kanji: "棋譜" })}
       />
       </MoveFormatProvider>
 

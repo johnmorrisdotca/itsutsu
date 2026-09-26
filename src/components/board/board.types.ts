@@ -263,3 +263,19 @@ export type BoardSizeMarkProps = {
   words: BoardSizeMarkWords;
   className?: string;
 };
+
+/**
+ * WHAT A BOARD SHOWN ON ITS OWN IS, for the small header over it
+ * (`BoardMasthead`): the kind of view, the game, and where the game came from.
+ * The source is never left to a default: a famous game or a record kept from
+ * another site is not ours, and the header must say whose it is.
+ */
+export type BoardStory = {
+  /** "Game review", "Practice board", "Live game". */
+  kind: string;
+  kanji: string;
+  /** The players and the game, one line. */
+  title: import("react").ReactNode;
+  /** Where the game was played or recorded, with a link where there is one. */
+  source: import("react").ReactNode;
+};

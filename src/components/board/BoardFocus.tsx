@@ -7,6 +7,9 @@ import { createPortal } from "react-dom";
 import { PAGE_WIDTH } from "@/components/layout/pageWidth.constants";
 import { FOCUS_RING } from "@/components/ui/ui.constants";
 
+import { BoardMasthead } from "./BoardMasthead";
+import type { BoardStory } from "./board.types";
+
 /**
  * ANY BOARD, OPENED ON ITS OWN. John, 2026-09-25, on /famous with one game's
  * board, scrubber and moves open among a page of cards: "we should be able to
@@ -31,10 +34,13 @@ import { FOCUS_RING } from "@/components/ui/ui.constants";
  */
 export function BoardFocus({
   children,
+  story,
   label = "this board",
   layout = "",
 }: {
   children: ReactNode;
+  /** What the board is and whose game it is, for the header drawn over it when open (`BoardMasthead`). */
+  story: BoardStory;
   label?: string;
   /** The box's own layout while it sits in the page, for a parent that lays its children out ("flex flex-col gap-2"). */
   layout?: string;
@@ -68,7 +74,7 @@ export function BoardFocus({
       data-testid="board-focus"
     >
       <div
-        className={open ? `relative mx-auto flex w-full ${PAGE_WIDTH} flex-col gap-3 rounded-xl bg-paper p-3 pt-12 shadow-2xl sm:p-5 sm:pt-14` : "contents"}
+        className={open ? `relative mx-auto flex w-full ${PAGE_WIDTH} flex-col gap-3 rounded-xl bg-paper p-3 shadow-2xl sm:p-5` : "contents"}
         role={open ? "dialog" : undefined}
         aria-modal={open ? true : undefined}
         aria-label={open ? `${label}, on its own` : undefined}
@@ -92,6 +98,12 @@ export function BoardFocus({
             <span aria-hidden="true">⤢</span>
           )}
         </button>
+        {/* Open, a small header says what this is and whose game it is; its right side keeps room for Close. */}
+        {open ? (
+          <div className="pr-28">
+            <BoardMasthead story={story} />
+          </div>
+        ) : null}
         {children}
       </div>
     </div>

@@ -117,6 +117,8 @@ test.describe("just the board", () => {
     // A modal: the column is a dialog over the page, and the page's own furniture is gone.
     const panel = page.locator("main[data-strippable]");
     await expect(panel).toHaveAttribute("role", "dialog");
+    // A small header says what this is and where it was played.
+    await expect(page.getByTestId("board-masthead-source")).toContainText("Played on Itsutsu");
     await expect(page.getByTestId("applause")).toBeHidden();
     await expect(page.getByRole("heading", { level: 1 })).toBeHidden();
     await expect(page.getByTestId("replay-scrubber")).toBeHidden();

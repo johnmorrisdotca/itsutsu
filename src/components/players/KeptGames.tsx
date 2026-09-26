@@ -73,7 +73,17 @@ function KeptGame({
           <span className="font-medium text-ink-soft">{result}</span> · {game.source}
         </span>
       </p>
-      <GameReplay game={keptGameDetail(game)} appearance={appearance} />
+      <GameReplay
+        game={keptGameDetail(game)}
+        appearance={appearance}
+        // Not ours: a kept record is credited to the site it was played on.
+        story={{
+          kind: "Game review",
+          kanji: "棋譜",
+          title: `${game.playedAt} · vs ${opponentName}`,
+          source: `Played on ${game.source}, kept here as a record`,
+        }}
+      />
     </div>
   );
 }

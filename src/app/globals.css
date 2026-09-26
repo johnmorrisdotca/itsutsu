@@ -161,7 +161,7 @@ html[data-bare="true"] [data-strippable] aside {
  * centered and almost all you see."
  */
 html[data-bare="true"] [data-strippable] [data-bare-board] {
-  width: min(100%, calc(100dvh - 13rem));
+  width: min(100%, calc(100dvh - 17rem));
   margin-inline: auto;
 }
 
@@ -194,7 +194,7 @@ html[data-bare="true"]:has([data-bare-frame]) body {
   overflow: hidden;
 }
 html[data-bare="true"] [data-bare-frame] > [data-strippable] {
-  width: min(100%, calc(100dvh - 13rem + 2rem));
+  width: min(100%, calc(100dvh - 17rem + 2rem));
   max-width: 100%;
   margin-block: auto;
   padding: 1rem;
@@ -227,6 +227,11 @@ html[data-bare="true"] [data-strippable] [data-testid="review-banner"][data-revi
 [data-board-focus="open"] [data-board-column] {
   width: 100%;
   max-width: none;
+}
+
+/* Just the board is already the board alone, so the button that opens one board on its own is not drawn inside it. */
+html[data-bare="true"] [data-strippable] [data-testid="board-focus-toggle"] {
+  display: none;
 }
 
 /* What only the modal draws — a finished game's scrubber under its board — and nothing draws otherwise. */

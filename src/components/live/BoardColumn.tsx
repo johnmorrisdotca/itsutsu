@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { BOARD_SIZES, BOARD_SIZE_LIST, type BoardSize } from "@/lib/preferences/boardSize";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardFocus } from "@/components/board/BoardFocus";
+import type { BoardStory } from "@/components/board/board.types";
 import {
   BOARD_COLUMN,
   BOARD_COLUMN_SIZE,
@@ -72,12 +73,15 @@ function roomFor(column: HTMLElement): number | null {
 export function BoardColumn({
   initial,
   remember,
+  story,
   children,
 }: {
   /** The size the account holds, read by the page with the rest of its preferences. */
   initial: BoardSize;
   /** Whether there is an account to keep a new choice on. */
   remember: boolean;
+  /** What the game is, for the header over the board opened on its own (`BoardMasthead`). */
+  story: BoardStory;
   children: ReactNode;
 }) {
   const [size, setSize] = useState<BoardSize>(initial);
@@ -164,7 +168,7 @@ export function BoardColumn({
         ))}
       </fieldset>
       {/* The board and the controls for the move being made, openable on their own (`BoardFocus`); under the size chooser, so its button sits on the board's box and not on the chooser. */}
-      <BoardFocus label="this game" layout="flex w-full flex-col gap-2">
+      <BoardFocus label="this game" layout="flex w-full flex-col gap-2" story={story}>
         {children}
       </BoardFocus>
     </div>

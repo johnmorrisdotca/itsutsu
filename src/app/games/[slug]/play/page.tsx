@@ -16,6 +16,7 @@ import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
+import { BoardMasthead } from "@/components/board/BoardMasthead";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/play">): Promise<Metadata> {
   const { slug } = await params;
@@ -54,6 +55,12 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   return (
     <Page board>
       <SiteHeader />
+      {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
+      <div data-bare-only>
+        <BoardMasthead
+          story={{ kind: "Practice board", kanji: "試し打ち", title: copy.label, source: "On Itsutsu: both sides are yours, and nothing here is rated" }}
+        />
+      </div>
       <GameViewClient
         variant={variant}
         trackPath
