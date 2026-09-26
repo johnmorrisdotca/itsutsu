@@ -1,5 +1,6 @@
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom } from "../random";
+import { dailyWordOfSeed } from "../dailyWords/dailyPools";
 import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
 
 /**
@@ -15,10 +16,14 @@ import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
  * One generator for all three languages — English, French (Gomoji Mot) and
  * German (Gomoji Wort) — since a word puzzle is the same puzzle whatever list
  * it draws from; only the list and the kind it is stamped with change.
+ *
+ * A DAY'S SEED (`dailyWordSeed`) hides that day's word instead, at any level:
+ * the word everybody meets today, drawn from its frozen pool
+ * (`dailyWords/`), never from the live list.
  */
 export function generateGomoji(size: number, level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "gomoji"): Puzzle {
   const words = answersFor(size, level === "easy", lang);
   if (words.length === 0) throw new Error(`No ${size}-letter words.`);
-  const word = words[Math.floor(seededRandom(seed)() * words.length)]!;
+  const word = dailyWordOfSeed(kind, size, seed) ?? words[Math.floor(seededRandom(seed)() * words.length)]!;
   return { kind, size, level, seed, givens: encodeHidden(word), solution: word };
 }

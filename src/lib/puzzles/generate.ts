@@ -11,6 +11,7 @@ import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
 import { loadEveryTsunagiLevel, loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
 import { generateKumimoji } from "./kumimoji/generate";
 import { loadTileWords } from "./kumimoji/tileWords";
+import { loadDailyPools } from "./dailyWords/dailyPools";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -57,17 +58,18 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
 
 /**
  * What a kind needs fetched before it can be made or checked: the kana
- * Gomoji, whose word list is loaded a length at a time (`loadKanaWords`), and
+ * Gomoji, whose word list is loaded a length at a time (`loadKanaWords`) with
+ * its daily words' pool at that length beside it (`loadDailyPools`), and
  * Kumimoji, whose one list is loaded whole (`loadTileWords`).
  * The solve page, the solved route and a race's finish await it for their one
  * puzzle; the gates await `prepareEveryPuzzle`.
  */
 export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<void> {
-  if (kind === "gomojiKana") await loadKanaWords(size);
+  if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
   if (kind === "kumimoji") await loadTileWords();
 }
 
 export async function prepareEveryPuzzle(): Promise<void> {
-  await Promise.all([...KANA_SIZES.map((size) => loadKanaWords(size)), loadEveryTsunagiLevel(), loadTileWords()]);
+  await Promise.all([...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords()]);
 }

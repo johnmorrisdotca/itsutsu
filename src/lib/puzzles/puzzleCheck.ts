@@ -9,6 +9,7 @@ import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { checkKumimoji } from "./kumimoji/check";
+import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { checkTsunagi } from "./tsunagi/check";
@@ -268,7 +269,8 @@ function checkGomojiKana(size: number, givens: string, answer: string, ending: "
     // Refused rather than waved through: a check that cannot read the list cannot say the guesses are words.
     return { ok: false, reason: "the kana word list is not loaded" };
   }
-  const unknown = guesses.find((guess) => !allowed.has(guess));
+  // A day's word is a guess its own puzzle takes, whatever the list has since become (`isDailyPoolWord`).
+  const unknown = guesses.find((guess) => !allowed.has(guess) && !(guess === puzzle.word && isDailyPoolWord("ja", size, guess)));
   if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
   const firstFound = guesses.indexOf(puzzle.word);
   if (ending === "found") {
@@ -303,7 +305,7 @@ function checkGomoji(
   // Mot and Wort are laid out as English Gomoji is: the same board, the same guesses at each level.
   const rows = guessesFor("gomoji", size, level, 0);
   if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
-  const unknown = guesses.find((guess) => !isWord(guess, size, lang));
+  const unknown = guesses.find((guess) => !isWord(guess, size, lang) && !(guess === hidden && isDailyPoolWord(lang, size, guess)));
   if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
   const firstFound = guesses.indexOf(hidden);
   if (ending === "found") {

@@ -26,9 +26,18 @@ export function seededRandom(seed: number): Random {
 /** The most a seed can be: it travels in an address and a POST body as a plain integer. */
 export const SEED_MOST = 2 ** 31 - 1;
 
-/** A new seed for a puzzle nobody asked for by number. */
+/**
+ * THE SEEDS KEPT FOR THE DAILY WORDS: a hundred million of them, from a
+ * thousand million up, where a Gomoji's seed names a day rather than a draw
+ * (`dailyWords/dailyDay.ts`). `freshSeed` never lands in it, so a word drawn
+ * at random is never somebody's word of the day, early or late.
+ */
+export const DAILY_SEED_BLOCK = { from: 1_000_000_000, size: 100_000_000 } as const;
+
+/** A new seed for a puzzle nobody asked for by number: anywhere in the range but the daily words' block. */
 export function freshSeed(): number {
-  return Math.floor(Math.random() * SEED_MOST) + 1;
+  const drawn = Math.floor(Math.random() * (SEED_MOST - DAILY_SEED_BLOCK.size)) + 1;
+  return drawn >= DAILY_SEED_BLOCK.from ? drawn + DAILY_SEED_BLOCK.size : drawn;
 }
 
 /** Whether a number read from an address or a body is a seed this can use. */
