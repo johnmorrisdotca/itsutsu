@@ -24,7 +24,9 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("tsunagi at %i×%i", (s
     expect(tsunagiLevelsOf(size).length).toBeGreaterThanOrEqual(50);
   });
 
-  it("proves every level has exactly one answer, the stored one, and that it fills the board", () => {
+  // Its own allowance, as the every-variant simulation has: 256 boards re-proved took 30.7 s at 9×9 on a CI runner (0.391.1),
+  // over the 30 s default. A timeout here is the runner's speed, not a board without one answer, which fails on its own.
+  it("proves every level has exactly one answer, the stored one, and that it fills the board", { timeout: 180_000 }, () => {
     for (const [index, [givens, answer]] of tsunagiLevelsOf(size).entries()) {
       const layout = decodeLayout(givens, size);
       expect(layout, `level ${index + 1} is not a layout`).not.toBeNull();
