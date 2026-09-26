@@ -238,6 +238,14 @@ export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";
  */
 export type TsunagiMarks = "colours" | "numbers";
 
+/**
+ * Marbles fills every cell a line runs through with a marble of the pair's
+ * colour, so a finished board is a board of marbles joined by their lines;
+ * Lines draws the line alone. John, 2026-09-26: "Tsunagi still looks like the
+ * other games." Marbles until turned off.
+ */
+export type TsunagiFill = "marbles" | "lines";
+
 /** Each pair's colour as hue, saturation and lightness, for the marble, its line and the wash of its cells. */
 export const TSUNAGI_COLOURS: readonly (readonly [number, number, number])[] = [
   [24, 100, 44], // vermillion
@@ -273,6 +281,17 @@ export function tsunagiMarbleLook(pair: number, marks: TsunagiMarks): { backgrou
   };
 }
 
+/**
+ * A marble on a line's way, between its two ends: the pair's colour, shaded as
+ * the ends are, and for Numbers the line's own soft tint, with nothing written
+ * on it — the number belongs to the ends, which are the level.
+ */
+export function tsunagiBeadLook(pair: number, marks: TsunagiMarks): { background: string } {
+  if (marks === "colours") return { background: tsunagiMarbleLook(pair, marks).background };
+  const tint = [colourOf(pair)[0], 30, 62] as const;
+  return { background: `radial-gradient(circle at 35% 30%, ${hsl(tint, 22)} 0%, ${hsl(tint)} 45%, ${hsl(tint, -18)} 100%)` };
+}
+
 /** The stroke a pair's line is drawn in: its colour, or a soft tint of it for Numbers. */
 export function tsunagiLineColour(pair: number, marks: TsunagiMarks): string {
   const colour = colourOf(pair);
@@ -288,6 +307,9 @@ export function tsunagiWash(pair: number, marks: TsunagiMarks): string {
 /** A marble: round and shaded like a stone, sized to its cell, the pair's number on it for Numbers. */
 export const TSUNAGI_MARBLE =
   "flex size-[74%] items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-[0_1px_2px_rgba(0,0,0,0.5)]";
+
+/** A marble on a line's way: a little smaller than the ends, so the two a line joins still stand out. */
+export const TSUNAGI_BEAD = "size-[56%] rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.45)]";
 
 /**
  * KOUSHI: Gomoji's letter tiles (`WORD_TILE`, `WORD_TILE_MARK`) in a lattice on

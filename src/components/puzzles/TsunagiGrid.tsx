@@ -7,13 +7,16 @@ import { CELL_BLOCKED, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
 import { ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { PuzzleBoard } from "./PuzzleBoard";
-import { TSUNAGI_MARBLE, tsunagiLineColour, tsunagiMarbleLook, tsunagiWash, type TsunagiMarks } from "./puzzles.constants";
+import { TSUNAGI_BEAD, TSUNAGI_MARBLE, tsunagiBeadLook, tsunagiLineColour, tsunagiMarbleLook, tsunagiWash, type TsunagiFill, type TsunagiMarks } from "./puzzles.constants";
 
 /**
  * THE TSUNAGI BOARD: marbles on the board itself, in the player's board
  * colour (`PuzzleBoard`, the frame and coordinates every board has), the
  * lines drawn between them as thick rounded strokes through the cells'
- * centres, and every cell a line passes through washed faintly in its colour.
+ * centres, and every cell a line passes through washed faintly in its colour
+ * — and, with Marbles (`fill`), holding a marble of that colour too, so a
+ * finished board is a board of marbles joined by their lines. They appear as
+ * the line is dragged, since they are read from the lines as they stand.
  *
  * It knows nothing of the rules. A press, each cell the pointer enters and the
  * letting go are reported (`onPress`, `onDrag`, `onLift`), by mouse, pen or
@@ -25,6 +28,7 @@ export function TsunagiGrid({
   layout,
   lines,
   marks,
+  fill = "marbles",
   theme,
   done = false,
   readOnly = false,
@@ -35,6 +39,8 @@ export function TsunagiGrid({
   layout: LinkLayout;
   lines: Lines;
   marks: TsunagiMarks;
+  /** Marbles in every cell of a line, or the line alone. */
+  fill?: TsunagiFill;
   theme: BoardThemeTokens;
   done?: boolean;
   /** Drawn only, never pressed: a picture of a level. */
@@ -81,7 +87,7 @@ export function TsunagiGrid({
   };
 
   return (
-    <div className="w-full select-none" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"} data-marks={marks}>
+    <div className="w-full select-none" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"} data-marks={marks} data-fill={fill}>
       <PuzzleBoard size={size} theme={theme}>
         <div
           className={`relative h-full w-full ${live ? "cursor-pointer" : ""}`}
@@ -143,6 +149,8 @@ export function TsunagiGrid({
                     <span className={`${TSUNAGI_MARBLE} ${size >= 8 ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`} style={tsunagiMarbleLook(cell, marks)} data-testid="tsunagi-marble" data-pair={cell}>
                       {marks === "numbers" ? cell + 1 : null}
                     </span>
+                  ) : fill === "marbles" && owner >= 0 ? (
+                    <span className={TSUNAGI_BEAD} style={tsunagiBeadLook(owner, marks)} data-testid="tsunagi-bead" data-pair={owner} />
                   ) : null}
                 </div>
               );

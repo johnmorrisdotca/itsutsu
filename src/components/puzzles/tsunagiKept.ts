@@ -1,11 +1,11 @@
 "use client";
 
-import type { TsunagiMarks } from "./puzzles.constants";
+import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 
 /**
  * WHAT A BROWSER REMEMBERS OF TSUNAGI for somebody with no account: the
- * levels solved at each size, with the best time on each, and whether they
- * play by colours or numbers. A member's solves are on the account
+ * levels solved at each size, with the best time on each, whether they play
+ * by colours or numbers, and whether a line's cells hold marbles. A member's solves are on the account
  * (`PuzzleSolve`) and read by the server; these sit beside them, so the board
  * of levels opens the next row the moment a level is solved, account or not.
  *
@@ -14,6 +14,7 @@ import type { TsunagiMarks } from "./puzzles.constants";
  */
 const SOLVED_KEY = (size: number) => `itsutsu.tsunagi.solved.${size}`;
 const MARKS_KEY = "itsutsu.tsunagi.marks";
+const FILL_KEY = "itsutsu.tsunagi.fill";
 
 /** The levels this browser has solved at a size, each with its best time in milliseconds. */
 export function keptSolves(size: number): Record<number, number> {
@@ -56,6 +57,23 @@ export function keptMarks(): TsunagiMarks | null {
 export function keepMarksHere(marks: TsunagiMarks): void {
   try {
     window.localStorage.setItem(MARKS_KEY, marks);
+  } catch {
+    // Remembered for the page only.
+  }
+}
+
+export function keptFill(): TsunagiFill | null {
+  try {
+    const raw = window.localStorage.getItem(FILL_KEY);
+    return raw === "marbles" || raw === "lines" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+export function keepFillHere(fill: TsunagiFill): void {
+  try {
+    window.localStorage.setItem(FILL_KEY, fill);
   } catch {
     // Remembered for the page only.
   }

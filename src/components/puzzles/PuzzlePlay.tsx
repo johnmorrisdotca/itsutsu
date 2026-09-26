@@ -20,7 +20,7 @@ import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
-import type { TsunagiMarks } from "./puzzles.constants";
+import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 
@@ -63,8 +63,8 @@ export function PuzzlePlay({
   headStart?: boolean;
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
   twins?: boolean;
-  /** Tsunagi's levels already solved at this size on the account, and whether it is played by colours or numbers. */
-  tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null } | null;
+  /** Tsunagi's levels already solved at this size on the account, whether it is played by colours or numbers, and with marbles along the lines or not. */
+  tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null; fill?: TsunagiFill | null } | null;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -160,6 +160,7 @@ export function PuzzlePlay({
           appearance={appearance}
           known={tsunagi?.known}
           marksChosen={tsunagi?.marks ?? null}
+          fillChosen={tsunagi?.fill ?? null}
         />
       );
     case "kumimoji":

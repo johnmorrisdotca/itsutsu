@@ -194,6 +194,14 @@ export const PREFERENCE_SPECS = {
   tsunagiMarks: { options: ["colours", "numbers"] as const, fallback: "colours" },
 
   /*
+   * Whether every cell a Tsunagi line runs through holds a marble of its
+   * colour, or the line alone. John, 2026-09-26: "Tsunagi still looks like the
+   * other games" — so a finished board is a full board of marbles joined by
+   * their lines. Marbles until turned off; the level is the same either way.
+   */
+  tsunagiFill: { options: ["marbles", "lines"] as const, fallback: "marbles" },
+
+  /*
    * Whether a finished game's list of moves is open or folded. John,
    * 2026-09-25: "Moves might be collapsed or hidden naturally as some people
    * might not want it." Open until somebody folds it; folded once, it stays

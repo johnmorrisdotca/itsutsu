@@ -18,12 +18,12 @@ import { nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZE
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { feltOrWoodTheme } from "./GomojiGrid";
-import type { TsunagiMarks } from "./puzzles.constants";
+import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiLevelBoard, tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { SetUpResume } from "./SetUpResume";
-import { TsunagiMarksPicker } from "./TsunagiMarksPicker";
+import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import { keptSolves } from "./tsunagiKept";
-import { useTsunagiMarks } from "./useTsunagiMarks";
+import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
 /** The sizes the tiles show at once: four, as every set-up screen keeps room for (`picker.test.ts`). */
 const TILES = 4;
@@ -47,6 +47,7 @@ export function TsunagiSetUp({
   hasAccount,
   appearance = DEFAULT_APPEARANCE,
   marksChosen,
+  fillChosen = null,
   solved,
   initialSize,
   resumeHref = null,
@@ -54,6 +55,7 @@ export function TsunagiSetUp({
   hasAccount: boolean;
   appearance?: Appearance;
   marksChosen: TsunagiMarks | null;
+  fillChosen?: TsunagiFill | null;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
   solved: Record<number, Record<number, number>>;
   initialSize: number;
@@ -69,6 +71,7 @@ export function TsunagiSetUp({
   const shown = boards.slice(shelf, shelf + TILES);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
+  const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
   const theme = feltOrWoodTheme({ ...appearance, felt });
 
   /* This browser's solves, read once it has hydrated: the server drew the account's alone, and the two are joined here. */
@@ -123,6 +126,7 @@ export function TsunagiSetUp({
             {copy.board}
           </p>
           <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
+          <TsunagiFillPicker fill={fill} onChoose={chooseFill} />
           <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">

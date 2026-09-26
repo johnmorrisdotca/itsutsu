@@ -201,6 +201,47 @@ test.describe("Tsunagi", () => {
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-marks", "colours");
   });
 
+  test("Marbles fill a line's cells as it is dragged, Lines turns them off, and the choice comes back after a reload", async ({ page }) => {
+    const level = TSUNAGI_4[2]!;
+    const longest = lettersOf(level)
+      .map((letter) => answerLine(level, 4, letter))
+      .sort((a, b) => b.length - a.length)[0]!;
+    // A line with cells between its two ends, or there would be nothing to fill.
+    expect(longest.length).toBeGreaterThan(2);
+    const choose = async (fill: "marbles" | "lines") => {
+      const saved = page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
+      await page.getByTestId(`tsunagi-fill-${fill}`).click();
+      await saved;
+      await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-fill", fill);
+    };
+    const beads = page.getByTestId("tsunagi-bead");
+
+    await openLevel(page, 4, 3);
+    await choose("marbles");
+    // Still pressed: the marbles are there while the line is being drawn, one in each cell between its ends.
+    await drag(page, 4, longest, true);
+    await expect(beads).toHaveCount(longest.length - 2);
+    await page.mouse.up();
+    const pair = await page.getByTestId("tsunagi-line").first().getAttribute("data-pair");
+    for (const bead of await beads.all()) await expect(bead).toHaveAttribute("data-pair", pair!);
+
+    await choose("lines");
+    await expect(page.getByTestId("tsunagi-line")).toHaveCount(1);
+    await expect(beads).toHaveCount(0);
+    await page.reload();
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-fill", "lines");
+
+    // And back, which is also how this leaves the account: marbles, as a new player first sees it.
+    await choose("marbles");
+    await page.reload();
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-fill", "marbles");
+    await expect(beads).toHaveCount(longest.length - 2);
+    await page.getByTestId("tsunagi-restart").click();
+    await expect(beads).toHaveCount(0);
+  });
+
   test("a half-drawn level is kept when left, and waits in My games", async ({ page }) => {
     const level = TSUNAGI_5[6]!;
     const letter = lettersOf(level)[0]!;
