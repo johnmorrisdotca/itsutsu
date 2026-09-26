@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.345.0 — 2026-09-26
+- Any board opens on its own: the button in the corner of a board's box makes the board, its scrubber and its controls a full-screen view.
+
 ## 0.344.3 — 2026-09-26
 - Admin's site settings are one condensed control panel: access, notices and modes, a row each.
 
