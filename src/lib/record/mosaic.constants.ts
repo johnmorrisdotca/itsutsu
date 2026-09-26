@@ -46,7 +46,6 @@ export const MOSAIC_ART = {
   label: "#5b3d1c",
   /** The title bar across the top: a band a shade lighter than the ground, a wood rule under it. */
   bar: "#2c231a",
-  barBrand: "#e2ba7a",
   barTitle: "#f4efe4",
   barLine: "#c9b89c",
   /** The margin round each tile, as a share of its side. */
@@ -73,8 +72,8 @@ export const MOSAIC_COPY = {
   },
   failed: "The picture could not be drawn in this browser.",
   shapeLabel: "Shape",
-  /** The start of the title bar across the top of every picture. */
-  brand: "ITSUTSU GAME VIEWER",
+  /** The name the logo on the title bar carries for anything reading the picture as text. */
+  brand: "Itsutsu",
   site: "itsutsu.com",
   /** The bar's note when the grid holds fewer positions than the game has: "120 of 211 positions". */
   shownOf: (shown: number, total: number) => `${shown} of ${total} positions`,

@@ -7,6 +7,7 @@ import { replayTimeline } from "@/lib/gomoku/replay";
 import { framesOf, mosaicDraws, mosaicGrid, mosaicLayout, mosaicPlan, mosaicSvg, pickFrames } from "./mosaic";
 import { MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_PICKS, MOSAIC_SHAPES, type MosaicShape } from "./mosaic.constants";
 import type { MosaicFrame } from "./mosaic.types";
+import { MOSAIC_WORDMARK } from "./mosaicLogo.constants";
 
 /** A stored game of five in a row on 9×9: black runs along row 4, white along row 0. */
 function storedGame(moves: [number, number][]) {
@@ -137,7 +138,7 @@ describe("mosaicSvg", () => {
     expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"')).toBe(true);
     // One board per frame — the only rounded rectangles — and one stone for every stone in every frame: 1 + 2 + 3.
     expect(svg.match(BOARD)).toHaveLength(3);
-    expect(svg.match(/<circle/g)).toHaveLength(6);
+    expect(svg.replace(MOSAIC_WORDMARK.body, "").match(/<circle/g)).toHaveLength(6);
     expect(picture(frames, "portrait").startsWith('<svg xmlns="http://www.w3.org/2000/svg" width="1170" height="2532"')).toBe(true);
   });
 });
@@ -155,10 +156,12 @@ describe("mosaicSvg's labels and title bar", () => {
   // Seven positions make no rectangle on a wide picture, so the grid holds six.
   const seven = framesOf(replayTimeline(storedGame([[4, 0], [0, 0], [4, 1], [0, 1], [4, 2], [0, 2], [4, 3]])));
 
-  it("carries the brand, the game's name and its details across the top, and no card after the last move", () => {
+  it("carries the logo, the game's name and its details across the top, and no card after the last move", () => {
     const svg = picture(seven);
-    expect(svg).toContain(`>${MOSAIC_COPY.brand}</tspan>`);
-    expect(svg).toContain(">Ann vs Bo</tspan>");
+    // The logo, carried inside the picture, and no brand typed in a font.
+    expect(svg).toContain(MOSAIC_WORDMARK.body);
+    expect(svg).not.toContain("GAME VIEWER");
+    expect(svg).toContain(">Ann vs Bo</text>");
     expect(svg).toContain("2026-09-25 · itsutsu.com");
     // Six boards and nothing after them.
     expect(svg.match(BOARD)).toHaveLength(6);

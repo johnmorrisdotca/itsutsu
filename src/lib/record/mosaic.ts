@@ -5,6 +5,7 @@ import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 
 import { MOSAIC_ART, MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_PICKS, type MosaicPick } from "./mosaic.constants";
 import type { MosaicFrame, MosaicPicture, MosaicTitle } from "./mosaic.types";
+import { MOSAIC_WORDMARK } from "./mosaicLogo.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 /**
@@ -275,7 +276,9 @@ function wrapped(parts: readonly string[], wide: number, most: number): string[]
  * date perhaps, and any other references or info. if we have a title there,
  * then we don't need the title in the bottom right." So the brand and the
  * game's name on one line, and under it everything else a caller knows —
- * the date, the event, the result, the source — on one or two lines.
+ * the date, the event, the result, the source — on one or two lines. The
+ * brand is the logo, not words typed in a font (John, 2026-09-26: "should be
+ * using my Logo"): the kit's wordmark down the bar's left, the rest beside it.
  */
 function titleBarSvg(title: MosaicTitle, width: number, height: number): string {
   const art = MOSAIC_ART;
@@ -284,9 +287,13 @@ function titleBarSvg(title: MosaicTitle, width: number, height: number): string 
   const pad = short * 0.025;
   const big = short * BAR.big;
   const small = short * BAR.small;
+  // The wordmark's own box has its margins drawn in, so it runs the bar's height and sits at its left edge.
+  const logoHigh = bar * 0.82;
+  const logoWide = (logoHigh * MOSAIC_WORDMARK.width) / MOSAIC_WORDMARK.height;
+  const textAt = logoWide + pad * 0.5;
   // An average character of the site's sans is a little over half its size across.
-  const wideAt = (font: number) => Math.max(8, Math.floor((width - pad * 2) / (font * 0.56)));
-  const name = fitted(title.name, Math.max(8, wideAt(big) - MOSAIC_COPY.brand.length - 3));
+  const wideAt = (font: number) => Math.max(8, Math.floor((width - textAt - pad) / (font * 0.56)));
+  const name = fitted(title.name, wideAt(big));
   const lines = wrapped(title.details, wideAt(small), room);
   // Fewer lines than there is room for sit in the middle of the bar, not at its top.
   const shift = ((room - lines.length) * BAR.step * short) / 2;
@@ -296,13 +303,12 @@ function titleBarSvg(title: MosaicTitle, width: number, height: number): string 
   const parts = [
     `<rect width="${width}" height="${bar}" fill="${art.bar}"/>`,
     `<rect y="${bar - short * 0.003}" width="${width}" height="${short * 0.003}" fill="${art.wood}"/>`,
-    `<text x="${pad}" y="${centredBaseline(nameAt, big)}" ${font} font-size="${big}">` +
-      `<tspan font-weight="700" letter-spacing="${big * 0.06}" fill="${art.barBrand}">${MOSAIC_COPY.brand}</tspan>` +
-      `<tspan fill="${art.barLine}"> · </tspan>` +
-      `<tspan font-weight="600" fill="${art.barTitle}">${escaped(name)}</tspan></text>`,
+    `<svg x="0" y="${(bar - logoHigh) / 2}" width="${logoWide}" height="${logoHigh}" viewBox="0 0 ${MOSAIC_WORDMARK.width} ${MOSAIC_WORDMARK.height}">` +
+      `<title>${MOSAIC_COPY.brand}</title>${MOSAIC_WORDMARK.body}</svg>`,
+    `<text x="${textAt}" y="${centredBaseline(nameAt, big)}" ${font} font-size="${big}" font-weight="600" fill="${art.barTitle}">${escaped(name)}</text>`,
     ...lines.map(
       (line, i) =>
-        `<text x="${pad}" y="${centredBaseline(lineAt(i), small)}" ${font} font-size="${small}" fill="${art.barLine}">${escaped(line)}</text>`,
+        `<text x="${textAt}" y="${centredBaseline(lineAt(i), small)}" ${font} font-size="${small}" fill="${art.barLine}">${escaped(line)}</text>`,
     ),
   ];
   return parts.join("");
