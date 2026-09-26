@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -17,6 +15,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
 import { WordStyleProvider } from "./WordStyleContext";
+import { GameTrailNav } from "@/components/games/GameTrail";
 
 /**
  * /games/<slug>/play for a puzzle: the solve, at the size, level and seed the
@@ -44,18 +43,10 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         over it (see NO_TITLE in pageShape.coverage.test.ts). The trail stays,
         because it is the way back to the puzzle and its set-up.
       */}
-      <nav aria-label="Where this puzzle is" className="flex flex-col gap-1">
-        <p className="text-xs text-muted">
-          <Link href={gamePath(kind)} className="underline-offset-2 hover:underline" data-testid="play-up">
-            {copy.label}
-          </Link>{" "}
-          /{" "}
-          <Link href={setUpPath(kind)} className="underline-offset-2 hover:underline">
-            Set up
-          </Link>{" "}
-          / Play
-        </p>
-      </nav>
+      <GameTrailNav
+        game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }}
+        steps={[{ label: "Set up", href: setUpPath(kind) }, { label: "Play" }]}
+      />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
           <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} resumed={resumed} hasAccount={reader.hasAccount} />

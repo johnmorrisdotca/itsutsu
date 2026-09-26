@@ -32,6 +32,7 @@ import {
   variantFor,
 } from "@/lib/gomoku/slugs";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
+import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -105,10 +106,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             Games / name / …; this is the first step of that trail.
           */}
           <p className="text-xs text-muted" data-testid="game-crumb">
-            <Link href="/games" className="underline-offset-2 hover:underline">
-              Games
-            </Link>{" "}
-            / {page.title}
+            <GameTrail game={{ label: page.title }} />
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">
             {/*

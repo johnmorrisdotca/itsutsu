@@ -19,6 +19,7 @@ import { PuzzlePlayClient } from "./PuzzlePlayClient";
 import { RaceControls } from "./RaceControls";
 import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /**
  * A race, at /games/<slug>/match/<id>: two seats, two clocks, one puzzle.
@@ -58,14 +59,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
       <PageTitle
         title={`Race at ${copy.label}`}
         kanji="競解"
-        crumb={
-          <>
-            <Link href={gamePath(kind)} className="underline-offset-2 hover:underline" data-testid="race-up">
-              {copy.label}
-            </Link>{" "}
-            / Race
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "race-up" }} steps={[{ label: "Race" }]} />}
         lead={`${sizeWord(race.size, kind)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
         testId="puzzle-race"
       />

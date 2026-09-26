@@ -9,6 +9,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { EVERY_GAME_KEY, gameCopyOf, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { gameKeyFor, gamePath, rulesPath, slugFor } from "@/lib/gomoku/slugs";
 import { backgroundFor } from "@/lib/gomoku/backgrounds";
+import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/background">): Promise<Metadata> {
   const copy = gameCopyOf(gameKeyFor((await params).slug) ?? "");
@@ -50,14 +51,7 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
       <PageTitle
         title="Background"
         kanji="背景"
-        crumb={
-          <>
-            <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="background-up">
-              {copy.label}
-            </Link>{" "}
-            / Background
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "background-up" }} steps={[{ label: "Background" }]} />}
       />
 
       {art === null ? (

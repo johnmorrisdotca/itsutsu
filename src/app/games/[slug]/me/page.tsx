@@ -9,9 +9,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { findMemberById } from "@/lib/auth/members";
-import { historyPath, myGamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, myGamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { PuzzleMePage } from "@/components/puzzles/PuzzleMePage";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { GameTrail } from "@/components/games/GameTrail";
 
 // Whose games these are is read from the session on every request.
 export const dynamic = "force-dynamic";
@@ -60,6 +61,7 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
         <SiteHeader />
         <PageTitle
           title={`Your games of ${copy.label}`}
+          crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Yours" }]} />}
           lead={
             myId === null
               ? "This page counts your own games, and it does not know who you are yet."

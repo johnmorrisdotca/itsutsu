@@ -21,6 +21,7 @@ import { PuzzleFastest } from "./PuzzleFastest";
 import { PuzzlePlayOrResume } from "./PuzzlePlayOrResume";
 import { PuzzlePoints } from "./PuzzlePoints";
 import { sizeWord } from "./puzzles.constants";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /**
  * A puzzle's front door, at /games/<slug>: what every puzzle's name leads to.
@@ -58,10 +59,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             Games / name / …; this is the first step of that trail.
           */}
           <p className="text-xs text-muted" data-testid="game-crumb">
-            <Link href="/games" className="underline-offset-2 hover:underline">
-              Games
-            </Link>{" "}
-            / {page.title}
+            <GameTrail game={{ label: page.title }} />
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>

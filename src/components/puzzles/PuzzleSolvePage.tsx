@@ -20,6 +20,7 @@ import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /** A word puzzle's hidden word, in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
@@ -67,18 +68,7 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
       <PageTitle
         title={`Your ${copy.label}`}
         kanji={copy.kanji}
-        crumb={
-          <>
-            <Link href={gamePath(kind)} className="underline-offset-2 hover:underline">
-              {copy.label}
-            </Link>{" "}
-            /{" "}
-            <Link href={myGamePath(kind)} className="underline-offset-2 hover:underline">
-              Yours
-            </Link>{" "}
-            / {solve.finishedAt.toISOString().slice(0, 10)}
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Yours", href: myGamePath(kind) }, { label: solve.finishedAt.toISOString().slice(0, 10) }]} />}
         lead={`${outcome}, ${solve.finishedAt.toISOString().slice(0, 10)}.`}
       />
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"}>

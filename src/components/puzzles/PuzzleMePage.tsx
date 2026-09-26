@@ -14,6 +14,7 @@ import { ownSolvesOf, ownWordsOf } from "@/lib/puzzles/server/puzzleSolves";
 import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
 import { WordHistory } from "./WordHistory";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /**
  * /games/<slug>/me for a puzzle: your own solves of it, newest first, and
@@ -33,14 +34,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
       <PageTitle
         title={`Your ${copy.label}`}
         kanji={copy.kanji}
-        crumb={
-          <>
-            <Link href={gamePath(kind)} className="underline-offset-2 hover:underline">
-              {copy.label}
-            </Link>{" "}
-            / Yours
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Yours" }]} />}
         lead={
           me === null
             ? "This page lists your own solves, and it does not know who you are yet."

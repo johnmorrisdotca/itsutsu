@@ -21,7 +21,7 @@ import { SeatFullNotice } from "./SeatFullNotice";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { gameRatingRefusal } from "@/lib/rating/rateable";
-import { matchPath, seatPath } from "@/lib/gomoku/slugs";
+import { gamePath, matchPath, seatPath } from "@/lib/gomoku/slugs";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { playedHereStory } from "@/components/board/boardStory";
 import { BoardMasthead } from "@/components/board/BoardMasthead";
@@ -36,6 +36,9 @@ import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { BoardColumn } from "@/components/live/BoardColumn";
+import { GameTrailNav } from "@/components/games/GameTrail";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /*
  * THE LIVE MATCH: the board being played, and the panel beside it — the offer,
@@ -258,6 +261,10 @@ export async function LiveMatch({
      */
     <Page board>
       <SiteHeader />
+      <GameTrailNav
+        game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
+        steps={[{ label: "Match" }]}
+      />
       <SeatFullNotice shown={seatFull} />
       {/* Before the first stone: who these two are to each other. See RivalryPanel. */}
       {game.moveCount === 0 ? (

@@ -18,10 +18,11 @@ import { creationFor, openerIn, seatsFor } from "@/components/live/setUpStart";
 import { sittingAt } from "@/components/live/sittingAt";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
-import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
 import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { GameTrail } from "@/components/games/GameTrail";
 
 export const dynamic = "force-dynamic";
 
@@ -211,6 +212,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
       */}
       <PageTitle
         testId="doorstep-title"
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Begin" }]} />}
         title={<GameName variant={variant} kanji className="no-underline hover:underline" />}
         lead={
           <>

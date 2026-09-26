@@ -21,6 +21,7 @@ import { buddyMemberIds } from "@/lib/social/buddies";
 import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { closedToReader } from "@/lib/social/childReach";
+import { GameTrail } from "@/components/games/GameTrail";
 
 export const metadata = { title: "Standings 名人" };
 
@@ -105,15 +106,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={
-          <>
-            {/* Up to the game, which is what this is a facet of. */}
-            <Link href={gamePath(variant)} className="underline-offset-2 hover:underline">
-              {copy.label}
-            </Link>{" "}
-            / Standings
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Standings" }]} />}
       >
         <p className="text-sm font-medium">{copy.tagline}</p>
         <p className="flex flex-wrap gap-x-3 text-xs">

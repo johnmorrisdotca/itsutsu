@@ -12,6 +12,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzleSetUp } from "./PuzzleSetUp";
 import { WordStyleProvider } from "./WordStyleContext";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /**
  * /games/<slug>/new for a puzzle: the heading, then the size and the level.
@@ -35,14 +36,7 @@ export async function PuzzleSetUpPage({ kind, hasAccount, memberId }: { kind: Pu
       <PageTitle
         title={`Play ${copy.label}`}
         kanji={copy.kanji}
-        crumb={
-          <>
-            <Link href={gamePath(kind)} className="underline-offset-2 hover:underline" data-testid="set-up-up">
-              {copy.label}
-            </Link>{" "}
-            / Set up
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: "Set up" }]} />}
         lead={
           <>
             {copy.tagline}{" "}

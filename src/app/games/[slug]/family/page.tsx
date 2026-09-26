@@ -16,6 +16,7 @@ import { EVERY_GAME_KEY, gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
 import { familyPath, gameKeyFor, gamePath, setUpPath, slugFor } from "@/lib/gomoku/slugs";
 import { scopeOfFamily } from "@/lib/points/ipBoards";
+import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/family">): Promise<Metadata> {
   const variant = gameKeyFor((await params).slug);
@@ -64,14 +65,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
         title={family.title}
         kanji={family.kanji}
         lead={family.blurb}
-        crumb={
-          <>
-            <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="family-up">
-              {copy.label}
-            </Link>{" "}
-            / Family
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "family-up" }} steps={[{ label: "Family" }]} />}
       />
 
       <div className="flex items-center gap-4">

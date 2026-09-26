@@ -16,6 +16,7 @@ import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
+import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
   const { slug } = await params;
@@ -130,14 +131,12 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
                   that is public must have a public way out of it, or it is a
                   room with one exit that is locked.
                 */}
-                <Link href="/games" className="underline-offset-2 hover:underline" data-testid="rules-to-games">
-                  {say.say("nav.games")}
-                </Link>{" "}
-                /{" "}
-                <Link href={gamePath(key)} className="underline-offset-2 hover:underline" data-testid="rules-up">
-                  {name.text}
-                </Link>{" "}
-                / {say.say("nav.rules")}
+                <GameTrail
+                  root={say.say("nav.games")}
+                  rootTestId="rules-to-games"
+                  game={{ label: name.text, href: gamePath(key), testId: "rules-up" }}
+                  steps={[{ label: say.say("nav.rules") }]}
+                />
               </>
             }
           >

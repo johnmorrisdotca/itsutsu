@@ -14,7 +14,7 @@ import { SeatFullNotice } from "./SeatFullNotice";
 import { shownName } from "@/lib/rating/shownName";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
-import { matchPath, puzzleFor, slugFor } from "@/lib/gomoku/slugs";
+import { gamePath, matchPath, puzzleFor, slugFor } from "@/lib/gomoku/slugs";
 import { PuzzleRacePage } from "@/components/puzzles/PuzzleRacePage";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { seatCookieName } from "@/lib/history/seatCookie";
@@ -24,6 +24,8 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { prisma } from "@/lib/prisma";
+import { GameTrailNav } from "@/components/games/GameTrail";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 /**
  * A match, at /games/<slug>/match/<id>.
@@ -135,6 +137,10 @@ export async function MatchPage({
     return (
       <Page board>
         <SiteHeader />
+        <GameTrailNav
+          game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
+          steps={[{ label: "Match" }]}
+        />
         <SeatFullNotice shown={seatFull} />
         <GameViewClient
           variant={game.variant as RuleVariant}

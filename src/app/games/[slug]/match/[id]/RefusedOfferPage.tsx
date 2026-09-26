@@ -7,6 +7,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { boardPhrase } from "@/lib/gomoku/boardWords";
+import { GameTrail } from "@/components/games/GameTrail";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { gamePath } from "@/lib/gomoku/slugs";
 
 /**
  * AN OFFER NOBODY TOOK UP, at the address it had.
@@ -48,6 +52,12 @@ export async function RefusedOfferPage({ game }: { game: GameDetail }) {
         <PageTitle
           title={declined ? "This offer was declined" : "This offer was withdrawn"}
           kanji={declined ? "辞退" : "取消"}
+          crumb={
+            <GameTrail
+              game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
+              steps={[{ label: "Match" }]}
+            />
+          }
         />
         <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
           <p className="text-sm text-ink-soft">

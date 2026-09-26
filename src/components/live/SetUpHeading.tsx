@@ -4,12 +4,13 @@ import { Paired } from "@/components/i18n/Paired";
 import { PageTitle } from "@/components/layout/Headings";
 import { PAGE_TITLE_KANJI } from "@/components/ui/ui.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { rulesPath, setUpLink } from "@/lib/gomoku/slugs";
+import { gamePath, rulesPath, setUpLink } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { SET_UP_COPY } from "./live.constants";
 import { RematchSwap, RematchTitle } from "./RematchHeading";
 import { stillARematch } from "./setUpStart";
 import type { HeadingTitle, RematchHeadingState, SetUpFrom } from "./setUp.types";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /**
  * WHAT THIS SETUP SCREEN IS FOR, SAID AT THE TOP OF IT.
@@ -79,6 +80,13 @@ export function SetUpHeading({
   return (
     <PageTitle
       testId="set-up-title"
+      crumb={
+        variant !== null && copy !== null ? (
+          <GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Set up" }]} />
+        ) : (
+          <GameTrail game={{ label: "Set up" }} />
+        )
+      }
       title={
         from.again !== null && rematch !== null ? (
           <RematchTitle id={from.again.id} againName={from.again.opponent.name} plain={plain} initial={rematch} />

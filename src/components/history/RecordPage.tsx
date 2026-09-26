@@ -8,7 +8,7 @@ import { HistoryFilters } from "./HistoryFilters";
 import { LiveRecord } from "./LiveRecord";
 import { RecordText } from "./RecordText";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { historyPath } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchGameHistoryPage, fetchWholeRecord } from "@/lib/history/gameHistory";
 import { resolveMember } from "@/lib/history/recordMember";
@@ -17,6 +17,7 @@ import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { RivalryPanel } from "./RivalryPanel";
+import { GameTrail } from "@/components/games/GameTrail";
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -180,6 +181,11 @@ export async function RecordPage({
           )
         }
         kanji={variant !== undefined && copy !== null ? "" : "棋譜"}
+        crumb={
+          variant !== undefined && copy !== null ? (
+            <GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: impliedPlayer === undefined ? "Record" : "Yours" }]} />
+          ) : undefined
+        }
         lead={
           copy === null
             ? "Every finished game, newest first. Open one to replay it stone by stone."

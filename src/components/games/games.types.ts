@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { FamilyStats, GameStats } from "@/lib/catalogue/catalogue.types";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 
@@ -72,3 +74,6 @@ export type GameStatsStripProps = {
 export type FamilyStatsLineProps = {
   stats: FamilyStats;
 };
+
+/** One step of a game's trail after the game itself: a link while there are steps after it, the page's own name at the end. */
+export type TrailStep = { label: ReactNode; href?: string; testId?: string };

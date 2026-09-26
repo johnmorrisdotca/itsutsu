@@ -17,6 +17,7 @@ import { gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { BoardMasthead } from "@/components/board/BoardMasthead";
+import { GameTrailNav } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/play">): Promise<Metadata> {
   const { slug } = await params;
@@ -61,6 +62,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
           story={{ kind: "Practice board", kanji: "試し打ち", title: copy.label, source: "On Itsutsu: both sides are yours, and nothing here is rated" }}
         />
       </div>
+      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Play" }]} />
       <GameViewClient
         variant={variant}
         trackPath

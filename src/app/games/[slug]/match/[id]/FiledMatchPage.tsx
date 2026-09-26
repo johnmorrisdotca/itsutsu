@@ -17,7 +17,7 @@ import { LocalTime } from "@/components/ui/LocalTime";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { historyPath, matchPath } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, matchPath } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -27,7 +27,7 @@ import { SelfVerdict, type Verdict } from "@/components/history/SelfVerdict";
 import { seatClaims, seatCookieName } from "@/lib/history/seatCookie";
 import { resultCardFor } from "@/lib/history/resultCardRead";
 import type { ResultCardData } from "@/lib/history/gameResult.types";
-import type { Stone } from "@/lib/gomoku/gomoku.types";
+import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { ResultCard } from "@/components/history/ResultCard";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
@@ -48,6 +48,8 @@ import { GameName } from "@/components/games/GameName";
 import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { boardWords } from "@/lib/gomoku/boardWords";
+import { GameTrail } from "@/components/games/GameTrail";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 /**
  * A match that has been filed: the replay, at the address the match has always
@@ -315,6 +317,12 @@ function FiledMatch({
       </div>
       <div data-chrome className="contents">
       <PageTitle
+        crumb={
+          <GameTrail
+            game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
+            steps={[{ label: "Record", href: historyPath(game.variant) }, { label: "Match" }]}
+          />
+        }
         title={
           <>
             <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} />

@@ -12,6 +12,7 @@ import { fastestSolvesOf, memberNamesOf } from "@/lib/puzzles/server/puzzleSolve
 
 import { FastestTable } from "./PuzzleFastest";
 import { PuzzlePoints } from "./PuzzlePoints";
+import { GameTrail } from "@/components/games/GameTrail";
 
 /**
  * /games/<slug>/standings for a puzzle: the whole leaderboard, all time and
@@ -28,14 +29,7 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={
-          <>
-            <Link href={gamePath(kind)} className="underline-offset-2 hover:underline">
-              {copy.label}
-            </Link>{" "}
-            / Standings
-          </>
-        }
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Standings" }]} />}
         lead="Everybody's points at it, all time and this month, then the fastest solves at every size and level. A solve on your own is timed by your browser; a race by the site."
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
