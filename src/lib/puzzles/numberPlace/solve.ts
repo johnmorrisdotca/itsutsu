@@ -147,7 +147,7 @@ export function countSolutions(grid: Grid, layout: Layout, limit = 2): number {
  * asks this of layouts that are sometimes slow to settle, and draws another
  * rather than keeping a browser waiting.
  */
-export function countSolutionsWithin(grid: Grid, layout: Layout, limit: number, budget: number): number | null {
+export function countSolutionsWithin(grid: Grid, layout: Layout, limit: number, budget: number, first?: (answer: Grid) => void): number | null {
   const work = [...grid];
   const taken = used(work, layout);
   let found = 0;
@@ -158,6 +158,7 @@ export function countSolutionsWithin(grid: Grid, layout: Layout, limit: number, 
     steps += 1;
     const { index, mask } = mostConstrained(work, layout, taken);
     if (index === -1) {
+      if (found === 0) first?.([...work]);
       found += 1;
       return;
     }
@@ -173,6 +174,20 @@ export function countSolutionsWithin(grid: Grid, layout: Layout, limit: number, 
   };
   step();
   return steps > budget && found < limit ? null : found;
+}
+
+/**
+ * THE ANSWER, WORKED OUT FROM THE GIVENS: a finished puzzle kept before its
+ * grid was, drawn solved rather than as dealt. Every puzzle made here has
+ * exactly one answer, so the search stops at two and hands back the first
+ * only when there was no second. Null when there is none, or more than one,
+ * or the search ran past `budget`: a grid this cannot vouch for is never drawn
+ * as though it were the one that was solved.
+ */
+export function solutionOf(grid: Grid, layout: Layout, budget = 2_000_000): Grid | null {
+  let answer: Grid | null = null;
+  const found = countSolutionsWithin(grid, layout, 2, budget, (first) => (answer = first));
+  return found === 1 ? answer : null;
 }
 
 export type SinglesResult = { grid: Grid; solved: boolean; contradiction: boolean };

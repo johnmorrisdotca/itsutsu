@@ -178,13 +178,14 @@ function branchCell(grid: Grid, size: number): number {
 }
 
 /** How many answers the grid has, up to `limit`: the strongest reasoning at every node, then both colours at one cell. */
-export function countSolutions(grid: Grid, size: number, limit = 2): number {
+export function countSolutions(grid: Grid, size: number, limit = 2, first?: (answer: Grid) => void): number {
   let found = 0;
   const step = (at: Grid): void => {
     if (found >= limit) return;
     const singles = applySingles(at, size, "lines");
     if (singles.contradiction) return;
     if (singles.solved) {
+      if (found === 0) first?.(singles.grid);
       found += 1;
       return;
     }
@@ -198,6 +199,12 @@ export function countSolutions(grid: Grid, size: number, limit = 2): number {
   };
   step(grid);
   return found;
+}
+
+/** The one answer the printed stones allow, or null when they allow none or more than one: see `numberPlace/solve.ts`'s `solutionOf`. */
+export function solutionOf(grid: Grid, size: number): Grid | null {
+  let answer: Grid | null = null;
+  return countSolutions(grid, size, 2, (first) => (answer = [...first])) === 1 ? answer : null;
 }
 
 /**

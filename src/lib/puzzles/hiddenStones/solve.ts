@@ -51,6 +51,12 @@ export function countSolutions(size: number, regions: Regions, limit = 2): numbe
   return solutions(size, regions, limit).length;
 }
 
+/** The one answer the regions allow, a column per row, or null when they allow none or more than one: see `numberPlace/solve.ts`'s `solutionOf`. */
+export function solutionOf(size: number, regions: Regions): number[] | null {
+  const found = solutions(size, regions, 2);
+  return found.length === 1 ? found[0]! : null;
+}
+
 /**
  * What a person can see without trying anything: a cell is out when a
  * placed stone shares its row, column or region or touches it; a stone goes
