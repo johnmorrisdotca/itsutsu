@@ -50,6 +50,27 @@ test.describe("the account menu", () => {
     await expect(panel).toHaveCount(0);
   });
 
+  /*
+   * A PAGE VIEW DOES NOT ASK WHO IS HERE AGAIN. The page's own render already
+   * read the session and marked the member seen (`currentSession` →
+   * `touchMember`); the menu asking `/api/session` as it arrived was a second
+   * paid request per page view that told it nothing new. The one session it
+   * still asks for is one from before accounts, which that request makes a
+   * member — `invite-player.spec.ts` holds that half. The menu being ready,
+   * and a press on it working, is the presence the absence is measured after.
+   */
+  test("asks the server nothing about who is here as a page arrives", async ({ page }) => {
+    const asked: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname === "/api/session") asked.push(request.method());
+    });
+    await page.goto("/games");
+    await ready(page, "account-menu");
+    await page.getByTestId("account-menu-button").click();
+    await expect(page.getByTestId("account-menu-panel")).toBeVisible();
+    expect(asked, "the menu asked who is here on a page that had just said").toEqual([]);
+  });
+
   test("follows a link and is shut on the page it lands on", async ({ page }) => {
     await page.goto("/games");
     await ready(page, "account-menu");

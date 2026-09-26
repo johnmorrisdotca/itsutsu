@@ -19,6 +19,17 @@ import { XpToasts } from "./XpToasts";
 import { headerCounts } from "@/lib/history/headerCounts";
 import { HeaderCountsSeed } from "./HeaderCountsSeed";
 
+/**
+ * Whether this is a session from before accounts: an invite code with nobody
+ * behind it. `/api/session` makes it a member the first time it is asked, and
+ * reissues the cookie, which a page render cannot do — so the menu asks, for
+ * this session and no other.
+ */
+async function admitsOnArrival(): Promise<boolean> {
+  const session = await currentSession();
+  return session?.kind === "player" && !session.memberId && !session.email && Boolean(session.code);
+}
+
 /** Who is signed in, read on the server so the header is right on first paint. */
 async function whoIsHere(): Promise<Who> {
   const session = await currentSession();
@@ -49,7 +60,7 @@ async function HeaderCountsFromServer() {
 }
 
 async function Nav() {
-  const [who, say] = await Promise.all([whoIsHere(), currentSpeaker()]);
+  const [who, admit, say] = await Promise.all([whoIsHere(), admitsOnArrival(), currentSpeaker()]);
   const { semver } = versionStamps();
   return (
     <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -57,6 +68,7 @@ async function Nav() {
       {/* Everything about the reader's own account, the operator's links among it, so the bar is the same for everybody. */}
       <AccountMenu
         initial={who}
+        admit={admit}
         languages={{ options: languageOptions(), current: say.locale, param: LANG_PARAM, label: say.say("site.language") }}
         version={{ stage: STAGE, semver }}
       />
