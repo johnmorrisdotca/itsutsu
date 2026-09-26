@@ -3,8 +3,8 @@ import Link from "@/components/ui/Link";
 import { PlayButton } from "@/components/games/PlayButton";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
 
 /**
@@ -22,11 +22,10 @@ export async function PuzzlePlayOrResume({ kind }: { kind: PuzzleKind }) {
   const memberId = await currentMemberId();
   const run = memberId === null ? null : await latestRunOf(memberId, kind);
   if (run === null) return <PlayButton href={setUpPath(kind)} />;
-  const level = run.level as PuzzleLevel;
   return (
     <>
       <PlayButton
-        href={`${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed, strict: run.strict })}`}
+        href={`${playPath(kind)}${puzzleQuery(keptRunAsked(kind, run))}`}
         label="Resume →"
         testId="game-resume"
       />

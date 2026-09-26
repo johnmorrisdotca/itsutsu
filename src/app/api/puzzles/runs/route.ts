@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { progressFits } from "@/lib/puzzles/puzzleProgress";
 import { decodeStepLog, STEPS_KEPT } from "@/lib/puzzles/stepLog";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
@@ -39,6 +40,8 @@ const bodySchema = z.object({
   hintsAllowed: z.boolean().optional(),
   /** Gomoji's Strict, kept only for a Gomoji. */
   strict: z.boolean().optional(),
+  /** Gomoji's Head start, kept only for a word puzzle at easy, in the hint columns (`headStart.ts`). */
+  headStart: z.boolean().optional(),
   progress: z.string().max(PUZZLE_CODE_LONGEST),
   /** Every grid it has been (`stepLog.ts`); a log that does not read as this grid's is dropped, never the run. */
   steps: z.string().max(STEP_LOG_LONGEST).optional(),
@@ -66,16 +69,18 @@ export async function POST(request: Request) {
     const checksAllowed = parsed.data.checksAllowed ?? null;
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
 
+    const level = parsed.data.level as PuzzleLevel;
+    const headStart = parsed.data.headStart === true && offersHeadStart(kind, level);
     await keepRun({
       memberId,
       kind,
       size,
-      level: parsed.data.level as PuzzleLevel,
+      level,
       seed,
       checksAllowed,
       checksUsed: Math.min(parsed.data.checksUsed ?? 0, checksAllowed ?? Number.MAX_SAFE_INTEGER),
-      hintsAllowed: parsed.data.hintsAllowed ?? false,
-      hintsUsed: parsed.data.hintsAllowed === true ? (parsed.data.hintsUsed ?? 0) : 0,
+      hintsAllowed: headStart || (parsed.data.hintsAllowed ?? false),
+      hintsUsed: headStart ? HEAD_START_HINTS : parsed.data.hintsAllowed === true ? (parsed.data.hintsUsed ?? 0) : 0,
       strict: parsed.data.strict === true && (kind === "gomoji" || kind === "gomojiKana"),
       progress,
       steps: stepsFor(parsed.data.steps, progress),

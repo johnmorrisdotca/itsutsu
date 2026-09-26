@@ -64,9 +64,11 @@ export function pointsFor(
   elapsedMs = 0,
   level?: PuzzleLevel,
 ): number {
-  if (kind === "gomoji") return wordPoints(size, givens, answer, elapsedMs, level);
-  if (kind === "gomojiMot") return wordPoints(size, givens, answer, elapsedMs, level, "fr");
-  if (kind === "gomojiWort") return wordPoints(size, givens, answer, elapsedMs, level, "de");
-  if (kind === "gomojiKana") return kanaPoints(size, givens, answer, elapsedMs, level);
+  /* A word's one help is its Head start, kept as a hint (`headStart.ts`) and priced as one: a free guess's worth off, never below nought. */
+  const helped = (points: number) => Math.max(0, points - POINTS_A_HELP * hintsUsed);
+  if (kind === "gomoji") return helped(wordPoints(size, givens, answer, elapsedMs, level));
+  if (kind === "gomojiMot") return helped(wordPoints(size, givens, answer, elapsedMs, level, "fr"));
+  if (kind === "gomojiWort") return helped(wordPoints(size, givens, answer, elapsedMs, level, "de"));
+  if (kind === "gomojiKana") return helped(kanaPoints(size, givens, answer, elapsedMs, level));
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

@@ -1,6 +1,7 @@
 import { PUZZLE_SPECS, isCheckAllowance } from "./puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { isSeed } from "./random";
+import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.
@@ -26,9 +27,15 @@ export type PuzzleAsked = {
    * and left out of the address, by default.
    */
   strict?: boolean;
+  /**
+   * Gomoji's Head start: keys greyed before the first guess (`headStart.ts`).
+   * Easy only; false, and left out of the address, by default and at any
+   * other level, whatever the address asked.
+   */
+  headStart?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -47,7 +54,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;
   const hints = one(PUZZLE_PARAMS.hints) === "1";
   const strict = one(PUZZLE_PARAMS.strict) === "1";
-  return { size, level, seed, checks, hints, strict };
+  const headStart = one(PUZZLE_PARAMS.headStart) === "1" && offersHeadStart(kind, level);
+  return { size, level, seed, checks, hints, strict, headStart };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -57,5 +65,23 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
   if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");
   if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");
+  if (asked.headStart === true && asked.level === "easy") params.set(PUZZLE_PARAMS.headStart, "1");
   return `?${params.toString()}`;
+}
+
+/** What a kept run was asked as, for Continue and Resume, its Head start read back from where it is kept (`hadHeadStart`). */
+export function keptRunAsked(
+  kind: PuzzleKind,
+  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean },
+): PuzzleAsked {
+  const headStart = hadHeadStart(kind, run.level, run.hintsAllowed);
+  return {
+    size: run.size,
+    level: run.level as PuzzleLevel,
+    seed: run.seed,
+    checks: run.checksAllowed,
+    hints: headStart ? false : run.hintsAllowed,
+    strict: run.strict,
+    headStart,
+  };
 }

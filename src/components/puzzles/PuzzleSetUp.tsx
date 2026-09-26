@@ -24,6 +24,7 @@ import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
+import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
@@ -32,6 +33,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
+import { HeadStartChips } from "./HeadStartChips";
 import { useWordStyle } from "./WordStyleContext";
 
 
@@ -77,6 +79,8 @@ export function PuzzleSetUp({
   const [hints, setHints] = useState(false);
   // Gomoji's Strict, off unless chosen, at any level; like Hint, not carried into a race.
   const [strict, setStrict] = useState(false);
+  // Gomoji's Head start, off unless chosen, easy only; like Strict, not carried into a race.
+  const [headStart, setHeadStart] = useState(false);
   const { style, setStyle } = useWordStyle();
   const [racing, setRacing] = useState<"" | "making" | string>("");
   // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).
@@ -192,6 +196,16 @@ export function PuzzleSetUp({
           </p>
         ) : null}
         {/*
+          HEAD START, easy only (`headStart.ts`). John, 2026-09-26: "add another
+          game option for easy mode… a random N chars based on word size, will
+          already be eliminated for you on the keyboard." Drawn at every level so
+          the screen never changes height when the level does; at medium and
+          hard its chips are switched off and the line under them says why.
+        */}
+        {offersHeadStart(kind, "easy") ? (
+          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} />
+        ) : null}
+        {/*
           HOW THE GRID IS DRAWN, chosen here as well as under the keyboard.
           John, 2026-09-26: "where is the Reversi / Gomoku / Tiles options in
           our Options (it's only currently in the actual Play page)?" The same
@@ -284,7 +298,7 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { preparePuzzle } from "@/lib/puzzles/generate";
+import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
@@ -58,6 +59,13 @@ const bodySchema = z.object({
    * found, paid `puzzleEnded`, and its kept run comes off the member's games.
    */
   outOfGuesses: z.boolean().optional(),
+  /**
+   * A word puzzle played with its Head start (`headStart.ts`): easy only, and
+   * kept as the one help it is, a Hint's price off its points. Nothing in the
+   * check changes: the keys it greyed are never letters of the word, and no
+   * guess was spent on them.
+   */
+  headStart: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -84,6 +92,10 @@ export async function POST(request: Request) {
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
     const checksUsed = parsed.data.checksUsed ?? 0;
     if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
+    // A word puzzle's only help is its Head start; every other puzzle's hints are the ones it says it pressed.
+    const words = spec.helps === false;
+    const headStart = parsed.data.headStart === true && offersHeadStart(kind, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
+    const hintsUsed = words ? (headStart ? HEAD_START_HINTS : 0) : (parsed.data.hintsUsed ?? 0);
 
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     await preparePuzzle(kind, size);
@@ -106,7 +118,7 @@ export async function POST(request: Request) {
         checksAllowed: null,
         checksUsed: 0,
         pausedMs: parsed.data.pausedMs ?? 0,
-        hintsUsed: 0,
+        hintsUsed,
         answer,
         solved: false,
       });
@@ -137,7 +149,7 @@ export async function POST(request: Request) {
       checksAllowed,
       checksUsed,
       pausedMs: parsed.data.pausedMs ?? 0,
-      hintsUsed: parsed.data.hintsUsed ?? 0,
+      hintsUsed,
       answer,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.

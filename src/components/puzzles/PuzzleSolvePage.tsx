@@ -10,6 +10,7 @@ import { gamePath, matchPath, myGamePath, setUpPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { clockText } from "@/lib/puzzles/clockText";
 import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
+import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
@@ -48,13 +49,14 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, solve.answer);
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,
-    solve.hintsUsed ? `${solve.hintsUsed} ${solve.hintsUsed === 1 ? "hint" : "hints"}` : null,
+    hintsWords(kind, solve.level, solve.hintsUsed),
   ].filter((part) => part !== null);
+  const headStart = hadHeadStart(kind, solve.level, solve.hintsUsed);
   const facts: { label: string; value: string; testId: string }[] = [
     { label: "How it ended", value: outcome, testId: "solve-outcome" },
     // A word puzzle says its word, found or not: a word not found is the one thing the grid cannot show.
     ...(words ? [{ label: "The word", value: wordOf(kind, solve.givens, solve.size), testId: "solve-word" }] : []),
-    { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}`, testId: "solve-puzzle" },
+    { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
     // A word's guesses, out of the level's allowance: the other half of how it went.
     ...(taken === null ? [] : [{ label: "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
@@ -73,7 +75,7 @@ export async function PuzzleSolvePage({ kind, solveId }: { kind: PuzzleKind; sol
       />
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"}>
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={false}>
-          <FinishedPuzzle kind={kind} size={solve.size} level={solve.level as PuzzleLevel} givens={solve.givens} answer={solve.answer} />
+          <FinishedPuzzle kind={kind} size={solve.size} level={solve.level as PuzzleLevel} givens={solve.givens} answer={solve.answer} headStart={headStart} />
         </WordStyleProvider>
         {solve.answer === null ? (
           <p className="text-sm text-muted" data-testid="solve-not-kept">

@@ -5,7 +5,8 @@ import { useState } from "react";
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { letterKeyMarks, kanaKeyMarks } from "@/lib/puzzles/keyMarks";
+import { letterKeyMarks, kanaKeyMarks, withHeadStart } from "@/lib/puzzles/keyMarks";
+import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
@@ -41,6 +42,7 @@ export function WordReplay({
   givens,
   guesses,
   level,
+  headStart = false,
   style,
   appearance = DEFAULT_APPEARANCE,
 }: {
@@ -50,6 +52,8 @@ export function WordReplay({
   guesses: readonly string[];
   /** The level it was played at, which decided its guesses (`layout.ts`). */
   level: PuzzleLevel;
+  /** Whether it was played with its Head start: those keys are grey at every step, the first included (`headStart.ts`). */
+  headStart?: boolean;
   style: WordStyle;
   /** The reader's board colour; the default wood where nobody has asked for it. */
   appearance?: Appearance;
@@ -71,6 +75,7 @@ export function WordReplay({
     row.map((each) => (each.wrongSize && each.wrongMark ? "↓↑" : each.wrongSize ? "↓" : each.wrongMark ? "↑" : "")),
   );
   const free = kana && grey !== null ? 1 : 0;
+  const started = headStart ? headStartKeys(kind, size, givens) : [];
 
   return (
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
@@ -90,7 +95,7 @@ export function WordReplay({
       <ReplayScrubber index={Math.min(at, last)} last={last} onGo={setAt} testId="word-replay" />
       {kana ? (
         <KanaKeyboard
-          known={kanaKeyMarks(rows, word)}
+          known={withHeadStart(kanaKeyMarks(rows, word), started, "miss")}
           typed={NONE}
           style={style}
           disabled={false}
@@ -102,7 +107,7 @@ export function WordReplay({
           onBack={NOTHING}
         />
       ) : (
-        <WordKeyboard known={letterKeyMarks(played, word)} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
+        <WordKeyboard known={withHeadStart(letterKeyMarks(played, word), started, "miss")} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
       )}
     </div>
   );

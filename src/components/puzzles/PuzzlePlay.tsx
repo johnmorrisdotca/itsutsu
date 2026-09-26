@@ -47,9 +47,12 @@ export function PuzzlePlay({
   checks = null,
   hints = false,
   strict = false,
+  headStart = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
 }: {
+  /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
+  headStart?: boolean;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -76,8 +79,8 @@ export function PuzzlePlay({
      that would draw a different one. */
   useEffect(() => {
     if (seed !== null) return;
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict })}`);
-  }, [seed, kind, size, level, checks, hints, strict, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict, headStart })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, router]);
 
   /* A kind whose words load by length (the kana Gomoji) waits for its list; every other kind is ready at once. */
   const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" ? null : `${kind}:${size}`);
@@ -116,8 +119,10 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}`;
+  // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
   const seat = race ?? null;
+  const headStarted = seat === null && headStart;
   switch (kind) {
     case "hiddenStones":
       return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
@@ -126,9 +131,9 @@ export function PuzzlePlay({
     case "gomoji":
     case "gomojiMot":
     case "gomojiWort":
-      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "gomojiKana":
-      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     default:
       return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
   }

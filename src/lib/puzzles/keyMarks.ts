@@ -45,6 +45,18 @@ export function kanaKeyMarks(rows: readonly string[], word: string): Map<string,
 }
 
 /**
+ * The keys a head start greyed (`headStart.ts`), laid under what the guesses
+ * have said: each is marked not in the word, as a guess would have marked it,
+ * unless a guess has already said something better of it (a kana's yellow).
+ * A new map; the one given is left as it was.
+ */
+export function withHeadStart<Mark extends string>(known: ReadonlyMap<string, Mark>, keys: readonly string[], miss: Mark): Map<string, Mark> {
+  const out = new Map(known);
+  for (const key of keys) if (!out.has(key)) out.set(key, miss);
+  return out;
+}
+
+/**
  * How many times each letter is in the row being typed: its key is ringed at
  * one and carries a count at two or more. John, 2026-09-25: "add Count chips
  * on a letter when it is selected more than once." The row being typed only —

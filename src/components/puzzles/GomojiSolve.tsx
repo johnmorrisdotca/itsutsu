@@ -14,7 +14,8 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, decodeHidden, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
-import { letterKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
+import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
+import { letterKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
@@ -47,6 +48,7 @@ import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 export function GomojiSolve({
   puzzle,
   strict = false,
+  headStart = false,
   hasAccount,
   race = null,
   resumed = null,
@@ -54,6 +56,8 @@ export function GomojiSolve({
 }: {
   /** Whether Strict was chosen: every letter found must be played again, a green in its place. */
   strict?: boolean;
+  /** Whether Head start was chosen: as many letters as the word has, none of them in it, grey before the first guess (`headStart.ts`). */
+  headStart?: boolean;
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
@@ -83,13 +87,15 @@ export function GomojiSolve({
     hasAccount,
     race,
     null,
-    { progress: encodeGomojiProgress(guesses), resumed, strict },
+    { progress: encodeGomojiProgress(guesses), resumed, strict, headStart },
     false,
     true,
   );
 
   const marks = useMemo(() => guesses.map((guess) => markGuess(guess, hidden)), [guesses, hidden]);
-  const known = useMemo(() => letterKeyMarks(guesses, hidden), [guesses, hidden]);
+  // The head start's letters are grey from the first moment, as a guess would have left them; a guess can only say the same of them.
+  const given = useMemo(() => (headStart ? headStartKeys(kind, size, puzzle.givens) : []), [headStart, kind, size, puzzle.givens]);
+  const known = useMemo(() => withHeadStart(letterKeyMarks(guesses, hidden), given, "miss"), [guesses, hidden, given]);
 
   const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
@@ -169,7 +175,7 @@ export function GomojiSolve({
 
   return (
     <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
-      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
+      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null ? (
         <SolvePaused pausing={pausing}>
@@ -192,6 +198,7 @@ export function GomojiSolve({
           givens={puzzle.givens}
           guesses={guesses}
           level={level}
+          headStart={headStart}
           style={style}
           appearance={dressed}
         />
@@ -215,7 +222,7 @@ export function GomojiSolve({
           <p className="text-base">
             Out of {rows} guesses. The word was <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
-          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} />
+          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} headStart={headStart} />
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
@@ -229,7 +236,7 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
@@ -240,8 +247,8 @@ export function GomojiSolve({
         </div>
       ) : (
         <>
-          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} />
-          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} />
+          <WordScoreLine score={wordScore(hidden, guesses, rows, done.elapsedMs)} headStart={headStart} />
+          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>
       )}
       {/*

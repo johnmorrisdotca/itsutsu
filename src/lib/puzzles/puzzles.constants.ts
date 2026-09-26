@@ -237,6 +237,10 @@ export function levelBlurb(kind: PuzzleKind, level: PuzzleLevel): string {
   return PUZZLE_LEVEL_BLURBS[kind]?.[level] ?? PUZZLE_LEVEL_DISPLAY[level].blurb;
 }
 
+/** A lettered Gomoji's Head start, in its rules (`headStart.ts`); the kana one says it in kana. */
+const HEAD_START_RULE =
+  "Head start, a choice at easy, greys as many keys as the word has letters before the first guess, none of them in the word: a free guess that takes no row, at a cost of 50 points.";
+
 export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   numberPlace: {
     label: "Sudoku",
@@ -389,6 +393,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
       "Hard gives the classic count: six guesses for five letters, five for four. Medium gives one more, and easy every row of the board: nine for five letters, eight for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
+      HEAD_START_RULE,
     ],
     board:
       "Five letters on a board nine squares across, or four on eight. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
@@ -406,6 +411,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "An arrow means right kana, not quite: down for the wrong size (つ for っ), up for the wrong mark (は for ば or ぱ). The word is found only when every place is plain green.",
       "On easy and medium the puzzle opens with a free word already played that is grey everywhere, so its kana are out before you start.",
       "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a double consonant for っ, nn for ん, - for ー). Strict, a choice at any level, keeps you honest: every kana found must be used again, a green one in its place.",
+      "Head start, a choice at easy, greys as many kana keys as the word is long before the first guess, none of them in the word nor in the free grey word: a free guess that takes no row, at a cost of 50 points.",
     ],
     board:
       "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule — textbook-common words first, then by how often newspapers use them: easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",
@@ -424,6 +430,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
       "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
+      HEAD_START_RULE,
     ],
     board:
       "Five letters and six guesses, or four letters and five. Any word in Lexique, a dictionary of about 140,000 French words, may be guessed. The hidden word is one Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words, as Lexique counts them among those French film dialogue uses most (hermitdave's FrequencyWords), and medium and hard one of the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
@@ -442,6 +449,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Ä, Ö and Ü are letters of their own, not vowels with a fold: a guess for ä only matches ä.",
       "Six guesses for five letters, five for four. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
+      HEAD_START_RULE,
     ],
     board:
       "Five letters and six guesses, or four letters and five. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",

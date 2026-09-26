@@ -7,7 +7,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { familyPath, playPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
@@ -47,7 +47,8 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
         {runs.map((run) => {
           const kind = run.kind as PuzzleKind;
           const level = run.level as PuzzleLevel;
-          const href = `${playPath(kind)}${puzzleQuery({ size: run.size, level, seed: run.seed, checks: run.checksAllowed, hints: run.hintsAllowed, strict: run.strict })}`;
+          const asked = keptRunAsked(kind, run);
+          const href = `${playPath(kind)}${puzzleQuery(asked)}`;
           return (
             <li key={run.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-going" data-kind={kind} data-seed={run.seed}>
               {/* The whole card carries on, as a game's row opens its game; the name above it leads to the puzzle. */}
@@ -60,8 +61,9 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
                 <span className="text-xs text-muted">
                   {sizeWord(run.size, kind)} · {PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
                   {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
-                  {run.hintsAllowed ? " · hints" : ""}
+                  {asked.hints ? " · hints" : ""}
                   {run.strict ? " · strict" : ""}
+                  {asked.headStart ? " · head start" : ""}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">

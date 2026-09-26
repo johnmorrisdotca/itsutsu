@@ -13,6 +13,7 @@ import { type FastestBoard, fastestSolvesOf, memberNamesOf } from "@/lib/puzzles
 import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
+import { hadHeadStart } from "@/lib/puzzles/gomoji/headStart";
 
 /**
  * The fastest solves of a puzzle, on its front door: the puzzle's ladder.
@@ -119,7 +120,7 @@ export function FastestTable({ kind, board, names, whole }: { kind: PuzzleKind; 
                       <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" />
                       {solve.hintsUsed !== null && solve.hintsUsed > 0 ? (
                         <span className="text-xs text-muted" data-testid="puzzle-fastest-hints">
-                          with hints
+                          {hadHeadStart(kind, row.level, solve.hintsUsed) ? "with a head start" : "with hints"}
                         </span>
                       ) : null}
                       {solve.checksAllowed !== null ? (

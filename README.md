@@ -148,7 +148,9 @@ screen for now: **Gomoji** 五文字, a hidden word of four or five letters
 found on a board of eight or nine squares, each guess coloured letter by
 letter: hard gives the classic count of guesses, medium one more, easy every
 row, and Strict at any level holds each guess to the letters already found
-(`src/lib/puzzles/gomoji/layout.ts`). English words
+(`src/lib/puzzles/gomoji/layout.ts`). Head start, at easy only, greys as many
+keys as the word is long before the first guess, none of them in the word,
+for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). English words
 from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an

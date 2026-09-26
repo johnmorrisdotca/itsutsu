@@ -9,6 +9,7 @@ import { mySolvePath } from "@/lib/gomoku/slugs";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { clockText } from "@/lib/puzzles/clockText";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
+import { hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { MySolve, MySolvesPage } from "@/lib/puzzles/server/mySolves";
 
@@ -21,7 +22,8 @@ function helpWords(solve: MySolve): string | null {
   if (solve.checksUsed === null && solve.hintsUsed === null) return null;
   const parts = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}` : null,
-    solve.hintsUsed ? `${solve.hintsUsed} ${solve.hintsUsed === 1 ? "hint" : "hints"}` : null,
+    // A word's one help is its Head start, kept as a hint (`headStart.ts`), and said as what it was.
+    hintsWords(solve.kind, solve.level, solve.hintsUsed)?.toLowerCase() ?? null,
   ].filter((part) => part !== null);
   return parts.length === 0 ? "no help" : parts.join(", ");
 }

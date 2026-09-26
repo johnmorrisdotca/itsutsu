@@ -19,7 +19,8 @@ import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMarked } from 
 import { kanaScore } from "@/lib/puzzles/gomojiKana/kanaScore";
 import { kanaWordsOf } from "@/lib/puzzles/gomojiKana/kanaWords";
 import { finishRomaji, readRomaji } from "@/lib/puzzles/gomojiKana/romaji";
-import { kanaKeyMarks, typedCounts } from "@/lib/puzzles/keyMarks";
+import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
+import { kanaKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
@@ -65,6 +66,7 @@ function changeLast(row: TypingRow, change: (kana: string) => string): TypingRow
 export function GomojiKanaSolve({
   puzzle,
   strict = false,
+  headStart = false,
   hasAccount,
   race = null,
   resumed = null,
@@ -73,6 +75,8 @@ export function GomojiKanaSolve({
   puzzle: Puzzle;
   /** Whether Strict was chosen: every kana found must be played again, a green in its place. */
   strict?: boolean;
+  /** Whether Head start was chosen: as many kana keys as the word has, none of them in it, grey before the first guess (`headStart.ts`). */
+  headStart?: boolean;
   hasAccount: boolean;
   race?: SolveRace | null;
   resumed?: ResumedRun | null;
@@ -97,12 +101,14 @@ export function GomojiKanaSolve({
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
   const [engaged, setEngaged] = useState(false);
-  const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeKanaProgress(guesses), resumed, strict }, false, true);
+  const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeKanaProgress(guesses), resumed, strict, headStart }, false, true);
 
   /* The rows drawn: the free grey word first where there is one, then the guesses. */
   const shown = useMemo(() => (given.grey === null ? guesses : [given.grey, ...guesses]), [given.grey, guesses]);
   const marked = useMemo(() => shown.map((guess) => markKanaGuess([...guess], [...hidden])), [shown, hidden]);
-  const known = useMemo(() => kanaKeyMarks(shown, hidden), [shown, hidden]);
+  // The head start's kana keys are grey from the first moment, as a guess would have left them (`headStart.ts`).
+  const started = useMemo(() => (headStart ? headStartKeys(kind, size, puzzle.givens) : []), [headStart, kind, size, puzzle.givens]);
+  const known = useMemo(() => withHeadStart(kanaKeyMarks(shown, hidden), started, "miss"), [shown, hidden, started]);
 
   const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
@@ -212,7 +218,7 @@ export function GomojiKanaSolve({
   const score = done === null ? null : kanaScore(hidden, guesses, rows, done.elapsedMs);
   return (
     <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
-      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
+      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null ? (
         <SolvePaused pausing={pausing}>
@@ -231,7 +237,7 @@ export function GomojiKanaSolve({
             />
         </SolvePaused>
       ) : (
-        <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} style={style} appearance={dressed} />
+        <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} headStart={headStart} style={style} appearance={dressed} />
       )}
       {done === null ? (
         <>
@@ -268,7 +274,7 @@ export function GomojiKanaSolve({
           <p className="text-base">
             Out of {rows} guesses. The word was <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>.
           </p>
-          <WordScoreLine score={score!} />
+          <WordScoreLine score={score!} headStart={headStart} />
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
               {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
@@ -281,7 +287,7 @@ export function GomojiKanaSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
@@ -292,8 +298,8 @@ export function GomojiKanaSolve({
         </div>
       ) : (
         <>
-          <WordScoreLine score={score!} />
-          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} />
+          <WordScoreLine score={score!} headStart={headStart} />
+          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>
       )}
       {/* JMdict's licence asks for this on every page that shows its words. */}

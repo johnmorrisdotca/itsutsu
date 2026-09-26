@@ -12,6 +12,7 @@ import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -57,6 +58,8 @@ export type Keeping = {
   steps?: () => string;
   /** Whether Gomoji's Strict was chosen, kept so Continue opens it Strict; none for any other puzzle. */
   strict?: boolean;
+  /** Whether Gomoji's Head start was chosen, kept (as a hint, `headStart.ts`) so Continue opens with it and the solve is priced with it. */
+  headStart?: boolean;
 };
 
 export function useSolve(
@@ -137,6 +140,7 @@ export function useSolve(
       progress: keeping.progress,
       ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
       ...(keeping.strict === undefined ? {} : { strict: keeping.strict }),
+      ...(keeping.headStart === true ? { headStart: true } : {}),
       elapsedMs,
     };
   });
@@ -215,7 +219,7 @@ export function useSolve(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
             race === null
-              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs }
+              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs, headStart: keeping.headStart === true }
               : { answer, checksUsed: used },
           ),
         });
@@ -231,7 +235,7 @@ export function useSolve(
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router],
+    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping.headStart],
   );
 
   /**
@@ -250,7 +254,7 @@ export function useSolve(
         const answered = await fetch("/api/puzzles/solved", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true }),
+          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true }),
         });
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[] } | null;
         if (answered.ok) setDone({ elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, outOfGuesses: true });
@@ -258,7 +262,7 @@ export function useSolve(
         // Nothing is owed that cannot wait: a run left kept is opened again as it was and can be ended again.
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race],
+    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, keeping.headStart],
   );
 
   const elapsedMs = done !== null ? done.elapsedMs : carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs));
@@ -289,12 +293,17 @@ export type Pausing = {
 };
 
 /** The line over the grid: what was asked, the seed, and the clock. */
-export function SolveHeader({ puzzle, elapsedMs, pausing }: { puzzle: Puzzle; elapsedMs: number; pausing?: Pausing }) {
+export function SolveHeader({ puzzle, elapsedMs, pausing, headStart = false }: { puzzle: Puzzle; elapsedMs: number; pausing?: Pausing; headStart?: boolean }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
       <p className="text-sm text-muted" data-testid="puzzle-asked">
         {sizeWord(puzzle.size, puzzle.kind)} · {PUZZLE_LEVEL_DISPLAY[puzzle.level].label}{" "}
         <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
+        {headStart ? (
+          <span data-testid="puzzle-asked-head-start">
+            {" "}· {HEAD_START_DISPLAY.label} <span className="font-mincho">{HEAD_START_DISPLAY.kanji}</span>
+          </span>
+        ) : null}
         <span className="ml-2 text-xs">№ {puzzle.seed}</span>
       </p>
       {/*
@@ -390,6 +399,7 @@ export function SolveDone({
   race = null,
   checks = null,
   strict = false,
+  headStart = false,
 }: {
   puzzle: Puzzle;
   done: Done;
@@ -399,11 +409,13 @@ export function SolveDone({
   checks?: number | null;
   /** Gomoji's Strict, which Another keeps too. */
   strict?: boolean;
+  /** Gomoji's Head start, which Another keeps as well. */
+  headStart?: boolean;
 }) {
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks, strict })}`);
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks, strict, headStart })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">
