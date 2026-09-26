@@ -192,6 +192,21 @@ export const PREFERENCE_SPECS = {
    * it" asks of it.
    */
   movesShown: { options: ["open", "folded"], fallback: "open" },
+
+  /*
+   * Whether the OPERATOR sees the site's 1000 simulated test members in every
+   * list, board and count that reads `Member` rows. John, 2026-09-25: "In
+   * test mode, all the Test Users are available in all my scoreboards, etc.
+   * And this can also be seen in production... if I have my internal Test
+   * Mode turned on." Off for everybody until an admin turns it on, and even
+   * then it only ever changes what THAT admin sees — see
+   * `src/lib/testMode/testMode.ts`, the one function every surface reads it
+   * through, and `docs/plans/test-mode/README.md` for the whole design. Kept
+   * in this registry rather than a store of its own for the same reason every
+   * other per-account switch is: it has to follow the admin from device to
+   * device, and a JSON column already does that for nothing.
+   */
+  testMode: { options: [true, false] as const, fallback: false },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */
