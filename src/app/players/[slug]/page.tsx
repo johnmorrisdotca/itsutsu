@@ -225,7 +225,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * reading is a different question from how much the summary above it counts,
    * and answering one by resetting the other loses their place.
    */
-  const openTab = open === ITSUTSU_TAB.key ? undefined : open;
+  // The first tab is the bare address (`tabs.ts`), and which tab is first depends on where the playing happened.
+  const openTab = open === tabs[0]?.key ? undefined : open;
   const offered = scopeWorthAsking(whole.sources.length);
   const counted = offered && scope === RECORD_SCOPES.everywhere ? whole.figures : figures;
 

@@ -230,11 +230,12 @@ test("draws game emails off and locked where email is not set up, and refuses to
   await expect(row).toBeVisible();
   await expect(row.getByTestId("gameEmails-off")).toHaveAttribute("data-chosen", "true");
   await expect(row.getByTestId("gameEmails-on-use")).toBeDisabled();
-  await expect(row.getByTestId("site-setting-gameEmails-locked")).toContainText("cannot be switched on here");
+  // One of the two reasons this server can have: not the live site (a dev server), or no provider key (the suite's production build).
+  await expect(row.getByTestId("site-setting-gameEmails-locked")).toContainText(/cannot be switched on here|not set up on this site/);
 
   const on = await request.put(SETTINGS, { data: { key: "gameEmails", value: "on" } });
   expect(on.status()).toBe(422);
-  expect(((await on.json()) as { error?: string }).error).toContain("cannot be switched on here");
+  expect(((await on.json()) as { error?: string }).error).toMatch(/cannot be switched on here|not set up on this site/);
   // Off is always allowed: a way out never waits on the provider.
   const off = await request.put(SETTINGS, { data: { key: "gameEmails", value: "off" } });
   expect(off.ok()).toBe(true);

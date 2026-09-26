@@ -1,10 +1,35 @@
+import { PrismaClient } from "@prisma/client";
 import { expect, test, type Page } from "@playwright/test";
 
 import { TSUNAGI_4 } from "../src/lib/puzzles/tsunagi/levels/size4.data";
 import { TSUNAGI_5 } from "../src/lib/puzzles/tsunagi/levels/size5.data";
 import { TSUNAGI_7 } from "../src/lib/puzzles/tsunagi/levels/size7.data";
 import { TSUNAGI_8 } from "../src/lib/puzzles/tsunagi/levels/size8.data";
+import { suiteOperator } from "./operator";
 import { ready } from "./support";
+
+/*
+ * EVERY TEST STARTS FROM A PLAYER WHO HAS SOLVED NOTHING. A solved level now
+ * opens on its solved board, the next level is the lowest unsolved one, and
+ * attempts are counted, so what this file sees depends on the operator's past
+ * Tsunagi rows — which other runs, and the picture script, leave behind. The
+ * suite's operator is nobody's account (`operator.ts`), so its Tsunagi solves,
+ * attempts and kept runs are cleared before each test rather than assumed.
+ */
+async function forgetOperatorTsunagi() {
+  const prisma = new PrismaClient();
+  try {
+    const member = await prisma.member.findFirst({ where: { email: suiteOperator().email }, select: { id: true } });
+    if (member === null) return;
+    await prisma.puzzleSolve.deleteMany({ where: { memberId: member.id, kind: "tsunagi" } });
+    await prisma.puzzleRun.deleteMany({ where: { memberId: member.id, kind: "tsunagi" } });
+    await prisma.tsunagiAttempt.deleteMany({ where: { memberId: member.id } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+test.beforeEach(forgetOperatorTsunagi);
 
 /**
  * TSUNAGI, played as a person plays it: by dragging. Every line here is drawn
