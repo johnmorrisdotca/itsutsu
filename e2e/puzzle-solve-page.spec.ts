@@ -90,8 +90,8 @@ test("a word found says how many guesses it took beside its time, out of the lev
   await mine.getByTestId("word-history-word").click();
   await expect(page.getByTestId("solve-guesses")).toHaveText("2/6");
 
-  // The fastest board: every word time at five letters, hard, says its guesses out of six.
+  // The fastest board: every word time at five letters, hard, says its guesses out of six, in their own column.
   await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/standings`);
   const row = page.locator('[data-testid="puzzle-fastest-row"][data-size="5"][data-level="hard"]');
-  await expect(row.getByTestId("puzzle-fastest-guesses").first()).toHaveText(/^[1-6]\/6 guesses$/);
+  await expect(row.getByTestId("puzzle-fastest-guesses").first()).toHaveText(/^[1-6]\/6$/);
 });
