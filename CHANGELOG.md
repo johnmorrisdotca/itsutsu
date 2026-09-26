@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.363.0 — 2026-09-26
+- A new puzzle, Tsunagi 繋ぎ: join each pair of marbles with a line and fill the board, a hundred levels at each size from 4x4 to 9x9
+
 ## 0.362.2 — 2026-09-26
 - My games has three tabs: puzzles in progress are under Going and finished ones under Completed, beside the games
 - The Games tabs read Families, Cards, List, Learning and Famous, the kind filter says Puzzles, and About's tabs are one word each
