@@ -256,6 +256,11 @@ model Game {
   /// stopped being true the moment it became an ORDER.
   @@index([lastMoveAt])
   @@index([matchId])
+  /// "Has this game been played here before?", asked once when a game ends so
+  /// the Everyone feed can say it was played for the first time (`siteNewsWrite.ts`).
+  /// A `findFirst` that stops at the first earlier game of the variant, rather
+  /// than a walk of every finished game on the site.
+  @@index([variant, status])
 }
 
 model Move {
@@ -891,6 +896,54 @@ model XpEvent {
   @@index([memberId, dayKey])
   /// A member's own history, newest first.
   @@index([memberId, createdAt])
+}
+
+/// Something worth telling everybody, written once when it happened: a game
+/// played for the first time, a new leader, a top computer grade beaten, a
+/// member's first win or loss, a new best time. The Everyone feed reads these
+/// in its window with one query (`feedNews.ts`); nothing here is recomputed
+/// when a page is read.
+///
+/// John, 2026-09-26: "announce when a game has its first player, or someone
+/// beats the others and gets first place, or a hard bot gets beaten, a first
+/// loss, a first win, etc... for all users. Best time, new records being
+/// broken on the site."
+model SiteNews {
+  id       String  @id @default(cuid())
+  /// A key of SITE_NEWS in src/lib/feed/siteNews.constants.ts. A string rather
+  /// than a Postgres enum for XpEvent.type's reason: the catalogue will grow,
+  /// and an enum member cannot be renamed under rows that hold it.
+  kind     String
+  /// Who it is about, or null where it is about nobody (a news line may name
+  /// nobody). Whether a line may name them on the Everyone tab is decided when
+  /// it is read, never here: an age band can change after the fact.
+  memberId String?
+  /// The GameKey it happened at, or "" where it is about no one game.
+  variant  String  @default("")
+  /// What makes this fact itself, per kind — see the unique below.
+  subject  String  @default("")
+  /// The game it happened in, where there was one, so the line can lead to it.
+  gameId   String?
+  createdAt DateTime @default(now())
+
+  /// ONCE, PER KIND, BY WHAT THE KIND SAYS IS ONCE:
+  ///
+  /// - firstGameOfGame: (variant, "") — once per game, ever.
+  /// - hardBotBeaten:   (variant, grade) — the first person to beat that grade
+  ///                    at that game, once.
+  /// - firstWin, firstLoss: ("", member id) — once per member, ever; the game
+  ///                    is found through `gameId`.
+  /// - tookFirstPlace:  (variant, game id) — a lead can change hands many
+  ///                    times, and each game that changed it is told once.
+  /// - bestTime:        (puzzle, "size:level:ms") — a record is strictly
+  ///                    faster than the one before, so no two share a time.
+  ///
+  /// NOT NULLABLE, for XpEvent.subject's reason: Postgres does not count two
+  /// nulls as equal, so a nullable column here would let a once-ever line be
+  /// written twice. The unique is also what makes the backfill safe to re-run.
+  @@unique([kind, variant, subject])
+  /// The feed's one read: the window, newest first.
+  @@index([createdAt])
 }
 
 /// Courtesy time one seat gave the other during a game, kept so sportsmanship can be read later.
