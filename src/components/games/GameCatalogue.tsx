@@ -22,6 +22,8 @@ import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
 import { familyPath } from "@/lib/gomoku/slugs";
 
+import { FamilyFold } from "@/components/games/FamilyFold";
+import { familyOpenAt, isFamilyFoldKey, type FamilyFoldKey, type KeptFolds } from "@/lib/catalogue/familyFolds";
 import type { CatalogueFamily, CatalogueGame, CatalogueGuest, GameCard, GameCardKind } from "./games.types";
 
 /**
@@ -41,9 +43,15 @@ export function GameCatalogue({
   families,
   stats,
   signedIn,
+  folds = {},
+  keepsFolds = false,
 }: {
   view: CatalogueView;
   families: CatalogueFamily[];
+  /** Which families this member keeps open or shut on the Families tab, from the account; empty for anybody else. */
+  folds?: KeptFolds;
+  /** Whether there is an account to keep the folds on; otherwise the browser keeps them (`FamilyFold`). */
+  keepsFolds?: boolean;
   /**
    * What has been played of every game and family, ALREADY SHAPED FOR THIS
    * READER by `forReader` — a stranger's copy names nobody. Every view draws
@@ -66,7 +74,7 @@ export function GameCatalogue({
           <GameCards cards={CARDS} stats={stats} signedIn={signedIn} />
         </Suspense>
       ) : null}
-      {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} /> : null}
+      {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} folds={folds} keepsFolds={keepsFolds} /> : null}
 
       {/*
         WHOSE NAMES THESE GAMES ARE, and it is here because the page that
@@ -92,15 +100,26 @@ function Families({
   families,
   stats,
   signedIn,
+  folds,
+  keepsFolds,
 }: {
   families: CatalogueFamily[];
   stats: CatalogueStats;
   signedIn: boolean;
+  folds: KeptFolds;
+  keepsFolds: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
       {families.map((family, index) => (
-        <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>
+        /* Open or shut as this reader last left it; a family never toggled follows the first-one-open rule. */
+        <FamilyFold
+          key={family.title}
+          familyKey={family.key as FamilyFoldKey}
+          initialOpen={familyOpenAt(isFamilyFoldKey(family.key) ? folds[family.key] : undefined, index)}
+          saves={keepsFolds}
+          className={`${PANEL_CLASS} group`}
+          summary={
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-3">
               <FamilyMark family={family.title} size="regular" />
@@ -134,6 +153,8 @@ function Families({
             <span className="text-xs text-muted group-open:hidden">show</span>
             <span className="hidden text-xs text-muted group-open:inline">hide</span>
           </summary>
+          }
+        >
           <p className="mt-2 text-sm text-muted">{family.blurb}</p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {family.games.map((game) => (
@@ -144,7 +165,7 @@ function Families({
               <FamilyGameCard key={guest.variant} game={guest} stats={stats} signedIn={signedIn} />
             ))}
           </ul>
-        </details>
+        </FamilyFold>
       ))}
     </div>
   );

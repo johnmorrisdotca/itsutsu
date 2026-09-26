@@ -6,7 +6,7 @@ import { GAME_FAMILIES, boardGamesOf } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 
 import { removeMember, seedMember } from "./members";
-import { chooseGame, openChoice, openMoreSettings, openSetUpPage, ready, readyHere } from "./support";
+import { chooseGame, forgetFamilyFolds, openChoice, openMoreSettings, openSetUpPage, ready, readyHere } from "./support";
 import { removeGames } from "./tidy";
 
 /**
@@ -66,6 +66,8 @@ async function isOneLineInside(label: Locator, tile: Locator): Promise<void> {
 
 test.describe("the games index", () => {
   test("draws a board on every game card of a family opened from its summary", async ({ page }) => {
+    // Every family as a newcomer finds it: the families a reader opened stay open (`familyFolds.ts`).
+    await forgetFamilyFolds(page);
     await page.goto("/games");
     // The strips under the cards carry the hydration mark; wait on it before clicking anything.
     await readyHere(page.locator('[data-testid="game-stats"]').first());

@@ -4,7 +4,10 @@ import { Page } from "@/components/layout/Page";
 import { fetchCatalogueStats } from "@/lib/catalogue/catalogueStats";
 import { forReader } from "@/lib/catalogue/catalogueReader";
 import { GameCatalogue } from "@/components/games/GameCatalogue";
-import { readCatalogueView } from "@/lib/gomoku/catalogueView";
+import { CATALOGUE_VIEWS, readCatalogueView } from "@/lib/gomoku/catalogueView";
+import { keptFoldsFrom } from "@/lib/catalogue/familyFolds";
+import { cleanPreferences } from "@/lib/preferences/preferences";
+import { storedPreferencesFor } from "@/lib/preferences/memberPreferences";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentReader } from "@/lib/auth/currentReader";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -45,7 +48,17 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
   if (!reader.signedIn) {
     return <PublicCatalogue view={view} say={say} />;
   }
-  const stats = await fetchCatalogueStats();
+  /*
+   * Which families this member keeps open, off the member row this render has
+   * already read: nothing is asked for it, and only the Families tab asks.
+   * A reader with no account keeps them in the browser (`FamilyFold`).
+   */
+  const [stats, folds] = await Promise.all([
+    fetchCatalogueStats(),
+    reader.hasAccount && view === CATALOGUE_VIEWS.families
+      ? storedPreferencesFor().then((stored) => keptFoldsFrom(cleanPreferences(stored)))
+      : Promise.resolve({}),
+  ]);
 
   return (
     <Page>
@@ -60,7 +73,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
         lead="Almost every game here is five in a row with one idea changed. Every name leads to that game — its rules, its record, its standings and a board."
       />
       <section className="flex flex-col gap-4">
-        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} />
+        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} folds={folds} keepsFolds={reader.hasAccount} />
       </section>
       {/*
         The learning shelf and the famous games were two panels down here; they
