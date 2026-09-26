@@ -206,7 +206,7 @@ export function Row({
         question is drawn in this line, and at its full width it ran off the
         right of a phone (John, 2026-09-26), so it wraps inside instead.
       */}
-      <span className="ml-auto flex max-w-full min-w-0 shrink-0 items-center gap-2">
+      <span className="ml-auto flex max-w-full min-w-0 shrink-0 items-center gap-2" data-width-reason="the row's own controls, at the end of the line; max-w-full only keeps a question opened here (Resign) inside the card on a phone">
         {/*
           WHAT THE GAME EARNED, on a finished game's row: John, 2026-09-25, "For
           all completed games… show the XP Earned… these tables will be much more
