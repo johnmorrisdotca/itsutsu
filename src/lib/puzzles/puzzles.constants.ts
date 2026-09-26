@@ -117,7 +117,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
   /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
   gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false, strict: true, wordGrid: "gomojiKana" },
-  // Gomoji in French, from hermitdave's FrequencyWords: the same shape as English's, accents folded away.
+  // Gomoji in French, from the Lexique dictionary: the same shape as English's, accents folded away.
   gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
   gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
@@ -415,7 +415,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
     ],
     board:
-      "Five letters and six guesses, or four letters and five. The words come from hermitdave's FrequencyWords, a count of OpenSubtitles' French dialogue: easy hides one of the commoner words, medium and hard one of a wider list, and any word the list carries may be guessed. Accents are folded away, and words spelled with œ or æ are left out.",
+      "Five letters and six guesses, or four letters and five. Any word in Lexique, a dictionary of about 140,000 French words, may be guessed. The hidden word is one Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words, as Lexique counts them among those French film dialogue uses most (hermitdave's FrequencyWords), and medium and hard one of the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
   },
   gomojiWort: {
     label: "Gomoji Wort",
@@ -433,6 +433,6 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
     ],
     board:
-      "Five letters and six guesses, or four letters and five. The words come from hermitdave's FrequencyWords, a count of OpenSubtitles' German dialogue: easy hides one of the commoner words, medium and hard one of a wider list, and any word the list carries may be guessed. Words spelled with ß are left out, the way French leaves out œ and æ.",
+      "Five letters and six guesses, or four letters and five. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
   },
 };

@@ -47,8 +47,10 @@ test.describe("Gomoji Mot", () => {
       expect(marks.every((mark) => mark === "hit" || mark === "near" || mark === "miss")).toBe(true);
       await expect(row.first()).toHaveAttribute("aria-label", new RegExp(`^${GUESS[0]!.toUpperCase()}, `));
 
-      // FrequencyWords' CC BY-SA credit, shown on the play page as JMdict's is for Gomoji Kana.
+      // The dictionaries' and FrequencyWords' CC BY-SA credit, shown on the play page as JMdict's is for Gomoji Kana.
       await expect(page.getByTestId("word-credit")).toContainText("FrequencyWords");
+      await expect(page.getByTestId("word-credit")).toContainText("Lexique");
+      await expect(page.getByTestId("word-credit")).toContainText("Wiktionary");
     });
   });
 

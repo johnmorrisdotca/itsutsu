@@ -259,6 +259,10 @@ puzzle with exactly one answer at every size and level it offers, in a browser's
 time, and that `checkSolution` refuses a wrong grid. Everything that thinks about
 a puzzle runs in the browser; the server checks a finished grid in O(cells) and
 pays. The reasoning is in `docs/plans/numbers/README.md`.
+A word puzzle's list in any language comes from a real dictionary of that
+language, with a frequency count only ranking it: a count of film subtitles
+alone once made RUDD a French word (John, 2026-09-26), and
+`wordLists.coverage.test.ts` holds the words that got through.
 
 **Every board is the same board, and a preview is always a live one.** John,
 2026-09-24, finding a screenshot where every game draws its wooden board:

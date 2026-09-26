@@ -50,8 +50,10 @@ test.describe("Gomoji Wort", () => {
       // The Ä typed shows as Ä on the tile, never folded to A.
       await expect(row.nth(1)).toHaveAttribute("aria-label", /^Ä, /);
 
-      // FrequencyWords' CC BY-SA credit, shown on the play page as JMdict's is for Gomoji Kana.
+      // The dictionaries' and FrequencyWords' CC BY-SA credit, shown on the play page as JMdict's is for Gomoji Kana.
       await expect(page.getByTestId("word-credit")).toContainText("FrequencyWords");
+      await expect(page.getByTestId("word-credit")).toContainText("LanguageTool");
+      await expect(page.getByTestId("word-credit")).toContainText("Wiktionary");
     });
   });
 

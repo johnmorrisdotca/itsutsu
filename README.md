@@ -150,6 +150,9 @@ letter: hard gives the classic count of guesses, medium one more, easy every
 row, and Strict at any level holds each guess to the letters already found
 (`src/lib/puzzles/gomoji/layout.ts`). English words
 from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
+French and German words from real dictionaries, Lexique and LanguageTool's
+German dictionary, with every hidden word also in Wiktionary and never an
+English borrowing (`scripts/word-lists-fr-de.mjs`); kana from JMdict.
 
 Every finished puzzle a member solves is kept (`PuzzleSolve`), so a puzzle's
 page shows the fastest solves at each size and level (`/standings`) and a

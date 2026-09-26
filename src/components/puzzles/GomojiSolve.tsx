@@ -244,14 +244,32 @@ export function GomojiSolve({
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} />
         </>
       )}
-      {/* FrequencyWords' licence asks for this on every page that shows its words: French and German only, English's SCOWL asks for no in-page credit. */}
+      {/*
+        The licences of the dictionaries and of FrequencyWords ask for this on every page that shows their words: French and
+        German only, English's SCOWL asks for no in-page credit. The dictionary decides what is a word, Wiktionary which may
+        be hidden, and the count how common.
+      */}
       {lang === "en" ? null : (
         <p className="text-xs text-muted" data-testid="word-credit">
           Words from{" "}
+          {lang === "fr" ? (
+            <a href="http://www.lexique.org" className="underline" rel="noreferrer" target="_blank">
+              Lexique 3.83
+            </a>
+          ) : (
+            <a href="https://github.com/languagetool-org/german-pos-dict" className="underline" rel="noreferrer" target="_blank">
+              LanguageTool&apos;s German dictionary
+            </a>
+          )}
+          {" and "}
+          <a href="https://en.wiktionary.org" className="underline" rel="noreferrer" target="_blank">
+            Wiktionary
+          </a>
+          , ranked by{" "}
           <a href="https://github.com/hermitdave/FrequencyWords" className="underline" rel="noreferrer" target="_blank">
             FrequencyWords
           </a>{" "}
-          by Hermit Dave, a count of OpenSubtitles 2018, used under{" "}
+          by Hermit Dave, a count of OpenSubtitles 2018; all used under{" "}
           <a href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline" rel="noreferrer" target="_blank">
             CC BY-SA 4.0
           </a>
