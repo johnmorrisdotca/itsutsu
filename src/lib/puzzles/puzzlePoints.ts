@@ -3,6 +3,7 @@ import { wordScore } from "./gomoji/wordScore";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { kanaScore } from "./gomojiKana/kanaScore";
+import { kumimojiPoints } from "./kumimoji/check";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -28,6 +29,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   const area = size * size;
   if (kind === "hiddenStones") return area;
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") return size;
+  // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.
+  if (kind === "kumimoji") return givens.length;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
@@ -70,5 +73,7 @@ export function pointsFor(
   if (kind === "gomojiMot") return helped(wordPoints(size, givens, answer, elapsedMs, level, "fr"));
   if (kind === "gomojiWort") return helped(wordPoints(size, givens, answer, elapsedMs, level, "de"));
   if (kind === "gomojiKana") return helped(kanaPoints(size, givens, answer, elapsedMs, level));
+  // A tile game: ten a tile of the bag, and up to as much again for speed.
+  if (kind === "kumimoji") return kumimojiPoints(givens, elapsedMs);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));
 }

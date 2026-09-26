@@ -8,6 +8,7 @@ import { decodeGuesses, decodeHidden, isWord, languageOf, type GomojiLanguage } 
 import { baseGuesses, guessesFor } from "./gomoji/layout";
 import { decodeKanaGivens, decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
+import { checkKumimoji } from "./kumimoji/check";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
 import { decodeCells } from "./puzzleCode";
 import { checkTsunagi } from "./tsunagi/check";
@@ -58,6 +59,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkGomojiKana(size, givens, answer, "found", level);
     case "tsunagi":
       return checkTsunagi(size, givens, answer);
+    case "kumimoji":
+      return checkKumimoji(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

@@ -1,6 +1,7 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { MOST_GUESSES } from "./gomoji/layout";
+import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "./kumimoji/tiles.constants";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -38,6 +39,7 @@ export const PUZZLE_KINDS = {
   gomojiMot: "gomojiMot",
   gomojiWort: "gomojiWort",
   tsunagi: "tsunagi",
+  kumimoji: "kumimoji",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -55,6 +57,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.gomojiMot,
   PUZZLE_KINDS.gomojiWort,
   PUZZLE_KINDS.tsunagi,
+  PUZZLE_KINDS.kumimoji,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -104,6 +107,15 @@ export function isCheckAllowance(value: unknown): value is number | null {
 /** The longest answer a word puzzle can hand in: every guess its most generous level gives, of its longest word. */
 const WORD_ANSWER_MOST = MOST_GUESSES * 5;
 
+/**
+ * A Kumimoji's longest string is a kept game (`encodeTileProgress`): the count
+ * of tiles taken, the tiles traded back, the hand, and the grid, which writes
+ * a letter a tile, a number for each gap and a "/" between rows. Fifty tiles
+ * each on a row of its own and indented by two digits is 199 characters for
+ * the grid; with a hand and trades beside it, 400 holds any game of fifty.
+ */
+const TILE_GAME_MOST = 400;
+
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 256: a 16×16's cells, one character each, 1–9 then A–G.
   numberPlace: { sizes: [4, 6, 9, 16], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 256 },
@@ -141,6 +153,21 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * or Hint: a line is joined or it is not, and the board shows which.
    */
   tsunagi: { sizes: [4, 5, 6, 7, 8, 9], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 81, helps: false, onBoard: true, fixedLevels: true },
+   * A size is the hand a game opens with (`KUMIMOJI_HANDS`), and the bag it is
+   * played from follows from it (`KUMIMOJI_BAG`). One level: the bag is the
+   * whole of a game's difficulty. The hand of three is the browser tests' own,
+   * made and checked like any other and never offered.
+   */
+  kumimoji: {
+    sizes: [KUMIMOJI_HANDS.tiny, KUMIMOJI_HANDS.quick, KUMIMOJI_HANDS.classic],
+    offered: [KUMIMOJI_HANDS.quick, KUMIMOJI_HANDS.classic],
+    defaultSize: KUMIMOJI_HANDS.classic,
+    levels: ["medium"],
+    defaultLevel: "medium",
+    mostCells: TILE_GAME_MOST,
+    helps: false,
+    tiles: true,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -237,6 +264,10 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     7: { label: "Usual", kanji: "定番" },
     8: { label: "Long", kanji: "長" },
     9: { label: "Longest", kanji: "最長" },
+  kumimoji: {
+    [KUMIMOJI_HANDS.tiny]: { label: "Tiny", kanji: "極小" },
+    [KUMIMOJI_HANDS.quick]: { label: "Quick", kanji: "速" },
+    [KUMIMOJI_HANDS.classic]: { label: "Classic", kanji: "定番" },
   },
 };
 
@@ -250,13 +281,15 @@ const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
   medium: "A wider list of words, and one guess more than the classic game.",
   hard: "A wider list of words, and the classic count of guesses.",
 };
-export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Record<PuzzleLevel, string>>> = {
+export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, string>>>> = {
   gomoji: WORD_LEVEL_BLURBS,
   gomojiKana: WORD_LEVEL_BLURBS,
   tsunagi: {
     easy: "The first third of a size's hundred levels: every line can be found by looking.",
     medium: "The middle third: longer lines, and somewhere one has to be tried.",
     hard: "The last third: winding lines, and more than one place to try something and see.",
+  kumimoji: {
+    medium: `Every tile of the bag goes down before the clock stops: ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} in a Quick game, ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]} in a Classic one.`,
   },
 };
 
@@ -501,5 +534,26 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "4×4 is where to start, and 9×9 is the long one. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",
+  /*
+   * OUR OWN GAME, UNDER OUR OWN NAME. The anagram-grid race games are sold
+   * under trademarks this site does not use, in its copy, its pictures or its
+   * rules: the idea of building a crossword of your own from drawn tiles is
+   * nobody's, and the letter mix is a fact about English (`TILE_MIX`).
+   */
+  kumimoji: {
+    label: "Kumimoji",
+    kanji: "組文字",
+    tagline: "Build one crossword of your own from a hand of letter tiles, draw more as you go, and use the whole bag against the clock.",
+    inspiredBy: "the anagram-grid race games",
+    origin:
+      "Our own solo take on the anagram-grid race games, where every player builds a crossword of their own from drawn tiles at the same time. Kumimoji plays it alone, against the clock, from a bag drawn from the classic mix of 144 letters. Its name, 組文字, means “assembled letters”: a sibling of Gomoji 五文字.",
+    rules: [
+      `You start with a hand of tiles, ${KUMIMOJI_HANDS.classic} in a Classic game or ${KUMIMOJI_HANDS.quick} in a Quick one. Lay them out to build one crossword: every tile joined to the rest, and every line of two or more letters, across or down, a word.`,
+      "Tap a tile and then a square to put it there, or drag it; on a keyboard, choose a square and type. Tiles can be moved, swapped or sent back to your hand at any time, and a line that is not a word is marked in red until it is.",
+      "When your hand is empty and the grid is sound, press Draw for the next tile from the bag, and fit it in. Rebuild as much as you like: only the whole has to be right.",
+      "Stuck with a Q or an X? Trade it: it goes to the bottom of the bag and you take the next three. Every tile still has to be used, the traded one included.",
+      "The game ends when the bag is empty and every tile is on a sound grid. Your time is your score. Every bag has been laid out once before you see it, so it can always be finished.",
+    ],
+    board: `There is no board: the tiles lie on a table that grows as the crossword does, and zooms to fit it. A Quick game uses ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} tiles and a Classic one ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]}, drawn from the full mix of 144: thirteen A's, eighteen E's, and two each of J, K, Q, X and Z. Any word from two letters to fifteen in SCOWL, Kevin Atkinson's English and American spelling lists, counts.`,
   },
 };

@@ -17,7 +17,8 @@ import type { PuzzleKind } from "./puzzles.types";
 export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
-  const sizes = spec.offered.map((size) => `${size}×${size}`).join(", ");
+  // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
+  const sizes = spec.offered.map((size) => (spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`)).join(", ");
   const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${(spec.fixedLevels === true ? levelBlurb(kind, level) : PUZZLE_LEVEL_DISPLAY[level].blurb).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];
@@ -25,6 +26,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     `Sizes: ${sizes}. ${copy.board}`,
     spec.fixedLevels === true
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
+      : spec.tiles === true
+      ? "Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well."
       : "Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none.",
   ];
   const play = [

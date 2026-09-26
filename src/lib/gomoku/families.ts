@@ -180,9 +180,9 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Other",
     kanji: "その他",
-    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, and pairs of marbles to join with lines.",
-    /* Tsunagi joined 2026-09-26: a puzzle for one with no digits in it, and Numbers already holds its eight. */
-    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "tsunagi"],
+    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, and tiles to build into your own crossword.",
+    /* Tsunagi and Kumimoji joined 2026-09-26: puzzles for one with no digits in them, and Numbers already holds its eight. */
+    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "tsunagi", "kumimoji"],
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];

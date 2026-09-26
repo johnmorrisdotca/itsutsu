@@ -1,6 +1,7 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { decodeGuesses, type GomojiLanguage } from "./gomoji/code";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
+import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES } from "./gomoji/layout";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
@@ -83,5 +84,7 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "gomojiKana") return decodeKanaProgress(code, size) !== null;
   // Tsunagi keeps its lines, one character a cell (`encodeLines`); read against its layout when opened.
   if (kind === "tsunagi") return linesCodeFits(code, size);
+  // A Kumimoji's shape only: its bag is checked when the game is opened again (`decodeTileProgress`).
+  if (kind === "kumimoji") return readTileProgress(code) !== null;
   return decodeNumberProgress(code, size) !== null;
 }

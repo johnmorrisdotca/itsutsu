@@ -21,7 +21,8 @@ export type PuzzleKind =
   | "gomojiKana"
   | "gomojiMot"
   | "gomojiWort"
-  | "tsunagi";
+  | "tsunagi"
+  | "kumimoji";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -77,6 +78,11 @@ export type PuzzleSpec = {
    * level's number (`tsunagi/levels.ts`). Absent is a new puzzle each time.
    */
   fixedLevels?: true;
+   * Whether the puzzle is a tile game (Kumimoji): its size is the hand it opens
+   * with, not the side of a grid, and any sound grid of its tiles finishes it,
+   * so it has many answers rather than one. Absent is a grid with one answer.
+   */
+  tiles?: true;
 };
 
 /**

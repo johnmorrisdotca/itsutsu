@@ -24,6 +24,8 @@ export const TABLE = {
   /** How near an edge of the table a dragged tile starts it panning, and how fast, in pixels a frame. */
   edge: 36,
   edgeStep: 8,
+  /** How long a dragged tile must stay near an edge before the table pans: crossing an edge on the way in is not asking to pan. */
+  edgeDwellMs: 350,
 } as const;
 
 /** The squares shown: from `top`/`left`, `rows` by `cols`. */
@@ -47,10 +49,14 @@ export function tableArea(tiles: Tiles, also: readonly string[] = []): Area {
   return { top: top - m, left: left - m, rows: bottom - top + 1 + 2 * m, cols: right - left + 1 + 2 * m };
 }
 
-/** The view that shows the whole area, centred, its tiles as big as fit between the least and the most. */
-export function fitView(area: Area, width: number, height: number): View {
+/**
+ * The view that shows the whole area, centred, its tiles as big as fit between
+ * the least and the most. A picture nobody presses (a finished grid, the
+ * set-up preview) passes a smaller least, so a whole grid fits its box.
+ */
+export function fitView(area: Area, width: number, height: number, least: number = TABLE.tileLeast): View {
   const fits = Math.min(width / area.cols, height / area.rows);
-  const tile = Math.max(TABLE.tileLeast, Math.min(TABLE.tileMost, Math.floor(fits)));
+  const tile = Math.max(least, Math.min(TABLE.tileMost, Math.floor(fits)));
   return {
     tile,
     x: Math.round((width - area.cols * tile) / 2 - area.left * tile),
