@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { difficultyScores, forcedShare, measureLevel, orderByDifficulty, type LevelMeasure } from "./difficulty";
+import { difficultyScores, forcedShare, measureLevel, type LevelMeasure } from "./difficulty";
+import { isTwist } from "./ladder";
+import { TSUNAGI_MARKS } from "./levels/marks.data";
 import { loadEveryTsunagiLevel, TSUNAGI_SIZES, tsunagiLevelsOf } from "./levels";
 
 /**
@@ -65,6 +67,13 @@ describe("the score", () => {
   });
 });
 
+/** Each size's levels measured once, for every test below: measuring runs the solver on all 1,536. */
+const measuredOnce = new Map<number, LevelMeasure[]>();
+function measuredLevels(size: number): LevelMeasure[] {
+  if (!measuredOnce.has(size)) measuredOnce.set(size, tsunagiLevelsOf(size).map(([layout, answer]) => measureLevel(layout, answer, size)!));
+  return measuredOnce.get(size)!;
+}
+
 describe("the levels the site plays", () => {
   it("makes John's four straight rows 4×4 level 1: \"that would have to be number one\"", () => {
     const levels = tsunagiLevelsOf(4);
@@ -72,8 +81,22 @@ describe("the levels the site plays", () => {
     expect(at + 1, "its level number").toBe(1);
   });
 
-  it.each(TSUNAGI_SIZES.map((size) => [size]))("are stored easiest first at %i×%i: the order the measure gives", (size) => {
+  it.each(TSUNAGI_SIZES.map((size) => [size]))("climb block by block at %i×%i: each block's plain levels no easier on average than the block before's", (size) => {
     const levels = tsunagiLevelsOf(size);
-    expect(orderByDifficulty(levels, size)).toEqual(levels.map((_, at) => at));
+    const measured = measuredLevels(size);
+    const plain = levels.flatMap(([layout], at) => (isTwist(layout) ? [] : [{ at }]));
+    const scores = difficultyScores(
+      plain.map(({ at }) => measured[at]!),
+      size,
+    );
+    const byBlock = new Map<number, number[]>();
+    plain.forEach(({ at }, index) => byBlock.set(Math.floor(at / 16), [...(byBlock.get(Math.floor(at / 16)) ?? []), scores[index]!]));
+    const means = [...byBlock.values()].map((each) => each.reduce((sum, score) => sum + score, 0) / each.length);
+    for (let block = 1; block < means.length; block += 1) expect(means[block]!, `block ${block + 1}`).toBeGreaterThanOrEqual(means[block - 1]!);
+  });
+
+  it.each(TSUNAGI_SIZES.map((size) => [size]))("marks every %i×%i level 1 to 5 by its measured score among the size's levels", (size) => {
+    const scores = difficultyScores(measuredLevels(size), size);
+    expect(TSUNAGI_MARKS[size]).toBe(scores.map((score) => String(Math.min(5, 1 + Math.floor(score / 20)))).join(""));
   });
 });

@@ -12,6 +12,7 @@ import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
 import { blockOf, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
+import { challengesOf } from "@/lib/puzzles/tsunagi/ladder";
 import { firstUnsolvedTsunagiLevel, nextLevelLabel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
 import { allJoined, answerOf, decodeLines, dragThrough, encodeLines, filled, joined, letGo, linesOfAnswer, noLines, pressAt, unjoinedPairs, type Lines } from "@/lib/puzzles/tsunagi/lines";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -19,6 +20,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { feltOrWoodTheme } from "./GomojiGrid";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { TsunagiGrid } from "./TsunagiGrid";
+import { TsunagiLevelChips } from "./TsunagiLevelChips";
 import { TsunagiSolvedView } from "./TsunagiSolvedView";
 import { tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
@@ -154,7 +156,7 @@ export function TsunagiSolve({
   const lift = useCallback(() => {
     if (drawing.current === null) return;
     drawing.current = null;
-    const next = letGo(now.current);
+    const next = letGo(now.current, layout);
     show(next);
     const was = before.current;
     before.current = null;
@@ -235,6 +237,7 @@ export function TsunagiSolve({
     );
   }
 
+  const chips = <TsunagiLevelChips size={size} level={level} challenges={challengesOf(puzzle.givens)} />;
   const pickers = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap gap-3">
@@ -262,6 +265,7 @@ export function TsunagiSolve({
           next={onward.next}
           all={onward.all}
           onRestart={playAgain}
+          under={chips}
         />
         {pickers}
       </section>
@@ -274,6 +278,7 @@ export function TsunagiSolve({
       <SolvePaused pausing={pausing}>
         <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} flagged={flagged} onPress={press} onDrag={drag} onLift={lift} />
       </SolvePaused>
+      {chips}
       {done === null ? (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">

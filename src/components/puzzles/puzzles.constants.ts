@@ -328,3 +328,21 @@ export const KOUSHI_TILE_TARGET = "ring-2 ring-ink/60";
  */
 export const KOUSHI_MARK_KEPT = "inline-block size-5 rounded-full bg-ink shadow-[inset_0_-2px_3px_rgba(255,255,255,0.18)]";
 export const KOUSHI_MARK_SPENT = "inline-block size-5 rounded-full border-2 border-ink/35";
+
+/*
+ * THE ROW UNDER A TSUNAGI BOARD (`TsunagiLevelChips`): the level's measured
+ * difficulty and a chip for each challenge it has, each with the one line a
+ * hover or a tap shows. John, 2026-09-26: "just like we have settings to
+ * choose colour, we would have indicators that this level is more difficult
+ * because a certain difficulty is turned on."
+ */
+export const TSUNAGI_CHIPS = {
+  difficulty: {
+    label: "Difficulty",
+    says: "How hard this level measured among this size's levels: its corners, the guessing it asks for, the cells you cannot fill by forced moves, and its longest line.",
+  },
+  bridges: { label: "Bridges", kanji: "橋", says: "A bridge is crossed by two lines: one straight across, a different one straight down. Neither may turn on it, and both must cross." },
+  walls: { label: "Walls", kanji: "壁", says: "No line may cross a wall, or go into a blocked cell." },
+  teaches: { label: (what: string) => `New: ${what}`, says: "This block's new idea: its 15th level shows it gently." },
+  tests: { label: "Block's test", kanji: "試", says: "This block's test: its 16th level uses its twist hard." },
+} as const;

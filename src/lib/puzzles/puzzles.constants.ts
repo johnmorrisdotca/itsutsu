@@ -623,6 +623,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "The level is solved when every pair is joined and every cell of the board has a line through it. Every level has exactly one way to do that.",
       "Press on a marble, or on the end of a line, and drag. Drag back over your own line to shorten it; drag into another line to cut it back. Tap a marble to clear its line.",
       "256 levels at every size (192 at 4×4), the same for everybody and ordered easiest first. They come in blocks of 16: solve a whole block and the next one opens.",
+      "The last two levels of a block bring a twist: the 15th shows it gently, the 16th is the block's test. BRIDGES first: a bridge is crossed by two lines, one straight across and a different one straight down, and neither may turn on it. Then WALLS: no line may cross a wall, or go into a blocked cell.",
     ],
     board:
       "4×4 is where to start, and 9×9 is the long one. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",

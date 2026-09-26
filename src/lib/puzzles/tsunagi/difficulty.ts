@@ -1,4 +1,4 @@
-import { decodeLayout, neighbourTable, PAIR_LETTERS } from "./code.ts";
+import { decodeLayout, layoutCells, layoutNeighbours, PAIR_LETTERS } from "./code.ts";
 import { turnsIn } from "./generate.ts";
 import { countSolutions } from "./solve.ts";
 
@@ -61,8 +61,12 @@ export const DIFFICULTY_WEIGHTS = { corners: 0.35, guessing: 0.3, notForced: 0.2
  * to go to, until a pair's ends meet or no end has only one way on. What a
  * person does before they have to think.
  */
-export function forcedShare(layout: string, size: number): number {
-  const around = neighbourTable(size);
+export function forcedShare(code: string, size: number): number {
+  const decoded = decodeLayout(code, size);
+  if (decoded === null) return 0;
+  // Across open edges only; a bridge is not a cell a forced move fills (it is crossed, not taken).
+  const around = layoutNeighbours(decoded);
+  const layout = layoutCells(code);
   const letters = [...new Set([...layout].filter((char) => PAIR_LETTERS.includes(char)))];
   const owner = [...layout].map((char) => (PAIR_LETTERS.includes(char) ? letters.indexOf(char) : char === "." ? -1 : -2));
   const heads = letters.map((letter) => layout.indexOf(letter));
@@ -104,7 +108,7 @@ export function measureLevel(layout: string, answer: string, size: number): Leve
     pairs: decoded.ends.length,
     turns: turnsIn(answer, decoded),
     longest: Math.max(...lengths),
-    empties: [...layout].filter((char) => char === ".").length,
+    empties: [...layoutCells(layout)].filter((char) => char === ".").length,
     forcedShare: forcedShare(layout, size),
     nodes: solved.nodes,
     branches: solved.branches,

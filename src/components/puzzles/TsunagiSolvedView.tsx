@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import Link from "@/components/ui/Link";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
@@ -31,6 +33,7 @@ export function TsunagiSolvedView({
   next,
   all,
   onRestart,
+  under = null,
 }: {
   layout: LinkLayout;
   lines: Lines;
@@ -43,10 +46,13 @@ export function TsunagiSolvedView({
   next: { href: string; label: string } | null;
   all: { href: string; label: string };
   onRestart: () => void;
+  /** What sits directly under the board: the level's row of chips. */
+  under?: ReactNode;
 }) {
   return (
     <>
       <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done readOnly />
+      {under}
       <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="tsunagi-solved-already">
         <p className="text-sm">
           You have solved this level

@@ -1,5 +1,5 @@
 /**
- * THE TSUNAGI LEVELS, MADE ON A DESK: `node scripts/tsunagi-levels.ts [size…] [--migration <dir>]`.
+ * THE TSUNAGI LEVELS, MADE ON A DESK: `node scripts/tsunagi-levels.ts [size…] [--keep <size:level,…>] [--grow [--migration <dir>]]`.
  *
  * For each size asked (all six when none is), fills grids with random lines
  * (`randomFilling`), keeps a layout only when the solver proves it has exactly
@@ -31,11 +31,23 @@
  * (old number to new, for a browser's own record of its solves) and, with
  * `--migration <dir>`, a migration that moves the stored rows with it. A
  * solve is kept by its board (`givens`), so it follows without being moved.
+ *
+ * A SIZE IS NEVER REORDERED UNLESS ASKED. A run keeps the order of the levels
+ * it finds, so a board with play on it stays at its number; only `--grow` adds
+ * boards (to whole blocks, up to `WANTED`) and reorders the size, and that run
+ * must ship with its migration. What a run may
+ * still change is a block's 15th and 16th slot, given a twist where nobody has
+ * played it (`tsunagi-twists.ts`, `--keep <size:level,…>` naming the slots
+ * with play, read from production first), and the difficulty marks every level
+ * shows (`levels/marks.data.ts`).
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { candidate, symmetryKey, type LinkCandidate } from "../src/lib/puzzles/tsunagi/generate.ts";
-import { orderByDifficulty } from "../src/lib/puzzles/tsunagi/difficulty.ts";
+import { difficultyScores, measureLevel, orderByDifficulty } from "../src/lib/puzzles/tsunagi/difficulty.ts";
+import { withTwists } from "./tsunagi-twists.ts";
+import { twistRole } from "../src/lib/puzzles/tsunagi/ladder.ts";
+import type { TwistRole } from "../src/lib/puzzles/tsunagi/ladder.types.ts";
 import { seededRandom } from "../src/lib/puzzles/random.ts";
 import { TSUNAGI_BLOCK } from "../src/lib/puzzles/tsunagi/levelBlocks.ts";
 
@@ -50,6 +62,16 @@ const PLAN: Record<number, { longest: number; tries: number; ceiling: number }> 
   7: { longest: 21, tries: 60_000, ceiling: 20_000 },
   8: { longest: 24, tries: 80_000, ceiling: 30_000 },
   9: { longest: 27, tries: 120_000, ceiling: 40_000 },
+};
+
+/** Per size, for the twist boards: grids to try for each kind, the longest line, and the solver's budget. */
+const PLAN_TWISTS: Record<number, { tries: number; longest: number; budget: number }> = {
+  4: { tries: 20_000, longest: 12, budget: 1_000 },
+  5: { tries: 8_000, longest: 15, budget: 5_000 },
+  6: { tries: 8_000, longest: 18, budget: 10_000 },
+  7: { tries: 8_000, longest: 21, budget: 20_000 },
+  8: { tries: 12_000, longest: 24, budget: 30_000 },
+  9: { tries: 12_000, longest: 27, budget: 40_000 },
 };
 
 /** The most pairs a level may have: as many colours as the stones come in (`TSUNAGI_COLOURS`). */
@@ -88,7 +110,7 @@ function fileFor(size: number, levels: readonly Level[]): string {
   const lines = levels.map(([layout, answer]) => `  ["${layout}", "${answer}"],`);
   return [
     "/**",
-    ` * TSUNAGI AT ${size}×${size}: ${levels.length} levels, easiest first by the measured difficulty (\`difficulty.ts\`).`,
+    ` * TSUNAGI AT ${size}×${size}: ${levels.length} levels in blocks of 16, easiest first by the measured difficulty (\`difficulty.ts\`), each block's 15th and 16th its twist where one could be placed.`,
     " *",
     " * WRITTEN BY `node scripts/tsunagi-levels.ts`, NEVER BY HAND. Each line is",
     " * one level: its layout (a letter for each pair's two stones, `.` for an empty",
@@ -160,19 +182,75 @@ function migrationFor(moved: readonly Moved[], bands: readonly { size: number; l
   ].join("\n");
 }
 
+/** A level's difficulty marks, 1 to 5, from its score among every level of its size. */
+function marksOf(levels: readonly Level[], size: number): string {
+  const scores = difficultyScores(
+    levels.map(([layout, answer]) => measureLevel(layout, answer, size)!),
+    size,
+  );
+  return scores.map((score) => String(Math.min(5, 1 + Math.floor(score / 20)))).join("");
+}
+
+function marksFile(marks: Record<number, string>, roles: Record<number, Record<number, TwistRole>>): string {
+  return [
+    "/**",
+    " * EVERY TSUNAGI LEVEL'S DIFFICULTY, 1 TO 5: one digit a level, level 1 first,",
+    " * from its measured score (`difficulty.ts`) among every level of its size —",
+    " * the marks the row under a board shows. And each twist level's part in its",
+    " * block's lesson (`twistRole`), so the board of levels and the row can say it",
+    " * without loading a size's boards. Written by `node scripts/tsunagi-levels.ts`,",
+    " * never by hand; `difficulty.test.ts` and `ladder.test.ts` hold both to the levels.",
+    " */",
+    'import type { TwistRole } from "../ladder.types.ts";',
+    "",
+    "export const TSUNAGI_MARKS: Readonly<Record<number, string>> = {",
+    ...Object.entries(marks).map(([size, digits]) => `  ${size}: "${digits}",`),
+    "};",
+    "",
+    "export const TSUNAGI_ROLES: Readonly<Record<number, Readonly<Record<number, TwistRole>>>> = {",
+    ...Object.entries(roles).map(([size, bySize]) => `  ${size}: ${JSON.stringify(bySize)},`),
+    "};",
+    "",
+  ].join("\n");
+}
+
 const args = process.argv.slice(2);
 const migrationAt = args.includes("--migration") ? args[args.indexOf("--migration") + 1] : undefined;
-const asked = args.map(Number).filter((size) => PLAN[size] !== undefined);
+// The slots with play on production, as `size:level`: never given a twist.
+const keepList = args.includes("--keep") ? (args[args.indexOf("--keep") + 1] ?? "") : "";
+const keep = new Map<number, Set<number>>();
+for (const each of keepList.split(",").filter(Boolean)) {
+  const [size, level] = each.split(":").map(Number) as [number, number];
+  if (!keep.has(size)) keep.set(size, new Set());
+  keep.get(size)!.add(level);
+}
+const growing = args.includes("--grow");
+const asked = args.filter((arg, at) => args[at - 1] !== "--keep" && args[at - 1] !== "--migration").map(Number).filter((size) => PLAN[size] !== undefined);
+const marks: Record<number, string> = {};
+const roles: Record<number, Record<number, TwistRole>> = {};
 const moves: Record<number, number[]> = {};
 const moved: Moved[] = [];
 const bands: { size: number; layout: string; band: string }[] = [];
 for (const size of asked.length > 0 ? asked : Object.keys(PLAN).map(Number)) {
   const started = performance.now();
   const now = await levelsNow(size);
-  const all = grown(size, now);
-  const order = orderByDifficulty(all, size);
-  const levels = order.map((at) => all[at]!);
+  // Boards are added only when asked (`--grow`), and adding reorders the size, which needs a migration:
+  // a rerun that grew on its own once reordered 149 4×4 boards with play on them.
+  const all = growing ? grown(size, now) : [...now];
+  // Ordered only when boards were added; a full size keeps its order, every board at its number.
+  const order = all.length > now.length ? orderByDifficulty(all, size) : all.map((_, at) => at);
+  const ordered = order.map((at) => all[at]!);
+  const twisted = withTwists(size, ordered, keep.get(size) ?? new Set(), PLAN_TWISTS[size]!);
+  const levels = twisted.levels;
   writeFileSync(`src/lib/puzzles/tsunagi/levels/size${size}.data.ts`, fileFor(size, levels));
+  marks[size] = marksOf(levels, size);
+  const layouts = levels.map(([layout]) => layout);
+  roles[size] = Object.fromEntries(layouts.flatMap((_, at) => {
+    const role = twistRole(layouts, at + 1);
+    return role === null ? [] : [[at + 1, role]];
+  }));
+  for (const each of twisted.placed) console.log(`  level ${each.level}: ${each.kind}`);
+  if (twisted.kept.length > 0) console.log(`  blocks kept plain: ${twisted.kept.join(", ")}`);
   // Where each board that was already here went: its old number is its place in `now`, its new one its place in `order`.
   const to = now.map((_, from) => order.indexOf(from) + 1);
   moves[size] = to;
@@ -181,6 +259,7 @@ for (const size of asked.length > 0 ? asked : Object.keys(PLAN).map(Number)) {
   const stayed = to.filter((level, from) => level === from + 1).length;
   console.log(`${size}×${size}: ${levels.length} levels (${levels.length - now.length} new), ${now.length - stayed} of ${now.length} old ones moved, ${Math.round((performance.now() - started) / 1000)} s`);
 }
+writeFileSync("src/lib/puzzles/tsunagi/levels/marks.data.ts", marksFile(marks, roles));
 if (Object.values(moves).some((to) => to.some((level, from) => level !== from + 1))) {
   writeFileSync("src/lib/puzzles/tsunagi/levels/renumbered.data.ts", renumberedFile(moves));
   if (migrationAt !== undefined) {

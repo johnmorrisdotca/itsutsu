@@ -3,7 +3,7 @@
 import { useRef, type PointerEvent } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
-import { CELL_BLOCKED, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
+import { CELL_BLOCKED, CELL_BRIDGE, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
 import { ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { PuzzleBoard } from "./PuzzleBoard";
@@ -116,6 +116,38 @@ export function TsunagiGrid({
               </g>
             ))}
             <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
+            {/* A BRIDGE: a deck with a rail each side, the way across it; one line goes over it across and another down (`steps.ts`). */}
+            {layout.cells.map((cell, at) =>
+              cell === CELL_BRIDGE ? (
+                <g key={`bridge-${at}`} data-testid="tsunagi-bridge" data-cell={at}>
+                  <rect x={(at % size) + 0.1} y={Math.floor(at / size) + 0.1} width={0.8} height={0.8} rx={0.14} fill={theme.line} opacity={0.22} />
+                  {[0.16, 0.84].map((edge) => (
+                    <line key={edge} x1={(at % size) + 0.1} y1={Math.floor(at / size) + edge} x2={(at % size) + 0.9} y2={Math.floor(at / size) + edge} stroke={theme.line} strokeWidth={0.07} strokeLinecap="round" />
+                  ))}
+                </g>
+              ) : null,
+            )}
+            {/* A WALL: a thick bar on the edge between two cells, which no line crosses. */}
+            {[...layout.walls].map((wall) => {
+              const [a, b] = wall.split("-").map(Number) as [number, number];
+              const row = Math.floor(a / size);
+              const col = a % size;
+              const across = b === a + 1;
+              return (
+                <line
+                  key={`wall-${wall}`}
+                  x1={across ? col + 1 : col}
+                  y1={across ? row : row + 1}
+                  x2={across ? col + 1 : col + 1}
+                  y2={across ? row + 1 : row + 1}
+                  stroke={theme.line}
+                  strokeWidth={0.14}
+                  strokeLinecap="round"
+                  data-testid="tsunagi-wall"
+                  data-edge={wall}
+                />
+              );
+            })}
             {lines.map((line, pair) =>
               line.length < 2 ? null : (
                 <polyline
@@ -136,7 +168,7 @@ export function TsunagiGrid({
           <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${size}, minmax(0, 1fr))` }}>
             {layout.cells.map((cell, at) => {
               const owner = owners[at]!;
-              const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : ", empty"}`;
+              const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : cell === CELL_BRIDGE ? ", bridge" : ", empty"}`;
               return (
                 <div
                   key={at}

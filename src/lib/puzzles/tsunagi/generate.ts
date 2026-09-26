@@ -1,5 +1,6 @@
-import { CELL_EMPTY, decodeLayout, encodeAnswer, encodeLayout, type LinkLayout, neighbourTable, PAIR_LETTERS } from "./code.ts";
+import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, compareEdges, decodeLayout, edgeKey, encodeAnswer, encodeLayout, layoutCells, type LinkLayout, LINK_WALLS, neighbourTable, PAIR_LETTERS } from "./code.ts";
 import { countSolutions } from "./solve.ts";
+import { stepTable } from "./steps.ts";
 import type { Random } from "../random.ts";
 
 /**
@@ -35,11 +36,19 @@ export type LinkCandidate = {
 
 const SHORTEST_LINE = 3;
 
+/** How a blocked cell is marked while a grid is filled: an owner no line has. */
+const BLOCKED_MARK = 32_000;
+
+/** What a board has besides its lines: the cells no line enters, the bridges two lines cross, and the walls between cells. */
+export type LinkExtras = { blocked?: ReadonlySet<number>; bridges?: ReadonlySet<number>; walls?: ReadonlySet<string> };
+
 /** Grid lines that fill every cell, as lists of cells; null when this attempt painted itself into a corner. */
-export function randomFilling(size: number, random: Random, longest: number): number[][] | null {
+export function randomFilling(size: number, random: Random, longest: number, blocked: ReadonlySet<number> = new Set()): number[][] | null {
   const total = size * size;
   const around = neighbourTable(size);
   const owner = new Int16Array(total).fill(-1);
+  // A blocked cell belongs to no line, ever: marked as one nothing can be.
+  for (const cell of blocked) owner[cell] = BLOCKED_MARK;
   const paths: number[][] = [];
   const emptyAround = (at: number) => around[at]!.filter((next) => owner[next] === -1).length;
   // Whether `cell` can follow `tip` on line `id` without the line touching itself.
@@ -112,8 +121,12 @@ function absorb(run: number[], paths: number[][], owner: Int16Array, around: num
   return false;
 }
 
-/** The layout and answer the lines leave: their ends as stones, lettered in reading order. */
-export function layoutOf(size: number, paths: readonly number[][]): { layout: string; answer: string } {
+/**
+ * The layout and answer the lines leave: their ends as stones, lettered in
+ * reading order, with whatever else the board has — blocked cells, bridges
+ * (in two lines' paths, drawn `+`) and walls.
+ */
+export function layoutOf(size: number, paths: readonly number[][], extras: LinkExtras = {}): { layout: string; answer: string } {
   const total = size * size;
   const byFirst = [...paths].map((path) => (path[0]! < path[path.length - 1]! ? path : [...path].reverse())).sort((a, b) => a[0]! - b[0]!);
   const cells = new Array<number>(total).fill(CELL_EMPTY);
@@ -123,23 +136,37 @@ export function layoutOf(size: number, paths: readonly number[][]): { layout: st
     cells[path[path.length - 1]!] = pair;
     for (const cell of path) owners[cell] = pair;
   });
+  for (const cell of extras.blocked ?? []) cells[cell] = owners[cell] = CELL_BLOCKED;
+  for (const cell of extras.bridges ?? []) cells[cell] = owners[cell] = CELL_BRIDGE;
   // Relabel in reading order of first stone, which `byFirst`'s order already is.
-  return { layout: encodeLayout(cells), answer: encodeAnswer(owners) };
+  return { layout: encodeLayout(cells, extras.walls ?? []), answer: encodeAnswer(owners) };
 }
 
-/** A layout code turned or mirrored: `turn` quarter turns, then a mirror across the vertical when `mirror`. */
+/** Where cell `at` goes when a board is given `turn` quarter turns and then mirrored across the vertical when `mirror`. */
+function movedTo(size: number, at: number, turn: number, mirror: boolean): number {
+  let r = Math.floor(at / size);
+  let c = at % size;
+  for (let each = 0; each < turn; each += 1) [r, c] = [c, size - 1 - r];
+  if (mirror) c = size - 1 - c;
+  return r * size + c;
+}
+
+/** A layout code turned or mirrored: `turn` quarter turns, then a mirror across the vertical when `mirror`. Its walls turn with it. */
 export function transformed(code: string, size: number, turn: number, mirror: boolean): string {
+  const cells = layoutCells(code);
   const out = new Array<string>(size * size);
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      let r = row;
-      let c = col;
-      for (let each = 0; each < turn; each += 1) [r, c] = [c, size - 1 - r];
-      if (mirror) c = size - 1 - c;
-      out[r * size + c] = code[row * size + col]!;
-    }
-  }
-  return out.join("");
+  for (let at = 0; at < size * size; at += 1) out[movedTo(size, at, turn, mirror)] = cells[at]!;
+  const bar = code.indexOf(LINK_WALLS);
+  if (bar === -1) return out.join("");
+  const walls = code
+    .slice(bar + 1)
+    .split(",")
+    .map((edge) => {
+      const [a, b] = edge.split("-").map(Number) as [number, number];
+      return edgeKey(movedTo(size, a, turn, mirror), movedTo(size, b, turn, mirror));
+    })
+    .sort(compareEdges);
+  return `${out.join("")}${LINK_WALLS}${walls.join(",")}`;
 }
 
 /** A code's letters renamed in reading order of first appearance: the one spelling of a layout or answer. */
@@ -166,15 +193,16 @@ export function symmetryKey(code: string, size: number): string {
   return least!;
 }
 
-/** How many times an answer's lines turn a corner, over all of them. */
+/** How many times an answer's lines turn a corner, over all of them: a line going straight over a bridge turns nowhere on it. */
 export function turnsIn(answer: string, layout: LinkLayout): number {
   const { size } = layout;
-  const around = neighbourTable(size);
+  const steps = stepTable(layout);
   let turns = 0;
-  for (let at = 0; at < answer.length; at += 1) {
+  for (let at = 0; at < layoutCells(answer).length; at += 1) {
     if (layout.cells[at] !== CELL_EMPTY) continue;
-    const same = around[at]!.filter((next) => answer[next] === answer[at]);
-    if (same.length === 2 && Math.abs(same[0]! - same[1]!) !== 2 && Math.abs(same[0]! - same[1]!) !== 2 * size) turns += 1;
+    // The ways this cell's line goes on from it, as offsets: over a bridge, the way onto it.
+    const ways = steps[at]!.filter((step) => answer[step.to] === answer[at]).map((step) => (step.over === -1 ? step.to : step.over) - at);
+    if (ways.length === 2 && Math.abs(ways[0]! - ways[1]!) !== 2 && Math.abs(ways[0]! - ways[1]!) !== 2 * size) turns += 1;
   }
   return turns;
 }

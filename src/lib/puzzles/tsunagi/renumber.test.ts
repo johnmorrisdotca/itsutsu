@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { loadEveryTsunagiLevel, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelsOf } from "./levels";
 import { TSUNAGI_RENUMBERED } from "./levels/renumbered.data";
+import { isTwist } from "./ladder";
 import { renumberedRecord } from "./renumber";
 
 /**
@@ -48,9 +49,11 @@ describe("the renumbering", () => {
     }
   });
 
-  it("gives every level's board its band in the migration, for the solves kept by board", () => {
+  it("gave every plain level's board its band in the migration, for the solves kept by board", () => {
+    // A twist board came after the renumbering, into a 15th or 16th nobody had played, so nothing stored needed its band.
     for (const size of TSUNAGI_SIZES) {
       tsunagiLevelsOf(size).forEach(([layout], at) => {
+        if (isTwist(layout)) return;
         expect(MIGRATION, `${size}×${size} level ${at + 1}`).toContain(`(${size}, '${layout}', '${tsunagiBand(size, at + 1)}')`);
       });
     }

@@ -15,6 +15,8 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import { blockOf, blockRange, blocksIn } from "@/lib/puzzles/tsunagi/levelBlocks";
+import { tsunagiRole } from "@/lib/puzzles/tsunagi/ladder";
+import { TsunagiLevelChips } from "./TsunagiLevelChips";
 import { firstUnsolvedTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@/lib/puzzles/tsunagi/levels";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -164,6 +166,8 @@ export function TsunagiSetUp({
           <Link href={tsunagiLevelPath(size, next)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={next}>
             <PressLabel words={`${START_PRESS.start.words} level ${next}`} kanji={START_PRESS.start.kanji} />
           </Link>
+          {/* What the level Start plays asks, before it is started. */}
+          <TsunagiLevelChips size={size} level={next} challenges={tsunagiRole(size, next)?.challenges ?? []} />
           {skippedPast ? (
             <p className="text-xs text-muted" data-testid="tsunagi-first-unsolved">
               Level {gap} is the first one you have not finished.

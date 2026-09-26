@@ -7,6 +7,7 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { blockRange, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
+import { tsunagiRole } from "@/lib/puzzles/tsunagi/ladder";
 import { TSUNAGI_LEVEL_COUNTS, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
 
 import { PuzzleBoard } from "./PuzzleBoard";
@@ -69,6 +70,19 @@ export function TsunagiLevelBoard({
           {Array.from({ length: last - first + 1 }, (_, at) => first + at).map((level) => {
             const time = best[level];
             const tries = attempts[level] ?? 0;
+            // A block's lesson, said before it is opened: its 15th brings a twist, its 16th tests it.
+            const role = tsunagiRole(size, level);
+            const taught = role === null ? "" : role.challenges.join(" and ");
+            const roleWords = role === null ? "" : role.role === "teaches" ? `, teaches ${taught}` : ", the block's test";
+            const badge =
+              role === null ? null : (
+                <span
+                  className={`absolute top-[5%] right-[6%] rounded-sm px-1 py-px text-[0.5rem] font-bold tracking-wide uppercase sm:text-[0.6rem] ${role.role === "tests" ? "bg-shu text-paper" : "bg-ochre text-ink"}`}
+                  data-testid="tsunagi-level-role"
+                >
+                  {role.role === "teaches" ? "New" : "Test"}
+                </span>
+              );
             const triesWords = tries === 0 ? "" : `, ${tries} ${tries === 1 ? "attempt" : "attempts"}`;
             const solved = time !== undefined;
             // A level solved is never locked: a board solved before the levels were renumbered may sit in a block not yet open, and it is still yours.
@@ -80,6 +94,7 @@ export function TsunagiLevelBoard({
               "data-level": level,
               "data-state": solved ? "solved" : locked ? "locked" : "open",
               "data-attempts": tries,
+              "data-role": role?.role,
             };
             // Each cell rules its right and bottom; the first row and column rule their top and left too, so the grid is closed
             // on all four sides (John, 2026-09-26: "missing the TOP and LEFT borders").
@@ -88,7 +103,8 @@ export function TsunagiLevelBoard({
             const ruled = { borderColor: `color-mix(in srgb, ${theme.line} 45%, transparent)` };
             if (locked) {
               return (
-                <div key={level} className={`${rules} opacity-45`} style={{ ...ruled, color: theme.coordinate }} aria-label={`Level ${level}, locked`} {...common}>
+                <div key={level} className={`${rules} opacity-45`} style={{ ...ruled, color: theme.coordinate }} aria-label={`Level ${level}, locked${roleWords}`} {...common}>
+                  {badge}
                   <span>{level}</span>
                   <svg viewBox="0 0 10 12" className="mt-0.5 h-2 w-2 sm:h-2.5 sm:w-2.5" aria-hidden="true" data-testid="tsunagi-level-lock">
                     <path d="M2.5 5V3.5a2.5 2.5 0 0 1 5 0V5" fill="none" stroke="currentColor" strokeWidth="1.4" />
@@ -103,10 +119,11 @@ export function TsunagiLevelBoard({
                 href={tsunagiLevelPath(size, level)}
                 className={`${rules} hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-moss ${level === next ? "ring-2 ring-inset ring-ochre" : ""}`}
                 style={{ ...ruled, color: theme.dark ? "#f7f3ea" : "#2a1d0e" }}
-                aria-label={solved ? `Level ${level}, solved in ${clockText(time)}${triesWords}` : `Level ${level}${level === next ? ", next" : ""}${triesWords}`}
-                title={solved ? `Level ${level}: best ${clockText(time)}${triesWords}` : `Level ${level}${triesWords}`}
+                aria-label={solved ? `Level ${level}, solved in ${clockText(time)}${roleWords}${triesWords}` : `Level ${level}${level === next ? ", next" : ""}${roleWords}${triesWords}`}
+                title={solved ? `Level ${level}: best ${clockText(time)}${roleWords}${triesWords}` : `Level ${level}${roleWords}${triesWords}`}
                 {...common}
               >
+                {badge}
                 {solved ? (
                   <>
                     <span className={`${TSUNAGI_MARBLE} size-[50%] text-sm sm:text-base`} style={tsunagiMarbleLook(block - 1, marks)}>
