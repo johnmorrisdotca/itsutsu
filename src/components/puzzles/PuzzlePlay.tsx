@@ -65,7 +65,7 @@ export function PuzzlePlay({
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
   twins?: boolean;
   /** Tsunagi's levels already solved at this size on the account, whether it is played by colours or numbers, and with marbles along the lines or not. */
-  tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null; fill?: TsunagiFill | null } | null;
+  tsunagi?: { known: Record<number, number>; bestSolves?: Record<number, string>; attempts?: Record<number, number>; marks: TsunagiMarks | null; fill?: TsunagiFill | null } | null;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -162,6 +162,8 @@ export function PuzzlePlay({
           resumed={race === null ? resumed : null}
           appearance={appearance}
           known={tsunagi?.known}
+          attempts={tsunagi?.attempts}
+          bestSolves={tsunagi?.bestSolves}
           marksChosen={tsunagi?.marks ?? null}
           fillChosen={tsunagi?.fill ?? null}
         />

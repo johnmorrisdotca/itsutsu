@@ -16,7 +16,7 @@ import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
-import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
+import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { TsunagiLevelFastest } from "./TsunagiLevelFastest";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -52,9 +52,10 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`), and their stone set for a
      puzzle played with stones; read only for a puzzle drawn on the board, Kumimoji's table, and the stone puzzles. */
   const appearance = drawnOnBoard(kind) || kind === "kumimoji" || PUZZLE_SPECS[kind].stones === true ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
-  /* Tsunagi's levels this member has solved at this size, so a level past the open rows is shut (`TsunagiSolve`). One read, for Tsunagi only. */
-  const solved = tsunagi && reader.memberId !== null ? await tsunagiSolvedBy(reader.memberId) : null;
+  /* Tsunagi's levels this member has solved, so a level past the open rows is shut and a solved one opens solved (`TsunagiSolve`), and their attempts at each: two reads, for Tsunagi only. */
+  const [solved, attempts] = tsunagi && reader.memberId !== null ? await Promise.all([tsunagiSolvedBy(reader.memberId), tsunagiAttemptsBy(reader.memberId)]) : [null, null];
   const known = Object.fromEntries(Object.entries(solved?.[asked.size] ?? {}).map(([level, best]) => [level, best.elapsedMs]));
+  const bestSolves = Object.fromEntries(Object.entries(solved?.[asked.size] ?? {}).map(([level, best]) => [level, best.solveId]));
   return (
     <Page>
       <SiteHeader />
@@ -69,7 +70,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} twins={asked.twins === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} twins={asked.twins === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null } : null} />
         </WordStyleProvider>
       </div>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}

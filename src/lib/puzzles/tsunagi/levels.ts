@@ -111,3 +111,22 @@ export function nextTsunagiLevel(size: number, solved: ReadonlySet<number>): num
   for (let level = 1; level <= open; level += 1) if (!solved.has(level)) return level;
   return open;
 }
+
+/**
+ * The lowest level not yet solved, or null when every level of the size is.
+ * It is always open: a row opens only once the row before is all solved, so
+ * the first gap is in the open rows. What every "next" on Tsunagi points at —
+ * the done card, the set-up's Start and a shut level's way back — so nobody is
+ * sent past a level they have not finished (John, 2026-09-26: having solved
+ * only level 10, he was offered level 11).
+ */
+export function firstUnsolvedTsunagiLevel(size: number, solved: ReadonlySet<number>): number | null {
+  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
+  for (let level = 1; level <= count; level += 1) if (!solved.has(level)) return level;
+  return null;
+}
+
+/** The words on the button to the next level: plain when it is the one after, and saying why when it is further back. */
+export function nextLevelLabel(after: number, next: number): string {
+  return next === after + 1 ? `Level ${next} →` : `Level ${next}, the first one you have not finished →`;
+}

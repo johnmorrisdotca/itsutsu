@@ -25,7 +25,7 @@ export function tsunagiLevelPath(size: number, level: number): string {
  *
  * A cell is a level, in one of three states:
  *  - SOLVED: a marble sits on it, its number on the marble and the best time
- *    under it. Still a link, to play it again.
+ *    under it. Still a link, which opens it solved (`TsunagiSolvedView`).
  *  - OPEN: its number, a link to play it.
  *  - LOCKED: its number faint, a small lock, nothing to press. Rows open ten
  *    at a time (`openTsunagiLevels`).
@@ -33,6 +33,7 @@ export function tsunagiLevelPath(size: number, level: number): string {
 export function TsunagiLevelBoard({
   size,
   best,
+  attempts = {},
   open,
   next,
   marks,
@@ -41,6 +42,8 @@ export function TsunagiLevelBoard({
   size: number;
   /** The levels solved, each with its best time. */
   best: Record<number, number>;
+  /** How many times each level has been started, where it has. */
+  attempts?: Record<number, number>;
   /** Levels 1 to this are open. */
   open: number;
   /** The level Start would play, ringed. */
@@ -59,6 +62,8 @@ export function TsunagiLevelBoard({
         >
           {Array.from({ length: count }, (_, at) => at + 1).map((level) => {
             const time = best[level];
+            const tries = attempts[level] ?? 0;
+            const triesWords = tries === 0 ? "" : `, ${tries} ${tries === 1 ? "attempt" : "attempts"}`;
             const solved = time !== undefined;
             const locked = level > open;
             const row = Math.floor((level - 1) / TSUNAGI_ROW);
@@ -66,6 +71,7 @@ export function TsunagiLevelBoard({
               "data-testid": "tsunagi-level",
               "data-level": level,
               "data-state": solved ? "solved" : locked ? "locked" : "open",
+              "data-attempts": tries,
             };
             // Each cell rules its right and bottom; the first row and column rule their top and left too, so the grid is closed
             // on all four sides (John, 2026-09-26: "missing the TOP and LEFT borders").
@@ -89,8 +95,8 @@ export function TsunagiLevelBoard({
                 href={tsunagiLevelPath(size, level)}
                 className={`${rules} hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-moss ${level === next ? "ring-2 ring-inset ring-ochre" : ""}`}
                 style={{ ...ruled, color: theme.dark ? "#f7f3ea" : "#2a1d0e" }}
-                aria-label={solved ? `Level ${level}, solved in ${clockText(time)}` : `Level ${level}${level === next ? ", next" : ""}`}
-                title={solved ? `Level ${level}: best ${clockText(time)}` : `Level ${level}`}
+                aria-label={solved ? `Level ${level}, solved in ${clockText(time)}${triesWords}` : `Level ${level}${level === next ? ", next" : ""}${triesWords}`}
+                title={solved ? `Level ${level}: best ${clockText(time)}${triesWords}` : `Level ${level}${triesWords}`}
                 {...common}
               >
                 {solved ? (

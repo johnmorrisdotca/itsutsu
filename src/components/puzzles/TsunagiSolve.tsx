@@ -11,18 +11,23 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
-import { openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
-import { allJoined, answerOf, decodeLines, dragThrough, encodeLines, filled, joined, letGo, noLines, pressAt, type Lines } from "@/lib/puzzles/tsunagi/lines";
+import { firstUnsolvedTsunagiLevel, nextLevelLabel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
+import { allJoined, answerOf, decodeLines, dragThrough, encodeLines, filled, joined, letGo, linesOfAnswer, noLines, pressAt, unjoinedPairs, type Lines } from "@/lib/puzzles/tsunagi/lines";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { feltOrWoodTheme } from "./GomojiGrid";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { TsunagiGrid } from "./TsunagiGrid";
+import { TsunagiSolvedView } from "./TsunagiSolvedView";
 import { tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { keepSolveHere, keptSolves } from "./tsunagiKept";
+import { useTsunagiAttempts } from "./useTsunagiAttempts";
 import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
+
+/** How long Check's flashing lasts; its words stay until the board changes. */
+const CHECK_FLASH_MS = 2400;
 
 /** The board of levels at a size: the set-up, opened on that size. */
 export function tsunagiLevelsPath(size: number): string {
@@ -47,6 +52,8 @@ export function TsunagiSolve({
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   known = {},
+  attempts: attemptsKnown = {},
+  bestSolves = {},
   marksChosen = null,
   fillChosen = null,
 }: {
@@ -57,6 +64,10 @@ export function TsunagiSolve({
   appearance?: Appearance;
   /** The levels at this size the member has solved on the account, with their best times. */
   known?: Record<number, number>;
+  /** How many times the member has started each level at this size, on the account. */
+  attempts?: Record<number, number>;
+  /** The member's best solve of each level at this size, to open from its time. */
+  bestSolves?: Record<number, string>;
   /** Colours or numbers, as the account last chose; null where it never has. */
   marksChosen?: TsunagiMarks | null;
   /** Marbles or lines, as the account last chose; null where it never has. */
@@ -81,16 +92,38 @@ export function TsunagiSolve({
   const open = openTsunagiLevels(size, solvedSet);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
   const shut = race === null && resumed === null && level > open;
+  // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
+  const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...solvedSet, level]));
+  const onward = {
+    next: onwardTo === null ? null : { href: tsunagiLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo) },
+    all: { href: tsunagiLevelsPath(size), label: "All levels" },
+  };
+  // A level already solved opens on its finished board; only Restart starts it again (`TsunagiSolvedView`).
+  const answerLines = useMemo(() => linesOfAnswer(layout, puzzle.solution), [layout, puzzle.solution]);
+  const [reviewing, setReviewing] = useState(race === null && resumed === null && solvedSet.has(level) && answerLines !== null);
+  // An attempt is a board started from empty: counted at its first line, once, and again after Restart. A kept run was counted when it began.
+  const { attempts, countOne } = useTsunagiAttempts(size, level, hasAccount, attemptsKnown[level] ?? 0);
+  const counted = useRef(resumed !== null);
+  // Check: the pairs not joined yet, their marbles flashing a moment; the words stay until the board changes.
+  const [flagged, setFlagged] = useState<ReadonlySet<number> | null>(null);
+  const [checkSays, setCheckSays] = useState<string | null>(null);
+  useEffect(() => {
+    if (flagged === null) return;
+    const off = window.setTimeout(() => setFlagged(null), CHECK_FLASH_MS);
+    return () => window.clearTimeout(off);
+  }, [flagged]);
 
   const { startedAt, elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race, null, {
     progress: encodeLines(layout, lines),
     resumed,
   });
-  const idle = done !== null || pausing.paused || shut;
+  const idle = done !== null || pausing.paused || shut || reviewing;
 
   const show = useCallback((next: Lines) => {
     now.current = next;
     setLines(next);
+    setFlagged(null);
+    setCheckSays(null);
   }, []);
 
   const press = useCallback(
@@ -99,11 +132,15 @@ export function TsunagiSolve({
       const pressed = pressAt(layout, now.current, cell);
       if (pressed.drawing === null) return;
       begin();
+      if (!counted.current) {
+        counted.current = true;
+        countOne();
+      }
       before.current = now.current;
       drawing.current = pressed.drawing;
       show(pressed.lines);
     },
-    [idle, layout, begin, show],
+    [idle, layout, begin, show, countOne],
   );
   const drag = useCallback(
     (cell: number) => {
@@ -144,6 +181,24 @@ export function TsunagiSolve({
     if (idle || now.current.every((line) => line.length === 0)) return;
     setUndo((stack) => [...stack.slice(-199), now.current]);
     show(noLines(layout));
+    counted.current = false;
+  };
+  const playAgain = () => {
+    setReviewing(false);
+    setUndo([]);
+    show(noLines(layout));
+    counted.current = false;
+  };
+  const check = () => {
+    if (idle) return;
+    const missing = unjoinedPairs(layout, now.current);
+    setFlagged(new Set(missing));
+    const empty = filled(layout, now.current);
+    setCheckSays(
+      missing.length > 0
+        ? `${missing.length} ${missing.length === 1 ? "pair is" : "pairs are"} not joined yet: ${missing.length === 1 ? "its marbles are" : "their marbles are"} flashing.`
+        : `Every pair is joined; ${empty.of - empty.done} ${empty.of - empty.done === 1 ? "cell is" : "cells are"} still empty.`,
+    );
   };
 
   const pairs = layout.ends.length;
@@ -151,20 +206,24 @@ export function TsunagiSolve({
   const cover = filled(layout, lines);
   const asked = (
     <>
-      {size}×{size} · Level {level} <span className="text-xs">of {count}</span>
+      {size}×{size} · Level {level} <span className="text-xs">of {count}</span>{" "}
+      <span className="text-xs text-muted" data-testid="tsunagi-attempts" data-count={attempts}>
+        · {attempts} {attempts === 1 ? "attempt" : "attempts"}
+      </span>
     </>
   );
 
   if (shut) {
     const row = Math.ceil(level / 10);
+    const first = firstUnsolvedTsunagiLevel(size, solvedSet) ?? 1;
     return (
       <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
         <p className="text-sm" data-testid="tsunagi-shut">
           Level {level} at {size}×{size} opens when every level in row {row - 1} of the board of levels is solved.
         </p>
         <p className="flex flex-wrap gap-2">
-          <Link href={tsunagiLevelPath(size, Math.min(open, level))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-            Play level {Math.min(open, level)}
+          <Link href={tsunagiLevelPath(size, first)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tsunagi-shut-first">
+            Play level {first}, the first one you have not finished
           </Link>
           <Link href={tsunagiLevelsPath(size)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
             All levels
@@ -174,11 +233,44 @@ export function TsunagiSolve({
     );
   }
 
+  const pickers = (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap gap-3">
+        <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
+        <TsunagiFillPicker fill={fill} onChoose={chooseFill} />
+      </div>
+      <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
+    </div>
+  );
+
+  if (reviewing && answerLines !== null) {
+    return (
+      <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-reviewing="true" {...readyMark(hydrated)}>
+        <p className="text-sm text-muted" data-testid="puzzle-asked">
+          {asked}
+        </p>
+        <TsunagiSolvedView
+          layout={layout}
+          lines={answerLines}
+          marks={marks}
+          fill={fill}
+          theme={theme}
+          best={solvedHere[level] === undefined ? null : { elapsedMs: solvedHere[level]!, solveId: bestSolves[level] ?? null }}
+          attempts={attempts}
+          next={onward.next}
+          all={onward.all}
+          onRestart={playAgain}
+        />
+        {pickers}
+      </section>
+    );
+  }
+
   return (
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
-        <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} onPress={press} onDrag={drag} onLift={lift} />
+        <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} flagged={flagged} onPress={press} onDrag={drag} onLift={lift} />
       </SolvePaused>
       {done === null ? (
         <div className="flex flex-col gap-3">
@@ -195,12 +287,20 @@ export function TsunagiSolve({
             >
               Restart
             </button>
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={pausing.paused} data-testid="tsunagi-check">
+              Check
+            </button>
             <span className="text-sm text-muted tabular-nums" data-testid="tsunagi-progress" data-joined={pairsJoined} data-filled={cover.done} aria-live="polite">
               {pairsJoined === pairs && cover.done < cover.of
                 ? `Every pair joined; ${cover.of - cover.done} ${cover.of - cover.done === 1 ? "cell is" : "cells are"} still empty.`
                 : `${pairsJoined} of ${pairs} joined · ${Math.round((100 * cover.done) / cover.of)}% of the board`}
             </span>
           </div>
+          {checkSays === null ? null : (
+            <p className="text-sm" data-testid="tsunagi-check-says" data-missing={flagged?.size ?? undefined} aria-live="polite">
+              {checkSays}
+            </p>
+          )}
           <p className="text-sm text-muted">Press a marble and drag to its partner. Drag back to shorten a line; tap a marble to clear it.</p>
         </div>
       ) : (
@@ -209,19 +309,10 @@ export function TsunagiSolve({
           done={done}
           hasAccount={hasAccount}
           race={race}
-          onward={{
-            next: level < count ? { href: tsunagiLevelPath(size, level + 1), label: `Level ${level + 1} →` } : null,
-            all: { href: tsunagiLevelsPath(size), label: "All levels" },
-          }}
+          onward={onward}
         />
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-3">
-          <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
-          <TsunagiFillPicker fill={fill} onChoose={chooseFill} />
-        </div>
-        <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
-      </div>
+      {pickers}
     </section>
   );
 }

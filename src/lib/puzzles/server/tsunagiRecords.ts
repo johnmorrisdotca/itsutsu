@@ -61,3 +61,22 @@ export async function tsunagiLevelFastest(size: number, level: number): Promise<
   const seen = new Set<string>();
   return rows.filter((row) => (seen.has(row.memberId) ? false : (seen.add(row.memberId), true))).slice(0, LEVEL_FASTEST_SHOWN);
 }
+
+/** A member's attempts at every level they have started, by size and then level: how many times each was started from an empty board. */
+export async function tsunagiAttemptsBy(memberId: string): Promise<Record<number, Record<number, number>>> {
+  const rows = await prisma.tsunagiAttempt.findMany({ where: { memberId }, select: { size: true, level: true, count: true } });
+  const out: Record<number, Record<number, number>> = {};
+  for (const row of rows) (out[row.size] ??= {})[row.level] = row.count;
+  return out;
+}
+
+/** One more attempt at a level, counted on the account; the count it now stands at. */
+export async function countTsunagiAttempt(memberId: string, size: number, level: number): Promise<number> {
+  const row = await prisma.tsunagiAttempt.upsert({
+    where: { memberId_size_level: { memberId, size, level } },
+    create: { memberId, size, level, count: 1 },
+    update: { count: { increment: 1 } },
+    select: { count: true },
+  });
+  return row.count;
+}

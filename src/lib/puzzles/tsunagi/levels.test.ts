@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { checkSolution } from "../puzzleCheck";
 import { decodeLayout, encodeAnswer, neighboursOf } from "./code";
 import { symmetryKey } from "./generate";
-import { loadEveryTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf, tsunagiPuzzle } from "./levels";
+import { firstUnsolvedTsunagiLevel, loadEveryTsunagiLevel, nextLevelLabel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf, tsunagiPuzzle } from "./levels";
 import { countSolutions } from "./solve";
 
 /**
@@ -83,5 +83,29 @@ describe("the levels open a row of ten at a time", () => {
     const all = new Set(Array.from({ length: 100 }, (_, at) => at + 1));
     expect(openTsunagiLevels(6, all)).toBe(100);
     expect(nextTsunagiLevel(6, all)).toBe(100);
+  });
+});
+
+describe("the next level is the lowest one not yet solved", () => {
+  it("sends somebody who solved only level 10 back to level 1, never on to 11", () => {
+    // John's screenshot: level 10 solved on its own, and "Level 11 →" offered.
+    const solved = new Set([10]);
+    expect(firstUnsolvedTsunagiLevel(5, solved)).toBe(1);
+    expect(openTsunagiLevels(5, solved)).toBe(10);
+    expect(nextLevelLabel(10, 1)).toBe("Level 1, the first one you have not finished →");
+  });
+
+  it("names the gap, and says the level after plainly when that is the gap", () => {
+    expect(firstUnsolvedTsunagiLevel(5, new Set([1, 2, 4, 5]))).toBe(3);
+    expect(nextLevelLabel(5, 3)).toBe("Level 3, the first one you have not finished →");
+    expect(firstUnsolvedTsunagiLevel(5, new Set([1, 2, 3]))).toBe(4);
+    expect(nextLevelLabel(3, 4)).toBe("Level 4 →");
+  });
+
+  it("goes on to the next row once a row is all solved, and to nothing once every level is", () => {
+    const row = new Set(Array.from({ length: 10 }, (_, at) => at + 1));
+    expect(firstUnsolvedTsunagiLevel(7, row)).toBe(11);
+    const all = new Set(Array.from({ length: 100 }, (_, at) => at + 1));
+    expect(firstUnsolvedTsunagiLevel(7, all)).toBeNull();
   });
 });

@@ -8,7 +8,7 @@ import { gamePath, playPath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
-import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
+import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { keptRunAsked, puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
@@ -84,6 +84,7 @@ export async function PuzzleSetUpPage({
           marksChosen={preferences?.tsunagiMarks ?? null}
           fillChosen={preferences?.tsunagiFill ?? null}
           solved={memberId === null ? {} : bestTimes(await tsunagiSolvedBy(memberId))}
+          attempts={memberId === null ? {} : await tsunagiAttemptsBy(memberId)}
           initialSize={sizeAsked(kind, query)}
           resumeHref={resumeHref}
         />
