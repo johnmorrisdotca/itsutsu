@@ -5,6 +5,7 @@ import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { answersFor, breaksHardRule, isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
+import { knownCounts } from "../src/lib/puzzles/keyMarks";
 import { wordScore } from "../src/lib/puzzles/gomoji/wordScore";
 import { freshPuzzleSeed, ready } from "./support";
 
@@ -158,6 +159,76 @@ test.describe("the word puzzle", () => {
       await page.getByTestId("word-key-enter").click();
       await expect(page.locator('[data-testid^="word-key-"][data-typed="true"]')).toHaveCount(0);
       await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).not.toHaveAttribute("data-mark", "typed");
+    });
+  });
+
+  /*
+   * John, 2026-09-26, on a solved PRIOR: "A Keyboard where a Letter was used
+   * twice should show the (2) count superscript badge on the Letter R." Only
+   * what the marks on the board prove: a guess whose two copies of a letter
+   * are both green or yellow, and then the word itself.
+   */
+  test.describe("on a phone, a letter the guesses prove is in the word twice", () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test("carries the count on its key, live, in the replay and on the finished word's own page", async ({ page }) => {
+      const answers = answersFor(5, false);
+      const once = (word: string, letter: string) => word.split(letter).length === 2;
+      // A seed whose word holds a letter twice and a letter once, and a real word, not the answer, proving both copies.
+      const planFor = (seed: number) => {
+        const hidden = generatePuzzle(KIND, 5, LEVEL, seed).solution;
+        const letter = [...hidden].find((each, at) => hidden.indexOf(each) !== at);
+        const single = [...hidden].find((each) => once(hidden, each));
+        if (letter === undefined || single === undefined) return null;
+        const proving = answers.find((word) => word !== hidden && isWord(word, 5) && (knownCounts([word], [markGuess(word, hidden)]).get(letter) ?? 0) >= 2);
+        return proving === undefined ? null : { seed, hidden, letter, single, proving };
+      };
+      const plan = Array.from({ length: 300 }, () => freshPuzzleSeed())
+        .map(planFor)
+        .find((each) => each !== null);
+      expect(plan, "a seed whose word has a letter twice").toBeDefined();
+      const { seed, hidden, letter, single, proving } = plan!;
+      const firstCounts = knownCounts([proving], [markGuess(proving, hidden)]);
+      const proved = firstCounts.get(letter)!;
+      const provedKeys = [...firstCounts.values()].filter((count) => count >= 2).length;
+      const inWord = hidden.split(letter).length - 1;
+
+      await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+      await ready(page, "puzzle-play");
+      const key = (each: string) => page.getByTestId(`word-key-${each}`);
+      // Before any guess, nothing is known: no key carries a count.
+      await expect(key(letter)).toBeVisible();
+      await expect(page.getByTestId("key-known-count")).toHaveCount(0);
+
+      await page.keyboard.type(proving);
+      await page.keyboard.press("Enter");
+      await expect(key(letter).getByTestId("key-known-count")).toHaveText(String(proved));
+      await expect(key(letter)).toHaveAttribute("aria-label", new RegExp(`^${letter.toUpperCase()}, in the word (twice|${proved} times)$`));
+      // Only the letters that guess proved twice carry a count; every other key carries none.
+      await expect(page.getByTestId("key-known-count")).toHaveCount(provedKeys);
+
+      // Found: every copy green, and the replay's keyboard says so, step by step.
+      await page.keyboard.type(hidden);
+      await page.keyboard.press("Enter");
+      await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+      const replay = page.getByTestId("word-replay");
+      await expect(replay.getByTestId(`word-key-${letter}`).getByTestId("key-known-count")).toHaveText(String(inWord));
+      await expect(replay.getByTestId(`word-key-${letter}`)).toHaveAttribute("data-known-count", String(inWord));
+      await expect(replay.getByTestId(`word-key-${single}`)).toHaveAttribute("data-mark", "hit");
+      await expect(replay.getByTestId(`word-key-${single}`).getByTestId("key-known-count")).toHaveCount(0);
+      await page.getByTestId("word-replay-start").click();
+      await expect(replay).toHaveAttribute("data-at", "0");
+      await expect(replay.getByTestId("key-known-count")).toHaveCount(0);
+      await page.getByTestId("word-replay-forward").click();
+      await expect(replay).toHaveAttribute("data-at", "1");
+      await expect(replay.getByTestId(`word-key-${letter}`).getByTestId("key-known-count")).toHaveText(String(proved));
+
+      // And on the finished word's own page, from the history of words.
+      await page.goto(AT);
+      await page.getByTestId("facet-me").click();
+      await page.getByTestId("word-history-row").filter({ hasText: hidden.toUpperCase() }).filter({ hasText: "Found in 2/" }).first().getByTestId("word-history-word").click();
+      await expect(page.getByTestId("solve-outcome")).toHaveText("Found");
+      await expect(page.getByTestId("word-replay").getByTestId(`word-key-${letter}`).getByTestId("key-known-count")).toHaveText(String(inWord));
     });
   });
 

@@ -2,8 +2,12 @@
 
 import { cycleMark, toggleSize, type KanaMark } from "@/lib/puzzles/gomojiKana/kanaMarks";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
+import { keyLabel } from "@/lib/puzzles/keyMarks";
 
+import { KeyFace } from "./KeyFace";
 import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
+
+const NONE_COUNTED: ReadonlyMap<string, number> = new Map();
 
 /**
  * The gojūon, a column to a consonant and five kana down each, read left to
@@ -32,6 +36,7 @@ const COLUMNS: readonly (readonly string[])[] = [
  */
 export function KanaKeyboard({
   known,
+  counted = NONE_COUNTED,
   typed,
   last = null,
   style,
@@ -45,6 +50,8 @@ export function KanaKeyboard({
 }: {
   /** The best each base kana has been marked, by `kanaBase`. */
   known: ReadonlyMap<string, KanaMark>;
+  /** How many of each base kana the guesses prove the word holds (`knownCounts` by `kanaBase`): a count on the kana from two. */
+  counted?: ReadonlyMap<string, number>;
   /** How often each kana is in the row being typed, by base (`typedCounts`): its key is ringed, and counted from two; ぱ rings は. */
   typed: ReadonlyMap<string, number>;
   /** The kana 小 and ゛゜ would change — the chosen one, or the one just typed — or null when there is none. */
@@ -82,6 +89,7 @@ export function KanaKeyboard({
             if (kana === "") return <span key={`${at}-${row}`} aria-hidden="true" />;
             const mark = known.get(kana);
             const count = typed.get(kana) ?? 0;
+            const proven = counted.get(kana) ?? 0;
             return (
               <button
                 key={kana}
@@ -93,9 +101,10 @@ export function KanaKeyboard({
                 data-testid={`kana-key-${kana}`}
                 data-mark={mark ?? ""}
                 data-typed={count > 0 ? "true" : undefined}
-                aria-label={count > 1 ? `${kana}, ${count} in the row` : undefined}
+                data-known-count={proven >= 2 ? proven : undefined}
+                aria-label={keyLabel(kana, proven, count)}
               >
-                {kana}
+                <KeyFace letter={kana} known={proven} />
                 {count > 1 ? (
                   <span className={WORD_KEY_COUNT} aria-hidden="true" data-testid="key-count">
                     {count}

@@ -3,10 +3,13 @@
 import type { GomojiLanguage, LetterMark } from "@/lib/puzzles/gomoji/code";
 import { KEYBOARD_ROWS } from "@/lib/puzzles/gomoji/keyboardRows";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
+import { keyLabel } from "@/lib/puzzles/keyMarks";
 
+import { KeyFace } from "./KeyFace";
 import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KEY_TYPED, WORD_TILE_MARK } from "./puzzles.constants";
 
 const NONE_TYPED: ReadonlyMap<string, number> = new Map();
+const NONE_COUNTED: ReadonlyMap<string, number> = new Map();
 
 /**
  * THE KEYBOARD UNDER A GOMOJI GRID, for a phone with no keys of its own:
@@ -22,6 +25,7 @@ const NONE_TYPED: ReadonlyMap<string, number> = new Map();
  */
 export function WordKeyboard({
   known,
+  counted = NONE_COUNTED,
   typed = NONE_TYPED,
   style,
   lang = "en",
@@ -32,6 +36,8 @@ export function WordKeyboard({
   onBack,
 }: {
   known: ReadonlyMap<string, LetterMark>;
+  /** How many of each letter the guesses prove the word holds (`knownCounts`): a count on the letter from two. */
+  counted?: ReadonlyMap<string, number>;
   /** How often each letter is in the row being typed (`typedCounts`): its key is ringed, and counted from two. */
   typed?: ReadonlyMap<string, number>;
   style: WordStyle;
@@ -59,6 +65,7 @@ export function WordKeyboard({
           {[...row].map((letter) => {
             const mark = known.get(letter);
             const count = typed.get(letter) ?? 0;
+            const proven = counted.get(letter) ?? 0;
             return (
               <button
                 key={letter}
@@ -70,9 +77,10 @@ export function WordKeyboard({
                 data-testid={`word-key-${letter}`}
                 data-mark={mark ?? ""}
                 data-typed={count > 0 ? "true" : undefined}
-                aria-label={count > 1 ? `${letter}, ${count} in the row` : undefined}
+                data-known-count={proven >= 2 ? proven : undefined}
+                aria-label={keyLabel(letter, proven, count)}
               >
-                {letter}
+                <KeyFace letter={letter} known={proven} />
                 {count > 1 ? (
                   <span className={WORD_KEY_COUNT} aria-hidden="true" data-testid="key-count">
                     {count}
