@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { STAT_CHIP, STAT_LINK } from "@/components/games/games.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { RAISED_LINK } from "@/components/ui/ui.constants";
 import { historyPath } from "@/lib/gomoku/slugs";

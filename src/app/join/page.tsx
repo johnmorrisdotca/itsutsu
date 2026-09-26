@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { redirect } from "next/navigation";
 
 import { AskForInvite } from "@/components/auth/AskForInvite";

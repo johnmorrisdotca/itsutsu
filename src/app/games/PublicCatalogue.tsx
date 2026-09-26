@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 

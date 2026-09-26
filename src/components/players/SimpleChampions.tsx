@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { GameThumb } from "@/components/games/GameThumb";
 import { Paired } from "@/components/i18n/Paired";

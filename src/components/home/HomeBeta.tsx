@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_HEADING, TONE_CLASS } from "@/components/ui/ui.constants";
 import { BETA_TESTERS } from "@/lib/thanks/testers";

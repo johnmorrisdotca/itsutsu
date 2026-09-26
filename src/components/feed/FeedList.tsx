@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { FeedDay } from "@/lib/feed/feed.types";

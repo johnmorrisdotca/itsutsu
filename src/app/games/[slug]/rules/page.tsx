@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GAME_SIDE_COLUMN } from "@/components/games/games.constants";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 
 import { PlayButton } from "@/components/games/PlayButton";

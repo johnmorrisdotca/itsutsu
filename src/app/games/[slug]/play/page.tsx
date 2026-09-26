@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { currentReader } from "@/lib/auth/currentReader";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 
 import { GameViewClient } from "@/components/game/GameViewClient";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { LevelName } from "@/components/xp/LevelName";
 import { countText } from "@/lib/rating/figures";

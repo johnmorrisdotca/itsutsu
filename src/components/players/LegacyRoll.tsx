@@ -1,5 +1,5 @@
 import { Paired } from "@/components/i18n/Paired";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 import type { LegacyKind } from "@/lib/legacy/legacyPlayers.types";

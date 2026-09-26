@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { AccountMenu, type Who } from "@/components/auth/AccountMenu";
 import { currentSession } from "@/lib/auth/currentSession";

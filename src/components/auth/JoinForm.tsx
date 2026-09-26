@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useId, useState, type FormEvent } from "react";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { thousands } from "@/components/about/XpCurve";
 import { SITE_SCOPE, type IpStanding, ipStandingOf } from "@/lib/points/ipBoards";

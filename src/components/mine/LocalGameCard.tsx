@@ -1,7 +1,7 @@
 "use client";
 
 import { Paired } from "@/components/i18n/Paired";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useState } from "react";
 
 import { loadSnapshot, type GameSnapshot } from "@/components/game/gameStorage";

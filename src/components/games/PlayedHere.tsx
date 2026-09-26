@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { currentReader } from "@/lib/auth/currentReader";
 import { findMembersByNames, type NamedMember } from "@/lib/auth/members";

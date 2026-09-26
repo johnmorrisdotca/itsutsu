@@ -1,5 +1,5 @@
 import { Paired } from "@/components/i18n/Paired";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { CountryMark } from "@/components/players/CountryMark";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";

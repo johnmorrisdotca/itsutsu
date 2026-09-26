@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { PlayerName } from "@/components/players/PlayerName";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";

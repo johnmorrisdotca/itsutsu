@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import type { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";

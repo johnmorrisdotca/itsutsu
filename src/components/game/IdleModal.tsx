@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/Controls";

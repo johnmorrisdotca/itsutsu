@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";

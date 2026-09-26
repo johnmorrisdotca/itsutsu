@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { PlayButton } from "@/components/games/PlayButton";
 import { currentMemberId } from "@/lib/auth/currentSession";

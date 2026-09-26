@@ -1,5 +1,5 @@
 import { Paired } from "@/components/i18n/Paired";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";

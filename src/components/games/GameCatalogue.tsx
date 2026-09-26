@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Suspense } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";

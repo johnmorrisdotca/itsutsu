@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";

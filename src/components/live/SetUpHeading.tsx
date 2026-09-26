@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { Paired } from "@/components/i18n/Paired";
 import { PageTitle } from "@/components/layout/Headings";

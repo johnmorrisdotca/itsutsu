@@ -5,7 +5,7 @@ import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/go
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { familyPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { Game, Inside } from "./about.links";
 import type { AboutSection } from "./about.constants";
