@@ -36,14 +36,17 @@ if (FINAL === undefined) {
   process.exit(1);
 }
 const OUT = "src/lib/puzzles/gomoji/words.en.data.ts";
-const LENGTHS = [4, 5];
+const LENGTHS = [4, 5, 6];
 
 const NOT_AN_ANSWER = new Set(
   `arse arsed bitch boner boobs booby boob butt butts crap cunt damn dick dicks dildo dyke fag fags fart farts fuck
   fucks gook hell piss pissy shit slut sluts spic tits titty turd twat wank whore pussy prick horny bimbo homo negro
   kike pimp porn rape raped rapes sexy penis semen sperm anal anus coon dago gypsy honky jizz kinky nazi queer skank
   slag spunk tramp wench wop bong booze crack weed pee poop puke vomit pubic nude nudes lust lusty balls ballsy bust
-  busty strip chink lynch noose orgy lewd smut hump booty thong puss coke dope moron idiot scum`.split(/\s+/).filter(Boolean),
+  busty strip chink lynch noose orgy lewd smut hump booty thong puss coke dope moron idiot scum
+  bugger condom erotic faggot harlot heroin incest molest nipple orgasm raping rapist sexing sexism sexist sexual sodomy
+  vagina rectum rectal testis herpes fetish pantie hooter crotch nudity virgin virile carnal seduce lewder sadism sadist
+  junkie puking racism racist stupid dumber sucker cretin midget retard weirdo nitwit breast abuser`.split(/\s+/).filter(Boolean),
 );
 
 function wordsAt(sizes) {
