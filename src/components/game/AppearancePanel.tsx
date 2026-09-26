@@ -2,13 +2,13 @@
 
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { BOARD_THEMES, GRID_STYLES, STONE_SETS } from "@/components/board/Board.constants";
-import { FeltUnderBoard } from "@/components/board/FeltPatches";
+import { boardPatchLook, FeltUnderBoard } from "@/components/board/FeltPatches";
 import type { BoardTheme, GridStyle, StoneSet } from "@/components/board/board.types";
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
-/** A swatch row: pick the surface by looking at it, not by reading its name. */
+/** A swatch row: pick the surface by looking at it, not by reading its name — each a bit of that board, as the felt patches are (`boardPatchLook`). */
 function ThemeSwatches({ session, actions }: GamePanelProps) {
   return (
     <div className="flex flex-wrap gap-2" role="group" aria-label="Board">
@@ -22,10 +22,10 @@ function ThemeSwatches({ session, actions }: GamePanelProps) {
             aria-pressed={active}
             title={`${theme.label} ${theme.kanji}`}
             data-testid={`board-theme-${key}`}
-            className={`size-9 rounded-lg outline-none transition focus-visible:ring-2 focus-visible:ring-moss ${
-              active ? "ring-2 ring-ink" : "ring-1 ring-rule-strong"
+            className={`size-9 cursor-pointer rounded-md outline-none transition focus-visible:ring-2 focus-visible:ring-moss ${
+              active ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : "ring-1 ring-rule-strong"
             }`}
-            style={{ background: theme.surface }}
+            style={boardPatchLook(theme)}
           >
             <span className="sr-only">{theme.label}</span>
           </button>
@@ -48,7 +48,7 @@ function StoneSwatches({ session, actions }: GamePanelProps) {
             aria-pressed={active}
             title={`${set.label} ${set.kanji}`}
             data-testid={`stone-set-${key}`}
-            className={`flex size-9 items-center justify-center gap-0.5 rounded-lg bg-rule outline-none transition focus-visible:ring-2 focus-visible:ring-moss ${
+            className={`flex size-9 cursor-pointer items-center justify-center gap-0.5 rounded-lg bg-rule outline-none transition focus-visible:ring-2 focus-visible:ring-moss ${
               active ? "ring-2 ring-ink" : "ring-1 ring-rule-strong"
             }`}
           >

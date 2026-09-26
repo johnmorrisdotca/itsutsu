@@ -163,7 +163,7 @@ export function AccountMenu({ initial, languages, version }: { initial: Who; lan
         aria-expanded={open}
         aria-controls="account-menu-panel"
         title={data.email ?? undefined}
-        className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full py-0.5 pl-0.5 pr-2 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`}
+        className={`inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full py-0.5 pl-0.5 pr-2 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`}
         data-testid="account-menu-button"
       >
         <Face picture={data.picture} label={label} />

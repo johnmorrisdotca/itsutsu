@@ -101,7 +101,8 @@ export const PICK_TILE_NAME = "line-clamp-2 h-[2lh] w-full text-center text-[0.7
 export const PICK_CHIP =
   `${PICK_TILE} rounded-xl border transition-colors` +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
-  " disabled:cursor-not-allowed disabled:opacity-50";
+  // A pointer only while it can be pressed: `enabled:` and `disabled:` never meet, so neither decides by emit order (see `PICK_BASE`).
+  " enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
 
@@ -114,7 +115,7 @@ export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
 export const PICK_WORD_CHIP =
   "flex min-h-11 w-full flex-col items-center justify-center rounded-xl border px-1 py-1.5 text-center text-xs leading-tight transition-colors sm:w-28" +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
-  " disabled:cursor-not-allowed disabled:opacity-50";
+  " enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
 
 /**
  * The first row of the set-up screen: the families, and — through the picker's
