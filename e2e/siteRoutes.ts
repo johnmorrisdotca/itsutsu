@@ -65,6 +65,7 @@ export const ROUTES: Record<string, Route> = {
   "/inbox": { url: () => "/inbox" },
   "/join": { skip: "the doorstep a stranger without an invite sees: a centred card, no masthead and no frame" },
   "/learn": { url: () => "/learn" },
+  "/stop/[token]": { skip: "reached only through a signed link from an email; mail-stop.spec opens it with a real token and measures it at 390px" },
   "/learn/[slug]": { url: () => "/learn/five-in-a-row" },
   "/me": { url: () => "/me" },
   "/messages/[memberId]": { url: (made) => `/messages/${made.member}` },

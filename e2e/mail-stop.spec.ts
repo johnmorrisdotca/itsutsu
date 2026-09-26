@@ -83,7 +83,10 @@ test.describe("stopping email from its own link", () => {
   });
 
   test("opening the link changes nothing, and a broken one opens nothing", async ({ page }) => {
+    // On a phone, as most email is read: the page fits 390px with nothing to scroll sideways (page-width.spec skips it for this).
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/stop/${token}`);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     await expect(page.getByTestId("stop-page")).toHaveAttribute("data-kind-on", "true");
     expect(await wanted(memberId)).toEqual({ yourTurn: "on", all: true });
 
