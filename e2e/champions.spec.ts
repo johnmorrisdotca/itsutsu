@@ -92,7 +92,7 @@ test.describe("champions", () => {
     await page.goto("/champions");
     const simple = page.getByTestId("champions-simple");
     await expect(simple).toBeVisible();
-    await expect(simple.locator("thead th")).toHaveText(["Game", "Leader", "Rating", "XP"]);
+    await expect(simple.locator("thead th")).toHaveText(["Game", "Leader", "Rating", "XP", "IP"]);
     await expect(page.getByTestId("champions-family")).toHaveCount(0);
     await page.getByTestId("champions-view-full").click();
     await expect(page).toHaveURL(/\/champions\?view=full$/);

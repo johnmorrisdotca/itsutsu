@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import type { GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
 import type { RatingPool } from "@/lib/rating/pools";
@@ -59,9 +60,20 @@ export type RecordColumns = {
    * table that otherwise reads exactly like the members list.
    */
   xp?: boolean;
+  /**
+   * IP, directly after XP. John, 2026-09-26: "Entire Site, tables where we show
+   * XP should probably also show IP." On wherever XP is, by the same default
+   * and for the same reason; off with `ip: false` only where XP is off, since
+   * the rows are games or sites and not people. `ipColumn.coverage.test.ts`
+   * holds the two switches together.
+   */
+  ip?: boolean;
   /** The heading over the actions column; absent means there are no actions. */
   actions?: string;
 };
+
+/** One row's IP, as the IP column draws it: see `RecordTableRow.ip`. */
+export type IpShown = { ip: number; memberId: string; game: RuleVariant | null };
 
 /** A row's lesser actions, behind "⋯": whose row it is, and where they stand with the reader. */
 export type RowMoreProps = {
@@ -148,6 +160,14 @@ export type RecordTableRow = {
    * say it on the row rather than trust the default.
    */
   xpBlankBecause?: string;
+  /**
+   * What this member has WON, for the IP column: the total, whose it is, and
+   * the one game it was counted over, or null for the whole site. A game's
+   * figure leads to exactly the games that paid it (`IpFigure`); the site's
+   * adds games and puzzles together, which no one page lists, so it is plain.
+   * Null is a name with no member behind it, as for XP; nought is a number.
+   */
+  ip?: IpShown | null;
   /**
    * `data-*` attributes on the row, for identifying it rather than drawing it.
    *

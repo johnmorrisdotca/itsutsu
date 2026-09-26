@@ -5,6 +5,7 @@ import { BOT_ALL_TIERS, BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { lastPlayedByMember } from "@/lib/history/lastPlayed";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
+import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { RATING_POOLS } from "@/lib/rating/pools";
@@ -53,7 +54,7 @@ export async function AdminBots() {
     (a, b) => order.indexOf(a.botTier ?? "") - order.indexOf(b.botTier ?? ""),
   );
   const ids = shown.map((entry) => entry.id);
-  const [tallies, lastPlayed] = await Promise.all([
+  const [tallies, lastPlayed, ip] = await Promise.all([
     /*
      * Every finished game each has played, rated or not, in one query for
      * however many rows are on the tab — the same read the players page's
@@ -64,6 +65,8 @@ export async function AdminBots() {
      */
     fetchPlayedTallies(ids),
     lastPlayedByMember(ids),
+    // What each has won, for the IP column after XP, in the same one pass.
+    ipTotalsOf(ids, LISTED_ALREADY),
   ]);
 
   const rows: RecordTableRow[] = shown.map((entry) => {
@@ -157,6 +160,7 @@ export async function AdminBots() {
        */
       level: levelShown(entry),
       xp: xpShown(entry),
+      ip: { ip: ip.get(entry.id) ?? 0, memberId: entry.id, game: null },
     };
   });
 

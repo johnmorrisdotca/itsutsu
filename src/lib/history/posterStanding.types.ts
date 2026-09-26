@@ -20,6 +20,8 @@ export type PosterStanding = {
   level: number | null;
   /** Their XP total as `xpShown` answers it; null for a poster with no member row. */
   xp: number | null;
+  /** What they have won across the site, for the IP column after XP; null for a poster with no member row. */
+  ip: number | null;
   /** Their country, for the flag and its name; null where none is known. */
   country: string | null;
 };

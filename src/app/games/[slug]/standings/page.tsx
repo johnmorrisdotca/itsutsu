@@ -13,6 +13,7 @@ import { gamePath, historyPath, playPath, puzzleFor, rulesPath, standingsPath, v
 import { PuzzleStandingsPage } from "@/components/puzzles/PuzzleStandingsPage";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
+import { LISTED_ALREADY, ipTotalsOf, scopeOfGame } from "@/lib/points/ipBoards";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { currentReader } from "@/lib/auth/currentReader";
 import { findMembersByNames, type NamedMember } from "@/lib/auth/members";
@@ -71,6 +72,12 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
    */
   const reader = await currentReader();
   const named = [...standings, ...againstComputers].map((one) => one.name);
+  // What each of them has won at this game, for the IP column: one query over both ladders.
+  const ipRead = ipTotalsOf(
+    [...standings, ...againstComputers].flatMap((one) => (one.memberId === null ? [] : [one.memberId])),
+    LISTED_ALREADY,
+    scopeOfGame(variant),
+  );
   const [members, buddies, ignored] =
     reader.memberId === null
       ? [new Map<string, NamedMember>(), new Set<string>(), new Set<string>()]
@@ -79,7 +86,10 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
           buddyMemberIds(reader.memberId),
           ignoredMemberIds(reader.memberId),
         ]);
-  const closed = await closedToReader(reader.memberId, [...members.values()].flatMap((member) => (member.id ? [member.id] : [])));
+  const [closed, ip] = await Promise.all([
+    closedToReader(reader.memberId, [...members.values()].flatMap((member) => (member.id ? [member.id] : []))),
+    ipRead,
+  ]);
   const actionsFor = (standing: VariantStanding) => {
     const member = members.get(playerKey(standing.name));
     const id = member?.id;
@@ -128,7 +138,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
           yet... and that's a change to have a link saying - be the first to
           play!" See Show The Data, Not The Way To It in AGENTS.md.
         */}
-        <StandingsTable standings={standings} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel="Ask" />
+        <StandingsTable standings={standings} game={variant} ip={ip} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel="Ask" />
         {standings.length === 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="standings-empty">
             <span className="text-muted">
@@ -176,6 +186,8 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
             </p>
           <StandingsTable
             standings={againstComputers}
+            game={variant}
+            ip={ip}
             pool="computer"
             testId="computer-standings-table"
             actions={reader.hasAccount ? actionsFor : undefined}
