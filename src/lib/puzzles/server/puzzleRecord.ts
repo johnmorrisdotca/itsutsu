@@ -2,7 +2,7 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 
-import { monthBounds } from "@/lib/history/recordMonth";
+import { monthBounds, weekBounds } from "@/lib/history/recordMonth";
 import { prisma } from "@/lib/prisma";
 
 import { guessesTaken, type GuessesTaken } from "../gomoji/guessesTaken";
@@ -49,14 +49,21 @@ export type PuzzleRecord = {
   tally: RecordTally | null;
 };
 
+/** The spans a record is narrowed to, a month's and a week's, each [start, end) in UTC; both apply when both are asked. */
+function periodsOf(asked: Pick<PuzzleRecordAsked, "month" | "week">): { start: Date; end: Date }[] {
+  return [asked.month === null ? null : monthBounds(asked.month), asked.week === null ? null : weekBounds(asked.week)].filter(
+    (span): span is { start: Date; end: Date } => span !== null,
+  );
+}
+
 function whereOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Prisma.PuzzleSolveWhereInput {
-  const month = asked.month === null ? null : monthBounds(asked.month);
+  const spans = periodsOf(asked);
   return {
     kind,
     ...(asked.member !== null ? { memberId: asked.member } : {}),
     ...(asked.size !== null ? { size: asked.size } : {}),
     ...(asked.level !== null ? { level: asked.level } : {}),
-    ...(month !== null ? { finishedAt: { gte: month.start, lt: month.end } } : {}),
+    ...(spans.length > 0 ? { AND: spans.map((span) => ({ finishedAt: { gte: span.start, lt: span.end } })) } : {}),
     // Fastest first is the fastest board's order, and a word not found has no time to rank.
     ...(asked.sort === PUZZLE_RECORD_SORTS.fastest ? { solved: true } : {}),
   };
@@ -81,7 +88,7 @@ export async function puzzleRecordOf(kind: PuzzleKind, asked: PuzzleRecordAsked)
       },
     }),
     prisma.puzzleSolve.count({ where }),
-    asked.member === null ? null : tallyOf(kind, asked.member, asked.month),
+    asked.member === null ? null : tallyOf(kind, asked.member, asked),
   ]);
   const solves = rows.map(({ givens, answer, ...row }) => ({
     ...row,
@@ -97,9 +104,15 @@ export async function puzzleRecordOf(kind: PuzzleKind, asked: PuzzleRecordAsked)
  * the earliest of equal bests. So the figure a board links from is the figure
  * the record prints, and the reader can see which rows it is the sum of.
  */
-export async function tallyOf(kind: PuzzleKind, memberId: string, month: string | null): Promise<RecordTally> {
-  const bounds = month === null ? null : monthBounds(month);
-  const when = bounds === null ? Prisma.empty : Prisma.sql` AND "finishedAt" >= ${bounds.start} AND "finishedAt" < ${bounds.end}`;
+export async function tallyOf(
+  kind: PuzzleKind,
+  memberId: string,
+  period: Pick<PuzzleRecordAsked, "month" | "week">,
+): Promise<RecordTally> {
+  const when = periodsOf(period).reduce(
+    (sql, span) => Prisma.sql`${sql} AND "finishedAt" >= ${span.start} AND "finishedAt" < ${span.end}`,
+    Prisma.empty,
+  );
   const rows = await prisma.$queryRaw<{ id: string; points: number }[]>`
     SELECT DISTINCT ON ("givens") "id", "points"
     FROM "PuzzleSolve"

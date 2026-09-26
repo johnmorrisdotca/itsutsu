@@ -10,7 +10,8 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
  *
  * A points figure on a board is a sum somebody already ran: each grid once, at
  * the member's best solve of it. So it leads to the puzzle's record narrowed to
- * that member, and to the month when the board was this month's — where the
+ * that member, and to the month or the week when the board was this month's
+ * or this week's — where the
  * same sum is printed again with the rows that make it marked. The rule is
  * `GameCount`'s: any number that refers to games (here, solves) leads to
  * exactly those.
@@ -20,6 +21,7 @@ export function SolvePoints({
   memberId,
   points,
   month = null,
+  week = null,
   testId = "solve-points-link",
   className = "",
 }: {
@@ -28,12 +30,14 @@ export function SolvePoints({
   points: number;
   /** "2026-09" when the figure is one month's. */
   month?: string | null;
+  /** "2026-09-21", the Monday, when the figure is one week's. */
+  week?: string | null;
   testId?: string;
   className?: string;
 }) {
   return (
     <Link
-      href={puzzleRecordHref(kind, { member: memberId, month })}
+      href={puzzleRecordHref(kind, { member: memberId, month, week })}
       className={`font-mono tabular-nums underline-offset-2 hover:underline ${className}`}
       title="The solves these points were made of"
       data-testid={testId}

@@ -20,6 +20,12 @@ describe("appliedNarrowings", () => {
     expect(narrowings).toEqual([]);
   });
 
+  it("says a week in words, and claims no week that is not a Monday", () => {
+    expect(appliedNarrowings({ ...NONE, week: "2026-09-21" })).toEqual([{ key: "week", label: "Finished in the week of 21 September 2026" }]);
+    // A Tuesday narrows nothing in the query, so the chip must not claim it did.
+    expect(appliedNarrowings({ ...NONE, week: "2026-09-22" })).toEqual([]);
+  });
+
   it("does the same for lost, the outcome's other player-only half", () => {
     expect(appliedNarrowings({ ...NONE, outcome: "lost" })).toEqual([]);
   });

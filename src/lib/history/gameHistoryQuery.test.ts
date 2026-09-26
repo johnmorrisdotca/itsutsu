@@ -135,6 +135,16 @@ describe("buildGameWhere", () => {
     expect(buildGameWhere(parse("")!)).toEqual({ AND: BASE });
   });
 
+  it("narrows to one week's games by when they finished, Monday to Monday in UTC, as the weekly boards count", () => {
+    const where = buildGameWhere(parse("?week=2026-09-21")!);
+    expect(where).toEqual({
+      AND: [...BASE, { lastMoveAt: { gte: new Date("2026-09-21T00:00:00Z"), lt: new Date("2026-09-28T00:00:00Z") } }],
+    });
+    // A date that is not a Monday names no week, and narrows nothing rather than refusing the page.
+    expect(parse("?week=2026-09-22").week).toBeNull();
+    expect(buildGameWhere(parse("?week=2026-09-22")!)).toEqual({ AND: BASE });
+  });
+
   it("searches both seats case-insensitively", () => {
     const where = buildGameWhere(parse("?search=aki")!);
     expect(where.AND).toContainEqual({
