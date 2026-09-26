@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.392.1 — 2026-09-26
+- A Tsunagi solve's page shows its board: the marbles as dealt while its answer is kept back, and its lines once you have solved that level.
+
 ## 0.392.0 — 2026-09-26
 - Tsunagi at 10×10 and 11×11, with buttons to zoom, move and fit the board, and the wheel zooming it.
 
