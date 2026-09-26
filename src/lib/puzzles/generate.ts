@@ -14,6 +14,7 @@ import { generateKumimoji } from "./kumimoji/generate";
 import { loadTileWords } from "./kumimoji/tileWords";
 import { loadDailyPools } from "./dailyWords/dailyPools";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import { POP_OWN_GUESS_LENGTHS, loadPopGuesses } from "./gomoji/popWords";
 
 /**
  * A puzzle of any kind, from a seed: the one door the solve page, the
@@ -45,6 +46,8 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateGomoji(size, level, seed, "fr", "gomojiMot");
     case "gomojiWort":
       return generateGomoji(size, level, seed, "de", "gomojiWort");
+    case "gomojiPop":
+      return generateGomoji(size, level, seed, "pop", "gomojiPop");
     case "gomojiKana":
       // Its list is loaded by length first (`loadKanaWords`); see its generator.
       return generateGomojiKana(size, level, seed);
@@ -72,8 +75,10 @@ export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<voi
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
   if (kind === "kumimoji") await loadTileWords();
+  // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).
+  if (kind === "gomojiPop") await loadPopGuesses(size);
 }
 
 export async function prepareEveryPuzzle(): Promise<void> {
-  await Promise.all([...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords()]);
+  await Promise.all([...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords(), ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size))]);
 }

@@ -35,6 +35,7 @@ import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { PopClue } from "./PopClue";
 
 /**
  * Solving Gomoji: type a word, press Enter, read its colours, and find the
@@ -203,6 +204,8 @@ export function GomojiSolve({
   return (
     <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
+      {/* Pop Gomoji's clue: each hidden word's category, from the first guess (`PopClue`). */}
+      {kind === "gomojiPop" ? <PopClue words={words.words} /> : null}
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null && twins ? (
         <SolvePaused pausing={pausing}>
@@ -224,7 +227,7 @@ export function GomojiSolve({
         </SolvePaused>
       ) : (
         <WordReplay
-          kind={kind === "gomojiKana" ? "gomojiKana" : kind === "gomojiMot" ? "gomojiMot" : kind === "gomojiWort" ? "gomojiWort" : "gomoji"}
+          kind={kind === "gomojiKana" ? "gomojiKana" : kind === "gomojiMot" ? "gomojiMot" : kind === "gomojiWort" ? "gomojiWort" : kind === "gomojiPop" ? "gomojiPop" : "gomoji"}
           size={size}
           givens={puzzle.givens}
           guesses={guesses}
@@ -285,10 +288,10 @@ export function GomojiSolve({
       )}
       {/*
         The licences of the dictionaries and of FrequencyWords ask for this on every page that shows their words: French and
-        German only, English's SCOWL asks for no in-page credit. The dictionary decides what is a word, Wiktionary which may
-        be hidden, and the count how common.
+        German only, English's SCOWL asks for no in-page credit, and nor does Pop Gomoji, whose guesses are SCOWL's and whose
+        answers are its own list. The dictionary decides what is a word, Wiktionary which may be hidden, and the count how common.
       */}
-      {lang === "en" ? null : (
+      {lang === "en" || lang === "pop" ? null : (
         <p className="text-xs text-muted" data-testid="word-credit">
           Words from{" "}
           {lang === "fr" ? (

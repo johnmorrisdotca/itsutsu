@@ -39,6 +39,7 @@ export const PUZZLE_KINDS = {
   gomojiKana: "gomojiKana",
   gomojiMot: "gomojiMot",
   gomojiWort: "gomojiWort",
+  gomojiPop: "gomojiPop",
   tsunagi: "tsunagi",
   kumimoji: "kumimoji",
   koushi: "koushi",
@@ -58,6 +59,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.gomojiKana,
   PUZZLE_KINDS.gomojiMot,
   PUZZLE_KINDS.gomojiWort,
+  PUZZLE_KINDS.gomojiPop,
   PUZZLE_KINDS.tsunagi,
   PUZZLE_KINDS.kumimoji,
   PUZZLE_KINDS.koushi,
@@ -162,6 +164,13 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   gomojiMot: { sizes: [4, 5, 6], offered: [4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
   gomojiWort: { sizes: [4, 5, 6], offered: [4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji" },
+  /*
+   * Pop Gomoji: three to seven letters, the answers a person's pop-culture list
+   * with each word's category shown as its clue (`popWords.ts`). Five lengths
+   * and room for four tiles, so they are a shelf (`shelves`): 3 to 6, then 4
+   * to 7, on its own set-up page.
+   */
+  gomojiPop: { sizes: [3, 4, 5, 6, 7], offered: [3, 4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji", shelves: true },
   /*
    * Six sizes of a hundred fixed levels each, and room for four size tiles:
    * they show four at a time, 4 to 7 or 6 to 9 (`TsunagiSizes`). A level's
@@ -299,6 +308,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     5: { label: "Five letters", kanji: "五文字" },
     6: { label: "Six letters", kanji: "六文字" },
   },
+  gomojiPop: {
+    3: { label: "Three letters", kanji: "三文字" },
+    4: { label: "Four letters", kanji: "四文字" },
+    5: { label: "Five letters", kanji: "五文字" },
+    6: { label: "Six letters", kanji: "六文字" },
+    7: { label: "Seven letters", kanji: "七文字" },
+  },
   tsunagi: {
     4: { label: "First", kanji: "初" },
     5: { label: "Quick", kanji: "速" },
@@ -330,6 +346,11 @@ const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, string>>>> = {
   gomoji: WORD_LEVEL_BLURBS,
   gomojiKana: WORD_LEVEL_BLURBS,
+  gomojiPop: {
+    easy: "A word from the pop list with its category shown, and every row of the board to find it in.",
+    medium: "The same list and clue, and one guess more than the classic game.",
+    hard: "The same list and clue, and the classic count of guesses.",
+  },
   tsunagi: {
     easy: "The first third of a size's hundred levels: every line can be found by looking.",
     medium: "The middle third: longer lines, and somewhere one has to be tried.",
@@ -566,7 +587,25 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "Five letters and six guesses, four letters and five, or six letters and six. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
+  },  gomojiPop: {
+    label: "Pop Gomoji",
+    kanji: "五文字・流行",
+    tagline: "Find the hidden pop-culture word from its category. Each guess shows which of its letters are in the word, and which are in the right place.",
+    inspiredBy: "Wordle",
+    origin:
+      "Gomoji with a quiz inside it: the hunt for a hidden word Josh Wardle's Wordle (2021) made a daily habit, over a list of the games, films, myths, music, sport and Japanese culture people know by name, each word shown with the category it comes from.",
+    rules: [
+      "A word is hidden, three to seven letters long, and its category is shown above the board: a Pokemon, a Greek deity, a musical instrument. Type a word of that length and press Enter to guess it.",
+      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
+      "Any English word of the length may be guessed, and any word of the pop list, names included: MARIO and ZELDA are words here.",
+      "Hard gives the classic count of guesses, medium one more, and easy every row of the board. A word the list does not know is refused and costs nothing.",
+      "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
+      HEAD_START_RULE,
+    ],
+    board:
+      "Three to six letters on the set-up screen's first shelf, and four to seven on its second. The answers are one list kept by hand, each word checked to belong to its category and to be fit for every member of the site; names are written as plain words, with no marks or logos. Guesses come from that list and from SCOWL, the spelling lists by Kevin Atkinson.",
   },
+
   tsunagi: {
     label: "Tsunagi",
     kanji: "繋ぎ",

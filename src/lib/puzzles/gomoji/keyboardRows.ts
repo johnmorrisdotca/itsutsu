@@ -12,4 +12,6 @@ export const KEYBOARD_ROWS: Record<GomojiLanguage, readonly string[]> = {
   en: ["qwertyuiop", "asdfghjkl", "zxcvbnm"],
   fr: ["azertyuiop", "qsdfghjklm", "wxcvbn"],
   de: ["qwertzuiopü", "asdfghjklöä", "yxcvbnm"],
+  // Pop Gomoji is English's letters, on English's keyboard.
+  pop: ["qwertyuiop", "asdfghjkl", "zxcvbnm"],
 };

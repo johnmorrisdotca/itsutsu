@@ -1,4 +1,4 @@
-import { PUZZLE_SPECS } from "../puzzles.constants";
+import { PUZZLE_SPECS, sizesOffered } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { wordOfDay } from "./dailyCycle";
 import { dayIndexOf, dayOfDailyWordSeed } from "./dailyDay";
@@ -7,6 +7,7 @@ import type { DailyLanguage, DailyPool, DayWord, PackedDailyPool } from "./daily
 import { DAILY_POOL_DE } from "./pool.de.data";
 import { DAILY_POOL_EN } from "./pool.en.data";
 import { DAILY_POOL_FR } from "./pool.fr.data";
+import { DAILY_POOL_POP } from "./pool.pop.data";
 
 /**
  * THE DAILY WORDS OF EACH GOMOJI: which pool a kind draws from, which lengths
@@ -23,6 +24,7 @@ export function dailyLanguageOf(kind: PuzzleKind): DailyLanguage | null {
   if (kind === "gomoji") return "en";
   if (kind === "gomojiMot") return "fr";
   if (kind === "gomojiWort") return "de";
+  if (kind === "gomojiPop") return "pop";
   if (kind === "gomojiKana") return "ja";
   return null;
 }
@@ -30,7 +32,7 @@ export function dailyLanguageOf(kind: PuzzleKind): DailyLanguage | null {
 const unpacked = (versions: readonly PackedDailyPool[]): DailyPool[] =>
   versions.map((version) => ({ fromCycle: version.fromCycle, words: version.words.split(/\s+/).filter(Boolean) }));
 
-const ALPHABET_POOLS: Record<"en" | "fr" | "de", Record<number, readonly PackedDailyPool[]>> = { en: DAILY_POOL_EN, fr: DAILY_POOL_FR, de: DAILY_POOL_DE };
+const ALPHABET_POOLS: Record<"en" | "fr" | "de" | "pop", Record<number, readonly PackedDailyPool[]>> = { en: DAILY_POOL_EN, fr: DAILY_POOL_FR, de: DAILY_POOL_DE, pop: DAILY_POOL_POP };
 
 const READ = new Map<string, DailyPool[]>();
 
@@ -83,14 +85,14 @@ function poolsIn(lang: DailyLanguage, size: number): readonly DailyPool[] | null
 
 /**
  * The lengths a kind has a word of the day at: every length its set-up offers
- * (`PUZZLE_SPECS`), in order, that has a pool. A new length appears here the
+ * (`sizesOffered`, both shelves of Pop Gomoji's), in order, that has a pool. A new length appears here the
  * day its pool is written; `dailyPools.test.ts` fails the build until it is.
  */
 export function dailyLengths(kind: PuzzleKind): number[] {
   const lang = dailyLanguageOf(kind);
   if (lang === null) return [];
   const has = (size: number) => (lang === "ja" ? KANA_POOL_SIZES.includes(size) : ALPHABET_POOLS[lang][size] !== undefined);
-  return [...PUZZLE_SPECS[kind].offered].sort((a, b) => a - b).filter(has);
+  return [...sizesOffered(kind)].sort((a, b) => a - b).filter(has);
 }
 
 /** A kind's word for a day at a length, with its place in the cycle, or null for a day or length that has none. */

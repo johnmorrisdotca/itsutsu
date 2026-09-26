@@ -46,7 +46,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const kept = reader.memberId !== null && asked.seed !== null ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed) : null;
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis, and for Kumimoji's table, which is drawn on the same choice of board. */
-  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
+  const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
   const tsunagi = kind === "tsunagi";
   const { wordStyle, tsunagiMarks, tsunagiFill } = words || tsunagi || kind === "kumimoji" ? await preferencesFor() : { wordStyle: undefined, tsunagiMarks: undefined, tsunagiFill: undefined };
   /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`), and their stone set for a

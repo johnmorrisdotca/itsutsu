@@ -13,8 +13,8 @@ export type PackedDailyPool = { fromCycle: number; source: string; words: string
 /** A day's word, and where in its cycle it falls. */
 export type DayWord = { word: string; cycle: number; place: number; cycleLength: number };
 
-/** The languages the daily words are kept in: the three alphabet Gomojis and the kana one. */
-export type DailyLanguage = "en" | "fr" | "de" | "ja";
+/** The languages the daily words are kept in: the three alphabet Gomojis, Pop Gomoji's list, and the kana one. */
+export type DailyLanguage = "en" | "fr" | "de" | "pop" | "ja";
 
 /** How many guesses a word took, out of how many it had. */
 type Guesses = GuessesTaken;

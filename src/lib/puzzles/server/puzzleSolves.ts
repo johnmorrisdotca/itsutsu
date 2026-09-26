@@ -160,7 +160,7 @@ export const OWN_WORDS_SHOWN = 50;
  */
 export async function ownWordsOf(
   memberId: string,
-  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" = "gomoji",
+  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" | "gomojiPop" = "gomoji",
 ): Promise<{ words: OwnWord[]; total: number }> {
   const [words, total] = await Promise.all([
     prisma.puzzleSolve.findMany({

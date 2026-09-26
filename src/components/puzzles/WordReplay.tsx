@@ -48,7 +48,7 @@ export function WordReplay({
   appearance = DEFAULT_APPEARANCE,
   position,
 }: {
-  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
+  kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" | "gomojiPop";
   size: number;
   givens: string;
   guesses: readonly string[];

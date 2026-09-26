@@ -23,6 +23,7 @@ import { NumberSolve } from "./NumberSolve";
 import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
+import { POP_OWN_GUESS_LENGTHS } from "@/lib/puzzles/gomoji/popWords";
 
 /**
  * Solving a puzzle: the whole of it, in the browser.
@@ -99,8 +100,9 @@ export function PuzzlePlay({
     router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins })}`);
   }, [seed, kind, size, level, checks, hints, strict, headStart, twins, router]);
 
-  /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji) waits for them; every other kind is ready at once. */
-  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" ? null : `${kind}:${size}`);
+  /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji, Pop Gomoji at three or seven letters) waits for them; every other kind is ready at once. */
+  const waits = kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" || (kind === "gomojiPop" && POP_OWN_GUESS_LENGTHS.includes(size));
+  const [loaded, setLoaded] = useState<string | null>(waits ? null : `${kind}:${size}`);
   useEffect(() => {
     let live = true;
     void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
@@ -148,6 +150,7 @@ export function PuzzlePlay({
     case "gomoji":
     case "gomojiMot":
     case "gomojiWort":
+    case "gomojiPop":
       return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "tsunagi":
       return (

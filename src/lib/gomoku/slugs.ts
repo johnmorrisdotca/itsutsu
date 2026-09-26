@@ -83,6 +83,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   gomojiKana: "gomoji-kana",
   gomojiMot: "gomoji-mot",
   gomojiWort: "gomoji-wort",
+  gomojiPop: "pop-gomoji",
   tsunagi: "tsunagi",
   kumimoji: "kumimoji",
   koushi: "koushi",

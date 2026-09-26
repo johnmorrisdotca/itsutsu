@@ -83,6 +83,7 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "gomoji") return decodeGomojiProgress(code, size) !== null;
   if (kind === "gomojiMot") return decodeGomojiProgress(code, size, "fr") !== null;
   if (kind === "gomojiWort") return decodeGomojiProgress(code, size, "de") !== null;
+  if (kind === "gomojiPop") return decodeGomojiProgress(code, size, "pop") !== null;
   if (kind === "gomojiKana") return decodeKanaProgress(code, size) !== null;
   // Tsunagi keeps its lines, one character a cell (`encodeLines`); read against its layout when opened.
   if (kind === "tsunagi") return linesCodeFits(code, size);
@@ -102,7 +103,7 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
  * Any other kind has no count to be past.
  */
 export function runGuessesFit(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, code: string): boolean {
-  if (kind !== "gomoji" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiKana") return true;
+  if (kind !== "gomoji" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop" && kind !== "gomojiKana") return true;
   const guesses = kind === "gomojiKana" ? decodeKanaProgress(code, size) : decodeGomojiProgress(code, size, languageOf(kind));
   if (guesses === null) return false;
   const grid = kind === "gomojiKana" ? "gomojiKana" : "gomoji";
