@@ -36,7 +36,7 @@ export type Route = { url: (made: MadeRows) => string; also?: readonly string[] 
 export const ROUTES: Record<string, Route> = {
   "/": { url: () => "/" },
   "/about": { url: () => "/about", also: ["/about?view=games"] },
-  "/admin": { url: () => "/admin", also: ["/admin?view=work"] },
+  "/admin": { url: () => "/admin", also: ["/admin?view=tickets"] },
   "/admin/player-journeys": { url: () => "/admin/player-journeys" },
   "/backlog": { url: () => "/backlog" },
   "/champions": { url: () => "/champions" },

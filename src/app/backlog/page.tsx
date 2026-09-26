@@ -67,7 +67,7 @@ export default async function BacklogPage({ searchParams }: PageProps<"/backlog"
             </>
           )}
           A request written here outlives the conversation that raised it. The same board is a tab of{" "}
-          <Link href="/admin?view=work" className="underline underline-offset-4">
+          <Link href="/admin?view=tickets" className="underline underline-offset-4">
             Admin
           </Link>
           . What has already shipped has{" "}

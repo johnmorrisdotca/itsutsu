@@ -44,7 +44,7 @@ test.describe("the operator log", () => {
     await page.getByTestId("ban-member-yes").click();
     await expect(row.getByTestId("ban-member")).toHaveText(/Open it again/);
 
-    await openTab(page, "The log");
+    await openTab(page, "Log");
     await expect(page).toHaveURL(/\?view=log$/);
     await expect(page.getByTestId("operator-log-table")).toBeVisible();
     await expect(rows("shut"), "the shut was not kept").toHaveCount(1);
@@ -53,13 +53,13 @@ test.describe("the operator log", () => {
     await expect(rows("shut")).toContainText(member.name);
 
     // Open it again, from the Members tab.
-    await openTab(page, "The members");
+    await openTab(page, "Members");
     await ready(page, "admin-members");
     const again = page.getByTestId("admin-member").filter({ hasText: member.name });
     await again.getByTestId("ban-member").click();
     await expect(again.getByTestId("ban-member")).toHaveText(/Shut the account/);
 
-    await openTab(page, "The log");
+    await openTab(page, "Log");
     await expect(rows("restore"), "the opening was not kept").toHaveCount(1);
     await expect(rows("shut")).toHaveCount(1);
 

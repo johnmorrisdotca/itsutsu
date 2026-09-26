@@ -232,7 +232,7 @@ test.describe("a hand-written label names its control too", () => {
      * and `name: undefined` matches any box at all. Reading the tab saves
      * nothing.
      */
-    await page.goto("/admin?view=site");
+    await page.goto("/admin?view=settings");
     await ready(page, "admin-site");
 
     const label = "What the door says";

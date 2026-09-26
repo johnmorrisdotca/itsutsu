@@ -57,7 +57,7 @@ export function statusFromAddress(value: string | string[] | undefined): StatusF
 
 /**
  * The address of a filter, on whichever page the board is drawn — `/backlog`, or
- * Admin's work tab, whose own `view=work` is kept. The default view carries no
+ * Admin's Tickets tab, whose own `view=tickets` is kept. The default view carries no
  * `show` at all, so the way back is the plain address.
  */
 export function hrefFor(base: string, status: StatusFilter): string {

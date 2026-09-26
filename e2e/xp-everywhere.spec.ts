@@ -169,7 +169,7 @@ test.describe("XP on every stats table, and on a person's page", () => {
 
   test("the operator's Bots tab prints a program's total and rung, like any table", async ({ page }) => {
     await page.goto("/admin");
-    await openTab(page, "The bots");
+    await openTab(page, "Bots");
     const bots = page.getByTestId("admin-bots-table");
     const row = rowFor(bots, program);
     await expect(row, "the seeded program is not on the Bots tab").toHaveCount(1);

@@ -191,25 +191,25 @@ test.describe("a page of many sections is tabs", () => {
      */
     await page.goto("/admin");
     // Named rather than counted: the door, the site, the members, the bots, the work, the reports, and the operator log.
-    await expectTabs(page, ["door", "site", "members", "bots", "work", "reports", "log"]);
+    await expectTabs(page, ["access", "settings", "members", "bots", "tickets", "reports", "log"]);
     await expect(page.getByTestId("admin-door")).toBeVisible();
     // One at a time: the board is not also on screen behind the invites.
     await expect(page.getByTestId("admin-backlog")).toHaveCount(0);
     await expect(page.getByTestId("admin-people")).toHaveCount(0);
     await expect(page.getByTestId("admin-machines")).toHaveCount(0);
 
-    await page.getByTestId("tab").filter({ hasText: "The work" }).click();
-    await expect(page).toHaveURL(/\?view=work$/);
+    await page.getByTestId("tab").filter({ hasText: "Tickets" }).click();
+    await expect(page).toHaveURL(/\?view=tickets$/);
     await expect(page.getByTestId("admin-backlog")).toBeVisible();
     await expect(page.getByTestId("admin-door")).toHaveCount(0);
 
     await page.goto("/admin?view=members");
     await expect(page.getByTestId("admin-people")).toBeVisible();
-    await expect(page.getByTestId("tab").filter({ hasText: "The members" })).toHaveAttribute("data-open", "true");
+    await expect(page.getByTestId("tab").filter({ hasText: "Members" })).toHaveAttribute("data-open", "true");
     // And the programs are not in it: they are one tab along.
     await expect(page.getByTestId("admin-machines")).toHaveCount(0);
 
-    await page.getByTestId("tab").filter({ hasText: "The bots" }).click();
+    await page.getByTestId("tab").filter({ hasText: "Bots" }).click();
     await expect(page).toHaveURL(/\?view=bots$/);
     await expect(page.getByTestId("admin-bots-table")).toBeVisible();
     await expect(page.getByTestId("admin-people")).toHaveCount(0);

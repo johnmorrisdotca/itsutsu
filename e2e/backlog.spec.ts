@@ -206,7 +206,7 @@ test.describe("backlog", () => {
   });
 
   test("the operator reaches the board from the Admin page, with both lists on the card", async ({ page }) => {
-    await page.goto("/admin?view=work");
+    await page.goto("/admin?view=tickets");
     const card = page.getByTestId("admin-board");
     await expect(card).toBeVisible();
     await expect(card).toContainText("still wanted");
@@ -216,21 +216,21 @@ test.describe("backlog", () => {
   });
 
   test("Admin's board reads dropped rows only when asked, keeps its own tab in the address, and comes back", async ({ page }) => {
-    await page.goto("/admin?view=work");
+    await page.goto("/admin?view=tickets");
     await ready(page, "backlog-filters");
     const card = page.getByTestId("admin-board");
     await expect(card).toContainText("still wanted");
     await expect(page.getByTestId("filter-dropped")).not.toContainText(/\d/);
 
     await page.getByTestId("filter-dropped").click();
-    await expect(page).toHaveURL(/\/admin\?view=work&show=dropped$/);
+    await expect(page).toHaveURL(/\/admin\?view=tickets&show=dropped$/);
     await expect(page.getByTestId("filter-dropped")).toHaveAttribute("aria-pressed", "true");
     // The card says what this view read, and no longer what it did not.
     await expect(card).toContainText("dropped");
     await expect(card).not.toContainText("still wanted");
 
     await page.getByTestId("filter-unfinished").click();
-    await expect(page).toHaveURL(/\/admin\?view=work$/);
+    await expect(page).toHaveURL(/\/admin\?view=tickets$/);
     await expect(page.getByTestId("filter-unfinished")).toHaveAttribute("aria-pressed", "true");
     await expect(card).toContainText("still wanted");
   });

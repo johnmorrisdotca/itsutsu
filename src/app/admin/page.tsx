@@ -43,8 +43,15 @@ export const dynamic = "force-dynamic";
  * split up Members from Bots." It sits beside the members rather than after
  * the work, because it answers the same question one category along.
  */
+/*
+ * Short, plain names (John, 2026-09-26: "more concise or tech friendly tab
+ * titles. Some are weird.") — and the addresses say the same ("You should make
+ * the URLs match though"): ?view=access, settings, tickets. No redirect from
+ * the old ones, as this site keeps none. Access is the codes and tokens,
+ * Tickets the board and the releases; not "Board", which here means a game's.
+ */
 const TABS: Tab[] = [
-  { key: "door", label: "The door", kanji: "門" },
+  { key: "access", label: "Access", kanji: "門" },
   /*
    * Beside the door rather than first, and not first on purpose: `tabHref`
    * makes the first tab the bare /admin address, so promoting this would
@@ -52,22 +59,22 @@ const TABS: Tab[] = [
    * this is the policy they operate under, which is why it sits next to them
    * rather than under "the work".
    */
-  { key: "site", label: "The site", kanji: "設定" },
-  { key: "members", label: "The members", kanji: "会員" },
-  { key: "bots", label: "The bots", kanji: "機械" },
-  { key: "work", label: "The work", kanji: "仕事" },
+  { key: "settings", label: "Settings", kanji: "設定" },
+  { key: "members", label: "Members", kanji: "会員" },
+  { key: "bots", label: "Bots", kanji: "機械" },
+  { key: "tickets", label: "Tickets", kanji: "課題" },
   /*
    * What members have reported from "Report a problem", beside the work
    * because a report is where a ticket often starts: one press files it there.
    */
-  { key: "reports", label: "The reports", kanji: "報告" },
+  { key: "reports", label: "Reports", kanji: "報告" },
   /*
    * What the operator has done to members' accounts, kept: shut, opened again,
    * four words set, a pick opened. Last, so `/admin` still lands where it did,
    * and its own tab rather than a section of Members, because it is a record
    * of acts rather than a list of people.
    */
-  { key: "log", label: "The log", kanji: "記録" },
+  { key: "log", label: "Log", kanji: "記録" },
 ];
 
 /**
@@ -83,7 +90,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const open = activeTab(TABS, asked.view);
   // The board's own view, in `?show=` beside the tab: the unfinished rows unless it asks for more (`boardScope.ts`).
   const status = statusFromAddress(asked.show);
-  const board = open === "work" ? await readBoard(scopeOf(status)) : null;
+  const board = open === "tickets" ? await readBoard(scopeOf(status)) : null;
   return (
     <Page>
       <SiteHeader />
@@ -91,7 +98,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
       <Tabs tabs={TABS} active={open} base="/admin" label="What the operator does here" />
 
-      {open === "door" ? (
+      {open === "access" ? (
         <div className="grid gap-4 md:grid-cols-2" data-testid="admin-door">
           <div className={PANEL_CLASS}>
             <AdminInvites />
@@ -102,7 +109,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </div>
       ) : null}
 
-      {open === "site" ? (
+      {open === "settings" ? (
         <div data-testid="admin-site-tab">
           <AdminSite modes={<TestModeControl />} />
         </div>
@@ -132,7 +139,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </div>
       ) : null}
 
-      {open === "work" && board !== null ? (
+      {open === "tickets" && board !== null ? (
         <>
           <div className={PANEL_CLASS}>
             <AdminBoardCard board={board} />
@@ -150,7 +157,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
               </Link>
             </SectionHeading>
             {board.ok ? (
-              <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/admin?view=work" who={who} />
+              <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/admin?view=tickets" who={who} />
             ) : (
               <BoardUnreadable problem={board.problem} />
             )}

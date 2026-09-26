@@ -99,14 +99,14 @@ test("the operator attaches a record kept under another name, and the member's p
   await expect(modal).toHaveCount(0);
 
   // The act is kept, and says what moved without the name it was kept under.
-  await openTab(page, "The log");
+  await openTab(page, "Log");
   const logged = page.locator(`[data-testid="operator-log-row"][data-subject="${MEMBER.id}"][data-action="recordClaimed"]`);
   await expect(logged, "the claim was not kept").toHaveCount(1);
   await expect(logged).toContainText("1 finished game");
   await expect(logged).not.toContainText(RECORD);
 
   // To the member's page the way the operator goes: their name on their row.
-  await openTab(page, "The members");
+  await openTab(page, "Members");
   await ready(page, "admin-members");
   await page.getByTestId("admin-member").filter({ hasText: MEMBER.name }).getByRole("link", { name: MEMBER.name }).click();
   await expect(page).toHaveURL(new RegExp(`/players/${MEMBER.id}$`));
