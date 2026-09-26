@@ -61,7 +61,7 @@ export function plannedTestMembers(seed: string): { id: string; name: string; ro
 describe.skipIf(!ASKED)("seed 1000 test members", () => {
   it(run ? "writes them" : "reports only", async () => {
     const host = new URL(process.env.DATABASE_URL ?? "postgresql://unknown").host;
-    const already = await prisma.member.count({ where: { isTest: true } });
+    const already = await prisma.member.count({ where: { unclaimableBecause: UNCLAIMABLE_REASONS.test } });
     console.log(`Database: ${host}. Test members already there: ${already}.`);
 
     const planned = plannedTestMembers(SEED);
@@ -84,17 +84,16 @@ describe.skipIf(!ASKED)("seed 1000 test members", () => {
           id: member.id,
           email: null,
           name: member.name,
-          isTest: true,
-          // Nobody signs in as a fixture — the same reason a computer player is
-          // unclaimable, under the reason that already exists for a made-up row.
-          unclaimableBecause: UNCLAIMABLE_REASONS.seed,
+          // The Test kind: nobody signs in as a fixture, and every reader but the
+          // operator in Test mode is shown none of them (`testMode.ts`).
+          unclaimableBecause: UNCLAIMABLE_REASONS.test,
         },
       });
       written += 1;
     }
     console.log(`Upserted ${written} test members (seed ${SEED}) on ${host}.`);
 
-    const now = await prisma.member.count({ where: { isTest: true } });
+    const now = await prisma.member.count({ where: { unclaimableBecause: UNCLAIMABLE_REASONS.test } });
     console.log(`Database now holds ${now} test members in total.`);
   });
 });

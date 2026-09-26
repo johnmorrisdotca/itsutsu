@@ -17,7 +17,7 @@ are seeded from.
 
 ## What was built, in one paragraph
 
-A third kind of member (`Member.isTest`), invisible everywhere by default; one
+An eighth kind of member, Test (`unclaimableBecause: "test"`), invisible everywhere by default; one
 function every list, board and count reads through (`hiddenMembersWhere`); an
 admin-only switch remembered on the operator's own account (`TestModeControl`) with
 a banner shown on every page while it is on (`TestModeBanner`); a coverage test that
@@ -28,37 +28,30 @@ IP come from the same code a real game's do. Two surfaces (`/xp` and its rungs) 
 fully wired today; the rest are listed below with the reason each is not yet, so the
 gap is a decision to review rather than an oversight.
 
-## The schema: the smallest change that fits how programs are marked today
+## No schema change: Test is a kind, like Seeded and Kept record
 
-Programs are already marked on `Member` by `botTier: String?` (null for a person, a
-`BotTier` value for a computer player) — see `src/lib/bots/bots.ts`'s `isBotId` and
-`src/lib/auth/memberKind.ts`'s `MEMBER_KINDS.robot`. A test member is not a program:
-it is a fixture, played by the SAME move-choosing code a computer player is (see
-"The play runner" below) but never shown as a `robot` and never mixed into the bot
-ladder or the Bots admin tab. So it is its own column, not a third value squeezed
-into `botTier`:
+John, 2026-09-25, when the first draft added a `Member.isTest` column and a
+migration: "why introduce a new column and database change, rather than just
+adding a Type". What kind of row a member is already lives in
+`unclaimableBecause` (`seed`, `kept-record`, `computer`) and `botTier`, and
+`memberKind()` reads them into one of the kinds every list badges. A test member
+is one more value there, `UNCLAIMABLE_REASONS.test`, and one more kind,
+`MEMBER_KINDS.test` ("Test 試験"), so it lands with no migration and no backup
+step, and badges itself wherever a kind is drawn.
 
-```prisma
-model Member {
-  // ...
-  botTier String?
-  isTest  Boolean @default(false)
-  // ...
-  @@index([botTier])
-  @@index([isTest])
-}
-```
+The column went live first, in 0.351.0 (migration
+`20260926022200_test_mode_member_flag`), before the change of mind reached it.
+John: "Obviously remove isTest if it's not needed." It comes out in two pushes,
+because the deploy applies migrations before the new build is live and the
+build before it still selects the column: first the schema and the code stop
+naming it, then, once that is live, `20260926100000_drop_test_mode_member_flag`
+drops it, after a Neon branch and a DS1 dump.
 
-`isTest` and `botTier` are orthogonal and both default to their "ordinary person"
-value, so every existing row is unaffected and `memberKind()` needs no change: a
-test member reads as `MEMBER_KINDS.member` today, same as an ordinary account. (A
-later ticket could add a `MEMBER_KINDS.test` badge for the operator's own views —
-not built here, since nothing yet asks for one and `MEMBER_KIND_DISPLAY` is a
-`Record` that would need a decision about kanji and a note.)
-
-Migration `20260926022200_test_mode_member_flag`, applied to `itsutsu_sim` only,
-verified with `prisma migrate diff --from-url $DATABASE_URL --to-schema-datamodel
-prisma/schema.prisma` → "No difference detected."
+`hiddenMembersWhere` writes the null out — `OR: [{ unclaimableBecause: null },
+{ unclaimableBecause: { not: "test" } }]` — because `NOT (col = 'test')` is NULL
+for an ordinary member and would hide everybody; the IP boards' raw SQL says
+`IS DISTINCT FROM 'test'` for the same reason. A test member is never a robot:
+`botTier` stays null, and the play runner moves its seats itself.
 
 ## How Test Mode is switched
 
@@ -146,7 +139,7 @@ comments.
 |---|---|
 | `src/lib/xp/xpBoard.ts` | The XP leaderboard (`/xp`) and a reader's own rank on it |
 | `src/lib/xp/levelMembers.ts` | Who is standing on one rung (`/xp/levels/[level]`) |
-| `src/lib/points/ipBoards.ts` | Every IP leaderboard: a game's, a family's and the site's (`/points`). Raw SQL, so the rule is written there as `WHERE NOT "Member"."isTest"`, and `IpBoard` reads the reader once |
+| `src/lib/points/ipBoards.ts` | Every IP leaderboard: a game's, a family's and the site's (`/points`). Raw SQL, so the rule is written there as `IS DISTINCT FROM 'test'`, and `IpBoard` reads the reader once |
 
 Both took a `reader: TestModeReader` parameter (required on the board's own fetch,
 defaulted to `HIDES_TEST_MEMBERS` on the smaller helper so nothing else calling it
@@ -259,8 +252,8 @@ a first unfiltered listing query without the build saying so.
   anything — the same two habits `botSeries.play.test.ts` and AGENTS.md's "Back
   It Up Before You Migrate It" ask for, because "which database did this
   actually reach" is the one question that must never be assumed.
-- Sets `isTest: true` and nothing about `botTier` — a test member is never a
-  robot.
+- Sets `unclaimableBecause: "test"` and nothing about `botTier` — a test
+  member is never a robot.
 - Command: `TEST_MEMBERS_RUN=1 pnpm exec vitest run src/lib/sim/seedTestMembers.play.test.ts --disable-console-intercept`
 
 ## The play runner

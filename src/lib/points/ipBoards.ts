@@ -9,6 +9,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { prisma } from "@/lib/prisma";
+import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { HIDES_TEST_MEMBERS, type TestModeReader } from "@/lib/testMode/testMode";
 import { PUZZLE_IP_WEIGHT } from "./points.constants";
 
@@ -82,7 +83,7 @@ export async function ipBoardOf(
   if (parts.length === 0) return [];
   // Members who still exist only: a row a removed member left behind names nobody, and a board of "A member" says nothing.
   // And no simulated test member unless this reader asked to see them — the rule `hiddenMembersWhere` keeps, in SQL.
-  const tests = reader.showsTestMembers ? Prisma.empty : Prisma.sql`WHERE NOT "Member"."isTest"`;
+  const tests = reader.showsTestMembers ? Prisma.empty : Prisma.sql`WHERE "Member"."unclaimableBecause" IS DISTINCT FROM ${UNCLAIMABLE_REASONS.test}`;
   const rows = await prisma.$queryRaw<{ memberId: string; ip: number }[]>`
     SELECT earned."memberId", ROUND(SUM(earned.ip))::int AS ip
     FROM (${Prisma.join(parts, " UNION ALL ")}) AS earned

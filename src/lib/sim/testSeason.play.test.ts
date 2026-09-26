@@ -49,6 +49,7 @@ import type { MoveRequest } from "@/lib/history/liveGame.types";
 import { settleEnded } from "@/lib/history/liveGameEndings";
 import { isOffered } from "@/lib/history/offers";
 import { seatMemberId } from "@/lib/bots/bots";
+import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { prisma } from "@/lib/prisma";
 
 import { mulberry32, uniformInt } from "./prng";
@@ -136,7 +137,7 @@ describe.skipIf(!ASKED)("play a season between test members", () => {
     run ? "plays it" : "reports only",
     async () => {
     const host = new URL(process.env.DATABASE_URL ?? "postgresql://unknown").host;
-    const roster = await prisma.member.findMany({ where: { isTest: true }, select: { id: true, name: true } });
+    const roster = await prisma.member.findMany({ where: { unclaimableBecause: UNCLAIMABLE_REASONS.test }, select: { id: true, name: true } });
     console.log(`Database: ${host}. Test members available: ${roster.length}.`);
     expect(roster.length, "seed the test members first: TEST_MEMBERS_RUN=1 pnpm exec vitest run src/lib/sim/seedTestMembers.play.test.ts").toBeGreaterThan(1);
 
