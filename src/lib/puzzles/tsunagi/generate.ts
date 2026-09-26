@@ -1,4 +1,4 @@
-import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, stepBetween, compareEdges, decodeLayout, edgeKey, encodeAnswer, encodeLayout, layoutCells, layoutNeighbours, type LinkLayout, LINK_WALLS, neighbourTable, PAIR_LETTERS, tailWord } from "./code.ts";
+import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, compareEdges, decodeLayout, edgeKey, encodeAnswer, encodeLayout, hexNeighbourTable, layoutCells, layoutNeighbours, layoutStep, type LinkLayout, LINK_HEX, LINK_WALLS, neighbourTable, PAIR_LETTERS, tailWord } from "./code.ts";
 import { countSolutions } from "./solve.ts";
 import { stepTable } from "./steps.ts";
 import type { Random } from "../random.ts";
@@ -40,13 +40,14 @@ const SHORTEST_LINE = 3;
 const BLOCKED_MARK = 32_000;
 
 /** What a board has besides its lines: the cells no line enters, the bridges two lines cross, and the walls between cells. */
-export type LinkExtras = { blocked?: ReadonlySet<number>; bridges?: ReadonlySet<number>; walls?: ReadonlySet<string>; waypoints?: ReadonlySet<number>; wrap?: boolean };
+export type LinkExtras = { blocked?: ReadonlySet<number>; bridges?: ReadonlySet<number>; walls?: ReadonlySet<string>; waypoints?: ReadonlySet<number>; wrap?: boolean; hex?: boolean };
 
 /** Grid lines that fill every cell, as lists of cells; null when this attempt painted itself into a corner. */
-export function randomFilling(size: number, random: Random, longest: number, blocked: ReadonlySet<number> = new Set(), wrap = false): number[][] | null {
+export function randomFilling(size: number, random: Random, longest: number, blocked: ReadonlySet<number> = new Set(), wrap = false, hex = false): number[][] | null {
   const total = size * size;
   // On a board that wraps, the lines may run off one edge and on at the other.
-  const around = wrap ? layoutNeighbours({ size, cells: [], ends: [], walls: new Set(), waypoints: new Map(), wrap: true, explosions: null }) : neighbourTable(size);
+  // On a board that wraps, the lines may run off one edge and on at the other; on a hexagon, a cell has six neighbours.
+  const around = hex ? hexNeighbourTable(size) : wrap ? layoutNeighbours({ size, cells: [], ends: [], walls: new Set(), waypoints: new Map(), wrap: true, hex: false, explosions: null }) : neighbourTable(size);
   const owner = new Int16Array(total).fill(-1);
   // A blocked cell belongs to no line, ever: marked as one nothing can be.
   for (const cell of blocked) owner[cell] = BLOCKED_MARK;
@@ -142,7 +143,7 @@ export function layoutOf(size: number, paths: readonly number[][], extras: LinkE
   // A waypoint is kept for the pair whose line runs through it in the answer.
   const waypoints = new Map([...(extras.waypoints ?? [])].map((cell) => [cell, owners[cell]!] as const));
   // Relabel in reading order of first stone, which `byFirst`'s order already is.
-  return { layout: encodeLayout(cells, extras.walls ?? [], { waypoints, wrap: extras.wrap }), answer: encodeAnswer(owners) };
+  return { layout: encodeLayout(cells, extras.walls ?? [], { waypoints, wrap: extras.wrap, hex: extras.hex }), answer: encodeAnswer(owners) };
 }
 
 /** Where cell `at` goes when a board is given `turn` quarter turns and then mirrored across the vertical when `mirror`. */
@@ -193,11 +194,18 @@ export function relettered(code: string): string {
   return renamed + code.slice(cells.length);
 }
 
-/** The least spelling of a layout over its eight turns and mirrors: equal keys are the same board. */
+/**
+ * The least spelling of a layout over its eight turns and mirrors: equal keys
+ * are the same board. A hexagon is only turned the ways that keep its lattice
+ * — half round, and the two diagonal mirrors (a quarter turn then a mirror) —
+ * since a quarter turn alone would make its slanting neighbours the wrong pair.
+ */
 export function symmetryKey(code: string, size: number): string {
   let least: string | null = null;
+  const hex = code.slice(layoutCells(code).length).split(LINK_WALLS).includes(LINK_HEX);
   for (let turn = 0; turn < 4; turn += 1) {
     for (const mirror of [false, true]) {
+      if (hex && (turn % 2 === 1) !== mirror) continue;
       const each = relettered(transformed(code, size, turn, mirror));
       if (least === null || each < least) least = each;
     }
@@ -207,14 +215,14 @@ export function symmetryKey(code: string, size: number): string {
 
 /** How many times an answer's lines turn a corner, over all of them: a line going straight over a bridge turns nowhere on it. */
 export function turnsIn(answer: string, layout: LinkLayout): number {
-  const { size } = layout;
   const steps = stepTable(layout);
   let turns = 0;
   for (let at = 0; at < layoutCells(answer).length; at += 1) {
     if (layout.cells[at] !== CELL_EMPTY) continue;
     // The ways this cell's line goes on from it, as steps: over a bridge, the way onto it; across a joined edge, the step it is.
-    const ways = steps[at]!.filter((step) => answer[step.to] === answer[at]).map((step) => stepBetween(size, at, step.over === -1 ? step.to : step.over, layout.wrap));
-    if (ways.length === 2 && Math.abs(ways[0]! - ways[1]!) !== 2 && Math.abs(ways[0]! - ways[1]!) !== 2 * size) turns += 1;
+    const ways = steps[at]!.filter((step) => answer[step.to] === answer[at]).map((step) => layoutStep(layout, at, step.over === -1 ? step.to : step.over));
+    // Straight on is two opposite steps, on a square or a hexagon alike.
+    if (ways.length === 2 && ways[0]! + ways[1]! !== 0) turns += 1;
   }
   return turns;
 }

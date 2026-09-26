@@ -26,6 +26,13 @@
  * left and right edges join, and so do the top and bottom, so a line leaving
  * one side comes back in on the other, as the wrapping gomoku does.
  *
+ * A HEXAGON (`hex`, first of the words after the walls) is Hexversi's
+ * honeycomb: an odd square of side 2R + 1 with every row slid half a cell
+ * along, so each cell has six neighbours — the four around it and the two
+ * diagonals along the slant, up-right and down-left (`rules/hexagon.ts`). The
+ * cells outside the hexagon of radius R are `#`, off the board, and a
+ * hexagon has no walls, bridges or wrap.
+ *
  * AN ANSWER is the grid of cells with every open cell carrying the letter of
  * the line through it, `#` where the layout has one, and `+` on a bridge: the
  * two lines over it are the ones either side of it.
@@ -60,6 +67,8 @@ export type LinkLayout = {
   waypoints: ReadonlyMap<number, number>;
   /** Whether the edges join: left to right and top to bottom. */
   wrap: boolean;
+  /** Whether the board is a hexagon of hexagons: six neighbours a cell, the square's corners off the board. */
+  hex: boolean;
   /** Explosions: every `every` strokes a drawn line is broken — cut back by half, or, with `blast`, wiped with a neighbour cut too. Null for none. */
   explosions: { every: number; blast: boolean } | null;
 };
@@ -70,11 +79,12 @@ export type LinkLayout = {
  * `boom<N>` (a line cut back every N strokes) or `blast<N>` (a line wiped and
  * its neighbour cut).
  */
-const TAIL_ORDER = ["wrap", "explosion"] as const;
+const TAIL_ORDER = ["hex", "wrap", "explosion"] as const;
 
 /** Which of the tail's words a segment is, and what it says; null for none of them (the walls list). */
 export function tailWord(segment: string): { word: (typeof TAIL_ORDER)[number]; every?: number; blast?: boolean } | null {
   if (segment === LINK_WRAP) return { word: "wrap" };
+  if (segment === LINK_HEX) return { word: "hex" };
   const boom = /^(boom|blast)([1-9][0-9]?)$/.exec(segment);
   if (boom !== null) return { word: "explosion", every: Number(boom[2]), blast: boom[1] === "blast" };
   return null;
@@ -82,6 +92,22 @@ export function tailWord(segment: string): { word: (typeof TAIL_ORDER)[number]; 
 
 /** The segment after the cells that makes a board wrap. */
 export const LINK_WRAP = "wrap";
+
+/** The segment after the cells that makes a board a hexagon of hexagons. */
+export const LINK_HEX = "hex";
+
+/** The hexagon's radius on a board of this side: R, for a side of 2R + 1. */
+export function hexRadius(size: number): number {
+  return Math.floor(size / 2);
+}
+
+/** Whether a cell of the square is inside the hexagon: at most R lattice steps from the middle. */
+export function inHex(size: number, at: number): boolean {
+  const radius = hexRadius(size);
+  const x = (at % size) - radius;
+  const z = Math.floor(at / size) - radius;
+  return Math.max(Math.abs(x), Math.abs(z), Math.abs(x + z)) <= radius;
+}
 
 /** An edge between two neighbouring cells, the same whichever way round they are named. */
 export function edgeKey(a: number, b: number): string {
@@ -102,6 +128,7 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
   let wallList: string | null = null;
   let wrap = false;
   let explosions: LinkLayout["explosions"] = null;
+  let hex = false;
   let rank = -1;
   for (const [at, segment] of tail.entries()) {
     const word = tailWord(segment);
@@ -114,6 +141,7 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
     if (place <= rank) return null;
     rank = place;
     if (word.word === "wrap") wrap = true;
+    else if (word.word === "hex") hex = true;
     else explosions = { every: word.every!, blast: word.blast! };
   }
   const cells: number[] = [];
@@ -147,6 +175,11 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
   if ([...marked.values()].some((pair) => pair >= seen.length)) return null;
   const walls = wallList === null ? new Set<string>() : readWalls(wallList, size);
   if (walls === null) return null;
+  // A hexagon: an odd side, `#` exactly outside it, and none of the square's twists.
+  if (hex) {
+    if (size % 2 === 0 || size < 5 || wrap || walls.size > 0 || cells.includes(CELL_BRIDGE)) return null;
+    for (let at = 0; at < cells.length; at += 1) if (!inHex(size, at) && cells[at] !== CELL_BLOCKED) return null;
+  }
   // A bridge away from the edge, beside no other bridge, and with no wall on any of its four sides.
   for (let at = 0; at < cells.length; at += 1) {
     if (cells[at] !== CELL_BRIDGE) continue;
@@ -155,7 +188,7 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
     if (row === 0 || col === 0 || row === size - 1 || col === size - 1) return null;
     for (const beside of neighboursOf(size, at)) if (cells[beside] === CELL_BRIDGE || walls.has(edgeKey(at, beside))) return null;
   }
-  return { size, cells, ends: seen.map((stones) => [stones[0]!, stones[1]!]), walls, waypoints: marked, wrap, explosions };
+  return { size, cells, ends: seen.map((stones) => [stones[0]!, stones[1]!]), walls, waypoints: marked, wrap, hex, explosions };
 }
 
 /** The walls after a layout's `|`, or null for a list that is not one: an edge that is not two neighbouring cells, out of order, or twice. */
@@ -191,7 +224,7 @@ export function encodeWalls(walls: Iterable<string>): string {
 }
 
 /** A layout's code, from its cells, walls, waypoints and whether it wraps: the inverse of `decodeLayout`. */
-export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean; explosions?: LinkLayout["explosions"] } = {}): string {
+export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean; hex?: boolean; explosions?: LinkLayout["explosions"] } = {}): string {
   const grid = cells
     .map((cell, at) => {
       const waypoint = more.waypoints?.get(at);
@@ -200,7 +233,7 @@ export function encodeLayout(cells: readonly number[], walls: Iterable<string> =
     })
     .join("");
   const boom = more.explosions == null ? "" : `${LINK_WALLS}${more.explosions.blast ? "blast" : "boom"}${more.explosions.every}`;
-  return grid + encodeWalls(walls) + (more.wrap === true ? `${LINK_WALLS}${LINK_WRAP}` : "") + boom;
+  return grid + encodeWalls(walls) + (more.hex === true ? `${LINK_WALLS}${LINK_HEX}` : "") + (more.wrap === true ? `${LINK_WALLS}${LINK_WRAP}` : "") + boom;
 }
 
 /** A finished grid's code: the letter of the line through each cell, `#` where blocked, `+` on a bridge. */
@@ -227,9 +260,12 @@ export function wrappedStep(size: number, at: number, by: number): number {
 /**
  * The way from `a` to its neighbour `b` as a step (-1, +1, -size, +size),
  * counting a step across a wrapped edge as the step it is — right off the
- * right edge is +1, though the cells' numbers differ by size - 1.
+ * right edge is +1, though the cells' numbers differ by size - 1. On a
+ * hexagon, the two slanting steps too: up-right (1 - size) and down-left
+ * (size - 1). Zero for cells that are not neighbours.
  */
-export function stepBetween(size: number, a: number, b: number, wrap: boolean): number {
+export function stepBetween(size: number, a: number, b: number, wrap: boolean, hex = false): number {
+  if (hex) return hexNeighboursOf(size, a).includes(b) ? b - a : 0;
   for (const by of [1, -1, size, -size]) {
     const plain = a + by;
     const same = Math.abs(by) === size || Math.floor(plain / size) === Math.floor(a / size);
@@ -237,6 +273,11 @@ export function stepBetween(size: number, a: number, b: number, wrap: boolean): 
     if (wrap && wrappedStep(size, a, by) === b) return by;
   }
   return 0;
+}
+
+/** A layout's step from `a` to its neighbour `b` (`stepBetween` on its own kind of board), or 0. */
+export function layoutStep(layout: LinkLayout, a: number, b: number): number {
+  return stepBetween(layout.size, a, b, layout.wrap, layout.hex);
 }
 
 /** Whether a line may step from cell `a` to its neighbour `b`: no wall between them. */
@@ -252,6 +293,7 @@ export function edgeOpen(layout: LinkLayout, a: number, b: number): boolean {
 export function layoutNeighbours(layout: LinkLayout): number[][] {
   const { size } = layout;
   // On a board that wraps, every cell has four neighbours, the edges' ones across the join.
+  if (layout.hex) return hexNeighbourTable(size);
   const table = layout.wrap ? Array.from({ length: size * size }, (_, at) => [...new Set([-size, 1, size, -1].map((by) => wrappedStep(size, at, by)))].filter((next) => next !== at)) : neighbourTable(size);
   return layout.walls.size === 0 ? table : table.map((around, at) => around.filter((next) => edgeOpen(layout, at, next)));
 }
@@ -266,6 +308,25 @@ export function neighboursOf(size: number, at: number): number[] {
   if (row < size - 1) out.push(at + size);
   if (col > 0) out.push(at - 1);
   return out;
+}
+
+/** The six neighbours of a cell on the hexagon lattice, as indexes; fewer at an edge of the square (the hexagon's own edge is its `#` cells). */
+export function hexNeighboursOf(size: number, at: number): number[] {
+  const row = Math.floor(at / size);
+  const col = at % size;
+  const out: number[] = [];
+  if (row > 0) out.push(at - size);
+  if (row > 0 && col < size - 1) out.push(at - size + 1);
+  if (col < size - 1) out.push(at + 1);
+  if (row < size - 1) out.push(at + size);
+  if (row < size - 1 && col > 0) out.push(at + size - 1);
+  if (col > 0) out.push(at - 1);
+  return out;
+}
+
+/** Every cell's six neighbours on the hexagon lattice, worked out once for a size. */
+export function hexNeighbourTable(size: number): number[][] {
+  return Array.from({ length: size * size }, (_, at) => hexNeighboursOf(size, at));
 }
 
 /** Every cell's neighbours, worked out once for a size. */

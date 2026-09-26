@@ -1,4 +1,4 @@
-import { layoutCells, LINK_BLOCKED, LINK_BRIDGE, LINK_WALLS, tailWord } from "./code.ts";
+import { inHex, layoutCells, LINK_BLOCKED, LINK_BRIDGE, LINK_WALLS, tailWord } from "./code.ts";
 import { TSUNAGI_BLOCK } from "./levelBlocks.ts";
 import type { Challenge, TwistRole } from "./ladder.types.ts";
 import { TSUNAGI_MARKS, TSUNAGI_ROLES } from "./levels/marks.data.ts";
@@ -16,7 +16,7 @@ export type { Challenge, TwistRole };
  * Imports carry their `.ts` so the level script can read the same rules.
  */
 
-export const CHALLENGES: readonly Challenge[] = ["bridges", "walls", "waypoints", "wrap", "explosions"];
+export const CHALLENGES: readonly Challenge[] = ["bridges", "walls", "waypoints", "wrap", "explosions", "hexagon"];
 
 /** The challenges on a board, in the order the ladder teaches them. */
 export function challengesOf(layout: string): Challenge[] {
@@ -25,10 +25,15 @@ export function challengesOf(layout: string): Challenge[] {
   const out: Challenge[] = [];
   if (cells.includes(LINK_BRIDGE)) out.push("bridges");
   const words = tail.map(tailWord);
-  if (words.some((word) => word === null) || cells.includes(LINK_BLOCKED)) out.push("walls");
+  const hex = words.some((word) => word?.word === "hex");
+  // A hexagon's corners are off the board, not blocked: only a `#` inside it is a wall.
+  const size = Math.round(Math.sqrt(cells.length));
+  const blocked = [...cells].some((cell, at) => cell === LINK_BLOCKED && (!hex || inHex(size, at)));
+  if (words.some((word) => word === null) || blocked) out.push("walls");
   if (/[a-p]/.test(cells)) out.push("waypoints");
   if (words.some((word) => word?.word === "wrap")) out.push("wrap");
   if (words.some((word) => word?.word === "explosion")) out.push("explosions");
+  if (hex) out.push("hexagon");
   return out;
 }
 

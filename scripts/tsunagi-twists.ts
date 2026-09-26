@@ -15,6 +15,11 @@
  * few pairs for a blast to be fair). The other lessons keep the places they
  * had before explosions came, so adding them moved no other lesson.
  *
+ * HEXAGONS are the seventh lesson and every fifth after it (the twelfth), at
+ * the odd sizes only, the ones a hexagon of hexagons fits (`hexCandidate`):
+ * whole new boards, the easy end of the kind's pool to teach and further up
+ * it to test.
+ *
  * NEVER A BOARD WITH PLAY ON IT. A slot is only given a twist when its board
  * has none: the slots named in `keep` (read from production before the run:
  * solves, kept runs, attempts and races) keep their plain board, and so does
@@ -23,18 +28,19 @@
  * nothing. Levels 1 to 14 of every block are never touched.
  */
 import { orderByDifficulty } from "../src/lib/puzzles/tsunagi/difficulty.ts";
-import { bridgeAndWallCandidate, bridgeCandidate, wallCandidate, waypointCandidate, wrapCandidate, type TwistCandidate } from "../src/lib/puzzles/tsunagi/twists.ts";
+import { bridgeAndWallCandidate, bridgeCandidate, hexCandidate, wallCandidate, waypointCandidate, wrapCandidate, type TwistCandidate } from "../src/lib/puzzles/tsunagi/twists.ts";
 import { symmetryKey } from "../src/lib/puzzles/tsunagi/generate.ts";
 import { TSUNAGI_BLOCK } from "../src/lib/puzzles/tsunagi/levelBlocks.ts";
-import { challengesOf, type Challenge } from "../src/lib/puzzles/tsunagi/ladder.ts";
+import { challengesOf, isTwist, type Challenge } from "../src/lib/puzzles/tsunagi/ladder.ts";
 import { decodeLayout } from "../src/lib/puzzles/tsunagi/code.ts";
 import { seededRandom } from "../src/lib/puzzles/random.ts";
 
 type Level = readonly [string, string];
 
-type Kind = "bridge" | "bridges" | "walls" | "wallsAndBlocked" | "bridgeAndWalls" | "waypoints" | "wrap" | "boom" | "blast";
+type Kind = "bridge" | "bridges" | "walls" | "wallsAndBlocked" | "bridgeAndWalls" | "waypoints" | "wrap" | "boom" | "blast" | "hexagon";
 
-const KINDS: readonly Kind[] = ["bridge", "bridges", "walls", "wallsAndBlocked", "bridgeAndWalls", "waypoints", "wrap"];
+// A new kind goes on the end: each kind's stream is seeded by its place here, so the others keep making the boards they made.
+const KINDS: readonly Kind[] = ["bridge", "bridges", "walls", "wallsAndBlocked", "bridgeAndWalls", "waypoints", "wrap", "hexagon"];
 
 /** One kind's candidate, from its own random stream. */
 function candidateOf(kind: Kind, size: number, random: () => number, longest: number, budget: number): TwistCandidate | null {
@@ -44,6 +50,7 @@ function candidateOf(kind: Kind, size: number, random: () => number, longest: nu
   if (kind === "wallsAndBlocked") return wallCandidate(size, random, longest, budget, 2, 6);
   if (kind === "bridgeAndWalls") return bridgeAndWallCandidate(size, random, longest, budget, 1, 6);
   if (kind === "waypoints") return waypointCandidate(size, random, longest, budget, 4);
+  if (kind === "hexagon") return hexCandidate(size, random, longest, budget);
   return wrapCandidate(size, random, longest, budget);
 }
 
@@ -89,10 +96,11 @@ const LATER: Record<Exclude<Challenge, "explosions">, { teach: Kind[]; test: Kin
   walls: { teach: ["wallsAndBlocked", "walls"], test: ["bridgeAndWalls", "wallsAndBlocked"] },
   waypoints: { teach: ["waypoints"], test: ["waypoints"] },
   wrap: { teach: ["wrap"], test: ["wrap"] },
+  hexagon: { teach: ["hexagon"], test: ["hexagon"] },
 };
 
 /** The lessons, in the order the ladder meets them: bridges, walls, waypoints, wrap, explosions, then each again, climbing, explosions every fifth. */
-function lessons(count: number): Lesson[] {
+function lessons(count: number, size: number): Lesson[] {
   const out: Lesson[] = [
     { twist: "bridges", teach: ["bridge"], test: ["bridges", "bridge", "bridgeAndWalls"], teachAt: 0, testAt: 0.5 },
     { twist: "walls", teach: ["walls", "wallsAndBlocked"], test: ["wallsAndBlocked", "walls"], teachAt: 0, testAt: 0.5 },
@@ -103,6 +111,11 @@ function lessons(count: number): Lesson[] {
   for (let each = out.length; each < count; each += 1) {
     if ((each - 4) % 5 === 0) {
       out.push({ twist: "explosions", teach: [], test: [], teachAt: 0, testAt: 0 });
+      continue;
+    }
+    if (size % 2 === 1 && each >= 6 && (each - 6) % 5 === 0) {
+      const climb = count <= 7 ? 0 : (each - 6) / (count - 7);
+      out.push({ twist: "hexagon", ...LATER.hexagon, teachAt: 0.6 * climb, testAt: 0.5 + 0.5 * climb });
       continue;
     }
     const twist = cycle[(each - 4) % cycle.length]!;
@@ -120,18 +133,30 @@ export type TwistPlan = { levels: Level[]; placed: { level: number; kind: Kind; 
  * left as they are. A free block that already holds its planned lesson — the
  * lesson's twist on both its boards — keeps those boards, so running this again
  * changes nothing, and lessons already shipped stay where they are.
+ *
+ * A played block that already holds a lesson keeps its place in the lesson
+ * order, untouched: play arriving on a shipped lesson must not deal every later
+ * lesson of the size one block along. A played block left plain has no place.
  */
 export function withTwists(size: number, levels: readonly Level[], keep: ReadonlySet<number>, plan: { tries: number; longest: number; budget: number }): TwistPlan {
   const out = [...levels];
   const blocks = Math.floor(levels.length / TSUNAGI_BLOCK);
   const placed: TwistPlan["placed"] = [];
   const kept: number[] = [];
+  // The blocks in the lesson order: every free block, and every played one that already holds a lesson (`frozen`).
   const free: number[] = [];
+  const frozen = new Set<number>();
   for (let block = 1; block <= blocks; block += 1) {
-    if (keep.has(block * TSUNAGI_BLOCK - 1) || keep.has(block * TSUNAGI_BLOCK)) kept.push(block);
-    else free.push(block);
+    if (!keep.has(block * TSUNAGI_BLOCK - 1) && !keep.has(block * TSUNAGI_BLOCK)) {
+      free.push(block);
+      continue;
+    }
+    if (isTwist(levels[block * TSUNAGI_BLOCK - 2]![0]) && isTwist(levels[block * TSUNAGI_BLOCK - 1]![0])) {
+      free.push(block);
+      frozen.add(block);
+    } else kept.push(block);
   }
-  const planned = lessons(free.length);
+  const planned = lessons(free.length, size);
   // What each lesson may use: its own twist and every twist taught before it, never one still to come.
   const allowed = planned.map((_, at) => new Set(planned.slice(0, at + 1).map((lesson) => lesson.twist)));
   const fits = (layout: string, at: number) => {
@@ -139,7 +164,7 @@ export function withTwists(size: number, levels: readonly Level[], keep: Readonl
     return on.includes(planned[at]!.twist) && on.every((twist) => allowed[at]!.has(twist));
   };
   // Which free blocks already hold their lesson, and which need boards made.
-  const needed = free.filter((block, at) => !(fits(levels[block * TSUNAGI_BLOCK - 2]![0], at) && fits(levels[block * TSUNAGI_BLOCK - 1]![0], at)));
+  const needed = free.filter((block, at) => !frozen.has(block) && !(fits(levels[block * TSUNAGI_BLOCK - 2]![0], at) && fits(levels[block * TSUNAGI_BLOCK - 1]![0], at)));
   if (needed.length === 0) return { levels: out, placed, kept };
   // Explosions change no cell: their lesson is the slot's own board with one added. The rest need boards made.
   const madeNeeded = needed.some((block) => planned[free.indexOf(block)]!.twist !== "explosions");

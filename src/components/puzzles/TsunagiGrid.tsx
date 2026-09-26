@@ -2,11 +2,14 @@
 
 import { useRef, type PointerEvent } from "react";
 
+import { HEX_LATTICE } from "@/components/board/Board.constants";
+import { hexagonPoints } from "@/components/board/BoardLines";
 import type { BoardThemeTokens } from "@/components/board/board.types";
-import { CELL_BLOCKED, CELL_BRIDGE, stepBetween, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
+import { CELL_BLOCKED, CELL_BRIDGE, inHex, stepBetween, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
 import { ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { PuzzleBoard } from "./PuzzleBoard";
+import { hexCellAt, tsunagiHexFit } from "./tsunagiHex";
 import { TSUNAGI_BEAD, TSUNAGI_MARBLE, tsunagiBeadLook, tsunagiLineColour, tsunagiMarbleLook, tsunagiWash, type TsunagiFill, type TsunagiMarks } from "./puzzles.constants";
 
 /**
@@ -30,6 +33,11 @@ import { TSUNAGI_BEAD, TSUNAGI_MARBLE, tsunagiBeadLook, tsunagiLineColour, tsuna
  * A finger dragged onto a ghost cell is on the real one it shows, and a line
  * across the join is drawn out through one edge into the ghost and in through
  * the other.
+ *
+ * A HEXAGON is drawn as Hexversi's board is: the cells sheared into the
+ * honeycomb and fitted to the box (`tsunagiHex.ts`), each cell outlined as a
+ * hexagon, the square's corners left off, and the marbles stood upright again
+ * so they stay round. A finger is on the hexagon nearest it.
  */
 export function TsunagiGrid({
   layout,
@@ -69,9 +77,16 @@ export function TsunagiGrid({
   const span = size + 2 * ring;
   const pressing = useRef<{ pointer: number; cell: number } | null>(null);
   const live = !readOnly && !done;
+  const fit = layout.hex ? tsunagiHexFit(size) : null;
+  // On a hexagon, the corners of the square are off the board: not drawn, not pressed.
+  const onBoard = (at: number) => !layout.hex || inHex(size, at);
 
   const cellAt = (event: PointerEvent<HTMLDivElement>): number | null => {
     const box = event.currentTarget.getBoundingClientRect();
+    if (fit !== null) {
+      const at = hexCellAt(size, fit, (event.clientX - box.left) / box.width, (event.clientY - box.top) / box.height);
+      return at !== null && onBoard(at) ? at : null;
+    }
     const across = Math.floor(((event.clientX - box.left) / box.width) * span);
     const down = Math.floor(((event.clientY - box.top) / box.height) * span);
     if (across < 0 || down < 0 || across >= span || down >= span) return null;
@@ -107,7 +122,7 @@ export function TsunagiGrid({
 
   return (
     <div className="w-full select-none" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"} data-marks={marks} data-fill={fill}>
-      <PuzzleBoard size={span} theme={theme} coordinates={!layout.wrap}>
+      <PuzzleBoard size={span} theme={theme} coordinates={!layout.wrap && !layout.hex}>
         <div
           className={`relative h-full w-full ${live ? "cursor-pointer" : ""}`}
           style={{ touchAction: "none" }}
@@ -116,27 +131,49 @@ export function TsunagiGrid({
           onPointerUp={up}
           onPointerCancel={up}
           data-testid="tsunagi-board"
+          data-hex={layout.hex ? "true" : undefined}
         >
-          <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true" data-wrap={layout.wrap ? "true" : undefined}>
+          {/* The drawing and the cells, sheared into the honeycomb on a hexagon; as they are on a square. */}
+          <div className="absolute inset-0" style={fit === null ? undefined : { transform: fit.transform, transformOrigin: "top left" }}>
+          <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true" data-wrap={layout.wrap ? "true" : undefined}
+            // A hexagon's edge cells reach past the square they are sheared from; the board's own clip trims them, as Hexversi's.
+            overflow={fit === null ? undefined : "visible"}>
             {layout.wrap ? (
               // Where the edges join: the real board marked off from its ghost.
               <rect x={ring} y={ring} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" data-testid="tsunagi-wrap-edge" />
             ) : null}
             <g transform={`translate(${ring} ${ring})`}>
-            {owners.map((owner, at) =>
+            {fit !== null ? (
+              // A HEXAGON: each cell of it outlined, washed in its line's colour, and nothing drawn off it.
+              layout.cells.map((cell, at) =>
+                onBoard(at) ? (
+                  <polygon
+                    key={`hex-${at}`}
+                    points={hexagonPoints((at % size) + 0.5, Math.floor(at / size) + 0.5)}
+                    fill={owners[at]! >= 0 && cell < 0 ? tsunagiWash(owners[at]!, marks) : cell === CELL_BLOCKED ? theme.line : "none"}
+                    fillOpacity={cell === CELL_BLOCKED ? 0.55 : 1}
+                    stroke={theme.line}
+                    strokeWidth={1}
+                    strokeOpacity={0.55}
+                    vectorEffect="non-scaling-stroke"
+                    data-testid="tsunagi-hex-cell"
+                  />
+                ) : null,
+              )
+            ) : owners.map((owner, at) =>
               owner >= 0 && layout.cells[at]! < 0 ? (
                 <rect key={`wash-${at}`} x={at % size} y={Math.floor(at / size)} width={1} height={1} fill={tsunagiWash(owner, marks)} />
               ) : owner === CELL_BLOCKED ? (
                 <rect key={`block-${at}`} x={(at % size) + 0.08} y={Math.floor(at / size) + 0.08} width={0.84} height={0.84} rx={0.08} fill={theme.line} opacity={0.55} />
               ) : null,
             )}
-            {Array.from({ length: size - 1 }, (_, at) => at + 1).map((at) => (
+            {fit !== null ? null : Array.from({ length: size - 1 }, (_, at) => at + 1).map((at) => (
               <g key={`rule-${at}`} stroke={theme.line} strokeWidth={1} vectorEffect="non-scaling-stroke" opacity={0.55}>
                 <line x1={at} y1={0} x2={at} y2={size} vectorEffect="non-scaling-stroke" />
                 <line x1={0} y1={at} x2={size} y2={at} vectorEffect="non-scaling-stroke" />
               </g>
             ))}
-            {layout.wrap ? null : <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />}
+            {layout.wrap || fit !== null ? null : <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />}
             {/* A BRIDGE: a deck with a rail each side, the way across it; one line goes over it across and another down (`steps.ts`). */}
             {layout.cells.map((cell, at) =>
               cell === CELL_BRIDGE ? (
@@ -172,7 +209,7 @@ export function TsunagiGrid({
             {lines.map((line, pair) =>
               line.length < 2 ? null : (
                 <g key={`line-${pair}`} data-testid="tsunagi-line" data-pair={pair} data-cells={line.length}>
-                  {runsOf(line, size, layout.wrap).map((points, at) => (
+                  {runsOf(line, size, layout.wrap, layout.hex).map((points, at) => (
                     <polyline
                       key={at}
                       points={points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(" ")}
@@ -211,6 +248,8 @@ export function TsunagiGrid({
                   </div>
                 );
               }
+              // Off a hexagon's edge: a place in the grid and nothing more.
+              if (!onBoard(at)) return <div key={at} aria-hidden="true" />;
               const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : cell === CELL_BRIDGE ? ", bridge" : ", empty"}${waypoint === undefined ? "" : `, waypoint for line ${waypoint + 1}`}`;
               return (
                 <div
@@ -222,6 +261,8 @@ export function TsunagiGrid({
                   data-stone={cell >= 0 ? cell : undefined}
                   aria-label={label}
                   role="img"
+                  // On a hexagon the cell stands upright again inside the sheared lattice, so its marble stays round.
+                  style={fit === null ? undefined : { transform: HEX_LATTICE.unslant }}
                 >
                   {waypoint === undefined ? null : (
                     // A WAYPOINT: a ring of its line's colour on a cell only that line may pass.
@@ -257,6 +298,7 @@ export function TsunagiGrid({
               );
             })}
           </div>
+          </div>
         </div>
       </PuzzleBoard>
     </div>
@@ -269,13 +311,13 @@ export function TsunagiGrid({
  * edge (in the ghost) and starts the next a cell out beyond the other edge, so
  * the line is seen to leave and come back.
  */
-function runsOf(line: readonly number[], size: number, wrap: boolean): [number, number][][] {
+function runsOf(line: readonly number[], size: number, wrap: boolean, hex = false): [number, number][][] {
   const point = (cell: number): [number, number] => [cell % size, Math.floor(cell / size)];
   const runs: [number, number][][] = [[point(line[0]!)]];
   for (let at = 1; at < line.length; at += 1) {
     const from = line[at - 1]!;
     const to = line[at]!;
-    const plain = stepBetween(size, from, to, false) !== 0 || Math.abs(to - from) === 2 || Math.abs(to - from) === 2 * size;
+    const plain = hex || stepBetween(size, from, to, false) !== 0 || Math.abs(to - from) === 2 || Math.abs(to - from) === 2 * size;
     if (plain || !wrap) {
       runs[runs.length - 1]!.push(point(to));
       continue;

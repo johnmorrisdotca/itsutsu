@@ -1,4 +1,4 @@
-import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, edgeOpen, encodeAnswer, PAIR_LETTERS, stepBetween, wrappedStep, type LinkLayout } from "./code";
+import { CELL_BLOCKED, CELL_BRIDGE, CELL_EMPTY, edgeOpen, encodeAnswer, hexNeighboursOf, layoutStep, PAIR_LETTERS, wrappedStep, type LinkLayout } from "./code";
 import { stepTable } from "./steps";
 
 /**
@@ -133,7 +133,7 @@ export function answerOf(layout: LinkLayout, lines: Lines): string {
 
 /** Neighbours with no wall between them: across a joined edge too, on a board that wraps. */
 function stepOpen(layout: LinkLayout, a: number, b: number): boolean {
-  return stepBetween(layout.size, a, b, layout.wrap) !== 0 && edgeOpen(layout, a, b);
+  return layoutStep(layout, a, b) !== 0 && edgeOpen(layout, a, b);
 }
 
 function replaced(lines: Lines, pair: number, line: readonly number[]): Lines {
@@ -205,15 +205,26 @@ export function dragThrough(layout: LinkLayout, lines: Lines, pair: number, cell
     if (line.length === 0) return now;
     const tip = line[line.length - 1]!;
     // Already there, or one step away (across a joined edge counts): straight to it.
-    if (tip === cell || line.includes(cell) || stepBetween(size, tip, cell, layout.wrap) !== 0) return dragTo(layout, now, pair, cell);
+    if (tip === cell || line.includes(cell) || layoutStep(layout, tip, cell) !== 0) return dragTo(layout, now, pair, cell);
     const [tr, tc] = [Math.floor(tip / size), tip % size];
     const [cr, cc] = [Math.floor(cell / size), cell % size];
-    const step = tc !== cc ? tip + Math.sign(cc - tc) : tip + Math.sign(cr - tr) * size;
+    // On a square, along the row and then the column; on a hexagon, whichever of the six steps comes nearest.
+    const step = layout.hex ? hexToward(size, tip, cell) : tc !== cc ? tip + Math.sign(cc - tc) : tip + Math.sign(cr - tr) * size;
     const after = dragTo(layout, now, pair, step);
     if (after === now) return now;
     now = after;
   }
   return now;
+}
+
+/** The neighbour of `from` on the hexagon lattice fewest steps from `to`. */
+function hexToward(size: number, from: number, to: number): number {
+  const apart = (a: number, b: number) => {
+    const dq = (b % size) - (a % size);
+    const dr = Math.floor(b / size) - Math.floor(a / size);
+    return Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
+  };
+  return hexNeighboursOf(size, from).reduce((best, next) => (apart(next, to) < apart(best, to) ? next : best));
 }
 
 /** Letting go: a line of only its stone is no line (a tap on a stone clears it), and a line ends before a bridge it stopped on. */
@@ -230,10 +241,11 @@ export function letGo(lines: Lines, layout?: LinkLayout): Lines {
  * THE LINES AS A KEPT RUN'S PROGRESS: one character a cell, so an unfinished
  * level is kept like any other puzzle (`PuzzleRun.progress`). `.` is a cell no
  * line starts or passes through; `*` a stone a line starts from; `n`, `e`,
- * `s` or `w` a cell whose line came into it from that side.
+ * `s` or `w` a cell whose line came into it from that side — and on a
+ * hexagon, `u` from the cell up and to the right, `v` from down and to the left.
  */
-const FROM: Record<string, number> = { n: 0, e: 1, s: 2, w: 3 };
-const PROGRESS_CHARS = /^[.*nesw]*$/;
+const FROM: Record<string, number> = { n: 0, e: 1, s: 2, w: 3, u: 4, v: 5 };
+const PROGRESS_CHARS = /^[.*neswuv]*$/;
 
 export function encodeLines(layout: LinkLayout, lines: Lines): string {
   const size = layout.size;
@@ -248,8 +260,8 @@ export function encodeLines(layout: LinkLayout, lines: Lines): string {
       }
       const came = line[at - 1]!;
       // Which side it came in from, across a joined edge too: the step from here back to where it came from.
-      const by = stepBetween(size, cell, came, layout.wrap);
-      out[cell] = by === -size ? "n" : by === 1 ? "e" : by === size ? "s" : "w";
+      const by = layoutStep(layout, cell, came);
+      out[cell] = by === -size ? "n" : by === 1 ? "e" : by === size ? "s" : by === -1 ? "w" : by === 1 - size ? "u" : "v";
     });
   }
   return out.join("");
@@ -274,9 +286,9 @@ export function decodeLines(layout: LinkLayout, code: string): Lines | null {
     const char = code[cell]!;
     if (char === "." || char === "*") continue;
     const dir = FROM[char]!;
-    const by = [-size, 1, size, -1][dir]!;
+    const by = [-size, 1, size, -1, 1 - size, size - 1][dir]!;
     let came = layout.wrap ? wrappedStep(size, cell, by) : cell + by;
-    if (came < 0 || came >= size * size || stepBetween(size, cell, came, layout.wrap) === 0) return null;
+    if (came < 0 || came >= size * size || layoutStep(layout, cell, came) === 0) return null;
     // From a bridge: from the cell on its far side, over it.
     if (layout.cells[came] === CELL_BRIDGE) came = came - (cell - came);
     if (came < 0 || came >= size * size || code[came] === "." || next.has(came)) return null;
@@ -294,7 +306,7 @@ export function decodeLines(layout: LinkLayout, code: string): Lines | null {
     while (next.has(at)) {
       const after = next.get(at)!;
       // Two cells apart: the bridge between them is in the line.
-      if (stepBetween(size, at, after, layout.wrap) === 0) {
+      if (layoutStep(layout, at, after) === 0) {
         const bridge = (at + after) / 2;
         if (layout.cells[bridge] !== CELL_BRIDGE) return null;
         line.push(bridge);

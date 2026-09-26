@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_CODE_LONGEST, PUZZLE_SPECS } from "../puzzles.constants";
-import { decodeLayout, encodeAnswer, neighboursOf } from "./code";
+import { decodeLayout, encodeAnswer, hexNeighboursOf, neighboursOf } from "./code";
 import { difficultyScores, measureSolved, type LevelMeasure } from "./difficulty";
 import { symmetryKey } from "./generate";
 import { isTwist } from "./ladder";
@@ -57,7 +57,8 @@ export function levelSuite(size: number): void {
       for (const [index, [givens, answer]] of tsunagiLevelsOf(size).entries()) {
         const layout = decodeLayout(givens, size)!;
         for (const [a, b] of layout.ends) {
-          expect(neighboursOf(size, a), `level ${index + 1}: a pair sits side by side`).not.toContain(b);
+          // Side by side on the board's own lattice: six ways round on a hexagon.
+          expect(layout.hex ? hexNeighboursOf(size, a) : neighboursOf(size, a), `level ${index + 1}: a pair sits side by side`).not.toContain(b);
           expect([...answer].filter((letter) => letter === answer[a]).length).toBeGreaterThanOrEqual(3);
         }
       }
