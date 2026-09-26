@@ -5,7 +5,7 @@ import { levelShown } from "@/lib/xp/levelShown";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpForBadge } from "@/lib/xp/xpScope";
 
-import { StripGames } from "./StripGames";
+import { StripGames, StripIp } from "./StripGames";
 
 /**
  * A MEMBER'S OWN FIGURES, ON ONE LINE UNDER THE MASTHEAD, EACH A LINK.
@@ -42,6 +42,7 @@ export async function MemberStrip() {
       <Link href="/xp" className="whitespace-nowrap underline-offset-4 hover:text-ink hover:underline" data-testid="strip-xp">
         {xp.toLocaleString("en-US")} XP
       </Link>
+      <StripIp />
     </nav>
   );
 }

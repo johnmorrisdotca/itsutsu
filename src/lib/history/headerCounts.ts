@@ -5,14 +5,22 @@ import { cache } from "react";
 
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { ipTotalOf } from "@/lib/points/ipBoards";
 import { ratedRecordOf, type RatedRecord } from "@/lib/rating/ratedRecord";
 
 import { gamesGoing } from "./gamesGoing";
 import { fetchMyGames } from "./myGames";
 import { seatClaims } from "./seatCookie";
 
-/** The header's four figures: what is waiting on the reader, what they have going, and their rated record. */
-export type HeaderCounts = { yourMove: number; going: number; offered: number; record: RatedRecord | null };
+/** The header's figures: what is waiting on the reader, what they have going, their rated record, and their IP. */
+export type HeaderCounts = {
+  yourMove: number;
+  going: number;
+  offered: number;
+  record: RatedRecord | null;
+  /** Their IP, all time, beside their XP (`ipTotalOf`); null for a browser with no member behind it. */
+  ip: number | null;
+};
 
 /**
  * THE HEADER'S GAME COUNTS, WORKED OUT IN THE PAGE'S OWN RENDER.
@@ -37,10 +45,12 @@ export const headerCounts = cache(async (): Promise<HeaderCounts | null> => {
   const memberId = await currentMemberId();
   if (claims.size === 0 && memberId === null) return null;
   const keepFinishedDays = await keepFinishedDaysFor(memberId);
-  const [queue, record] = await Promise.all([
+  // The IP is one indexed sum over the reader's own rows, read alongside the queue rather than after it.
+  const [queue, record, ip] = await Promise.all([
     fetchMyGames(claims, memberId, new Date(), keepFinishedDays, { limit: 1 }),
     ratedRecordOf(memberId),
+    memberId === null ? Promise.resolve(null) : ipTotalOf(memberId),
   ]);
   const { groups } = queue;
-  return { yourMove: groups.yourMove.length, going: gamesGoing(groups), offered: groups.offered.length, record };
+  return { yourMove: groups.yourMove.length, going: gamesGoing(groups), offered: groups.offered.length, record, ip };
 });

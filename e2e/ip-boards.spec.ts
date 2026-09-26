@@ -55,6 +55,10 @@ test("a game won puts the winner on the IP boards, and a stranger sees them shut
     await expect(page.getByTestId("player-ip")).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));
     await expect(page.getByTestId("player-ip-all")).toHaveAttribute("data-place", /^[1-9]\d*$/);
     await expect(page.getByTestId("player-ip-month")).toHaveAttribute("href", "/points");
+    // And the strip under the masthead, on every page they open, beside their XP: their IP, leading to the board.
+    const stripIp = page.getByTestId("member-strip").getByTestId("strip-ip");
+    await expect(stripIp).toHaveAttribute("data-ip", String(gameMax("freestyle", 9)));
+    await expect(stripIp).toHaveAttribute("href", "/points");
     await page.goto(`/players/${await memberIdFor(them.email)}`);
     await expect(page.getByTestId("player-ip")).toHaveAttribute("data-ip", "0");
     await expect(page.getByTestId("player-ip-none")).toBeVisible();

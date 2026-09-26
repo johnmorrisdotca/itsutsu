@@ -53,17 +53,26 @@ export const SITE_SCOPE: IpScope = { variants: RULE_VARIANT_LIST, puzzles: PUZZL
  * read, so the two can never count differently. Null when the scope holds
  * nothing to count.
  */
-function totalsOf(scope: IpScope, since: Date | null, reader: TestModeReader): Prisma.Sql | null {
+function totalsOf(
+  scope: IpScope,
+  since: Date | null,
+  reader: TestModeReader,
+  /** One member's rows only, by the member indexes: their own total, not the whole board's. */
+  only: string | null = null,
+): Prisma.Sql | null {
   const parts: Prisma.Sql[] = [];
+  const black = only === null ? Prisma.empty : Prisma.sql` AND "blackMemberId" = ${only}`;
+  const white = only === null ? Prisma.empty : Prisma.sql` AND "whiteMemberId" = ${only}`;
+  const solver = only === null ? Prisma.empty : Prisma.sql` AND "memberId" = ${only}`;
   if (scope.variants.length > 0) {
     const variants = Prisma.join(scope.variants.map((variant) => Prisma.sql`${variant}`));
     const when = since === null ? Prisma.empty : Prisma.sql` AND "lastMoveAt" >= ${since}`;
     parts.push(Prisma.sql`
       SELECT "blackMemberId" AS "memberId", "blackPoints"::float AS ip FROM "Game"
-      WHERE "variant" IN (${variants}) AND "blackMemberId" IS NOT NULL AND "blackPoints" > 0${when}
+      WHERE "variant" IN (${variants}) AND "blackMemberId" IS NOT NULL AND "blackPoints" > 0${when}${black}
       UNION ALL
       SELECT "whiteMemberId", "whitePoints"::float FROM "Game"
-      WHERE "variant" IN (${variants}) AND "whiteMemberId" IS NOT NULL AND "whitePoints" > 0${when}`);
+      WHERE "variant" IN (${variants}) AND "whiteMemberId" IS NOT NULL AND "whitePoints" > 0${when}${white}`);
   }
   if (scope.puzzles.length > 0) {
     const kinds = Prisma.join(scope.puzzles.map((kind) => Prisma.sql`${kind}`));
@@ -76,7 +85,7 @@ function totalsOf(scope: IpScope, since: Date | null, reader: TestModeReader): P
     parts.push(Prisma.sql`
       SELECT "memberId", best * (CASE "kind" ${weight} ELSE 0 END) AS ip FROM (
         SELECT "memberId", "kind", "givens", MAX("points") AS best FROM "PuzzleSolve"
-        WHERE "kind" IN (${kinds})${when}
+        WHERE "kind" IN (${kinds})${when}${solver}
         GROUP BY "memberId", "kind", "givens"
       ) AS best_of_each`);
   }
@@ -135,4 +144,19 @@ export async function ipStandingOf(
   const row = rows[0];
   if (row === undefined || row.ip === null) return null;
   return { ip: Number(row.ip), place: Number(row.above) + 1 };
+}
+
+/**
+ * One member's IP over the whole site, all time: the figure the strip under the
+ * masthead shows beside their XP. The same totals the board counts
+ * (`totalsOf`), narrowed to their own rows by the member indexes — one query
+ * over their games and solves, never the whole board's ranking, because it is
+ * read on every page they open. Their place on the board is on their own page
+ * (`PlayerIp`), where ranking everybody is paid for once.
+ */
+export async function ipTotalOf(memberId: string): Promise<number> {
+  const totals = totalsOf(SITE_SCOPE, null, HIDES_TEST_MEMBERS, memberId);
+  if (totals === null) return 0;
+  const rows = await prisma.$queryRaw<{ ip: number }[]>`SELECT ip FROM (${totals}) AS totals`;
+  return rows.length === 0 ? 0 : Number(rows[0]!.ip);
 }

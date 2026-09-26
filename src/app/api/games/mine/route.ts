@@ -8,6 +8,7 @@ import { gamesGoing } from "@/lib/history/gamesGoing";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { seatClaims } from "@/lib/history/seatCookie";
+import { ipTotalOf } from "@/lib/points/ipBoards";
 import { ratedRecordOf } from "@/lib/rating/ratedRecord";
 
 /**
@@ -37,7 +38,11 @@ export async function GET(request: Request) {
      * who closed the tab comes looking: see `BotCatchUp` and
      * `unansweredBotTurns`. No computer move costs a paid function any more.
      */
-    const [queue, record] = await Promise.all([fetchMyGames(claims, memberId, now, keepFinishedDays), ratedRecordOf(memberId)]);
+    const [queue, record, ip] = await Promise.all([
+      fetchMyGames(claims, memberId, now, keepFinishedDays),
+      ratedRecordOf(memberId),
+      memberId === null ? Promise.resolve(null) : ipTotalOf(memberId),
+    ]);
     const { groups } = queue;
     return NextResponse.json(
       {
@@ -82,6 +87,8 @@ export async function GET(request: Request) {
          * the line reads the same answer, and costs one indexed sum.
          */
         record,
+        /** The reader's IP, beside their XP in the strip — the same figure the page's own render handed over (`headerCounts`). */
+        ip,
       },
       { status: 200, headers: NO_STORE },
     );

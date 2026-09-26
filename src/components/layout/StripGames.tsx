@@ -3,12 +3,13 @@
 import Link from "@/components/ui/Link";
 import useSWR from "swr";
 
+import { thousands } from "@/components/about/XpCurve";
 import { GameCount } from "@/components/games/GameCount";
 import { MINE_KEY } from "@/components/mine/mine.constants";
 import type { RatedRecord } from "@/lib/rating/ratedRecord";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-type Mine = { yourMove: number; going?: number; offered?: number; record?: RatedRecord | null };
+type Mine = { yourMove: number; going?: number; offered?: number; record?: RatedRecord | null; ip?: number | null };
 
 const fetcher = async (url: string): Promise<Mine | null> => {
   const response = await fetch(url);
@@ -73,5 +74,26 @@ export function StripGames({ memberId }: { memberId: string }) {
         </span>
       )}
     </span>
+  );
+}
+
+/**
+ * THE READER'S IP, BESIDE THEIR XP. John, 2026-09-26: "We are showing XP in
+ * the header, but not showing IP." XP is taking part and IP is winning, so the
+ * strip shows both, the same size, and IP leads to the board that ranks it.
+ *
+ * The same answer as the counts beside it (`MINE_KEY`), which the page's own
+ * render handed over (`headerCounts`, one indexed sum over the reader's rows):
+ * no request of its own. Nothing is drawn until it has arrived, and nothing
+ * for a browser with no member behind it.
+ */
+export function StripIp() {
+  const { data } = useSWR(MINE_KEY, fetcher, { refreshInterval: 0, revalidateOnMount: false, revalidateOnFocus: true, dedupingInterval: 2_000 });
+  const ip = data?.ip;
+  if (ip === undefined || ip === null) return null;
+  return (
+    <Link href="/points" className={ITEM} data-testid="strip-ip" data-ip={ip}>
+      {thousands(ip)} IP
+    </Link>
   );
 }
