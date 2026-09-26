@@ -80,6 +80,13 @@ export const MY_GAMES_COPY = {
   },
   stale: "Stale",
   staleHint: (days: number) => `No move for more than ${days} days. Resign it, or make a move.`,
+  /*
+   * A ROW'S ONE PLAIN-SIGHT BUTTON is the way into the game (John, 2026-09-26:
+   * "The most prominent button should be Play or Resume… to play your turn, not
+   * an accidental resign button"). Resign is in the row's "⋯" (`rowMore`).
+   */
+  rowOpen: { yourMove: "Your move →", open: "Open →" },
+  rowMore: { title: "Resign, and anything else this game can do", label: (players: string) => `More for ${players}` },
   resign: { label: "Resign", kanji: "投了" },
   resignConfirm: "Resign this game? The other side wins and it is filed in the record.",
   /*
