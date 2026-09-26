@@ -352,6 +352,8 @@ export function SetUpGame({
           onGame={(variant) => setRules(applyRulesChange(settled, { variant }))}
           disabled={busy}
           hasAccount={canAsk}
+          appearance={{ ...appearance, felt }}
+          onFelt={chooseFelt}
         />
       ) : (
       <>

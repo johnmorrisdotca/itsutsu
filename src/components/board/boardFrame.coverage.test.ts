@@ -45,11 +45,14 @@ describe("the set-up preview", () => {
     expect(game).toContain("SET_UP_PREVIEW_BOX");
     expect(puzzle).toContain("SET_UP_PREVIEW_BOX");
     expect(puzzle).toContain("<BoardFrame");
-    expect(read("src/components/live/PuzzleHere.tsx")).toContain("<PuzzleBoardPreview kind={puzzle} size={size}");
+    // One row of preview and sizes, on the screen that chooses among every game and on a puzzle's own set-up.
+    expect(read("src/components/puzzles/PuzzleSetUp.tsx")).toContain("<PuzzleBoardPreview kind={kind} size={size}");
+    expect(read("src/components/live/PuzzleHere.tsx")).toContain("<PuzzleBoardAndSizes kind={puzzle} size={size}");
+    expect(read("src/components/puzzles/PuzzleSetUp.tsx")).toContain("<PuzzleBoardAndSizes kind={kind} size={size}");
   });
 
   it("is never a picture file", () => {
-    for (const file of ["src/components/live/PuzzleHere.tsx", "src/components/live/PuzzleBoardPreview.tsx", "src/components/live/BoardPreview.tsx"]) {
+    for (const file of ["src/components/live/PuzzleHere.tsx", "src/components/live/PuzzleBoardPreview.tsx", "src/components/live/BoardPreview.tsx", "src/components/puzzles/PuzzleSetUp.tsx"]) {
       expect(read(file), `${file} draws a picture where the live board belongs`).not.toMatch(/<GameThumb|<img|\.jpg/);
     }
   });

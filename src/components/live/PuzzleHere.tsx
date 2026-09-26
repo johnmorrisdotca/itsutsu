@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-import { PuzzleSetUp, PuzzleSizes } from "@/components/puzzles/PuzzleSetUp";
+import type { Appearance, Felt } from "@/components/board/board.types";
+import { PuzzleBoardAndSizes, PuzzleSetUp } from "@/components/puzzles/PuzzleSetUp";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { GamePicker } from "./GamePicker";
-import { PuzzleBoardPreview } from "./PuzzleBoardPreview";
-import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES, SET_UP_SUMMARY } from "./picker.constants";
+import { SET_UP_SUMMARY } from "./picker.constants";
 
 /**
  * THE SET-UP SCREEN WITH A PUZZLE CHOSEN: the puzzle's name where the game's
@@ -30,6 +30,8 @@ export function PuzzleHere({
   onGame,
   disabled,
   hasAccount,
+  appearance,
+  onFelt,
 }: {
   puzzle: PuzzleKind;
   onPuzzle: (kind: PuzzleKind | null) => void;
@@ -39,6 +41,9 @@ export function PuzzleHere({
   disabled: boolean;
   /** Whether this reader has an account, which a race needs. */
   hasAccount: boolean;
+  /** The reader's board and the way to change its colour, which the screen already holds for a game (`useFeltChoice`). */
+  appearance?: Appearance;
+  onFelt?: (felt: Felt) => void;
 }) {
   const copy = PUZZLE_DISPLAY[puzzle];
   // The size belongs to the puzzle it was chosen for: another puzzle starts at its own usual size.
@@ -63,12 +68,7 @@ export function PuzzleHere({
           onPuzzle={onPuzzle}
           underFamilies={
             // The picture and its sizes side by side, in the very row a game's board and its boards stand in.
-            <div className={`${PICK_BOARD_ROW} py-2 ${PICK_BOARD_ROW_UNDER_FAMILIES}`}>
-              <div className={PICK_BOARD_PREVIEW}>
-                <PuzzleBoardPreview kind={puzzle} size={size} />
-              </div>
-              <PuzzleSizes kind={puzzle} size={size} onSize={onSize} beside />
-            </div>
+            <PuzzleBoardAndSizes kind={puzzle} size={size} onSize={onSize} appearance={appearance} onFelt={onFelt} underFamilies />
           }
         />
         <PuzzleSetUp key={puzzle} kind={puzzle} hasAccount={hasAccount} framed={false} sized={{ size, onSize }} />

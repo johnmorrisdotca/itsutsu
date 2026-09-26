@@ -4,7 +4,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance, Felt } from "@/components/board/board.types";
+import { useFeltChoice } from "@/components/board/useFeltChoice";
+import { PuzzleBoardPreview } from "@/components/live/PuzzleBoardPreview";
+import {
+  PICK_BOARD_PREVIEW,
+  PICK_BOARD_ROW,
+  PICK_BOARD_ROW_UNDER_FAMILIES,
+  PICK_CHIP_OPEN,
+  PICK_CHIP_SHUT,
+  PICK_WORD_CHIP,
+} from "@/components/live/picker.constants";
 import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
@@ -32,6 +43,7 @@ export function PuzzleSetUp({
   hasAccount,
   framed = true,
   sized,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   kind: PuzzleKind;
   /** A race is between two members, so a session with no account is told so rather than offered one. */
@@ -43,6 +55,8 @@ export function PuzzleSetUp({
    * game's boards beside the board (`PuzzleHere`). Left out, this draws them.
    */
   sized?: { size: number; onSize: (size: number) => void };
+  /** The reader's board, for a puzzle drawn on the board itself: its colour is chosen under the preview (`PuzzleBoardPreview`). */
+  appearance?: Appearance;
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
@@ -57,6 +71,8 @@ export function PuzzleSetUp({
   // Gomoji's Strict, off unless chosen, at any level; like Hint, not carried into a race.
   const [strict, setStrict] = useState(false);
   const [racing, setRacing] = useState<"" | "making" | string>("");
+  // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).
+  const { felt, chooseFelt } = useFeltChoice(appearance);
 
   /*
    * A race: this browser makes the puzzle, posts it whole, and the site
@@ -87,7 +103,16 @@ export function PuzzleSetUp({
   return (
     // Unframed inside the set-up screen's own panel, which already is one: a box in a box is what the page-shape rules forbid.
     <section className={`${framed ? PANEL_CLASS : ""} flex flex-col gap-5`} data-testid="puzzle-set-up" {...readyMark(hydrated)}>
-      {sized === undefined ? <PuzzleSizes kind={kind} size={size} onSize={setOwnSize} /> : null}
+      {/*
+        THE BOARD AND ITS SIZES SIDE BY SIDE, as a game's set-up draws them
+        (`GameAndBoardChooser`): the live preview at the size and level chosen,
+        and, where the puzzle is drawn on the board itself, its colours under
+        it. John, 2026-09-25: "we aren't showing the Preview Board. Show the
+        Preview Board too. And the Board colour options."
+      */}
+      {sized === undefined ? (
+        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} />
+      ) : null}
 
       {/*
         THE PUZZLE'S OWN SETTINGS, UNDER A HEADING, BELOW THE CHOICE OF PUZZLE —
@@ -264,6 +289,39 @@ export function PuzzleSetUp({
  * now refuses a size picture that is not `BoardSizeMark`. What each size is
  * for is said in the settings below (`PuzzleSetUp`), not under the tiles.
  */
+/**
+ * A puzzle's live preview with its sizes beside it: the row a game's board and
+ * its boards stand in (`PICK_BOARD_ROW`), on the set-up screen that chooses
+ * among every game (`PuzzleHere`, under the families) and on a puzzle's own.
+ */
+export function PuzzleBoardAndSizes({
+  kind,
+  size,
+  onSize,
+  level,
+  appearance,
+  onFelt,
+  underFamilies = false,
+}: {
+  kind: PuzzleKind;
+  size: number;
+  onSize: (size: number) => void;
+  level?: PuzzleLevel;
+  appearance?: Appearance;
+  onFelt?: (felt: Felt) => void;
+  /** Under the row of families, where from a laptop's width the pair joins that row (`PICK_BOARD_ROW_UNDER_FAMILIES`). */
+  underFamilies?: boolean;
+}) {
+  return (
+    <div className={`${PICK_BOARD_ROW} py-2 ${underFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`}>
+      <div className={PICK_BOARD_PREVIEW}>
+        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} />
+      </div>
+      <PuzzleSizes kind={kind} size={size} onSize={onSize} beside />
+    </div>
+  );
+}
+
 export function PuzzleSizes({ kind, size, onSize, beside = false }: { kind: PuzzleKind; size: number; onSize: (size: number) => void; beside?: boolean }) {
   return (
     <BoardPicker value={size} sizes={PUZZLE_SPECS[kind].offered} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} />

@@ -114,13 +114,13 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // Even sides only: a line holds as many black stones as white.
   blackAndWhite: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 144 },
   // A size is the word's length. 30: six guesses of five letters, the longest answer; the givens are the word alone.
-  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true },
+  gomoji: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
   /* Six guesses at every length, the longest answer six guesses of five kana; the givens are the word and its grey word. */
-  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false, strict: true },
+  gomojiKana: { sizes: [3, 4, 5], offered: [3, 4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 30, helps: false, strict: true, wordGrid: "gomojiKana" },
   // Gomoji in French, from hermitdave's FrequencyWords: the same shape as English's, accents folded away.
-  gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true },
+  gomojiMot: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
   // Gomoji in German: the same shape again, its alphabet carrying Ä, Ö and Ü as letters of their own.
-  gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true },
+  gomojiWort: { sizes: [4, 5], offered: [4, 5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 30, helps: false, strict: true, wordGrid: "gomoji" },
 };
 
 /**
