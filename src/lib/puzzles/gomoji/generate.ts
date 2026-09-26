@@ -1,6 +1,8 @@
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom } from "../random";
-import { dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { encodeFutagoGivens } from "./futago";
+import { isFutagoSeed } from "./futagoSeed";
 import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
 
 /**
@@ -20,10 +22,26 @@ import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
  * A DAY'S SEED (`dailyWordSeed`) hides that day's word instead, at any level:
  * the word everybody meets today, drawn from its frozen pool
  * (`dailyWords/`), never from the live list.
+ *
+ * A FUTAGO'S SEED (`futagoSeed.ts`) hides two words, never one twice: two
+ * drawn from the level's list, or a day's two from the pool.
  */
 export function generateGomoji(size: number, level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "gomoji"): Puzzle {
   const words = answersFor(size, level === "easy", lang);
   if (words.length === 0) throw new Error(`No ${size}-letter words.`);
+  if (isFutagoSeed(seed)) {
+    const pair = dailyFutagoWordsOfSeed(kind, size, seed) ?? drawTwo(words, seed);
+    // Found when both are: the first guessed, then the second (`futago.ts`).
+    return { kind, size, level, seed, givens: encodeFutagoGivens(pair), solution: pair.join("") };
+  }
   const word = dailyWordOfSeed(kind, size, seed) ?? words[Math.floor(seededRandom(seed)() * words.length)]!;
   return { kind, size, level, seed, givens: encodeHidden(word), solution: word };
+}
+
+/** Two different words from a list, the seed deciding which. */
+function drawTwo(words: readonly string[], seed: number): [string, string] {
+  const random = seededRandom(seed);
+  const first = Math.floor(random() * words.length);
+  const second = Math.floor(random() * (words.length - 1));
+  return [words[first]!, words[second >= first ? second + 1 : second]!];
 }

@@ -14,10 +14,12 @@ import { useKeptRun } from "./useKeptRun";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
+import { isFutagoGivens } from "@/lib/puzzles/gomoji/futago";
+import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { PuzzleWayBack } from "./PuzzleWayBack";
@@ -383,7 +385,9 @@ export function SolveDone({
   const router = useRouter();
   const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeed(), checks, strict, headStart })}`);
+    // A Futago's Another is two more words (`futago.ts`): its seed says so.
+    const twins = PUZZLE_SPECS[puzzle.kind].wordGrid !== undefined && isFutagoGivens(puzzle.givens);
+    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, strict, headStart, twins })}`);
   };
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">

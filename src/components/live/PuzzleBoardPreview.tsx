@@ -69,9 +69,12 @@ export function PuzzleBoardPreview({
   level,
   appearance = DEFAULT_APPEARANCE,
   onFelt,
+  twins = false,
 }: {
   kind: PuzzleKind;
   size: number;
+  /** A Gomoji's Futago (`futago.ts`): its two boards side by side, in the same box, so choosing it moves nothing. */
+  twins?: boolean;
   /** The level chosen, where it changes the board: a Gomoji's guesses are its rows. The kind's own level when left out. */
   level?: PuzzleLevel;
   /** The reader's board, so a puzzle drawn on the board itself shows the colour they chose. */
@@ -90,7 +93,7 @@ export function PuzzleBoardPreview({
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} />
         ) : (
-          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} />
+          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} boards={twins ? 2 : 1} />
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
@@ -120,18 +123,21 @@ function WordGridPreview({
   level,
   style,
   appearance,
+  boards,
 }: {
   layout: "gomoji" | "gomojiKana";
   size: number;
   level: PuzzleLevel;
   style: WordStyle;
   appearance: Appearance;
+  /** One board, or a Futago's two side by side. */
+  boards: 1 | 2;
 }) {
   const free = layout === "gomojiKana" && level !== "hard" ? 1 : 0;
-  return (
+  const grid = (
     <GomojiGrid
       size={size}
-      rows={free + guessesFor(layout, size, level, free)}
+      rows={free + guessesFor(layout, size, level, free, boards)}
       guesses={[]}
       marks={[]}
       typing={emptyRow(size)}
@@ -140,6 +146,13 @@ function WordGridPreview({
       appearance={appearance}
       onChoose={NOTHING}
     />
+  );
+  if (boards === 1) return grid;
+  return (
+    <div className="grid h-full w-full grid-cols-2 items-center gap-1.5" data-testid="set-up-futago-preview">
+      {grid}
+      {grid}
+    </div>
   );
 }
 

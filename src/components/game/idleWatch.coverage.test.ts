@@ -40,6 +40,15 @@ const NOT_ASKED: Record<string, string> = {
   "src/components/game/EmbedGame.tsx": "a board inside another site's page, with no clock, no polling and nothing kept",
 };
 
+/**
+ * A part of another surface, never a page's board on its own, each with the
+ * reason: it is asked through whatever draws it, and the test below holds
+ * every file that draws it to asking, or to being listed as not played on.
+ */
+const PART_OF: Record<string, string> = {
+  "src/components/puzzles/FutagoBoards.tsx": "a Futago's two Gomoji grids, drawn only by a Gomoji's solve, which asks, or its replay, which is not played on",
+};
+
 const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|GomojiGrid)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
@@ -64,7 +73,7 @@ describe("the idle question", () => {
 
   it("is asked on every surface a person plays on", () => {
     for (const file of surfaces) {
-      if (file in NOT_PLAYED_ON || file in NOT_ASKED) continue;
+      if (file in NOT_PLAYED_ON || file in NOT_ASKED || file in PART_OF) continue;
       expect(readFileSync(file, "utf8"), `${file} draws a board or a grid and never asks whether anybody is there`).toMatch(ASKS);
     }
   });
@@ -75,6 +84,19 @@ describe("the idle question", () => {
       expect(readFileSync(file, "utf8"), `${file} is listed as not played on but draws a board that is not readOnly`).toMatch(/readOnly/);
     }
     for (const file of Object.keys(NOT_ASKED)) expect(surfaces, `${file} no longer draws a board; take it off the list`).toContain(file);
+  });
+
+  it("a part is asked through every file that draws it", () => {
+    const every = [...tsxUnder("src/components"), ...tsxUnder("src/app")];
+    for (const part of Object.keys(PART_OF)) {
+      expect(surfaces, `${part} no longer draws a board; take it off the list`).toContain(part);
+      const name = part.slice(part.lastIndexOf("/") + 1, -".tsx".length);
+      const drawers = every.filter((file) => new RegExp(`<${name}[\\s>]`).test(readFileSync(file, "utf8")));
+      expect(drawers.length, `${part} is drawn by nothing`).toBeGreaterThan(0);
+      for (const file of drawers) {
+        expect(file in NOT_PLAYED_ON || ASKS.test(readFileSync(file, "utf8")), `${file} draws ${name} and never asks whether anybody is there`).toBe(true);
+      }
+    }
   });
 
   it("the carriers really ask", () => {

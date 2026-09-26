@@ -1,7 +1,9 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
-import { encodeKanaGivens, greyWordFor, kanaWordFor } from "./kanaCode";
+import { encodeKanaGivens, greyWordFor, kanaWordFor, otherKanaWordFor } from "./kanaCode";
+import { encodeKanaFutagoGivens } from "../gomoji/futago";
+import { isFutagoSeed } from "../gomoji/futagoSeed";
 import { kanaWordsOf } from "./kanaWords";
-import { dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
 
 /**
  * Making a kana Gomoji puzzle from a seed: the word, and on easy and medium
@@ -13,6 +15,14 @@ import { dailyWordOfSeed } from "../dailyWords/dailyPools";
  */
 export function generateGomojiKana(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const words = kanaWordsOf(size);
+  /* A Futago's two words (`futago.ts`), and a free grey word grey against both of them. */
+  if (isFutagoSeed(seed)) {
+    const easy = level === "easy";
+    const first = kanaWordFor(words, easy, seed);
+    const pair = dailyFutagoWordsOfSeed("gomojiKana", size, seed) ?? ([first, otherKanaWordFor(words, easy, seed, first)] as const);
+    const grey = level === "hard" ? null : greyWordFor(words, pair, seed);
+    return { kind: "gomojiKana", size, level, seed, givens: encodeKanaFutagoGivens(pair, grey), solution: pair.join("") };
+  }
   const word = dailyWordOfSeed("gomojiKana", size, seed) ?? kanaWordFor(words, level === "easy", seed);
   const grey = level === "hard" ? null : greyWordFor(words, word, seed);
   return { kind: "gomojiKana", size, level, seed, givens: encodeKanaGivens(word, grey), solution: word };

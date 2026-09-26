@@ -2,6 +2,7 @@ import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { wordOfDay } from "./dailyCycle";
 import { dayIndexOf, dayOfDailyWordSeed } from "./dailyDay";
+import { dayOfFutagoSeed } from "../gomoji/futagoSeed";
 import type { DailyLanguage, DailyPool, DayWord, PackedDailyPool } from "./dailyWords.types";
 import { DAILY_POOL_DE } from "./pool.de.data";
 import { DAILY_POOL_EN } from "./pool.en.data";
@@ -107,6 +108,31 @@ export function dailyWordOfSeed(kind: PuzzleKind, size: number, seed: number): s
   const day = dayOfDailyWordSeed(seed);
   if (day === null) return null;
   return dailyWordOf(kind, size, day)?.word ?? null;
+}
+
+/**
+ * A DAY'S FUTAGO (`futago.ts`): two words a day at every length, from the same
+ * pool as the day's one word and in an order of their own, drawn two places at
+ * a time — day N is places 2N and 2N + 1 of the Futago's cycles. So the two
+ * words of a day are never one word twice, and the year the one-word cycle
+ * keeps between two plays of a word (`dailyCycle.ts`) holds for every
+ * Futago word too, half a year of days apart at worst. Null for a day or a
+ * length with no words.
+ */
+export function dailyFutagoWordsOf(kind: PuzzleKind, size: number, day: string): readonly [string, string] | null {
+  const pools = dailyPoolsOf(kind, size);
+  if (pools === null) return null;
+  const key = `${dailyLanguageOf(kind)}:${size}:futago`;
+  const index = dayIndexOf(day);
+  const first = wordOfDay(key, pools, 2 * index);
+  const second = wordOfDay(key, pools, 2 * index + 1);
+  return first === null || second === null ? null : [first.word, second.word];
+}
+
+/** The two words a seed hides when it is a day's Futago seed (`futagoDailySeed`), or null for every other seed. */
+export function dailyFutagoWordsOfSeed(kind: PuzzleKind, size: number, seed: number): readonly [string, string] | null {
+  const day = dayOfFutagoSeed(seed);
+  return day === null ? null : dailyFutagoWordsOf(kind, size, day);
 }
 
 /**

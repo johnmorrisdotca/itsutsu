@@ -1,7 +1,5 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
-import { decodeKanaGivens, decodeKanaGuesses } from "../gomojiKana/kanaCode";
-import { decodeGuesses, languageOf } from "./code";
-import { guessesFor } from "./layout";
+import { guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
 export type GuessesTaken = { used: number; allowed: number };
@@ -26,20 +24,12 @@ export function guessesTaken(
   answer: string | null,
 ): GuessesTaken | null {
   if (answer === null) return null;
-  const at = level as PuzzleLevel;
-  if (kind === "gomojiKana") {
-    const guesses = decodeKanaGuesses(answer, size);
-    const given = decodeKanaGivens(givens, size);
-    if (guesses === null || given === null) return null;
-    return { used: guesses.length, allowed: guessesFor("gomojiKana", size, at, given.grey === null ? 0 : 1) };
-  }
-  if (kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort") {
-    const guesses = decodeGuesses(answer, size, languageOf(kind));
-    if (guesses === null) return null;
-    // Mot and Wort are laid out as English is.
-    return { used: guesses.length, allowed: guessesFor("gomoji", size, at, 0) };
-  }
-  return null;
+  if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort") return null;
+  // A Futago's allowance is its own, a guess more than one word's (`futago.ts`); a kana puzzle's free grey word takes a row and is no guess.
+  const hidden = hiddenWordsOf(kind, size, givens);
+  const guesses = guessesOf(kind, size, answer);
+  if (hidden === null || guesses === null) return null;
+  return { used: guesses.length, allowed: wordRowsOf(kind, size, level as PuzzleLevel, hidden) };
 }
 
 /** "3/6", as a board prints it. */

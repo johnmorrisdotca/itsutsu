@@ -20,7 +20,7 @@ describe("the Check allowance in a puzzle's address", () => {
 
   it("reads back what it writes", () => {
     const query = Object.fromEntries(new URLSearchParams(puzzleQuery({ size: 6, level: "hard", seed: 7, checks: 1 }).slice(1)));
-    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false, strict: false, headStart: false });
+    expect(puzzleAsked("numberPlace", query)).toEqual({ size: 6, level: "hard", seed: 7, checks: 1, hints: false, strict: false, headStart: false, twins: false });
   });
 });
 
