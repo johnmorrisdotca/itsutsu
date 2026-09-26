@@ -45,6 +45,7 @@ export function WordReplay({
   headStart = false,
   style,
   appearance = DEFAULT_APPEARANCE,
+  position,
 }: {
   kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort";
   size: number;
@@ -57,9 +58,17 @@ export function WordReplay({
   style: WordStyle;
   /** The reader's board colour; the default wood where nobody has asked for it. */
   appearance?: Appearance;
+  /**
+   * Where the replay stands, held by the page around it when the box can be
+   * opened on its own (`BoardFocus` moves its children, which would start a
+   * replay of its own again at the end); null there means the end.
+   */
+  position?: { at: number | null; go: (index: number) => void };
 }) {
   const last = guesses.length;
-  const [at, setAt] = useState(last);
+  const [own, setOwn] = useState(last);
+  const at = position === undefined ? own : (position.at ?? last);
+  const setAt = position === undefined ? setOwn : position.go;
   const played = guesses.slice(0, Math.min(at, last));
   const kana = kind === "gomojiKana";
   const lang = languageOf(kind);
