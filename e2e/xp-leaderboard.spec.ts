@@ -211,6 +211,9 @@ test("the board opens on XP, highest first", async ({ page }) => {
   // The level badge is on the row, and it leads to that level's own page.
   const row = await rowFor(page, beta.name);
   await expect(row.getByTestId("level-name")).toHaveAttribute("href", "/xp/levels/80");
+  // And their IP beside their XP: a seeded member has won nothing, which is a total of nought, not a dash.
+  await expect(page.getByTestId("xp-leaderboard").locator("thead")).toContainText("IP");
+  await expect(row.getByTestId("xp-board-ip")).toHaveAttribute("data-ip", "0");
   expect(crashes, crashes.join("\n")).toEqual([]);
 });
 

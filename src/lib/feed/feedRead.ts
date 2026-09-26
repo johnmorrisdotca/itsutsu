@@ -12,7 +12,9 @@ import { IMPORTED_XP_TYPES } from "@/lib/xp/importedXp.constants";
 import { xpForBadge } from "@/lib/xp/xpScope";
 
 import { DAY_MS, FEED_LIMITS } from "./feed.constants";
-import { gameEntry, orderFeed, puzzleEntries, xpEntries } from "./feed";
+import { ipEarnedSince } from "@/lib/points/ipBoards";
+
+import { gameEntry, ipEntries, orderFeed, puzzleEntries, xpEntries } from "./feed";
 import type { FeedEntry, FeedGameRow, FeedPerson, FeedSeatStanding, FeedXpDay } from "./feed.types";
 import { everyoneMayShow, mayBeNamed } from "./feedEveryone";
 import { addedEntries, gamesToldByNews, newsEntries } from "./feedNews";
@@ -123,7 +125,7 @@ export async function readMineFeed(reader: FeedReader, now = new Date()): Promis
   const buddies = await buddyMemberIds(reader.id);
   const people = [reader.id, ...buddies];
 
-  const [games, earned, credited, solves] = await Promise.all([
+  const [games, earned, credited, solves, won] = await Promise.all([
     prisma.game.findMany({
       where: {
         AND: [{ OR: [{ blackMemberId: { in: people } }, { whiteMemberId: { in: people } }] }, inWindow(since)],
@@ -143,6 +145,8 @@ export async function readMineFeed(reader: FeedReader, now = new Date()): Promis
       take: FEED_LIMITS.puzzlesRead,
       select: { id: true, memberId: true, kind: true, finishedAt: true },
     }),
+    // IP won by the reader and their buddies, earning by earning, from the same SQL the boards count.
+    ipEarnedSince(people, since, FEED_LIMITS.ipRead),
   ]);
 
   const members = await membersOf([...people, ...seatIds(games)]);
@@ -157,6 +161,7 @@ export async function readMineFeed(reader: FeedReader, now = new Date()): Promis
     ...games.map((row) => gameEntry(feedRow(row, names), followed, reader.id)).filter((line): line is FeedEntry => line !== null),
     ...xpEntries([...earned, ...credited], totals, persons, reader.id),
     ...puzzleEntries(solves, reader.timeZone, persons, reader.id),
+    ...ipEntries(won, reader.timeZone, persons, reader.id),
   ];
   return orderFeed(lines, FEED_LIMITS.entries);
 }
@@ -207,9 +212,9 @@ async function xpTotals(reader: FeedReader, buddies: readonly string[]): Promise
  * programs. Also left out: a game with a member banned from the site, and a
  * game with somebody the reader has chosen to ignore.
  */
-export async function readEveryoneFeed(readerId: string | null, now = new Date()): Promise<FeedEntry[]> {
+export async function readEveryoneFeed(readerId: string | null, now = new Date(), zone: string | null = null): Promise<FeedEntry[]> {
   const since = windowStart(now);
-  const [games, ignored, news] = await Promise.all([
+  const [games, ignored, news, won] = await Promise.all([
     prisma.game.findMany({
       where: {
         AND: [inWindow(since)],
@@ -228,9 +233,11 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
     }),
     readerId === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(readerId),
     readNews(since),
+    // Everybody's IP, earning by earning: told a day at a time, only of those this tab may name (below).
+    ipEarnedSince(null, since, FEED_LIMITS.ipRead),
   ]);
 
-  const members = await membersOf([...seatIds(games), ...newsMemberIds(news)]);
+  const members = await membersOf([...seatIds(games), ...newsMemberIds(news), ...won.map((one) => one.memberId)]);
   const names = namesOf(members);
   const standing = (id: string | null): FeedSeatStanding => {
     const member = id === null ? undefined : members.get(id);
@@ -258,5 +265,15 @@ export async function readEveryoneFeed(readerId: string | null, now = new Date()
       return gameEntry(shown, everybody, readerId);
     })
     .filter((line): line is FeedEntry => line !== null);
-  return orderFeed([...lines, ...told, ...addedEntries(GAME_ADDED, now, FEED_LIMITS.windowDays)], FEED_LIMITS.entries);
+  /*
+   * IP WON, under the games' own rule: only somebody this tab may name — an
+   * adult or a program (`mayBeNamed`), not banned, not ignored by the reader,
+   * and never a Test member. A child's winnings are theirs and their buddies'
+   * to see, on the other tab.
+   */
+  const nameable = (id: string) => mayBeNamed(standing(id)) && welcome(id) && members.get(id)?.unclaimableBecause !== UNCLAIMABLE_REASONS.test;
+  const shownWon = won.filter((one) => nameable(one.memberId));
+  const winners = new Map<string, FeedPerson>(shownWon.map((one) => [one.memberId, { memberId: one.memberId, name: members.get(one.memberId)?.name ?? "" }]));
+  const ipLines = ipEntries(shownWon, zone, winners, readerId);
+  return orderFeed([...lines, ...told, ...ipLines, ...addedEntries(GAME_ADDED, now, FEED_LIMITS.windowDays)], FEED_LIMITS.entries);
 }

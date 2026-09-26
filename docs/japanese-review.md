@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (170)
+## 1. Written by a machine — please check these (172)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -136,6 +136,8 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first. | **まだ何もありません。あなたや仲間が対局を始めたり終えたり、経験値を得たり、レベルが上がったり、パズルを解いたりすると、ここに新しい順で表示されます。** | Nothing yet. When you or your buddies start or finish a game, earn experience, go up a level or solve a puzzle, it is shown here, newest first. |  |
 | — — — | Find buddies → | **仲間を探す →** | Find buddies. |  |
 | — — — | Your feed | **あなたの近況** | Your recent activity. |  |
+| — — — | {who} won {ip} | **{who}が{ip}を勝ち取りました** | {who} won {ip}. |  |
+| — — — | You won {ip} | **{ip}を勝ち取りました** | You won {ip}. |  |
 | — — — | What you and your buddies have been playing lately, newest first. | **あなたと仲間が最近遊んだこと。新しい順です。** | What you and your buddies played recently. Newest first. |  |
 | — — — | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only computer players and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース(初めての出来事、新しい首位、最速記録)です。名前を表示するのは、コンピューターと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. |  |
 | — — — | {who} reached level {level}, {name} | **{who}がレベル{level}「{name}」になりました** | {who} became level {level}, "{name}". |  |

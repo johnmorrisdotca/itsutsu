@@ -37,6 +37,9 @@ export type FeedXpEntry = FeedLine<"xp" | "credited"> & { points: number };
 
 export type FeedLevelEntry = FeedLine<"level"> & { level: number };
 
+/** IP won in one day, by one member: see `ipEntries`. */
+export type FeedIpEntry = FeedLine<"ip"> & { points: number };
+
 export type FeedPuzzlesEntry = FeedLine<"puzzles"> & { variant: string; count: number };
 
 /**
@@ -66,6 +69,7 @@ export type FeedEntry =
   | FeedStartedEntry
   | FeedXpEntry
   | FeedLevelEntry
+  | FeedIpEntry
   | FeedPuzzlesEntry
   | FeedNewsEntry
   | FeedAddedEntry;

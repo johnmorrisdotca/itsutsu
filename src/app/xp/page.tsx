@@ -29,6 +29,7 @@ import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
 import { xpWhoFor } from "@/lib/xp/xpWhoServer";
 import { xpScopeHref } from "@/lib/xp/xpScope";
 import { xpScopeFor } from "@/lib/xp/xpScopeServer";
+import { ipTotalsOf } from "@/lib/points/ipBoards";
 
 export const metadata = {
   title: "XP leaderboard",
@@ -118,9 +119,11 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
    * Over the rows the narrowing already chose. Behind next follows the scope; a
    * gain never includes imported credit under either scope — see `xpGains.ts`.
    */
-  const [gains, above] = await Promise.all([
+  const [gains, above, ip] = await Promise.all([
     fetchXpBoardGains({ rows: board.items }),
     fetchXpAboveTotal({ cursor: paging.cursor, sort: paging.sort, scope }),
+    // Each row's IP beside its XP: one query over the rows on screen, never a read per row.
+    ipTotalsOf(board.items.map((row) => row.id), reader),
   ]);
 
   /* The justification under every total that includes another site's credit. */
@@ -209,6 +212,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           viewerZone={viewer?.timeZone ?? ""}
           rankAmong={narrowed ? XP_WHO_SAID[who] : undefined}
           gains={gains}
+          ip={ip}
           above={above}
           empty={
             narrowed ? (

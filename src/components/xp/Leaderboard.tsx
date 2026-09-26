@@ -177,6 +177,12 @@ export type LeaderboardProps = {
    */
   gains: ReadonlyMap<string, XpGain>;
   /**
+   * Each row's IP, all time, by member id (`ipTotalsOf`): what they have won,
+   * beside what they have taken part in. John, 2026-09-26: "We show people
+   * earning their XP but no mention of IP anywhere". Absent is none won.
+   */
+  ip: ReadonlyMap<string, number>;
+  /**
    * The total of the row directly above this page's first row — the previous
    * page's last — or null on the first page, where the top row has nobody above.
    */
@@ -196,6 +202,7 @@ export function Leaderboard({
   scope,
   notes,
   gains,
+  ip,
   above,
 }: LeaderboardProps) {
   const spec = xpBoardSortSpec(scope) as SortSpec<string>;
@@ -221,6 +228,10 @@ export function Leaderboard({
             </SortHead>
             <SortHead {...head} param="xp">
               XP
+            </SortHead>
+            {/* Not sortable: IP is summed from the games and solves for the rows on screen, and ranked on its own board (/points). */}
+            <SortHead {...head} param={null} title="Itsutsu Points, won by results alone: the IP board ranks them">
+              IP
             </SortHead>
             {/*
               Not sortable, any of the three: a gain is summed from the ledger for
@@ -253,7 +264,7 @@ export function Leaderboard({
              * Not The Way To It".
              */
             <tr className={ROW_CLASS}>
-              <td className="py-3 pr-3 text-sm" colSpan={8} data-testid="xp-board-empty">
+              <td className="py-3 pr-3 text-sm" colSpan={9} data-testid="xp-board-empty">
                 {empty}
               </td>
             </tr>
@@ -279,6 +290,9 @@ export function Leaderboard({
                     <LevelName level={xpLevelFor(row.xp)} />
                   </td>
                   <td className={CELL} data-testid="xp-board-xp">{countText(row.xp)}</td>
+                  <td className={`${CELL} text-muted`} data-testid="xp-board-ip" data-ip={ip.get(row.id) ?? 0}>
+                    {countText(ip.get(row.id) ?? 0)}
+                  </td>
                   <td className={`${CELL} text-moss`} data-testid="xp-board-today">
                     {xpGainText(gains.get(row.id)?.today)}
                   </td>

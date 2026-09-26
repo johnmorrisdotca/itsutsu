@@ -41,7 +41,7 @@ export default async function FeedPage({ searchParams }: PageProps<"/feed">) {
   const now = new Date();
   const zone = member?.timeZone ?? null;
   const entries = everyone
-    ? await readEveryoneFeed(member?.id ?? null, now)
+    ? await readEveryoneFeed(member?.id ?? null, now, zone)
     : member === null
       ? []
       : await readMineFeed({ id: member.id, timeZone: member.timeZone, xp: member.xp, xpEverywhere: member.xpEverywhere }, now);
