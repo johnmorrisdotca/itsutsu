@@ -293,18 +293,35 @@ export type Pausing = {
 };
 
 /** The line over the grid: what was asked, the seed, and the clock. */
-export function SolveHeader({ puzzle, elapsedMs, pausing, headStart = false }: { puzzle: Puzzle; elapsedMs: number; pausing?: Pausing; headStart?: boolean }) {
+export function SolveHeader({
+  puzzle,
+  elapsedMs,
+  pausing,
+  headStart = false,
+  asked,
+}: {
+  puzzle: Puzzle;
+  elapsedMs: number;
+  pausing?: Pausing;
+  headStart?: boolean;
+  /** What a puzzle of fixed levels says in place of size, level and number (Tsunagi's "Level 12 of 100"). */
+  asked?: ReactNode;
+}) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
       <p className="text-sm text-muted" data-testid="puzzle-asked">
-        {sizeWord(puzzle.size, puzzle.kind)} · {PUZZLE_LEVEL_DISPLAY[puzzle.level].label}{" "}
-        <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
-        {headStart ? (
-          <span data-testid="puzzle-asked-head-start">
-            {" "}· {HEAD_START_DISPLAY.label} <span className="font-mincho">{HEAD_START_DISPLAY.kanji}</span>
-          </span>
-        ) : null}
-        <span className="ml-2 text-xs">№ {puzzle.seed}</span>
+        {asked ?? (
+          <>
+            {sizeWord(puzzle.size, puzzle.kind)} · {PUZZLE_LEVEL_DISPLAY[puzzle.level].label}{" "}
+            <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
+            {headStart ? (
+              <span data-testid="puzzle-asked-head-start">
+                {" "}· {HEAD_START_DISPLAY.label} <span className="font-mincho">{HEAD_START_DISPLAY.kanji}</span>
+              </span>
+            ) : null}
+            <span className="ml-2 text-xs">№ {puzzle.seed}</span>
+          </>
+        )}
       </p>
       {/*
         THE CLOCK ON THE LEFT, PAUSE ON THE RIGHT, and Pause always there. John,
@@ -400,7 +417,10 @@ export function SolveDone({
   checks = null,
   strict = false,
   headStart = false,
+  onward,
 }: {
+  /** Where a puzzle of fixed levels goes on to, in place of Another and the set-up: Tsunagi's next level, and its board of levels. */
+  onward?: { next: { href: string; label: string } | null; all: { href: string; label: string } };
   puzzle: Puzzle;
   done: Done;
   hasAccount: boolean;
@@ -433,7 +453,18 @@ export function SolveDone({
       </p>
       {race === null ? null : <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>}
       <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
-        {race === null ? (
+        {race === null && onward !== undefined ? (
+          <>
+            {onward.next === null ? null : (
+              <Link href={onward.next.href} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="puzzle-next-level">
+                {onward.next.label}
+              </Link>
+            )}
+            <Link href={onward.all.href} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-all-levels">
+              {onward.all.label}
+            </Link>
+          </>
+        ) : race === null ? (
           <>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
               Another {copy.label} →

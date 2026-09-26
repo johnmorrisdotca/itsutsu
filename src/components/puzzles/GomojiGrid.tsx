@@ -39,7 +39,7 @@ const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size
  * files a real game's board picture is fingerprinted against
  * (`boardArtFingerprint.ts`), and this rule has nothing to do with any of them.
  */
-function feltOrWoodTheme(appearance: Appearance): BoardThemeTokens {
+export function feltOrWoodTheme(appearance: Appearance): BoardThemeTokens {
   return appearance.felt !== "wood" ? FELTS[appearance.felt] : BOARD_THEMES[appearance.boardTheme];
 }
 

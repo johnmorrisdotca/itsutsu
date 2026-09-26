@@ -12,7 +12,9 @@ import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
+import { TsunagiLevelFastest } from "./TsunagiLevelFastest";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
@@ -36,9 +38,13 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis. */
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
-  const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
-  /* The reader's board colour, so Gomoji's picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for the four Gomojis. */
-  const appearance = words ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
+  const tsunagi = kind === "tsunagi";
+  const { wordStyle, tsunagiMarks } = words || tsunagi ? await preferencesFor() : { wordStyle: undefined, tsunagiMarks: undefined };
+  /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`); read only for a puzzle drawn on the board. */
+  const appearance = drawnOnBoard(kind) ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
+  /* Tsunagi's levels this member has solved at this size, so a level past the open rows is shut (`TsunagiSolve`). One read, for Tsunagi only. */
+  const solved = tsunagi && reader.memberId !== null ? await tsunagiSolvedBy(reader.memberId) : null;
+  const known = Object.fromEntries(Object.entries(solved?.[asked.size] ?? {}).map(([level, best]) => [level, best.elapsedMs]));
   return (
     <Page>
       <SiteHeader />
@@ -53,9 +59,11 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null } : null} />
         </WordStyleProvider>
       </div>
+      {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
+      {tsunagi && asked.seed !== null ? <TsunagiLevelFastest size={asked.size} level={asked.seed} /> : null}
       <footer className="border-t border-rule pt-5 text-sm text-muted">
         <p>
           {copy.tagline}{" "}

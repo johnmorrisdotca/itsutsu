@@ -5,10 +5,10 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { sizeWord } from "@/components/puzzles/puzzles.constants";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
-import { familyPath, playPath } from "@/lib/gomoku/slugs";
+import { familyPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 
@@ -59,7 +59,8 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
                   <GameName variant={kind} raised />
                 </span>
                 <span className="text-xs text-muted">
-                  {sizeWord(run.size, kind)} · {PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
+                  {/* A fixed level is named by its number (Tsunagi), every other puzzle by its level. */}
+                  {sizeWord(run.size, kind)} · {PUZZLE_SPECS[kind].fixedLevels === true ? `Level ${run.seed}` : PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
                   {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
                   {asked.hints ? " · hints" : ""}
                   {run.strict ? " · strict" : ""}
@@ -67,6 +68,11 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
+                {PUZZLE_SPECS[kind].fixedLevels === true ? (
+                  <Link href={`${setUpPath(kind)}?size=${run.size}`} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
+                    All levels
+                  </Link>
+                ) : null}
                 <Link href={href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="puzzle-going-continue">
                   {MY_GAMES_COPY.continueGame} →
                 </Link>

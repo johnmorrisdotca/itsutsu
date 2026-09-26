@@ -7,10 +7,12 @@ import { appearanceFor } from "@/lib/auth/memberAccount";
 import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzleSetUp } from "./PuzzleSetUp";
+import { TsunagiSetUp } from "./TsunagiSetUp";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
@@ -26,9 +28,20 @@ import { GameTrail } from "@/components/games/GameTrail";
  * the reader's own board colour and style, so those two are read for it, and
  * for nothing else: every other puzzle is paper, and its page reads no row.
  */
-export async function PuzzleSetUpPage({ kind, hasAccount, memberId }: { kind: PuzzleKind; hasAccount: boolean; memberId: string | null }) {
+export async function PuzzleSetUpPage({
+  kind,
+  hasAccount,
+  memberId,
+  query = {},
+}: {
+  kind: PuzzleKind;
+  hasAccount: boolean;
+  memberId: string | null;
+  /** The address's query: Tsunagi's `?size=` opens its board of levels at that size. */
+  query?: Record<string, string | string[] | undefined>;
+}) {
   const copy = PUZZLE_DISPLAY[kind];
-  const onBoard = PUZZLE_SPECS[kind].wordGrid !== undefined;
+  const onBoard = drawnOnBoard(kind);
   const [appearance, preferences] = onBoard ? await Promise.all([appearanceFor(memberId), preferencesFor()]) : [null, null];
   return (
     <Page>
@@ -48,9 +61,32 @@ export async function PuzzleSetUpPage({ kind, hasAccount, memberId }: { kind: Pu
           </>
         }
       />
-      <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
-        <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} />
-      </WordStyleProvider>
+      {kind === "tsunagi" ? (
+        <TsunagiSetUp
+          hasAccount={hasAccount}
+          appearance={appearance ?? undefined}
+          marksChosen={preferences?.tsunagiMarks ?? null}
+          solved={memberId === null ? {} : bestTimes(await tsunagiSolvedBy(memberId))}
+          initialSize={sizeAsked(kind, query)}
+        />
+      ) : (
+        <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
+          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} />
+        </WordStyleProvider>
+      )}
     </Page>
+  );
+}
+
+/** The size an address asks for, where the puzzle has it; the puzzle's own default otherwise. */
+function sizeAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): number {
+  const asked = Number(Array.isArray(query.size) ? query.size[0] : query.size);
+  return PUZZLE_SPECS[kind].sizes.includes(asked) ? asked : PUZZLE_SPECS[kind].defaultSize;
+}
+
+/** A member's solved Tsunagi levels as the board of levels reads them: each level's best time. */
+function bestTimes(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): Record<number, Record<number, number>> {
+  return Object.fromEntries(
+    Object.entries(solved).map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.elapsedMs]))]),
   );
 }

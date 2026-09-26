@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { playPath } from "@/lib/gomoku/slugs";
+import { playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -16,6 +17,8 @@ import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
 import { NumberSolve } from "./NumberSolve";
+import type { TsunagiMarks } from "./puzzles.constants";
+import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 
 /**
@@ -50,9 +53,12 @@ export function PuzzlePlay({
   headStart = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
+  tsunagi = null,
 }: {
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
+  /** Tsunagi's levels already solved at this size on the account, and whether it is played by colours or numbers. */
+  tsunagi?: { known: Record<number, number>; marks: TsunagiMarks | null } | null;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -79,11 +85,16 @@ export function PuzzlePlay({
      that would draw a different one. */
   useEffect(() => {
     if (seed !== null) return;
+    // A puzzle of fixed levels has no seed to draw: no level asked is the board of levels to choose one on.
+    if (PUZZLE_SPECS[kind].fixedLevels === true) {
+      router.replace(`${setUpPath(kind)}?size=${size}`);
+      return;
+    }
     router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict, headStart })}`);
   }, [seed, kind, size, level, checks, hints, strict, headStart, router]);
 
-  /* A kind whose words load by length (the kana Gomoji) waits for its list; every other kind is ready at once. */
-  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" ? null : `${kind}:${size}`);
+  /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi) waits for them; every other kind is ready at once. */
+  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" ? null : `${kind}:${size}`);
   useEffect(() => {
     let live = true;
     void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
@@ -132,6 +143,19 @@ export function PuzzlePlay({
     case "gomojiMot":
     case "gomojiWort":
       return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+    case "tsunagi":
+      return (
+        <TsunagiSolve
+          key={key}
+          puzzle={puzzle}
+          hasAccount={hasAccount}
+          race={seat}
+          resumed={race === null ? resumed : null}
+          appearance={appearance}
+          known={tsunagi?.known}
+          marksChosen={tsunagi?.marks ?? null}
+        />
+      );
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     default:

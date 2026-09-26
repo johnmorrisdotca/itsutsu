@@ -199,3 +199,66 @@ export const WORD_KEY_COUNT =
 
 /** A key nothing is known of yet; a marked key takes its tile's colours (`WORD_TILE_MARK`), text and all. */
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";
+
+/*
+ * TSUNAGI: marbles joined by lines, on the board itself. A marble is shaded as
+ * the board's own stones are (`STONE_SETS`, `WORD_STONE_LOOK`): light at the
+ * upper left, deep at the rim. Twelve colours, most of them from Okabe and
+ * Ito's palette for colour-blind readers, ordered so the five pairs of a small
+ * board are the most unlike (no two blues, and no green, which a green felt
+ * would swallow); slate comes last, where a dark felt would hide it. Numbers,
+ * the other way to play, puts the pair's number on a plain shell stone and
+ * draws every line in a soft tint.
+ */
+export type TsunagiMarks = "colours" | "numbers";
+
+/** Each pair's colour as hue, saturation and lightness, for the marble, its line and the wash of its cells. */
+export const TSUNAGI_COLOURS: readonly (readonly [number, number, number])[] = [
+  [24, 100, 44], // vermillion
+  [202, 77, 60], // sky blue
+  [54, 88, 56], // yellow
+  [326, 48, 62], // reddish purple
+  [40, 22, 90], // shell
+  [36, 100, 50], // orange
+  [218, 90, 36], // deep blue
+  [164, 100, 31], // bluish green, after the first six so a green felt seldom meets it
+  [340, 82, 74], // pink
+  [85, 58, 47], // leaf
+  [28, 45, 36], // chestnut
+  [220, 8, 22], // slate
+];
+
+function hsl([hue, saturation, lightness]: readonly [number, number, number], shift = 0, alpha = 1): string {
+  const light = Math.max(4, Math.min(97, lightness + shift));
+  return alpha === 1 ? `hsl(${hue} ${saturation}% ${light}%)` : `hsl(${hue} ${saturation}% ${light}% / ${alpha})`;
+}
+
+function colourOf(pair: number): readonly [number, number, number] {
+  return TSUNAGI_COLOURS[pair % TSUNAGI_COLOURS.length]!;
+}
+
+/** A marble's face: a shaded ball of the pair's colour, or a shell stone for Numbers, with the ink its number is written in. */
+export function tsunagiMarbleLook(pair: number, marks: TsunagiMarks): { background: string; color: string } {
+  if (marks === "numbers") return { background: STONE_SETS.classic.white, color: STONE_SETS.classic.whiteInk };
+  const colour = colourOf(pair);
+  return {
+    background: `radial-gradient(circle at 35% 30%, ${hsl(colour, 28)} 0%, ${hsl(colour)} 45%, ${hsl(colour, -22)} 100%)`,
+    color: colour[2] > 55 ? "#1a1a1a" : "#ffffff",
+  };
+}
+
+/** The stroke a pair's line is drawn in: its colour, or a soft tint of it for Numbers. */
+export function tsunagiLineColour(pair: number, marks: TsunagiMarks): string {
+  const colour = colourOf(pair);
+  return marks === "numbers" ? hsl([colour[0], 30, 62]) : hsl(colour);
+}
+
+/** The faint wash a line leaves on the cells it runs through. */
+export function tsunagiWash(pair: number, marks: TsunagiMarks): string {
+  const colour = colourOf(pair);
+  return marks === "numbers" ? hsl([colour[0], 30, 70], 0, 0.22) : hsl(colour, 8, 0.28);
+}
+
+/** A marble: round and shaded like a stone, sized to its cell, the pair's number on it for Numbers. */
+export const TSUNAGI_MARBLE =
+  "flex size-[74%] items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-[0_1px_2px_rgba(0,0,0,0.5)]";
