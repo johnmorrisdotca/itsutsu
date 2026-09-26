@@ -86,6 +86,7 @@ export const RULE_VARIANTS = {
   notakto: "notakto",
   toroidalFive: "toroidalFive",
   obstacleFive: "obstacleFive",
+  rockfall: "rockfall",
   scatteredRocks: "scatteredRocks",
   reversi: "reversi",
   classicReversi: "classicReversi",
@@ -137,6 +138,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.toroidalFive,
   RULE_VARIANTS.obstacleFive,
   RULE_VARIANTS.scatteredRocks,
+  RULE_VARIANTS.rockfall,
   RULE_VARIANTS.makerBreaker,
   RULE_VARIANTS.dominoFive,
   RULE_VARIANTS.blockFive,
@@ -822,6 +824,17 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     hotSquares: 2,
     rocks: { placement: ROCK_PLACEMENTS.scattered, arriveAfter: null },
     headStartTurns: 1, // As Obstacle Five: 2 free turns choose where the rocks help.
+  }),
+  rockfall: plain({
+    grid: BOARD_GRIDS.lines,
+    winLength: null,
+    allowFirstPlayerChoice: true,
+    openings: FREE_ONLY,
+    boardSizes: [15],
+    deadSquares: 20,
+    hotSquares: 2,
+    rocks: { placement: ROCK_PLACEMENTS.scattered, arriveAfter: 8 },
+    headStartTurns: 2, // An open board until the eighth stone, as freestyle: 3 free turns give an open four.
   }),
   dropFour: drop({ headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
   ringDrop: drop({ wrap: WRAP_MODES.columns, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.

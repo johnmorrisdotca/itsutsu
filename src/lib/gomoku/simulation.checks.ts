@@ -94,7 +94,12 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
   }
   expect(seen(playedIndex), `${where}: placed stone missing`).toBe(placedStone);
 
-  const lifted = changed.filter((index) => index !== playedIndex);
+  // Rockfall's rocks and hotspots, if this is the stone they fall after; nothing anywhere else.
+  const fallen = changed.filter(
+    (index) => index !== playedIndex && before.board[index] === null && (seen(index) === "blocked" || seen(index) === "hot"),
+  );
+  checkFall(after, fallen, where);
+  const lifted = changed.filter((index) => index !== playedIndex && !fallen.includes(index));
   for (const index of lifted) {
     expect(before.board[index], `${where}: lifted a stone that was not the opponent's`)
       .toBe(otherStone(placedStone));
@@ -249,6 +254,28 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     );
     expect(undone.moves.length).toBe(before.moves.length);
   }
+}
+
+/**
+ * Rockfall, restated by hand from its rules page: twenty rocks and two
+ * hotspots fall after the eighth stone, onto empty points only, a hotspot that
+ * would finish a line by itself is lost, and nothing falls at any other moment
+ * or in any other game. With eight stones down, at least twelve of the twenty
+ * rocks have somewhere to land. The fall never decides the game, so the full
+ * scan finds no line after it.
+ */
+function checkFall(after: GameState, fallen: number[], where: string) {
+  const stones = after.moves.filter((move) => move.kind !== "pass" && move.kind !== "forfeit").length;
+  if (after.settings.variant !== "rockfall" || stones !== 8 || after.status !== GAME_STATUS.playing) {
+    expect(fallen, `${where}: rocks fell where nothing falls`).toEqual([]);
+    return;
+  }
+  const rocks = fallen.filter((index) => after.board[index] === "blocked").length;
+  const hot = fallen.filter((index) => after.board[index] === "hot").length;
+  expect(rocks, `${where}: the wrong number of rocks fell`).toBeGreaterThanOrEqual(12);
+  expect(rocks, `${where}: more rocks fell than there are`).toBeLessThanOrEqual(20);
+  expect(hot, `${where}: more hotspots fell than there are`).toBeLessThanOrEqual(2);
+  expect(bruteForceWinner(after.board, after.settings), `${where}: the fall made a line`).toBeNull();
 }
 
 /** The games where the mover picks, or does not own, the colour placed. Restated by hand. */

@@ -64,6 +64,7 @@ export const GAME_POINTS_WEIGHT: Record<RuleVariant, Weight> = {
   toroidalFive: FIVE,
   obstacleFive: FIVE,
   scatteredRocks: FIVE,
+  rockfall: FIVE,
   dominoFive: { weight: 1.1, bySize: { 13: 1, 15: 1.1, 19: 1.3 } },
   blockFive: { weight: 1.1, bySize: { 13: 1, 15: 1.1, 19: 1.3 } },
   twistFive: { weight: 0.7 },

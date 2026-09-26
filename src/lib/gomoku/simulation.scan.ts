@@ -106,6 +106,7 @@ export function runWinsIndependently(
     case "toroidalFive":
     case "obstacleFive":
     case "scatteredRocks":
+    case "rockfall":
     case "ninuki":
     case "freestyle":
     default:

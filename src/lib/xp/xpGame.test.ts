@@ -400,8 +400,8 @@ describe("the tour covers the site", () => {
     // a set that is complete and unpaid.
     // The puzzles count: "every game played" means every puzzle solved too.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
-    // Forty-seven since Scattered Rocks, on 2026-09-26.
-    expect(XP_VARIANTS_TO_PLAY).toBe(47 + PUZZLE_KIND_LIST.length);
+    // Forty-eight since the two rock games, Scattered Rocks and Rockfall, on 2026-09-26.
+    expect(XP_VARIANTS_TO_PLAY).toBe(48 + PUZZLE_KIND_LIST.length);
     // Nine since Other opened with Gomoji on 2026-09-25.
     expect(GAME_FAMILIES.length).toBe(9);
   });

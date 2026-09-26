@@ -70,8 +70,8 @@ describe("the mixed plan: games nobody has played", () => {
     const unplayed = RULE_VARIANT_LIST.filter((variant) => (LIVE.finishedByVariant[variant] ?? 0) === 0);
     // Twenty-eight on the live site as read, and the five draughts games added since, which nobody has played.
     // Thirty-four with Honeycomb, and thirty-five with Hex Five, neither played when the snapshot was read.
-    // Thirty-six with Scattered Rocks.
-    expect(unplayed).toHaveLength(36);
+    // Thirty-seven with the two rock games, Scattered Rocks and Rockfall.
+    expect(unplayed).toHaveLength(37);
     for (const seed of SEEDS) {
       const plan = planMix(LIVE, options({ seed }));
       for (const variant of unplayed) {

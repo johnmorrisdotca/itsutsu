@@ -277,6 +277,20 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "15×15 only: the board the rocks were tried on. Look at where the rocks cut the long lines before placing the first stone.",
   },
+  rockfall: {
+    label: "Rockfall",
+    kanji: "落石五目",
+    tagline: "Five in a row on an open board, until twenty rocks and two hotspots fall after the eighth stone.",
+    origin:
+      "Our own game, not a version of a published one. Chosen from the same playtest as Scattered Rocks: over sixty games between two equal computer players it went 23 to 21 with sixteen drawn, the closest to even of every board tried.",
+    rules: [
+      "Five in a row wins, and the board starts empty.",
+      "When the eighth stone has been played, twenty rocks and two hotspots fall onto the board, laid from the game's seed.",
+      "A rock or hotspot that falls on a stone is lost: the stone stays. A hotspot that would finish a five by itself is lost too, so the fall never decides a game.",
+      "A rock is a point no stone may be played on and no line runs through. A hotspot counts as a stone of either colour, so a line of either colour may run through it.",
+    ],
+    board: "15×15 only: the board the rocks were tried on. A line built early may be cut by the fall, so the first eight stones are about room as much as shape.",
+  },
   dropFour: {
     label: "Drop Four",
     kanji: "落とし四目",

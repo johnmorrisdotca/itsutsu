@@ -196,6 +196,7 @@ export type RuleVariant =
   | "hex"
   | "hexFive"
   | "obstacleFive"
+  | "rockfall"
   | "scatteredRocks"
   | "checkers"
   | "internationalDraughts"

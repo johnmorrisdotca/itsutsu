@@ -54,6 +54,8 @@ const SCENES: Record<
   toroidalFive: { size: 15, moves: [[0, 7], [7, 0], [14, 8], [7, 14], [1, 6], [13, 9]] },
   obstacleFive: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6]] },
   scatteredRocks: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6]] },
+  // Ten stones, so the picture is taken after the rocks have fallen, which is the whole of the game.
+  rockfall: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6], [9, 9], [5, 5], [9, 7], [5, 7]] },
   reversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },
   classicReversi: { size: 8, moves: [[3, 3], [3, 4], [4, 4], [4, 3], [2, 4], [2, 3], [2, 2]] },
   antiReversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },

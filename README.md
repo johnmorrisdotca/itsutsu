@@ -84,7 +84,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Five in a row | 7 |
 | Drops | 8 |
 | Turn and take | 8 |
-| Strange boards | 7 |
+| Strange boards | 8 |
 | Checkers | 6 |
 | Territory and races | 4 |
 | Small boards | 6 |
@@ -185,6 +185,7 @@ changed.
 | **Toroidal Five** 輪王五目 | Five in a row on a board with no edges: left joins right and top joins bottom, so a line may run off any side and continue from the far one. Every intersection is a centre one. |  |
 | **Obstacle Five** 石場五目 | Five in a row across six dead squares nothing can use and two hotspots that count as either colour. Drawn from the game's seed, so both players see the same board. |  |
 | **Scattered Rocks** 乱石五目 | Five in a row around twelve rocks and two hotspots, laid from the game's seed anywhere but the centre and there from the first move. 15×15 only. |  |
+| **Rockfall** 落石五目 | Five in a row on an open board until the eighth stone, when twenty rocks and two hotspots fall onto every point still empty. A hotspot that would finish a line by itself is lost, so the fall never decides a game. 15×15 only. |  |
 
 Each is a row of data in `VARIANT_SPECS` — the line rule per colour, the
 shapes each colour is forbidden, whether stones capture, stones per turn, a

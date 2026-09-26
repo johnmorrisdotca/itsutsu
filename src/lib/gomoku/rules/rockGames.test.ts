@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { createGame, isLegalMove, legalPoints, playMove } from "../engine";
-import { BLOCKED, GAME_STATUS, HOT, RULE_VARIANTS, STONES, VARIANT_SPECS } from "../gomoku.constants";
+import { BLOCKED, GAME_STATUS, HOT, MOVE_KINDS, RULE_VARIANTS, STONES, VARIANT_SPECS } from "../gomoku.constants";
 import type { GameState, Point, RuleVariant } from "../gomoku.types";
+import { replayMoves, undoMove } from "./record";
 import { rockLayoutFor } from "./rocks";
+import { stonesPlayed } from "./rockfall";
 
 /**
  * The two rock games the obstacle playtest named: Scattered Rocks, whose
@@ -36,8 +38,19 @@ function playAll(state: GameState, points: readonly Point[]): GameState {
   }, state);
 }
 
+/** Eight stones on clear points spread apart, so none of them makes a line. */
+function eightApart(state: GameState): Point[] {
+  const clear = clearPoints(state);
+  const picked: Point[] = [];
+  for (const point of clear) {
+    if (picked.every((other) => Math.max(Math.abs(other.row - point.row), Math.abs(other.col - point.col)) >= 3)) picked.push(point);
+    if (picked.length === 8) break;
+  }
+  return picked;
+}
+
 describe("the rock games read their rocks from the spec", () => {
-  it.each([RULE_VARIANTS.scatteredRocks] as RuleVariant[])(
+  it.each([RULE_VARIANTS.scatteredRocks, RULE_VARIANTS.rockfall] as RuleVariant[])(
     "%s lays every rock and hotspot its spec asks for, on every board it is offered on",
     (variant) => {
       const spec = VARIANT_SPECS[variant];
@@ -96,3 +109,98 @@ describe("Scattered Rocks", () => {
   });
 });
 
+describe("Rockfall", () => {
+  const game = (seed = 5) => createGame({ variant: RULE_VARIANTS.rockfall, size: SIZE, seed, allowUndo: true });
+
+  it("starts on an open board", () => {
+    const state = game();
+    expect(count(state, BLOCKED)).toBe(0);
+    expect(count(state, HOT)).toBe(0);
+  });
+
+  it("drops nothing before the eighth stone, and all of it with the eighth", () => {
+    const state = game();
+    const eight = eightApart(state);
+    const seven = playAll(state, eight.slice(0, 7));
+    expect(count(seven, BLOCKED)).toBe(0);
+    expect(count(seven, HOT)).toBe(0);
+    const fallen = playMove(seven, eight[7]);
+    expect(stonesPlayed(fallen.moves)).toBe(8);
+    expect(count(fallen, BLOCKED)).toBe(20);
+    expect(count(fallen, HOT)).toBe(2);
+    expect(fallen.status).toBe(GAME_STATUS.playing);
+    // And nothing more falls after it.
+    const ninth = clearPoints(fallen).find((point) => at(fallen, point) === null)!;
+    expect(count(playMove(fallen, ninth), BLOCKED)).toBe(20);
+  });
+
+  it("never lands a rock on a stone: the stone stays and the rock is lost", () => {
+    const state = game();
+    const layout = rockLayoutFor(state.settings)!;
+    const eight = eightApart(state);
+    // The first stone goes where a rock would fall.
+    const onRock = layout.dead[0];
+    const moves = [onRock, ...eight.filter((point) => Math.max(Math.abs(point.row - onRock.row), Math.abs(point.col - onRock.col)) >= 3).slice(0, 7)];
+    const fallen = playAll(state, moves);
+    expect(at(fallen, onRock)).toBe(STONES.black);
+    expect(count(fallen, BLOCKED)).toBe(19);
+    for (const point of moves) expect([STONES.black, STONES.white]).toContain(at(fallen, point));
+  });
+
+  it("loses a hotspot that would finish a five by itself, so the fall decides nothing", () => {
+    // A seed whose first hotspot has four clear points in a row beside it, then black's four there.
+    for (let seed = 1; seed < 200; seed += 1) {
+      const state = game(seed);
+      const hot = rockLayoutFor(state.settings)!.hot[0];
+      const clear = new Set(clearPoints(state).map(key));
+      const four = [1, 2, 3, 4].map((step) => ({ row: hot.row, col: hot.col - step }));
+      if (!four.every((point) => point.col >= 0 && clear.has(key(point)))) continue;
+      const whites = clearPoints(state)
+        .filter((point) => Math.abs(point.row - hot.row) >= 3 && point.row % 2 === 0 && point.col % 3 === 0)
+        .slice(0, 4);
+      const fallen = playAll(state, [four[0], whites[0], four[1], whites[1], four[2], whites[2], four[3], whites[3]]);
+      expect(fallen.status).toBe(GAME_STATUS.playing);
+      expect(at(fallen, hot)).toBeNull();
+      expect(count(fallen, HOT)).toBe(1);
+      // Black still has the five to make, with a stone of its own.
+      const won = playMove(fallen, hot);
+      expect(won.status).toBe(GAME_STATUS.won);
+      expect(won.winner).toBe(STONES.black);
+      return;
+    }
+    throw new Error("no seed under 200 put a hotspot beside four clear points");
+  });
+
+  it("counts stones, not passes or turns lost on time", () => {
+    const stone = { row: 0, col: 0, stone: STONES.black, kind: MOVE_KINDS.place };
+    const pass = { row: -1, col: -1, stone: STONES.white, kind: MOVE_KINDS.pass };
+    const forfeit = { row: -1, col: -1, stone: STONES.white, kind: MOVE_KINDS.forfeit };
+    expect(stonesPlayed([stone, pass, stone, forfeit, stone])).toBe(3);
+  });
+
+  it("lifts the rocks again when the eighth stone is undone", () => {
+    const state = game();
+    const eight = eightApart(state);
+    const seven = playAll(state, eight.slice(0, 7));
+    const fallen = playMove(seven, eight[7]);
+    const undone = undoMove(fallen);
+    expect(undone.board).toEqual(seven.board);
+    // And played again, they fall in the same places.
+    expect(playMove(undone, eight[7]).board).toEqual(fallen.board);
+  });
+
+  it("lands them in the same places when the record is replayed", () => {
+    const state = game(77);
+    const eight = eightApart(state);
+    const fallen = playAll(state, eight);
+    const timeline = replayMoves(createGame(state.settings), fallen.moves.map((move) => ({ row: move.row, col: move.col })));
+    expect(timeline[timeline.length - 1].board).toEqual(fallen.board);
+  });
+
+  it("offers no fallen rock or hotspot as a move", () => {
+    const state = game();
+    const fallen = playAll(state, eightApart(state));
+    const layout = rockLayoutFor(state.settings)!;
+    for (const point of [...layout.dead, ...layout.hot]) expect(isLegalMove(fallen, point)).toBe(false);
+  });
+});

@@ -54,6 +54,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   renju: "2026-09-07",
   reversi: "2026-09-07",
   ringDrop: "2026-09-07",
+  rockfall: "2026-09-26",
   russianDraughts: "2026-09-14",
   sannuki: "2026-09-07",
   scatteredRocks: "2026-09-26",

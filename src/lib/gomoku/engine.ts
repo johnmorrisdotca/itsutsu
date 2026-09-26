@@ -37,6 +37,7 @@ import {
   singlesUsedBy,
 } from "./rules/queue";
 import { winningLineFor } from "./rules/lines";
+import { fallRocks } from "./rules/rockfall";
 import { stonesLeftInTurn } from "./rules/turns";
 import { rotateQuadrant } from "./rules/twist";
 import { forfeitTurn } from "./rules/seats";
@@ -389,6 +390,9 @@ export function playMove(
       after = { ...placed, board: cleared.board, moves: [...state.moves, remembered] };
     }
   }
+
+  // A rock game's rocks may fall after this stone: see rules/rockfall.ts.
+  after = fallRocks(after);
 
   if (!after.board.includes(null)) return noPlayLeft(after, WIN_REASONS.full);
 

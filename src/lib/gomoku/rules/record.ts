@@ -25,6 +25,7 @@ import {
   playMove,
 } from "../engine";
 import { leavesNoStone } from "./stoneless";
+import { liftFallenRocks } from "./rockfall";
 
 /** A record nothing says ran a clock: a forfeit on it is refused. */
 const NO_CLOCK: ReplayFacts = { clocked: false };
@@ -127,6 +128,8 @@ function undoOne(state: GameState): GameState {
   for (const point of last.captured ?? []) {
     board[indexOf(size, point)] = otherStone(last.stone);
   }
+  // Rockfall: the rocks that fell after this stone go back up with it.
+  board = liftFallenRocks(board, state.settings, state.moves);
 
   // Checkers: put a king back where it moved from, a captured king back on the board, and reopen its chain.
   let kings = state.kings;

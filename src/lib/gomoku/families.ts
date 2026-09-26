@@ -102,7 +102,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * says rocks where it used to say hexagons.
      */
     blurb: "Boards that do not behave: edges that join, rocks in the way from the start or falling part way through, pieces laid from a queue, and quarters that turn.",
-    games: ["toroidalFive", "obstacleFive", "scatteredRocks", "dominoFive", "blockFive", "twistFive", "twistFour"],
+    games: ["toroidalFive", "obstacleFive", "scatteredRocks", "rockfall", "dominoFive", "blockFive", "twistFive", "twistFour"],
   },
   {
     key: "checkers",
