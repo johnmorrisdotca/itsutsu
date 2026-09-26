@@ -21,7 +21,7 @@ const percent = (share: number) => `${Math.round(share * 100)}%`;
 
 /**
  * IP, ITSUTSU POINTS, FOR THE WHOLE SITE: every game and every puzzle together,
- * this month and all time, and how each is priced. John, 2026-09-25: "XP is
+ * all time, this month and this week, and how each is priced. John, 2026-09-25: "XP is
  * site wide experience and maturity, like in D&D etc... and IP aka Points is
  * only about games. Pure ability", and "EVERY game in every family is also going
  * to have a Leaderboard. So IP matters." Each game's and each family's board
