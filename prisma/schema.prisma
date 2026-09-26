@@ -620,11 +620,6 @@ model Member {
   /// What this column adds is only that it is not a person, which the clock
   /// needs to know (a computer is never late) and the directory shows.
   botTier      String?
-  /// RETIRED, READ BY NOTHING: a test member is the member kind "test" now
-  /// (`unclaimableBecause`). Kept in the schema for one release only, because
-  /// the deploy migrates before the new build is live and the build before it
-  /// still selects this column; the next release drops it with a migration.
-  isTest       Boolean  @default(false)
 
   /// The run over EVERY finished game this member has played here — rated or
   /// friendly, either pool, whoever held the other seat. The rule is
@@ -798,7 +793,6 @@ model Member {
   parentalConsent ParentalConsent?
 
   @@index([botTier])
-  @@index([isTest])
   /// The XP leaderboard's default sort: highest first. The LEVEL is derived from
   /// this column and the curve is monotonic, so sorting by level is sorting by
   /// this — there is nothing to index for it, and nothing to store.
