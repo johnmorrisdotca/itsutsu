@@ -12,7 +12,7 @@ import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
-import { playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -38,6 +38,8 @@ export type Done = {
   problem: string | null;
   /** Ended without being solved: a word whose guesses ran out. Nothing is paid and nothing kept. */
   outOfGuesses?: true;
+  /** The kept solve, once the site has said which it is: the card opens it again, replay and all. */
+  solveId?: string | null;
 };
 
 /** A race this solve is one seat of: its id, when the server started this seat's clock, and the Check allowance both seats race under. */
@@ -218,23 +220,28 @@ export function useSolve(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
             race === null
-              ? { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs, headStart: keeping.headStart === true }
+              ? {
+                  kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs,
+                  checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs, headStart: keeping.headStart === true,
+                  // The grids on the way, for the replay on the solve's page: up to the one before the last entry, which the answer is.
+                  ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
+                }
               : { answer, checksUsed: used },
           ),
         });
-        const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string } | null;
+        const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string; solveId?: string | null } | null;
         if (!answered.ok) {
           setDone({ elapsedMs, paid: null, problem: body?.error ?? "The site could not record that solve." });
           return;
         }
-        setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null });
+        setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, solveId: body?.solveId ?? null });
         // The race page above the solve reads the stamps again, so the result shows without a reload.
         if (race !== null) router.refresh();
       } catch {
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping.headStart],
+    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping],
   );
 
   /**
@@ -413,6 +420,12 @@ export function SolveDone({
             <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
               Change the size or level
             </Link>
+            {/* The solve just kept, to watch again step by step, as every past solve opens. */}
+            {done.solveId ? (
+              <Link href={mySolvePath(puzzle.kind, done.solveId)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-see-solve">
+                Replay this solve
+              </Link>
+            ) : null}
           </>
         ) : null}
         <PuzzleWayBack kind={puzzle.kind} />

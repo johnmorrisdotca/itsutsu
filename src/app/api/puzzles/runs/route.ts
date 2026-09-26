@@ -6,7 +6,7 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { progressFits } from "@/lib/puzzles/puzzleProgress";
-import { decodeStepLog, STEPS_KEPT } from "@/lib/puzzles/stepLog";
+import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
@@ -19,9 +19,6 @@ import { keepRun } from "@/lib/puzzles/server/puzzleRuns";
  * it is keeping and nothing else — there is no answer to check yet, and the
  * time is the browser's, as a finished solve's is.
  */
-/** The longest a step log can be: the first grid whole and every kept step changing every cell. */
-const STEP_LOG_LONGEST = PUZZLE_CODE_LONGEST * 4 * STEPS_KEPT;
-
 /** The steps to keep: the log as sent when it reads back and ends on the grid being kept, else none. */
 function stepsFor(log: string | undefined, progress: string): string | null {
   if (log === undefined) return null;

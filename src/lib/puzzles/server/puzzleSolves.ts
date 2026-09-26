@@ -36,35 +36,45 @@ export type KeptSolve = {
   answer?: string;
   /** False for a word puzzle whose guesses ran out: kept for what it found, never counted as a solve. */
   solved?: boolean;
+  /** Every grid it was on the way (`stepLog.ts`), for the replay on its page; none for a word, whose answer is its steps. */
+  steps?: string | null;
 };
 
-export async function keepSolve(solve: KeptSolve): Promise<void> {
+/** Keeps a checked solve, and says which row it became — null when it could not be kept. */
+export async function keepSolve(solve: KeptSolve): Promise<string | null> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
-    const { answer, solved = true, ...kept } = solve;
+    const { answer, solved = true, steps = null, ...kept } = solve;
     const points = pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
     /* The fastest time before this one, for the Everyone feed's "a new best
        time" — read first, since afterwards this solve is in the answer. */
     const news = { memberId: solve.memberId, kind: solve.kind, size: solve.size, level: solve.level, elapsedMs: solve.elapsedMs, solved };
     const best = await bestBefore(news);
-    await prisma.puzzleSolve.create({
-      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null },
+    const row = await prisma.puzzleSolve.create({
+      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null, steps },
+      select: { id: true },
     });
     await tellSolve(news, best);
+    return row.id;
   } catch (problem) {
     /* The solve has already been checked and paid; a row that could not be
        kept is logged, never a failure the solver is shown. */
     console.error("Could not keep a puzzle solve", solve.memberId, solve.kind, problem);
+    return null;
   }
 }
 
 /** A fastest solve, with the Check allowance it was made under — so a one-check time is never shown as a free one. */
 export type FastestSolve = {
+  /** The solve itself, which its time on the board opens (`SolveTime`). */
+  id: string;
   memberId: string;
   elapsedMs: number;
   finishedAt: Date;
   checksAllowed: number | null;
   hintsUsed: number | null;
+  /** What this one solve scored (`pointsFor`), in its own column on the fastest table. */
+  points: number;
   /** A word's guesses, 3 of 6, beside its time (`guessesTaken`); null for every other puzzle. */
   guesses: GuessesTaken | null;
 };
@@ -93,7 +103,7 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
         where: { kind, size: Number(size), level, solved: true },
         orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,
-        select: { memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true, hintsUsed: true, givens: true, answer: true },
+        select: { id: true, memberId: true, elapsedMs: true, finishedAt: true, checksAllowed: true, hintsUsed: true, points: true, givens: true, answer: true },
       });
       board.get(key)!.fastest = rows.map(({ givens, answer, ...row }) => ({ ...row, guesses: guessesTaken(kind, Number(size), level, givens, answer) }));
     }),
@@ -171,6 +181,8 @@ export type FinishedSolve = {
   level: string;
   givens: string;
   answer: string | null;
+  /** The grids on the way, for the replay (`stepLog.ts`); null for a word and for a solve kept before steps were. */
+  steps: string | null;
   solved: boolean;
   points: number;
   elapsedMs: number;
@@ -190,13 +202,13 @@ export async function ownSolveOf(memberId: string, kind: PuzzleKind, id: string)
   const row = await prisma.puzzleSolve.findUnique({
     where: { id },
     select: {
-      id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, solved: true, points: true,
+      id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, steps: true, solved: true, points: true,
       elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true,
     },
   });
   if (row === null || row.memberId !== memberId || row.kind !== kind) return null;
   return {
-    id: row.id, kind: row.kind, size: row.size, level: row.level, givens: row.givens, answer: row.answer, solved: row.solved, points: row.points,
+    id: row.id, kind: row.kind, size: row.size, level: row.level, givens: row.givens, answer: row.answer, steps: row.steps, solved: row.solved, points: row.points,
     elapsedMs: row.elapsedMs, checksAllowed: row.checksAllowed, checksUsed: row.checksUsed, hintsUsed: row.hintsUsed, raceId: row.raceId, finishedAt: row.finishedAt,
   };
 }

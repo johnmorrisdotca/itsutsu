@@ -1318,10 +1318,15 @@ model PuzzleSolve {
   /// reader that means "solved" — the fastest times, the feed, the counts of
   /// solves — asks for true; the points boards and the player's own list take both.
   solved        Boolean  @default(true)
-  /// What was handed in, kept only where it is the story of the play: a
-  /// Gomoji's guesses, run together. Null for every grid, and for the words
-  /// solved before it was kept.
+  /// What was handed in: a Gomoji's guesses run together, or a grid in its
+  /// kind's code. Null for a solve kept before it was, whose page works the
+  /// grid out again from the givens (`solvedAnswer.ts`).
   answer        String?
+  /// Every grid it was on the way, for the replay on its page (`stepLog.ts`,
+  /// the encoding `PuzzleRun.steps` uses). Null for a word, whose guesses are
+  /// its steps, and for a solve kept before steps were: that page shows the
+  /// finished grid and says so, never a replay made up.
+  steps         String?
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])

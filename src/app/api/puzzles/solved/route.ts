@@ -7,12 +7,26 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { preparePuzzle } from "@/lib/puzzles/generate";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
+import { progressFits } from "@/lib/puzzles/puzzleProgress";
+import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
+
+/**
+ * The steps a solve is kept with, for the replay on its page: the log as sent
+ * when every grid in it is one this puzzle could have been, else none. A log
+ * that does not read is dropped, never the solve — the solve was checked by
+ * its answer, and the steps are only its story.
+ */
+function stepsOfSolve(kind: (typeof PUZZLE_KIND_LIST)[number], size: number, log: string | undefined): string | null {
+  if (log === undefined || PUZZLE_SPECS[kind].helps === false) return null;
+  const codes = decodeStepLog(log, size * size);
+  return codes !== null && codes.every((code) => progressFits(kind, size, code)) ? log : null;
+}
 
 /**
  * A finished puzzle, handed in once.
@@ -66,6 +80,12 @@ const bodySchema = z.object({
    * guess was spent on them.
    */
   headStart: z.boolean().optional(),
+  /**
+   * Every grid it was on the way (`stepLog.ts`, as a kept run's), for the
+   * replay on the solve's page. Kept only where it reads; a word sends none,
+   * its guesses being its steps.
+   */
+  steps: z.string().max(STEP_LOG_LONGEST).optional(),
 });
 
 export async function POST(request: Request) {
@@ -108,7 +128,7 @@ export async function POST(request: Request) {
          points boards and waits in the member's own list, and nothing that
          counts solves ever sees it. John, 2026-09-25: "0 points is only
          possible for never hitting even one letter". */
-      await keepSolve({
+      const solveId = await keepSolve({
         memberId,
         kind,
         size,
@@ -127,7 +147,7 @@ export async function POST(request: Request) {
       const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
       await awardTourBonuses({ memberId, paid, variant: kind, now });
       return NextResponse.json(
-        { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type) },
+        { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type), solveId },
         { headers: NO_STORE },
       );
     }
@@ -139,7 +159,7 @@ export async function POST(request: Request) {
     /* Kept, so the puzzle's page can show the fastest solves and a member
        their own. The browser's clock, said back to it: a solo solve is
        timed by nobody else, which is why a race is timed by the server. */
-    await keepSolve({
+    const solveId = await keepSolve({
       memberId,
       kind,
       size,
@@ -151,6 +171,7 @@ export async function POST(request: Request) {
       pausedMs: parsed.data.pausedMs ?? 0,
       hintsUsed,
       answer,
+      steps: stepsOfSolve(kind, size, parsed.data.steps),
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
     if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);
@@ -159,8 +180,9 @@ export async function POST(request: Request) {
        every game played, and a first puzzle at all can complete every family. */
     await awardTourBonuses({ memberId, paid, variant: kind, now });
 
+    // Which row it became, so the card that says "solved" can open it again, replay and all.
     return NextResponse.json(
-      { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type) },
+      { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type), solveId },
       { headers: NO_STORE },
     );
   } catch (error) {
