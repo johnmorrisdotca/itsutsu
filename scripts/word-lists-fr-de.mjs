@@ -100,7 +100,7 @@ if ([frPath, dePath, frDictPath, deDictPath, frWiktPath, deWiktPath].includes(un
   console.error("Usage: node scripts/word-lists-fr-de.mjs <fr_50k.txt> <de_50k.txt> <Lexique383.tsv> <german.txt> <fr.jsonl> <de.jsonl>");
   process.exit(1);
 }
-const LENGTHS = [4, 5];
+const LENGTHS = [4, 5, 6];
 /** How much of a folded French spelling's use its base readings must be, for it to be a base form. */
 const BASE_SHARE = 0.25;
 
@@ -118,6 +118,8 @@ rudi rudy ryan sara sean stan suzy sven tara theo tina toby tony vera will yvan 
 anton bella billy bjorn bobby brian bruno carla chloe chris chuck clark danny david denis diana emily
 erika frank franz fritz georg greta guido heidi henry horst james jerry jesus jimmy kevin laila larry
 laura manon maria marie marta peter petra regis robin roger sarah scott serge steve tommy mlle
+berthe sylvie claude benoit julien carole robert pascal tarzan figaro boston dundee olympe sparte thrace moloch mauser
+bresil elysee paques bayard
 `;
 const DE_NAMES = `
 abby adam addy alan alex andy anke anna arne bibi bill carl coco cole dave dean dena dirk dodo doug egon
@@ -129,20 +131,28 @@ alain andre anton bella benno bernd billy bjorn bobby brian bruno carla chloe ch
 david denis diana emily erika frank franz fritz georg greta guido heidi henry horst james jerry jesus
 jimmy kevin laila larry laura manon maria marie marta peter petra regis robin roger sarah scott serge
 steve tommy audi polen mars
+barbie boeing toyota michel buddha genfer prager berner
 `;
 /**
  * Vulgar, sexual and slur words actually present at these lengths — found by scanning the candidate lists, not guessed
  * blind — and a French word an English reader sees as one ("rape", a grater).
  */
 const FR_VULGAR = `anal baise bite cocu conne cons fesse merde negre negro nique penis pute putes salop seins vagin zizi homo porno hymen
-pede pine bitte etron beuh tapin rape boche ducon clito fion caca pipi vomi fatma nazi teton chier garce sucer viol sexe idiot`;
+pede pine bitte etron beuh tapin rape boche ducon clito fion caca pipi vomi fatma nazi teton chier garce sucer viol sexe idiot
+bander bordel chiant chieur encule foutre gerber gouine niquer nichon pisser putain salaud salope sperme nympho gigolo libido
+luxure sexuel suceur gammee fuhrer hetero pubien uretre uriner fesser fessee lecher violer verole herpes puceau vierge salace
+extase toxico debile cretin abruti batard tocard ignare neuneu crotte ordure soutif capote voyeur degueu rectum gyneco youpin
+ricain romano`;
 /** The words a slur is most often made of: a real word to guess, not a puzzle's answer. */
-const FR_PEOPLES = `juif juive`;
+const FR_PEOPLES = `juif juive eskimo`;
 /** A contraction's stem, split from its apostrophe by the source's own tokeniser (jusqu'à → "jusqu" + "à") — not a word of its own. */
 const FR_FRAGMENTS = `jusqu`;
 const DE_VULGAR = `arsch fick fickt fotze geil geile hure huren kacke kotze mist neger nutte pisse milf after lesbe porno penis vulva titte
-ficke dirne tunte puff popo zicke luder depp busen tussi idiot`;
-const DE_PEOPLES = `jude arier`;
+ficke dirne tunte puff popo zicke luder depp busen tussi idiot
+bumsen ficken vögeln muschi pimmel nippel pissen pisser kotzen furzen koitus kondom erotik libido vagina voyeur domina inzest
+geilen kiffen kiffer koksen kokain heroin psycho prolet lusche penner fatzke dussel zicken zickig fresse schwul pfaffe suizid
+tampon saufen säufer schiss pinkel poppen eunuch`;
+const DE_PEOPLES = `jude arier moslem türken eskimo`;
 
 const NOT_AN_ANSWER = {
   fr: new Set(`${FR_NAMES} ${FR_VULGAR} ${FR_PEOPLES} ${FR_FRAGMENTS}`.split(/\s+/).filter(Boolean)),

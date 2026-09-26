@@ -19,27 +19,43 @@ const NOT_WORDS = ["rudd", "rood", "aang", "alec", "ahem", "abed", "aldo", "ailo
 
 /** English words each language borrows, which may be guessed but must never be the hidden word. */
 const BORROWED: Record<"fr" | "de", readonly string[]> = {
-  fr: ["cool", "team", "baby", "lady", "boss", "deal", "look", "star", "black", "crash", "house", "loser", "class", "smart"],
-  de: ["like", "team", "song", "cool", "head", "push", "jump", "gate", "army", "take", "after", "party", "crash"],
+  fr: ["cool", "team", "baby", "lady", "boss", "deal", "look", "star", "black", "crash", "house", "loser", "class", "smart", "design", "leader"],
+  de: ["like", "team", "song", "cool", "head", "push", "jump", "gate", "army", "take", "after", "party", "crash", "design", "leader", "update"],
 };
 
 /** Inflected forms, which a dictionary knows and a puzzle does not hide: the base form is the answer. */
 const NOT_BASE: Record<"fr" | "de", readonly string[]> = {
-  fr: ["aime", "fera", "parle", "croit", "sais"],
-  de: ["neue", "gute", "rote", "slums", "alte"],
+  fr: ["aime", "fera", "parle", "croit", "sais", "aimait", "parlez", "grande", "petite"],
+  de: ["neue", "gute", "rote", "slums", "alte", "kleine", "schöne"],
 };
 
-/** Brands and names a dictionary carries unmarked, which the second dictionary (Wiktionary) does not have. */
+/** Brands and names a dictionary carries unmarked, which the second dictionary (Wiktionary) does not have, or the lists of names hold back. */
 const BRANDS: Record<"fr" | "de", readonly string[]> = {
-  fr: ["lego", "ajax", "kodak", "juan"],
-  de: ["volvo", "rolex", "rhein", "ipod"],
+  fr: ["lego", "ajax", "kodak", "juan", "claude", "robert", "sylvie"],
+  de: ["volvo", "rolex", "rhein", "ipod", "toyota", "barbie", "boeing"],
 };
 
 /** Everyday words each list must keep, as answers and as guesses. */
 const EVERYDAY: Record<"fr" | "de", readonly string[]> = {
-  fr: ["arbre", "ecole", "table", "carte", "lapin", "cage", "loup", "pont", "agent", "chat", "rouge"],
-  de: ["abend", "tisch", "vogel", "haus", "brot", "berg", "hand", "kind"],
+  fr: ["arbre", "ecole", "table", "carte", "lapin", "cage", "loup", "pont", "agent", "chat", "rouge", "maison", "jardin", "cheval", "soleil", "oiseau", "enfant"],
+  de: ["abend", "tisch", "vogel", "haus", "brot", "berg", "hand", "kind", "garten", "himmel", "wasser", "sommer", "kirche", "freund"],
 };
+
+/**
+ * GOMOJI 6 (John, 2026-09-26: "Introduce Gomoji 6… I hope we have enough
+ * words for 10 years if possible"). Six letters bring words four and five
+ * never met, so each list was read for vulgarity, slurs, drugs and insults
+ * and the ones found were added to its script's lists: these may be guessed
+ * and are never hidden, as the shorter lengths' are.
+ */
+const NOT_AN_ANSWER_AT_SIX: Record<"en" | "fr" | "de", readonly string[]> = {
+  en: ["raping", "faggot", "orgasm", "heroin", "stupid", "retard"],
+  fr: ["putain", "salope", "encule", "youpin", "gouine", "sperme"],
+  de: ["ficken", "vögeln", "muschi", "kokain", "schwul", "türken"],
+};
+
+/** The fewest six-letter answers a list may hold: four years of one a day, where it now holds 4.7 (German) to 8.1 (English). */
+const LEAST_ANSWERS_AT_SIX = 4 * 365;
 
 describe("the Gomoji word lists", () => {
   for (const lang of ["fr", "de"] as const) {
@@ -65,6 +81,27 @@ describe("the Gomoji word lists", () => {
       for (const word of EVERYDAY[lang]) {
         expect(isWord(word, word.length, lang), `${lang} refuses ${word}`).toBe(true);
         expect(answersFor(word.length, false, lang), `${lang} never hides ${word}`).toContain(word);
+      }
+    });
+  }
+
+  for (const lang of ["en", "fr", "de"] as const) {
+    it(`${lang}: six letters hold years of answers, easy's among them, every one a word that may be guessed`, () => {
+      const answers = answersFor(6, false, lang);
+      const easy = answersFor(6, true, lang);
+      expect(answers.length).toBeGreaterThanOrEqual(LEAST_ANSWERS_AT_SIX);
+      expect(easy.length).toBeGreaterThan(0);
+      for (const word of easy) expect(answers, `${lang} easy ${word} is not an answer`).toContain(word);
+      for (const word of answers) {
+        expect(word).toHaveLength(6);
+        expect(isWord(word, 6, lang), `${lang} hides ${word} and refuses it as a guess`).toBe(true);
+      }
+    });
+
+    it(`${lang}: six letters' vulgarity, slurs, drugs and insults may be guessed, and are never hidden`, () => {
+      for (const word of NOT_AN_ANSWER_AT_SIX[lang]) {
+        expect(isWord(word, 6, lang), `${lang} refuses ${word}`).toBe(true);
+        expect(answersFor(6, false, lang), `${lang} hides ${word}`).not.toContain(word);
       }
     });
   }
