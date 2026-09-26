@@ -6,6 +6,7 @@ import { TABLE_CLASS, TABLE_HEAD_CLASS } from "./PlayerRecord";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
 import type { LadderStanding, VariantStanding } from "@/lib/rating/variantRatings";
+import { withoutLevel, type NameTag } from "@/lib/xp/nameTag.types";
 import { levelShown } from "@/lib/xp/levelShown";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { ReactNode } from "react";
@@ -14,8 +15,9 @@ import { XP_BLANK_BECAUSE } from "./players.constants";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /** A player's name, leading to their page: the one name component, with its flag and badge. */
-export function PlayerLink({ name, memberId }: { name: string; memberId?: string | null }) {
-  return <PlayerName name={name} memberId={memberId} fallback={name} />;
+/** A name on a ladder, with its flag, badge and level (`tag`) as every list draws them. */
+export function PlayerLink({ name, memberId, tag }: { name: string; memberId?: string | null; tag: NameTag | null | undefined }) {
+  return <PlayerName name={name} memberId={memberId} fallback={name} tag={tag ?? undefined} />;
 }
 
 /** A rating tier in a word and its kanji, as the ladder writes it. */
@@ -88,7 +90,8 @@ export function StandingsTable({
       subject="Player"
       rows={standings.map((standing) => ({
         key: standing.key,
-        subject: <PlayerLink name={standing.name} memberId={standing.memberId} />,
+        // The level is the table's own, beside the name (`RecordTable`), so the tag goes without it.
+        subject: <PlayerLink name={standing.name} memberId={standing.memberId} tag={withoutLevel(standing.tag ?? undefined)} />,
         record: standing,
         of: { player: standing.name, variant: standing.variant, pool, rated: "yes" },
         // The pool's own run, from the same row as the figures beside it —
@@ -146,7 +149,7 @@ export function LadderSideView({
   invitation,
   testId = "ladder-side-view",
 }: {
-  standings: VariantStanding[];
+  standings: LadderStanding[];
   /** What no rows MEANS here, in a sentence, under the headings. */
   emptyNote: string;
   /** The way in, for a ladder with nothing on it yet. */
@@ -185,7 +188,7 @@ export function LadderSideView({
                 <tr key={standing.key} className="border-t border-rule">
                   <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
                   <td className="min-w-0 truncate py-1.5 pr-2">
-                    <PlayerLink name={standing.name} memberId={standing.memberId} />
+                    <PlayerLink name={standing.name} memberId={standing.memberId} tag={standing.tag} />
                   </td>
                   <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
                 </tr>

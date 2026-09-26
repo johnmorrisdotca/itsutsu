@@ -6,6 +6,7 @@ import { xpDayKey } from "@/lib/xp/xpDay";
 import { LevelName } from "./LevelName";
 import type { PromotionsTableProps } from "./promotions.types";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { withoutLevel } from "@/lib/xp/nameTag.types";
 
 /**
  * WHO WENT UP A LEVEL, AS A TABLE: who, from which rung to which, and when.
@@ -70,7 +71,7 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                   data-to={promotion.to}
                 >
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback="A member with no name yet" country={tags.get(promotion.memberId)?.country} kind={tags.get(promotion.memberId)?.kind} />
+                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback="A member with no name yet" tag={withoutLevel(tags.get(promotion.memberId))} />
                     {you ? <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span> : null}
                   </td>
                   <td className="py-1.5 pr-3">

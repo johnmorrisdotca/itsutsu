@@ -10,6 +10,7 @@ import { PLAYERS_TABS } from "@/app/players/players.tabs";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
+import { withoutLevel } from "@/lib/xp/nameTag.types";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
 import { IP_HEAD_TITLE, IpCell, XpCell, championIp } from "@/components/players/recordTrailing";
 import { LevelName } from "@/components/xp/LevelName";
@@ -58,7 +59,7 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
               `fetchChampions` read — null for a name with nobody behind it.
             */}
             <span className="flex min-w-0 items-baseline gap-2">
-              <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
+              <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} tag={withoutLevel(champion.leader.tag ?? undefined)} />
               {champion.leader.xp === null ? null : (
                 <LevelName
                   level={levelShown({ xp: champion.leader.xp }) ?? 1}

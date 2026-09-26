@@ -63,9 +63,9 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 <GameThumb variant={game.variant} size="small" />
                 <span className="flex min-w-0 flex-col">
                   <span className="font-medium">
-                    <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className={RAISED_LINK} testId="history-player" />
+                    <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className={RAISED_LINK} testId="history-player" tag={game.blackTag} />
                     <span className="px-2 text-muted">vs</span>
-                    <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className={RAISED_LINK} testId="history-player" />
+                    <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className={RAISED_LINK} testId="history-player" tag={game.whiteTag} />
                   </span>
                   <span className="text-xs text-muted" id={`played-${game.id}`}>
                     <LocalTime at={game.playedAt} />

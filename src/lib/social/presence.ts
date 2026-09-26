@@ -1,6 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import type { NameTag } from "@/lib/xp/nameTag.types";
+import { tagOf } from "@/lib/xp/nameTagsOf";
 import { AGE_BANDS } from "./ageBand.constants";
 
 /** How recently a member was seen, in the three bands the list marks. */
@@ -40,6 +42,8 @@ export type HereNow = {
   timeZone: string;
   /** The member's own clock, if they said where they are. */
   localTime: string | null;
+  /** The flag, badge and level beside the name, off the same row (`tagOf`). */
+  tag: NameTag;
 };
 
 /** The member's wall-clock time in their zone, or null when the zone is unset or unknown. */
@@ -72,7 +76,11 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
     },
     orderBy: { lastSeenAt: "desc" },
     take: HERE_MAX,
-    select: { id: true, email: true, name: true, picture: true, lastSeenAt: true, timeZone: true },
+    select: {
+      id: true, email: true, name: true, picture: true, lastSeenAt: true, timeZone: true,
+      // The marks beside the name, off the row this read already makes.
+      country: true, unclaimableBecause: true, xp: true, xpEverywhere: true,
+    },
   });
   return rows.map((row) => ({
     id: row.id,
@@ -83,5 +91,6 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
     recency: recencyOf(row.lastSeenAt, now),
     timeZone: row.timeZone,
     localTime: localTimeIn(row.timeZone, now),
+    tag: tagOf(row),
   }));
 }

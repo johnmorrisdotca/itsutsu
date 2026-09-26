@@ -2,6 +2,7 @@ import Link from "@/components/ui/Link";
 
 import { gamesHref } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
+import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
@@ -35,6 +36,8 @@ import { mayEmailInvites } from "@/lib/social/childRules";
  */
 export async function MyPeople({ memberId }: { memberId: string }) {
   const [buddies, ignored, age] = await Promise.all([fetchBuddies(memberId), fetchIgnored(memberId), ageBandOf(memberId)]);
+  // The flag, badge and level beside each name, as on the members list, in one read for both lists.
+  const tags = await nameTagsOf([...buddies, ...ignored].map((one) => one.id));
 
   return (
     <div className="flex flex-col gap-4" data-testid="my-people">
@@ -54,8 +57,8 @@ export async function MyPeople({ memberId }: { memberId: string }) {
             {buddies.map((buddy) => (
               <li key={buddy.id} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
                 <RecencyMark recency={buddy.recency} />
-                <span className="font-medium">
-                  <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} />
+                <span>
+                  <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} tag={tags.get(buddy.id)} />
                 </span>
                 <span className="text-xs text-muted">
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
@@ -90,7 +93,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
             {ignored.map((entry) => (
               <li key={entry.id} className="flex items-center gap-3">
                 <span>
-                  <PlayerName name={entry.name} memberId={entry.id} fallback={entry.name} />
+                  <PlayerName name={entry.name} memberId={entry.id} fallback={entry.name} tag={tags.get(entry.id)} />
                 </span>
                 <span className="ml-auto"><IgnoreButton memberId={entry.id} ignoring /></span>
               </li>

@@ -11,6 +11,7 @@ import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.consta
 import { gamesPlayed, ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
+import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 
 /**
  * The players that are programs.
@@ -103,7 +104,8 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
             fallback=""
             className="font-medium"
             testId="computer-player-name"
-            country={entry.country}
+            // A program's marks; the level is the table's own, beside the name (`RecordTable`).
+            tag={{ country: entry.country, kind: MEMBER_KINDS.robot, level: null }}
           />
         </span>
       ),

@@ -6,6 +6,9 @@ import { BOT_NAME_COUNTRIES } from "@/lib/bots/botNames";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 
+import { LevelName } from "@/components/xp/LevelName";
+import type { NameTag } from "@/lib/xp/nameTag.types";
+
 import { CountryMark } from "./CountryMark";
 
 /**
@@ -51,6 +54,7 @@ export function PlayerName({
   testId = "player-name",
   country,
   kind,
+  tag,
   tagged = true,
 }: {
   name: string;
@@ -94,6 +98,14 @@ export function PlayerName({
    */
   kind?: MemberKind;
   /**
+   * THE MARKS EVERY LIST DRAWS AFTER A NAME: flag, kind badge and level, read
+   * for the whole page at once (`nameTagsOf`). John, 2026-09-26: "Buddies has
+   * totally different name formatting… Ladder also is weird since it doesn't
+   * have Flag." A table that says the level in a column of its own passes the
+   * tag `withoutLevel`. `nameMarks.coverage.test.ts` holds every list to it.
+   */
+  tag?: NameTag;
+  /**
    * False only inside a sentence or a heading that already says who this is:
    * a badge in the middle of a line of prose reads as a typo.
    */
@@ -103,13 +115,15 @@ export function PlayerName({
   if (whole === "") return <>{fallback}</>;
   const shown = showWhole ? whole : shownName(whole);
   const botCountry = memberId === null || memberId === undefined ? undefined : BOT_NAME_COUNTRIES.get(memberId);
-  const shownKind = botCountry !== undefined ? MEMBER_KINDS.robot : kind;
-  const shownCountry = country ?? botCountry ?? null;
+  const shownKind = botCountry !== undefined ? MEMBER_KINDS.robot : (tag?.kind ?? kind);
+  const shownCountry = tag?.country ?? country ?? botCountry ?? null;
+  const level = tag?.level ?? null;
   const tags =
-    tagged && (shownCountry !== null || shownKind !== undefined) ? (
-      <span className="ml-1 inline-flex items-center gap-1 align-middle" data-testid="player-tags">
+    tagged && (shownCountry !== null || shownKind !== undefined || level !== null) ? (
+      <span className="ml-1 inline-flex items-center gap-1 align-middle whitespace-nowrap" data-testid="player-tags">
         <CountryMark country={shownCountry} className="text-sm leading-none" />
         {shownKind !== undefined ? <MemberKindBadge kind={shownKind} /> : null}
+        {level !== null ? <LevelName level={level} compact className="text-muted" testId="player-level" /> : null}
       </span>
     ) : null;
   if (!linkable) {

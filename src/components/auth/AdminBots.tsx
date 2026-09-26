@@ -12,6 +12,8 @@ import { RATING_POOLS } from "@/lib/rating/pools";
 import { gamesPlayed, ratingShown, tierShown } from "@/lib/rating/shownRecord";
 
 import { ADMIN_BOTS_COPY } from "./admin.constants";
+import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { BOT_NAME_COUNTRIES } from "@/lib/bots/botNames";
 
 /**
  * The computer players, on the operator's own page.
@@ -97,6 +99,8 @@ export async function AdminBots() {
               fallback=""
               className="font-medium"
               testId="admin-bot-name"
+              // A program's marks, its flag from its id; the level is the table's own (`RecordTable`).
+              tag={{ country: BOT_NAME_COUNTRIES.get(entry.id) ?? null, kind: MEMBER_KINDS.robot, level: null }}
             />
           </span>
           {/*

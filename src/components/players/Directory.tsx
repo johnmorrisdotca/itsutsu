@@ -119,12 +119,12 @@ function directoryRow(
             memberId={entry.id}
             fallback=""
             testId="directory-name"
-            country={entry.country}
-            kind={memberKind({
-              email: entry.email,
-              botTier: entry.botTier,
-              unclaimableBecause: entry.unclaimableBecause,
-            })}
+            // The level is the table's own, beside the name (`RecordTable`), so the tag goes without it.
+            tag={{
+              country: entry.country,
+              kind: memberKind({ email: entry.email, botTier: entry.botTier, unclaimableBecause: entry.unclaimableBecause }),
+              level: null,
+            }}
           />
         ) : (
           entry.email

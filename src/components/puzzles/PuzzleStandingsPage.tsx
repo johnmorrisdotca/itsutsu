@@ -9,7 +9,8 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, historyPath, myGamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { fastestSolvesOf, memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 
 import { FastestTable } from "./PuzzleFastest";
 import { PuzzlePoints } from "./PuzzlePoints";
@@ -23,7 +24,7 @@ import { GameTrail } from "@/components/games/GameTrail";
 export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
   const [board, me] = await Promise.all([fastestSolvesOf(kind), currentMemberId()]);
-  const names = await memberNamesOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
+  const { names, tags } = await namesAndTagsOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
   return (
     <Page>
       <SiteHeader />
@@ -44,7 +45,7 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
         <PuzzlePoints kind={kind} title={copy.label} whole />
       </Suspense>
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-standings">
-        <FastestTable kind={kind} board={board} names={names} whole me={me} />
+        <FastestTable kind={kind} board={board} names={names} tags={tags} whole me={me} />
       </section>
     </Page>
   );

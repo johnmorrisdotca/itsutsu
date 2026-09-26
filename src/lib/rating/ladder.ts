@@ -11,6 +11,7 @@ import { isRefusal, parseCursor, parseLimit, parseSort } from "@/lib/api/paging"
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
+import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
 import type { Prisma } from "@prisma/client";
 
@@ -78,6 +79,8 @@ export type LadderEntry = PlayerProfile & {
   xp: number | null;
   /** The site's IP for the IP column, read in the same pass as `xp`; null where no member is behind the name. */
   ip: number | null;
+  /** The flag, badge and level beside the name (`nameTagsOf`), read with the XP; null with no member behind it. */
+  tag: NameTag | null;
 };
 
 export type LadderPage = PagedEnvelope<LadderEntry> & {
@@ -141,11 +144,16 @@ export async function fetchLadderPage({
    * them, so the XP heading here is plain text. The Members tab orders by it.
    */
   const ids = rows.flatMap((row) => (row.memberId === null ? [] : [row.memberId]));
-  const [xp, ip] = await Promise.all([xpByMemberId(rows.map((row) => row.memberId)), ipTotalsOf(ids, LISTED_ALREADY)]);
+  const [xp, ip, tags] = await Promise.all([
+    xpByMemberId(rows.map((row) => row.memberId)),
+    ipTotalsOf(ids, LISTED_ALREADY),
+    nameTagsOf(ids),
+  ]);
   const items: LadderEntry[] = rows.map((row) => ({
     ...toProfile(row),
     xp: row.memberId === null ? null : (xp.get(row.memberId) ?? null),
     ip: row.memberId === null ? null : (ip.get(row.memberId) ?? 0),
+    tag: row.memberId === null ? null : (tags.get(row.memberId) ?? null),
   }));
   return { items, next, total };
 }

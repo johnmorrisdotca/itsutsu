@@ -10,6 +10,7 @@ import { useLiveScroll } from "@/lib/ui/useLiveScroll";
 import { levelShown } from "@/lib/xp/levelShown";
 
 import { PlayerLink } from "./Standings";
+import { withoutLevel } from "@/lib/xp/nameTag.types";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { XP_BLANK_BECAUSE } from "./players.constants";
@@ -25,7 +26,8 @@ import type { RecordSort } from "./recordSort";
 function ladderRow(player: LadderEntry): RecordTableRow {
   return {
     key: player.key,
-    subject: <PlayerLink name={player.name} memberId={player.memberId} />,
+    // The level is the table's own, beside the name (`RecordTable`), so the tag goes without it.
+    subject: <PlayerLink name={player.name} memberId={player.memberId} tag={withoutLevel(player.tag ?? undefined)} />,
     record: player,
     /*
       These are the ladder's own counting — rated games against people — so

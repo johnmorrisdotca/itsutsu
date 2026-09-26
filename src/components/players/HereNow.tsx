@@ -58,7 +58,7 @@ function Name({ entry }: { entry: Awaited<ReturnType<typeof fetchHereNow>>[numbe
     <span className="flex items-center gap-1">
       <RecencyMark recency={entry.recency} />
       {entry.name.trim() !== "" ? (
-        <PlayerName name={entry.name} memberId={entry.id} fallback="" testId="here-name" />
+        <PlayerName name={entry.name} memberId={entry.id} fallback="" testId="here-name" tag={entry.tag} />
       ) : (
         entry.email
       )}

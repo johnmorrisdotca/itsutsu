@@ -1,6 +1,7 @@
 import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 import type { Cursor, SortDirection } from "@/lib/api/paging.types";
 import type { GameSortField } from "./gameHistory.sort";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 import type {
   GAME_OUTCOME_FILTERS,
   GAME_OUTCOMES,
@@ -144,6 +145,13 @@ export type GameSummary = {
    */
   blackName: string;
   whiteName: string;
+  /**
+   * The flag, badge and level beside each seat's name (`nameTagsOf`), where the
+   * read that made this summary asked for them — the record's pages do, so a
+   * name there reads as on every other list. Absent for a seat with no member.
+   */
+  blackTag?: NameTag;
+  whiteTag?: NameTag;
   /**
    * The names as they were PLAYED, straight off the row.
    *

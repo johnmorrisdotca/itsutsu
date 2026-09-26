@@ -13,7 +13,7 @@ import { PUZZLE_RECORD_SORTS, puzzleRecordAsked, puzzleRecordHref, type PuzzleRe
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { puzzleRecordOf, PUZZLE_RECORD_PAGE } from "@/lib/puzzles/server/puzzleRecord";
-import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import { shownName } from "@/lib/rating/shownName";
 
 import { sizeWord } from "./puzzles.constants";
@@ -45,7 +45,7 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
   const asked = puzzleRecordAsked(kind, query);
   const me = await currentMemberId();
   const record = await puzzleRecordOf(kind, asked);
-  const names = await memberNamesOf([...record.solves.map((solve) => solve.memberId), ...(asked.member === null ? [] : [asked.member])]);
+  const { names, tags } = await namesAndTagsOf([...record.solves.map((solve) => solve.memberId), ...(asked.member === null ? [] : [asked.member])]);
   const whose = asked.member === null ? null : asked.member === me ? "Your" : `${shownName(names.get(asked.member) || "A member")}'s`;
   const chips = chipsOf(kind, asked, whose);
   const pages = Math.max(1, Math.ceil(record.total / PUZZLE_RECORD_PAGE));
@@ -116,7 +116,7 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
           </p>
         ) : null}
 
-        <RecordSolvesTable kind={kind} solves={record.solves} names={names} me={me} counted={record.tally?.counted ?? null} filtered={chips.length > 0} />
+        <RecordSolvesTable kind={kind} solves={record.solves} names={names} tags={tags} me={me} counted={record.tally?.counted ?? null} filtered={chips.length > 0} />
 
         {pages > 1 ? (
           <p className="flex flex-wrap items-center gap-3 text-sm" data-testid="record-pager">
