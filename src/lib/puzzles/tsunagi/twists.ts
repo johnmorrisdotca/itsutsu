@@ -1,4 +1,4 @@
-import { decodeLayout, edgeKey, encodeAnswer, stepBetween, type LinkLayout } from "./code.ts";
+import { decodeLayout, edgeKey, encodeAnswer, inHex, stepBetween, type LinkLayout } from "./code.ts";
 import { layoutOf, randomFilling, symmetryKey, turnsIn, type LinkCandidate } from "./generate.ts";
 import { countSolutions } from "./solve.ts";
 import { stepTable } from "./steps.ts";
@@ -226,5 +226,19 @@ export function wrapCandidate(size: number, random: Random, longest: number, bud
   const crosses = filling.some((path) => path.some((cell, at) => at > 0 && stepBetween(size, path[at - 1]!, cell, false) === 0));
   if (!crosses) return null;
   const { layout, answer } = layoutOf(size, filling, { wrap: true });
+  return proved(layout, answer, size, budget, { bridges: 0, walls: 0, blocked: 0 });
+}
+
+/**
+ * A HEXAGON: the board as Hexversi's honeycomb, the square's corners off the
+ * board, filled with lines that may step along either slant as well as the four
+ * ways a square allows (`hexNeighboursOf`). Only an odd side has a hexagon.
+ */
+export function hexCandidate(size: number, random: Random, longest: number, budget: number): TwistCandidate | null {
+  if (size % 2 === 0) return null;
+  const off = new Set(Array.from({ length: size * size }, (_, at) => at).filter((at) => !inHex(size, at)));
+  const filling = randomFilling(size, random, longest, off, false, true);
+  if (filling === null) return null;
+  const { layout, answer } = layoutOf(size, filling, { blocked: off, hex: true });
   return proved(layout, answer, size, budget, { bridges: 0, walls: 0, blocked: 0 });
 }

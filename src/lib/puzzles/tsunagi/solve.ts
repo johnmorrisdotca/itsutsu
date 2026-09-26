@@ -187,7 +187,8 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
     if (hopeless()) return;
     // The unfinished pair with the fewest ways on.
     let best = -1;
-    let bestWays = 5;
+    // More than any cell can have: four ways on a square, six on a hexagon.
+    let bestWays = 7;
     for (let pair = 0; pair < pairs; pair += 1) {
       if (closed[pair] === 1) continue;
       let ways = 0;

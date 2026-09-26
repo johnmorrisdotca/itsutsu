@@ -350,6 +350,11 @@ export const TSUNAGI_CHIPS = {
     kanji: "爆",
     says: "Every few strokes, a drawn line is broken: cut back to half, or on the hardest boards wiped with a line beside it cut too. The count under the board says when the next one goes off. The same strokes always break the same line, and the stroke that solves the level sets nothing off.",
   },
+  hexagon: {
+    label: "Hexagon",
+    kanji: "六角",
+    says: "A honeycomb: every cell has six neighbours, so a line may run up and down, side to side, and along both slants.",
+  },
   teaches: { label: (what: string) => `New: ${what}`, says: "This block's new idea: its 15th level shows it gently." },
   tests: { label: "Block's test", kanji: "試", says: "This block's test: its 16th level uses its twist hard." },
 } as const;
