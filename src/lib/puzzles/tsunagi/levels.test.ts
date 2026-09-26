@@ -26,7 +26,7 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("tsunagi at %i×%i", (s
 
   // Its own allowance, as the every-variant simulation has: 256 boards re-proved took 30.7 s at 9×9 on a CI runner (0.391.1),
   // over the 30 s default. A timeout here is the runner's speed, not a board without one answer, which fails on its own.
-  it("proves every level has exactly one answer, the stored one, and that it fills the board", { timeout: 180_000 }, () => {
+  it("proves every level has exactly one answer, the stored one, and that it fills the board", () => {
     for (const [index, [givens, answer]] of tsunagiLevelsOf(size).entries()) {
       const layout = decodeLayout(givens, size);
       expect(layout, `level ${index + 1} is not a layout`).not.toBeNull();
@@ -36,8 +36,8 @@ describe.each(TSUNAGI_SIZES.map((size) => [size, size]))("tsunagi at %i×%i", (s
       expect(answer).not.toContain(".");
       expect(checkSolution("tsunagi", size, givens, answer)).toEqual({ ok: true });
     }
-    // About three seconds for the hundred 9×9s on a laptop; room for a slower runner.
-  }, 30_000);
+    // About 15 seconds for the 256 9×9s on a laptop; a CI runner took 30.7 s, so the allowance is generous.
+  }, 180_000);
 
   it("fits every level's layout and answer within what the solve and race routes accept", () => {
     // A walled 9×9 layout ran to 109 characters when the route took 81, and every solve of it was refused (2026-09-26).
