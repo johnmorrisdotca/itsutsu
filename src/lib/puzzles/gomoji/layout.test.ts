@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { PUZZLE_SPECS } from "../puzzles.constants";
-import { LEAST_SPAN, MOST_GUESSES, boardSpan, gomojiLayout, playPlace } from "./layout";
+import { LEAST_SPAN, LONGEST_WORD, MOST_GUESSES, boardSpan, gomojiLayout, playPlace } from "./layout";
 
 describe("a Gomoji board", () => {
   it("is at least eight squares, the same board for four letters or kana, and odd for an odd word", () => {
     expect(gomojiLayout("gomoji", 4, "easy", 0).span).toBe(8);
     expect(gomojiLayout("gomoji", 5, "easy", 0).span).toBe(9);
+    expect(gomojiLayout("gomoji", 6, "easy", 0).span).toBe(8);
     expect(gomojiLayout("gomojiKana", 3, "hard", 0).span).toBe(9);
     expect(gomojiLayout("gomojiKana", 4, "easy", 1).span).toBe(8);
     expect(gomojiLayout("gomojiKana", 5, "easy", 1).span).toBe(9);
@@ -17,6 +18,10 @@ describe("a Gomoji board", () => {
     expect(gomojiLayout("gomoji", 5, "medium", 0).guesses).toBe(7);
     expect(gomojiLayout("gomoji", 5, "hard", 0).guesses).toBe(6);
     expect(gomojiLayout("gomojiKana", 4, "easy", 1).guesses).toBe(7);
+    // Six letters stop at the published six for hard (`baseGuesses`): seven, medium eight and easy eight would leave nothing between easy and medium.
+    expect(gomojiLayout("gomoji", 6, "easy", 0).guesses).toBe(8);
+    expect(gomojiLayout("gomoji", 6, "medium", 0).guesses).toBe(7);
+    expect(gomojiLayout("gomoji", 6, "hard", 0).guesses).toBe(6);
     expect(gomojiLayout("gomojiKana", 4, "medium", 1).guesses).toBe(7);
     expect(gomojiLayout("gomojiKana", 5, "hard", 0).guesses).toBe(6);
   });
@@ -32,6 +37,7 @@ describe("a Gomoji board", () => {
             expect(layout.top + layout.free + layout.guesses).toBeLessThanOrEqual(layout.span);
             expect(layout.top, `${kind} ${size} ${level}: the spare rows below outnumber those above`).toBeGreaterThanOrEqual(layout.span - layout.top - layout.free - layout.guesses);
             expect(layout.guesses).toBeLessThanOrEqual(MOST_GUESSES);
+            expect(size).toBeLessThanOrEqual(LONGEST_WORD);
             // The grid, which knows only the rows it draws, puts them in the same place.
             const { span, top, left } = layout;
             expect(playPlace(size, layout.free + layout.guesses)).toEqual({ span, top, left });

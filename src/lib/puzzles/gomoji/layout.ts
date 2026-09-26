@@ -14,10 +14,11 @@ import type { PuzzleLevel } from "../puzzles.types";
  *
  *  - THE BOARD is square, at least `LEAST_SPAN` tall, and as wide as the word
  *    with the spare columns split evenly either side (`boardSpan`): 8×8 for
- *    four letters or kana, 9×9 for three or five, which centre only on an
- *    odd board.
+ *    four or six letters or four kana, 9×9 for three or five, which centre
+ *    only on an odd board.
  *  - THE GUESSES: hard keeps the published count (a letter more than the word
- *    for English, six for kana); medium one more; easy every row of the board.
+ *    for English, never more than six; six for kana); medium one more; easy
+ *    every row of the board.
  *  - THE PLAY sits in the middle of the board's height, a spare row over to the
  *    top, so play starts lower rather than against the edge.
  *
@@ -32,9 +33,23 @@ export function boardSpan(size: number, rows: number): number {
   return (span - size) % 2 === 0 ? span : span + 1;
 }
 
-/** The published game's count: a guess more than the word has letters for English, six for kana. */
+/** The most guesses hard ever gives: Wordle's six, the published game's own count. */
+const PUBLISHED_MOST = 6;
+
+/**
+ * The published game's count: a guess more than the word has letters for
+ * English, up to six, and six for kana.
+ *
+ * Six letters stop at six. John, 2026-09-26, asking for them: "hopefully
+ * still challenging and still winnable". A sixth letter tells more with every
+ * guess, so a word of six is found no later than one of five: a greedy solver
+ * finds the six-letter answers about as often within six guesses and within
+ * seven as it finds the five-letter ones (`solvable.test.ts`). Seven for hard
+ * would have made six letters the easiest size, and left easy and medium both
+ * at eight on the 8×8 board.
+ */
 export function baseGuesses(kind: "gomoji" | "gomojiKana", size: number): number {
-  return kind === "gomoji" ? size + 1 : 6;
+  return kind === "gomoji" ? Math.min(size + 1, PUBLISHED_MOST) : PUBLISHED_MOST;
 }
 
 /**
@@ -74,3 +89,6 @@ export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: P
 
 /** The most guesses any Gomoji can have: what a kept run's guesses are checked against before its level is known. */
 export const MOST_GUESSES = 9;
+
+/** The longest word any Gomoji hides, in letters or kana: six, for Gomoji 6. */
+export const LONGEST_WORD = 6;

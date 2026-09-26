@@ -126,5 +126,7 @@ describe("what the server checks", () => {
     expect(progressFits("gomoji", 5, "slate".repeat(10))).toBe(false);
     expect(decodeGuesses("SLATE", 5)).toBeNull();
     expect(rowsFor(4)).toBe(5);
+    // Six letters stop at the published six, not seven (`baseGuesses`).
+    expect(rowsFor(6)).toBe(6);
   });
 });
