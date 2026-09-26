@@ -19,10 +19,10 @@ import { feltOrWoodTheme } from "./GomojiGrid";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { TsunagiGrid } from "./TsunagiGrid";
 import { tsunagiLevelPath } from "./TsunagiLevelBoard";
-import { TsunagiMarksPicker } from "./TsunagiMarksPicker";
-import type { TsunagiMarks } from "./puzzles.constants";
+import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
+import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { keepSolveHere, keptSolves } from "./tsunagiKept";
-import { useTsunagiMarks } from "./useTsunagiMarks";
+import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
 /** The board of levels at a size: the set-up, opened on that size. */
 export function tsunagiLevelsPath(size: number): string {
@@ -48,6 +48,7 @@ export function TsunagiSolve({
   appearance = DEFAULT_APPEARANCE,
   known = {},
   marksChosen = null,
+  fillChosen = null,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
@@ -58,6 +59,8 @@ export function TsunagiSolve({
   known?: Record<number, number>;
   /** Colours or numbers, as the account last chose; null where it never has. */
   marksChosen?: TsunagiMarks | null;
+  /** Marbles or lines, as the account last chose; null where it never has. */
+  fillChosen?: TsunagiFill | null;
 }) {
   const hydrated = useHydrated();
   const { size, seed: level } = puzzle;
@@ -69,6 +72,7 @@ export function TsunagiSolve({
   const before = useRef<Lines | null>(null);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
+  const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
   const theme = feltOrWoodTheme({ ...appearance, felt });
 
   // This page is drawn in the browser only (`PuzzlePlayClient`), so the browser's own solves are read at once.
@@ -174,7 +178,7 @@ export function TsunagiSolve({
     <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
-        <TsunagiGrid layout={layout} lines={lines} marks={marks} theme={theme} done={done !== null} onPress={press} onDrag={drag} onLift={lift} />
+        <TsunagiGrid layout={layout} lines={lines} marks={marks} fill={fill} theme={theme} done={done !== null} onPress={press} onDrag={drag} onLift={lift} />
       </SolvePaused>
       {done === null ? (
         <div className="flex flex-col gap-3">
@@ -212,7 +216,10 @@ export function TsunagiSolve({
         />
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
+        <div className="flex flex-wrap gap-3">
+          <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
+          <TsunagiFillPicker fill={fill} onChoose={chooseFill} />
+        </div>
         <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
       </div>
     </section>

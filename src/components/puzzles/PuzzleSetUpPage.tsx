@@ -78,6 +78,7 @@ export async function PuzzleSetUpPage({
           hasAccount={hasAccount}
           appearance={appearance ?? undefined}
           marksChosen={preferences?.tsunagiMarks ?? null}
+          fillChosen={preferences?.tsunagiFill ?? null}
           solved={memberId === null ? {} : bestTimes(await tsunagiSolvedBy(memberId))}
           initialSize={sizeAsked(kind, query)}
         />

@@ -48,7 +48,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis. */
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort";
   const tsunagi = kind === "tsunagi";
-  const { wordStyle, tsunagiMarks } = words || tsunagi ? await preferencesFor() : { wordStyle: undefined, tsunagiMarks: undefined };
+  const { wordStyle, tsunagiMarks, tsunagiFill } = words || tsunagi ? await preferencesFor() : { wordStyle: undefined, tsunagiMarks: undefined, tsunagiFill: undefined };
   /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`), and their stone set for a
      puzzle played with stones; read only for a puzzle drawn on the board, Kumimoji's table, and the stone puzzles. */
   const appearance = drawnOnBoard(kind) || kind === "kumimoji" || PUZZLE_SPECS[kind].stones === true ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
@@ -69,7 +69,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} twins={asked.twins === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} twins={asked.twins === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null } : null} />
         </WordStyleProvider>
       </div>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
