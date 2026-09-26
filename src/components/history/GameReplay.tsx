@@ -24,6 +24,7 @@ import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { moveNumberAt, timelineIndexForMove } from "@/lib/history/replayIndex";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { BoardFocus } from "@/components/board/BoardFocus";
 
 /**
  * The whole game as text, the way a printed record or the elder sites give
@@ -238,13 +239,14 @@ export function GameReplay({
   const current = game.moves[moveNumber - 1];
 
   return (
+    <BoardFocus label="this game">
     <div
       className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch"
       data-testid="game-replay"
       {...readyMark(useHydrated())}
     >
       <div className="w-full min-w-0 flex-1">
-        <div className="relative mx-auto w-full max-w-[min(100%,38rem)]" data-bare-board>
+        <div className="relative mx-auto w-full max-w-[min(100%,38rem)]" data-bare-board data-focus-board>
           {overlay}
           <Board
             state={state}
@@ -363,5 +365,6 @@ export function GameReplay({
         <ReplayAdvanced gameId={game.id} variant={game.variant} move={moveNumber} last={game.moveCount} seated={seated} />
       </aside>
     </div>
+    </BoardFocus>
   );
 }

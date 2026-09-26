@@ -11,6 +11,7 @@ import { famousTimeline } from "@/lib/famous/famous";
 import { famousMoveNames, famousMoves } from "@/lib/famous/famousMoves";
 import type { FamousGame } from "@/lib/famous/famous.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { BoardFocus } from "@/components/board/BoardFocus";
 
 /**
  * A FAMOUS GAME, STEPPED THROUGH: the board at any move, the scrubber a
@@ -54,7 +55,9 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[min(100%,30rem)]">
+      {/* The board, where it stands, its scrubber and its moves: openable on their own (`BoardFocus`). */}
+      <BoardFocus label="this game">
+      <div className="mx-auto w-full max-w-[min(100%,30rem)]" data-focus-board>
         <Board state={timeline[index]!} appearance={DEFAULT_APPEARANCE} readOnly onPlay={() => {}} />
       </div>
       <p className="text-sm text-muted" data-testid="famous-replay-at">
@@ -73,6 +76,7 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
           testId="famous-moves"
         />
       </div>
+      </BoardFocus>
       <Button onClick={onClose} data-testid="famous-replay-close">
         Fold the moves away
       </Button>

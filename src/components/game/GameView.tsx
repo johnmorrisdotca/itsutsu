@@ -20,6 +20,7 @@ import { useIdleWatch } from "./useIdleWatch";
 import { BranchPrompt, ReviewBanner } from "./ReviewControls";
 import { useGameRecording } from "./useGameRecording";
 import { useGameSession } from "./useGameSession";
+import { BoardFocus } from "@/components/board/BoardFocus";
 
 export function GameView({
   variant,
@@ -173,9 +174,11 @@ export function GameView({
      * arrived, not that anything is listening yet.
      */
     <div className="flex w-full flex-col gap-8" data-testid="game-view" {...readyMark(useHydrated())}>
+      {/* The board and everything that plays it, openable on their own (`BoardFocus`). */}
+      <BoardFocus label="this board">
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
-          <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3">
+          <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3" data-focus-board>
             <ReviewBanner session={session} actions={actions} />
             <BranchPrompt session={session} actions={actions} />
             <Board
@@ -207,6 +210,7 @@ export function GameView({
         </div>
         <GameSidebar session={session} actions={actions} postSeat={postSeat} practice={match === null} defaults={defaults} />
       </div>
+      </BoardFocus>
       <GameOptions session={session} actions={actions} streaks={streaks} />
       <IdleModal open={showIdle} onConfirm={confirm} />
     </div>

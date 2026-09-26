@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 
 import { BOARD_SIZES, BOARD_SIZE_LIST, type BoardSize } from "@/lib/preferences/boardSize";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { BoardFocus } from "@/components/board/BoardFocus";
 import {
   BOARD_COLUMN,
   BOARD_COLUMN_SIZE,
@@ -162,7 +163,10 @@ export function BoardColumn({
           </label>
         ))}
       </fieldset>
-      {children}
+      {/* The board and the controls for the move being made, openable on their own (`BoardFocus`); under the size chooser, so its button sits on the board's box and not on the chooser. */}
+      <BoardFocus label="this game" layout="flex w-full flex-col gap-2">
+        {children}
+      </BoardFocus>
     </div>
   );
 }

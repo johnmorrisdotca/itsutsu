@@ -209,6 +209,26 @@ html[data-bare="true"] [data-strippable] [data-testid="review-banner"][data-revi
   display: none;
 }
 
+/*
+ * ONE BOARD OPENED ON ITS OWN (`BoardFocus`): the board as large as the screen
+ * allows, room kept for its controls, centred in the modal's panel.
+ */
+[data-board-focus="open"] [data-focus-board] {
+  width: min(100%, calc(100dvh - 11rem));
+  max-width: none;
+  margin-inline: auto;
+}
+/* A live game's board has whose turn it is and the turn button above it in the same box, so it leaves them room. */
+[data-board-focus="open"] [data-bare-board]:not([data-bare-only]):not([data-focus-board]) {
+  width: min(100%, calc(100dvh - 20rem));
+  max-width: none;
+  margin-inline: auto;
+}
+[data-board-focus="open"] [data-board-column] {
+  width: 100%;
+  max-width: none;
+}
+
 /* What only the modal draws — a finished game's scrubber under its board — and nothing draws otherwise. */
 [data-bare-only] {
   display: none;
