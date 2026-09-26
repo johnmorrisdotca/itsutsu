@@ -83,7 +83,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
     // A word's guesses, out of the level's allowance: the other half of how it went.
-    ...(taken === null ? [] : [{ label: "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
+    ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
     { label: "Points", value: String(solve.points), testId: "solve-points" },
     { label: "Help", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
     { label: "Finished", value: solve.finishedAt.toISOString().slice(0, 10), testId: "solve-date" },

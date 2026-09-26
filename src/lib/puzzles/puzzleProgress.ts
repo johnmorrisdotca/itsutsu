@@ -3,6 +3,7 @@ import { decodeGuesses, type GomojiLanguage } from "./gomoji/code";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES } from "./gomoji/layout";
+import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind } from "./puzzles.types";
 import { linesCodeFits } from "./tsunagi/lines";
@@ -86,5 +87,7 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "tsunagi") return linesCodeFits(code, size);
   // A Kumimoji's shape only: its bag is checked when the game is opened again (`decodeTileProgress`).
   if (kind === "kumimoji") return readTileProgress(code) !== null;
+  // Koushi keeps the grid as it stands and the swaps so far, as its answer is written.
+  if (kind === "koushi") return decodePlay(code) !== null;
   return decodeNumberProgress(code, size) !== null;
 }

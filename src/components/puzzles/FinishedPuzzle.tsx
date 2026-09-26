@@ -12,10 +12,13 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { decodeGuesses, languageOf } from "@/lib/puzzles/gomoji/code";
 import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { decodeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { readKoushi } from "@/lib/puzzles/koushi/check";
+import { decodeGivens, markLattice } from "@/lib/puzzles/koushi/lattice";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { HiddenStonesGrid } from "./HiddenStonesGrid";
+import { KoushiGrid } from "./KoushiGrid";
 import { KumimojiTable } from "./KumimojiTable";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
@@ -78,6 +81,14 @@ export function FinishedPuzzle({
   const hydrated = useHydrated();
   // Where a word's replay stands, held out here: opening the box on its own moves what is inside it.
   const [wordAt, setWordAt] = useState<number | null>(null);
+
+  // A lattice as it ended, in its colours: the grid its swaps made, or the scramble it was dealt.
+  if (kind === "koushi") {
+    const asked = decodeGivens(givens);
+    if (asked === null) return null;
+    const grid = readKoushi(givens, answer)?.played.grid ?? asked.scramble;
+    return <KoushiGrid grid={grid} marks={markLattice(grid, asked.solution)} done={readOnly} onPress={NOTHING} onSwap={NOTHING} />;
+  }
 
   // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") {

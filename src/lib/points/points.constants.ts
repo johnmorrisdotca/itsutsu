@@ -27,6 +27,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   tsunagi: 0.57,
   // A Classic game of fifty tiles in about ten minutes scores about 800 (`KUMIMOJI_SCORE`).
   kumimoji: 0.13,
+  // A medium solve is about 880 (`koushiPoints`: 500, three swaps spare, a quick time).
+  koushi: 0.11,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

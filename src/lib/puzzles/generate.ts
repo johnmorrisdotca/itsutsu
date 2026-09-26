@@ -7,6 +7,7 @@ import { generateTowers } from "./towers/generate";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
 import { generateGomoji } from "./gomoji/generate";
 import { generateGomojiKana } from "./gomojiKana/generate";
+import { generateKoushi } from "./koushi/generate";
 import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
 import { loadEveryTsunagiLevel, loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
 import { generateKumimoji } from "./kumimoji/generate";
@@ -53,6 +54,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "kumimoji":
       // Its bag is laid out as a crossword first, from its word list (`loadTileWords`); see its generator.
       return generateKumimoji(size, level, seed);
+    case "koushi":
+      // One size, the lattice: `size` is always its 5, and the level decides the swaps.
+      return generateKoushi(level, seed);
   }
 }
 

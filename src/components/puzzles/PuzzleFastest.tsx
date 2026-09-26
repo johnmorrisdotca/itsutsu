@@ -134,7 +134,7 @@ export function FastestTable({
             <th className={`${cell} w-6 text-right`}>#</th>
             <th className={`${cell} w-full text-left`}>Player</th>
             <th className={`${cell} text-right`}>Time</th>
-            {words ? <th className={`${cell} text-right`}>Guesses</th> : null}
+            {words ? <th className={`${cell} text-right`}>{spec.lattice === true ? "Swaps" : "Guesses"}</th> : null}
             <th className={`${cell} text-right`}>Points</th>
             <th className={`${replay} py-1 text-right`}>
               <span className="sr-only">Replay</span>
