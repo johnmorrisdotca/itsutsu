@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance, Felt } from "@/components/board/board.types";
@@ -25,7 +25,7 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -53,6 +53,7 @@ export function PuzzleSetUp({
   framed = true,
   sized,
   appearance = DEFAULT_APPEARANCE,
+  asked,
 }: {
   kind: PuzzleKind;
   /** A race is between two members, so a session with no account is told so rather than offered one. */
@@ -66,21 +67,40 @@ export function PuzzleSetUp({
   sized?: { size: number; onSize: (size: number) => void };
   /** The reader's board, for a puzzle drawn on the board itself: its colour is chosen under the preview (`PuzzleBoardPreview`). */
   appearance?: Appearance;
+  /** What the address asked for (`puzzleAsked`): the choice this screen opens on, so a reload keeps what was chosen. */
+  asked?: PuzzleAsked;
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
   const spec = PUZZLE_SPECS[kind];
   const copy = PUZZLE_DISPLAY[kind];
-  const [ownSize, setOwnSize] = useState(spec.defaultSize);
+  const [ownSize, setOwnSize] = useState(asked?.size ?? spec.defaultSize);
   const size = sized?.size ?? ownSize;
-  const [level, setLevel] = useState<PuzzleLevel>(spec.defaultLevel);
-  const [checks, setChecks] = useState<number | null>(null);
+  const [level, setLevel] = useState<PuzzleLevel>(asked?.level ?? spec.defaultLevel);
+  const [checks, setChecks] = useState<number | null>(asked?.checks ?? null);
   // Hint, off unless chosen: see `useHints`. Not carried into a race, which allows none.
-  const [hints, setHints] = useState(false);
+  const [hints, setHints] = useState(asked?.hints ?? false);
   // Gomoji's Strict, off unless chosen, at any level; like Hint, not carried into a race.
-  const [strict, setStrict] = useState(false);
+  const [strict, setStrict] = useState(asked?.strict ?? false);
   // Gomoji's Head start, off unless chosen, easy only; like Strict, not carried into a race.
-  const [headStart, setHeadStart] = useState(false);
+  const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
+  /*
+   * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
+   * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
+   * lived only in this component, and a reload began again at the default.
+   * The address already said what a set-up opens on (`puzzleAsked`); now each
+   * choice writes it back, with the browser's own `replaceState` — no request,
+   * no render on the server, and no new entry in the history for Back to walk
+   * through. The first render writes nothing: an address nobody changed stays
+   * as it was typed.
+   */
+  const shownSize = sized === undefined ? size : null;
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) });
+  const opened = useRef(query);
+  useEffect(() => {
+    if (query === opened.current && window.location.search === "") return;
+    if (window.location.search !== query) window.history.replaceState(window.history.state, "", `${window.location.pathname}${query}`);
+  }, [query]);
   const { style, setStyle } = useWordStyle();
   const [racing, setRacing] = useState<"" | "making" | string>("");
   // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).

@@ -10,6 +10,7 @@ import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
 import { tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+import { puzzleAsked } from "@/lib/puzzles/puzzleAddress";
 
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { Suspense } from "react";
@@ -75,7 +76,7 @@ export async function PuzzleSetUpPage({
         />
       ) : (
         <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
-          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} />
+          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={puzzleAsked(kind, query)} />
         </WordStyleProvider>
       )}
       {dailyLanguageOf(kind) !== null ? (
