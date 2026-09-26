@@ -33,6 +33,10 @@
  * cells outside the hexagon of radius R are `#`, off the board, and a
  * hexagon has no walls, bridges or wrap.
  *
+ * `sparse` says the board has few, long lines — at most `sparseMost` — and is
+ * refused on a board with more; `strokes<N>` (last of all) gives the player N
+ * strokes to solve it in, every lift that changed the board spending one.
+ *
  * AN ANSWER is the grid of cells with every open cell carrying the letter of
  * the line through it, `#` where the layout has one, and `+` on a bridge: the
  * two lines over it are the ones either side of it.
@@ -69,6 +73,10 @@ export type LinkLayout = {
   wrap: boolean;
   /** Whether the board is a hexagon of hexagons: six neighbours a cell, the square's corners off the board. */
   hex: boolean;
+  /** Whether the board is sparse: few, long lines, at most `sparseMost` of them. */
+  sparse: boolean;
+  /** How many strokes the player has to solve it in, or null for no limit. */
+  strokes: number | null;
   /** Explosions: every `every` strokes a drawn line is broken — cut back by half, or, with `blast`, wiped with a neighbour cut too. Null for none. */
   explosions: { every: number; blast: boolean } | null;
 };
@@ -79,12 +87,15 @@ export type LinkLayout = {
  * `boom<N>` (a line cut back every N strokes) or `blast<N>` (a line wiped and
  * its neighbour cut).
  */
-const TAIL_ORDER = ["hex", "wrap", "explosion"] as const;
+const TAIL_ORDER = ["hex", "sparse", "wrap", "explosion", "strokes"] as const;
 
 /** Which of the tail's words a segment is, and what it says; null for none of them (the walls list). */
 export function tailWord(segment: string): { word: (typeof TAIL_ORDER)[number]; every?: number; blast?: boolean } | null {
   if (segment === LINK_WRAP) return { word: "wrap" };
   if (segment === LINK_HEX) return { word: "hex" };
+  if (segment === LINK_SPARSE) return { word: "sparse" };
+  const limit = /^strokes([1-9][0-9]?)$/.exec(segment);
+  if (limit !== null) return { word: "strokes", every: Number(limit[1]) };
   const boom = /^(boom|blast)([1-9][0-9]?)$/.exec(segment);
   if (boom !== null) return { word: "explosion", every: Number(boom[2]), blast: boom[1] === "blast" };
   return null;
@@ -95,6 +106,14 @@ export const LINK_WRAP = "wrap";
 
 /** The segment after the cells that makes a board a hexagon of hexagons. */
 export const LINK_HEX = "hex";
+
+/** The segment after the cells that says a board has few, long lines. */
+export const LINK_SPARSE = "sparse";
+
+/** The most lines a sparse board of this side has: two thirds of the side — six on a 9×9, where nine is usual. */
+export function sparseMost(size: number): number {
+  return Math.floor((2 * size) / 3);
+}
 
 /** The hexagon's radius on a board of this side: R, for a side of 2R + 1. */
 export function hexRadius(size: number): number {
@@ -129,6 +148,8 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
   let wrap = false;
   let explosions: LinkLayout["explosions"] = null;
   let hex = false;
+  let sparse = false;
+  let strokes: number | null = null;
   let rank = -1;
   for (const [at, segment] of tail.entries()) {
     const word = tailWord(segment);
@@ -142,6 +163,8 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
     rank = place;
     if (word.word === "wrap") wrap = true;
     else if (word.word === "hex") hex = true;
+    else if (word.word === "sparse") sparse = true;
+    else if (word.word === "strokes") strokes = word.every!;
     else explosions = { every: word.every!, blast: word.blast! };
   }
   const cells: number[] = [];
@@ -171,6 +194,10 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
     }
   }
   if (seen.length === 0 || seen.some((stones) => stones.length !== 2)) return null;
+  // Sparse is a claim about the board, and a board with more lines than that is not one.
+  if (sparse && seen.length > sparseMost(size)) return null;
+  // A limit of fewer strokes than lines could never be met.
+  if (strokes !== null && strokes < seen.length) return null;
   // A waypoint names a pair the board has.
   if ([...marked.values()].some((pair) => pair >= seen.length)) return null;
   const walls = wallList === null ? new Set<string>() : readWalls(wallList, size);
@@ -188,7 +215,7 @@ export function decodeLayout(code: string, size: number): LinkLayout | null {
     if (row === 0 || col === 0 || row === size - 1 || col === size - 1) return null;
     for (const beside of neighboursOf(size, at)) if (cells[beside] === CELL_BRIDGE || walls.has(edgeKey(at, beside))) return null;
   }
-  return { size, cells, ends: seen.map((stones) => [stones[0]!, stones[1]!]), walls, waypoints: marked, wrap, hex, explosions };
+  return { size, cells, ends: seen.map((stones) => [stones[0]!, stones[1]!]), walls, waypoints: marked, wrap, hex, sparse, strokes, explosions };
 }
 
 /** The walls after a layout's `|`, or null for a list that is not one: an edge that is not two neighbouring cells, out of order, or twice. */
@@ -224,7 +251,7 @@ export function encodeWalls(walls: Iterable<string>): string {
 }
 
 /** A layout's code, from its cells, walls, waypoints and whether it wraps: the inverse of `decodeLayout`. */
-export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean; hex?: boolean; explosions?: LinkLayout["explosions"] } = {}): string {
+export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean; hex?: boolean; sparse?: boolean; strokes?: number | null; explosions?: LinkLayout["explosions"] } = {}): string {
   const grid = cells
     .map((cell, at) => {
       const waypoint = more.waypoints?.get(at);
@@ -233,7 +260,9 @@ export function encodeLayout(cells: readonly number[], walls: Iterable<string> =
     })
     .join("");
   const boom = more.explosions == null ? "" : `${LINK_WALLS}${more.explosions.blast ? "blast" : "boom"}${more.explosions.every}`;
-  return grid + encodeWalls(walls) + (more.hex === true ? `${LINK_WALLS}${LINK_HEX}` : "") + (more.wrap === true ? `${LINK_WALLS}${LINK_WRAP}` : "") + boom;
+  const words = [more.hex === true ? LINK_HEX : "", more.sparse === true ? LINK_SPARSE : "", more.wrap === true ? LINK_WRAP : ""].filter(Boolean).map((word) => `${LINK_WALLS}${word}`).join("");
+  const limit = more.strokes == null ? "" : `${LINK_WALLS}strokes${more.strokes}`;
+  return grid + encodeWalls(walls) + words + boom + limit;
 }
 
 /** A finished grid's code: the letter of the line through each cell, `#` where blocked, `+` on a bridge. */

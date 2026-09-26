@@ -55,6 +55,10 @@ export function tsunagiLevelsPath(size: number): string {
  * it was, and leaves nothing to undo: an explosion is not taken back. Restart
  * starts the count again; a kept run picks up with a fresh count.
  *
+ * A board with a STROKE LIMIT uses the same count: the strokes left are shown
+ * under the board, Undo gives none back, and a board out of strokes before it
+ * is solved takes nothing more until Restart, which gives them all back.
+ *
  * A level past the open blocks is shut, and says which block opens it. A member's
  * solved levels come from the page (`tsunagiSolvedBy`); anybody's are also in
  * this browser (`tsunagiKept`), written the moment a level is solved.
@@ -142,7 +146,9 @@ export function TsunagiSolve({
     progress: encodeLines(layout, lines),
     resumed,
   });
-  const idle = done !== null || pausing.paused || shut || reviewing;
+  // Out of strokes: the board takes nothing more until Restart.
+  const spent = layout.strokes !== null && strokeCount >= layout.strokes && done === null;
+  const idle = done !== null || pausing.paused || shut || reviewing || spent;
 
   const show = useCallback((next: Lines) => {
     now.current = next;
@@ -218,7 +224,7 @@ export function TsunagiSolve({
     setUndo((stack) => stack.slice(0, -1));
   };
   const restart = () => {
-    if (idle || now.current.every((line) => line.length === 0)) return;
+    if ((idle && !spent) || now.current.every((line) => line.length === 0)) return;
     setUndo((stack) => [...stack.slice(-199), now.current]);
     show(noLines(layout));
     counted.current = false;
@@ -326,7 +332,7 @@ export function TsunagiSolve({
       {done === null ? (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={takeBack} disabled={undo.length === 0 || pausing.paused} data-testid="tsunagi-undo">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={takeBack} disabled={undo.length === 0 || pausing.paused || spent} data-testid="tsunagi-undo">
               Undo
             </button>
             <button
@@ -347,6 +353,17 @@ export function TsunagiSolve({
                 : `${pairsJoined} of ${pairs} joined · ${Math.round((100 * cover.done) / cover.of)}% of the board`}
             </span>
           </div>
+          {layout.strokes === null ? null : (
+            <p
+              className={`text-sm ${spent ? "font-semibold text-shu" : "text-muted"}`}
+              data-testid="tsunagi-strokes-left"
+              data-left={Math.max(0, layout.strokes - strokeCount)}
+              data-limit={layout.strokes}
+              aria-live="polite"
+            >
+              {spent ? "Out of strokes. Restart to try again." : `${layout.strokes - strokeCount} of ${layout.strokes} ${layout.strokes === 1 ? "stroke" : "strokes"} left.`}
+            </p>
+          )}
           {boomIn === null ? null : (
             <p className={`text-sm ${boomIn === 1 ? "font-semibold text-shu" : "text-muted"}`} data-testid="tsunagi-boom-countdown" data-left={boomIn} data-strokes={strokeCount} aria-live="polite">
               {blastSays === null ? "" : `${blastSays} `}

@@ -20,6 +20,13 @@
  * whole new boards, the easy end of the kind's pool to teach and further up
  * it to test.
  *
+ * A STROKE LIMIT is the sixth lesson and the fourteenth: like explosions it
+ * changes no cell, so it is the slot's own board with a limit added — the
+ * fewest strokes the board can be solved in and three to spare at the 15th,
+ * the fewest exactly at the 16th. SPARSE BOARDS (few, long lines, `sparse.ts`)
+ * are the eighth and the sixteenth, at 5×5 to 9×9: a 4×4 has too few cells for
+ * a sparse board with one answer, and 10×10 and 11×11 too few blocks to reach.
+ *
  * NEVER A BOARD WITH PLAY ON IT. A slot is only given a twist when its board
  * has none: the slots named in `keep` (read from production before the run:
  * solves, kept runs, attempts and races) keep their plain board, and so does
@@ -32,15 +39,19 @@ import { bridgeAndWallCandidate, bridgeCandidate, hexCandidate, wallCandidate, w
 import { symmetryKey } from "../src/lib/puzzles/tsunagi/generate.ts";
 import { TSUNAGI_BLOCK } from "../src/lib/puzzles/tsunagi/levelBlocks.ts";
 import { challengesOf, isTwist, type Challenge } from "../src/lib/puzzles/tsunagi/ladder.ts";
-import { decodeLayout } from "../src/lib/puzzles/tsunagi/code.ts";
+import { decodeLayout, stepBetween, wrappedStep } from "../src/lib/puzzles/tsunagi/code.ts";
+import { sparseCandidate } from "../src/lib/puzzles/tsunagi/sparse.ts";
 import { seededRandom } from "../src/lib/puzzles/random.ts";
 
 type Level = readonly [string, string];
 
-type Kind = "bridge" | "bridges" | "walls" | "wallsAndBlocked" | "bridgeAndWalls" | "waypoints" | "wrap" | "boom" | "blast" | "hexagon";
+type Kind = "bridge" | "bridges" | "walls" | "wallsAndBlocked" | "bridgeAndWalls" | "waypoints" | "wrap" | "boom" | "blast" | "hexagon" | "sparse" | "strokes";
 
 // A new kind goes on the end: each kind's stream is seeded by its place here, so the others keep making the boards they made.
-const KINDS: readonly Kind[] = ["bridge", "bridges", "walls", "wallsAndBlocked", "bridgeAndWalls", "waypoints", "wrap", "hexagon"];
+const KINDS: readonly Kind[] = ["bridge", "bridges", "walls", "wallsAndBlocked", "bridgeAndWalls", "waypoints", "wrap", "hexagon", "sparse"];
+
+/** How many times a kind's tries a sparse pool gets: few fillings join down to a sparse board with one answer. */
+const SPARSE_TRIES = 5;
 
 /** One kind's candidate, from its own random stream. */
 function candidateOf(kind: Kind, size: number, random: () => number, longest: number, budget: number): TwistCandidate | null {
@@ -51,6 +62,10 @@ function candidateOf(kind: Kind, size: number, random: () => number, longest: nu
   if (kind === "bridgeAndWalls") return bridgeAndWallCandidate(size, random, longest, budget, 1, 6);
   if (kind === "waypoints") return waypointCandidate(size, random, longest, budget, 4);
   if (kind === "hexagon") return hexCandidate(size, random, longest, budget);
+  if (kind === "sparse") {
+    const made = sparseCandidate(size, random, budget);
+    return made === null ? null : { ...made, bridges: 0, walls: 0, blocked: 0 };
+  }
   return wrapCandidate(size, random, longest, budget);
 }
 
@@ -64,7 +79,7 @@ function pools(size: number, tries: number, longest: number, budget: number): Re
   KINDS.forEach((kind, index) => {
     const random = seededRandom(20260927 + size * 100 + index);
     const found = new Map<string, TwistCandidate>();
-    for (let each = 0; each < tries; each += 1) {
+    for (let each = 0; each < (kind === "sparse" ? tries * SPARSE_TRIES : tries); each += 1) {
       const made = candidateOf(kind, size, random, longest, budget);
       if (made !== null && !found.has(made.key)) found.set(made.key, made);
     }
@@ -97,7 +112,29 @@ const LATER: Record<Exclude<Challenge, "explosions">, { teach: Kind[]; test: Kin
   waypoints: { teach: ["waypoints"], test: ["waypoints"] },
   wrap: { teach: ["wrap"], test: ["wrap"] },
   hexagon: { teach: ["hexagon"], test: ["hexagon"] },
+  sparse: { teach: ["sparse"], test: ["sparse"] },
+  strokes: { teach: [], test: [] },
 };
+
+/**
+ * A board with a stroke limit added: the fewest strokes it can be solved in —
+ * one a line, and one more for every time a line crosses the join of a board
+ * that wraps, where it is let go and taken up on the far side — with three to
+ * spare at the 15th and none at the 16th.
+ */
+export function limited(layout: string, answer: string, size: number, role: "teach" | "test"): { layout: string; kind: Kind } {
+  const decoded = decodeLayout(layout, size)!;
+  let least = decoded.ends.length;
+  if (decoded.wrap) {
+    for (let at = 0; at < size * size; at += 1) {
+      for (const by of [1, size]) {
+        const next = wrappedStep(size, at, by);
+        if (stepBetween(size, at, next, false) === 0 && /[A-P]/.test(answer[at]!) && answer[at] === answer[next]) least += 1;
+      }
+    }
+  }
+  return { layout: `${layout}|strokes${role === "teach" ? least + 3 : least}`, kind: "strokes" };
+}
 
 /** The lessons, in the order the ladder meets them: bridges, walls, waypoints, wrap, explosions, then each again, climbing, explosions every fifth. */
 function lessons(count: number, size: number): Lesson[] {
@@ -111,6 +148,15 @@ function lessons(count: number, size: number): Lesson[] {
   for (let each = out.length; each < count; each += 1) {
     if ((each - 4) % 5 === 0) {
       out.push({ twist: "explosions", teach: [], test: [], teachAt: 0, testAt: 0 });
+      continue;
+    }
+    if (each === 5 || each === 13) {
+      out.push({ twist: "strokes", teach: [], test: [], teachAt: 0, testAt: 0 });
+      continue;
+    }
+    if ((each === 7 || each === 15) && size >= 5 && size <= 9) {
+      const climb = each === 7 ? 0 : 1;
+      out.push({ twist: "sparse", ...LATER.sparse, teachAt: 0.4 * climb, testAt: 0.5 + 0.5 * climb });
       continue;
     }
     if (size % 2 === 1 && each >= 6 && (each - 6) % 5 === 0) {
@@ -167,7 +213,7 @@ export function withTwists(size: number, levels: readonly Level[], keep: Readonl
   const needed = free.filter((block, at) => !frozen.has(block) && !(fits(levels[block * TSUNAGI_BLOCK - 2]![0], at) && fits(levels[block * TSUNAGI_BLOCK - 1]![0], at)));
   if (needed.length === 0) return { levels: out, placed, kept };
   // Explosions change no cell: their lesson is the slot's own board with one added. The rest need boards made.
-  const madeNeeded = needed.some((block) => planned[free.indexOf(block)]!.twist !== "explosions");
+  const madeNeeded = needed.some((block) => !["explosions", "strokes"].includes(planned[free.indexOf(block)]!.twist));
   const pool = madeNeeded ? pools(size, plan.tries, plan.longest, plan.budget) : ({} as Record<Kind, TwistCandidate[]>);
   const used = new Set<string>(levels.map(([layout]) => symmetryKey(layout, size)));
   const take = (kinds: Kind[], at: number, lesson: number): { made: TwistCandidate; kind: Kind } | null => {
@@ -190,6 +236,18 @@ export function withTwists(size: number, levels: readonly Level[], keep: Readonl
       ] as const) {
         const [layout, answer] = out[slot - 1]!;
         const made = explosive(layout, size, role);
+        placed.push({ level: slot, kind: made.kind, replaced: layout });
+        out[slot - 1] = [made.layout, answer];
+      }
+      return;
+    }
+    if (lesson.twist === "strokes") {
+      for (const [slot, role] of [
+        [block * TSUNAGI_BLOCK - 1, "teach"],
+        [block * TSUNAGI_BLOCK, "test"],
+      ] as const) {
+        const [layout, answer] = out[slot - 1]!;
+        const made = limited(layout, answer, size, role);
         placed.push({ level: slot, kind: made.kind, replaced: layout });
         out[slot - 1] = [made.layout, answer];
       }
