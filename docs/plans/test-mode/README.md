@@ -331,11 +331,29 @@ Both runners were exercised against `itsutsu_sim` — a private database on this
 machine, at `localhost:55434`, that nothing else reads — in this session:
 
 1. `TEST_MEMBERS_RUN=1 pnpm exec vitest run src/lib/sim/seedTestMembers.play.test.ts --disable-console-intercept`
-2. `TEST_SEASON_RUN=1 pnpm exec vitest run src/lib/sim/testSeason.play.test.ts --disable-console-intercept`
+   → 1000 test members written; a second run confirmed it upserts the same
+   1000 rather than doubling them.
+2. `TEST_SEASON_RUN=1 TEST_SEASON_GAMES=<n> pnpm exec vitest run src/lib/sim/testSeason.play.test.ts --disable-console-intercept`,
+   run in two passes (a 20-game rehearsal, then 1780 more) → **2002 games
+   total, 2001 finished and 1 left active** (a bounded run stopping mid-game,
+   not a stuck one — nothing in 2001 other games got stuck), split roughly
+   evenly across the three modelled boards (tic-tac-toe 600, Drop Four 568,
+   Gomoku on 9×9 612), **15,329 `XpEvent` rows** written (within the
+   8,000-16,000 estimated above), and **990 of the 1000 test members hold XP
+   greater than nought** — the ten with none simply were never drawn as a
+   seat across 2002 random pairings, which is expected at this sample size.
+3. `/xp` was loaded as the operator with Test Mode off (no `Test·` name
+   anywhere on the board, no banner), then with it switched on directly on the
+   operator's own stored preference (no test names appeared until then, and
+   the banner appeared the moment it was on), then switched off again and
+   confirmed hidden once more — the whole mechanism, checked in both
+   directions.
 
-The counts each run printed, and what checking `/xp` with and without Test Mode
-showed, are in the hand-off message rather than duplicated here — this file is
-the design, not the log of one run of it.
+This is the one surface that could be checked end-to-end today: `/players`,
+`/champions` and a game's own standings are not yet converted (see the
+surface list above), so they were not part of this check — seeding 1000 test
+members made them show on those pages regardless of Test Mode, which is
+exactly the gap the warning below is about.
 
 **Before running the seeding step anywhere but `itsutsu_sim`**: `/players`,
 `/champions` and a game's own standings are NOT YET converted (see the surface
