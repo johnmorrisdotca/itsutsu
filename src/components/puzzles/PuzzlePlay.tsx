@@ -16,6 +16,7 @@ import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
+import { KumimojiSolve } from "./KumimojiSolve";
 import { NumberSolve } from "./NumberSolve";
 import type { TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
@@ -93,8 +94,8 @@ export function PuzzlePlay({
     router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeed(), checks, hints, strict, headStart })}`);
   }, [seed, kind, size, level, checks, hints, strict, headStart, router]);
 
-  /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi) waits for them; every other kind is ready at once. */
-  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" ? null : `${kind}:${size}`);
+  /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji) waits for them; every other kind is ready at once. */
+  const [loaded, setLoaded] = useState<string | null>(kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" ? null : `${kind}:${size}`);
   useEffect(() => {
     let live = true;
     void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
@@ -156,6 +157,8 @@ export function PuzzlePlay({
           marksChosen={tsunagi?.marks ?? null}
         />
       );
+    case "kumimoji":
+      return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     default:

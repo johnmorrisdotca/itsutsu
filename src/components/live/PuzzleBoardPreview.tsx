@@ -20,6 +20,9 @@ import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import type { Appearance, Felt } from "@/components/board/board.types";
 import { GomojiGrid } from "@/components/puzzles/GomojiGrid";
+import { KumimojiTable, tableTheme } from "@/components/puzzles/KumimojiTable";
+import { TILE_PICTURE_BOX } from "@/components/puzzles/kumimoji.constants";
+import { decodeGrid } from "@/lib/puzzles/kumimoji/grid";
 import { useWordStyle } from "@/components/puzzles/WordStyleContext";
 import { seededRandom } from "@/lib/puzzles/random";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "@/lib/puzzles/blackAndWhite/code";
@@ -82,12 +85,18 @@ export function PuzzleBoardPreview({
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="set-up-puzzle-preview" data-kind={kind} data-size={size}>
       <div className={SET_UP_PREVIEW_BOX} aria-hidden="true">
-        {words === undefined ? <PaperGrid kind={kind} size={size} /> : <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} />}
+        {spec.tiles === true ? (
+          <TilePreview size={size} appearance={appearance} />
+        ) : words === undefined ? (
+          <PaperGrid kind={kind} size={size} />
+        ) : (
+          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} />
+        )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
         {SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
-        {words === undefined || onFelt === undefined ? null : (
+        {(words === undefined && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">
             <FeltPatches felt={appearance.felt} wood={appearance.boardTheme} onChoose={onFelt} />
           </span>
@@ -135,6 +144,19 @@ function WordGridPreview({
 }
 
 const NOTHING = () => undefined;
+
+/**
+ * A Kumimoji's first hand laid out, on its table in the reader's colour: one
+ * small crossword of exactly the hand's tiles, WORD and GRID for seven, and
+ * SWAN and NOD beside them for eleven. An example, not the game's own tiles,
+ * which are dealt from the word list the set-up screen does not load.
+ */
+const TILE_EXAMPLES: Record<number, string> = { 3: "cat", 7: "2g/word/2i/2d", 11: "s1g/word/a1i/nod" };
+
+function TilePreview({ size, appearance }: { size: number; appearance: Appearance }) {
+  const tiles = useMemo(() => decodeGrid(TILE_EXAMPLES[size] ?? "") ?? new Map<string, string>(), [size]);
+  return <KumimojiTable tiles={tiles} theme={tableTheme(appearance)} readOnly boxClass={TILE_PICTURE_BOX} />;
+}
 
 /** A puzzle written on paper: the grid, ruled at this size, inside the wood every board has. */
 function PaperGrid({ kind, size }: { kind: PuzzleKind; size: number }) {

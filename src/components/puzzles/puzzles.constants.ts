@@ -81,6 +81,8 @@ export const PUZZLE_CLOCK_TICK_MS = 1000;
 export function sizeWord(size: number, kind?: PuzzleKind): string {
   if (kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort") return `${size} letters`;
   if (kind === "gomojiKana") return `${size} kana`;
+  // A Kumimoji's size is the hand it opens with.
+  if (kind === "kumimoji") return `${size} tiles`;
   return `${size}×${size}`;
 }
 

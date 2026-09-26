@@ -149,6 +149,8 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-size-note">
           {copy.board}
         </p>
+        {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
+        {spec.levels.length < 2 ? null : (
         <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Level">
           {spec.levels.map((each) => (
             <button
@@ -164,6 +166,7 @@ export function PuzzleSetUp({
             </button>
           ))}
         </div>
+        )}
         <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
           {levelBlurb(kind, level)}
         </p>

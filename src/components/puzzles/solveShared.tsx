@@ -15,7 +15,7 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } fro
 import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { freshSeed } from "@/lib/puzzles/random";
@@ -312,8 +312,13 @@ export function SolveHeader({
       <p className="text-sm text-muted" data-testid="puzzle-asked">
         {asked ?? (
           <>
-            {sizeWord(puzzle.size, puzzle.kind)} · {PUZZLE_LEVEL_DISPLAY[puzzle.level].label}{" "}
-            <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
+            {sizeWord(puzzle.size, puzzle.kind)}
+            {/* A puzzle with one level has no level to name (Kumimoji). */}
+            {PUZZLE_SPECS[puzzle.kind].levels.length < 2 ? null : (
+              <>
+                {" "}· {PUZZLE_LEVEL_DISPLAY[puzzle.level].label} <span className="font-mincho">{PUZZLE_LEVEL_DISPLAY[puzzle.level].kanji}</span>
+              </>
+            )}
             {headStart ? (
               <span data-testid="puzzle-asked-head-start">
                 {" "}· {HEAD_START_DISPLAY.label} <span className="font-mincho">{HEAD_START_DISPLAY.kanji}</span>

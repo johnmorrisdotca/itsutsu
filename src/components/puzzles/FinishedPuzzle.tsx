@@ -7,9 +7,13 @@ import { decodeCells } from "@/lib/puzzles/puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { decodeGuesses, languageOf } from "@/lib/puzzles/gomoji/code";
 import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
+import { decodeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
 import { HiddenStonesGrid, type StoneMark } from "./HiddenStonesGrid";
+import { KumimojiTable } from "./KumimojiTable";
+import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
@@ -63,6 +67,12 @@ export function FinishedPuzzle({
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort") {
     const guesses = (answer === null ? null : kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind))) ?? [];
     return <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} level={level} headStart={headStart} style={style} />;
+  }
+
+  // A Kumimoji is its crossword, laid out on its table and fitted to the box.
+  if (kind === "kumimoji") {
+    const tiles = (answer === null ? null : decodeGrid(answer)) ?? new Map<string, string>();
+    return <KumimojiTable tiles={tiles} theme={BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} readOnly boxClass={TILE_PICTURE_BOX} />;
   }
 
   // Every grid of numbers: the printed cells as printed, the rest from the answer.
