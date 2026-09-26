@@ -7,6 +7,8 @@ import type { DailyStatus } from "@/lib/puzzles/dailyWords/dailyWords.types";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 
 import type { DailyWordButtonsProps } from "./dailyWords.types";
+import { SolveTime } from "./SolveTime";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /**
  * TODAY'S WORDS, ONE BUTTON A LENGTH: "Today's 4", "Today's 5" — in kana
@@ -40,7 +42,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
             </td>
             {showStatus ? (
               <td className="py-0.5 text-xs whitespace-nowrap tabular-nums" data-testid="daily-status" data-state={row.status?.state ?? "unknown"}>
-                {row.status === null ? null : <StatusText status={row.status} />}
+                {row.status === null ? null : <StatusText kind={kind} status={row.status} />}
               </td>
             ) : null}
           </tr>
@@ -84,11 +86,11 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
   );
 }
 
-function StatusText({ status }: { status: DailyStatus }) {
+function StatusText({ kind, status }: { kind: PuzzleKind; status: DailyStatus }) {
   if (status.state === "found") {
     return (
       <span className="text-moss">
-        ✓ {clockText(status.elapsedMs)}
+        ✓ <SolveTime kind={kind} solveId={status.solveId} elapsedMs={status.elapsedMs} mine />
         {status.guesses === null ? null : <span className="text-muted"> · {guessesText(status.guesses)}</span>}
       </span>
     );

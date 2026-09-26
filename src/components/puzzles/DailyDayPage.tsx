@@ -17,6 +17,7 @@ import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.cons
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { fastestOfWord } from "@/lib/puzzles/server/dailyPlays";
 import { memberNamesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { SolveTime } from "./SolveTime";
 
 /**
  * /games/<slug>/daily/<day>: one day's words, and the fastest to find each.
@@ -77,14 +78,14 @@ export async function DailyDayPage({ kind, day, today }: { kind: PuzzleKind; day
               </span>
             ) : null}
           </h2>
-          <FastestOfDay rows={board.fastest} names={names} playHref={dailyPlayPath(kind, board.size, day)} />
+          <FastestOfDay kind={kind} rows={board.fastest} names={names} playHref={dailyPlayPath(kind, board.size, day)} />
         </section>
       ))}
     </Page>
   );
 }
 
-function FastestOfDay({ rows, names, playHref }: { rows: readonly DailyFastest[]; names: Map<string, string>; playHref: string }) {
+function FastestOfDay({ kind, rows, names, playHref }: { kind: PuzzleKind; rows: readonly DailyFastest[]; names: Map<string, string>; playHref: string }) {
   return (
     <div className={TABLE_SCROLL}>
       <table className="w-full text-sm" data-testid="daily-day-fastest-table">
@@ -109,7 +110,9 @@ function FastestOfDay({ rows, names, playHref }: { rows: readonly DailyFastest[]
           ) : (
             rows.map((row, at) => (
               <tr key={`${row.memberId}-${at}`} className="border-t border-rule" data-testid="daily-day-fastest-row">
-                <td className="py-1 pr-2 font-mono tabular-nums">{clockText(row.elapsedMs)}</td>
+                <td className="py-1 pr-2 font-mono tabular-nums">
+                  <SolveTime kind={kind} solveId={row.solveId} elapsedMs={row.elapsedMs} />
+                </td>
                 <td className="py-1 pr-2 tabular-nums text-muted">{row.guesses === null ? "—" : guessesText(row.guesses)}</td>
                 <td className="py-1 pr-2">
                   <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" />
