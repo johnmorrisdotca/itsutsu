@@ -615,6 +615,13 @@ model Member {
   /// What this column adds is only that it is not a person, which the clock
   /// needs to know (a computer is never late) and the directory shows.
   botTier      String?
+  /// A simulated member, made for load and projection testing, never a real
+  /// person or program. Off for every real row, including every `botTier` one.
+  /// The one place every list, board and count hides these unless the admin's
+  /// own Test Mode is on — see `src/lib/testMode/testMode.ts` and
+  /// `docs/plans/test-mode/README.md` — never a second, looser check of its
+  /// own on a page that thinks it knows better.
+  isTest       Boolean  @default(false)
 
   /// The run over EVERY finished game this member has played here — rated or
   /// friendly, either pool, whoever held the other seat. The rule is
@@ -788,6 +795,7 @@ model Member {
   parentalConsent ParentalConsent?
 
   @@index([botTier])
+  @@index([isTest])
   /// The XP leaderboard's default sort: highest first. The LEVEL is derived from
   /// this column and the curve is monotonic, so sorting by level is sorting by
   /// this — there is nothing to index for it, and nothing to store.
