@@ -15,7 +15,7 @@ import { breaksHardRule, decodeHidden, isWord, languageOf, markGuess } from "@/l
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
-import { letterKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
+import { knownCounts, letterKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
@@ -96,6 +96,8 @@ export function GomojiSolve({
   // The head start's letters are grey from the first moment, as a guess would have left them; a guess can only say the same of them.
   const given = useMemo(() => (headStart ? headStartKeys(kind, size, puzzle.givens) : []), [headStart, kind, size, puzzle.givens]);
   const known = useMemo(() => withHeadStart(letterKeyMarks(guesses, hidden), given, "miss"), [guesses, hidden, given]);
+  // How many of a letter the marks on the board prove, never the hidden word: a count on its key from two.
+  const counted = useMemo(() => knownCounts(guesses, marks), [guesses, marks]);
 
   const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
@@ -209,7 +211,7 @@ export function GomojiSolve({
             {said ?? `Type a ${size}-letter word and press Enter. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
-            <WordKeyboard known={known} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
+            <WordKeyboard known={known} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <WordStylePicker />

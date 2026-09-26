@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { letterKeyMarks, kanaKeyMarks, withHeadStart } from "@/lib/puzzles/keyMarks";
+import { knownCounts, letterKeyMarks, kanaKeyMarks, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { decodeHidden, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
@@ -13,7 +13,7 @@ import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { decodeKanaGivens } from "@/lib/puzzles/gomojiKana/kanaCode";
-import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { kanaBase, markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
@@ -74,6 +74,8 @@ export function WordReplay({
   const arrows: CellArrow[][] = kanaMarks.map((row) =>
     row.map((each) => (each.wrongSize && each.wrongMark ? "↓↑" : each.wrongSize ? "↓" : each.wrongMark ? "↑" : "")),
   );
+  // How many of a letter the marks drawn at this step prove, by base for kana: a count on its key from two.
+  const counted = knownCounts(rows, marks, kana ? kanaBase : undefined);
   const free = kana && grey !== null ? 1 : 0;
   const started = headStart ? headStartKeys(kind, size, givens) : [];
 
@@ -96,6 +98,7 @@ export function WordReplay({
       {kana ? (
         <KanaKeyboard
           known={withHeadStart(kanaKeyMarks(rows, word), started, "miss")}
+          counted={counted}
           typed={NONE}
           style={style}
           disabled={false}
@@ -107,7 +110,7 @@ export function WordReplay({
           onBack={NOTHING}
         />
       ) : (
-        <WordKeyboard known={withHeadStart(letterKeyMarks(played, word), started, "miss")} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
+        <WordKeyboard known={withHeadStart(letterKeyMarks(played, word), started, "miss")} counted={counted} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
       )}
     </div>
   );

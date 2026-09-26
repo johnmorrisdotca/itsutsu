@@ -20,7 +20,7 @@ import { kanaScore } from "@/lib/puzzles/gomojiKana/kanaScore";
 import { kanaWordsOf } from "@/lib/puzzles/gomojiKana/kanaWords";
 import { finishRomaji, readRomaji } from "@/lib/puzzles/gomojiKana/romaji";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
-import { kanaKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
+import { kanaKeyMarks, knownCounts, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
@@ -109,6 +109,16 @@ export function GomojiKanaSolve({
   // The head start's kana keys are grey from the first moment, as a guess would have left them (`headStart.ts`).
   const started = useMemo(() => (headStart ? headStartKeys(kind, size, puzzle.givens) : []), [headStart, kind, size, puzzle.givens]);
   const known = useMemo(() => withHeadStart(kanaKeyMarks(shown, hidden), started, "miss"), [shown, hidden, started]);
+  // How many of a kana the marks on the board prove, by base as the keys are: a count on its key from two.
+  const counted = useMemo(
+    () =>
+      knownCounts(
+        shown,
+        marked.map((row) => row.map((each) => each.mark)),
+        kanaBase,
+      ),
+    [shown, marked],
+  );
 
   const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
@@ -252,6 +262,7 @@ export function GomojiKanaSolve({
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <KanaKeyboard
               known={known}
+              counted={counted}
               typed={typedCounts(typing.slots, kanaBase)}
               last={lastTyped(typing) >= 0 && typing.slots[lastTyped(typing)] !== "" ? typing.slots[lastTyped(typing)]! : null}
               style={style}

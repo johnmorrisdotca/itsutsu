@@ -72,3 +72,57 @@ export function typedCounts(slots: readonly string[], keyOf: (letter: string) =>
   }
   return counts;
 }
+
+/**
+ * HOW MANY OF A LETTER THE WORD IS KNOWN TO HOLD, read off the marks the
+ * board already shows and never off the hidden word, so a key says no more
+ * than a player looking at the board could work out. John, 2026-09-26, on a
+ * solved PRIOR: "A Keyboard where a Letter was used twice should show the (2)
+ * count superscript badge on the Letter R."
+ *
+ * Each copy of a letter marked in its place or in the word elsewhere is a
+ * copy the word holds, because a guess's marks never give a letter more
+ * copies than the word has (`markGuess`, `markKanaGuess`). So one guess
+ * proves as many as it marked, and the word holds at least the most any
+ * single guess proved: the most, not the sum, since a yellow R in one guess
+ * and a yellow R in the next may be the same R. A copy marked grey proves
+ * nothing more, so ERROR against a word with one R, one green and two grey,
+ * proves one.
+ *
+ * Kana: green and orange count, green with an arrow included (the kana is in
+ * that place, only its size or mark differs), and yellow does not (it says
+ * the place holds a kana of the same row, not this one). Counted by base, as
+ * the keys are, so ぱ and は are two of the は key: `keyOf` does that.
+ *
+ * Every letter proved at least once is in the map; a key shows its count from
+ * two. `marks[i]` are the marks of `guesses[i]`, place by place.
+ */
+export function knownCounts(guesses: readonly string[], marks: readonly (readonly string[])[], keyOf: (letter: string) => string = (letter) => letter): Map<string, number> {
+  const most = new Map<string, number>();
+  guesses.forEach((guess, row) => {
+    const shown = marks[row];
+    if (shown === undefined) return;
+    const proved = new Map<string, number>();
+    [...guess].forEach((letter, at) => {
+      const mark = shown[at];
+      if (mark !== "hit" && mark !== "near") return;
+      const key = keyOf(letter);
+      proved.set(key, (proved.get(key) ?? 0) + 1);
+    });
+    for (const [key, count] of proved) if (count > (most.get(key) ?? 0)) most.set(key, count);
+  });
+  return most;
+}
+
+/**
+ * What a screen reader hears for a key beyond its letter: how many the word is
+ * known to hold (`knownCounts`) and how many are in the row being typed
+ * (`typedCounts`), each from two, as the key shows them. "R, in the word
+ * twice", "R, 2 in the row", or both; nothing extra when neither is shown.
+ */
+export function keyLabel(letter: string, known: number, typed: number): string | undefined {
+  const said: string[] = [];
+  if (known >= 2) said.push(`in the word ${known === 2 ? "twice" : `${known} times`}`);
+  if (typed >= 2) said.push(`${typed} in the row`);
+  return said.length === 0 ? undefined : [letter.toUpperCase(), ...said].join(", ");
+}
