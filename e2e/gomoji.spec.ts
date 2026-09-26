@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { breaksHardRule, isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
+import { answersFor, breaksHardRule, isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { wordScore } from "../src/lib/puzzles/gomoji/wordScore";
 import { freshPuzzleSeed, ready } from "./support";
@@ -185,6 +185,25 @@ test.describe("the word puzzle", () => {
     await page.getByTestId("word-keys-toggle").click();
     await expect(page.getByTestId("word-keys-box")).toBeHidden();
     await expect(page.getByTestId("word-keys-toggle")).toHaveAttribute("aria-pressed", "false");
+  });
+
+  test("a letter already found green is green again as it is typed in that place, and nowhere else", async ({ page }) => {
+    // John, 2026-09-26: "if a letter is known green, placing that letter in the same column should start off green".
+    const seed = freshPuzzleSeed();
+    await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const hidden = generatePuzzle(KIND, 5, LEVEL, seed).solution;
+    const first = answersFor(5, false).find((word) => word[0] === hidden[0] && word !== hidden)!;
+    await page.keyboard.type(first);
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("data-mark", "hit");
+    const typing = page.locator('[data-testid="word-tile"][data-row="1"]');
+    // The found letter, in its place: green before Enter.
+    await page.keyboard.type(hidden[0]!);
+    await expect(typing.first()).toHaveAttribute("data-known", "hit");
+    // The same letter one place along was never found there, so it is only typed.
+    await page.keyboard.type(hidden[0]!);
+    await expect(typing.nth(1)).not.toHaveAttribute("data-known", "hit");
   });
 
   test("a typed letter is tapped to choose it, then typed over, or cleared with Space or Delete, before Enter", async ({ page }) => {

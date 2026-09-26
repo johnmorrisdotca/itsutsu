@@ -4,7 +4,7 @@ import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
 import { wordPoints } from "../puzzlePoints";
 import { decodeGomojiProgress, progressFits } from "../puzzleProgress";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
-import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, encodeHidden, isWord, markGuess, rowsFor } from "./code";
+import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, encodeHidden, foundInPlace, isWord, markGuess, rowsFor } from "./code";
 import { generateGomoji } from "./generate";
 import { foundBonus } from "./wordScore";
 
@@ -40,6 +40,16 @@ describe("drawing a Gomoji", () => {
       for (const word of answersFor(size, true)) expect(wide.has(word)).toBe(true);
       for (const word of answersFor(size, false)) expect(isWord(word, size)).toBe(true);
     }
+  });
+});
+
+describe("what the board has already found in place", () => {
+  it("names, for each place, the letter an earlier guess found green there, and nothing it only found elsewhere", () => {
+    const guesses = ["crane", "cream"];
+    const marks = [markGuess("crane", "clasp"), markGuess("cream", "clasp")];
+    // CRANE finds C and A in place; CREAM finds C again and its A only elsewhere, which adds nothing.
+    expect(foundInPlace(guesses, marks, 5)).toEqual(["c", "", "a", "", ""]);
+    expect(foundInPlace([], [], 4)).toEqual(["", "", "", ""]);
   });
 });
 

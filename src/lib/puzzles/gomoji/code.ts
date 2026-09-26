@@ -150,3 +150,18 @@ export function breaksHardRule(guesses: readonly string[], hidden: string, next:
 function ordinal(n: number): string {
   return ["first", "second", "third", "fourth", "fifth", "sixth"][n - 1] ?? `${n}th`;
 }
+
+/**
+ * For each place, the letter an earlier guess already found there (green), or
+ * "" where none has. John, 2026-09-26: "if a letter is known green, placing
+ * that letter in the same column should start off green… since it's gonna be
+ * green anyway." What the board already told the player, never a peek at the
+ * hidden word: it reads only the guesses made and their marks.
+ */
+export function foundInPlace(guesses: readonly string[], marks: readonly (readonly string[])[], size: number): string[] {
+  const found = Array.from({ length: size }, () => "");
+  guesses.forEach((guess, row) => {
+    for (let at = 0; at < size; at += 1) if (marks[row]?.[at] === "hit") found[at] = guess[at] ?? "";
+  });
+  return found;
+}

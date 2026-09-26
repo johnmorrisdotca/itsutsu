@@ -2,7 +2,7 @@
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE, EDGE_LINE_WIDTH, FELTS, LINE_WIDTH, STAR_RADIUS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
-import type { LetterMark } from "@/lib/puzzles/gomoji/code";
+import { foundInPlace, type LetterMark } from "@/lib/puzzles/gomoji/code";
 import { playPlace } from "@/lib/puzzles/gomoji/layout";
 import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
@@ -99,6 +99,7 @@ export function GomojiGrid({
   // Tiles stand centred across the board (`justify-center` below), so the play area's border starts where they do, not at the board's edge.
   const { span, top, left } = tiles ? { span: rows, top: 0, left: (rows - size) / 2 } : playPlace(size, rows);
   const theme = feltOrWoodTheme(appearance);
+  const found = foundInPlace(guesses, marks, size);
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={span} theme={theme}>
@@ -122,6 +123,9 @@ export function GomojiGrid({
               return Array.from({ length: size }, (_, at) => {
                 const letter = letters[at] ?? "";
                 const mark = guessed === undefined ? null : marks[row]![at]!;
+                // A letter typed where an earlier guess already found it green is drawn green at once: it cannot be anything else.
+                const known = live && letter !== "" && found[at] === letter;
+                const shown = mark ?? (known ? "hit" : null);
                 const arrow = mark === null ? "" : (arrows[row]?.[at] ?? "");
                 const label =
                   letter === ""
@@ -134,6 +138,7 @@ export function GomojiGrid({
                   "data-mark": mark ?? (letter === "" ? "empty" : "typed"),
                   "data-arrow": arrow === "" ? undefined : arrow,
                   "data-free": row < free ? "true" : undefined,
+                  "data-known": known ? "hit" : undefined,
                   "data-focus": focused ? "true" : undefined,
                   "aria-label": live ? `${label}, letter ${at + 1}${focused ? ", chosen" : ""}` : label,
                 };
@@ -149,7 +154,7 @@ export function GomojiGrid({
                 ) : (
                   <span
                     className={`relative ${WORD_STONE} ${WORD_STONE_SIZE[style]} ${focused ? WORD_FOCUS.stoneFilled : ""}`}
-                    style={WORD_STONE_LOOK[mark ?? "typed"]}
+                    style={WORD_STONE_LOOK[shown ?? "typed"]}
                     aria-hidden="true"
                   >
                     {letter}
@@ -157,7 +162,7 @@ export function GomojiGrid({
                   </span>
                 );
                 const look = tiles
-                  ? `relative ${WORD_TILE} ${mark !== null ? WORD_TILE_MARK[mark] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY} ${focused ? (letter === "" ? WORD_FOCUS.tileEmpty : WORD_FOCUS.tileFilled) : ""}`
+                  ? `relative ${WORD_TILE} ${shown !== null ? WORD_TILE_MARK[shown] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY} ${focused ? (letter === "" ? WORD_FOCUS.tileEmpty : WORD_FOCUS.tileFilled) : ""}`
                   : "relative flex items-center justify-center";
                 // A place on the row being typed is a press; every other cell is only drawn.
                 return live ? (
