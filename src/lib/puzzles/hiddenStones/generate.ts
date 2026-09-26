@@ -1,6 +1,8 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled, type Random } from "../random";
+import { CLIMB_TRIES, CLIMBED_ABOVE, CLIMBED_PLACEMENTS, LOOSEN_TRIES, climbToReasoned, loosenPastReasoning } from "./climb";
 import { encodeRegions, encodeStones } from "./code";
+import { connected } from "./regions";
 import { applyReasoning, solutions } from "./solve";
 
 /**
@@ -88,25 +90,6 @@ export function growRegions(size: number, stones: readonly number[], random: Ran
 }
 
 /**
- * Whether a region is one connected piece, walking from one of its cells.
- */
-function connected(size: number, regions: readonly number[], region: number, from: number): boolean {
-  const seen = new Set<number>([from]);
-  const queue = [from];
-  while (queue.length > 0) {
-    const cell = queue.pop()!;
-    const row = Math.floor(cell / size);
-    const col = cell % size;
-    for (const next of [row > 0 ? cell - size : -1, row < size - 1 ? cell + size : -1, col > 0 ? cell - 1 : -1, col < size - 1 ? cell + 1 : -1]) {
-      if (next === -1 || seen.has(next) || regions[next] !== region) continue;
-      seen.add(next);
-      queue.push(next);
-    }
-  }
-  return regions.every((each, index) => each !== region || seen.has(index));
-}
-
-/**
  * Tighten a grown grid until it has one answer.
  *
  * A grid grown at random almost always has several answers (measured: two in
@@ -155,6 +138,10 @@ function tighten(size: number, regions: number[], stones: readonly number[], ran
 }
 
 export function generateHiddenStones(size: number, level: PuzzleLevel, seed: number): Puzzle {
+  /* A grid past ten is climbed rather than tightened (`climb.ts`): tightening
+     a 12×12 took seconds, and the sizes up to ten keep the way they were made
+     so every seed already played makes the grid it made then. */
+  if (size > CLIMBED_ABOVE) return climbHiddenStones(size, level, seed);
   const random = seededRandom(seed);
   const wanted = level === "easy" ? 0 : 1;
   let fallback: { stones: number[]; regions: number[] } | null = null;
@@ -176,6 +163,32 @@ export function generateHiddenStones(size: number, level: PuzzleLevel, seed: num
   /* Every try spent: the last unique grid, at whatever level it turned out.
      A grid with one answer is a puzzle; a grid of the wrong level is a puzzle
      with a label that flatters or undersells it, which is the lesser fault. */
+  if (fallback !== null) return made(size, level, seed, fallback.stones, fallback.regions);
+  throw new Error(`could not make a ${size}×${size} Hidden Stones from seed ${seed}`);
+}
+
+/**
+ * A grid past ten, climbed: stones placed and regions grown as below, then
+ * cells moved one at a time until the reasoning alone finishes it — which
+ * makes it an easy puzzle with one answer, since every step the reasoning
+ * takes is forced. A hard one is walked on from there until the reasoning
+ * stops short while the solver still counts one answer. Measured on a 12×12:
+ * a third of a second for an easy one and a quarter for a hard one on
+ * average, never over one and a half, where tightening took seconds.
+ */
+function climbHiddenStones(size: number, level: PuzzleLevel, seed: number): Puzzle {
+  const random = seededRandom(seed);
+  let fallback: { stones: number[]; regions: number[] } | null = null;
+  for (let placement = 0; placement < CLIMBED_PLACEMENTS; placement += 1) {
+    const stones = placeStones(size, random);
+    if (stones === null) continue;
+    const regions = growRegions(size, stones, random);
+    if (regions.includes(-1) || !climbToReasoned(size, regions, stones, random, CLIMB_TRIES)) continue;
+    if (level === "easy") return made(size, level, seed, stones, regions);
+    fallback ??= { stones, regions: [...regions] };
+    if (loosenPastReasoning(size, regions, stones, random, LOOSEN_TRIES)) return made(size, level, seed, stones, regions);
+  }
+  // As below: a grid with one answer at the wrong level is the lesser fault.
   if (fallback !== null) return made(size, level, seed, fallback.stones, fallback.regions);
   throw new Error(`could not make a ${size}×${size} Hidden Stones from seed ${seed}`);
 }

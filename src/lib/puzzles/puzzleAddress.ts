@@ -1,4 +1,4 @@
-import { PUZZLE_SPECS, isCheckAllowance } from "./puzzles.constants";
+import { PUZZLE_SPECS, isCheckAllowance, levelsFor } from "./puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
@@ -56,7 +56,9 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const sizeAsked = Number(one(PUZZLE_PARAMS.size));
   const size = spec.sizes.includes(sizeAsked) ? sizeAsked : spec.defaultSize;
   const levelAsked = one(PUZZLE_PARAMS.level) as PuzzleLevel | undefined;
-  const level = levelAsked !== undefined && spec.levels.includes(levelAsked) ? levelAsked : spec.defaultLevel;
+  // A level this size cannot be made at (a 4×4 Hidden Stones is easy only) is the first one it can.
+  const levels = levelsFor(kind, size);
+  const level = levelAsked !== undefined && levels.includes(levelAsked) ? levelAsked : levels.includes(spec.defaultLevel) ? spec.defaultLevel : levels[0]!;
   const seedAsked = Number(one(PUZZLE_PARAMS.seed));
   /* A fixed level's seed is its number, and its band follows from it, whatever the address said (`tsunagi/levels.ts`). */
   if (spec.fixedLevels === true) {
