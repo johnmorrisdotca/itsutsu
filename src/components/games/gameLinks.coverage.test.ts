@@ -39,8 +39,13 @@ import { PAIRED_NAME, code, inside, insideControl, isGameName, namesPrinted } fr
 
 const ROOTS = ["src/components", "src/app"];
 
-/** The two components every other file goes through, and nothing else. */
-const OWNERS = new Set(["GameName.tsx", "GameCount.tsx", "PlayerRecord.tsx"]);
+/**
+ * The components every other file goes through, and nothing else: a game's
+ * name, a count of games, a record — and a puzzle's time, a member's points at
+ * a puzzle and an IP figure, which print their number in a plain branch too,
+ * for the one honest exception each of them owns.
+ */
+const OWNERS = new Set(["GameName.tsx", "GameCount.tsx", "PlayerRecord.tsx", "SolveTime.tsx", "SolvePoints.tsx", "IpFigure.tsx"]);
 
 function filesUnder(dir: string): string[] {
   const out: string[] = [];
@@ -479,6 +484,121 @@ describe("a count of games said through a phrase is still the way into those gam
   });
 });
 
+/**
+ * A PUZZLE'S TIME IS THE WAY INTO THAT SOLVE, AND A SCORE IS THE WAY INTO WHAT
+ * IT WAS MADE OF.
+ *
+ * John, 2026-09-26, on a puzzle's standings — a points leaderboard, and the
+ * fastest times such as "5x5 easy 2:41 John M.": "No way to view played
+ * games.. clicking a name takes us to profile and no links to the Game Played
+ * History viewer." Every time on that page was printed as plain text, and so
+ * was every points figure, on a page whose whole subject is those numbers. The
+ * checks above could not see it: a time is not a count of games, and a sum of
+ * points is neither a record nor a table of them.
+ *
+ * So, the same rule in its own terms:
+ *
+ *  - A time printed with `clockText(` is inside a link, or goes through
+ *    `SolveTime`, which opens that solve.
+ *  - A points or IP figure — `{x.points}`, `{x.ip}`, or `thousands(` of one —
+ *    is inside a link, or goes through `SolvePoints` (a member's points at a
+ *    puzzle, to the solves they were made of) or `IpFigure` (IP, to the games
+ *    it was won in).
+ *
+ * Or the file is named below, with the reason a link there would lead nowhere
+ * new. Attribute positions (`data-ip={row.ip}`) are not figures on the page.
+ */
+const PUZZLE_TIME = /clockText\(/g;
+
+const POINTS_FIGURE =
+  /(.)\{\s*\+?\s*[A-Za-z_$][\w$?.]*\.(?:points|ip)(?:\.toLocaleString\([^)]*\))?\s*\}|(.)thousands\(\s*[A-Za-z_$][\w$?.]*\.(?:points|ip)\s*\)/g;
+
+const TIME_EXCEPTIONS: Record<string, string> = {
+  // The puzzle being played: its running clock and the line that says it is solved. The solve IS the page.
+  "src/components/puzzles/solveShared.tsx": "the clock of the puzzle in front of the reader, and its own finishing line",
+  // One finished puzzle's own page: its time is a fact about the page the reader is on.
+  "src/components/puzzles/PuzzleSolvePage.tsx": "the solve's own page: a link would lead where the reader already is",
+  // A race's page saying how each seat finished it: the race is the page, and each seat's solve is on its solver's list.
+  "src/components/puzzles/PuzzleRacePage.tsx": "the race's own page, telling its own seats' times",
+  // Time spent so far on a puzzle not finished: there is no solve yet to open, and the row resumes the puzzle.
+  "src/components/mine/MyPuzzleRuns.tsx": "time so far on an unfinished puzzle: nothing finished to open",
+  // The whole row is the link to this solve (a stretched card link), so its time already leads there.
+  "src/components/mine/MyPuzzleSolves.tsx": "the row itself opens this solve, time and all",
+};
+
+const POINTS_EXCEPTIONS: Record<string, string> = {
+  // The whole row is the link to this solve (a stretched card link), so its score already leads there.
+  "src/components/mine/MyPuzzleSolves.tsx": "the row itself opens this solve, points and all",
+  // A member's points at the top of the record narrowed to them: the sum of the page the reader is on, its rows marked.
+  "src/components/puzzles/PuzzleRecordPage.tsx": "the sum of the page the reader is on, its counted rows marked",
+  // An XP award in the reader's own ledger of XP: experience, not a score of games or solves, and the row is the award.
+  "src/components/mine/MyXp.tsx": "an XP award in the XP ledger itself, not a score of games",
+};
+
+function figuresIn(source: string, pattern: RegExp): number[] {
+  return [...source.matchAll(pattern)]
+    // An attribute (`data-ip={row.ip}`) and a template string's `${…}` are not figures on the page.
+    .filter((match) => !["=", "$"].includes(match[1] ?? match[2] ?? ""))
+    // Past the one character a pattern captures before the figure, when it captures one.
+    .map((match) => match.index + (match[1] ?? match[2] ?? "").length);
+}
+
+describe("a puzzle's time and a score lead to what they were made of", () => {
+  it("nobody prints a puzzle's time with nothing behind it", () => {
+    const offenders = FILES.filter((file) =>
+      figuresIn(file.source, PUZZLE_TIME).some((at) => !clickable(file.source, at)),
+    )
+      .map((file) => file.path)
+      .filter((path) => TIME_EXCEPTIONS[path] === undefined);
+    expect(offenders, "print a solve's time through SolveTime, which opens that solve — or name the file above with why it cannot").toEqual([]);
+  });
+
+  it("nobody prints a points or IP figure with nothing behind it", () => {
+    const offenders = FILES.filter((file) =>
+      figuresIn(file.source, POINTS_FIGURE).some((at) => !clickable(file.source, at)),
+    )
+      .map((file) => file.path)
+      .filter((path) => POINTS_EXCEPTIONS[path] === undefined);
+    expect(offenders, "print it through SolvePoints or IpFigure, which lead to what it was made of — or name the file above with why it cannot").toEqual([]);
+  });
+
+  it("still finds times and figures to check, so a passing run means something", () => {
+    // If the patterns stop matching, every file is compliant at once.
+    expect(FILES.filter((file) => figuresIn(file.source, PUZZLE_TIME).length > 0).length).toBeGreaterThan(2);
+    expect(FILES.filter((file) => figuresIn(file.source, POINTS_FIGURE).length > 0).length).toBeGreaterThan(2);
+  });
+
+  it("the boards that print times and scores print them through the components that link them", () => {
+    // The page John was on, and the panels of it every puzzle's front door draws.
+    const read = (path: string) => readFileSync(path, "utf8");
+    expect(read("src/components/puzzles/PuzzleFastest.tsx")).toContain("<SolveTime");
+    // Gomoji's table (every puzzle's): a solve's own points open that solve, and so does its Replay.
+    expect(read("src/components/puzzles/PuzzleFastest.tsx")).toContain("<OneSolvePoints");
+    expect(read("src/components/puzzles/PuzzleFastest.tsx")).toContain("puzzle-fastest-replay");
+    expect(read("src/components/puzzles/RecordSolvesTable.tsx")).toContain("<OneSolvePoints");
+    expect(read("src/components/puzzles/PuzzlePoints.tsx")).toContain("<SolvePoints");
+    expect(read("src/components/points/IpBoard.tsx")).toContain("<IpFigure");
+    expect(read("src/components/feed/FeedNewsLine.tsx")).toContain("<SolveTime");
+  });
+
+  it("every exception is a file that still exists", () => {
+    const known = new Set(FILES.map((file) => file.path));
+    expect([...Object.keys(TIME_EXCEPTIONS), ...Object.keys(POINTS_EXCEPTIONS)].filter((path) => !known.has(path))).toEqual([]);
+  });
+
+  it("SolveTime opens the solve, SolvePoints the member's solves, and IpFigure the games that paid", () => {
+    const time = readFileSync("src/components/puzzles/SolveTime.tsx", "utf8");
+    expect(time).toContain("solvePath(");
+    expect(time).toContain("mySolvePath(");
+    const points = readFileSync("src/components/puzzles/SolvePoints.tsx", "utf8");
+    expect(points).toMatch(/puzzleRecordHref\(kind, \{ member: memberId, month \}\)/);
+    expect(points).toContain("mySolvePath(kind, solveId) : solvePath(kind, solveId)");
+    const ip = readFileSync("src/components/points/IpFigure.tsx", "utf8");
+    expect(ip).toContain('ip: "paid"');
+    expect(ip).toContain("puzzleRecordHref(");
+  });
+});
+
 describe("the components the rules are kept in", () => {
   it("GameName links, and says plainly when a game is not ours", () => {
     const source = readFileSync("src/components/games/GameName.tsx", "utf8");
@@ -510,7 +630,7 @@ describe("the components the rules are kept in", () => {
      * is only worth enforcing in one place if there IS only one place.
      */
     const shadows = FILES.filter((file) =>
-      [...file.source.matchAll(/\bfunction (GameName|GameCount|PlayerName)\s*\(/g)].some(
+      [...file.source.matchAll(/\bfunction (GameName|GameCount|PlayerName|SolveTime|SolvePoints|IpFigure)\s*\(/g)].some(
         // Its own file is where it is SUPPOSED to be. `OWNERS` already keeps
         // GameName.tsx and GameCount.tsx out of `FILES`; PlayerName.tsx is in
         // them, because it prints names and counts like any other page.
