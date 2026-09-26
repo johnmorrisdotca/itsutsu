@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GameThumb } from "@/components/games/GameThumb";
 import { PageTitle } from "@/components/layout/Headings";
 import { Tabs } from "@/components/ui/Tabs";
 import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
@@ -50,7 +51,9 @@ export default async function LearnIndexPage() {
               data-card-link=""
               className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
             >
-              <span className="flex min-w-0 flex-col gap-2">
+              {/* The game the guide is first about, drawn as its card on /games draws it (John: "doesn't have the matching image in the block"). */}
+              <GameThumb variant={guide.variants[0]} size="regular" />
+              <span className="flex min-w-0 flex-1 flex-col gap-2">
                 <span className="flex items-baseline gap-2 font-semibold">
                   {guide.title}
                   <span className="font-mincho text-xs font-normal opacity-70">{guide.kanji}</span>

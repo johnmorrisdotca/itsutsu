@@ -81,6 +81,8 @@ test.describe("rules and learning", () => {
   test("the learning shelf lists the guides and each guide links its games", async ({ page }) => {
     await page.goto("/learn");
     await expect(page.getByTestId("learn-index").getByRole("link")).toHaveCount(8);
+    // Each card shows its game's picture, as a card on /games does.
+    await expect(page.getByTestId("learn-index").getByTestId("game-thumb")).toHaveCount(8);
     await page.getByRole("link", { name: /gravity is the board/ }).click();
     await expect(page.getByTestId("guide-page")).toContainText("Parity");
     await page.getByRole("link", { name: "Ring Drop" }).click();

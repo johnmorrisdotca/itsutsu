@@ -302,6 +302,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // Cards: /games, a family's page, the practice browser.
   "src/app/games/[slug]/family/page.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  // The learning shelf: a card per guide, headed by the game it is first about, as the catalogue's cards are.
+  "src/app/learn/page.tsx": { GameThumb: "regular" },
   "src/components/games/GameCards.tsx": { GameThumb: "regular" },
   // The front page's families: a card each, like the catalogue's.
   "src/components/home/HomeFamilies.tsx": { FamilyMark: "regular" },
