@@ -4,8 +4,8 @@ import { useCallback, useMemo, useState } from "react";
 
 import { useHydrated } from "@/lib/ui/hydrated";
 
-import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
-import { keepFillHere, keepMarksHere, keptFill, keptMarks } from "./tsunagiKept";
+import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
+import { keepCheatsHere, keepExplosionsHere, keepFillHere, keepMarksHere, keptCheats, keptExplosions, keptFill, keptMarks } from "./tsunagiKept";
 
 /**
  * One of Tsunagi's looks, as this player last chose it: on the account for a
@@ -18,7 +18,7 @@ import { keepFillHere, keepMarksHere, keptFill, keptMarks } from "./tsunagiKept"
  * agree, and nothing sets state from an effect.
  */
 function useTsunagiLook<T extends string>(
-  preference: "tsunagiMarks" | "tsunagiFill",
+  preference: "tsunagiMarks" | "tsunagiFill" | "tsunagiExplosions" | "tsunagiCheats",
   initial: T | null,
   saves: boolean,
   fallback: T,
@@ -47,6 +47,8 @@ function useTsunagiLook<T extends string>(
 
 const MARKS_HERE = { read: keptMarks, keep: keepMarksHere };
 const FILL_HERE = { read: keptFill, keep: keepFillHere };
+const EXPLOSIONS_HERE = { read: keptExplosions, keep: keepExplosionsHere };
+const CHEATS_HERE = { read: keptCheats, keep: keepCheatsHere };
 
 /** Colours or numbers: how the pairs are told apart (the `tsunagiMarks` preference). */
 export function useTsunagiMarks(initial: TsunagiMarks | null, saves: boolean): { marks: TsunagiMarks; chooseMarks: (next: TsunagiMarks) => void } {
@@ -58,4 +60,16 @@ export function useTsunagiMarks(initial: TsunagiMarks | null, saves: boolean): {
 export function useTsunagiFill(initial: TsunagiFill | null, saves: boolean): { fill: TsunagiFill; chooseFill: (next: TsunagiFill) => void } {
   const [fill, chooseFill] = useTsunagiLook("tsunagiFill", initial, saves, "marbles", FILL_HERE);
   return { fill, chooseFill };
+}
+
+/** How a level with explosions is played: as made, softened or with none (the `tsunagiExplosions` preference). */
+export function useTsunagiExplosions(initial: TsunagiExplosionsChoice | null, saves: boolean): { explosions: TsunagiExplosionsChoice; chooseExplosions: (next: TsunagiExplosionsChoice) => void } {
+  const [explosions, chooseExplosions] = useTsunagiLook("tsunagiExplosions", initial, saves, "on", EXPLOSIONS_HERE);
+  return { explosions, chooseExplosions };
+}
+
+/** Whether Cheat is offered on a level (the `tsunagiCheats` preference): off until chosen at set-up. */
+export function useTsunagiCheats(initial: TsunagiCheatsChoice | null, saves: boolean): { cheats: TsunagiCheatsChoice; chooseCheats: (next: TsunagiCheatsChoice) => void } {
+  const [cheats, chooseCheats] = useTsunagiLook("tsunagiCheats", initial, saves, "off", CHEATS_HERE);
+  return { cheats, chooseCheats };
 }

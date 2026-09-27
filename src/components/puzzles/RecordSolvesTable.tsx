@@ -1,5 +1,6 @@
 import Link from "@/components/ui/Link";
 
+import { SOLVE_HELP_SAYS } from "@/lib/puzzles/solveHelp";
 import { PlayerName } from "@/components/players/PlayerName";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
@@ -78,6 +79,11 @@ export function RecordSolvesTable({
                     {solve.solved ? null : <span className="ml-1 text-xs text-muted">not found</span>}
                     {solve.guesses === null || !solve.solved ? null : <span className="ml-1 text-xs text-muted tabular-nums">{guessesText(solve.guesses)}</span>}
                     {solve.raceId === null ? null : <span className="ml-1 text-xs text-muted">race</span>}
+                    {solve.helped === null ? null : (
+                      <span className="ml-1 text-xs text-muted" title={SOLVE_HELP_SAYS[solve.helped]} data-testid="record-solve-helped" data-helped={solve.helped}>
+                        helped
+                      </span>
+                    )}
                   </td>
                   <td className="py-1 pr-2 text-right whitespace-nowrap">
                     {counted?.has(solve.id) ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "@/components/ui/Link";
+import { helpOpensOn, SOLVE_HELP_SAYS, type SolveHelp } from "@/lib/puzzles/solveHelp";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -42,6 +43,8 @@ export type Done = {
   outOfGuesses?: true;
   /** The kept solve, once the site has said which it is: the card opens it again, replay and all. */
   solveId?: string | null;
+  /** How the solve was helped (`solveHelp.ts`), or null for none: the card says what that costs it. */
+  helped?: SolveHelp | null;
 };
 
 /** A race this solve is one seat of: its id, when the server started this seat's clock, and the Check allowance both seats race under. */
@@ -210,9 +213,9 @@ export function useSolve(
   }, [startedAt]);
 
   const finish = useCallback(
-    async (answer: string, at: number) => {
+    async (answer: string, at: number, helped: SolveHelp | null = null) => {
       const elapsedMs = carriedMs + (startedAt === null ? 0 : Math.max(0, at - startedAt - pausedMs));
-      setDone({ elapsedMs, paid: null, problem: null });
+      setDone({ elapsedMs, paid: null, problem: null, helped });
       if (!hasAccount) return;
       try {
         /* One's own solve goes to the solved route with the browser's time; a
@@ -227,20 +230,22 @@ export function useSolve(
                   checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs, headStart: keeping.headStart === true,
                   // The grids on the way, for the replay on the solve's page: up to the one before the last entry, which the answer is.
                   ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
+                  // How it was helped, kept with the solve: solved, and scoring nothing (`solveHelp.ts`).
+                  ...(helped === null ? {} : { helped }),
                 }
               : { answer, checksUsed: used },
           ),
         });
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string; solveId?: string | null } | null;
         if (!answered.ok) {
-          setDone({ elapsedMs, paid: null, problem: body?.error ?? "The site could not record that solve." });
+          setDone({ elapsedMs, paid: null, problem: body?.error ?? "The site could not record that solve.", helped });
           return;
         }
-        setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, solveId: body?.solveId ?? null });
+        setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, solveId: body?.solveId ?? null, helped });
         // The race page above the solve reads the stamps again, so the result shows without a reload.
         if (race !== null) router.refresh();
       } catch {
-        setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve." });
+        setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve.", helped });
       }
     },
     [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping],
@@ -403,6 +408,13 @@ export function SolveDone({
               : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
             : (done.problem ?? "Recording your solve…")}
       </p>
+      {done.helped == null ? null : (
+        // A helped solve says what it costs, before anybody wonders where its points went.
+        <p className="text-sm" data-testid="puzzle-helped" data-helped={done.helped}>
+          {SOLVE_HELP_SAYS[done.helped]}. It counts as solved, but scores no points and is not on the fastest table
+          {helpOpensOn(done.helped) ? "." : ", and it does not open the next block: solve it with its explosions on for that."}
+        </p>
+      )}
       {race === null ? null : <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>}
       <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
         {race === null && onward !== undefined ? (

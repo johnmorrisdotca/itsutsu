@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
+import { helpOpensOn, solveHelpOf } from "../solveHelp";
 import { loadTsunagiLevels, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf } from "../tsunagi/levels";
 
 /**
@@ -11,8 +12,12 @@ import { loadTsunagiLevels, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiL
  * level 12" are each one indexed read over rows that already exist.
  */
 
-/** A member's best on one level: the time, and the solve it was, to open again. */
-export type LevelBest = { elapsedMs: number; solveId: string };
+/**
+ * A member's best on one level: the time, and the solve it was, to open again —
+ * and whether any of their solves of it opens what a solve opens (`helpOpensOn`):
+ * a level solved only with its explosions off is solved, and opens no block.
+ */
+export type LevelBest = { elapsedMs: number; solveId: string; opens: boolean };
 
 /** Every level a member has solved, by size and then level number, each with their best time on it. */
 export type TsunagiSolved = Record<number, Record<number, LevelBest>>;
@@ -21,7 +26,7 @@ export async function tsunagiSolvedBy(memberId: string): Promise<TsunagiSolved> 
   const rows = await prisma.puzzleSolve.findMany({
     where: { memberId, kind: "tsunagi", solved: true },
     orderBy: { elapsedMs: "asc" },
-    select: { id: true, size: true, givens: true, elapsedMs: true },
+    select: { id: true, size: true, givens: true, elapsedMs: true, helped: true },
   });
   const out: TsunagiSolved = {};
   const sizes = [...new Set(rows.map((row) => row.size))].filter((size) => (TSUNAGI_SIZES as readonly number[]).includes(size));
@@ -31,8 +36,9 @@ export async function tsunagiSolvedBy(memberId: string): Promise<TsunagiSolved> 
     const level = tsunagiLevelOf(row.size, row.givens);
     if (level === null) continue;
     const bySize = (out[row.size] ??= {});
-    // Fastest first, so the first seen is the best.
-    bySize[level] ??= { elapsedMs: row.elapsedMs, solveId: row.id };
+    // Fastest first, so the first seen is the best; any solve that opens makes the level open.
+    const best = (bySize[level] ??= { elapsedMs: row.elapsedMs, solveId: row.id, opens: false });
+    if (helpOpensOn(solveHelpOf(row.helped))) best.opens = true;
   }
   return out;
 }
@@ -53,7 +59,8 @@ export async function tsunagiLevelFastest(size: number, level: number): Promise<
   const givens = tsunagiLevelsOf(size)[level - 1]?.[0];
   if (givens === undefined) return [];
   const rows = await prisma.puzzleSolve.findMany({
-    where: { kind: "tsunagi", size, level: tsunagiBand(size, level), givens, solved: true },
+    // Unhelped only: a solve Cheat or eased explosions helped is no time to race.
+    where: { kind: "tsunagi", size, level: tsunagiBand(size, level), givens, solved: true, helped: null },
     orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
     take: LEVEL_FASTEST_SHOWN * 4,
     select: { id: true, memberId: true, elapsedMs: true, finishedAt: true },

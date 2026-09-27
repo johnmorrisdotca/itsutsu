@@ -1327,6 +1327,11 @@ model PuzzleSolve {
   /// its steps, and for a solve kept before steps were: that page shows the
   /// finished grid and says so, never a replay made up.
   steps         String?
+  /// How the solve was helped (`solveHelp.ts`): "cheated", "explosionsSoft" or
+  /// "explosionsOff", or null for none — which every solve kept before help
+  /// existed truly was. A helped solve counts as solved but scores no points and
+  /// stays off the fastest tables; with explosions off it opens no next block.
+  helped        String?
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])

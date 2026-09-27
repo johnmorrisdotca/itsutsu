@@ -20,7 +20,7 @@ import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
-import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
+import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 import { POP_OWN_GUESS_LENGTHS } from "@/lib/puzzles/gomoji/popWords";
@@ -65,7 +65,17 @@ export function PuzzlePlay({
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
   twins?: boolean;
   /** Tsunagi's levels already solved at this size on the account, whether it is played by colours or numbers, and with marbles along the lines or not. */
-  tsunagi?: { known: Record<number, number>; bestSolves?: Record<number, string>; attempts?: Record<number, number>; marks: TsunagiMarks | null; fill?: TsunagiFill | null } | null;
+  tsunagi?: {
+    known: Record<number, number>;
+    bestSolves?: Record<number, string>;
+    /** Levels solved only in a way that opens no block (explosions off). */
+    closed?: number[];
+    attempts?: Record<number, number>;
+    marks: TsunagiMarks | null;
+    fill?: TsunagiFill | null;
+    explosions?: TsunagiExplosionsChoice | null;
+    cheats?: TsunagiCheatsChoice | null;
+  } | null;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -166,6 +176,9 @@ export function PuzzlePlay({
           bestSolves={tsunagi?.bestSolves}
           marksChosen={tsunagi?.marks ?? null}
           fillChosen={tsunagi?.fill ?? null}
+          closed={tsunagi?.closed}
+          explosionsChosen={tsunagi?.explosions ?? null}
+          cheatsChosen={tsunagi?.cheats ?? null}
         />
       );
     case "kumimoji":

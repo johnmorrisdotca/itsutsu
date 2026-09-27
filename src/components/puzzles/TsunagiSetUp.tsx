@@ -21,12 +21,13 @@ import { firstUnsolvedTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { feltOrWoodTheme } from "./GomojiGrid";
-import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
+import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
+import { TsunagiHelpPickers } from "./TsunagiHelpPickers";
 import { TsunagiLevelBoard, tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { SetUpResume } from "./SetUpResume";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
-import { keptAttempts, keptSolves } from "./tsunagiKept";
-import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
+import { keptAttempts, keptSolves, keptSolvesOff } from "./tsunagiKept";
+import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
 /** The sizes the tiles show at once: four, as every set-up screen keeps room for (`picker.test.ts`). */
 const TILES = 4;
@@ -52,6 +53,9 @@ export function TsunagiSetUp({
   marksChosen,
   fillChosen = null,
   solved,
+  closed = {},
+  explosionsChosen = null,
+  cheatsChosen = null,
   attempts = {},
   initialSize,
   resumeHref = null,
@@ -62,6 +66,11 @@ export function TsunagiSetUp({
   fillChosen?: TsunagiFill | null;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
   solved: Record<number, Record<number, number>>;
+  /** The member's levels by size solved only with explosions off: shown solved, never counted to open a block. */
+  closed?: Record<number, readonly number[]>;
+  /** Explosions as made, softened or off, and whether Cheat is allowed, as the account last chose; null where it never has. */
+  explosionsChosen?: TsunagiExplosionsChoice | null;
+  cheatsChosen?: TsunagiCheatsChoice | null;
   /** The member's attempts by size and level, on the account: none for anybody without one, whose are in this browser. */
   attempts?: Record<number, Record<number, number>>;
   initialSize: number;
@@ -78,6 +87,8 @@ export function TsunagiSetUp({
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
   const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
+  const { explosions, chooseExplosions } = useTsunagiExplosions(explosionsChosen, hasAccount);
+  const { cheats, chooseCheats } = useTsunagiCheats(cheatsChosen, hasAccount);
   const theme = feltOrWoodTheme({ ...appearance, felt });
 
   /* This browser's solves, read once it has hydrated: the server drew the account's alone, and the two are joined here. */
@@ -85,19 +96,26 @@ export function TsunagiSetUp({
     () => (hydrated ? Object.fromEntries(TSUNAGI_SIZES.map((each) => [each, keptSolves(each)])) : {}),
     [hydrated],
   );
+  // And the ones solved here only with explosions off: solved, never counted to open a block.
+  const hereOff = useMemo<Record<number, number>>(() => (hydrated ? keptSolvesOff(size) : {}), [hydrated, size]);
   const best = useMemo(() => {
-    const out: Record<number, number> = { ...(here[size] ?? {}) };
+    const out: Record<number, number> = { ...hereOff, ...(here[size] ?? {}) };
     for (const [level, ms] of Object.entries(solved[size] ?? {})) out[Number(level)] = Math.min(ms, out[Number(level)] ?? ms);
     return out;
-  }, [here, solved, size]);
+  }, [here, hereOff, solved, size]);
   const done = useMemo(() => new Set(Object.keys(best).map(Number)), [best]);
+  // Every solved level but the ones solved only with explosions off: these open blocks and decide which level is next.
+  const opening = useMemo(() => {
+    const shut = new Set(closed[size] ?? []);
+    return new Set([...Object.keys(here[size] ?? {}), ...Object.keys(solved[size] ?? {}).filter((level) => !shut.has(Number(level)))].map(Number));
+  }, [here, solved, closed, size]);
   // A member's attempts are the account's; a visitor's this browser's, read once hydrated as the solves are.
   const tries = useMemo(() => (hasAccount ? (attempts[size] ?? {}) : hydrated ? keptAttempts(size) : {}), [hasAccount, attempts, size, hydrated]);
-  const open = openTsunagiLevels(size, done);
-  const next = nextTsunagiLevel(size, done);
+  const open = openTsunagiLevels(size, opening);
+  const next = nextTsunagiLevel(size, opening);
   // Said when a later level is solved, so Start's number is not read as a slip.
-  const gap = firstUnsolvedTsunagiLevel(size, done);
-  const skippedPast = gap !== null && [...done].some((level) => level > gap);
+  const gap = firstUnsolvedTsunagiLevel(size, opening);
+  const skippedPast = gap !== null && [...opening].some((level) => level > gap);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
   /*
    * ONE BLOCK AT A TIME: the block the next level is in, until a reader turns
@@ -160,6 +178,7 @@ export function TsunagiSetUp({
           <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
           <TsunagiFillPicker fill={fill} onChoose={chooseFill} />
           <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
+          <TsunagiHelpPickers explosions={explosions} onExplosions={chooseExplosions} cheats={cheats} onCheats={chooseCheats} />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />

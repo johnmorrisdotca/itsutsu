@@ -1,4 +1,5 @@
 import Link from "@/components/ui/Link";
+import { SOLVE_HELP_WORDS } from "@/lib/puzzles/solveHelp";
 import { notFound } from "next/navigation";
 
 import { PageTitle } from "@/components/layout/Headings";
@@ -81,6 +82,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,
     hintsWords(kind, solve.level, solve.hintsUsed),
+    // Cheat, or a level's explosions eased: the help that takes a solve's points and its place on the fastest table.
+    solve.helped === null ? null : SOLVE_HELP_WORDS[solve.helped],
   ].filter((part) => part !== null);
   const headStart = hadHeadStart(kind, solve.level, solve.hintsUsed);
   const facts: { label: string; value: string; testId: string }[] = [

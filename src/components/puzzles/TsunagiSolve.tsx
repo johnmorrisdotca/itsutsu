@@ -11,7 +11,9 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
-import { explosionAfter, strokesToExplosion } from "@/lib/puzzles/tsunagi/explosions";
+import { helpOpensOn, SOLVE_HELPS, strongestHelp, type SolveHelp } from "@/lib/puzzles/solveHelp";
+import { cheatLine } from "@/lib/puzzles/tsunagi/cheat";
+import { explosionAfter, explosionsAsChosen, strokesToExplosion } from "@/lib/puzzles/tsunagi/explosions";
 import { blockOf, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
 import { challengesOf } from "@/lib/puzzles/tsunagi/ladder";
 import { firstUnsolvedTsunagiLevel, nextLevelLabel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
@@ -26,10 +28,10 @@ import { TsunagiViewport } from "./TsunagiViewport";
 import { TsunagiSolvedView } from "./TsunagiSolvedView";
 import { tsunagiLevelPath } from "./TsunagiLevelBoard";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
-import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
-import { keepSolveHere, keptSolves } from "./tsunagiKept";
+import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
+import { keepSolveHere, keptSolves, keptSolvesOff } from "./tsunagiKept";
 import { useTsunagiAttempts } from "./useTsunagiAttempts";
-import { useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
+import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
 /** How long Check's flashing lasts; its words stay until the board changes. */
 const CHECK_FLASH_MS = 2400;
@@ -59,6 +61,11 @@ export function tsunagiLevelsPath(size: number): string {
  * under the board, Undo gives none back, and a board out of strokes before it
  * is solved takes nothing more until Restart, which gives them all back.
  *
+ * HELP, as chosen at set-up: a level's explosions softened or off, and Cheat,
+ * which draws one unfinished line (`cheatLine`). A solve that used either is
+ * sent as helped (`solveHelp.ts`): solved, no points, off the fastest table —
+ * and with explosions off, opening no block. Neither is offered in a race.
+ *
  * A level past the open blocks is shut, and says which block opens it. A member's
  * solved levels come from the page (`tsunagiSolvedBy`); anybody's are also in
  * this browser (`tsunagiKept`), written the moment a level is solved.
@@ -74,6 +81,9 @@ export function TsunagiSolve({
   bestSolves = {},
   marksChosen = null,
   fillChosen = null,
+  closed = [],
+  explosionsChosen = null,
+  cheatsChosen = null,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
@@ -90,6 +100,12 @@ export function TsunagiSolve({
   marksChosen?: TsunagiMarks | null;
   /** Marbles or lines, as the account last chose; null where it never has. */
   fillChosen?: TsunagiFill | null;
+  /** Levels at this size solved on the account only with explosions off: solved, and opening no block. */
+  closed?: readonly number[];
+  /** Explosions as made, softened or off, as the account last chose at set-up; null where it never has. */
+  explosionsChosen?: TsunagiExplosionsChoice | null;
+  /** Whether Cheat is allowed, as the account last chose at set-up; null where it never has. */
+  cheatsChosen?: TsunagiCheatsChoice | null;
 }) {
   const hydrated = useHydrated();
   const { size, seed: level } = puzzle;
@@ -103,16 +119,33 @@ export function TsunagiSolve({
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
   const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
   const theme = feltOrWoodTheme({ ...appearance, felt });
+  // Help, as chosen at set-up; never in a race, where both seats play the level as made.
+  const { explosions: explosionsChoice } = useTsunagiExplosions(explosionsChosen, hasAccount);
+  const { cheats } = useTsunagiCheats(cheatsChosen, hasAccount);
+  const easing = race === null && layout.explosions !== null ? explosionsChoice : "on";
+  const cheatOffered = race === null && cheats === "allowed";
+  // The board as it is played: its explosions as chosen.
+  const played = useMemo(() => ({ ...layout, explosions: explosionsAsChosen(layout.explosions, easing) }), [layout, easing]);
+  const eased: SolveHelp | null = easing === "off" ? SOLVE_HELPS.explosionsOff : easing === "soft" ? SOLVE_HELPS.explosionsSoft : null;
+  const cheated = useRef(false);
+  const [cheatedShown, setCheatedShown] = useState(false);
 
-  // This page is drawn in the browser only (`PuzzlePlayClient`), so the browser's own solves are read at once.
-  const [solvedHere] = useState(() => ({ ...keptSolves(size), ...known }));
+  /*
+   * This page is drawn in the browser only (`PuzzlePlayClient`), so the
+   * browser's own solves are read at once. Two sets: every level solved, which
+   * opens on its finished board; and the ones that open blocks, which is every
+   * one but a level solved only with its explosions off (`helpOpensOn`).
+   */
+  const [solvedHere] = useState(() => ({ ...keptSolvesOff(size), ...keptSolves(size), ...known }));
   const solvedSet = useMemo(() => new Set(Object.keys(solvedHere).map(Number)), [solvedHere]);
-  const open = openTsunagiLevels(size, solvedSet);
+  const [opening] = useState(() => new Set([...Object.keys(keptSolves(size)), ...Object.keys(known).filter((each) => !closed.includes(Number(each)))].map(Number)));
+  const open = openTsunagiLevels(size, opening);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
   // Past the open blocks is shut, except a level already solved: it opens on its finished board wherever it now sits.
   const shut = race === null && resumed === null && level > open && !solvedSet.has(level);
-  // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
-  const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...solvedSet, level]));
+  // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in where its solve opens.
+  const opensNow = helpOpensOn(eased);
+  const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...opening, ...(opensNow ? [level] : [])]));
   const onward = {
     next: onwardTo === null ? null : { href: tsunagiLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo) },
     all: { href: tsunagiLevelsPath(size), label: "All levels" },
@@ -197,12 +230,12 @@ export function TsunagiSolve({
       // Every level has one answer, so a board joined and full is it; compared all the same, never assumed.
       if (answer === puzzle.solution) {
         const at = Date.now();
-        void finish(answer, at).then(() => undefined);
+        void finish(answer, at, strongestHelp([cheated.current ? SOLVE_HELPS.cheated : null, eased])).then(() => undefined);
         return;
       }
     }
     // A stroke that solves the level sets nothing off; any other may.
-    const blown = explosionAfter(layout, puzzle.givens, next, stroke);
+    const blown = explosionAfter(played, puzzle.givens, next, stroke);
     if (blown === null) {
       setUndo((stack) => [...stack.slice(-199), was]);
       return;
@@ -211,11 +244,11 @@ export function TsunagiSolve({
     setUndo([]);
     setBlasted(new Set(blown.cells));
     setBlastSays(blown.hit.length > 1 ? "Blast! A line was wiped, and the one beside it cut back to half." : "Boom! A line was cut back to half.");
-  }, [layout, show, finish, puzzle.solution, puzzle.givens]);
+  }, [layout, played, eased, show, finish, puzzle.solution, puzzle.givens]);
 
   // Kept in this browser as soon as it is solved, so the board of levels opens the next row with or without an account.
   useEffect(() => {
-    if (done !== null && race === null) keepSolveHere(size, level, done.elapsedMs);
+    if (done !== null && race === null) keepSolveHere(size, level, done.elapsedMs, helpOpensOn(done.helped ?? null));
   }, [done, race, size, level]);
 
   const takeBack = () => {
@@ -231,6 +264,9 @@ export function TsunagiSolve({
     strokes.current = 0;
     setStrokeCount(0);
     setBlastSays(null);
+    // A fresh attempt: Cheat pressed in the one before is not held against it.
+    cheated.current = false;
+    setCheatedShown(false);
   };
   const playAgain = () => {
     setReviewing(false);
@@ -239,6 +275,26 @@ export function TsunagiSolve({
     counted.current = false;
     strokes.current = 0;
     setStrokeCount(0);
+    cheated.current = false;
+    setCheatedShown(false);
+  };
+  /* CHEAT: one unfinished line drawn as the answer has it (`cheatLine`), anything in its way cut back. It spends no stroke, and the solve it helps is kept as helped. */
+  const cheat = () => {
+    if (idle || answerLines === null) return;
+    const drawn = cheatLine(layout, now.current, answerLines);
+    if (drawn === null) return;
+    begin();
+    if (!counted.current) {
+      counted.current = true;
+      countOne();
+    }
+    cheated.current = true;
+    setCheatedShown(true);
+    setUndo((stack) => [...stack.slice(-199), now.current]);
+    show(drawn.lines);
+    if (allJoined(layout, drawn.lines) && answerOf(layout, drawn.lines) === puzzle.solution) {
+      void finish(puzzle.solution, Date.now(), strongestHelp([SOLVE_HELPS.cheated, eased])).then(() => undefined);
+    }
   };
   const check = () => {
     if (idle) return;
@@ -255,7 +311,7 @@ export function TsunagiSolve({
   const pairs = layout.ends.length;
   const pairsJoined = layout.ends.filter((_, pair) => joined(layout, lines, pair)).length;
   const cover = filled(layout, lines);
-  const boomIn = strokesToExplosion(layout, strokeCount);
+  const boomIn = strokesToExplosion(played, strokeCount);
   const asked = (
     <>
       {size}×{size} · Level {level} <span className="text-xs">of {count}</span>{" "}
@@ -347,6 +403,11 @@ export function TsunagiSolve({
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={pausing.paused} data-testid="tsunagi-check">
               Check
             </button>
+            {cheatOffered ? (
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={cheat} disabled={pausing.paused || spent} title="Draws one unfinished line. A solve that used it scores no points." data-testid="tsunagi-cheat">
+                Cheat
+              </button>
+            ) : null}
             <span className="text-sm text-muted tabular-nums" data-testid="tsunagi-progress" data-joined={pairsJoined} data-filled={cover.done} aria-live="polite">
               {pairsJoined === pairs && cover.done < cover.of
                 ? `Every pair joined; ${cover.of - cover.done} ${cover.of - cover.done === 1 ? "cell is" : "cells are"} still empty.`
@@ -362,6 +423,16 @@ export function TsunagiSolve({
               aria-live="polite"
             >
               {spent ? "Out of strokes. Restart to try again." : `${layout.strokes - strokeCount} of ${layout.strokes} ${layout.strokes === 1 ? "stroke" : "strokes"} left.`}
+            </p>
+          )}
+          {eased === null && !cheatedShown ? null : (
+            // Said before the solve, not after it: what the help chosen will cost.
+            <p className="text-sm text-muted" data-testid="tsunagi-help-note" data-helped={strongestHelp([cheatedShown ? SOLVE_HELPS.cheated : null, eased]) ?? undefined}>
+              {eased === SOLVE_HELPS.explosionsOff
+                ? "Explosions are off, as chosen at set-up: a solve counts, scores no points and does not open the next block."
+                : eased === SOLVE_HELPS.explosionsSoft
+                  ? `Explosions are softened, as chosen at set-up${cheatedShown ? ", and Cheat has been used" : ""}: a solve counts, but scores no points.`
+                  : "Cheat has been used: a solve counts, but scores no points."}
             </p>
           )}
           {boomIn === null ? null : (

@@ -166,7 +166,7 @@ export async function bestBefore(solve: NewsSolve): Promise<number | null | unde
   if (!solve.solved) return undefined;
   try {
     const best = await prisma.puzzleSolve.findFirst({
-      where: { kind: solve.kind, size: solve.size, level: solve.level, solved: true },
+      where: { kind: solve.kind, size: solve.size, level: solve.level, solved: true, helped: null },
       orderBy: { elapsedMs: "asc" },
       select: { elapsedMs: true },
     });

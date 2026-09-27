@@ -246,6 +246,12 @@ export type TsunagiMarks = "colours" | "numbers";
  */
 export type TsunagiFill = "marbles" | "lines";
 
+/** How a level with explosions is played: as made, softened, or with none (`explosionsAsChosen`). */
+export type TsunagiExplosionsChoice = "on" | "soft" | "off";
+
+/** Whether Cheat is offered: off until "Allow cheating" is chosen at set-up. */
+export type TsunagiCheatsChoice = "off" | "allowed";
+
 /** Each pair's colour as hue, saturation and lightness, for the marble, its line and the wash of its cells. */
 export const TSUNAGI_COLOURS: readonly (readonly [number, number, number])[] = [
   [24, 100, 44], // vermillion

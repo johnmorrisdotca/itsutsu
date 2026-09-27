@@ -202,6 +202,23 @@ export const PREFERENCE_SPECS = {
   tsunagiFill: { options: ["marbles", "lines"] as const, fallback: "marbles" },
 
   /*
+   * How a Tsunagi level with explosions is played: as made, softened (a boom
+   * in place of a blast, and half as often), or with none. John's row, filed
+   * from the explosions work: "a set-up option to soften or switch them off".
+   * A solve eased either way is kept as helped (`solveHelp.ts`): solved, no
+   * points, off the fastest tables — and with them off, it opens no block.
+   */
+  tsunagiExplosions: { options: ["on", "soft", "off"] as const, fallback: "on" },
+
+  /*
+   * Whether a Tsunagi level offers Cheat, which draws one unfinished line.
+   * John, 2026-09-26: offered only when "Allow cheating" was chosen before the
+   * game started; "Then maybe that is OK". A solve that used it is kept as
+   * helped (`solveHelp.ts`). Off until chosen.
+   */
+  tsunagiCheats: { options: ["off", "allowed"] as const, fallback: "off" },
+
+  /*
    * Whether a finished game's list of moves is open or folded. John,
    * 2026-09-25: "Moves might be collapsed or hidden naturally as some people
    * might not want it." Open until somebody folds it; folded once, it stays

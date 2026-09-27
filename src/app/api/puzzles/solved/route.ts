@@ -11,6 +11,8 @@ import { progressFits } from "@/lib/puzzles/puzzleProgress";
 import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
+import { SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
+import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
@@ -86,6 +88,12 @@ const bodySchema = z.object({
    * its guesses being its steps.
    */
   steps: z.string().max(STEP_LOG_LONGEST).optional(),
+  /**
+   * How the solve was helped (`solveHelp.ts`), as the browser says: kept on
+   * the solve, which then scores nothing and stays off the fastest tables. Only
+   * Tsunagi offers help, and only a level with explosions can have them eased.
+   */
+  helped: z.enum(SOLVE_HELP_LIST as [SolveHelp, ...SolveHelp[]]).optional(),
 });
 
 export async function POST(request: Request) {
@@ -154,6 +162,11 @@ export async function POST(request: Request) {
 
     const verdict = checkSolution(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
+    const helped = parsed.data.helped ?? null;
+    if (helped !== null && kind !== "tsunagi") return unprocessable("No help is offered on this puzzle.");
+    if ((helped === SOLVE_HELPS.explosionsOff || helped === SOLVE_HELPS.explosionsSoft) && decodeLayout(givens, size)?.explosions == null) {
+      return unprocessable("This level has no explosions to ease.");
+    }
 
     const now = new Date();
     /* Kept, so the puzzle's page can show the fastest solves and a member
@@ -172,6 +185,7 @@ export async function POST(request: Request) {
       hintsUsed,
       answer,
       steps: stepsOfSolve(kind, size, parsed.data.steps),
+      helped,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
     if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);

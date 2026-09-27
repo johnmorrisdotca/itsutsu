@@ -172,6 +172,7 @@ answer is never kept.
 | `elapsedMs` | The browser's clock for a solve on one's own; the server's two stamps in a race |
 | `finishedAt` | When the site checked it |
 | `raceId` | The `PuzzleRace` this was one seat of, or null |
+| `helped` | How the solve was helped (`solveHelp.ts`): `cheated`, `explosionsSoft` or `explosionsOff`, or null for none. A helped solve counts as solved but scores no points (so no IP) and stays off every fastest table; with explosions off it opens no next Tsunagi block |
 
 Indexed by member and date (a member's own), and by kind, size, level and
 time (the fastest board).

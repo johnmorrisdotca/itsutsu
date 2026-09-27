@@ -74,3 +74,15 @@ export function explosionAfter(layout: LinkLayout, givens: string, lines: Lines,
   const cells = hit.flatMap((pair) => lines[pair]!.filter((cell) => !next[pair]!.includes(cell)));
   return { lines: next, hit, cells };
 }
+
+/**
+ * A level's explosions as the player chose to play them at set-up: as made,
+ * SOFTENED — a boom in place of a blast, and half as often — or OFF. John's
+ * row: "a set-up option to soften or switch them off". Either way the solve is
+ * kept as helped (`solveHelp.ts`).
+ */
+export function explosionsAsChosen(rule: LinkLayout["explosions"], choice: "on" | "soft" | "off"): LinkLayout["explosions"] {
+  if (rule === null || choice === "off") return null;
+  if (choice === "soft") return { every: rule.every * 2, blast: false };
+  return rule;
+}

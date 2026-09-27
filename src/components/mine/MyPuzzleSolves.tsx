@@ -1,5 +1,6 @@
 import Link from "@/components/ui/Link";
 
+import { SOLVE_HELP_WORDS } from "@/lib/puzzles/solveHelp";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { sizeWord } from "@/components/puzzles/puzzles.constants";
@@ -19,8 +20,9 @@ import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
 
 /** The help a solve took, in words: "no help", "2 checks", "1 check, 1 hint". Nothing where it was never recorded. */
 function helpWords(solve: MySolve): string | null {
-  if (solve.checksUsed === null && solve.hintsUsed === null) return null;
+  if (solve.checksUsed === null && solve.hintsUsed === null && solve.helped === null) return null;
   const parts = [
+    solve.helped === null ? null : SOLVE_HELP_WORDS[solve.helped],
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}` : null,
     // A word's one help is its Head start, kept as a hint (`headStart.ts`), and said as what it was.
     hintsWords(solve.kind, solve.level, solve.hintsUsed)?.toLowerCase() ?? null,

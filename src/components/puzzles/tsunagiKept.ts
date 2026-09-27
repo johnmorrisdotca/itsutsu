@@ -3,7 +3,7 @@
 import { TSUNAGI_RENUMBERED_AT } from "@/lib/puzzles/tsunagi/levels/renumbered.data";
 import { renumberedRecord } from "@/lib/puzzles/tsunagi/renumber";
 
-import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
+import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 
 /**
  * WHAT A BROWSER REMEMBERS OF TSUNAGI for somebody with no account: the
@@ -24,6 +24,8 @@ import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
  * the new key, and the old one taken away.
  */
 const SOLVED_KEY = (size: number) => `itsutsu.tsunagi.solved.${size}@${TSUNAGI_RENUMBERED_AT}`;
+/* Levels solved only with their explosions off: solved, and opening no block (`solveHelp.ts`), so kept apart from the solves that do. */
+const SOLVED_OFF_KEY = (size: number) => `itsutsu.tsunagi.solvedOff.${size}@${TSUNAGI_RENUMBERED_AT}`;
 const ATTEMPTS_KEY = (size: number) => `itsutsu.tsunagi.attempts.${size}@${TSUNAGI_RENUMBERED_AT}`;
 const BEFORE_RENUMBERING = { solved: (size: number) => `itsutsu.tsunagi.solved.${size}`, attempts: (size: number) => `itsutsu.tsunagi.attempts.${size}` };
 
@@ -43,6 +45,8 @@ function readRecord(key: string, before: string, size: number): unknown {
 
 const MARKS_KEY = "itsutsu.tsunagi.marks";
 const FILL_KEY = "itsutsu.tsunagi.fill";
+const EXPLOSIONS_KEY = "itsutsu.tsunagi.explosions";
+const CHEATS_KEY = "itsutsu.tsunagi.cheats";
 
 /** The levels this browser has solved at a size, each with its best time in milliseconds. */
 export function keptSolves(size: number): Record<number, number> {
@@ -59,13 +63,33 @@ export function keptSolves(size: number): Record<number, number> {
   }
 }
 
-/** Remembers a solve, keeping the better of two times on one level. */
-export function keepSolveHere(size: number, level: number, elapsedMs: number): void {
+/** The levels this browser has solved at a size only with their explosions off: solved, and opening no block. */
+export function keptSolvesOff(size: number): Record<number, number> {
   try {
-    const kept = keptSolves(size);
+    const raw = window.localStorage.getItem(SOLVED_OFF_KEY(size));
+    const parsed: unknown = raw === null ? null : JSON.parse(raw);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: Record<number, number> = {};
+    for (const [level, ms] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Number.isInteger(Number(level)) && typeof ms === "number" && ms >= 0) out[Number(level)] = ms;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Remembers a solve, keeping the better of two times on one level: with the
+ * solves that open blocks, or — `opens` false, explosions off — apart from them.
+ */
+export function keepSolveHere(size: number, level: number, elapsedMs: number, opens = true): void {
+  try {
+    const key = opens ? SOLVED_KEY(size) : SOLVED_OFF_KEY(size);
+    const kept = opens ? keptSolves(size) : keptSolvesOff(size);
     const before = kept[level];
     kept[level] = before === undefined ? elapsedMs : Math.min(before, elapsedMs);
-    window.localStorage.setItem(SOLVED_KEY(size), JSON.stringify(kept));
+    window.localStorage.setItem(key, JSON.stringify(kept));
   } catch {
     // Nowhere to keep it: the solve still stands on the page.
   }
@@ -128,6 +152,40 @@ export function keptFill(): TsunagiFill | null {
 export function keepFillHere(fill: TsunagiFill): void {
   try {
     window.localStorage.setItem(FILL_KEY, fill);
+  } catch {
+    // Remembered for the page only.
+  }
+}
+
+export function keptExplosions(): TsunagiExplosionsChoice | null {
+  try {
+    const raw = window.localStorage.getItem(EXPLOSIONS_KEY);
+    return raw === "on" || raw === "soft" || raw === "off" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+export function keepExplosionsHere(choice: TsunagiExplosionsChoice): void {
+  try {
+    window.localStorage.setItem(EXPLOSIONS_KEY, choice);
+  } catch {
+    // Remembered for the page only.
+  }
+}
+
+export function keptCheats(): TsunagiCheatsChoice | null {
+  try {
+    const raw = window.localStorage.getItem(CHEATS_KEY);
+    return raw === "off" || raw === "allowed" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+export function keepCheatsHere(choice: TsunagiCheatsChoice): void {
+  try {
+    window.localStorage.setItem(CHEATS_KEY, choice);
   } catch {
     // Remembered for the page only.
   }

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { guessesTaken, type GuessesTaken } from "../gomoji/guessesTaken";
 import { PUZZLE_RECORD_SORTS, type PuzzleRecordAsked } from "../puzzleRecordAddress";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
+import { solveHelpOf, type SolveHelp } from "../solveHelp";
 import type { FinishedSolve } from "./puzzleSolves";
 
 /**
@@ -37,6 +38,8 @@ export type RecordSolve = {
   checksUsed: number | null;
   hintsUsed: number | null;
   guesses: GuessesTaken | null;
+  /** How it was helped (`solveHelp.ts`), or null for none. */
+  helped: SolveHelp | null;
 };
 
 /** A member's points on the board, and exactly which of their solves made them. */
@@ -65,7 +68,8 @@ function whereOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Prisma.PuzzleSolve
     ...(asked.level !== null ? { level: asked.level } : {}),
     ...(spans.length > 0 ? { AND: spans.map((span) => ({ finishedAt: { gte: span.start, lt: span.end } })) } : {}),
     // Fastest first is the fastest board's order, and a word not found has no time to rank.
-    ...(asked.sort === PUZZLE_RECORD_SORTS.fastest ? { solved: true } : {}),
+    // …and a helped solve is no time to rank either (`solveHelp.ts`).
+    ...(asked.sort === PUZZLE_RECORD_SORTS.fastest ? { solved: true, helped: null } : {}),
   };
 }
 
@@ -84,14 +88,15 @@ export async function puzzleRecordOf(kind: PuzzleKind, asked: PuzzleRecordAsked)
       take: PUZZLE_RECORD_PAGE,
       select: {
         id: true, memberId: true, size: true, level: true, elapsedMs: true, points: true, solved: true, finishedAt: true,
-        raceId: true, checksUsed: true, hintsUsed: true, givens: true, answer: true,
+        raceId: true, checksUsed: true, hintsUsed: true, givens: true, answer: true, helped: true,
       },
     }),
     prisma.puzzleSolve.count({ where }),
     asked.member === null ? null : tallyOf(kind, asked.member, asked),
   ]);
-  const solves = rows.map(({ givens, answer, ...row }) => ({
+  const solves = rows.map(({ givens, answer, helped, ...row }) => ({
     ...row,
+    helped: solveHelpOf(helped),
     level: row.level as PuzzleLevel,
     guesses: guessesTaken(kind, row.size, row.level, givens, answer),
   }));
@@ -132,10 +137,10 @@ export async function anySolveOf(kind: PuzzleKind, id: string): Promise<(Finishe
     where: { id },
     select: {
       id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, steps: true, solved: true, points: true,
-      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true,
+      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, helped: true,
     },
   });
-  return row === null || row.kind !== kind ? null : row;
+  return row === null || row.kind !== kind ? null : { ...row, helped: solveHelpOf(row.helped) };
 }
 
 /** Whether a member has finished this very grid themselves: one count on the (kind, memberId, givens) index. */

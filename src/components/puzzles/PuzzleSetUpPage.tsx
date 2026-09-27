@@ -83,7 +83,9 @@ export async function PuzzleSetUpPage({
           appearance={appearance ?? undefined}
           marksChosen={preferences?.tsunagiMarks ?? null}
           fillChosen={preferences?.tsunagiFill ?? null}
-          solved={memberId === null ? {} : bestTimes(await tsunagiSolvedBy(memberId))}
+          explosionsChosen={preferences?.tsunagiExplosions ?? null}
+          cheatsChosen={preferences?.tsunagiCheats ?? null}
+          {...(memberId === null ? { solved: {}, closed: {} } : setUpSolves(await tsunagiSolvedBy(memberId)))}
           attempts={memberId === null ? {} : await tsunagiAttemptsBy(memberId)}
           initialSize={sizeAsked(kind, query)}
           resumeHref={resumeHref}
@@ -109,9 +111,15 @@ function sizeAsked(kind: PuzzleKind, query: Record<string, string | string[] | u
   return PUZZLE_SPECS[kind].sizes.includes(asked) ? asked : PUZZLE_SPECS[kind].defaultSize;
 }
 
-/** A member's solved Tsunagi levels as the board of levels reads them: each level's best time. */
-function bestTimes(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): Record<number, Record<number, number>> {
-  return Object.fromEntries(
-    Object.entries(solved).map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.elapsedMs]))]),
-  );
+/**
+ * A member's solved Tsunagi levels as the board of levels reads them: each
+ * level's best time, and the levels solved only in a way that opens nothing
+ * (explosions off, `solveHelp.ts`) — shown solved, never counted to open a block.
+ */
+function setUpSolves(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): { solved: Record<number, Record<number, number>>; closed: Record<number, number[]> } {
+  const entries = Object.entries(solved);
+  return {
+    solved: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.elapsedMs]))])),
+    closed: Object.fromEntries(entries.map(([size, levels]) => [size, Object.entries(levels).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]))])),
+  };
 }
