@@ -50,7 +50,12 @@ test.describe("Tsunagi after the renumbering", () => {
       await expect(cell).toHaveAttribute("data-state", "solved");
       await expect(cell.getByTestId("tsunagi-level-time")).toHaveText("0:42");
 
+      // Chosen, the preview draws it solved, and its time opens the solve it was; Start opens it.
       await cell.click();
+      await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-state", "solved");
+      await expect(page.getByTestId("tsunagi-preview-best")).toHaveText("0:42");
+      await expect(page.getByTestId("tsunagi-preview-best")).toHaveAttribute("href", new RegExp(solve.id));
+      await page.getByTestId("puzzle-solve").click();
       await ready(page, "puzzle-play");
       await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-reviewing", "true");
       await expect(page.getByTestId("tsunagi-best-time")).toHaveText("0:42");

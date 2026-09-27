@@ -518,8 +518,8 @@ const TIME_EXCEPTIONS: Record<string, string> = {
   "src/components/puzzles/solveShared.tsx": "the clock of the puzzle in front of the reader, and its own finishing line",
   // The same running clock, split out of solveShared.tsx to keep that file under the size gate.
   "src/components/puzzles/SolveHeader.tsx": "the running clock of the puzzle being played: there is no finished solve to open yet",
-  // A level's cell is itself a link to that level, whose page lists its fastest solves, each one opening.
-  "src/components/puzzles/TsunagiLevelBoard.tsx": "the level cell is already a link, to the level whose page opens its solves",
+  // A level's tile is the button that chooses it; the chosen level's best time, opening that solve, is under the preview above it.
+  "src/components/puzzles/TsunagiLevelPicker.tsx": "the tile is the button that chooses its level; the chosen level's time opens its solve in the preview's caption",
   // One finished puzzle's own page: its time is a fact about the page the reader is on.
   "src/components/puzzles/PuzzleSolvePage.tsx": "the solve's own page: a link would lead where the reader already is",
   // A race's page saying how each seat finished it: the race is the page, and each seat's solve is on its solver's list.

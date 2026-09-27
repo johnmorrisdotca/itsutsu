@@ -23,7 +23,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { feltOrWoodTheme } from "./GomojiGrid";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiHelpPickers } from "./TsunagiHelpPickers";
-import { TsunagiLevelBoard, tsunagiLevelPath } from "./TsunagiLevelBoard";
+import { TsunagiLevelPicker, tsunagiLevelPath } from "./TsunagiLevelPicker";
+import { TsunagiLevelPreview } from "./TsunagiLevelPreview";
 import { SetUpResume } from "./SetUpResume";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import { keptAttempts, keptSolves, keptSolvesOff } from "./tsunagiKept";
@@ -55,6 +56,7 @@ export function TsunagiSetUp({
   fillChosen = null,
   solved,
   closed = {},
+  bestSolves = {},
   explosionsChosen = null,
   cheatsChosen = null,
   attempts = {},
@@ -67,6 +69,8 @@ export function TsunagiSetUp({
   fillChosen?: TsunagiFill | null;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
   solved: Record<number, Record<number, number>>;
+  /** The member's best solve of each level by size, which the preview's time opens: none for anybody without an account. */
+  bestSolves?: Record<number, Record<number, string>>;
   /** The member's levels by size solved only with explosions off: shown solved, never counted to open a block. */
   closed?: Record<number, readonly number[]>;
   /** Explosions as made, softened or off, and whether Cheat is allowed, as the account last chose; null where it never has. */
@@ -121,13 +125,21 @@ export function TsunagiSetUp({
   const skippedPast = gap !== null && [...opening].some((level) => level > gap);
   const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
   /*
-   * ONE BLOCK AT A TIME: the block the next level is in, until a reader turns
-   * to another with ‹ and ›. A size change goes back to following the next
-   * level. Locked blocks can be looked at; their levels show their locks.
+   * THE LEVEL CHOSEN: the next one not yet solved, until a reader chooses
+   * another in the picker. The preview draws it and Start plays it. A size
+   * change goes back to the next level of that size.
+   */
+  const [picked, setPicked] = useState<{ size: number; level: number } | null>(null);
+  const chosen = picked !== null && picked.size === size ? picked.level : next;
+  const chosenLocked = chosen > open && best[chosen] === undefined;
+  /*
+   * ONE BLOCK AT A TIME: the block the chosen level is in, until a reader turns
+   * to another with ‹ and ›. Locked blocks can be looked at, and their levels
+   * chosen to be looked at; Start says they are locked.
    */
   const [turnedTo, setTurnedTo] = useState<{ size: number; block: number } | null>(null);
   const blocks = blocksIn(count);
-  const block = turnedTo !== null && turnedTo.size === size ? turnedTo.block : blockOf(next);
+  const block = turnedTo !== null && turnedTo.size === size ? turnedTo.block : blockOf(chosen);
   const { first, last } = blockRange(block, count);
   const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
 
@@ -143,7 +155,7 @@ export function TsunagiSetUp({
   return (
     <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" {...readyMark(hydrated)}>
       {/*
-        THE SIZES BESIDE THE BOARD OF LEVELS, OR UNDER IT. John, 2026-09-26: at
+        THE PREVIEW AND THE LEVEL PICKER, THE SIZES BESIDE THEM OR UNDER THEM. John, 2026-09-26: at
         narrower desk widths the tiles ran off the right edge, "Bigger boards"
         cut in half. The row wraps, so where the two do not fit side by side
         the sizes go under the board, and their column never gives up width
@@ -151,7 +163,18 @@ export function TsunagiSetUp({
       */}
       <div className={`${PICK_BOARD_ROW} py-2 md:flex-wrap`}>
         <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
-          <TsunagiLevelBoard size={size} block={block} best={best} attempts={tries} open={open} next={next} marks={marks} theme={theme} />
+          <TsunagiLevelPreview size={size} level={chosen} best={best[chosen]} solveId={bestSolves[size]?.[chosen] ?? null} locked={chosenLocked} marks={marks} fill={fill} theme={theme} />
+          <TsunagiLevelPicker
+            size={size}
+            block={block}
+            best={best}
+            attempts={tries}
+            open={open}
+            next={next}
+            chosen={chosen}
+            onChoose={(level) => setPicked({ size, level })}
+            marks={marks}
+          />
           <div className="flex items-center gap-2" data-testid="tsunagi-blocks">
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label="The block before" data-testid="tsunagi-block-back">
               ‹
@@ -187,11 +210,18 @@ export function TsunagiSetUp({
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />
-          <Link href={tsunagiLevelPath(size, next)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={next}>
-            <PressLabel words={`${START_PRESS.start.words} level ${next}`} kanji={START_PRESS.start.kanji} />
-          </Link>
+          {chosenLocked ? (
+            // The same button, saying why it cannot start: a locked level is looked at, never played.
+            <span className={`${PLAY_BUTTON} cursor-not-allowed opacity-60`} aria-disabled="true" data-testid="puzzle-solve" data-level={chosen} data-locked="true">
+              <PressLabel words={`Level ${chosen} is locked`} kanji="鍵" />
+            </span>
+          ) : (
+            <Link href={tsunagiLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
+              <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
+            </Link>
+          )}
           {/* What the level Start plays asks, before it is started. */}
-          <TsunagiLevelChips size={size} level={next} challenges={tsunagiRole(size, next)?.challenges ?? []} />
+          <TsunagiLevelChips size={size} level={chosen} challenges={tsunagiRole(size, chosen)?.challenges ?? []} />
           {skippedPast ? (
             <p className="text-xs text-muted" data-testid="tsunagi-first-unsolved">
               Level {gap} is the first one you have not finished.

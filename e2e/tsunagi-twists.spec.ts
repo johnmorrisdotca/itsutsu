@@ -121,7 +121,10 @@ test.describe("Tsunagi's twists", () => {
     await expect(cell).toHaveAttribute("data-role", "tests");
     await expect(cell.getByTestId("tsunagi-level-role")).toHaveText("Test");
     await expect(page.locator(`[data-testid="tsunagi-level"][data-level="${test16 - 1}"]`)).toHaveAttribute("data-role", "teaches");
+    // Chosen: the chips under Start say so before it is played, and again on its board.
     await cell.click();
+    await expect(page.getByTestId("puzzle-play-buttons").getByTestId("tsunagi-chip-tests")).toContainText("Block's test");
+    await page.getByTestId("puzzle-solve").click();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("tsunagi-chip-tests")).toContainText("Block's test");
   });

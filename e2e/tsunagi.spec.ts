@@ -210,9 +210,22 @@ test.describe("Tsunagi", () => {
     await expect(cell(32)).toHaveAttribute("data-state", "open");
     await page.getByTestId("tsunagi-block-on").click();
     await expect(cell(33)).toHaveAttribute("data-state", "locked");
+    // A locked level can be chosen to be looked at: the preview draws it under a lock, and Start says it is locked.
+    await cell(33).click();
+    await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-level", "33");
+    await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-state", "locked");
+    await expect(page.getByTestId("tsunagi-preview-lock")).toBeVisible();
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-locked", "true");
     await page.getByTestId("tsunagi-block-back").click();
 
+    // Choosing a level draws its own board in the preview, and Start plays it.
     await cell(17).click();
+    await expect(cell(17)).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-level", "17");
+    await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-drawn", "true");
+    await expect(page.getByTestId("tsunagi-preview").getByTestId("tsunagi-marble").first()).toBeVisible();
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "17");
+    await page.getByTestId("puzzle-solve").click();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-asked")).toContainText("Level 17");
 
@@ -389,7 +402,12 @@ test.describe("a Tsunagi level already solved", () => {
     // Opened again: the finished board, not a fresh one.
     await page.goto(`${AT}/new?size=4`);
     await ready(page, "puzzle-set-up");
+    // Chosen, it shows solved in the preview, lines and all; Start opens it.
     await page.locator('[data-testid="tsunagi-level"][data-level="4"]').click();
+    await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-state", "solved");
+    await expect(page.getByTestId("tsunagi-preview").getByTestId("tsunagi-line")).toHaveCount(letters.length);
+    await expect(page.getByTestId("tsunagi-preview-best")).toHaveAttribute("href", /\/games\/tsunagi\/.+/);
+    await page.getByTestId("puzzle-solve").click();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-reviewing", "true");
     await expect(page.getByTestId("tsunagi-solved-already")).toBeVisible();
@@ -503,5 +521,44 @@ for (const width of [390, 820, 1024, 1280]) {
     await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Smaller boards, from 4×4");
     await page.getByTestId("tsunagi-more-sizes").click();
     await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Bigger boards");
+  });
+}
+
+/*
+ * CHOOSING A LEVEL NEVER MOVES THE PAGE. The set-up's preview is the chosen
+ * level's own board (John, 2026-09-26: "the board should be a preview that
+ * changes with each choice"), and like every set-up, nothing on it changes
+ * height as something is chosen (John, 2026-09-24: "We cannot have the heights
+ * change in Mobile or Desktop"). Chosen in turn: a plain level, a block's
+ * lesson and its test, one solved and one locked — the preview, its caption,
+ * Start and the chips under it each keep the room their longest takes.
+ */
+for (const width of [390, 1280]) {
+  test(`choosing levels never changes the set-up's height, at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    // The first block solved in this browser but its 3rd level, so the second block is open, with solved and unsolved levels side by side.
+    await page.addInitScript(() =>
+      window.localStorage.setItem("itsutsu.tsunagi.solved.6@2026-09-26", JSON.stringify(Object.fromEntries(Array.from({ length: 16 }, (_, at) => [at + 1, 40_000]).filter(([level]) => level !== 3)))),
+    );
+    await page.goto(`${AT}/new?size=6`);
+    await ready(page, "puzzle-set-up");
+    const measure = async () => ({
+      height: (await page.getByTestId("puzzle-set-up").boundingBox())!.height,
+      options: (await page.getByTestId("puzzle-settings").boundingBox())!.y,
+    });
+    const first = await measure();
+    const choose = async (level: number) => {
+      const block = Math.ceil(level / 16);
+      while (Number(await page.getByTestId("tsunagi-block").getAttribute("data-block")) < block) await page.getByTestId("tsunagi-block-on").click();
+      while (Number(await page.getByTestId("tsunagi-block").getAttribute("data-block")) > block) await page.getByTestId("tsunagi-block-back").click();
+      await page.locator(`[data-testid="tsunagi-level"][data-level="${level}"]`).click();
+      await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-level", String(level));
+      await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-drawn", "true");
+    };
+    // Solved, open and plain, a lesson's 15th and its 16th, and a locked one two blocks on.
+    for (const level of [1, 3, 15, 16, 31, 32, 40]) {
+      await choose(level);
+      expect(await measure(), `level ${level} at ${width}px`).toEqual(first);
+    }
   });
 }

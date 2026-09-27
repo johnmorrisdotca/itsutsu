@@ -26,7 +26,7 @@ import { TsunagiGrid } from "./TsunagiGrid";
 import { TsunagiLevelChips } from "./TsunagiLevelChips";
 import { TsunagiViewport } from "./TsunagiViewport";
 import { TsunagiSolvedView } from "./TsunagiSolvedView";
-import { tsunagiLevelPath } from "./TsunagiLevelBoard";
+import { tsunagiLevelPath } from "./TsunagiLevelPicker";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { keepSolveHere, keptSolves, keptSolvesOff } from "./tsunagiKept";

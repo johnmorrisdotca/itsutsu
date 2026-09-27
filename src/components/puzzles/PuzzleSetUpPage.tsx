@@ -85,7 +85,7 @@ export async function PuzzleSetUpPage({
           fillChosen={preferences?.tsunagiFill ?? null}
           explosionsChosen={preferences?.tsunagiExplosions ?? null}
           cheatsChosen={preferences?.tsunagiCheats ?? null}
-          {...(memberId === null ? { solved: {}, closed: {} } : setUpSolves(await tsunagiSolvedBy(memberId)))}
+          {...(memberId === null ? { solved: {}, closed: {}, bestSolves: {} } : setUpSolves(await tsunagiSolvedBy(memberId)))}
           attempts={memberId === null ? {} : await tsunagiAttemptsBy(memberId)}
           initialSize={sizeAsked(kind, query)}
           resumeHref={resumeHref}
@@ -116,9 +116,15 @@ function sizeAsked(kind: PuzzleKind, query: Record<string, string | string[] | u
  * level's best time, and the levels solved only in a way that opens nothing
  * (explosions off, `solveHelp.ts`) — shown solved, never counted to open a block.
  */
-function setUpSolves(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): { solved: Record<number, Record<number, number>>; closed: Record<number, number[]> } {
+function setUpSolves(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): {
+  solved: Record<number, Record<number, number>>;
+  closed: Record<number, number[]>;
+  bestSolves: Record<number, Record<number, string>>;
+} {
   const entries = Object.entries(solved);
   return {
+    // Each level's best solve, which its time on the preview opens.
+    bestSolves: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.solveId]))])),
     solved: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.elapsedMs]))])),
     closed: Object.fromEntries(entries.map(([size, levels]) => [size, Object.entries(levels).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]))])),
   };
