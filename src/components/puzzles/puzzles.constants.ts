@@ -75,8 +75,13 @@ export const REGION_FILLS: readonly string[] = [
   "hsl(18 70% 40% / 0.34)",
 ];
 
-/** The clock over the grid. */
-export const PUZZLE_CLOCK = "font-mono text-lg tabular-nums";
+/**
+ * The clock over the grid, a width that holds "59:59" from its first second, so
+ * nothing beside it moves when the minutes reach two figures — the line over a
+ * board must not change width while a finger is on the board (see the attempts
+ * count in `TsunagiSolve`).
+ */
+export const PUZZLE_CLOCK = "inline-block min-w-[5ch] text-right font-mono text-lg tabular-nums";
 
 /** How often the clock is redrawn: once a second, in the browser, and never on a server. */
 export const PUZZLE_CLOCK_TICK_MS = 1000;

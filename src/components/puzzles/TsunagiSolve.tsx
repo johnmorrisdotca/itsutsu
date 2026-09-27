@@ -315,7 +315,14 @@ export function TsunagiSolve({
   const asked = (
     <>
       {size}×{size} · Level {level} <span className="text-xs">of {count}</span>{" "}
-      <span className="text-xs text-muted" data-testid="tsunagi-attempts" data-count={attempts}>
+      {/*
+        ONE WIDTH FOR EVERY COUNT. The first stroke turns "0 attempts" into "1
+        attempt", and where the line over the board sat on the edge of wrapping,
+        the board jumped under the finger mid-drag (0.398.0's CI). Room for "· 999
+        attempts", kept whatever the count, so the line wraps the same before
+        play and during it.
+      */}
+      <span className="inline-block min-w-[13ch] text-xs text-muted" data-testid="tsunagi-attempts" data-count={attempts}>
         · {attempts} {attempts === 1 ? "attempt" : "attempts"}
       </span>
     </>

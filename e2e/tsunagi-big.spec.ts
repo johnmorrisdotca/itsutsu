@@ -1,9 +1,11 @@
+import { PrismaClient } from "@prisma/client";
 import { expect, test, type Page } from "@playwright/test";
 
 import { decodeLayout } from "../src/lib/puzzles/tsunagi/code";
 import { linesOfAnswer } from "../src/lib/puzzles/tsunagi/lines";
 import { TSUNAGI_10 } from "../src/lib/puzzles/tsunagi/levels/size10.data";
 import { TSUNAGI_12 } from "../src/lib/puzzles/tsunagi/levels/size12.data";
+import { suiteOperator } from "./operator";
 import { ready } from "./support";
 
 /**
@@ -140,15 +142,60 @@ test.describe("Tsunagi at 12×12 on a phone", () => {
     if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
     await expect(page.getByTestId("tsunagi-viewport")).toHaveAttribute("data-zoom", "1.00");
     await page.getByTestId("tsunagi-board").scrollIntoViewIfNeeded();
-    const box = (await page.getByTestId("tsunagi-board").boundingBox())!;
-    const at = (cell: number) => ({ x: box.x + (((cell % size) + 0.5) * box.width) / size, y: box.y + ((Math.floor(cell / size) + 0.5) * box.height) / size });
+    // Where the board is, read before every move, as a finger sees it.
+    const at = async (cell: number) => {
+      const box = (await page.getByTestId("tsunagi-board").boundingBox())!;
+      return { x: box.x + (((cell % size) + 0.5) * box.width) / size, y: box.y + ((Math.floor(cell / size) + 0.5) * box.height) / size };
+    };
     for (const line of lines) {
-      await page.mouse.move(at(line[0]!).x, at(line[0]!).y);
+      const from = await at(line[0]!);
+      await page.mouse.move(from.x, from.y);
       await page.mouse.down();
-      for (const cell of line.slice(1)) await page.mouse.move(at(cell).x, at(cell).y, { steps: 3 });
+      for (const cell of line.slice(1)) {
+        const to = await at(cell);
+        await page.mouse.move(to.x, to.y, { steps: 3 });
+      }
       await page.mouse.up();
     }
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
   });
+});
+
+/**
+ * THE BOARD STAYS PUT WHEN PLAY STARTS. The first stroke starts the clock and
+ * counts an attempt, and "0 attempts" becoming "1 attempt" changed the width of
+ * the line over the board: where that line sat on the edge of wrapping — on the
+ * CI runner's fonts, at a phone's 390 — the board jumped some forty pixels
+ * under the finger mid-drag, and the line being drawn landed on other cells
+ * (0.398.0's CI, 2026-09-26). Swept across the widths where the line wraps, from
+ * a count of nought each time, so the change of words is what is measured.
+ */
+test.describe("Tsunagi's board under a finger", () => {
+  for (const width of [372, 376, 380, 384, 388, 392, 396]) {
+    test(`does not move when the first line starts the clock, at ${width}px`, async ({ page }) => {
+      const prisma = new PrismaClient();
+      try {
+        const member = await prisma.member.findFirst({ where: { email: suiteOperator().email }, select: { id: true } });
+        if (member !== null) await prisma.tsunagiAttempt.deleteMany({ where: { memberId: member.id, size: SIZE, level: 1 } });
+      } finally {
+        await prisma.$disconnect();
+      }
+      await page.setViewportSize({ width, height: 900 });
+      await openLevel(page, 1);
+      await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "0");
+      const before = (await page.getByTestId("tsunagi-board").boundingBox())!;
+      const [code, answer] = TSUNAGI_10[0]!;
+      const line = linesOfAnswer(decodeLayout(code, SIZE)!, answer)![0]!;
+      const from = await centre(page, line[0]!);
+      await page.mouse.move(from.x, from.y);
+      await page.mouse.down();
+      const to = await centre(page, line[1]!);
+      await page.mouse.move(to.x, to.y, { steps: 2 });
+      await page.mouse.up();
+      await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "1");
+      const after = (await page.getByTestId("tsunagi-board").boundingBox())!;
+      expect(after.y, "the board moved when play started").toBe(before.y);
+    });
+  }
 });
