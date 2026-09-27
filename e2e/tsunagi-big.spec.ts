@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { decodeLayout } from "../src/lib/puzzles/tsunagi/code";
 import { linesOfAnswer } from "../src/lib/puzzles/tsunagi/lines";
 import { TSUNAGI_10 } from "../src/lib/puzzles/tsunagi/levels/size10.data";
+import { TSUNAGI_12 } from "../src/lib/puzzles/tsunagi/levels/size12.data";
 import { ready } from "./support";
 
 /**
@@ -118,5 +119,36 @@ test.describe("Tsunagi at 10×10 on a phone", () => {
     await page.mouse.wheel(0, -300);
     await expect.poll(async () => Number(await viewport.getAttribute("data-zoom"))).toBeGreaterThan(1);
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
+  });
+});
+
+/**
+ * AND AT 12×12, the biggest board: sixteen pairs, the four newest colours among
+ * them, solved by dragging at Fit on a phone. Made by mending a board to one
+ * answer rather than by luck (`repairedCandidate`), so this is the proof that
+ * what the generator mended is what a finger can draw.
+ */
+test.describe("Tsunagi at 12×12 on a phone", () => {
+  test.use({ viewport: PHONE, hasTouch: true, isMobile: true });
+
+  test("the first level is solved by dragging at Fit, and nothing scrolls sideways", async ({ page }) => {
+    const size = 12;
+    const [code, answer] = TSUNAGI_12[0]!;
+    const lines = linesOfAnswer(decodeLayout(code, size)!, answer)!;
+    await page.goto(`/games/tsunagi/play?size=${size}&seed=1`);
+    await ready(page, "puzzle-play");
+    if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
+    await expect(page.getByTestId("tsunagi-viewport")).toHaveAttribute("data-zoom", "1.00");
+    await page.getByTestId("tsunagi-board").scrollIntoViewIfNeeded();
+    const box = (await page.getByTestId("tsunagi-board").boundingBox())!;
+    const at = (cell: number) => ({ x: box.x + (((cell % size) + 0.5) * box.width) / size, y: box.y + ((Math.floor(cell / size) + 0.5) * box.height) / size });
+    for (const line of lines) {
+      await page.mouse.move(at(line[0]!).x, at(line[0]!).y);
+      await page.mouse.down();
+      for (const cell of line.slice(1)) await page.mouse.move(at(cell).x, at(cell).y, { steps: 3 });
+      await page.mouse.up();
+    }
+    await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
   });
 });

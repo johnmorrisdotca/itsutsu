@@ -44,7 +44,7 @@
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 
-import { candidate, symmetryKey, type LinkCandidate } from "../src/lib/puzzles/tsunagi/generate.ts";
+import { candidate, repairedCandidate, symmetryKey, type LinkCandidate } from "../src/lib/puzzles/tsunagi/generate.ts";
 import { difficultyScores, measureLevel, orderByDifficulty } from "../src/lib/puzzles/tsunagi/difficulty.ts";
 import { withTwists } from "./tsunagi-twists.ts";
 import { twistRole } from "../src/lib/puzzles/tsunagi/ladder.ts";
@@ -60,7 +60,14 @@ import { TSUNAGI_BLOCK } from "../src/lib/puzzles/tsunagi/levelBlocks.ts";
  * generator far longer to find (2026-09-26: about a thousand distinct 10×10
  * boards in four minutes, seventy 11×11, none at 15×15).
  */
-const WANTED: Record<number, number> = { 4: 256, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64 };
+const WANTED: Record<number, number> = { 4: 256, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64, 12: 128 };
+
+/**
+ * From which side a board is MENDED to one answer (`repairedCandidate`) rather
+ * than kept only when luck made it one: at 12×12 luck made 8 a minute in the
+ * spike of 2026-09-26, mending with a filling that takes lines back made 40.
+ */
+const MEND_FROM = 12;
 
 /** Per size: the longest a line may be drawn, how many grids to try, and the most solver positions a kept level may take. */
 const PLAN: Record<number, { longest: number; tries: number; ceiling: number }> = {
@@ -72,6 +79,7 @@ const PLAN: Record<number, { longest: number; tries: number; ceiling: number }> 
   9: { longest: 27, tries: 120_000, ceiling: 40_000 },
   10: { longest: 30, tries: 400_000, ceiling: 60_000 },
   11: { longest: 33, tries: 2_000_000, ceiling: 80_000 },
+  12: { longest: 36, tries: 3_000, ceiling: 100_000 },
 };
 
 /** Per size, for the twist boards: grids to try for each kind, the longest line, and the solver's budget. */
@@ -84,10 +92,11 @@ const PLAN_TWISTS: Record<number, { tries: number; longest: number; budget: numb
   9: { tries: 12_000, longest: 27, budget: 40_000 },
   10: { tries: 6_000, longest: 30, budget: 60_000 },
   11: { tries: 30_000, longest: 33, budget: 80_000 },
+  12: { tries: 150, longest: 36, budget: 100_000 },
 };
 
 /** The most pairs a level may have: as many colours as the stones come in (`TSUNAGI_COLOURS`). */
-const MOST_PAIRS = 12;
+const MOST_PAIRS = 16;
 
 type Level = readonly [string, string];
 
@@ -105,7 +114,7 @@ function grown(size: number, now: readonly Level[]): Level[] {
   const have = new Set(now.map(([layout]) => symmetryKey(layout, size)));
   const fresh = new Map<string, LinkCandidate>();
   for (let each = 0; each < plan.tries; each += 1) {
-    const made = candidate(size, random, plan.longest, plan.ceiling);
+    const made = size >= MEND_FROM ? repairedCandidate(size, random, plan.longest, plan.ceiling, MOST_PAIRS) : candidate(size, random, plan.longest, plan.ceiling);
     if (made === null || made.pairs > MOST_PAIRS || have.has(made.key) || fresh.has(made.key)) continue;
     fresh.set(made.key, made);
   }

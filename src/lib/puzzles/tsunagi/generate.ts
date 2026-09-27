@@ -36,6 +36,17 @@ export type LinkCandidate = {
 
 const SHORTEST_LINE = 3;
 
+/**
+ * From which side a filling takes back lines rather than give up, and how many
+ * times. Below 12×12 a stranded run ends the attempt, as it always has, so the
+ * boards made there are the boards they always were; from 12×12 almost every
+ * attempt strands one (5 good fillings in 20,000 at 12×12, none at 15×15, in
+ * the spike of 2026-09-26), and taking back the last few lines and growing them
+ * again is what makes a filling at all.
+ */
+const RETREAT_FROM = 12;
+const RETREATS = 400;
+
 /** How a blocked cell is marked while a grid is filled: an owner no line has. */
 const BLOCKED_MARK = 32_000;
 
@@ -52,6 +63,7 @@ export function randomFilling(size: number, random: Random, longest: number, blo
   // A blocked cell belongs to no line, ever: marked as one nothing can be.
   for (const cell of blocked) owner[cell] = BLOCKED_MARK;
   const paths: number[][] = [];
+  let retreats = size >= RETREAT_FROM ? RETREATS : 0;
   const emptyAround = (at: number) => around[at]!.filter((next) => owner[next] === -1).length;
   // Whether `cell` can follow `tip` on line `id` without the line touching itself.
   const fits = (id: number, tip: number, cell: number) => owner[cell] === -1 && around[cell]!.every((next) => next === tip || owner[next] !== id);
@@ -86,9 +98,13 @@ export function randomFilling(size: number, random: Random, longest: number, blo
       paths.push(path);
       continue;
     }
-    // Too short to be a line: hand its cells to a neighbouring line's end, or give up on this attempt.
+    // Too short to be a line: hand its cells to a neighbouring line's end; else take back the last few lines and grow them again, or give up.
     for (const cell of path) owner[cell] = -1;
-    if (!absorb(path, paths, owner, around)) return null;
+    if (absorb(path, paths, owner, around)) continue;
+    if (retreats <= 0) return null;
+    retreats -= 1;
+    const back = Math.min(paths.length, 1 + Math.floor(random() * 3));
+    for (let each = 0; each < back; each += 1) for (const cell of paths.pop()!) owner[cell] = -1;
   }
   return paths;
 }
@@ -251,4 +267,54 @@ export function candidate(size: number, random: Random, longest: number, budget:
     turns: turnsIn(answer, decoded),
     key: symmetryKey(layout, size),
   };
+}
+
+/** How many times a board with two answers is mended before it is dropped. */
+const REPAIR_ROUNDS = 30;
+
+/** The lines with the one through `cell` cut in two there, each half a line of its own of at least three cells; null where no such cut is. */
+function splitAt(paths: readonly number[][], cell: number): number[][] | null {
+  const at = paths.findIndex((path) => path.includes(cell));
+  const path = paths[at]!;
+  const index = path.indexOf(cell);
+  for (const cut of [index + 1, index]) {
+    const [first, second] = [path.slice(0, cut), path.slice(cut)];
+    if (first.length >= SHORTEST_LINE && second.length >= SHORTEST_LINE) return [...paths.slice(0, at), first, second, ...paths.slice(at + 1)];
+  }
+  return null;
+}
+
+/**
+ * One candidate level made by MENDING rather than by luck, for boards too big
+ * for luck (12×12): a filling whose layout has a second answer is mended where
+ * the two answers differ — the line through a cell they disagree on is cut in
+ * two there, which adds a pair of stones the second answer cannot honour — and
+ * solved again, until it has exactly one answer, its own. The classic
+ * Numberlink generator's move; in the 2026-09-26 spike it took 0.4 rounds on
+ * average at 12×12 and doubled what luck alone made. Null when the solver
+ * gives up, the lines pass `most`, or no cut can be made.
+ */
+export function repairedCandidate(size: number, random: Random, longest: number, budget: number, most: number): LinkCandidate | null {
+  let paths = randomFilling(size, random, longest);
+  if (paths === null) return null;
+  for (let round = 0; round < REPAIR_ROUNDS; round += 1) {
+    if (paths.length > most) return null;
+    const { layout, answer } = layoutOf(size, paths);
+    const decoded = decodeLayout(layout, size);
+    if (decoded === null) return null;
+    const solved = countSolutions(decoded, 2, budget);
+    if (solved.gaveUp) return null;
+    if (solved.count === 1) {
+      if (encodeAnswer(solved.solution!) !== answer) return null;
+      return { layout, answer, pairs: decoded.ends.length, nodes: solved.nodes, branches: solved.branches, turns: turnsIn(answer, decoded), key: symmetryKey(layout, size) };
+    }
+    const other = solved.solutions.map(encodeAnswer).find((each) => each !== answer);
+    if (other === undefined) return null;
+    const differ = [...other].flatMap((char, at) => (char !== answer[at] ? [at] : []));
+    let mended: number[][] | null = null;
+    for (let left = differ.length; left > 0 && mended === null; left -= 1) mended = splitAt(paths, differ.splice(Math.floor(random() * left), 1)[0]!);
+    if (mended === null) return null;
+    paths = mended;
+  }
+  return null;
 }

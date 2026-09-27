@@ -1,6 +1,15 @@
 import { CELL_EMPTY, type LinkLayout } from "./code.ts";
 import { bridgesOf, stepTable, type Step } from "./steps.ts";
 
+/*
+ * An empty cell, read into this module once. The search reads it millions of
+ * times, and a test runner that rewrites imports into lookups on a module
+ * object (vitest's does) made every one of those reads a property access: the
+ * same solves ran 2.8 times slower under the unit suite than in node, and a
+ * 12×12 proof file took 47 seconds rather than 16.
+ */
+const EMPTY: number = CELL_EMPTY;
+
 /**
  * THE TSUNAGI SOLVER: how many ways a layout can be joined, up to a
  * limit, and how much trying it took.
@@ -41,6 +50,8 @@ export type SolveCount = {
   branches: number;
   /** The first answer found, as the pair through each cell; null for none. */
   solution: number[] | null;
+  /** Every answer found, in the order found: a second one is where a generator mends a board that has two (`repairedCandidate`). */
+  solutions: number[][];
   /** True when the search stopped at the node budget before it could say. */
   gaveUp: boolean;
 };
@@ -62,10 +73,10 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
   const kept = new Int16Array(total).fill(-1);
   for (const [cell, pair] of layout.waypoints) kept[cell] = pair;
   /** Whether `pair`'s line may take the empty cell `at`. */
-  const mayTake = (at: number, pair: number) => grid[at] === CELL_EMPTY && (kept[at] === -1 || kept[at] === pair);
+  const mayTake = (at: number, pair: number) => grid[at] === EMPTY && (kept[at] === -1 || kept[at] === pair);
   let openPairs = pairs;
   // Every empty cell, and both slots of every bridge, must be used.
-  let empties = cells.filter((cell) => cell === CELL_EMPTY).length + 2 * bridges.length;
+  let empties = cells.filter((cell) => cell === EMPTY).length + 2 * bridges.length;
 
   // Scratch for the region check, reused at every node.
   const region = new Int16Array(total);
@@ -86,14 +97,14 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
     return mine[step.over] === -1 && (pair === -1 || other[step.over] !== pair);
   };
 
-  const result: SolveCount = { count: 0, nodes: 0, branches: 0, solution: null, gaveUp: false };
+  const result: SolveCount = { count: 0, nodes: 0, branches: 0, solution: null, solutions: [], gaveUp: false };
 
   const hopeless = (): boolean => {
     // Every empty cell needs two ways: an empty cell or an unfinished line's end a step away.
     for (let at = 0; at < total; at += 1) {
-      if (grid[at] !== CELL_EMPTY) continue;
+      if (grid[at] !== EMPTY) continue;
       let ways = 0;
-      for (const step of steps[at]!) if (free(step) && (grid[step.to] === CELL_EMPTY || endOf[step.to] !== -1)) ways += 1;
+      for (const step of steps[at]!) if (free(step) && (grid[step.to] === EMPTY || endOf[step.to] !== -1)) ways += 1;
       if (ways < 2) return true;
     }
     // Every free slot of a bridge needs something on both sides that a line could still come from or go to.
@@ -103,14 +114,14 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
         [down, size],
       ] as const) {
         if (slot[bridge] !== -1) continue;
-        for (const side of [bridge - by, bridge + by]) if (grid[side] !== CELL_EMPTY && endOf[side] === -1) return true;
+        for (const side of [bridge - by, bridge + by]) if (grid[side] !== EMPTY && endOf[side] === -1) return true;
       }
     }
     // Regions of empty cells, joined over a bridge's free slot.
     region.fill(-1);
     let regions = 0;
     for (let at = 0; at < total; at += 1) {
-      if (grid[at] !== CELL_EMPTY || region[at] !== -1) continue;
+      if (grid[at] !== EMPTY || region[at] !== -1) continue;
       let read = 0;
       let write = 0;
       queue[write++] = at;
@@ -118,7 +129,7 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
       while (read < write) {
         const cell = queue[read++]!;
         for (const step of steps[cell]!) {
-          if (free(step) && grid[step.to] === CELL_EMPTY && region[step.to] === -1) {
+          if (free(step) && grid[step.to] === EMPTY && region[step.to] === -1) {
             region[step.to] = regions;
             queue[write++] = step.to;
           }
@@ -139,15 +150,15 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
         if (step.to === to) {
           touching = true;
           fromWays += 1;
-        } else if (grid[step.to] === CELL_EMPTY) fromWays += 1;
+        } else if (grid[step.to] === EMPTY) fromWays += 1;
       }
-      for (const step of steps[to]!) if (free(step, pair) && (step.to === from || grid[step.to] === CELL_EMPTY)) toWays += 1;
+      for (const step of steps[to]!) if (free(step, pair) && (step.to === from || grid[step.to] === EMPTY)) toWays += 1;
       if (fromWays === 0 || toWays === 0) return true;
       let joined = touching;
       for (const a of steps[from]!) {
-        if (grid[a.to] !== CELL_EMPTY || !free(a, pair)) continue;
+        if (grid[a.to] !== EMPTY || !free(a, pair)) continue;
         for (const b of steps[to]!) {
-          if (grid[b.to] === CELL_EMPTY && free(b, pair) && region[a.to] === region[b.to]) {
+          if (grid[b.to] === EMPTY && free(b, pair) && region[a.to] === region[b.to]) {
             joined = true;
             served[region[a.to]!] = 1;
           }
@@ -181,6 +192,7 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
       if (empties === 0) {
         result.count += 1;
         if (result.solution === null) result.solution = Array.from(grid);
+        result.solutions.push(Array.from(grid));
       }
       return;
     }
@@ -230,7 +242,7 @@ export function countSolutions(layout: LinkLayout, limit = 2, budget = Number.PO
         endOf[from] = best;
         head[best] = from;
         empties += 1;
-        grid[next] = CELL_EMPTY;
+        grid[next] = EMPTY;
         untake(step);
       }
       if (result.count >= limit || result.gaveUp) return;

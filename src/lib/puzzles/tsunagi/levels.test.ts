@@ -35,9 +35,9 @@ describe("the levels open a block of sixteen at a time", () => {
     expect(openTsunagiLevels(4, new Set(upTo(192)))).toBe(192);
   });
 
-  it("has whole blocks at every size: 256 a size, 192 at 4×4, 128 at 10×10 and 64 at 11×11", () => {
+  it("has whole blocks at every size: 256 a size, 192 at 4×4, 128 at 10×10 and 12×12, and 64 at 11×11", () => {
     for (const size of TSUNAGI_SIZES) expect(TSUNAGI_LEVEL_COUNTS[size]! % 16, `${size}×${size}`).toBe(0);
-    expect(TSUNAGI_LEVEL_COUNTS).toEqual({ 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64 });
+    expect(TSUNAGI_LEVEL_COUNTS).toEqual({ 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64, 12: 128 });
   });
 });
 

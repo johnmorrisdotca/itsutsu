@@ -74,9 +74,14 @@ function candidateOf(kind: Kind, size: number, random: () => number, longest: nu
  * kind. Every kind draws from a random stream of its own, so adding a kind
  * never changes the boards another kind makes.
  */
-function pools(size: number, tries: number, longest: number, budget: number): Record<Kind, TwistCandidate[]> {
+function pools(size: number, tries: number, longest: number, budget: number, wanted: ReadonlySet<Kind>): Record<Kind, TwistCandidate[]> {
   const out = {} as Record<Kind, TwistCandidate[]>;
   KINDS.forEach((kind, index) => {
+    // Only the kinds a lesson still to be made can use: a big board's pool takes minutes a kind.
+    if (!wanted.has(kind)) {
+      out[kind] = [];
+      return;
+    }
     const random = seededRandom(20260927 + size * 100 + index);
     const found = new Map<string, TwistCandidate>();
     for (let each = 0; each < (kind === "sparse" ? tries * SPARSE_TRIES : tries); each += 1) {
@@ -214,7 +219,8 @@ export function withTwists(size: number, levels: readonly Level[], keep: Readonl
   if (needed.length === 0) return { levels: out, placed, kept };
   // Explosions change no cell: their lesson is the slot's own board with one added. The rest need boards made.
   const madeNeeded = needed.some((block) => !["explosions", "strokes"].includes(planned[free.indexOf(block)]!.twist));
-  const pool = madeNeeded ? pools(size, plan.tries, plan.longest, plan.budget) : ({} as Record<Kind, TwistCandidate[]>);
+  const wanted = new Set(needed.flatMap((block) => { const lesson = planned[free.indexOf(block)]!; return [...lesson.teach, ...lesson.test]; }));
+  const pool = madeNeeded ? pools(size, plan.tries, plan.longest, plan.budget, wanted) : ({} as Record<Kind, TwistCandidate[]>);
   const used = new Set<string>(levels.map(([layout]) => symmetryKey(layout, size)));
   const take = (kinds: Kind[], at: number, lesson: number): { made: TwistCandidate; kind: Kind } | null => {
     for (const kind of kinds) {

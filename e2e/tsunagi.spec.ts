@@ -495,10 +495,12 @@ for (const width of [390, 820, 1024, 1280]) {
       expect(drawn.left).toBeGreaterThanOrEqual(0);
     };
     await fits("4×4 to 7×7");
-    // The other shelf, whose button reads the other way, and back: the way there and the way back.
-    await page.getByTestId("tsunagi-more-sizes").click();
-    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Smaller boards");
-    await fits("the bigger boards");
+    // Every other shelf in turn, until the button reads the other way, and back to the first: the way there and the way back.
+    for (let shelf = 2; shelf <= 5 && !(await page.getByTestId("tsunagi-more-sizes").textContent())?.includes("Smaller boards"); shelf += 1) {
+      await page.getByTestId("tsunagi-more-sizes").click();
+      await fits(`shelf ${shelf}`);
+    }
+    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Smaller boards, from 4×4");
     await page.getByTestId("tsunagi-more-sizes").click();
     await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Bigger boards");
   });

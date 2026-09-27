@@ -266,6 +266,11 @@ export const TSUNAGI_COLOURS: readonly (readonly [number, number, number])[] = [
   [85, 58, 47], // leaf
   [28, 45, 36], // chestnut
   [220, 8, 22], // slate
+  // Four more for the 12×12 boards, which run to sixteen pairs as Flow Free's biggest do: each well apart from the twelve.
+  [300, 80, 45], // magenta
+  [350, 70, 28], // maroon
+  [186, 90, 48], // cyan
+  [0, 0, 62], // grey
 ];
 
 function hsl([hue, saturation, lightness]: readonly [number, number, number], shift = 0, alpha = 1): string {

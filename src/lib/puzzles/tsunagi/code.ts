@@ -250,13 +250,17 @@ export function encodeWalls(walls: Iterable<string>): string {
   return list.length === 0 ? "" : `${LINK_WALLS}${list.join(",")}`;
 }
 
+/** What a pair past `PAIR_LETTERS` is written as: a character no layout reads. */
+const NO_LETTER = "?";
+
 /** A layout's code, from its cells, walls, waypoints and whether it wraps: the inverse of `decodeLayout`. */
 export function encodeLayout(cells: readonly number[], walls: Iterable<string> = [], more: { waypoints?: ReadonlyMap<number, number>; wrap?: boolean; hex?: boolean; sparse?: boolean; strokes?: number | null; explosions?: LinkLayout["explosions"] } = {}): string {
+  // A pair past the last letter has no spelling: it is written `?`, which no layout reads, so a filling of too many lines is refused rather than thrown on.
   const grid = cells
     .map((cell, at) => {
       const waypoint = more.waypoints?.get(at);
-      if (waypoint !== undefined) return PAIR_LETTERS[waypoint]!.toLowerCase();
-      return cell === CELL_EMPTY ? LINK_EMPTY : cell === CELL_BLOCKED ? LINK_BLOCKED : cell === CELL_BRIDGE ? LINK_BRIDGE : PAIR_LETTERS[cell]!;
+      if (waypoint !== undefined) return PAIR_LETTERS[waypoint]?.toLowerCase() ?? NO_LETTER;
+      return cell === CELL_EMPTY ? LINK_EMPTY : cell === CELL_BLOCKED ? LINK_BLOCKED : cell === CELL_BRIDGE ? LINK_BRIDGE : (PAIR_LETTERS[cell] ?? NO_LETTER);
     })
     .join("");
   const boom = more.explosions == null ? "" : `${LINK_WALLS}${more.explosions.blast ? "blast" : "boom"}${more.explosions.every}`;

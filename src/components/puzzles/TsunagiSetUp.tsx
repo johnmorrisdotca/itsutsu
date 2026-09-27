@@ -42,10 +42,11 @@ const TILES = 4;
  * plays the next one not yet solved. The options are how the pairs are told
  * apart (colours or numbers) and the board's colour.
  *
- * EIGHT SIZES, FOUR TILES. The set-up screen keeps room for four boards and no
- * more, so the tiles show four at a time, 4 to 7 or 8 to 11, and one press
- * beside them turns to the other four. The press is always there, so choosing
- * never moves the page.
+ * MORE SIZES THAN TILES. The set-up screen keeps room for four boards and no
+ * more, so the tiles show four at a time — 4 to 7, 8 to 11, and the last four,
+ * 9 to 12, so every shelf is full — and one press beside them turns to the
+ * next shelf, and from the last back to the first. The press is always there,
+ * so choosing never moves the page.
  */
 export function TsunagiSetUp({
   hasAccount,
@@ -82,7 +83,9 @@ export function TsunagiSetUp({
   const boards = sizesOffered("tsunagi");
   const copy = PUZZLE_DISPLAY.tsunagi;
   const [size, setSize] = useState(initialSize);
-  const [shelf, setShelf] = useState(initialSize > boards[TILES - 1]! ? boards.length - TILES : 0);
+  // Where each shelf starts: every four, the last one full (`shelvesOf`).
+  const shelves = shelvesOf(boards.length);
+  const [shelf, setShelf] = useState(shelves.findLast((start) => boards[start]! <= initialSize) ?? 0);
   const shown = boards.slice(shelf, shelf + TILES);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
@@ -128,12 +131,14 @@ export function TsunagiSetUp({
   const { first, last } = blockRange(block, count);
   const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
 
+  const onLast = shelf === shelves[shelves.length - 1];
+  const nextShelf = onLast ? 0 : shelves[shelves.indexOf(shelf) + 1]!;
   const turnShelf = () => {
-    const other = shelf === 0 ? boards.length - TILES : 0;
-    setShelf(other);
-    const sizes = boards.slice(other, other + TILES);
-    if (!sizes.includes(size)) setSize(other === 0 ? sizes[sizes.length - 1]! : sizes[0]!);
+    setShelf(nextShelf);
+    const sizes = boards.slice(nextShelf, nextShelf + TILES);
+    if (!sizes.includes(size)) setSize(nextShelf === 0 ? sizes[sizes.length - 1]! : sizes.find((each) => each > size) ?? sizes[0]!);
   };
+  const furthest = boards[Math.min(boards.length, nextShelf + TILES) - 1]!;
 
   return (
     <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" {...readyMark(hydrated)}>
@@ -165,7 +170,7 @@ export function TsunagiSetUp({
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="tsunagi-sizes">
           <BoardPicker value={size} sizes={shown} onChange={setSize} names={PUZZLE_SIZE_NAMES.tsunagi} beside />
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turnShelf} data-testid="tsunagi-more-sizes">
-            {shelf === 0 ? `Bigger boards, to ${boards[boards.length - 1]}×${boards[boards.length - 1]} →` : `← Smaller boards, from ${boards[0]}×${boards[0]}`}
+            {onLast ? `← Smaller boards, from ${boards[0]}×${boards[0]}` : `Bigger boards, to ${furthest}×${furthest} →`}
           </button>
         </div>
       </div>
@@ -199,4 +204,11 @@ export function TsunagiSetUp({
       </div>
     </section>
   );
+}
+
+/** Where each shelf of four sizes starts: every four, and a last one moved back so it too is full — 0, 4 and 5 for nine sizes. */
+export function shelvesOf(count: number): number[] {
+  const starts: number[] = [];
+  for (let start = 0; start < count; start += TILES) starts.push(Math.min(start, Math.max(0, count - TILES)));
+  return [...new Set(starts)];
 }
