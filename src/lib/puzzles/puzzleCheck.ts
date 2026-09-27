@@ -271,16 +271,16 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   const rows = wordRowsOf(kind, size, level, hidden);
   if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
   const lang: GomojiLanguage | "ja" = kana ? "ja" : languageOf(kind);
-  let known: (guess: string) => boolean;
+  let unknown: string | undefined;
   try {
     const allowed = kana ? kanaWordsOf(size).allowed : null;
-    known = (guess) => (allowed === null ? isWord(guess, size, lang as GomojiLanguage) : allowed.has(guess));
+    const known = (guess: string) => (allowed === null ? isWord(guess, size, lang as GomojiLanguage) : allowed.has(guess));
+    // A day's word is a guess its own puzzle takes, whatever the list has since become (`isDailyPoolWord`).
+    unknown = guesses.find((guess) => !known(guess) && !(hidden.words.includes(guess) && isDailyPoolWord(lang, size, guess)));
   } catch {
-    // Refused rather than waved through: a check that cannot read the list cannot say the guesses are words.
-    return { ok: false, reason: "the kana word list is not loaded" };
+    // Refused rather than waved through: a check that cannot read its list (`wordData.ts`, the kana lists) cannot say the guesses are words.
+    return { ok: false, reason: kana ? "the kana word list is not loaded" : "the word list is not loaded" };
   }
-  // A day's word is a guess its own puzzle takes, whatever the list has since become (`isDailyPoolWord`).
-  const unknown = guesses.find((guess) => !known(guess) && !(hidden.words.includes(guess) && isDailyPoolWord(lang, size, guess)));
   if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
   const firstFound = hidden.words.map((word) => guesses.indexOf(word));
   if (ending === "found") {

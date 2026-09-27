@@ -4,6 +4,10 @@ import { lastPastDay } from "../src/lib/puzzles/dailyWords/dailyArchive";
 import { dailyWordSeed, dayAfter, dayKeyOf } from "../src/lib/puzzles/dailyWords/dailyDay";
 import { dailyLengths, dailyWordOf, loadDailyPools } from "../src/lib/puzzles/dailyWords/dailyPools";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * THE DAILY WORDS: a word a day at every length of every Gomoji, a button

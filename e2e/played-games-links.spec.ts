@@ -7,6 +7,10 @@ import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
 import { clockText } from "../src/lib/puzzles/clockText";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * EVERY FIGURE ABOUT PLAYING LEADS TO THE PLAYING. John, 2026-09-26, on Hidden

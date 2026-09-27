@@ -5,6 +5,10 @@ import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { PLAYER_STATE, freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * A FINISHED PUZZLE OPENS AS IT ENDED. John, 2026-09-25: "Drilldown into

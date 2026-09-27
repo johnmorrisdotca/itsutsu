@@ -6,6 +6,10 @@ import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { PUZZLE_SIZE_NAMES } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * GOMOJI 6: six-letter words, in English, French and German. John,

@@ -21,6 +21,10 @@ import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * One screenshot per puzzle, part way through, into public/art/games/ — the

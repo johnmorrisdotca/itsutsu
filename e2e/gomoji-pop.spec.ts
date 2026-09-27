@@ -7,6 +7,10 @@ import { popCategoryOf } from "../src/lib/puzzles/gomoji/popWords";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Pop Gomoji: Gomoji over a hand-kept pop-culture list, three to seven

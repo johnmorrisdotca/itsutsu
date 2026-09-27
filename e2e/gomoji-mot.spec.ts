@@ -5,6 +5,10 @@ import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Gomoji Mot: the French Gomoji, on the AZERTY keyboard drawn under the

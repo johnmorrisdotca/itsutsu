@@ -5,6 +5,10 @@ import { BLACK, decodeBlackAndWhite, EMPTY, encodeBlackAndWhite, WHITE } from ".
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Black and White: a grid of black and white stones, half of each in every

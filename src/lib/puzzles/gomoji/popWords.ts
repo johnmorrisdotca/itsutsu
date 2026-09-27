@@ -1,4 +1,4 @@
-import { EN_WORDS } from "./words.en.data";
+import { wordDataOf } from "./wordData";
 import { POP_ANSWERS, POP_CATEGORIES } from "./words.pop.data";
 
 /**
@@ -75,7 +75,7 @@ export function isPopWord(word: string, size: number): boolean {
   }
   let english = ENGLISH.get(size);
   if (english === undefined) {
-    english = new Set((EN_WORDS[size]?.allowed ?? "").split(/\s+/).filter(Boolean));
+    english = new Set((wordDataOf("en")[size]?.allowed ?? "").split(/\s+/).filter(Boolean));
     ENGLISH.set(size, english);
   }
   return english.has(word);

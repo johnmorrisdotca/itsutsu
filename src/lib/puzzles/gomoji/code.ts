@@ -1,8 +1,6 @@
 import type { PuzzleKind } from "../puzzles.types";
 import { baseGuesses } from "./layout";
-import { EN_WORDS } from "./words.en.data";
-import { FR_WORDS } from "./words.fr.data";
-import { DE_WORDS } from "./words.de.data";
+import { wordDataOf } from "./wordData";
 import { isPopWord, popAnswers } from "./popWords";
 
 /**
@@ -32,12 +30,6 @@ import { isPopWord, popAnswers } from "./popWords";
  * `popWords.ts`.
  */
 export type GomojiLanguage = "en" | "fr" | "de" | "pop";
-
-const WORD_DATA: Record<Exclude<GomojiLanguage, "pop">, Record<number, { easy: string; answers: string; allowed: string }>> = {
-  en: EN_WORDS,
-  fr: FR_WORDS,
-  de: DE_WORDS,
-};
 
 /** The letters a language's givens and guesses may be spelled with, upper case, for a decoding regex. */
 const ALPHABET: Record<GomojiLanguage, string> = { en: "A-Z", fr: "A-Z", de: "A-ZÄÖÜ", pop: "A-Z" };
@@ -111,7 +103,8 @@ function listsFor(size: number, lang: Exclude<GomojiLanguage, "pop"> = "en"): Li
   const key = `${lang}:${size}`;
   const known = LISTS.get(key);
   if (known !== undefined) return known;
-  const text = WORD_DATA[lang][size];
+  // Loaded by `preparePuzzle` (`wordData.ts`); a list not loaded is an error, never an empty one.
+  const text = wordDataOf(lang)[size];
   if (text === undefined) return null;
   const split = (words: string) => words.split(/\s+/).filter(Boolean);
   const lists = { easy: split(text.easy), answers: split(text.answers), allowed: new Set(split(text.allowed)) };

@@ -8,6 +8,10 @@ import { decodeKanaGivens } from "../src/lib/puzzles/gomojiKana/kanaCode";
 import { kanaBase } from "../src/lib/puzzles/gomojiKana/kanaMarks";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * GOMOJI'S HEAD START (src/lib/puzzles/gomoji/headStart.ts). John, 2026-09-26:

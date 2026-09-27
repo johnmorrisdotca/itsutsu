@@ -7,7 +7,7 @@ import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constan
 import type { Appearance } from "@/components/board/board.types";
 import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
-import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
+import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
@@ -23,7 +23,6 @@ import { NumberSolve } from "./NumberSolve";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
-import { POP_OWN_GUESS_LENGTHS } from "@/lib/puzzles/gomoji/popWords";
 
 /**
  * Solving a puzzle: the whole of it, in the browser.
@@ -110,8 +109,8 @@ export function PuzzlePlay({
     router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins })}`);
   }, [seed, kind, size, level, checks, hints, strict, headStart, twins, router]);
 
-  /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji, Pop Gomoji at three or seven letters) waits for them; every other kind is ready at once. */
-  const waits = kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" || (kind === "gomojiPop" && POP_OWN_GUESS_LENGTHS.includes(size));
+  /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them; every other kind is ready at once. */
+  const waits = puzzleLoads(kind);
   const [loaded, setLoaded] = useState<string | null>(waits ? null : `${kind}:${size}`);
   useEffect(() => {
     let live = true;

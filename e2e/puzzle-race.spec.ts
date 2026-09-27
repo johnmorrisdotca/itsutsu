@@ -4,6 +4,10 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { ADMIN_STATE, PLAYER_STATE, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * A race: two members, one puzzle, two clocks kept by the site.

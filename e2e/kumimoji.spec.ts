@@ -7,6 +7,10 @@ import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.
 import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * KUMIMOJI 組文字: a crossword of your own, from a hand of tiles, on a table

@@ -8,6 +8,10 @@ import { kanaScore } from "../src/lib/puzzles/gomojiKana/kanaScore";
 import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import { tapKana, thumbKana } from "./kanaTyping";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Gomoji in kana (docs/plans/other/WORD-04-kana.md): a word of kana found

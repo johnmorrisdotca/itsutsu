@@ -6,6 +6,10 @@ import { LETTER_CELLS, decodeGivens, decodePlay, swapsAllowed, type Swap } from 
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Koushi: six words in a lattice, put right by swapping letters. Each case

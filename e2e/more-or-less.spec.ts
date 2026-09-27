@@ -6,6 +6,10 @@ import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * The marks puzzle: a Latin square with more-than marks drawn between its

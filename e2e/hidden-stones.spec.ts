@@ -7,6 +7,10 @@ import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST } from "../src/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * The stone puzzle: a tap places a stone, a second a cross, a third clears;

@@ -8,6 +8,10 @@ import { hiddenWordsOf } from "../src/lib/puzzles/gomoji/futago";
 import { freshFutagoSeed, futagoDailySeed } from "../src/lib/puzzles/gomoji/futagoSeed";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * GOMOJI FUTAGO 双子: two hidden words at once (`futago.ts`). Every guess goes

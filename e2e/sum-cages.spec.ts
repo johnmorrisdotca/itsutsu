@@ -7,6 +7,10 @@ import { checkSolution } from "../src/lib/puzzles/puzzleCheck";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * SUM CAGES: our Killer Sudoku. The cages the page draws are the ones in the

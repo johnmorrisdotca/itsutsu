@@ -8,6 +8,10 @@ import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { suiteOperator } from "./operator";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * A FINISHED PUZZLE IS WATCHED AGAIN, NOT JUST LOOKED AT. John, 2026-09-26:

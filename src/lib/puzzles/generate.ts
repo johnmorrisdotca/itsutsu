@@ -1,4 +1,5 @@
 import { generateHiddenStones } from "./hiddenStones/generate";
+import { loadWordData } from "./gomoji/wordData";
 import { generateMoreOrLess } from "./moreOrLess/generate";
 import { generateJigsaw } from "./jigsaw/generate";
 import { generateSumCages } from "./killer/generate";
@@ -71,7 +72,21 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
  * The solve page, the solved route and a race's finish await it for their one
  * puzzle; the gates await `prepareEveryPuzzle`.
  */
+/**
+ * Whether a puzzle of this kind and size has anything to load before it can be
+ * made or checked (`preparePuzzle`): its words or its levels. Beside the loader
+ * so the two cannot disagree; a page waits on exactly these.
+ */
+export function puzzleLoads(kind: PuzzleKind): boolean {
+  // Every word puzzle's list (`wordData.ts`, the kana lists, Pop's guesses, Kumimoji's tiles), and Tsunagi's levels.
+  return kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "gomojiKana" || kind === "koushi" || kind === "kumimoji" || kind === "tsunagi";
+}
+
 export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<void> {
+  // Gomoji's lists (`wordData.ts`): French for Mot, German for Wort, English for Gomoji, Pop's dictionary guesses, Koushi's lattice and Kumimoji's grid check.
+  if (kind === "gomojiMot") await loadWordData("fr");
+  if (kind === "gomojiWort") await loadWordData("de");
+  if (kind === "gomoji" || kind === "gomojiPop" || kind === "koushi" || kind === "kumimoji") await loadWordData("en");
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
   if (kind === "kumimoji") await loadTileWords();
@@ -80,5 +95,5 @@ export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<voi
 }
 
 export async function prepareEveryPuzzle(): Promise<void> {
-  await Promise.all([...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords(), ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size))]);
+  await Promise.all([loadWordData("en"), loadWordData("fr"), loadWordData("de"), ...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords(), ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size))]);
 }

@@ -6,6 +6,10 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { decodeTowers, TOWER_SIDES } from "../src/lib/puzzles/towers/code";
 import { ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Towers: a Latin square with clues around its edge saying how many towers

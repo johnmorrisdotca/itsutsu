@@ -8,6 +8,10 @@ import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { knownCounts } from "../src/lib/puzzles/keyMarks";
 import { wordScore } from "../src/lib/puzzles/gomoji/wordScore";
 import { freshPuzzleSeed, ready } from "./support";
+import { loadEveryWordList } from "./wordLists";
+
+// Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
+test.beforeAll(loadEveryWordList);
 
 /**
  * Gomoji: a hidden word found in guesses, each coloured letter by letter.
