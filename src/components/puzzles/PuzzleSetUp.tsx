@@ -24,7 +24,6 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, PLAY_BUTTON } from "@/component
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
-import { kumimojiTileCount, TILE_MIX_TOTAL } from "@/lib/puzzles/kumimoji/tiles.constants";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -38,6 +37,7 @@ import { SetUpSection } from "@/components/live/SetUpSection";
 
 import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
+import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
 import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";
 import { sizeWord } from "./puzzles.constants";
@@ -189,78 +189,17 @@ export function PuzzleSetUp({
           {copy.board}
         </p>
         {kind === "kumimoji" ? (
-          <>
-            <div className="grid grid-cols-2 gap-1.5 pt-1" role="radiogroup" aria-label="Language" data-testid="kumimoji-language">
-              {(["english", "japanese"] as const).map((each) => (
-                <button
-                  key={each}
-                  type="button"
-                  role="radio"
-                  aria-checked={language === each}
-                  className={`${PICK_WORD_CHIP} ${language === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-                  onClick={() => {
-                    setLanguage(each);
-                    if (each === "japanese") setDoubleSet(false);
-                  }}
-                  data-testid={`kumimoji-language-${each}`}
-                >
-                  {each === "english" ? "English" : "Japanese · ひらがな"}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-3 gap-1.5 pt-1" role="radiogroup" aria-label="Game length" data-testid="kumimoji-length">
-              {(["short", "medium", "full"] as const).map((each) => (
-                <button
-                  key={each}
-                  type="button"
-                  role="radio"
-                  aria-checked={gameLength === each}
-                  className={`${PICK_WORD_CHIP} ${gameLength === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-                  onClick={() => setGameLength(each)}
-                  data-testid={`kumimoji-length-${each}`}
-                >
-                  {each === "short" ? "Short" : each === "medium" ? "Medium" : "Full"} · {kumimojiTileCount(size, each, TILE_MIX_TOTAL, doubleSet && language === "english")}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Tile set" data-testid="kumimoji-double">
-              {[false, true].map((each) => (
-                <button
-                  key={String(each)}
-                  type="button"
-                  role="radio"
-                  aria-checked={doubleSet === each}
-                  className={`${PICK_WORD_CHIP} ${doubleSet === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-                  onClick={() => language === "english" && setDoubleSet(each)}
-                  disabled={each && language === "japanese"}
-                  data-testid={`kumimoji-double-${each ? "on" : "off"}`}
-                >
-                  {each ? "Double" : "One set"} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
-                </button>
-              ))}
-            </div>
-            {/*
-              HELP, chosen here or not at all (John, 2026-09-28: "can only be
-              turned on as an option before you start the game"): the puzzles'
-              own hints switch, which a Kumimoji spends on arranging the hand
-              into a word (`help.ts`).
-            */}
-            <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Help" data-testid="kumimoji-help-choice">
-              {[false, true].map((each) => (
-                <button
-                  key={String(each)}
-                  type="button"
-                  role="radio"
-                  aria-checked={hints === each}
-                  className={`${PICK_WORD_CHIP} ${hints === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-                  onClick={() => setHints(each)}
-                  data-testid={`kumimoji-help-${each ? "on" : "off"}`}
-                >
-                  {each ? "Help" : "No help"} <span className="font-mincho opacity-70">{each ? "助け有" : "助け無"}</span>
-                </button>
-              ))}
-            </div>
-          </>
+          <KumimojiSetUpOptions
+            size={size}
+            language={language}
+            setLanguage={setLanguage}
+            gameLength={gameLength}
+            setGameLength={setGameLength}
+            doubleSet={doubleSet}
+            setDoubleSet={setDoubleSet}
+            hints={hints}
+            setHints={setHints}
+          />
         ) : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
