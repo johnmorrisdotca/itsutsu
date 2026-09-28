@@ -3,9 +3,11 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { tileDescription as describeTile, tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
 import { KUMIMOJI_TRADE } from "@/lib/puzzles/kumimoji/tiles.constants";
 
 import { HAND_TILE_PX, TILE, TILE_CHOSEN, TRAY, tileLetterPx } from "./kumimoji.constants";
+import { TileFace, wildStyle } from "./KumimojiTileFace";
 
 /** What each of the tray's presses may do now, and does. */
 export type TrayPresses = {
@@ -13,6 +15,7 @@ export type TrayPresses = {
   trade: { can: boolean; run: () => void };
   back: { can: boolean; run: () => void };
   allBack: { can: boolean; run: () => void };
+  sort: { can: boolean; run: () => void };
 };
 
 /**
@@ -28,8 +31,8 @@ export type TrayPresses = {
  */
 export function KumimojiTray({
   hand,
-  glyphOf = (tile) => tile,
-  tileDescription = (tile) => tile.toUpperCase(),
+  faceOf = tileFace,
+  tileDescription = describeTile,
   chosenAt,
   left,
   disabled,
@@ -39,7 +42,7 @@ export function KumimojiTray({
   onTray,
 }: {
   hand: readonly string[];
-  glyphOf?: (tile: string) => string;
+  faceOf?: (tile: string) => TileFaceOf;
   tileDescription?: (tile: string) => string;
   /** The hand tile chosen, by its place, or null. */
   chosenAt: number | null;
@@ -62,8 +65,21 @@ export function KumimojiTray({
       }}
     >
       <div className="flex items-baseline justify-between text-xs text-muted">
-        <span>
-          Your hand <span className="font-mincho">手札</span>
+        <span className="flex items-baseline gap-2">
+          <span>
+            Your hand <span className="font-mincho">手札</span>
+          </span>
+          {/* On the hand's own line, so the four presses under it keep a quarter each. */}
+          <button
+            type="button"
+            className="rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
+            disabled={disabled || !presses.sort.can}
+            onClick={presses.sort.run}
+            data-testid="kumimoji-sort"
+            aria-keyshortcuts="/"
+          >
+            Sort
+          </button>
         </span>
         <span className="tabular-nums" data-testid="kumimoji-bag" data-left={left}>
           {left} in the bag
@@ -80,10 +96,10 @@ export function KumimojiTray({
               key={`${at}-${letter}`}
               type="button"
               disabled={disabled}
-              className={`${TILE} touch-none ${chosenAt === at ? TILE_CHOSEN : ""}`}
-              style={{ width: HAND_TILE_PX, height: HAND_TILE_PX, fontSize: tileLetterPx(HAND_TILE_PX) * (glyphOf(letter).length > 1 ? 0.62 : 1) }}
+              className={`${TILE} relative touch-none ${chosenAt === at ? TILE_CHOSEN : ""}`}
+              style={wildStyle(faceOf(letter), { width: HAND_TILE_PX, height: HAND_TILE_PX, fontSize: tileLetterPx(HAND_TILE_PX) })}
               onClick={() => onHandTile(at)}
-              onPointerDown={(event) => onHandDown(at, glyphOf(letter), event)}
+              onPointerDown={(event) => onHandDown(at, faceOf(letter).glyph, event)}
               data-testid="kumimoji-hand-tile"
               data-letter={letter}
               data-at={at}
@@ -91,7 +107,7 @@ export function KumimojiTray({
               aria-pressed={chosenAt === at}
               aria-label={`${tileDescription(letter)} in your hand`}
             >
-              {glyphOf(letter)}
+              <TileFace face={faceOf(letter)} />
             </button>
           ))
         )}

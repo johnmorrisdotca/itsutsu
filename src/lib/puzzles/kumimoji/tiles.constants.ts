@@ -22,6 +22,28 @@ export const TILE_MIX: Readonly<Record<string, number>> = {
   n: 8, o: 11, p: 3, q: 2, r: 9, s: 6, t: 9, u: 6, v: 3, w: 3, x: 2, y: 3, z: 2,
 };
 
+/**
+ * THE JAPANESE SET: 144 hiragana tiles in 45 kinds (`kana.ts`), as the English
+ * set is 144 letters. Shared by how often each kana is used in the commonest
+ * words — the answers the kana Gomoji hides, each kana read as its tile — with
+ * one of any kana that comes out below one; measured that way, English comes
+ * out the shape of the table above. So ぬ, へ, ね, ろ, れ, む and の are the
+ * hard tiles, Japanese's Q, X and Z, and う, ん, い and し, which end and join
+ * everything, are its E's. John, 2026-09-28: "the letters that you don't
+ * really wanna get… should really be low counts just like Z and XNQ".
+ *
+ * Fixed here rather than taken from the monthly dictionary refresh, which
+ * prints what it measures beside this table (`scripts/word-lists-ja.mjs`): a
+ * kept game's bag is checked against these counts.
+ */
+export const JAPANESE_TILE_MIX: Readonly<Record<string, number>> = {
+  あ: 2, い: 11, う: 12, え: 1, お: 2, か: 7, き: 6, く: 6, け: 3, こ: 4,
+  さ: 3, し: 10, す: 2, せ: 3, そ: 2, た: 4, ち: 3, つ: 6, て: 2, と: 3,
+  な: 1, に: 1, ぬ: 1, ね: 1, の: 1, は: 2, ひ: 2, ふ: 2, へ: 1, ほ: 1,
+  ま: 2, み: 1, む: 1, め: 1, も: 1, や: 2, ゆ: 4, よ: 6, ら: 1, り: 3,
+  る: 3, れ: 1, ろ: 1, わ: 1, ん: 11,
+};
+
 /** The whole set, counted from the table. */
 export const TILE_MIX_TOTAL = Object.values(TILE_MIX).reduce((sum, count) => sum + count, 0);
 

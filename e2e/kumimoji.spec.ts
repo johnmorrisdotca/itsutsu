@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
+import { TABLE } from "../src/lib/puzzles/kumimoji/tableView";
 import { lettersOf, sameLetters } from "../src/lib/puzzles/kumimoji/grid";
 import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
 import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
@@ -49,23 +50,20 @@ function classicGame(from: number): { seed: number; hand: string; word: string }
   }
 }
 
-async function japaneseGame(from: number): Promise<{ seed: number; wildAt: number; flexAt: number; flexForm: string }> {
+async function japaneseGame(from: number): Promise<{ seed: number; wildAt: number; formsAt: number; forms: string }> {
   const words = await loadTileWords("japanese");
   for (let seed = from; seed < from + 1_000; seed += 1) {
     try {
       const puzzle = generateKumimoji(KUMIMOJI_HANDS.quick, "medium", seed, { language: "japanese" });
       const hand = [...puzzle.givens.slice(0, KUMIMOJI_HANDS.quick)];
       const wildAt = hand.findIndex(words.isWild);
-      const flexAt = hand.findIndex((tile) => !words.isWild(tile) && words.flexForms(tile).length > 1);
-      if (wildAt < 0 || flexAt < 0) continue;
-      const original = words.soundOf(hand[flexAt]!);
-      const flexForm = words.flexForms(hand[flexAt]!).find((form) => form !== original);
-      if (flexForm !== undefined) return { seed, wildAt, flexAt, flexForm };
+      const formsAt = hand.findIndex((tile) => words.formsOf(tile) !== "");
+      if (wildAt >= 0 && formsAt >= 0) return { seed, wildAt, formsAt, forms: words.formsOf(hand[formsAt]!) };
     } catch {
       continue;
     }
   }
-  throw new Error("Could not find a Japanese hand with a wild and flex tile.");
+  throw new Error("Could not find a Japanese hand with a wild and a tile of several forms.");
 }
 
 /**
@@ -127,10 +125,34 @@ test.describe("Kumimoji", () => {
     await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", String(KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]! - KUMIMOJI_HANDS.quick));
   });
 
+  test("the / key and Sort put the hand in order, and a table tile tapped twice goes back to it", async ({ page }) => {
+    const { seed, word } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const hand = page.getByTestId("kumimoji-hand-tile");
+    const inOrder = async () => {
+      const letters = await hand.evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute("data-letter")!));
+      const plain = letters.filter((letter) => letter !== "*");
+      expect(plain).toEqual([...plain].sort());
+      expect(letters.slice(plain.length).every((letter) => letter === "*")).toBe(true);
+    };
+    await page.keyboard.press("/");
+    await inOrder();
+
+    // Laid, then tapped twice: back in the hand, at its end, and Sort puts it in its place.
+    await lay(page, word[0]!, "0,0");
+    await expect(hand).toHaveCount(CLASSIC - 1);
+    await page.locator('[data-testid="kumimoji-tile"][data-square="0,0"]').dblclick();
+    await expect(page.getByTestId("kumimoji-tile")).toHaveCount(0);
+    await expect(hand).toHaveCount(CLASSIC);
+    await page.getByTestId("kumimoji-sort").click();
+    await inOrder();
+  });
+
   test.describe("Japanese play", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    test("keeps the language in the address and assigns wild and flex readings", async ({ page }) => {
+    test("keeps the language in the address, shows the forms a tile also plays as, and gives a wild its reading", async ({ page }) => {
       const operator = suiteOperator();
       const signIn = await page.request.post("/api/session", {
         data: { kind: "admin", email: operator.email, token: process.env.ADMIN_TOKEN ?? "local-operator-token" },
@@ -144,7 +166,7 @@ test.describe("Kumimoji", () => {
       await page.goto(`${AT}/new`);
       await ready(page, "puzzle-set-up");
       await page.getByTestId("kumimoji-language-japanese").click();
-      await expect(page.getByTestId("kumimoji-length-short")).toContainText("40");
+      await expect(page.getByTestId("kumimoji-length-short")).toContainText(String(KUMIMOJI_BAG[CLASSIC]));
       await expect(page.getByTestId("kumimoji-double-on")).toBeDisabled();
       await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /language=japanese/);
       await page.goto(`${AT}/play?size=${KUMIMOJI_HANDS.quick}&level=medium&seed=${game.seed}&language=japanese`);
@@ -153,13 +175,15 @@ test.describe("Kumimoji", () => {
 
       const hand = page.getByTestId("kumimoji-hand-tile");
       await expect(hand).toHaveCount(KUMIMOJI_HANDS.quick);
-      await hand.nth(game.wildAt).click();
-      await page.getByTestId("kumimoji-tile-reading").selectOption({ label: "ちゃ" });
-      await expect(hand.nth(game.wildAt)).toHaveAccessibleName("Wild, ちゃ in your hand");
+      // ゆ says ゅ, は says ば and ぱ: the tile plays them all, with nothing to choose.
+      await expect(hand.nth(game.formsAt).getByTestId("kumimoji-tile-forms")).toHaveText(game.forms);
+      await expect(page.getByTestId("kumimoji-tile-reading")).toHaveCount(0);
 
-      await hand.nth(game.flexAt).click();
-      await page.getByTestId("kumimoji-tile-reading").selectOption({ label: game.flexForm });
-      await expect(hand.nth(game.flexAt)).toHaveAccessibleName(`${game.flexForm} in your hand`);
+      // The wild is the 五 until it is given a kana.
+      await expect(hand.nth(game.wildAt)).toHaveAccessibleName("Wild, unassigned in your hand");
+      await hand.nth(game.wildAt).click();
+      await page.getByTestId("kumimoji-tile-reading").selectOption({ label: "か" });
+      await expect(hand.nth(game.wildAt)).toHaveAccessibleName("Wild, か in your hand");
     });
   });
 
@@ -332,7 +356,9 @@ test.describe("Kumimoji", () => {
     const tilePx = async () => Number(await table.getAttribute("data-tile-px"));
     await fills();
 
-    // Each arrow moves the view, and the board goes with it.
+    // The arrows are out of sight until asked for; then each moves the view, and the board goes with it.
+    await expect(page.getByTestId("kumimoji-pad")).toHaveCount(0);
+    await page.getByTestId("kumimoji-arrows").click();
     for (const key of ["right", "down", "left", "up"] as const) {
       const before = await place();
       await page.getByTestId(`kumimoji-pad-${key}`).click();
@@ -341,10 +367,9 @@ test.describe("Kumimoji", () => {
     }
     await expect(table).toHaveAttribute("data-fitted", "false");
 
-    // Zoomed out as far as it goes, then panned: still a board to the edges.
-    const fitTile = await tilePx();
-    for (let press = 0; press < 6; press += 1) await page.getByTestId("kumimoji-pad-out").click();
-    await expect.poll(tilePx).toBeLessThan(fitTile + 1);
+    // Zoomed out as far as it goes, past the size Fit stops at, then panned: still a board to the edges.
+    for (let press = 0; press < 12; press += 1) await page.getByTestId("kumimoji-pad-out").click();
+    await expect.poll(tilePx).toBe(TABLE.zoomLeast);
     await page.getByTestId("kumimoji-pad-left").click();
     await page.getByTestId("kumimoji-pad-left").click();
     await fills();
@@ -375,8 +400,9 @@ test.describe("Kumimoji", () => {
       const { seed } = classicGame(freshPuzzleSeed());
       await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
       await ready(page, "puzzle-play");
+      await page.getByTestId("kumimoji-arrows").click();
       const outer = (await page.getByTestId("kumimoji-table").boundingBox())!;
-      for (const id of ["kumimoji-fit", "kumimoji-pad"]) {
+      for (const id of ["kumimoji-fit", "kumimoji-arrows", "kumimoji-pad"]) {
         const inner = (await page.getByTestId(id).boundingBox())!;
         expect(inner.x).toBeGreaterThanOrEqual(outer.x);
         expect(inner.x + inner.width).toBeLessThanOrEqual(outer.x + outer.width + 0.5);

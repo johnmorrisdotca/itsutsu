@@ -6,8 +6,10 @@ import { BOARD_THEMES, FELTS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { placeOf, squareAt, type Tiles } from "@/lib/puzzles/kumimoji/grid";
+import { tileDescription as describeTile, tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
 import { TABLE, edgePan, fitView, keepInReach, panView, tableArea, zoomView, type View } from "@/lib/puzzles/kumimoji/tableView";
 
+import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { ViewPad, type PadKey } from "./ViewPad";
 import { TABLE_BOX, TABLE_CURSOR, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, tileLetterPx } from "./kumimoji.constants";
 import { useWordStyle } from "./WordStyleContext";
@@ -79,8 +81,8 @@ export function KumimojiTable({
   theme,
   misspelt = NONE,
   apart = NONE,
-  glyphOf = (tile) => tile,
-  tileDescription = (tile) => tile.toUpperCase(),
+  faceOf = tileFace,
+  tileDescription = describeTile,
   chosen = null,
   cursor = null,
   readOnly = false,
@@ -93,7 +95,7 @@ export function KumimojiTable({
   theme: BoardThemeTokens;
   misspelt?: ReadonlySet<string>;
   apart?: ReadonlySet<string>;
-  glyphOf?: (tile: string) => string;
+  faceOf?: (tile: string) => TileFaceOf;
   tileDescription?: (tile: string) => string;
   /** The tile chosen to move, by its square. */
   chosen?: string | null;
@@ -313,11 +315,12 @@ export function KumimojiTable({
                 </button>
               );
             }
-            const glyph = glyphOf(letter);
+            const tileFaceOf = faceOf(letter);
+            const glyph = tileFaceOf.glyph;
             const description = tileDescription(letter);
             const mark = misspelt.has(square) ? "misspelt" : apart.has(square) ? "apart" : "ok";
-            const look = `${TILE} ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typing ? "outline-2 outline-offset-1 outline-moss" : ""}`;
-            const face = { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) * (glyph.length > 1 ? 0.62 : 1) };
+            const look = `${TILE} relative ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typing ? "outline-2 outline-offset-1 outline-moss" : ""}`;
+            const face = wildStyle(tileFaceOf, { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) });
             /*
              * A table nobody presses still says where each tile stands. The last
              * tile of a game finishes it, and the table turns read-only in the
@@ -328,7 +331,7 @@ export function KumimojiTable({
             return readOnly ? (
               <div key={square} className="absolute flex items-center justify-center" style={place} data-testid="kumimoji-tile" data-square={square} data-letter={letter} data-mark={mark}>
                 <span className={look} style={face}>
-                  {glyph}
+                  <TileFace face={tileFaceOf} />
                 </span>
               </div>
             ) : (
@@ -348,7 +351,7 @@ export function KumimojiTable({
                 aria-label={`${description}${mark === "misspelt" ? ", in a line that is not a word" : mark === "apart" ? ", not joined to the rest" : ""}${chosen === square ? ", chosen" : ""}`}
               >
                 <span className={look} style={face}>
-                  {glyph}
+                  <TileFace face={tileFaceOf} />
                 </span>
               </button>
             );

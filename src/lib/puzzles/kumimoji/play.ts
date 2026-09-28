@@ -1,4 +1,5 @@
 import { decodeGrid, encodeGrid, lettersOf, sameLetters, type GridVerdict, type Tiles } from "./grid";
+import { tileFace } from "./tileFace";
 import { KUMIMOJI_DRAW, KUMIMOJI_TRADE } from "./tiles.constants";
 import { tileWords } from "./tileWords";
 
@@ -102,6 +103,16 @@ export function liftToHand(play: TilePlay, square: string): TilePlay {
 /** Every tile on the table back to the hand. */
 export function liftAll(play: TilePlay): TilePlay {
   return { ...play, tiles: new Map(), hand: [...play.hand, ...play.tiles.values()] };
+}
+
+/**
+ * The hand in order (John, 2026-09-28: "it gets sorted for letters
+ * alphabetically"): English A to Z, Japanese あいうえお, which is the order
+ * of the kana's tile codes, and the wilds last as they came.
+ */
+export function sortHand(play: TilePlay): TilePlay {
+  const hand = [...play.hand].sort((a, b) => Number(tileFace(a).wild) - Number(tileFace(b).wild) || (tileFace(a).wild ? 0 : a < b ? -1 : a > b ? 1 : 0));
+  return { ...play, hand };
 }
 
 /** Whether Draw may be pressed: the hand used, the grid sound, and a tile left to draw. */

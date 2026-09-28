@@ -22,11 +22,13 @@ import {
   mayTrade,
   moveOnTable,
   placeFromHand,
+  sortHand,
   swapWithHand,
   tilesLeft,
   trade,
   type TilePlay,
 } from "@/lib/puzzles/kumimoji/play";
+import { tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -35,7 +37,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { KumimojiTable, TABLE_BOARDS, tableTheme, type TableHandle } from "./KumimojiTable";
 import { WordStylePicker } from "./WordStylePicker";
 import { KumimojiTray } from "./KumimojiTray";
-import { HAND_TILE_PX, TILE, TRAY_ROOM, tileLetterPx } from "./kumimoji.constants";
+import { DOUBLE_TAP_MS, SORT_KEY, HAND_TILE_PX, TILE, TRAY_ROOM, tileLetterPx } from "./kumimoji.constants";
+import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { useTileDrag, type DragSource, type DropTarget } from "./useTileDrag";
 
@@ -76,6 +79,8 @@ export function KumimojiSolve({
   const [chosen, setChosen] = useState<Chosen>(null);
   const [cursor, setCursor] = useState<Cursor>(null);
   const table = useRef<TableHandle>(null);
+  /* The last table tile chosen by a tap, and when: the same tile again inside `DOUBLE_TAP_MS` sends it back to the hand. */
+  const lastTap = useRef<{ square: string; at: number } | null>(null);
 
   const verdict = useMemo(
     () => judgeGrid(
@@ -117,11 +122,17 @@ export function KumimojiSolve({
     const there = play.tiles.get(square);
     if (chosen?.from === "hand") return move((now) => (there === undefined ? placeFromHand(now, chosen.at, square) : swapWithHand(now, chosen.at, square)));
     if (chosen?.from === "table") {
-      if (chosen.square === square) return setChosen(null);
+      if (chosen.square === square) {
+        // A double tap: John, 2026-09-28, "if you double click on a tile I think that would just shoot it back to your collection".
+        const twice = lastTap.current?.square === square && performance.now() - lastTap.current.at < DOUBLE_TAP_MS;
+        lastTap.current = null;
+        return twice ? move((now) => liftToHand(now, square)) : setChosen(null);
+      }
       return move((now) => moveOnTable(now, chosen.square, square));
     }
     if (there !== undefined) {
       setChosen({ from: "table", square });
+      lastTap.current = { square, at: performance.now() };
       return;
     }
     // An empty square with nothing chosen: typing starts here, across; a second tap turns it down.
@@ -181,6 +192,9 @@ export function KumimojiSolve({
       } else if (event.key === "Enter" && cursor !== null) {
         event.preventDefault();
         setCursor({ square: cursor.square, across: !cursor.across });
+      } else if (event.key === SORT_KEY) {
+        event.preventDefault();
+        move((now) => sortHand(now));
       } else if (event.key === "Escape") {
         setChosen(null);
         setCursor(null);
@@ -193,10 +207,9 @@ export function KumimojiSolve({
   const chosenAt = chosen?.from === "hand" ? chosen.at : null;
   const selectedTile = chosen?.from === "hand" ? play.hand[chosen.at] ?? null : chosen?.from === "table" ? play.tiles.get(chosen.square) ?? null : null;
   const selectedWild = selectedTile !== null && words.isWild(selectedTile);
-  const adjustmentOptions = selectedTile === null ? [] : selectedWild ? words.wildOptions : words.flexForms(selectedTile);
   const adjustSelected = (face: string) => {
     if (selectedTile === null) return;
-    const code = selectedWild ? words.wildFor(face) : words.flexTile(selectedTile, face);
+    const code = words.wildFor(face);
     if (code === null) return;
     move((now) => chosen?.from === "hand" ? assignHandTile(now, chosen.at, code) : chosen?.from === "table" ? assignTableTile(now, chosen.square, code) : now);
   };
@@ -205,6 +218,7 @@ export function KumimojiSolve({
     trade: { can: chosenAt !== null && mayTrade(play), run: () => chosenAt !== null && move((now) => trade(now, chosenAt)) },
     back: { can: chosen?.from === "table", run: () => chosen?.from === "table" && move((now) => liftToHand(now, chosen.square)) },
     allBack: { can: play.tiles.size > 0, run: () => move((now) => liftAll(now)) },
+    sort: { can: play.hand.length > 1, run: () => move((now) => sortHand(now)) },
   };
 
   return (
@@ -216,8 +230,6 @@ export function KumimojiSolve({
           theme={theme}
           misspelt={verdict.misspelt}
           apart={verdict.apart}
-          glyphOf={words.glyphOf}
-          tileDescription={(tile) => words.isWild(tile) ? `Wild, ${words.wildSound(tile) ?? "unassigned"}` : words.soundOf(tile) ?? tile}
           chosen={chosen?.from === "table" ? chosen.square : null}
           cursor={done === null ? cursor : null}
           readOnly={done !== null}
@@ -231,9 +243,9 @@ export function KumimojiSolve({
           <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
             {sayState(play.hand.length, left, verdict)}
           </p>
-          {selectedTile !== null && adjustmentOptions.length > 1 ? (
+          {selectedWild ? (
             <label className="flex flex-wrap items-center gap-2 text-sm" data-testid="kumimoji-tile-adjustment">
-              <span>{selectedWild ? "Choose this wild tile's reading" : "Use this kana as"}</span>
+              <span>{language === "japanese" ? "This wild tile is the kana" : "This wild tile is the letter"}</span>
               <select
                 className="rounded border border-rule bg-paper px-2 py-1 text-ink"
                 value={selectedWild && words.wildSound(selectedTile) === null ? "" : selectedTile}
@@ -242,8 +254,8 @@ export function KumimojiSolve({
                 data-testid="kumimoji-tile-reading"
               >
                 {selectedWild && words.wildSound(selectedTile) === null ? <option value="">Choose reading</option> : null}
-                {adjustmentOptions.map((face) => {
-                  const code = selectedWild ? words.wildFor(face) : words.flexTile(selectedTile, face);
+                {words.wildOptions.map((face) => {
+                  const code = words.wildFor(face);
                   return code === null ? null : <option key={code} value={code}>{face}</option>;
                 })}
               </select>
@@ -257,8 +269,6 @@ export function KumimojiSolve({
           {pausing.paused ? null : (
             <KumimojiTray
               hand={play.hand}
-              glyphOf={words.glyphOf}
-              tileDescription={(tile) => words.isWild(tile) ? `Wild, ${words.wildSound(tile) ?? "unassigned"}` : words.soundOf(tile) ?? tile}
               chosenAt={chosenAt}
               left={left}
               disabled={closed}

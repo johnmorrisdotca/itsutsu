@@ -1,4 +1,6 @@
-import { TILE_MIX } from "./tiles.constants";
+import { tileKana } from "./kana";
+import { KANA_TILE_START, KANA_WILD_START, kanaTileCode, tileFace } from "./tileFace";
+import { JAPANESE_TILE_MIX, TILE_MIX } from "./tiles.constants";
 import type { KumimojiLanguage } from "./kumimoji.types";
 
 /**
@@ -36,12 +38,10 @@ export type TileWords = {
   wildSound: (tile: string) => string | null;
   /** Identity used to verify that the exact physical bag was played. */
   inventoryKey: (tile: string) => string | null;
-  /** Identity used when a Japanese mora is flexed across its voiced family. */
+  /** Which tile of the set this is, a wild being any wild. */
   familyKey: (tile: string) => string | null;
-  /** Kana forms sharing this tile's dakuten/handakuten family. */
-  flexForms: (tile: string) => readonly string[];
-  /** Replace a Japanese tile code with a family form. */
-  flexTile: (tile: string, form: string) => string | null;
+  /** The other forms a tile plays as, shown small in its corner: ば and ぱ on は. */
+  formsOf: (tile: string) => string;
   /** Possible readings for a wild tile. */
   wildOptions: readonly string[];
   /** Internal tile code for a visible letter or mora. */
@@ -95,93 +95,68 @@ export function unpackTileWords(data: Readonly<Record<number, string>>): TileWor
     wildSound: (tile) => (assigned.has(tile) ? assigned.get(tile)! : null),
     inventoryKey: (tile) => (isWild(tile) ? "*" : /^[a-z]$/.test(tile) ? tile : null),
     familyKey: (tile) => (isWild(tile) ? "*" : /^[a-z]$/.test(tile) ? tile : null),
-    flexForms: () => [],
-    flexTile: () => null,
+    formsOf: () => "",
     wildOptions: letters,
     codeOf: (face) => (/^[a-z]$/.test(face) ? face : null),
   };
 }
 
 type JapaneseWordsData = {
-  morae: readonly string[];
-  mix: Readonly<Record<string, number>>;
+  /** The 45 base kana, in the order of their tile codes (`BASE_KANA`). */
+  kana: string;
+  /** One printable character a kana, as the words are packed. */
+  codes: string;
   byLength: Readonly<Record<number, string>>;
 };
 
-const MORA_ID_START = 0xe000;
-const WILD_ID_START = 0xf000;
-
-function withoutMarks(mora: string): string {
-  return mora.normalize("NFD").replace(/[\u3099\u309a]/gu, "").normalize("NFC");
-}
-
-function unpackMoraLength(packed: string, length: number, morae: readonly string[]): string[][] {
-  const text = packed.replace(/\s+/g, "");
-  const words: string[][] = [];
-  let before: string[] = [];
-  let at = 0;
-  while (at < text.length) {
-    const shared = Number.parseInt(text[at]!, 16);
-    if (!Number.isInteger(shared) || shared >= length) throw new Error("Invalid front-coded Japanese word.");
-    at += 1;
-    const word = before.slice(0, shared);
-    for (let index = shared; index < length; index += 1) {
-      const moraIndex = Number.parseInt(text.slice(at, at + 2), 36);
-      if (!Number.isInteger(moraIndex) || moraIndex < 0 || moraIndex >= morae.length) throw new Error("Invalid Japanese mora code.");
-      word.push(morae[moraIndex]!);
-      at += 2;
-    }
-    words.push(word);
-    before = word;
-  }
-  return words;
-}
-
+/**
+ * The Japanese list, spelt in the 45 base kana (`kana.ts`): a tile is its
+ * kana's code above `KANA_TILE_START`, so a line of tiles reads straight off
+ * as the folded word it spells, and が, ゃ and を are found by the tile they
+ * are played with.
+ */
 function unpackJapaneseWords(data: JapaneseWordsData): TileWords {
-  const codeForFace = new Map(data.morae.map((face, at) => [face, String.fromCodePoint(MORA_ID_START + at)]));
-  const faceForCode = new Map([...codeForFace].map(([face, code]) => [code, face]));
-  const wildFaceForCode = new Map(data.morae.map((face, at) => [String.fromCodePoint(WILD_ID_START + at), face]));
-  const wildCodeForFace = new Map([...wildFaceForCode].map(([code, face]) => [face, code]));
+  const kana = [...data.kana];
+  if (kana.some((face, at) => kanaTileCode(face) !== String.fromCodePoint(KANA_TILE_START + at))) throw new Error("The Japanese Kumimoji list's kana are not the tiles' own order.");
+  const tileOfPacked = new Map([...data.codes].map((code, at) => [code, kanaTileCode(kana[at]!)!]));
   const byLength = new Map<number, string[]>();
   const allowed = new Set<string>();
   for (const [length, packed] of Object.entries(data.byLength)) {
-    const words = unpackMoraLength(packed, Number(length), data.morae);
-    byLength.set(Number(length), words.map((word) => word.map((mora) => codeForFace.get(mora)!).join("")));
-    for (const word of words) allowed.add(word.join(""));
+    const words = unpackLength(packed, Number(length)).map((word) => [...word].map((code) => tileOfPacked.get(code)!).join(""));
+    byLength.set(Number(length), words);
+    for (const word of words) allowed.add([...word].map((tile) => tileFace(tile).glyph).join(""));
   }
-  const mix = new Map(Object.entries(data.mix).map(([face, count]) => [codeForFace.get(face)!, count]));
-  const soundOf = (tile: string) => faceForCode.get(tile) ?? wildFaceForCode.get(tile) ?? null;
-  const isWild = (tile: string) => tile === "*" || wildFaceForCode.has(tile);
-  const familyKey = (tile: string) => {
-    if (isWild(tile)) return "*";
-    const face = soundOf(tile);
-    return face === null ? null : withoutMarks(face);
-  };
-  const flexForms = (tile: string) => {
-    if (isWild(tile)) return [];
-    const family = familyKey(tile);
-    return family === null ? [] : data.morae.filter((mora) => withoutMarks(mora) === family);
-  };
+  const mix = new Map(Object.entries(JAPANESE_TILE_MIX).map(([face, count]) => [kanaTileCode(face)!, count]));
+  const isTile = (tile: string) => tile.length === 1 && tile.codePointAt(0)! - KANA_TILE_START >= 0 && tile.codePointAt(0)! - KANA_TILE_START < kana.length;
+  const isAssignedWild = (tile: string) => tile.length === 1 && tile.codePointAt(0)! - KANA_WILD_START >= 0 && tile.codePointAt(0)! - KANA_WILD_START < kana.length;
+  const isWild = (tile: string) => tile === "*" || isAssignedWild(tile);
+  const soundOf = (tile: string) => (isTile(tile) || isAssignedWild(tile) ? tileFace(tile).glyph : null);
+  const identity = (tile: string) => (isWild(tile) ? "*" : isTile(tile) ? tileFace(tile).glyph : null);
   return {
     language: "japanese",
     allowed,
     byLength,
     mix,
-    glyphOf: (tile) => soundOf(tile) ?? (tile === "*" ? "五" : ""),
+    glyphOf: (tile) => tileFace(tile).glyph,
     soundOf,
     wordOf: (tiles) => {
       const sounds = [...tiles].map(soundOf);
       return sounds.some((sound) => sound === null) ? null : sounds.join("");
     },
-    wildFor: (sound) => wildCodeForFace.get(sound) ?? null,
+    wildFor: (sound) => {
+      const base = tileKana(sound);
+      return base === null ? null : kanaTileCode(base, true);
+    },
     isWild,
-    wildSound: (tile) => wildFaceForCode.get(tile) ?? null,
-    inventoryKey: (tile) => (isWild(tile) ? "*" : faceForCode.get(tile) ?? null),
-    familyKey,
-    flexForms,
-    flexTile: (tile, form) => (flexForms(tile).includes(form) ? codeForFace.get(form) ?? null : null),
-    wildOptions: data.morae,
-    codeOf: (face) => codeForFace.get(face) ?? null,
+    wildSound: (tile) => (isAssignedWild(tile) ? tileFace(tile).glyph : null),
+    inventoryKey: identity,
+    familyKey: identity,
+    formsOf: (tile) => (isTile(tile) ? tileFace(tile).forms : ""),
+    wildOptions: kana,
+    codeOf: (face) => {
+      const base = tileKana(face);
+      return base === null ? null : kanaTileCode(base);
+    },
   };
 }
 

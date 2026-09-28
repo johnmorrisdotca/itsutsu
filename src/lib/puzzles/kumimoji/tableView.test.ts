@@ -40,7 +40,7 @@ describe("the kumimoji table", () => {
     const zoomed = zoomView(view, 1.5, 220, 170);
     expect(zoomed.tile).toBe(60);
     expect(squareUnder(zoomed, 220, 170)).toEqual(under);
-    expect(zoomView(view, 0.1, 0, 0).tile).toBe(TABLE.tileLeast);
+    expect(zoomView(view, 0.1, 0, 0).tile).toBe(TABLE.zoomLeast);
     expect(zoomView(view, 10, 0, 0).tile).toBe(TABLE.zoomMost);
   });
 

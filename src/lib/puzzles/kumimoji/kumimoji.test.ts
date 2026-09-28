@@ -4,11 +4,11 @@ import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import { checkKumimoji, kumimojiPoints } from "./check";
 import { generateKumimoji } from "./generate";
+import { BASE_KANA } from "./kana";
 import { decodeGrid, encodeGrid, judgeGrid, lettersOf, runsOf, squareAt } from "./grid";
 import {
   deal,
   assignHandTile,
-  assignTableTile,
   decodeTileProgress,
   draw,
   encodeTileProgress,
@@ -74,19 +74,45 @@ describe("the kumimoji word list", () => {
     expect(words.allowed.size).toBeGreaterThan(100_000);
   });
 
-  it("loads broad Japanese words and maps mora tiles, wilds, and voiced families", async () => {
+  it("spells every Japanese word in the 45 base kana, so any kana plays as its tile", async () => {
     const words = await loadTileWords("japanese");
-    expect(words.allowed.has("きゃく")).toBe(true);
     expect(words.allowed.size).toBeGreaterThan(100_000);
-    expect([...words.mix.values()].reduce((sum, count) => sum + count, 0)).toBe(144);
-    const ha = [...words.mix.keys()].find((tile) => words.soundOf(tile) === "は")!;
-    expect(words.flexForms(ha)).toEqual(expect.arrayContaining(["は", "ば", "ぱ"]));
-    const wild = words.wildFor("ちゃ")!;
-    expect(words.isWild(wild)).toBe(true);
-    expect(words.wildSound(wild)).toBe("ちゃ");
+    expect(words.mix.size).toBe(45);
+    // がっこう is laid か, つ, こ, う; きゃく is き, や, く; を is お.
+    for (const word of ["かつこう", "きやく", "はん"]) expect(words.allowed.has(word), word).toBe(true);
+    expect(words.codeOf("が")).toBe(words.codeOf("か"));
+    expect(words.codeOf("ぱ")).toBe(words.codeOf("は"));
+    expect(words.codeOf("ゃ")).toBe(words.codeOf("や"));
+    expect(words.codeOf("っ")).toBe(words.codeOf("つ"));
+    expect(words.codeOf("を")).toBe(words.codeOf("お"));
+    expect(words.codeOf("ー")).toBeNull();
+    expect(words.codeOf("カ")).toBeNull();
+  });
+
+  it("shows the forms a tile also plays as in its corner, and a wild as the 五", async () => {
+    const words = await loadTileWords("japanese");
+    expect(words.formsOf(words.codeOf("は")!)).toBe("ばぱ");
+    expect(words.formsOf(words.codeOf("ゆ")!)).toBe("ゅ");
+    expect(words.formsOf(words.codeOf("つ")!)).toBe("っづ");
+    expect(words.formsOf(words.codeOf("お")!)).toBe("を");
+    expect(words.formsOf(words.codeOf("ん")!)).toBe("");
     expect(words.glyphOf("*")).toBe("五");
-    expect(words.glyphOf(wild)).toBe("ちゃ");
-    expect(words.wordOf(wild)).toBe("ちゃ");
+    const wild = words.wildFor("ぱ")!;
+    expect(words.isWild(wild)).toBe(true);
+    expect(words.wildSound(wild)).toBe("は");
+    expect(words.glyphOf(wild)).toBe("は");
+    expect(words.wordOf(wild)).toBe("は");
+    expect(words.formsOf(wild)).toBe("");
+    expect(tileWords().formsOf("a")).toBe("");
+  });
+
+  it("holds 144 Japanese tiles, the hard kana at one and the joining kana on top", async () => {
+    const words = await loadTileWords("japanese");
+    const count = (kana: string) => words.mix.get(words.codeOf(kana)!) ?? 0;
+    expect([...words.mix.values()].reduce((sum, each) => sum + each, 0)).toBe(144);
+    for (const kana of BASE_KANA) expect(count(kana), kana).toBeGreaterThanOrEqual(1);
+    for (const kana of "ぬへねろれむの") expect(count(kana), kana).toBe(1);
+    for (const kana of "うんいし") expect(count(kana), kana).toBeGreaterThanOrEqual(10);
   });
 });
 
@@ -165,29 +191,15 @@ describe("making a kumimoji", () => {
     expect(checkSolution("kumimoji", 7, puzzle.givens, puzzle.solution, "medium", { gameLength: "full", doubleSet: true })).toEqual({ ok: true });
   });
 
-  it("lays a Japanese bag of mora and independently checks its words and wilds", async () => {
+  it("lays a Japanese bag and independently checks its words and wilds", async () => {
     await loadTileWords("japanese");
-    const puzzle = generateKumimoji(7, "medium", 20260928, { language: "japanese" });
     const words = tileWords("japanese");
-    expect(puzzle.givens).toHaveLength(40);
-    expect([...puzzle.givens].filter(words.isWild)).toHaveLength(3);
-    expect(checkSolution("kumimoji", 7, puzzle.givens, puzzle.solution, "medium", { language: "japanese" })).toEqual({ ok: true });
-    const original = decodeGrid(puzzle.solution)!;
-    let foundValidFlex = false;
-    for (const [square, tile] of original) {
-      if (words.isWild(tile)) continue;
-      const sound = words.soundOf(tile);
-      for (const other of words.flexForms(tile).filter((form) => form !== sound)) {
-        const flexed = new Map(original);
-        flexed.set(square, words.flexTile(tile, other)!);
-        if (checkSolution("kumimoji", 7, puzzle.givens, encodeGrid(flexed), "medium", { language: "japanese" }).ok) {
-          foundValidFlex = true;
-          break;
-        }
-      }
-      if (foundValidFlex) break;
+    for (const seed of [1, 20260928]) {
+      const puzzle = generateKumimoji(7, "medium", seed, { language: "japanese" });
+      expect(puzzle.givens).toHaveLength(40);
+      expect([...puzzle.givens].filter(words.isWild)).toHaveLength(3);
+      expect(checkSolution("kumimoji", 7, puzzle.givens, puzzle.solution, "medium", { language: "japanese" })).toEqual({ ok: true });
     }
-    expect(foundValidFlex).toBe(true);
   });
 });
 
@@ -224,17 +236,13 @@ describe("checking a finished kumimoji", () => {
 });
 
 describe("playing a kumimoji", () => {
-  it("keeps Japanese flex and wild assignments through a saved run", async () => {
+  it("keeps a Japanese wild's reading through a saved run", async () => {
     const words = await loadTileWords("japanese");
     const ha = words.codeOf("は")!;
-    const ba = words.flexTile(ha, "ば")!;
-    const wild = words.wildFor("ちゃ")!;
-    const start = deal(`*${ha}`, 2);
-    const assigned = assignHandTile(start, 0, wild);
+    const wild = words.wildFor("ち")!;
+    const assigned = assignHandTile(deal(`*${ha}`, 2), 0, wild);
     expect(assigned.hand).toEqual([wild, ha]);
-    const onTable = placeFromHand(assigned, 1, "0,0");
-    const flexed = assignTableTile(onTable, "0,0", ba);
-    const saved = encodeTileProgress({ ...flexed, hand: [wild] });
+    const saved = encodeTileProgress(placeFromHand(assigned, 1, "0,0"));
     expect(decodeTileProgress(saved, `*${ha}`, "japanese")?.hand).toEqual([wild]);
 
     const englishWild = tileWords().wildFor("x")!;

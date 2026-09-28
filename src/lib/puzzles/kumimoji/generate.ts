@@ -35,7 +35,6 @@ export function generateKumimoji(size: number, level: PuzzleLevel, seed: number,
   const setSize = [...words.mix.values()].reduce((sum, count) => sum + count, 0);
   const tiles = kumimojiTileCount(size, gameLength, language === "english" ? TILE_MIX_TOTAL : setSize, doubleSet);
   const wilds = kumimojiWildCount(size, level, tiles);
-  const ordinaryTiles = tiles - wilds;
   const random = seededRandom(seed);
   const side = layingSideFor(tiles);
   let bestProgress = 0;
