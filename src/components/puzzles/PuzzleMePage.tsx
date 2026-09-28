@@ -6,11 +6,12 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, historyPath, matchPath, mySolvePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_KINDS, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { racesOf, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 import { ownSolvesOf, ownWordsOf } from "@/lib/puzzles/server/puzzleSolves";
 
+import { KumimojiWallpaper } from "./KumimojiWallpaper";
 import { sizeWord } from "./puzzles.constants";
 import { SolveTime } from "./SolveTime";
 import { WordHistory } from "./WordHistory";
@@ -57,6 +58,8 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
         <h2 className={SECTION_TITLE}>
           Your solves <span className="font-mincho normal-case tracking-normal">自分の解</span>
         </h2>
+        {/* Every crossword you have finished as one picture, fetched on the press and drawn in your browser. */}
+        {kind === PUZZLE_KINDS.kumimoji && me !== null ? <KumimojiWallpaper /> : null}
         {solves.length === 0 ? (
           <p className="text-sm text-muted">
             None yet.{" "}

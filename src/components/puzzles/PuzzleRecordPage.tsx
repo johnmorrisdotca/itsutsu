@@ -10,12 +10,13 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { monthWords, weekWords } from "@/lib/history/recordMonth";
 import { PUZZLE_RECORD_SORTS, puzzleRecordAsked, puzzleRecordHref, type PuzzleRecordAsked } from "@/lib/puzzles/puzzleRecordAddress";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_KINDS, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { puzzleRecordOf, PUZZLE_RECORD_PAGE } from "@/lib/puzzles/server/puzzleRecord";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import { shownName } from "@/lib/rating/shownName";
 
+import { KumimojiWallpaper } from "./KumimojiWallpaper";
 import { sizeWord } from "./puzzles.constants";
 import { RecordSolvesTable } from "./RecordSolvesTable";
 
@@ -115,6 +116,9 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
             rows marked <span aria-hidden>★</span><span className="sr-only">with a star</span> are the ones counted.
           </p>
         ) : null}
+
+        {/* Your own finished crosswords as one picture, fetched on the press and drawn in your browser. */}
+        {kind === PUZZLE_KINDS.kumimoji && me !== null ? <KumimojiWallpaper /> : null}
 
         <RecordSolvesTable kind={kind} solves={record.solves} names={names} tags={tags} me={me} counted={record.tally?.counted ?? null} filtered={chips.length > 0} />
 

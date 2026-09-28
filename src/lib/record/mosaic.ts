@@ -49,12 +49,12 @@ export function frameOf(state: GameState): MosaicFrame {
 }
 
 /** Text a person typed, made safe to stand inside SVG. */
-function escaped(text: string): string {
+export function escaped(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 /** A line cut to what a tile can carry, so a long name does not run off the card. */
-function fitted(text: string, most: number): string {
+export function fitted(text: string, most: number): string {
   return text.length <= most ? text : `${text.slice(0, most - 1)}…`;
 }
 
@@ -156,7 +156,7 @@ export function mosaicGrid(count: number, width: number, height: number): { colu
 const BAR = { top: 0.018, big: 0.03, small: 0.019, gap: 0.0275, step: 0.0255, bottom: 0.022 } as const;
 
 /** The bar's height in pixels, and how many lines of details it has room for. */
-function barOf(width: number, height: number): { bar: number; lines: number } {
+export function barOf(width: number, height: number): { bar: number; lines: number } {
   const lines = height > width ? 3 : 2;
   const share = BAR.top + BAR.big * 0.6 + BAR.gap + (lines - 1) * BAR.step + BAR.bottom;
   return { bar: Math.round(Math.min(width, height) * share), lines };
@@ -283,7 +283,7 @@ function wrapped(parts: readonly string[], wide: number, most: number): string[]
  * brand is the logo, not words typed in a font (John, 2026-09-26: "should be
  * using my Logo"): the kit's wordmark down the bar's left, the rest beside it.
  */
-function titleBarSvg(title: MosaicTitle, width: number, height: number): string {
+export function titleBarSvg(title: MosaicTitle, width: number, height: number): string {
   const art = MOSAIC_ART;
   const { bar, lines: room } = barOf(width, height);
   const short = Math.min(width, height);
