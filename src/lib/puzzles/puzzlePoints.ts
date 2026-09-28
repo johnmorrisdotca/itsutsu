@@ -78,8 +78,8 @@ export function pointsFor(
   if (kind === "gomojiWort") return helped(wordPoints(size, givens, answer, elapsedMs, level, "de"));
   if (kind === "gomojiPop") return helped(wordPoints(size, givens, answer, elapsedMs, level, "pop"));
   if (kind === "gomojiKana") return helped(kanaPoints(size, givens, answer, elapsedMs, level));
-  // A tile game: ten a tile of the bag, and up to as much again for speed.
-  if (kind === "kumimoji") return kumimojiPoints(givens, elapsedMs);
+  // A tile game: ten a tile of the bag, and up to as much again for speed; each Help that arranged the hand into a word is a hint's worth off.
+  if (kind === "kumimoji") return helped(kumimojiPoints(givens, elapsedMs));
   // Fewest swaps first, then time (`koushiPoints`); it has no helps to price.
   if (kind === "koushi") return koushiPoints(givens, answer, elapsedMs, level);
   return Math.max(0, POINTS_A_CELL * cellsFilled(kind, size, givens) - POINTS_A_HELP * (checksUsed + hintsUsed));

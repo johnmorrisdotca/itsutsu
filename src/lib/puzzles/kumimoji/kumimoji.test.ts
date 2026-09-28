@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { checkSolution } from "../puzzleCheck";
+import { POINTS_A_HELP, pointsFor } from "../puzzlePoints";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import { checkKumimoji, kumimojiPoints } from "./check";
 import { generateKumimoji } from "./generate";
 import { BASE_KANA } from "./kana";
+import { handSpelling, HELP_WORDS_MOST, wordsInHand } from "./help";
 import { decodeGrid, encodeGrid, judgeGrid, lettersOf, runsOf, squareAt } from "./grid";
 import {
   deal,
@@ -232,6 +234,40 @@ describe("checking a finished kumimoji", () => {
     expect(kumimojiPoints(bag, 10 * 60_000)).toBe(800);
     expect(kumimojiPoints(bag, 50 * 30_000)).toBe(500);
     expect(kumimojiPoints(bag, 60 * 60_000)).toBe(500);
+  });
+});
+
+describe("Help, the hand arranged into a word", () => {
+  it("finds the words the hand's own tiles spell, longest first, and leaves a wild out", () => {
+    const found = wordsInHand(["t", "a", "c", "*", "q"], tileWords());
+    expect(found[0]!.length).toBe(3);
+    expect(found).toEqual(expect.arrayContaining(["cat", "act"]));
+    expect(found.every((word) => tileWords().allowed.has(word))).toBe(true);
+    expect(found.some((word) => word.includes("q"))).toBe(false);
+    expect(found.length).toBeLessThanOrEqual(HELP_WORDS_MOST);
+    expect(wordsInHand(["q", "z"], tileWords())).toEqual([]);
+  });
+
+  it("puts the word's tiles first, in order, the rest behind them, and changes nothing else", () => {
+    const play = deal("tacqz", 5);
+    const helped = handSpelling(play, "cat");
+    expect(helped.hand).toEqual(["c", "a", "t", "q", "z"]);
+    expect(play.hand).toEqual(["t", "a", "c", "q", "z"]);
+    expect(helped.tiles).toBe(play.tiles);
+    expect(handSpelling(play, "dog")).toBe(play);
+  });
+
+  it("spells Japanese words in the base kana, がっこう as か つ こ う", async () => {
+    const words = await loadTileWords("japanese");
+    const hand = [..."うこかつ"].map((kana) => words.codeOf(kana)!);
+    const found = wordsInHand(hand, words).map((word) => words.wordOf(word));
+    expect(found).toContain("かつこう");
+  });
+
+  it("costs a Kumimoji a hint's worth of points a press", () => {
+    const bag = "a".repeat(50);
+    expect(pointsFor("kumimoji", 11, bag, 0, 2, "", 10 * 60_000)).toBe(kumimojiPoints(bag, 10 * 60_000) - 2 * POINTS_A_HELP);
+    expect(pointsFor("kumimoji", 11, bag, 0, 0, "", 10 * 60_000)).toBe(kumimojiPoints(bag, 10 * 60_000));
   });
 });
 

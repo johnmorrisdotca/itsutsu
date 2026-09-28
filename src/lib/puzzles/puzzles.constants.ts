@@ -647,6 +647,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     rules: [
       `You start with a hand of tiles, ${KUMIMOJI_HANDS.classic} in a Classic game or ${KUMIMOJI_HANDS.quick} in a Quick one. Lay them out to build one crossword: every tile joined to the rest, and every line of two or more letters, across or down, a word.`,
       "Tap a tile and then a square to put it there, or drag it; on a keyboard, choose a square and type. Tiles can be moved, swapped or sent back to your hand at any time: tap a tile on the table twice and it goes straight back. Sort, or the / key, puts your hand in order. A line that is not a word is marked in red until it is.",
+      "Choose Help on the set-up screen and a Help press arranges your hand to spell a word, a different one each time; you still have to find it a place. Each press costs a hint's worth of points, and Help is never offered in a race.",
       "The charcoal tiles marked 五 are wild: tap one and choose the letter it stands for, and change it whenever you like. Easy games have the most of them, Medium half as many, and Hard none.",
       "In Japanese every tile is a hiragana and plays as all of its forms, shown small in its corner: は is also ば and ぱ, つ is also っ and づ, や is also ゃ, and お is also を. A line is a word when it spells one read that way, as in a Japanese crossword: 学校, がっこう, is laid か つ こ う.",
       "When your hand is empty and the grid is sound, press Draw for the next tile from the bag, and fit it in. Rebuild as much as you like: only the whole has to be right.",

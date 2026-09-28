@@ -149,6 +149,40 @@ test.describe("Kumimoji", () => {
     await inOrder();
   });
 
+  test("Help, chosen on the set-up screen, arranges the hand into a word, a different one each press", async ({ page }) => {
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    await page.getByTestId("kumimoji-help-on").click();
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /hints=1/);
+    await page.getByTestId("puzzle-solve").click();
+    await ready(page, "puzzle-play");
+    const help = page.getByTestId("kumimoji-help");
+    await expect(help).toHaveAttribute("data-offered", "true");
+    const said = page.getByTestId("kumimoji-said");
+    const shown = async () => (await said.innerText()).split(" ")[0]!.toLowerCase();
+    const front = async (length: number) => (await page.getByTestId("kumimoji-hand-tile").evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute("data-letter")!))).slice(0, length).join("");
+
+    await help.click();
+    await expect(said).toContainText("is at the front of your hand");
+    const first = await shown();
+    expect(isWord(first), `${first} is a word`).toBe(true);
+    expect(await front(first.length)).toBe(first);
+
+    await help.click();
+    await expect.poll(shown).not.toBe(first);
+    const second = await shown();
+    expect(isWord(second), `${second} is a word`).toBe(true);
+    expect(await front(second.length)).toBe(second);
+  });
+
+  test("Help is on the tray but cannot be pressed when it was not chosen", async ({ page }) => {
+    const { seed } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("kumimoji-help")).toHaveAttribute("data-offered", "false");
+    await expect(page.getByTestId("kumimoji-help")).toBeDisabled();
+  });
+
   test.describe("Japanese play", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 

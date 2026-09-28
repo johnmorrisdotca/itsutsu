@@ -16,6 +16,8 @@ export type TrayPresses = {
   back: { can: boolean; run: () => void };
   allBack: { can: boolean; run: () => void };
   sort: { can: boolean; run: () => void };
+  /** Help, when it was chosen on the set-up screen: shown either way, and pressable only then. */
+  help: { offered: boolean; can: boolean; run: () => void };
 };
 
 /**
@@ -79,6 +81,17 @@ export function KumimojiTray({
             aria-keyshortcuts="/"
           >
             Sort
+          </button>
+          <button
+            type="button"
+            className="rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
+            disabled={disabled || !presses.help.can}
+            onClick={presses.help.run}
+            title={presses.help.offered ? "Arrange your hand into a word" : "Help is chosen on the set-up screen, before the game starts"}
+            data-testid="kumimoji-help"
+            data-offered={presses.help.offered ? "true" : "false"}
+          >
+            Help
           </button>
         </span>
         <span className="tabular-nums" data-testid="kumimoji-bag" data-left={left}>

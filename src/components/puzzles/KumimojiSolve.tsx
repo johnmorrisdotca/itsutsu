@@ -7,6 +7,8 @@ import { FeltPatches } from "@/components/board/FeltPatches";
 import type { Appearance } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { kumimojiPoints } from "@/lib/puzzles/kumimoji/check";
+import { handSpelling, wordsInHand } from "@/lib/puzzles/kumimoji/help";
+import { POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
 import { encodeGrid, judgeGrid, placeOf, squareAt } from "@/lib/puzzles/kumimoji/grid";
 import {
   assignHandTile,
@@ -28,7 +30,6 @@ import {
   trade,
   type TilePlay,
 } from "@/lib/puzzles/kumimoji/play";
-import { tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -38,7 +39,6 @@ import { KumimojiTable, TABLE_BOARDS, tableTheme, type TableHandle } from "./Kum
 import { WordStylePicker } from "./WordStylePicker";
 import { KumimojiTray } from "./KumimojiTray";
 import { DOUBLE_TAP_MS, SORT_KEY, HAND_TILE_PX, TILE, TRAY_ROOM, tileLetterPx } from "./kumimoji.constants";
-import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { useTileDrag, type DragSource, type DropTarget } from "./useTileDrag";
 
@@ -63,6 +63,7 @@ export function KumimojiSolve({
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   language = puzzle.language ?? "english",
+  hints = false,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
@@ -70,6 +71,8 @@ export function KumimojiSolve({
   resumed?: ResumedRun | null;
   appearance?: Appearance;
   language?: KumimojiLanguage;
+  /** Whether Help was chosen on the set-up screen (`hints=1`); never in a race. */
+  hints?: boolean;
 }) {
   const hydrated = useHydrated();
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -95,7 +98,11 @@ export function KumimojiSolve({
   );
   const left = tilesLeft(play);
 
-  const { elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeTileProgress(play), resumed }, false, true);
+  const { elapsedMs, done, begin, finish, pausing, hinting } = useSolve(puzzle, hasAccount, race, null, { progress: encodeTileProgress(play), resumed }, hints, true);
+  /* Help's words for this hand, found only when Help was chosen, and which one the next press shows. */
+  const helpWords = useMemo(() => (hinting.allowed ? wordsInHand(play.hand, words) : []), [hinting.allowed, play.hand, words]);
+  const helpAt = useRef(0);
+  const [helpSaid, setHelpSaid] = useState<string | null>(null);
   const closed = done !== null || pausing.paused;
 
   /* Every move goes through here: it starts the clock, and forgets what was chosen. */
@@ -105,6 +112,7 @@ export function KumimojiSolve({
       begin();
       setPlay(next);
       setChosen(null);
+      setHelpSaid(null);
     },
     [closed, begin],
   );
@@ -207,10 +215,9 @@ export function KumimojiSolve({
   const chosenAt = chosen?.from === "hand" ? chosen.at : null;
   const selectedTile = chosen?.from === "hand" ? play.hand[chosen.at] ?? null : chosen?.from === "table" ? play.tiles.get(chosen.square) ?? null : null;
   const selectedWild = selectedTile !== null && words.isWild(selectedTile);
-  const adjustSelected = (face: string) => {
-    if (selectedTile === null) return;
-    const code = words.wildFor(face);
-    if (code === null) return;
+  /* The reading chosen for the selected wild: the select's value is the wild's own code for that letter (`wildFor`). */
+  const adjustSelected = (code: string) => {
+    if (selectedTile === null || !words.isWild(code)) return;
     move((now) => chosen?.from === "hand" ? assignHandTile(now, chosen.at, code) : chosen?.from === "table" ? assignTableTile(now, chosen.square, code) : now);
   };
   const presses = {
@@ -219,6 +226,18 @@ export function KumimojiSolve({
     back: { can: chosen?.from === "table", run: () => chosen?.from === "table" && move((now) => liftToHand(now, chosen.square)) },
     allBack: { can: play.tiles.size > 0, run: () => move((now) => liftAll(now)) },
     sort: { can: play.hand.length > 1, run: () => move((now) => sortHand(now)) },
+    help: {
+      offered: hinting.allowed,
+      can: hinting.allowed && play.hand.length > 1,
+      run: () => {
+        if (helpWords.length === 0) return setHelpSaid("No word in this hand. Trade a tile, or build it onto the table.");
+        const word = helpWords[helpAt.current % helpWords.length]!;
+        helpAt.current += 1;
+        hinting.spend();
+        move((now) => handSpelling(now, word));
+        setHelpSaid(`${(words.wordOf(word) ?? word).toUpperCase()} is at the front of your hand. Press Help again for another word.`);
+      },
+    },
   };
 
   return (
@@ -241,7 +260,7 @@ export function KumimojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
-            {sayState(play.hand.length, left, verdict)}
+            {helpSaid ?? sayState(play.hand.length, left, verdict)}
           </p>
           {selectedWild ? (
             <label className="flex flex-wrap items-center gap-2 text-sm" data-testid="kumimoji-tile-adjustment">
@@ -285,7 +304,8 @@ export function KumimojiSolve({
       ) : (
         <>
           <p className="text-sm" data-testid="kumimoji-score">
-            All {puzzle.givens.length} tiles in one crossword. <strong>{kumimojiPoints(puzzle.givens, done.elapsedMs)}</strong> points: ten a tile, and the rest for speed.
+            All {puzzle.givens.length} tiles in one crossword. <strong>{Math.max(0, kumimojiPoints(puzzle.givens, done.elapsedMs) - POINTS_A_HELP * hinting.used)}</strong> points: ten a tile, and the rest for speed
+            {hinting.used > 0 ? `, less ${POINTS_A_HELP} for each of ${hinting.used} ${hinting.used === 1 ? "Help" : "Helps"}` : ""}.
           </p>
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
         </>

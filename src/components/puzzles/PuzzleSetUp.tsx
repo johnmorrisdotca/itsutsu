@@ -239,6 +239,27 @@ export function PuzzleSetUp({
                 </button>
               ))}
             </div>
+            {/*
+              HELP, chosen here or not at all (John, 2026-09-28: "can only be
+              turned on as an option before you start the game"): the puzzles'
+              own hints switch, which a Kumimoji spends on arranging the hand
+              into a word (`help.ts`).
+            */}
+            <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Help" data-testid="kumimoji-help-choice">
+              {[false, true].map((each) => (
+                <button
+                  key={String(each)}
+                  type="button"
+                  role="radio"
+                  aria-checked={hints === each}
+                  className={`${PICK_WORD_CHIP} ${hints === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                  onClick={() => setHints(each)}
+                  data-testid={`kumimoji-help-${each ? "on" : "off"}`}
+                >
+                  {each ? "Help" : "No help"} <span className="font-mincho opacity-70">{each ? "助け有" : "助け無"}</span>
+                </button>
+              ))}
+            </div>
           </>
         ) : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
