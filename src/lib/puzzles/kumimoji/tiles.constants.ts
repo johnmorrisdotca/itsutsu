@@ -1,3 +1,5 @@
+import type { KumimojiLength } from "./kumimoji.types";
+
 /**
  * KUMIMOJI 組文字: build one crossword of your own from letter tiles drawn
  * from a bag, and draw more whenever the hand is used and the grid is sound.
@@ -9,9 +11,8 @@
 /**
  * THE MIX: how many of each letter a full set holds, 144 tiles in all. This is
  * the letter-frequency table of the best-known anagram-grid tile game, a fact
- * about how often English uses its letters and nobody's rule text. A solo game
- * never uses the whole set: its bag is drawn from it (`KUMIMOJI_BAG`), and no
- * bag holds more of a letter than this table does.
+ * about how often English uses its letters and nobody's rule text. Short and
+ * Medium games draw from it; Full uses all 144 tiles. Double uses two copies.
  *
  * To tune the letters, change the counts here. The total is checked by
  * `tiles.test.ts`, so an edit that loses a tile says so.
@@ -43,17 +44,43 @@ export const KUMIMOJI_GRID_MOST = 60;
 export const KUMIMOJI_HANDS = { tiny: 3, quick: 7, classic: 11 } as const;
 
 /**
- * HOW MANY TILES A GAME USES IN ALL, by its hand: the bag is this many tiles,
- * the hand included, and the game ends when every one of them is on a sound
- * grid. Chosen so a game is a sitting, not an evening: a Quick game is forty
- * tiles, a Classic fifty. The full set of 144 is the mix they are drawn from,
- * not a bag anybody plays alone.
+ * SHORT GAME TOTALS, by opening hand. Medium and Full derive from the tile
+ * inventory in `kumimojiTileCount`; these stay the existing Short lengths.
  */
 export const KUMIMOJI_BAG: Readonly<Record<number, number>> = {
   [KUMIMOJI_HANDS.tiny]: 5,
   [KUMIMOJI_HANDS.quick]: 40,
   [KUMIMOJI_HANDS.classic]: 50,
 };
+
+/** Wild tiles per original 40/50-tile game, included within the bag total. */
+export const KUMIMOJI_WILDS: Readonly<Record<number, Readonly<Record<"easy" | "medium" | "hard", number>>>> = {
+  [KUMIMOJI_HANDS.tiny]: { easy: 0, medium: 0, hard: 0 },
+  [KUMIMOJI_HANDS.quick]: { easy: 6, medium: 3, hard: 0 },
+  [KUMIMOJI_HANDS.classic]: { easy: 8, medium: 4, hard: 0 },
+};
+
+/** Tile count for a selected length and inventory size. Double supplies two sets. */
+export function kumimojiTileCount(hand: number, length: KumimojiLength, setSize = TILE_MIX_TOTAL, doubleSet = false): number {
+  const short = KUMIMOJI_BAG[hand];
+  if (short === undefined) throw new Error(`No Kumimoji with a hand of ${hand}.`);
+  if (!Number.isInteger(setSize) || setSize < 1) throw new Error(`Invalid Kumimoji set size: ${setSize}.`);
+  const multiplier = doubleSet ? 2 : 1;
+  const available = setSize * multiplier;
+  if (short * multiplier > available) throw new Error(`A short game needs more tiles than the ${available}-tile set holds.`);
+  if (length === "short") return short * multiplier;
+  if (length === "medium") return Math.floor(available / 2);
+  return available;
+}
+
+/** Wilds scale with the bag; doubling the tile set doubles the wild count too. */
+export function kumimojiWildCount(hand: number, level: "easy" | "medium" | "hard", totalTiles: number): number {
+  const short = KUMIMOJI_BAG[hand];
+  const wilds = KUMIMOJI_WILDS[hand];
+  if (short === undefined || wilds === undefined) throw new Error(`No Kumimoji with a hand of ${hand}.`);
+  if (!Number.isInteger(totalTiles) || totalTiles < short) throw new Error(`Invalid Kumimoji tile count: ${totalTiles}.`);
+  return Math.round((wilds[level] * totalTiles) / short);
+}
 
 /** How many tiles one Draw takes from the bag, once the hand is used and the grid is sound. */
 export const KUMIMOJI_DRAW = 1;

@@ -23,6 +23,8 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
+import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
+import { kumimojiTileCount, TILE_MIX_TOTAL } from "@/lib/puzzles/kumimoji/tiles.constants";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -98,6 +100,9 @@ export function PuzzleSetUp({
   const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
   // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
   const [twins, setTwins] = useState(asked?.twins ?? false);
+  const [gameLength, setGameLength] = useState<KumimojiLength>(asked?.gameLength ?? "short");
+  const [language, setLanguage] = useState<KumimojiLanguage>(asked?.language ?? "english");
+  const [doubleSet, setDoubleSet] = useState(asked?.doubleSet ?? false);
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -109,7 +114,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -128,12 +133,12 @@ export function PuzzleSetUp({
   const race = async () => {
     setRacing("making");
     try {
-      await preparePuzzle(kind, size);
-      const made = generatePuzzle(kind, size, level, twins && spec.wordGrid !== undefined ? freshFutagoSeed() : freshSeed());
+      await preparePuzzle(kind, size, language);
+      const made = generatePuzzle(kind, size, level, twins && spec.wordGrid !== undefined ? freshFutagoSeed() : freshSeed(), { gameLength, language, doubleSet });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, size, level, seed: made.seed, givens: made.givens, solution: made.solution, checksAllowed: checks }),
+        body: JSON.stringify({ kind, size, level, seed: made.seed, givens: made.givens, solution: made.solution, checksAllowed: checks, gameLength, language, doubleSet }),
       });
       const body = (await answered.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (!answered.ok || body?.at === undefined) {
@@ -183,6 +188,59 @@ export function PuzzleSetUp({
         <p className="text-xs text-muted" data-testid="puzzle-size-note">
           {copy.board}
         </p>
+        {kind === "kumimoji" ? (
+          <>
+            <div className="grid grid-cols-2 gap-1.5 pt-1" role="radiogroup" aria-label="Language" data-testid="kumimoji-language">
+              {(["english", "japanese"] as const).map((each) => (
+                <button
+                  key={each}
+                  type="button"
+                  role="radio"
+                  aria-checked={language === each}
+                  className={`${PICK_WORD_CHIP} ${language === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                  onClick={() => {
+                    setLanguage(each);
+                    if (each === "japanese") setDoubleSet(false);
+                  }}
+                  data-testid={`kumimoji-language-${each}`}
+                >
+                  {each === "english" ? "English" : "Japanese · ひらがな"}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 pt-1" role="radiogroup" aria-label="Game length" data-testid="kumimoji-length">
+              {(["short", "medium", "full"] as const).map((each) => (
+                <button
+                  key={each}
+                  type="button"
+                  role="radio"
+                  aria-checked={gameLength === each}
+                  className={`${PICK_WORD_CHIP} ${gameLength === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                  onClick={() => setGameLength(each)}
+                  data-testid={`kumimoji-length-${each}`}
+                >
+                  {each === "short" ? "Short" : each === "medium" ? "Medium" : "Full"} · {kumimojiTileCount(size, each, TILE_MIX_TOTAL, doubleSet && language === "english")}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Tile set" data-testid="kumimoji-double">
+              {[false, true].map((each) => (
+                <button
+                  key={String(each)}
+                  type="button"
+                  role="radio"
+                  aria-checked={doubleSet === each}
+                  className={`${PICK_WORD_CHIP} ${doubleSet === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                  onClick={() => language === "english" && setDoubleSet(each)}
+                  disabled={each && language === "japanese"}
+                  data-testid={`kumimoji-double-${each ? "on" : "off"}`}
+                >
+                  {each ? "Double" : "One set"} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
         <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Level">
@@ -343,7 +401,7 @@ export function PuzzleSetUp({
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <SetUpResume href={resumeHref} />
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

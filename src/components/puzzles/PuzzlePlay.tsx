@@ -24,6 +24,7 @@ import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, Tsunagi
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 import { POP_OWN_GUESS_LENGTHS } from "@/lib/puzzles/gomoji/popWords";
+import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
 /**
  * Solving a puzzle: the whole of it, in the browser.
@@ -56,6 +57,9 @@ export function PuzzlePlay({
   strict = false,
   headStart = false,
   twins = false,
+  gameLength = "short",
+  language = "english",
+  doubleSet = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
@@ -64,6 +68,9 @@ export function PuzzlePlay({
   headStart?: boolean;
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
   twins?: boolean;
+  gameLength?: KumimojiLength;
+  language?: KumimojiLanguage;
+  doubleSet?: boolean;
   /** Tsunagi's levels already solved at this size on the account, whether it is played by colours or numbers, and with marbles along the lines or not. */
   tsunagi?: {
     known: Record<number, number>;
@@ -107,22 +114,23 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, router]);
 
   /* A kind whose words or levels load by size (the kana Gomoji, Tsunagi, Kumimoji, Pop Gomoji at three or seven letters) waits for them; every other kind is ready at once. */
   const waits = kind === "gomojiKana" || kind === "tsunagi" || kind === "kumimoji" || (kind === "gomojiPop" && POP_OWN_GUESS_LENGTHS.includes(size));
-  const [loaded, setLoaded] = useState<string | null>(waits ? null : `${kind}:${size}`);
+  const loadedKey = `${kind}:${size}:${kind === "kumimoji" ? language : ""}`;
+  const [loaded, setLoaded] = useState<string | null>(waits ? null : loadedKey);
   useEffect(() => {
     let live = true;
-    void preparePuzzle(kind, size).then(() => live && setLoaded(`${kind}:${size}`));
+    void preparePuzzle(kind, size, language).then(() => live && setLoaded(loadedKey));
     return () => {
       live = false;
     };
-  }, [kind, size]);
+  }, [kind, size, language, loadedKey]);
   const puzzle = useMemo(
-    () => (seed === null || loaded !== `${kind}:${size}` ? null : generatePuzzle(kind, size, level, seed)),
-    [kind, size, level, seed, loaded],
+    () => (seed === null || loaded !== loadedKey ? null : generatePuzzle(kind, size, level, seed, { gameLength, language, doubleSet })),
+    [kind, size, level, seed, loaded, loadedKey, gameLength, language, doubleSet],
   );
 
   if (puzzle === null) {
@@ -148,7 +156,7 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}`;
   // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
   const seat = race ?? null;
   const headStarted = seat === null && headStart;
@@ -182,7 +190,7 @@ export function PuzzlePlay({
         />
       );
     case "kumimoji":
-      return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} />;
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
     case "koushi":

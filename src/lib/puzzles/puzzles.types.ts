@@ -126,6 +126,10 @@ export type Puzzle = {
   seed: number;
   givens: string;
   solution: string;
+  /** Kumimoji settings; absent on older kept puzzles and every other puzzle. */
+  gameLength?: import("./kumimoji/kumimoji.types").KumimojiLength;
+  doubleSet?: boolean;
+  language?: import("./kumimoji/kumimoji.types").KumimojiLanguage;
 };
 
 /** The verdict on a submitted answer, from the one O(cells) check the server also runs. */

@@ -4,6 +4,7 @@ import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 import { isFutagoSeed } from "./gomoji/futagoSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
+import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.
@@ -42,9 +43,15 @@ export type PuzzleAsked = {
    * address, for one word and for any puzzle that is not a word.
    */
   twins?: boolean;
+  /** Kumimoji's game length; Short is the default. */
+  gameLength?: KumimojiLength;
+  /** Kumimoji's language; English is the default. */
+  language?: KumimojiLanguage;
+  /** Kumimoji's second English tile set. */
+  doubleSet?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", gameLength: "length", language: "language", doubleSet: "double" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -72,7 +79,12 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const strict = one(PUZZLE_PARAMS.strict) === "1";
   const headStart = one(PUZZLE_PARAMS.headStart) === "1" && offersHeadStart(kind, level);
   const twins = spec.wordGrid !== undefined && (seed === null ? one(PUZZLE_PARAMS.twins) === "1" : isFutagoSeed(seed));
-  return { size, level, seed, checks, hints, strict, headStart, twins };
+  const requestedLength = one(PUZZLE_PARAMS.gameLength);
+  const gameLength: KumimojiLength = requestedLength === "medium" || requestedLength === "full" ? requestedLength : "short";
+  const requestedLanguage = one(PUZZLE_PARAMS.language);
+  const language: KumimojiLanguage = requestedLanguage === "japanese" ? "japanese" : "english";
+  const doubleSet = one(PUZZLE_PARAMS.doubleSet) === "1";
+  return { size, level, seed, checks, hints, strict, headStart, twins, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet } : {}) };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -84,13 +96,16 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");
   if (asked.headStart === true && asked.level === "easy") params.set(PUZZLE_PARAMS.headStart, "1");
   if (asked.twins === true) params.set(PUZZLE_PARAMS.twins, "1");
+  if (asked.doubleSet === true) params.set(PUZZLE_PARAMS.doubleSet, "1");
+  if (asked.gameLength !== undefined && asked.gameLength !== "short") params.set(PUZZLE_PARAMS.gameLength, asked.gameLength);
+  if (asked.language === "japanese") params.set(PUZZLE_PARAMS.language, asked.language);
   return `?${params.toString()}`;
 }
 
 /** What a kept run was asked as, for Continue and Resume, its Head start read back from where it is kept (`hadHeadStart`). */
 export function keptRunAsked(
   kind: PuzzleKind,
-  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean },
+  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean; language?: string; gameLength?: string; doubleSet?: boolean },
 ): PuzzleAsked {
   const headStart = hadHeadStart(kind, run.level, run.hintsAllowed);
   return {
@@ -102,5 +117,6 @@ export function keptRunAsked(
     strict: run.strict,
     headStart,
     twins: isFutagoSeed(run.seed),
+    ...(kind === "kumimoji" ? { gameLength: run.gameLength === "medium" || run.gameLength === "full" ? run.gameLength : "short", language: run.language === "japanese" ? "japanese" : "english", doubleSet: run.language !== "japanese" && (run.doubleSet ?? false) } : {}),
   };
 }

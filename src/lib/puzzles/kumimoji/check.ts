@@ -1,6 +1,7 @@
 import type { PuzzleCheck } from "../puzzles.types";
 import { decodeGrid, judgeGrid, lettersOf, sameLetters } from "./grid";
-import { KUMIMOJI_BAG, KUMIMOJI_SCORE } from "./tiles.constants";
+import { kumimojiTileCount, kumimojiWildCount, KUMIMOJI_SCORE, TILE_MIX_TOTAL } from "./tiles.constants";
+import type { KumimojiLanguage, KumimojiLength } from "./kumimoji.types";
 import { tileWords } from "./tileWords";
 
 /**
@@ -15,20 +16,45 @@ import { tileWords } from "./tileWords";
  * grid; the list must have been loaded (`loadTileWords`), and a check that
  * cannot read it refuses.
  */
-export function checkKumimoji(size: number, givens: string, answer: string): PuzzleCheck {
-  const inBag = KUMIMOJI_BAG[size];
-  if (inBag === undefined) return { ok: false, reason: `no Kumimoji with a hand of ${size}` };
-  if (typeof givens !== "string" || givens.length !== inBag || !/^[a-z]+$/.test(givens)) return { ok: false, reason: "the givens are not a bag of tiles" };
+export function checkKumimoji(size: number, givens: string, answer: string, options: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage; level?: "easy" | "medium" | "hard" } = {}): PuzzleCheck {
+  const gameLength = options.gameLength ?? "short";
+  const language = options.language ?? "english";
+  const doubleSet = language === "english" && (options.doubleSet ?? false);
+  const level = options.level ?? "medium";
+  const multiplier = doubleSet ? 2 : 1;
+  let words: ReturnType<typeof tileWords>;
+  let inBag: number;
+  try {
+    words = tileWords(language);
+    const setSize = [...words.mix.values()].reduce((sum, count) => sum + count, 0);
+    inBag = kumimojiTileCount(size, gameLength, language === "english" ? TILE_MIX_TOTAL : setSize, doubleSet);
+  } catch {
+    return { ok: false, reason: `no Kumimoji with a hand of ${size}` };
+  }
+  const bag = [...givens];
+  if (typeof givens !== "string" || bag.length !== inBag) return { ok: false, reason: "the givens are not a bag of tiles" };
+  const expectedWilds = kumimojiWildCount(size, level, inBag);
+  if (bag.filter(words.isWild).length !== expectedWilds) return { ok: false, reason: "the bag has the wrong number of wild tiles" };
+  for (const [tile, count] of lettersOf(bag.filter((each) => !words.isWild(each)))) {
+    const face = words.inventoryKey(tile);
+    const code = face === null ? null : words.codeOf(face);
+    if (code === null || count > (words.mix.get(code) ?? 0) * multiplier) return { ok: false, reason: "the bag exceeds the tile set" };
+  }
   const tiles = decodeGrid(answer);
   if (tiles === null) return { ok: false, reason: "the answer is not a grid" };
-  if (!sameLetters(lettersOf(tiles.values()), lettersOf(givens))) return { ok: false, reason: "the grid does not use exactly the tiles of the bag" };
-  let allowed: ReadonlySet<string>;
-  try {
-    allowed = tileWords().allowed;
-  } catch {
-    return { ok: false, reason: "the word list is not loaded" };
+  const bagIdentities = bag.map(words.familyKey);
+  const tileIdentities = [...tiles.values()].map(words.familyKey);
+  if (bagIdentities.some((tile) => tile === null) || tileIdentities.some((tile) => tile === null) || !sameLetters(lettersOf(tileIdentities as string[]), lettersOf(bagIdentities as string[]))) {
+    return { ok: false, reason: "the grid does not use exactly the tiles of the bag" };
   }
-  const verdict = judgeGrid(tiles, (word) => allowed.has(word));
+  const verdict = judgeGrid(
+    tiles,
+    (codes) => {
+      const word = words.wordOf(codes);
+      return word !== null && words.allowed.has(word);
+    },
+    (codes) => words.wordOf(codes) ?? codes,
+  );
   if (verdict.apart.size > 0) return { ok: false, reason: "the tiles are not all joined" };
   if (verdict.notWords.length > 0) return { ok: false, reason: `${verdict.notWords[0]} is not in the word list` };
   if (!verdict.sound) return { ok: false, reason: "the grid is not finished" };

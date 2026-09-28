@@ -7,6 +7,7 @@ import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.
 import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { suiteOperator } from "./operator";
 
 /**
  * KUMIMOJI 組文字: a crossword of your own, from a hand of tiles, on a table
@@ -46,6 +47,25 @@ function classicGame(from: number): { seed: number; hand: string; word: string }
       if (word !== null) return { seed, hand, word };
     }
   }
+}
+
+async function japaneseGame(from: number): Promise<{ seed: number; wildAt: number; flexAt: number; flexForm: string }> {
+  const words = await loadTileWords("japanese");
+  for (let seed = from; seed < from + 1_000; seed += 1) {
+    try {
+      const puzzle = generateKumimoji(KUMIMOJI_HANDS.quick, "medium", seed, { language: "japanese" });
+      const hand = [...puzzle.givens.slice(0, KUMIMOJI_HANDS.quick)];
+      const wildAt = hand.findIndex(words.isWild);
+      const flexAt = hand.findIndex((tile) => !words.isWild(tile) && words.flexForms(tile).length > 1);
+      if (wildAt < 0 || flexAt < 0) continue;
+      const original = words.soundOf(hand[flexAt]!);
+      const flexForm = words.flexForms(hand[flexAt]!).find((form) => form !== original);
+      if (flexForm !== undefined) return { seed, wildAt, flexAt, flexForm };
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("Could not find a Japanese hand with a wild and flex tile.");
 }
 
 /**
@@ -105,6 +125,42 @@ test.describe("Kumimoji", () => {
     await expect(page).toHaveURL(/size=7/);
     await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(KUMIMOJI_HANDS.quick);
     await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", String(KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]! - KUMIMOJI_HANDS.quick));
+  });
+
+  test.describe("Japanese play", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("keeps the language in the address and assigns wild and flex readings", async ({ page }) => {
+      const operator = suiteOperator();
+      const signIn = await page.request.post("/api/session", {
+        data: { kind: "admin", email: operator.email, token: process.env.ADMIN_TOKEN ?? "local-operator-token" },
+      });
+      expect(signIn.ok(), `operator sign-in answered ${signIn.status()}`).toBe(true);
+      const cookie = signIn.headers()["set-cookie"]?.match(/itsutsu_session=([^;]+)/)?.[1];
+      expect(cookie, "operator sign-in did not return a session cookie").toBeTruthy();
+      await page.context().addCookies([{ name: "itsutsu_session", value: cookie!, url: new URL(signIn.url()).origin }]);
+      const game = await japaneseGame(freshPuzzleSeed());
+      await page.route("**/api/puzzles/runs", (route) => route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' }));
+      await page.goto(`${AT}/new`);
+      await ready(page, "puzzle-set-up");
+      await page.getByTestId("kumimoji-language-japanese").click();
+      await expect(page.getByTestId("kumimoji-length-short")).toContainText("40");
+      await expect(page.getByTestId("kumimoji-double-on")).toBeDisabled();
+      await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /language=japanese/);
+      await page.goto(`${AT}/play?size=${KUMIMOJI_HANDS.quick}&level=medium&seed=${game.seed}&language=japanese`);
+      await ready(page, "puzzle-play");
+      await expect(page).toHaveURL(/language=japanese/);
+
+      const hand = page.getByTestId("kumimoji-hand-tile");
+      await expect(hand).toHaveCount(KUMIMOJI_HANDS.quick);
+      await hand.nth(game.wildAt).click();
+      await page.getByTestId("kumimoji-tile-reading").selectOption({ label: "ちゃ" });
+      await expect(hand.nth(game.wildAt)).toHaveAccessibleName("Wild, ちゃ in your hand");
+
+      await hand.nth(game.flexAt).click();
+      await page.getByTestId("kumimoji-tile-reading").selectOption({ label: game.flexForm });
+      await expect(hand.nth(game.flexAt)).toHaveAccessibleName(`${game.flexForm} in your hand`);
+    });
   });
 
   test.describe("on a phone", () => {

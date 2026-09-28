@@ -28,6 +28,8 @@ export type TrayPresses = {
  */
 export function KumimojiTray({
   hand,
+  glyphOf = (tile) => tile,
+  tileDescription = (tile) => tile.toUpperCase(),
   chosenAt,
   left,
   disabled,
@@ -37,6 +39,8 @@ export function KumimojiTray({
   onTray,
 }: {
   hand: readonly string[];
+  glyphOf?: (tile: string) => string;
+  tileDescription?: (tile: string) => string;
   /** The hand tile chosen, by its place, or null. */
   chosenAt: number | null;
   /** Tiles still in the bag. */
@@ -77,17 +81,17 @@ export function KumimojiTray({
               type="button"
               disabled={disabled}
               className={`${TILE} touch-none ${chosenAt === at ? TILE_CHOSEN : ""}`}
-              style={{ width: HAND_TILE_PX, height: HAND_TILE_PX, fontSize: tileLetterPx(HAND_TILE_PX) }}
+              style={{ width: HAND_TILE_PX, height: HAND_TILE_PX, fontSize: tileLetterPx(HAND_TILE_PX) * (glyphOf(letter).length > 1 ? 0.62 : 1) }}
               onClick={() => onHandTile(at)}
-              onPointerDown={(event) => onHandDown(at, letter, event)}
+              onPointerDown={(event) => onHandDown(at, glyphOf(letter), event)}
               data-testid="kumimoji-hand-tile"
               data-letter={letter}
               data-at={at}
               data-chosen={chosenAt === at ? "true" : undefined}
               aria-pressed={chosenAt === at}
-              aria-label={`${letter.toUpperCase()} in your hand`}
+              aria-label={`${tileDescription(letter)} in your hand`}
             >
-              {letter}
+              {glyphOf(letter)}
             </button>
           ))
         )}

@@ -1350,6 +1350,9 @@ model PuzzleRun {
   size          Int
   level         String
   seed          Int
+  language      String   @default("english")
+  gameLength    String   @default("short")
+  doubleSet     Boolean  @default(false)
   /// The Check allowance it is being solved under, or null for no limit.
   checksAllowed Int?
   checksUsed    Int      @default(0)
@@ -1370,7 +1373,7 @@ model PuzzleRun {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@unique([memberId, kind, size, level, seed])
+  @@unique([memberId, kind, size, language, gameLength, doubleSet, level, seed])
   @@index([memberId, updatedAt])
 }
 
@@ -1405,6 +1408,9 @@ model PuzzleRace {
   level         String
   /// The seed the puzzle was made from, so the guest's browser makes the same grid; the givens are what is checked against.
   seed          Int
+  language      String    @default("english")
+  gameLength    String    @default("short")
+  doubleSet     Boolean   @default(false)
   givens        String
   /// Kept to check a finish in O(cells); never sent to a browser.
   solution      String

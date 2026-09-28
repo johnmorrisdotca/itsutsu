@@ -79,6 +79,8 @@ export function KumimojiTable({
   theme,
   misspelt = NONE,
   apart = NONE,
+  glyphOf = (tile) => tile,
+  tileDescription = (tile) => tile.toUpperCase(),
   chosen = null,
   cursor = null,
   readOnly = false,
@@ -91,6 +93,8 @@ export function KumimojiTable({
   theme: BoardThemeTokens;
   misspelt?: ReadonlySet<string>;
   apart?: ReadonlySet<string>;
+  glyphOf?: (tile: string) => string;
+  tileDescription?: (tile: string) => string;
   /** The tile chosen to move, by its square. */
   chosen?: string | null;
   /** The square a typed letter goes to, and which way the typing runs. */
@@ -309,9 +313,11 @@ export function KumimojiTable({
                 </button>
               );
             }
+            const glyph = glyphOf(letter);
+            const description = tileDescription(letter);
             const mark = misspelt.has(square) ? "misspelt" : apart.has(square) ? "apart" : "ok";
             const look = `${TILE} ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typing ? "outline-2 outline-offset-1 outline-moss" : ""}`;
-            const face = { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) };
+            const face = { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) * (glyph.length > 1 ? 0.62 : 1) };
             /*
              * A table nobody presses still says where each tile stands. The last
              * tile of a game finishes it, and the table turns read-only in the
@@ -322,7 +328,7 @@ export function KumimojiTable({
             return readOnly ? (
               <div key={square} className="absolute flex items-center justify-center" style={place} data-testid="kumimoji-tile" data-square={square} data-letter={letter} data-mark={mark}>
                 <span className={look} style={face}>
-                  {letter}
+                  {glyph}
                 </span>
               </div>
             ) : (
@@ -332,17 +338,17 @@ export function KumimojiTable({
                 className="absolute flex touch-none items-center justify-center outline-none"
                 style={place}
                 onClick={() => onSquare?.(square)}
-                onPointerDown={(event) => onTileDown?.(square, letter, event)}
+                onPointerDown={(event) => onTileDown?.(square, glyph, event)}
                 data-square={square}
                 data-tile="true"
                 data-testid="kumimoji-tile"
                 data-letter={letter}
                 data-mark={mark}
                 data-chosen={chosen === square ? "true" : undefined}
-                aria-label={`${letter.toUpperCase()}${mark === "misspelt" ? ", in a line that is not a word" : mark === "apart" ? ", not joined to the rest" : ""}${chosen === square ? ", chosen" : ""}`}
+                aria-label={`${description}${mark === "misspelt" ? ", in a line that is not a word" : mark === "apart" ? ", not joined to the rest" : ""}${chosen === square ? ", chosen" : ""}`}
               >
                 <span className={look} style={face}>
-                  {letter}
+                  {glyph}
                 </span>
               </button>
             );

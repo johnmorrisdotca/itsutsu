@@ -1,7 +1,7 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
-import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "./kumimoji/tiles.constants";
+import { KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS } from "./kumimoji/tiles.constants";
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
@@ -117,13 +117,11 @@ export function isCheckAllowance(value: unknown): value is number | null {
 const WORD_ANSWER_MOST = MOST_GUESSES * LONGEST_WORD;
 
 /**
- * A Kumimoji's longest string is a kept game (`encodeTileProgress`): the count
- * of tiles taken, the tiles traded back, the hand, and the grid, which writes
- * a letter a tile, a number for each gap and a "/" between rows. Fifty tiles
- * each on a row of its own and indented by two digits is 199 characters for
- * the grid; with a hand and trades beside it, 400 holds any game of fifty.
+ * A Kumimoji grid fits within 60×60. Each tile is one character and each gap
+ * takes no more characters than the empty squares it represents; row separators
+ * add fewer than 60 more.
  */
-const TILE_GAME_MOST = 400;
+const TILE_GAME_MOST = KUMIMOJI_GRID_MOST * (KUMIMOJI_GRID_MOST + 1);
 
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // 256: a 16×16's cells, one character each, 1–9 then A–G.
@@ -183,16 +181,15 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   // at 9×9, past the 81 the route once allowed, and every solve of those levels was refused. `levels.test.ts` holds every level to this.
   tsunagi: { sizes: [4, 5, 6, 7, 8, 9, 10, 11, 12], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true },
   /*
-   * A size is the hand a game opens with (`KUMIMOJI_HANDS`), and the bag it is
-   * played from follows from it (`KUMIMOJI_BAG`). One level: the bag is the
-   * whole of a game's difficulty. The hand of three is the browser tests' own,
-   * made and checked like any other and never offered.
+  * A size is the hand a game opens with (`KUMIMOJI_HANDS`); length and
+  * inventory settings decide how many tiles it uses. The hand of three is
+  * the browser tests' own, made and checked like any other and never offered.
    */
   kumimoji: {
     sizes: [KUMIMOJI_HANDS.tiny, KUMIMOJI_HANDS.quick, KUMIMOJI_HANDS.classic],
     offered: [KUMIMOJI_HANDS.quick, KUMIMOJI_HANDS.classic],
     defaultSize: KUMIMOJI_HANDS.classic,
-    levels: ["medium"],
+    levels: ["easy", "medium", "hard"],
     defaultLevel: "medium",
     mostCells: TILE_GAME_MOST,
     helps: false,
@@ -364,7 +361,7 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     hard: "The last third: winding lines, and more than one place to try something and see.",
   },
   kumimoji: {
-    medium: `Every tile of the bag goes down before the clock stops: ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} in a Quick game, ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]} in a Classic one.`,
+    medium: "Use every tile in the selected bag before the clock stops.",
   },
   koushi: {
     easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
@@ -654,7 +651,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Stuck with a Q or an X? Trade it: it goes to the bottom of the bag and you take the next three. Every tile still has to be used, the traded one included.",
       "The game ends when the bag is empty and every tile is on a sound grid. Your time is your score. Every bag has been laid out once before you see it, so it can always be finished.",
     ],
-    board: `There is no board: the tiles lie on a table that grows as the crossword does, and zooms to fit it. A Quick game uses ${KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]} tiles and a Classic one ${KUMIMOJI_BAG[KUMIMOJI_HANDS.classic]}, drawn from the full mix of 144: thirteen A's, eighteen E's, and two each of J, K, Q, X and Z. Any word from two letters to fifteen in SCOWL, Kevin Atkinson's English and American spelling lists, counts.`,
+    board: `There is no board: the tiles lie on a table that grows as the crossword does, and zooms to fit it. The chosen length and set determine how many tiles must be played, drawn from the 144-letter mix: thirteen A's, eighteen E's, and two each of J, K, Q, X and Z. Any word from two letters to fifteen in SCOWL, Kevin Atkinson's English and American spelling lists, counts.`,
   },
   koushi: {
     label: "Koushi",

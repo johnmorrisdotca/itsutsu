@@ -9,6 +9,8 @@ import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { kumimojiPoints } from "@/lib/puzzles/kumimoji/check";
 import { encodeGrid, judgeGrid, placeOf, squareAt } from "@/lib/puzzles/kumimoji/grid";
 import {
+  assignHandTile,
+  assignTableTile,
   deal,
   decodeTileProgress,
   draw,
@@ -26,6 +28,7 @@ import {
   type TilePlay,
 } from "@/lib/puzzles/kumimoji/play";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
+import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -56,23 +59,35 @@ export function KumimojiSolve({
   race = null,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
+  language = puzzle.language ?? "english",
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
   resumed?: ResumedRun | null;
   appearance?: Appearance;
+  language?: KumimojiLanguage;
 }) {
   const hydrated = useHydrated();
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const theme = tableTheme({ ...appearance, felt });
-  const [play, setPlay] = useState<TilePlay>(() => (resumed === null ? null : decodeTileProgress(resumed.progress, puzzle.givens)) ?? deal(puzzle.givens, puzzle.size));
+  const words = useMemo(() => tileWords(language), [language]);
+  const [play, setPlay] = useState<TilePlay>(() => (resumed === null ? null : decodeTileProgress(resumed.progress, puzzle.givens, language)) ?? deal(puzzle.givens, puzzle.size));
   const [chosen, setChosen] = useState<Chosen>(null);
   const [cursor, setCursor] = useState<Cursor>(null);
   const table = useRef<TableHandle>(null);
 
-  const allowed = useMemo(() => tileWords().allowed, []);
-  const verdict = useMemo(() => judgeGrid(play.tiles, (word) => allowed.has(word)), [play.tiles, allowed]);
+  const verdict = useMemo(
+    () => judgeGrid(
+      play.tiles,
+      (codes) => {
+        const word = words.wordOf(codes);
+        return word !== null && words.allowed.has(word);
+      },
+      (codes) => words.wordOf(codes) ?? codes,
+    ),
+    [play.tiles, words],
+  );
   const left = tilesLeft(play);
 
   const { elapsedMs, done, begin, finish, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeTileProgress(play), resumed }, false, true);
@@ -144,8 +159,9 @@ export function KumimojiSolve({
         const { row, col } = placeOf(square);
         return across ? squareAt(row, col + by) : squareAt(row + by, col);
       };
-      if (/^[a-zA-Z]$/.test(event.key) && cursor !== null) {
-        const at = play.hand.indexOf(event.key.toLowerCase());
+      const typedTile = words.codeOf(event.key) ?? words.codeOf(event.key.toLowerCase());
+      if (typedTile !== null && cursor !== null) {
+        const at = play.hand.indexOf(typedTile);
         if (at === -1) return;
         event.preventDefault();
         const square = cursor.square;
@@ -172,9 +188,18 @@ export function KumimojiSolve({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [closed, cursor, play.hand, move]);
+  }, [closed, cursor, play.hand, move, words]);
 
   const chosenAt = chosen?.from === "hand" ? chosen.at : null;
+  const selectedTile = chosen?.from === "hand" ? play.hand[chosen.at] ?? null : chosen?.from === "table" ? play.tiles.get(chosen.square) ?? null : null;
+  const selectedWild = selectedTile !== null && words.isWild(selectedTile);
+  const adjustmentOptions = selectedTile === null ? [] : selectedWild ? words.wildOptions : words.flexForms(selectedTile);
+  const adjustSelected = (face: string) => {
+    if (selectedTile === null) return;
+    const code = selectedWild ? words.wildFor(face) : words.flexTile(selectedTile, face);
+    if (code === null) return;
+    move((now) => chosen?.from === "hand" ? assignHandTile(now, chosen.at, code) : chosen?.from === "table" ? assignTableTile(now, chosen.square, code) : now);
+  };
   const presses = {
     draw: { can: mayDraw(play, verdict), run: () => move((now) => draw(now)) },
     trade: { can: chosenAt !== null && mayTrade(play), run: () => chosenAt !== null && move((now) => trade(now, chosenAt)) },
@@ -191,6 +216,8 @@ export function KumimojiSolve({
           theme={theme}
           misspelt={verdict.misspelt}
           apart={verdict.apart}
+          glyphOf={words.glyphOf}
+          tileDescription={(tile) => words.isWild(tile) ? `Wild, ${words.wildSound(tile) ?? "unassigned"}` : words.soundOf(tile) ?? tile}
           chosen={chosen?.from === "table" ? chosen.square : null}
           cursor={done === null ? cursor : null}
           readOnly={done !== null}
@@ -204,6 +231,24 @@ export function KumimojiSolve({
           <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
             {sayState(play.hand.length, left, verdict)}
           </p>
+          {selectedTile !== null && adjustmentOptions.length > 1 ? (
+            <label className="flex flex-wrap items-center gap-2 text-sm" data-testid="kumimoji-tile-adjustment">
+              <span>{selectedWild ? "Choose this wild tile's reading" : "Use this kana as"}</span>
+              <select
+                className="rounded border border-rule bg-paper px-2 py-1 text-ink"
+                value={selectedWild && words.wildSound(selectedTile) === null ? "" : selectedTile}
+                onChange={(event) => adjustSelected(event.target.value)}
+                disabled={closed}
+                data-testid="kumimoji-tile-reading"
+              >
+                {selectedWild && words.wildSound(selectedTile) === null ? <option value="">Choose reading</option> : null}
+                {adjustmentOptions.map((face) => {
+                  const code = selectedWild ? words.wildFor(face) : words.flexTile(selectedTile, face);
+                  return code === null ? null : <option key={code} value={code}>{face}</option>;
+                })}
+              </select>
+            </label>
+          ) : null}
           <div className="flex flex-wrap items-center gap-2">
             <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
             {/* The board under the tiles, as Gomoji's grid chooses it: Reversi's squares, or Gomoku's crossings. */}
@@ -212,6 +257,8 @@ export function KumimojiSolve({
           {pausing.paused ? null : (
             <KumimojiTray
               hand={play.hand}
+              glyphOf={words.glyphOf}
+              tileDescription={(tile) => words.isWild(tile) ? `Wild, ${words.wildSound(tile) ?? "unassigned"}` : words.soundOf(tile) ?? tile}
               chosenAt={chosenAt}
               left={left}
               disabled={closed}
