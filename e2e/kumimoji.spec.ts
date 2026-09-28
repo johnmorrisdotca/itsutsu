@@ -427,6 +427,90 @@ test.describe("Kumimoji", () => {
     await expect.poll(place).toBe(reversiAt);
   });
 
+  /*
+   * TURN THE TABLE, EVERY TILE UPRIGHT. John, 2026-09-28: "if you rotate the
+   * board like flip it 180° for example then all the tiles will flip 180° to
+   * right themselves directly just so that they're not backwards for you or
+   * upside down." Driven by the press and the finger, measured on the screen.
+   */
+  test("Turn turns the table a quarter a press with every tile upright, and a tap or an arrow key goes where the screen says", async ({ page }) => {
+    const { seed, word } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    for (const [at, letter] of [...word].entries()) await lay(page, letter, `0,${at}`);
+    const table = page.getByTestId("kumimoji-table");
+    const tileAt = (square: string) => page.locator(`[data-testid="kumimoji-tile"][data-square="${square}"]`);
+    const middles = async () => {
+      const out: { x: number; y: number }[] = [];
+      for (let at = 0; at < word.length; at += 1) {
+        const box = (await tileAt(`0,${at}`).boundingBox())!;
+        out.push({ x: box.x + box.width / 2, y: box.y + box.height / 2 });
+      }
+      return out;
+    };
+    await expect(table).toHaveAttribute("data-turn", "0");
+    const unturned = await middles();
+    for (let at = 1; at < word.length; at += 1) expect(unturned[at]!.x).toBeGreaterThan(unturned[at - 1]!.x);
+
+    // A quarter: the word runs down the screen.
+    await page.getByTestId("kumimoji-turn").click();
+    await expect(table).toHaveAttribute("data-turn", "1");
+    const quarter = await middles();
+    for (let at = 1; at < word.length; at += 1) {
+      expect(quarter[at]!.y).toBeGreaterThan(quarter[at - 1]!.y);
+      expect(Math.abs(quarter[at]!.x - quarter[0]!.x)).toBeLessThan(1);
+    }
+
+    // Half: the word stands right to left, on one line.
+    await page.getByTestId("kumimoji-turn").click();
+    await expect(table).toHaveAttribute("data-turn", "2");
+    const half = await middles();
+    for (let at = 1; at < word.length; at += 1) {
+      expect(half[at]!.x, "the word is not right to left after half a turn").toBeLessThan(half[at - 1]!.x);
+      expect(Math.abs(half[at]!.y - half[0]!.y)).toBeLessThan(1);
+    }
+    // Every tile is drawn upright: nothing on it, in it or over it is turned.
+    const turned = await page.locator('[data-testid="kumimoji-tile"]').evaluateAll((tiles) =>
+      tiles.flatMap((tile) => {
+        const all: Element[] = [tile, ...tile.querySelectorAll("*")];
+        for (let up = tile.parentElement; up !== null && up !== document.body; up = up.parentElement) all.push(up);
+        return all.map((element) => getComputedStyle(element)).filter((style) => style.transform !== "none" || style.rotate !== "none").map((style) => `${style.transform} ${style.rotate}`);
+      }),
+    );
+    expect(turned, "a tile or what holds it is rotated").toEqual([]);
+
+    // A tile tapped onto the square under the finger: below the first letter on the screen, which is above it in the grid.
+    const spare = (await page.getByTestId("kumimoji-hand-tile").first().getAttribute("data-letter"))!;
+    await page.getByTestId("kumimoji-hand-tile").first().click();
+    const first = (await tileAt("0,0").boundingBox())!;
+    await page.mouse.click(first.x + first.width / 2, first.y + first.height * 1.5);
+    await expect(tileAt("-1,0")).toHaveAttribute("data-letter", spare);
+    const laid = (await tileAt("-1,0").boundingBox())!;
+    const firstNow = (await tileAt("0,0").boundingBox())!;
+    expect(laid.y).toBeGreaterThan(firstNow.y);
+    expect(Math.abs(laid.x - firstNow.x)).toBeLessThan(1);
+
+    // Typing runs across the grid, which is leftward on this screen, and its arrow says so; the arrow keys go the way they point.
+    const lastNow = (await tileAt(`0,${word.length - 1}`).boundingBox())!;
+    await page.mouse.click(lastNow.x + lastNow.width / 2, lastNow.y - lastNow.height / 2);
+    const typing = page.locator("[data-typing]");
+    await expect(typing).toHaveAttribute("data-typing", "left");
+    await expect(typing).toHaveText("←");
+    await expect(typing).toHaveAttribute("data-square", `1,${word.length - 1}`);
+    const before = (await typing.boundingBox())!;
+    await page.keyboard.press("ArrowRight");
+    await expect(typing).toHaveAttribute("data-square", `1,${word.length - 2}`);
+    expect((await typing.boundingBox())!.x).toBeGreaterThan(before.x);
+
+    // Four presses in all: back as it was.
+    await page.keyboard.press("Escape");
+    await page.getByTestId("kumimoji-turn").click();
+    await page.getByTestId("kumimoji-turn").click();
+    await expect(table).toHaveAttribute("data-turn", "0");
+    const back = await middles();
+    for (let at = 1; at < word.length; at += 1) expect(back[at]!.x).toBeGreaterThan(back[at - 1]!.x);
+  });
+
   test.describe("on a phone", () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
@@ -436,7 +520,7 @@ test.describe("Kumimoji", () => {
       await ready(page, "puzzle-play");
       await page.getByTestId("kumimoji-arrows").click();
       const outer = (await page.getByTestId("kumimoji-table").boundingBox())!;
-      for (const id of ["kumimoji-fit", "kumimoji-arrows", "kumimoji-pad"]) {
+      for (const id of ["kumimoji-turn", "kumimoji-fit", "kumimoji-arrows", "kumimoji-pad"]) {
         const inner = (await page.getByTestId(id).boundingBox())!;
         expect(inner.x).toBeGreaterThanOrEqual(outer.x);
         expect(inner.x + inner.width).toBeLessThanOrEqual(outer.x + outer.width + 0.5);
@@ -445,6 +529,32 @@ test.describe("Kumimoji", () => {
       const before = await page.getByTestId("kumimoji-ruling").evaluate((element) => getComputedStyle(element).backgroundPosition);
       await page.getByTestId("kumimoji-pad-down").click();
       await expect.poll(() => page.getByTestId("kumimoji-ruling").evaluate((element) => getComputedStyle(element).backgroundPosition)).not.toBe(before);
+    });
+
+    test("Turn sits in the table's corner beside Arrows and Fit, and turning moves nothing on the page", async ({ page }) => {
+      const { seed, word } = classicGame(freshPuzzleSeed());
+      await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+      await ready(page, "puzzle-play");
+      for (const [at, letter] of [...word].entries()) await lay(page, letter, `0,${at}`);
+      const table = page.getByTestId("kumimoji-table");
+      const outer = (await table.boundingBox())!;
+      const corner = await Promise.all(["kumimoji-turn", "kumimoji-arrows", "kumimoji-fit"].map(async (id) => (await page.getByTestId(id).boundingBox())!));
+      // One row, inside the table, none over another.
+      for (const [at, box] of corner.entries()) {
+        expect(box.x).toBeGreaterThanOrEqual(outer.x);
+        expect(box.x + box.width).toBeLessThanOrEqual(outer.x + outer.width + 0.5);
+        expect(Math.abs(box.y - corner[0]!.y)).toBeLessThan(1);
+        if (at > 0) expect(box.x).toBeGreaterThanOrEqual(corner[at - 1]!.x + corner[at - 1]!.width);
+      }
+      await expect(page.getByTestId("kumimoji-turn")).toHaveAccessibleName(/turn the table a quarter turn clockwise/i);
+      const tray = (await page.getByTestId("kumimoji-tray").boundingBox())!;
+      await page.getByTestId("kumimoji-turn").click();
+      await expect(table).toHaveAttribute("data-turn", "1");
+      const after = (await table.boundingBox())!;
+      expect(after.height).toBe(outer.height);
+      expect(after.y).toBe(outer.y);
+      expect((await page.getByTestId("kumimoji-tray").boundingBox())!.y).toBe(tray.y);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     });
   });
 });

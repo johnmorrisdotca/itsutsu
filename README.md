@@ -164,7 +164,8 @@ a puzzle is played (`src/lib/puzzles/gomoji/popWords.ts`). Its five lengths
 are two shelves of four on its set-up screen (`shelves`, `sizesOffered`).
 Beside them, **Kumimoji** 組文字, our own solo take on the anagram-grid race
 games: a hand of seven or eleven letter tiles laid out as one crossword on a
-table with no board, which grows and zooms to fit (`tableView.ts`), drawing
+table with no board, which grows and zooms to fit (`tableView.ts`) and turns
+a quarter at a press of Turn with every tile kept upright (`turn.ts`), drawing
 one more tile whenever the hand is used and the grid is sound, until the bag
 is used: Short (forty or fifty tiles), Medium (half the set) or Full (all of
 it), from one set or, in English, two (`kumimojiTileCount`). The bag is drawn
