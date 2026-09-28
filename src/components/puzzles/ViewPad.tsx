@@ -39,8 +39,29 @@ export type PadKey = "in" | "out" | "up" | "down" | "left" | "right";
  * Over the box's corner, where Kumimoji has empty table to spare; or `inline`,
  * a row of its own under the box, where a Tsunagi board fills its box to the
  * edge and a pad over it would cover cells a line has to be drawn through.
+ *
+ * TURN, in the corner beside them where a board can be turned (`onTurn`,
+ * Kumimoji's table: John, 2026-09-28, turning the table with every tile kept
+ * upright). It is a way of looking, like Fit and the arrows, so it sits with
+ * them, over table already given to them, and nothing under the box moves.
  */
-export function ViewPad({ fitted, onFit, onPress, label, testId, inline = false }: { fitted: boolean; onFit: () => void; onPress: (key: PadKey) => void; label: string; testId: string; inline?: boolean }) {
+export function ViewPad({
+  fitted,
+  onFit,
+  onPress,
+  onTurn,
+  label,
+  testId,
+  inline = false,
+}: {
+  fitted: boolean;
+  onFit: () => void;
+  onPress: (key: PadKey) => void;
+  onTurn?: () => void;
+  label: string;
+  testId: string;
+  inline?: boolean;
+}) {
   const open = useSyncExternalStore(subscribe, arrowsShown, () => false);
   const toggle = () => keepArrows(!open);
   const arrows = (
@@ -77,6 +98,19 @@ export function ViewPad({ fitted, onFit, onPress, label, testId, inline = false 
   return (
     <>
       <div className="absolute top-2 right-2 z-10 flex gap-1.5">
+        {onTurn === undefined ? null : (
+          <button
+            type="button"
+            className={`${BUTTON_BASE} ${BUTTON_QUIET} min-h-9 px-3 py-1 text-xs shadow-sm`}
+            onClick={onTurn}
+            aria-label="Turn the table a quarter turn clockwise, keeping every tile upright"
+            title="Turn the table a quarter turn clockwise"
+            data-turn="true"
+            data-testid={`${testId}-turn`}
+          >
+            Turn
+          </button>
+        )}
         {arrows}
         <button
           type="button"

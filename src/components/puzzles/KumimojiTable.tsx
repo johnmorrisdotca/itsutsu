@@ -8,6 +8,8 @@ import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { placeOf, squareAt, type Tiles } from "@/lib/puzzles/kumimoji/grid";
 import { tileDescription as describeTile, tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
 import { TABLE, edgePan, fitView, keepInReach, panView, tableArea, zoomView, type View } from "@/lib/puzzles/kumimoji/tableView";
+import { turnArea, turnPlace, turnView, typingWay } from "@/lib/puzzles/kumimoji/turn";
+import type { Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
 import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { ViewPad, type PadKey } from "./ViewPad";
@@ -75,6 +77,13 @@ const PICTURE_LEAST = 6;
  *
  * Read-only, it is a picture of a grid — the finished puzzle, the set-up
  * preview, the catalogue's screenshot — fitted to its box and pressed by nobody.
+ *
+ * TURNED (`turn`, from Turn in the corner): every square is drawn where the
+ * turned table puts it (`turnPlace`) and every tile is drawn upright there, so
+ * no letter is ever sideways or upside down. Nothing here rotates a picture:
+ * the view below works on the turned squares, so Fit, the pad, a pan and an
+ * edge pan all go the way the screen does, and a square is still named by
+ * where it is in the grid, so a tap or a drop lands on the square under it.
  */
 export function KumimojiTable({
   tiles,
@@ -86,6 +95,8 @@ export function KumimojiTable({
   chosen = null,
   cursor = null,
   readOnly = false,
+  turn = 0,
+  onTurn,
   onSquare,
   onTileDown,
   boxClass = TABLE_BOX,
@@ -102,6 +113,10 @@ export function KumimojiTable({
   /** The square a typed letter goes to, and which way the typing runs. */
   cursor?: { square: string; across: boolean } | null;
   readOnly?: boolean;
+  /** How far the player has turned the table, in quarters clockwise. */
+  turn?: Turn;
+  /** Turn it a quarter more: offered in the corner beside Fit when given. */
+  onTurn?: () => void;
   /** A tap on a square, with a tile on it or not. */
   onSquare?: (square: string) => void;
   /** A press on a tile, which may become a drag. */
@@ -125,7 +140,9 @@ export function KumimojiTable({
     return () => watcher.disconnect();
   }, []);
 
-  const area = useMemo(() => tableArea(tiles, cursor === null ? [] : [cursor.square]), [tiles, cursor]);
+  /* The grid's squares, and the same squares as the turned table shows them: the view is of the second. */
+  const grid = useMemo(() => tableArea(tiles, cursor === null ? [] : [cursor.square]), [tiles, cursor]);
+  const area = useMemo(() => turnArea(grid, turn), [grid, turn]);
   const view = useMemo(() => {
     if (size.width === 0) return null;
     if (fitted || free === null) return fitView(area, size.width, size.height, readOnly ? PICTURE_LEAST : TABLE.tileLeast);
@@ -185,7 +202,7 @@ export function KumimojiTable({
       moved.current = false;
       travel.current = 0;
     }
-    if (readOnly || (event.target instanceof Element && event.target.closest("[data-tile], button[data-fit], [data-pad]") !== null)) return;
+    if (readOnly || (event.target instanceof Element && event.target.closest("[data-tile], button[data-fit], button[data-turn], [data-pad]") !== null)) return;
     const rect = box.current!.getBoundingClientRect();
     const at = (e: PointerEvent | ReactPointerEvent) => ({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     const id = event.pointerId;
@@ -253,11 +270,18 @@ export function KumimojiTable({
     change(moves[key]);
   };
 
+  /* Turn: a fitted table fits again, turned; one the player zoomed keeps its zoom, turned about the middle of the box. */
+  const turnOnce = () => {
+    if (!fitted) change((view) => turnView(view, size.width, size.height));
+    onTurn?.();
+  };
+
   const squares = useMemo(() => {
     const all: string[] = [];
-    for (let row = area.top; row < area.top + area.rows; row += 1) for (let col = area.left; col < area.left + area.cols; col += 1) all.push(squareAt(row, col));
+    for (let row = grid.top; row < grid.top + grid.rows; row += 1) for (let col = grid.left; col < grid.left + grid.cols; col += 1) all.push(squareAt(row, col));
     return all;
-  }, [area]);
+  }, [grid]);
+  const typing = cursor === null ? null : typingWay(cursor.across, turn);
 
   return (
     <div
@@ -267,7 +291,7 @@ export function KumimojiTable({
       onPointerDown={down}
       // A pan that ends over a square is not a tap on it.
       onClickCapture={(event) => {
-        if (moved.current && pointers.current.size === 0 && !(event.target instanceof Element && event.target.closest("button[data-fit], [data-pad]"))) {
+        if (moved.current && pointers.current.size === 0 && !(event.target instanceof Element && event.target.closest("button[data-fit], button[data-turn], [data-pad]"))) {
           moved.current = false;
           event.stopPropagation();
         }
@@ -278,6 +302,7 @@ export function KumimojiTable({
       data-cols={area.cols}
       data-rows={area.rows}
       data-board={board}
+      data-turn={turn}
     >
       {view === null ? null : (
         <>
@@ -289,10 +314,11 @@ export function KumimojiTable({
             data-testid="kumimoji-area"
           />
           {squares.map((square) => {
-            const { row, col } = placeOf(square);
+            const at = placeOf(square);
+            const { row, col } = turnPlace(at.row, at.col, turn);
             const letter = tiles.get(square);
             const place = { left: view.x + col * view.tile, top: view.y + row * view.tile, width: view.tile, height: view.tile };
-            const typing = cursor !== null && cursor.square === square;
+            const typingHere = cursor !== null && cursor.square === square ? typing : null;
             if (letter === undefined) {
               if (readOnly) return null;
               return (
@@ -305,11 +331,12 @@ export function KumimojiTable({
                   onClick={() => onSquare?.(square)}
                   data-square={square}
                   data-testid="kumimoji-square"
-                  aria-label={`empty square${typing ? `, typing ${cursor!.across ? "across" : "down"}` : ""}`}
+                  aria-label={`empty square${typingHere !== null ? `, typing ${cursor!.across ? "across" : "down"}, ${typingHere.name} on the screen` : ""}`}
+                  data-typing={typingHere?.name}
                 >
-                  {typing ? (
+                  {typingHere !== null ? (
                     <span className={`${TABLE_CURSOR} flex size-[88%] items-center justify-center text-ink/60`} style={{ fontSize: view.tile * 0.4 }}>
-                      {cursor!.across ? "→" : "↓"}
+                      {typingHere.arrow}
                     </span>
                   ) : null}
                 </button>
@@ -319,7 +346,7 @@ export function KumimojiTable({
             const glyph = tileFaceOf.glyph;
             const description = tileDescription(letter);
             const mark = misspelt.has(square) ? "misspelt" : apart.has(square) ? "apart" : "ok";
-            const look = `${TILE} relative ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typing ? "outline-2 outline-offset-1 outline-moss" : ""}`;
+            const look = `${TILE} relative ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typingHere !== null ? "outline-2 outline-offset-1 outline-moss" : ""}`;
             const face = wildStyle(tileFaceOf, { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) });
             /*
              * A table nobody presses still says where each tile stands. The last
@@ -365,7 +392,7 @@ export function KumimojiTable({
          * controls on the page". A press is a gesture like any other, so the
          * view is the player's own until Fit.
          */
-        <ViewPad fitted={fitted} onFit={() => setFitted(true)} onPress={press} label="Move and zoom the table" testId="kumimoji" />
+        <ViewPad fitted={fitted} onFit={() => setFitted(true)} onPress={press} onTurn={onTurn === undefined ? undefined : turnOnce} label="Move and zoom the table" testId="kumimoji" />
       )}
     </div>
   );

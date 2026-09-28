@@ -30,7 +30,8 @@ import {
 } from "@/lib/puzzles/kumimoji/play";
 import { tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
-import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
+import type { KumimojiLanguage, Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
+import { arrowStep, nextTurn } from "@/lib/puzzles/kumimoji/turn";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -78,6 +79,8 @@ export function KumimojiSolve({
   const [play, setPlay] = useState<TilePlay>(() => (resumed === null ? null : decodeTileProgress(resumed.progress, puzzle.givens, language)) ?? deal(puzzle.givens, puzzle.size));
   const [chosen, setChosen] = useState<Chosen>(null);
   const [cursor, setCursor] = useState<Cursor>(null);
+  /* How far the player has turned the table to look at it: theirs alone, kept across moves, never saved with the game. */
+  const [turn, setTurn] = useState<Turn>(0);
   const table = useRef<TableHandle>(null);
   /* The last table tile chosen by a tap, and when: the same tile again inside `DOUBLE_TAP_MS` sends it back to the hand. */
   const lastTap = useRef<{ square: string; at: number } | null>(null);
@@ -183,12 +186,12 @@ export function KumimojiSolve({
         const back = step(cursor.square, cursor.across, -1);
         move((now) => liftToHand(now, back));
         setCursor({ square: back, across: cursor.across });
-      } else if (event.key.startsWith("Arrow")) {
+      } else if (arrowStep(event.key, turn) !== null) {
+        // The arrows move the cursor the way they point on the screen, however the table is turned.
         event.preventDefault();
-        const from = cursor?.square ?? squareAt(0, 0);
-        const across = event.key === "ArrowLeft" || event.key === "ArrowRight";
-        const by = event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
-        setCursor({ square: cursor === null ? from : step(from, across, by), across: cursor?.across ?? true });
+        const from = placeOf(cursor?.square ?? squareAt(0, 0));
+        const by = arrowStep(event.key, turn)!;
+        setCursor({ square: cursor === null ? squareAt(from.row, from.col) : squareAt(from.row + by.row, from.col + by.col), across: cursor?.across ?? true });
       } else if (event.key === "Enter" && cursor !== null) {
         event.preventDefault();
         setCursor({ square: cursor.square, across: !cursor.across });
@@ -202,7 +205,7 @@ export function KumimojiSolve({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [closed, cursor, play.hand, move, words]);
+  }, [closed, cursor, play.hand, move, words, turn]);
 
   const chosenAt = chosen?.from === "hand" ? chosen.at : null;
   const selectedTile = chosen?.from === "hand" ? play.hand[chosen.at] ?? null : chosen?.from === "table" ? play.tiles.get(chosen.square) ?? null : null;
@@ -233,6 +236,8 @@ export function KumimojiSolve({
           chosen={chosen?.from === "table" ? chosen.square : null}
           cursor={done === null ? cursor : null}
           readOnly={done !== null}
+          turn={turn}
+          onTurn={() => setTurn(nextTurn)}
           onSquare={onSquare}
           onTileDown={(square, letter, event) => drag.start({ from: "table", square }, letter, event)}
           handle={table}
