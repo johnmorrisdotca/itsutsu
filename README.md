@@ -166,10 +166,16 @@ Beside them, **Kumimoji** 組文字, our own solo take on the anagram-grid race
 games: a hand of seven or eleven letter tiles laid out as one crossword on a
 table with no board, which grows and zooms to fit (`tableView.ts`), drawing
 one more tile whenever the hand is used and the grid is sound, until the bag
-of forty or fifty is used. The bag is drawn from the 144-tile letter mix
-(`TILE_MIX`) and laid out once as a crossword before it is dealt, so every
-game can be finished; any SCOWL word of two to fifteen letters counts
-(`scripts/tile-words.mjs`), and the list is fetched only when a game opens.
+is used: Short (forty or fifty tiles), Medium (half the set) or Full (all of
+it), from one set or, in English, two (`kumimojiTileCount`). The bag is drawn
+from the 144-tile letter mix (`TILE_MIX`), with a few wild tiles at Easy and
+Medium, and laid out once as a crossword before it is dealt, so every game can
+be finished; any SCOWL word of two to fifteen letters counts
+(`scripts/tile-words.mjs`), and the list is fetched only when a game opens. In
+Japanese the tiles are the 45 base hiragana (`JAPANESE_TILE_MIX`, `kana.ts`),
+each playing as its voiced and small forms, and the words are JMdict's
+(`scripts/word-lists-ja.mjs`). Help, chosen on the set-up screen, arranges the
+hand into a word at a hint's price (`help.ts`).
 
 Every Gomoji has a word a day at each length it offers, the same for everybody
 and new at midnight UTC: "Today's 4", "Today's 5" and, in kana, "Today's 3", a
