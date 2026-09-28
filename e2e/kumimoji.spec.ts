@@ -154,7 +154,10 @@ test.describe("Kumimoji", () => {
     await ready(page, "puzzle-set-up");
     await page.getByTestId("kumimoji-help-on").click();
     await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /hints=1/);
-    await page.getByTestId("puzzle-solve").click();
+    // The address the set-up built, on a bag of this spec's own: a hand can be all consonants and spell nothing, which Help rightly says.
+    const href = (await page.getByTestId("puzzle-solve").getAttribute("href"))!;
+    const { seed } = classicGame(freshPuzzleSeed());
+    await page.goto(`${href}&seed=${seed}`);
     await ready(page, "puzzle-play");
     const help = page.getByTestId("kumimoji-help");
     await expect(help).toHaveAttribute("data-offered", "true");
