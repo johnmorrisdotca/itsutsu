@@ -43,3 +43,16 @@ export async function pngOf(svg: string, width: number, height: number): Promise
   }
 }
 
+
+/** Hands a picture to the reader as a file, then lets the browser forget it. */
+export function saveAs(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // Revoked once the browser has taken the file; revoking in the same tick cancels it in some browsers.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+}
