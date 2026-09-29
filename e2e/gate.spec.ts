@@ -121,6 +121,8 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku",
       "/games/gomoku/family",
       "/games/gomoku/background",
+      // The Party games shelf, a family page at an address of its own.
+      "/games/party",
       "/learn",
       "/about",
     ]) {
@@ -176,6 +178,9 @@ test.describe("the pages that stay open", () => {
       // check had to follow the front door rather than stay on the rules page.
       "/games/gomoku",
       "/games/gomoku/family",
+      "/games/party",
+      // Chinese Checkers' own page, which offers the table and remembers a kept one in the browser, never on the server.
+      "/games/chinese-checkers",
     ]) {
       const said = await (await request.get(path)).text();
       expect(said, `${path} links to a player's page without a session`).not.toMatch(/\/players\//);
@@ -199,6 +204,8 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/match/nosuchgame",
       "/games/gomoku/history",
       "/games/gomoku/standings",
+      // A table of players on one device is playing, like any board.
+      "/games/chinese-checkers/pass-and-play",
     ]) {
       await page.goto(path);
       await expect(page, `${path} should send you to the door`).toHaveURL(/\/join/);

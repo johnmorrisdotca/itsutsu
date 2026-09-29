@@ -4,7 +4,8 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
-import { siblingsOf } from "@/lib/gomoku/families";
+import Link from "@/components/ui/Link";
+import { ALSO_LISTED_IN, GAME_FAMILIES, familyPagePath, siblingsOf } from "@/lib/gomoku/families";
 
 /**
  * The other games in this game's family, on the game's own page.
@@ -38,6 +39,8 @@ export function GameFamily({ variant }: { variant: GameKey }) {
    * panel for one game is a page with a hole where the family should be.
    */
   const alone = siblings.games.length === 0;
+  /* The other shelves it is shown on (`ALSO_LISTED_IN`), each leading to that family's page. */
+  const shelves = (ALSO_LISTED_IN[variant] ?? []).flatMap((listing) => GAME_FAMILIES.filter((one) => one.key === listing.family));
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-family">
@@ -65,6 +68,20 @@ export function GameFamily({ variant }: { variant: GameKey }) {
       {alone ? (
         <p className="text-xs text-muted" data-testid="game-family-alone">
           The only one in its family so far.
+        </p>
+      ) : null}
+      {shelves.length > 0 ? (
+        <p className="text-xs text-muted" data-testid="game-family-shelves">
+          Also shown under{" "}
+          {shelves.map((shelf, index) => (
+            <span key={shelf.key}>
+              {index > 0 ? ", " : null}
+              <Link href={familyPagePath(shelf)} className="underline underline-offset-2" data-testid="game-family-shelf">
+                {shelf.title}
+              </Link>
+            </span>
+          ))}
+          .
         </p>
       ) : null}
       <ul className="-mx-2 flex flex-col text-sm">

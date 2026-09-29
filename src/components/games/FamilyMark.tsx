@@ -224,6 +224,24 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
+   * PARTY GAMES: six players sat round one board, black and white by turns,
+   * and the turn going round the table in the middle — the family's whole
+   * idea, a game passed from hand to hand, and the one mark on the row with
+   * nobody facing anybody.
+   */
+  "Party games": {
+    n: 5,
+    stones: [
+      { r: 0, c: 2 },
+      { r: 1, c: 4, white: true },
+      { r: 3, c: 4 },
+      { r: 4, c: 2, white: true },
+      { r: 3, c: 0 },
+      { r: 1, c: 0, white: true },
+    ],
+    path: "M 2 1.1 A 0.9 0.9 0 1 1 1.22 1.55 l -0.32 0.15 M 1.22 1.55 l 0.03 0.35",
+  },
+  /*
    * TERRITORY AND RACES, one picture for the family that took the races in
    * on 2026-09-24: the surrounded stone of Territory on the left, and on the
    * right a black piece hopping over a white one towards the far end of the

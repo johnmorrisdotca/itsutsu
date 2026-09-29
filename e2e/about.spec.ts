@@ -74,7 +74,7 @@ test.describe("about", () => {
    */
   test("counts the games it really has, and lists every family", async ({ page }) => {
     const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
-    const { GAME_FAMILIES } = await import("../src/lib/gomoku/families");
+    const { GAME_FAMILIES, familyPagePath } = await import("../src/lib/gomoku/families");
 
     await page.goto("/about/games");
     const section = page
@@ -90,7 +90,8 @@ test.describe("about", () => {
     await expect(rows).toHaveCount(GAME_FAMILIES.length);
     for (const family of GAME_FAMILIES) {
       const link = rows.getByRole("link", { name: family.title, exact: true });
-      await expect(link).toHaveAttribute("href", /\/games\/[a-z0-9-]+\/family$/);
+      // Under its first game, or — for a shelf of guests with no game of its own (Party games) — at its own address.
+      await expect(link).toHaveAttribute("href", familyPagePath(family));
     }
   });
 

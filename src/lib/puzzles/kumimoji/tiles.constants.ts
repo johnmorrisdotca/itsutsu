@@ -131,4 +131,10 @@ export const KUMIMOJI_SCORE = { tile: 10, slowestMsATile: 30_000 } as const;
  * A name is optional and kept to a line: it is shown on the cover and the
  * finish, never sent anywhere.
  */
-export const KUMIMOJI_PARTY = { least: 2, most: 8, nameMost: 20 } as const;
+/**
+ * `doubleFrom`: from this many players the set-up screen recommends the Double
+ * set, and chooses it when the count reaches it (John, 2026-09-28: "when having
+ * 6 or more players, we should recommend the double size 288 version"); in
+ * Japanese, which has no Double, the Full game instead.
+ */
+export const KUMIMOJI_PARTY = { least: 2, most: 8, nameMost: 20, doubleFrom: 6 } as const;

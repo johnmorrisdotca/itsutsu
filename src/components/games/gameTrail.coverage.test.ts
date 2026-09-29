@@ -52,6 +52,7 @@ const TRAIL_DRAWN_BY: Record<string, readonly string[]> = {
   "/games/[slug]/new": ["src/components/live/SetUpHeading.tsx", "src/components/puzzles/PuzzleSetUpPage.tsx"],
   "/games/[slug]/begin": ["src/app/games/[slug]/begin/page.tsx"],
   "/games/[slug]/play": ["src/app/games/[slug]/play/page.tsx", "src/components/puzzles/PuzzlePlayPage.tsx"],
+  "/games/[slug]/pass-and-play": ["src/app/games/[slug]/pass-and-play/page.tsx"],
   "/games/[slug]/history": ["src/components/history/RecordPage.tsx", "src/components/puzzles/PuzzleRecordPage.tsx"],
   "/games/[slug]/history/[id]": ["src/components/puzzles/PuzzleSolvePage.tsx"],
   "/games/[slug]/me": ["src/app/games/[slug]/me/page.tsx", "src/components/history/RecordPage.tsx", "src/components/puzzles/PuzzleMePage.tsx"],

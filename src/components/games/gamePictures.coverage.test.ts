@@ -303,7 +303,12 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/games/GameFamily.tsx": { GameThumb: "small", FamilyMark: "regular" },
 
   // Cards: /games, a family's page, the practice browser.
-  "src/app/games/[slug]/family/page.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  "src/app/games/[slug]/family/page.tsx": { FamilyMark: "regular" },
+  // The shelf a family's page draws, one card a game — Party games' page draws it too, under its own mark.
+  "src/components/games/FamilyShelf.tsx": { GameThumb: "regular" },
+  "src/app/games/party/page.tsx": { FamilyMark: "regular" },
+  // My games' Pass and play tab: the table's game kept in this browser, a row like the board for two beside it.
+  "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   // The learning shelf: a card per guide, headed by the game it is first about, as the catalogue's cards are.
   "src/app/learn/page.tsx": { GameThumb: "regular" },

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import type { FamilyStats, GameStats } from "@/lib/catalogue/catalogue.types";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
+import type { ShelvedGame } from "@/lib/gomoku/families.types";
 
 /** One of the site's three picture sizes: "small" at half of "regular", or "large" at twice it. See `PICTURE_PX`. */
 export type PictureSize = "small" | "regular" | "large";
@@ -34,7 +35,7 @@ export type CatalogueGame = {
 };
 
 /** A game shown on a family's shelf from another family, with the home it says it is also under. */
-export type CatalogueGuest = CatalogueGame & { home: { title: string; kanji: string } };
+export type CatalogueGuest = CatalogueGame & { home: { title: string; kanji: string }; why: string };
 
 /** A family as the catalogue shows it: the heading, the line under it, and its games. */
 export type CatalogueFamily = {
@@ -77,3 +78,6 @@ export type FamilyStatsLineProps = {
 
 /** One step of a game's trail after the game itself: a link while there are steps after it, the page's own name at the end. */
 export type TrailStep = { label: ReactNode; href?: string; testId?: string };
+
+/** A family's shelf on its own page, and the game the reader came from when there is one. */
+export type FamilyShelfProps = { shelf: ShelvedGame[]; current?: GameKey | null };

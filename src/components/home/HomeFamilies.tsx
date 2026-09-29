@@ -3,8 +3,7 @@ import Link from "@/components/ui/Link";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_HEADING, STRETCHED_CARD } from "@/components/ui/ui.constants";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
-import { familyPath } from "@/lib/gomoku/slugs";
+import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/families";
 
 /**
  * THE FAMILIES, ON THE FRONT PAGE, SO A VISITOR SEES THE SHAPE OF THE
@@ -36,7 +35,7 @@ export function HomeFamilies() {
         {GAME_FAMILIES.map((family) => (
           <li key={family.key}>
             <Link
-              href={familyPath(family.games[0])}
+              href={familyPagePath(family)}
               data-card-link=""
               data-testid="front-family"
               className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
@@ -47,9 +46,7 @@ export function HomeFamilies() {
                   <span className="flex flex-wrap items-baseline gap-x-2 font-semibold">
                     {family.title}
                     <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
-                    <span className="text-xs font-normal text-muted">
-                      {family.games.length} {family.games.length === 1 ? "game" : "games"}
-                    </span>
+                    <span className="text-xs font-normal text-muted">{familyCountWords(family)}</span>
                   </span>
                   <span className="text-xs text-muted">{family.blurb}</span>
                 </span>

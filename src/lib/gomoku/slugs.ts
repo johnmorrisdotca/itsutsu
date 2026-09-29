@@ -136,6 +136,15 @@ export function variantFor(slug: string): RuleVariant | null {
  * know the other two existed to finish an errand about one game.
  */
 
+/**
+ * /games/<slug>/pass-and-play — the game for a whole table on one device, where
+ * a game has one (`PARTY_PLAY_GAMES`): Chinese Checkers for two to six. Kept in
+ * the browser, never rated; beside `playPath`, the practice board for two.
+ */
+export function passAndPlayPath(variant: string): string {
+  return `${gamePath(variant)}/pass-and-play`;
+}
+
 /** /games/<slug> — the game. The front door, and where every game's name leads. */
 export function gamePath(variant: string): string {
   return `/games/${slugFor(variant)}`;

@@ -7,9 +7,14 @@ import { KUMIMOJI_PARTY, KUMIMOJI_HANDS } from "./tiles.constants";
  * settings, the whole bag in its order, what was traded back and taken, whose
  * turn it is, who is out, who resigned and who still has a last turn, what
  * this turn has done so far, and every player's
- * name, hand and grid (`encodeGrid`). The bag is written out rather than made
- * again from the seed, so a game left half way opens the same after the
- * generator has changed.
+ * name, hand and grid (`encodeGrid`), and whether a computer plays it. The
+ * bag is written out rather than made again from the seed, so a game left half
+ * way opens the same after the generator has changed.
+ *
+ * Joining, leaving and computer players came after the first version of this
+ * and did not change its number: `dealt` and a player's `computer` are
+ * written only when they say something, and a game kept without them reads
+ * as one dealt to as many as sit at it, every seat a person's.
  *
  * It is never sent to the server: a local game has no points, no record and
  * nothing to check, and the names in it are the players' own business.
@@ -32,7 +37,9 @@ type Kept = {
   startTable: string;
   traded: boolean;
   passedBy: number | null;
-  players: { name: string; hand: string; grid: string }[];
+  /** How many the game was dealt to, where players have joined or left since; absent, as many as sit at it. */
+  dealt?: number;
+  players: { name: string; hand: string; grid: string; computer?: true }[];
 };
 
 export function encodeParty(game: PartyGame): string {
@@ -52,7 +59,8 @@ export function encodeParty(game: PartyGame): string {
     startTable: game.startTable,
     traded: game.traded,
     passedBy: game.passedBy,
-    players: game.players.map((player) => ({ name: player.name, hand: player.hand.join(""), grid: encodeGrid(player.tiles) })),
+    ...(game.dealt === game.players.length ? {} : { dealt: game.dealt }),
+    players: game.players.map((player) => ({ name: player.name, hand: player.hand.join(""), grid: encodeGrid(player.tiles), ...(player.computer === true ? { computer: true as const } : {}) })),
   };
   return JSON.stringify(kept);
 }
@@ -97,18 +105,22 @@ export function decodeParty(code: string | null, familyKey?: (tile: string) => s
   const line = kept.bag + kept.returned;
   if (!isCount(kept.taken, line.length) || !Array.isArray(kept.players)) return null;
   const count = kept.players.length;
-  if (count < KUMIMOJI_PARTY.least || count > KUMIMOJI_PARTY.most) return null;
+  // Dealt to two or more; one may be left at the table after the rest leave (`partySeats.ts`).
+  if (count < 1 || count > KUMIMOJI_PARTY.most) return null;
+  const dealt = kept.dealt ?? count;
+  if (!Number.isInteger(dealt) || dealt < KUMIMOJI_PARTY.least || dealt > KUMIMOJI_PARTY.most) return null;
   if (!isCount(kept.turn, count - 1) || !isCount(kept.turns, 1_000_000) || (kept.ending !== null && kept.ending !== "out" && kept.ending !== "standing" && kept.ending !== "tied") || typeof kept.traded !== "boolean" || !isTiles(kept.startTable) || (kept.passedBy !== null && !isCount(kept.passedBy, count - 1))) return null;
   const seats = (list: unknown): list is number[] => Array.isArray(list) && list.every((at) => isCount(at, count - 1)) && new Set(list).size === list.length;
   if (!seats(kept.out) || (kept.lastTurns !== null && !seats(kept.lastTurns)) || !seats(kept.resigned) || !seats(kept.resignRun)) return null;
   const players: PartyGame["players"][number][] = [];
   for (const player of kept.players) {
     if (typeof player !== "object" || player === null || typeof player.name !== "string" || player.name.length > KUMIMOJI_PARTY.nameMost || !isTiles(player.hand)) return null;
+    if (player.computer !== undefined && player.computer !== true) return null;
     const tiles = decodeGrid(player.grid);
     if (tiles === null) return null;
-    players.push({ name: player.name, hand: [...player.hand], tiles });
+    players.push(player.computer === true ? { name: player.name, hand: [...player.hand], tiles, computer: true } : { name: player.name, hand: [...player.hand], tiles });
   }
-  const game: PartyGame = { settings, bag: kept.bag, returned: kept.returned, taken: kept.taken, players, turn: kept.turn, turns: kept.turns, out: kept.out, lastTurns: kept.lastTurns, resigned: kept.resigned, resignRun: kept.resignRun, ending: kept.ending, startTable: kept.startTable, traded: kept.traded, passedBy: kept.passedBy };
+  const game: PartyGame = { settings, bag: kept.bag, returned: kept.returned, taken: kept.taken, players, dealt, turn: kept.turn, turns: kept.turns, out: kept.out, lastTurns: kept.lastTurns, resigned: kept.resigned, resignRun: kept.resignRun, ending: kept.ending, startTable: kept.startTable, traded: kept.traded, passedBy: kept.passedBy };
   if (familyKey !== undefined && !holdsItsBag(game, familyKey)) return null;
   return game;
 }
@@ -125,11 +137,11 @@ export function holdsItsBag(game: PartyGame, familyKey: (tile: string) => string
   return sameLetters(tally, lettersOf(held as string[]));
 }
 
-/** Whether a kept game is the one an address asks for: the same settings, and as many players. */
+/** Whether a kept game is the one an address asks for: the same settings, and dealt to as many players, whoever has joined or left since. */
 export function isPartyFor(game: PartyGame, settings: PartySettings, players: number): boolean {
   const a = game.settings;
   return (
-    game.players.length === players &&
+    game.dealt === players &&
     a.size === settings.size &&
     a.level === settings.level &&
     a.seed === settings.seed &&

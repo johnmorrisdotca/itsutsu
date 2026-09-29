@@ -1,6 +1,7 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled, type Random } from "../random";
-import { DIAGONAL_RUN_LEAST, encodeGrid, squareAt } from "./grid";
+import { encodeGrid, squareAt } from "./grid";
+import { crossingFit } from "./placement";
 import { kumimojiTileCount, kumimojiWildCount, TILE_MIX_TOTAL } from "./tiles.constants";
 import type { KumimojiOptions } from "./kumimoji.types";
 import { tileWords, type TileWords } from "./tileWords";
@@ -225,11 +226,11 @@ function sample(list: readonly string[], count: number, random: Random, letter?:
 
 /**
  * Where `word` would stand crossing the tile at `anchor` with its letter at
- * `at`, or null where it cannot: off the board, over a different letter, a
- * tile at either end, a new tile with a neighbour at its side, more new tiles
- * than the bag has room for, or a letter the set has run out of — and, where
- * the diagonals are read (`diagonalWords`), a new tile that would stand in a
- * diagonal run of three or more that is not a word.
+ * `at`, or null where it cannot: the laying rule every crossword here keeps
+ * (`crossingFit`: on the laying square, nothing at either end, no new tile
+ * with a neighbour at its side, and with Diagonals no diagonal run of three
+ * or more that is not a word), then more new tiles than the bag has room
+ * for, or a letter the set has run out of.
  */
 function fit(
   squares: readonly string[],
@@ -244,61 +245,23 @@ function fit(
   side: number,
   diagonalWords: TileWords | null = null,
 ): Placement | null {
-  const row = Math.floor(anchor / side);
-  const col = anchor % side;
-  const first = across ? col - at : row - at;
-  if (first < 0 || first + word.length > side) return null;
-  const step = across ? 1 : side;
-  const start = anchor - at * step;
-  const before = first > 0 ? start - step : -1;
-  const after = first + word.length < side ? start + word.length * step : -1;
-  if ((before !== -1 && squares[before] !== "") || (after !== -1 && squares[after] !== "")) return null;
-  const fresh: number[] = [];
-  for (let k = 0; k < word.length; k += 1) {
-    const index = start + k * step;
-    if (squares[index] !== "") {
-      if (squares[index] !== word[k]) return null;
-      continue;
-    }
-    const r = Math.floor(index / side);
-    const c = index % side;
-    const sides = across ? [r > 0 ? index - side : -1, r < side - 1 ? index + side : -1] : [c > 0 ? index - 1 : -1, c < side - 1 ? index + 1 : -1];
-    if (sides.some((near) => near !== -1 && squares[near] !== "")) return null;
-    fresh.push(index);
-  }
-  if (fresh.length === 0 || fresh.length > room) return null;
-  if (diagonalWords !== null && !diagonalsRead(squares, word, start, step, fresh, side, diagonalWords)) return null;
-  return scored(word, start, across, fresh, left, wanted, random, squares, side);
-}
-
-/**
- * Whether every diagonal run a placement's new tiles would stand in reads as
- * a word: walked from its top end down, the word's own letters on its new
- * squares. Only a run through a new tile can change, and two new tiles of one
- * word never share a diagonal (they share a row or a column), so each is read
- * on its own.
- */
-function diagonalsRead(squares: readonly string[], word: string, start: number, step: number, fresh: readonly number[], side: number, words: TileWords): boolean {
-  const letterAt = (row: number, col: number): string => {
-    if (row < 0 || col < 0 || row >= side || col >= side) return "";
-    const index = row * side + col;
-    if (squares[index] !== "") return squares[index]!;
-    return fresh.includes(index) ? word[(index - start) / step]! : "";
-  };
-  for (const index of fresh) {
-    const row = Math.floor(index / side);
-    const col = index % side;
-    for (const lean of [1, -1]) {
-      let top = 0;
-      while (letterAt(row - top - 1, col - (top + 1) * lean) !== "") top += 1;
-      let run = "";
-      for (let at = -top; letterAt(row + at, col + at * lean) !== ""; at += 1) run += letterAt(row + at, col + at * lean);
-      if (run.length < DIAGONAL_RUN_LEAST) continue;
-      const read = words.wordOf(run);
-      if (read === null || !words.allowed.has(read)) return false;
-    }
-  }
-  return true;
+  const place = crossingFit(
+    (row, col) => squares[row * side + col]!,
+    (row, col) => row >= 0 && row < side && col >= 0 && col < side,
+    word,
+    { row: Math.floor(anchor / side), col: anchor % side },
+    at,
+    across,
+    diagonalWords === null
+      ? null
+      : (run) => {
+          const read = diagonalWords.wordOf(run);
+          return read !== null && diagonalWords.allowed.has(read);
+        },
+  );
+  if (place === null || place.fresh.length > room) return null;
+  const fresh = place.fresh.map((square) => square.row * side + square.col);
+  return scored(word, place.first.row * side + place.first.col, across, fresh, left, wanted, random, squares, side);
 }
 
 /** A placement's worth: a letter drawn from the mix is worth two, any other costs three, and the set's own counts are a wall. */

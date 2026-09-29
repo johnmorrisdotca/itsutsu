@@ -18,12 +18,21 @@ export type PartySettings = {
   hints: boolean;
 };
 
-/** One player: their name as typed (empty for "Player N"), their hand and their own table. */
+/**
+ * One player: their name as typed (empty for "Player N"), their hand and
+ * their own table, and whether the seat is a computer's (`computerTurn.ts`),
+ * whose turns play themselves in the browser. A computer's name is always
+ * written out ("Computer 1"), never left for its number.
+ */
 export type PartyPlayer = {
   name: string;
   hand: readonly string[];
   tiles: Tiles;
+  computer?: boolean;
 };
+
+/** A seat asked for before the deal or at a join: a name (empty for its number) and whether a computer plays it. */
+export type PartySeat = { name: string; computer?: boolean };
 
 /**
  * A PASS-AND-PLAY KUMIMOJI: one bag, read as a line the way the solo game
@@ -37,11 +46,16 @@ export type PartyGame = {
   returned: string;
   /** How many tiles have been taken from `bag + returned`, by every player together. */
   taken: number;
-  /** Two to eight. */
+  /** Up to eight; two to eight when dealt, and one or more after players leave (`partySeats.ts`). */
   players: readonly PartyPlayer[];
+  /**
+   * How many the game was dealt to: the address's own `players`, which a
+   * kept game is matched to, however many have joined or left since.
+   */
+  dealt: number;
   /** Whose turn it is, by place in `players`. */
   turn: number;
-  /** How many turns have been ended with Done: a turn's own number, so each one opens on a fresh view. */
+  /** How many turns have been ended, and seats left: a turn's own number, so each one opens on a fresh view. */
   turns: number;
   /** The players who went out, in the order they did; the first is the one who began the last round. */
   out: readonly number[];

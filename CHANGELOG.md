@@ -10,6 +10,24 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.416.0 — 2026-09-29
+- Kumimoji: six or more players choose the Double set's 288 tiles, marked recommended
+
+## 0.415.0 — 2026-09-29
+- Kumimoji pass and play: any seat can be a computer, playing its turn in your browser
+
+## 0.414.0 — 2026-09-29
+- Kumimoji pass and play: players join and leave between turns, and a leaver's tiles go back in the bag
+
+## 0.413.0 — 2026-09-29
+- Party games 団欒: a shelf of the games a group plays round one device, starting with Chinese Checkers and Kumimoji
+
+## 0.412.0 — 2026-09-29
+- Chinese Checkers for two, three, four or six players, passed round one phone or tablet
+
+## 0.411.0 — 2026-09-29
+- Kumimoji's page shows it being played, lets you try a hand right there, and its rules count every English and Japanese tile
+
 ## 0.410.0 — 2026-09-29
 - Kumimoji pass and play: two to eight players round one device, every table face up, a last turn for everyone once somebody goes out
 
