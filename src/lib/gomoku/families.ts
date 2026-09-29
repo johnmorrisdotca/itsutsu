@@ -396,12 +396,8 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
       why: "Pass and play for up to six: two, three, four or six players round one device, each racing ten pieces across the star.",
     },
   ],
-  /*
-   * KUMIMOJI GOES ON THE PARTY SHELF WHEN ITS PASS AND PLAY FOR UP TO EIGHT
-   * LANDS, and not before: a shelf lists what the game offers today. The line:
-   *
-   *   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
-   */
+  /* KUMIMOJI, whose pass and play for up to eight landed in 0.410.0: a shelf lists what the game offers today. */
+  kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
 };
 
 /** Whether a family's shelf shows this game, at home or as a guest. */
