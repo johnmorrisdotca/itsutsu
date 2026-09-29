@@ -315,6 +315,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/party/PartyBlocksCard.tsx": { GameThumb: "small" },
   // And Dots and Boxes' game, kept in this browser: a row like the rest.
   "src/components/party/DotsCard.tsx": { GameThumb: "small" },
+  // And Superghost's, the same row.
+  "src/components/party/GhostCard.tsx": { GameThumb: "small" },
   "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   // The learning shelf: a card per guide, headed by the game it is first about, as the catalogue's cards are.
   "src/app/learn/page.tsx": { GameThumb: "regular" },

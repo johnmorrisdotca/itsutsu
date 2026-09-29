@@ -5,7 +5,10 @@ import type { PartyKind } from "@/lib/party/party.types";
 import { DotsCard } from "./DotsCard";
 import { DotsGame } from "./DotsGame";
 import { DotsOffer } from "./DotsOffer";
-import { DOTS_COPY, PARTY_COPY } from "./party.constants";
+import { GhostCard } from "./GhostCard";
+import { GhostGame } from "./GhostGame";
+import { GhostOffer } from "./GhostOffer";
+import { DOTS_COPY, GHOST_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTable } from "./party.types";
 
 /**
@@ -24,5 +27,13 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Game: DotsGame,
     Offer: DotsOffer,
     Card: DotsCard,
+  },
+  superghost: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: GHOST_COPY.lead,
+    Game: GhostGame,
+    Offer: GhostOffer,
+    Card: GhostCard,
   },
 };

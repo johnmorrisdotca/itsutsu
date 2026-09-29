@@ -67,7 +67,7 @@ export function PartyFrontDoor({ kind }: { kind: PartyKind }) {
                 </p>
               ) : null}
               <span className="text-xs text-muted" data-testid="party-offered">
-                Pass and play for {partyPlayersWords(kind)}, on {partyBoardsWords(kind)}. Never rated; kept only in the browser it is played in.
+                Pass and play for {partyPlayersWords(kind)}, {partyBoardsWords(kind)}. Never rated; kept only in the browser it is played in.
               </span>
             </div>
           </div>

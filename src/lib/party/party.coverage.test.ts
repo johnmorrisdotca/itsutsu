@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { PARTY_MARBLES } from "@/components/party/party.constants";
 import { GAME_ADDED } from "@/lib/catalogue/gameAdded.data";
@@ -14,7 +14,7 @@ import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 import { PARTY_ART_FINGERPRINT } from "./partyArt.data";
 import { PARTY_ART_FILES, readPartyArtFingerprint } from "./partyArtFingerprint";
 import { PARTY_DISPLAY, PARTY_KIND_LIST, PARTY_SPECS } from "./party.constants";
-import type { PartyKind, PartyRules } from "./party.types";
+import type { PartyKind, PartyLanguage, PartyRules } from "./party.types";
 import { partyRulesPage } from "./partyRulesPage";
 import { PARTY_RULES } from "./partyRules";
 
@@ -28,8 +28,8 @@ import { PARTY_RULES } from "./partyRules";
  * neither, and neither gate sees it, so this one asks every question of the
  * New Game Gate that applies to it, in a party game's terms:
  *
- *  - it is tested, and its rules play out: at every board and every number of
- *    players it offers, played at random, it ENDS, every seat can WIN, every
+ *  - it is tested, and its rules play out: at every board, every number of
+ *    players and every language it offers, played at random, it ENDS, every seat can WIN, every
  *    move offered is one the rules take, and a kept game reads back exactly —
  *    what the simulator asks of a variant;
  *  - it has a picture and a thumbnail, taken of the board as it is drawn now;
@@ -41,8 +41,15 @@ import { PARTY_RULES } from "./partyRules";
  *  - it is driven by a browser spec, it says the day it arrived, and no kept
  *    record from another site names it without a decision.
  *
- * Every question is asked of `PARTY_KIND_LIST`, so the day Superghost is
- * listed it is held to all of this before it ships.
+ * Every question is asked of `PARTY_KIND_LIST`, so a game listed there is
+ * held to all of this before it ships — Superghost was, the day it arrived.
+ *
+ * Played at random, a game ends only if its rules end it: Superghost's random
+ * player takes every letter at either end and the challenge with equal
+ * chance, so a round's fragment grows into nonsense until somebody
+ * challenges, nobody can name a word with it in, and a letter is taken. Every
+ * round takes a letter, and five put a player out, so a table of eight is
+ * over within thirty-nine rounds.
  */
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -70,9 +77,16 @@ function seeded(start: number): () => number {
 }
 
 /** Plays one game out at random, moving only as the rules offer; the game at its end, and how many moves it took. */
-function playOut<S, M>(rules: PartyRules<S, M>, size: number, count: number, seed: number, most: number): { end: S; moves: number; mid: S | null } {
+function playOut<S, M>(
+  rules: PartyRules<S, M>,
+  size: number,
+  count: number,
+  seed: number,
+  most: number,
+  language?: PartyLanguage,
+): { end: S; moves: number; mid: S | null } {
   const random = seeded(seed);
-  let game = rules.start(size, new Array<string>(count).fill(""));
+  let game = rules.start(size, new Array<string>(count).fill(""), language);
   if (game === null) throw new Error(`no table of ${count} at size ${size}`);
   let mid: S | null = null;
   let moves = 0;
@@ -101,6 +115,11 @@ function recordedGameNames(): Set<string> {
 }
 
 describe("every party game is finished, not just declared", () => {
+  // A word game's rules judge with lists the table fetches first; the gate fetches them the same way.
+  beforeAll(async () => {
+    for (const kind of PARTY_KIND_LIST) await PARTY_RULES[kind].prepare?.();
+  });
+
   const unitTests = sourcesUnder(join(process.cwd(), "src", "lib", "party"), ".test.ts");
   const browserSpecs = readdirSync("e2e")
     .filter((name) => name.endsWith(".ts") && name !== "party-screenshots.spec.ts")
@@ -114,15 +133,15 @@ describe("every party game is finished, not just declared", () => {
     expect(unitTests, `no unit test under src/lib/party names ${kind}: test the rule that makes it a game`).toContain(kind);
   });
 
-  it.each(PARTY_KIND_LIST)("%s ends, at every board and table it offers, and every seat can win", (kind) => {
+  it.each(PARTY_KIND_LIST)("%s ends, at every board, table and language it offers, and every seat can win", (kind) => {
     const rules = PARTY_RULES[kind] as PartyRules<unknown, unknown>;
     const spec = PARTY_SPECS[kind];
-    for (const size of spec.sizes) {
+    for (const [language, tongue] of (spec.languages ?? [undefined]).entries()) for (const size of spec.sizes) {
       for (let count = spec.fewestPlayers; count <= spec.mostPlayers; count += 1) {
         const won = new Set<number>();
         for (let game = 0; game < 60; game += 1) {
-          const { end, moves } = playOut(rules, size, count, 1000 * size + 100 * count + game, 10_000);
-          expect(rules.over(end), `${kind} ${size} for ${count}: still going after ${moves} moves`).toBe(true);
+          const { end, moves } = playOut(rules, size, count, 100_000 * language + 1000 * size + 100 * count + game, 10_000, tongue);
+          expect(rules.over(end), `${kind} ${size} ${tongue ?? ""} for ${count}: still going after ${moves} moves`).toBe(true);
           expect(rules.moves(end), "a game over offers no move").toEqual([]);
           const winners = rules.winners(end);
           expect(winners.length, "a game over names somebody").toBeGreaterThan(0);
@@ -132,7 +151,7 @@ describe("every party game is finished, not just declared", () => {
             won.add(seat);
           }
         }
-        expect(won.size, `${kind} ${size} for ${count}: some seat never won in 60 games`).toBe(count);
+        expect(won.size, `${kind} ${size} ${tongue ?? ""} for ${count}: some seat never won in 60 games`).toBe(count);
       }
     }
   });
@@ -149,7 +168,7 @@ describe("every party game is finished, not just declared", () => {
     expect(rules.start(spec.defaultSize, [""]), "a table of one is not a party").toBeNull();
   });
 
-  it.each(PARTY_KIND_LIST)("%s offers tables the site can seat: at most six colours, at most four boards", (kind) => {
+  it.each(PARTY_KIND_LIST)("%s offers tables the site can seat: one colour a player, at most four boards", (kind) => {
     const spec = PARTY_SPECS[kind];
     expect(spec.fewestPlayers).toBeGreaterThanOrEqual(2);
     expect(spec.mostPlayers).toBeLessThanOrEqual(PARTY_MARBLES.length);

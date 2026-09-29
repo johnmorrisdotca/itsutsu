@@ -27,6 +27,9 @@ const MARK_WORDS: Record<LetterMark, string> = { hit: "in its place", near: "in 
  * Ä, Ö and Ü of their own. Defaults to English so every existing caller keeps
  * drawing the keyboard it always has.
  *
+ * Without `onEnter` it draws no Enter key: Superghost's letter turn
+ * (`GhostKeys`) takes one letter and its end, and has nothing to enter.
+ *
  * A Futago's keyboard (`futago.ts`) is handed `split`, each board's marks,
  * and draws every key in two halves, one board's colour each (`FutagoKey`);
  * a Yotsugo's (`yotsugo.ts`) in four corners, one quarter's colour each.
@@ -57,7 +60,8 @@ export function WordKeyboard({
   /** Drawn at full colour and pressed by nobody: the keyboard of a finished game, replayed. */
   readOnly?: boolean;
   onLetter: (letter: string) => void;
-  onEnter: () => void;
+  /** Absent, there is no Enter key. */
+  onEnter?: () => void;
   onBack: () => void;
 }) {
   const marked = style === WORD_STYLES.tiles ? WORD_TILE_MARK : WORD_KEY_MARK_STONES;
@@ -67,7 +71,7 @@ export function WordKeyboard({
     <div className={`flex select-none flex-col gap-1.5 ${readOnly ? "pointer-events-none" : ""}`} data-testid="word-keyboard" data-read-only={readOnly ? "true" : undefined}>
       {KEYBOARD_ROWS[lang].map((row, index) => (
         <div key={row} className="flex gap-1">
-          {index === 2 ? (
+          {index === 2 && onEnter !== undefined ? (
             <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onEnter} disabled={disabled} data-testid="word-key-enter" {...inert}>
               {/* Its own size on a span, not a second size on the key, so the word fits at 390px ("ENTER" was clipped). */}
               <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>

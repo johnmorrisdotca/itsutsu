@@ -1,5 +1,6 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import { PARTY_SPECS } from "../party.constants";
+import { PARTY_NAME_MOST, cleanPartyName, partyPlayerName } from "../partyNames";
 import type { PartyRules } from "../party.types";
 
 import type { DotsGame, DotsLineEnds, DotsSeat, DotsStatus } from "./dotsAndBoxes.types";
@@ -21,18 +22,15 @@ export const DOTS_STATUS = { playing: "playing", finished: "finished" } as const
 
 const SPEC = PARTY_SPECS.dotsAndBoxes;
 
-/** The longest name a seat keeps: enough for a first name and an initial, short enough for a turn line on a phone. */
-export const DOTS_NAME_MOST = 20;
+/** The longest name a seat keeps, as at every party table (`partyNames.ts`). */
+export const DOTS_NAME_MOST = PARTY_NAME_MOST;
 
-/** A name as the table typed it, tidied: spaces run together, trimmed, cut to `DOTS_NAME_MOST`. */
-export function cleanDotsName(name: string): string {
-  return name.replace(/\s+/g, " ").trim().slice(0, DOTS_NAME_MOST);
-}
+/** A name as the table typed it, tidied (`cleanPartyName`). */
+export const cleanDotsName = cleanPartyName;
 
 /** A seat's name as the table reads it: the one given, or "Player 3". */
 export function dotsPlayerName(game: Pick<DotsGame, "players">, seat: DotsSeat): string {
-  const given = game.players[seat]?.trim() ?? "";
-  return given === "" ? `Player ${seat + 1}` : given;
+  return partyPlayerName(game, seat);
 }
 
 /** How many lines across there are on a board of `size` boxes a side; the lines down are numbered after them. */

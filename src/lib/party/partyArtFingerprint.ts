@@ -12,8 +12,11 @@ import { fingerprintOf } from "../gomoku/ladderFingerprint.ts";
  */
 export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/DotsBoard.tsx",
+  "src/components/party/GhostFragment.tsx",
+  "src/components/party/GhostTurnLine.tsx",
   "src/components/party/party.constants.ts",
   "src/lib/party/dotsAndBoxes/dotsAndBoxes.ts",
+  "src/lib/party/superghost/superghost.ts",
   "e2e/party-screenshots.spec.ts",
 ];
 

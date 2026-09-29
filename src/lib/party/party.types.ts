@@ -18,25 +18,40 @@
  */
 
 import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
+import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 
-export type PartyKind = "dotsAndBoxes";
+export type PartyKind = "dotsAndBoxes" | "superghost";
+
+/**
+ * The languages a word game at the table is played in: the two Kumimoji's
+ * lists are kept in (`lib/puzzles/kumimoji/tileWords.ts`), which Superghost
+ * reads too.
+ */
+export type PartyLanguage = "english" | "japanese";
 
 /** What a party game's set-up offers: how many may sit at the table, and on which boards. */
 export type PartySpec = {
   /** The fewest players a table may start with. */
   fewestPlayers: number;
-  /** The most. Never more than the six colours the tables share (`PARTY_MARBLES`). */
+  /** The most. Never more than the colours the tables share (`PARTY_MARBLES`, eight). */
   mostPlayers: number;
   /** The player count the set-up opens on. */
   defaultPlayers: number;
   /**
    * The boards the set-up offers, smallest first, at most four (the set-up
    * rule every game and puzzle keeps: four tiles, a steady height). What a
-   * size counts is the game's own: boxes along a side, for Dots and Boxes.
+   * size counts is the game's own: boxes along a side, for Dots and Boxes;
+   * the shortest word that loses, for Superghost.
    */
   sizes: readonly number[];
   /** The board the set-up opens on. */
   defaultSize: number;
+  /**
+   * For a game played in words, the languages the set-up offers, the first
+   * the one it opens on; the gate plays every one. Absent for a game with no
+   * words in it.
+   */
+  languages?: readonly PartyLanguage[];
 };
 
 /**
@@ -47,8 +62,12 @@ export type PartySpec = {
  * game's terms. `S` is a game in progress, `M` one move in it.
  */
 export type PartyRules<S, M> = {
-  /** A new game at this board size for these names (one a seat), or null for a table the game is not offered for. */
-  start: (size: number, players: readonly string[]) => S | null;
+  /**
+   * A new game at this board size for these names (one a seat), in this
+   * language when the game offers languages, or null for a table the game is
+   * not offered for.
+   */
+  start: (size: number, players: readonly string[], language?: PartyLanguage) => S | null;
   /** Every move the player to move may make now; none once the game is over. */
   moves: (game: S) => readonly M[];
   /** The game after that move, or null for a move that may not be made; the game given is left untouched. */
@@ -59,9 +78,17 @@ export type PartyRules<S, M> = {
   encode: (game: S) => string;
   /** A kept game read back, or null for nothing kept or anything these rules cannot play out again. */
   decode: (text: string | null) => S | null;
+  /**
+   * What the rules must have fetched before they can judge a move: a word
+   * game's lists. The table waits for it before play, and the gate before
+   * playing out. Absent for a game that needs nothing but itself. Reading a
+   * kept game back never waits for it (`decode` judges nothing).
+   */
+  prepare?: () => Promise<void>;
 };
 
 /** Each party game's game and move, so its rules can be named with their own types (`PARTY_RULES`). */
 export type PartyPlays = {
   dotsAndBoxes: { game: DotsGame; move: number };
+  superghost: { game: GhostGame; move: GhostMove };
 };

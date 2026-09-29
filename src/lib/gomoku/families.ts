@@ -205,7 +205,8 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Party games",
     kanji: "団欒",
     blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on.",
-    games: ["dotsAndBoxes"],
+    /* And Superghost (2026-09-28), the word game for two to eight, in English or Japanese: the second at home here. */
+    games: ["dotsAndBoxes", "superghost"],
     notOnSetUp:
       "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

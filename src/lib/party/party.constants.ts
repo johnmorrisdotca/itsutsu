@@ -15,10 +15,11 @@ import type { PartyKind, PartySpec } from "./party.types";
  */
 export const PARTY_KINDS = {
   dotsAndBoxes: "dotsAndBoxes",
+  superghost: "superghost",
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -40,6 +41,23 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "Choose 3×3 boxes for a quick game for two, 4×4 or 5×5 for three or four, and 6×6 when five or six are playing, so everybody gets a turn at the long chains.",
   },
+  superghost: {
+    label: "Superghost",
+    kanji: "幽霊",
+    tagline: "Add a letter at either end; finish a word, or bluff and be caught, and you are one step nearer a ghost.",
+    origin:
+      "Ghost is an old spoken word game of the English-speaking world, where letters are only ever added at the end. Superghost lets a letter go on at either end, and was made famous by James Thurber's essay about it in The New Yorker, \"Do You Want to Make Something Out of It?\". Nobody owns either.",
+    wikipedia: "Ghost (game)",
+    rules: [
+      "Players take turns adding one letter to either end of a growing string of letters, the fragment. The first player of a round sets down any letter.",
+      "Finish a word of four letters or more and you lose the round. Shorter words do not count, so CAT is safe and CATS is not.",
+      "Instead of adding a letter, you may challenge the player who added the last one. They must name a real word with the fragment inside it, its letters together and in order.",
+      "If they name one, the challenger loses the round; if they cannot, they lose it. A word named must be four letters or more, and in the site's word list.",
+      "Whoever loses a round takes the next letter of GHOST (in Japanese, おばけだぞ) and begins the next round. Take all five and you are out. The last player left wins.",
+    ],
+    board:
+      "Two to eight players, in English or in Japanese. In Japanese the letters are the kana of the Japanese Kumimoji: が is played as か, ゃ as や and を as お, so a player never has to choose between them.",
+  },
 };
 
 /**
@@ -56,4 +74,17 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
  */
 export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
   dotsAndBoxes: { fewestPlayers: 2, mostPlayers: 6, defaultPlayers: 2, sizes: [3, 4, 5, 6], defaultSize: 4 },
+  /*
+   * Superghost for two to eight, in English or Japanese, where a word of four
+   * letters or more loses: the length the game is traditionally played to,
+   * and the one "size" offered, so the set-up asks only who is playing and in
+   * which language. Four holds in Japanese too, kana being syllables: of the
+   * four-kana strings that some word still contains, about one in six is a
+   * word itself (one in eleven for four letters in English), which leaves the
+   * player at three kana a handful of safe letters to choose among, as in
+   * English. At three, one in four would be a word
+   * (the Japanese list holds twelve thousand three-kana words); five
+   * would let a round run long past what a table remembers.
+   */
+  superghost: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 3, sizes: [4], defaultSize: 4, languages: ["english", "japanese"] },
 };

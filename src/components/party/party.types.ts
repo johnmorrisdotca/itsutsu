@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
@@ -6,6 +6,7 @@ import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 import type { BlocksHold, BlocksPieceKey, BlocksPreview, PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import type { PartyRaceRules, PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
+import type { GhostEnd, GhostGame, GhostJudge, GhostMove } from "@/lib/party/superghost/superghost.types";
 
 /** One player's marble: its colour, the letter it carries, and the ink the letter is written in. */
 export type PartyMarble = { label: string; letter: string; fill: string; ink: string };
@@ -156,4 +157,37 @@ export type DotsSetUpProps = {
   onStart: (game: DotsGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+};
+
+export type GhostSetUpProps = {
+  onStart: (game: GhostGame) => void;
+  /** The hydration mark (`readyMark`), on the form a test fills in. */
+  ready: { "data-ready": string };
+};
+
+/** Every player at a game of Superghost, in turn order, with the letters of the ghost each holds. */
+export type GhostPlayersProps = {
+  game: GhostGame;
+  /** Rows kept for seats nobody is in, so a set-up's list never changes height when the count does. */
+  room?: number;
+};
+
+/** The fragment, large, and — on a turn — the two places a letter may go. */
+export type GhostFragmentProps = {
+  game: GhostGame;
+  /** The letter tapped on the keyboard, waiting for its end. */
+  pending: string | null;
+  onEnd: (end: GhostEnd) => void;
+  /** Said above the letters: how the last round was lost, while the next has none yet. */
+  note?: ReactNode;
+};
+
+/** What the player to move presses: letters and their end, or the challenge; or, when challenged, a word. */
+export type GhostKeysProps = {
+  game: GhostGame;
+  pending: string | null;
+  onPending: (letter: string | null) => void;
+  onMove: (move: GhostMove) => void;
+  /** The judge, once the list is here; null while it is being fetched. */
+  judge: GhostJudge | null;
 };

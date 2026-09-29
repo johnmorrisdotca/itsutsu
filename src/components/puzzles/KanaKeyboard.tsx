@@ -38,7 +38,8 @@ const COLUMNS: readonly (readonly string[])[] = [
  * kana keyboard does. A key is coloured by what the guesses have said about
  * its kana in any size or mark: found, in the word, or out — and for a
  * Futago (`futago.ts`), in two halves, one board's colour each (`FutagoKey`),
- * or a Yotsugo (`yotsugo.ts`), in four corners.
+ * or a Yotsugo (`yotsugo.ts`), in four corners. Without `onEnter` it draws no
+ * Enter key, for Superghost's letter turn (`GhostKeys`).
  */
 export function KanaKeyboard({
   known,
@@ -72,7 +73,8 @@ export function KanaKeyboard({
   onKana: (kana: string) => void;
   onSmall: () => void;
   onMark: () => void;
-  onEnter: () => void;
+  /** Absent, there is no Enter key. */
+  onEnter?: () => void;
   onBack: () => void;
 }) {
   const marked = style === WORD_STYLES.tiles ? WORD_TILE_MARK : WORD_KEY_MARK_STONES;
@@ -139,9 +141,11 @@ export function KanaKeyboard({
         <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onBack} disabled={disabled} aria-label="delete a kana" data-testid="kana-key-back" {...inert}>
           ⌫
         </button>
-        <button type="button" className={`${key} ${WORD_KEY_PLAIN} flex-[2]`} onClick={onEnter} disabled={disabled} data-testid="kana-key-enter" {...inert}>
-          <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
-        </button>
+        {onEnter === undefined ? null : (
+          <button type="button" className={`${key} ${WORD_KEY_PLAIN} flex-[2]`} onClick={onEnter} disabled={disabled} data-testid="kana-key-enter" {...inert}>
+            <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
+          </button>
+        )}
       </div>
     </div>
   );

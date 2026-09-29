@@ -1,7 +1,7 @@
 # Party games: a third kind of game
 
 **Status: the kind and its first game, Dots and Boxes, built 2026-09-28 on
-branch `party-dots`. Superghost is next on the board.**
+branch `party-dots`; Superghost, the second, the same day on `party-ghost`.**
 
 John is filling the Party games 団欒 shelf: games a group plays round one
 phone or tablet. Until now that shelf held only guests — Chinese Checkers for
@@ -115,7 +115,32 @@ components are held by them like any other (`gamePictures.coverage.test.ts`
 classifies the card and the set-up's board marks); the idle-watch gate now
 names `DotsBoard` among the surfaces a person plays on.
 
-## Adding the next one (Superghost)
+## Superghost, the second
+
+Superghost (`src/lib/party/superghost/`) went in as the rows above ask, and
+asked three things of the kind that Dots and Boxes had not:
+
+- **Words.** Its rules judge with a word list the browser fetches, so the
+  contract has an optional `prepare` (fetch what the rules read before they
+  judge a move): the table waits for it, and the gate awaits it before playing
+  out. The rules take the list as a `GhostJudge` handed in, so they hold none,
+  and a kept game carries its verdicts in its moves (a `!` after a letter that
+  spelled a word) — read back, it replays with those, and My games shows it
+  without fetching a dictionary. The lists are Kumimoji's (`tileWords.ts`):
+  SCOWL for English, JMdict's readings in the 45 base kana for Japanese.
+- **Languages.** `PartySpec.languages`, and a third, optional argument to
+  `start`; the gate plays every language as it plays every board.
+- **Eight players.** `PARTY_MARBLES` has eight now: orange and sky blue, the
+  two of Okabe and Ito's set left, each with its own letter.
+
+A word of four letters or more loses (`sizes: [4]`, the one "size" offered);
+the loss letters are GHOST, or おばけだぞ in Japanese. A word named in answer to
+a challenge that is not taken is handed back to try again, and "I can't name
+one" gives the round up. The random player of the gate takes every letter at
+either end and the challenge with equal chance: fragments grow into nonsense
+until a challenge nobody can answer, so every round ends and every game does.
+
+## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,
    `PARTY_DISPLAY`, `PARTY_SPECS` and `PARTY_SLUGS`; the compiler lists the
@@ -132,6 +157,11 @@ names `DotsBoard` among the surfaces a person plays on.
 
 - Dots and Boxes lives in Party games rather than a family of its own, and
   Party games stays out of every XP count.
+- Superghost: four letters as the shortest losing word, in both languages;
+  おばけだぞ for the Japanese loss letters; a word not taken may be tried again;
+  a named word must be four letters or more; the table offers no choice of
+  length; 幽霊 for its kanji; the seventh and eighth marbles orange (O) and sky
+  blue (S).
 - A box carries its owner's colour letter (R, B, Y, G, P, W, the letter on
   their marble) rather than the first letter of their name, so it is unique
   at every table.
