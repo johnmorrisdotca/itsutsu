@@ -62,7 +62,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
           story={{ kind: "Practice board", kanji: "試し打ち", title: copy.label, source: "On Itsutsu: both sides are yours, and nothing here is rated" }}
         />
       </div>
-      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Play" }]} />
+      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Practice board" }]} />
       <GameViewClient
         variant={variant}
         trackPath

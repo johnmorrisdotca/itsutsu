@@ -79,7 +79,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} |  |
 | The games index, /games — under every game and every family, in all three views | against bots | **対コンピュータ** | Against the computer. |  |
 | The games index, /games — under every game and every family, in all three views | among people | **対人** | Against people. |  |
-| The games index, /games — under every game and every family, in all three views | Standings → | **順位表 →** | Standings → |  |
+| The games index, /games — under every game and every family, in all three views | Leaderboard → | **順位表 →** | Standings → |  |
 | The games index, /games — under every game and every family, in all three views | Nobody holds a standing among people yet, so this is the top of the ladder against the bots — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder. | **対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。** | There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder. |  |
 | The games index, /games — under every game and every family, in all three views | The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder. | **この種目の対人順位表の首位です。メンバー同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。** | This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder. |  |
 | The games index, /games — under every game and every family, in all three views | Top player | **首位** | First place. |  |
@@ -208,15 +208,15 @@ English half was the redundant one. Listed for completeness, not for review.
 | --- | --- | --- |
 | About | 五つについて | the About page's own heading |
 | Admin | 管理 | the Admin page's own heading, the join form, and the operator badge |
-| All games | 全種目 | the Every game heading on /games, over the catalogue |
+| All games | 全種目 | the All games heading on /games, over the catalogue |
 | Learn | 学び | the Learn heading on its own page; the Learn panel in a game's rules sidebar |
 | Players | 対局者 | the Players page heading |
-| Game history | 棋譜 | the Record page's title |
+| Game history | 棋譜 | the Game history page's title |
 | Rules | 規則 | the Rules trail and heading on a game's rules page; the Rules field in the record's filter bar |
 | Board | 盤 | the Board section of every rules page |
 | House rules | 細則 | the House rules section of every rules page |
-| Object | 目的 | the Object section of every rules page |
-| Play | 手順 | the Play section of every rules page |
+| Objective | 目的 | the Objective section of every rules page |
+| How to play | 手順 | the How to play section of every rules page |
 
 ## 3. The game names, and most of the furniture — nothing to check either
 

@@ -131,9 +131,9 @@ export const PHRASES = {
   "filter.any": "Any",
   "filter.searchNames": "Search names",
 
-  "rules.object": "Object",
+  "rules.object": "Objective",
   "rules.board": "Board",
-  "rules.play": "Play",
+  "rules.play": "How to play",
   "rules.house": "House rules",
   "rules.learn": "Learn",
   "rules.inspiredBy":
@@ -301,7 +301,7 @@ export const PHRASES = {
   "catalogue.joinToSeeWho": "Join to see who →",
   /** The way into a game of it, from its card on the catalogue. */
   "catalogue.play": "Play →",
-  "catalogue.standings": "Standings →",
+  "catalogue.standings": "Leaderboard →",
   "catalogue.wonTitle": "The rated games they won on this ladder",
   "catalogue.lostTitle": "The rated games they lost on this ladder",
   "catalogue.drawnTitle": "The rated games they drew on this ladder",

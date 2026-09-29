@@ -27,9 +27,9 @@ test.describe("rules and learning", () => {
     // are one segment under it, and the front door is where you pick them up.
     await page.getByTestId("game-rules-link").click();
     const rules = page.getByTestId("rules-page");
-    await expect(rules).toContainText("Object");
+    await expect(rules).toContainText("Objective");
     await expect(rules).toContainText("Board");
-    await expect(rules).toContainText("Play");
+    await expect(rules).toContainText("How to play");
     await expect(rules).toContainText("House rules");
     await expect(rules).toContainText("hotspot");
     await expect(rules).toContainText("falls to the lowest empty point");

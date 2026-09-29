@@ -24,7 +24,7 @@ import { ignoredMemberIds } from "@/lib/social/ignores";
 import { closedToReader } from "@/lib/social/childReach";
 import { GameTrail } from "@/components/games/GameTrail";
 
-export const metadata = { title: "Standings 名人" };
+export const metadata = { title: "Leaderboard 番付" };
 
 // The ladder is read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -116,12 +116,12 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Standings" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Leaderboard" }]} />}
       >
         <p className="text-sm font-medium">{copy.tagline}</p>
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">record</Link>
+          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">history</Link>
           <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
         </p>
       </PageTitle>

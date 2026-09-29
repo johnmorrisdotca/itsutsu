@@ -61,7 +61,7 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
         lead="Every solve of it kept here, by everybody. Open a time to watch that solve again, step by step."
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
-          <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">standings</Link>
+          <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">leaderboard</Link>
           {me === null ? null : (
             <Link href={puzzleRecordHref(kind, { member: me })} className="text-muted underline-offset-2 hover:underline" data-testid="record-just-mine">
               just mine

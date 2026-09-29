@@ -46,7 +46,7 @@ export function LadderStrength({ tier, measured }: { tier: BotTier; measured: re
   return (
     <section className="flex flex-col gap-2" data-testid="ladder-strength">
       <h2 className={SECTION_TITLE}>
-        Measured game by game <span className="font-mincho normal-case tracking-normal">実力</span>
+        Strength by game <span className="font-mincho normal-case tracking-normal">実力</span>
       </h2>
       <ul className="flex flex-col gap-1.5">
         {rows.map(({ measurement, beside }) => (
