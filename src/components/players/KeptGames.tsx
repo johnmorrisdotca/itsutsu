@@ -33,7 +33,7 @@ export async function KeptGames({ slug, site }: { slug: string; site?: string })
   const appearance = appearanceFrom(await appearanceFor(await currentMemberId()));
   return (
     <section className="flex flex-col gap-4" data-testid="kept-games">
-      <h3 className={SECTION_TITLE}>Games we have</h3>
+      <h3 className={SECTION_TITLE}>Saved games</h3>
       {games.map((game) => (
         <KeptGame key={game.id} game={game} viewedAs={slug} appearance={appearance} />
       ))}

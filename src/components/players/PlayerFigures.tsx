@@ -68,7 +68,7 @@ export function PlayerFigures({
           testId: "player-rating",
         },
         ...(computer !== null && computer.ratedGames > 0
-          ? [{ label: "Vs computer", value: computer.rating, testId: "player-computer-rating" }]
+          ? [{ label: "Vs bots", value: computer.rating, testId: "player-computer-rating" }]
           : []),
         {
           label: "Played",

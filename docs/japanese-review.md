@@ -28,7 +28,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | Every screen — account menu, top right | Sign out | **サインアウト** | Sign out. |  |
 | Every screen — footer | Language | **言語** | Language |  |
 | Most list pages — filter bars on the record and players pages | Any | **すべて** | All / any. |  |
-| Most list pages — filter bars on the record and players pages | Narrowed to | **絞り込み** | Narrowed down to / filtered by. |  |
+| Most list pages — filter bars on the record and players pages | Filtered by | **絞り込み** | Narrowed down to / filtered by. |  |
 | Most list pages — filter bars on the record and players pages | Player | **対局者** | Player (the site's own word for one). |  |
 | Most list pages — filter bars on the record and players pages | Result | **結果** | Result. |  |
 | Most list pages — filter bars on the record and players pages | Search names | **名前を検索** | Search names. |  |

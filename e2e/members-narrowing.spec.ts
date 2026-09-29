@@ -128,7 +128,7 @@ test.describe("narrowing the members list", () => {
     // The row that stays, waited for before the row that goes.
     await expect(named(page, SETTLED_AWAY)).toHaveCount(1);
     await expect(named(page, NEW_HERE)).toHaveCount(0);
-    await expect(page.getByTestId("directory-narrowed")).toContainText("Settled ratings");
+    await expect(page.getByTestId("directory-narrowed")).toContainText("Established ratings");
 
     await page.getByTestId("only-active").click();
     await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "true");

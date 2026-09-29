@@ -41,7 +41,7 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
               Member
             </th>
             <th className={HEAD} scope="col">
-              Promotion
+              Level-up
             </th>
             <th className={HEAD} scope="col">
               When

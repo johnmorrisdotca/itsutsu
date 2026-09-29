@@ -122,7 +122,7 @@ export const PHRASES = {
   "account.signIn": "Sign in",
   "account.signOut": "Sign out",
 
-  "filter.narrowedTo": "Narrowed to",
+  "filter.narrowedTo": "Filtered by",
   "filter.player": "Player",
   "filter.result": "Result",
   "filter.board": "Board",

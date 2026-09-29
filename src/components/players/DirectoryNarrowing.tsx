@@ -72,13 +72,13 @@ type NarrowingProps = {
   rememberedWho: DirectoryWho | null;
 };
 
-/** The line above the table: "Narrowed to" and a chip per narrowing, each with its ×. */
+/** The line above the table: "Filtered by" and a chip per narrowing, each with its ×. */
 export function DirectoryNarrowed({ filter, query, rememberedWho }: NarrowingProps) {
   const on = narrowingsIn(filter);
   if (on.length === 0) return null;
   return (
     <p className="flex flex-wrap items-center gap-2 text-xs text-muted" data-testid="directory-narrowed">
-      <span>Narrowed to</span>
+      <span>Filtered by</span>
       {on.map((one) => (
         <span key={one} className={`${FILTER_CHIP} ${FILTER_CHIP_OFF} inline-flex items-center gap-1.5`}>
           <span className="text-ink">{chipName(filter, one)}</span>
@@ -87,7 +87,7 @@ export function DirectoryNarrowed({ filter, query, rememberedWho }: NarrowingPro
           ) : null}
           <Link
             href={filterBarHref(without(filter, one), query)}
-            aria-label={`Take off ${chipName(filter, one)}`}
+            aria-label={`Remove ${chipName(filter, one)}`}
             className="px-0.5 text-ink hover:text-ink-soft"
             data-testid={`narrowed-off-${one}`}
           >
@@ -118,7 +118,7 @@ export function DirectoryEmpty({ filter, query }: Omit<NarrowingProps, "remember
               className="underline underline-offset-4"
               data-testid={`narrowed-off-${one}`}
             >
-              Take off {chipName(filter, one)}
+              Remove {chipName(filter, one)}
             </Link>
           ))}
           {/*
@@ -128,7 +128,7 @@ export function DirectoryEmpty({ filter, query }: Omit<NarrowingProps, "remember
             to remove, and appear to do nothing at all.
           */}
           <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
-            Show everybody again
+            Show everyone
           </Link>
         </span>
       )}

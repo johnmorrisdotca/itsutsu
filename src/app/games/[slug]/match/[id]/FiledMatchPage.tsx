@@ -320,7 +320,7 @@ function FiledMatch({
         crumb={
           <GameTrail
             game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-            steps={[{ label: "Record", href: historyPath(game.variant) }, { label: "Match" }]}
+            steps={[{ label: "Game history", href: historyPath(game.variant) }, { label: "Match" }]}
           />
         }
         title={
@@ -383,7 +383,7 @@ function FiledMatch({
             ) : null}
             {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
             <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
-              Back to the record
+              Back to game history
             </Link>
           </span>
         }

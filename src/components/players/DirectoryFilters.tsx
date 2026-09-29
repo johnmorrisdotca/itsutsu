@@ -67,7 +67,7 @@ export function DirectoryFilters({
           testId="only-settled"
           title="A rating is unrated for the first few games and provisional while it settles."
         >
-          Settled ratings
+          Established ratings
         </ToggleLink>
         <ToggleLink
           href={to({ ...filter, active: !filter.active })}
@@ -75,7 +75,7 @@ export function DirectoryFilters({
           testId="only-active"
           title={`Seen in the last ${AWAY_AFTER_DAYS} days. A bot is always about.`}
         >
-          Seen lately
+          Recently active
         </ToggleLink>
         {worldwide}
       </nav>

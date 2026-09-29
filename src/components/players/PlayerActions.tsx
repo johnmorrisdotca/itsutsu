@@ -132,7 +132,7 @@ export function PlayerActions({
           className="inline-flex min-h-11 items-center rounded-lg border border-rule-strong/80 bg-ivory/80 px-3 py-1.5 text-sm font-medium text-ink hover:bg-rule/60 sm:min-h-0"
           data-testid="message-link"
         >
-          Write 手紙
+          Message 手紙
         </Link>
       ) : null}
       <BuddyButton memberId={memberId} isBuddy={isBuddy} />

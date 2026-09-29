@@ -43,7 +43,7 @@ export const MY_GAMES_COPY = {
      * play, and it has a tab of its own now, away from the account's games.
      */
     hotSeat: { label: "Pass and play", kanji: "対面", hint: "Two people taking turns on this screen. Never rated." },
-    finished: { label: "Completed", kanji: "終局", hint: "Filed in the record." },
+    finished: { label: "Completed", kanji: "終局", hint: "Saved in game history." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   /** The starred games, first on the Completed tab (`FavouritesPanel`); not a group of the queue, so apart from the seven. */
   favourites: {

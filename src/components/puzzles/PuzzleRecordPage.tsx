@@ -55,9 +55,9 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
     <Page>
       <SiteHeader />
       <PageTitle
-        title={`${copy.label} · Record`}
+        title={`${copy.label} · All solves`}
         kanji="棋譜"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Record" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "All solves" }]} />}
         lead="Every solve of it kept here, by everybody. Open a time to watch that solve again, step by step."
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
@@ -74,7 +74,7 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-record" data-total={record.total}>
         {chips.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="record-narrowed">
-            <span className="text-muted">Narrowed to</span>
+            <span className="text-muted">Filtered by</span>
             {chips.map((chip) => (
               <Link
                 key={chip.key}

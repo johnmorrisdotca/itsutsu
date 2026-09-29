@@ -13,7 +13,7 @@ import { viewerXp } from "@/lib/xp/xpViewer";
 import { xpForBadge } from "@/lib/xp/xpScope";
 
 export const metadata = {
-  title: "The hundred levels",
+  title: "All levels",
   description:
     "Every rung of Itsutsu's experience ladder, from Insert Coin to Divine Move: what each level is called, what it costs, and why.",
 };
@@ -51,15 +51,15 @@ export default async function LevelsPage() {
       {/* The leaderboard and the ladder are two halves of one thing, and each
           is the other's way on. See Nothing Is A Dead End. */}
       <PageTitle
-        title="The hundred levels"
+        title="All levels"
         kanji="段位"
         aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp/promotions" className="text-sm underline underline-offset-4" data-testid="to-promotions">
-              Recent promotions <span className="font-mincho">昇級</span>
+              Recent level-ups <span className="font-mincho">昇級</span>
             </Link>
             <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
-              Who is where <span className="font-mincho">経験値</span>
+              XP leaderboard <span className="font-mincho">経験値</span>
             </Link>
           </div>
         }

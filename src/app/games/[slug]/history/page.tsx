@@ -10,10 +10,10 @@ import { PuzzleRecordPage } from "@/components/puzzles/PuzzleRecordPage";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/history">): Promise<Metadata> {
   const { slug } = await params;
   const puzzle = puzzleFor(slug);
-  if (puzzle !== null) return { title: `${PUZZLE_DISPLAY[puzzle].label} · Record 棋譜` };
+  if (puzzle !== null) return { title: `${PUZZLE_DISPLAY[puzzle].label} · All solves 棋譜` };
   const variant = variantFor(slug);
   return {
-    title: variant === null ? "Record 棋譜" : `${RULE_VARIANT_DISPLAY[variant].label} · Record 棋譜`,
+    title: variant === null ? "Game history 棋譜" : `${RULE_VARIANT_DISPLAY[variant].label} · Game history 棋譜`,
   };
 }
 
