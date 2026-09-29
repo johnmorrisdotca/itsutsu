@@ -123,7 +123,7 @@ export function PuzzleBoardPreview({
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
-        {SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
+        {kind === "mahjong" ? SET_UP_COPY.previewMahjong : SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
         {(!onBoard && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">

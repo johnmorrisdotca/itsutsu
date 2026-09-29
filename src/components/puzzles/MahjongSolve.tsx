@@ -9,7 +9,7 @@ import { canTake, freePairs, geometryOf, isCleared, tilesLeft } from "@/lib/puzz
 import { shuffleTiles } from "@/lib/puzzles/mahjong/deal";
 import { layoutFor } from "@/lib/puzzles/mahjong/layouts";
 import type { MahjongMove } from "@/lib/puzzles/mahjong/mahjong.types";
-import { decodeMoves, encodeMoves, replayMoves } from "@/lib/puzzles/mahjong/moves";
+import { decodeMoves, encodeMoves, playSolve } from "@/lib/puzzles/mahjong/moves";
 import { bonusRuleOf } from "@/lib/puzzles/mahjong/tiles";
 import { encodeMahjongProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -60,13 +60,13 @@ export function MahjongSolve({
   const rule = bonusRuleOf(givens);
   const [moves, setMoves] = useState<MahjongMove[]>(() => {
     const kept = resumed === null ? null : decodeMoves(resumed.progress, givens.length);
-    return kept !== null && replayMoves(size, givens, kept) !== null ? kept : [];
+    return kept !== null && playSolve(size, givens, kept) !== null ? kept : [];
   });
   const [chosen, setChosen] = useState<number | null>(null);
   const [said, setSaid] = useState<string | null>(null);
   const showFree = useMahjongFree();
 
-  const played = useMemo(() => replayMoves(size, givens, moves) ?? { cells: givens, shuffles: 0 }, [size, givens, moves]);
+  const played = useMemo(() => playSolve(size, givens, moves) ?? { cells: givens, shuffles: 0 }, [size, givens, moves]);
   const cells = played.cells;
   const pairs = useMemo(() => freePairs(geometry, cells, rule), [geometry, cells, rule]);
   const stuck = pairs.length === 0 && !isCleared(cells);
@@ -82,7 +82,7 @@ export function MahjongSolve({
       setMoves(next);
       setChosen(null);
       if ("pair" in move) for (const slot of move.pair) hinting.unmark(slot);
-      const after = replayMoves(size, givens, next);
+      const after = playSolve(size, givens, next);
       setSaid("shuffle" in move ? MAHJONG_COPY.shuffled : null);
       if (after !== null && isCleared(after.cells)) void finish(encodeMoves(next), at);
     },

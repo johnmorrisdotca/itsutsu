@@ -100,8 +100,9 @@ export function MahjongScores({ table, state }: { table: MahjongTable; state: Ma
               {SEAT_WINDS[at]!.kanji}
             </span>
             <span className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="truncate text-sm font-semibold">
-                {seatName(table.seats, at)} {seat.computer === true ? <ComputerMark /> : null}
+              <span className="flex min-w-0 items-center gap-1 text-sm font-semibold">
+                <span className="truncate">{seatName(table.seats, at)}</span>
+                {seat.computer === true ? <ComputerMark /> : null}
               </span>
               <span className="text-xs text-muted">
                 {state.pairs[at]} {state.pairs[at] === 1 ? "pair" : "pairs"}

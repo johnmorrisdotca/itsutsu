@@ -8,7 +8,7 @@ import { layPairs, pairsLeft, shuffleTiles } from "./deal";
 import { MAHJONG_SAME_BLOCK, bonusRuleOfSeed, freshMahjongSeed, generateMahjong } from "./generate";
 import { MAHJONG_LAYOUTS, layoutExtent, layoutFor } from "./layouts";
 import type { MahjongLayout } from "./mahjong.types";
-import { SHUFFLE_MARK, decodeMoves, encodeMoves, replayMoves } from "./moves";
+import { SHUFFLE_MARK, decodeMoves, encodeMoves, playSolve } from "./moves";
 import { MAHJONG_FACES, bonusRuleOf, faceOf, matchClass, pairPoints, setPairs, tilesMatch } from "./tiles";
 import { seededRandom } from "../random";
 
@@ -201,7 +201,7 @@ describe("a solve", () => {
         found = true;
       }
       if (!found) continue;
-      const replayed = replayMoves(8, deal.givens, played)!;
+      const replayed = playSolve(8, deal.givens, played)!;
       expect(replayed.cells).toBe(cells);
       expect(replayed.shuffles).toBe(shuffles);
       if (tilesLeft(cells) === 0) expect(checkMahjong(8, deal.givens, encodeMoves(played))).toEqual({ ok: true });

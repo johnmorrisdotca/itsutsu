@@ -1,6 +1,6 @@
 import type { PuzzleCheck } from "../puzzles.types";
 import { isCleared } from "./board";
-import { dealFits, decodeMoves, replayMoves } from "./moves";
+import { dealFits, decodeMoves, playSolve } from "./moves";
 
 /**
  * Whether a solve clears a Mahjong deal: the check the browser makes to say
@@ -13,7 +13,7 @@ export function checkMahjong(size: number, givens: string, answer: string): Puzz
   if (!dealFits(size, givens)) return { ok: false, reason: "the givens are not a deal of that layout" };
   const moves = decodeMoves(answer, givens.length);
   if (moves === null) return { ok: false, reason: "the answer is not a list of moves" };
-  const played = replayMoves(size, givens, moves);
+  const played = playSolve(size, givens, moves);
   if (played === null) return { ok: false, reason: "a move the rules do not allow" };
   if (!isCleared(played.cells)) return { ok: false, reason: "tiles are left on the layout" };
   return { ok: true };

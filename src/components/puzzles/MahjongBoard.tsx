@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useId, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
@@ -90,12 +90,9 @@ export function MahjongBoard({
   const [dragging, setDragging] = useState<{ slot: number; x: number; y: number } | null>(null);
   const swallow = useRef(false);
 
-  const free = useMemo(() => (geometry === null ? [] : [...cells].map((_, slot) => isFree(geometry, cells, slot))), [geometry, cells]);
+  const free = geometry === null ? [] : [...cells].map((_, slot) => isFree(geometry, cells, slot));
   /* Far to near: layer by layer, back row first, right to left along a row. */
-  const order = useMemo(() => {
-    if (layout === null) return [];
-    return layout.slots.map((slot, index) => ({ slot, index })).sort((a, b) => a.slot.z - b.slot.z || a.slot.y - b.slot.y || b.slot.x - a.slot.x);
-  }, [layout]);
+  const order = layout === null ? [] : layout.slots.map((slot, index) => ({ slot, index })).sort((a, b) => a.slot.z - b.slot.z || a.slot.y - b.slot.y || b.slot.x - a.slot.x);
 
   if (layout === null) return null;
 
@@ -108,13 +105,14 @@ export function MahjongBoard({
     }
   };
 
-  const tapped = (slot: number) => {
+  /* `at` is the press's own time stamp, so two presses on one tile close together are a double-tap. */
+  const tapped = (slot: number, at: number) => {
     if (readOnly) return;
     if (!free[slot]) {
       shake(slot);
       return;
     }
-    const now = Date.now();
+    const now = at;
     const before = lastTap.current;
     lastTap.current = { slot, at: now };
     if (before !== null && before.slot === slot && now - before.at < MAHJONG_DOUBLE_TAP_MS && onDouble !== undefined) {
@@ -204,14 +202,14 @@ export function MahjongBoard({
                 aria-label={face === null ? undefined : `${faceWords(face)}${free[index] ? "" : ", blocked"}`}
                 aria-pressed={readOnly ? undefined : isChosen}
                 onPointerDown={(event) => pressed(index, event)}
-                onClick={() => {
+                onClick={(event) => {
                   if (swallow.current) return;
-                  tapped(index);
+                  tapped(index, event.timeStamp);
                 }}
                 onKeyDown={(event) => {
                   if (event.key !== "Enter" && event.key !== " ") return;
                   event.preventDefault();
-                  tapped(index);
+                  tapped(index, event.timeStamp);
                 }}
               >
                 {/* A raised tile's shadow on what lies under it: the higher, the darker, so the layers read at a glance. */}

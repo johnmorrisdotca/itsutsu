@@ -180,15 +180,17 @@ test.describe("Mahjong Solitaire", () => {
     await tile(page, pair![0]).click();
     await tile(page, pair![1]).click();
     await expect(page.locator('[data-testid="mahjong-score"][data-at="0"]')).not.toHaveAttribute("data-points", "0");
-    // The computer takes its pair where everybody can watch, and the turn comes back.
-    await expect(table).toHaveAttribute("data-left", "60");
-    await expect(table).toHaveAttribute("data-turn", "0");
+    // The computer takes its pair where everybody can watch — two or more, if it takes a flower or season — and the turn comes back.
+    await expect
+      .poll(async () => (await table.getAttribute("data-turn")) === "0" && Number(await table.getAttribute("data-left")) <= 60)
+      .toBe(true);
     await expect(page.getByTestId("mahjong-table-last")).toContainText("Computer 1 took");
+    const left = (await table.getAttribute("data-left"))!;
 
     // Kept in this browser: a reload opens the same table, and My games offers it on Pass and play.
     await page.reload();
     await ready(page, "mahjong-table");
-    await expect(table).toHaveAttribute("data-left", "60");
+    await expect(table).toHaveAttribute("data-left", left);
     await page.goto(`${AT}/new`);
     await ready(page, "puzzle-set-up");
     await expect(page.getByTestId("mahjong-table-continue")).toBeVisible();

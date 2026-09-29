@@ -90,6 +90,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Small boards | 6 |
 | Numbers | 3 |
 | Logic puzzles | 1 |
+| Mahjong | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -167,6 +168,15 @@ yields to counting, medium needs the joining rule (no group of islands may be
 closed off), hard needs a bridge tried. The answer and a run kept half way are
 one drawing, a character a cell (`- = | H` for the bridges), which the server
 checks in O(cells) without the solver (`bridges/check.ts`).
+
+**Mahjong** 麻雀 (2026-09-29) is the family of games played with a mahjong
+set, opened with **Mahjong Solitaire** 牌合わせ (`src/lib/puzzles/mahjong/`):
+take matching pairs of free tiles off a stacked layout — Torii, Fuji, Castle or
+the classic 144-tile Turtle — alone against the clock, or two to four taking a
+pair a turn round one device, with computers for empty seats. Every deal is
+laid pair by pair in reverse, so it can be cleared; the answer and a kept run
+are the moves, which the server plays through to check. The tiles are our own
+Japanese-style SVG. See `docs/plans/mahjong/README.md`.
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters

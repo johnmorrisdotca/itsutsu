@@ -59,7 +59,7 @@ export type Replayed = { cells: MahjongCells; shuffles: number };
  * could still be taken (Shuffle is for when you are stuck), or one that
  * cannot help. Null for a deal or a move that does not read.
  */
-export function replayMoves(size: number, givens: string, moves: readonly MahjongMove[], rule: MahjongBonusRule = bonusRuleOf(givens)): Replayed | null {
+export function playSolve(size: number, givens: string, moves: readonly MahjongMove[], rule: MahjongBonusRule = bonusRuleOf(givens)): Replayed | null {
   const layout = layoutFor(size);
   if (layout === null || !dealFits(size, givens)) return null;
   const geometry = geometryOf(layout);
