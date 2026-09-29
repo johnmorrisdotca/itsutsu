@@ -288,7 +288,11 @@ export function trailingHeadings({
         Held to the right edge of the table's own scroll box, with the cells under
         it — see `ACTIONS_CELL` below.
       */}
-      {columns.actions === undefined ? null : <th className={`${HEAD} ${ACTIONS_CELL}`}>{columns.actions}</th>}
+      {columns.actions === undefined ? null : (
+        <th className={`${HEAD} ${ACTIONS_CELL}`} data-row-actions-head>
+          {columns.actions}
+        </th>
+      )}
     </>
   );
 }
@@ -310,6 +314,14 @@ export function trailingHeadings({
  * down the table, in both schemes. This is that same sixty-per-cent mix, made
  * solid, so the column matches the panel and what slides beneath does not show
  * through it.
+ *
+ * AND WITH A MOUSE, THEY TAKE NO COLUMN AT ALL. John, 2026-09-29, on /players:
+ * "The play and stars don't fit well in the RHS column. We should only show
+ * these buttons on Hover… and it should float over the space, not take up the
+ * space/column." Where the pointer can hover, the cell is no wider than
+ * nothing and its buttons float over the row's right end while the row is
+ * hovered or holds the focus (`[data-row-actions]` in globals.css); a phone,
+ * which has no hover, keeps the column as it was.
  */
 const ACTIONS_CELL = "sticky right-0 bg-[color-mix(in_srgb,var(--color-ivory)_60%,var(--color-paper))]";
 
@@ -357,7 +369,7 @@ export function TrailingCells({
         </td>
       ) : null}
       {columns.actions === undefined ? null : (
-        <td className={`py-1.5 text-right ${ACTIONS_CELL}`}>
+        <td className={`py-1.5 text-right ${ACTIONS_CELL}`} data-row-actions>
           {/*
             An empty `RowActions` where a row offers nothing, so the space a
             control would have taken is held rather than the absence patched —

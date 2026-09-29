@@ -709,3 +709,44 @@ html[data-bare="true"] [data-strippable] [data-board-column] {
     transition: none;
   }
 }
+
+/*
+ * A TABLE ROW'S OWN BUTTONS (Play, ★, ⋯) FLOAT OVER ITS RIGHT END ON HOVER.
+ * John, 2026-09-29, on /players: "We should only show these buttons on Hover…
+ * and it should float over the space, not take up the space/column." With a
+ * mouse the actions cell (`recordTrailing.tsx`) is no wider than nothing, so
+ * the figures keep the room; its buttons sit over the row's end, unseen until
+ * the row is hovered or a key has moved into it, which is how a keyboard
+ * reaches them. Unseen is opacity alone, so the buttons are where the pointer
+ * finds them. A touch screen has no hover and keeps the column.
+ */
+@media (hover: hover) and (pointer: fine) {
+  [data-row-actions],
+  [data-row-actions-head] {
+    width: 0;
+    max-width: 0;
+    padding: 0 !important;
+    font-size: 0;
+  }
+  [data-row-actions] > * {
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--color-ivory) 60%, var(--color-paper));
+    box-shadow: 0 0.25rem 0.75rem -0.25rem rgb(0 0 0 / 0.25);
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  [data-row-actions]:empty > *,
+  [data-row-actions] > :empty {
+    box-shadow: none;
+  }
+  tr:hover > [data-row-actions] > *,
+  tr:focus-within > [data-row-actions] > * {
+    opacity: 1;
+  }
+}
