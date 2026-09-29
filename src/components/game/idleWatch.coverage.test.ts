@@ -56,9 +56,10 @@ const PART_OF: Record<string, string> = {
 /*
  * And Dots and Boxes' board (2026-09-28), the first party game's surface, drawn by its table and its set-up;
  * Superghost's fragment, the letters its table watches, drawn by its table alone; Bridges' grid the same day;
- * and Mancala's board, drawn by its table and its set-up; Picture logic's grid (2026-09-29); and Tenka's map, the same.
+ * and Mancala's board, drawn by its table and its set-up; Picture logic's grid (2026-09-29); Tenka's map, the same; and Mahjong's layout, drawn by its
+ * solve, its table, its set-up's preview and a finished solve's page.
  */
-const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|BridgesGrid|PictureLogicGrid|GomojiGrid|DotsBoard|GhostFragment|MancalaBoard|TenkaMap)[\s>]/;
+const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|BridgesGrid|PictureLogicGrid|GomojiGrid|DotsBoard|GhostFragment|MancalaBoard|TenkaMap|MahjongBoard)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
 function tsxUnder(folder: string): string[] {
@@ -84,6 +85,8 @@ describe("the idle question", () => {
     expect(surfaces).toContain("src/components/party/GhostGame.tsx");
     expect(surfaces).toContain("src/components/party/MancalaGame.tsx");
     expect(surfaces).toContain("src/components/party/tenka/TenkaPlay.tsx");
+    expect(surfaces).toContain("src/components/puzzles/MahjongSolve.tsx");
+    expect(surfaces).toContain("src/components/puzzles/MahjongTableGame.tsx");
   });
 
   it("is asked on every surface a person plays on", () => {

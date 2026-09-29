@@ -28,6 +28,8 @@ type Mark = {
   ink?: string;
   /** The digits' size, in cells, where they sit inside a stone rather than on a cell; 0.75 otherwise. */
   digitSize?: number;
+  /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
+  tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
 };
 
 /**
@@ -258,6 +260,24 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
+   * MAHJONG: a little stack of tiles, three on the table, two on them and
+   * one on top, and the two red dragons 中 that are free — the top tile and
+   * the end of the bottom row — the pair the game is about finding.
+   */
+  Mahjong: {
+    n: 5,
+    cells: true,
+    stones: [],
+    tiles: [
+      { x: 0.25, y: 2.7, glyph: "中", red: true },
+      { x: 1.85, y: 2.7, glyph: "東" },
+      { x: 3.45, y: 2.7, glyph: "萬" },
+      { x: 1.15, y: 1.4, glyph: "發" },
+      { x: 2.75, y: 1.4, glyph: "南" },
+      { x: 1.95, y: 0.1, glyph: "中", red: true },
+    ],
+  },
+  /*
    * PARTY GAMES: six players sat round one board, black and white by turns,
    * and the turn going round the table in the middle — the family's whole
    * idea, a game passed from hand to hand, and the one mark on the row with
@@ -359,6 +379,15 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           strokeDasharray={stone.faded ? "0.2 0.15" : undefined}
           opacity={stone.faded ? 0.5 : 1}
         />
+      ))}
+      {(mark.tiles ?? []).map((tile) => (
+        <g key={`${tile.x}-${tile.y}`}>
+          <rect x={tile.x - 0.1} y={tile.y + 0.1} width={1.3} height={1.7} rx={0.14} fill="#d9c59b" stroke="#a8926a" strokeWidth={0.05} />
+          <rect x={tile.x} y={tile.y} width={1.3} height={1.7} rx={0.14} fill="#fffdf6" stroke="#b9ad96" strokeWidth={0.05} />
+          <text x={tile.x + 0.65} y={centredBaseline(tile.y + 0.85, 0.95)} textAnchor="middle" fontSize={0.95} fontWeight={700} fill={tile.red === true ? "#b2302f" : "#22231f"}>
+            {tile.glyph}
+          </text>
+        </g>
       ))}
       {mark.path !== undefined ? (
         <path d={mark.path} fill="none" stroke="var(--shu)" strokeWidth={0.14} strokeLinecap="round" />
