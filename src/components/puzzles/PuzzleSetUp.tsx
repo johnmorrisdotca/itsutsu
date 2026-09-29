@@ -34,6 +34,7 @@ import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
 import { SolitaireSetUpOptions } from "./SolitaireSetUpOptions";
 import { useSolitaireScoring } from "./useSolitaireScoring";
+import { sizeWord } from "./puzzles.constants";
 import { useKumimojiChoice } from "./useKumimojiChoice";
 import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";

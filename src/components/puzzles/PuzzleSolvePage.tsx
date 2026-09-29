@@ -100,7 +100,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
     ...(timed.ms === null ? [] : [{ label: "Clock", value: `${timed.label} ${timed.kanji}, ${timed.time}`, testId: "solve-clock" }]),
     // A word's guesses, out of the level's allowance: the other half of how it went.
-    ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
+    ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : taken.unit === "moves" ? "Moves" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
     { label: "Points", value: String(solve.points), testId: "solve-points" },
     { label: "Help", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
     { label: "Finished", value: solve.finishedAt.toISOString().slice(0, 10), testId: "solve-date" },

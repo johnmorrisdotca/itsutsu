@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { cardFromId, cardIndex } from "@/lib/cards/deck";
 
+import { guessesTaken, guessesText } from "../gomoji/guessesTaken";
+
 import { checkSolitaire, solitaireMovesFit } from "./check";
 import { dealOfSeed, decodeMoves, deckOf, encodeMoves, replay } from "./code";
 import { ANY_DEAL_BLOCK, freshSolitaireSeed, generateSolitaire, isAnyDeal, solitaireRules } from "./generate";
@@ -168,6 +170,15 @@ describe("the solver and the check", () => {
     }
     // Measured 2026-09-29: about two deals in three at this budget.
     expect(won).toBeGreaterThanOrEqual(10);
+  });
+});
+
+describe("a won game on the fastest table", () => {
+  it("counts its moves, which have no allowance to be out of", () => {
+    const made = generateSolitaire(1, "easy", 77);
+    const taken = guessesTaken("solitaire", 1, "easy", made.givens, made.solution)!;
+    expect(taken).toEqual({ used: decodeMoves(made.solution)!.length, allowed: 0, unit: "moves" });
+    expect(guessesText(taken)).toBe(String(taken.used));
   });
 });
 
