@@ -108,6 +108,33 @@ test.describe("Mahjong Solitaire", () => {
     await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
   });
 
+  test("with hints chosen, Hint lights a free pair and counts it; without them it cannot be pressed", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    await page.goto(`${AT}/play?size=8&level=easy&seed=${seed}&hints=1`);
+    await ready(page, "puzzle-play");
+    const hint = page.getByTestId("puzzle-hint");
+    await expect(hint).toHaveAttribute("data-allowed", "true");
+    await hint.click();
+    await expect(hint).toContainText("1 used");
+    const lit = board(page).locator('[data-hinted="true"]');
+    await expect(lit).toHaveCount(2);
+    const pairs = (await freePairs(page)).map((pair) => pair.join("-"));
+    const slots = await lit.evaluateAll((all) => all.map((one) => Number(one.getAttribute("data-slot"))));
+    expect(pairs).toContain(slots.sort((a, b) => a - b).join("-"));
+    // Taken, and the light goes with them.
+    await tile(page, slots[0]!).click();
+    await tile(page, slots[1]!).click();
+    await expect(lit).toHaveCount(0);
+
+    await page.goto(`${AT}/play?size=8&level=easy&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("puzzle-hint")).toBeDisabled();
+    // No Check and no Show: nothing on a Mahjong table can be wrong.
+    await expect(page.getByTestId("mahjong-undo")).toBeVisible();
+    await expect(page.getByTestId("puzzle-check")).toHaveCount(0);
+    await expect(page.getByTestId("puzzle-show")).toHaveCount(0);
+  });
+
   test("left half way, it waits in My games and opens where it was left", async ({ page }) => {
     const seed = freshPuzzleSeed();
     await page.goto(`${AT}/play?size=8&level=medium&seed=${seed}`);

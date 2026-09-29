@@ -71,7 +71,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
     return (
       <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="mahjong-table" data-stage="names" {...readyMark(hydrated)}>
         <h2 className={SECTION_HEADING}>
-          Who is playing? <span className="font-mincho text-sm font-normal opacity-70">席</span>
+          Players <span className="font-mincho text-sm font-normal opacity-70">席</span>
         </h2>
         <p className="text-sm text-muted">{MAHJONG_COPY.tableLead}</p>
         <MahjongTableNames

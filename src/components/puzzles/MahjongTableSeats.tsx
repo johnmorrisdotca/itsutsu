@@ -73,7 +73,7 @@ export function MahjongTableNames({ players, replacing, onBegin }: { players: nu
       )}
       <p className="min-h-5 text-sm text-muted">{nobody ? "At least one seat is a person's." : ""}</p>
       <button type="submit" className={PLAY_BUTTON} disabled={nobody} data-testid="mahjong-table-begin">
-        <PressLabel words="Begin" kanji="始" />
+        <PressLabel words="Start" kanji="始" />
       </button>
     </form>
   );
