@@ -89,6 +89,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   kumimoji: "kumimoji",
   koushi: "koushi",
   bridges: "bridges",
+  pictureLogic: "picture-logic",
 };
 
 /**

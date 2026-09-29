@@ -2,6 +2,8 @@ import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { solutionOf as blackAndWhiteSolution } from "./blackAndWhite/solve";
 import { boardOf, encodeBridges } from "./bridges/code";
 import { solutionOf as bridgesSolution } from "./bridges/solve";
+import { decodeClues, encodePicture } from "./pictureLogic/code";
+import { solutionOf as pictureSolution } from "./pictureLogic/solve";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -81,6 +83,11 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
       const board = boardOf(givens, size);
       const counts = board === null ? null : bridgesSolution(board);
       return board === null || counts === null ? null : encodeBridges(board, counts);
+    }
+    case "pictureLogic": {
+      const clues = decodeClues(givens, size);
+      const picture = clues === null ? null : pictureSolution(clues);
+      return picture === null ? null : encodePicture(picture);
     }
     default:
       return null;

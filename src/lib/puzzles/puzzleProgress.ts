@@ -3,6 +3,7 @@ import type { BridgeCounts, BridgesBoard } from "./bridges/bridges.types";
 import { ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO, MOST_BRIDGES, WATER, encodeBridges } from "./bridges/code";
 import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
 import { wordCountOfSeed } from "./gomoji/wordsSeed";
+import { decodeCells as decodePictureCells } from "./pictureLogic/code";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesFor } from "./gomoji/layout";
@@ -99,6 +100,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "kumimoji") return readTileProgress(code) !== null;
   // Bridges keeps its drawing, one character a cell, as its answer is written; read against its islands when opened.
   if (kind === "bridges") return bridgesCodeFits(code, size);
+  // Picture logic keeps the player's grid, one character a cell: "." untouched, "#" shaded, "x" marked empty (`pictureLogic/code.ts`).
+  if (kind === "pictureLogic") return decodePictureCells(code, size) !== null;
   // Koushi keeps the grid as it stands and the swaps so far, as its answer is written.
   if (kind === "koushi") return decodePlay(code) !== null;
   return decodeNumberProgress(code, size) !== null;

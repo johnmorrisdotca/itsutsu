@@ -16,6 +16,7 @@ import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { BridgesSolve } from "./BridgesSolve";
+import { PictureLogicSolve } from "./PictureLogicSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
@@ -184,6 +185,8 @@ export function PuzzlePlay({
         return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
       case "bridges":
         return <BridgesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+      case "pictureLogic":
+        return <PictureLogicSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
       case "gomoji":
       case "gomojiMot":
       case "gomojiWort":

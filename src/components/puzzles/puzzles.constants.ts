@@ -456,3 +456,38 @@ export const BRIDGES_COPY = {
   crossing: "That bridge would cross another. Take the other one away first.",
   allNumbers: "Every island has its number, and it is not the answer yet: are they all joined into one?",
 } as const;
+
+/**
+ * PICTURE LOGIC ON PAPER (`PictureLogicGrid`), in fixed colours rather than the
+ * page's tokens, as Bridges' are: the paper is white whatever the page's
+ * theme, so its ink must be dark whatever the page's theme. The clue panels
+ * are a warm tint of the paper so the grid reads as the square to shade; a
+ * clue met is drawn faint and struck through, never by colour alone.
+ */
+export const PICTURE_LOOK = {
+  ink: "#22231f",
+  paper: "#ffffff",
+  band: "#f3efe6",
+  rule: "#cfc8ba",
+  ruleStrong: "#6f6a62",
+  cross: "#6f6a62",
+  wrong: "#b2302f",
+  aim: "#52664b",
+  /** How faint a met clue is drawn. */
+  metOpacity: 0.35,
+  /** A clue number's size, in cells: two digits fit a cell. */
+  clueFont: 0.56,
+  /** Every fifth rule is drawn heavier, so a row can be counted along. */
+  every: 5,
+} as const;
+
+/** What a cell of a Picture logic grid reads as in the list of steps (`PuzzleSteps`). */
+export const PICTURE_CELL_WORDS: Record<string, string> = { ".": "cleared", "#": "shaded", x: "marked empty" };
+
+/** What the line under a Picture logic board says, while it is being solved. */
+export const PICTURE_COPY = {
+  howTo: "Tap to shade, again for ✕, again to clear. Drag along a row or column to do the same to every square like the first.",
+  howToMark: "Tap to mark ✕, again to shade, again to clear. Drag along a row or column to do the same to every square like the first.",
+  pens: { shade: "Shade", mark: "Mark ✕" },
+  pensLabel: "What a tap does first",
+} as const;

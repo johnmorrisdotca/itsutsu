@@ -32,6 +32,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   koushi: 0.11,
   // Five an end of a bridge (`cellsFilled`): a medium 9×9 has about 43 (measured over a hundred seeds), so about 215 points.
   bridges: 0.46,
+  // Five a cell, every cell decided (`cellsFilled`): a 10×10 is always 100 cells, so 500 points before any help.
+  pictureLogic: 0.2,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

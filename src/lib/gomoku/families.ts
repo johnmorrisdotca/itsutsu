@@ -195,11 +195,14 @@ export const GAME_FAMILIES: GameFamily[] = [
      * family's key, and moving one would make that family's award a thing a
      * newcomer earns from a different set of games than everybody before.
      * Say so, and leave the decision to John.
+     *
+     * Picture logic 絵解き (2026-09-29) is the second: the picture to uncover
+     * from its row and column counts the first note promised.
      */
     title: "Logic puzzles",
     kanji: "理詰め",
-    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, and more to come. A few clues, one answer, and nothing to do but reason it out.",
-    games: ["bridges"],
+    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, and more to come. A few clues, one answer, and nothing to do but reason it out.",
+    games: ["bridges", "pictureLogic"],
   },
   {
     key: "party",

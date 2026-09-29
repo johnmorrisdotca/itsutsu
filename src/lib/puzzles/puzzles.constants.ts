@@ -44,6 +44,7 @@ export const PUZZLE_KINDS = {
   kumimoji: "kumimoji",
   koushi: "koushi",
   bridges: "bridges",
+  pictureLogic: "pictureLogic",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -65,6 +66,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.kumimoji,
   PUZZLE_KINDS.koushi,
   PUZZLE_KINDS.bridges,
+  PUZZLE_KINDS.pictureLogic,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -232,6 +234,16 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * big ones zoomed (`TsunagiViewport`).
    */
   bridges: { sizes: [7, 9, 11, 13], offered: [7, 9, 11, 13], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 169 },
+  /*
+   * A picture to uncover from its row and column clues (`pictureLogic/`). The
+   * givens are the two panels of clues, `2 × size × ⌈size/2⌉` characters (400
+   * at 20×20), and the answer and a kept run a character a cell (400 too).
+   * Every size and level is made in well under a second (`pictureLogic/generate.ts`
+   * has the measurements). 5×5 to 20×20 are the sizes the puzzle is known by;
+   * 15×15 and 20×20 are zoomed on a phone (`TsunagiViewport`), where a cell of
+   * the whole board fitted to 390 pixels is about fourteen wide.
+   */
+  pictureLogic: { sizes: [5, 10, 15, 20], offered: [5, 10, 15, 20], defaultSize: 10, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 400 },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -376,6 +388,12 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     11: { label: "Long", kanji: "長" },
     13: { label: "Longest", kanji: "最長" },
   },
+  pictureLogic: {
+    5: { label: "Quick", kanji: "速" },
+    10: { label: "Usual", kanji: "定番" },
+    15: { label: "Long", kanji: "長" },
+    20: { label: "Longest", kanji: "最長" },
+  },
 };
 
 /**
@@ -412,6 +430,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     easy: "Counting alone: every island against what the islands in line with it can still give.",
     medium: "Counting, and the joining rule: no group of islands may close itself off from the rest.",
     hard: "Somewhere counting and joining both run out, and a bridge has to be tried and seen.",
+  },
+  // A Picture logic level is what it takes to finish (`pictureLogic/solve.ts`, `solveClues`): the ends, the whole line, or a trial.
+  pictureLogic: {
+    easy: "The ends alone: slide each line's runs to one side and the other, and shade where they overlap.",
+    medium: "Somewhere the ends run out, and a whole line has to be read against what its crossing lines have settled.",
+    hard: "Somewhere even whole lines run out, and a square has to be tried and followed until a clue breaks.",
   },
   koushi: {
     easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
@@ -754,5 +778,34 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "9×9 is the usual size. 7×7 is quick; 11×11 and 13×13 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
+  },
+  /*
+   * OUR OWN NAME FOR IT. The grid picture puzzle has many names, and some of
+   * them are trademarks — the best known is a games company's — so none is
+   * used here, in copy, pictures or code. Picture logic says what it is; 絵解き
+   * (etoki), "reading a picture out", is the plain Japanese.
+   *
+   * The history, as far as it could be checked (Wikipedia's "Nonogram", read
+   * 2026-09-29): Non Ishida's winning grid pictures in Tokyo in 1987, Tetsuya
+   * Nishio's independent invention of the same puzzle, Ishida's three "Window
+   * Art Puzzles" of 1988, James Dalgety's name "nonogram", and The Sunday
+   * Telegraph's weekly puzzle from 1990.
+   */
+  pictureLogic: {
+    label: "Picture logic",
+    kanji: "絵解き",
+    tagline: "Shade the squares the numbers ask for, row by row and column by column, and a picture appears.",
+    inspiredBy: "the grid picture puzzle known in English as the nonogram, devised in Japan in 1987",
+    origin:
+      "A Japanese puzzle of hidden pictures. In 1987 Non Ishida, a graphics editor, won a competition in Tokyo with pictures drawn in the lit windows of a grid, and the puzzle maker Tetsuya Nishio came to the same idea on his own; Ishida published three as Window Art Puzzles in 1988. In Britain James Dalgety named them nonograms, after her, and The Sunday Telegraph printed one every week from 1990. 絵解き means reading a picture out. The pictures here are drawn by our own code, and each puzzle has exactly one answer.",
+    country: "JP",
+    rules: [
+      "Every row has a clue beside it and every column a clue above it: the lengths of its runs of shaded squares, in order. A 0 means none.",
+      "Between two runs in a line there is at least one empty square; before the first and after the last there may be any number.",
+      "The puzzle is solved when every row and every column has exactly its runs, and the picture they draw appears. Every puzzle has exactly one answer.",
+      "Tap a square to shade it, again to mark it ✕ (sure to be empty), and again to clear it; with the ✕ pen, a tap marks first. Drag along a row or column to do the same to every square like the first. A clue that is met turns pale and is struck through.",
+    ],
+    board:
+      "10×10 is the usual size. 5×5 is quick; 15×15 and 20×20 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
   },
 };

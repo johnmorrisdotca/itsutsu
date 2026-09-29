@@ -211,7 +211,8 @@ test.describe("the Bridges puzzle", () => {
     const logic = page.getByTestId("set-up-family").filter({ hasText: "Logic puzzles" });
     await logic.click();
     await expect(logic).toHaveAttribute("data-open", "true");
-    await expect(page.getByTestId("set-up-puzzle")).toHaveCount(1);
+    // Bridges first, then Picture logic (2026-09-29): the shelf opens on its first.
+    await expect(page.getByTestId("set-up-puzzle")).toHaveCount(2);
     await expect(page.getByTestId("set-up-puzzle").first()).toHaveAttribute("data-kind", KIND);
     await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", KIND);
 

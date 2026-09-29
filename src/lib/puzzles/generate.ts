@@ -1,4 +1,5 @@
 import { generateBridges } from "./bridges/generate";
+import { generatePictureLogic } from "./pictureLogic/generate";
 import { generateHiddenStones } from "./hiddenStones/generate";
 import { loadWordData } from "./gomoji/wordData";
 import { generateMoreOrLess } from "./moreOrLess/generate";
@@ -65,6 +66,8 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateKoushi(level, seed);
     case "bridges":
       return generateBridges(size, level, seed);
+    case "pictureLogic":
+      return generatePictureLogic(size, level, seed);
   }
 }
 
