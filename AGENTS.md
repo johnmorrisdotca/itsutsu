@@ -448,8 +448,17 @@ width at Regular and past it at the other two — and the modal is as wide as
 the map, as large as the window's height allows. Set-up furniture goes once
 play starts: a table's colour choice is one small control, the place's marble
 and "Change colour", that opens the picker when asked (`PartySeatColour`).
-Held by `boardScale.coverage.test.ts`, `e2e/wide-mode.spec.ts` and the big
-monitor cases in `e2e/bare-board.spec.ts`.
+And nothing in the modal scrolls on a desk (John: "is so big we see
+scrollbars in desktop. It should probably be slightly less."): from a laptop's
+width the board is sized from the window's height, and what would run past its
+foot goes beside it inside the modal — a puzzle's controls in the column they
+take at Large and Full, the practice board's and Block Five's side column, a
+live game's whose turn and move being made, Mexican Train's hand
+(`data-bare-beside`), a card table's seats.
+Held by `boardScale.coverage.test.ts`, `e2e/wide-mode.spec.ts`, and the survey
+in `e2e/bare-board.spec.ts`, which opens every play at 1280×800 and 1920×1080
+and fails on a scroll or an empty column; `bareSurvey.coverage.test.ts` holds
+its list to the catalogue, so a new play joins it.
 
 ### Every Table Of Players Shows XP, And The Programs Are Players
 

@@ -378,6 +378,14 @@ html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-wid
   }
 }
 
+/* A live game's board has its masthead and whose turn above it, and the move being confirmed under it. */
+html[data-bare="true"] [data-strippable] [data-testid="shared-game"] > [data-bare-board] {
+  width: min(100%, calc(100dvh - 19rem));
+}
+html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-testid="shared-game"] > [data-bare-board]) {
+  width: min(100%, calc(100dvh - 19rem + 2rem));
+}
+
 /* A row laid out beside something that is furniture in the modal is one column there (`data-bare-column`): Tenka's phase bar, whose dice beside it go, and it carries them. */
 html[data-bare="true"] [data-strippable] [data-bare-column] {
   display: flex;
@@ -470,6 +478,159 @@ html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
   display: contents;
 }
 
+/*
+ * NOTHING IN THE MODAL SCROLLS ON A DESK. John, 2026-09-29, on a board opened
+ * on its own: "is so big we see scrollbars in desktop. It should probably be
+ * slightly less." Under a board sat a puzzle's keys and scrubber, the practice
+ * board's whose turn and its presses, Block Five's tray, a Mexican Train hand
+ * and a card hand with the scores, and each ran past the foot of a laptop's
+ * window. So from a laptop's width (`lg`) the board is sized from the window's
+ * height, less what must stay beside or under it, and what is too tall to go
+ * under it goes beside it, inside the modal:
+ *
+ * - a puzzle lays its controls beside its board (`data-scale-stack`), as it
+ *   does at Large and Full, in the same 24rem column, so every control there
+ *   is already one that fits it;
+ * - a live game lays whose turn it is and the move being made beside it;
+ * - a play whose side column plays the board (`data-bare-keep`: the practice
+ *   board, Block Five) keeps that column beside the board, at 20rem, as the
+ *   page has it on a desk;
+ * - a play that marks what goes beside its board (`data-bare-beside`: Mexican
+ *   Train's hand) lays it in a 24rem column there;
+ * - a card table keeps its hand under the trick (a hand beside a trick would
+ *   read as two things), and lays whose turn and the other seats beside them
+ *   (its table's column, `cards-board`).
+ *
+ * The modal is then as wide as the board and its column, so nothing in it is
+ * empty. The room kept in the height is the backdrop's padding and the
+ * modal's, and whatever sits above or under the board in its own column.
+ */
+@media (min-width: 64rem) {
+  html[data-bare="true"] [data-strippable] [data-board-scaling] {
+    max-width: none;
+  }
+
+  /* A puzzle: the board down the left, its controls in a column beside it from the top. */
+  html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    grid-template-rows: repeat(8, auto) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]) > [data-scale-board][data-bare-board] {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    width: 100%;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]) > :not([data-scale-board]) {
+    grid-column: 2;
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-stack][data-bare-board]) {
+    width: min(100%, calc(100dvh - 10rem + 24rem + 1.5rem + 2rem));
+  }
+  /* Kumimoji's table is a band of a fixed height on the page; beside its tray it is a square, as at Large and Full. */
+  html[data-bare="true"] [data-strippable] [data-scale-stack] [data-testid="kumimoji-table"] {
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  /*
+   * A live game: the board down the left, and whose turn it is, how the board
+   * is keeping up and the move being made — placed, nudged, sent — in a
+   * column beside it, where they are read with the board and never push it.
+   */
+  html[data-bare="true"] [data-strippable] [data-testid="shared-game"]:has(> [data-bare-board]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-rows: repeat(10, auto) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    row-gap: 1rem;
+    align-items: start;
+  }
+  html[data-bare="true"] [data-strippable] [data-testid="shared-game"] > [data-bare-board][data-bare-board] {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    width: 100%;
+  }
+  html[data-bare="true"] [data-strippable] [data-testid="shared-game"] > :not([data-bare-board]) {
+    grid-column: 2;
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-testid="shared-game"] > [data-bare-board]) {
+    width: min(100%, calc(100dvh - 12rem + 20rem + 1.5rem + 2rem));
+  }
+
+  /* The practice board and Block Five: the column that plays the board stays beside it. */
+  html[data-bare="true"] [data-strippable] :has(> [data-bare-keep]) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-bare-keep]) > :not([data-bare-keep]) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  html[data-bare="true"] [data-strippable] [data-bare-keep][data-bare-keep] {
+    width: 20rem;
+    flex: none;
+  }
+  html[data-bare="true"] [data-strippable]:has([data-bare-keep]) [data-bare-board][data-bare-board] {
+    width: 100%;
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-bare-keep]) {
+    width: min(100%, calc(100dvh - 12rem + 20rem + 1.5rem + 2rem));
+  }
+
+  /* Mexican Train: the table down the left with whose turn above it, the hand beside it. */
+  html[data-bare="true"] [data-strippable] [data-bare-board]:has(> [data-bare-beside]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    grid-template-rows: repeat(6, auto) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    align-items: start;
+    width: 100%;
+  }
+  html[data-bare="true"] [data-strippable] [data-bare-board]:has(> [data-bare-beside]) > * {
+    grid-column: 1;
+  }
+  html[data-bare="true"] [data-strippable] [data-bare-board]:has(> [data-bare-beside]) > [data-bare-beside] {
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-bare-beside]) {
+    width: min(100%, calc(100dvh - 16rem + 24rem + 1.5rem + 2rem));
+  }
+
+  /*
+   * A card table: the trick and the hand under it down the left, never wider
+   * than a hand is read at (42rem, as the page) nor taller than the window
+   * leaves it, and whose turn and the other seats in a column beside it, one
+   * seat to a line.
+   */
+  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-rows: repeat(8, auto) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) > [data-testid="cards-board"] {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    width: 100%;
+    max-width: none;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) > :not([data-testid="cards-board"]) {
+    grid-column: 2;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) [data-testid="cards-seats"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-testid="cards-board"]) {
+    width: min(100%, calc(min(42rem, (100dvh - 23rem) * 2) + 1.5rem + 20rem + 2rem));
+  }
+}
+
 /* Just the board is already the board alone, so the button that opens one board on its own is not drawn inside it. */
 html[data-bare="true"] [data-strippable] [data-testid="board-focus-toggle"] {
   display: none;
@@ -486,10 +647,14 @@ html[data-bare="true"] [data-strippable] [data-bare-only] {
 /*
  * A board's column sits against the page's left edge on a desk, like every
  * other page's content (`BOARD_COLUMN`). With the side matter gone there is
- * nothing beside it, so just the board centres it again.
+ * nothing beside it, so just the board centres it again — and its width is
+ * the modal's, which is sized to the board, rather than the room the page
+ * measured for it (`BOARD_COLUMN_FIT`), which left a big monitor's modal with
+ * its board in the middle of paper.
  */
 html[data-bare="true"] [data-strippable] [data-board-column] {
   margin-inline: auto;
+  max-width: none;
 }
 
 /*

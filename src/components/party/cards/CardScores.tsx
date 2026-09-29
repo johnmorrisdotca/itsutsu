@@ -13,7 +13,8 @@ import { CARD_TABLE_COPY } from "./cardTable.constants";
  */
 export function CardScores({ names, scoreWords, standing, winners }: { names: readonly string[]; scoreWords: string; standing: (seat: number) => { score: string; note?: string }; winners: readonly number[] }) {
   return (
-    <section className="flex flex-col gap-1" data-testid="cards-scores" aria-label={CARD_TABLE_COPY.scores}>
+    // Side matter in just the board: the seats above the table already say each player's count (`data-chrome`).
+    <section className="flex flex-col gap-1" data-testid="cards-scores" aria-label={CARD_TABLE_COPY.scores} data-chrome>
       <h2 className={SECTION_TITLE}>
         {CARD_TABLE_COPY.scores} <span className="font-normal normal-case tracking-normal">· {scoreWords}</span>
       </h2>

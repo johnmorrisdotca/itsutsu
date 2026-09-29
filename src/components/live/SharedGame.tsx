@@ -360,7 +360,10 @@ export function SharedGame({
         finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />
       {notice}
-      <LiveSeatColour place="first" {...seatColour} />
+      {/* Set-up furniture in just the board, as a table's colour is: asked on the page, beside whose turn it is. */}
+      <div data-chrome className="contents">
+        <LiveSeatColour place="first" {...seatColour} />
+      </div>
 
       {/* How the board is keeping up, and anything that went wrong — see `LiveStatusLines`. */}
       <LiveStatusLines
