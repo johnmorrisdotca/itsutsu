@@ -1,6 +1,6 @@
 import Link from "@/components/ui/Link";
 
-import { thousands } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 import { GameTrail } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";

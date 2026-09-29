@@ -5,7 +5,9 @@ import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
 import { TABLE } from "../src/lib/puzzles/kumimoji/tableView";
 import { lettersOf, sameLetters } from "../src/lib/puzzles/kumimoji/grid";
 import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
-import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+// This process has no browser: the lists are read from their modules (`tileWordsModule.ts`).
+import { loadTileWordsFromModule as loadTileWords } from "../src/lib/puzzles/kumimoji/tileWordsModule";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
 import { suiteOperator } from "./operator";

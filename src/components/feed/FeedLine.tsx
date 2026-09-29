@@ -14,7 +14,7 @@ import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 import { playerPath } from "@/lib/rating/playerKey";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpHistoryHref } from "@/lib/xp/xpHistoryDays";
-import { thousands } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 
 /**
  * ONE LINE OF THE FEED: the game's picture where there is a game, the sentence

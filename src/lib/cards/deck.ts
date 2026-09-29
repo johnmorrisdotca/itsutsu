@@ -1,4 +1,4 @@
-import { seededRandom, shuffled } from "@/lib/puzzles/random";
+import { seededRandom, shuffled } from "../puzzles/random";
 
 import { CARD_ALPHABET, DECK_SIZE, RANKS, RANK_DISPLAY, SUITS, SUIT_DISPLAY } from "./cards.constants";
 import type { Card, CardCode, Rank, Suit, SuitColour } from "./cards.types";

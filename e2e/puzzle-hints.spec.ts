@@ -53,10 +53,14 @@ function marked(page: Page, kind: PuzzleKind, index: number) {
 /** Puts one wrong entry on the grid, and says which cell (on Bridges, which span). */
 async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number): Promise<number> {
   if (kind === "bridges") {
-    // A bridge on a span the answer leaves empty: nothing is drawn yet, so it crosses nothing.
-    const span = bridgesAnswer(size, seed).answer.findIndex((count) => count === 0);
-    await tapBridge(page, size, seed, span);
-    await expect(marked(page, kind, span)).toHaveAttribute("data-count", "1");
+    // One bridge more than the answer lays on a span: on an empty span one tap, on a span of one bridge two taps.
+    // Nothing is drawn yet, so it crosses nothing; a puzzle with no empty span still has a span of one or fewer.
+    const { answer } = bridgesAnswer(size, seed);
+    const empty = answer.findIndex((count) => count === 0);
+    const span = empty >= 0 ? empty : answer.findIndex((count) => count === 1);
+    const wrong = answer[span]! + 1;
+    for (let tap = 0; tap < wrong; tap += 1) await tapBridge(page, size, seed, span);
+    await expect(marked(page, kind, span)).toHaveAttribute("data-count", String(wrong));
     return span;
   }
   const puzzle = generatePuzzle(kind, size, "easy", seed);

@@ -21,7 +21,7 @@ import { openMoreSettings, openSetUpPage, ready } from "./support";
  * IT HAS TO BE CHECKED BY NAME AND NOT BY READING THE MARKUP, because the
  * name is computed from the rendered tree by rules no source file states.
  * That is also what `exact: true` is doing on every one of these: without it
- * Playwright matches a SUBSTRING, so `name: "Show when I am here"` would find
+ * Playwright matches a SUBSTRING, so `name: "Show when I'm online"` would find
  * the control whatever paragraph followed it, and this file would have been
  * green against the fault it exists to catch.
  *

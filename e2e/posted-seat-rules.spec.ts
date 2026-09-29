@@ -222,7 +222,7 @@ test.describe("the rules panel on a game still waiting for somebody", () => {
     await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page).toHaveURL(/\/games\/reversi\/match\//);
     await expect(page.getByTestId("shared-rules")).toBeVisible();
-    await expect(page.locator("body")).not.toContainText("nothing here");
+    await expect(page.locator("body")).not.toContainText("Page not found");
     expect(crashes, crashes.join("\n")).toEqual([]);
   });
 

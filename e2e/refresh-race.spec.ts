@@ -32,7 +32,7 @@ test.describe("refreshing straight after a move", () => {
     const answer = await page.reload();
 
     expect(answer?.status(), `reloading ${address} said the game does not exist`).toBe(200);
-    await expect(page.locator("body")).not.toContainText("nothing here");
+    await expect(page.locator("body")).not.toContainText("Page not found");
     // And it is the game: the stone that was played is still on the board.
     await expect(page.getByRole("button", { name: /^H8, Black stone$/ })).toBeVisible();
   });

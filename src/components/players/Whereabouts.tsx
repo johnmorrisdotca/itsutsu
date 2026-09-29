@@ -30,7 +30,7 @@ export function Whereabouts({
       {where !== "" ? <span data-testid="whereabouts-city">{where}</span> : null}
       {where !== "" && time !== null ? " · " : null}
       {time !== null ? (
-        <span data-testid="whereabouts-time">{time} where they are</span>
+        <span data-testid="whereabouts-time">Local time {time}</span>
       ) : null}
     </p>
   );

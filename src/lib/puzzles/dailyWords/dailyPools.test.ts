@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { generatePuzzle, prepareEveryPuzzle } from "../generate";
+import { generatePuzzle } from "../generate";
+import { prepareEveryPuzzle } from "../prepareEvery";
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS, sizesOffered } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";

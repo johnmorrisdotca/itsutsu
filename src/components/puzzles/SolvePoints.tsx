@@ -1,6 +1,6 @@
 import Link from "@/components/ui/Link";
 
-import { thousands } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 import { mySolvePath, solvePath } from "@/lib/gomoku/slugs";
 import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { prepareEveryPuzzle } from "../generate";
+import { prepareEveryPuzzle } from "../prepareEvery";
 import { archiveMonthAsked, archiveMonths, archiveWeeks, lastPastDay } from "./dailyArchive";
 import { DAILY_WORDS_EPOCH, dayAfter, dayIndexOf } from "./dailyDay";
 import { dailyLengths, dailyWordOf } from "./dailyPools";
