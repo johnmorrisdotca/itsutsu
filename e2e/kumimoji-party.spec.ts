@@ -235,8 +235,18 @@ test.describe("Kumimoji pass and play", () => {
 
     await begin(page, ["Aiko", "", "Cho"]);
     await expect(page).toHaveURL(/players=3/);
-    const seed = Number(new URL(page.url()).searchParams.get("seed"));
+    let seed = Number(new URL(page.url()).searchParams.get("seed"));
     expect(seed).toBeGreaterThan(0);
+    // The set-up deals at random, and now and then the first hand spells nothing ("mnlmlld"). The case is about the
+    // table, not about that hand, so such a deal is swapped for the next seed whose first hand holds a word.
+    const firstHand = (at: number) => generateKumimoji(QUICK, "medium", at).givens.slice(0, QUICK);
+    if (wordIn(firstHand(seed)) === null) {
+      while (wordIn(firstHand(seed)) === null) seed += 1;
+      const url = new URL(page.url());
+      url.searchParams.set("seed", String(seed));
+      await page.goto(url.toString());
+      await begin(page, ["Aiko", "", "Cho"]);
+    }
     const bag = generateKumimoji(QUICK, "medium", seed).givens;
     const [first, second] = [bag.slice(0, QUICK), bag.slice(QUICK, 2 * QUICK)];
 

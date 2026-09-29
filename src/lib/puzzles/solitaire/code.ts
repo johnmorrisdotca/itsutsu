@@ -1,4 +1,4 @@
-import { cardAt, cardIndex, isWholeDeck, readCards, shuffledDeck, writeCards } from "@/lib/cards/deck";
+import { cardAt, cardIndex, isWholeDeck, readCards, shuffledDeck, writeCards } from "../../cards/deck";
 
 import { dealKlondike, playKlondike } from "./klondike";
 import type { KlondikeMove, KlondikePile, KlondikeRules, KlondikeTable } from "./solitaire.types";
