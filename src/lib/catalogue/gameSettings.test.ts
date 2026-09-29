@@ -102,7 +102,8 @@ function sourcesUnder(folder: string): string[] {
 
 describe("nothing on the site leads to the old addresses", () => {
   /* The table of slugs keeps them for the router's redirects and download names; this file and the redirects' own say them to test them. */
-  const ALLOWED = new Set(["src/lib/gomoku/slugs.ts", "src/lib/catalogue/formerAddresses.ts", "src/lib/catalogue/gameSettings.test.ts"]);
+  // The table itself moved to `slugs.data.ts` (2026-09-29), when `slugs.ts` passed the file size gate.
+  const ALLOWED = new Set(["src/lib/gomoku/slugs.ts", "src/lib/gomoku/slugs.data.ts", "src/lib/catalogue/formerAddresses.ts", "src/lib/catalogue/gameSettings.test.ts"]);
   it("has no page, component or spec that names one", () => {
     const old = settingsOf("gomoji").filter(isSettingKind).map((kind) => PUZZLE_SLUGS[kind]);
     const naming = [...sourcesUnder("src"), ...sourcesUnder("e2e")]
