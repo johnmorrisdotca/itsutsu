@@ -95,7 +95,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
       </div>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Clock at this screen</span>
+        <span className="text-sm font-medium">Clock for games on one device</span>
         <Select
           value={fields.timeControl}
           onChange={(event) => set({ timeControl: event.target.value as GameDefaults["timeControl"] })}
@@ -110,7 +110,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Clock in a game on two devices</span>
+        <span className="text-sm font-medium">Clock for games on two devices</span>
         <Select
           value={fields.moveTimeMs === null ? "none" : String(fields.moveTimeMs)}
           onChange={(event) =>
@@ -194,7 +194,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
           className={`${BUTTON_BASE} px-3 text-xs`}
           data-testid="reset-game-defaults"
         >
-          Back to the ordinary ones
+          Reset to defaults
         </button>
         {saved ? <span className="text-xs text-moss">Saved.</span> : null}
         {error !== null ? <span className="text-xs text-shu">{error}</span> : null}

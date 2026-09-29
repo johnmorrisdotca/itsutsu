@@ -337,7 +337,7 @@ export async function MyGamesList({
               nothing going is shown the door to one, not told about it.
             */}
             <p className="text-sm text-muted">
-              Nothing going.{" "}
+              No games in progress.{" "}
               <Link href="/games/new" className="font-medium text-ink underline underline-offset-4" data-testid="empty-new-game">
                 New game →
               </Link>

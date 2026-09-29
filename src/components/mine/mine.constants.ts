@@ -6,7 +6,7 @@ export const MY_GAMES_COPY = {
   title: { label: "Your games", kanji: "対局中" },
   /** The tabs of /play (`myGamesViews.ts`). */
   views: {
-    going: { label: "Going", kanji: "対局中" },
+    going: { label: "In progress", kanji: "対局中" },
     completed: { label: "Completed", kanji: "終局" },
     "pass-and-play": { label: "Pass and play", kanji: "対面" },
   },
@@ -102,7 +102,7 @@ export const MY_GAMES_COPY = {
   localParty: { label: "Pass and play", kanji: "回し" },
   /** The puzzles a member started and left unfinished, kept on the account (`MyPuzzleRuns`). */
   puzzlesGoing: {
-    label: "Puzzles going",
+    label: "Puzzles in progress",
     kanji: "解きかけ",
     hint: "Left part way, kept where you left them. Open one to carry on.",
   },
@@ -114,7 +114,7 @@ export const MY_GAMES_COPY = {
     empty: "Nothing solved yet.",
   },
   openBoard: {
-    label: "Open seats",
+    label: "Open games",
     kanji: "対局募集",
     hint: "Games somebody has posted for anyone. Sit down and it is yours.",
     /** The hover on a poster's rating that the computer players earned, which is not a place on the ladder. */

@@ -221,16 +221,16 @@ describe("the privacy page", () => {
  * go on saying removal waits on somebody being awake.
  */
 describe("removal is described as the control it is", () => {
-  it("names Remove this account and What Itsutsu holds about you, and not removal by hand", () => {
+  it("names Remove this account and Your data, and not removal by hand", () => {
     expect(existsSync("src/lib/auth/removeMember.ts")).toBe(true);
     const keeping = section("keeping");
     expect(keeping).toContain("Remove this account");
-    expect(keeping).toContain("What Itsutsu holds about you");
+    expect(keeping).toContain("under Your data");
     expect(keeping).not.toContain("by hand");
     // The control's heading is the words the page points at, and the control draws that heading.
     expect(read("src/components/mine/mine.constants.ts")).toContain('heading: "Remove this account"');
     expect(read("src/components/mine/RemoveAccount.tsx")).toContain("REMOVE_COPY.heading");
-    expect(read("src/components/mine/WhatWeHold.tsx")).toContain("What Itsutsu holds about you");
+    expect(read("src/components/mine/WhatWeHold.tsx")).toContain("Your data <span");
   });
 });
 

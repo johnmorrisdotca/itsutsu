@@ -38,7 +38,7 @@ export function ProfileSends({ fields, set, child = false, mailSending = false }
         ) : (
           <>
             <Toggle
-              label="Show when I am here"
+              label="Show when I'm online"
               checked={fields.showOnline}
               onChange={(next) => set({ showOnline: next })}
               hint="Listed on the players page while you are on the site. Off, and nobody sees you come and go."

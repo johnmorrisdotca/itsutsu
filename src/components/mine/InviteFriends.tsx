@@ -88,7 +88,7 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
       {link === null ? (
         <span>
           <button type="button" onClick={() => void invite()} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-1.5 text-sm`}>
-            Make an invitation
+            Create an invite link
           </button>
         </span>
       ) : (
@@ -100,7 +100,7 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
                 {copied ? "Copied" : "Copy link"}
               </button>
               <button type="button" onClick={() => void invite()} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-1 text-xs`}>
-                Another
+                New link
               </button>
             </span>
           </div>

@@ -159,7 +159,7 @@ export function ProfileForm({
               className={INPUT_CLASS}
               data-testid="profile-country"
             >
-              <option value="">Not saying</option>
+              <option value="">Prefer not to say</option>
               {unlisted === null ? null : <option value={unlisted}>{unlisted}</option>}
               {countries.map((country) => (
                 <option key={country.code} value={country.code}>
