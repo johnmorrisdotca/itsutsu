@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { joinQuery, playPath, PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
-import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { prepareEveryPuzzle } from "../src/lib/puzzles/prepareEvery";
 import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { hiddenWordsOf, wordsShown } from "../src/lib/puzzles/gomoji/futago";
 import { freshYotsugoSeed, yotsugoDailySeed } from "../src/lib/puzzles/gomoji/yotsugoSeed";

@@ -284,9 +284,9 @@ test.describe("a member reading the games index", () => {
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
     await expect(strip.getByTestId("game-stats-last")).toHaveText("Last played today");
-    // One standings link per game: the row's own, and not a second one in the strip.
+    // One leaderboard link per game: the row's own, and not a second one in the strip.
     const row = page.getByTestId(`every-game-${seeded}`);
-    await expect(row.getByRole("link", { name: "standings", exact: true })).toHaveAttribute(
+    await expect(row.getByRole("link", { name: "leaderboard", exact: true })).toHaveAttribute(
       "href",
       `/games/${slugFor(seeded)}/standings`,
     );

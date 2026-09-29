@@ -34,7 +34,7 @@ test.describe("a seat posted for anyone", () => {
       await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
       const banner = page.getByTestId("turn-banner");
       await expect(banner).toHaveAttribute("data-awaiting", "true");
-      await expect(banner).toContainText("waiting for somebody");
+      await expect(banner).toContainText("Waiting for an opponent");
       // Not the sentence that made it look like a game already in progress.
       await expect(banner).not.toContainText("Your move");
 

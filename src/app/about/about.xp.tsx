@@ -1,6 +1,7 @@
 import { FigureTable } from "@/components/about/FigureTable";
 import { RatingTiers } from "@/components/about/RatingTiers";
-import { LAST_TEN_SHARE, XpCurve, thousands } from "@/components/about/XpCurve";
+import { LAST_TEN_SHARE, XpCurve } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 import { XP_EVENT_SPECS } from "@/lib/xp/xp.constants";
 import type { XpEventType } from "@/lib/xp/xp.types";
 import { XP_LEVELS, xpForLevel } from "@/lib/xp/xpCurve";

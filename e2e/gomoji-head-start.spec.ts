@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { joinQuery, myGamePath, playPath, setUpPath } from "../src/lib/gomoku/slugs";
-import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { prepareEveryPuzzle } from "../src/lib/puzzles/prepareEvery";
 import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { headStartKeys } from "../src/lib/puzzles/gomoji/headStart";
 import { decodeKanaGivens } from "../src/lib/puzzles/gomojiKana/kanaCode";

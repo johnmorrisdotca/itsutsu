@@ -160,12 +160,51 @@ function unpackJapaneseWords(data: JapaneseWordsData): TileWords {
   };
 }
 
+/**
+ * Where the lists come from where there is no browser — a server checking a
+ * solve, a unit test, a browser spec's own process — registered by the
+ * loader that imports them (`tileWordsModule.ts`). Null until one does.
+ */
+let fromModule: ((language: KumimojiLanguage) => Promise<TileWords>) | null = null;
+
+/** Used by `tileWordsModule.ts` only: how to read a list where there is no browser. */
+export function readTileWordsWith(source: (language: KumimojiLanguage) => Promise<TileWords>): void {
+  fromModule = source;
+}
+
+/** A list read from its module, for `tileWordsModule.ts`. */
+export function tileWordsFrom(language: KumimojiLanguage, data: unknown): TileWords {
+  return language === "english"
+    ? unpackTileWords(data as Readonly<Record<number, string>>)
+    : unpackJapaneseWords(data as JapaneseWordsData);
+}
+
+/**
+ * THE LIST, ONCE. In a browser (or its worker) it arrives as its own script,
+ * fetched by the dynamic import below the first time a Kumimoji needs it.
+ *
+ * ONLY IN A BROWSER, AND SAID SO WHERE THE BUILD CAN SEE IT. The page's
+ * components are drawn on the server too, and a dynamic import in them is a
+ * copy of its target in every server function — two lists, 1.3 MB, which put
+ * the site's grouped function over its size limit (`functionSizeGate`). The
+ * build writes `typeof window` as a constant — "undefined" on the server,
+ * "object" in a browser bundle, its worker included — so on the server the
+ * branch, and the import with it, is gone before anything is traced. The
+ * server reads the list through `tileWordsModule.ts` instead, which only the
+ * server's own checks and the tests import.
+ */
 export async function loadTileWords(language: KumimojiLanguage = "english"): Promise<TileWords> {
   const already = loaded.get(language);
   if (already !== undefined) return already;
-  const words = language === "english"
-    ? unpackTileWords((await import("./words.en.data")).TILE_WORDS_EN)
-    : unpackJapaneseWords((await import("./words.ja.data")).TILE_WORDS_JA);
+  let words: TileWords;
+  if (typeof window !== "undefined") {
+    words = language === "english"
+      ? unpackTileWords((await import("./words.en.data")).TILE_WORDS_EN)
+      : unpackJapaneseWords((await import("./words.ja.data")).TILE_WORDS_JA);
+  } else {
+    if (fromModule === null) throw new Error("Kumimoji's words are read on the server through tileWordsModule.ts (loadTileWordsFromModule), which was not imported.");
+    words = await fromModule(language);
+  }
   loaded.set(language, words);
   return words;
 }

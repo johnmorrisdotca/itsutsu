@@ -63,7 +63,7 @@ test.describe("where somebody is", () => {
     });
     await page.goto("/players/flags-tokyo");
     await expect(page.getByTestId("whereabouts-city")).toHaveText("Tokyo");
-    await expect(page.getByTestId("whereabouts-time")).toContainText("where they are");
+    await expect(page.getByTestId("whereabouts-time")).toContainText("Local time");
     await expect(page.getByTestId("whereabouts-time")).toContainText(/\d\d:\d\d/);
   });
 
