@@ -4,17 +4,19 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { GameStatsStrip } from "@/components/games/GameStats";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
-import { HOME_FAMILIES } from "@/lib/gomoku/families";
+import { HOME_FAMILIES, familyPagePath } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import {
   familyPath,
   historyPath,
+  passAndPlayPath,
   playPath,
   rulesPath,
   setUpPath,
   standingsPath,
 } from "@/lib/gomoku/slugs";
-import { gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { gameCopyFor, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { PartyLine } from "@/components/party/PartyLine";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 
@@ -47,8 +49,8 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
         own, and under it the rules, the record, the standings and a board.
       </p>
       {/*
-        Each game once, under its home: a shelf of guests (Party games) lists
-        nothing here that is not already listed where it lives.
+        Each game once, under its home: Party games lists only its own party
+        games here, since each guest on its shelf is already listed where it lives.
       */}
       {HOME_FAMILIES.map((family) => (
         <section key={family.title} className="flex flex-col gap-3" data-testid="every-game-family">
@@ -62,7 +64,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
           <dl className="flex flex-col gap-3">
             {family.games.map((variant) => {
               const copy = gameCopyFor(variant);
-              const aliases = isPuzzleKind(variant) ? [] : aliasesFor(variant);
+              const aliases = isPuzzleKind(variant) || isPartyKind(variant) ? [] : aliasesFor(variant);
               return (
                 <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
                   <dt className="flex items-center gap-2 font-medium">
@@ -95,6 +97,16 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                           <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
                           <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
                           <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                        </span>
+                      </>
+                    ) : isPartyKind(variant) ? (
+                      // A party game is kept in one browser: no record, no standings, and its family has a page of its own.
+                      <>
+                        <PartyLine kind={variant} signedIn={signedIn} />
+                        <span className="flex flex-wrap gap-x-3 text-xs">
+                          <Link href={passAndPlayPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
+                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>family</Link>
                         </span>
                       </>
                     ) : (

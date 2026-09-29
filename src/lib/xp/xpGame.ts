@@ -1,5 +1,5 @@
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { EVERY_GAME_KEY } from "@/lib/catalogue/gameKeys";
+import { RECORDED_GAME_KEYS } from "@/lib/catalogue/gameKeys";
 import { GAME_FAMILIES, boardGamesOf, familyKeyOf } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
@@ -103,9 +103,11 @@ const VARIANTS: ReadonlySet<string> = new Set<string>(RULE_VARIANT_LIST);
 /**
  * Every game on the site, the puzzles included: what `everyVariantPlayed` is
  * counted against. A puzzle pays `firstOfVariant` under its own kind (see
- * `xpPuzzle.ts`), so "every game played" means every puzzle solved too.
+ * `xpPuzzle.ts`), so "every game played" means every puzzle solved too. A
+ * party game is left out: it is played in one browser and never recorded, so
+ * nobody could ever be seen to have played it.
  */
-export const XP_VARIANTS_TO_PLAY = EVERY_GAME_KEY.length;
+export const XP_VARIANTS_TO_PLAY = RECORDED_GAME_KEYS.length;
 
 /**
  * The fewest games a family must hold for winning all of them to be a family won.

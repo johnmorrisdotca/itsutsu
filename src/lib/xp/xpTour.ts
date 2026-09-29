@@ -1,6 +1,6 @@
 import "server-only";
 
-import { HOME_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
+import { RECORDED_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
 import { prisma } from "@/lib/prisma";
 
 import { awardXp } from "./awardXp";
@@ -153,7 +153,7 @@ export async function awardTourBonuses({
         memberId,
         each: XP_EVENTS.firstOfFamily,
         all: XP_EVENTS.everyFamilyPlayed,
-        size: HOME_FAMILIES.length,
+        size: RECORDED_FAMILIES.length,
         /* Three families were folded into others; a row under a retired key is
            a row for the family that absorbed it, never a family of its own. */
         fold: familyKeyNow,

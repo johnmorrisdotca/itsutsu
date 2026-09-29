@@ -8,7 +8,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { GameStatsStrip } from "@/components/games/GameStats";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
-import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { PartyLine } from "@/components/party/PartyLine";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD, STRETCHED_LINK } from "@/components/ui/ui.constants";
@@ -143,6 +144,8 @@ export function GameCards({
               ) : null}
               {isPuzzleKind(copy.variant) ? (
                 <PuzzleLine kind={copy.variant} signedIn={signedIn} />
+              ) : isPartyKind(copy.variant) ? (
+                <PartyLine kind={copy.variant} signedIn={signedIn} />
               ) : (
                 <GameStatsStrip stats={stats.games[copy.variant]} signedIn={signedIn} compact />
               )}

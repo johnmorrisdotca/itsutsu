@@ -8,7 +8,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { gamePath, historyPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, partyKindFor, passAndPlayPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { partyRulesPage } from "@/lib/party/partyRulesPage";
 
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
@@ -22,7 +23,7 @@ import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? "");
   return { title: copy === null ? "Rules 規則" : `${copy.label} · Rules 規則` };
 }
 
@@ -83,10 +84,12 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
    * are the game's alone.
    */
   const puzzle = puzzleFor(slug);
-  const variant = puzzle === null ? variantFor(slug) : null;
-  if (puzzle === null && variant === null) notFound();
-  const key = puzzle ?? variant!;
-  const page = puzzle !== null ? puzzleRulesPage(puzzle) : rulesPageFor(variant!);
+  // And a party game's, built by `partyRulesPage` from its own spec and copy, with no record to link either.
+  const party = puzzle === null ? partyKindFor(slug) : null;
+  const variant = puzzle === null && party === null ? variantFor(slug) : null;
+  if (puzzle === null && party === null && variant === null) notFound();
+  const key = puzzle ?? party ?? variant!;
+  const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : rulesPageFor(variant!);
   const guides = variant === null ? [] : guidesFor(variant);
   const say = await currentSpeaker();
   /*
@@ -245,7 +248,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
               className="w-full rounded-lg"
             />
             {/* The one big Play, under the picture, as on the game's page; see `PlayButton`. */}
-            <PlayButton href={setUpPath(key)} testId="rules-play" label={say.say("rules.play.button")} />
+            {/* A party game is set up at its table, the one way to play it; every other game at its set-up. */}
+            <PlayButton href={party !== null ? passAndPlayPath(party) : setUpPath(key)} testId="rules-play" label={say.say("rules.play.button")} />
           </figure>
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-learn">

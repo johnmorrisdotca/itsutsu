@@ -1,6 +1,6 @@
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 import { gamePoints, type PricedResult } from "@/lib/points/gamePoints";
-import { HOME_FAMILIES, familyKeyOf } from "@/lib/gomoku/families";
+import { RECORDED_FAMILIES, familyKeyOf } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST, STONES, WIN_REASONS, defaultBoardFor } from "@/lib/gomoku/gomoku.constants";
 import { expectedScore, rateGame } from "@/lib/rating/elo";
 import { XP_EVENTS, XP_LONG_GAME_MOVES, dayStreakMilestoneFor, resultMilestoneFor, winStreakMilestoneFor } from "@/lib/xp/xp.constants";
@@ -199,7 +199,7 @@ function awardGameXp(player: SimPlayer, opponent: SimPlayer, variant: string, wo
   if (familyKey !== null && !player.familiesPlayed.has(familyKey)) {
     player.familiesPlayed.add(familyKey);
     player.xpTotal += batch.awardUncapped(XP_EVENTS.firstOfFamily);
-    if (!player.everyFamilyPaid && player.familiesPlayed.size >= HOME_FAMILIES.length) {
+    if (!player.everyFamilyPaid && player.familiesPlayed.size >= RECORDED_FAMILIES.length) {
       player.everyFamilyPaid = true;
       player.xpTotal += batch.awardUncapped(XP_EVENTS.everyFamilyPlayed);
     }

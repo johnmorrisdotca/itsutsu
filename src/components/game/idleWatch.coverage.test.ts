@@ -30,6 +30,7 @@ const NOT_PLAYED_ON: Record<string, string> = {
   "src/components/puzzles/FinishedPuzzle.tsx": "a puzzle already finished, drawn as it ended; nobody is solving it",
   "src/components/puzzles/WordReplay.tsx": "a word puzzle already over, replayed guess by guess with its keyboard readOnly; nobody is playing it",
   "src/components/party/PartySetUp.tsx": "a pass-and-play table's set-up: the board beside it is the live board set out for that many, readOnly, before anybody moves",
+  "src/components/party/DotsSetUp.tsx": "Dots and Boxes' set-up: the board beside it is the live board at the size chosen, readOnly (no line to tap), before anybody draws",
 };
 
 /**
@@ -51,7 +52,8 @@ const PART_OF: Record<string, string> = {
   "src/components/puzzles/YotsugoBoards.tsx": "a Yotsugo's two Gomoji grids of two quarters each, drawn only by a Gomoji's solve, which asks, or its replay, which is not played on",
 };
 
-const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|GomojiGrid)[\s>]/;
+/* And Dots and Boxes' board (2026-09-28), the first party game's surface, drawn by its table and its set-up. */
+const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|GomojiGrid|DotsBoard)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
 function tsxUnder(folder: string): string[] {
@@ -71,6 +73,7 @@ describe("the idle question", () => {
     expect(surfaces).toContain("src/components/puzzles/NumberSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/HiddenStonesSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/BlackAndWhiteSolve.tsx");
+    expect(surfaces).toContain("src/components/party/DotsGame.tsx");
   });
 
   it("is asked on every surface a person plays on", () => {

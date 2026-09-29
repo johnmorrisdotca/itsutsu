@@ -311,6 +311,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   // The same tab's Pair Go game, kept in this browser: a row like the two beside it.
   "src/components/party/PairGoCard.tsx": { GameThumb: "small" },
+  // And Dots and Boxes' game, kept in this browser: a row like the rest.
+  "src/components/party/DotsCard.tsx": { GameThumb: "small" },
   "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   // The learning shelf: a card per guide, headed by the game it is first about, as the catalogue's cards are.
   "src/app/learn/page.tsx": { GameThumb: "regular" },
@@ -324,6 +326,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // The puzzles a Numbers tile opens on the set-up screen: the same cards as the games beside them.
   "src/components/live/PuzzleShelf.tsx": { GameThumb: "regular" },
   "src/components/live/BoardPicker.tsx": { BoardSizeMark: "regular" },
+  // Dots and Boxes' set-up: its four boards as the set-up screen's tiles are drawn.
+  "src/components/party/DotsSetUp.tsx": { BoardSizeMark: "regular" },
   "src/components/live/OpeningPicker.tsx": { OpeningMark: "regular" },
   "src/components/live/OpponentChoice.tsx": { SeatMark: "regular" },
   "src/components/live/RatedPicker.tsx": { MovesIcon: "regular", LevelIcon: "regular" },

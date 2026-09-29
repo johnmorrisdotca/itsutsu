@@ -73,6 +73,8 @@ export const GAME_CARD_KINDS: { kind: GameCardKind; label: string; kanji: string
   { kind: "flips", label: "Flips", kanji: "反転" },
   // Plural, as the filter is read: "Puzzles" (John, 2026-09-26: "Rename A PUZZLE to Puzzles").
   { kind: "puzzle", label: "Puzzles", kanji: "詰" },
+  // A table round one device, won by the most boxes or whatever the game counts: not a line of any length.
+  { kind: "party", label: "Party games", kanji: "団欒" },
 ];
 
 /** A quiet text link in a row of them, as the plain list uses. */

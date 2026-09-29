@@ -1,4 +1,4 @@
-import { HOME_FAMILIES } from "@/lib/gomoku/families";
+import { RECORDED_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { StreakOutcome } from "@/lib/rating/streak";
 import { inWords } from "@/lib/text/inWords";
@@ -13,8 +13,8 @@ import type { XpEventSpec, XpEventType } from "./xp.types";
  * count instead.
  */
 const GAMES = inWords(RULE_VARIANT_LIST.length);
-/* The families a game can be played FROM: a shelf of guests (Party games) is never one a first game is paid in. */
-const FAMILIES = inWords(HOME_FAMILIES.length);
+/* The families a game can be played FROM: Party games, whose own games are never recorded, is never one a first game is paid in. */
+const FAMILIES = inWords(RECORDED_FAMILIES.length);
 
 /**
  * Everything that earns XP on this site, priced, named and explained.

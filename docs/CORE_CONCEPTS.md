@@ -65,6 +65,13 @@ make sense for a board — the two-player set-up, a ladder, a record — read
 `boardGamesOf(family)` and skip the puzzles. `docs/plans/numbers/README.md`
 has the reasoning.
 
+**Nor is a party game.** Dots and Boxes seats two to six round one device,
+gives an extra turn for a closed box, and is never rated or recorded, so it
+is a third kind, `PartyKind` (`src/lib/party/`), joined into `GameKey` the
+same way, with its own gate (`party.coverage.test.ts`). It lives in Party
+games, a family no award counts (`RECORDED_FAMILIES`, `RECORDED_GAME_KEYS`).
+`docs/plans/party-games/README.md` has the reasoning.
+
 ## 2. A game is its moves
 
 A stored game is **its settings plus its move list, never a board**. A board

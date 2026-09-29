@@ -71,3 +71,23 @@ export const PARTY_GAME_COPY: Record<RaceVariant, PartyGameCopy> = {
     about: "About Halma, its rules and its rated game for two",
   },
 };
+
+/** Where this browser keeps its game of Dots and Boxes: one at a time, apart from every other table's. */
+export const DOTS_STORAGE_KEY = "itsutsu.dotsAndBoxes";
+
+/** How strongly a claimed box is filled in its owner's colour: enough to read at a glance, never so much the letter is lost. */
+export const DOTS_BOX_FILL_OPACITY = 0.82;
+
+/** What Dots and Boxes' table says, beyond what every table says (`PARTY_COPY`). */
+export const DOTS_COPY = {
+  lead: "Dots and Boxes for two to six people round one phone or tablet. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  board: "Which board?",
+  lines: (count: number) => `${count} lines`,
+  tap: "Tap between two dots to draw a line. Close a box and it is yours, and you draw again.",
+  closed: (boxes: number) => (boxes === 2 ? "Closed two boxes: draw again." : "Closed a box: draw again."),
+  boxes: (count: number) => `${count} ${count === 1 ? "box" : "boxes"}`,
+  drawn: (drawn: number, of: number) => `${drawn} of ${of} lines drawn.`,
+  play: "Play →",
+  continue: "Continue →",
+  about: "About Dots and Boxes and its rules",
+} as const;

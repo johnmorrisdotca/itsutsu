@@ -1,0 +1,26 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { fingerprintOf } from "../gomoku/ladderFingerprint.ts";
+
+/**
+ * The files that decide how a party game's picture looks: its board, its
+ * colours and the scene the picture is taken of. The same idea as
+ * `boardArtFingerprint.ts` for the boards and `puzzleArtFingerprint.ts` for
+ * the puzzles, kept apart so that a change to Dots and Boxes' board asks for
+ * the party games' pictures to be re-taken and nothing else's.
+ */
+export const PARTY_ART_FILES: readonly string[] = [
+  "src/components/party/DotsBoard.tsx",
+  "src/components/party/party.constants.ts",
+  "src/lib/party/dotsAndBoxes/dotsAndBoxes.ts",
+  "e2e/party-screenshots.spec.ts",
+];
+
+export function readPartyArtFingerprint(root: string = process.cwd()): string | null {
+  try {
+    return fingerprintOf(PARTY_ART_FILES.map((path) => ({ path, text: readFileSync(join(root, path), "utf8") })));
+  } catch {
+    return null;
+  }
+}

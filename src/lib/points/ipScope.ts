@@ -1,4 +1,4 @@
-import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { isPuzzleKind, isRuleVariant } from "@/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -13,13 +13,13 @@ export function scopeOfGame(key: RuleVariant | PuzzleKind): IpScope {
   return isPuzzleKind(key) ? { variants: [], puzzles: [key] } : { variants: [key], puzzles: [] };
 }
 
-/** One family's board: every game and puzzle at home in it. */
+/** One family's board: every game and puzzle at home in it. A party game wins nothing anybody records, so it adds nothing. */
 export function scopeOfFamily(familyKey: string): IpScope | null {
   const family = GAME_FAMILIES.find((one) => one.key === familyKey);
   if (family === undefined) return null;
   return {
-    variants: family.games.filter((game): game is RuleVariant => !isPuzzleKind(game)),
-    puzzles: family.games.filter((game): game is PuzzleKind => isPuzzleKind(game)),
+    variants: family.games.filter(isRuleVariant),
+    puzzles: family.games.filter(isPuzzleKind),
   };
 }
 

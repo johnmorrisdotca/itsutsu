@@ -10,7 +10,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { IpBoard } from "@/components/points/IpBoard";
-import { EVERY_GAME_KEY, gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, gameCopyFor, isPartyKind } from "@/lib/catalogue/gameKeys";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
 import { gameKeyFor, gamePath, setUpPath, slugFor } from "@/lib/gomoku/slugs";
 import { scopeOfFamily } from "@/lib/points/ipBoards";
@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/fami
 }
 
 export function generateStaticParams() {
-  // A puzzle's family page is under the puzzle, as a game's is under the game.
-  return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
+  // A puzzle's family page is under the puzzle, as a game's is under the game. A party game's family has its own (`familyPagePath`).
+  return EVERY_GAME_KEY.filter((variant) => !isPartyKind(variant)).map((variant) => ({ slug: slugFor(variant) }));
 }
 
 /**
@@ -42,7 +42,12 @@ export function generateStaticParams() {
  */
 export default async function GameFamilyPage({ params }: PageProps<"/games/[slug]/family">) {
   const variant = gameKeyFor((await params).slug);
-  if (variant === null) notFound();
+  /*
+   * Not for a party game: its family, Party games, has a page of its own at
+   * /games/party (`familyPagePath`), and a second copy of it here would be a
+   * second door to one room. Nothing links here for one.
+   */
+  if (variant === null || isPartyKind(variant)) notFound();
   const family = familyOf(variant);
   const copy = gameCopyFor(variant);
   // A game in no family is a gap the New Game Gate refuses, but a page must

@@ -10,6 +10,8 @@ import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { PartyCheckersCard } from "@/components/party/PartyCheckersGame";
 import { PartyHalmaCard } from "@/components/party/PartyHalmaGame";
 import { PairGoCard } from "@/components/party/PairGoCard";
+import { PARTY_KIND_TABLES } from "@/components/party/partyKindTables";
+import { PARTY_KIND_LIST } from "@/lib/party/party.constants";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenSeatsSection } from "@/components/mine/OpenSeatsSection";
 import { readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
@@ -138,8 +140,9 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         /*
           The games kept in this browser rather than on the server: the board
           for two, the Chinese Checkers table for up to six (`PartyCheckersCard`),
-          Pair Go's two teams of two (`PairGoCard`), and Halma for four
-          (`PartyHalmaCard`).
+          Pair Go's two teams of two (`PairGoCard`), Halma for four
+          (`PartyHalmaCard`), and every party game's own table, each with the
+          card its row in `PARTY_KIND_TABLES` names (Dots and Boxes).
         */
         local={
           <>
@@ -147,6 +150,10 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
             <PartyCheckersCard />
             <PairGoCard />
             <PartyHalmaCard />
+            {PARTY_KIND_LIST.map((kind) => {
+              const { Card } = PARTY_KIND_TABLES[kind];
+              return <Card key={kind} />;
+            })}
           </>
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}

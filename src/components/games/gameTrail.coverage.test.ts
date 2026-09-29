@@ -42,7 +42,7 @@ const MATCH = [
 
 /** Every file that draws a page under a game, by route: the page itself where it draws its own. */
 const TRAIL_DRAWN_BY: Record<string, readonly string[]> = {
-  "/games/[slug]": ["src/app/games/[slug]/page.tsx", "src/components/puzzles/PuzzleFrontDoor.tsx"],
+  "/games/[slug]": ["src/app/games/[slug]/page.tsx", "src/components/puzzles/PuzzleFrontDoor.tsx", "src/components/party/PartyFrontDoor.tsx"],
   "/games/[slug]/rules": ["src/app/games/[slug]/rules/page.tsx"],
   "/games/[slug]/family": ["src/app/games/[slug]/family/page.tsx"],
   "/games/[slug]/background": ["src/app/games/[slug]/background/page.tsx"],
