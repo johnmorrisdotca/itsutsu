@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.422.0 — 2026-09-29
+- Block Five for four 四人積み: a corner each, twenty-one pieces each, touching your own only corner to corner, round one device
+
 ## 0.421.1 — 2026-09-29
 - The suite's own build reads the games list fresh, as the live site's hour-long cache must not be tested; the untimed fastest times lead to untimed solves only
 
