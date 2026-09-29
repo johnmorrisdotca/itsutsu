@@ -3,9 +3,9 @@
 **Status (2026-09-29): the layer, Dots and Boxes, Chinese Checkers, Halma
 and Block Five (branch `party-online`), and Pair Go with the site's Go
 programs in computer seats (branch `party-online-2`) are built and
-browser-tested, and so is Kumimoji's pass and play with its own computer
-player (John decided its two questions, below). Superghost and Mancala are
-next; Tenka joins when its own agent has finished it.**
+browser-tested, and so are Kumimoji's pass and play with its own computer
+player (John decided its two questions, below), Superghost and Mancala. Tenka
+joins when its own agent has finished it.**
 
 John, 2026-09-28: "all our Pass and Play games should ultimately get an agent
 to make the Multi-device (invite a buddy / bot). so that they can be played on
@@ -293,12 +293,23 @@ it.
      game's reader (`decodeParty`) accepts only English tiles, so a Japanese
      table is refused at Start rather than stored unreadable — true of the
      game kept on one device too, and worth a look of its own.
-5. **Then Superghost and Mancala**, both already on the merge head: a row in
-   `ONLINE_GAMES` through `fromPartyRules` (their `PartyRules` and the four
-   things `PartyRules` does not say), a board in `ONLINE_VIEWS`, the set-up's
-   `WhereChoice` and `SeatChoiceSelect`, and one browser case. Superghost's
-   words follow John's Kumimoji rule: checked in the browser.
-6. **Tenka** joins the same way once its own agent has finished it.
+5. **Done: Superghost and Mancala** (`onlineWordGames.ts`,
+   `e2e/party-online-words.spec.ts`). Mancala is a row through
+   `fromPartyRules`: its `PartyRules` and the four things they do not say.
+   Superghost is not, because its party rules read the word list
+   (`ghostRules.ts`): its row plays the game's own `playGhost` with a judge
+   that answers what the browser said — the same shape a kept game is read
+   back with — so a move is the move and the browser's word on whether a
+   letter finished a word, or a word named is one. Everything else (whose
+   turn, a letter of the alphabet, an answer long enough and holding the
+   fragment) the rules check. The table's language comes with the set-up.
+   Neither has a computer player, so neither offers a computer seat.
+6. **Tenka** joins the same way once its own agent has finished it: a row in
+   `ONLINE_GAMES` (through `fromPartyRules` if its party rules need no word
+   list or other data the server must not load), a board in `ONLINE_VIEWS`,
+   `WhereChoice` and `SeatChoiceSelect` in its set-up, and one browser case;
+   a computer player, if it has one, is `computers` on its row and its move
+   in `onlineComputerMoves.ts`.
 
 ## Decisions to review
 
@@ -324,6 +335,10 @@ it.
   Resign, so the others see a turn when it is pressed, not tile by tile.
 - Kumimoji's bag is the host browser's word for its letters (the server
   checks its size, its wilds and that every tile is one of the set's).
+- Superghost at a table takes the browser's word on words, as Kumimoji does:
+  a member's own browser could claim a word is one when it is not.
+- Mancala at a table is drawn as it stands after a sowing, not sown seed by
+  seed as on one device.
 - Names at a table are the name the site prints (`shownName`: first name and
   an initial); the whole name never leaves the server.
 - The pass-and-play leads now say "or choose Several devices"; Pair Go's,

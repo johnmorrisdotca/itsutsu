@@ -10,6 +10,9 @@ import { PARTY_SPECS } from "@/lib/party/party.constants";
 
 import { MancalaBoard } from "./MancalaBoard";
 import { MarbleChip } from "./MarbleChip";
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
+import { ONLINE_COPY } from "./online/online.constants";
+import type { SeatChoice } from "./online/online.types";
 import { MANCALA_COPY, PARTY_COPY, PARTY_MARBLES } from "./party.constants";
 import type { MancalaSetUpProps } from "./party.types";
 
@@ -28,11 +31,17 @@ const SPEC = PARTY_SPECS.mancala;
  * is a square as wide as its column, and the two rule tiles are one size,
  * each with room for its longest line.
  */
-export function MancalaSetUp({ appearance, onStart, ready }: MancalaSetUpProps) {
+export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetUpProps) {
   const [board, setBoard] = useState(SPEC.defaultSize);
   const [names, setNames] = useState<string[]>(() => new Array<string>(SPEC.mostPlayers).fill(""));
   // A table the set-up offers is always one the rules start.
   const preview = startMancala(board, names)!;
+  // Several devices: a seat chooser in each name's row, and Start sets the table on the server (`OnlineSetUpParts`).
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, SPEC.mostPlayers));
+  const table = useStartTable(online);
+  const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
+  const severalOffer = several ? online : undefined;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start">
@@ -45,9 +54,11 @@ export function MancalaSetUp({ appearance, onStart, ready }: MancalaSetUpProps) 
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          onStart(startMancala(board, names)!);
+          if (severalOffer !== undefined) void table.start(board, choices);
+          else onStart(startMancala(board, names)!);
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{MANCALA_COPY.rules}</legend>
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={MANCALA_COPY.rules}>
@@ -84,22 +95,36 @@ export function MancalaSetUp({ appearance, onStart, ready }: MancalaSetUpProps) 
               <span className="sr-only">
                 Player {index + 1}, {PARTY_MARBLES[index].label}, {index === 0 ? "the near row, sowing first" : "the far row"}
               </span>
-              <input
-                type="text"
-                value={name}
-                maxLength={PARTY_NAME_MOST}
-                placeholder={`Player ${index + 1}${index === 0 ? " (near row, sows first)" : " (far row)"}`}
-                onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
-                className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
-                data-testid="mancala-name"
-              />
+              {severalOffer !== undefined ? (
+                <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />
+              ) : (
+                <input
+                  type="text"
+                  value={name}
+                  maxLength={PARTY_NAME_MOST}
+                  placeholder={`Player ${index + 1}${index === 0 ? " (near row, sows first)" : " (far row)"}`}
+                  onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
+                  className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
+                  data-testid="mancala-name"
+                />
+              )}
             </label>
           ))}
         </fieldset>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="mancala-start">
-          {PARTY_COPY.start} →
+        <button
+          type="submit"
+          className={`${BUTTON_LEAD} ${BUTTON_STRONG}`}
+          data-testid="mancala-start"
+          disabled={table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, SPEC.mostPlayers))}
+        >
+          {severalOffer === undefined ? PARTY_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
+        <p className="text-xs text-muted">{severalOffer === undefined ? PARTY_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, SPEC.mostPlayers))}</p>
       </form>
     </div>
   );

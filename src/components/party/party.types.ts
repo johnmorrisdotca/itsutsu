@@ -176,6 +176,8 @@ export type GhostSetUpProps = {
   onStart: (game: GhostGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /** Every player at a game of Superghost, in turn order, with the letters of the ghost each holds. */
@@ -224,6 +226,8 @@ export type MancalaSetUpProps = {
   onStart: (game: MancalaGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /** A sowing being drawn seed by seed: the board at each step, and which step is showing. */

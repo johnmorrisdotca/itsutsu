@@ -31,7 +31,7 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
@@ -227,5 +227,53 @@ describe("Pair Go on several devices", () => {
     const move = computerPlayOf("go")!.move(game, 1, level) as PairGoMove | null;
     expect(move).not.toBeNull();
     expect(rules.play(game, move!)).not.toBeNull();
+  });
+});
+
+describe("Superghost on several devices", () => {
+  const rules = ONLINE_GAMES.superghost;
+
+  it("starts in the language the set-up asked for, and in no language it does not offer", () => {
+    expect(rules.start(4, 3, { setup: { language: "japanese" } })!.language).toBe("japanese");
+    expect(rules.start(4, 3)!.language).toBe("english");
+    expect(rules.start(4, 3, { setup: { language: "klingon" } })).toBeNull();
+    expect(rules.start(4, 1)).toBeNull();
+  });
+
+  it("plays a move on the browser's word for the word, and checks everything else itself", () => {
+    const game = rules.start(4, 2)!;
+    const a = rules.play(game, { move: { kind: "letter", letter: "c", end: "after" }, word: false })!;
+    expect(rules.toPlay(a)).toBe(1);
+    expect(rules.moveCount(a)).toBeGreaterThan(0);
+    // A letter of no alphabet, and a challenge before any letter, are the rules' to refuse.
+    expect(rules.play(game, { move: { kind: "letter", letter: "9", end: "after" }, word: false })).toBeNull();
+    expect(rules.play(game, { move: { kind: "challenge" }, word: false })).toBeNull();
+    // An answer that does not hold the fragment is refused whatever the browser says of it.
+    const challenged = rules.play(a, { move: { kind: "challenge" }, word: false })!;
+    expect(rules.toPlay(challenged)).toBe(0);
+    expect(rules.play(challenged, { move: { kind: "answer", word: "dogs" }, word: true })).toBeNull();
+    const named = rules.play(challenged, { move: { kind: "answer", word: "cats" }, word: true })!;
+    expect(rules.decode(rules.encode(named))).not.toBeNull();
+  });
+
+  it("reads a move's shape and nothing else", () => {
+    expect(rules.readMove({ move: { kind: "letter", letter: "a", end: "before" }, word: false })).not.toBeNull();
+    expect(rules.readMove({ move: { kind: "letter", letter: "ab", end: "before" }, word: false })).toBeNull();
+    expect(rules.readMove({ move: { kind: "concede" } })).toBeNull();
+  });
+});
+
+describe("Mancala on several devices", () => {
+  const rules = ONLINE_GAMES.mancala;
+
+  it("is its party rules, a move a pit", () => {
+    const game = rules.start(14, 2)!;
+    expect(rules.start(14, 3)).toBeNull();
+    expect(rules.toPlay(game)).toBe(0);
+    const pit = [0, 1, 2, 3, 4, 5].find((one) => rules.play(game, one) !== null)!;
+    const next = rules.play(game, pit)!;
+    expect(rules.moveCount(next)).toBe(1);
+    expect(rules.readMove(3)).toBe(3);
+    expect(rules.readMove("3")).toBeNull();
   });
 });

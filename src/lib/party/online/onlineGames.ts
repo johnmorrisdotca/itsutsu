@@ -8,16 +8,21 @@ import type { PartyCheckersState } from "../../gomoku/party/partyCheckers.types"
 import type { PartyHalmaState } from "../../gomoku/party/partyHalma.types";
 import type { PairGoGame } from "../../gomoku/party/pairGo.types";
 import type { PartyGame } from "../../puzzles/kumimoji/party.types";
+import type { MancalaGame } from "../mancala/mancala.types";
+import type { GhostGame } from "../superghost/superghost.types";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";
 import type { BlocksPieceKey, PartyBlocksState } from "../../gomoku/party/partyBlocks.types";
 import { DOTS_RULES, DOTS_STATUS } from "../dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "../dotsAndBoxes/dotsAndBoxes.types";
 import { PARTY_SPECS } from "../party.constants";
-import type { PartyRules } from "../party.types";
 
 import type { OnlineGameKey, OnlineRules } from "./online.types";
+import { fromPartyRules } from "./onlineGames.parts";
 import { KUMIMOJI_ONLINE, type KumimojiMove } from "./onlineKumimoji";
+import { MANCALA_ONLINE, SUPERGHOST_ONLINE, type GhostTableMove } from "./onlineWordGames";
+
+export { fromPartyRules };
 import { PAIR_GO_ONLINE, type PairGoMove } from "./onlinePairGo";
 import { readPoint } from "./onlinePoints";
 
@@ -42,33 +47,6 @@ export type RaceMove = { from: Point; to: Point };
 
 /** A piece laid at Block Five: which, and the squares it covers. */
 export type BlocksLay = { piece: BlocksPieceKey; cells: readonly Point[] };
-
-/**
- * A party kind's rules (`PartyRules`) as a table on several devices asks them.
- * A new party kind — Superghost, Mancala, Tenka — joins with this and the four
- * things `PartyRules` does not say: whose turn it is, how many moves have been
- * made, a move's shape, and where the names go.
- */
-export function fromPartyRules<S, M>(
-  rules: PartyRules<S, M>,
-  spec: { sizes: readonly number[]; counts: readonly number[] },
-  own: Pick<OnlineRules<S, M>, "toPlay" | "moveCount" | "readMove" | "named">,
-): OnlineRules<S, M> {
-  return {
-    sizes: spec.sizes,
-    counts: spec.counts,
-    // A table of blank names: the names are the seats', written in for a page by `named`.
-    start: (size, count) => (spec.counts.includes(count) ? rules.start(size, new Array<string>(count).fill("")) : null),
-    encode: rules.encode,
-    decode: (text) => rules.decode(text),
-    toPlay: (game) => (rules.over(game) ? null : own.toPlay(game)),
-    winners: (game) => (rules.over(game) ? rules.winners(game) : []),
-    moveCount: own.moveCount,
-    readMove: own.readMove,
-    play: rules.play,
-    named: own.named,
-  };
-}
 
 /** Every count from the fewest to the most. */
 function countsBetween(fewest: number, most: number): number[] {
@@ -141,6 +119,8 @@ type OnlinePlays = {
   blockFive: { game: PartyBlocksState; move: BlocksLay };
   go: { game: PairGoGame; move: PairGoMove };
   kumimoji: { game: PartyGame; move: KumimojiMove };
+  superghost: { game: GhostGame; move: GhostTableMove };
+  mancala: { game: MancalaGame; move: number };
 };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
@@ -151,6 +131,8 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   blockFive: BLOCKS_ONLINE,
   go: PAIR_GO_ONLINE,
   kumimoji: KUMIMOJI_ONLINE,
+  superghost: SUPERGHOST_ONLINE,
+  mancala: MANCALA_ONLINE,
 };
 
 /**

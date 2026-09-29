@@ -7,11 +7,12 @@
 /**
  * THE GAMES THAT CAN BE PLAYED ON SEVERAL DEVICES, by their catalogue key
  * (`GameKey`): Dots and Boxes, the three tables of the rule variants that the
- * race and the tray share, Go as Pair Go, and Kumimoji's pass and play. A game joins by a row in `ONLINE_GAMES` and a
+ * race and the tray share, Go as Pair Go, Kumimoji's pass and play,
+ * Superghost and Mancala. A game joins by a row in `ONLINE_GAMES` and a
  * board in the client's `ONLINE_VIEWS`, both `Record`s over this, so a key
  * added here without either does not compile.
  */
-export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji";
+export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala";
 
 /** Who sits in a seat: a member, nobody yet (its link is out), or a computer. */
 export type OnlineSeatKind = "member" | "open" | "computer";
