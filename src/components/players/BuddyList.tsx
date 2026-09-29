@@ -97,14 +97,14 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               */}
               <span className="text-xs text-muted" data-testid="buddy-going">
                 {with_.going === 0 ? (
-                  "no games going"
+                  "no games in progress"
                 ) : (
                   <Link
                     href={`/play?with=${encodeURIComponent(buddy.id)}`}
                     className={`${RAISED_LINK} underline underline-offset-4`}
                     data-testid="buddy-going-link"
                   >
-                    {with_.going} going{with_.yours > 0 ? `, ${with_.yours} on you` : ""}
+                    {with_.going} in progress{with_.yours > 0 ? `, ${with_.yours} on you` : ""}
                   </Link>
                 )}
               </span>

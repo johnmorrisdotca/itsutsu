@@ -16,7 +16,7 @@ export const MY_GAMES_COPY = {
     theirMove: "Nothing waiting on them.",
     completed: "Nothing finished yet.",
     passAndPlay: "No games on this screen. Try the board on any game's page starts one.",
-    puzzles: "No puzzles going.",
+    puzzles: "No puzzles in progress.",
   },
   groups: {
     /*

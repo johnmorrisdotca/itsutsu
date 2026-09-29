@@ -61,7 +61,7 @@ export const ONLINE_COPY = {
   myYourMove: "Your move",
   myTheirMove: (name: string) => `${name}’s move`,
   myOpen: "Waiting for the open seat",
-  myNone: "No tables going.",
+  myNone: "No online tables.",
   myNoneFinished: "No tables finished yet.",
   myFind: "Find a party game",
   myOpenTable: "Open",

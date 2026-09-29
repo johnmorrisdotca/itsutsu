@@ -23,7 +23,7 @@ export const AWARENESS_DISPLAY: Record<
     description: "Read the board yourself.",
   },
   outlook: {
-    label: "Show who is ahead",
+    label: "Describe the position",
     kanji: "形勢",
     description: "You are told when you are winning or in trouble, never where.",
   },

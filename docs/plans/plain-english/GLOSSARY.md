@@ -115,7 +115,7 @@ something uses the word already chosen for it.
 | Place the piece · Place the piece in hand: … | Lay the piece · Lay the piece in hand: … | — | `game.constants.ts` | same |
 | Load moves | Walk through it | — | `game.constants.ts` (paste a game) | plain |
 | Analysis | Awareness | — | `GameSettingsPanel.tsx` | the setting shows who is ahead and the threats |
-| Show who is ahead · Show threats | Tell me how it stands · Show me the threats | 形勢 · 急所 (unchanged) | `game.constants.ts` | plain, and matches the "Who is ahead" panel |
+| Describe the position · Show threats | Tell me how it stands · Show me the threats | 形勢 · 急所 (unchanged) | `game.constants.ts` | plain; not "Show who is ahead", which would read as the "Who is ahead" checkbox beside it |
 | Hints per player | Hints each | — | `GameSettingsPanel.tsx` | plain |
 | Flip the board · Flip the board back | Turn the board round · Turn the board back | — | `AppearancePanel.tsx`, `SharedGameControls.tsx`, `GameReplay.tsx` | the usual words |
 | Waiting for an opponent 募集中. | Posted, and waiting for somebody 募集中. | 募集中 (unchanged) | `TurnBanner.tsx` | plain |
@@ -154,6 +154,8 @@ something uses the word already chosen for it.
 | In progress | Going | 対局中 (unchanged) | `mine.constants.ts` | the usual words |
 | No games in progress. | Nothing going. | — | `MyGamesList.tsx` | same |
 | Puzzles in progress | Puzzles going | 解きかけ (unchanged) | `mine.constants.ts` | same |
+| No puzzles in progress. · No online tables. · No games in progress. | No puzzles going. · No tables going. · No games going right now. | — | `mine.constants.ts`, `online.constants.ts`, `PlayerPlays.tsx` | same |
+| no games in progress · {n} in progress | no games going · {n} going | — | `BuddyList.tsx` | same |
 | Open games | Open seats | 対局募集 (unchanged) | `mine.constants.ts` | ItsYourTurn's word for games waiting for a player |
 | Prefer not to say | Not saying | — | `ProfileForm.tsx` | the usual words |
 | Show when I'm online | Show when I am here | — | `ProfileSends.tsx` | same |

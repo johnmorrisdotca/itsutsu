@@ -74,7 +74,7 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
         </h3>
         {going.length === 0 ? (
           <p className="text-sm text-muted" data-testid="player-going-none">
-            No games going right now.
+            No games in progress.
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-rule text-sm">
