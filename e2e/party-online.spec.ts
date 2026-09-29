@@ -116,6 +116,9 @@ test.describe("Dots and Boxes on several devices", () => {
     await ready(b.page, "online-table");
     await expect(b.page.getByTestId("online-table")).toHaveAttribute("data-my-seat", "1");
     await expect(b.page.getByTestId("online-status")).toHaveText(`Waiting on ${host.name}.`);
+    // Hana is on the site, so Kenji's page asks at the fast cadence — at the suite's relief, the floor of both (`pollEvery`).
+    await expect(b.page.getByTestId("online-table")).toHaveAttribute("data-poll-hurrying", "true");
+    await expect(b.page.getByTestId("online-table")).toHaveAttribute("data-poll-every", "2500");
     // Not his turn: his board offers no line to tap (asked once the board is there).
     await expect(b.page.getByTestId("dots-board")).toBeVisible();
     await expect(line(b.page, 0)).toHaveCount(0);
@@ -125,6 +128,8 @@ test.describe("Dots and Boxes on several devices", () => {
     await arrives(b.page, 1);
     await expect(b.page.locator('[data-testid="dots-drawn"][data-line="0"]')).toHaveCount(1);
     await expect(b.page.getByTestId("online-status")).toHaveText("Your turn.");
+    // On his own turn his page still asks, at the ordinary cadence, and never hurries for himself.
+    await expect(b.page.getByTestId("online-table")).not.toHaveAttribute("data-poll-hurrying", "true");
     if (SHOTS) await b.page.screenshot({ path: `${SHOTS}/online-seat2-390.png`, fullPage: true });
     await fitsThePhone(b.page);
 
@@ -171,6 +176,8 @@ test.describe("Dots and Boxes on several devices", () => {
     await draw(last, 23);
     await expect(last.getByTestId("online-table")).toHaveAttribute("data-state", "finished");
     await expect(last.getByTestId("dots-winner")).toBeVisible();
+    // A finished table asks nothing more.
+    await expect(last.getByTestId("online-table")).toHaveAttribute("data-poll-every", "0");
     // The other device was waiting on this one, so it sees the end arrive by itself.
     await arrives(other, table.version + 1);
     await expect(other.getByTestId("dots-winner")).toBeVisible();
