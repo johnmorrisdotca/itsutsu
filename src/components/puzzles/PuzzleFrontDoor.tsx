@@ -14,7 +14,7 @@ import { Suspense } from "react";
 import { backgroundPath, familyPath, historyPath, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { DAILY_PARAM } from "@/lib/puzzles/daily";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
-import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_KINDS, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
@@ -25,6 +25,8 @@ import { PuzzleFastest } from "./PuzzleFastest";
 import { PuzzlePlayOrResume } from "./PuzzlePlayOrResume";
 import { PuzzlePoints } from "./PuzzlePoints";
 import { GameTrail } from "@/components/games/GameTrail";
+import { KumimojiShots } from "./KumimojiShots";
+import { KumimojiTryIt } from "./KumimojiTryIt";
 import { offeredLine } from "./offeredLine";
 
 /**
@@ -134,6 +136,19 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             </p>
           </section>
 
+          {/*
+            KUMIMOJI SHOWS ITSELF: pictures of real play and a hand to try, in
+            the reader's browser. John, 2026-09-28: "update and improve the
+            landing page for the game… Provide screenshots and do some cool
+            things." Both are static or browser-only, so the page stays
+            prerendered and costs nothing per view.
+          */}
+          {kind === PUZZLE_KINDS.kumimoji ? (
+            <>
+              <KumimojiShots />
+              <KumimojiTryIt />
+            </>
+          ) : null}
           </div>
         </div>
 

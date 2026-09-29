@@ -12,6 +12,8 @@ import { gamePath, historyPath, puzzleFor, setUpPath, slugFor, variantFor } from
 
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
+import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
+import { KumimojiTiles } from "@/components/puzzles/KumimojiTiles";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
@@ -218,6 +220,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
             ) : null}
           </p>
         </article>
+        {/* Kumimoji's two sets of tiles, counted and drawn, and every form a kana tile plays as: see `KumimojiTiles`. */}
+        {puzzle === PUZZLE_KINDS.kumimoji ? <KumimojiTiles /> : null}
         </div>
 
         {/*
