@@ -160,7 +160,7 @@ export const PHRASES = {
   "setup.opponent": "Opponent",
   "setup.anyoneMeans": "Whoever comes along first takes the other seat.",
   "setup.askedFor": "Asked for",
-  "setup.hereNow": "Here now",
+  "setup.hereNow": "Online now",
   "setup.playersYouKnow": "Players you know",
   "setup.theComputer": "Bots",
   "setup.showAll": "Show all {count}",

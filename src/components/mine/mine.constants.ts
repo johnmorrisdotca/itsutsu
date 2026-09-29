@@ -248,7 +248,7 @@ export const START_COPY = {
   anyone: "anyone",
   atThisScreen: "someone at this screen",
   hereNow: {
-    label: "Here now",
+    label: "Online now",
     kanji: "在室",
     /* The fold under the first few, printing what it holds — see HereNowPanel. */
     more: (count: number) => `and ${count} more, seen lately`,

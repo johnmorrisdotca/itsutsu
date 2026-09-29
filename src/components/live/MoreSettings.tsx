@@ -68,7 +68,7 @@ export function MoreSettings({
       >
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className={SECTION_TITLE}>
-            The rest of the rules <span className="font-mincho normal-case tracking-normal">残りの規則</span>
+            More rules <span className="font-mincho normal-case tracking-normal">残りの規則</span>
           </span>
           <SettingWords words={summary} testId="more-settings-summary" />
         </span>

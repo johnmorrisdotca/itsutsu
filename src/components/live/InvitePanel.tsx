@@ -29,7 +29,7 @@ export function InvitePanel({
 }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-      <SectionTitle kanji="招待">Seat links</SectionTitle>
+      <SectionTitle kanji="招待">Invite links</SectionTitle>
       <p className="text-xs text-muted">
         Send a player their own link. Whoever opens it plays that colour, so it
         is only shown while the seat is still waiting for somebody — once

@@ -182,7 +182,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | Asked for | **指名** | Nominated — the person named for this game. |  |
 | — — — | Friendly | **親善対局** | Friendly game. |  |
 | — — — | Played for its own sake. No rating moves. | **対局そのものを楽しむ一局です。レーティングは変動しません。** | A game played to enjoy the game itself. The rating does not change. |  |
-| — — — | Here now | **在室** | In the room — here now. |  |
+| — — — | Online now | **在室** | In the room — here now. |  |
 | — — — | Opening | **開局ルール** | Opening rule — the rule for how a game begins. |  |
 | — — — | Opponent | **対戦相手** | Opponent — the person you play against. |  |
 | — — — | Players you know | **知人** | Acquaintances — people you know. |  |

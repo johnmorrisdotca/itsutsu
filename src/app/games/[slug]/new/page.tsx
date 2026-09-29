@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/new">): Promise<Metadata> {
   const { slug } = await params;
   const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
-  return { title: copy === null ? "Set up a game" : `Set up ${copy.label}` };
+  return { title: copy === null ? "New game" : `New game of ${copy.label}` };
 }
 
 /**

@@ -45,7 +45,7 @@ export function SetUpHeading({
   variant: RuleVariant | null;
 }) {
   const copy = variant === null ? null : RULE_VARIANT_DISPLAY[variant];
-  const plain: HeadingTitle = copy !== null ? { en: copy.label, kanji: copy.kanji } : { en: "Set up a game", kanji: "対局設定" };
+  const plain: HeadingTitle = copy !== null ? { en: copy.label, kanji: copy.kanji } : { en: "New game", kanji: "新規対局" };
 
   const title: HeadingTitle =
     from.fork !== null
@@ -100,11 +100,11 @@ export function SetUpHeading({
             {lead}{" "}
             {variant !== null ? (
               <Link href={rulesPath(variant)} className="underline underline-offset-4">
-                How it is played
+                How to play
               </Link>
             ) : (
               <Link href="/games" className="underline underline-offset-4">
-                Every game there is
+                All games
               </Link>
             )}
             .

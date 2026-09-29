@@ -266,7 +266,7 @@ export const SET_UP_COPY = {
    * the doorstep, because the rules being agreed to there are somebody else's.
    */
   /** The press after a game has already been begun from this address, in this tab. */
-  board: "Open the board 対局へ",
+  board: "Go to game 対局へ",
   /** The same press where somebody is already asking for exactly this game. */
   continueToSeat: (who: string) => `Continue to sit down with ${who} 次へ`,
   /* Which seat the asker takes, where it is theirs to choose — see `colourChoice.ts`. */
@@ -274,7 +274,7 @@ export const SET_UP_COPY = {
     label: "You play",
     black: "Black, and move first",
     white: "White, and move second",
-    lot: "Drawn by lot",
+    lot: "Random",
   },
   /**
    * How many games at once, as GoldToken asks it: No / Two-game / Four-game /
@@ -290,8 +290,8 @@ export const SET_UP_COPY = {
   },
   /** The headings over the screen's groups, in the order they are drawn. */
   sections: {
-    opponent: { title: "Who you play", kanji: "対戦相手" },
-    rules: { title: "The rules", kanji: "規則" },
+    opponent: { title: "Opponent", kanji: "対戦相手" },
+    rules: { title: "Rules", kanji: "規則" },
     handicap: { title: "Handicap", kanji: "ハンデ" },
   },
   /**
@@ -404,18 +404,18 @@ export const ASK_NEEDS_ACCOUNT =
  * reading.
  */
 export const DOORSTEP_COPY = {
-  title: "Before the first stone",
+  title: "Ready to start",
   kanji: "確認",
   /** Above the table of rows, saying why nothing on this page can be changed here. */
   note: "This is what will be played. Nothing has been written yet.",
   /** Taking a seat somebody has already posted, rather than making a second game. */
   sit: (who: string) => `Sit down with ${who} 着席`,
-  change: "Change something 変更",
+  change: "Change settings 変更",
   /** Who a game against a computer player drawn at random is against, before the draw. */
   drawnFrom: (names: readonly string[]) =>
     `a bot drawn at random from ${names.join(", ")} when you press Start`,
   /** Once this doorstep has made its game, the same control opens its board. */
-  board: "Open the board 対局へ",
+  board: "Go to game 対局へ",
   made: "You have already begun this game. The button below opens its board rather than making a second one.",
   another: "Start another like this one",
   refused: "That game could not be started.",

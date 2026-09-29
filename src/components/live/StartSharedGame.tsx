@@ -116,7 +116,7 @@ export function StartSharedGame({
 
   return (
     <section ref={panel} id="post-seat" className="flex scroll-mt-6 flex-col gap-2">
-      <SectionTitle kanji="通信対局">Play apart</SectionTitle>
+      <SectionTitle kanji="通信対局">Play on two devices</SectionTitle>
       {postSeat ? (
         <p className="text-xs text-moss" data-testid="post-seat-note">
           Posting a seat: start the game and the other seat goes on the games page for whoever
