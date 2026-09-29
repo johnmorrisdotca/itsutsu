@@ -53,6 +53,15 @@ export function KumimojiSetUpOptions({
   const inBag = (length: KumimojiLength, two: boolean) => kumimojiTileCount(size, length, TILE_MIX_TOTAL, two && language === "english");
   const fits = (length: KumimojiLength, two: boolean) => partyFits(players, size, inBag(length, two));
   const tooSmall = LENGTHS.filter((each) => !fits(each, double));
+  /* Six or more round one device: Double in English, Full in Japanese, chosen as the count reaches it and marked, never forced. */
+  const crowd = players >= KUMIMOJI_PARTY.doubleFrom;
+  const recommended = language === "english" ? "Double, 288 tiles," : "Full, all 144 tiles,";
+  const choosePlayers = (each: number) => {
+    setPlayers(each);
+    if (each < KUMIMOJI_PARTY.doubleFrom || players >= KUMIMOJI_PARTY.doubleFrom) return;
+    if (language === "english") setDoubleSet(true);
+    setGameLength("full");
+  };
   const tooFew = (tiles: number) => `${tiles} tiles cannot deal ${players} hands of ${size} and a round of draws (${partyTilesNeeded(players, size)})`;
   return (
     <>
@@ -65,7 +74,7 @@ export function KumimojiSetUpOptions({
             aria-checked={players === each}
             aria-label={each === 1 ? "One player" : `${each} players`}
             className={`${PARTY_PLAYERS_CHIP} ${players === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-            onClick={() => setPlayers(each)}
+            onClick={() => choosePlayers(each)}
             data-testid={`kumimoji-players-${each}`}
           >
             {each}
@@ -76,7 +85,7 @@ export function KumimojiSetUpOptions({
       <p className="min-h-12 text-xs text-muted" data-testid="kumimoji-players-blurb">
         {players === 1
           ? "One player: the solo game, with its clock and its leaderboard. Choose more to pass this device round."
-          : `${players} players pass this device round, one bag between them. Played and kept in this browser only, with no points.${tooSmall.length === 0 ? "" : ` ${tooSmall.map((each) => LENGTH_WORDS[each]).join(" and ")} ${tooSmall.length === 1 ? "is" : "are"} too small for ${players}.`}`}
+          : `${players} players pass this device round, one bag, kept in this browser only.${crowd ? ` ${recommended} is recommended for ${KUMIMOJI_PARTY.doubleFrom} or more.` : ""}${tooSmall.length === 0 ? "" : ` ${tooSmall.map((each) => LENGTH_WORDS[each]).join(" and ")} ${tooSmall.length === 1 ? "is" : "are"} too small for ${players}.`}`}
       </p>
       <div className="grid grid-cols-2 gap-1.5 pt-1" role="radiogroup" aria-label="Language" data-testid="kumimoji-language">
         {(["english", "japanese"] as const).map((each) => (
@@ -125,8 +134,10 @@ export function KumimojiSetUpOptions({
             disabled={(each && language === "japanese") || !fits(gameLength, each)}
             title={fits(gameLength, each) ? undefined : tooFew(inBag(gameLength, each))}
             data-testid={`kumimoji-double-${each ? "on" : "off"}`}
+            data-recommended={each && crowd && language === "english" ? "true" : undefined}
           >
             {each ? "Double" : "One set"} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
+            {each && crowd && language === "english" ? <span aria-label=", recommended"> ★</span> : null}
           </button>
         ))}
       </div>

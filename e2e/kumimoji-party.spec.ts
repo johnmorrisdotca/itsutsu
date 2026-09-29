@@ -204,6 +204,23 @@ async function uncover(page: Page, name: string) {
 }
 
 test.describe("Kumimoji pass and play", () => {
+  test("six or more players choose the Double set's 288 tiles and mark it recommended, and it can still be turned off", async ({ page }) => {
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    await page.getByTestId("kumimoji-players-6").click();
+    await expect(page.getByTestId("kumimoji-double-on")).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("kumimoji-double-on")).toHaveAttribute("data-recommended", "true");
+    await expect(page.getByTestId("kumimoji-length-full")).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("kumimoji-double-on")).toContainText("288");
+    await expect(page.getByTestId("kumimoji-players-blurb")).toContainText("Double, 288 tiles, is recommended");
+    // Not forced: turned off it stays off, and back under six the mark goes.
+    await page.getByTestId("kumimoji-double-off").click();
+    await expect(page.getByTestId("kumimoji-double-off")).toHaveAttribute("aria-checked", "true");
+    await page.getByTestId("kumimoji-players-3").click();
+    await expect(page.getByTestId("kumimoji-players-blurb")).toContainText("3 players pass this device round");
+    await expect(page.getByTestId("kumimoji-double-on")).not.toHaveAttribute("data-recommended", "true");
+  });
+
   test("three players set up with a name, the pass screen first, a word, Done, face-up tables to swipe through, All tables, and the next player's own hand", async ({ page }) => {
     await page.goto(`${AT}/new`);
     await ready(page, "puzzle-set-up");
@@ -494,8 +511,10 @@ test.describe("Kumimoji pass and play", () => {
       await ready(page, "puzzle-set-up");
       await page.getByTestId("kumimoji-players-8").click();
       await expect(page.getByTestId("kumimoji-players-8")).toHaveAttribute("aria-checked", "true");
-      // Eight Classic hands and a round of draws are 96 tiles: Short and Medium cannot deal them.
+      // Eight Classic hands and a round of draws are 96 tiles: from one set, Short and Medium cannot deal them
+      // (eight players choose the Double set, so it is turned off here to see the one set's limits).
       await page.locator(`[data-testid="set-up-size"][data-size="${KUMIMOJI_HANDS.classic}"]`).click();
+      await page.getByTestId("kumimoji-double-off").click();
       await expect(page.getByTestId("kumimoji-length-short")).toBeDisabled();
       await expect(page.getByTestId("kumimoji-length-full")).toHaveAttribute("aria-checked", "true");
       expect(await wide()).toBeLessThanOrEqual(390);
