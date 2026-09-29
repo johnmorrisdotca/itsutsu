@@ -6,6 +6,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * be what another test sees.
  */
 
+/*
+ * Next's data cache, stood in for by one that keeps an answer until its tag is
+ * cleared and never keeps a throw, which is what the store relies on. `held`
+ * lives out here because each test imports a fresh copy of the modules.
+ */
+const held = new Map<string, unknown>();
+vi.mock("next/cache", () => ({
+  unstable_cache:
+    <T,>(read: () => Promise<T>, keys: string[]) =>
+    async () => {
+      const key = keys.join("/");
+      if (!held.has(key)) held.set(key, await read());
+      return held.get(key) as T;
+    },
+  revalidateTag: () => held.clear(),
+}));
+
 type Answer = { status: number; body: unknown } | Error;
 
 const calls: { url: string; method: string; init: RequestInit }[] = [];
@@ -29,7 +46,6 @@ const every = (...entries: { key: string; value: string }[]): Answer => ({
   status: 200,
   body: { ok: true, settings: {}, entries: entries.map((entry) => ({ ...entry, setBy: "operator@example.test", updatedAt: at })) },
 });
-const missing: Answer = { status: 404, body: { ok: false, error: "missing" } };
 const DEV = "https://api.example.test/api/v1/projects/itsutsu-dev/settings";
 
 async function store() {
@@ -39,6 +55,7 @@ async function store() {
 
 beforeEach(() => {
   calls.length = 0;
+  held.clear();
   vi.stubEnv("SUMILABU_BOARD_URL", "https://api.example.test");
   vi.stubEnv("SUMILABU_SETTINGS_DEV_TOKEN", "dev-settings-secret");
   vi.stubEnv("SUMILABU_PROJECT_KEY", "");
@@ -52,12 +69,12 @@ afterEach(() => {
 });
 
 describe("the sign-up decision", () => {
-  it("asks the dev project for its one key, every time it is asked", async () => {
-    answerWith(() => setting("registration", "closed"));
+  it("asks the dev project once, however many strangers ask", async () => {
+    answerWith(() => every({ key: "registration", value: "closed" }));
     const { registrationMode } = await store();
     expect(await registrationMode()).toBe("closed");
     expect(await registrationMode()).toBe("closed");
-    expect(calls.map((call) => call.url)).toEqual([`${DEV}/registration`, `${DEV}/registration`]);
+    expect(calls.map((call) => call.url)).toEqual([DEV]);
   });
 
   it("fails closed to invite-only when the store cannot answer, and says why without the token", async () => {
@@ -73,31 +90,43 @@ describe("the sign-up decision", () => {
     expect(said.join(" ")).not.toMatch(/secret/);
   });
 
+  it("does not remember a failed read: the next stranger asks again", async () => {
+    answerWith(() => new TypeError("fetch failed"));
+    const { registrationMode } = await store();
+    expect(await registrationMode()).toBe("invite-only");
+    answerWith(() => every({ key: "registration", value: "open" }));
+    expect(await registrationMode()).toBe("open");
+  });
+
   it("reads nothing stored, or a mode the registry does not offer, as invite-only", async () => {
-    answerWith(() => missing);
+    answerWith(() => every());
     expect(await (await store()).registrationMode()).toBe("invite-only");
-    answerWith(() => setting("registration", "approval"));
+    held.clear();
+    answerWith(() => every({ key: "registration", value: "approval" }));
     expect(await (await store()).registrationMode()).toBe("invite-only");
   });
 
   it("cannot reach the live project from a checkout, and so fails closed without asking anybody", async () => {
     vi.stubEnv("SUMILABU_PROJECT_KEY", "itsutsu");
     vi.stubEnv("SUMILABU_SETTINGS_TOKEN", "live-settings-secret");
-    answerWith(() => setting("registration", "open"));
+    answerWith(() => every({ key: "registration", value: "open" }));
     expect(await (await store()).registrationMode()).toBe("invite-only");
     expect(calls).toEqual([]);
   });
 });
 
 describe("the door", () => {
-  it("reads both settings in one call, and a write is on the door at the very next read", async () => {
+  it("shares the sign-up decision's one read, and shows a write once the panel has cleared it", async () => {
     let words = "Beta — ask John";
     answerWith((_url, method) => (method === "PUT" ? setting("join_notice", "Open this weekend") : every({ key: "registration", value: "open" }, { key: "join_notice", value: words })));
-    const { fetchSiteSettings, writeSiteSetting } = await store();
+    const { fetchSiteSettings, registrationMode, writeSiteSetting } = await store();
     expect(await fetchSiteSettings()).toEqual({ registration: "open", joinNotice: "Beta — ask John", livePollFast: 3, livePollOrdinary: 15, gameEmails: "off" });
+    expect(await registrationMode()).toBe("open");
 
     await writeSiteSetting("joinNotice", "Open this weekend", "operator@example.test");
     words = "Open this weekend";
+    /* What `/api/site` does after the write. */
+    (await import("next/cache")).revalidateTag("site-settings", { expire: 0 });
     expect(await fetchSiteSettings()).toEqual({ registration: "open", joinNotice: "Open this weekend", livePollFast: 3, livePollOrdinary: 15, gameEmails: "off" });
     expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([`GET ${DEV}`, `PUT ${DEV}/join_notice`, `GET ${DEV}`]);
   });
