@@ -19,7 +19,7 @@ export function TenkaPlayers({ game }: { game: TenkaGame }) {
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="tenka-players">
       <h2 className={`${SECTION_TITLE} flex items-baseline justify-between gap-2`}>
         <span>
-          At the table <span className="font-mincho normal-case tracking-normal">席</span>
+          Players <span className="font-mincho normal-case tracking-normal">席</span>
         </span>
         <span className="normal-case tracking-normal" data-testid="tenka-round">
           {TENKA_COPY.roundOf(game.round, game.rounds, TENKA_WORLD_ROUNDS)}

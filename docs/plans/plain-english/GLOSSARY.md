@@ -80,6 +80,9 @@ something uses the word already chosen for it.
 | Leaderboard | Standings | 番付 (was 名人) | `standings/page.tsx` title and trail, `PuzzleStandingsPage.tsx` | one word for it |
 | Leaderboard → | Standings → | — | `i18n.constants.ts` `catalogue.standings` | same |
 | leaderboard · history | standings · record | — | `GameList.tsx`, `standings/page.tsx`, `PuzzleRecordPage.tsx` link rows | same |
+| Family | Its family | 同族 (unchanged) | `GameFamily.tsx`, the panel's heading when a game is alone in its family | one word for it |
+| Total | All of it | — | `LegacySource.tsx`, a kept record's footer row | plain |
+| Local time 01:12 | 01:12 where they are | — | `Whereabouts.tsx`, on a player's page | plain |
 | Strength by game | Measured game by game | 実力 (unchanged) | `LadderStrength.tsx` | plain |
 
 ## Set-up
@@ -152,6 +155,7 @@ something uses the word already chosen for it.
 | Now | Was | Kanji | Where | Why |
 |---|---|---|---|---|
 | In progress | Going | 対局中 (unchanged) | `mine.constants.ts` | the usual words |
+| The Practice board on any game's page starts one. | Try the board on any game's page starts one. | — | `mine.constants.ts`, empty Pass and play tab | the board's name now |
 | No games in progress. | Nothing going. | — | `MyGamesList.tsx` | same |
 | Puzzles in progress | Puzzles going | 解きかけ (unchanged) | `mine.constants.ts` | same |
 | No puzzles in progress. · No online tables. · No games in progress. | No puzzles going. · No tables going. · No games going right now. | — | `mine.constants.ts`, `online.constants.ts`, `PlayerPlays.tsx` | same |
@@ -171,6 +175,8 @@ something uses the word already chosen for it.
 |---|---|---|---|---|
 | All solves | Every solve here | 棋譜 (unchanged) | `PuzzleFrontDoor.tsx` | plain |
 | Your solves | Your own solves | — | `PuzzleFrontDoor.tsx` | same as the page it opens |
+| Leaderboard · All solves | Fastest · Record | — | `WordSettingsPanel.tsx` (the Gomoji language rows) | the pages they open are the Leaderboard and All solves |
+| First tap | What a tap does first | — | `puzzles.constants.ts` (Picture logic's pen chooser) | plain |
 | Sort: | Order: | — | `PuzzleRecordPage.tsx` | the usual word |
 | Normal | As made | 爆 (unchanged) | `TsunagiHelpPickers.tsx` | plain; "Softer" beside it reads fine and stays |
 
@@ -178,7 +184,7 @@ something uses the word already chosen for it.
 
 | Now | Was | Kanji | Where | Why |
 |---|---|---|---|---|
-| Players | At the table / At the board | 席 (unchanged) | `DotsGame.tsx`, `MancalaGame.tsx`, `PairGoGame.tsx`, `PartyBlocksStatus.tsx`, `PartyRaceGame.tsx`, `online.constants.ts` `seatsHeading` | the list of who is playing. Superghost's (`party.constants.ts` `GHOST_COPY.table`) still says At the table: that file is fingerprinted for the party screenshots, so it changes with the next `pnpm screenshots:party` |
+| Players | At the table / At the board | 席 (unchanged) | `DotsGame.tsx`, `MancalaGame.tsx`, `PairGoGame.tsx`, `PartyBlocksStatus.tsx`, `PartyRaceGame.tsx`, `online.constants.ts` `seatsHeading` | the list of who is playing, Superghost's (`party.constants.ts` `GHOST_COPY.table`, with the party pictures' stamp re-taken; no picture changed) and Tenka's (`TenkaPlayers.tsx`) included |
 | Start online game · Starting… · The game could not be started. | Set the table · Setting the table… · The table could not be set. | — | `online.constants.ts` | Start begins a game, everywhere; "online" keeps it apart from the one-device Start |
 | Online table | At a table | 卓 (unchanged) | `online.constants.ts`, `tables/[id]/page.tsx` | says what the page is |
 | Online tables · Finished tables | At a table · Tables finished | — | `online.constants.ts` (My games) | plain |

@@ -37,10 +37,10 @@ export function WordSettingsPanel({ game }: { game: PuzzleKind }) {
                 Daily words
               </Link>
               <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">
-                Fastest
+                Leaderboard
               </Link>
               <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline">
-                Record
+                All solves
               </Link>
             </li>
           );

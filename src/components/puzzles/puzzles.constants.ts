@@ -509,5 +509,5 @@ export const PICTURE_COPY = {
   howTo: "Tap to shade, again for ✕, again to clear. Drag along a row or column to do the same to every square like the first.",
   howToMark: "Tap to mark ✕, again to shade, again to clear. Drag along a row or column to do the same to every square like the first.",
   pens: { shade: "Shade", mark: "Mark ✕" },
-  pensLabel: "What a tap does first",
+  pensLabel: "First tap",
 } as const;
