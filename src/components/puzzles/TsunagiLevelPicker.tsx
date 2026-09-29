@@ -7,7 +7,7 @@ import { blockRange, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
 import { tsunagiRole } from "@/lib/puzzles/tsunagi/ladder";
 import { TSUNAGI_LEVEL_COUNTS, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
 
-import { TSUNAGI_MARBLE, tsunagiMarbleLook, type TsunagiMarks } from "./puzzles.constants";
+import { TSUNAGI_MARBLE, tsunagiMarbleLook, tsunagiNumberType, type TsunagiMarks } from "./puzzles.constants";
 
 /** A block's sixteen levels, in two rows of eight: short enough to sit under the preview. */
 const ACROSS = TSUNAGI_BLOCK / 2;
@@ -111,7 +111,7 @@ export function TsunagiLevelPicker({
             )}
             {solved ? (
               <>
-                <span className={`${TSUNAGI_MARBLE} size-6 text-[0.65rem]`} style={tsunagiMarbleLook(block - 1, marks)}>
+                <span className={`${TSUNAGI_MARBLE} size-6`} style={{ ...tsunagiMarbleLook(block - 1, marks), ...tsunagiNumberType(level, "1.5rem", "0.65rem") }} data-testid="tsunagi-level-marble">
                   {level}
                 </span>
                 <span className="mt-0.5 text-[0.55rem] font-normal" data-testid="tsunagi-level-time">

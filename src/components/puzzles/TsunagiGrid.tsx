@@ -10,7 +10,20 @@ import { ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { hexCellAt, tsunagiHexFit } from "./tsunagiHex";
-import { TSUNAGI_BEAD, TSUNAGI_MARBLE, tsunagiBeadLook, tsunagiLineColour, tsunagiMarbleLook, tsunagiWash, type TsunagiFill, type TsunagiMarks } from "./puzzles.constants";
+import {
+  TSUNAGI_BEAD,
+  TSUNAGI_MARBLE,
+  TSUNAGI_MARBLE_ACROSS,
+  TSUNAGI_MARBLE_CELL,
+  TSUNAGI_WAYPOINT_RING,
+  tsunagiBeadLook,
+  tsunagiLineColour,
+  tsunagiMarbleLook,
+  tsunagiNumberType,
+  tsunagiWash,
+  type TsunagiFill,
+  type TsunagiMarks,
+} from "./puzzles.constants";
 
 /**
  * THE TSUNAGI BOARD: marbles on the board itself, in the player's board
@@ -237,9 +250,9 @@ export function TsunagiGrid({
               if (ghost) {
                 // A ghost of the far edge: what is there, faded, and nothing to find in a test's count.
                 return (
-                  <div key={`ghost-${place}`} className="relative flex items-center justify-center opacity-35" data-ghost={at} aria-hidden="true">
+                  <div key={`ghost-${place}`} className={`${TSUNAGI_MARBLE_CELL} relative flex items-center justify-center opacity-35`} data-ghost={at} aria-hidden="true">
                     {cell >= 0 ? (
-                      <span className={`${TSUNAGI_MARBLE} ${size >= 8 ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`} style={tsunagiMarbleLook(cell, marks)}>
+                      <span className={TSUNAGI_MARBLE} style={{ ...tsunagiMarbleLook(cell, marks), ...tsunagiNumberType(cell + 1, TSUNAGI_MARBLE_ACROSS) }}>
                         {marks === "numbers" ? cell + 1 : null}
                       </span>
                     ) : fill === "marbles" && owner >= 0 ? (
@@ -254,7 +267,7 @@ export function TsunagiGrid({
               return (
                 <div
                   key={at}
-                  className="relative flex items-center justify-center"
+                  className={`${TSUNAGI_MARBLE_CELL} relative flex items-center justify-center`}
                   data-testid="puzzle-cell"
                   data-index={at}
                   data-owner={owner >= 0 ? owner : undefined}
@@ -267,8 +280,9 @@ export function TsunagiGrid({
                   {waypoint === undefined ? null : (
                     // A WAYPOINT: a ring of its line's colour on a cell only that line may pass.
                     <span
-                      className="pointer-events-none absolute inset-[18%] flex items-center justify-center rounded-full border-[3px] text-[0.6rem] font-bold"
-                      style={{ borderColor: tsunagiLineColour(waypoint, marks), color: tsunagiLineColour(waypoint, marks) }}
+                      className="pointer-events-none absolute inset-[18%] flex items-center justify-center rounded-full font-bold leading-none tabular-nums"
+                      // The ring thins on a small cell, and its number is sized to what is left inside it, as a marble's is.
+                      style={{ borderStyle: "solid", borderWidth: TSUNAGI_WAYPOINT_RING, borderColor: tsunagiLineColour(waypoint, marks), color: tsunagiLineColour(waypoint, marks), ...tsunagiNumberType(waypoint + 1, `(64cqw - 2 * ${TSUNAGI_WAYPOINT_RING})`, "0.6rem") }}
                       data-testid="tsunagi-waypoint"
                       data-pair={waypoint}
                     >
@@ -288,7 +302,7 @@ export function TsunagiGrid({
                     />
                   ) : null}
                   {cell >= 0 ? (
-                    <span className={`${TSUNAGI_MARBLE} ${size >= 8 ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`} style={tsunagiMarbleLook(cell, marks)} data-testid="tsunagi-marble" data-pair={cell}>
+                    <span className={TSUNAGI_MARBLE} style={{ ...tsunagiMarbleLook(cell, marks), ...tsunagiNumberType(cell + 1, TSUNAGI_MARBLE_ACROSS) }} data-testid="tsunagi-marble" data-pair={cell}>
                       {marks === "numbers" ? cell + 1 : null}
                     </span>
                   ) : fill === "marbles" && owner >= 0 ? (
