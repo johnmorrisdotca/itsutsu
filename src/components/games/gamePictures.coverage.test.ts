@@ -96,6 +96,9 @@ const PICTURE_REACH = 1000;
  *  - a HEADING over something that is itself about that one game.
  */
 const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
+  "src/components/party/TableWallpaper.tsx": [
+    { line: "<BoardWallpaper id={`table-${game}`} name={gameCopyFor(game).label}", why: "the title of a finished table's wallpaper, whose picture is the game's board itself" },
+  ],
   "src/components/history/RecordPage.tsx": [
     { line: "<GameName variant={variant} kanji />", why: "the title of one game's record" },
   ],

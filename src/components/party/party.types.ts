@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
-import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
+import type { Point, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 import type { BlocksHold, BlocksPieceKey, BlocksPreview, PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import type { PartyRaceRules, PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
@@ -52,6 +52,8 @@ export type PartyRaceKind<S extends PartyRaceState, C extends number> = {
   useKept: () => [S | null | undefined, (game: S | null) => void];
   /** The table's test id: `party-checkers` for the star, `party-halma` for the square. */
   testId: string;
+  /** The game it is, for its name wherever the table says it (a finished board's wallpaper). */
+  variant: RuleVariant;
   copy: PartyGameCopy;
 };
 

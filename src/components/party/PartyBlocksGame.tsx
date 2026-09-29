@@ -12,6 +12,9 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/compon
 import { BLOCKS_STATUS, againBlocksParty, blocksLeaders, layBlocks } from "@/lib/gomoku/party/partyBlocks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
+import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import { PartyBlocksBoard } from "./PartyBlocksBoard";
 import { PartyBlocksSetUp } from "./PartyBlocksSetUp";
 import { PartyBlocksPlayers, PartyBlocksTurnLine } from "./PartyBlocksStatus";
@@ -152,6 +155,9 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
             </button>
           )}
         </div>
+        {playing ? null : (
+          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player)), blocksLeaders(game))} />
+        )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {PARTY_BLOCKS_COPY.about} →

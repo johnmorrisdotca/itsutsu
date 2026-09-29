@@ -9,7 +9,8 @@ import type { CardSpot } from "@/components/cards/cards.types";
 import { useCardDrag } from "@/components/cards/useCardDrag";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
-import { tableNews } from "@/components/game/winNews";
+import { resultLine, tableNews } from "@/components/game/winNews";
+import { TableWallpaper } from "../TableWallpaper";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { cardOfId } from "@/lib/cardGames/cards";
@@ -235,6 +236,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
           </button>
         )}
       </div>
+      {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners)} /> : null}
       <p className="text-xs text-muted">{CARD_TABLE_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">

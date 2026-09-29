@@ -9,6 +9,7 @@ import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
 import { tableNews } from "@/components/game/winNews";
+import { TableWallpaper } from "@/components/party/TableWallpaper";
 import { PARTY_COPY } from "@/components/party/party.constants";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, PLAY_SURFACE, SECTION_HEADING } from "@/components/ui/ui.constants";
@@ -188,9 +189,12 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         </TsunagiViewport>
       </WinCoverOver>
       {state.over ? (
-        <button type="button" className={PLAY_BUTTON} onClick={again} data-testid="mahjong-table-again">
-          <PressLabel words={WIN_COVER_COPY.playAgain} kanji="再" />
-        </button>
+        <>
+          <button type="button" className={PLAY_BUTTON} onClick={again} data-testid="mahjong-table-again">
+            <PressLabel words={WIN_COVER_COPY.playAgain} kanji="再" />
+          </button>
+          <TableWallpaper game="mahjong" result={winnersLine(table, state.winners)} />
+        </>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={undo} disabled={lastPerson < 0 || computerTurn} data-testid="mahjong-table-undo">

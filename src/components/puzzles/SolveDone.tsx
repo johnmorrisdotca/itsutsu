@@ -22,6 +22,7 @@ import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 import { freshSolitaireSeed, isAnyDeal } from "@/lib/puzzles/solitaire/generate";
 
 import { usePuzzleClock } from "./PuzzleClockContext";
+import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { useWinSlot } from "./PuzzleWinSlot";
 import type { Done, SolveRace } from "./solveShared";
@@ -193,6 +194,19 @@ export function SolveDone({
         ) : null}
         <PuzzleWayBack kind={puzzle.kind} />
       </div>
+      {/* The grid as it was finished, as a desktop or phone wallpaper, as every board game offers its positions. */}
+      <PuzzleWallpaper
+        puzzle={puzzle}
+        result={
+          gaveUp
+            ? `Given up after ${clockText(done.elapsedMs)}${moveWords}`
+            : cards
+              ? `Won in ${clockText(done.elapsedMs)}${moveWords}`
+              : done.outOfTime
+                ? "Out of time"
+                : `Solved in ${clockText(done.elapsedMs)}`
+        }
+      />
     </div>
     </>
   );

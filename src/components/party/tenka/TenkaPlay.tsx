@@ -7,7 +7,8 @@ import { PartySeatColour } from "../PartySeatColour";
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
-import { tableNews } from "@/components/game/winNews";
+import { resultLine, tableNews } from "@/components/game/winNews";
+import { TableWallpaper } from "../TableWallpaper";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { TENKA_MOVES, TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
@@ -194,6 +195,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
               </button>
             )}
           </div>
+          {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => tenkaPlayerName(game, seat)), game.winners)} />}
           <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
           <p className="text-sm">
             <Link href={gameHref} className="underline underline-offset-4">

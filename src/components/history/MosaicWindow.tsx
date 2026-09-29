@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { SECTION_TITLE } from "@/components/ui/ui.constants";
+import { SECTION_TITLE, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { BrandWordmark } from "@/components/layout/BrandMarks";
 
 /** A small picture that opens the window: the picture itself is the press, with room for the icon over its corner. */
@@ -82,7 +82,7 @@ export function MosaicWindow({
         <button
           type="button"
           onClick={press}
-          className="self-start text-xs text-muted underline underline-offset-4 hover:text-ink"
+          className={`inline-flex items-center gap-1 self-start text-xs text-muted underline underline-offset-4 hover:text-ink ${TAP_HEIGHT}`}
           data-testid={testId}
           {...readyMark(hydrated)}
         >

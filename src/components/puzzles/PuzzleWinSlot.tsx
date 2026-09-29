@@ -40,7 +40,7 @@ export function WinStack({ children, hidden = false }: { children: ReactNode; /*
   const context = useContext(WinSlotContext);
   return (
     <div className="grid grid-cols-[minmax(0,1fr)]">
-      <div className={`col-start-1 row-start-1 min-w-0 ${hidden ? "invisible" : ""}`} aria-hidden={hidden || undefined}>
+      <div className={`col-start-1 row-start-1 min-w-0 ${hidden ? "invisible" : ""}`} aria-hidden={hidden || undefined} data-wallpaper-board>
         {children}
       </div>
       <div ref={context?.mark} className="contents" data-testid="win-slot" />

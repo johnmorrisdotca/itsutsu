@@ -86,10 +86,21 @@ const CHOOSERS: Record<string, string> = {
   "src/components/game/GameBrowser.tsx": "a chooser over the board: the name is what you pick, not a way out",
 };
 
+/**
+ * Files where a game's name is the TITLE OF A PICTURE of that game, in a window
+ * opened over the game's own page: a finished board's wallpaper, whose title
+ * bar and window name the game the reader has just played. The page the window
+ * opens over is that game's, so a link would lead where the reader already is.
+ */
+const PICTURE_TITLES: Record<string, string> = {
+  "src/components/party/TableWallpaper.tsx": "the title of a finished table's wallpaper, over the page of the game it pictures",
+};
+
 describe("a game's name is the way into that game", () => {
   it("every chooser exception is a file that still exists", () => {
     const known = new Set(FILES.map((file) => file.path));
     expect(Object.keys(CHOOSERS).filter((path) => !known.has(path))).toEqual([]);
+    expect(Object.keys(PICTURE_TITLES).filter((path) => !known.has(path))).toEqual([]);
   });
 
   it("has files to check, so a passing run means something", () => {
@@ -149,7 +160,7 @@ describe("a game's name is the way into that game", () => {
       ),
     )
       .map((file) => file.path)
-      .filter((path) => CHOOSERS[path] === undefined);
+      .filter((path) => CHOOSERS[path] === undefined && PICTURE_TITLES[path] === undefined);
 
     expect(offenders, "render the name through GameName, which links it").toEqual([]);
   });

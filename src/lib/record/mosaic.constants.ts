@@ -88,3 +88,18 @@ export const VISUAL_MOVES_COPY = {
   kanji: "局面",
   soFar: "In play",
 } as const;
+
+/**
+ * THE WORDS OF A FINISHED BOARD'S WALLPAPER — every game that is not a board
+ * game: its board as it was finished, in the game wallpaper's frame
+ * (`BoardWallpaper`). John, 2026-09-29, on a finished Solitaire: "where is the
+ * option to see the Desktop / Mobile image of the game?"
+ */
+export const BOARD_WALLPAPER_COPY = {
+  /** The quiet press beside a finished game's way on, and the window's name. */
+  openLabel: "Game wallpaper",
+  kanji: "壁紙",
+  drawing: "Drawing the board…",
+  failed: "The board could not be drawn in this browser.",
+  alt: (name: string) => `The finished board of ${name}, as a wallpaper`,
+} as const;

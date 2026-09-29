@@ -15,6 +15,8 @@ import { GHOST_PHASE, ghostAgain, playGhost } from "@/lib/party/superghost/super
 import type { GhostEnd, GhostMove } from "@/lib/party/superghost/superghost.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
 import { GhostFragment } from "./GhostFragment";
 import { GhostKeys } from "./GhostKeys";
 import { GhostPlayers } from "./GhostPlayers";
@@ -165,6 +167,7 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
             </button>
           )}
         </div>
+        {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners)} />}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {GHOST_COPY.about} →

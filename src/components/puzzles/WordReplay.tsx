@@ -100,6 +100,8 @@ export function WordReplay({
 
   return (
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
+      {/* The board alone, without the scrubber and keys under it, is what a finished word's wallpaper is taken of (`BoardWallpaper`). */}
+      <div data-wallpaper-focus>
       {many ? (
         <WordBoards size={size} rows={allowed} boards={boards} free={free} typing={emptyRow(size)} done style={style} onChoose={NOTHING} appearance={appearance} />
       ) : (
@@ -117,6 +119,7 @@ export function WordReplay({
           appearance={appearance}
         />
       )}
+      </div>
       <ReplayScrubber index={Math.min(at, last)} last={last} onGo={setAt} testId="word-replay" />
       {kana ? (
         <KanaKeyboard

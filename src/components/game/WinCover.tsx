@@ -136,7 +136,10 @@ export function WinCover({ news, onClose }: { news: WinNews; onClose: () => void
 export function WinCoverOver({ news, onClose, children }: { news: WinNews | null; onClose: () => void; children: ReactNode }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)]" data-testid="win-cover-over" data-covered={news === null ? "false" : "true"}>
-      <div className="col-start-1 row-start-1 min-w-0">{children}</div>
+      {/* The board, marked as the one a finished game's wallpaper is taken of (`BoardWallpaper`). */}
+      <div className="col-start-1 row-start-1 min-w-0" data-wallpaper-board>
+        {children}
+      </div>
       {news === null ? null : <WinCover news={news} onClose={onClose} />}
     </div>
   );

@@ -35,6 +35,7 @@ import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
 import { usePlayInView } from "./usePlayInView";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
@@ -346,6 +347,7 @@ export function GomojiKanaSolve({
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>
+          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : `Out of ${rows} guesses`} />
         </div>
       ) : (
         <>

@@ -147,6 +147,8 @@ export function TsunagiViewport({
         onPointerCancel={() => (held.current = null)}
         data-testid={`${name}-viewport`}
         data-zoom={view.zoom.toFixed(2)}
+        // The board as it is framed, without the pad under it, is what a finished game's wallpaper is taken of (`BoardWallpaper`).
+        data-wallpaper-focus
       >
         <div className="absolute top-0 left-0" style={{ width: width * view.zoom || "100%", transform: `translate(${view.x}px, ${view.y}px)` }}>
           {children}
