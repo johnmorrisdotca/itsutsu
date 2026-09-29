@@ -9,7 +9,6 @@ import { CARD_GAME_SPECS } from "@/lib/cardGames/cardGames.constants";
 import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_MARBLES } from "../party.constants";
 import { CARD_ADAPTERS } from "./cardAdapters";
 import { CARD_TABLE_COPY, PREVIEW_SEED } from "./cardTable.constants";
 import type { CardSetUpProps } from "./cardTable.types";
@@ -99,9 +98,7 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
               <div key={seat} className={`flex items-center gap-2 text-sm ${away ? "invisible" : ""}`} aria-hidden={away ? true : undefined} data-testid="cards-seat-set-up" data-seat={seat}>
                 <MarbleChip player={seat} />
                 <label className="min-w-0 flex-1">
-                  <span className="sr-only">
-                    Player {seat + 1}, {PARTY_MARBLES[seat].label}
-                  </span>
+                  <span className="sr-only">Player {seat + 1}</span>
                   <input
                     type="text"
                     value={name}
