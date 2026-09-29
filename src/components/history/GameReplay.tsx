@@ -262,6 +262,8 @@ export function GameReplay({
             appearance={{ ...appearance, flipped: turned, showMoveNumbers: showNumbers }}
             readOnly
             onPlay={() => {}}
+            // The colours the players chose for their pieces, as they played them.
+            colours={game.colours}
           />
         </div>
         {/*

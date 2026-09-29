@@ -1,3 +1,4 @@
+import type { SeatColours } from "@/lib/pieces/seatColours";
 import type { PictureSize } from "@/components/games/games.types";
 import type { BoardGrid, Cell, GameState, MoveNarrowing, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { BOARD_THEMES, FELT_LIST, STONE_SETS } from "./Board.constants";
@@ -161,6 +162,11 @@ export type BoardProps = {
    * embed, a replay, somebody watching — which is drawn as it is stored.
    */
   viewer?: Stone | null;
+  /**
+   * The colour each seat chose for its pieces (`seatColours.ts`), laid over
+   * the reader's stone set; a seat absent from it is drawn as it always was.
+   */
+  colours?: SeatColours;
 };
 
 export type IntersectionProps = {

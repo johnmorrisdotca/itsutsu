@@ -10,6 +10,21 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.438.0 — 2026-09-29
+- Choose the colour of your own pieces, Deep Red, Blue, Green, Plum and more, at set-up or on your first move, and change it whenever you like
+
+## 0.437.0 — 2026-09-29
+- Mexican Train: dominoes for two to eight round one device, with computer players in any seat
+
+## 0.436.0 — 2026-09-29
+- Solitaire: classic Klondike on our own cards, draw one or three, every card draggable, winnable deals by default
+
+## 0.435.0 — 2026-09-29
+- Mahjong Solitaire 牌合わせ: clear the tiles in matching pairs from four layouts, alone or taking turns with up to three others
+
+## 0.434.0 — 2026-09-29
+- Buttons, labels and titles across the site say things the way you would expect: Leaderboard, Game history, Objective, Practice board, Online now
+
 ## 0.433.2 — 2026-09-29
 - The site's largest server function is 4 MB smaller: the header no longer carries a whole validation library nine times, and the word lists a browser fetches stay out of the server
 

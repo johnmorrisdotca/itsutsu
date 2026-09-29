@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { usePartyMarbles } from "../partyMarbles";
+import { SeatColourButton } from "../SeatColourButton";
 
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
@@ -8,8 +10,7 @@ import { TENKA_NAME_MOST, TENKA_PLACING, TENKA_WORLD_ROUNDS } from "@/lib/party/
 import type { TenkaPlacing } from "@/lib/party/tenka/tenka.types";
 import { startTenka } from "@/lib/party/tenka/tenkaStart";
 
-import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY, PARTY_MARBLES } from "../party.constants";
+import { PARTY_COPY } from "../party.constants";
 import { TENKA_COPY } from "./tenka.constants";
 import type { TenkaSetUpProps } from "./tenka.types";
 import { TenkaMap } from "./TenkaMap";
@@ -59,6 +60,8 @@ function Choices<T extends string | number>({ label, options, value, onChange, w
  * chosen kept in their place and hidden.
  */
 export function TenkaSetUp({ appearance, onStart, ready }: TenkaSetUpProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const [count, setCount] = useState(SPEC.defaultPlayers);
   const [rounds, setRounds] = useState(SPEC.defaultSize);
   const [placing, setPlacing] = useState<TenkaPlacing>(TENKA_PLACING.auto);
@@ -100,9 +103,9 @@ export function TenkaSetUp({ appearance, onStart, ready }: TenkaSetUpProps) {
             const sitting = index < count;
             return (
               <label key={index} className={`flex items-center gap-2 text-sm ${sitting ? "" : "invisible"}`} aria-hidden={sitting ? undefined : true}>
-                <MarbleChip player={index} />
+                <SeatColourButton player={index} playing={count} />
                 <span className="sr-only">
-                  Player {index + 1}, {PARTY_MARBLES[index].label}
+                  Player {index + 1}, {marbles[index].label}
                 </span>
                 <input
                   type="text"

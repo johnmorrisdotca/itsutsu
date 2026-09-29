@@ -1,13 +1,14 @@
 "use client";
 
 import { BOARD_THEMES } from "@/components/board/Board.constants";
+import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import { laidEnds } from "@/lib/party/mexicanTrain/dominoes";
 import { TRAIN_PHASES, mayLay, mexicanOf, openEnd, trainPlayerName } from "@/lib/party/mexicanTrain/mexicanTrain";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { DominoFace } from "./DominoFace";
-import { PARTY_MARBLES, TRAIN_COPY } from "./party.constants";
+import { TRAIN_COPY } from "./party.constants";
 import { HUB_HEIGHT, TABLE_UNITS, rowBoxes, tileX } from "./trainLayout";
 import type { TrainTableProps } from "./train.types";
 
@@ -41,6 +42,8 @@ function shortName(name: string): string {
  * dropped on it does the same (`data-train`, read by the hand's drag).
  */
 export function TrainTable({ game, appearance, holding = null, onTrain, readOnly = false }: TrainTableProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
   const ink = theme.line;
   const band = theme.dark ? "rgba(255,255,255,0.06)" : "rgba(58,32,8,0.07)";
@@ -82,7 +85,7 @@ export function TrainTable({ game, appearance, holding = null, onTrain, readOnly
         {game.trains.map((train, at) => {
           const row = rows[at];
           const isMexican = at === mexican;
-          const marble = isMexican ? null : PARTY_MARBLES[at];
+          const marble = isMexican ? null : marbles[at];
           const target = !readOnly && playing && holding !== null && mayLay(game, holding, at);
           const toMove = playing && !isMexican && at === game.toPlay;
           const shown = train.laid.slice(Math.max(0, train.laid.length - row.fits));

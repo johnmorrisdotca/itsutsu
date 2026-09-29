@@ -1,12 +1,15 @@
+"use client";
+
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
+import { usePartyMarbles } from "../partyMarbles";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
 import { cardKind, cardTerritory } from "@/lib/party/tenka/tenkaCards";
 import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
 import { tenkaPlayerName, territoriesHeld } from "@/lib/party/tenka/tenkaTurn";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_MARBLES } from "../party.constants";
+
 import { TENKA_COPY } from "./tenka.constants";
 
 /**
@@ -17,6 +20,8 @@ import { TENKA_COPY } from "./tenka.constants";
  * news, so the map never moves under a finger.
  */
 export function TenkaTurnLine({ game }: { game: TenkaGame }) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   if (game.phase === TENKA_PHASES.over) {
     const names = game.winners.map((seat) => tenkaPlayerName(game, seat));
     const world = game.out.filter((out) => !out).length === 1;
@@ -36,7 +41,7 @@ export function TenkaTurnLine({ game }: { game: TenkaGame }) {
       </p>
     );
   }
-  const marble = PARTY_MARBLES[game.toPlay];
+  const marble = marbles[game.toPlay];
   const news = [
     game.lastOut !== null ? `${tenkaPlayerName(game, game.lastOut.by)} knocked ${tenkaPlayerName(game, game.lastOut.seat)} out and took their cards.` : null,
     game.lastTrade !== null ? `${tenkaPlayerName(game, game.lastTrade.seat)} traded a set for ${TENKA_COPY.armies(game.lastTrade.armies)}.` : null,

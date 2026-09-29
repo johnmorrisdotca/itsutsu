@@ -1,6 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { PartyColoursProvider } from "../partyMarbles";
+import { PartySeatColour } from "../PartySeatColour";
+import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { useCallback, useMemo, useState } from "react";
 
 import Link from "@/components/ui/Link";
@@ -85,8 +88,15 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
 
   const playing = view.status === ONLINE_STATUS.playing;
   const canMove = playing && view.toPlay === view.mySeat && !sending;
+  // Every place's colour as the server keeps it, and how this reader changes their own (`setTableColour`).
+  const colours = view.seats.map((one) => one.colour);
+  const chooseColour = async (_seat: number, colour: PieceColour | null) => {
+    const response = await fetch(`/api/tables/${view.id}/colour`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ colour }) });
+    if (response.ok) void mutate();
+  };
 
   return (
+    <PartyColoursProvider colours={colours} choose={(seat, colour) => void chooseColour(seat, colour)}>
     <section
       className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"
       // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
@@ -118,6 +128,12 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* This reader's own colour, any time while the table plays; nobody chooses anybody else's. */}
+        {playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={view.mySeat} name="" yours playing={view.seats.length} />
+          </div>
+        ) : null}
         <OnlineSeats view={view} standing={(seat) => (game === null ? "" : shown.standing(game, seat))} gameLabel={gameLabel} tags={tags} />
         {playing ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -152,6 +168,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
         </p>
       </aside>
     </section>
+    </PartyColoursProvider>
   );
 }
 

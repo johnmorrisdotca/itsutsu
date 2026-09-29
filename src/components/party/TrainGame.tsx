@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
@@ -128,6 +129,12 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); a computer's seat keeps its table colour. Furniture in just the board. */}
+        {personToMove ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={trainPlayerName(game, game.toPlay)} playing={game.players.length} />
+          </div>
+        ) : null}
         <TrainScores game={game} />
         <div className="flex flex-wrap gap-2">
           {confirming ? (

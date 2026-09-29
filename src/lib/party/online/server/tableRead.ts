@@ -4,6 +4,7 @@ import type { PartySeat, PartyTable } from "@prisma/client";
 
 import { PRESENT_WITHIN_MS } from "@/components/live/live.constants";
 import { prisma } from "@/lib/prisma";
+import { isPieceColour } from "@/lib/pieces/pieceColours";
 import { shownName } from "@/lib/rating/shownName";
 import { AGE_BANDS } from "@/lib/social/ageBand.constants";
 
@@ -109,6 +110,7 @@ export function viewOf(row: TableRow & { lastMoverId: string | null }, readerId:
       name: shownName(one.name),
       yours: one.seat === mySeat,
       link: one.token === null ? null : tableSeatPath(row.game, row.id, one.token),
+      colour: isPieceColour(one.colour) ? one.colour : null,
     })),
     mySeat,
     toPlayHere: here,

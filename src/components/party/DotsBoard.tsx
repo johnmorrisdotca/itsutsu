@@ -1,12 +1,13 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import { pointName } from "@/lib/gomoku/notation";
 import { DOTS_STATUS, dotsLineCount, dotsLineEnds, dotsPlayerName } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
 import { centredBaseline } from "@/lib/ui/svgText";
 
-import { DOTS_BOX_FILL_OPACITY, PARTY_MARBLES } from "./party.constants";
+import { DOTS_BOX_FILL_OPACITY } from "./party.constants";
 import type { DotsBoardProps } from "./party.types";
 
 /** A drawn line's width, and a dot's radius, in the board's own units (one unit from dot to dot). */
@@ -33,13 +34,15 @@ const LETTER_SIZE = 0.5;
  * button to a screen reader and a keyboard too, named by its two dots.
  */
 export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBoardProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
   const points = game.size + 1;
   const lines = Array.from({ length: dotsLineCount(game.size) }, (_, line) => line);
   const last = game.lines.at(-1) ?? null;
   // Nothing to tap on a preview, or once the last line is drawn.
   const draw = !readOnly && game.status === DOTS_STATUS.playing ? onLine : undefined;
-  const mover = PARTY_MARBLES[game.toPlay];
+  const mover = marbles[game.toPlay];
   const at = (index: number) => index + 0.5;
 
   return (
@@ -57,7 +60,7 @@ export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBo
           if (owner === null) return null;
           const row = Math.floor(box / game.size);
           const col = box % game.size;
-          const marble = PARTY_MARBLES[owner];
+          const marble = marbles[owner];
           const fresh = game.lastClosed.includes(box);
           return (
             <g key={box} data-testid="dots-box" data-box={box} data-owner={owner} data-fresh={fresh ? "true" : undefined}>
@@ -99,7 +102,7 @@ export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBo
               y1={at(ends.from.row)}
               x2={at(ends.to.col)}
               y2={at(ends.to.row)}
-              stroke={latest ? PARTY_MARBLES[by].fill : theme.line}
+              stroke={latest ? marbles[by].fill : theme.line}
               strokeWidth={latest ? LINE_WIDTH * 1.4 : LINE_WIDTH}
               strokeLinecap="round"
               data-testid="dots-drawn"

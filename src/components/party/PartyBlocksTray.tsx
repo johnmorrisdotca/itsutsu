@@ -1,5 +1,6 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { PieceGlyph } from "@/components/game/PieceTray";
 import { Button, SectionTitle } from "@/components/ui/Controls";
@@ -7,7 +8,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { BLOCKS_PIECES } from "@/lib/gomoku/party/partyBlocks.constants";
 import { blocksPiecesLeft, blocksPieceSize, heldCells } from "@/lib/gomoku/party/partyBlocks";
 
-import { PARTY_MARBLES } from "./party.constants";
+
 import type { PartyBlocksTrayProps } from "./party.types";
 import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
 
@@ -20,7 +21,9 @@ import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
  * phone in three rows of seven.
  */
 export function PartyBlocksTray({ game, hold, onHold, onRotate, onFlip, refusal }: PartyBlocksTrayProps) {
-  const marble = PARTY_MARBLES[game.toPlay];
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
+  const marble = marbles[game.toPlay];
   const paint = (label: string) => ({ fill: marble.fill, label });
   const left = blocksPiecesLeft(game, game.toPlay);
 

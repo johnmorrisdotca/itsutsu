@@ -1,4 +1,7 @@
 import { badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { isPieceColour } from "@/lib/pieces/pieceColours";
+import { setSeatColour } from "@/lib/history/seatColour";
+import { prisma } from "@/lib/prisma";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { playBotTurns } from "@/lib/bots/botPlay";
@@ -197,6 +200,23 @@ export async function POST(request: Request) {
     }
 
     const caller = await currentMemberId();
+    /*
+     * THE COLOUR THE ASKER CHOSE FOR THEIR PIECES on the set-up screen, laid on
+     * their own seat of every game just made — never the other player's, who
+     * chooses theirs on their first move or whenever they like. A colour the
+     * other seat cannot share is simply not written: the asker is the first to
+     * choose, so the only clash is with the ordinary stones opposite, and the
+     * board's own chooser says so and offers another. Optional: a body without
+     * one, or with a colour the palette does not offer, changes nothing.
+     */
+    const pieceColour = typeof body === "object" && body !== null ? (body as { pieceColour?: unknown }).pieceColour : undefined;
+    if (caller !== null && isPieceColour(pieceColour)) {
+      for (const game of made) {
+        const seats = await prisma.game.findUnique({ where: { id: game.id }, select: { blackMemberId: true, whiteMemberId: true } });
+        const seat = seats?.blackMemberId === caller ? STONES.black : seats?.whiteMemberId === caller ? STONES.white : null;
+        if (seat !== null) await setSeatColour(game.id, seat, pieceColour);
+      }
+    }
     /*
      * XP for the game just made, on the one call that makes every game: an ask,
      * a rematch or a fork, and nothing for the lobby or a posted seat. Which of

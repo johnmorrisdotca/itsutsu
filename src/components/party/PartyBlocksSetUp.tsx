@@ -1,5 +1,6 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
 import { useState } from "react";
 
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -7,7 +8,7 @@ import { BLOCKS_PARTY_PLAYERS } from "@/lib/gomoku/party/partyBlocks.constants";
 import { startBlocksParty } from "@/lib/gomoku/party/partyBlocks";
 import { PARTY_NAME_MOST } from "@/lib/gomoku/party/partyRace";
 
-import { MarbleChip } from "./MarbleChip";
+import { SeatColourButton } from "./SeatColourButton";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
 import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
@@ -23,6 +24,8 @@ import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
  * where they start before they choose who sits where.
  */
 export function PartyBlocksSetUp({ appearance, onStart, ready, online }: PartyBlocksSetUpProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const [names, setNames] = useState<string[]>(() => new Array(BLOCKS_PARTY_PLAYERS).fill(""));
   const preview = startBlocksParty(names);
   // Several devices: a seat chooser in each name's row, and Start sets the table on the server (`OnlineSetUpParts`).
@@ -53,9 +56,9 @@ export function PartyBlocksSetUp({ appearance, onStart, ready, online }: PartyBl
           <legend className={SECTION_TITLE}>{severalOffer !== undefined ? ONLINE_COPY.seats : PARTY_BLOCKS_COPY.names}</legend>
           {preview.players.map((player, index) => (
             <label key={player.corner} className="flex items-center gap-2 text-sm">
-              <MarbleChip player={index} />
+              <SeatColourButton player={index} playing={preview.players.length} />
               <span className="sr-only">
-                Player {index + 1}, {PARTY_MARBLES[index].label}
+                Player {index + 1}, {marbles[index].label}
               </span>
               {severalOffer !== undefined ? (
                 <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />

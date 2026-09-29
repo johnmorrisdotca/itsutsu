@@ -5,6 +5,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { BeginAction } from "./beginGame";
 import { COLOUR_CHOICES, colourIsChosen, type ColourChoice } from "./colourChoice";
+import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { describeSeating } from "./doorstepSays";
 import { DOORSTEP_COPY, SET_UP_COPY } from "./live.constants";
 import type { MatchSize } from "@/lib/history/liveMatch";
@@ -32,7 +33,10 @@ export function setUpBegin({
   waiting,
   colour = COLOUR_CHOICES.black,
   games = 1,
+  pieceColour = null,
 }: {
+  /** The colour the asker chose for their own pieces, or null for the game's own (`pieceColours.ts`). */
+  pieceColour?: PieceColour | null;
   /** The form as it stands, with any posted seat's board already settled into it. */
   settled: RulesDraft;
   /** Somebody already waiting at exactly this game, or undefined. Begin sits down with them. */
@@ -114,7 +118,9 @@ export function setUpBegin({
    * the control is not drawn and the request asks for one game.
    */
   const match = chosen !== undefined && games > 1 ? games : 1;
-  const body = match > 1 ? { ...creation.body, games: match } : creation.body;
+  // The asker's piece colour rides the request that writes the game, laid on their own seat by the route.
+  const dressed = pieceColour === null ? creation.body : { ...creation.body, pieceColour };
+  const body = match > 1 ? { ...dressed, games: match } : dressed;
   const begin: BeginAction =
     waiting !== undefined
       ? { kind: "sit", id: waiting.id, who: waiting.who, instead: creation.body }

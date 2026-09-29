@@ -1,4 +1,7 @@
-import { PARTY_MARBLES, marbleFace } from "./party.constants";
+"use client";
+
+import { usePartyMarbles } from "./partyMarbles";
+import { marbleFace } from "./party.constants";
 import type { MarbleChipProps } from "./party.types";
 
 /**
@@ -8,7 +11,9 @@ import type { MarbleChipProps } from "./party.types";
  * board say whose turn it is in one picture.
  */
 export function MarbleChip({ player, size = "line" }: MarbleChipProps) {
-  const marble = PARTY_MARBLES[player];
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
+  const marble = marbles[player];
   return (
     <span
       className={[

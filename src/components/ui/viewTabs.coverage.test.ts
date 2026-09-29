@@ -20,9 +20,7 @@ import { describe, expect, it } from "vitest";
 const ALLOWED: Record<string, string> = {
   "src/components/ui/ViewTabs.tsx": "the ticked box of an on-and-off switch (`ToggleLink`)",
   "src/components/live/BeginBar.tsx": "the set-up form's answers (colour, how many games), a form's choices rather than a view of a page",
-  "src/components/party/PartySetUp.tsx": "how many are playing, the pass-and-play table's one choice before it starts: a form's answer, drawn as BeginBar draws its own",
-  "src/components/party/DotsSetUp.tsx": "how many are playing at Dots and Boxes, a form's answer before the game starts, drawn as the other tables' set-up draws its own",
-  "src/components/party/GhostSetUp.tsx": "how many are playing at Superghost, a form's answer before the game starts, drawn as Dots and Boxes' set-up draws its own",
+  "src/components/party/PlayerCountChoice.tsx": "how many are playing, the one row every pass-and-play table's set-up uses: a form's answer before the game starts, drawn as BeginBar draws its own",
   "src/components/party/online/OnlineSetUpParts.tsx": "where a party table is played, this device or several: a form's answer before the game starts, drawn as the count beside it is",
   "src/components/party/tenka/TenkaSetUp.tsx": "how many are playing at Tenka, for how long and how the armies go down: a form's answers before the game starts, drawn as the other tables' set-ups draw theirs",
 };

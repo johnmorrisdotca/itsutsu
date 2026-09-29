@@ -1,5 +1,7 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
+import { SeatColourButton } from "./SeatColourButton";
 import { useState } from "react";
 
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -9,11 +11,10 @@ import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 
 import { MancalaBoard } from "./MancalaBoard";
-import { MarbleChip } from "./MarbleChip";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
 import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
-import { MANCALA_COPY, PARTY_COPY, PARTY_MARBLES } from "./party.constants";
+import { MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { MancalaSetUpProps } from "./party.types";
 
 const SPEC = PARTY_SPECS.mancala;
@@ -32,6 +33,8 @@ const SPEC = PARTY_SPECS.mancala;
  * each with room for its longest line.
  */
 export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetUpProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const [board, setBoard] = useState(SPEC.defaultSize);
   const [names, setNames] = useState<string[]>(() => new Array<string>(SPEC.mostPlayers).fill(""));
   // A table the set-up offers is always one the rules start.
@@ -91,9 +94,9 @@ export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetU
           <legend className={SECTION_TITLE}>{MANCALA_COPY.names}</legend>
           {names.map((name, index) => (
             <label key={index} className="flex items-center gap-2 text-sm">
-              <MarbleChip player={index} />
+              <SeatColourButton player={index} playing={2} />
               <span className="sr-only">
-                Player {index + 1}, {PARTY_MARBLES[index].label}, {index === 0 ? "the near row, sowing first" : "the far row"}
+                Player {index + 1}, {marbles[index].label}, {index === 0 ? "the near row, sowing first" : "the far row"}
               </span>
               {severalOffer !== undefined ? (
                 <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />

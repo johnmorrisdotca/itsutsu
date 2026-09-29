@@ -13,6 +13,8 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { snapshotFromMatch } from "./matchSnapshot";
+import { useLocalSeatColours } from "./useLocalSeatColours";
+import { StoneColoursProvider } from "@/components/board/seatColourContext";
 import { useMatchMirror } from "./useMatchMirror";
 import { GameOptions, GameSidebar } from "./GamePanel";
 import { IdleModal } from "./IdleModal";
@@ -79,6 +81,7 @@ export function GameView({
    * rather than a session: an invite holder has no account to save it to.
    */
   useSavedAppearance(session.appearance, savesToAccount);
+
   // From the first stone the game is a match on the server, and has an address.
   /*
    * AND NEVER A PASTED GAME. `session.pasted` is what tells a game somebody
@@ -86,6 +89,9 @@ export function GameView({
    * filed here under their name. See `playMoves`.
    */
   const kept = useMatchMirror(session, trackPath && !session.pasted, match?.game.id ?? null);
+  // Each seat's piece colour, both chosen at this one screen and kept in this browser under the match it is (`useLocalSeatColours`).
+  const colourKey = kept.matchId ?? match?.game.id ?? null;
+  const seatColours = useLocalSeatColours(colourKey === null ? "practice" : `match:${colourKey}`, "practice");
   const streaks = useGameRecording(session, { active: kept.matchId !== null, synced: kept.synced });
 
   /*
@@ -177,6 +183,7 @@ export function GameView({
      */
     <div className="flex w-full flex-col gap-8" data-testid="game-view" {...readyMark(useHydrated())}>
       {/* The board and everything that plays it, openable on their own (`BoardFocus`). */}
+      <StoneColoursProvider colours={seatColours.colours}>
       <BoardFocus
         label="this board"
         story={{
@@ -215,13 +222,15 @@ export function GameView({
                * play both sides, and "Turn the board round" is one press away.
                */
               viewer={null}
+              colours={seatColours.colours}
             />
             <FeltUnderBoard appearance={session.appearance} variant={session.state.settings.variant} onChoose={(felt) => actions.setAppearance({ felt })} />
           </div>
         </div>
-        <GameSidebar session={session} actions={actions} postSeat={postSeat} practice={match === null} defaults={defaults} />
+        <GameSidebar session={session} actions={actions} postSeat={postSeat} practice={match === null} defaults={defaults} seatColours={seatColours} />
       </div>
       </BoardFocus>
+      </StoneColoursProvider>
       <GameOptions session={session} actions={actions} streaks={streaks} />
       <IdleModal open={showIdle} onConfirm={confirm} />
     </div>
