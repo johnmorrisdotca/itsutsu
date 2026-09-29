@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { ALSO_LISTED_IN } from "../src/lib/gomoku/families";
 import { ready } from "./support";
 
 /**
@@ -163,7 +164,10 @@ test.describe("the Party games shelf", () => {
     await expect(card).toHaveAttribute("data-listed", "shelf");
     await expect(card.getByTestId("family-game-why")).toContainText("Pass and play for up to six");
     await expect(card.getByTestId("family-game-home")).toContainText("Territory and races");
-    await expect(page.getByTestId("family-guest-count")).toContainText("1 game from other families");
+    // Read from the shelf's own table, never typed: Kumimoji joined it after this was written.
+    const guests = Object.values(ALSO_LISTED_IN).filter((listings) => (listings ?? []).some((listing) => listing.family === "party")).length;
+    await expect(page.getByTestId("family-guest-count")).toContainText(`${guests} ${guests === 1 ? "game" : "games"} from other families`);
+    await expect(page.getByTestId("family-game-kumimoji").getByTestId("family-game-why")).toContainText("Pass and play for up to eight");
 
     // The name leads to the game's own page, where the table is offered.
     await card.getByRole("link", { name: /Chinese Checkers/ }).first().click();
