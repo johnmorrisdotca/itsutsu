@@ -50,7 +50,7 @@ function Choice<K extends string>({
             onClick={() => onChange(option)}
             data-testid={testId}
             data-value={option}
-            className={`flex h-20 min-w-0 flex-col items-start gap-0.5 rounded-lg border p-2 text-left ${
+            className={`flex h-28 min-w-0 flex-col items-start gap-0.5 rounded-lg border p-2 text-left sm:h-20 ${
               option === value ? "border-ink bg-rule/70" : "border-rule-strong bg-ivory hover:bg-rule/60"
             }`}
           >
@@ -122,7 +122,7 @@ export function TrainSetUp({ appearance, onStart, ready }: TrainSetUpProps) {
                 onClick={() => setSet(option)}
                 data-testid="train-set"
                 data-set={option}
-                className={`flex h-28 min-w-0 flex-col items-start gap-1 rounded-lg border p-2 text-left ${
+                className={`flex h-36 min-w-0 flex-col items-start gap-1 rounded-lg border p-2 text-left sm:h-28 ${
                   option === set ? "border-ink bg-rule/70" : "border-rule-strong bg-ivory hover:bg-rule/60"
                 }`}
               >
