@@ -396,6 +396,12 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
       why: "Pass and play for up to six: two, three, four or six players round one device, each racing ten pieces across the star.",
     },
   ],
+  /*
+   * PAIR GO, the tournament format for four: two teams of two, Black and
+   * White, the turns going round the table and partners not talking. The same
+   * Go, played by the same engine, on one device (`/games/go/pass-and-play`).
+   */
+  go: [{ family: "party", why: "Pair Go: two teams of two, taking turns, no talking." }],
   /* KUMIMOJI, whose pass and play for up to eight landed in 0.410.0: a shelf lists what the game offers today. */
   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
 };

@@ -33,8 +33,8 @@ import {
   variantFor,
 } from "@/lib/gomoku/slugs";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
-import { PARTY_PLAY_GAMES } from "@/lib/gomoku/party/partyCheckers";
-import { PartyOffer } from "@/components/party/PartyOffer";
+import { partyTableFor } from "@/components/party/partyTables";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
@@ -154,10 +154,12 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               </Link>
               {/*
                 A GAME FOR THE WHOLE TABLE, where the game has one: Chinese
-                Checkers for two to six, passed round one device. A third way on,
-                and said as such — not Play, which sets up a game between two seats.
+                Checkers for two to six, passed round one device, and Pair Go,
+                two teams of two. A third way on, and said as such — not Play,
+                which sets up a game between two seats. Each table's offer knows
+                its own kept game, so each is its own component (`PARTY_TABLES`).
               */}
-              {PARTY_PLAY_GAMES.includes(variant) ? <PartyOffer href={passAndPlayPath(variant)} /> : null}
+              <PartyTableOffer variant={variant} />
             </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>
@@ -332,4 +334,12 @@ function Facet({ href, children, testId }: { href: string; children: ReactNode; 
       <CardArrow className="size-6" />
     </Link>
   );
+}
+
+/** The way to a game's pass-and-play table, where it has one (`PARTY_TABLES`). */
+function PartyTableOffer({ variant }: { variant: RuleVariant }) {
+  const table = partyTableFor(variant);
+  if (table === null) return null;
+  const { Offer } = table;
+  return <Offer href={passAndPlayPath(variant)} />;
 }

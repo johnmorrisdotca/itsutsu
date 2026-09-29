@@ -69,6 +69,14 @@ const PASS_AND_ONLY_A_PASS = new Map([
     "tells a Go player the other side has just PASSED, so a pass now ends the game; a turn lost on time is not the first of two passes, so it is rightly not told that",
   ],
   [
+    "src/lib/gomoku/party/pairGo.ts",
+    "Pair Go at one table runs no clock, so no turn on its record is ever lost on time: it keeps a pass as a pass and every other move as its point",
+  ],
+  [
+    "src/components/party/PairGoStatus.tsx",
+    "tells the table whose PASS the last move was, so another ends the game; Pair Go runs no clock, so nothing on its record is a forfeit",
+  ],
+  [
     "src/lib/gomoku/expert/goExpert.ts",
     "offers the Go player a pass when the other side has just PASSED, since two in a row end the game; a turn lost on time is not the first of two, so a forfeit is rightly not an invitation to pass",
   ],

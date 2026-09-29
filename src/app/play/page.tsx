@@ -8,6 +8,7 @@ import Link from "@/components/ui/Link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { PartyGameCard } from "@/components/party/PartyGameCard";
+import { PairGoCard } from "@/components/party/PairGoCard";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenSeatsSection } from "@/components/mine/OpenSeatsSection";
 import { readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
@@ -135,12 +136,14 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         viewAsked={asked[TAB_FROM_PATH]}
         /*
           The games kept in this browser rather than on the server: the board
-          for two, and the pass-and-play table for up to six (`PartyGameCard`).
+          for two, the pass-and-play table for up to six (`PartyGameCard`), and
+          Pair Go's two teams of two (`PairGoCard`).
         */
         local={
           <>
             <LocalGameCardClient />
             <PartyGameCard />
+            <PairGoCard />
           </>
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
