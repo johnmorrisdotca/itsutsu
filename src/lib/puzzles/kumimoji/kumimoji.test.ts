@@ -187,6 +187,15 @@ describe("making a kumimoji", () => {
     expect(generateKumimoji(11, "medium", 1).givens).not.toBe(generateKumimoji(11, "medium", 2).givens);
   });
 
+  it("makes a Full game in a browser's time, the Quick hand at seed 2 among them, which once took over five minutes", () => {
+    for (const seed of [1, 2, 3]) {
+      const started = performance.now();
+      const puzzle = generateKumimoji(7, "medium", seed, { gameLength: "full" });
+      expect(performance.now() - started, `seed ${seed}`).toBeLessThan(8_000);
+      expect(checkSolution("kumimoji", 7, puzzle.givens, puzzle.solution, "medium", { gameLength: "full" })).toEqual({ ok: true });
+    }
+  });
+
   it("lays and independently checks a full Double inventory", () => {
     const puzzle = generateKumimoji(7, "medium", 20260928, { gameLength: "full", doubleSet: true });
     expect(puzzle.givens).toHaveLength(288);

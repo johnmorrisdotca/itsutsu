@@ -101,11 +101,24 @@ const FINISH_NODES = 2_000;
  */
 const DIAGONAL_FINISH_NODES = 15;
 
+/**
+ * A GAME THIS BIG FINISHES THE SAME WAY. Reading every word from every tile
+ * of a table of a hundred-odd tiles is about seventeen million checks a step,
+ * and a Full game with a Quick hand (seed 2) ran over five minutes on
+ * "Making your puzzle…" (found 2026-09-28). A bag of more than this many
+ * tiles — Full, and Double at Medium or Full — is laid the way a Diagonals
+ * game is: a sample of words from every tile, and fewer steps before a try
+ * starts again. Smaller bags are laid exactly as before, so their games, kept
+ * and raced, are the same tiles they always were.
+ */
+const WIDE_FINISH_FROM = 100;
+
 type Placement = { word: string; start: number; across: boolean; fresh: number[]; score: number };
 
 /** A crossword of exactly `tiles` tiles, or null where this try got stuck (the caller tries again). */
 function layCrossword(tiles: number, random: Random, words: TileWords, side: number, multiplier: number, mix: ReadonlyMap<string, number>, progress: (laid: number) => void, diagonals: boolean): string[] | null {
   const squares = new Array<string>(side * side).fill("");
+  const wide = diagonals || tiles > WIDE_FINISH_FROM;
   // What the set still holds of each letter, and the handful drawn from it that the words are chosen to use.
   const left = new Map([...mix].map(([letter, count]) => [letter, count * multiplier]));
   const wanted = new Map<string, number>();
@@ -180,9 +193,9 @@ function layCrossword(tiles: number, random: Random, words: TileWords, side: num
   let finishNodes = 0;
   const finish = (room: number): boolean => {
     if (room === 0) return true;
-    if (finishNodes >= (diagonals ? DIAGONAL_FINISH_NODES : FINISH_NODES)) return false;
+    if (finishNodes >= (wide ? DIAGONAL_FINISH_NODES : FINISH_NODES)) return false;
     finishNodes += 1;
-    const placements = placementsFor(room, diagonals ? "wide" : "exhaustive")
+    const placements = placementsFor(room, wide ? "wide" : "exhaustive")
       .sort((a, b) => b.score - a.score || b.fresh.length - a.fresh.length)
       .slice(0, FINISH_BRANCHES);
     for (const placement of placements) {
@@ -202,8 +215,8 @@ function layCrossword(tiles: number, random: Random, words: TileWords, side: num
       laid = tiles;
       break;
     }
-    /* With Diagonals a few tiles often offer nothing the diagonals allow: every tile is tried before this try is given up. */
-    const next = bestOf(placementsFor(room, "sampled")) ?? (diagonals ? bestOf(placementsFor(room, "wide")) : null);
+    /* With Diagonals, or a big bag, a few tiles often offer nothing: every tile is tried before this try is given up. */
+    const next = bestOf(placementsFor(room, "sampled")) ?? (wide ? bestOf(placementsFor(room, "wide")) : null);
     if (next === null) return null;
     lay(next);
     laid += next.fresh.length;
