@@ -86,7 +86,8 @@ function playOut<S, M>(
   language?: PartyLanguage,
 ): { end: S; moves: number; mid: S | null } {
   const random = seeded(seed);
-  let game = rules.start(size, new Array<string>(count).fill(""), language);
+  // The seed too, so a game dealt from a shuffle is dealt afresh each game (a game with nothing hidden ignores it).
+  let game = rules.start(size, new Array<string>(count).fill(""), language, seed);
   if (game === null) throw new Error(`no table of ${count} at size ${size}`);
   let mid: S | null = null;
   let moves = 0;

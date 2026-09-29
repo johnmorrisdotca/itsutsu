@@ -19,9 +19,10 @@
 
 import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
 import type { MancalaGame } from "./mancala/mancala.types";
+import type { TrainGame, TrainMove } from "./mexicanTrain/mexicanTrain.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala";
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "mexicanTrain";
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -68,9 +69,12 @@ export type PartyRules<S, M> = {
   /**
    * A new game at this board size for these names (one a seat), in this
    * language when the game offers languages, or null for a table the game is
-   * not offered for.
+   * not offered for. A game dealt from a shuffle (Mexican Train's tiles) takes
+   * the `seed` it is drawn from, so the gate plays a different deal each game
+   * and a kept game deals the same again; a game with nothing hidden has no
+   * use for one.
    */
-  start: (size: number, players: readonly string[], language?: PartyLanguage) => S | null;
+  start: (size: number, players: readonly string[], language?: PartyLanguage, seed?: number) => S | null;
   /** Every move the player to move may make now; none once the game is over. */
   moves: (game: S) => readonly M[];
   /** The game after that move, or null for a move that may not be made; the game given is left untouched. */
@@ -95,4 +99,5 @@ export type PartyPlays = {
   dotsAndBoxes: { game: DotsGame; move: number };
   superghost: { game: GhostGame; move: GhostMove };
   mancala: { game: MancalaGame; move: number };
+  mexicanTrain: { game: TrainGame; move: TrainMove };
 };
