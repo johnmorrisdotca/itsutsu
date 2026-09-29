@@ -93,7 +93,7 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
         ) : null}
 
         <p className="flex flex-wrap gap-x-3 text-xs" data-testid="record-sort">
-          <span className="text-muted">Order:</span>
+          <span className="text-muted">Sort:</span>
           {[PUZZLE_RECORD_SORTS.newest, PUZZLE_RECORD_SORTS.fastest].map((sort) =>
             sort === asked.sort ? (
               <span key={sort} className="font-semibold" aria-current="true">
