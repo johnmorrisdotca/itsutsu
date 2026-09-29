@@ -59,9 +59,9 @@ describe("which family the picker opens on", () => {
 
 describe("what a click on a family chooses", () => {
   it("offers every family with a game two people can play, and only those", () => {
-    // Numbers and Other hold puzzles for one; the set-up screen makes games between two.
+    // Numbers and Other hold puzzles for one, and Party games holds no game of its own; the set-up screen makes games between two.
     expect(SET_UP_FAMILIES.map((family) => family.key)).toEqual(
-      GAME_FAMILIES.filter((family) => family.key !== "numbers" && family.key !== "other").map((family) => family.key),
+      GAME_FAMILIES.filter((family) => !["numbers", "other", "party"].includes(family.key)).map((family) => family.key),
     );
     expect(GAME_FAMILIES.some((family) => family.key === "numbers")).toBe(true);
   });
@@ -170,6 +170,8 @@ describe("a game on two shelves", () => {
     for (const [variant, listings] of guests) {
       for (const listing of listings) {
         const shelf = GAME_FAMILIES.find((family) => family.key === listing.family)!;
+        // Only a shelf this screen shows can be picked from here; Party games is set up from each game's own page.
+        if (!SET_UP_FAMILIES.includes(shelf)) continue;
         expect(gameForFamilyClick(shelf, variant), `${variant} on ${shelf.title}`).toBeNull();
         expect(familyShown(variant, shelf.key).key, `${variant} on ${shelf.title}`).toBe(shelf.key);
       }

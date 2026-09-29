@@ -1,9 +1,8 @@
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { FigureTable as Table } from "@/components/about/FigureTable";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { familyPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import Link from "@/components/ui/Link";
 
@@ -46,12 +45,12 @@ const FAMILIES = (
     rows={GAME_FAMILIES.map((family) => [
       <span key={family.key} className="flex items-center gap-2">
         <FamilyMark family={family.title} size="small" />
-        <Link href={familyPath(family.games[0])} className="underline decoration-rule underline-offset-2">
+        <Link href={familyPagePath(family)} className="underline decoration-rule underline-offset-2">
           {family.title}
         </Link>
         <span className="font-mincho text-xs opacity-70">{family.kanji}</span>
       </span>,
-      family.games.length,
+      familyCountWords(family),
       <span key={`${family.key}-blurb`} className="text-muted">
         {family.blurb}
       </span>,

@@ -3,6 +3,7 @@ import { type GameKey, isPuzzleKind } from "../catalogue/gameKeys";
 
 import type { AlsoListing, GameFamily, ShelvedGame } from "./families.types";
 import type { RuleVariant } from "./gomoku.types";
+import { familyPath } from "./slugs";
 
 /**
  * The games grouped the way a newcomer should meet them: one first, then
@@ -171,6 +172,35 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "hiddenStones", "blackAndWhite"],
   },
   {
+    key: "party",
+    /*
+     * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to
+     * eight: "That's probably a new category, party games, and then the
+     * Chinese checkers is a game for six people I believe and we should also
+     * allow people to play that in a pass and play sort of way."
+     *
+     * A SHELF WITH NO GAME AT HOME IN IT, and the first. Every game here
+     * already has a family that says what KIND of game it is, and a party is
+     * not a kind of game: it is who is sitting round the table. So each game is
+     * shown here from its own home, through `ALSO_LISTED_IN`, with the reason
+     * it belongs — the same game, never a copy — and this family counts,
+     * plays and pays nothing of its own: no crowns, no ladder, no XP for a
+     * first game of it (see `HOME_FAMILIES`). Its page is its own address,
+     * `/games/party`, since a family page is otherwise found under a game
+     * that lives in it (`familyPagePath`).
+     *
+     * 団欒 (danran): a group gathered in a circle for company, the word for a
+     * family round its table of an evening — which is exactly a phone passed
+     * round, and says nothing of the drink that 宴 (a banquet) would.
+     */
+    title: "Party games",
+    kanji: "団欒",
+    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on.",
+    games: [],
+    notOnSetUp:
+      "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },
+  {
     key: "other",
     /*
      * OTHER. John, 2026-09-25, asking for a word puzzle of our own: "a special
@@ -186,6 +216,31 @@ export const GAME_FAMILIES: GameFamily[] = [
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];
+
+/**
+ * THE FAMILIES THAT ARE SOME GAME'S HOME: every family but a shelf of guests.
+ *
+ * What a member can play a game FROM, so what "every family" means wherever
+ * one is counted towards an award or a tour — `everyFamilyPlayed` is paid for
+ * a first game in each of these, and a family nobody can play a game from
+ * (Party games) would make it a prize no member could ever finish. Anything
+ * that SHOWS the families reads `GAME_FAMILIES`.
+ */
+export const HOME_FAMILIES: GameFamily[] = GAME_FAMILIES.filter((family) => family.games.length > 0);
+
+/**
+ * WHERE A FAMILY'S PAGE IS. For a family that is some game's home, under
+ * the first of its games — `/games/<slug>/family`, the address it has always
+ * had, since "the family Renju is in" is a question about Renju. A shelf of
+ * guests has no game of its own to be found under, so it has an address of
+ * its own at `/games/<key>`: an address the gate already reads as the
+ * catalogue's, open to anybody, and a folder of its own under `src/app/games`
+ * (`families.coverage.test.ts` holds every such family to one).
+ */
+export function familyPagePath(family: GameFamily): string {
+  const first = family.games[0];
+  return first === undefined ? `/games/${family.key}` : familyPath(first);
+}
 
 /**
  * The games in a family the engine plays: its rule variants, its puzzles
@@ -276,7 +331,7 @@ export function familyKeyNow(key: string): string {
  *    listing with no reason, one on the game's own family or a family that does
  *    not exist, and a game shown twice on one shelf.
  */
-export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>> = {
+export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = {
   miniReversi: [
     {
       family: "small-boards",
@@ -331,14 +386,29 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
       family: "checkers",
       why: "Checkers by name only: nothing is taken and nothing is crowned — you are racing your ten pieces to the far point of the star.",
     },
+    /*
+     * FOR THE STAR'S SIX POINTS. The rated game is for two, but the board was
+     * made for six, and its own page offers the game for two, three, four or
+     * six players passed round one device (`/games/chinese-checkers/pass-and-play`).
+     */
+    {
+      family: "party",
+      why: "Pass and play for up to six: two, three, four or six players round one device, each racing ten pieces across the star.",
+    },
   ],
+  /*
+   * KUMIMOJI GOES ON THE PARTY SHELF WHEN ITS PASS AND PLAY FOR UP TO EIGHT
+   * LANDS, and not before: a shelf lists what the game offers today. The line:
+   *
+   *   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
+   */
 };
 
 /** Whether a family's shelf shows this game, at home or as a guest. */
 export function familyShows(family: GameFamily, variant: GameKey): boolean {
   return (
     family.games.includes(variant) ||
-    (isPuzzleKind(variant) ? false : (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key))
+    (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key)
   );
 }
 
@@ -351,10 +421,13 @@ export function familyShows(family: GameFamily, variant: GameKey): boolean {
  */
 export function gamesShownIn(family: GameFamily): ShelvedGame[] {
   const own: ShelvedGame[] = family.games.map((variant) => ({ variant, listed: "home" }));
-  const guests = (Object.keys(ALSO_LISTED_IN) as RuleVariant[]).flatMap((variant): ShelvedGame[] => {
+  const guests = (Object.keys(ALSO_LISTED_IN) as GameKey[]).flatMap((variant): ShelvedGame[] => {
     const home = familyOf(variant);
     const listedHere = (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key);
-    return home === null || home.key === family.key || !listedHere ? [] : [{ variant, listed: "shelf", home }];
+    const listing = (ALSO_LISTED_IN[variant] ?? []).find((one) => one.family === family.key);
+    return home === null || home.key === family.key || !listedHere || listing === undefined
+      ? []
+      : [{ variant, listed: "shelf", home, why: listing.why }];
   });
   return [...own, ...guests];
 }
@@ -399,4 +472,21 @@ export function familyOf(variant: GameKey): (typeof GAME_FAMILIES)[number] | nul
  */
 export function familyKeyOf(variant: GameKey): string | null {
   return familyOf(variant)?.key ?? null;
+}
+
+/**
+ * HOW MANY GAMES A FAMILY'S SHELF HOLDS, in words: its own, then any listed
+ * from other families said apart, since a guest is counted once, at home. A
+ * shelf of guests alone says so rather than "0 games".
+ */
+export function familyCountWords(family: GameFamily): string {
+  return shelfCountWords(family.games.length, gamesShownIn(family).length - family.games.length);
+}
+
+/** The same words from the two counts, for a caller holding a family's copy rather than the family. */
+export function shelfCountWords(home: number, guests: number): string {
+  const games = (count: number) => `${count} ${count === 1 ? "game" : "games"}`;
+  if (guests === 0) return games(home);
+  if (home === 0) return `${games(guests)} from other families`;
+  return `${games(home)}, and ${guests} from other families`;
 }

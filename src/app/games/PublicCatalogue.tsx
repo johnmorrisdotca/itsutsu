@@ -45,7 +45,7 @@ export function catalogueFamilies(): CatalogueFamily[] {
     blurb: family.blurb,
     games: family.games.map(gameCopy),
     guests: gamesShownIn(family).flatMap((shown) =>
-      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant), home: { title: shown.home.title, kanji: shown.home.kanji } }] : [],
+      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant), home: { title: shown.home.title, kanji: shown.home.kanji }, why: shown.why }] : [],
     ),
   }));
 }
