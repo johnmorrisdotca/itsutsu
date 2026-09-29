@@ -1,6 +1,6 @@
 import type { GridVerdict, Tiles } from "./grid";
 import type { KumimojiLength } from "./kumimoji.types";
-import type { PartyGame, PartySettings } from "./party.types";
+import type { PartyGame, PartyPlayer, PartySeat, PartySettings } from "./party.types";
 import { tilesLeft, type TilePlay } from "./play";
 import { KUMIMOJI_PARTY, kumimojiTileCount } from "./tiles.constants";
 
@@ -53,17 +53,34 @@ export function partyLength(players: number, hand: number, chosen: KumimojiLengt
   return LENGTHS.find(fits) ?? "full";
 }
 
-/** The deal: each player the next hand from the bag in turn, player one first, and every table empty. */
-export function startParty(settings: PartySettings, bag: string, names: readonly string[]): PartyGame {
-  const count = Math.min(Math.max(names.length, KUMIMOJI_PARTY.least), KUMIMOJI_PARTY.most);
+/**
+ * The deal: each player the next hand from the bag in turn, player one first,
+ * and every table empty. A seat is a name, or a name and whether a computer
+ * plays it; a computer is named "Computer 1", "Computer 2"… in seat order.
+ */
+export function startParty(settings: PartySettings, bag: string, seats: readonly (string | PartySeat)[]): PartyGame {
+  const count = Math.min(Math.max(seats.length, KUMIMOJI_PARTY.least), KUMIMOJI_PARTY.most);
   const hand = settings.size;
   if (bag.length < partyTilesNeeded(count, hand)) throw new Error(`A bag of ${bag.length} cannot be dealt to ${count} players.`);
-  const players = Array.from({ length: count }, (_, at) => ({
-    name: tidyName(names[at] ?? ""),
-    hand: [...bag.slice(at * hand, (at + 1) * hand)],
-    tiles: new Map<string, string>(),
-  }));
-  return { settings, bag, returned: "", taken: count * hand, players, turn: 0, turns: 0, out: [], lastTurns: null, resigned: [], resignRun: [], ending: null, startTable: "", traded: false, passedBy: null };
+  const players: PartyPlayer[] = [];
+  for (let at = 0; at < count; at += 1) {
+    const seat = seats[at] ?? "";
+    const asked = typeof seat === "string" ? { name: seat } : seat;
+    const dealt = { hand: [...bag.slice(at * hand, (at + 1) * hand)], tiles: new Map<string, string>() };
+    players.push(asked.computer === true ? { name: computerName(players), computer: true, ...dealt } : { name: tidyName(asked.name), ...dealt });
+  }
+  return { settings, bag, returned: "", taken: count * hand, players, dealt: count, turn: 0, turns: 0, out: [], lastTurns: null, resigned: [], resignRun: [], ending: null, startTable: "", traded: false, passedBy: null };
+}
+
+/** The name a new computer takes: "Computer" and the lowest number no player at the table already goes by. */
+export function computerName(players: readonly PartyPlayer[]): string {
+  const taken = new Set(players.map((player) => player.name));
+  for (let number = 1; ; number += 1) if (!taken.has(`Computer ${number}`)) return `Computer ${number}`;
+}
+
+/** Whether a computer plays this seat. */
+export function isComputer(game: PartyGame, at: number): boolean {
+  return game.players[at]?.computer === true;
 }
 
 /** A table's tiles as one string in order, wherever they stand: what a turn compares to see whether anything was laid or lifted. */

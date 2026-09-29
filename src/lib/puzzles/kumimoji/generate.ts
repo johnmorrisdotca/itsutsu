@@ -1,6 +1,7 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled, type Random } from "../random";
 import { encodeGrid, squareAt } from "./grid";
+import { crossingFit } from "./placement";
 import { kumimojiTileCount, kumimojiWildCount, TILE_MIX_TOTAL } from "./tiles.constants";
 import type { KumimojiLanguage, KumimojiLength } from "./kumimoji.types";
 import { tileWords, type TileWords } from "./tileWords";
@@ -202,9 +203,10 @@ function sample(list: readonly string[], count: number, random: Random, letter?:
 
 /**
  * Where `word` would stand crossing the tile at `anchor` with its letter at
- * `at`, or null where it cannot: off the board, over a different letter, a
- * tile at either end, a new tile with a neighbour at its side, more new tiles
- * than the bag has room for, or a letter the set has run out of.
+ * `at`, or null where it cannot: the laying rule every crossword here keeps
+ * (`crossingFit`: on the laying square, nothing at either end, no new tile
+ * with a neighbour at its side), then more new tiles than the bag has room
+ * for, or a letter the set has run out of.
  */
 function fit(
   squares: readonly string[],
@@ -218,30 +220,17 @@ function fit(
   random: Random,
   side: number,
 ): Placement | null {
-  const row = Math.floor(anchor / side);
-  const col = anchor % side;
-  const first = across ? col - at : row - at;
-  if (first < 0 || first + word.length > side) return null;
-  const step = across ? 1 : side;
-  const start = anchor - at * step;
-  const before = first > 0 ? start - step : -1;
-  const after = first + word.length < side ? start + word.length * step : -1;
-  if ((before !== -1 && squares[before] !== "") || (after !== -1 && squares[after] !== "")) return null;
-  const fresh: number[] = [];
-  for (let k = 0; k < word.length; k += 1) {
-    const index = start + k * step;
-    if (squares[index] !== "") {
-      if (squares[index] !== word[k]) return null;
-      continue;
-    }
-    const r = Math.floor(index / side);
-    const c = index % side;
-    const sides = across ? [r > 0 ? index - side : -1, r < side - 1 ? index + side : -1] : [c > 0 ? index - 1 : -1, c < side - 1 ? index + 1 : -1];
-    if (sides.some((near) => near !== -1 && squares[near] !== "")) return null;
-    fresh.push(index);
-  }
-  if (fresh.length === 0 || fresh.length > room) return null;
-  return scored(word, start, across, fresh, left, wanted, random, squares, side);
+  const place = crossingFit(
+    (row, col) => squares[row * side + col]!,
+    (row, col) => row >= 0 && row < side && col >= 0 && col < side,
+    word,
+    { row: Math.floor(anchor / side), col: anchor % side },
+    at,
+    across,
+  );
+  if (place === null || place.fresh.length > room) return null;
+  const fresh = place.fresh.map((square) => square.row * side + square.col);
+  return scored(word, place.first.row * side + place.first.col, across, fresh, left, wanted, random, squares, side);
 }
 
 /** A placement's worth: a letter drawn from the mix is worth two, any other costs three, and the set's own counts are a wall. */

@@ -7,8 +7,8 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle } from "@/lib/puzzles/generate";
-import { startParty } from "@/lib/puzzles/kumimoji/party";
-import type { PartySettings } from "@/lib/puzzles/kumimoji/party.types";
+import { isComputer, partyLength, startParty } from "@/lib/puzzles/kumimoji/party";
+import type { PartyGame, PartySeat, PartySettings } from "@/lib/puzzles/kumimoji/party.types";
 import { holdsItsBag, isPartyFor } from "@/lib/puzzles/kumimoji/partyKept";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
@@ -18,7 +18,9 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { tableTheme } from "./KumimojiTable";
 import { KumimojiPartyPass } from "./KumimojiPartyBoards";
+import { KumimojiPartyComputer } from "./KumimojiPartyComputer";
 import { KumimojiPartyFinish, KumimojiPartyNames, KumimojiPartyOrder, partyAddress } from "./KumimojiPartyScreens";
+import { KumimojiPartySeats } from "./KumimojiPartySeats";
 import { KumimojiPartyTurn } from "./KumimojiPartyTurn";
 import { keepParty, rememberNames, useKeptParty, useRememberedNames } from "./kumimojiPartyKept";
 
@@ -38,11 +40,17 @@ import { keepParty, rememberNames, useKeptParty, useRememberedNames } from "./ku
  * table and hand is face up, as at a real table — and All tables shows them
  * side by side from the pass screen or any turn (`KumimojiPartyAll`).
  *
+ * A seat may be a computer's: its turn skips the pass screen and plays itself
+ * out on its table where everybody can see (`KumimojiPartyComputer`). From
+ * the pass screen, between turns, players may leave — their tiles back in the
+ * bag — and join, people or computers (`KumimojiPartySeats`).
+ *
  * LOCAL ONLY. The bag is the one the address's seed makes, as the solo game's
  * is, and the whole game lives in this browser (`kumimojiPartyKept.ts`):
  * nothing is handed to the server, no points, no leaderboard, no XP. A reload
  * opens it on the pass screen of the player whose turn it was, never on their
- * desk, since whoever holds the device after a reload may not be that player.
+ * desk, since whoever holds the device after a reload may not be that player;
+ * on a computer's turn, it plays that turn again from its start.
  */
 export function KumimojiParty({
   puzzle,
@@ -74,19 +82,31 @@ export function KumimojiParty({
   /* Which turn has been uncovered, by its number: a new turn is covered until its player says they are there. */
   const [uncovered, setUncovered] = useState<number | null>(null);
 
-  const begin = (names: string[]) => {
-    rememberNames(names);
-    keepParty(startParty(settings, puzzle.givens, names));
+  const begin = (seats: PartySeat[]) => {
+    rememberNames(seats.map((seat) => (seat.computer === true ? "" : seat.name)));
+    keepParty(startParty(settings, puzzle.givens, seats));
   };
+  /* The same players again, however many joined or left: a bag long enough for them, since more may have sat down than this length deals to. */
   const again = () => {
     if (game === null) return;
     const s = game.settings;
-    const next = { ...s, seed: freshSeed() };
-    const made = generatePuzzle("kumimoji", s.size, s.level, next.seed, { gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet });
-    const fresh = startParty(next, made.givens, game.players.map((player) => player.name));
+    const seats = game.players.map((player): PartySeat => ({ name: player.name, computer: player.computer }));
+    const next = { ...s, seed: freshSeed(), gameLength: partyLength(Math.max(seats.length, 2), s.size, s.gameLength, s.doubleSet) };
+    const made = generatePuzzle("kumimoji", next.size, next.level, next.seed, { gameLength: next.gameLength, language: next.language, doubleSet: next.doubleSet });
+    const fresh = startParty(next, made.givens, seats);
     keepParty(fresh);
     router.push(partyAddress(fresh));
   };
+  /* Under the pass screen and a computer's turn alike: the order of play, and ending the game for everybody. */
+  const underneath = (playing: PartyGame) => (
+    <KumimojiPartyOrder
+      game={playing}
+      onEnd={() => {
+        keepParty(null);
+        router.push(setUpPath("kumimoji"));
+      }}
+    />
+  );
 
   return (
     <section className="flex flex-col gap-3" data-testid="kumimoji-party" data-players={players} {...readyMark(hydrated)}>
@@ -94,17 +114,16 @@ export function KumimojiParty({
         <KumimojiPartyNames count={players} remembered={remembered} replacing={kept !== null && kept.ending === null ? kept : null} onBegin={begin} />
       ) : game.ending !== null ? (
         <KumimojiPartyFinish game={game} theme={theme} onAgain={again} />
+      ) : isComputer(game, game.turn) ? (
+        <KumimojiPartyComputer key={game.turns} game={game} words={words} theme={theme}>
+          {underneath(game)}
+        </KumimojiPartyComputer>
       ) : uncovered === game.turns ? (
         <KumimojiPartyTurn key={game.turns} game={game} words={words} theme={theme} onHide={() => setUncovered(null)} />
       ) : (
         <KumimojiPartyPass key={game.turns} game={game} theme={theme} onUncover={() => setUncovered(game.turns)}>
-          <KumimojiPartyOrder
-            game={game}
-            onEnd={() => {
-              keepParty(null);
-              router.push(setUpPath("kumimoji"));
-            }}
-          />
+          {underneath(game)}
+          <KumimojiPartySeats game={game} />
         </KumimojiPartyPass>
       )}
     </section>

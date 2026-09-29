@@ -3,7 +3,7 @@
 import type { TileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
-import { HAND_TILE_PX, TILE, tileLetterPx } from "./kumimoji.constants";
+import { COMPUTER_MARK, HAND_TILE_PX, TILE, tileLetterPx } from "./kumimoji.constants";
 
 /**
  * The reading of the chosen wild tile, under the table while one is chosen:
@@ -55,6 +55,19 @@ export function KumimojiGhost({ ghost }: { ghost: { x: number; y: number; letter
       aria-hidden="true"
     >
       {ghost.letter}
+    </span>
+  );
+}
+
+/** The mark beside a computer's name wherever it is shown: a small robot and the word. */
+export function ComputerMark() {
+  return (
+    <span className={COMPUTER_MARK} data-testid="kumimoji-party-computer-mark" title="A computer plays this seat">
+      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="2.5" y="5" width="11" height="8" rx="2" />
+        <path d="M8 5V2.5M6 9h.01M10 9h.01M6 11.25h4" strokeLinecap="round" />
+      </svg>
+      Bot
     </span>
   );
 }
