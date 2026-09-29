@@ -277,6 +277,14 @@ award counts: `RECORDED_FAMILIES`), has a front door, rules and a table at
 `PARTY_KIND_TABLES`, and `party.coverage.test.ts` plays its rules out at every
 table it offers and asks it every question above in its own terms. The
 reasoning, and how to add the next one, is in `docs/plans/party-games/README.md`.
+**A language or a word list is a setting of a game, never a game of its own.**
+John, 2026-09-28, at five Gomoji cards on one shelf (English, Kana, French,
+German, Pop): "just have 1 and allow language selection", then "this is the
+correct way we should handle our language variants or corpus variants." So a
+new language or corpus for an existing game is a choice on that game's set-up
+(as Kumimoji chooses English or Japanese), with one card, one front door and
+one family entry; records, fastest tables and kept runs may stay apart
+underneath.
 A word puzzle's list in any language comes from a real dictionary of that
 language, with a frequency count only ranking it: a count of film subtitles
 alone once made RUDD a French word (John, 2026-09-26), and
