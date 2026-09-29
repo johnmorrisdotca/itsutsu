@@ -6,6 +6,7 @@ import { capturePaths, slideWord, type SlideMove } from "@/lib/gomoku/notation";
 import type { Point } from "@/lib/gomoku/gomoku.types";
 import type { GameMove } from "@/lib/history/gameHistory.types";
 import { MOVE_FORMAT_DISPLAY, linesOf, pointIn, type MoveFormatChoice } from "@/lib/record/moveFormats";
+import { SELECTABLE } from "@/components/ui/ui.constants";
 
 /**
  * The moves of a game, in order — the 棋譜 itself.
@@ -109,7 +110,8 @@ export function PlayedMoves({
                 </span>
               </>
             );
-            const shared = `flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1 text-left ${
+            // Notation is copied, so a move stays text even where it is a button to jump to (`SELECTABLE`).
+            const shared = `${SELECTABLE} flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1 text-left ${
               current ? "bg-shade font-semibold" : ""
             } ${ahead ? "opacity-60" : ""}`;
             return onJump === undefined ? (

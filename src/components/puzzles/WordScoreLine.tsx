@@ -1,5 +1,6 @@
 import type { WordScore } from "@/lib/puzzles/gomoji/wordScore";
 import { POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
+import { SELECTABLE } from "@/components/ui/ui.constants";
 
 /** A word's score, English's or the kana version's, which adds the columns its yellows named. */
 type Scored = WordScore & { column?: number };
@@ -24,7 +25,7 @@ export function WordScoreLine({ score, headStart = false }: { score: Scored; hea
   const parts = PARTS.filter((part) => (score[part.key] ?? 0) > 0);
   const total = Math.max(0, score.total - (headStart ? POINTS_A_HELP : 0));
   return (
-    <div className="flex flex-col gap-1" data-testid="word-score" data-total={total}>
+    <div className={`${SELECTABLE} flex flex-col gap-1`} data-testid="word-score" data-total={total}>
       <p className="text-base">
         <strong className="tabular-nums">{total}</strong> {total === 1 ? "point" : "points"}
         {score.total === 0 ? <span className="text-muted"> — nothing of the word was found.</span> : null}

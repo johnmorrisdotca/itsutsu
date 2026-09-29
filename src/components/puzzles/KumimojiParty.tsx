@@ -15,6 +15,7 @@ import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 import { tableTheme } from "./KumimojiTable";
 import { KumimojiPartyPass } from "./KumimojiPartyBoards";
@@ -109,7 +110,7 @@ export function KumimojiParty({
   );
 
   return (
-    <section className="flex flex-col gap-3" data-testid="kumimoji-party" data-players={players} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-3`} data-testid="kumimoji-party" data-players={players} {...readyMark(hydrated)}>
       {game === null ? (
         <KumimojiPartyNames count={players} remembered={remembered} replacing={kept !== null && kept.ending === null ? kept : null} onBegin={begin} />
       ) : game.ending !== null ? (

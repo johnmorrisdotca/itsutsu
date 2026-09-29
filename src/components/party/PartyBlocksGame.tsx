@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import type { Point } from "@/lib/gomoku/gomoku.types";
 import { BLOCKS_STATUS, againBlocksParty, blocksPiecesLeft, blocksPreviewAt, blocksStartSquares, layBlocks } from "@/lib/gomoku/party/partyBlocks";
 import type { BlocksHold, BlocksPieceKey } from "@/lib/gomoku/party/partyBlocks.types";
@@ -100,7 +100,7 @@ export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
 
   return (
     <section
-      className="grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start"
+      className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start`}
       data-testid="party-blocks"
       data-state={game.status}
       data-moves={game.moves.length}

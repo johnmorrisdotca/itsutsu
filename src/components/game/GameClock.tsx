@@ -8,6 +8,7 @@ import type { Seat } from "@/lib/gomoku/gomoku.types";
 import { SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { GameSession } from "./game.types";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 /**
  * Both clocks, side by side.
@@ -21,7 +22,7 @@ export function GameClock({ session }: { session: GameSession }) {
   const running = session.state.status === GAME_STATUS.playing;
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className={`${PLAY_SURFACE} flex flex-col gap-3`}>
       <SectionTitle kanji={GAME_COPY.clock.kanji}>
         {GAME_COPY.clock.label}
       </SectionTitle>

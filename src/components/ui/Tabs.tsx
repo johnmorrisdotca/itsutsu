@@ -79,7 +79,7 @@ export function Tabs({
       other page's 1,024 (e2e/page-width.spec.ts). The list's own padding keeps
       the first tab's focus ring inside the scroll box.
     */
-    <nav aria-label={label} className="sm:overflow-x-auto" data-testid="tabs" {...readyMark(hydrated)}>
+    <nav aria-label={label} className="sm:overflow-x-auto select-none" data-testid="tabs" {...readyMark(hydrated)}>
       <ul className="flex min-w-full flex-wrap gap-x-1 border-b border-rule px-1 sm:flex-nowrap">
         {tabs.map((tab) => {
           const open = tab.key === active;

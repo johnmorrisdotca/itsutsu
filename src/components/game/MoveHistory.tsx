@@ -20,6 +20,7 @@ import type { HistoryMode } from "./game.types";
 import type { GamePanelProps } from "./game.types";
 import { useMoveFormat } from "./MoveFormatContext";
 import { MoveFormatPicker } from "./MoveFormatPicker";
+import { SELECTABLE } from "@/components/ui/ui.constants";
 
 /**
  * The game record (棋譜). Every entry is a position to jump to, which is what
@@ -99,7 +100,8 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                     key={number}
                     type="button"
                     onClick={() => actions.jumpTo(number)}
-                    className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-shade ${
+                    // Notation is copied, so a move stays text even though it is a button (`SELECTABLE`).
+                    className={`${SELECTABLE} flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-shade ${
                       current ? "bg-shade font-semibold" : ""
                     } ${ahead ? "opacity-60" : ""}`}
                     aria-current={current ? "step" : undefined}

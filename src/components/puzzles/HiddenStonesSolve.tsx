@@ -19,6 +19,7 @@ import { StoneLinesToggle, useStoneLines } from "./StoneLinesToggle";
 import { rowHint } from "@/lib/puzzles/hintCell";
 import { decodeStoneProgress, encodeStoneProgress } from "@/lib/puzzles/puzzleProgress";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 /**
  * Solving Hidden Stones: tap a cell for a stone, again for a cross, again to
@@ -167,7 +168,7 @@ export function HiddenStonesSolve({
   };
 
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <HiddenStonesGrid size={size} regions={regions} marks={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} lines={linesOn} set={set} />

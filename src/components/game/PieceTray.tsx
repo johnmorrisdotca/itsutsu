@@ -6,6 +6,7 @@ import type { Piece, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { PieceHand } from "./usePieceHand";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 /**
  * A piece drawn small, as a grid of its bounding box: each stone in its own
@@ -82,7 +83,7 @@ export function PieceTray({
   if (hand.piece === null) return null;
 
   return (
-    <section className="flex flex-col gap-3" data-testid="piece-tray">
+    <section className={`${PLAY_SURFACE} flex flex-col gap-3`} data-testid="piece-tray">
       <SectionTitle kanji={GAME_COPY.piece.kanji}>{GAME_COPY.piece.label}</SectionTitle>
 
       <div className="flex items-center gap-4">

@@ -7,7 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
@@ -332,7 +332,7 @@ export function TsunagiSolve({
     const block = blockOf(level);
     const first = firstUnsolvedTsunagiLevel(size, solvedSet) ?? 1;
     return (
-      <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
+      <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
         <p className="text-sm" data-testid="tsunagi-shut">
           Level {level} at {size}×{size} opens when every level in block {block - 1} (levels {(block - 2) * TSUNAGI_BLOCK + 1}–{(block - 1) * TSUNAGI_BLOCK}) is solved.
         </p>
@@ -361,7 +361,7 @@ export function TsunagiSolve({
 
   if (reviewing && answerLines !== null) {
     return (
-      <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-reviewing="true" {...readyMark(hydrated)}>
+      <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-reviewing="true" {...readyMark(hydrated)}>
         <p className="text-sm text-muted" data-testid="puzzle-asked">
           {asked}
         </p>
@@ -384,7 +384,7 @@ export function TsunagiSolve({
   }
 
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
         <TsunagiViewport size={size}>
