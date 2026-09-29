@@ -23,12 +23,12 @@ export const AWARENESS_DISPLAY: Record<
     description: "Read the board yourself.",
   },
   outlook: {
-    label: "Tell me how it stands",
+    label: "Show who is ahead",
     kanji: "形勢",
     description: "You are told when you are winning or in trouble, never where.",
   },
   full: {
-    label: "Show me the threats",
+    label: "Show threats",
     kanji: "急所",
     description: "Threats that must be answered are marked on the board.",
   },
@@ -101,11 +101,11 @@ export const GAME_COPY = {
   newGame: { label: "New game", kanji: "新局" },
   newGameConfirm: "Start a new game? This board is not finished, and it is not kept.",
   newGameYes: { label: "Yes, start a new one", kanji: "新局" },
-  newGameNo: { label: "Never mind", kanji: "取消" },
+  newGameNo: { label: "Cancel", kanji: "取消" },
   skip: { label: "Skip turn", kanji: "捨て石" },
   skipHint: "Spends your turn on a far corner. It still costs you a stone.",
   passHint: "Takes your turn without playing a stone. Two passes in a row end the game.",
-  swap: { label: "Swap seats", kanji: "駒交換" },
+  swap: { label: "Swap colours", kanji: "交代" },
   swapHint:
     "Hand over your colour and take your opponent's stones instead. It costs you this move.",
   hint: { label: "Best move", kanji: "手筋" },
@@ -114,8 +114,8 @@ export const GAME_COPY = {
   askHelp: { label: "Ask for advice", kanji: "助言" },
   askHelpHint: "Your opponent marks the point they think you should play.",
   helpWaiting: "Mark the point you would play.",
-  cancelHelp: { label: "Never mind", kanji: "取消" },
-  moveHistory: { label: "Record", kanji: "棋譜" },
+  cancelHelp: { label: "Cancel", kanji: "取消" },
+  moveHistory: { label: "Moves", kanji: "棋譜" },
   settings: { label: "Settings", kanji: "設定" },
   advanced: { label: "Advanced", kanji: "詳細" },
   appearance: { label: "Appearance", kanji: "見た目" },
@@ -178,7 +178,7 @@ export const GAME_COPY = {
   stoneOfTurn: (placed: number, total: number) => `Stone ${placed} of ${total} this turn`,
   forbiddenNote: (colour: string, shapes: string) =>
     `${colour} may not play the points marked ✕: ${shapes}.`,
-  browser: { label: "Games", kanji: "遊び方" },
+  browser: { label: "Games", kanji: "種目" },
   browserTitle: "Choose a game",
   browserIntro:
     "Every game here is a line of stones at heart. Pick the rules, then an opening if the variant offers one. Changing either starts a new game.",
@@ -273,8 +273,8 @@ export const GAME_COPY = {
   nextPieces: { label: "Coming next", kanji: "次" },
   rotatePiece: { label: "Rotate", kanji: "回転" },
   flipPiece: { label: "Flip", kanji: "反転" },
-  useSingle: { label: "Lay a single", kanji: "単石" },
-  usePiece: { label: "Lay the piece", kanji: "駒" },
+  useSingle: { label: "Place a single", kanji: "単石" },
+  usePiece: { label: "Place the piece", kanji: "駒" },
   singlesLeft: (count: number) => `${count} single${count === 1 ? "" : "s"} left`,
   /*
    * The pass is taken for a player now — see rules/forcedPass.ts — so this is
@@ -292,7 +292,7 @@ export const GAME_COPY = {
   headStartWatched: (who: string, turn: number, of: number) => `${who}'s head start: free turn ${turn} of ${of}.`,
   drawNoMoves: "Draw. Neither side had a move left.",
   passTurn: { label: "Pass", kanji: "パス" },
-  piecePrompt: "Lay the piece in hand: rotate or flip it, then click where its top-left corner goes.",
+  piecePrompt: "Place the piece in hand: rotate or flip it, then click where its top-left corner goes.",
   singlePrompt: "Lay one stone of your colour.",
   notes: { label: "Notes", kanji: "覚え書き" },
   notesHint: "Private. Kept in this browser and never sent to anyone.",
@@ -379,7 +379,7 @@ export const PRACTICE_COPY = {
   paste: {
     label: "Paste a game",
     kanji: "棋譜貼付",
-    button: "Walk through it",
+    button: "Load moves",
     clear: "Clear",
     placeholder: "Paste a list of moves",
     hint: (example: string) => `A list of moves, in most of the ways they are published — like ${example}. Move numbers, line breaks and a result on the end are all fine.`,

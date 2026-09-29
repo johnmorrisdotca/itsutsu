@@ -118,7 +118,7 @@ test.describe("who is ahead", () => {
     // percentage would be a claim about a search this site does not run.
     await expect(panel).toHaveAttribute("data-kind", "threats");
     await expect(panel).not.toContainText("%");
-    await expect(panel).toContainText("Level");
+    await expect(panel).toContainText("Even");
   });
 
   test("gives the lead to the side building a threat", async ({ page }) => {

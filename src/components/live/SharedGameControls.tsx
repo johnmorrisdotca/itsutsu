@@ -55,7 +55,7 @@ export function TurnBoardButton({ gameId, turned }: TurnBoardProps) {
           title="Your own view of this board. The other player's board does not move."
           data-testid="turn-board"
         >
-          {turned ? "Turn the board back" : "Turn the board round"}{" "}
+          {turned ? "Flip the board back" : "Flip the board"}{" "}
           <span className="font-mincho">盤反転</span>
         </button>
       </div>

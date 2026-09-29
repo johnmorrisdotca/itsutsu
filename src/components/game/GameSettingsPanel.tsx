@@ -284,7 +284,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             hint={said(locks.allowSkip, GAME_COPY.skipHint)}
           />
           <Toggle
-            label="Allow swapping seats"
+            label="Allow swapping colours"
             checked={settings.allowSwap}
             onChange={(next) => actions.reset({ allowSwap: next })}
             hint={GAME_COPY.swapHint}
@@ -344,7 +344,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           </Field>
 
           <Field
-            label="Awareness"
+            label="Analysis"
             hint={locks.reading ?? AWARENESS_DISPLAY[session.settings.awareness].description}
           >
             <Select
@@ -403,7 +403,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           />
 
           {session.settings.hintPolicy === HINT_POLICIES.limited ? (
-            <Field label="Hints each">
+            <Field label="Hints per player">
               <Select
                 value={session.settings.hintsPerSeat}
                 onChange={(event) =>

@@ -166,7 +166,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
         hint={GAME_COPY.skipHint}
       />
       <Toggle
-        label="Allow swapping seats"
+        label="Allow swapping colours"
         checked={fields.allowSwap}
         onChange={(next) => set({ allowSwap: next })}
         hint={GAME_COPY.swapHint}

@@ -99,7 +99,7 @@ export function AppearancePanel(props: GamePanelProps) {
         hint="Numbers the stones as a printed game record does."
       />
       <Toggle
-        label="Turn the board round"
+        label="Flip the board"
         checked={session.appearance.flipped ?? boardStartsFlipped(session.state.settings, session.state.opener)}
         onChange={(next) => actions.setAppearance({ flipped: next })}
         hint="Your own view: the far side of the board nearest you, letters and numbers with it. Nobody else's board moves."

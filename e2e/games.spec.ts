@@ -96,7 +96,7 @@ test.describe("the small games", () => {
     await playSequence(page, 15, [[7, 7], [7, 8]]);
     await page.getByRole("button", { name: /^New game/ }).click();
     await expect(page.getByTestId("new-game-confirm")).toBeVisible();
-    await page.getByRole("button", { name: /^Never mind/ }).click();
+    await page.getByRole("button", { name: /^Cancel/ }).click();
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
 
     await page.getByRole("button", { name: /^New game/ }).click();
