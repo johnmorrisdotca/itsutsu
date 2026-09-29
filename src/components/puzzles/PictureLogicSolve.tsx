@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { checkPictureLogic } from "@/lib/puzzles/pictureLogic/check";
 import { answerOfCells, decodeCells, decodeClues, decodePicture, encodeCells } from "@/lib/puzzles/pictureLogic/code";
 import { hintedState, pictureChecked, pictureHint, pictureWrong } from "@/lib/puzzles/pictureLogic/help";
@@ -115,7 +116,7 @@ export function PictureLogicSolve({
   const steps = useMemo(() => history.steps.map((code) => [...code]), [history.steps]);
   const finished = done !== null && done.outOfGuesses !== true;
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-drawing={drawing} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-drawing={drawing} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <TsunagiViewport size={size} name="picture">
