@@ -16,6 +16,8 @@ import { startTenka } from "../src/lib/party/tenka/tenkaStart";
 import { playTrain, startTrain } from "../src/lib/party/mexicanTrain/mexicanTrain";
 import { encodeTrain } from "../src/lib/party/mexicanTrain/trainCodec";
 import { computerMove } from "../src/lib/party/mexicanTrain/trainComputer";
+import { CARD_GAME_RULES } from "../src/lib/cardGames/cardGameRules";
+import type { CardGameKind } from "../src/lib/cardGames/cardGames.constants";
 import { ready } from "./support";
 
 /**
@@ -70,6 +72,21 @@ function tenkaScene(): string {
   return encodeTenka(game);
 }
 
+/**
+ * A family card game from a fixed seed, one person (Ann, in the first seat)
+ * and computers in the rest, played by the computers' own choices — Ann's
+ * too — until the table stands where the picture wants it and it is Ann's
+ * turn: then the table waits for her, and the picture is of her hand under
+ * the table, as she sees it.
+ */
+function cardScene(kind: CardGameKind, size: number, seats: number, when: (game: never) => boolean): string {
+  const rules = CARD_GAME_RULES[kind] as unknown as { start: (...args: unknown[]) => unknown; play: (game: unknown, move: unknown) => unknown; computer: (game: unknown) => unknown; toPlay: (game: unknown) => number | null; encode: (game: unknown) => string };
+  const names = ["Ann", "Ben", "Cy", "Dee", "Eve", "Fay"].slice(0, seats);
+  let game = rules.start(size, names, undefined, 20260929, names.map((_, seat) => seat > 0));
+  for (let move = 0; move < 2000 && !(rules.toPlay(game) === 0 && when(game as never)); move += 1) game = rules.play(game, rules.computer(game));
+  return rules.encode(game);
+}
+
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
 const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; width?: number; scale?: number }[] = [
   {
@@ -117,6 +134,46 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "board-surface",
     stored: trainScene(),
   },
+  // Hearts for four, four tricks gone and three cards on the fifth: Ann to play to it, her hand under the table.
+  {
+    kind: "hearts",
+    key: "itsutsu.cards.hearts",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("hearts", 100, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 3 && game.played.length >= 16),
+  },
+  // Big Two for four, a pair or better on the table for Ann to beat.
+  {
+    kind: "bigTwo",
+    key: "itsutsu.cards.bigTwo",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("bigTwo", 3, 4, (game: { pile: { cards: unknown[] } | null }) => (game.pile?.cards.length ?? 0) >= 2),
+  },
+  // President for five in the second round, titles won, a pair or more on the table for Ann to beat.
+  {
+    kind: "president",
+    key: "itsutsu.cards.president",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("president", 3, 5, (game: { phase: string; round: number; pile: { cards: unknown[] } | null }) => game.phase === "playing" && game.round >= 1 && (game.pile?.cards.length ?? 0) >= 2),
+  },
+  // Go Fish for three, a few asks in and a book down: the pond, and what was last said.
+  {
+    kind: "goFish",
+    key: "itsutsu.cards.goFish",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("goFish", 1, 3, (game: { log: { kind: string }[] }) => game.log.some((event) => event.kind === "book") && game.log.length >= 8),
+  },
+  // Crazy Eights for three, a few cards down: the stock, the discard pile, and Ann's hand to match it from.
+  {
+    kind: "crazyEights",
+    key: "itsutsu.cards.crazyEights",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("crazyEights", 100, 3, (game: { discard: unknown[]; drawn: unknown }) => game.discard.length >= 7 && game.drawn === null),
+  },
 ];
 
 test.describe("party game screenshots", () => {
@@ -137,6 +194,8 @@ test.describe("party game screenshots", () => {
         if (scene.shot === "board-surface") await expect(surface).toHaveAttribute("data-surface", "Kaya");
         // The ways of looking round a big board (Fit, the arrows) are for the player, not the picture.
         await page.addStyleTag({ content: '[data-testid$="-fit"], [data-testid$="-arrows"] { visibility: hidden !important; }' });
+        // And a card game's presses and the line under its hand are for playing, not for its picture.
+        await page.addStyleTag({ content: '[data-testid="cards-actions"], [data-testid="cards-hand-panel"] > p { visibility: hidden !important; }' });
         await page.mouse.move(0, 0);
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         // The board in its wood, or the letters the table watches, and nothing round it, as a game's picture is taken (game-screenshots.spec.ts).

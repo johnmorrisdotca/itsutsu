@@ -22,8 +22,15 @@ import type { MancalaGame } from "./mancala/mancala.types";
 import type { TrainGame, TrainMove } from "./mexicanTrain/mexicanTrain.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 import type { TenkaGame, TenkaMove } from "./tenka/tenka.types";
+import type { CardGameKind } from "../cardGames/cardGames.constants";
+import type { CardGamePlays } from "../cardGames/cardGameRules";
 
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain";
+/**
+ * The party games, and the family card games among them (`CardGameKind`:
+ * Hearts, Big Two, President, Go Fish, Crazy Eights), which are party games
+ * too — a table round one device — with a computer in any empty seat.
+ */
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | CardGameKind;
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -74,9 +81,11 @@ export type PartyRules<S, M> = {
    * not offered for. A game of chance takes a `seed` too, which the gate gives
    * each game it plays, and a kept game deals or throws the same again: Tenka's
    * dice, Mexican Train's shuffled tiles. A game with nothing hidden and no
-   * dice ignores it.
+   * dice ignores it. A game dealt from a shuffle with computers at the table
+   * (the card games) takes which seats a computer plays as `computers`, one a
+   * seat; a game nobody but people plays ignores it.
    */
-  start: (size: number, players: readonly string[], language?: PartyLanguage, seed?: number) => S | null;
+  start: (size: number, players: readonly string[], language?: PartyLanguage, seed?: number, computers?: readonly boolean[]) => S | null;
   /** Every move the player to move may make now; none once the game is over. */
   moves: (game: S) => readonly M[];
   /** The game after that move, or null for a move that may not be made; the game given is left untouched. */
@@ -113,4 +122,4 @@ export type PartyPlays = {
   mancala: { game: MancalaGame; move: number };
   tenka: { game: TenkaGame; move: TenkaMove };
   mexicanTrain: { game: TrainGame; move: TrainMove };
-};
+} & CardGamePlays;

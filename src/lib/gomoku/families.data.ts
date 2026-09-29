@@ -226,8 +226,14 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Cards",
     kanji: "札",
-    blurb: "Games with a deck of cards, drawn by us: Solitaire to start, and the family card games to come.",
-    games: ["solitaire"],
+    blurb: "Games with a deck of cards, drawn by us: Solitaire for one, and the family card games round one device, with a computer in any empty seat.",
+    /*
+     * And the family card games (2026-09-29), party games at home here rather
+     * than on Party games: a card game is the kind of game it is, and who is
+     * round the table is how it is played. Nothing of them is recorded, so
+     * this family's first and its award are still Solitaire's alone.
+     */
+    games: ["solitaire", "hearts", "crazyEights", "goFish", "bigTwo", "president"],
   },
   {
     key: "mahjong",

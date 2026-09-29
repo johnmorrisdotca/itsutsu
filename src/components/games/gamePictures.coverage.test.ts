@@ -326,6 +326,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/party/online/MyTables.tsx": { GameThumb: "small" },
   // And Tenka's.
   "src/components/party/tenka/TenkaCard.tsx": { GameThumb: "small" },
+  "src/components/party/cards/CardGameCard.tsx": { GameThumb: "small" },
   "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
   // The learning shelf: a card per guide, headed by the game it is first about, as the catalogue's cards are.
   "src/app/learn/page.tsx": { GameThumb: "regular" },

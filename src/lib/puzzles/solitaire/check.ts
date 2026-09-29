@@ -2,7 +2,7 @@ import type { PuzzleCheck, PuzzleLevel } from "../puzzles.types";
 
 import { decodeMoves, deckOf } from "./code";
 import { dealKlondike, klondikeWon, playKlondike } from "./klondike";
-import { solitaireRules } from "./generate";
+import { solitaireRules } from "./rules";
 import type { KlondikeTable } from "./solitaire.types";
 
 /** The most characters a Solitaire move list may be: two a carry, one a turn of the stock, and room for a long evening of turning. */

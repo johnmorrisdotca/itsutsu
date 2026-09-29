@@ -18,7 +18,7 @@ const WIDEST_STEP = 0.62;
  * no names, no codes, no data attributes — so looking at the source of a pass-
  * and-play table tells nobody what the next player holds.
  */
-export function CardHand({ id, cards, hidden = false, back, chosen = [], onPress, onLift, lifted, label, cardWidth = 72, className }: CardHandProps) {
+export function CardHand({ id, cards, hidden = false, back, chosen = [], hinted = [], onPress, onLift, lifted, label, cardWidth = 72, className }: CardHandProps) {
   const count = cards.length;
   const width = `min(${cardWidth}px, 100%)`;
   const reach = 1 + WIDEST_STEP * Math.max(0, count - 1);
@@ -50,7 +50,7 @@ export function CardHand({ id, cards, hidden = false, back, chosen = [], onPress
               onPointerDown={(event) => (hidden ? undefined : onLift?.({ pile: id, index }, event))}
               onClick={() => onPress?.({ pile: id, index })}
             >
-              <PlayingCard card={hidden ? undefined : card} faceUp={!hidden} back={back} picked={up} lifted={isLifted} />
+              <PlayingCard card={hidden ? undefined : card} faceUp={!hidden} back={back} picked={up} hinted={!hidden && hinted.includes(index)} lifted={isLifted} />
             </button>
           );
         })}

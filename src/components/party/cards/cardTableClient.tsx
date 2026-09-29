@@ -1,0 +1,86 @@
+"use client";
+
+import dynamic from "next/dynamic";
+
+import { PLAY_BUTTON } from "@/components/ui/ui.constants";
+
+import type { PartyTableGameProps } from "../party.types";
+import { CARD_TABLE_COPY } from "./cardTable.constants";
+
+/**
+ * THE CARD GAMES' TABLE, THEIR PLAY BUTTON AND THEIR MY GAMES CARD, LOADED IN
+ * THE BROWSER ONLY. All three read a game kept in this browser, which the
+ * server cannot see, so a server render of them does no work a reader sees.
+ * Loading them here keeps the five games' rules, their computer players and
+ * the deck's drawing out of the server's functions altogether (the deploy
+ * measures every function's size), as Mexican Train's are (`trainClient.tsx`).
+ * The page arrives with the table's room kept, and the button reading Play,
+ * until the browser fills them.
+ */
+const Table = dynamic(() => import("./CardGameTable").then((module) => module.CardGameTable), {
+  ssr: false,
+  loading: () => <section className="min-h-[36rem]" data-testid="cards-game" data-ready="false" aria-busy="true" />,
+});
+const Offer = dynamic(() => import("./CardGameOffer").then((module) => module.CardGameOffer), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col" data-testid="party-kind-offer" data-ready="false">
+      {/* The button's room and words, not yet a link: the browser has not said whether a game is going. */}
+      <span className={PLAY_BUTTON} aria-hidden="true">
+        {CARD_TABLE_COPY.play}
+      </span>
+    </div>
+  ),
+});
+const Card = dynamic(() => import("./CardGameCard").then((module) => module.CardGameCard), { ssr: false });
+
+/*
+ * Each game's three, told which game it is: named components rather than a
+ * function that makes them, since the server's table of tables
+ * (`partyKindTables.ts`) may name a component from this file but not call one.
+ */
+export function HeartsTable(props: PartyTableGameProps) {
+  return <Table kind="hearts" {...props} />;
+}
+export function HeartsOffer({ href }: { href: string }) {
+  return <Offer kind="hearts" href={href} />;
+}
+export function HeartsCard() {
+  return <Card kind="hearts" />;
+}
+export function BigTwoTable(props: PartyTableGameProps) {
+  return <Table kind="bigTwo" {...props} />;
+}
+export function BigTwoOffer({ href }: { href: string }) {
+  return <Offer kind="bigTwo" href={href} />;
+}
+export function BigTwoCard() {
+  return <Card kind="bigTwo" />;
+}
+export function PresidentTable(props: PartyTableGameProps) {
+  return <Table kind="president" {...props} />;
+}
+export function PresidentOffer({ href }: { href: string }) {
+  return <Offer kind="president" href={href} />;
+}
+export function PresidentCard() {
+  return <Card kind="president" />;
+}
+export function GoFishTable(props: PartyTableGameProps) {
+  return <Table kind="goFish" {...props} />;
+}
+export function GoFishOffer({ href }: { href: string }) {
+  return <Offer kind="goFish" href={href} />;
+}
+export function GoFishCard() {
+  return <Card kind="goFish" />;
+}
+export function CrazyEightsTable(props: PartyTableGameProps) {
+  return <Table kind="crazyEights" {...props} />;
+}
+export function CrazyEightsOffer({ href }: { href: string }) {
+  return <Offer kind="crazyEights" href={href} />;
+}
+export function CrazyEightsCard() {
+  return <Card kind="crazyEights" />;
+}

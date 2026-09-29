@@ -8,7 +8,7 @@ import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
 import { partyPlayersAsked } from "./kumimoji/party";
-import { isAnyDeal } from "./solitaire/generate";
+import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
 import type { MahjongBonusRule } from "./mahjong/mahjong.types";
 import { tablePlayersAsked } from "./mahjong/table";

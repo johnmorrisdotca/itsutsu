@@ -66,7 +66,8 @@ describe("every game with pieces a player owns offers them a colour", () => {
     });
     expect(silent, "a table whose players cannot choose a colour on their turn: draw <PartySeatColour> in its side column").toEqual([]);
     // Pair Go's set-up names four players in two teams; its colours are the teams', chosen on the board (NO_OWNED_PIECES).
-    const setUps = files.filter((path) => path.endsWith("SetUp.tsx") && !path.endsWith("PairGoSetUp.tsx"));
+    // And the family card games' set-up (2026-09-29): a card game has no pieces, and its marbles only name the seats.
+    const setUps = files.filter((path) => path.endsWith("SetUp.tsx") && !path.endsWith("PairGoSetUp.tsx") && !path.endsWith(join("cards", "CardSetUp.tsx")));
     expect(setUps.length).toBeGreaterThan(3);
     const plain = setUps.filter((path) => !read(path).includes("<SeatColourButton"));
     expect(plain, "a set-up whose marbles do not choose a colour: draw <SeatColourButton> beside each name").toEqual([]);

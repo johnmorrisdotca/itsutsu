@@ -5,6 +5,7 @@ import { MEXICAN_TRAIN_RULES } from "./mexicanTrain/trainRules";
 import type { PartyKind, PartyPlays, PartyRules } from "./party.types";
 import { SUPERGHOST_RULES } from "./superghost/ghostRules";
 import { TENKA_RULES } from "./tenka/tenkaRules";
+import { CARD_GAME_RULES } from "../cardGames/cardGameRules";
 
 /**
  * EVERY PARTY GAME'S RULES, by kind: what the New Game Gate plays out at every
@@ -17,4 +18,5 @@ export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], 
   mancala: MANCALA_RULES,
   tenka: TENKA_RULES,
   mexicanTrain: MEXICAN_TRAIN_RULES,
+  ...CARD_GAME_RULES,
 };
