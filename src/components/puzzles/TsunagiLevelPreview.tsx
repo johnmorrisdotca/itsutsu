@@ -82,7 +82,8 @@ export function TsunagiLevelPreview({
         )}
         {locked ? (
           <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgb(0 0 0 / 0.38)" }} data-testid="tsunagi-preview-lock">
-            <svg viewBox="0 0 10 12" className="h-12 w-12 text-paper drop-shadow" aria-hidden="true">
+            {/* A pale lock on the dimmed board in both themes: the light theme's paper (`surface-light`), since the dark theme's is charcoal on charcoal. */}
+            <svg viewBox="0 0 10 12" className="surface-light h-12 w-12 text-paper drop-shadow" aria-hidden="true">
               <path d="M2.5 5V3.5a2.5 2.5 0 0 1 5 0V5" fill="none" stroke="currentColor" strokeWidth="1.4" />
               <rect x="1" y="5" width="8" height="6.5" rx="1" fill="currentColor" />
             </svg>

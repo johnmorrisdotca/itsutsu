@@ -6,9 +6,13 @@
  * its letter is set in pixels from the tile's side (`tileLetterPx`).
  */
 
-/** A tile, on the table or in the hand. */
+/**
+ * A tile, on the table or in the hand: white in both themes, so it carries
+ * the light theme's inks (`surface-light`, globals.css) and its letter, its
+ * corner forms, its rim and the misspelt wash read the same by night.
+ */
 export const TILE =
-  "flex items-center justify-center rounded-[14%] border-2 border-ink-soft/70 bg-white font-bold uppercase leading-none text-ink shadow-[0_1px_2px_rgba(0,0,0,0.35)] select-none";
+  "surface-light flex items-center justify-center rounded-[14%] border-2 border-ink-soft/70 bg-white font-bold uppercase leading-none text-ink shadow-[0_1px_2px_rgba(0,0,0,0.35)] select-none";
 
 /** A tile in a line that is not a word: red rim and a red wash, never colour alone — the line under the table names the word. */
 export const TILE_MISSPELT = "border-shu bg-shu-soft text-shu";
@@ -16,8 +20,11 @@ export const TILE_MISSPELT = "border-shu bg-shu-soft text-shu";
 /** A tile not joined to the rest: dashed, as though set down to one side. */
 export const TILE_APART = "border-dashed opacity-80";
 
-/** The tile chosen to move, in the hand or on the table. */
-export const TILE_CHOSEN = "ring-4 ring-moss ring-offset-1 ring-offset-transparent";
+/** The tile chosen to move, in the hand or on the table: a ring round it, in the page's moss (`--page-moss`), since it stands on the tray and not on the tile. */
+export const TILE_CHOSEN = "ring-4 ring-(--page-moss) ring-offset-1 ring-offset-transparent";
+
+/** The table tile a typed letter goes after: an outline round it, in the page's moss for the same reason. */
+export const TILE_TYPING = "outline-2 outline-offset-1 outline-(--page-moss)";
 
 /** Two taps on one table tile inside this many milliseconds send it back to the hand. */
 export const DOUBLE_TAP_MS = 350;

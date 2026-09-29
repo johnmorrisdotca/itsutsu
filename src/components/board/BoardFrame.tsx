@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { columnLetter, rowNumber } from "@/lib/gomoku/notation";
 
@@ -27,6 +27,18 @@ type LabelStripProps = {
   shape: LatticeShape;
 };
 
+/**
+ * THE STRIPS' INK. The strips stand on the page, not on the board, and the
+ * page turns charcoal at night while a board's `coordinate` is one fixed
+ * colour — kaya's brown was about 2:1 on the dark page, and the pale inks of
+ * the dark woods about 1.3:1 on the light one. So the strips are written in
+ * the page's own ink with the board's colour mixed into it (`.board-coordinates`
+ * in globals.css), which reads in both themes on every surface.
+ */
+function stripInk(theme: BoardThemeTokens): CSSProperties {
+  return { "--board-coordinate": theme.coordinate } as CSSProperties;
+}
+
 function ColumnLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripProps) {
   /*
    * A star is given no letters at all: no row of it holds the columns a strip
@@ -37,10 +49,10 @@ function ColumnLabels({ size, theme, flipped, inset, lattice, shape }: LabelStri
   if (lattice && shape === "star") return <div />;
   return (
     <div
-      className="grid text-center text-[0.65rem] font-medium select-none"
+      className="board-coordinates grid text-center text-[0.65rem] font-medium select-none"
       style={{
         gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns", shape) : labelTracks(size, inset),
-        color: theme.coordinate,
+        ...stripInk(theme),
       }}
       aria-hidden="true"
     >
@@ -70,10 +82,10 @@ function RowLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripPr
        * letters across the top were never affected — they are one line tall
        * whatever the board.
        */
-      className="grid h-0 min-h-full text-right text-[0.65rem] font-medium select-none"
+      className="board-coordinates grid h-0 min-h-full text-right text-[0.65rem] font-medium select-none"
       style={{
         gridTemplateRows: lattice ? latticeLabelTracks(size, "rows", shape) : labelTracks(size, inset),
-        color: theme.coordinate,
+        ...stripInk(theme),
       }}
       aria-hidden="true"
     >
