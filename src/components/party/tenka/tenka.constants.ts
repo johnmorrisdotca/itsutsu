@@ -20,7 +20,7 @@ export const TENKA_SEA_DARK = "#2b3a42";
 export const TENKA_LAND_OPACITY = 0.78;
 
 /** The lines on the map, in map units: a territory's edge, a continent's, a sea link's dashes, the chosen territory's ring. */
-export const TENKA_LINES = { territory: 1.2, continent: 3.2, sea: 2.4, seaDash: "7 6", chosen: 5, reach: 3.5 } as const;
+export const TENKA_LINES = { territory: 1.2, continent: 3.2, sea: 2.4, seaDash: "7 6", chosen: 3, reach: 2.5 } as const;
 
 /**
  * An army counter's radius, in map units: ten screen pixels where it can be,
