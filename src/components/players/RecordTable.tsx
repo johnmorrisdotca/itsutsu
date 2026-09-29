@@ -394,6 +394,8 @@ export function RecordTable({
                 key={row.key}
                 className={`${ROW_CLASS} whitespace-nowrap`}
                 data-testid={rowTestId}
+                // A tap gives the row the focus, which brings up its buttons (`[data-row-actions]` in globals.css); out of the Tab order.
+                tabIndex={columns.actions === undefined ? undefined : -1}
                 {...row.attributes}
               >
                 {columns.rank === true ? (

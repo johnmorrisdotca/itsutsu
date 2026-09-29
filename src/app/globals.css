@@ -779,42 +779,78 @@ html[data-bare="true"] [data-strippable] [data-board-column] {
 }
 
 /*
- * A TABLE ROW'S OWN BUTTONS (Play, ★, ⋯) FLOAT OVER ITS RIGHT END ON HOVER.
- * John, 2026-09-29, on /players: "We should only show these buttons on Hover…
- * and it should float over the space, not take up the space/column." With a
- * mouse the actions cell (`recordTrailing.tsx`) is no wider than nothing, so
- * the figures keep the room; its buttons sit over the row's end, unseen until
- * the row is hovered or a key has moved into it, which is how a keyboard
- * reaches them. Unseen is opacity alone, so the buttons are where the pointer
- * finds them. A touch screen has no hover and keeps the column.
+ * A TABLE ROW'S OWN BUTTONS (Play, ★, ⋯) FLOAT OVER ITS RIGHT END, AND COME UP
+ * WHEN THE ROW IS HOVERED OR TAPPED. John, 2026-09-29, on /players: "We should
+ * only show these buttons on Hover… and it should float over the space, not
+ * take up the space/column" — and then, of a phone: "touch should bring up the
+ * options". The actions cell (`recordTrailing.tsx`) is no wider than nothing on
+ * every screen, so the figures keep the room; its buttons sit over the row's
+ * end, unseen until the row is hovered, or holds the focus, which a tap gives
+ * it (the row is `tabIndex={-1}` in `RecordTable.tsx`) and a key moving into it
+ * gives it too. An unseen button takes no press, so a phone's first tap on a
+ * row opens its buttons and never presses one it cannot see.
  */
-@media (hover: hover) and (pointer: fine) {
-  [data-row-actions],
-  [data-row-actions-head] {
-    width: 0;
-    max-width: 0;
-    padding: 0 !important;
-    font-size: 0;
-  }
+[data-row-actions],
+[data-row-actions-head] {
+  width: 0;
+  max-width: 0;
+  padding: 0 !important;
+  font-size: 0;
+}
+[data-row-actions] > * {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-ivory) 60%, var(--color-paper));
+  box-shadow: 0 0.25rem 0.75rem -0.25rem rgb(0 0 0 / 0.25);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+/*
+ * On a touch screen an unseen button takes no press, so a first tap on a row
+ * opens its buttons rather than pressing one. A mouse always hovers before it
+ * presses, so there the button stays where the pointer can reach it.
+ */
+@media (hover: none) {
   [data-row-actions] > * {
-    position: absolute;
-    right: 0.25rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.875rem;
-    padding: 0.125rem 0.25rem;
-    border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--color-ivory) 60%, var(--color-paper));
-    box-shadow: 0 0.25rem 0.75rem -0.25rem rgb(0 0 0 / 0.25);
-    opacity: 0;
-    transition: opacity 120ms ease;
+    pointer-events: none;
   }
-  [data-row-actions]:empty > *,
-  [data-row-actions] > :empty {
-    box-shadow: none;
-  }
-  tr:hover > [data-row-actions] > *,
   tr:focus-within > [data-row-actions] > * {
+    pointer-events: auto;
+  }
+}
+[data-row-actions]:empty > *,
+[data-row-actions] > :empty {
+  box-shadow: none;
+}
+/*
+ * Hover only where a pointer truly hovers: a phone's browser makes a hover up
+ * at the start of a tap, which showed the buttons in time for that same tap to
+ * press one. On a touch screen the focus alone shows them, and it arrives once
+ * the tap has already chosen what it landed on.
+ */
+@media (hover: hover) {
+  tr:hover > [data-row-actions] > * {
     opacity: 1;
   }
+}
+tr:focus-within > [data-row-actions] > * {
+  opacity: 1;
+}
+/*
+ * Every row one height. The actions cell used to hold it, an empty set of
+ * buttons keeping a row with nothing to offer as tall as one with Play; out of
+ * the flow, it holds nothing, and a kept record's name stood 4px taller than
+ * its neighbours (`e2e/row-heights.spec.ts`). A row's height in a table is its
+ * least, so the tallest subject still fits.
+ */
+tr:has(> [data-row-actions]) {
+  height: 2.5rem;
+}
+tr:has(> [data-row-actions]):focus {
+  outline: none;
 }

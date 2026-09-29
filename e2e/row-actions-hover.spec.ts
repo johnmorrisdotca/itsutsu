@@ -8,8 +8,9 @@ import { expect, test } from "@playwright/test";
  * to the table's right edge over the XP figures, which read "23…" and "1,…".
  *
  * With a mouse the column takes no room, every XP figure is whole, and a row's
- * Play shows when that row is hovered. A phone has no hover and keeps the
- * column, which the phone specs (fits-a-phone, phone-overflow) hold.
+ * Play shows when that row is hovered. And on a phone, which has no hover:
+ * "touch should bring up the options" — a tap on the row brings them up, and a
+ * first tap where an unseen button sits presses nothing.
  */
 test.describe("the members list on a desk", () => {
   test.use({ viewport: { width: 1024, height: 800 } });
@@ -35,5 +36,36 @@ test.describe("the members list on a desk", () => {
     await row.hover();
     await expect(buttons).toHaveCSS("opacity", "1");
     await page.screenshot({ path: test.info().outputPath("members-hover-1024.png") });
+  });
+});
+
+test.describe("the members list on a phone", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test("a tap on a row brings up its buttons, and never presses one it could not see", async ({ page }) => {
+    await page.goto("/players");
+    const table = page.getByTestId("directory");
+    await expect(table).toBeVisible();
+    const row = table.locator("tr").filter({ has: page.locator("td[data-row-actions] button, td[data-row-actions] a") }).first();
+    const buttons = row.locator("td[data-row-actions] > *");
+    await expect(buttons).toHaveCSS("opacity", "0");
+
+    // The first tap lands where the unseen buttons sit: it opens them and goes nowhere.
+    await row.scrollIntoViewIfNeeded();
+    const at = (await buttons.boundingBox())!;
+    const address = page.url();
+    await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
+    // By the focus, not by a hover the browser makes up for a tap: iPhone's Safari makes up none for a row.
+    await expect(row).toBeFocused();
+    await expect(buttons).toHaveCSS("opacity", "1");
+    await expect(buttons).toHaveCSS("pointer-events", "auto");
+    expect(page.url()).toBe(address);
+    await page.screenshot({ path: test.info().outputPath("members-tap-390.png") });
+
+    // A tap on another row moves them there.
+    const other = table.locator("tr").filter({ has: page.locator("td[data-row-actions] button, td[data-row-actions] a") }).nth(1);
+    await other.locator("td").nth(1).tap();
+    await expect(other.locator("td[data-row-actions] > *")).toHaveCSS("opacity", "1");
+    await expect(buttons).toHaveCSS("opacity", "0");
   });
 });
