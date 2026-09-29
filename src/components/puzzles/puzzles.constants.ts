@@ -190,6 +190,23 @@ export const WORD_KEY =
  */
 export const WORD_GRID_BOX = "w-full select-none";
 
+/**
+ * A LETTER'S SIZE IS ITS SQUARE'S. John, 2026-09-28, with a two-word game on
+ * his iPhone: "the letters are too big or squares are too small" — the letters
+ * were a fixed 20 pixels, and a Futago's squares had come down to fifteen. So
+ * a letter or kana is drawn at `WORD_LETTER_OF_SQUARE` of its square's side,
+ * read from the grid's own width (`cqw`, the grid being the letters'
+ * container), and never larger than the 24 pixels a desk's board drew before —
+ * so its box, the height a line of it takes included, sits inside its stone or
+ * tile at every size. `e2e/gomoji-letters.spec.ts` measures it.
+ */
+export const WORD_LETTER_OF_SQUARE = 0.58;
+
+/** The letter size for a word `size` squares wide, as a CSS length, inside the grid that holds that word. */
+export function wordLetterSize(size: number): string {
+  return `min(calc(100cqw / ${size} * ${WORD_LETTER_OF_SQUARE}), 1.5rem)`;
+}
+
 /*
  * GOMOJI IN STONES: the Reversi and Gomoku styles (`wordStyles.ts`). A letter
  * is written on a stone shaded as the board's own stones are (`STONE_SETS`):

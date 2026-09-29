@@ -100,18 +100,20 @@ describe("what the server checks", () => {
     expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(5), "hard").ok).toBe(false);
     expect(checkOutOfGuesses("gomoji", 5, givens, `${"slate".repeat(5)}crane`, "hard").ok).toBe(false);
     expect(checkOutOfGuesses("numberPlace", 9, givens, six, "hard").ok).toBe(false);
-    // Easy runs out at the board's nine; six is also taken, from a page opened before easy had nine.
+    // Easy runs out at its eight; nine is also taken, from a run kept when easy had nine (before 2026-09-28), and six from a page opened before easy had more than six.
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(8), "easy")).toEqual({ ok: true });
     expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(9), "easy")).toEqual({ ok: true });
     expect(checkOutOfGuesses("gomoji", 5, givens, six, "easy")).toEqual({ ok: true });
-    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(8), "easy").ok).toBe(false);
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(7), "easy").ok).toBe(false);
+    expect(checkOutOfGuesses("gomoji", 5, givens, "slate".repeat(10), "easy").ok).toBe(false);
   });
 
   it("scores from the guesses handed in, a word lost for what it found (see wordScore.test.ts)", () => {
     const crane = encodeHidden("crane");
     // Found at once, inside a minute: every letter placed on the first row, the word, five rows left, the speed.
     expect(wordPoints(5, crane, "crane", 10_000)).toBe(5 * 10 * 6 + foundBonus(5, 6) + 25 * 5 + 50);
-    // Easy's nine rows weigh every guess more, and the word itself.
-    expect(wordPoints(5, crane, "crane", 10_000, "easy")).toBe(5 * 10 * 9 + foundBonus(5, 9) + 25 * 8 + 50);
+    // Easy's eight rows weigh every guess more, and the word itself.
+    expect(wordPoints(5, crane, "crane", 10_000, "easy")).toBe(5 * 10 * 8 + foundBonus(5, 8) + 25 * 7 + 50);
     // Lost: SLATE's A and E are placed on every row from the first, and nothing else is found.
     expect(wordPoints(5, crane, "slate".repeat(6), 10_000)).toBe(2 * 10 * 6);
     // Nothing a scorer can read scores nothing.

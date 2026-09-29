@@ -27,8 +27,11 @@ export function PuzzleBoard({
   theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme],
   coordinates = true,
   children,
+  rows,
 }: {
   size: number;
+  /** A board of other than `size` rows, its squares still square (`BoardFrame`): a Gomoji's, eight down however wide. */
+  rows?: number;
   theme?: BoardThemeTokens;
   /** Row numbers and column letters, as a game's board draws them; on by default, off only where a caller draws its own (Towers' ring of clues). */
   coordinates?: boolean;
@@ -43,6 +46,7 @@ export function PuzzleBoard({
       lattice={false}
       shape="rhombus"
       coordinates={coordinates}
+      rows={rows}
     >
       {children}
     </BoardFrame>

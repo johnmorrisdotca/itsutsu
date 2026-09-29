@@ -1,7 +1,7 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { decodeKanaGivens, decodeKanaGuesses, toKatakana } from "../gomojiKana/kanaCode";
 import { decodeGuesses, decodeHidden, encodeHidden, languageOf } from "./code";
-import { guessesFor } from "./layout";
+import { formerGuessesFor, guessesFor, rowsResumed } from "./layout";
 import type { WordCount } from "./words.types";
 import { asWordCount } from "./wordsSeed";
 
@@ -25,7 +25,8 @@ import { asWordCount } from "./wordsSeed";
  *    so nothing written for one word can read a Futago as one by accident;
  *  - its ANSWER is every guess run together, as a Gomoji's is.
  *
- * Every guess goes to both boards until a board's word is found; from then
+ * Both words are drawn side by side on one board (`WordBoards`). Every
+ * guess goes to both words until a word is found; from then
  * that board keeps the guesses that found it and takes no more, as Dordle's
  * does. It is found when both words are, and ended when the guesses run out
  * first. It gives one more guess than a Gomoji at every level (`layout.ts`).
@@ -43,8 +44,8 @@ export const FUTAGO_DISPLAY = { label: "Futago", kanji: "双子", words: "Two wo
  */
 export function futagoRule(grid: WordGrid): string {
   return grid === "gomojiKana"
-    ? "Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side, the free grey word grey against both: every guess goes to both boards until a board's word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well."
-    : "Futago 双子 (twins), a choice at any level, hides two words at once, side by side: every guess goes to both boards until a board's word is found, each key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well.";
+    ? "Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side on one board, the free grey word grey against both: every guess goes to both words until a word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well."
+    : "Futago 双子 (twins), a choice at any level, hides two words at once, side by side on one board: every guess goes to both words until a word is found, each key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well.";
 }
 
 /** How many boards a Futago has. */
@@ -113,6 +114,16 @@ export function guessesOf(kind: PuzzleKind, size: number, code: string): string[
 /** The guesses a puzzle with these givens allows at this level: one word's count, a Futago's or a Yotsugo's (`layout.ts`). */
 export function wordRowsOf(kind: PuzzleKind, size: number, level: PuzzleLevel, hidden: HiddenWords): number {
   return guessesFor(wordGridOf(kind), size, level, hidden.grey === null ? 0 : 1, asWordCount(hidden.words.length));
+}
+
+/** The guesses a run resumed with `guessed` already made is given: today's count, or one more for a run kept under the old, larger count (`rowsResumed`). */
+export function wordRowsResumed(kind: PuzzleKind, size: number, level: PuzzleLevel, hidden: HiddenWords, guessed: number): number {
+  return rowsResumed(wordGridOf(kind), size, level, hidden.grey === null ? 0 : 1, asWordCount(hidden.words.length), guessed);
+}
+
+/** The count these givens had at this level before 2026-09-28 (`formerGuessesFor`), for a run or solve kept under it. */
+export function formerWordRowsOf(kind: PuzzleKind, size: number, level: PuzzleLevel, hidden: HiddenWords): number {
+  return formerGuessesFor(wordGridOf(kind), size, level, hidden.grey === null ? 0 : 1, asWordCount(hidden.words.length));
 }
 
 /** The guesses one board shows: every guess up to and including the one that found its word, or all of them while it is not found. */

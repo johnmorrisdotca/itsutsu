@@ -158,9 +158,11 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
-found on a board of eight or nine squares, each guess coloured letter by
-letter: hard gives the classic count of guesses (a letter more than the word,
-never more than six), medium one more, easy every row, and Strict at any level holds each guess to the letters already found
+found on a board eight rows tall (eight or nine squares across), each guess
+coloured letter by letter: easy gives eight guesses, medium seven and hard six
+at every length, a kana word's free grey word being one of easy's and medium's
+rows; a Futago's two words a row more and a Yotsugo's four three more; and
+Strict at any level holds each guess to the letters already found
 (`src/lib/puzzles/gomoji/layout.ts`). Head start, at easy only, greys as many
 keys as the word is long before the first guess, none of them in the word,
 for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). English words

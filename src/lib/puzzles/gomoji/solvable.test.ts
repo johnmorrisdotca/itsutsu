@@ -83,3 +83,25 @@ describe("Gomoji 6 is still winnable and still a challenge", () => {
     });
   }
 });
+
+/*
+ * FOUR LETTERS ARE NOT EASIER. John, 2026-09-28: "yes short words aren't
+ * really easier to find." Four letters had five guesses at hard, as if a short
+ * word were easier; the same player finds a four-letter word within six
+ * guesses less often than a five-letter word within six (measured 2026-09-28:
+ * English 80% against 98%, French 79% against 97%, German 91% against 94%),
+ * and within the old five barely two times in three in English and French. A
+ * short word gives away fewer letters a guess, and many four-letter words
+ * differ from each other by a single letter. So hard gives six at every length.
+ */
+describe("four letters are no easier to find than five", () => {
+  for (const lang of ["en", "fr", "de"] as const) {
+    it(`${lang}: four letters within six guesses are found no more often than five within six, and the old five lost too many`, () => {
+      const [fourHard, fourInFive] = foundWithin(4, lang, [guessesFor("gomoji", 4, "hard", 0), 5], 8);
+      const [fiveHard] = foundWithin(5, lang, [guessesFor("gomoji", 5, "hard", 0)], 8);
+      expect(guessesFor("gomoji", 4, "hard", 0)).toBe(guessesFor("gomoji", 5, "hard", 0));
+      expect(fourHard, `${lang} four letters within six against five within six`).toBeLessThanOrEqual(fiveHard);
+      expect(fourInFive, `${lang} four letters within the old five`).toBeLessThan(0.85);
+    });
+  }
+});

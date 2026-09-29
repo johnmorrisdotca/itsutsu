@@ -160,27 +160,28 @@ describe("a Yotsugo's board and its guesses", () => {
   it("gives three guesses more than one word at hard, four at medium and five at easy", () => {
     const count = (size: number, level: (typeof PUZZLE_LEVEL_LIST)[number]) => guessesFor("gomoji", size, level, 0, 4);
     expect([count(5, "hard"), count(5, "medium"), count(5, "easy")]).toEqual([9, 10, 11]);
-    expect([count(4, "hard"), count(4, "medium"), count(4, "easy")]).toEqual([8, 9, 10]);
+    expect([count(4, "hard"), count(4, "medium"), count(4, "easy")]).toEqual([9, 10, 11]);
     expect([count(6, "hard"), count(6, "medium"), count(6, "easy")]).toEqual([9, 10, 11]);
-    expect(guessesFor("gomojiKana", 3, "easy", 1, 4)).toBe(11);
+    // Kana's free grey word is one of the eleven rows.
+    expect(guessesFor("gomojiKana", 3, "easy", 1, 4)).toBe(10);
   });
 
-  it("is a square two words wide, every row inside it, never more guesses than a kept run may hold", () => {
+  it("is two words wide exactly, every row inside it, never more guesses than a kept run may hold", () => {
     for (const kind of ["gomoji", "gomojiKana"] as const) {
       for (const size of kind === "gomoji" ? [3, 4, 5, 6, 7] : PUZZLE_SPECS.gomojiKana.sizes) {
         for (const level of PUZZLE_LEVEL_LIST) {
           for (const free of kind === "gomojiKana" && level !== "hard" ? [0, 1] : [0]) {
             const layout = gomojiLayout(kind, size, level, free, 4);
-            expect(layout.span).toBeGreaterThanOrEqual(2 * size);
-            expect(Number.isInteger(layout.left)).toBe(true);
-            expect(layout.top + free + layout.guesses).toBeLessThanOrEqual(layout.span);
+            expect(layout.cols).toBe(2 * size);
+            expect(layout.left).toBe(0);
+            expect(layout.top + free + layout.guesses).toBeLessThanOrEqual(layout.rows);
             expect(layout.guesses).toBeLessThanOrEqual(MOST_GUESSES);
           }
         }
       }
     }
-    // Five letters at hard: ten across, nine rows and a spare one over them.
-    expect(gomojiLayout("gomoji", 5, "hard", 0, 4)).toMatchObject({ span: 10, top: 1, left: 0, guesses: 9 });
+    // Five letters at hard: ten across, eleven down, nine rows of play and the spare ones over them.
+    expect(gomojiLayout("gomoji", 5, "hard", 0, 4)).toMatchObject({ cols: 10, rows: 11, top: 1, left: 0, guesses: 9 });
   });
 });
 

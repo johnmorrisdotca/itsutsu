@@ -300,7 +300,8 @@ test.describe("puzzle screenshots", () => {
       // The board in its wood and nothing round it, as a game's picture is taken (game-screenshots.spec.ts):
       // the letters and numbers along a played board's edges are for playing it, not for its picture.
       // John, 2026-09-26: "they do not have a numbered border."
-      const board = grid.locator(".aspect-square").first();
+      // The wood itself (`BoardFrame`'s surface), square or, for a Gomoji of an odd length, a square wider than tall.
+      const board = grid.getByTestId("board-surface").first();
       await expect(board).toBeVisible();
       await board.screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
     });

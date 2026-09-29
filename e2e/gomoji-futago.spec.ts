@@ -65,7 +65,7 @@ test.describe("Gomoji Futago", () => {
 
     await expect(page).toHaveURL(/twins=1|seed=10[01]\d{7}/);
     await ready(page, "puzzle-play");
-    await expect(page.getByTestId("futago-board")).toHaveCount(2);
+    await expect(page.getByTestId("word-part")).toHaveCount(2);
     await expect(page.getByTestId("puzzle-asked-futago")).toContainText("双子");
   });
 
@@ -73,7 +73,9 @@ test.describe("Gomoji Futago", () => {
     const { seed, words: [first, second], miss } = futagoWithAMiss();
     await page.goto(`${AT}/play?size=5&level=easy&seed=${seed}`);
     await ready(page, "puzzle-play");
-    const boards = page.getByTestId("futago-board");
+    // Both words on one board, side by side.
+    await expect(page.getByTestId("word-board-pair")).toHaveCount(1);
+    const boards = page.getByTestId("word-part");
     await expect(boards).toHaveCount(2);
 
     // A miss on both: written on both boards, and every key it pressed grey on both halves.
@@ -86,7 +88,7 @@ test.describe("Gomoji Futago", () => {
     await page.keyboard.type(first);
     await page.keyboard.press("Enter");
     await expect(boards.nth(0)).toHaveAttribute("data-found", "true");
-    await expect(boards.nth(0).getByTestId("futago-board-state")).toContainText("Found in 2");
+    await expect(page.locator('[data-testid="word-part-state"][data-part="0"]')).toContainText("Found in 2");
     await expect(boards.nth(1)).toHaveAttribute("data-found", "false");
     await expect(page.getByTestId(`word-key-${first[0]}`)).toHaveAttribute("data-mark", /^hit\|/);
 
@@ -107,12 +109,12 @@ test.describe("Gomoji Futago", () => {
     expect(hidden.words).toHaveLength(2);
     await page.goto(`/games/${PUZZLE_SLUGS.gomojiKana}/play?size=3&level=easy&seed=${seed}`);
     await ready(page, "puzzle-play");
-    await expect(page.getByTestId("futago-board")).toHaveCount(2);
+    await expect(page.getByTestId("word-part")).toHaveCount(2);
     for (const word of hidden.words) {
       await tapKana(page, word);
       await page.getByTestId("kana-key-enter").click();
     }
-    await expect(page.getByTestId("futago-board").nth(1)).toHaveAttribute("data-found", "true");
+    await expect(page.getByTestId("word-part").nth(1)).toHaveAttribute("data-found", "true");
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   });
 
@@ -124,6 +126,6 @@ test.describe("Gomoji Futago", () => {
     await expect(play.first()).toHaveAttribute("href", new RegExp(`seed=${futagoDailySeed(dayKeyOf(new Date()))}|twins=1.*daily=1`));
     await play.first().click();
     await ready(page, "puzzle-play");
-    await expect(page.getByTestId("futago-board")).toHaveCount(2);
+    await expect(page.getByTestId("word-part")).toHaveCount(2);
   });
 });

@@ -32,7 +32,7 @@ describe("gomojiKana, made and checked", () => {
 
   it("scores a loss for what it found and a win on top of every place", () => {
     const made = generatePuzzle("gomojiKana", 3, "medium", 5);
-    // Medium's three kana: a free word and seven guesses (`layout.ts`), found on the first.
-    expect(pointsFor("gomojiKana", 3, made.givens, 0, 0, made.solution, 10_000, "medium")).toBe(3 * 10 * 7 + foundBonus(3, 7) + 25 * 6 + 50);
+    // Medium's three kana: seven rows, a free word and six guesses (`layout.ts`), found on the first.
+    expect(pointsFor("gomojiKana", 3, made.givens, 0, 0, made.solution, 10_000, "medium")).toBe(3 * 10 * 6 + foundBonus(3, 6) + 25 * 5 + 50);
   });
 });

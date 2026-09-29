@@ -78,7 +78,7 @@ test.describe("Gomoji Yotsugo", () => {
     await page.getByTestId("puzzle-solve").click();
     await expect(page).toHaveURL(/quadruplets=1|seed=10[34]\d{7}/);
     await ready(page, "puzzle-play");
-    await expect(page.getByTestId("yotsugo-pair")).toHaveCount(2);
+    await expect(page.getByTestId("word-board-pair")).toHaveCount(2);
     await expect(page.getByTestId("word-part")).toHaveCount(4);
     await expect(page.getByTestId("puzzle-asked-yotsugo")).toContainText("四つ子");
     // Nine guesses at hard, each quarter a row for each.
@@ -113,7 +113,7 @@ test.describe("Gomoji Yotsugo", () => {
     // The first word: its quarter is found and keeps its rows; the others play on.
     await guess(page, words[0]!);
     await expect(quarter(0)).toHaveAttribute("data-found", "true");
-    await expect(page.locator('[data-testid="yotsugo-quarter-state"][data-part="0"]')).toContainText("Found in 2");
+    await expect(page.locator('[data-testid="word-part-state"][data-part="0"]')).toContainText("Found in 2");
     for (const at of [1, 2, 3]) await expect(quarter(at)).toHaveAttribute("data-found", "false");
 
     // The second: its quarter holds it on the third row, and the first quarter took nothing more.

@@ -320,13 +320,19 @@ test.describe("the word puzzle", () => {
     await expect(page.locator('[data-testid="word-tile"][data-row="1"]').first()).toHaveAttribute("data-focus", "true");
   });
 
-  test("easy has every row of the board, medium one more guess than hard, and play starts below the top", async ({ page }) => {
-    for (const [level, guesses] of [["easy", 9], ["medium", 7], ["hard", 6]] as const) {
-      expect(guessesFor(KIND, 5, level, 0)).toBe(guesses);
-      await page.goto(`${AT}/play?size=5&level=${level}&seed=${freshPuzzleSeed()}`);
-      await ready(page, "puzzle-play");
-      await expect(page.getByTestId("word-said")).toContainText(`${guesses} guesses left`);
-      await expect(page.getByTestId("word-tile")).toHaveCount(5 * guesses);
+  test("easy eight guesses, medium seven, hard six, at every length, on a board eight rows tall", async ({ page }) => {
+    // John, 2026-09-28: "make sure that the easiest ones to the hardest go from most rows to the least" — and the same at every length.
+    for (const size of [4, 5, 6]) {
+      for (const [level, guesses] of [["easy", 8], ["medium", 7], ["hard", 6]] as const) {
+        expect(guessesFor(KIND, size, level, 0)).toBe(guesses);
+        await page.goto(`${AT}/play?size=${size}&level=${level}&seed=${freshPuzzleSeed()}`);
+        await ready(page, "puzzle-play");
+        await expect(page.getByTestId("word-said")).toContainText(`${guesses} guesses left`);
+        await expect(page.getByTestId("word-tile")).toHaveCount(size * guesses);
+        // Eight rows down the board's side whatever the level: the row numbers run 8 to 1.
+        await expect(page.getByTestId("puzzle-grid").getByText("8", { exact: true })).toHaveCount(1);
+        await expect(page.getByTestId("puzzle-grid").getByText("9", { exact: true })).toHaveCount(0);
+      }
     }
   });
 
@@ -416,13 +422,14 @@ test.describe("the word puzzle", () => {
   });
 
   test("running out of guesses ends it and shows the word", async ({ page }) => {
-    // Hard, which keeps the published count: a guess more than the word has letters.
+    // Hard: six guesses, as at every length (four letters had five before 2026-09-28).
     const seed = freshPuzzleSeed();
     const puzzle = generatePuzzle(KIND, 4, "hard", seed);
     await page.goto(`${AT}/play?size=4&level=hard&seed=${seed}`);
     await ready(page, "puzzle-play");
-    const wrong = ["tree", "cake", "moon", "fish", "bird", "lamp", "rope"].filter((word) => word !== puzzle.solution && isWord(word, 4)).slice(0, 5);
-    expect(wrong).toHaveLength(5);
+    const hard = guessesFor(KIND, 4, "hard", 0);
+    const wrong = ["tree", "cake", "moon", "fish", "bird", "lamp", "rope", "ship"].filter((word) => word !== puzzle.solution && isWord(word, 4)).slice(0, hard);
+    expect(wrong).toHaveLength(hard);
     for (const word of wrong) {
       await page.keyboard.type(word);
       await page.keyboard.press("Enter");
