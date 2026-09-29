@@ -71,9 +71,12 @@ export type PartyRules<S, M> = {
    * A new game at this board size for these names (one a seat), in this
    * language when the game offers languages, or null for a table the game is
    * not offered for. A game of chance takes a `seed` too, which the gate gives
-   * each game it plays; a game with no dice ignores it.
+   * each game it plays; a game with no dice ignores it. A game dealt from a
+   * shuffle (the card games) deals from the seed, and takes which seats a
+   * computer plays as `computers`, one a seat; a game nobody but people plays
+   * ignores it.
    */
-  start: (size: number, players: readonly string[], language?: PartyLanguage, seed?: number) => S | null;
+  start: (size: number, players: readonly string[], language?: PartyLanguage, seed?: number, computers?: readonly boolean[]) => S | null;
   /** Every move the player to move may make now; none once the game is over. */
   moves: (game: S) => readonly M[];
   /** The game after that move, or null for a move that may not be made; the game given is left untouched. */
