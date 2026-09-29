@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { ALSO_LISTED_IN } from "../src/lib/gomoku/families";
+import { ALSO_LISTED_IN } from "../src/lib/gomoku/familyShelves";
 import { ready } from "./support";
 
 /**

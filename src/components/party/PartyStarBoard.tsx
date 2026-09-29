@@ -2,18 +2,20 @@
 
 import { BoardFrame } from "@/components/board/BoardFrame";
 import { BoardLines, hexagonPoints } from "@/components/board/BoardLines";
-import { HEX_LATTICE, LINE_WIDTH, latticeFitFor } from "@/components/board/Board.constants";
+import { LINE_WIDTH, latticeFitFor } from "@/components/board/Board.constants";
 import { LatticeGround } from "@/components/board/LatticeGround";
 import { boardThemeFor, gridFor } from "@/components/board/appearance";
 import { playingAreaInset } from "@/components/board/margin";
 import { BOARD_GRIDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { Cell, Point } from "@/lib/gomoku/gomoku.types";
-import { PARTY_RADIUS, PARTY_SIZE, PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyCheckers";
+import { PARTY_RADIUS, PARTY_SIZE } from "@/lib/gomoku/party/partyCheckers";
+import type { PartyCheckersState } from "@/lib/gomoku/party/partyCheckers.types";
+import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { STAR_TIPS, inStar, starTipCells } from "@/lib/gomoku/rules/chineseCheckers";
 
-import { MarbleChip } from "./MarbleChip";
+import { PartyHole } from "./PartyHole";
 import { HOME_TINT_OPACITY, PARTY_MARBLES } from "./party.constants";
-import type { PartyStarBoardProps } from "./party.types";
+import type { PartyBoardProps } from "./party.types";
 
 /** The star, cut from its square the way the two-player board is. */
 const SHAPE = "star" as const;
@@ -40,7 +42,7 @@ const HOLES = Array.from({ length: PARTY_SIZE * PARTY_SIZE }, (_, index) => ({
  * colours are black and white all the way down, and a game for six is not
  * one of those.
  */
-export function PartyStarBoard({ game, appearance, selected, targets, onHole, readOnly = false }: PartyStarBoardProps) {
+export function PartyStarBoard({ game, appearance, selected, targets, onHole, readOnly = false }: PartyBoardProps<PartyCheckersState>) {
   const spec = VARIANT_SPECS.chineseCheckers;
   const theme = boardThemeFor(appearance, spec);
   const inset = playingAreaInset(PARTY_SIZE, gridFor(appearance, spec) === BOARD_GRIDS.cells);
@@ -100,7 +102,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
           const picked = selected !== null && selected.row === point.row && selected.col === point.col;
           const mine = owner === game.toPlay;
           return (
-            <Hole
+            <PartyHole
               key={index}
               point={point}
               owner={owner}
@@ -109,6 +111,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
               picked={picked}
               last={last !== null && last.row === point.row && last.col === point.col}
               enabled={!readOnly && game.status === PARTY_STATUS.playing && (target || mine)}
+              unslant
               onHole={onHole}
             />
           );
@@ -118,53 +121,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
   );
 }
 
-function holeLabel(point: Point, owner: number | null, players: PartyStarBoardProps["game"]["players"]): string {
+function holeLabel(point: Point, owner: number | null, players: PartyCheckersState["players"]): string {
   const where = `row ${point.row + 1}, hole ${point.col + 1}`;
   return owner === null ? `Empty hole, ${where}` : `${partyPlayerName(players, owner)}'s ${PARTY_MARBLES[owner].label.toLowerCase()} piece, ${where}`;
-}
-
-/** One hole of the star: a button, with the marble standing in it, if any. */
-function Hole({
-  point,
-  owner,
-  label,
-  target,
-  picked,
-  last,
-  enabled,
-  onHole,
-}: {
-  point: Point;
-  owner: number | null;
-  label: string;
-  target: boolean;
-  picked: boolean;
-  last: boolean;
-  enabled: boolean;
-  onHole: (point: Point) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onHole(point)}
-      disabled={!enabled}
-      aria-label={label}
-      aria-pressed={picked}
-      data-testid="party-hole"
-      data-row={point.row}
-      data-col={point.col}
-      data-owner={owner ?? ""}
-      data-target={target ? "true" : undefined}
-      data-picked={picked ? "true" : undefined}
-      className="relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-default"
-    >
-      {/* On the lattice the cell is sheared; the marble inside leans back so it is round again, as `Intersection` does. */}
-      <span className="pointer-events-none absolute inset-0 flex items-center justify-center" style={{ transform: HEX_LATTICE.unslant, containerType: "size" }}>
-        {owner === null ? null : <MarbleChip player={owner} size="hole" />}
-        {picked ? <span className="absolute inset-[2%] rounded-full border-[0.16em] border-ink" /> : null}
-        {last && !picked ? <span className="absolute inset-[4%] rounded-full border-[0.1em] border-dashed border-shu" /> : null}
-        {target ? <span className="absolute inset-[32%] rounded-full bg-moss opacity-85" data-mark="target" /> : null}
-      </span>
-    </button>
-  );
 }

@@ -27,8 +27,8 @@ function headingOf(game: string, title: string): string {
  * A GAME FOR THE WHOLE TABLE, ON ONE DEVICE, at /games/<slug>/pass-and-play.
  *
  * Chinese Checkers for two, three, four or six, passed round one phone or
- * tablet (John, 2026-09-28), and Pair Go: Go for two teams of two, taking
- * turns. Beside `/play`, the practice board for two: this is its own address
+ * tablet (John, 2026-09-28), Pair Go: Go for two teams of two, taking
+ * turns, and Halma for four racing corner to corner. Beside `/play`, the practice board for two: this is its own address
  * because it is its own game — more players than the two seats a board has —
  * and only the games in `PARTY_PLAY_GAMES` answer here, each through its row
  * in `PARTY_TABLES`.

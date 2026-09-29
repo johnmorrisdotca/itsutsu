@@ -10,17 +10,16 @@ import {
   PARTY_RADIUS,
   PARTY_SEATS,
   PARTY_SIZE,
-  PARTY_STATUS,
   decodePartyGame,
   encodePartyGame,
   partyDestinations,
   partyHasWon,
   partyMove,
   partyPiecesHome,
-  partyPlayerName,
   startPartyGame,
 } from "./partyCheckers";
 import type { PartyCheckersState } from "./partyCheckers.types";
+import { PARTY_STATUS, partyPlayerName } from "./partyRace";
 
 const p = (row: number, col: number): Point => ({ row, col });
 const key = (point: Point) => `${point.row},${point.col}`;

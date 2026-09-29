@@ -5,7 +5,8 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 import Link from "@/components/ui/Link";
-import { ALSO_LISTED_IN, GAME_FAMILIES, familyPagePath, siblingsOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyPagePath, siblingsOf } from "@/lib/gomoku/families";
+import { ALSO_LISTED_IN } from "@/lib/gomoku/familyShelves";
 
 /**
  * The other games in this game's family, on the game's own page.

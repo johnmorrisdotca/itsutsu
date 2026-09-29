@@ -154,8 +154,8 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               </Link>
               {/*
                 A GAME FOR THE WHOLE TABLE, where the game has one: Chinese
-                Checkers for two to six, passed round one device, and Pair Go,
-                two teams of two. A third way on, and said as such — not Play,
+                Checkers for two to six, passed round one device, Pair Go, two
+                teams of two, and Halma for four. A third way on, and said as such — not Play,
                 which sets up a game between two seats. Each table's offer knows
                 its own kept game, so each is its own component (`PARTY_TABLES`).
               */}

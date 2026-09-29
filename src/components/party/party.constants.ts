@@ -1,8 +1,11 @@
-import type { PartyMarble } from "./party.types";
+import type { RaceVariant } from "@/lib/gomoku/party/partyRace.types";
+
+import type { PartyGameCopy, PartyMarble } from "./party.types";
 
 /**
  * THE SIX MARBLES, one per player in turn order: Player 1 is always red,
- * Player 2 blue, and so on round the table.
+ * Player 2 blue, and so on round the table — at Chinese Checkers' star and
+ * Halma's square board alike.
  *
  * The colours are Okabe and Ito's set, chosen to stay apart for the commonest
  * kinds of colour blindness, and each marble carries its letter as well, so
@@ -19,6 +22,10 @@ export const PARTY_MARBLES: readonly PartyMarble[] = [
   { label: "White", letter: "W", fill: "#f4f1ea", ink: "#1a1a1a" },
 ];
 
+/** Where this browser keeps each race table's game: one of each at a time, apart from each other and from the board for two's. */
+export const PARTY_STORAGE_KEY = "itsutsu.partyCheckers";
+export const PARTY_HALMA_STORAGE_KEY = "itsutsu.partyHalma";
+
 /** A marble's round face: the colour lit from the top left, as the board's own stones are. */
 export function marbleFace(marble: PartyMarble): string {
   return `radial-gradient(circle at 35% 30%, color-mix(in srgb, ${marble.fill} 45%, white) 0%, ${marble.fill} 48%, color-mix(in srgb, ${marble.fill} 72%, black) 100%)`;
@@ -27,16 +34,10 @@ export function marbleFace(marble: PartyMarble): string {
 /** How strongly a player's home point is tinted in their colour on the board. */
 export const HOME_TINT_OPACITY = 0.32;
 
-/** Where this browser keeps the game: one game at a time, like the practice board's. */
-export const PARTY_STORAGE_KEY = "itsutsu.partyCheckers";
-
 export const PARTY_COPY = {
   title: "Pass and play",
   kanji: "回し打ち",
-  /** On the game's own page, the way in. */
-  offer: "Pass and play: 2–6 players on this device",
   resume: "Continue the pass-and-play game",
-  lead: "Chinese Checkers for two, three, four or six people round one phone or tablet. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
   howMany: "How many are playing?",
   names: "Names, if you like",
   start: "Start",
@@ -50,4 +51,23 @@ export const PARTY_COPY = {
   kept: "Kept in this browser: leave and come back, and it is here.",
   /** On My games' Pass and play tab. */
   card: "Pass and play on this device",
+  /** The "are you still there?" question at a table: nothing runs while nobody moves. */
+  idleDetail: "Nothing has moved at this table for a couple of minutes. There is no clock here; the game simply waits.",
+  idleKept: "This game is kept in this browser. It will be here when you come back.",
 } as const;
+
+/** What each race table says that is its game's own. */
+export const PARTY_GAME_COPY: Record<RaceVariant, PartyGameCopy> = {
+  chineseCheckers: {
+    offer: "Pass and play: 2–6 players on this device",
+    lead: "Chinese Checkers for two, three, four or six people round one phone or tablet. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+    farCamp: "the far point",
+    about: "About Chinese Checkers, its rules and its rated game for two",
+  },
+  halma: {
+    offer: "Pass and play: 2 or 4 players on this device",
+    lead: "Halma for four people round one phone or tablet, or for two: each races their pieces from their own corner into the corner opposite, thirteen each when four play and nineteen when two do. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+    farCamp: "the far corner",
+    about: "About Halma, its rules and its rated game for two",
+  },
+};

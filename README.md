@@ -94,10 +94,13 @@ No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
 discovery (`ALSO_LISTED_IN`), while it belongs to one. Party games is a shelf
 of such guests and nothing else — games a group plays round one device, at
-`/games/party` — starting with Chinese Checkers for two, three, four or six
-players passed round one phone (`/games/chinese-checkers/pass-and-play`), and
-Pair Go, Go for two teams of two taking turns (`/games/go/pass-and-play`) —
-each kept in the browser, never rated (`src/lib/gomoku/party/`). The **Games** button
+`/games/party` — among them Chinese Checkers for two, three, four or six
+players passed round one phone (`/games/chinese-checkers/pass-and-play`),
+Pair Go, Go for two teams of two taking turns (`/games/go/pass-and-play`), and
+Halma for four, or two, racing corner to corner (`/games/halma/pass-and-play`)
+— each kept in the browser, never rated (`src/lib/gomoku/party/`; the two
+races share `partyRace.ts`). Which shelves a game is shown on besides its home
+is `src/lib/gomoku/familyShelves.ts`. The **Games** button
 opens a browser over the board with each rule set spelled out, and picking one
 starts a new game with those rules.
 

@@ -3,7 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ALSO_LISTED_IN, GAME_FAMILIES, boardGamesShownIn, familyOf, familyShows } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesShownIn, familyOf, familyShows } from "@/lib/gomoku/families";
+import { ALSO_LISTED_IN } from "@/lib/gomoku/familyShelves";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_LIST, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";

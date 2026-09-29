@@ -181,6 +181,8 @@ test.describe("the pages that stay open", () => {
       "/games/party",
       // Chinese Checkers' own page, which offers the table and remembers a kept one in the browser, never on the server.
       "/games/chinese-checkers",
+      // And Halma's, which offers its table for four the same way.
+      "/games/halma",
     ]) {
       const said = await (await request.get(path)).text();
       expect(said, `${path} links to a player's page without a session`).not.toMatch(/\/players\//);
@@ -208,6 +210,8 @@ test.describe("the pages that stay open", () => {
       "/games/chinese-checkers/pass-and-play",
       // Pair Go, two teams of two on one device, the same.
       "/games/go/pass-and-play",
+      // Halma for four, the same.
+      "/games/halma/pass-and-play",
     ]) {
       await page.goto(path);
       await expect(page, `${path} should send you to the door`).toHaveURL(/\/join/);
