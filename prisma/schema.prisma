@@ -1388,10 +1388,6 @@ model PuzzleRun {
 
   /// One run per member per game as it was set up. Named short (`map`), since
   /// Postgres keeps only 63 characters of a name and Prisma's own would differ.
-  /// Superseded by `runClockKey`, which adds the clock; kept while the code
-  /// before it may still be live (a deploy migrates before it switches), and
-  /// dropped by a later migration once nothing upserts on it.
-  @@unique([memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed], name: "runKey", map: "PuzzleRun_run_key")
   /// One run per member per game as it was set up, its clock included. Named
   /// short (`map`), since Postgres keeps only 63 characters of a name.
   @@unique([memberId, kind, size, language, gameLength, doubleSet, diagonals, clock, level, seed], name: "runClockKey", map: "PuzzleRun_run_clock_key")

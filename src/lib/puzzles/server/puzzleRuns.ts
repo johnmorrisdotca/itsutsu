@@ -48,13 +48,6 @@ export async function keepRun(run: KeptRun): Promise<void> {
   const doubleSet = kind === "kumimoji" && (run.doubleSet ?? false);
   const diagonals = kind === "kumimoji" && (run.diagonals ?? false);
   const clock = run.clock ?? "none";
-  /*
-   * THE SAME GRID ON ANOTHER CLOCK GIVES WAY, while the key without the clock
-   * (`runKey`) still stands: it lets one row per grid whatever the clock, so a
-   * Rabbit run of a grid kept as untimed would be refused rather than kept.
-   * Goes with that key, in the migration that drops it.
-   */
-  await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed, NOT: { clock } } });
   await prisma.puzzleRun.upsert({
     where: { runClockKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, clock, level, seed } },
     create: { ...run, language, gameLength, doubleSet, diagonals, clock },
