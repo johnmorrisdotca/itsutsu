@@ -37,6 +37,7 @@ import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { BoardColumn } from "@/components/live/BoardColumn";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -262,7 +263,7 @@ export async function LiveMatch({
      * The same frame as every other page, a big screen included: see
      * `PAGE_WIDTH`. The board fits that column; see `BoardColumn`.
      */
-    <Page board>
+    <Page board="play">
       <SiteHeader />
       <GameTrailNav
         game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
@@ -274,28 +275,25 @@ export async function LiveMatch({
         <RivalryPanel of={{ seats: { black: game.blackMemberId, white: game.whiteMemberId } }} variant={game.variant} moment={RIVALRY_MOMENTS.before} />
       ) : null}
 
-      {/*
-        BESIDE THE BOARD AT FIT, UNDER IT AT MEDIUM AND LARGE. Every page is one
-        width now, so beside the panel a board has 672 pixels whatever size was
-        pressed, and Large would be Fit. A reader who asks for a bigger board
-        gets the page's whole width for it, and the panel moves below, as it does
-        on a phone.
-      */}
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
         <BoardMasthead story={playedHereStory(game, { label: "Live game", kanji: "対局" })} />
       </div>
-      <div
-        className="group/match flex w-full flex-col items-start gap-8 lg:flex-row lg:has-[[data-board-size=medium]]:flex-col lg:has-[[data-board-size=large]]:flex-col"
-      >
+      {/*
+        THE BOARD AND ITS PANEL, at the size this reader keeps for this kind of
+        screen (`BoardScaled`): at Regular the board is fitted to the screen
+        beside the panel; at Large and Full the two are given more of the
+        window, the panel still beside the board.
+      */}
+      <BoardScaled>
+      <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
           {/*
-            THE COLUMN THE BOARD IS PLAYED IN, at the size this reader keeps on
-            a desk — fit the screen, or small, medium or large. See
+            THE COLUMN THE BOARD IS PLAYED IN, fitted to the screen. See
             `BoardColumn`. It was a fixed 36rem, which on a 27-inch screen is a
             board a quarter of the width of the page.
           */}
-          <BoardColumn initial={preferences.boardSize} remember={reader !== null} story={playedHereStory(game, { label: "Live game", kanji: "対局" })}>
+          <BoardColumn story={playedHereStory(game, { label: "Live game", kanji: "対局" })}>
             <SharedGame
               initial={game}
               token={token}
@@ -311,7 +309,7 @@ export async function LiveMatch({
           </BoardColumn>
         </div>
 
-        <aside className="flex w-full flex-col gap-4 lg:w-80 lg:group-has-[[data-board-size=medium]]/match:w-full lg:group-has-[[data-board-size=large]]/match:w-full">
+        <aside className="flex w-full flex-col gap-4 lg:w-80 lg:shrink-0">
           {/*
             THE ANSWER, FIRST IN THE PANEL. An offer is the one thing on this
             page a reader has to do something about, so it sits above the
@@ -374,6 +372,7 @@ export async function LiveMatch({
           ) : null}
         </aside>
       </div>
+      </BoardScaled>
   </Page>
   );
 }

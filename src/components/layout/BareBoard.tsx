@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, FOCUS_RING } from "@/components/ui/ui.constants";
 import { BARE_ATTRIBUTE, readBare, subscribeBare, writeBare } from "./bare";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -20,7 +20,16 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
  * a trap: bare, it is the modal's Close, at the screen's top right where a
  * modal's close is looked for, and Esc does the same.
  */
-export function BareBoard() {
+export function BareBoard({
+  compact = false,
+}: {
+  /**
+   * Drawn small, as one of the view choices in a board's own row beside its
+   * size (`BoardScale`), so that row takes no more height than the size chips.
+   * Open, it is the modal's full-sized Close either way.
+   */
+  compact?: boolean;
+} = {}) {
   const bare = useSyncExternalStore(subscribeBare, readBare, () => false);
 
   useEffect(() => {
@@ -75,7 +84,11 @@ export function BareBoard() {
       <button
         type="button"
         onClick={() => writeBare(!bare)}
-        className={`${BUTTON_BASE} ${BUTTON_QUIET} ${bare ? "bg-paper shadow-md" : ""}`}
+        className={
+          compact && !bare
+            ? `${FOCUS_RING} cursor-pointer rounded-md border border-rule px-2 py-0.5 text-xs text-ink-soft hover:border-rule-strong`
+            : `${BUTTON_BASE} ${BUTTON_QUIET} ${bare ? "bg-paper shadow-md" : ""}`
+        }
         aria-pressed={bare}
         data-testid="bare-board-toggle"
         title={

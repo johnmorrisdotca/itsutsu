@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -72,15 +73,21 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
   const { Game } = table;
 
   return (
-    <Page board>
+    <Page board="play">
       <SiteHeader />
       <GameTrailNav game={{ label: copy.label, href: gamePath(key) }} steps={[{ label: table.title }]} />
-      <PageTitle
-        title={headingOf(copy.label, table.title)}
-        kanji={table.kanji}
-        lead={table.lead}
-      />
-      <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
+      {/* Furniture, for just the board: the table and what plays it stay. */}
+      <div data-chrome>
+        <PageTitle
+          title={headingOf(copy.label, table.title)}
+          kanji={table.kanji}
+          lead={table.lead}
+        />
+      </div>
+      {/* The table at the size this reader keeps for this kind of screen (`BoardScaled`), once a game is on it. */}
+      <BoardScaled>
+        <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
+      </BoardScaled>
     </Page>
   );
 }

@@ -388,7 +388,12 @@ export function SolveCheck({ checking, onCheck, disabled }: { checking: Checking
  */
 export function SolvePaused({ pausing, children }: { pausing: Pausing; children: ReactNode }) {
   return (
-    <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"}>
+    /*
+      The board's column for the size chooser (`BoardScale`): at Large and Full
+      it takes the width, and the controls around it in the solve move beside
+      it (`data-scale-stack`, globals.css).
+    */
+    <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"} data-scale-board data-scale-stack data-bare-board>
       <div className={pausing.paused ? "invisible" : undefined} aria-hidden={pausing.paused || undefined}>
         {children}
       </div>

@@ -200,13 +200,16 @@ export const WORD_GRID_BOX = "w-full select-none";
  * read from the grid's own width (`cqw`, the grid being the letters'
  * container), and never larger than the 24 pixels a desk's board drew before —
  * so its box, the height a line of it takes included, sits inside its stone or
- * tile at every size. `e2e/gomoji-letters.spec.ts` measures it.
+ * tile at every size. `e2e/gomoji-letters.spec.ts` measures it. That cap grows
+ * with the board when the reader asks for a Large or Full one (`--board-grow`,
+ * set by `BoardScale`; 1 everywhere else), so a bigger square gets a bigger
+ * letter rather than the same 24 pixels.
  */
 export const WORD_LETTER_OF_SQUARE = 0.58;
 
 /** The letter size for a word `size` squares wide, as a CSS length, inside the grid that holds that word. */
 export function wordLetterSize(size: number): string {
-  return `min(calc(100cqw / ${size} * ${WORD_LETTER_OF_SQUARE}), 1.5rem)`;
+  return `min(calc(100cqw / ${size} * ${WORD_LETTER_OF_SQUARE}), calc(1.5rem * var(--board-grow, 1)))`;
 }
 
 /*
