@@ -1,5 +1,6 @@
 "use client";
 
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -62,7 +63,7 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
 
   return (
     <section
-      className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"
+      className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start`}
       data-testid="mancala-game"
       data-state={game.status}
       data-rules={game.ruleSet}

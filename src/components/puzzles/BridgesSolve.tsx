@@ -1,5 +1,6 @@
 "use client";
 
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { useCallback, useMemo, useState } from "react";
 
 import { checkBridges } from "@/lib/puzzles/bridges/check";
@@ -144,7 +145,7 @@ export function BridgesSolve({
 
   const steps = useMemo(() => history.steps.map((code) => [...code]), [history.steps]);
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-drawing={drawing} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-drawing={drawing} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <TsunagiViewport size={size} name="bridges">
