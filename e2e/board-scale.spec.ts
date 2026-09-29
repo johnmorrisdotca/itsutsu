@@ -193,11 +193,12 @@ for (const viewport of [LAPTOP, WIDE]) {
           await page.reload();
           await ready(page, "board-scaling");
           await settledAt(page, "full");
-          expect(Math.abs((await widthOf(board.square(page))) - full), "Full was not the same size after a reload").toBeLessThan(3);
+          // Waited for, not read once: the board settles a frame or two after the size is taken, later on a busy machine.
+          await expect.poll(async () => Math.abs((await widthOf(board.square(page))) - full), { message: "Full was not the same size after a reload" }).toBeLessThan(3);
 
           // And back.
           await choose(page, "regular");
-          expect(Math.abs((await widthOf(board.square(page))) - regular), "Regular did not go back to the size it was").toBeLessThan(2);
+          await expect.poll(async () => Math.abs((await widthOf(board.square(page))) - regular), { message: "Regular did not go back to the size it was" }).toBeLessThan(2);
         } finally {
           await context.close();
           await removeMember(email);

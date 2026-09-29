@@ -120,7 +120,8 @@ test.describe("one Gomoji, in every language", () => {
 
   test("an old address leads to the one Gomoji's page, its language chosen", async ({ page }) => {
     await page.goto(`/games/${PUZZLE_SLUGS.gomojiMot}/new`);
-    await expect(page).toHaveURL(/\/games\/gomoji\/new\?language=french$/);
+    // The set-up may add the reader's remembered size and level to the address; the language is what the old address promised.
+    await expect(page).toHaveURL((url) => url.pathname === "/games/gomoji/new" && url.searchParams.get("language") === "french");
     await ready(page, "puzzle-set-up");
     await expect(page.getByTestId("word-language-french")).toHaveAttribute("aria-checked", "true");
     await page.goto(`/games/${PUZZLE_SLUGS.gomojiPop}`);
