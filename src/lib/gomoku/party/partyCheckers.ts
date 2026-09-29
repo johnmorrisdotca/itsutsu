@@ -1,6 +1,6 @@
 // Relative: the engine boundary (`boundary.coverage.test.ts`) allows no alias under src/lib/gomoku.
-import { BLOCKED, RULE_VARIANTS } from "../gomoku.constants";
-import type { Cell, Point, RuleVariant } from "../gomoku.types";
+import { BLOCKED } from "../gomoku.constants";
+import type { Cell, Point } from "../gomoku.types";
 import { indexOf, pointOf } from "../rules/board";
 import { STAR_RADIUS, STAR_TIPS, inStar, oppositeTip, starMoves, starSize, starTipCells, type StarTip } from "../rules/chineseCheckers";
 
@@ -25,13 +25,6 @@ import type { PartyCheckersState, PartyMove, PartyPlayer, PartyPlayerCount, Part
 
 /** Where a game stands, compared through these rather than as strings. */
 export const PARTY_STATUS = { playing: "playing", won: "won", stuck: "stuck" } as const satisfies Record<PartyStatus, PartyStatus>;
-
-/**
- * THE GAMES WITH A PASS-AND-PLAY TABLE OF THEIR OWN, beyond the practice board
- * for two: the ones whose page offers it, and the only ones its address
- * answers for. A table, so a page never asks a game's name.
- */
-export const PARTY_PLAY_GAMES: readonly RuleVariant[] = [RULE_VARIANTS.chineseCheckers];
 
 /** The star every party game is played on: the standard 121 holes. */
 export const PARTY_RADIUS = STAR_RADIUS;

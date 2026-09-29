@@ -206,6 +206,8 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/standings",
       // A table of players on one device is playing, like any board.
       "/games/chinese-checkers/pass-and-play",
+      // Pair Go, two teams of two on one device, the same.
+      "/games/go/pass-and-play",
     ]) {
       await page.goto(path);
       await expect(page, `${path} should send you to the door`).toHaveURL(/\/join/);

@@ -6,33 +6,32 @@ import { GameTrailNav } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PartyCheckersGame } from "@/components/party/PartyCheckersGame";
-import { PARTY_COPY } from "@/components/party/party.constants";
+import { partyTableFor } from "@/components/party/partyTables";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
-import { PARTY_PLAY_GAMES } from "@/lib/gomoku/party/partyCheckers";
 import { gamePath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-/** The game this address is about, when it is one with a table for more than two. */
-function partyGameFor(slug: string) {
-  const variant = variantFor(slug);
-  return variant !== null && PARTY_PLAY_GAMES.includes(variant) ? variant : null;
+export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass-and-play">): Promise<Metadata> {
+  const variant = variantFor((await params).slug);
+  const table = partyTableFor(variant);
+  return { title: variant === null || table === null ? "Games" : headingOf(RULE_VARIANT_DISPLAY[variant].label, table.title) };
 }
 
-export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass-and-play">): Promise<Metadata> {
-  const variant = partyGameFor((await params).slug);
-  return { title: variant === null ? "Games" : `${RULE_VARIANT_DISPLAY[variant].label}: ${PARTY_COPY.title}` };
+/** "Chinese Checkers, pass and play"; "Pair Go", which names its game already. */
+function headingOf(game: string, title: string): string {
+  return title.includes(game) ? title : `${game}, ${title.toLowerCase()}`;
 }
 
 /**
  * A GAME FOR THE WHOLE TABLE, ON ONE DEVICE, at /games/<slug>/pass-and-play.
  *
  * Chinese Checkers for two, three, four or six, passed round one phone or
- * tablet (John, 2026-09-28). Beside `/play`, the practice board for two: this
- * is its own address because it is its own game — more colours than the
- * engine has, and a table rather than two seats — and only the games in
- * `PARTY_PLAY_GAMES` answer here.
+ * tablet (John, 2026-09-28), and Pair Go: Go for two teams of two, taking
+ * turns. Beside `/play`, the practice board for two: this is its own address
+ * because it is its own game — more players than the two seats a board has —
+ * and only the games in `PARTY_PLAY_GAMES` answer here, each through its row
+ * in `PARTY_TABLES`.
  *
  * Playing is for members, as every board is: the gate lets nobody in here
  * without an invite, and the game's own page, which a stranger can read, is
@@ -41,18 +40,24 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass
  * drawn.
  */
 export default async function PassAndPlayPage({ params }: PageProps<"/games/[slug]/pass-and-play">) {
-  const variant = partyGameFor((await params).slug);
-  if (variant === null) notFound();
+  const variant = variantFor((await params).slug);
+  const table = partyTableFor(variant);
+  if (variant === null || table === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
   const reader = await currentReader();
   const appearance = (await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE;
+  const { Game } = table;
 
   return (
     <Page board>
       <SiteHeader />
-      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: PARTY_COPY.title }]} />
-      <PageTitle title={`${copy.label}, ${PARTY_COPY.title.toLowerCase()}`} kanji={PARTY_COPY.kanji} lead={PARTY_COPY.lead} />
-      <PartyCheckersGame appearance={appearance} gameHref={gamePath(variant)} />
+      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: table.title }]} />
+      <PageTitle
+        title={headingOf(copy.label, table.title)}
+        kanji={table.kanji}
+        lead={table.lead}
+      />
+      <Game appearance={appearance} gameHref={gamePath(variant)} />
     </Page>
   );
 }
