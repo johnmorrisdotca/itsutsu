@@ -73,3 +73,27 @@ export const TRAY_ROOM = "pb-48 sm:pb-0";
 
 /** A tile in the hand: a fingertip each way. */
 export const HAND_TILE_PX = 40;
+
+/** Room kept under a pass-and-play turn on a phone: the tray there carries Done as well. */
+export const PARTY_TRAY_ROOM = "pb-64 sm:pb-0";
+
+/**
+ * THE PASS LAYER between two turns: a graded, see-through band over the
+ * lower part of the table being looked at, carrying who to pass to and their
+ * press. John, 2026-09-28: "we don't actually have to block out the user's
+ * board. We would just put it in the background, probably slightly opaque,
+ * graded… but it's still visible." Nothing in the game is secret; it marks
+ * that the device has changed hands.
+ */
+export const PARTY_PASS_LAYER =
+  "pointer-events-none absolute inset-x-0 top-1/4 bottom-0 flex flex-col items-center justify-end gap-3 rounded-b-xl bg-linear-to-b from-transparent via-ivory/80 to-ivory/95 px-4 pt-10 pb-4 text-center";
+
+/** Every player's table and hand side by side: two to a row on a phone, three from a tablet up, so the tiles stay legible in the play column. */
+export const PARTY_ALL_GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3";
+
+/** A tile of a hand shown to be looked at, not played: small, and pressed by nobody. */
+export const PARTY_HAND_TILE_PX = 24;
+
+/** A number of players on the set-up screen: eight to a row, so it is a narrow chip of its own rather than a word chip. */
+export const PARTY_PLAYERS_CHIP =
+  "flex min-h-11 w-full items-center justify-center rounded-xl border text-sm tabular-nums transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";

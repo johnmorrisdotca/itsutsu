@@ -1,6 +1,6 @@
 "use client";
 
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { tileDescription as describeTile, tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
@@ -12,7 +12,8 @@ import { TileFace, wildStyle } from "./KumimojiTileFace";
 /** What each of the tray's presses may do now, and does. */
 export type TrayPresses = {
   draw: { can: boolean; run: () => void };
-  trade: { can: boolean; run: () => void };
+  /** `urge`: Trade is the press the player must make next, drawn as the strong one (a pass-and-play hand that spells nothing). */
+  trade: { can: boolean; run: () => void; urge?: boolean };
   back: { can: boolean; run: () => void };
   allBack: { can: boolean; run: () => void };
   sort: { can: boolean; run: () => void };
@@ -42,6 +43,7 @@ export function KumimojiTray({
   onHandTile,
   onHandDown,
   onTray,
+  done,
 }: {
   hand: readonly string[];
   faceOf?: (tile: string) => TileFaceOf;
@@ -56,6 +58,12 @@ export function KumimojiTray({
   onHandDown: (at: number, letter: string, event: ReactPointerEvent) => void;
   /** A tap on the tray itself, not on a tile: where a chosen table tile is sent back. */
   onTray: () => void;
+  /**
+   * Pass and play's Done, under the four presses, with what stands in its way
+   * said above it; the solo game has none. Under the thumb on a phone, since
+   * the tray is.
+   */
+  done?: { label: ReactNode; can: boolean; run: () => void; note: string | null };
 }) {
   return (
     <div
@@ -132,7 +140,7 @@ export function KumimojiTray({
         </button>
         <button
           type="button"
-          className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2`}
+          className={`${BUTTON_BASE} ${presses.trade.urge === true ? BUTTON_STRONG : BUTTON_QUIET} px-2`}
           disabled={disabled || !presses.trade.can}
           onClick={presses.trade.run}
           title={`Give the chosen tile back and take ${KUMIMOJI_TRADE.take}`}
@@ -147,6 +155,18 @@ export function KumimojiTray({
           All back
         </button>
       </div>
+      {done === undefined ? null : (
+        <>
+          {done.note === null ? null : (
+            <p className="text-sm text-shu" data-testid="kumimoji-party-done-note">
+              {done.note}
+            </p>
+          )}
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full`} disabled={disabled || !done.can} onClick={done.run} data-testid="kumimoji-party-done">
+            {done.label}
+          </button>
+        </>
+      )}
     </div>
   );
 }

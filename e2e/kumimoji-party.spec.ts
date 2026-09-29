@@ -1,0 +1,355 @@
+import { expect, test, type Page } from "@playwright/test";
+
+import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
+import { lettersOf, sameLetters } from "../src/lib/puzzles/kumimoji/grid";
+import { KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
+import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+import { freshPuzzleSeed, ready } from "./support";
+
+/**
+ * KUMIMOJI PASS AND PLAY: two to eight players round one device, a cover
+ * between turns, and the game kept in this browser. Every case drives what a
+ * player does — the Players chips, the names, "I'm …", laying tiles, Done,
+ * Draw, Resign — on bags this spec reads from the same generator the page
+ * uses, from the seed in the page's own address, so it knows each hand without
+ * trusting anything a previous run left behind. Each case opens in a browser
+ * context of its own, so no kept game from another case is in its storage.
+ *
+ * Nothing in the game is secret (John, 2026-09-28: "there are no secrets
+ * because they are face up"): the pass screen marks that the device has
+ * changed hands, over tables and hands anybody may look at, read-only.
+ */
+const KIND = "kumimoji";
+const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
+const TINY = KUMIMOJI_HANDS.tiny;
+const QUICK = KUMIMOJI_HANDS.quick;
+
+test.beforeAll(async () => {
+  await loadTileWords();
+});
+
+const isWord = (word: string) => tileWords().allowed.has(word);
+
+/** A word of two to four letters the tiles make, each used once, wilds left out; or null. */
+function wordIn(tiles: string): string | null {
+  const have = lettersOf([...tiles].filter((tile) => tile !== "*"));
+  for (const length of [4, 3, 2]) {
+    const found = tileWords().byLength.get(length)?.find((word) => [...lettersOf(word)].every(([letter, count]) => (have.get(letter) ?? 0) >= count));
+    if (found !== undefined) return found;
+  }
+  return null;
+}
+
+/** A three-letter word made of exactly these three tiles, or null. */
+const anagram = (tiles: string) => tileWords().byLength.get(3)!.find((word) => sameLetters(lettersOf(word), lettersOf(tiles))) ?? null;
+
+/** Where a tile hangs off a letter of a word laid across row 0 to make a two-letter word down: the square, or null. */
+const hangs = (on: string, letter: string, col: number) => (isWord(on + letter) ? `1,${col}` : isWord(letter + on) ? `-1,${col}` : null);
+
+/** Two players, hands of three, from a double-set Short bag of ten: the smallest bag pass and play can deal. */
+const smallBag = (seed: number) => generateKumimoji(TINY, "medium", seed, { gameLength: "short", doubleSet: true }).givens;
+const smallAddress = (seed: number) => `${AT}/play?size=${TINY}&level=medium&seed=${seed}&double=1&players=2`;
+
+/**
+ * A small bag in which player one can go out in one turn: their hand is a
+ * three-letter word, and the tiles they draw with the two Draws (the bag's
+ * seventh and ninth; the eighth and tenth go to player two) each hang off one
+ * end of it.
+ */
+function goingOutGame(from: number) {
+  for (let seed = from; ; seed += 1) {
+    const bag = smallBag(seed);
+    const across = anagram(bag.slice(0, TINY));
+    if (across === null) continue;
+    const first = hangs(across[0]!, bag[6]!, 0);
+    const second = hangs(across[2]!, bag[8]!, 2);
+    if (first !== null && second !== null) return { seed, across, drawn: [{ letter: bag[6]!, square: first }, { letter: bag[8]!, square: second }] };
+  }
+}
+
+/** A small bag whose player one holds a three-letter word, and whose player two, after one Draw, holds a two-letter one. */
+function standingGame(from: number) {
+  for (let seed = from; ; seed += 1) {
+    const bag = smallBag(seed);
+    const across = anagram(bag.slice(0, TINY));
+    const second = wordIn(bag.slice(TINY, 2 * TINY) + bag[7]!);
+    if (across !== null && second !== null && second.length === 2) return { seed, across, second };
+  }
+}
+
+/** A small bag whose player one's hand spells no word at all. */
+function noWordGame(from: number) {
+  for (let seed = from; ; seed += 1) {
+    if (wordIn(smallBag(seed).slice(0, TINY)) === null) return { seed };
+  }
+}
+
+/** Three players with hands of three from a Medium bag, player one's a three-letter word. */
+function drawGame(from: number) {
+  for (let seed = from; ; seed += 1) {
+    const bag = generateKumimoji(TINY, "medium", seed, { gameLength: "medium" }).givens;
+    const across = anagram(bag.slice(0, TINY));
+    if (across !== null) return { seed, bag, across };
+  }
+}
+
+/** Tap a tile of this letter in the hand, then a square on the table. */
+async function lay(page: Page, letter: string, square: string) {
+  await page.locator(`[data-testid="kumimoji-hand-tile"][data-letter="${letter}"]`).first().click();
+  await page.locator(`[data-testid="kumimoji-square"][data-square="${square}"]`).click();
+  await expect(page.locator(`[data-testid="kumimoji-tile"][data-square="${square}"]`)).toHaveAttribute("data-letter", letter);
+}
+
+async function layAcross(page: Page, word: string) {
+  for (const [at, letter] of [...word].entries()) await lay(page, letter, `0,${at}`);
+}
+
+/** The letters in the hand now, in order. */
+const handLetters = (page: Page) => page.getByTestId("kumimoji-hand-tile").evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute("data-letter")!).join(""));
+
+/** Names typed on the names screen, one a seat or empty for its number, then Begin. */
+async function begin(page: Page, names: string[]) {
+  await ready(page, "kumimoji-party");
+  await expect(page.getByTestId("kumimoji-party-names")).toBeVisible();
+  for (const [at, name] of names.entries()) await page.locator(`[data-testid="kumimoji-party-name"][data-at="${at}"]`).fill(name);
+  await page.getByTestId("kumimoji-party-begin").click();
+}
+
+/**
+ * The pass screen is up, naming this player, and nobody's desk is: the
+ * tables behind it are face up, but no tile can be moved until the player
+ * says they are there.
+ */
+async function passFor(page: Page, name: string) {
+  await expect(page.getByTestId("kumimoji-party-pass-screen")).toBeVisible();
+  await expect(page.getByTestId("kumimoji-party-pass")).toHaveText(`Pass to ${name}`);
+  await expect(page.getByTestId("kumimoji-tray")).toHaveCount(0);
+  await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(0);
+}
+
+/** Every tile of a hand shown to be looked at is pressed by nobody: none of them is a button. */
+async function readOnlyHands(page: Page) {
+  const tags = await page.getByTestId("kumimoji-party-hand-tile").evaluateAll((tiles) => tiles.map((tile) => tile.tagName));
+  expect(tags.length).toBeGreaterThan(0);
+  expect(tags.every((tag) => tag !== "BUTTON")).toBe(true);
+}
+
+async function uncover(page: Page, name: string) {
+  await page.getByTestId("kumimoji-party-uncover").click();
+  await expect(page.getByTestId("kumimoji-party-whose")).toContainText(`${name}’s turn`);
+  await expect(page.getByTestId("kumimoji-tray")).toBeVisible();
+}
+
+test.describe("Kumimoji pass and play", () => {
+  test("three players set up with a name, the pass screen first, a word, Done, face-up tables to swipe through, All tables, and the next player's own hand", async ({ page }) => {
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    await page.locator(`[data-testid="set-up-size"][data-size="${QUICK}"]`).click();
+    await page.getByTestId("kumimoji-players-3").click();
+    await expect(page.getByTestId("kumimoji-players-3")).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByTestId("kumimoji-players-blurb")).toContainText("3 players pass this device round");
+    // A race is two members on two devices: not offered for pass and play.
+    await expect(page.getByTestId("puzzle-race")).toBeDisabled();
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /players=3/);
+    await page.getByTestId("puzzle-solve").click();
+
+    await begin(page, ["Aiko", "", "Cho"]);
+    await expect(page).toHaveURL(/players=3/);
+    const seed = Number(new URL(page.url()).searchParams.get("seed"));
+    expect(seed).toBeGreaterThan(0);
+    const bag = generateKumimoji(QUICK, "medium", seed).givens;
+    const [first, second] = [bag.slice(0, QUICK), bag.slice(QUICK, 2 * QUICK)];
+
+    await passFor(page, "Aiko");
+    await uncover(page, "Aiko");
+    expect([...(await handLetters(page))].sort()).toEqual([...first].sort());
+
+    const word = wordIn(first);
+    expect(word, `a word in the hand ${first}`).not.toBeNull();
+    await layAcross(page, word!);
+    await expect(page.getByTestId("kumimoji-said")).toHaveAttribute("data-sound", "true");
+    await page.getByTestId("kumimoji-party-done").click();
+
+    // The second seat has no name: its number. Behind the pass layer, the table just played on: Aiko's word, and what is left in her hand.
+    await passFor(page, "Player 2");
+    const viewer = page.getByTestId("kumimoji-party-viewer");
+    await expect(viewer.getByTestId("kumimoji-party-board")).toHaveAttribute("data-player", "0");
+    await expect(viewer.getByTestId("kumimoji-tile")).toHaveCount(word!.length);
+    await expect(viewer.getByTestId("kumimoji-party-hand-tile")).toHaveCount(QUICK - word!.length);
+    await readOnlyHands(page);
+
+    // A swipe shows the next player's table and hand; the arrow goes back.
+    const box = (await viewer.boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2, { steps: 5 });
+    await page.mouse.up();
+    await expect(viewer.getByTestId("kumimoji-party-board")).toHaveAttribute("data-player", "1");
+    await expect(viewer.getByTestId("kumimoji-party-hand-tile")).toHaveCount(QUICK);
+    await page.getByTestId("kumimoji-party-view-prev").click();
+    await expect(viewer.getByTestId("kumimoji-party-board")).toHaveAttribute("data-player", "0");
+
+    await uncover(page, "Player 2");
+    const theirs = await handLetters(page);
+    expect([...theirs].sort()).toEqual([...second].sort());
+    expect([...theirs].sort()).not.toEqual([...first].sort());
+    // Their table is their own: Aiko's word is not on it.
+    await expect(page.getByTestId("kumimoji-table").getByTestId("kumimoji-tile")).toHaveCount(0);
+
+    // All tables: three, each with its hand; another's opens large and read-only; your own takes you back to play.
+    await page.getByTestId("kumimoji-party-all-open").click();
+    const tables = page.getByTestId("kumimoji-party-all-table");
+    await expect(tables).toHaveCount(3);
+    await expect(page.getByTestId("kumimoji-tray")).toHaveCount(0);
+    await expect(tables.nth(0).getByTestId("kumimoji-tile")).toHaveCount(word!.length);
+    await expect(tables.nth(2).getByTestId("kumimoji-party-hand-tile")).toHaveCount(QUICK);
+    await readOnlyHands(page);
+    await tables.nth(0).click();
+    await expect(page.getByTestId("kumimoji-party-one")).toHaveAttribute("data-player", "0");
+    await page.getByTestId("kumimoji-party-one-back").click();
+    await page.locator('[data-testid="kumimoji-party-all-table"][data-own="true"]').click();
+    await expect(page.getByTestId("kumimoji-tray")).toBeVisible();
+    await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(QUICK);
+  });
+
+  test("Draw gives every player a tile, and a reload opens on the pass screen of the same player", async ({ page }) => {
+    const { seed, bag, across } = drawGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${TINY}&level=medium&seed=${seed}&length=medium&players=3`);
+    await begin(page, ["Aiko", "Ben", "Cho"]);
+    await passFor(page, "Aiko");
+    await uncover(page, "Aiko");
+    const before = Number(await page.getByTestId("kumimoji-bag").getAttribute("data-left"));
+    expect(before).toBe(bag.length - 3 * TINY);
+    await expect(page.getByTestId("kumimoji-draw")).toBeDisabled();
+    await layAcross(page, across);
+    await page.getByTestId("kumimoji-draw").click();
+    await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", String(before - 3));
+    await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(1);
+    await page.getByTestId("kumimoji-party-done").click();
+
+    await passFor(page, "Ben");
+    await page.reload();
+    await ready(page, "kumimoji-party");
+    await passFor(page, "Ben");
+    await uncover(page, "Ben");
+    // A hand of three and the one tile the Draw gave them.
+    await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(TINY + 1);
+    expect([...(await handLetters(page))].sort()).toEqual([...(bag.slice(TINY, 2 * TINY) + bag[3 * TINY + 1]!)].sort());
+    await page.getByTestId("kumimoji-party-hide").click();
+    await passFor(page, "Ben");
+    // Behind the pass layer, the table Aiko has just played on: her word and the tile she drew.
+    await expect(page.getByTestId("kumimoji-party-viewer").getByTestId("kumimoji-tile")).toHaveCount(TINY);
+
+    // The set-up screen offers the game back, and takes the reader to Ben's cover.
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    await page.getByTestId("kumimoji-party-continue").click();
+    await ready(page, "kumimoji-party");
+    await passFor(page, "Ben");
+  });
+
+  test("a hand that spells nothing is traded before Done", async ({ page }) => {
+    const { seed } = noWordGame(freshPuzzleSeed());
+    await page.goto(smallAddress(seed));
+    await begin(page, ["Aiko", "Ben"]);
+    await uncover(page, "Aiko");
+    const done = page.getByTestId("kumimoji-party-done");
+    await expect(done).toBeDisabled();
+    await expect(page.getByTestId("kumimoji-party-done-note")).toContainText("No word in your hand");
+    await page.getByTestId("kumimoji-hand-tile").first().click();
+    await page.getByTestId("kumimoji-trade").click();
+    await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(TINY - 1 + 3);
+    await expect(done).toBeEnabled();
+    await done.click();
+    await passFor(page, "Ben");
+  });
+
+  test("one player goes out, the other has one last turn, and the finish names the winner with both crosswords", async ({ page }) => {
+    const { seed, across, drawn } = goingOutGame(freshPuzzleSeed());
+    await page.goto(smallAddress(seed));
+    await begin(page, ["Aiko", "Ben"]);
+    await uncover(page, "Aiko");
+    // Four tiles in the bag: a trade can still be had, so there is no Resign.
+    await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", "4");
+    await expect(page.getByTestId("kumimoji-party-resign")).toHaveCount(0);
+    await layAcross(page, across);
+    for (const tile of drawn) {
+      await page.getByTestId("kumimoji-draw").click();
+      await lay(page, tile.letter, tile.square);
+    }
+    await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", "0");
+    await expect(page.getByTestId("kumimoji-party-done")).toHaveText("Done, and go out");
+    await page.getByTestId("kumimoji-party-done").click();
+
+    await passFor(page, "Ben");
+    await expect(page.getByTestId("kumimoji-party-last")).toHaveText("Aiko went out — last turn for Ben");
+    await uncover(page, "Ben");
+    await page.getByTestId("kumimoji-party-done").click();
+
+    await expect(page.getByTestId("kumimoji-party-winner")).toHaveText("Aiko wins");
+    const crosswords = page.getByTestId("kumimoji-party-board");
+    await expect(crosswords).toHaveCount(2);
+    await expect(crosswords.nth(0)).toHaveAttribute("data-won", "true");
+    await expect(crosswords.nth(0).getByTestId("kumimoji-tile")).toHaveCount(TINY + 2);
+    await expect(page.getByTestId("kumimoji-party-again")).toBeVisible();
+  });
+
+  test("Resign is offered once the bag cannot give three, and the last one standing wins by laying a tile", async ({ page }) => {
+    const { seed, across, second } = standingGame(freshPuzzleSeed());
+    await page.goto(smallAddress(seed));
+    await begin(page, ["Aiko", "Ben"]);
+    await uncover(page, "Aiko");
+    await expect(page.getByTestId("kumimoji-tray")).toBeVisible();
+    await expect(page.getByTestId("kumimoji-party-resign")).toHaveCount(0);
+    await layAcross(page, across);
+    await page.getByTestId("kumimoji-draw").click();
+    await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", "2");
+    await page.getByTestId("kumimoji-party-resign").click();
+    await page.getByTestId("kumimoji-party-resign-yes").click();
+
+    await passFor(page, "Ben");
+    await uncover(page, "Ben");
+    await expect(page.getByTestId("kumimoji-party-whose")).toContainText("the last one standing");
+    const done = page.getByTestId("kumimoji-party-done");
+    await expect(done).toBeDisabled();
+    await expect(page.getByTestId("kumimoji-party-done-note")).toContainText("Everybody else has resigned");
+    await layAcross(page, second);
+    await expect(done).toBeEnabled();
+    await done.click();
+    await expect(page.getByTestId("kumimoji-party-winner")).toHaveText("Ben wins, the last one standing");
+    await expect(page.getByTestId("kumimoji-party-board").nth(0)).toHaveAttribute("data-resigned", "true");
+  });
+
+  test.describe("on a phone", () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test("nothing scrolls sideways: the Players chips, the names, the pass screen, a turn and All tables", async ({ page }) => {
+      const wide = () => page.evaluate(() => document.documentElement.scrollWidth);
+      await page.goto(`${AT}/new`);
+      await ready(page, "puzzle-set-up");
+      await page.getByTestId("kumimoji-players-8").click();
+      await expect(page.getByTestId("kumimoji-players-8")).toHaveAttribute("aria-checked", "true");
+      // Eight Classic hands and a round of draws are 96 tiles: Short and Medium cannot deal them.
+      await page.locator(`[data-testid="set-up-size"][data-size="${KUMIMOJI_HANDS.classic}"]`).click();
+      await expect(page.getByTestId("kumimoji-length-short")).toBeDisabled();
+      await expect(page.getByTestId("kumimoji-length-full")).toHaveAttribute("aria-checked", "true");
+      expect(await wide()).toBeLessThanOrEqual(390);
+
+      await page.goto(`${AT}/play?size=${QUICK}&level=medium&seed=${freshPuzzleSeed()}&length=medium&players=8`);
+      await ready(page, "kumimoji-party");
+      await expect(page.getByTestId("kumimoji-party-name")).toHaveCount(8);
+      expect(await wide()).toBeLessThanOrEqual(390);
+      await begin(page, ["A very long name indeed"]);
+      await passFor(page, "A very long name ind");
+      expect(await wide()).toBeLessThanOrEqual(390);
+      await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
+      await uncover(page, "A very long name ind");
+      await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(QUICK);
+      expect(await wide()).toBeLessThanOrEqual(390);
+      await page.getByTestId("kumimoji-party-all-open").click();
+      await expect(page.getByTestId("kumimoji-party-all-table")).toHaveCount(8);
+      expect(await wide()).toBeLessThanOrEqual(390);
+    });
+  });
+});

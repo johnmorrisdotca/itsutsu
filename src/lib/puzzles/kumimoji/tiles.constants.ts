@@ -123,3 +123,12 @@ export const KUMIMOJI_TRADE = { give: 1, take: 3 } as const;
  * 500 + 300 = 800. The time is the browser's clock, as every solo time here is.
  */
 export const KUMIMOJI_SCORE = { tile: 10, slowestMsATile: 30_000 } as const;
+
+/**
+ * PASS AND PLAY: up to eight people round one device, each with a hand and a
+ * table of their own from one shared bag (`party.ts`). John, 2026-09-28: "pass
+ * and play with up to eight players". One player is the solo game, unchanged.
+ * A name is optional and kept to a line: it is shown on the cover and the
+ * finish, never sent anywhere.
+ */
+export const KUMIMOJI_PARTY = { least: 2, most: 8, nameMost: 20 } as const;

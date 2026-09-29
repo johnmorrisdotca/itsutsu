@@ -23,7 +23,6 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
-import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -37,7 +36,9 @@ import { SetUpSection } from "@/components/live/SetUpSection";
 
 import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
+import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
+import { useKumimojiChoice } from "./useKumimojiChoice";
 import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";
 import { sizeWord } from "./puzzles.constants";
@@ -100,9 +101,7 @@ export function PuzzleSetUp({
   const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
   // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
   const [twins, setTwins] = useState(asked?.twins ?? false);
-  const [gameLength, setGameLength] = useState<KumimojiLength>(asked?.gameLength ?? "short");
-  const [language, setLanguage] = useState<KumimojiLanguage>(asked?.language ?? "english");
-  const [doubleSet, setDoubleSet] = useState(asked?.doubleSet ?? false);
+  const { language, setLanguage, gameLength, setGameLength, doubleSet, setDoubleSet, players, setPlayers } = useKumimojiChoice(asked, size, kind === "kumimoji");
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -114,7 +113,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, players });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -199,6 +198,8 @@ export function PuzzleSetUp({
             setDoubleSet={setDoubleSet}
             hints={hints}
             setHints={setHints}
+            players={players}
+            setPlayers={setPlayers}
           />
         ) : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
@@ -360,8 +361,9 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <SetUpResume href={resumeHref} />
+        {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, players })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
@@ -372,8 +374,8 @@ export function PuzzleSetUp({
           type="button"
           className={PLAY_BUTTON}
           onClick={race}
-          disabled={!hasAccount || racing === "making"}
-          title={hasAccount ? undefined : "A race is between two members; this session has no account yet."}
+          disabled={!hasAccount || racing === "making" || players > 1}
+          title={players > 1 ? "Pass and play is on this device; a race is between two members on two." : hasAccount ? undefined : "A race is between two members; this session has no account yet."}
           data-testid="puzzle-race"
         >
           {racing === "making" ? (

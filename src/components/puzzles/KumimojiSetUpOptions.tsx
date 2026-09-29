@@ -2,13 +2,27 @@
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
-import { kumimojiTileCount, TILE_MIX_TOTAL } from "@/lib/puzzles/kumimoji/tiles.constants";
+import { partyFits, partyTilesNeeded } from "@/lib/puzzles/kumimoji/party";
+import { KUMIMOJI_PARTY, kumimojiTileCount, TILE_MIX_TOTAL } from "@/lib/puzzles/kumimoji/tiles.constants";
+
+import { PARTY_PLAYERS_CHIP } from "./kumimoji.constants";
+
+const LENGTHS = ["short", "medium", "full"] as const;
+const LENGTH_WORDS: Record<KumimojiLength, string> = { short: "Short", medium: "Medium", full: "Full" };
 
 /**
- * KUMIMOJI'S OWN SET-UP CHOICES, under the puzzle's options: the language,
- * the length of the game, one set or two, and Help. Each is a row of chips,
- * as every choice on the set-up screen is, and each writes into the address
- * the set-up already builds (`puzzleQuery`).
+ * KUMIMOJI'S OWN SET-UP CHOICES, under the puzzle's options: how many
+ * players, the language, the length of the game, one set or two, and Help.
+ * Each is a row of chips, as every choice on the set-up screen is, and each
+ * writes into the address the set-up already builds (`puzzleQuery`).
+ *
+ * PLAYERS, one to eight (John, 2026-09-28: "pass and play with up to eight
+ * players… we have to have the number of players as an option"). One is the
+ * solo game, as it always was. More pass one device round (`KumimojiParty`),
+ * and a bag must deal every hand and a round of draws (`partyFits`): a length
+ * or set too small for the players is switched off here, with the reason, and
+ * `gameLength` arrives already moved to the shortest that fits. The names are
+ * typed on the play page, so this screen keeps one height whatever is chosen.
  */
 export function KumimojiSetUpOptions({
   size,
@@ -20,7 +34,11 @@ export function KumimojiSetUpOptions({
   setDoubleSet,
   hints,
   setHints,
+  players,
+  setPlayers,
 }: {
+  players: number;
+  setPlayers: (players: number) => void;
   size: number;
   language: KumimojiLanguage;
   setLanguage: (language: KumimojiLanguage) => void;
@@ -31,8 +49,35 @@ export function KumimojiSetUpOptions({
   hints: boolean;
   setHints: (hints: boolean) => void;
 }) {
+  const double = doubleSet && language === "english";
+  const inBag = (length: KumimojiLength, two: boolean) => kumimojiTileCount(size, length, TILE_MIX_TOTAL, two && language === "english");
+  const fits = (length: KumimojiLength, two: boolean) => partyFits(players, size, inBag(length, two));
+  const tooSmall = LENGTHS.filter((each) => !fits(each, double));
+  const tooFew = (tiles: number) => `${tiles} tiles cannot deal ${players} hands of ${size} and a round of draws (${partyTilesNeeded(players, size)})`;
   return (
     <>
+      <div className="grid grid-cols-8 gap-1 pt-1" role="radiogroup" aria-label="Players" data-testid="kumimoji-players">
+        {Array.from({ length: KUMIMOJI_PARTY.most }, (_, at) => at + 1).map((each) => (
+          <button
+            key={each}
+            type="button"
+            role="radio"
+            aria-checked={players === each}
+            aria-label={each === 1 ? "One player" : `${each} players`}
+            className={`${PARTY_PLAYERS_CHIP} ${players === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+            onClick={() => setPlayers(each)}
+            data-testid={`kumimoji-players-${each}`}
+          >
+            {each}
+          </button>
+        ))}
+      </div>
+      {/* Three lines' room at a phone's width whatever it says, so the options below never move when the players do. */}
+      <p className="min-h-12 text-xs text-muted" data-testid="kumimoji-players-blurb">
+        {players === 1
+          ? "One player: the solo game, with its clock and its leaderboard. Choose more to pass this device round."
+          : `${players} players pass this device round, one bag between them. Played and kept in this browser only, with no points.${tooSmall.length === 0 ? "" : ` ${tooSmall.map((each) => LENGTH_WORDS[each]).join(" and ")} ${tooSmall.length === 1 ? "is" : "are"} too small for ${players}.`}`}
+      </p>
       <div className="grid grid-cols-2 gap-1.5 pt-1" role="radiogroup" aria-label="Language" data-testid="kumimoji-language">
         {(["english", "japanese"] as const).map((each) => (
           <button
@@ -52,7 +97,7 @@ export function KumimojiSetUpOptions({
         ))}
       </div>
       <div className="grid grid-cols-3 gap-1.5 pt-1" role="radiogroup" aria-label="Game length" data-testid="kumimoji-length">
-        {(["short", "medium", "full"] as const).map((each) => (
+        {LENGTHS.map((each) => (
           <button
             key={each}
             type="button"
@@ -60,9 +105,11 @@ export function KumimojiSetUpOptions({
             aria-checked={gameLength === each}
             className={`${PICK_WORD_CHIP} ${gameLength === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
             onClick={() => setGameLength(each)}
+            disabled={!fits(each, double)}
+            title={fits(each, double) ? undefined : tooFew(inBag(each, double))}
             data-testid={`kumimoji-length-${each}`}
           >
-            {each === "short" ? "Short" : each === "medium" ? "Medium" : "Full"} · {kumimojiTileCount(size, each, TILE_MIX_TOTAL, doubleSet && language === "english")}
+            {LENGTH_WORDS[each]} · {inBag(each, double)}
           </button>
         ))}
       </div>
@@ -75,7 +122,8 @@ export function KumimojiSetUpOptions({
             aria-checked={doubleSet === each}
             className={`${PICK_WORD_CHIP} ${doubleSet === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
             onClick={() => language === "english" && setDoubleSet(each)}
-            disabled={each && language === "japanese"}
+            disabled={(each && language === "japanese") || !fits(gameLength, each)}
+            title={fits(gameLength, each) ? undefined : tooFew(inBag(gameLength, each))}
             data-testid={`kumimoji-double-${each ? "on" : "off"}`}
           >
             {each ? "Double" : "One set"} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
