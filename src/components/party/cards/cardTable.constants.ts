@@ -24,10 +24,11 @@ export const HAND_CARD_PX = 64;
 
 /**
  * THE TABLE IN THE MIDDLE: a board of the reader's own wood, as every table on
- * the site is (`BoardFrame`), wider than tall — eight across to five down —
- * laid out, like Solitaire's, in hundredths of its own width.
+ * the site is (`BoardFrame`), twice as wide as it is tall — eight across to
+ * four down, so the hand under it stays on a phone's screen — laid out, like
+ * Solitaire's, in hundredths of its own width: fifty down.
  */
-export const CARD_TABLE_BOARD = { across: 8, down: 5, inset: 0.025, card: 15 } as const;
+export const CARD_TABLE_BOARD = { across: 8, down: 4, inset: 0.025, card: 13 } as const;
 
 export const CARD_TABLE_COPY = {
   howMany: "How many are playing?",
@@ -56,8 +57,8 @@ export const CARD_TABLE_COPY = {
   computerTag: "computer",
   scores: "Scores",
   lead: (game: string) => `${game} round one phone or tablet: a person or a computer in every seat. Nothing here is rated or kept anywhere but this browser.`,
-  play: "Play",
-  continue: "Continue",
+  play: "Play →",
+  continue: "Continue →",
   card: "Cards on this device",
   about: (game: string) => `About ${game}, its rules and its family`,
   idleDetail: "Nothing has moved at this table for a couple of minutes. There is no clock here; the game simply waits.",

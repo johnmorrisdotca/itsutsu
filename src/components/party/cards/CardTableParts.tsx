@@ -71,11 +71,11 @@ export function trickPlace(seat: number, viewer: number, seats: number): { left:
   const card = CARD_TABLE_BOARD.card;
   const middle = 50 - card / 2;
   const places4 = [
-    { left: middle, top: 34 },
-    { left: 18, top: 17 },
-    { left: middle, top: 3 },
-    { left: 82 - card, top: 17 },
+    { left: middle, top: 30 },
+    { left: 16, top: 15.5 },
+    { left: middle, top: 1.5 },
+    { left: 84 - card, top: 15.5 },
   ];
-  const places3 = [places4[0], { left: 24, top: 8 }, { left: 76 - card, top: 8 }];
+  const places3 = [places4[0], { left: 22, top: 6 }, { left: 78 - card, top: 6 }];
   return (seats === 3 ? places3 : places4)[from] ?? places4[0];
 }

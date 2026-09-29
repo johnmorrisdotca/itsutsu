@@ -17,6 +17,10 @@ import { TenkaCard } from "./tenka/TenkaCard";
 import { TENKA_COPY } from "./tenka/tenka.constants";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
+import { CARD_TABLE_COPY } from "./cards/cardTable.constants";
+import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, PresidentCard, PresidentOffer, PresidentTable } from "./cards/cardTableClient";
+import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
+import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
 import { TrainOffer } from "./TrainOffer";
 
@@ -70,4 +74,15 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Offer: TrainOffer,
     Card: TrainCardClient,
   },
+  // The family card games, one table for all five (`cards/CardGameTable.tsx`), loaded in the browser only.
+  hearts: cardTable("hearts", HeartsTable, HeartsOffer, HeartsCard),
+  bigTwo: cardTable("bigTwo", BigTwoTable, BigTwoOffer, BigTwoCard),
+  president: cardTable("president", PresidentTable, PresidentOffer, PresidentCard),
+  goFish: cardTable("goFish", GoFishTable, GoFishOffer, GoFishCard),
+  crazyEights: cardTable("crazyEights", CrazyEightsTable, CrazyEightsOffer, CrazyEightsCard),
 };
+
+/** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */
+function cardTable(kind: CardGameKind, Game: PartyTable["Game"], Offer: PartyTable["Offer"], Card: ComponentType): PartyTable & { Card: ComponentType } {
+  return { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: CARD_TABLE_COPY.lead(CARD_GAME_DISPLAY[kind].label), Game, Offer, Card };
+}

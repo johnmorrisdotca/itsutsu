@@ -32,7 +32,7 @@ export type CardAdapter<S, M> = {
   /** How many cards a seat may choose at once for a move now: one, or as many as a play or a pass takes. */
   chooses: (game: S) => number;
   /** The presses open to the player to move, with these cards chosen and this seat pointed at. */
-  actions: (game: S, chosen: readonly CardId[], target: number | null) => CardAction<M>[];
+  actions: (game: S, chosen: readonly CardId[], target: number | null, name: (seat: number) => string) => CardAction<M>[];
   /** What a double tap on a card, or a card let go on the table, plays: the one obvious move with it, or null. */
   quick: (game: S, card: CardId, chosen: readonly CardId[], target: number | null) => M | null;
   /** The seats a move may be aimed at (Go Fish's asks); none for a game without. */

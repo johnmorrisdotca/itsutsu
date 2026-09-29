@@ -75,6 +75,8 @@ export type CardHandProps = {
   back?: CardBackField;
   /** Which cards are raised: chosen to play. */
   chosen?: readonly number[];
+  /** Which cards are ringed for the eye: just arrived (Hearts' passed cards). */
+  hinted?: readonly number[];
   onPress?: (spot: CardSpot) => void;
   onLift?: (spot: CardSpot, event: ReactPointerEvent<HTMLElement>) => void;
   lifted?: CardSpot | null;
