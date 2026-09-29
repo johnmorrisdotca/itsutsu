@@ -115,7 +115,7 @@ export const GHOST_COPY = {
     english: { name: "English", letters: "A–Z", words: "SCOWL's English words" },
     japanese: { name: "日本語", letters: "かな", words: "JMdict's readings, in Kumimoji's kana" },
   },
-  table: "At the table",
+  table: "Players",
   loading: "Fetching the word list…",
   failed: "The word list could not be fetched. Check the connection, then reload the page.",
   pick: "Tap a letter, then Add before or Add after — or challenge.",

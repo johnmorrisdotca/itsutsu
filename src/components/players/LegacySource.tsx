@@ -136,7 +136,7 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
           <tfoot>
             <tr className="border-t-2 border-rule-strong font-medium">
               <td className="py-1.5 pr-3" data-testid="legacy-class-total">
-                {detail.length > 0 ? "All of it" : row.class}
+                {detail.length > 0 ? "Total" : row.class}
               </td>
               <ResultCells record={row.record} />
             </tr>

@@ -52,7 +52,7 @@ export function GameFamily({ variant }: { variant: GameKey }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-family">
       <h2 className={SECTION_TITLE}>
-        {alone ? "Its family" : siblings.games.length > 0 ? "Also in this family" : "Also on its shelf"} <span className="font-mincho normal-case tracking-normal">同族</span>
+        {alone ? "Family" : siblings.games.length > 0 ? "Also in this family" : "Also on its shelf"} <span className="font-mincho normal-case tracking-normal">同族</span>
       </h2>
       <div className="flex items-center gap-3">
         <FamilyMark family={family.title} size="regular" />

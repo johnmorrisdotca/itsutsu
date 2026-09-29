@@ -134,7 +134,7 @@ test.describe("giving up, from the board", () => {
     const game = (await made.json()) as { id: string; blackToken: string };
 
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
-    await expect(page.getByTestId("turn-banner")).toContainText("waiting for somebody");
+    await expect(page.getByTestId("turn-banner")).toContainText("Waiting for an opponent");
     /*
      * Hydrated before the absence below is read, and before anything is
      * pressed. Nothing carries this reader anywhere — no move is played, so
