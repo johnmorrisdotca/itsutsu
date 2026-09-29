@@ -44,7 +44,7 @@ something uses the word already chosen for it.
 | Members who were seen lately | **Online now 在室** | Here now 在室 |
 | A list narrowed by a filter | **Filtered by** | Narrowed to |
 | Going up a level | **Level-up 昇級** | Promotion 昇級 |
-| A game still being played | **In progress 対局中** | Going 対局中, going, Nothing going |
+| A game still being played | **In progress 対局中** | Going 対局中, going, Nothing going, active |
 | Who opens a game, chosen by chance | **Random** | Drawn by lot |
 | Neither side ahead | **Even 互角** | Level 互角 (clashed with the XP "Level") |
 | Colours changing hands | **Swap colours** | Swap seats |
@@ -55,8 +55,8 @@ something uses the word already chosen for it.
 |---|---|---|---|---|
 | Game history | Record | 棋譜 (unchanged) | `i18n.constants.ts` `nav.record` | "Record" also means a W–L–D record; this page is every finished game |
 | All games | Every game | 全種目 (unchanged) | `i18n.constants.ts` `nav.everyGame` | the usual words for the full list |
-| No active games | Nothing going | — | `StripGames.tsx` | "going" is not how a game site says in progress |
-| {n} active | {n} going | — | `StripGames.tsx` | same |
+| No games in progress | Nothing going | — | `StripGames.tsx` | "going" is not how a game site says in progress |
+| {n} in progress | {n} going | — | `StripGames.tsx` | same, and the same words as the My games tab |
 | Your account | You | — | `app/me/page.tsx` (`<title>`) | a tab title that says what the page is |
 | What's new | What has shipped | 更新履歴 (unchanged) | `app/releases/page.tsx` | the account menu already calls it "What's new" |
 | Page not found | nothing here | 何もない (unchanged) | `app/not-found.tsx` | the standard words |
@@ -87,6 +87,8 @@ something uses the word already chosen for it.
 | Now | Was | Kanji | Where | Why |
 |---|---|---|---|---|
 | New game | Set up a game | 新規対局 (was 対局設定) | `SetUpHeading.tsx`, `app/games/new/page.tsx`, `RefusedOfferPage.tsx` | the button that leads here says New game |
+| New game of {game} | Set up {game} | — | `app/games/[slug]/new/page.tsx` (`<title>`) | same |
+| Before the game | Before the first stone | — | `Conversation.tsx` | the notes said before move one |
 | How to play | How it is played | — | `SetUpHeading.tsx`, `begin/page.tsx`, `PuzzleSetUpPage.tsx` | the usual words |
 | All games | Every game there is | — | `SetUpHeading.tsx` | plain |
 | Opponent | Who you play | 対戦相手 (unchanged) | `live.constants.ts` | the tile row is already headed "Opponent" |
@@ -110,12 +112,12 @@ something uses the word already chosen for it.
 | Moves | Record | 棋譜 (unchanged) | `game.constants.ts` `moveHistory` | same word as every other move list |
 | Games | Games | 種目 (was 遊び方) | `game.constants.ts` `browser` | 遊び方 means "how to play"; the games list is 種目 everywhere else |
 | Place a single | Lay a single | — | `game.constants.ts` | "place" is the usual verb |
-| Place the piece | Lay the piece | — | `game.constants.ts` | same |
+| Place the piece · Place the piece in hand: … | Lay the piece · Lay the piece in hand: … | — | `game.constants.ts` | same |
 | Load moves | Walk through it | — | `game.constants.ts` (paste a game) | plain |
 | Analysis | Awareness | — | `GameSettingsPanel.tsx` | the setting shows who is ahead and the threats |
 | Show who is ahead · Show threats | Tell me how it stands · Show me the threats | 形勢 · 急所 (unchanged) | `game.constants.ts` | plain, and matches the "Who is ahead" panel |
 | Hints per player | Hints each | — | `GameSettingsPanel.tsx` | plain |
-| Flip the board | Turn the board round | — | `AppearancePanel.tsx` and callers | the usual words |
+| Flip the board · Flip the board back | Turn the board round · Turn the board back | — | `AppearancePanel.tsx`, `SharedGameControls.tsx`, `GameReplay.tsx` | the usual words |
 | Waiting for an opponent 募集中. | Posted, and waiting for somebody 募集中. | 募集中 (unchanged) | `TurnBanner.tsx` | plain |
 | Even | Level | 互角 (unchanged) | `advantage.constants.ts` | "Level" is the XP word here |
 | Moves | Move list | 棋譜 (unchanged) | `GameReplay.tsx` | one word for it |
@@ -126,7 +128,8 @@ something uses the word already chosen for it.
 
 | Now | Was | Kanji | Where | Why |
 |---|---|---|---|---|
-| Game history | Record | 棋譜 (unchanged) | `RecordPage.tsx`, `app/history/page.tsx`, `games/[slug]/history/page.tsx`, `PuzzleRecordPage.tsx` | John's word for it, and "Record" is also W–L–D |
+| Game history | Record | 棋譜 (unchanged) | `RecordPage.tsx` (title and trail), `app/history/page.tsx`, `games/[slug]/history/page.tsx`, `FiledMatchPage.tsx` trail | John's word for it, and "Record" is also W–L–D |
+| {puzzle} · All solves | {puzzle} · Record | 棋譜 (unchanged) | `PuzzleRecordPage.tsx`, `PuzzleSolvePage.tsx` trail, `games/[slug]/history/page.tsx` | a puzzle's history is its solves, as its front door says |
 | Back to game history | Back to the record | — | `FiledMatchPage.tsx` | same |
 | Saved in game history. | Filed in the record. | — | `mine.constants.ts` | same |
 | Filtered by | Narrowed to | — | `i18n.constants.ts` `filter.narrowedTo`, `DirectoryNarrowing.tsx`, XP pages, `PuzzleRecordPage.tsx` | the usual words |
@@ -152,13 +155,13 @@ something uses the word already chosen for it.
 | No games in progress. | Nothing going. | — | `MyGamesList.tsx` | same |
 | Puzzles in progress | Puzzles going | 解きかけ (unchanged) | `mine.constants.ts` | same |
 | Open games | Open seats | 対局募集 (unchanged) | `mine.constants.ts` | ItsYourTurn's word for games waiting for a player |
-| Play as White | Sit as White | 着席 (unchanged) | `mine.constants.ts` | plain |
 | Prefer not to say | Not saying | — | `ProfileForm.tsx` | the usual words |
 | Show when I'm online | Show when I am here | — | `ProfileSends.tsx` | same |
 | Clock for games on one device · Clock for games on two devices | Clock at this screen · Clock in a game on two devices | — | `GameDefaultsForm.tsx` | plain, and a pair |
 | Reset to defaults | Back to the ordinary ones | — | `GameDefaultsForm.tsx` | the usual words |
 | Your data | What Itsutsu holds about you | 保存情報 (unchanged) | `WhatWeHold.tsx` | plain |
 | Create an invite link · New link | Make an invitation · Another | — | `InviteFriends.tsx` | plain |
+| (privacy page) under Your data | under What Itsutsu holds about you | — | `privacy.constants.ts` | it names the heading above, which is now Your data |
 
 ## Puzzles
 
@@ -167,14 +170,14 @@ something uses the word already chosen for it.
 | All solves | Every solve here | 棋譜 (unchanged) | `PuzzleFrontDoor.tsx` | plain |
 | Your solves | Your own solves | — | `PuzzleFrontDoor.tsx` | same as the page it opens |
 | Sort: | Order: | — | `PuzzleRecordPage.tsx` | the usual word |
-| Normal · Gentle | As made · Softer | 爆 · 弱 (unchanged) | `TsunagiHelpPickers.tsx` | plain |
+| Normal | As made | 爆 (unchanged) | `TsunagiHelpPickers.tsx` | plain; "Softer" beside it reads fine and stays |
 
 ## Party games
 
 | Now | Was | Kanji | Where | Why |
 |---|---|---|---|---|
-| Players | At the table / At the board | 席 (unchanged) | `DotsGame.tsx`, `MancalaGame.tsx`, `PairGoGame.tsx`, `PartyBlocksStatus.tsx`, `PartyRaceGame.tsx`, `online.constants.ts` `seatsHeading` | the list of who is playing |
-| Start | Set the table | — | `online.constants.ts` | Start begins a game, everywhere |
+| Players | At the table / At the board | 席 (unchanged) | `DotsGame.tsx`, `MancalaGame.tsx`, `PairGoGame.tsx`, `PartyBlocksStatus.tsx`, `PartyRaceGame.tsx`, `online.constants.ts` `seatsHeading` | the list of who is playing. Superghost's (`party.constants.ts` `GHOST_COPY.table`) still says At the table: that file is fingerprinted for the party screenshots, so it changes with the next `pnpm screenshots:party` |
+| Start online game · Starting… · The game could not be started. | Set the table · Setting the table… · The table could not be set. | — | `online.constants.ts` | Start begins a game, everywhere; "online" keeps it apart from the one-device Start |
 | Online table | At a table | 卓 (unchanged) | `online.constants.ts`, `tables/[id]/page.tsx` | says what the page is |
 | Online tables · Finished tables | At a table · Tables finished | — | `online.constants.ts` (My games) | plain |
 
@@ -184,7 +187,7 @@ something uses the word already chosen for it.
 |---|---|---|---|---|
 | Meet the bots | Meet the programs | — | `home.constants.ts` | the site calls them bots |
 | Bots | Programs | 棋士 (unchanged) | `about.chapters.ts` | same |
-| The bots | The players that are not people | 棋力 (unchanged) | `about.bots.tsx` | plain |
+| How strong the bots are | The players that are not people | 棋力 (unchanged) | `about.bots.tsx` | plain; "The bots" was already a heading in the engine chapter |
 
 ## Admin (the operator only)
 
@@ -194,7 +197,8 @@ something uses the word already chosen for it.
 | Suspend account · Suspend | Shut the account · Shut it | — | `AdminMembers.tsx` | same |
 | Reactivate | Open it again | — | `AdminMembers.tsx` | same |
 | Remove name · Remove it | Take the name off · Take it off | — | `AdminMembers.tsx` | same |
-| Maintenance | Being worked on | 整備 (unchanged) | `AdminSite.tsx` | same |
+| Maintenance mode | Being worked on | 整備 (unchanged) | `AdminSite.tsx` | same. The public maintenance page (`maintenance.ts`) keeps "being worked on": it is a sentence there, and it sits beside the gate |
+| Suspended the account · Reactivated the account | Shut the account · Opened the account | 停止 · 再開 (unchanged) | `operatorLog.constants.ts` | the operator log says what the buttons now say |
 
 ## Left as they are, on purpose
 
@@ -223,6 +227,5 @@ something uses the word already chosen for it.
 ## Addresses worth renaming (recommended, not done)
 
 - `/games/<slug>/standings` → `/games/<slug>/leaderboard`, to match its title.
-- `/history` → `/games/history` or keep: its title is now Game history, which
-  the address already says.
+- `/history`: keep. Its title is now Game history, which the address already says.
 - `/play` (My games) → `/my-games`: "Play" leads to set-up everywhere else.
