@@ -1,12 +1,11 @@
 import "server-only";
 
-import { cache } from "react";
-
 import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
 
 import { DEFAULT_SITE_SETTINGS, SITE_SETTING_REMOTE_KEYS } from "./site.constants";
-import { siteSettingStates, siteSettingsFrom, storedFromRemote, valueFor } from "./site";
-import { deleteRemoteSetting, putRemoteSetting, readRemoteSetting, readRemoteSettings } from "./siteSettingsWire";
+import { cachedSiteSettings } from "./liveBoardIntervals";
+import { siteSettingStates, storedFromRemote } from "./site";
+import { deleteRemoteSetting, putRemoteSetting, readRemoteSettings } from "./siteSettingsWire";
 import type {
   RegistrationMode,
   SiteSettingKey,
@@ -30,22 +29,23 @@ import type {
  * WHAT EACH READ COSTS. Nothing here may cost extra money, so a call is made
  * where a setting is needed and nowhere else, and nothing polls:
  *
- *  - The sign-up decision, `registrationMode`, reads its one key every time it
- *    is asked. Both doors ask only about a stranger, after finding no member
- *    row, so it runs once per would-be member.
- *  - The door, `fetchSiteSettings`, reads both settings in ONE call per render
- *    — the same count as the query it replaced.
- *  - The panel reads everything, because the operator decides from it.
+ *  - The sign-up decision, `registrationMode`, and the door,
+ *    `fetchSiteSettings`, read through `cachedSiteSettings`: one call to
+ *    Sumilabu in ten minutes per server cache, however many strangers ask.
+ *  - The panel reads everything, uncached, because the operator decides from
+ *    it and must see what is stored now.
  *
- * NOTHING IS CACHED BETWEEN REQUESTS, and the join notice was, for an
- * afternoon. A copy held in this module is not the copy the operator's write
- * reaches: the panel's API route and the door's page each get their own
- * instance of this file — in development, and all the more on Vercel, where
- * they can run in different functions — so a write could not clear the page's
- * copy and the door went on showing the old line. A cache that cannot hear
- * its own invalidation is a stale answer with nothing to say so. One that can
- * would have to live outside the process, which is a new thing to run or pay
- * for, and the door is not busy enough to need one.
+ * THE DOOR IS CACHED ACROSS REQUESTS, and for a while it was not. A copy held
+ * in this module could not hear the panel's write — the panel's route and the
+ * door's page each get their own instance of this file — so the door read the
+ * store every time instead. Every one of those reads is a function call on
+ * Sumilabu that wakes its database for five minutes: in September 2026 settings
+ * reads were 2.3K of Sumilabu's 2.8K calls in twelve hours and its database was
+ * awake three quarters of the day, most of it for a browser suite signing in
+ * strangers. Next's data cache lives outside the process and the panel's write
+ * clears it by tag (`revalidateTag` in `/api/site`), so the objection to the
+ * module's own copy does not hold for it. A setting changed anywhere but the
+ * panel reaches the door within ten minutes.
  *
  * FAILING. A sign-up decision that cannot read the store answers `invite-only`,
  * and says why. That is both the registry's default and how the site behaved
@@ -77,8 +77,7 @@ function why(error: unknown): string {
  */
 export async function registrationMode(): Promise<RegistrationMode> {
   try {
-    const stored = await readRemoteSetting(sumilabuTarget("settings"), SITE_SETTING_REMOTE_KEYS.registration);
-    return valueFor("registration", stored?.value);
+    return (await cachedSiteSettings()).registration;
   } catch (error) {
     console.error(`Signing up is treated as ${DEFAULT_SITE_SETTINGS.registration}: the settings store could not be read. ${why(error)}`);
     return DEFAULT_SITE_SETTINGS.registration;
@@ -86,17 +85,17 @@ export async function registrationMode(): Promise<RegistrationMode> {
 }
 
 /**
- * How the door is set up, in one call, deduplicated per render. It DESCRIBES
- * the mode; the decision is `registrationMode`, asked where a member is made.
+ * How the door is set up. It DESCRIBES the mode; the decision is
+ * `registrationMode`, asked where a member is made.
  */
-export const fetchSiteSettings = cache(async (): Promise<SiteSettings> => {
+export async function fetchSiteSettings(): Promise<SiteSettings> {
   try {
-    return siteSettingsFrom(storedFromRemote(await readRemoteSettings(sumilabuTarget("settings"))));
+    return await cachedSiteSettings();
   } catch (error) {
     console.error(`The door asks for a code and shows no notice: the settings store could not be read. ${why(error)}`);
     return { ...DEFAULT_SITE_SETTINGS };
   }
-});
+}
 
 /** Every setting with when it was written and by whom, for the panel. Throws when the store cannot be read. */
 export async function fetchSiteSettingStates(): Promise<SiteSettingState[]> {
