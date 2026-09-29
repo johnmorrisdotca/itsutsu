@@ -33,7 +33,8 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
       const board = boardOf(generatePuzzle(kind, size, "easy", seed).givens, size)!;
       await islands.nth(board.spans[0]!.a).click();
       await islands.nth(board.spans[0]!.b).click();
-    } else if (kind === "hiddenStones") await page.getByTestId("puzzle-cell").first().click();
+    } else if (kind === "pictureLogic") await page.getByTestId("picture-cell").first().click();
+    else if (kind === "hiddenStones") await page.getByTestId("puzzle-cell").first().click();
     else if (kind === "blackAndWhite") await page.locator('[data-testid="puzzle-cell"][data-given="false"]').first().click();
     else {
       await page.locator('[data-testid="puzzle-cell"][data-value=""]').first().click();
