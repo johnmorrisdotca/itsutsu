@@ -3,7 +3,11 @@ import { FigureTable as Table } from "@/components/about/FigureTable";
 import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { isSettingKind } from "@/lib/catalogue/gameSettings";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+
+/** The puzzles as the catalogue lists them: a Gomoji's languages and word lists are settings of the one Gomoji, not puzzles of their own. */
+const LISTED_PUZZLES = PUZZLE_KIND_LIST.filter((kind) => !isSettingKind(kind));
 import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import Link from "@/components/ui/Link";
 
@@ -103,10 +107,10 @@ export const CATALOGUE_SECTION: AboutSection = {
     <>
       Of the families, {PUZZLE_FAMILIES.length} are not board games at all:{" "}
       {PUZZLE_FAMILIES.map((family, index) => `${index > 0 ? (index === PUZZLE_FAMILIES.length - 1 ? " and " : ", ") : ""}${family.title}`).join("")} hold{" "}
-      {PUZZLE_KIND_LIST.length === 1 ? "a puzzle" : "puzzles"} for one person:{" "}
-      {PUZZLE_KIND_LIST.map((kind, index) => (
+      {LISTED_PUZZLES.length === 1 ? "a puzzle" : "puzzles"} for one person:{" "}
+      {LISTED_PUZZLES.map((kind, index) => (
         <span key={kind}>
-          {index > 0 ? (index === PUZZLE_KIND_LIST.length - 1 ? " and " : ", ") : ""}
+          {index > 0 ? (index === LISTED_PUZZLES.length - 1 ? " and " : ", ") : ""}
           <Game variant={kind}>{PUZZLE_DISPLAY[kind].label}</Game>, our version of {PUZZLE_DISPLAY[kind].inspiredBy}, at{" "}
           {PUZZLE_SPECS[kind].sizes.length > 3
             ? `${PUZZLE_SPECS[kind].sizes[0]}×${PUZZLE_SPECS[kind].sizes[0]} up to ${PUZZLE_SPECS[kind].sizes.at(-1)}×${PUZZLE_SPECS[kind].sizes.at(-1)}`

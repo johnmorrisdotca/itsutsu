@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { FELTS } from "../src/components/board/Board.constants";
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, playPath, PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
@@ -91,8 +91,8 @@ test("the colour and the style chosen at set-up draw the preview and open the ga
  * border did not. Measured on the page, not read off the numbers that drew it.
  */
 test("the play area's border stands around the tiles and stones in every style, at every length", async ({ page }) => {
-  for (const [slug, size] of [[PUZZLE_SLUGS.gomojiKana, 4], [PUZZLE_SLUGS.gomojiKana, 5], [PUZZLE_SLUGS.gomoji, 5]] as const) {
-    await page.goto(`/games/${slug}/play?size=${size}&level=easy&seed=${freshPuzzleSeed()}`);
+  for (const [slug, size] of [["gomojiKana", 4], ["gomojiKana", 5], ["gomoji", 5]] as const) {
+    await page.goto(joinQuery(playPath(slug), `?size=${size}&level=easy&seed=${freshPuzzleSeed()}`));
     await ready(page, "puzzle-play");
     for (const style of ["tiles", "reversi", "gomoku"] as const) {
       await page.getByTestId(`word-style-${style}`).click();

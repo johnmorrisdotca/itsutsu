@@ -4,7 +4,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { appearanceFor } from "@/lib/auth/memberAccount";
-import { gamePath, playPath, rulesPath } from "@/lib/gomoku/slugs";
+import { listedGameOf } from "@/lib/catalogue/gameSettings";
+import { gamePath, joinQuery, playPath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
@@ -48,11 +49,12 @@ export async function PuzzleSetUpPage({
   /** The address's query: Tsunagi's `?size=` opens its board of levels at that size. */
   query?: Record<string, string | string[] | undefined>;
 }) {
-  const copy = PUZZLE_DISPLAY[kind];
+  // One Gomoji, whatever its language: its name, its front door and its rules are the game's (`gameSettings.ts`).
+  const copy = PUZZLE_DISPLAY[listedGameOf(kind)];
   const onBoard = drawnOnBoard(kind);
   // One of this puzzle already going leads the Start column, as it leads the front door (`PuzzlePlayOrResume`).
   const run = memberId === null ? null : await latestRunOf(memberId, kind);
-  const resumeHref = run === null ? null : `${playPath(kind)}${puzzleQuery(keptRunAsked(kind, run))}`;
+  const resumeHref = run === null ? null : joinQuery(playPath(kind), puzzleQuery(keptRunAsked(kind, run)));
   // The stone puzzles read the reader's stone set too, for the preview's stones.
   const [appearance, preferences] = onBoard
     ? await Promise.all([appearanceFor(memberId), preferencesFor()])

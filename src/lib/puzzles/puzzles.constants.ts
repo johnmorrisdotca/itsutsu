@@ -396,6 +396,9 @@ const KANA_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
 };
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, string>>>> = {
   gomoji: WORD_LEVEL_BLURBS,
+  // French and German are Gomoji in another language (`gameSettings.ts`): their levels mean what English's do, never a number puzzle's "looking" and "trying".
+  gomojiMot: WORD_LEVEL_BLURBS,
+  gomojiWort: WORD_LEVEL_BLURBS,
   gomojiKana: KANA_LEVEL_BLURBS,
   gomojiPop: {
     easy: "A word from the pop list with its category shown, and eight guesses to find it in.",

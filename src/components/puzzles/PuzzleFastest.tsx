@@ -5,7 +5,7 @@ import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
-import { mySolvePath, setUpPath, solvePath, standingsPath } from "@/lib/gomoku/slugs";
+import { joinQuery, mySolvePath, setUpPath, solvePath, standingsPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_CLOCK_LIST, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor, offersClock } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { type FastestBoard, fastestKey, fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
@@ -246,7 +246,7 @@ export function FastestTable({
             </tr>
             <tr className="border-t border-rule">
               <td colSpan={columns} className="py-1 text-muted">
-                <Link href={`${setUpPath(kind)}?clock=${clock}`} className="underline-offset-2 hover:underline" data-testid="puzzle-fastest-clock-first">
+                <Link href={joinQuery(setUpPath(kind), `?clock=${clock}`)} className="underline-offset-2 hover:underline" data-testid="puzzle-fastest-clock-first">
                   nobody yet on the {PUZZLE_CLOCK_DISPLAY[clock].label} — be the first
                 </Link>
               </td>

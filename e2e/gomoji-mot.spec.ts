@@ -1,9 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { PUZZLE_SLUGS, playPath } from "../src/lib/gomoku/slugs";
 import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
-import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 
@@ -19,16 +18,21 @@ test.beforeAll(loadEveryWordList);
  */
 const KIND = "gomojiMot";
 const LEVEL = "medium";
-const NAME = PUZZLE_DISPLAY[KIND].label;
+// Its address from before 2026-09-28, which leads on to the one Gomoji (`formerAddresses.ts`).
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
+// Where it is played now: the one Gomoji's board and set-up, the setting in the query (`gameSettings.ts`).
+const PLAY = playPath(KIND);
 const GUESS = "chien"; // "dog": a common French word, five letters, in the guessable list.
 
 test.describe("Gomoji Mot", () => {
-  test("its front door names it, its family, and what it is our version of", async ({ page }) => {
+  test("its old front door leads to the one Gomoji, which names it among its languages and word lists", async ({ page }) => {
     await page.goto(AT);
-    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
+    // One Gomoji now: its old address is a setting of it (John, 2026-09-28: "just have 1 and allow language selection").
+    await expect(page).toHaveURL(/\/games\/gomoji\?language=french$/);
+    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toHaveText(/^Gomoji/);
     await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
     await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.locator('[data-testid="word-setting-row"][data-kind="gomojiMot"]')).toContainText("Français");
   });
 
   test.describe("on a phone, typed on the AZERTY keys", () => {
@@ -37,7 +41,7 @@ test.describe("Gomoji Mot", () => {
     test("a guess typed on the on-screen keys is coloured, and the credit line names the source", async ({ page }) => {
       expect(isWord(GUESS, 5, "fr")).toBe(true);
       const seed = freshPuzzleSeed();
-      await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+      await page.goto(`${PLAY}&size=5&level=${LEVEL}&seed=${seed}`);
       await ready(page, "puzzle-play");
       // Laid out as English Gomoji is: the level decides the guesses (`layout.ts`).
       await expect(page.getByTestId("word-tile")).toHaveCount(5 * guessesFor("gomoji", 5, LEVEL, 0));
@@ -60,7 +64,7 @@ test.describe("Gomoji Mot", () => {
 
   test("a word the list does not know is refused, and marking follows the rules", async ({ page }) => {
     const seed = freshPuzzleSeed();
-    await page.goto(`${AT}/play?size=5&level=${LEVEL}&seed=${seed}`);
+    await page.goto(`${PLAY}&size=5&level=${LEVEL}&seed=${seed}`);
     await ready(page, "puzzle-play");
     await page.keyboard.type("qqjjj");
     await page.keyboard.press("Enter");

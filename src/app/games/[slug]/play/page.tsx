@@ -14,6 +14,7 @@ import { siblingsOf } from "@/lib/gomoku/families";
 import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { BoardMasthead } from "@/components/board/BoardMasthead";
@@ -38,8 +39,10 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/play
 export default async function PlayPage({ params, searchParams }: PageProps<"/games/[slug]/play">) {
   const { slug } = await params;
   // A puzzle's solve: the size, level and seed in the query, the grid made in the browser.
-  const puzzle = puzzleFor(slug);
-  if (puzzle !== null) return <PuzzlePlayPage kind={puzzle} query={await searchParams} />;
+  const query = await searchParams;
+  // A Gomoji's language and word list are in the query (`gameSettings.ts`).
+  const puzzle = puzzleForAddress(slug, query);
+  if (puzzle !== null) return <PuzzlePlayPage kind={puzzle} query={query} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];

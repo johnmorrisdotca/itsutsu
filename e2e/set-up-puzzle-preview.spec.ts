@@ -26,7 +26,7 @@ async function box(locator: Locator) {
 }
 
 test("a Gomoji set-up shows its live board, its board colours, and does not move", async ({ page }) => {
-  await page.goto("/games/gomoji-mot/new");
+  await page.goto("/games/gomoji/new?language=french");
   await ready(page, "puzzle-set-up");
   const preview = page.getByTestId("set-up-puzzle-preview");
   await expect(preview).toHaveAttribute("data-kind", "gomojiMot");

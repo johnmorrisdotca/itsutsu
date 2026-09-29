@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SELECTABLE } from "@/components/ui/ui.constants";
 import { viewHref } from "@/lib/history/myGamesViews";
-import { mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { joinQuery, mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { helpOpensOn, SOLVE_HELP_SAYS } from "@/lib/puzzles/solveHelp";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -57,7 +57,7 @@ export function SolveDone({
   const another = () => {
     // A Futago's Another is two more words (`futago.ts`), a Yotsugo's four more (`yotsugo.ts`): its seed says so.
     const words = PUZZLE_SPECS[puzzle.kind].wordGrid === undefined ? 1 : wordCountOfGivens(puzzle.givens);
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeedOf(words), checks, strict, headStart, words, clock })}`);
+    router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeedOf(words), checks, strict, headStart, words, clock })));
   };
   const timed = PUZZLE_CLOCK_DISPLAY[clock];
   return (

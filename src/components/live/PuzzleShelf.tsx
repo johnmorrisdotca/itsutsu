@@ -1,3 +1,4 @@
+import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { GameThumb } from "@/components/games/GameThumb";
 import { OneName } from "@/components/i18n/OneName";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
@@ -48,13 +49,14 @@ export function PuzzleShelf({
               className={`${PICK_CARD} ${PICK_TILE} cursor-pointer`}
               data-testid="set-up-puzzle"
               data-kind={kind}
-              data-chosen={kind === chosen ? "true" : "false"}
+              data-chosen={kind === listedGameOf(chosen) ? "true" : "false"}
             >
               <input
                 type="radio"
                 name="set-up-puzzle"
                 value={kind}
-                checked={kind === chosen}
+                // A Gomoji in another language is still the Gomoji tile (`gameSettings.ts`).
+                checked={kind === listedGameOf(chosen)}
                 disabled={disabled}
                 onChange={() => onChoose(kind)}
                 className="peer sr-only"

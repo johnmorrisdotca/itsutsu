@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { PUZZLE_SLUGS, playPath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { decodeKanaGivens, KANA_ROWS } from "../src/lib/puzzles/gomojiKana/kanaCode";
 import { kanaBase, markKanaGuess } from "../src/lib/puzzles/gomojiKana/kanaMarks";
@@ -21,22 +21,29 @@ test.beforeAll(loadEveryWordList);
  * a phone is used, or in romaji on the desk; JMdict is credited on the page.
  */
 const KIND = "gomojiKana";
+// Its address from before 2026-09-28, which leads on to the one Gomoji (`formerAddresses.ts`).
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
+// Where it is played now: the one Gomoji's board and set-up, the setting in the query (`gameSettings.ts`).
+const PLAY = playPath(KIND);
 
 test.beforeAll(prepareEveryPuzzle);
 
 test.describe("the kana word puzzle", () => {
-  test("its front door names it and its family", async ({ page }) => {
+  test("its old front door leads to the one Gomoji, which names it among its languages and word lists", async ({ page }) => {
     await page.goto(AT);
-    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText("Gomoji Kana");
+    // One Gomoji now: its old address is a setting of it (John, 2026-09-28: "just have 1 and allow language selection").
+    await expect(page).toHaveURL(/\/games\/gomoji\?language=japanese$/);
+    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toHaveText(/^Gomoji/);
+    await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
     await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.locator('[data-testid="word-setting-row"][data-kind="gomojiKana"]')).toContainText("日本語 かな");
   });
 
   test("opens with a free word grey everywhere, colours a guess by the rules, and is found in kana", async ({ page }) => {
     const seed = freshPuzzleSeed();
     const puzzle = generatePuzzle(KIND, 3, "easy", seed);
     const { word, grey } = decodeKanaGivens(puzzle.givens, 3)!;
-    await page.goto(`${AT}/play?size=3&level=easy&seed=${seed}`);
+    await page.goto(`${PLAY}&size=3&level=easy&seed=${seed}`);
     await ready(page, "puzzle-play");
 
     // The free row: the grey word, every place grey, said to be given.
@@ -82,7 +89,7 @@ test.describe("the kana word puzzle", () => {
   });
 
   test("romaji typed on the desk becomes kana, the sound being typed waiting beside the prompt", async ({ page }) => {
-    await page.goto(`${AT}/play?size=4&level=medium&seed=${freshPuzzleSeed()}`);
+    await page.goto(`${PLAY}&size=4&level=medium&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");
     const place = (at: number) => page.locator('[data-testid="word-tile"][data-row="1"]').nth(at);
     await page.keyboard.type("k");
@@ -97,7 +104,7 @@ test.describe("the kana word puzzle", () => {
 
   test("the clock starts at the first kana typed on the keys, not at the first guess sent", async ({ page }) => {
     // John, on an iPhone mid-word: "clock doesn't start on iPhone with keyboard use."
-    await page.goto(`${AT}/play?size=4&level=easy&seed=${freshPuzzleSeed()}`);
+    await page.goto(`${PLAY}&size=4&level=easy&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-pause")).toBeDisabled();
     await tapKana(page, "か");
@@ -106,7 +113,7 @@ test.describe("the kana word puzzle", () => {
   });
 
   test("a kana being typed rings its key in any size or mark: ぱ rings は", async ({ page }) => {
-    await page.goto(`${AT}/play?size=4&level=medium&seed=${freshPuzzleSeed()}`);
+    await page.goto(`${PLAY}&size=4&level=medium&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");
     await tapKana(page, "ぱ");
     await expect(page.getByTestId("kana-key-は")).toHaveAttribute("data-typed", "true");
@@ -127,7 +134,7 @@ test.describe("the kana word puzzle", () => {
 
     test("the kana typed stay on the screen with the keys, and the page moves once, not per key", async ({ page }) => {
       // John, on an iPhone at five kana: "Why don't we see the chars we type?"
-      await page.goto(`${AT}/play?size=5&level=easy&seed=${freshPuzzleSeed()}`);
+      await page.goto(`${PLAY}&size=5&level=easy&seed=${freshPuzzleSeed()}`);
       await ready(page, "puzzle-play");
       const row = page.locator('[data-testid="word-tile"][data-row="1"]');
       const onScreen = async (box: { y: number; height: number } | null) => box !== null && box.y >= 0 && box.y + box.height <= HIGH;
@@ -143,7 +150,7 @@ test.describe("the kana word puzzle", () => {
 
     test("scrolled past the board's top, the first kana leaves the keys on the screen and the row in view", async ({ page }) => {
       // The case the first version got wrong: it scrolled back to the board's top and put Enter below the screen.
-      await page.goto(`${AT}/play?size=5&level=easy&seed=${freshPuzzleSeed()}`);
+      await page.goto(`${PLAY}&size=5&level=easy&seed=${freshPuzzleSeed()}`);
       await ready(page, "puzzle-play");
       const row = page.locator('[data-testid="word-tile"][data-row="1"]');
       const onScreen = async (box: { y: number; height: number } | null) => box !== null && box.y >= 0 && box.y + box.height <= HIGH;
@@ -159,7 +166,7 @@ test.describe("the kana word puzzle", () => {
 
     test("小 and ゛゜ say what they will make of the last kana, and are dimmed when nothing", async ({ page }) => {
       // John: "no way to enter ga vs Ka and po and little Tsu".
-      await page.goto(`${AT}/play?size=4&level=medium&seed=${freshPuzzleSeed()}`);
+      await page.goto(`${PLAY}&size=4&level=medium&seed=${freshPuzzleSeed()}`);
       await ready(page, "puzzle-play");
       const small = page.getByTestId("kana-key-small");
       const mark = page.getByTestId("kana-key-mark");
@@ -185,7 +192,7 @@ test.describe("the kana word puzzle", () => {
   });
 
   test("hard opens with no free word", async ({ page }) => {
-    await page.goto(`${AT}/play?size=4&level=hard&seed=${freshPuzzleSeed()}`);
+    await page.goto(`${PLAY}&size=4&level=hard&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("word-tile")).toHaveCount(4 * KANA_ROWS);
     await expect(page.locator('[data-testid="word-tile"][data-free="true"]')).toHaveCount(0);
@@ -194,7 +201,7 @@ test.describe("the kana word puzzle", () => {
   test("six words that miss end it, show the word and score what they found", async ({ page }) => {
     const seed = freshPuzzleSeed();
     const puzzle = generatePuzzle(KIND, 3, "hard", seed);
-    await page.goto(`${AT}/play?size=3&level=hard&seed=${seed}`);
+    await page.goto(`${PLAY}&size=3&level=hard&seed=${seed}`);
     await ready(page, "puzzle-play");
     // Six real words none of which is the word and none placing a kana, so no Strict could refuse one.
     const wrong = kanaWordsOf(3).easy.filter((word) => markKanaGuess([...word], [...puzzle.solution]).every((mark) => mark.mark === "miss" || mark.mark === "kin")).slice(0, KANA_ROWS);
@@ -220,7 +227,7 @@ test.describe("the kana word puzzle", () => {
     const seed = freshPuzzleSeed();
     const puzzle = generatePuzzle(KIND, 3, "easy", seed);
     const { word, grey } = decodeKanaGivens(puzzle.givens, 3)!;
-    await page.goto(`${AT}/play?size=3&level=easy&seed=${seed}`);
+    await page.goto(`${PLAY}&size=3&level=easy&seed=${seed}`);
     await ready(page, "puzzle-play");
     await tapKana(page, word);
     await page.getByTestId("kana-key-enter").click();

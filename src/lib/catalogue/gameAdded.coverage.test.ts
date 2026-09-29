@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { GAME_ADDED } from "./gameAdded.data";
-import { EVERY_GAME_KEY } from "./gameKeys";
+import { EVERY_GAME_KEY, EVERY_KIND_KEY } from "./gameKeys";
 
 /**
  * THE NEW-GAMES GATE: every game says the day it arrived.
@@ -20,8 +20,9 @@ describe("the day every game arrived", () => {
     expect(missing, "run `pnpm games:added` to date these").toEqual([]);
   });
 
-  it("names nothing that is not in the catalogue", () => {
-    const known = new Set<string>(EVERY_GAME_KEY);
+  it("names nothing that is not in the catalogue, or a setting of a game in it", () => {
+    // A Gomoji's languages keep the days they arrived (the feed announced them then), though they are settings of one Gomoji now (`gameSettings.ts`).
+    const known = new Set<string>(EVERY_KIND_KEY);
     expect(Object.keys(GAME_ADDED).filter((key) => !known.has(key))).toEqual([]);
   });
 

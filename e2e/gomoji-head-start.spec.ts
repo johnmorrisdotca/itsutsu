@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, myGamePath, playPath, setUpPath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { headStartKeys } from "../src/lib/puzzles/gomoji/headStart";
@@ -28,7 +28,7 @@ test.beforeAll(prepareEveryPuzzle);
 
 /** Chooses Easy and Head start on a Gomoji's set-up screen, presses Start, and answers the puzzle it opened. */
 async function startWithHeadStart(page: Page, kind: "gomoji" | "gomojiKana") {
-  await page.goto(`/games/${PUZZLE_SLUGS[kind]}/new`);
+  await page.goto(setUpPath(kind));
   await ready(page, "puzzle-set-up");
   await page.getByTestId("puzzle-level-easy").click();
   await expect(page.getByTestId("puzzle-head-start-off")).toHaveAttribute("aria-checked", "true");
@@ -67,7 +67,7 @@ test.describe("Gomoji's head start", () => {
     await expect(page.getByTestId("puzzle-paid")).toHaveText(/XP|Already paid/);
 
     // Kept with it: its own page says so and replays the keyboard with the same keys grey.
-    await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/me`);
+    await page.goto(myGamePath("gomoji"));
     await page.getByTestId("word-history-word").filter({ hasText: new RegExp(`^${word}$`, "i") }).first().click();
     await expect(page.getByTestId("solve-puzzle")).toContainText("Head start");
     await expect(page.getByTestId("solve-help")).toHaveText("Head start");
@@ -95,7 +95,7 @@ test.describe("Gomoji's head start", () => {
   });
 
   test("is not offered at medium or hard, and an address asking for it there gets none", async ({ page }) => {
-    await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/new`);
+    await page.goto(setUpPath("gomoji"));
     await ready(page, "puzzle-set-up");
     await page.getByTestId("puzzle-level-easy").click();
     await page.getByTestId("puzzle-head-start-on").click();
@@ -107,7 +107,7 @@ test.describe("Gomoji's head start", () => {
       await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", new RegExp(`level=${level}`));
       await expect(page.getByTestId("puzzle-solve")).not.toHaveAttribute("href", /head-start=/);
     }
-    await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/play?size=5&level=medium&seed=4242&head-start=1`);
+    await page.goto(joinQuery(playPath("gomoji"), `?size=5&level=medium&seed=4242&head-start=1`));
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-asked")).toContainText("Medium");
     await expect(page.getByTestId("puzzle-asked-head-start")).toHaveCount(0);
@@ -129,7 +129,7 @@ test.describe("Gomoji's head start", () => {
     await expect(page.getByTestId("puzzle-done")).toBeVisible();
     await expect(page.getByTestId("word-score-head-start")).toContainText("−50");
 
-    await page.goto(`/games/${PUZZLE_SLUGS.gomojiKana}/me`);
+    await page.goto(myGamePath("gomojiKana"));
     await page.getByTestId("word-history-word").filter({ hasText: word }).first().click();
     await expect(page.getByTestId("solve-puzzle")).toContainText("Head start");
     for (const key of keys) await expect(page.getByTestId(`kana-key-${key}`)).toHaveAttribute("data-mark", "miss");

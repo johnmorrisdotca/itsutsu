@@ -9,7 +9,7 @@ import { useFeltChoice } from "@/components/board/useFeltChoice";
 import type { Appearance } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { viewHref } from "@/lib/history/myGamesViews";
-import { playPath } from "@/lib/gomoku/slugs";
+import { joinQuery, playPath } from "@/lib/gomoku/slugs";
 import { sparesOf } from "@/lib/puzzles/koushi/check";
 import {
   SPARE_SWAPS,
@@ -153,7 +153,7 @@ export function KoushiSolve({
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
-            <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, clock })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="koushi-another">
+            <Link href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, clock }))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="koushi-another">
               Another lattice →
             </Link>
             <PuzzleWayBack kind={kind} />

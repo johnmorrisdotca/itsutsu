@@ -1,6 +1,6 @@
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { historyPath, variantFor } from "@/lib/gomoku/slugs";
+import { historyPath, joinQuery, variantFor } from "@/lib/gomoku/slugs";
 
 /**
  * Somebody a page's own address already names, rather than somebody a query
@@ -112,5 +112,5 @@ export function recordGameRedirect(
     rest.set(key, value);
   }
   const search = rest.toString();
-  return search === "" ? historyPath(game) : `${historyPath(game)}?${search}`;
+  return search === "" ? historyPath(game) : joinQuery(historyPath(game), `?${search}`);
 }

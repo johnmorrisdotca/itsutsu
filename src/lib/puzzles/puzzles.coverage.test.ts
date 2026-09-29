@@ -1,3 +1,4 @@
+import { isSettingKind, listedGameOf } from "@/lib/catalogue/gameSettings";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
@@ -170,8 +171,14 @@ describe("every puzzle is finished, not just declared", () => {
 });
 
 describe("the catalogue counts the puzzles among the games", () => {
-  it("lists every puzzle in EVERY_GAME_KEY, after the board games, and copies it", () => {
+  it("lists every puzzle in EVERY_GAME_KEY, after the board games, and copies it — a setting of a puzzle once, as its game", () => {
     for (const kind of PUZZLE_KIND_LIST) {
+      // A Gomoji in French is a setting of the one Gomoji, never a card of its own (`gameSettings.ts`).
+      if (isSettingKind(kind)) {
+        expect(EVERY_GAME_KEY).not.toContain(kind);
+        expect(EVERY_GAME_KEY).toContain(listedGameOf(kind));
+        continue;
+      }
       expect(EVERY_GAME_KEY).toContain(kind);
       expect(isPuzzleKind(kind)).toBe(true);
       expect(gameCopyFor(kind).label).toBe(PUZZLE_DISPLAY[kind].label);

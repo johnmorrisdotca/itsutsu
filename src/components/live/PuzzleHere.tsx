@@ -9,6 +9,7 @@ import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
+import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { GamePicker } from "./GamePicker";
 import { SET_UP_SUMMARY } from "./picker.constants";
 
@@ -50,10 +51,12 @@ export function PuzzleHere({
   /** How the reader last drew a Gomoji grid, so its preview and its Options start there (`WordStyleProvider`). */
   wordStyle?: WordStyle | null;
 }) {
-  const copy = PUZZLE_DISPLAY[puzzle];
+  // A Gomoji's language is a setting of it: the summary names the one game.
+  const copy = PUZZLE_DISPLAY[listedGameOf(puzzle)];
   // The size belongs to the puzzle it was chosen for: another puzzle starts at its own usual size.
   const [chosen, setChosen] = useState<{ kind: PuzzleKind; size: number } | null>(null);
-  const size = chosen !== null && chosen.kind === puzzle ? chosen.size : PUZZLE_SPECS[puzzle].defaultSize;
+  // A size chosen for a Gomoji holds across its languages where the language has it (kana stops at five).
+  const size = chosen !== null && listedGameOf(chosen.kind) === listedGameOf(puzzle) && PUZZLE_SPECS[puzzle].sizes.includes(chosen.size) ? chosen.size : PUZZLE_SPECS[puzzle].defaultSize;
   const onSize = (next: number) => setChosen({ kind: puzzle, size: next });
   return (
     // A Gomoji's style is chosen in its Options and drawn on its preview, as on its own set-up page.
@@ -77,7 +80,8 @@ export function PuzzleHere({
             <PuzzleBoardAndSizes kind={puzzle} size={size} onSize={onSize} appearance={appearance} onFelt={onFelt} underFamilies />
           }
         />
-        <PuzzleSetUp key={puzzle} kind={puzzle} hasAccount={hasAccount} framed={false} sized={{ size, onSize }} />
+        {/* Keyed by the listed game, so choosing a Gomoji's language keeps its other choices; its language is the shelf's choice (`WordSettingChips`). */}
+        <PuzzleSetUp key={listedGameOf(puzzle)} kind={puzzle} hasAccount={hasAccount} framed={false} sized={{ size, onSize }} onKind={onPuzzle} />
       </div>
     </WordStyleProvider>
   );

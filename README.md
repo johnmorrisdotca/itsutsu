@@ -182,7 +182,17 @@ from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an
 English borrowing (`scripts/word-lists-fr-de.mjs`); kana from JMdict.
-**Pop Gomoji** 五文字・流行 hides a pop-culture word of three to seven letters and
+It is ONE game in the catalogue, with one card, one front door at
+`/games/gomoji` and one rules page: its language (English, Français, Deutsch,
+日本語 かな) and its word list (Everyday, or Pop culture in English) are chosen
+on its set-up and carried in its addresses (`?language=french`, `?list=pop`),
+as a language or a word list is a setting of a game, never a game of its own
+(`src/lib/catalogue/gameSettings.ts`). Underneath, each is still the kind it
+was stored as — `gomoji`, `gomojiMot`, `gomojiWort`, `gomojiKana`,
+`gomojiPop` — with its own runs, solves, fastest times and days' words, and
+the four front doors they had until 2026-09-28 lead on for good to the same
+page under `/games/gomoji` (`src/lib/catalogue/formerAddresses.ts`).
+Its **Pop culture** list 五文字・流行 hides a pop-culture word of three to seven letters and
 shows its category as the clue. Its answers are one list kept by hand,
 `scripts/pop-corpus.txt`, checked and written by `scripts/word-lists-pop.mjs`;
 any English word of the length may be guessed too, from SCOWL, with the

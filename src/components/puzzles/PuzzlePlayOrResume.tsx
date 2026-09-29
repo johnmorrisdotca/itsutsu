@@ -2,7 +2,7 @@ import Link from "@/components/ui/Link";
 
 import { PlayButton } from "@/components/games/PlayButton";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
@@ -25,7 +25,7 @@ export async function PuzzlePlayOrResume({ kind }: { kind: PuzzleKind }) {
   return (
     <>
       <PlayButton
-        href={`${playPath(kind)}${puzzleQuery(keptRunAsked(kind, run))}`}
+        href={joinQuery(playPath(kind), puzzleQuery(keptRunAsked(kind, run)))}
         label="Resume →"
         testId="game-resume"
       />
