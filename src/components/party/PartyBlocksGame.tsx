@@ -32,7 +32,7 @@ import { useBlocksHand } from "./useBlocksHand";
  * the board to decide anything. The game is kept in this browser after every
  * piece (`partyBlocksStore.ts`), and nowhere else.
  */
-export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
+export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptBlocksParty();
   const [confirming, setConfirming] = useState(false);
@@ -49,7 +49,7 @@ export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="party-blocks" data-state="set-up">
-        <PartyBlocksSetUp appearance={appearance} onStart={(started) => keep(started)} ready={readyMark(hydrated)} />
+        <PartyBlocksSetUp appearance={appearance} onStart={(started) => keep(started)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

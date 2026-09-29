@@ -59,6 +59,8 @@ export type PartySetUpProps<S extends PartyRaceState, C extends number> = {
   onStart: (game: S) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices, where the game can be: see `OnlineOffer`. */
+  online?: OnlineOffer;
 };
 
 /** What every pass-and-play table is handed by its page. */
@@ -143,6 +145,8 @@ export type PartyBlocksSetUpProps = {
   onStart: (game: PartyBlocksState) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /** What Dots and Boxes' board is handed: the game, and what to do with a line tapped. */

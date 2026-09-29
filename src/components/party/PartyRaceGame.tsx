@@ -31,7 +31,7 @@ import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
  * asks it where a piece may go and what the board is after a move, and hands
  * the answer to the kind's board to draw.
  */
-export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind, appearance, gameHref }: PartyTableGameProps & { kind: PartyRaceKind<S, C> }) {
+export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind, appearance, gameHref, online }: PartyTableGameProps & { kind: PartyRaceKind<S, C> }) {
   const hydrated = useHydrated();
   const [game, keep] = kind.useKept();
   const [selected, setSelected] = useState<Point | null>(null);
@@ -45,7 +45,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid={kind.testId} data-state="set-up">
-        <PartySetUp kind={kind} appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <PartySetUp kind={kind} appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }
