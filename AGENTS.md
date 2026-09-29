@@ -269,9 +269,9 @@ time, and that `checkSolution` refuses a wrong grid. Everything that thinks abou
 a puzzle runs in the browser; the server checks a finished grid in O(cells) and
 pays. The reasoning is in `docs/plans/numbers/README.md`.
 **Nor is a party game, and it has a gate of its own too.** Dots and Boxes
-(2026-09-28) is a `PartyKind` under `src/lib/party/`: a table of two to six
+and Tenka (2026-09-28) are `PartyKind`s under `src/lib/party/`: a table of two to six
 round one device, kept only in that browser — or, played on several devices,
-as a table on the server (`docs/plans/party-online/README.md`) — never rated. It is
+as a table on the server (`docs/plans/party-online/README.md`) — never rated. Each is
 joined into `GameKey` beside the other two, lives in Party games (a family no
 award counts: `RECORDED_FAMILIES`), has a front door, rules and a table at
 `/games/<slug>/pass-and-play`, waits on My games through its row in

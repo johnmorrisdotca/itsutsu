@@ -7,6 +7,12 @@ import { encodeDots, replayDots } from "../src/lib/party/dotsAndBoxes/dotsAndBox
 import { encodeGhost, replayGhost } from "../src/lib/party/superghost/superghost";
 import { encodeMancala, replayMancala } from "../src/lib/party/mancala/mancala";
 import type { PartyKind } from "../src/lib/party/party.types";
+import { TENKA_PHASES } from "../src/lib/party/tenka/tenka.constants";
+import { playTenka } from "../src/lib/party/tenka/tenka";
+import type { TenkaGame } from "../src/lib/party/tenka/tenka.types";
+import { encodeTenka } from "../src/lib/party/tenka/tenkaKeep";
+import { sensibleTenkaMove } from "../src/lib/party/tenka/tenkaPolicy";
+import { startTenka } from "../src/lib/party/tenka/tenkaStart";
 import { ready } from "./support";
 
 /**
@@ -27,6 +33,24 @@ const OUT = "public/art/games";
 const DOTS_KEPT = "itsutsu.dotsAndBoxes";
 const GHOST_KEPT = "itsutsu.superghost";
 const MANCALA_KEPT = "itsutsu.mancala";
+/** And Tenka's: `TENKA_STORAGE_KEY`. */
+const TENKA_KEPT = "itsutsu.tenka";
+
+/**
+ * Four players, five rounds into a game of the whole world, played by the
+ * gate's sensible player from a fixed seed and a fixed random: every colour on
+ * the map, armies piled on the fronts, stopped at the start of a turn.
+ */
+function tenkaScene(): string {
+  let seed = 11;
+  const random = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
+  let game: TenkaGame = startTenka(60, ["", "", "", ""], 20260928)!;
+  while (game.round < 6 || game.phase !== TENKA_PHASES.reinforce) game = playTenka(game, sensibleTenkaMove(game, random))!;
+  return encodeTenka(game);
+}
 
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
 const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; width?: number; scale?: number }[] = [
@@ -59,6 +83,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "board-surface",
     stored: encodeMancala(replayMancala(14, ["Ann", "Ben"], 0, [5, 12, 3, 8, 10, 2, 12, 5, 9, 4, 10, 5, 1, 7, 1, 11])!),
   },
+  {
+    // Four players five rounds into the whole world, every colour on the map, at the start of a turn.
+    kind: "tenka",
+    key: TENKA_KEPT,
+    table: "tenka-game",
+    shot: "board-surface",
+    stored: tenkaScene(),
+  },
 ];
 
 test.describe("party game screenshots", () => {
@@ -77,6 +109,8 @@ test.describe("party game screenshots", () => {
         const surface = page.getByTestId(scene.shot).first();
         // The board a member who never chose one sees: the picture is of the site's own wood, never an evening's choice.
         if (scene.shot === "board-surface") await expect(surface).toHaveAttribute("data-surface", "Kaya");
+        // The ways of looking round a big board (Fit, the arrows) are for the player, not the picture.
+        await page.addStyleTag({ content: '[data-testid$="-fit"], [data-testid$="-arrows"] { visibility: hidden !important; }' });
         await page.mouse.move(0, 0);
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         // The board in its wood, or the letters the table watches, and nothing round it, as a game's picture is taken (game-screenshots.spec.ts).

@@ -103,6 +103,7 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   dotsAndBoxes: "dots-and-boxes",
   superghost: "superghost",
   mancala: "mancala",
+  tenka: "tenka",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

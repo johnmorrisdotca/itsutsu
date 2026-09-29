@@ -157,25 +157,26 @@ test.describe("Halma, pass and play", () => {
   });
 });
 
-test.describe("Halma on the Party games shelf", () => {
+test.describe("Halma for four, found from Halma's own page", () => {
   // Open to anybody: it names games and nobody who plays them.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("is listed with why it is there, says where it lives, and leads to its page where the table is offered", async ({ page }) => {
-    await page.goto("/games/party");
-    const card = page.getByTestId("family-game-halma");
-    await expect(card).toHaveAttribute("data-listed", "shelf");
-    await expect(card.getByTestId("family-game-why")).toContainText("Pass and play for four");
-    await expect(card.getByTestId("family-game-home")).toContainText("Territory and races");
-
-    await card.getByRole("link", { name: /Halma/ }).first().click();
-    await expect(page).toHaveURL(/\/games\/halma$/);
+  /*
+   * Halma for four left the Party games shelf the day Tenka arrived (a shelf
+   * shows at most eight), so a table finds it where the game lives: Halma's
+   * own page offers it.
+   */
+  test("is offered on Halma's page, which leads to it, and the Party games shelf lists the eight it has room for", async ({ page }) => {
+    await page.goto("/games/halma");
     await expect(page.getByTestId("party-play")).toContainText("2 or 4 players");
-    await expect(page.getByTestId("game-family-shelves")).toContainText("Party games");
+
+    await page.goto("/games/party");
+    await expect(page.getByTestId("family-game-chineseCheckers")).toBeVisible();
+    await expect(page.getByTestId("family-game-halma")).toHaveCount(0);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/games/party");
-    await expect(page.getByTestId("family-game-halma")).toBeVisible();
+    await page.goto("/games/halma");
+    await expect(page.getByTestId("party-play")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });

@@ -70,7 +70,9 @@ gives an extra turn for a closed box, and is never rated or recorded, so it
 is a third kind, `PartyKind` (`src/lib/party/`), joined into `GameKey` the
 same way, with its own gate (`party.coverage.test.ts`). It lives in Party
 games, a family no award counts (`RECORDED_FAMILIES`, `RECORDED_GAME_KEYS`).
-`docs/plans/party-games/README.md` has the reasoning.
+Tenka, world conquest for two to six, is the second: a game of chance, so its
+dice are drawn from a seed kept with its moves, and a kept game is thrown
+again exactly as it fell. `docs/plans/party-games/README.md` has the reasoning.
 
 ## 2. A game is its moves
 

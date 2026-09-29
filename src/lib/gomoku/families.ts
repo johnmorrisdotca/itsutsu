@@ -237,6 +237,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      * Mancala joined it the same day: Kalah or Oware for two, passed across
      * one device, a party game rather than a rule variant because a sowing is
      * nothing the engine's stones-on-points can play.
+     *
+     * And Tenka 天下, world conquest for two to six, the same day.
      */
     title: "Party games",
     kanji: "団欒",
@@ -244,9 +246,9 @@ export const GAME_FAMILIES: GameFamily[] = [
     /*
      * And Superghost (2026-09-28), the word game for two to eight, in English
      * or Japanese: the second at home here. And Mancala the same day, Kalah or
-     * Oware for two.
+     * Oware for two; and Tenka, world conquest for two to six.
      */
-    games: ["dotsAndBoxes", "superghost", "mancala"],
+    games: ["dotsAndBoxes", "superghost", "mancala", "tenka"],
     notOnSetUp:
       "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

@@ -96,16 +96,18 @@ holds that — and a game may also be listed on a second family's shelf for
 discovery (`ALSO_LISTED_IN`), while it belongs to one. Party games is mostly a
 shelf of such guests — games a group plays round one device, at
 `/games/party` — with the party games of its own at home in it: Dots and
-Boxes for two to six (`/games/dots-and-boxes`) and Mancala for two, by Kalah's
-or Oware's rules (`/games/mancala`), a third kind of game
+Boxes for two to six (`/games/dots-and-boxes`), Mancala for two, by Kalah's
+or Oware's rules (`/games/mancala`), and Tenka, world conquest for two to six
+on a map of the modern world (`/games/tenka`), a third kind of game
 (`PartyKind`, `src/lib/party/`, see `docs/plans/party-games/README.md`). The
 guests include Chinese Checkers for two, three, four or six
 players passed round one phone (`/games/chinese-checkers/pass-and-play`),
 Pair Go, Go for two teams of two taking turns (`/games/go/pass-and-play`),
-Halma for four, or two, racing corner to corner (`/games/halma/pass-and-play`),
 and Block Five for four, each laying twenty-one shapes out from their own
 corner of a twenty-square board, touching their own only corner to corner
-(`/games/block-five/pass-and-play`) — each kept in the browser, never rated (`src/lib/gomoku/party/`; the two
+(`/games/block-five/pass-and-play`). Halma for four, or two, racing corner to
+corner (`/games/halma/pass-and-play`), is offered from Halma's own page. Each is
+kept in the browser, never rated (`src/lib/gomoku/party/`; the two
 races share `partyRace.ts`). Which shelves a game is shown on besides its home
 is `src/lib/gomoku/familyShelves.ts`. The **Games** button
 opens a browser over the board with each rule set spelled out, and picking one
