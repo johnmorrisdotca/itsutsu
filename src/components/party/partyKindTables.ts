@@ -13,6 +13,10 @@ import { MancalaGame } from "./MancalaGame";
 import { MancalaOffer } from "./MancalaOffer";
 import { DOTS_COPY, GHOST_COPY, MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTable } from "./party.types";
+import { TenkaCard } from "./tenka/TenkaCard";
+import { TENKA_COPY } from "./tenka/tenka.constants";
+import { TenkaOffer } from "./tenka/TenkaOffer";
+import { TenkaTable } from "./tenka/TenkaTable";
 
 /**
  * EACH PARTY GAME'S TABLE, one row a `PartyKind`: what its table page at
@@ -46,5 +50,13 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Game: MancalaGame,
     Offer: MancalaOffer,
     Card: MancalaCard,
+  },
+  tenka: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: TENKA_COPY.lead,
+    Game: TenkaTable,
+    Offer: TenkaOffer,
+    Card: TenkaCard,
   },
 };

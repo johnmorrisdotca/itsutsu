@@ -15,6 +15,8 @@ import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
 import { KumimojiTiles } from "@/components/puzzles/KumimojiTiles";
+import { TenkaWorldTable } from "@/components/party/tenka/TenkaWorldTable";
+import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
@@ -225,6 +227,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
         </article>
         {/* Kumimoji's two sets of tiles, counted and drawn, and every form a kana tile plays as: see `KumimojiTiles`. */}
         {puzzle === PUZZLE_KINDS.kumimoji ? <KumimojiTiles /> : null}
+        {/* Tenka's world: its continents, their bonuses and their territories, from the table the rules read. */}
+        {party === PARTY_KINDS.tenka ? <TenkaWorldTable /> : null}
         </div>
 
         {/*

@@ -1,0 +1,92 @@
+import type { PartyMarble } from "../party.types";
+
+/**
+ * TENKA'S TABLE: what its screens say and how its map is drawn — one
+ * constants module for the component group (`TenkaTable`, `TenkaMap`,
+ * `TenkaBar`, and the rest in this folder).
+ */
+
+/** Where this browser keeps its game of Tenka: one at a time, apart from every other table's. */
+export const TENKA_STORAGE_KEY = "itsutsu.tenka";
+
+/** The neutral army of a table of two: grey, with N, never a player's colour. */
+export const TENKA_NEUTRAL_MARBLE: PartyMarble = { label: "Neutral", letter: "N", fill: "#a39e93", ink: "#1a1a1a" };
+
+/** The sea the world is drawn on, inside the board's wood: a plain chart, light and dark. */
+export const TENKA_SEA = "#d9e5ea";
+export const TENKA_SEA_DARK = "#2b3a42";
+
+/** How strongly a territory is filled in its owner's colour: enough to read at a glance, never so much the counter is lost. */
+export const TENKA_LAND_OPACITY = 0.78;
+
+/** The lines on the map, in map units: a territory's edge, a continent's, a sea link's dashes, the chosen territory's ring. */
+export const TENKA_LINES = { territory: 1.2, continent: 3.2, sea: 2.4, seaDash: "7 6", chosen: 5, reach: 3.5 } as const;
+
+/**
+ * An army counter's radius, in map units: ten screen pixels where it can be,
+ * never smaller than nine map units nor larger than eighteen — at eighteen
+ * the counters of Europe's crowded middle stand clear of each other at a
+ * whole-world view, and pinching in makes them grow to a thumb's size.
+ */
+export const TENKA_CHIP = { screen: 10, least: 9, most: 18 } as const;
+
+/** How far the map may be zoomed in, as a multiple of the whole world fitted to its box. */
+export const TENKA_ZOOM_MOST = 8;
+
+/** How far a finger may move and still be a tap, in pixels. */
+export const TENKA_TAP_SLOP = 6;
+
+/**
+ * THE BOX THE MAP IS LOOKED AT THROUGH. The site's wooden board (`BoardFrame`)
+ * is square, and a map of the world is twice as wide as it is tall: in a
+ * square, half the board would be sea above and below. So the map is drawn
+ * inside the same frame — the same wood, rim and shadow — with only its
+ * shape following the map's: four by three on a phone, where the height is
+ * needed for pinching into a continent, and two by one from a laptop, where
+ * the whole world fills it.
+ */
+export const TENKA_FRAME_SHAPE = "[&_[data-testid=board-surface]]:aspect-[4/3] lg:[&_[data-testid=board-surface]]:aspect-[2/1]";
+
+/** What Tenka's table says, beyond what every table says (`PARTY_COPY`). */
+export const TENKA_COPY = {
+  lead: "Tenka for two to six people round one phone or tablet: take the world a territory at a time, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  length: "How long?",
+  lengthWords: (rounds: number, world: number) => (rounds === world ? "The whole world" : `${rounds} rounds`),
+  lengthNote: (rounds: number, world: number) =>
+    rounds === world ? "Play until one player holds the world." : `Most territories after ${rounds} rounds wins.`,
+  placing: "Starting armies",
+  placingAuto: "Placed for you",
+  placingHand: "Place them in turn",
+  placingNote: "Placed for you starts at once; in turn, everybody places one army at a time round the table.",
+  play: "Play →",
+  continue: "Continue →",
+  about: "About Tenka and its rules",
+  steps: ["Place", "Attack", "Fortify", "End turn"] as const,
+  passTo: (name: string) => `Pass to ${name}`,
+  ready: (name: string) => `I'm ${name}: start my turn`,
+  place: (armies: number) => `${armies} ${armies === 1 ? "army" : "armies"} to place: tap your territories.`,
+  setUp: (armies: number) => `Set-up: place one army on a territory of yours (${armies} left).`,
+  placeAll: (armies: number, where: string) => `All ${armies} on ${where}`,
+  mustTrade: "Five cards or more: trade a set before placing.",
+  attackHint: "Tap one of your territories with two armies or more, then a neighbour to attack.",
+  attackTarget: (from: string, to: string) => `${from} attacks ${to}`,
+  roll: (dice: number) => `Roll ${dice}`,
+  blitz: "Roll until decided",
+  doneAttacking: "Done attacking",
+  occupy: (to: string) => `${to} is yours. How many armies move in?`,
+  moveIn: (armies: number) => `Move ${armies} in`,
+  fortifyHint: "Move armies once between two of your territories joined by your own land, or end your turn.",
+  fortifyPair: (from: string, to: string) => `From ${from} to ${to}`,
+  fortify: (armies: number) => `Move ${armies}`,
+  endTurn: "End turn",
+  armies: (count: number) => `${count} ${count === 1 ? "army" : "armies"}`,
+  territories: (count: number) => `${count} ${count === 1 ? "territory" : "territories"}`,
+  cards: (count: number) => `${count} ${count === 1 ? "card" : "cards"}`,
+  hand: "Your cards",
+  noCards: "No cards yet: take a territory this turn to earn one.",
+  trade: (armies: number) => `Trade for ${armies}`,
+  roundOf: (round: number, rounds: number, world: number) => (rounds === world ? `Round ${round}` : `Round ${round} of ${rounds}`),
+  out: "out",
+  map: "Map of the world",
+  fit: "Move and zoom the map",
+} as const;
