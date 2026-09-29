@@ -421,6 +421,20 @@ classified — and for a retired per-surface size coming back. A page title, a
 heading or a sentence naming a game, and a picture that must differ from its
 file's size, are exceptions written there by line, with their reason.
 
+### Every Game Offers Just The Board
+
+John, 2026-09-28: "all games should offer the standalone modal option/mode
+where it's in a modal with just bare minimum stuff (like scrubber) and a few
+buttons." `BareBoard` (`src/components/layout/BareBoard.tsx`, with `bare.ts`
+and the `data-bare` rules in `globals.css`) is that mode: the page's column
+becomes a modal holding the board, the scrubber where the game has one, and
+only the presses play needs; Close sits top right and Esc leaves, because a
+mode you cannot leave is a trap. Every play page offers it — board games,
+puzzles, Gomoji, Tsunagi, Kumimoji, every party table — and a new kind of play
+is not finished until it does; a coverage check holds it (board row
+every-game-offers-the-just-the-board-mode). The same goes for the desktop
+board size (Regular, Large, Full), remembered per kind of device.
+
 ### Every Table Of Players Shows XP, And The Programs Are Players
 
 John, 2026-09-14, looking at a site where the members list had an XP column
