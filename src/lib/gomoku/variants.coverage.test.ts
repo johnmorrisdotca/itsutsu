@@ -3,7 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ALSO_LISTED_IN, FAMILY_MOST_GAMES, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
+import { FAMILY_MOST_GAMES, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
+import { ALSO_LISTED_IN } from "./familyShelves";
 import { RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
 import { GAME_SLUGS } from "./slugs";
 import { measureHeadStart } from "./simulation.headStartDecides";

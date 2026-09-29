@@ -2,7 +2,8 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
-import { ALSO_LISTED_IN, GAME_FAMILIES, boardGamesOf } from "../src/lib/gomoku/families";
+import { GAME_FAMILIES, boardGamesOf } from "../src/lib/gomoku/families";
+import { ALSO_LISTED_IN } from "../src/lib/gomoku/familyShelves";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { playerKey } from "../src/lib/rating/playerKey";
 import { shownName } from "../src/lib/rating/shownName";

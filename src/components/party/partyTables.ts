@@ -4,10 +4,10 @@ import { PARTY_PLAY_GAMES } from "@/lib/gomoku/party/partyGames";
 
 import { PairGoGame } from "./PairGoGame";
 import { PairGoOffer } from "./PairGoOffer";
-import { PartyCheckersGame } from "./PartyCheckersGame";
-import { PartyOffer } from "./PartyOffer";
+import { PartyCheckersGame, PartyCheckersOffer } from "./PartyCheckersGame";
+import { PartyHalmaGame, PartyHalmaOffer } from "./PartyHalmaGame";
 import { PAIR_GO_COPY } from "./pairGo.constants";
-import { PARTY_COPY } from "./party.constants";
+import { PARTY_COPY, PARTY_GAME_COPY } from "./party.constants";
 import type { PartyTable } from "./party.types";
 
 /**
@@ -16,8 +16,15 @@ import type { PartyTable } from "./party.types";
  * (`partyTables.test.ts` holds the two lists to one another).
  */
 export const PARTY_TABLES: Partial<Record<RuleVariant, PartyTable>> = {
-  [RULE_VARIANTS.chineseCheckers]: { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: PARTY_COPY.lead, Game: PartyCheckersGame, Offer: PartyOffer },
+  [RULE_VARIANTS.chineseCheckers]: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: PARTY_GAME_COPY.chineseCheckers.lead,
+    Game: PartyCheckersGame,
+    Offer: PartyCheckersOffer,
+  },
   [RULE_VARIANTS.go]: { title: PAIR_GO_COPY.title, kanji: PAIR_GO_COPY.kanji, lead: PAIR_GO_COPY.lead, Game: PairGoGame, Offer: PairGoOffer },
+  [RULE_VARIANTS.halma]: { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: PARTY_GAME_COPY.halma.lead, Game: PartyHalmaGame, Offer: PartyHalmaOffer },
 };
 
 /** The table this game is played at on one device, or null when it has none. */

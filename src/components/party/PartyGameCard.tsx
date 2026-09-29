@@ -4,27 +4,28 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
-import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
-import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyCheckers";
+import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyRace";
+import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 
 import { MarbleChip } from "./MarbleChip";
 import { PARTY_COPY } from "./party.constants";
-import { useKeptPartyGame } from "./partyCheckersStore";
+import type { PartyRaceKind } from "./party.types";
 
 /**
- * THE TABLE'S GAME, WAITING IN MY GAMES. "Anything a person plays is kept
- * until it is finished, and waits in My games" (AGENTS.md): the pass-and-play
- * game is kept in this browser, so it is listed from this browser, on the
- * Pass and play tab beside the board for two that is kept the same way. Only
- * while it is going; a finished one has nothing left to come back to.
+ * A TABLE'S GAME, WAITING IN MY GAMES. "Anything a person plays is kept until
+ * it is finished, and waits in My games" (AGENTS.md): a pass-and-play game is
+ * kept in this browser, so it is listed from this browser, on the Pass and
+ * play tab beside the board for two that is kept the same way — one card for
+ * each kind of table with a game going. Only while it is going; a finished
+ * one has nothing left to come back to.
  */
-export function PartyGameCard() {
-  const [game] = useKeptPartyGame();
+export function PartyGameCard<S extends PartyRaceState, C extends number>({ kind }: { kind: PartyRaceKind<S, C> }) {
+  const [game] = kind.useKept();
   if (game === undefined || game === null || game.status !== PARTY_STATUS.playing) return null;
-  const variant = RULE_VARIANTS.chineseCheckers;
+  const variant = kind.rules.variant;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game">
+    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={variant}>
       <GameThumb variant={variant} size="small" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>

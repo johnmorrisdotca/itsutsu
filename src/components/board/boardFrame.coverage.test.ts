@@ -38,6 +38,13 @@ describe("the board frame", () => {
     expect(star).not.toContain("boxShadow");
   });
 
+  it("holds Halma's square a table of four passes round, ruled by the two-player board's own lines", () => {
+    const square = read("src/components/party/PartySquareBoard.tsx");
+    expect(square).toContain("<BoardFrame");
+    expect(square).toContain("<BoardLines");
+    expect(square).not.toContain("boxShadow");
+  });
+
   it("holds every puzzle grid, on white paper", () => {
     for (const grid of ["src/components/puzzles/PuzzleGrid.tsx", "src/components/puzzles/HiddenStonesGrid.tsx"]) {
       expect(read(grid), `${grid} draws its grid off the board`).toContain("<PuzzleBoard");

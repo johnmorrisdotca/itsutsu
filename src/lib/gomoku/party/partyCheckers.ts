@@ -1,10 +1,12 @@
 // Relative: the engine boundary (`boundary.coverage.test.ts`) allows no alias under src/lib/gomoku.
-import { BLOCKED } from "../gomoku.constants";
+import { BLOCKED, RULE_VARIANTS } from "../gomoku.constants";
 import type { Cell, Point } from "../gomoku.types";
 import { indexOf, pointOf } from "../rules/board";
-import { STAR_RADIUS, STAR_TIPS, inStar, oppositeTip, starMoves, starSize, starTipCells, type StarTip } from "../rules/chineseCheckers";
+import { STAR_RADIUS, STAR_TIPS, inStar, oppositeTip, starCampSize, starMoves, starSize, starTipCells, type StarTip } from "../rules/chineseCheckers";
 
-import type { PartyCheckersState, PartyMove, PartyPlayer, PartyPlayerCount, PartyStatus } from "./partyCheckers.types";
+import type { PartyCheckersState, PartyPlayerCount } from "./partyCheckers.types";
+import { PARTY_STATUS, cleanPartyName, decodePartyRace, encodePartyRace, settlePartyMove } from "./partyRace";
+import type { PartyRaceRules } from "./partyRace.types";
 
 /**
  * CHINESE CHECKERS FOR TWO TO SIX, PASSED ROUND ONE DEVICE.
@@ -19,14 +21,11 @@ import type { PartyCheckersState, PartyMove, PartyPlayer, PartyPlayerCount, Part
  * and the step-or-chain-of-jumps are the two-player game's own functions in
  * `rules/chineseCheckers.ts`, asked of a board that says only which holes are
  * taken — a move there has never cared whose piece it jumps. What is new is
- * only what more players need: where each sits, whose turn follows whose, and
- * who has won.
+ * only what more players need: where each sits and who has won. Whose turn
+ * follows whose, and how a game is kept, every table shares (`partyRace.ts`).
  */
 
-/** Where a game stands, compared through these rather than as strings. */
-export const PARTY_STATUS = { playing: "playing", won: "won", stuck: "stuck" } as const satisfies Record<PartyStatus, PartyStatus>;
-
-/** The star every party game is played on: the standard 121 holes. */
+/** The star the table is played on: the standard 121 holes. */
 export const PARTY_RADIUS = STAR_RADIUS;
 export const PARTY_SIZE = starSize(PARTY_RADIUS);
 
@@ -48,31 +47,18 @@ export const PARTY_SEATS: Record<PartyPlayerCount, readonly StarTip[]> = {
   6: STAR_TIPS,
 };
 
-/** The longest name a player may give, so a turn line still fits on a phone. */
-export const PARTY_NAME_MOST = 20;
-
 export function isPartyPlayerCount(value: unknown): value is PartyPlayerCount {
   return PARTY_PLAYER_COUNTS.includes(value as PartyPlayerCount);
 }
 
-/** A player's name as the table reads it: the one they gave, or "Player 3". */
-export function partyPlayerName(players: readonly PartyPlayer[], player: number): string {
-  const given = players[player]?.name.trim() ?? "";
-  return given === "" ? `Player ${player + 1}` : given;
-}
-
 /** A new game: each player's ten pieces in their own point, the first player to move. */
 export function startPartyGame(count: PartyPlayerCount, names: readonly string[] = []): PartyCheckersState {
-  const players = PARTY_SEATS[count].map((tip, index) => ({ tip, name: cleanName(names[index] ?? "") }));
+  const players = PARTY_SEATS[count].map((tip, index) => ({ tip, name: cleanPartyName(names[index] ?? "") }));
   const board: (number | null)[] = new Array(PARTY_SIZE * PARTY_SIZE).fill(null);
   players.forEach((player, index) => {
     for (const point of starTipCells(PARTY_RADIUS, player.tip)) board[indexOf(PARTY_SIZE, point)] = index;
   });
   return { players, board, toPlay: 0, moves: [], status: PARTY_STATUS.playing, winner: null };
-}
-
-function cleanName(name: string): string {
-  return name.replace(/\s+/g, " ").trim().slice(0, PARTY_NAME_MOST);
 }
 
 /**
@@ -144,75 +130,51 @@ export function partyPiecesHome(state: PartyCheckersState, player: number): numb
 /**
  * The game after the player to move takes the piece at `from` to `to`, or
  * null when that is not a move they may make. A new state; the old one is
- * left as it was.
- *
- * The first to fill the point opposite wins and the game ends there, as the
- * two-player game does. The turn then goes to the next player round the star
- * who has a move — a player boxed in with none is passed over rather than
- * left holding a turn nobody can take — and a board where nobody can move at
- * all is `stuck`, which no real game reaches.
+ * left as it was. The first to fill the point opposite wins, and the turn
+ * goes round the star as it goes round every table (`settlePartyMove`).
  */
 export function partyMove(state: PartyCheckersState, from: Point, to: Point): PartyCheckersState | null {
   if (!partyDestinations(state, from).some((point) => point.row === to.row && point.col === to.col)) return null;
-  const board = state.board.slice();
-  board[indexOf(PARTY_SIZE, from)] = null;
-  board[indexOf(PARTY_SIZE, to)] = state.toPlay;
-  const move: PartyMove = { player: state.toPlay, from, to };
-  const moved = { ...state, board, moves: [...state.moves, move] };
-  if (partyHasWon(moved, state.toPlay)) return { ...moved, status: PARTY_STATUS.won, winner: state.toPlay };
-  for (let step = 1; step <= state.players.length; step += 1) {
-    const next = (state.toPlay + step) % state.players.length;
-    if (canMove(board, next)) return { ...moved, toPlay: next };
-  }
-  return { ...moved, status: PARTY_STATUS.stuck };
+  return settlePartyMove(state, from, to, PARTY_SIZE, { hasWon: partyHasWon, canMove });
 }
 
-/**
- * THE GAME AS TEXT, for this browser to keep: who sat where, under what name,
- * and the moves — never the board, which the moves make again. Kept small and
- * versioned, so a later shape can refuse an older one rather than misread it.
- */
+/** The game as text for this browser to keep: its seats by point of the star, as it was first written. */
 export function encodePartyGame(state: PartyCheckersState): string {
-  return JSON.stringify({
-    v: 1,
-    players: state.players.map((player) => ({ tip: player.tip, name: player.name })),
-    moves: state.moves.map((move) => [indexOf(PARTY_SIZE, move.from), indexOf(PARTY_SIZE, move.to)]),
+  return encodePartyRace(state, PARTY_SIZE, "tip", (player) => state.players[player].tip);
+}
+
+/** A kept game played out again, or null for anything that is not one (`decodePartyRace`). */
+export function decodePartyGame(text: string | null): PartyCheckersState | null {
+  return decodePartyRace(text, {
+    size: PARTY_SIZE,
+    seatField: "tip",
+    countOf: (players) => (isPartyPlayerCount(players) ? players : null),
+    seats: (count) => PARTY_SEATS[count],
+    start: startPartyGame,
+    move: partyMove,
   });
 }
 
-/**
- * A kept game, played out again move by move — or null for anything that is
- * not one: bad text, another version, a seating the game does not have, or a
- * move the rules refuse. Null rather than as much as could be read, because a
- * game resumed from half its moves is a different game wearing its name.
- */
-export function decodePartyGame(text: string | null): PartyCheckersState | null {
-  if (text === null) return null;
-  let kept: unknown;
-  try {
-    kept = JSON.parse(text);
-  } catch {
-    return null;
-  }
-  if (typeof kept !== "object" || kept === null) return null;
-  const { v, players, moves } = kept as { v?: unknown; players?: unknown; moves?: unknown };
-  if (v !== 1 || !Array.isArray(players) || !Array.isArray(moves)) return null;
-  if (!isPartyPlayerCount(players.length)) return null;
-  const seats = PARTY_SEATS[players.length];
-  const names: string[] = [];
-  for (const [index, player] of players.entries()) {
-    if (typeof player !== "object" || player === null) return null;
-    const { tip, name } = player as { tip?: unknown; name?: unknown };
-    if (tip !== seats[index] || typeof name !== "string") return null;
-    names.push(name);
-  }
-  let state: PartyCheckersState | null = startPartyGame(players.length, names);
-  for (const move of moves) {
-    if (!Array.isArray(move) || move.length !== 2 || !move.every((one) => Number.isInteger(one))) return null;
-    const [from, to] = move as [number, number];
-    if (from < 0 || to < 0 || from >= PARTY_SIZE * PARTY_SIZE || to >= PARTY_SIZE * PARTY_SIZE) return null;
-    state = partyMove(state, pointOf(PARTY_SIZE, from), pointOf(PARTY_SIZE, to));
-    if (state === null) return null;
-  }
-  return state;
+/** The count a table of this game was set for: it is always one of the four, because only `startPartyGame` seats one. */
+function countOf(state: PartyCheckersState): PartyPlayerCount {
+  const count = state.players.length;
+  if (!isPartyPlayerCount(count)) throw new Error(`A Chinese Checkers table of ${count} is not one this game seats.`);
+  return count;
 }
+
+/** Chinese Checkers' rules as a pass-and-play page asks them. */
+export const PARTY_CHECKERS_RULES: PartyRaceRules<PartyCheckersState, PartyPlayerCount> = {
+  variant: RULE_VARIANTS.chineseCheckers,
+  size: PARTY_SIZE,
+  counts: PARTY_PLAYER_COUNTS,
+  firstCount: 3,
+  start: startPartyGame,
+  again: (game) => startPartyGame(countOf(game), game.players.map((player) => player.name)),
+  destinations: partyDestinations,
+  move: partyMove,
+  piecesHome: partyPiecesHome,
+  piecesEach: () => starCampSize(PARTY_RADIUS),
+  seatOf: (game, player) => game.players[player].tip,
+  encode: encodePartyGame,
+  decode: decodePartyGame,
+};
