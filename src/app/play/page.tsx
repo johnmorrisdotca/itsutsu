@@ -7,6 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import Link from "@/components/ui/Link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
+import { PartyGameCard } from "@/components/party/PartyGameCard";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenSeatsSection } from "@/components/mine/OpenSeatsSection";
 import { readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
@@ -132,7 +133,16 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           is set up and /games the library. See `OpenSeatsSection`.
         */
         viewAsked={asked[TAB_FROM_PATH]}
-        local={<LocalGameCardClient />}
+        /*
+          The games kept in this browser rather than on the server: the board
+          for two, and the pass-and-play table for up to six (`PartyGameCard`).
+        */
+        local={
+          <>
+            <LocalGameCardClient />
+            <PartyGameCard />
+          </>
+        }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
       />
     </Page>

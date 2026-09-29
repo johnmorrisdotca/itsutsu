@@ -1,5 +1,5 @@
 import type { Cell, Point, Stone } from "../gomoku.types";
-import { cellAtPoint, indexOf, isOnBoard, samePoint, stepFrom } from "./board";
+import { cellAtPoint, indexOf, isOnBoard, stepFrom } from "./board";
 
 /**
  * Chinese Checkers: a hexagram (Star of David) board, one point of it
@@ -87,21 +87,69 @@ const DIRECTIONS: readonly Point[] = [
   { row: 1, col: 0 },
 ];
 
-/** Every cell of one of the star's six points: the ten cells `radius` rows out from the centre hexagon, in direction `side`. */
-function pointCells(radius: number, side: "top" | "bottom"): Point[] {
-  const mid = centreOf(radius);
-  const rows =
-    side === "top"
-      ? Array.from({ length: radius }, (_, i) => -2 * radius + i)
-      : Array.from({ length: radius }, (_, i) => radius + 1 + i);
+/**
+ * THE STAR'S SIX POINTS, clockwise from the top as the board is drawn. Each is
+ * the ten cells where one cube coordinate runs past the centre hexagon's
+ * radius: `top` is z < -R, and its opposite `bottom` is z > R; the other four
+ * pair off the same way on x and y. The two-player game uses `top` (black) and
+ * `bottom` (white); a game for three, four or six sits more players on the
+ * others (`party/partyCheckers.ts`). Named for where they are drawn, since the
+ * lattice's shear puts `upperRight` up and to the right, and so on round.
+ */
+export const STAR_TIPS = ["top", "upperRight", "lowerRight", "bottom", "lowerLeft", "upperLeft"] as const;
+export type StarTip = (typeof STAR_TIPS)[number];
+
+/** The point directly across the star: where a piece starting at `tip` is racing to. */
+export function oppositeTip(tip: StarTip): StarTip {
+  return STAR_TIPS[(STAR_TIPS.indexOf(tip) + 3) % STAR_TIPS.length];
+}
+
+/** Which of the six points a cell lies in, by its cube coordinates, or null in the centre hexagon. */
+function tipOfCube(radius: number, cube: { x: number; y: number; z: number }): StarTip | null {
+  if (cube.z < -radius) return "top";
+  if (cube.z > radius) return "bottom";
+  if (cube.x > radius) return "upperRight";
+  if (cube.x < -radius) return "lowerLeft";
+  if (cube.y < -radius) return "lowerRight";
+  if (cube.y > radius) return "upperLeft";
+  return null;
+}
+
+/*
+ * Kept, like `farCampSquares`: a point's cells are a fact about the radius, and
+ * `starCampOf` is asked once per cell every time a star board is drawn.
+ */
+const tipCells = new Map<string, Point[]>();
+
+/**
+ * Every cell of one of the star's six points, in reading order (row by row,
+ * left to right) — the order the two camps have always been listed in, which
+ * the tests and the bots' first moves read.
+ */
+export function starTipCells(radius: number, tip: StarTip): Point[] {
+  const key = `${radius}|${tip}`;
+  const known = tipCells.get(key);
+  if (known !== undefined) return known;
+  const size = starSize(radius);
   const points: Point[] = [];
-  for (const dr of rows) {
-    for (let dc = -2 * radius; dc <= 2 * radius; dc += 1) {
-      const point = { row: mid + dr, col: mid + dc };
-      if (inStar(radius, point)) points.push(point);
+  for (let row = 0; row < size; row += 1) {
+    for (let col = 0; col < size; col += 1) {
+      const point = { row, col };
+      if (inStar(radius, point) && tipOfCube(radius, cubeOf(radius, point)) === tip) points.push(point);
     }
   }
+  tipCells.set(key, points);
   return points;
+}
+
+/** Which of the six points `point` lies in, or null in the centre hexagon or off the star. */
+export function starTipOf(radius: number, point: Point): StarTip | null {
+  return inStar(radius, point) ? tipOfCube(radius, cubeOf(radius, point)) : null;
+}
+
+/** The two-player game's camps: black's at the top, white's at the bottom. */
+function pointCells(radius: number, side: "top" | "bottom"): Point[] {
+  return starTipCells(radius, side);
 }
 
 /** Pieces a side has: the cells of one point, ten on the standard board. */
@@ -120,9 +168,8 @@ export function starCampSquares(radius: number, stone: Stone): Point[] {
 
 /** Whose home point `point` lies in, or null outside both. */
 export function starCampOf(radius: number, point: Point): Stone | null {
-  if (pointCells(radius, "top").some((square) => samePoint(square, point))) return "black";
-  if (pointCells(radius, "bottom").some((square) => samePoint(square, point))) return "white";
-  return null;
+  const tip = starTipOf(radius, point);
+  return tip === "top" ? "black" : tip === "bottom" ? "white" : null;
 }
 
 /** Every piece on the board when the game starts: each colour filling its own point. */

@@ -1,6 +1,5 @@
 // Relative: the engine boundary (`boundary.coverage.test.ts`) allows no alias under src/lib/gomoku.
 import type { GameKey } from "../catalogue/gameKeys";
-import type { RuleVariant } from "./gomoku.types";
 
 /** A family of games: an identity (`key`), its words, and the games whose home it is. */
 export type GameFamily = {
@@ -31,4 +30,4 @@ export type AlsoListing = { family: string; why: string };
  * One game on a family's shelf. At home there, or a guest from its own family —
  * and a guest always knows which, so the shelf can say "also under" it.
  */
-export type ShelvedGame = { variant: GameKey; listed: "home" } | { variant: RuleVariant; listed: "shelf"; home: GameFamily };
+export type ShelvedGame = { variant: GameKey; listed: "home" } | { variant: GameKey; listed: "shelf"; home: GameFamily; why: string };

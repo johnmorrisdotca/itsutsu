@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { forgetFamilyFolds, ready, readyHere } from "./support";
 import { EVERY_GAME_KEY } from "../src/lib/catalogue/gameKeys";
-import { GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { GAME_FAMILIES, HOME_FAMILIES } from "../src/lib/gomoku/families";
 
 /** The rules pages and the learning shelf, and the link from one to the board. */
 test.describe("rules and learning", () => {
@@ -40,7 +40,8 @@ test.describe("rules and learning", () => {
     await page.goto("/games");
     await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
     await expect(page).toHaveURL(/\/games\/list$/);
-    await expect(page.getByTestId("every-game-family")).toHaveCount(GAME_FAMILIES.length);
+    // Each game once, under its home: a shelf of guests alone (Party games) has no section here.
+    await expect(page.getByTestId("every-game-family")).toHaveCount(HOME_FAMILIES.length);
     await expect(page.getByTestId("every-game").locator("dt")).toHaveCount(EVERY_GAME_KEY.length);
     await expect(page.getByTestId("every-game-freestyle")).toContainText("Also known as Go-Moku");
     // Our own name for a game is not one of its other names.

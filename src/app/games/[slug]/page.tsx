@@ -23,6 +23,7 @@ import {
   familyPath,
   historyPath,
   myGamePath,
+  passAndPlayPath,
   playPath,
   puzzleFor,
   rulesPath,
@@ -32,6 +33,8 @@ import {
   variantFor,
 } from "@/lib/gomoku/slugs";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
+import { PARTY_PLAY_GAMES } from "@/lib/gomoku/party/partyCheckers";
+import { PartyOffer } from "@/components/party/PartyOffer";
 import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
@@ -149,6 +152,12 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="game-play">
                 Try the board 試し打ち
               </Link>
+              {/*
+                A GAME FOR THE WHOLE TABLE, where the game has one: Chinese
+                Checkers for two to six, passed round one device. A third way on,
+                and said as such — not Play, which sets up a game between two seats.
+              */}
+              {PARTY_PLAY_GAMES.includes(variant) ? <PartyOffer href={passAndPlayPath(variant)} /> : null}
             </div>
             <div className="flex min-w-0 flex-col gap-2">
               <PageTitle title={page.title} kanji={page.kanji}>

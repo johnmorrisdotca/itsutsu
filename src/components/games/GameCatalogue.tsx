@@ -20,6 +20,7 @@ import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
 import { EVERY_GAME_KEY, gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
+import { shelfCountWords } from "@/lib/gomoku/families";
 import { familyPath } from "@/lib/gomoku/slugs";
 
 import { FamilyFold } from "@/components/games/FamilyFold";
@@ -133,8 +134,7 @@ function Families({
                     apart rather than added in.
                   */}
                   <span className="text-xs font-normal text-muted" data-testid="lobby-family-count">
-                    {family.games.length} {family.games.length === 1 ? "game" : "games"}
-                    {family.guests.length > 0 ? `, and ${family.guests.length} from other families` : ""}
+                    {shelfCountWords(family.games.length, family.guests.length)}
                   </span>
                 </span>
                 {/*
@@ -145,7 +145,8 @@ function Families({
                   does.
                 */}
                 {/* A family of puzzles has no played-figures: nothing is counted of a solve yet. */}
-                {family.games.every((game) => isPuzzleKind(game.variant)) ? null : (
+                {/* Nor does a shelf of guests: its games' figures are their own families'. */}
+                {family.games.length === 0 || family.games.every((game) => isPuzzleKind(game.variant)) ? null : (
                   <FamilyStatsLine stats={stats.families[family.key]} />
                 )}
               </span>
@@ -227,6 +228,12 @@ function FamilyGameCard({
             <Link href={familyPath(game.variant)} className={`${RAISED_LINK} underline underline-offset-2`}>
               {game.home.title}
             </Link>
+          </span>
+        ) : null}
+        {/* And why it is on this shelf too: the reason `ALSO_LISTED_IN` gives beside it. */}
+        {guest ? (
+          <span className="text-[0.7rem] text-muted" data-testid="family-game-why">
+            {game.why}
           </span>
         ) : null}
         <span className="text-xs text-muted">{game.tagline}</span>

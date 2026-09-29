@@ -30,6 +30,14 @@ describe("the board frame", () => {
     expect(read("src/components/board/BoardFrame.tsx")).toContain("boxShadow");
   });
 
+  it("holds the star a table of players passes round, drawn with the two-player board's own holes", () => {
+    const star = read("src/components/party/PartyStarBoard.tsx");
+    expect(star).toContain("<BoardFrame");
+    expect(star).toContain("<BoardLines");
+    expect(star).toContain("<LatticeGround");
+    expect(star).not.toContain("boxShadow");
+  });
+
   it("holds every puzzle grid, on white paper", () => {
     for (const grid of ["src/components/puzzles/PuzzleGrid.tsx", "src/components/puzzles/HiddenStonesGrid.tsx"]) {
       expect(read(grid), `${grid} draws its grid off the board`).toContain("<PuzzleBoard");

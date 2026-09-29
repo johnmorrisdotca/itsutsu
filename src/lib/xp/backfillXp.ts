@@ -1,5 +1,5 @@
 import { botTierFor } from "@/lib/bots/bots";
-import { GAME_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
+import { HOME_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
 import { playedSides, type PlayedSide } from "@/lib/rating/playedRun";
 import { STREAK_KINDS, extendStreak } from "@/lib/rating/streak";
 
@@ -121,7 +121,7 @@ const COLLECTED: readonly {
   fold?: (subject: string) => string;
 }[] = [
   { each: XP_EVENTS.firstOfVariant, all: XP_EVENTS.everyVariantPlayed, size: XP_VARIANTS_TO_PLAY },
-  { each: XP_EVENTS.firstOfFamily, all: XP_EVENTS.everyFamilyPlayed, size: GAME_FAMILIES.length, fold: familyKeyNow },
+  { each: XP_EVENTS.firstOfFamily, all: XP_EVENTS.everyFamilyPlayed, size: HOME_FAMILIES.length, fold: familyKeyNow },
   { each: XP_EVENTS.gradeBeaten, all: XP_EVENTS.everyGradeBeaten, size: XP_GRADES_TO_BEAT },
 ];
 
