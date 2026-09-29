@@ -31,7 +31,7 @@ import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
  * asks it where a piece may go and what the board is after a move, and hands
  * the answer to the kind's board to draw.
  */
-export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind, appearance, gameHref }: PartyTableGameProps & { kind: PartyRaceKind<S, C> }) {
+export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind, appearance, gameHref, online }: PartyTableGameProps & { kind: PartyRaceKind<S, C> }) {
   const hydrated = useHydrated();
   const [game, keep] = kind.useKept();
   const [selected, setSelected] = useState<Point | null>(null);
@@ -45,7 +45,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid={kind.testId} data-state="set-up">
-        <PartySetUp kind={kind} appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <PartySetUp kind={kind} appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }
@@ -80,7 +80,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
       {...readyMark(hydrated)}
     >
       <div className="flex min-w-0 flex-col gap-3">
-        <TurnLine game={game} farCamp={kind.copy.farCamp} />
+        <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
         <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} />
         {game.status === PARTY_STATUS.playing ? <p className="text-xs text-muted">{PARTY_COPY.pick}</p> : null}
       </div>
@@ -163,8 +163,8 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   );
 }
 
-/** Whose turn it is, by name and colour — or who has won. */
-function TurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
+/** Whose turn it is, by name and colour — or who has won. The same line at a table on several devices (`RaceOnline`). */
+export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
   if (game.status === PARTY_STATUS.won && game.winner !== null) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-2 text-base font-semibold`} data-testid="party-winner" data-player={game.winner}>

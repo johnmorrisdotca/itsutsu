@@ -18,7 +18,7 @@ const STAMP = Date.now().toString(36);
 const TRAIL_MEMBER = { email: `game-trail-${STAMP}@example.test`, name: `Trail Check ${STAMP}` };
 
 /** Ids this file makes before the run, filled in `beforeAll` — in place, since the route closures hold this object. */
-const made: MadeRows = { filed: "", live: "", member: "", solve: "" };
+const made: MadeRows = { filed: "", live: "", member: "", solve: "", table: "" };
 
 test.describe("the trail under a game", () => {
   const under = namesPlayedUnder();
@@ -29,7 +29,7 @@ test.describe("the trail under a game", () => {
   });
 
   test.afterAll(async () => {
-    await removeRouteRows(TRAIL_MEMBER);
+    await removeRouteRows(TRAIL_MEMBER, made);
   });
 
   const routes = measuredRoutes(made).filter(({ route }) => route.startsWith("/games/[slug]") || route === "/games/new");

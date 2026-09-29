@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import type { Point } from "@/lib/gomoku/gomoku.types";
-import { BLOCKS_STATUS, againBlocksParty, blocksPiecesLeft, blocksPreviewAt, blocksStartSquares, layBlocks } from "@/lib/gomoku/party/partyBlocks";
-import type { BlocksHold, BlocksPieceKey } from "@/lib/gomoku/party/partyBlocks.types";
+import { againBlocksParty, layBlocks } from "@/lib/gomoku/party/partyBlocks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PartyBlocksBoard } from "./PartyBlocksBoard";
@@ -17,16 +15,7 @@ import { PartyBlocksTray } from "./PartyBlocksTray";
 import type { PartyTableGameProps } from "./party.types";
 import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
 import { useKeptBlocksParty } from "./partyBlocksStore";
-
-/**
- * What the player to move is doing with their pieces this turn: which one
- * they hold (null: the first they have), how they have turned it, and the
- * square they last tapped or pointed at. Stored against the turn it belongs
- * to, so the next player picks the tray up fresh without an effect to reset it.
- */
-type Held = { turn: string; piece: BlocksPieceKey | null; turns: number; flipped: boolean; at: Point | null };
-
-const fresh = (turn: string): Held => ({ turn, piece: null, turns: 0, flipped: false, at: null });
+import { useBlocksHand } from "./useBlocksHand";
 
 /**
  * BLOCK FIVE FOR FOUR, PASSED ROUND THE TABLE.
@@ -43,33 +32,15 @@ const fresh = (turn: string): Held => ({ turn, piece: null, turns: 0, flipped: f
  * the board to decide anything. The game is kept in this browser after every
  * piece (`partyBlocksStore.ts`), and nowhere else.
  */
-export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
+export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptBlocksParty();
-  const [held, setHeld] = useState<Held>(() => fresh(""));
   const [confirming, setConfirming] = useState(false);
-  const playing = game !== undefined && game !== null && game.status === BLOCKS_STATUS.playing;
-  const turn = game === undefined || game === null ? "" : `${game.moves.length}:${game.toPlay}`;
-  const current = held.turn === turn ? held : fresh(turn);
-
-  // R turns the piece in hand and F flips it, as on Block Five's own board. Typing in a field is left alone.
-  useEffect(() => {
-    if (!playing) return;
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target !== null && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const key = event.key.toLowerCase();
-      if (key === "r" || key === "arrowright") setHeld((was) => turned(was, turn, 1, false));
-      else if (key === "f" || key === "arrowup") setHeld((was) => turned(was, turn, 0, true));
-      else return;
-      event.preventDefault();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [playing, turn]);
-
-  const starts = useMemo(() => (game === undefined || game === null || !playing ? [] : blocksStartSquares(game, game.toPlay)), [game, playing]);
+  const hand = useBlocksHand(game ?? null, true, (piece, cells) => {
+    const next = game === undefined || game === null ? null : layBlocks(game, piece, cells);
+    if (next !== null) keep(next);
+  });
+  const { playing, hold, preview } = hand;
 
   // Not read yet: the server has no browser to ask, so it keeps the room the game will take and says nothing.
   if (game === undefined) {
@@ -78,25 +49,10 @@ export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="party-blocks" data-state="set-up">
-        <PartyBlocksSetUp appearance={appearance} onStart={(started) => keep(started)} ready={readyMark(hydrated)} />
+        <PartyBlocksSetUp appearance={appearance} onStart={(started) => keep(started)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }
-
-  const left = blocksPiecesLeft(game, game.toPlay);
-  const piece = current.piece !== null && left.includes(current.piece) ? current.piece : (left[0] ?? null);
-  const hold: BlocksHold | null = piece === null ? null : { piece, turns: current.turns, flipped: current.flipped };
-  const preview = playing && hold !== null && current.at !== null ? blocksPreviewAt(game, hold, current.at) : null;
-
-  const onSquare = (point: Point) => {
-    const onIt = preview !== null && preview.cells.some((cell) => cell.row === point.row && cell.col === point.col);
-    if (hold !== null && preview !== null && preview.refusal === null && onIt) {
-      const next = layBlocks(game, hold.piece, preview.cells);
-      if (next !== null) keep(next);
-      return;
-    }
-    setHeld({ ...current, at: point });
-  };
 
   return (
     <section
@@ -112,9 +68,9 @@ export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
           game={game}
           appearance={appearance}
           preview={preview}
-          starts={starts}
-          onSquare={onSquare}
-          onAim={(point) => setHeld({ ...current, at: point })}
+          starts={hand.starts}
+          onSquare={hand.onSquare}
+          onAim={hand.onAim}
         />
       </div>
 
@@ -123,9 +79,9 @@ export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
           <PartyBlocksTray
             game={game}
             hold={hold}
-            onHold={(chosen) => setHeld({ ...current, piece: chosen, turns: 0, flipped: false })}
-            onRotate={() => setHeld(turned(current, turn, 1, false))}
-            onFlip={() => setHeld(turned(current, turn, 0, true))}
+            onHold={hand.onHold}
+            onRotate={hand.onRotate}
+            onFlip={hand.onFlip}
             refusal={preview?.refusal == null ? null : PARTY_BLOCKS_COPY.refusals[preview.refusal]}
           />
         ) : null}
@@ -175,10 +131,4 @@ export function PartyBlocksGame({ appearance, gameHref }: PartyTableGameProps) {
       <AskIfAway watching={playing} detail={PARTY_BLOCKS_COPY.idleDetail} kept={PARTY_BLOCKS_COPY.idleKept} />
     </section>
   );
-}
-
-/** The held piece a quarter turn further round, or mirrored — for this turn, fresh if what was held belongs to an earlier one. */
-function turned(was: Held, turn: string, turns: number, flip: boolean): Held {
-  const now = was.turn === turn ? was : fresh(turn);
-  return { ...now, turns: (now.turns + turns) % 4, flipped: flip ? !now.flipped : now.flipped };
 }

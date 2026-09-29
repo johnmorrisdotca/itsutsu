@@ -9,6 +9,8 @@ import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 import type { MancalaGame } from "@/lib/party/mancala/mancala.types";
 import type { GhostEnd, GhostGame, GhostJudge, GhostMove } from "@/lib/party/superghost/superghost.types";
 
+import type { OnlineOffer } from "./online/online.types";
+
 /** One player's marble: its colour, the letter it carries, and the ink the letter is written in. */
 export type PartyMarble = { label: string; letter: string; fill: string; ink: string };
 
@@ -59,6 +61,8 @@ export type PartySetUpProps<S extends PartyRaceState, C extends number> = {
   onStart: (game: S) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices, where the game can be: see `OnlineOffer`. */
+  online?: OnlineOffer;
 };
 
 /** What every pass-and-play table is handed by its page. */
@@ -67,6 +71,8 @@ export type PartyTableGameProps = {
   appearance: Appearance;
   /** The game's front door, for the way back. */
   gameHref: string;
+  /** Playing on several devices, where the game can be and the reader has an account (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /**
@@ -141,6 +147,8 @@ export type PartyBlocksSetUpProps = {
   onStart: (game: PartyBlocksState) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /** What Dots and Boxes' board is handed: the game, and what to do with a line tapped. */
@@ -158,6 +166,8 @@ export type DotsSetUpProps = {
   onStart: (game: DotsGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 export type GhostSetUpProps = {

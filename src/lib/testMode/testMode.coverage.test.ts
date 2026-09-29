@@ -57,6 +57,7 @@ const EXCEPTIONS: Record<string, string> = {
   "src/lib/social/childReach.ts": "who a child member may reach — a safety rule, deliberately untouched until reviewed with John",
   "src/lib/social/presence.ts": "who is here now — remaining work, see the plan, named explicitly as a next surface",
   "src/lib/xp/importedXpPay.ts": "the imported-XP payer's own runner, which only ever touches kept records, never test members — out of scope by construction",
+  "src/lib/party/online/server/tableCreate.ts": "reads the buddies a table's maker named, by id, each checked against the maker's own buddy list — an explicit list chosen upstream, nothing to hide among",
   "src/lib/xp/xpOfMembers.ts": "reads an explicit list of ids an upstream, already-filtered query chose, the same shape as nameTagsOf",
 };
 

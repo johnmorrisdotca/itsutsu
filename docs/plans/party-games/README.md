@@ -32,7 +32,7 @@ So it is a third kind, and the smallest honest one:
 
 | Kind | What it is | Played by | Kept |
 |---|---|---|---|
-| `PartyKind` | a table of people round one device (`src/lib/party/`) | the browser, pass and play | only in that browser (`keptInBrowser`); never rated, never sent to the server |
+| `PartyKind` | a table of people round one device (`src/lib/party/`) | the browser, pass and play | only in that browser (`keptInBrowser`), or as a table on the server when played on several devices (`docs/plans/party-online/`); never rated |
 
 `GameKey = RuleVariant | PuzzleKind | PartyKind`. The places that only make
 sense for one kind ask `isRuleVariant`, `isPuzzleKind` or `isPartyKind` by

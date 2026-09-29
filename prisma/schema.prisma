@@ -1449,3 +1449,79 @@ model PuzzleRace {
   @@index([hostMemberId, createdAt])
   @@index([guestMemberId, createdAt])
 }
+
+/// A PARTY TABLE PLAYED ON SEVERAL DEVICES: one game of a party table (Dots and
+/// Boxes, a race round the star or the square, Block Five…), each player on
+/// their own device — see docs/plans/party-online/README.md. The game is kept
+/// WHOLE, as the game's own encoded text (`state`), the very text the browser
+/// keeps it as on one device, so a poll is one indexed read of `version` and a
+/// move decodes, plays and writes; nothing ever replays a game to answer a poll.
+model PartyTable {
+  /// Eight characters in two blocks, made by makeGameId and checked free.
+  id           String    @id
+  /// The game, a GameKey with a row in ONLINE_GAMES (`lib/party/online`).
+  game         String
+  /// The board size the game was started at, in the game's own measure; 0 where it has one board.
+  size         Int       @default(0)
+  /// The game as it stands, in its own encoding (`OnlineRules.encode`).
+  state        String
+  /// Moves on every write — a move, a seat taken or left, an ending — and is the poll's tag.
+  version      Int       @default(0)
+  /// playing, finished (the rules ended it) or ended (a member ended it, nobody won).
+  status       String    @default("playing")
+  /// The seat to play, or null once the table is over.
+  toPlay       Int?
+  /// On a finished table, every seat that won: one, or more when it is shared.
+  winners      Int[]     @default([])
+  moveCount    Int       @default(0)
+  /// The last move, or the start: what a silent turn is measured from (PARTY_TURN_WAIT_DAYS).
+  movedAt      DateTime  @default(now())
+  /// Who made it. Null once that member has removed their account.
+  hostMemberId String?
+  /// Who ended it, on an ended table.
+  endedByMemberId String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  finishedAt   DateTime?
+  seats        PartySeat[]
+  actions      PartyAction[]
+
+  @@index([status, movedAt], map: "PartyTable_status_moved_idx")
+}
+
+/// One seat of a party table: a member's, an open one waiting for its link to
+/// be opened, or a computer's (whose moves a seated member's browser works out).
+model PartySeat {
+  tableId   String
+  table     PartyTable @relation(fields: [tableId], references: [id], onDelete: Cascade, map: "PartySeat_table_fkey")
+  /// Its place round the table, 0 first: the player number the game's rules know it by.
+  seat      Int
+  /// member, open or computer.
+  kind      String
+  memberId  String?
+  /// The name the table shows for it: the member's, "Computer", or "" for an open seat.
+  name      String     @default("")
+  /// An open seat's link; whoever opens it, signed in, takes the seat. Cleared when it is taken.
+  token     String?
+  joinedAt  DateTime?
+
+  @@id([tableId, seat], map: "PartySeat_pkey")
+  @@unique([token], map: "PartySeat_token_key")
+  @@index([memberId], map: "PartySeat_member_idx")
+}
+
+/// Every move made at a party table, in order: who it was for, what it was, and
+/// whose browser sent it. The record; nothing reads it to answer a poll or a move.
+model PartyAction {
+  tableId   String
+  table     PartyTable @relation(fields: [tableId], references: [id], onDelete: Cascade, map: "PartyAction_table_fkey")
+  index     Int
+  seat      Int
+  /// The move as the browser sent it and the rules read it, as JSON.
+  move      String
+  /// The member whose browser sent it: the mover, or for a computer's move the member who worked it out.
+  byMemberId String?
+  createdAt DateTime   @default(now())
+
+  @@id([tableId, index], map: "PartyAction_pkey")
+}

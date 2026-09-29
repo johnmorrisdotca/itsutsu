@@ -67,13 +67,13 @@ export const PARTY_COPY = {
 export const PARTY_GAME_COPY: Record<RaceVariant, PartyGameCopy> = {
   chineseCheckers: {
     offer: "Pass and play: 2–6 players on this device",
-    lead: "Chinese Checkers for two, three, four or six people round one phone or tablet. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+    lead: "Chinese Checkers for two, three, four or six people round one phone or tablet. Take your turn, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
     farCamp: "the far point",
     about: "About Chinese Checkers, its rules and its rated game for two",
   },
   halma: {
     offer: "Pass and play: 2 or 4 players on this device",
-    lead: "Halma for four people round one phone or tablet, or for two: each races their pieces from their own corner into the corner opposite, thirteen each when four play and nineteen when two do. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+    lead: "Halma for four people round one phone or tablet, or for two: each races their pieces from their own corner into the corner opposite, thirteen each when four play and nineteen when two do. Take your turn, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
     farCamp: "the far corner",
     about: "About Halma, its rules and its rated game for two",
   },
@@ -87,7 +87,7 @@ export const DOTS_BOX_FILL_OPACITY = 0.82;
 
 /** What Dots and Boxes' table says, beyond what every table says (`PARTY_COPY`). */
 export const DOTS_COPY = {
-  lead: "Dots and Boxes for two to six people round one phone or tablet. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Dots and Boxes for two to six people round one phone or tablet. Take your turn, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
   board: "Which board?",
   lines: (count: number) => `${count} lines`,
   tap: "Tap between two dots to draw a line. Close a box and it is yours, and you draw again.",

@@ -8,6 +8,9 @@ import { startBlocksParty } from "@/lib/gomoku/party/partyBlocks";
 import { PARTY_NAME_MOST } from "@/lib/gomoku/party/partyRace";
 
 import { MarbleChip } from "./MarbleChip";
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
+import { ONLINE_COPY } from "./online/online.constants";
+import type { SeatChoice } from "./online/online.types";
 import { PartyBlocksBoard } from "./PartyBlocksBoard";
 import { PARTY_MARBLES } from "./party.constants";
 import type { PartyBlocksSetUpProps } from "./party.types";
@@ -19,9 +22,15 @@ import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
  * of one — with each player's corner in their colour, so the four can see
  * where they start before they choose who sits where.
  */
-export function PartyBlocksSetUp({ appearance, onStart, ready }: PartyBlocksSetUpProps) {
+export function PartyBlocksSetUp({ appearance, onStart, ready, online }: PartyBlocksSetUpProps) {
   const [names, setNames] = useState<string[]>(() => new Array(BLOCKS_PARTY_PLAYERS).fill(""));
   const preview = startBlocksParty(names);
+  // Several devices: a seat chooser in each name's row, and Start sets the table on the server (`OnlineSetUpParts`).
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, PARTY_MARBLES.length));
+  const table = useStartTable(online);
+  const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
+  const severalOffer = several ? online : undefined;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start">
@@ -35,33 +44,49 @@ export function PartyBlocksSetUp({ appearance, onStart, ready }: PartyBlocksSetU
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          onStart(startBlocksParty(names));
+          if (severalOffer !== undefined) void table.start(0, choices.slice(0, BLOCKS_PARTY_PLAYERS));
+          else onStart(startBlocksParty(names));
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex flex-col gap-2">
-          <legend className={SECTION_TITLE}>{PARTY_BLOCKS_COPY.names}</legend>
+          <legend className={SECTION_TITLE}>{severalOffer !== undefined ? ONLINE_COPY.seats : PARTY_BLOCKS_COPY.names}</legend>
           {preview.players.map((player, index) => (
             <label key={player.corner} className="flex items-center gap-2 text-sm">
               <MarbleChip player={index} />
               <span className="sr-only">
                 Player {index + 1}, {PARTY_MARBLES[index].label}
               </span>
-              <input
-                type="text"
-                value={names[index]}
-                maxLength={PARTY_NAME_MOST}
-                placeholder={`Player ${index + 1}`}
-                onChange={(event) => setNames((was) => was.map((name, at) => (at === index ? event.target.value : name)))}
-                className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
-                data-testid="blocks-name"
-              />
+              {severalOffer !== undefined ? (
+                <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />
+              ) : (
+                <input
+                  type="text"
+                  value={names[index]}
+                  maxLength={PARTY_NAME_MOST}
+                  placeholder={`Player ${index + 1}`}
+                  onChange={(event) => setNames((was) => was.map((name, at) => (at === index ? event.target.value : name)))}
+                  className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
+                  data-testid="blocks-name"
+                />
+              )}
             </label>
           ))}
         </fieldset>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="blocks-start">
-          {PARTY_BLOCKS_COPY.start} →
+        <button
+          type="submit"
+          className={`${BUTTON_LEAD} ${BUTTON_STRONG}`}
+          data-testid="blocks-start"
+          disabled={table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, BLOCKS_PARTY_PLAYERS))}
+        >
+          {severalOffer === undefined ? PARTY_BLOCKS_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PARTY_BLOCKS_COPY.kept}</p>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
+        <p className="text-xs text-muted">{severalOffer === undefined ? PARTY_BLOCKS_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, BLOCKS_PARTY_PLAYERS))}</p>
       </form>
     </div>
   );

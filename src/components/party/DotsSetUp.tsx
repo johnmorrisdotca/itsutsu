@@ -9,6 +9,9 @@ import { DOTS_NAME_MOST, dotsLineCount, startDots } from "@/lib/party/dotsAndBox
 
 import { DotsBoard } from "./DotsBoard";
 import { MarbleChip } from "./MarbleChip";
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
+import { ONLINE_COPY } from "./online/online.constants";
+import type { SeatChoice } from "./online/online.types";
 import { DOTS_COPY, PARTY_COPY, PARTY_MARBLES } from "./party.constants";
 import type { DotsSetUpProps } from "./party.types";
 
@@ -26,10 +29,16 @@ const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 },
  * four tiles of one size, and there is a row for every name the table could
  * need, the ones past the count chosen kept in their place and hidden.
  */
-export function DotsSetUp({ appearance, onStart, ready }: DotsSetUpProps) {
+export function DotsSetUp({ appearance, onStart, ready, online }: DotsSetUpProps) {
   const [count, setCount] = useState(SPEC.defaultPlayers);
   const [size, setSize] = useState(SPEC.defaultSize);
   const [names, setNames] = useState<string[]>(() => new Array<string>(SPEC.mostPlayers).fill(""));
+  // Several devices: a seat chooser in each name's row, and Start sets the table on the server (`OnlineSetUpParts`).
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, SPEC.mostPlayers));
+  const table = useStartTable(online);
+  const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
+  const severalOffer = several ? online : undefined;
   const seated = names.slice(0, count);
   // A table the set-up offers is always one the rules start.
   const preview = startDots(size, seated)!;
@@ -45,9 +54,11 @@ export function DotsSetUp({ appearance, onStart, ready }: DotsSetUpProps) {
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          onStart(startDots(size, seated)!);
+          if (severalOffer !== undefined) void table.start(size, choices.slice(0, count));
+          else onStart(startDots(size, seated)!);
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{PARTY_COPY.howMany}</legend>
           <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={PARTY_COPY.howMany}>
@@ -92,7 +103,7 @@ export function DotsSetUp({ appearance, onStart, ready }: DotsSetUpProps) {
           </div>
         </fieldset>
         <fieldset className="flex flex-col gap-2">
-          <legend className={SECTION_TITLE}>{PARTY_COPY.names}</legend>
+          <legend className={SECTION_TITLE}>{severalOffer !== undefined ? ONLINE_COPY.seats : PARTY_COPY.names}</legend>
           {names.map((name, index) => {
             const sitting = index < count;
             return (
@@ -101,24 +112,38 @@ export function DotsSetUp({ appearance, onStart, ready }: DotsSetUpProps) {
                 <span className="sr-only">
                   Player {index + 1}, {PARTY_MARBLES[index].label}
                 </span>
-                <input
-                  type="text"
-                  value={name}
-                  maxLength={DOTS_NAME_MOST}
-                  placeholder={`Player ${index + 1}`}
-                  disabled={!sitting}
-                  onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
-                  className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
-                  data-testid="dots-name"
-                />
+                {severalOffer !== undefined ? (
+                  <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} disabled={!sitting} />
+                ) : (
+                  <input
+                    type="text"
+                    value={name}
+                    maxLength={DOTS_NAME_MOST}
+                    placeholder={`Player ${index + 1}`}
+                    disabled={!sitting}
+                    onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
+                    className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
+                    data-testid="dots-name"
+                  />
+                )}
               </label>
             );
           })}
         </fieldset>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="dots-start">
-          {PARTY_COPY.start} →
+        <button
+          type="submit"
+          className={`${BUTTON_LEAD} ${BUTTON_STRONG}`}
+          data-testid="dots-start"
+          disabled={table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, count))}
+        >
+          {severalOffer === undefined ? PARTY_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
+        <p className="text-xs text-muted">{severalOffer === undefined ? PARTY_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, count))}</p>
       </form>
     </div>
   );

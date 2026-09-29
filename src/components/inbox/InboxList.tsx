@@ -8,6 +8,7 @@ import { LocalTime } from "@/components/ui/LocalTime";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { messagesPath } from "@/lib/messages/messages.constants";
+import { tablePath } from "@/lib/party/online/onlinePaths";
 import type { InboxItemShown } from "@/lib/inbox/inbox";
 
 import { INBOX_COPY } from "./inbox.constants";
@@ -49,7 +50,7 @@ export function InboxList({ items }: { items: readonly InboxItemShown[] }) {
                   {INBOX_COPY.reply}
                 </Link>
               ) : item.gameId !== null && item.variant !== null ? (
-                <Link href={matchPath(item.variant, item.gameId)} className="underline underline-offset-4" data-testid="inbox-open">
+                <Link href={atTable(item.kind) ? tablePath(item.variant, item.gameId) : matchPath(item.variant, item.gameId)} className="underline underline-offset-4" data-testid="inbox-open">
                   {item.kind === INBOX_KINDS.offer ? INBOX_COPY.answer : INBOX_COPY.open}
                 </Link>
               ) : null}
@@ -97,6 +98,18 @@ function Said({ item }: { item: InboxItemShown }) {
           {who} {INBOX_COPY.seatTaken} {game}. {INBOX_COPY.begun}
         </>
       );
+    case INBOX_KINDS.tableInvite:
+      return (
+        <>
+          {who} {INBOX_COPY.tableInvite} {game}.
+        </>
+      );
+    case INBOX_KINDS.tableOver:
+      return (
+        <>
+          {INBOX_COPY.tableOver.lead} {game} {INBOX_COPY.tableOver.is} {INBOX_COPY.tableOver.result(item.detail)}
+        </>
+      );
     case INBOX_KINDS.message:
       return (
         <>
@@ -112,4 +125,9 @@ function Said({ item }: { item: InboxItemShown }) {
     default:
       return <>{item.detail}</>;
   }
+}
+
+/** Whether an item is about a party table on several devices, whose id is a table's, not a game's. */
+function atTable(kind: string): boolean {
+  return kind === INBOX_KINDS.tableInvite || kind === INBOX_KINDS.tableOver;
 }

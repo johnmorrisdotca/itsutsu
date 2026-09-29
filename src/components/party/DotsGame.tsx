@@ -31,7 +31,7 @@ import type { PartyTableGameProps } from "./party.types";
  * rules are all in `lib/party/dotsAndBoxes/dotsAndBoxes.ts`; this asks it what
  * a line does, and draws the answer.
  */
-export function DotsGame({ appearance, gameHref }: PartyTableGameProps) {
+export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptDotsGame();
   const [confirming, setConfirming] = useState(false);
@@ -43,7 +43,7 @@ export function DotsGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="dots-game" data-state="set-up">
-        <DotsSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <DotsSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

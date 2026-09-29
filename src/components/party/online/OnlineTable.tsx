@@ -1,0 +1,179 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+
+import Link from "@/components/ui/Link";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { ONLINE_SEAT_KINDS, ONLINE_STATUS } from "@/lib/party/online/online.constants";
+import type { OnlineTableView } from "@/lib/party/online/online.types";
+import { onlineRulesOf } from "@/lib/party/online/onlineGames";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+
+import { OnlineSeats } from "./OnlineSeats";
+import { ONLINE_COPY } from "./online.constants";
+import type { OnlineTableProps } from "./online.types";
+import { ONLINE_VIEWS } from "./onlineViews";
+import { useComputerTurn } from "./useComputerTurn";
+import { useOnlineTable } from "./useOnlineTable";
+
+/**
+ * A PARTY TABLE ON SEVERAL DEVICES, at /games/<slug>/tables/<id>: the game's
+ * own board, drawn from the table the server keeps, answering a tap only on
+ * the reader's own turn; the seats, with each open seat's link; and Leave and
+ * End. See docs/plans/party-online/README.md.
+ *
+ * A move is sent with how many moves the page had seen, and the answer is the
+ * new table, which this page takes as its own copy. Every other page at the
+ * table sees it at its next poll (`useOnlineTable`). The rules the board is
+ * drawn from are the same ones the server checks the move by
+ * (`onlineRulesOf`), so what a page offers is what the server takes.
+ */
+export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabel, tags }: OnlineTableProps) {
+  const hydrated = useHydrated();
+  const router = useRouter();
+  const { view, mutate, paused, resume, hurrying, every } = useOnlineTable(initial, intervals);
+  const rules = onlineRulesOf(view.game);
+  const shown = ONLINE_VIEWS[view.game];
+  const names = view.seats.map((seat) => seat.name).join("\n");
+  const game = useMemo(() => {
+    const decoded = rules.decode(view.state);
+    return decoded === null ? null : rules.named(decoded, names.split("\n"));
+  }, [rules, view.state, names]);
+  const [sending, setSending] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<"leave" | "end" | null>(null);
+
+  const send = useCallback(
+    async (move: unknown, seat: number) => {
+      setSending(true);
+      setProblem(null);
+      try {
+        const answer = await fetch(`/api/tables/${view.id}/moves`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ moves: view.moveCount, seat, move }),
+        });
+        const body = (await answer.json().catch(() => null)) as (OnlineTableView & { error?: string; table?: OnlineTableView | null }) | null;
+        if (answer.ok && body !== null) await mutate(body, { revalidate: false });
+        else {
+          if (body?.table) await mutate(body.table, { revalidate: false });
+          setProblem(body?.error ?? ONLINE_COPY.couldNotStart);
+        }
+      } catch {
+        setProblem("The site could not be reached.");
+      } finally {
+        setSending(false);
+      }
+    },
+    [view.id, view.moveCount, mutate],
+  );
+  useComputerTurn({ view, game, rules, send, sending });
+
+  const seatAction = async (what: "leave" | "end") => {
+    setProblem(null);
+    const answer = await fetch(`/api/tables/${view.id}/${what}`, { method: "POST" }).catch(() => null);
+    setConfirming(null);
+    if (answer === null || !answer.ok) {
+      const body = (await answer?.json().catch(() => null)) as { error?: string } | null;
+      setProblem(body?.error ?? "The site could not be reached.");
+      return;
+    }
+    if (what === "leave") router.push("/play");
+    else await mutate();
+  };
+
+  const playing = view.status === ONLINE_STATUS.playing;
+  const canMove = playing && view.toPlay === view.mySeat && !sending;
+
+  return (
+    <section
+      className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"
+      data-testid="online-table"
+      data-game={view.game}
+      data-state={view.status}
+      data-version={view.version}
+      data-to-play={view.toPlay ?? undefined}
+      data-my-seat={view.mySeat}
+      data-poll-every={every}
+      data-poll-hurrying={hurrying ? "true" : undefined}
+      {...readyMark(hydrated)}
+    >
+      <div className="flex min-w-0 flex-col gap-3">
+        <StatusLine view={view} sending={sending} />
+        {game === null ? null : <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />}
+        {problem !== null ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-problem">
+            {problem}
+          </p>
+        ) : null}
+        {paused ? (
+          <button type="button" onClick={resume} className="self-start text-xs text-muted underline underline-offset-4" data-testid="online-paused">
+            {ONLINE_COPY.paused}
+          </button>
+        ) : null}
+      </div>
+
+      <aside className="flex min-w-0 flex-col gap-4">
+        <OnlineSeats view={view} standing={(seat) => (game === null ? "" : shown.standing(game, seat))} gameLabel={gameLabel} tags={tags} />
+        {playing ? (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {confirming === null ? (
+              <>
+                <button type="button" onClick={() => setConfirming("leave")} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="online-leave">
+                  {ONLINE_COPY.leave}
+                </button>
+                {view.canEnd ? (
+                  <button type="button" onClick={() => setConfirming("end")} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="online-end">
+                    {ONLINE_COPY.end}
+                  </button>
+                ) : null}
+              </>
+            ) : (
+              <span className="flex flex-wrap items-center gap-2" data-testid="online-confirm">
+                <span>{confirming === "leave" ? ONLINE_COPY.leaveConfirm : ONLINE_COPY.endConfirm}</span>
+                <button type="button" onClick={() => void seatAction(confirming)} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="online-confirm-yes">
+                  {confirming === "leave" ? ONLINE_COPY.leaveYes : ONLINE_COPY.endYes}
+                </button>
+                <button type="button" onClick={() => setConfirming(null)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
+                  {ONLINE_COPY.keep}
+                </button>
+              </span>
+            )}
+          </div>
+        ) : null}
+        <p className="text-sm">
+          <Link href={gameHref} className="underline underline-offset-4">
+            {ONLINE_COPY.about} →
+          </Link>
+        </p>
+      </aside>
+    </section>
+  );
+}
+
+/** What the table waits on, in words: the reader, somebody by name, an open seat — or how it ended. */
+function StatusLine({ view, sending }: { view: OnlineTableView; sending: boolean }) {
+  if (view.status === ONLINE_STATUS.ended) {
+    return (
+      <p className={`${PANEL_CLASS} text-sm`} data-testid="online-status" data-state="ended">
+        {ONLINE_COPY.ended(view.endedBy)}
+      </p>
+    );
+  }
+  if (view.status !== ONLINE_STATUS.playing || view.toPlay === null) return null;
+  const toPlay = view.seats[view.toPlay];
+  const yours = view.toPlay === view.mySeat;
+  const words = sending
+    ? ONLINE_COPY.sending
+    : yours
+      ? ONLINE_COPY.yourTurn
+      : toPlay?.kind === ONLINE_SEAT_KINDS.open
+        ? ONLINE_COPY.waitingOpen
+        : ONLINE_COPY.waitingOn(toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : toPlay?.name || `Player ${view.toPlay + 1}`);
+  return (
+    <p className={`text-sm font-semibold ${yours ? "text-ink" : "text-muted"}`} data-testid="online-status" data-yours={yours ? "true" : undefined} aria-live="polite">
+      {words}
+    </p>
+  );
+}

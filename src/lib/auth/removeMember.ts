@@ -175,6 +175,19 @@ export async function removeMember(
     prisma.tsunagiAttempt.deleteMany({ where: { memberId } }),
     prisma.puzzleSolve.updateMany({ where: { raceId: { in: raceIds } }, data: { raceId: null } }),
     prisma.puzzleRace.deleteMany({ where: { id: { in: raceIds } } }),
+    /*
+     * Their seats at party tables played on several devices: the seat opens
+     * with no link (nobody can take it, and the others may end the table once
+     * its turn has waited), the name kept only when asked. The tables they made
+     * and the moves their browser sent keep their place without the account.
+     */
+    prisma.partySeat.updateMany({
+      where: { memberId },
+      data: blankSeats ? { memberId: null, kind: "open", token: null, name: "" } : { memberId: null, kind: "open", token: null },
+    }),
+    prisma.partyTable.updateMany({ where: { hostMemberId: memberId }, data: { hostMemberId: null } }),
+    prisma.partyTable.updateMany({ where: { endedByMemberId: memberId }, data: { endedByMemberId: null } }),
+    prisma.partyAction.updateMany({ where: { byMemberId: memberId }, data: { byMemberId: null } }),
     prisma.autoMatchRequest.deleteMany({ where: { member: memberId } }),
     prisma.socialRowWithoutMember.deleteMany({ where: { OR: [{ owner: memberId }, { target: memberId }] } }),
     // An operator's own past acts keep their line in the log, without a link to an account that is gone.

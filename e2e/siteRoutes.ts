@@ -6,6 +6,7 @@ import { expect, type PlaywrightWorkerArgs } from "@playwright/test";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { ensureMember, memberIdFor, newestSolveOf, removeMember } from "./members";
 import { suiteOperator } from "./operator";
+import { removeTables } from "./tables";
 
 /**
  * EVERY PAGE THE SITE SERVES, listed once, with the address each is measured at.
@@ -24,7 +25,7 @@ import { suiteOperator } from "./operator";
  */
 
 /** Ids the specs make before a run. */
-export type MadeRows = { filed: string; live: string; member: string; solve: string };
+export type MadeRows = { filed: string; live: string; member: string; solve: string; table: string };
 
 /**
  * Where a route is measured: the address, plus any other views of the same
@@ -64,6 +65,7 @@ export const ROUTES: Record<string, Route> = {
   "/games/[slug]/me": { url: () => "/games/gomoku/me", also: ["/games/number-place/me"] },
   "/games/[slug]/new": { url: () => "/games/gomoku/new", also: ["/games/number-place/new"] },
   "/games/[slug]/pass-and-play": { url: () => "/games/chinese-checkers/pass-and-play" },
+  "/games/[slug]/tables/[id]": { url: (made) => `/games/dots-and-boxes/tables/${made.table}` },
   "/games/[slug]/play": { url: () => "/games/gomoku/play", also: ["/games/number-place/play"] },
   "/games/[slug]/rules": { url: () => "/games/gomoku/rules", also: ["/games/number-place/rules"] },
   "/games/[slug]/standings": { url: () => "/games/gomoku/standings", also: ["/games/number-place/standings"] },
@@ -184,12 +186,23 @@ export async function seedRouteRows(
     data: { kind: "numberPlace", size: 4, level: "easy", seed: 424242, givens: puzzle.givens, answer: puzzle.solution, elapsedMs: 42_000 },
   });
   expect(solved.ok()).toBe(true);
+  // A party table on several devices, the operator in seat 1 and a link in seat 2: made through the set-up's own route.
+  const table = await request.post("/api/tables", { data: { game: "dotsAndBoxes", size: 3, seats: [{ kind: "me" }, { kind: "link" }] } });
+  expect(table.status(), await table.text()).toBe(201);
+  const tableId = ((await table.json()) as { id: string }).id;
   await request.dispose();
   await ensureMember(member);
-  return { filed: filedId, live: liveId, member: await memberIdFor(member.email), solve: await newestSolveOf(suiteOperator().email, "numberPlace") };
+  return {
+    filed: filedId,
+    live: liveId,
+    member: await memberIdFor(member.email),
+    solve: await newestSolveOf(suiteOperator().email, "numberPlace"),
+    table: tableId,
+  };
 }
 
-/** Takes the member away; the games go with the spec's tidy. */
-export async function removeRouteRows(member: { email: string }): Promise<void> {
+/** Takes the member and the table away; the games go with the spec's tidy. */
+export async function removeRouteRows(member: { email: string }, made?: MadeRows): Promise<void> {
   await removeMember(member.email);
+  if (made?.table) await removeTables([made.table]);
 }
