@@ -18,6 +18,7 @@ import { PuzzleSteps } from "./PuzzleSteps";
 import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
 import { cellHint } from "@/lib/puzzles/hintCell";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 /**
  * Solving a grid of numbers — Number Place and its variants, More or Less and Towers.
@@ -160,7 +161,7 @@ export function NumberSolve({
   };
 
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <PuzzleGrid

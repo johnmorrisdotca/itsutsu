@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Board } from "@/components/board/Board";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { canPass } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { boardWords } from "@/lib/gomoku/boardWords";
@@ -60,7 +60,7 @@ export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
 
   return (
     <section
-      className="grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start"
+      className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start`}
       data-testid="pairgo"
       data-state={game.state.status}
       data-moves={game.state.moves.length}

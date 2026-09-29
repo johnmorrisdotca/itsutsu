@@ -63,7 +63,7 @@ async function Nav() {
   const [who, admit, say] = await Promise.all([whoIsHere(), admitsOnArrival(), currentSpeaker()]);
   const { semver } = versionStamps();
   return (
-    <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+    <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm select-none">
       <NavLinks />
       {/* Everything about the reader's own account, the operator's links among it, so the bar is the same for everybody. */}
       <AccountMenu
@@ -114,7 +114,7 @@ export async function SiteHeader({
     return (
       <>
         <header data-chrome className="flex flex-col items-center gap-3 border-b border-rule pb-6">
-          <Link href="/" aria-label="Itsutsu home" className="block w-full max-w-2xl">
+          <Link href="/" aria-label="Itsutsu home" className="block w-full max-w-2xl select-none">
             <BrandHero className="w-full" />
           </Link>
           <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
@@ -147,7 +147,7 @@ export async function SiteHeader({
             header spec measures that it never lands on the bar.
           */}
           <span className="flex items-center gap-2">
-            <Link href="/" aria-label="Itsutsu home" className="block">
+            <Link href="/" aria-label="Itsutsu home" className="block select-none">
               <BrandWordmark className="h-9 w-auto sm:h-10" />
             </Link>
             <BetaMark />

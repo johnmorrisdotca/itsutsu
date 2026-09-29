@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { DOTS_STATUS, dotsAgain, dotsLineCount, dotsPlayerName, drawLine } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame as DotsGameState } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -55,7 +55,7 @@ export function DotsGame({ appearance, gameHref }: PartyTableGameProps) {
 
   return (
     <section
-      className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"
+      className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start`}
       data-testid="dots-game"
       data-state={game.status}
       data-players={game.players.length}

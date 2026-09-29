@@ -19,6 +19,7 @@ import { PuzzleSteps } from "./PuzzleSteps";
 import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
 import { cellHint } from "@/lib/puzzles/hintCell";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 /** What a tap puts in an open cell: black, then white, then nothing. */
 function nextStone(stone: number): number {
@@ -121,7 +122,7 @@ export function BlackAndWhiteSolve({
   };
 
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <BlackAndWhiteGrid size={size} givens={givens} stones={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} set={set} />

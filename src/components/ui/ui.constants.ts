@@ -9,7 +9,7 @@
 
 export const BUTTON_BASE =
   // `TAP_HEIGHT` at the end: a fingertip below `sm`, exactly as it was above. See its note.
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 min-h-11 sm:min-h-0";
+  "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 min-h-11 sm:min-h-0 select-none";
 
 /*
  * A CONTROL A CHILD TAPS ON AN IPAD, which the ordinary button is not.
@@ -28,7 +28,7 @@ export const BUTTON_BASE =
  * with `BUTTON_QUIET` or `BUTTON_STRONG`, which only set colours.
  */
 export const BUTTON_TAP =
-  "inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
+  "inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 select-none";
 
 /*
  * THE ONE ACTION A SCREEN EXISTS FOR, on a phone.
@@ -47,7 +47,30 @@ export const BUTTON_TAP =
  * they are written in.
  */
 export const BUTTON_LEAD =
-  "inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 sm:w-auto";
+  "inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 sm:w-auto select-none";
+
+/*
+ * `select-none` in each button class above, and in `PLAY_BUTTON` below, is
+ * for the LINK dressed as a button: a real <button> is refused a selection by
+ * globals.css already, but a link is text there, so one that looks and acts
+ * like a button says so here. See the note on selection in globals.css.
+ */
+
+/*
+ * A PLACE A GAME OR A PUZZLE IS PLAYED, which a drag, a long press or Select
+ * All never picks up as text. On the OUTERMOST element of the surface — a
+ * board's frame, a puzzle's solve, a party table, a clock, a tray — and
+ * everything inside inherits it, so no tile, stone or letter needs its own.
+ * The rule itself is `.play-surface` in globals.css; its roots are held by
+ * `playSurface.coverage.test.ts`.
+ */
+export const PLAY_SURFACE = "play-surface";
+
+/*
+ * A reading island inside a play surface — a finished puzzle's result, the
+ * credit for a word list — which is text somebody may want to copy.
+ */
+export const SELECTABLE = "select-text";
 
 export const BUTTON_QUIET =
   "border-rule-strong/80 bg-ivory/80 text-ink hover:bg-rule/60";
@@ -63,7 +86,7 @@ export const BUTTON_STRONG =
  * `sm:min-h-0` would win by stylesheet order and shrink it back at a desk.
  */
 export const PLAY_BUTTON =
-  "inline-flex min-h-16 w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-ink px-6 py-4 text-xl font-semibold text-paper transition-colors outline-none hover:bg-ink-soft focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
+  "inline-flex min-h-16 w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-ink px-6 py-4 text-xl font-semibold text-paper transition-colors outline-none hover:bg-ink-soft focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 select-none";
 
 /*
  * `min-w-0` and `max-w-full` because a select is as wide as its longest

@@ -151,6 +151,81 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
+/*
+ * WHAT A DRAG OR A SELECT ALL MAY PICK UP, AND WHAT IT MAY NOT.
+ *
+ * John, 2026-09-28, with Kumimoji's play page painted blue by a drag — the
+ * tray's heading, "37 in the bag", the board-style chips, Draw, Trade and the
+ * letters on the tiles all selected as text: "Buttons and labels should
+ * usually not be selectable - there are times when stuff should be
+ * selected... however when these are play elements or buttons, they should
+ * not."
+ *
+ * So two kinds of thing are never text to select, and everything else is:
+ *
+ *  A CONTROL: every button and anything acting as one — the ARIA roles a
+ *  control takes, a <summary> that opens a section, and a <label>, which is
+ *  a control's caption (the set-up screen's tiles and cards are radios
+ *  inside one). A control's caption is inside it, so it goes with it. A link dressed as a button says
+ *  so through its class (`BUTTON_BASE` and its siblings in ui.constants.ts),
+ *  because an ordinary link is text: a member's name in a table is a link,
+ *  and people copy names. The masthead's links and a page's tabs are a bar
+ *  of controls too, and say `select-none` on their own <nav>.
+ *
+ *  A PLAY SURFACE: `.play-surface`, put on the OUTERMOST element of each
+ *  place a game or a puzzle is played — every board (`BoardFrame`), a
+ *  puzzle's whole solve, a party table, a game's clock and its piece tray.
+ *  Everything inside inherits it, so no tile, stone, letter or counter
+ *  needs saying one by one. `PLAY_SURFACE` in ui.constants.ts is the name
+ *  to write, and `playSurface.coverage.test.ts` holds the roots to it.
+ *
+ * What stays selectable is what somebody reads or copies: rules, articles,
+ * move lists and records, names, chat, messages, error text, the release
+ * notes — and every input, where blocking a selection would block typing and
+ * pasting. A reading island INSIDE a play surface (a finished puzzle's result,
+ * a word's dictionary credit) says so with `SELECTABLE`.
+ *
+ * On a phone a long press over a control or the board would otherwise open
+ * the text callout (Copy, Look Up) or start a selection mid-drag, so both are
+ * refused here too; and a play surface draws its own pressed and chosen
+ * looks, so the browser's grey tap flash is not laid over them.
+ *
+ * In `@layer base`, and with no specificity (`:where`), so any utility —
+ * `select-text` on an island — wins without a fight.
+ */
+@layer base {
+  :where(
+      button,
+      summary,
+      [role="button"],
+      [role="tab"],
+      [role="radio"],
+      [role="switch"],
+      [role="checkbox"],
+      [role="menuitem"],
+      [role="menuitemradio"],
+      [role="menuitemcheckbox"],
+      [role="option"],
+      [role="slider"],
+      [role="timer"],
+      label,
+      .play-surface
+    ) {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  :where(.play-surface) {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Typing and pasting are never blocked, whatever a box sits inside: a board, a tray, a menu. */
+  :where(input:not([type="radio"], [type="checkbox"], [type="range"], [type="button"], [type="submit"], [type="reset"]), textarea, [contenteditable="true"], [contenteditable=""]) {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+}
+
 /* Japanese display text: the title, the kanji beside a label, section marks. */
 .font-mincho {
   font-family: var(--font-mincho), "Hiragino Mincho ProN", "Yu Mincho", serif;

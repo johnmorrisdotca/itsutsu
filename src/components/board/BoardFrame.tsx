@@ -3,6 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 
 import { columnLetter, rowNumber } from "@/lib/gomoku/notation";
+import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 import { BOARD_FRAME, COORDINATE_GAP, LABEL_GUTTER } from "./Board.constants";
 import { layoutOrder } from "./flip";
@@ -161,7 +162,7 @@ export function BoardFrame({
        * so the board keeps every pixel the labels leave it and the frame stays
        * on the page.
        */
-      className="grid w-full"
+      className={`${PLAY_SURFACE} grid w-full`}
       style={{
         gridTemplateColumns: `${gutter} minmax(0, 1fr)`,
         gridTemplateRows: `${gutter} auto`,

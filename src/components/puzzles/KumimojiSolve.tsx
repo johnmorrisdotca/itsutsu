@@ -23,6 +23,7 @@ import { KumimojiTray } from "./KumimojiTray";
 import { TRAY_ROOM } from "./kumimoji.constants";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { sayState, useKumimojiDesk } from "./useKumimojiDesk";
+import { PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 
 /**
  * Playing Kumimoji: lay the hand out as one crossword, draw the next tile
@@ -89,7 +90,7 @@ export function KumimojiSolve({
   const presses = { ...desk.presses, draw: { can: mayDraw(play, verdict), run: () => desk.move((now) => draw(now)) } };
 
   return (
-    <section ref={root} className={`flex flex-col gap-3 ${done === null ? TRAY_ROOM : ""}`} data-testid="puzzle-play" data-kind={puzzle.kind} data-seed={puzzle.seed} {...readyMark(hydrated)}>
+    <section ref={root} className={`${PLAY_SURFACE} flex flex-col gap-3 ${done === null ? TRAY_ROOM : ""}`} data-testid="puzzle-play" data-kind={puzzle.kind} data-seed={puzzle.seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <KumimojiTable
@@ -133,7 +134,7 @@ export function KumimojiSolve({
         </>
       ) : (
         <>
-          <p className="text-sm" data-testid="kumimoji-score">
+          <p className={`${SELECTABLE} text-sm`} data-testid="kumimoji-score">
             All {puzzle.givens.length} tiles in one crossword. <strong>{Math.max(0, kumimojiPoints(puzzle.givens, done.elapsedMs) - POINTS_A_HELP * hinting.used)}</strong> points: ten a tile, and the rest for speed
             {hinting.used > 0 ? `, less ${POINTS_A_HELP} for each of ${hinting.used} ${hinting.used === 1 ? "Help" : "Helps"}` : ""}.
           </p>

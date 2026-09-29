@@ -6,7 +6,7 @@ import { GAME_COPY } from "@/components/game/game.constants";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
-import { TONE_CLASS } from "@/components/ui/ui.constants";
+import { TONE_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { describeRemaining } from "@/lib/history/deadline";
@@ -57,7 +57,7 @@ export function MatchClock({
     <>
     {deadline !== null && state.status === GAME_STATUS.playing ? (
       <div
-        className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${
+        className={`${PLAY_SURFACE} flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${
           overdue ? TONE_CLASS.alarm : TONE_CLASS.calm
         }`}
         data-testid="deadline"
@@ -134,7 +134,7 @@ export function MatchClock({
       </div>
     ) : null}
     {detail.clockMode === "game" && detail.moveTimeMs !== null ? (
-      <p className="text-xs text-muted" data-testid="time-budgets">
+      <p className={`${PLAY_SURFACE} text-xs text-muted`} data-testid="time-budgets">
         Time left for the whole game · {STONE_DISPLAY.black.label}{" "}
         {describeBudget(detail.blackTimeMs ?? detail.moveTimeMs)} ·{" "}
         {STONE_DISPLAY.white.label}{" "}

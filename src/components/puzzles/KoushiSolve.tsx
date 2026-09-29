@@ -7,7 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import type { Appearance } from "@/components/board/board.types";
-import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { playPath } from "@/lib/gomoku/slugs";
 import { sparesOf } from "@/lib/puzzles/koushi/check";
@@ -116,7 +116,7 @@ export function KoushiSolve({
 
   const words = wordsOf(asked.solution);
   return (
-    <section className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <KoushiGrid grid={grid} marks={marks} chosen={done === null ? chosen : null} done={done !== null} onPress={press} onSwap={swap} appearance={dressed} />

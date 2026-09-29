@@ -50,7 +50,7 @@ export function ViewTabs({
   lead?: ReactNode;
 }) {
   return (
-    <nav aria-label={label} data-testid={testId} className="flex min-w-0 flex-wrap items-end gap-x-1 border-b border-rule">
+    <nav aria-label={label} data-testid={testId} className="flex min-w-0 flex-wrap items-end gap-x-1 border-b border-rule select-none">
       {lead === undefined ? null : <span className="self-center pr-1 text-xs text-muted">{lead}</span>}
       {items.map((item) => {
         // A tab drawn as a button shows the hand as a link does (John, 2026-09-26: "some of the Sub-tabs have no pointer on hover.. BUG!!!").

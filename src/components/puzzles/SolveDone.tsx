@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SELECTABLE } from "@/components/ui/ui.constants";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { helpOpensOn, SOLVE_HELP_SAYS } from "@/lib/puzzles/solveHelp";
@@ -61,7 +61,7 @@ export function SolveDone({
   };
   const timed = PUZZLE_CLOCK_DISPLAY[clock];
   return (
-    <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
+    <div className={`${PANEL_CLASS} ${SELECTABLE} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
       {done.outOfTime ? (
         <p className="text-lg font-semibold" data-testid="puzzle-out-of-time">
           Out of time <span className="font-mincho text-base font-normal opacity-70">時間切れ</span>: the {timed.label} {timed.kanji} ran down from{" "}

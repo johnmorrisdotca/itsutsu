@@ -35,7 +35,7 @@ import { usePlayInView } from "./usePlayInView";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { PuzzleWayBack } from "./PuzzleWayBack";
-import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 import { PopClue } from "./PopClue";
 
 /**
@@ -207,7 +207,7 @@ export function GomojiSolve({
   }, [closed, letter, enter, back, edit]);
 
   return (
-    <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section ref={playRoot} className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
       {/* Pop Gomoji's clue: each hidden word's category, from the first guess (`PopClue`). */}
       {kind === "gomojiPop" ? <PopClue words={words.words} /> : null}
@@ -261,7 +261,7 @@ export function GomojiSolve({
           </div>
         </>
       ) : done.outOfGuesses ? (
-        <div className="flex flex-col gap-2" data-testid="word-out">
+        <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
             {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {many ? "The words were" : "The word was"}{" "}
             <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
@@ -301,7 +301,7 @@ export function GomojiSolve({
         answers are its own list. The dictionary decides what is a word, Wiktionary which may be hidden, and the count how common.
       */}
       {lang === "en" || lang === "pop" ? null : (
-        <p className="text-xs text-muted" data-testid="word-credit">
+        <p className={`${SELECTABLE} text-xs text-muted`} data-testid="word-credit">
           Words from{" "}
           {lang === "fr" ? (
             <a href="http://www.lexique.org" className="underline" rel="noreferrer" target="_blank">

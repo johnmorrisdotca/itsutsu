@@ -37,7 +37,7 @@ import { WordStylePicker } from "./WordStylePicker";
 import { usePlayInView } from "./usePlayInView";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { PuzzleWayBack } from "./PuzzleWayBack";
-import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 
 
 function arrowOf(mark: KanaMarked): CellArrow {
@@ -256,7 +256,7 @@ export function GomojiKanaSolve({
   const left = rows - guesses.length;
   const score = done === null ? null : futagoKanaScore(given.words, guesses, rows, done.elapsedMs);
   return (
-    <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
+    <section ref={playRoot} className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null && count === 4 ? (
@@ -329,7 +329,7 @@ export function GomojiKanaSolve({
           </div>
         </>
       ) : done.outOfGuesses ? (
-        <div className="flex flex-col gap-2" data-testid="word-out">
+        <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
             {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {many ? "The words were" : "The word was"}{" "}
             <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.
@@ -363,7 +363,7 @@ export function GomojiKanaSolve({
         </>
       )}
       {/* JMdict's licence asks for this on every page that shows its words. */}
-      <p className="text-xs text-muted" data-testid="kana-credit">
+      <p className={`${SELECTABLE} text-xs text-muted`} data-testid="kana-credit">
         Words from{" "}
         <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" className="underline" rel="noreferrer" target="_blank">
           JMdict

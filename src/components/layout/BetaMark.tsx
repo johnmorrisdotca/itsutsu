@@ -21,7 +21,7 @@ export function BetaMark({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/thanks"
-      className={`inline-block rounded-full border border-ochre/40 bg-ochre-soft px-1.5 py-px text-[0.6rem] leading-tight font-semibold tracking-[0.14em] text-ochre uppercase hover:border-ochre ${className}`}
+      className={`inline-block rounded-full border border-ochre/40 bg-ochre-soft px-1.5 py-px text-[0.6rem] leading-tight font-semibold tracking-[0.14em] text-ochre uppercase select-none hover:border-ochre ${className}`}
       title={`Itsutsu is in ${STAGE.toLowerCase()}: new things arrive most days, and some rough edges are still being smoothed. The people helping test it are thanked here.`}
       data-testid="beta-mark"
     >
