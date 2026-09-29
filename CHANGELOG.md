@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.424.2 — 2026-09-29
+- Tsunagi's marble numbers fit inside their marbles on every board, 4x4 to 12x12
+
 ## 0.424.1 — 2026-09-29
 - In dark mode, tiles, puzzle paper and board coordinates read again: letters on white were drawn in the dark theme's pale ink
 
