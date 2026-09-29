@@ -1,4 +1,6 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
+import type { BridgeCounts, BridgesBoard } from "./bridges/bridges.types";
+import { ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO, MOST_BRIDGES, WATER, encodeBridges } from "./bridges/code";
 import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
 import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
@@ -17,6 +19,7 @@ import { linesCodeFits } from "./tsunagi/lines";
  * (`puzzleCode.ts`), givens left empty. A grid of stones writes "." for an
  * empty cell, "s" for a stone and "x" for a cross. Black and White writes its
  * whole grid as its code does, printed stones included: "b", "w" and ".".
+ * Bridges writes its drawing as its answer is written (`bridges/code.ts`).
  */
 export type StoneMarkCode = "" | "stone" | "cross";
 
@@ -44,6 +47,11 @@ export function decodeStoneProgress(code: string, size: number): StoneMarkCode[]
     else return null;
   }
   return marks;
+}
+
+/** Bridges writes its drawing as its answer is written: every island's number, and each water cell's bridge or none. */
+export function encodeBridgesProgress(board: BridgesBoard, counts: BridgeCounts): string {
+  return encodeBridges(board, counts);
 }
 
 export function encodeBlackAndWhiteProgress(stones: readonly number[]): string {
@@ -89,6 +97,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "tsunagi") return linesCodeFits(code, size);
   // A Kumimoji's shape only: its bag is checked when the game is opened again (`decodeTileProgress`).
   if (kind === "kumimoji") return readTileProgress(code) !== null;
+  // Bridges keeps its drawing, one character a cell, as its answer is written; read against its islands when opened.
+  if (kind === "bridges") return bridgesCodeFits(code, size);
   // Koushi keeps the grid as it stands and the swaps so far, as its answer is written.
   if (kind === "koushi") return decodePlay(code) !== null;
   return decodeNumberProgress(code, size) !== null;
@@ -109,4 +119,11 @@ export function runGuessesFit(kind: PuzzleKind, size: number, level: PuzzleLevel
   const grid = kind === "gomojiKana" ? "gomojiKana" : "gomoji";
   const free = grid === "gomojiKana" && level !== "hard" ? 1 : 0;
   return guesses.length <= guessesFor(grid, size, level, free, wordCountOfSeed(seed));
+}
+
+/** Whether a Bridges drawing is a grid of this size in its own characters: islands, water and bridges (`bridges/code.ts`). */
+function bridgesCodeFits(code: string, size: number): boolean {
+  if (code.length !== size * size) return false;
+  const kinds = new Set([WATER, ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO]);
+  return [...code].every((char) => kinds.has(char) || (char >= "1" && char <= String(MOST_BRIDGES)));
 }

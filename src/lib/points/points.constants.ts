@@ -30,6 +30,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   kumimoji: 0.13,
   // A medium solve is about 880 (`koushiPoints`: 500, three swaps spare, a quick time).
   koushi: 0.11,
+  // Five an end of a bridge (`cellsFilled`): a medium 9×9 has about 43 (measured over a hundred seeds), so about 215 points.
+  bridges: 0.46,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

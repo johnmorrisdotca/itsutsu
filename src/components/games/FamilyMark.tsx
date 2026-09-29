@@ -24,6 +24,10 @@ type Mark = {
   digits?: MarkDigit[];
   /** An extra stroke drawn over the board, in the same 0..n coordinate space. */
   path?: string;
+  /** Strokes in ink, drawn under the stones: the bridges between Logic puzzles' islands. */
+  ink?: string;
+  /** The digits' size, in cells, where they sit inside a stone rather than on a cell; 0.75 otherwise. */
+  digitSize?: number;
 };
 
 /**
@@ -200,6 +204,36 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     path: "M 2 0 L 2 4 M 0 2 L 4 2",
   },
   /*
+   * LOGIC PUZZLES: the family's first puzzle in one picture — five islands,
+   * each a ringed number, joined by single and double bridges so that every
+   * number is met and all five are one. The islands are drawn as the Numbers
+   * mark draws its digits, on the stones' white circles, and the bridges in
+   * ink beneath them, so it is the one mark on the row made of lines between
+   * numbers.
+   */
+  "Logic puzzles": {
+    n: 5,
+    cells: true,
+    stones: [
+      { r: 0, c: 0, white: true },
+      { r: 0, c: 3, white: true },
+      { r: 2, c: 0, white: true },
+      { r: 2, c: 3, white: true },
+      { r: 4, c: 3, white: true },
+    ],
+    digits: [
+      { r: 0, c: 0, value: 2 },
+      { r: 0, c: 3, value: 3 },
+      { r: 2, c: 0, value: 3 },
+      { r: 2, c: 3, value: 5 },
+      { r: 4, c: 3, value: 1 },
+    ],
+    digitSize: 0.52,
+    ink:
+      "M 0.92 0.5 L 3.08 0.5 M 0.5 0.92 L 0.5 2.08 M 3.38 0.92 L 3.38 2.08 M 3.62 0.92 L 3.62 2.08" +
+      " M 0.92 2.38 L 3.08 2.38 M 0.92 2.62 L 3.08 2.62 M 3.5 2.92 L 3.5 4.08",
+  },
+  /*
    * OTHER: a row of letters, the word puzzle's, two tiles lit green for a
    * letter in its place and one gold for a letter elsewhere — the family's
    * first game in one line, and the one mark on the row made of letters.
@@ -312,6 +346,7 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           <line y1={0} y2={extent} x1={i} x2={i} />
         </g>
       ))}
+      {mark.ink !== undefined ? <path d={mark.ink} fill="none" stroke="var(--ink)" strokeWidth={0.1} strokeLinecap="round" /> : null}
       {mark.stones.map((stone) => (
         <circle
           key={`${stone.r}-${stone.c}`}
@@ -337,9 +372,9 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
         <text
           key={`d${digit.r}-${digit.c}`}
           x={at(digit.c)}
-          y={centredBaseline(at(digit.r), 0.75)}
+          y={centredBaseline(at(digit.r), mark.digitSize ?? 0.75)}
           textAnchor="middle"
-          fontSize={0.75}
+          fontSize={mark.digitSize ?? 0.75}
           fontWeight={600}
           fill={digit.tile === undefined ? "var(--ink)" : "var(--ivory)"}
           opacity={digit.faded ? 0.35 : 1}

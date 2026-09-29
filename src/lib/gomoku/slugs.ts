@@ -88,6 +88,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   tsunagi: "tsunagi",
   kumimoji: "kumimoji",
   koushi: "koushi",
+  bridges: "bridges",
 };
 
 /**

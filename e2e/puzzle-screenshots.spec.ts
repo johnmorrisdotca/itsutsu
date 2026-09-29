@@ -14,6 +14,7 @@ import { decodeMoreOrLess } from "../src/lib/puzzles/moreOrLess/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
+import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
 import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
@@ -70,6 +71,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "kumimoji", size: 11, level: "medium", seed: 20260926, fill: 2 },
   // A Koushi four swaps into its fewest: greens, golds and plain letters still to place, and the four holes of the lattice.
   { kind: "koushi", size: 5, level: "medium", seed: 20260926, fill: 4 },
+  // A 9×9 Bridges with every other bridge of its answer laid: ringed islands, singles and doubles, and the full ones filled.
+  { kind: "bridges", size: 9, level: "medium", seed: 20260928, fill: 2 },
 ];
 
 /**
@@ -251,6 +254,18 @@ test.describe("puzzle screenshots", () => {
         for (const [a, b] of decodePlay(puzzle.solution)!.swaps.slice(0, scene.fill)) {
           await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${a}"]`).click();
           await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${b}"]`).click();
+          filled += 1;
+        }
+      } else if (scene.kind === "bridges") {
+        // Every other bridge of the answer, each tapped as a person lays one: an island, then its partner, once a bridge.
+        const board = boardOf(puzzle.givens, scene.size)!;
+        const islands = page.getByTestId("bridges-island");
+        for (const [span, count] of decodeBridges(board, puzzle.solution)!.entries()) {
+          if (count === 0 || span % scene.fill !== 0) continue;
+          for (let bridge = 0; bridge < count; bridge += 1) {
+            await islands.nth(board.spans[span]!.a).click();
+            await islands.nth(board.spans[span]!.b).click();
+          }
           filled += 1;
         }
       } else if (scene.kind === "blackAndWhite") {

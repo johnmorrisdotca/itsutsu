@@ -89,6 +89,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Territory and races | 4 |
 | Small boards | 6 |
 | Numbers | 3 |
+| Logic puzzles | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -128,7 +129,7 @@ same gates: `puzzles.coverage.test.ts` asks a puzzle what
 
 Everything that thinks runs in the browser. The generators, the uniqueness
 checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`,
-`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`; Hidden
+`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`, `bridges/`; Hidden
 Stones grows its regions out from a placed answer and then tightens the grid
 until the solver counts one; Futoshiki adds givens until it is a puzzle and then takes away every one it does not need), seeded
 so the same number makes the same grid in every browser,
@@ -155,6 +156,16 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 | **Skyscrapers** 摩天楼 | clues around the edge count the towers seen | 4×4 to 7×7 | graded by what a person sees at a glance |
 | **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5, 7×7, 9×9 and 10×10 (made at 6×6 and 8×8 too, not offered) | easy (reasoning alone finishes it), hard (a stone has to be tried) |
 | **Black and White** 白黒 | Takuzu / Binairo: half of each colour in every line, never three alike, no line repeated | 6×6, 8×8, 10×10, 12×12 | graded by what a person sees at a glance |
+
+**Logic puzzles** 理詰め (2026-09-28) is the shelf for grid puzzles that are not
+a Number Place, opened with **Bridges** 橋 (`src/lib/puzzles/bridges/`): our
+version of the island-and-bridge puzzle Nikoli first printed in 1990, under a
+name of our own. Islands at 7×7, 9×9, 11×11 and 13×13 are grown from an
+answer and kept only when the solver finds that answer and no other; easy
+yields to counting, medium needs the joining rule (no group of islands may be
+closed off), hard needs a bridge tried. The answer and a run kept half way are
+one drawing, a character a cell (`- = | H` for the bridges), which the server
+checks in O(cells) without the solver (`bridges/check.ts`).
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters

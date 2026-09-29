@@ -1,4 +1,5 @@
 import { decodeBlackAndWhite } from "./blackAndWhite/code";
+import { boardOf, decodeBridges } from "./bridges/code";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { readNumberGivens, type NumberGivens } from "./numberGivens";
 import { decodeCells } from "./puzzleCode";
@@ -15,7 +16,8 @@ import { decodeStepLog } from "./stepLog";
 export type Frame =
   | { kind: "numbers"; asked: NumberGivens; cells: number[] }
   | { kind: "stones"; regions: number[]; cells: StoneMarkCode[] }
-  | { kind: "blackAndWhite"; printed: number[]; cells: number[] };
+  | { kind: "blackAndWhite"; printed: number[]; cells: number[] }
+  | { kind: "bridges"; givens: string; cells: string[] };
 
 export type FinishedFrames = {
   /** The grid as dealt, and as it ended where the answer reads: what a page draws with no steps. */
@@ -58,6 +60,17 @@ export function finishedFrames(kind: PuzzleKind, size: number, givens: string, a
     const finished = solved === null ? null : frame(solved);
     const kept = readSteps(steps, cells, (code) => decodeBlackAndWhiteProgress(code, size));
     return assemble(frame([...printed]), finished, kept?.map(frame) ?? null, () => finished);
+  }
+
+  if (kind === "bridges") {
+    // A drawing, a character a cell (`bridges/code.ts`): read only where it is one of this board's.
+    const board = boardOf(givens, size);
+    const drawing = (code: string): string[] | null => (board !== null && decodeBridges(board, code) !== null ? [...code] : null);
+    const frame = (cells: string[]): Frame => ({ kind: "bridges", givens, cells });
+    const solved = answer === null ? null : drawing(answer);
+    const finished = solved === null ? null : frame(solved);
+    const kept = readSteps(steps, cells, drawing);
+    return assemble(frame([...givens]), finished, kept?.map(frame) ?? null, () => finished);
   }
 
   const asked = readNumberGivens(kind, givens, size);

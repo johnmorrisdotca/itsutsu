@@ -1,5 +1,7 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { solutionOf as blackAndWhiteSolution } from "./blackAndWhite/solve";
+import { boardOf, encodeBridges } from "./bridges/code";
+import { solutionOf as bridgesSolution } from "./bridges/solve";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -74,6 +76,11 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
       const printed = decodeBlackAndWhite(givens.slice(0, size * size), size);
       const solved = printed === null ? null : blackAndWhiteSolution(printed, size);
       return solved === null ? null : encodeBlackAndWhite(solved);
+    }
+    case "bridges": {
+      const board = boardOf(givens, size);
+      const counts = board === null ? null : bridgesSolution(board);
+      return board === null || counts === null ? null : encodeBridges(board, counts);
     }
     default:
       return null;

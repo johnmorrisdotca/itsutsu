@@ -13,17 +13,20 @@ import { decodeGuesses, languageOf } from "@/lib/puzzles/gomoji/code";
 import { decodeKanaGuesses } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { decodeGrid } from "@/lib/puzzles/kumimoji/grid";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { boardOf, decodeBridges } from "@/lib/puzzles/bridges/code";
 import { linesOfAnswer, noLines } from "@/lib/puzzles/tsunagi/lines";
 import { readKoushi } from "@/lib/puzzles/koushi/check";
 import { decodeGivens, markLattice } from "@/lib/puzzles/koushi/lattice";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 
 import { BlackAndWhiteGrid } from "./BlackAndWhiteGrid";
+import { BridgesGrid } from "./BridgesGrid";
 import { HiddenStonesGrid } from "./HiddenStonesGrid";
 import { KoushiGrid } from "./KoushiGrid";
 import { KumimojiTable } from "./KumimojiTable";
 import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
+import { BRIDGES_CELL_WORDS } from "./puzzles.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { useWordStyle } from "./WordStyleContext";
@@ -208,6 +211,7 @@ const NOTES: Record<string, string> = {
 function sayCell(kind: PuzzleKind, value: number | string): string {
   if (kind === "hiddenStones") return value === "stone" ? "a stone" : value === "cross" ? "a cross" : "cleared";
   if (kind === "blackAndWhite") return value === 1 ? "black" : value === 2 ? "white" : "cleared";
+  if (kind === "bridges") return BRIDGES_CELL_WORDS[value as string] ?? `island ${value}`;
   return value === 0 ? "cleared" : symbolOf(value as number);
 }
 
@@ -215,6 +219,11 @@ function sayCell(kind: PuzzleKind, value: number | string): string {
 function GridOf({ kind, size, frame }: { kind: PuzzleKind; size: number; frame: Frame }) {
   if (frame.kind === "stones") return <HiddenStonesGrid size={size} regions={frame.regions} marks={frame.cells} done={readOnly} onPress={NOTHING} />;
   if (frame.kind === "blackAndWhite") return <BlackAndWhiteGrid size={size} givens={frame.printed} stones={frame.cells} done={readOnly} onPress={NOTHING} />;
+  if (frame.kind === "bridges") {
+    const board = boardOf(frame.givens, size);
+    if (board === null) return null;
+    return <BridgesGrid board={board} counts={decodeBridges(board, frame.cells.join("")) ?? board.spans.map(() => 0)} done={readOnly} readOnly />;
+  }
   const asked = frame.asked;
   return (
     <PuzzleGrid

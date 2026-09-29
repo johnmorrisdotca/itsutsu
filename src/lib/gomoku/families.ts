@@ -173,6 +173,35 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "hiddenStones", "blackAndWhite"],
   },
   {
+    key: "logic",
+    /*
+     * LOGIC PUZZLES. John, 2026-09-28: "I think more games is nice." Numbers
+     * held its eight, the most a shelf shows, so the grid puzzles that are not
+     * a Number Place — islands and bridges first, then a picture to uncover
+     * from its row and column counts, walls of sea around numbered islands,
+     * one loop round numbered squares — have a shelf of their own. What they
+     * share is the pencil puzzle's promise: a grid, a handful of clues, one
+     * answer, and nothing to do but reason it out.
+     *
+     * 理詰め (rizume): working a thing out by reason, one step forced by the
+     * last. Chosen over 論理 (ronri, "logic"), which is the word on a
+     * university course; 理詰め is the word for how a person actually solves
+     * one of these, and it sits beside 落とし and 変盤 as an everyday word.
+     *
+     * NOTHING MOVED IN. Hidden Stones and Black and White would sit here as
+     * well as they sit in Numbers — neither has a digit in it — and Tsunagi,
+     * our Numberlink, is a logic puzzle living in Other. Each stays where it
+     * is: a first solve of each has already paid `firstOfFamily` under its
+     * family's key, and moving one would make that family's award a thing a
+     * newcomer earns from a different set of games than everybody before.
+     * Say so, and leave the decision to John.
+     */
+    title: "Logic puzzles",
+    kanji: "理詰め",
+    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, and more to come. A few clues, one answer, and nothing to do but reason it out.",
+    games: ["bridges"],
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to

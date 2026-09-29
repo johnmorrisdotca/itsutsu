@@ -424,3 +424,33 @@ export const TSUNAGI_CHIPS = {
   teaches: { label: (what: string) => `New: ${what}`, says: "This block's new idea: its 15th level shows it gently." },
   tests: { label: "Block's test", kanji: "試", says: "This block's test: its 16th level uses its twist hard." },
 } as const;
+
+/**
+ * BRIDGES ON PAPER (`BridgesGrid`), in fixed colours rather than the page's
+ * tokens: the paper is white whatever the page's theme, so its ink must be
+ * dark whatever the page's theme. Ink, vermilion for what is wrong or too
+ * many, moss for the island chosen.
+ */
+export const BRIDGES_LOOK = {
+  ink: "#22231f",
+  paper: "#ffffff",
+  wrong: "#b2302f",
+  chosen: "#52664b",
+  /** An island's radius, in cells: room for a two-digit ring and the water between two islands two cells apart. */
+  island: 0.38,
+  /** Half the gap between the two strokes of a double bridge, in cells. */
+  double: 0.11,
+  /** A bridge's stroke, in cells. */
+  stroke: 0.07,
+} as const;
+
+/** What a cell of a Bridges drawing reads as in the list of steps (`PuzzleSteps`); an island reads as its number. */
+export const BRIDGES_CELL_WORDS: Record<string, string> = { ".": "cleared", "-": "one bridge across", "=": "two bridges across", "|": "one bridge down", H: "two bridges down" };
+
+/** What the line under a Bridges board says, while it is being solved. */
+export const BRIDGES_COPY = {
+  howTo: "Tap an island, then one in line with it: once for a bridge, twice for two, three times to clear. Or drag between them.",
+  chosen: "Now tap an island in line with it, across or down.",
+  crossing: "That bridge would cross another. Take the other one away first.",
+  allNumbers: "Every island has its number, and it is not the answer yet: are they all joined into one?",
+} as const;
