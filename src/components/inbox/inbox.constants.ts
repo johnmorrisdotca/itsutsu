@@ -22,6 +22,13 @@ export const INBOX_COPY = {
   begun: "Your game has begun.",
   note: "wrote to you in your game of",
   message: "sent you a message",
+  tableInvite: "gave you a seat at a table on several devices, playing",
+  tableOver: {
+    lead: "Your table of",
+    is: "is over —",
+    result: (detail: string) =>
+      detail === "won" ? "you won." : detail === "shared" ? "you shared the win." : detail === "lost" ? "somebody else won." : "it was ended, and nobody won.",
+  },
   reply: "Reply",
   unread: (count: number) => `${count} new in your inbox`,
 } as const;

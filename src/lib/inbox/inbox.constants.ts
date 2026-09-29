@@ -7,6 +7,10 @@ export const INBOX_KINDS = {
   seatTaken: "seat-taken",
   note: "note",
   message: "message",
+  /** A seat at a party table on several devices, given by name (`gameId` is the table's id). */
+  tableInvite: "table-invite",
+  /** A party table you sat at has finished or been ended; `detail` is won, shared, lost or ended. */
+  tableOver: "table-over",
 } as const;
 
 export type InboxKind = (typeof INBOX_KINDS)[keyof typeof INBOX_KINDS];

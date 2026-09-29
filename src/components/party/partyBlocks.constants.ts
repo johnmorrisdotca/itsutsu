@@ -10,7 +10,7 @@ export const PARTY_BLOCKS_COPY = {
   /** On Block Five's own page, the way in. */
   offer: "Pass and play: 4 players on this device",
   resume: "Continue the Block Five game for four",
-  lead: "A different game from Block Five for two: four people round one phone or tablet, a corner each, each laying their own twenty-one shapes of one to five squares. Every new piece must touch one of your own at a corner and never along a side. When nobody can lay another piece, the most squares covered wins. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  lead: "A different game from Block Five for two: four people round one phone or tablet, a corner each, each laying their own twenty-one shapes of one to five squares. Every new piece must touch one of your own at a corner and never along a side. When nobody can lay another piece, the most squares covered wins. Take your turn, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
   names: "The four players, a corner each",
   start: "Start",
   preview: "Each player starts from the corner in their colour.",

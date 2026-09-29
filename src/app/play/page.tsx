@@ -20,6 +20,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { memberNamed } from "@/lib/auth/members";
+import { myTables } from "@/lib/party/online/server/myTables";
 
 export const metadata = { title: "My games 対局" };
 
@@ -65,7 +66,9 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
   // The other member the address narrows to, by id, with a name to print — or null.
   const withMember = typeof asked.with === "string" ? await memberNamed(asked.with) : null;
   // The one page that says how much is new in the inbox: one count, here, not on every page's header.
-  const unread = await unreadInbox(await currentMemberId());
+  const memberId = await currentMemberId();
+  // And the party tables they sit at on several devices, going and finished: two indexed reads (`myTables`).
+  const [unread, tables] = await Promise.all([unreadInbox(memberId), memberId === null ? null : myTables(memberId)]);
   return (
     <Page>
       <SiteHeader />
@@ -159,6 +162,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           </>
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
+        tables={withMember === null ? tables : null}
       />
     </Page>
   );

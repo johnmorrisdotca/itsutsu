@@ -7,6 +7,8 @@ import type { BlocksHold, BlocksPieceKey, BlocksPreview, PartyBlocksState } from
 import type { PartyRaceRules, PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 
+import type { OnlineOffer } from "./online/online.types";
+
 /** One player's marble: its colour, the letter it carries, and the ink the letter is written in. */
 export type PartyMarble = { label: string; letter: string; fill: string; ink: string };
 
@@ -65,6 +67,8 @@ export type PartyTableGameProps = {
   appearance: Appearance;
   /** The game's front door, for the way back. */
   gameHref: string;
+  /** Playing on several devices, where the game can be and the reader has an account (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /**
@@ -156,4 +160,6 @@ export type DotsSetUpProps = {
   onStart: (game: DotsGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };

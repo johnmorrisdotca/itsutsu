@@ -49,8 +49,8 @@ function subscribeVisibility(onChange: () => void): () => void {
   return () => document.removeEventListener("visibilitychange", onChange);
 }
 
-/** Whether this tab is the one being looked at. */
-function usePageVisible(): boolean {
+/** Whether this tab is the one being looked at. Shared with a party table's page (`useOnlineTable`), which asks the same way. */
+export function usePageVisible(): boolean {
   return useSyncExternalStore(
     subscribeVisibility,
     () => document.visibilityState !== "hidden",

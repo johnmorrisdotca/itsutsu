@@ -80,7 +80,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
       {...readyMark(hydrated)}
     >
       <div className="flex min-w-0 flex-col gap-3">
-        <TurnLine game={game} farCamp={kind.copy.farCamp} />
+        <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
         <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} />
         {game.status === PARTY_STATUS.playing ? <p className="text-xs text-muted">{PARTY_COPY.pick}</p> : null}
       </div>
@@ -163,8 +163,8 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   );
 }
 
-/** Whose turn it is, by name and colour — or who has won. */
-function TurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
+/** Whose turn it is, by name and colour — or who has won. The same line at a table on several devices (`RaceOnline`). */
+export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
   if (game.status === PARTY_STATUS.won && game.winner !== null) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-2 text-base font-semibold`} data-testid="party-winner" data-player={game.winner}>

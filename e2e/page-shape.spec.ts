@@ -58,7 +58,7 @@ const STAMP = Date.now().toString(36);
 const SHAPE_MEMBER = { email: `page-shape-${STAMP}@example.test`, name: `Shape Check ${STAMP}` };
 
 /** Ids this file makes before the run, filled in `beforeAll` — in place, since the route closures hold this object. */
-const made: MadeRows = { filed: "", live: "", member: "", solve: "" };
+const made: MadeRows = { filed: "", live: "", member: "", solve: "", table: "" };
 
 test.describe("page shape", () => {
   test.use({ viewport: VIEWPORT });
@@ -77,7 +77,7 @@ test.describe("page shape", () => {
   });
 
   test.afterAll(async () => {
-    await removeRouteRows(SHAPE_MEMBER);
+    await removeRouteRows(SHAPE_MEMBER, made);
   });
 
   for (const { route, name, url: address } of measuredRoutes(made)) {

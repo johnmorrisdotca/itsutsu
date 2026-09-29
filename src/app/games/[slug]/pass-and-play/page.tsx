@@ -14,6 +14,7 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
+import { onlineOfferFor } from "@/lib/party/online/server/onlineOffer";
 
 /**
  * The game this address names and its table, or null: a rule variant with a
@@ -53,9 +54,11 @@ function headingOf(game: string, title: string): string {
  *
  * Playing is for members, as every board is: the gate lets nobody in here
  * without an invite, and the game's own page, which a stranger can read, is
- * where it is offered. Nothing here is written anywhere but the reader's own
- * browser, so the only thing read on the server is how they like their board
- * drawn.
+ * where it is offered. A game on this device is written nowhere but the
+ * reader's own browser, so what is read on the server is how they like their
+ * board drawn — and, where the game can be played on several devices, the
+ * reader's buddies and band for the set-up's seat choosers
+ * (docs/plans/party-online/README.md).
  */
 export default async function PassAndPlayPage({ params }: PageProps<"/games/[slug]/pass-and-play">) {
   const found = tableAt((await params).slug);
@@ -63,7 +66,9 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
   const { key, table } = found;
   const copy = gameCopyFor(key);
   const reader = await currentReader();
-  const appearance = (await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE;
+  // And, where the game can be played on several devices, what its set-up offers for that (`onlineOfferFor`).
+  const [kept, online] = await Promise.all([appearanceFor(reader.memberId), onlineOfferFor(key, reader.memberId)]);
+  const appearance = kept ?? DEFAULT_APPEARANCE;
   const { Game } = table;
 
   return (
@@ -75,7 +80,7 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
         kanji={table.kanji}
         lead={table.lead}
       />
-      <Game appearance={appearance} gameHref={gamePath(key)} />
+      <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
     </Page>
   );
 }

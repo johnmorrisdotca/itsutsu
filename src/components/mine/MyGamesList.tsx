@@ -26,6 +26,9 @@ import { mySolvesCount, mySolvesPage } from "@/lib/puzzles/server/mySolves";
 import { SEATED_ONLY } from "@/lib/history/myFinished";
 import { favouriteGamesOf, favouritesAmong } from "@/lib/history/favourites";
 import { SeatedNarrowing } from "./SeatedNarrowing";
+import { MyTables } from "@/components/party/online/MyTables";
+import type { MyTable } from "@/lib/party/online/server/myTables";
+import type { NameTag } from "@/lib/xp/nameTag.types";
 
 /**
  * How many of each group the lobby prints BY DEFAULT — and every one of them
@@ -124,6 +127,7 @@ export async function MyGamesList({
   viewAsked,
   local = null,
   openSeats = null,
+  tables = null,
 }: {
   /**
    * One other member, by id: the list becomes the games running between the
@@ -159,6 +163,8 @@ export async function MyGamesList({
   local?: ReactNode;
   /** The seats other members have posted (`OpenSeatsSection`), drawn under Going. */
   openSeats?: ReactNode;
+  /** The party tables the member sits at on several devices (`myTables`): going under Going, finished under Completed. */
+  tables?: { going: readonly MyTable[]; finished: readonly MyTable[]; tags: ReadonlyMap<string, NameTag> } | null;
 } = {}) {
   const claims = seatClaims((await cookies()).getAll());
   // The member, by id — however they came in. Null for a browser holding only seat cookies.
@@ -305,8 +311,8 @@ export async function MyGamesList({
   const going = gamesGoing(groups);
   // Each tab counts what it holds: Going its games and the puzzles left part way, Completed its games and the puzzles finished.
   const counts: Record<MyGamesView, number> = {
-    going: going + runs.length,
-    completed: queue.finished.total + (solves?.total ?? solvedCount),
+    going: going + runs.length + (tables?.going.length ?? 0),
+    completed: queue.finished.total + (solves?.total ?? solvedCount) + (tables?.finished.length ?? 0),
     "pass-and-play": groups.hotSeat.length,
   };
   const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, count: counts[key] }));
@@ -358,6 +364,8 @@ export async function MyGamesList({
       ) : null}
       {/* The puzzles left part way, under Going with the games (John: "not two areas"). */}
       {view === "going" && runs.length > 0 ? <MyPuzzleRuns runs={runs} /> : null}
+      {/* The party tables on several devices, a panel of their own: a table's turn goes round several people. */}
+      {view === "going" && tables !== null ? <MyTables tables={tables.going} finished={false} tags={tables.tags} /> : null}
       {view === "going" ? openSeats : null}
       {/* The starred games first, on the first page: John, "favourite your game, it moves to the top". */}
       {/*
@@ -370,6 +378,7 @@ export async function MyGamesList({
           <div className="flex min-w-0 flex-col gap-4" data-testid="completed-games">
             {completed && cursor === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
             {panel("finished", MY_GAMES_COPY.empty.completed)}
+            {tables !== null ? <MyTables tables={tables.finished} finished tags={tables.tags} /> : null}
           </div>
           {solves === null ? null : (
             <div className="flex min-w-0 flex-col gap-4" data-testid="completed-puzzles">
