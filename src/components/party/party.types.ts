@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import type { Appearance } from "@/components/board/board.types";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
+import type { BlocksHold, BlocksPieceKey, BlocksPreview, PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import type { PartyRaceRules, PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 
 /** One player's marble: its colour, the letter it carries, and the ink the letter is written in. */
@@ -102,4 +103,39 @@ export type PartyHoleProps = {
   /** On the star's sheared lattice the marble leans back so it is round again; on a square board it stands as it is. */
   unslant: boolean;
   onHole: (point: Point) => void;
+  /** A piece being held over this square before it is laid: whose, and whether the rules let it lie there. */
+  ghost?: { player: number; allowed: boolean } | null;
+  /** A mouse pointing at this square (never a finger, whose tap is the aim itself). */
+  onAim?: (point: Point | null) => void;
+};
+
+/** Block Five for four's board: the game, the held piece where it would lie, and the squares a new piece may grow from. */
+export type PartyBlocksBoardProps = {
+  game: PartyBlocksState;
+  appearance: Appearance;
+  preview: BlocksPreview | null;
+  /** Dotted: where a new piece of the mover's may start. */
+  starts: readonly Point[];
+  onSquare: (point: Point) => void;
+  onAim?: (point: Point | null) => void;
+  /** A preview: the table set out, nothing to press. */
+  readOnly?: boolean;
+};
+
+/** The pieces the player to move still holds, the one in hand as they have turned it, and the ways to turn it. */
+export type PartyBlocksTrayProps = {
+  game: PartyBlocksState;
+  hold: BlocksHold;
+  onHold: (piece: BlocksPieceKey) => void;
+  onRotate: () => void;
+  onFlip: () => void;
+  /** Why the piece may not lie where it is aimed, if it may not. */
+  refusal: string | null;
+};
+
+export type PartyBlocksSetUpProps = {
+  appearance: Appearance;
+  onStart: (game: PartyBlocksState) => void;
+  /** The hydration mark (`readyMark`), on the form a test fills in. */
+  ready: { "data-ready": string };
 };

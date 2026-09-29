@@ -11,8 +11,14 @@ import type { RuleVariant } from "../gomoku.types";
  * - Chinese Checkers, for two to six round the star (`partyCheckers.ts`).
  * - Go, as Pair Go: two teams of two, taking turns (`pairGo.ts`).
  * - Halma, for four (or two) racing corner to corner (`partyHalma.ts`).
+ * - Block Five, for four laying shapes from their corners (`partyBlocks.ts`).
  *
  * Chinese Checkers and Halma are both races for the far camp, and share what
  * a race table is (`partyRace.ts`).
  */
-export const PARTY_PLAY_GAMES: readonly RuleVariant[] = [RULE_VARIANTS.chineseCheckers, RULE_VARIANTS.go, RULE_VARIANTS.halma];
+export const PARTY_PLAY_GAMES: readonly RuleVariant[] = [
+  RULE_VARIANTS.chineseCheckers,
+  RULE_VARIANTS.go,
+  RULE_VARIANTS.halma,
+  RULE_VARIANTS.blockFive,
+];

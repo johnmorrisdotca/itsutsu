@@ -139,7 +139,8 @@ export function variantFor(slug: string): RuleVariant | null {
 /**
  * /games/<slug>/pass-and-play — the game for a whole table on one device, where
  * a game has one (`PARTY_PLAY_GAMES`): Chinese Checkers for two to six, Pair
- * Go for two teams of two, and Halma for four or two. Kept in the browser,
+ * Go for two teams of two, Halma for four or two, and Block Five for four.
+ * Kept in the browser,
  * never rated; beside `playPath`, the practice board for two.
  */
 export function passAndPlayPath(variant: string): string {

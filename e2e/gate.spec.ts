@@ -212,6 +212,8 @@ test.describe("the pages that stay open", () => {
       "/games/go/pass-and-play",
       // Halma for four, the same.
       "/games/halma/pass-and-play",
+      // Block Five for four, the same.
+      "/games/block-five/pass-and-play",
     ]) {
       await page.goto(path);
       await expect(page, `${path} should send you to the door`).toHaveURL(/\/join/);
