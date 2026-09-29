@@ -1,7 +1,7 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
-import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS } from "./kumimoji/tiles.constants";
+import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS, KUMIMOJI_WILDS, kumimojiTileCount } from "./kumimoji/tiles.constants";
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
 import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
@@ -360,8 +360,11 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: "The middle third: longer lines, and somewhere one has to be tried.",
     hard: "The last third: winding lines, and more than one place to try something and see.",
   },
+  // A Kumimoji's level is how many of its tiles are wild (`KUMIMOJI_WILDS`), counted here for a Short Classic game.
   kumimoji: {
-    medium: "Use every tile in the selected bag before the clock stops.",
+    easy: `The most wild tiles: ${KUMIMOJI_WILDS[KUMIMOJI_HANDS.classic]!.easy} in a Short game from the Classic hand.`,
+    medium: `Half as many wild tiles: ${KUMIMOJI_WILDS[KUMIMOJI_HANDS.classic]!.medium} in a Short game from the Classic hand.`,
+    hard: "No wild tiles: every tile is the letter or kana printed on it.",
   },
   koushi: {
     easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
@@ -646,14 +649,17 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Our own solo take on the anagram-grid race games, where every player builds a crossword of their own from drawn tiles at the same time. Kumimoji plays it alone, against the clock, from a bag drawn from the classic mix of 144 letters. Its name, 組文字, means “assembled letters”: a sibling of Gomoji 五文字.",
     rules: [
       `You start with a hand of tiles, ${KUMIMOJI_HANDS.classic} in a Classic game or ${KUMIMOJI_HANDS.quick} in a Quick one. Lay them out to build one crossword: every tile joined to the rest, and every line of two or more letters, across or down, a word.`,
+      `A game is Short, Medium or Full: ${kumimojiTileCount(KUMIMOJI_HANDS.classic, "short")} tiles from a Classic hand (${kumimojiTileCount(KUMIMOJI_HANDS.quick, "short")} from a Quick one), half the set (${kumimojiTileCount(KUMIMOJI_HANDS.classic, "medium")}), or all ${kumimojiTileCount(KUMIMOJI_HANDS.classic, "full")}. In English the Double set plays two sets as one, ${kumimojiTileCount(KUMIMOJI_HANDS.classic, "full", undefined, true)} tiles at Full.`,
       "Tap a tile and then a square to put it there, or drag it; on a keyboard, choose a square and type. Tiles can be moved, swapped or sent back to your hand at any time: tap a tile on the table twice and it goes straight back. Sort, or the / key, puts your hand in order. A line that is not a word is marked in red until it is.",
       "Choose Help on the set-up screen and a Help press arranges your hand to spell a word, a different one each time; you still have to find it a place. Each press costs a hint's worth of points, and Help is never offered in a race.",
       "The charcoal tiles marked 五 are wild: tap one and choose the letter it stands for, and change it whenever you like. Easy games have the most of them, Medium half as many, and Hard none.",
       "In Japanese every tile is a hiragana and plays as all of its forms, shown small in its corner: は is also ば and ぱ, つ is also っ and づ, や is also ゃ, and お is also を. A line is a word when it spells one read that way, as in a Japanese crossword: 学校, がっこう, is laid か つ こ う.",
+      "The table grows as you build and fits itself to the crossword. Pinch or use the wheel to zoom, drag the table to move it, or press Arrows for buttons that do both. Turn turns the table a quarter at a time, to see the grid from another side, and every tile stays upright.",
       "When your hand is empty and the grid is sound, press Draw for the next tile from the bag, and fit it in. Rebuild as much as you like: only the whole has to be right.",
       "Stuck with a Q or an X, or a hand that spells no word? Trade a tile: it goes to the bottom of the bag and you take the next three. Every tile still has to be used, the traded one included.",
       "The game ends when the bag is empty and every tile is on a sound grid. Your time is your score. Every bag has been laid out once before you see it, so it can always be finished.",
       "Pass and play: choose two to eight players on the set-up screen and hand one device round. Everyone's crossword and hand are face up, as they would be on a table; press Done to pass, and All tables shows every crossword at once. When your hand is used and your grid is sound, Draw gives every player a tile. When somebody goes out, everybody else has one last turn, and anyone who goes out on it shares the win. Once the bag cannot give a trade, a player who is stuck may resign; the last one standing wins by laying a tile.",
+      "Every crossword a member finishes is kept on their record, and its Wallpaper button draws them all as one picture, for a desk or a phone.",
     ],
     board: `There is no board: the tiles lie on a table that grows as the crossword does, and zooms to fit it. The chosen length and set determine how many tiles must be played, drawn from the 144-letter mix: thirteen A's, eighteen E's, and two each of J, K, Q, X and Z. Any word from two letters to fifteen in SCOWL, Kevin Atkinson's English and American spelling lists, counts. The Japanese set is 144 hiragana in 45 kinds, shared by how often each is used: ${JAPANESE_TILE_MIX["う"]} う, ${JAPANESE_TILE_MIX["ん"]} ん, and one each of the hard ones, ぬ, へ, ね, ろ and れ. Its words are every hiragana reading in JMdict, the Electronic Dictionary Research and Development Group's dictionary, used under its licence.`,
   },

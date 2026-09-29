@@ -41,7 +41,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
     spec.fixedLevels === true
       ? "A level left half drawn is kept for a member and waits in My games, lines and clock as they were. The levels you have solved are kept on your account, or in this browser without one."
-      : "A puzzle you did not finish is not kept. Come back to the same address and the same puzzle is there; the clock starts again.",
+      : "A puzzle left half done is kept for a member and waits in My games, as it was left, clock and all. Without an account nothing is kept: the same address brings back the same puzzle, and its clock starts again.",
     "Nothing is rated, nobody is beaten and no ladder counts a solve. A puzzle is a game in the catalogue and not a game between two players.",
   ];
 
