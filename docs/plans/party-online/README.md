@@ -29,8 +29,8 @@ the order the games join it.
   handed over in (`SeatCard`: QR code, the address, Copy, Text). Whoever opens
   it, signed in, takes that seat. A buddy invited by name is seated at once and
   told in their inbox; they can leave the seat, which opens it again.
-- **Kept on the account.** A table going is on My games > Going, under its own
-  panel ("At a table"), your move first; a finished one is on Completed with
+- **Kept on the account.** A table going is on My games > In progress, under its own
+  panel ("Online tables"), your move first; a finished one is on Completed with
   the table's result. The inbox says when you are invited and when a table you
   sit at ends.
 
@@ -295,7 +295,7 @@ browser spec until a game with a computer joins.
 - Leaving opens your seat again rather than ending the table.
 - Seven days before a silent turn lets the others end the table.
 - Twenty tables at once, apart from the twenty games.
-- The table is listed under its own "At a table" panel on Going, not merged
+- The table is listed under its own "Online tables" panel on In progress, not merged
   into the two-player "Your move" and "Their move" columns.
 - A computer's move is a browser's word for it: legal, checked, but not proven
   to be the move the computer would have chosen.
