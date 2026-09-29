@@ -121,8 +121,12 @@ describe("making a kumimoji with Diagonals", () => {
     const started = performance.now();
     const puzzle = generateKumimoji(7, "medium", 20260928, { ...options, diagonals: true });
     expect(checkSolution("kumimoji", 7, puzzle.givens, puzzle.solution, "medium", { ...options, diagonals: true })).toEqual({ ok: true });
-    // Measured at two seconds or under alone; the whole suite runs beside it.
-    expect(performance.now() - started).toBeLessThan(8000);
+    /*
+     * Measured at two seconds or under alone. The gate runs the unit suite beside
+     * the lint and the build, where the Double set once took 8.5 s; the bound is
+     * here to catch a search that runs for minutes, not a busy machine.
+     */
+    expect(performance.now() - started).toBeLessThan(20_000);
   });
 
   it("deals the same bag it always dealt with Diagonals off", () => {
