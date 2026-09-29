@@ -1375,10 +1375,6 @@ model PuzzleRun {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  /// Superseded by `runKey`, which adds Diagonals; kept while the code before
-  /// it may still be live (a deploy migrates before it switches), and dropped
-  /// by a later migration once nothing upserts on it.
-  @@unique([memberId, kind, size, language, gameLength, doubleSet, level, seed])
   /// One run per member per game as it was set up. Named short (`map`), since
   /// Postgres keeps only 63 characters of a name and Prisma's own would differ.
   @@unique([memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed], name: "runKey", map: "PuzzleRun_run_key")
