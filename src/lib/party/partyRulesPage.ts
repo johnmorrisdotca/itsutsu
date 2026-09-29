@@ -3,6 +3,7 @@ import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
 import { mancalaBoardName } from "./mancala/mancala.constants";
+import { trainSetName } from "./mexicanTrain/mexicanTrain.constants";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
@@ -42,6 +43,11 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       spec.sizes.map((rounds) => (rounds === TENKA_WORLD_ROUNDS ? "to the last player standing" : `${rounds} rounds`)),
       "or",
     )}`,
+  mexicanTrain: (spec) =>
+    `with a ${listed(
+      spec.sizes.map((size) => `${(trainSetName(size) ?? `double-${size}`).toLowerCase()}${size === spec.defaultSize ? " (the default)" : ""}`),
+      "or",
+    )} set`,
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
@@ -90,6 +96,11 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
       "The defender always throws as many dice as allowed — two with two armies or more, one with one — since more never hurts a defence. Dice are thrown by the game, not by a person, and a reloaded page throws nothing again: every die is kept with the game.",
       "A card shows a territory and one of three kinds: land, sea or air. A set that includes a territory you hold puts two more armies straight onto it. Cards traded in go back under the deck once it runs out.",
     ],
+  },
+  mexicanTrain: {
+    turn: "Hands are secret: between two people's turns the table covers the hand and names who to pass the device to, and it shows only once that player says it is them. Drag a tile onto the end of a train, or tap the tile and then the train; tap a tile twice to lay it on the only train it fits, when there is just one. The trains it may go on are lit. With nothing to lay, press Draw, then lay the tile drawn or press Pass.",
+    house:
+      "Each train shows its last few tiles and how many are laid on it before them, so the table fits a phone and every open end is where it always is; a marker out is drawn at the train's start. Pips are drawn in a colour of their own for each number, as most double-twelve sets are, so a nine and a twelve are told apart at a glance. The set-up offers the common house rules: a short game of half the rounds, chained doubles, and a Mexican Train that only opens once your own train has started. Computer players can take any seat, and play in the browser.",
   },
   hearts: {
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",

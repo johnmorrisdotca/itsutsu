@@ -92,6 +92,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Logic puzzles | 2 |
 | Cards | 1 |
 | Mahjong | 1 |
+| Dominoes | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for

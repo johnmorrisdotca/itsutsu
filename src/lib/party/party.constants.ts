@@ -2,6 +2,7 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { MANCALA_BOARDS } from "./mancala/mancala.constants";
+import { TRAIN_SETS } from "./mexicanTrain/mexicanTrain.constants";
 import type { PartyKind, PartySpec } from "./party.types";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
@@ -22,11 +23,12 @@ export const PARTY_KINDS = {
   superghost: "superghost",
   mancala: "mancala",
   tenka: "tenka",
+  mexicanTrain: "mexicanTrain",
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -110,6 +112,26 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "One map of the modern world, forty-two territories in six continents. For a quick game choose ten rounds; twenty for an evening; the whole world to play until one player holds it (counted at round sixty if it ever gets that far).",
   },
+  mexicanTrain: {
+    label: "Mexican Train",
+    kanji: "列車",
+    tagline: "Build your own train of dominoes out from the hub, add to the Mexican Train or anybody's left open, and go out first with the fewest pips.",
+    origin:
+      /* Checked 2026-09-29: where the game began is not recorded; the double-twelve set and the rules below are the ones most North American sets print. */
+      "A domino game of the train family: a hub in the middle, a train out of it for every player, and one more, the Mexican Train, that anybody may add to. Where it began is not certain. It spread across North America in the late twentieth century, and is now most often played with a double-twelve set of ninety-one tiles, thirteen rounds to a game. Nobody owns it.",
+    alsoKnownAs: ["Mexican Train Dominoes", "Train dominoes"],
+    wikipedia: "Mexican Train",
+    rules: [
+      "Each round begins with one double in the hub: the set's highest in the first round, then one fewer each round, down to double blank. Everybody is dealt a hand, face down to everybody else, and the rest of the tiles are the boneyard.",
+      "On your turn, lay one tile whose end matches the open end of your own train, of the Mexican Train, or of any player's train that has its marker out. The first tile of every train matches the double in the hub.",
+      "If you cannot lay a tile, draw one from the boneyard. Lay it if it goes; if not, or if there is nothing left to draw, put your marker on your train: anybody may now lay on it, until you lay on it yourself.",
+      "Lay a double and you must lay again to cover it, with a tile matching it. A double left uncovered must be covered before anybody lays anything anywhere else, by whoever can, whoever's train it is on.",
+      "A round ends when somebody lays their last tile, or when nobody can lay and the boneyard is empty. Everybody scores the pips left in their hand.",
+      "After the last round, the lowest total wins; players level on the lowest share the win.",
+    ],
+    board:
+      "Double-twelve is the set the game is sold with, and the one to start with. Double-nine makes a quicker game of larger pips, and double-fifteen a long one for a big table. A short game plays half the rounds, from the highest double down.",
+  },
   // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
   ...CARD_GAME_DISPLAY,
 };
@@ -159,6 +181,18 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
     defaultPlayers: 3,
     sizes: [TENKA_SHORT_ROUNDS, TENKA_MEDIUM_ROUNDS, TENKA_WORLD_ROUNDS],
     defaultSize: TENKA_WORLD_ROUNDS,
+  },
+  /*
+   * Mexican Train for two to eight, on a double-nine, double-twelve or
+   * double-fifteen set, the set chosen as a board is: double-twelve, the set
+   * the game is sold with, is the default, and four the table it opens on.
+   */
+  mexicanTrain: {
+    fewestPlayers: 2,
+    mostPlayers: 8,
+    defaultPlayers: 4,
+    sizes: [TRAIN_SETS.nine, TRAIN_SETS.twelve, TRAIN_SETS.fifteen],
+    defaultSize: TRAIN_SETS.twelve,
   },
   // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
   ...CARD_GAME_SPECS,

@@ -56,6 +56,7 @@ const PASS_AND_ONLY_A_PASS = new Map([
   ["src/lib/history/liveGame.ts", "reads a REQUEST's kind; there is no request for a forfeit, so the pass branch is the whole of it"],
   ["src/lib/gomoku/opponentTurns.ts", "a computer's candidate turns, which offer a pass and never a forfeit"],
   ["src/lib/gomoku/opponent.ts", "scores a computer's candidate turn, never a stored move"],
+  ["src/components/party/TrainGame.tsx", "Mexican Train's own moves, where a pass is a domino player's marker going out; its moves have no forfeit"],
   ["src/lib/bots/botPlay.ts", "turns a computer's chosen turn into a request, and no computer chooses a forfeit"],
   [
     "src/lib/party/online/onlinePairGo.ts",

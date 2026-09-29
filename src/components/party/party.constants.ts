@@ -197,3 +197,101 @@ export const MANCALA_COPY = {
   continue: "Continue →",
   about: "About Mancala and its rules",
 } as const;
+
+/** Where this browser keeps its game of Mexican Train: one at a time, apart from every other table's. */
+export const TRAIN_STORAGE_KEY = "itsutsu.mexicanTrain";
+
+/**
+ * EACH NUMBER'S PIPS IN A COLOUR OF ITS OWN, as most double-twelve and
+ * double-fifteen sets print them, so a nine and a twelve are told apart at a
+ * glance on a phone as well as by their shape (`pipSpots`). Dark enough to
+ * read on the tile's ivory in either theme, since a tile is a light object on
+ * the table whatever the page is (`surface-light`). Indexed by the number;
+ * blank has no pips.
+ */
+export const TRAIN_PIP_COLOURS: readonly string[] = [
+  "#22231f",
+  "#1f6fb0",
+  "#2e7d4a",
+  "#b2302f",
+  "#7a4a1f",
+  "#233f8f",
+  "#9d6c1f",
+  "#6f3b8f",
+  "#11706e",
+  "#22231f",
+  "#8a1f3f",
+  "#3d4a57",
+  "#c2540f",
+  "#546f14",
+  "#a8327a",
+  "#4b4a44",
+];
+
+/** How long a computer takes over a move, so the table can watch it lay: a fixed pause, never a poll. Shorter under reduced motion. */
+export const TRAIN_COMPUTER_PAUSE_MS = 650;
+export const TRAIN_COMPUTER_PAUSE_REDUCED_MS = 150;
+
+/** How near together two taps on one tile must be to count as a double-tap, and how far a finger must move to start a drag. */
+export const TRAIN_DOUBLE_TAP_MS = 380;
+export const TRAIN_DRAG_PX = 8;
+
+/** What Mexican Train's table says, beyond what every table says (`PARTY_COPY`). */
+export const TRAIN_COPY = {
+  lead: "Mexican Train for two to eight round one phone or tablet, with a computer in any seat you like. Hands are secret: the table covers yours between turns. Nothing here is rated or kept anywhere but this browser.",
+  set: "Which set?",
+  setLine: { 9: "55 tiles, 10 rounds. Quicker, with fewer pips.", 12: "91 tiles, 13 rounds. The set the game is sold with.", 15: "136 tiles, 16 rounds. A long evening." } as Record<number, string>,
+  howMany: "How many are playing?",
+  seats: "Players",
+  computer: "Computer",
+  computerHelp: "A computer plays this seat",
+  house: "House rules",
+  lengthLabel: "Rounds",
+  lengths: { full: "Every round", short: "A short game" },
+  lengthLine: { full: "One for every double, the highest down to blank.", short: "Half as many, from the highest double." },
+  doublesLabel: "Doubles",
+  doubles: { one: "One at a time", chain: "Chained" },
+  doublesLine: { one: "Cover a double before anything else.", chain: "Lay more doubles, then cover the last first." },
+  mexicanLabel: "Mexican Train",
+  mexican: { any: "Open from the start", ownFirst: "After your own" },
+  mexicanLine: { any: "Anybody may lay on it at any time.", ownFirst: "Only once your own train has begun." },
+  hub: "Hub",
+  mexicanTrain: "Mexican Train",
+  boneyard: (count: number) => `${count} to draw`,
+  round: (round: number, rounds: number) => `Round ${round} of ${rounds}`,
+  engine: (engine: number) => `Double ${engine} in the hub`,
+  tiles: (count: number) => `${count} ${count === 1 ? "tile" : "tiles"}`,
+  more: (count: number) => `+${count}`,
+  pass: (name: string) => `Pass the device to ${name}`,
+  passNote: "Their tiles are hidden until they say it is them.",
+  iAm: (name: string) => `I’m ${name}`,
+  hide: "Hide my tiles",
+  yourTiles: (name: string) => `${name}’s tiles`,
+  tap: "Drag a tile onto a lit train, or tap it and then the train. Tap a tile twice to lay it where it alone fits.",
+  pick: (tile: string) => `${tile} chosen: tap a lit train to lay it.`,
+  nowhere: "That tile goes nowhere now.",
+  draw: "Draw a tile",
+  passTurn: "Pass: marker out",
+  mustDraw: "Nothing to lay: draw a tile.",
+  mustPass: (drew: boolean) => (drew ? "The tile drawn will not go: pass, and your marker goes out." : "Nothing to lay and nothing to draw: pass, and your marker goes out."),
+  cover: (tile: string, owner: string) => `The double ${tile} on ${owner} must be covered first.`,
+  thinking: (name: string) => `${name} is thinking…`,
+  turn: (name: string) => `${name} to play`,
+  laid: (name: string, tile: string, where: string) => `${name} laid ${tile} on ${where}.`,
+  drew: (name: string) => `${name} drew a tile.`,
+  passed: (name: string) => `${name} passed, and put their marker out.`,
+  roundOver: (round: number) => `Round ${round} is over`,
+  wentOut: (name: string) => `${name} went out.`,
+  blocked: "Nobody could lay a tile and there was nothing left to draw.",
+  nextRound: "Deal the next round",
+  scores: "Scores",
+  pips: (count: number) => `${count} ${count === 1 ? "pip" : "pips"}`,
+  total: "Total",
+  lowestWins: "Lowest total wins.",
+  wins: (names: string) => `${names} wins with the lowest total.`,
+  share: (names: string) => `${names} share the win with the lowest total.`,
+  their: (name: string) => `${name}’s train`,
+  play: "Play →",
+  continue: "Continue →",
+  about: "About Mexican Train and its rules",
+} as const;

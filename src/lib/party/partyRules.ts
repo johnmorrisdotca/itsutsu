@@ -1,6 +1,7 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import { DOTS_RULES } from "./dotsAndBoxes/dotsAndBoxes";
 import { MANCALA_RULES } from "./mancala/mancala";
+import { MEXICAN_TRAIN_RULES } from "./mexicanTrain/trainRules";
 import type { PartyKind, PartyPlays, PartyRules } from "./party.types";
 import { SUPERGHOST_RULES } from "./superghost/ghostRules";
 import { TENKA_RULES } from "./tenka/tenkaRules";
@@ -16,5 +17,6 @@ export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], 
   superghost: SUPERGHOST_RULES,
   mancala: MANCALA_RULES,
   tenka: TENKA_RULES,
+  mexicanTrain: MEXICAN_TRAIN_RULES,
   ...CARD_GAME_RULES,
 };
