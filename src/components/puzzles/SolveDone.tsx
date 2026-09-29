@@ -13,6 +13,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { wordCountOfGivens } from "@/lib/puzzles/gomoji/futago";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshSolitaireSeed, isAnyDeal } from "@/lib/puzzles/solitaire/generate";
 
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PuzzleWayBack } from "./PuzzleWayBack";
@@ -37,7 +38,10 @@ export function SolveDone({
   strict = false,
   headStart = false,
   onward,
+  moves,
 }: {
+  /** A card game's count of moves (Solitaire), said with its time. */
+  moves?: number;
   /** Where a puzzle of fixed levels goes on to, in place of Another and the set-up: Tsunagi's next level, and its board of levels. */
   onward?: { next: { href: string; label: string } | null; all: { href: string; label: string } };
   puzzle: Puzzle;
@@ -57,12 +61,32 @@ export function SolveDone({
   const another = () => {
     // A Futago's Another is two more words (`futago.ts`), a Yotsugo's four more (`yotsugo.ts`): its seed says so.
     const words = PUZZLE_SPECS[puzzle.kind].wordGrid === undefined ? 1 : wordCountOfGivens(puzzle.givens);
-    router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: freshSeedOf(words), checks, strict, headStart, words, clock })));
+    // A Solitaire's Another is another deal of the same kind, winnable or any (`isAnyDeal`).
+    const seed = puzzle.kind === "solitaire" ? freshSolitaireSeed(isAnyDeal(puzzle.seed)) : freshSeedOf(words);
+    router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed, checks, strict, headStart, words, clock })));
   };
   const timed = PUZZLE_CLOCK_DISPLAY[clock];
+  /*
+   * A CARD GAME IS WON OR GIVEN UP, never solved: Solitaire's Give up hands the
+   * game in as ended (`runOut`), kept among the member's finished games and
+   * paid for playing it out, as a word whose guesses ran out is.
+   */
+  const cards = PUZZLE_SPECS[puzzle.kind].cards === true;
+  const gaveUp = cards && done.outOfGuesses === true && done.outOfTime !== true;
+  const moveWords = moves === undefined ? "" : `, in ${moves} ${moves === 1 ? "move" : "moves"}`;
   return (
     <div className={`${PANEL_CLASS} ${SELECTABLE} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
-      {done.outOfTime ? (
+      {gaveUp ? (
+        <p className="text-lg font-semibold" data-testid="puzzle-given-up">
+          Given up <span className="font-mincho text-base font-normal opacity-70">投了</span> after {clockText(done.elapsedMs)}
+          {moveWords}.
+        </p>
+      ) : cards ? (
+        <p className="text-lg font-semibold" data-testid="puzzle-won">
+          Won <span className="font-mincho text-base font-normal opacity-70">勝ち</span> in {clockText(done.elapsedMs)}
+          {moveWords}.
+        </p>
+      ) : done.outOfTime ? (
         <p className="text-lg font-semibold" data-testid="puzzle-out-of-time">
           Out of time <span className="font-mincho text-base font-normal opacity-70">時間切れ</span>: the {timed.label} {timed.kanji} ran down from{" "}
           {clockText(done.elapsedMs)} before it was solved.
@@ -74,7 +98,7 @@ export function SolveDone({
         </p>
       )}
       <p className="text-sm text-muted" data-testid="puzzle-paid">
-        {done.outOfTime
+        {done.outOfTime || gaveUp
           ? outOfTimeWords(done, hasAccount)
           : !hasAccount
             ? "A member is paid XP for a solve. Join, and the next one counts."
@@ -83,7 +107,7 @@ export function SolveDone({
                 ? `+${done.paid.points} XP, for ${awardWords(done.paid.awards)}.`
                 : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
               : (done.problem ?? "Recording your solve…")}
-        {done.outOfTime && hasAccount && race === null ? (
+        {(done.outOfTime || gaveUp) && hasAccount && race === null ? (
           <>
             {" "}
             Kept in{" "}
@@ -117,15 +141,15 @@ export function SolveDone({
         ) : race === null ? (
           <>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
-              Another {copy.label} →
+              {cards ? "Deal again" : `Another ${copy.label}`} →
             </button>
             <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-              Change the size or level
+              {cards ? "Change the draw or passes" : "Change the size or level"}
             </Link>
             {/* The solve just kept, to watch again step by step, as every past solve opens. */}
             {done.solveId ? (
               <Link href={mySolvePath(puzzle.kind, done.solveId)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-see-solve">
-                {done.outOfTime ? "See how far it got" : "Replay this solve"}
+                {done.outOfTime || gaveUp ? "See how far it got" : cards ? "See this game" : "Replay this solve"}
               </Link>
             ) : null}
           </>

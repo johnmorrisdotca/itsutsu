@@ -1,5 +1,6 @@
 import { checkBridges } from "./bridges/check";
 import { checkPictureLogic } from "./pictureLogic/check";
+import { checkSolitaire, checkSolitaireGivenUp } from "./solitaire/check";
 import { checkMahjong } from "./mahjong/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
@@ -71,6 +72,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkBridges(size, givens, answer);
     case "pictureLogic":
       return checkPictureLogic(size, givens, answer);
+    case "solitaire":
+      // A replay of the moves from the deal: every one allowed, and every card home at the end.
+      return checkSolitaire(size, givens, answer, level ?? "easy");
     case "mahjong":
       return checkMahjong(size, givens, answer);
     default:
@@ -249,6 +253,8 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  * for a loss that really happened — every row a word, none of them the word.
  */
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
+  // A Solitaire given up: its moves allowed, at least one made, and not won.
+  if (kind === "solitaire") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkSolitaireGivenUp(size, givens, answer, level ?? "easy") : { ok: false, reason: `no ${kind} at ${size}` };
   if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop" && kind !== "koushi") {
     return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   }

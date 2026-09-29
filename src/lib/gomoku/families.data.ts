@@ -4,7 +4,7 @@ import type { GameFamily } from "./families.types";
 /*
  * THE FAMILIES THEMSELVES, AS DATA: each row's identity, its words, the
  * reasons written beside it, and the games whose home it is. Its own module
- * since 2026-09-29, when Mahjong and Dominoes joined and `families.ts` held
+ * since 2026-09-29, when Cards, Mahjong and Dominoes joined and `families.ts` held
  * both this table and everything that reads it: the table grows a row with
  * every new kind of game, and the reading of it (`families.ts`: which
  * families keep records, where a family's page is, what a shelf shows) does
@@ -208,6 +208,26 @@ export const GAME_FAMILIES: GameFamily[] = [
     kanji: "理詰め",
     blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, and more to come. A few clues, one answer, and nothing to do but reason it out.",
     games: ["bridges", "pictureLogic"],
+  },
+  {
+    key: "cards",
+    /*
+     * CARDS. John, 2026-09-29: "Let's create 3 new types of game (card,
+     * mahjong, dominos)", and first of the cards "Solitair classic game". The
+     * shelf for games played with the one deck the site draws
+     * (`src/lib/cards/`, `src/components/cards/`): Solitaire first, a patience
+     * for one kept and timed as a puzzle is, and the family games for a table
+     * of several to follow — Hearts, Big Two, President, Go Fish, Crazy Eights.
+     *
+     * 札 (fuda): a card — the word in karuta and hanafuda, Japan's own card
+     * games. Chosen over トランプ, the everyday word for a Western deck, which
+     * is a loanword with nothing of the table in it; 札 is a card of any kind,
+     * as this shelf will be.
+     */
+    title: "Cards",
+    kanji: "札",
+    blurb: "Games with a deck of cards, drawn by us: Solitaire to start, and the family card games to come.",
+    games: ["solitaire"],
   },
   {
     key: "mahjong",

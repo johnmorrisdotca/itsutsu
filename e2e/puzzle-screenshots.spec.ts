@@ -16,6 +16,9 @@ import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
 import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
+import { decodeMoves as decodeSolitaireMoves, replay } from "../src/lib/puzzles/solitaire/code";
+import { solitaireRules } from "../src/lib/puzzles/solitaire/generate";
+import { carriedFrom, columnAt, isColumnPile } from "../src/lib/puzzles/solitaire/klondike";
 import { decodeMoves } from "../src/lib/puzzles/mahjong/moves";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
@@ -77,6 +80,9 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "bridges", size: 9, level: "medium", seed: 20260928, fill: 2 },
   // A 10×10 Picture logic with every other row of its picture shaded and a ✕ or two: the clue panels, some struck through, and the picture half out.
   { kind: "pictureLogic", size: 10, level: "medium", seed: 20260929, fill: 2 },
+  // A Solitaire turning one card, the first thirty moves of its winning line played: runs down the columns, the
+  // foundations begun, the stock and the waste, and the Itsutsu backs on the cards still face down.
+  { kind: "solitaire", size: 1, level: "easy", seed: 20260929, fill: 30 },
   // The classic Turtle with its first eight pairs taken, as a person takes them: a tile, then its match. Free tiles lit.
   { kind: "mahjong", size: 15, level: "medium", seed: 20260929, fill: 8 },
 ];
@@ -135,6 +141,26 @@ test.describe("puzzle screenshots", () => {
       let filled = 0;
       // The board colour a Kumimoji scene found, to put back after its picture.
       let feltBefore: string | null = null;
+      if (scene.kind === "solitaire") {
+        // The first moves of the winning line, each tapped as a person plays it: the stock, or a card and where it goes.
+        const rules = solitaireRules(scene.size, scene.level);
+        const pile = (id: string) => page.locator(`[data-card-pile="${id}"][role="group"] > button`);
+        for (const move of decodeSolitaireMoves(puzzle.solution)!.slice(0, scene.fill)) {
+          const played = (await page.getByTestId("puzzle-play").getAttribute("data-moves")) ?? "";
+          const table = replay(puzzle.givens, rules, played)!.at(-1)!;
+          if (move.kind !== "carry") await pile("s").last().click();
+          else {
+            const from = isColumnPile(move.from) ? pile(move.from).and(page.locator(`[data-card-index="${carriedFrom(table, columnAt(move.from), move.to)}"]`)) : pile(move.from).last();
+            await from.click({ position: { x: 12, y: 8 } });
+            await pile(move.to).last().click();
+          }
+          await expect.poll(async () => ((await page.getByTestId("puzzle-play").getAttribute("data-moves")) ?? "").length).toBeGreaterThan(played.length);
+          filled += 1;
+        }
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+        await page.getByTestId("puzzle-play").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
       if (scene.kind === "hiddenStones") {
         const stones = decodeStones(puzzle.solution, scene.size)!;
         for (const [row, col] of stones.entries()) {

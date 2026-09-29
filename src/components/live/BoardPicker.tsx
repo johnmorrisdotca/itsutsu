@@ -36,6 +36,7 @@ export function BoardPicker({
   disabled = false,
   beside = false,
   names = BOARD_SIZE_DISPLAY,
+  legend = "Board",
 }: {
   /** The chosen board, as the length of one side. */
   value: number;
@@ -55,6 +56,8 @@ export function BoardPicker({
    * the classic one and not the "Mini" a 9×9 board is.
    */
   names?: Record<number, { label: string; kanji: string }>;
+  /** What the choice is called over the tiles: "Board", or "Draw" for a card game, whose tiles are how many cards the stock turns. */
+  legend?: string;
 }) {
   /*
    * A GAME WITH ONE BOARD IS DRAWN AS A CHOSEN BOARD, because that is what it
@@ -86,7 +89,7 @@ export function BoardPicker({
       data-testid="shared-rules-size"
       data-beside={beside ? "true" : "false"}
     >
-      <legend className="mb-0.5 text-sm text-ink-soft">Board</legend>
+      <legend className="mb-0.5 text-sm text-ink-soft">{legend}</legend>
       <div className={beside ? PICK_BLOCKS_ASIDE : PICK_BLOCKS}>
         {sizes.map((size) => {
           const copy = names[size];

@@ -19,6 +19,7 @@ import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -32,6 +33,9 @@ import { HeadStartChips } from "./HeadStartChips";
 import { PuzzleClockChips } from "./PuzzleClockChips";
 import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
+import { SolitaireSetUpOptions } from "./SolitaireSetUpOptions";
+import { useSolitaireScoring } from "./useSolitaireScoring";
+import { sizeWord } from "./puzzles.constants";
 import { MahjongSetUpOptions, useMahjongChoice } from "./MahjongSetUpOptions";
 import { MahjongTableResume } from "./MahjongTableSeats";
 import { useKumimojiChoice } from "./useKumimojiChoice";
@@ -109,6 +113,9 @@ export function PuzzleSetUp({
   // The countdown (`PuzzleClockChips`), none unless chosen; like Strict, not carried into a race.
   const [clock, setClock] = useState<PuzzleClock>(asked?.clock ?? "none");
   const kumimoji = useKumimojiChoice(asked, size, kind === "kumimoji");
+  // Solitaire's kind of deal (in the address) and how the score is kept (in this browser): `SolitaireSetUpOptions`.
+  const [anyDeal, setAnyDeal] = useState(asked?.anyDeal === true);
+  const [scoring, setScoring] = useSolitaireScoring();
   const mahjong = useMahjongChoice(asked);
   const { language, gameLength, doubleSet, diagonals } = kumimoji;
   // How many play is Kumimoji's choice or Mahjong's; the flowers' rule is Mahjong's alone.
@@ -125,7 +132,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -153,7 +160,8 @@ export function PuzzleSetUp({
     setRacing("making");
     try {
       await preparePuzzle(kind, size, language);
-      const made = generatePuzzle(kind, size, level, kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
+      // A race is on a deal both seats can win: a Solitaire's is always a winnable one, whatever is chosen for playing alone.
+      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -215,6 +223,7 @@ export function PuzzleSetUp({
         {kind === "kumimoji" ? (
           <KumimojiSetUpOptions size={size} hints={hints} setHints={setHints} {...kumimoji} />
         ) : null}
+        {kind === "solitaire" ? <SolitaireSetUpOptions anyDeal={anyDeal} setAnyDeal={setAnyDeal} scoring={scoring} setScoring={setScoring} /> : null}
         {kind === "mahjong" ? <MahjongSetUpOptions {...mahjong} /> : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
@@ -228,7 +237,7 @@ export function PuzzleSetUp({
               className={`${PICK_WORD_CHIP} ${level === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
               onClick={() => setLevel(each)}
               disabled={!sizeLevels.includes(each)}
-              title={sizeLevels.includes(each) ? undefined : `A ${size}×${size} has no ${PUZZLE_LEVEL_DISPLAY[each].label.toLowerCase()} puzzle to make`}
+              title={sizeLevels.includes(each) ? undefined : spec.cards === true ? `Not offered at ${sizeWord(size, kind)}` : `A ${size}×${size} has no ${PUZZLE_LEVEL_DISPLAY[each].label.toLowerCase()} puzzle to make`}
               data-testid={`puzzle-level-${each}`}
             >
               {PUZZLE_LEVEL_DISPLAY[each].label} <span className="font-mincho opacity-70">{PUZZLE_LEVEL_DISPLAY[each].kanji}</span>
@@ -381,7 +390,7 @@ export function PuzzleSetUp({
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         {kind === "mahjong" ? <MahjongTableResume /> : null}
         <Link
-          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus }))}
+          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal }))}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

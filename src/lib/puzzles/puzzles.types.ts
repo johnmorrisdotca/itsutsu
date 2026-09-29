@@ -27,6 +27,7 @@ export type PuzzleKind =
   | "koushi"
   | "bridges"
   | "pictureLogic"
+  | "solitaire"
   | "mahjong";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
@@ -118,6 +119,12 @@ export type PuzzleSpec = {
    * so it has many answers rather than one. Absent is a grid with one answer.
    */
   tiles?: true;
+  /**
+   * Whether the puzzle is a game of cards (Solitaire): a deal from the shared
+   * deck (`lib/cards/`) played on a table, not a grid, whose size is how many
+   * cards the stock turns and whose answer is its moves. Absent is a grid.
+   */
+  cards?: true;
   /**
    * Whether the puzzle's size names a LAYOUT rather than the side of a grid:
    * Mahjong Solitaire's stacks of tiles (`mahjong/layouts.ts`), whose size is

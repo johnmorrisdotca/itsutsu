@@ -1,13 +1,17 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { formerWordRowsOf, guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
 import { swapsTaken } from "../koushi/check";
+import { decodeMoves } from "../solitaire/code";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
 export type GuessesTaken = {
   used: number;
   allowed: number;
-  /** What was counted, where it was not guesses: a Koushi counts its swaps, 11/15. */
-  unit?: "swaps";
+  /**
+   * What was counted, where it was not guesses: a Koushi counts its swaps,
+   * 11/15, and a Solitaire its moves, which have no allowance to be out of.
+   */
+  unit?: "swaps" | "moves";
 };
 
 /**
@@ -30,6 +34,11 @@ export function guessesTaken(
   answer: string | null,
 ): GuessesTaken | null {
   if (answer === null) return null;
+  // A won Solitaire's moves, every one standing: the other half of how it went, as a word's guesses are.
+  if (kind === "solitaire") {
+    const moves = decodeMoves(answer);
+    return moves === null ? null : { used: moves.length, allowed: 0, unit: "moves" };
+  }
   if (kind === "koushi") {
     const taken = swapsTaken(level, givens, answer);
     return taken === null ? null : { ...taken, unit: "swaps" };
@@ -47,5 +56,7 @@ export function guessesTaken(
 
 /** "3/6", as a board prints it. */
 export function guessesText(taken: GuessesTaken): string {
+  // Moves have no allowance: "143", not "143/0".
+  if (taken.unit === "moves") return String(taken.used);
   return `${taken.used}/${taken.allowed}`;
 }

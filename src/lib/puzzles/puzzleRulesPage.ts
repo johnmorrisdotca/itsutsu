@@ -51,9 +51,11 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
 
   const object = [copy.tagline, copy.rules[0]];
   const board = [
-    `Sizes: ${sizes}. ${copy.board}`,
+    `${spec.cards === true ? "Draws" : "Sizes"}: ${sizes}. ${copy.board}`,
     spec.fixedLevels === true
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
+      : spec.cards === true
+      ? "Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won."
       : spec.layouts === true
       ? "Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well."
       : spec.tiles === true
@@ -64,10 +66,14 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     ...copy.rules.slice(1),
     ...(spec.wordGrid === undefined ? [] : [futagoRule(spec.wordGrid), yotsugoRule(spec.wordGrid)]),
     `Levels: ${levels.join("; ")}.`,
-    "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
+    spec.cards === true
+      ? "A game is for one person, in your own browser: the deal is shuffled and every move is checked there, and nothing is sent anywhere until the last card is home."
+      : "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
   ];
   const house = [
-    "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
+    spec.cards === true
+      ? "A won game is checked by the site, move by move from the deal, and a member is paid XP for it, once per deal."
+      : "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
     spec.fixedLevels === true
       ? "A level left half drawn is kept for a member and waits in My games, lines and clock as they were. The levels you have solved are kept on your account, or in this browser without one."
       : "A puzzle left half done is kept for a member and waits in My games, as it was left, clock and all. Without an account nothing is kept: the same address brings back the same puzzle, and its clock starts again.",
@@ -94,11 +100,13 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
 }
 
 /**
- * A size as a rules page says it: a grid's side, a tile game's hand, or a
- * layout's name and how many tiles it holds (`PuzzleSpec.layouts`).
+ * A size as a rules page says it: a grid's side, a tile game's hand, a
+ * layout's name and how many tiles it holds (`PuzzleSpec.layouts`), or how
+ * many cards a card game's stock turns (`PuzzleSpec.cards`).
  */
 function sizeText(kind: PuzzleKind, size: number): string {
   const spec = PUZZLE_SPECS[kind];
+  if (spec.cards === true) return `draw ${size}`;
   if (spec.layouts === true) return `${PUZZLE_SIZE_NAMES[kind][size]?.label ?? size} (${layoutFor(size)?.slots.length ?? 0} tiles)`;
   return spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`;
 }

@@ -15,6 +15,7 @@ import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { dealOfSeed } from "@/lib/puzzles/solitaire/code";
 import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
@@ -142,6 +143,11 @@ export async function POST(request: Request) {
     const spec = PUZZLE_SPECS[kind];
     if (!spec.sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
     if (givens.length > spec.mostCells || answer.length > spec.mostCells) return unprocessable("Not a grid of that size.");
+    /* A Solitaire's deal is the plain shuffle of its seed (`solitaire/generate.ts`), so the one it
+       names is checked in a pass: a won game of some other deal is not a game of this one. */
+    if (kind === "solitaire" && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || dealOfSeed(parsed.data.seed) !== givens)) {
+      return unprocessable("Not the deal of that seed.");
+    }
 
     const checksAllowed = parsed.data.checksAllowed ?? null;
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");

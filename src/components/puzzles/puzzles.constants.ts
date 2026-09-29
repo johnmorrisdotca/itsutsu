@@ -105,6 +105,8 @@ export function sizeWord(size: number, kind?: PuzzleKind): string {
   if (kind === "kumimoji") return `${size} tiles`;
   // Koushi comes at one size, the lattice; what a reader wants told is what is in it.
   if (kind === "koushi") return "6 words";
+  // A Solitaire's is how many cards the stock turns at a time.
+  if (kind === "solitaire") return `draw ${size}`;
   // A Mahjong size is a layout, called by its name; its width in tiles is only the number on its picture.
   if (kind === "mahjong") return PUZZLE_SIZE_NAMES.mahjong[size]?.label ?? `${size} across`;
   return `${size}×${size}`;
@@ -513,4 +515,38 @@ export const PICTURE_COPY = {
   howToMark: "Tap to mark ✕, again to shade, again to clear. Drag along a row or column to do the same to every square like the first.",
   pens: { shade: "Shade", mark: "Mark ✕" },
   pensLabel: "What a tap does first",
+} as const;
+
+/**
+ * SOLITAIRE'S TABLE (`SolitaireTable`), laid out in hundredths of the playing
+ * area's width (`cqw`, the table being its own size container), so a phone and
+ * a desk lay the same cards in the same places: seven columns of cards with a
+ * gap between each and at both edges, the stock, the waste and the four
+ * foundations along the top, and the columns under them.
+ *
+ * The table is a board like every board here (`BoardFrame`: the wood, the rim,
+ * the shadow), and square like every board, seven by seven: the longest column
+ * a deal can make, a King down to an Ace over six face-down cards, fits it once
+ * the columns squeeze (`pileLayout`'s `room`: face-down cards to a sliver, and
+ * face-up ones to the strip that still shows a rank). Eight down was tried
+ * first, and at 390 pixels it left a third of a phone's screen of bare wood
+ * under a fresh deal.
+ */
+export const SOLITAIRE_TABLE = {
+  across: 7,
+  down: 7,
+  /** The wood's rim, as a share of the board's width. */
+  inset: 0.022,
+  /** The gap between cards and at the edges, in hundredths of the width. */
+  gap: 1.6,
+} as const;
+
+/** What the line under the Solitaire table says. */
+export const SOLITAIRE_COPY = {
+  howTo: "Drag a card, or tap it and then where it goes. Tap a card twice to send it home.",
+  picked: "Now tap where it goes, or tap it again to put it back.",
+  cannot: "That card cannot go there.",
+  stuck: "No move is left: the stock is spent and no card can go anywhere. Deal again to play on.",
+  finishing: "Every card is face up: the rest are going home.",
+  passesLeft: (left: number) => (left === Infinity ? "Turn the stock as often as you like." : left === 0 ? "Last time through the stock." : `${left} more ${left === 1 ? "time" : "times"} through the stock after this.`),
 } as const;

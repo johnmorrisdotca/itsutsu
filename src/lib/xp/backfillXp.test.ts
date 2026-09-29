@@ -45,6 +45,8 @@ const PUZZLE_SOLVED: HeldEvent[] = [
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "other", dayKey: "2026-01-01" },
   // Logic puzzles (2026-09-28), met with its first Bridges solve: every family now counts it.
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "logic", dayKey: "2026-01-01" },
+  // Cards (2026-09-29), met with its first Solitaire won.
+  { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "cards", dayKey: "2026-01-01" },
   // Mahjong (2026-09-29), met with its first Mahjong Solitaire solve.
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "mahjong", dayKey: "2026-01-01" },
 ];

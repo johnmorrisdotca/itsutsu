@@ -8,6 +8,7 @@ import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
 import { partyPlayersAsked } from "./kumimoji/party";
+import { isAnyDeal } from "./solitaire/generate";
 import { bonusRuleOfSeed } from "./mahjong/generate";
 import type { MahjongBonusRule } from "./mahjong/mahjong.types";
 import { tablePlayersAsked } from "./mahjong/table";
@@ -72,6 +73,14 @@ export type PuzzleAsked = {
    */
   clock?: PuzzleClock;
   /**
+   * Solitaire's kind of deal: any deal, the shuffle as it falls, rather than
+   * one the solver has won (`solitaire/generate.ts`). Asked for by the address
+   * (`deal=any`) until a seed is drawn, and from then said by the seed itself
+   * (`isAnyDeal`), whatever the address says; false, and left out, for a
+   * winnable deal and for any puzzle that is not Solitaire.
+   */
+  anyDeal?: boolean;
+  /**
    * Mahjong's flowers and seasons: the usual rule, or Identical. Asked for by
    * the address (`flowers=same`) until a seed is drawn, and from then said by
    * the seed itself (`bonusRuleOfSeed`), as a Futago's word count is.
@@ -79,7 +88,7 @@ export type PuzzleAsked = {
   bonus?: MahjongBonusRule;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -121,7 +130,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     const bonus: MahjongBonusRule = seed === null ? (one(PUZZLE_PARAMS.bonus) === "same" ? "same" : "group") : bonusRuleOfSeed(seed);
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, bonus, ...(tablePlayers > 1 ? { players: tablePlayers } : {}) };
   }
-  return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
+  const anyDeal = kind === "solitaire" && (seed === null ? one(PUZZLE_PARAMS.deal) === "any" : isAnyDeal(seed));
+  return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(anyDeal ? { anyDeal } : {}), ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -140,6 +150,8 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.language === "japanese") params.set(PUZZLE_PARAMS.language, asked.language);
   if (asked.players !== undefined && asked.players > 1) params.set(PUZZLE_PARAMS.players, String(asked.players));
   if (asked.clock !== undefined && asked.clock !== "none") params.set(PUZZLE_PARAMS.clock, asked.clock);
+  // Only while there is no seed to say it: a seed in the any-deal block is any deal already.
+  if (asked.anyDeal === true && asked.seed === null) params.set(PUZZLE_PARAMS.deal, "any");
   // Only until a seed is drawn: from then the seed says it.
   if (asked.bonus === "same" && asked.seed === null) params.set(PUZZLE_PARAMS.bonus, asked.bonus);
   return `?${params.toString()}`;

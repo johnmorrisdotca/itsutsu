@@ -27,6 +27,7 @@ export const FAMILY_FOLD_KEYS = [
   "small-boards",
   "numbers",
   "logic",
+  "cards",
   "mahjong",
   "dominoes",
   "party",

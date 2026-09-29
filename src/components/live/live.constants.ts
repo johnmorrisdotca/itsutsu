@@ -169,6 +169,8 @@ export const SET_UP_COPY = {
   // A puzzle's, in the same shape and length, so the line under the board is the same height whichever is chosen.
   previewMahjong: "A deal of this layout, for a look. Yours is dealt when you start.",
   previewPuzzle: (puzzle: string) => `A preview of the ${puzzle} grid. Nothing is written yet.`,
+  /** A card game's, which has a deal and not a grid. */
+  previewCards: (game: string) => `A deal of ${game}, the stock turned once. Nothing is played yet.`,
   /** Added where the board is dealt from a seed, so this arrangement is one of many. */
   previewDealt: "This game scatters its board, so the one you play will be different.",
   /** The heading and lead, where nothing but the opponent is known. */
