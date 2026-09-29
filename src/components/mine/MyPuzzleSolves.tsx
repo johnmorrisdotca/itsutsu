@@ -9,6 +9,7 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, STRETCHED_HOST } from "@/compon
 import { mySolvePath } from "@/lib/gomoku/slugs";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { clockText } from "@/lib/puzzles/clockText";
+import { clockWord } from "@/lib/puzzles/puzzleClock";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { hintsWords } from "@/lib/puzzles/gomoji/headStart";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -76,10 +77,11 @@ export function MyPuzzleSolves({ page, now, paged }: { page: MySolvesPage; now: 
                 </span>
                 <span className="text-xs text-muted">
                   {/* A word whose guesses ran out is kept too, scored for the letters it found; it says so first. */}
-                  {solve.solved ? "" : "Not found · "}
+                  {solve.solved ? "" : solve.guesses === null ? "Not solved · " : "Not found · "}
                   {sizeWord(solve.size, solve.kind)} · {PUZZLE_LEVEL_DISPLAY[solve.level].label} · {clockText(solve.elapsedMs)}
                   {solve.guesses === null || !solve.solved ? "" : ` · ${guessesText(solve.guesses)} guesses`}
                   {help === null ? "" : ` · ${help}`}
+                  {clockWord(solve.clock) === "" ? "" : ` · ${clockWord(solve.clock)}`}
                   {solve.raceId === null ? "" : " · race"} · {ago(solve.finishedAt.toISOString(), now)}
                 </span>
               </span>

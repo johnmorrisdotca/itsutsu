@@ -94,7 +94,7 @@ export function GomojiSolve({
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
   const [engaged, setEngaged] = useState(false);
-  const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(
+  const { elapsedMs, done, begin, finish, runOut, pausing, clock } = useSolve(
     puzzle,
     hasAccount,
     race,
@@ -253,8 +253,8 @@ export function GomojiSolve({
         </>
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
-          <p className="text-base">
-            Out of {rows} guesses. {twins ? "The words were" : "The word was"}{" "}
+          <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {twins ? "The words were" : "The word was"}{" "}
             <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
           </p>
           <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />
@@ -271,7 +271,7 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins, clock })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >

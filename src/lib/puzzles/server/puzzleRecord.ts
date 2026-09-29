@@ -40,6 +40,8 @@ export type RecordSolve = {
   guesses: GuessesTaken | null;
   /** How it was helped (`solveHelp.ts`), or null for none. */
   helped: SolveHelp | null;
+  /** The countdown it was played on, "none" for none. */
+  clock: string;
 };
 
 /** A member's points on the board, and exactly which of their solves made them. */
@@ -66,6 +68,7 @@ function whereOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Prisma.PuzzleSolve
     ...(asked.member !== null ? { memberId: asked.member } : {}),
     ...(asked.size !== null ? { size: asked.size } : {}),
     ...(asked.level !== null ? { level: asked.level } : {}),
+    ...(asked.clock !== null ? { clock: asked.clock } : {}),
     ...(spans.length > 0 ? { AND: spans.map((span) => ({ finishedAt: { gte: span.start, lt: span.end } })) } : {}),
     // Fastest first is the fastest board's order, and a word not found has no time to rank.
     // …and a helped solve is no time to rank either (`solveHelp.ts`).
@@ -88,7 +91,7 @@ export async function puzzleRecordOf(kind: PuzzleKind, asked: PuzzleRecordAsked)
       take: PUZZLE_RECORD_PAGE,
       select: {
         id: true, memberId: true, size: true, level: true, elapsedMs: true, points: true, solved: true, finishedAt: true,
-        raceId: true, checksUsed: true, hintsUsed: true, givens: true, answer: true, helped: true,
+        raceId: true, checksUsed: true, hintsUsed: true, givens: true, answer: true, helped: true, clock: true,
       },
     }),
     prisma.puzzleSolve.count({ where }),
@@ -137,7 +140,7 @@ export async function anySolveOf(kind: PuzzleKind, id: string): Promise<(Finishe
     where: { id },
     select: {
       id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, steps: true, solved: true, points: true,
-      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, helped: true,
+      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, helped: true, clock: true,
     },
   });
   return row === null || row.kind !== kind ? null : { ...row, helped: solveHelpOf(row.helped) };

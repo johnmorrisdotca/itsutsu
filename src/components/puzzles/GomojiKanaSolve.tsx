@@ -109,7 +109,7 @@ export function GomojiKanaSolve({
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
   const [engaged, setEngaged] = useState(false);
-  const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeKanaProgress(guesses), resumed, strict, headStart }, false, true);
+  const { elapsedMs, done, begin, finish, runOut, pausing, clock } = useSolve(puzzle, hasAccount, race, null, { progress: encodeKanaProgress(guesses), resumed, strict, headStart }, false, true);
 
   /* The rows drawn: the free grey word first where there is one, then the guesses. */
   const shown = useMemo(() => (given.grey === null ? guesses : [given.grey, ...guesses]), [given.grey, guesses]);
@@ -322,8 +322,8 @@ export function GomojiKanaSolve({
         </>
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
-          <p className="text-base">
-            Out of {rows} guesses. {twins ? "The words were" : "The word was"}{" "}
+          <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {twins ? "The words were" : "The word was"}{" "}
             <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.
           </p>
           <WordScoreLine score={score!} headStart={headStart} />
@@ -339,7 +339,7 @@ export function GomojiKanaSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins, clock })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >

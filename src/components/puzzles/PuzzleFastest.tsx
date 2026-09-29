@@ -6,9 +6,9 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { mySolvePath, setUpPath, solvePath, standingsPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor } from "@/lib/puzzles/puzzles.constants";
-import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { type FastestBoard, fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_CLOCK_LIST, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor, offersClock } from "@/lib/puzzles/puzzles.constants";
+import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
+import { type FastestBoard, fastestKey, fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 import { PUZZLE_RECORD_SORTS, puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
@@ -107,10 +107,21 @@ export function FastestTable({
   const spec = PUZZLE_SPECS[kind];
   const words = spec.helps === false;
   const columns = words ? 6 : 5;
-  const all = spec.sizes.flatMap((size) => levelsFor(kind, size).map((level) => ({ size, level, key: `${size}:${level}`, at: board.get(`${size}:${level}`) })));
+  const rowsOn = (clock: PuzzleClock) =>
+    spec.sizes.flatMap((size) => levelsFor(kind, size).map((level) => ({ size, level, clock, key: fastestKey(size, level, clock), at: board.get(fastestKey(size, level, clock)) })));
   // A size the set-up no longer offers keeps its row while somebody holds a time at it, and is not offered as empty.
-  const rows = all.filter((row) => spec.offered.includes(row.size) || row.at !== undefined);
-  const shown = whole ? rows : rows.filter((row) => row.at !== undefined).slice(0, 4);
+  const rows = rowsOn("none").filter((row) => spec.offered.includes(row.size) || row.at !== undefined);
+  /*
+   * EACH COUNTDOWN IS A TABLE OF ITS OWN (`puzzleClock.ts`): a Rabbit's minute
+   * and a solve with no clock are not one race. After the untimed rows, each
+   * clock's rows that anybody has solved on; on the standings page a clock
+   * nobody has solved on yet keeps one empty row, with the way in, so the shape
+   * of what is kept is there before the first time is.
+   */
+  const clocks = offersClock(kind) ? PUZZLE_CLOCK_LIST.filter((clock) => clock !== "none") : [];
+  const timed = clocks.flatMap((clock) => rowsOn(clock).filter((row) => row.at !== undefined));
+  const nobodyOn = whole ? clocks.filter((clock) => !timed.some((row) => row.clock === clock)) : [];
+  const shown = whole ? [...rows, ...timed] : [...rows, ...timed].filter((row) => row.at !== undefined).slice(0, 4);
   if (shown.length === 0) {
     return (
       <p className="text-sm text-muted" data-testid="puzzle-fastest-nobody">
@@ -150,17 +161,18 @@ export function FastestTable({
           const label = (
             <>
               {sizeWord(row.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[row.level].label.toLowerCase()}</span>
+              {row.clock === "none" ? null : <ClockMark clock={row.clock} />}
             </>
           );
           return (
-            <tbody key={row.key} data-testid="puzzle-fastest-row" data-size={row.size} data-level={row.level}>
+            <tbody key={row.key} data-testid="puzzle-fastest-row" data-size={row.size} data-level={row.level} data-clock={row.clock}>
               <tr className="border-t border-rule-strong">
                 <th colSpan={columns} scope="rowgroup" className="pt-2 pb-1 text-left text-xs font-semibold">
                   {row.at === undefined ? (
                     label
                   ) : (
                     <Link
-                      href={puzzleRecordHref(kind, { size: row.size, level: row.level, sort: PUZZLE_RECORD_SORTS.fastest })}
+                      href={puzzleRecordHref(kind, { size: row.size, level: row.level, clock: row.clock, sort: PUZZLE_RECORD_SORTS.fastest })}
                       className="underline-offset-2 hover:underline"
                       title="Every solve at this size and level, fastest first"
                       data-testid="puzzle-fastest-every"
@@ -225,7 +237,33 @@ export function FastestTable({
             </tbody>
           );
         })}
+        {nobodyOn.map((clock) => (
+          <tbody key={clock} data-testid="puzzle-fastest-row" data-clock={clock}>
+            <tr className="border-t border-rule-strong">
+              <th colSpan={columns} scope="rowgroup" className="pt-2 pb-1 text-left text-xs font-semibold">
+                Any size <ClockMark clock={clock} />
+              </th>
+            </tr>
+            <tr className="border-t border-rule">
+              <td colSpan={columns} className="py-1 text-muted">
+                <Link href={`${setUpPath(kind)}?clock=${clock}`} className="underline-offset-2 hover:underline" data-testid="puzzle-fastest-clock-first">
+                  nobody yet on the {PUZZLE_CLOCK_DISPLAY[clock].label} — be the first
+                </Link>
+              </td>
+            </tr>
+          </tbody>
+        ))}
       </table>
     </div>
+  );
+}
+
+/** The countdown a group of the table was solved on: its animal, its kanji and its time. */
+function ClockMark({ clock }: { clock: PuzzleClock }) {
+  const shown = PUZZLE_CLOCK_DISPLAY[clock];
+  return (
+    <span className="font-normal text-muted" data-testid="puzzle-fastest-clock">
+      {" "}· {shown.label} <span className="font-mincho">{shown.kanji}</span> {shown.time}
+    </span>
   );
 }

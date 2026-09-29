@@ -7,13 +7,15 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { preparePuzzle } from "@/lib/puzzles/generate";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
-import { progressFits } from "@/lib/puzzles/puzzleProgress";
-import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
+import { progressFits, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
+import { clockFor, clockLimitMs } from "@/lib/puzzles/puzzleClock";
+import { isSeed } from "@/lib/puzzles/random";
+import { decodeStepLog, encodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
-import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
@@ -28,6 +30,16 @@ function stepsOfSolve(kind: (typeof PUZZLE_KIND_LIST)[number], size: number, log
   if (log === undefined || PUZZLE_SPECS[kind].helps === false) return null;
   const codes = decodeStepLog(log, size * size);
   return codes !== null && codes.every((code) => progressFits(kind, size, code)) ? log : null;
+}
+
+/**
+ * The steps of a grid that ran out of time: the log as sent when it reads and
+ * ends on the grid as it stood, else that grid alone — so its page shows where
+ * it was left, never an empty one.
+ */
+function stepsOfEnded(size: number, log: string | undefined, progress: string): string {
+  const codes = log === undefined ? null : decodeStepLog(log, size * size);
+  return codes !== null && codes.at(-1) === progress ? log! : encodeStepLog([progress]);
 }
 
 /**
@@ -99,6 +111,16 @@ const bodySchema = z.object({
    * Tsunagi offers help, and only a level with explosions can have them eased.
    */
   helped: z.enum(SOLVE_HELP_LIST as [SolveHelp, ...SolveHelp[]]).optional(),
+  /** The countdown it was played on (`puzzleClock.ts`); none where absent, as from a browser from before clocks. */
+  clock: z.enum(PUZZLE_CLOCK_LIST as [string, ...string[]]).optional(),
+  /**
+   * A puzzle whose countdown ran out: ended, not solved. `answer` is what was
+   * written on it (`puzzleProgress.ts`), checked for its shape only, since
+   * there is no answer to check. Kept with `solved` false — a word or a lattice
+   * for what it found, a grid as it stood, scoring nothing — paid
+   * `puzzleEnded`, and its kept run comes off the member's games.
+   */
+  outOfTime: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -130,14 +152,52 @@ export async function POST(request: Request) {
     const headStart = parsed.data.headStart === true && offersHeadStart(kind, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
     const hintsUsed = words ? (headStart ? HEAD_START_HINTS : 0) : (parsed.data.hintsUsed ?? 0);
 
+    const clock = clockFor(kind, parsed.data.clock);
+    const limit = clockLimitMs(clock);
+    const level = parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number];
+
+    if (parsed.data.outOfTime === true) {
+      const seed = parsed.data.seed;
+      if (limit === null) return unprocessable("No clock to run out: this puzzle was not played on one.");
+      if (seed === undefined || !isSeed(seed)) return badRequest("Not a seed.");
+      if (!progressFits(kind, size, answer) || !runGuessesFit(kind, size, level, seed, answer)) return unprocessable("Not what a puzzle of that size could hold.");
+      const solveId = await keepSolve({
+        memberId,
+        kind,
+        size,
+        level,
+        givens,
+        // The whole allowance, whatever the browser's last tick read: that is how long it was played.
+        elapsedMs: limit,
+        checksAllowed,
+        checksUsed,
+        pausedMs: parsed.data.pausedMs ?? 0,
+        hintsUsed,
+        /* A word's and a lattice's writing is an answer in their own code, which
+           their pages replay; a grid's is its entries, kept as its last step. */
+        ...(words ? { answer } : { steps: stepsOfEnded(size, parsed.data.steps, answer) }),
+        solved: false,
+        clock,
+      });
+      await dropRun(memberId, kind, size, level, seed, "short", false, "english", false, clock);
+      const now = new Date();
+      const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
+      await awardTourBonuses({ memberId, paid, variant: kind, now });
+      return NextResponse.json(
+        { ok: true, points: paid.points, awards: paid.awards.filter((award) => award.points > 0).map((award) => award.type), solveId },
+        { headers: NO_STORE },
+      );
+    }
+    // Solved after its countdown ran out is not a solve on that clock; the browser ends it at the allowance.
+    if (limit !== null && (parsed.data.elapsedMs ?? 0) > limit) return unprocessable("Solved after its clock ran out.");
+
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     const language = kind === "kumimoji" ? parsed.data.language ?? "english" : "english";
     await preparePuzzle(kind, size, language);
 
     if (parsed.data.outOfGuesses === true) {
-      const ended = checkOutOfGuesses(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
+      const ended = checkOutOfGuesses(kind, size, givens, answer, level);
       if (!ended.ok) return unprocessable(`Not over: ${ended.reason}.`);
-      const level = parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number];
       /* Kept, not solved: it scores the letters it found (`wordScore`) on the
          points boards and waits in the member's own list, and nothing that
          counts solves ever sees it. John, 2026-09-25: "0 points is only
@@ -155,8 +215,9 @@ export async function POST(request: Request) {
         hintsUsed,
         answer,
         solved: false,
+        clock,
       });
-      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language, parsed.data.diagonals ?? false);
+      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language, parsed.data.diagonals ?? false, clock);
       const now = new Date();
       const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
       await awardTourBonuses({ memberId, paid, variant: kind, now });
@@ -166,7 +227,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const verdict = checkSolution(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], {
+    const verdict = checkSolution(kind, size, givens, answer, level, {
       gameLength: parsed.data.gameLength ?? "short",
       language,
       doubleSet: parsed.data.doubleSet ?? false,
@@ -187,7 +248,7 @@ export async function POST(request: Request) {
       memberId,
       kind,
       size,
-      level: parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number],
+      level,
       givens,
       elapsedMs: parsed.data.elapsedMs ?? 0,
       checksAllowed,
@@ -197,9 +258,10 @@ export async function POST(request: Request) {
       answer,
       steps: stepsOfSolve(kind, size, parsed.data.steps),
       helped,
+      clock,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
-    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language, parsed.data.diagonals ?? false);
+    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language, parsed.data.diagonals ?? false, clock);
     const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens), now });
     /* The tour, as after a finished game: a first solve of a puzzle can complete
        every game played, and a first puzzle at all can complete every family. */

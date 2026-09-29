@@ -37,6 +37,8 @@ export type MySolve = {
   guesses: GuessesTaken | null;
   /** How it was helped (`solveHelp.ts`), or null for none. */
   helped: SolveHelp | null;
+  /** The countdown it was played on, "none" for none. */
+  clock: string;
 };
 
 export type MySolvesPage = { solves: MySolve[]; total: number; next: string | null };
@@ -48,7 +50,7 @@ export async function mySolvesPage(memberId: string, cursor: string | null): Pro
       orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
       take: MY_SOLVES_PAGE + 1,
       ...(cursor === null ? {} : { cursor: { id: cursor }, skip: 1 }),
-      select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true, solved: true, givens: true, answer: true, helped: true },
+      select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true, solved: true, givens: true, answer: true, helped: true, clock: true },
     }),
     prisma.puzzleSolve.count({ where: { memberId } }),
   ]);

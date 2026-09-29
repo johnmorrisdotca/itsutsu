@@ -3,7 +3,7 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
 import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS, KUMIMOJI_WILDS, kumimojiTileCount } from "./kumimoji/tiles.constants";
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
-import type { PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
  * The puzzles: what each is, how big it comes, and what a reader is told.
@@ -104,6 +104,30 @@ export function isCheckAllowance(value: unknown): value is number | null {
 }
 
 /**
+ * THE COUNTDOWNS, slowest first, as the set-up offers them. John, 2026-09-26,
+ * reading about Speed Wordle: "we could have a TURTLE mode, RABBIT mode and
+ * some other animal in between... fast one being like 1 minute counter.
+ * turtle being 5 minutes". Called Tortoise here, as the fable has it. `ms` is
+ * null for none: the clock counts up and nothing runs out.
+ */
+export const PUZZLE_CLOCKS = { none: "none", tortoise: "tortoise", fox: "fox", rabbit: "rabbit" } as const satisfies Record<PuzzleClock, PuzzleClock>;
+
+export const PUZZLE_CLOCK_LIST: readonly PuzzleClock[] = ["none", "tortoise", "fox", "rabbit"];
+
+/** `time` is the allowance as a clock shows it, written out so a page naming a clock prints no time taken. */
+export const PUZZLE_CLOCK_DISPLAY: Record<PuzzleClock, { label: string; kanji: string; ms: number | null; time: string; blurb: string }> = {
+  none: { label: "No clock", kanji: "無", ms: null, time: "", blurb: "The clock counts up and never runs out: take as long as it takes." },
+  tortoise: { label: "Tortoise", kanji: "亀", ms: 5 * 60 * 1000, time: "5:00", blurb: "Five minutes, counting down. Out of time ends it unsolved, and it is kept as it stood." },
+  fox: { label: "Fox", kanji: "狐", ms: 3 * 60 * 1000, time: "3:00", blurb: "Three minutes, counting down. Out of time ends it unsolved, and it is kept as it stood." },
+  rabbit: { label: "Rabbit", kanji: "兎", ms: 60 * 1000, time: "1:00", blurb: "One minute, counting down. Out of time ends it unsolved, and it is kept as it stood." },
+};
+
+/** Whether a puzzle offers a countdown (`PuzzleSpec.clock`). */
+export function offersClock(kind: PuzzleKind): boolean {
+  return PUZZLE_SPECS[kind].clock !== false;
+}
+
+/**
  * Hidden Stones is made at eight sides and offered at four — Beginner, Usual,
  * Long and Longest — because the set-up screen keeps room for four boards and
  * no more (see `offered`). John, 2026-09-26: "is it possible to add a 12x12
@@ -179,7 +203,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    */
   // A layout is a cell a character and then its walls and `wrap` (`tsunagi/code.ts`): 81 cells and a wall list came to 109 characters
   // at 9×9, past the 81 the route once allowed, and every solve of those levels was refused. `levels.test.ts` holds every level to this.
-  tsunagi: { sizes: [4, 5, 6, 7, 8, 9, 10, 11, 12], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true },
+  tsunagi: { sizes: [4, 5, 6, 7, 8, 9, 10, 11, 12], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true, clock: false },
   /*
   * A size is the hand a game opens with (`KUMIMOJI_HANDS`); length and
   * inventory settings decide how many tiles it uses. The hand of three is
@@ -194,6 +218,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     mostCells: TILE_GAME_MOST,
     helps: false,
     tiles: true,
+    clock: false,
   },
   // One lattice of 21 letters; an answer is the grid and every swap made, two characters each (`lattice.ts`).
   koushi: { sizes: [5], offered: [5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: KOUSHI_ANSWER_MOST, helps: false, lattice: true },

@@ -10,8 +10,8 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { monthWords, weekWords } from "@/lib/history/recordMonth";
 import { PUZZLE_RECORD_SORTS, puzzleRecordAsked, puzzleRecordHref, type PuzzleRecordAsked } from "@/lib/puzzles/puzzleRecordAddress";
-import { PUZZLE_DISPLAY, PUZZLE_KINDS, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
-import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_KINDS, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { puzzleRecordOf, PUZZLE_RECORD_PAGE } from "@/lib/puzzles/server/puzzleRecord";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import { shownName } from "@/lib/rating/shownName";
@@ -151,9 +151,16 @@ function chipsOf(kind: PuzzleKind, asked: PuzzleRecordAsked, whose: string | nul
     whose === null ? null : { key: "member", label: `${whose} solves`, without: off({ member: null }) },
     asked.size === null ? null : { key: "size", label: sizeWord(asked.size, kind), without: off({ size: null }) },
     asked.level === null ? null : { key: "level", label: PUZZLE_LEVEL_DISPLAY[asked.level].label, without: off({ level: null }) },
+    asked.clock === null ? null : { key: "clock", label: clockWords(asked.clock), without: off({ clock: null }) },
     asked.month === null ? null : { key: "month", label: `Finished in ${monthWords(asked.month)}`, without: off({ month: null }) },
     asked.week === null ? null : { key: "week", label: `Finished in ${weekWords(asked.week)}`, without: off({ week: null }) },
     asked.sort === PUZZLE_RECORD_SORTS.fastest ? { key: "sort", label: "Solved, fastest first", without: off({ sort: PUZZLE_RECORD_SORTS.newest }) } : null,
   ];
   return chips.filter((chip): chip is Chip => chip !== null);
+}
+
+/** A clock as a chip says it: "Rabbit 兎, one minute", or "No clock". */
+function clockWords(clock: PuzzleClock): string {
+  const shown = PUZZLE_CLOCK_DISPLAY[clock];
+  return shown.ms === null ? shown.label : `${shown.label} ${shown.kanji} ${shown.time}`;
 }

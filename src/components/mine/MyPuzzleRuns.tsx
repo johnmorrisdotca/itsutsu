@@ -8,7 +8,7 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } f
 import { familyPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 
@@ -65,6 +65,8 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
                   {asked.hints ? " · hints" : ""}
                   {run.strict ? " · strict" : ""}
                   {asked.headStart ? " · head start" : ""}
+                  {/* A countdown says what it has left, the number that matters when it is picked up again. */}
+                  {asked.clock === undefined || asked.clock === "none" ? "" : ` · ${PUZZLE_CLOCK_DISPLAY[asked.clock].label.toLowerCase()}, ${clockText(Math.max(0, (PUZZLE_CLOCK_DISPLAY[asked.clock].ms ?? 0) - run.elapsedMs))} left`}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">

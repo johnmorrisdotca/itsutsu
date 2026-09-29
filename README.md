@@ -215,6 +215,15 @@ and the race page reads again when a browser comes back to it or presses
 Refresh. See `docs/plans/numbers/NUM-05-race-a-friend.md` and
 `docs/DATA_MODEL.md`.
 
+A puzzle can be played on a countdown, chosen on its set-up: no clock (the
+default), Tortoise 亀 5:00, Fox 狐 3:00 or Rabbit 兎 1:00
+(`src/lib/puzzles/puzzleClock.ts`). It is the same clock read the other way
+round, so it starts on the first entry and stops when the puzzle is paused;
+it is in the address, the kept run and the kept solve, and each clock has
+its own fastest table. At nought the puzzle ends unsolved and is kept as it
+stood, paid `puzzleEnded` like a word whose guesses ran out. Tsunagi and
+Kumimoji keep their own measures and offer none, and a race is never on one.
+
 #### Lines of stones
 
 The eleven the site started from. Each is five in a row with one thing

@@ -173,9 +173,17 @@ answer is never kept.
 | `finishedAt` | When the site checked it |
 | `raceId` | The `PuzzleRace` this was one seat of, or null |
 | `helped` | How the solve was helped (`solveHelp.ts`): `cheated`, `explosionsSoft` or `explosionsOff`, or null for none. A helped solve counts as solved but scores no points (so no IP) and stays off every fastest table; with explosions off it opens no next Tsunagi block |
+| `clock` | The countdown it was played on (`puzzleClock.ts`): `none`, `tortoise` (5:00), `fox` (3:00) or `rabbit` (1:00). Each clock has its own fastest table. A puzzle whose clock ran out is kept with `solved` false: a word or a lattice with what it found, a grid with no answer and its steps up to where it stood, scoring nothing |
 
 Indexed by member and date (a member's own), and by kind, size, level and
-time (the fastest board).
+time (the fastest board), and by kind, size, level, clock and time (each
+clock's fastest table, `PuzzleSolve_clock_fastest_idx`).
+
+`PuzzleRun`, an unfinished puzzle kept on the account, carries the same
+`clock`, in its key (`PuzzleRun_run_clock_key`), so Continue opens it on the
+same countdown with what it had left. The key without the clock
+(`PuzzleRun_run_key`) is still in place for the deploy that added it, and a
+later migration drops it.
 
 ### PuzzleRace
 

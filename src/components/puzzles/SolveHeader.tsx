@@ -10,6 +10,8 @@ import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.consta
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
 import { PUZZLE_CLOCK, sizeWord } from "./puzzles.constants";
+import { usePuzzleClock } from "./PuzzleClockContext";
+import { SolveCountdown } from "./SolveCountdown";
 import type { Pausing } from "./solveShared";
 
 /** The line over the grid: what was asked, the seed, and the clock. */
@@ -27,6 +29,8 @@ export function SolveHeader({
   /** What a puzzle of fixed levels says in place of size, level and number (Tsunagi's "Level 12 of 100"). */
   asked?: ReactNode;
 }) {
+  // A countdown where one was chosen (`PuzzleClockContext`), in the clock's own place.
+  const clock = usePuzzleClock();
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
       <p className="text-sm text-muted" data-testid="puzzle-asked">
@@ -62,9 +66,13 @@ export function SolveHeader({
         whose clock nothing here can stop.
       */}
       <div className="flex items-center gap-2">
-        <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
-          {clockText(elapsedMs)}
-        </p>
+        {clock === "none" ? (
+          <p className={PUZZLE_CLOCK} data-testid="puzzle-clock" aria-label="time taken">
+            {clockText(elapsedMs)}
+          </p>
+        ) : (
+          <SolveCountdown clock={clock} elapsedMs={elapsedMs} />
+        )}
         {pausing !== undefined && !pausing.racing ? (
           <button
             type="button"

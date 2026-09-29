@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 import { pointsFor } from "../puzzlePoints";
 import { PUZZLE_SPECS } from "../puzzles.constants";
-import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { guessesTaken, type GuessesTaken } from "../gomoji/guessesTaken";
 import { solveHelpOf, type SolveHelp } from "../solveHelp";
 
@@ -41,22 +41,28 @@ export type KeptSolve = {
   steps?: string | null;
   /** How it was helped (`solveHelp.ts`), or null for none: a helped solve scores nothing and is no best time. */
   helped?: SolveHelp | null;
+  /** The countdown it was played on; none where absent. A grid that ran out of it is kept unsolved. */
+  clock?: PuzzleClock;
 };
 
 /** Keeps a checked solve, and says which row it became — null when it could not be kept. */
 export async function keepSolve(solve: KeptSolve): Promise<string | null> {
   try {
     // Its leaderboard score, worked out once here so a board never sums on a view: see `pointsFor`.
-    const { answer, solved = true, steps = null, helped = null, ...kept } = solve;
-    // A helped solve scores nothing: it is solved, not the same achievement as one made unaided.
-    const points = helped !== null ? 0 : pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
+    const { answer, solved = true, steps = null, helped = null, clock = "none", ...kept } = solve;
+    /* A helped solve scores nothing: it is solved, not the same achievement as
+       one made unaided. Nor does a grid that ran out of time: a word or a
+       lattice scores what it found (`pointsFor`), and a grid's points are for
+       the cells of a finished one. */
+    const unsolvedGrid = !solved && PUZZLE_SPECS[solve.kind].helps !== false;
+    const points = helped !== null || unsolvedGrid ? 0 : pointsFor(solve.kind, solve.size, solve.givens, solve.checksUsed, solve.hintsUsed, answer, solve.elapsedMs, solve.level);
     /* The fastest time before this one, for the Everyone feed's "a new best
        time" — read first, since afterwards this solve is in the answer. */
-    const news = { memberId: solve.memberId, kind: solve.kind, size: solve.size, level: solve.level, elapsedMs: solve.elapsedMs, solved };
+    const news = { memberId: solve.memberId, kind: solve.kind, size: solve.size, level: solve.level, elapsedMs: solve.elapsedMs, solved, clock };
     // A helped time is no best time, so the feed is not told of it.
     const best = helped !== null ? undefined : await bestBefore(news);
     const row = await prisma.puzzleSolve.create({
-      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null, steps, helped },
+      data: { ...kept, raceId: solve.raceId ?? null, points, solved, answer: answer ?? null, steps, helped, clock },
       select: { id: true },
     });
     await tellSolve(news, best);
@@ -84,8 +90,16 @@ export type FastestSolve = {
   guesses: GuessesTaken | null;
 };
 
-/** The fastest solve at each size and level of a kind, as a map keyed `${size}:${level}`, and how many solves each has. */
+/**
+ * The fastest solves at each size, level and clock of a kind, as a map keyed
+ * by `fastestKey`, and how many solves each has. Each clock is a table of its
+ * own: a Rabbit's minute and an untimed solve are not one race.
+ */
 export type FastestBoard = Map<string, { fastest: FastestSolve[]; solves: number }>;
+
+export function fastestKey(size: number, level: string, clock: string): string {
+  return `${size}:${level}:${clock}`;
+}
 
 export const FASTEST_SHOWN = 3;
 
@@ -93,20 +107,20 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
   const spec = PUZZLE_SPECS[kind];
   const board: FastestBoard = new Map();
   const counts = await prisma.puzzleSolve.groupBy({
-    by: ["size", "level"],
+    by: ["size", "level", "clock"],
     where: { kind, solved: true },
     _count: { _all: true },
   });
-  for (const row of counts) board.set(`${row.size}:${row.level}`, { fastest: [], solves: row._count._all });
-  /* One query per (size, level) that has any solves — at most the kind's sizes
-     times its levels, each on the (kind, size, level, elapsedMs) index. */
+  for (const row of counts) board.set(fastestKey(row.size, row.level, row.clock), { fastest: [], solves: row._count._all });
+  /* One query per (size, level, clock) that has any solves — at most the kind's
+     sizes times its levels times four clocks, each on the clock's index. */
   await Promise.all(
     [...board.keys()].map(async (key) => {
-      const [size, level] = key.split(":");
+      const [size, level, clock] = key.split(":");
       if (!spec.sizes.includes(Number(size))) return;
       const rows = await prisma.puzzleSolve.findMany({
         // Unhelped only: a helped solve is solved, and no time to beat.
-        where: { kind, size: Number(size), level, solved: true, helped: null },
+        where: { kind, size: Number(size), level, clock, solved: true, helped: null },
         /* Koushi ranks the fewest swaps first and then the time, which its stored points already say (`koushiPoints`). */
         orderBy: kind === "koushi" ? [{ points: "desc" }, { elapsedMs: "asc" }, { finishedAt: "asc" }] : [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,
@@ -200,6 +214,8 @@ export type FinishedSolve = {
   finishedAt: Date;
   /** How it was helped, or null for none (`solveHelp.ts`). */
   helped: SolveHelp | null;
+  /** The countdown it was played on, "none" for none. */
+  clock: string;
 };
 
 /**
@@ -212,13 +228,13 @@ export async function ownSolveOf(memberId: string, kind: PuzzleKind, id: string)
     where: { id },
     select: {
       id: true, memberId: true, kind: true, size: true, level: true, givens: true, answer: true, steps: true, solved: true, points: true,
-      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, helped: true,
+      elapsedMs: true, checksAllowed: true, checksUsed: true, hintsUsed: true, raceId: true, finishedAt: true, helped: true, clock: true,
     },
   });
   if (row === null || row.memberId !== memberId || row.kind !== kind) return null;
   return {
     id: row.id, kind: row.kind, size: row.size, level: row.level, givens: row.givens, answer: row.answer, steps: row.steps, solved: row.solved, points: row.points,
     elapsedMs: row.elapsedMs, checksAllowed: row.checksAllowed, checksUsed: row.checksUsed, hintsUsed: row.hintsUsed, raceId: row.raceId, finishedAt: row.finishedAt,
-    helped: solveHelpOf(row.helped),
+    helped: solveHelpOf(row.helped), clock: row.clock,
   };
 }

@@ -1,5 +1,6 @@
 import { PUZZLE_SPECS, isCheckAllowance, levelsFor } from "./puzzles.constants";
-import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import { clockFor } from "./puzzleClock";
 import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 import { isFutagoSeed } from "./gomoji/futagoSeed";
@@ -58,9 +59,16 @@ export type PuzzleAsked = {
    * the address: they are typed on the play page and stay in the browser.
    */
   players?: number;
+  /**
+   * The countdown (`puzzleClock.ts`): "none", and left out of the address, by
+   * default and for a puzzle that offers none (`offersClock`), whatever the
+   * address asked. Part of the puzzle's identity, so Continue, Another and a
+   * reload keep it.
+   */
+  clock?: PuzzleClock;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -79,7 +87,7 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   /* A fixed level's seed is its number, and its band follows from it, whatever the address said (`tsunagi/levels.ts`). */
   if (spec.fixedLevels === true) {
     const number = isTsunagiLevel(size, seedAsked) ? seedAsked : null;
-    return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false };
+    return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false, clock: "none" };
   }
   const seed = isSeed(seedAsked) ? seedAsked : null;
   const checksAsked = Number(one(PUZZLE_PARAMS.checks));
@@ -95,7 +103,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const doubleSet = one(PUZZLE_PARAMS.doubleSet) === "1";
   const diagonals = one(PUZZLE_PARAMS.diagonals) === "1";
   const players = partyPlayersAsked(one(PUZZLE_PARAMS.players));
-  return { size, level, seed, checks, hints, strict, headStart, twins, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
+  const clock = clockFor(kind, one(PUZZLE_PARAMS.clock));
+  return { size, level, seed, checks, hints, strict, headStart, twins, clock, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -112,13 +121,14 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.gameLength !== undefined && asked.gameLength !== "short") params.set(PUZZLE_PARAMS.gameLength, asked.gameLength);
   if (asked.language === "japanese") params.set(PUZZLE_PARAMS.language, asked.language);
   if (asked.players !== undefined && asked.players > 1) params.set(PUZZLE_PARAMS.players, String(asked.players));
+  if (asked.clock !== undefined && asked.clock !== "none") params.set(PUZZLE_PARAMS.clock, asked.clock);
   return `?${params.toString()}`;
 }
 
 /** What a kept run was asked as, for Continue and Resume, its Head start read back from where it is kept (`hadHeadStart`). */
 export function keptRunAsked(
   kind: PuzzleKind,
-  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean; language?: string; gameLength?: string; doubleSet?: boolean; diagonals?: boolean },
+  run: { size: number; level: string; seed: number; checksAllowed: number | null; hintsAllowed: boolean; strict: boolean; language?: string; gameLength?: string; doubleSet?: boolean; diagonals?: boolean; clock?: string },
 ): PuzzleAsked {
   const headStart = hadHeadStart(kind, run.level, run.hintsAllowed);
   return {
@@ -130,6 +140,7 @@ export function keptRunAsked(
     strict: run.strict,
     headStart,
     twins: isFutagoSeed(run.seed),
+    clock: clockFor(kind, run.clock),
     ...(kind === "kumimoji" ? { gameLength: run.gameLength === "medium" || run.gameLength === "full" ? run.gameLength : "short", language: run.language === "japanese" ? "japanese" : "english", doubleSet: run.language !== "japanese" && (run.doubleSet ?? false), diagonals: run.diagonals === true } : {}),
   };
 }

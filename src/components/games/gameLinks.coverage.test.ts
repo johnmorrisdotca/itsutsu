@@ -518,6 +518,10 @@ const TIME_EXCEPTIONS: Record<string, string> = {
   "src/components/puzzles/solveShared.tsx": "the clock of the puzzle in front of the reader, and its own finishing line",
   // The same running clock, split out of solveShared.tsx to keep that file under the size gate.
   "src/components/puzzles/SolveHeader.tsx": "the running clock of the puzzle being played: there is no finished solve to open yet",
+  // The countdown of the puzzle being played, in the clock's place: the time left, not a solve's time.
+  "src/components/puzzles/SolveCountdown.tsx": "the time left on the puzzle being played: there is no finished solve to open yet",
+  // The finishing line, split out of solveShared.tsx: the solve just made, whose Replay is the button beside it.
+  "src/components/puzzles/SolveDone.tsx": "the finishing line of the puzzle in front of the reader, with Replay beside it",
   // A level's tile is the button that chooses it; the chosen level's best time, opening that solve, is under the preview above it.
   "src/components/puzzles/TsunagiLevelPicker.tsx": "the tile is the button that chooses its level; the chosen level's time opens its solve in the preview's caption",
   // One finished puzzle's own page: its time is a fact about the page the reader is on.

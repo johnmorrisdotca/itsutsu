@@ -44,7 +44,8 @@ describe("every reader that ranks solves by time leaves helped ones out", () => 
   const read = (path: string) => readFileSync(join(process.cwd(), "src/lib", path), "utf8");
 
   it("the fastest tables, the level's leaderboard, the record's fastest order and the feed's best time", () => {
-    expect(read("puzzles/server/puzzleSolves.ts")).toMatch(/where: \{ kind, size: Number\(size\), level, solved: true, helped: null \}/);
+    // Each clock's own table (`puzzleClock.ts`) asks the same.
+    expect(read("puzzles/server/puzzleSolves.ts")).toMatch(/where: \{ kind, size: Number\(size\), level, clock, solved: true, helped: null \}/);
     expect(read("puzzles/server/tsunagiRecords.ts")).toMatch(/givens, solved: true, helped: null \}/);
     expect(read("puzzles/server/puzzleRecord.ts")).toMatch(/\{ solved: true, helped: null \}/);
     expect(read("feed/siteNewsWrite.ts")).toMatch(/solved: true, helped: null \}/);
@@ -52,7 +53,8 @@ describe("every reader that ranks solves by time leaves helped ones out", () => 
 
   it("the keeper scores a helped solve nothing and tells the feed nothing", () => {
     const keeper = read("puzzles/server/puzzleSolves.ts");
-    expect(keeper).toMatch(/const points = helped !== null \? 0 :/);
+    // A grid that ran out of its clock scores nothing too; the helped one still does, first.
+    expect(keeper).toMatch(/const points = helped !== null (\|\| unsolvedGrid )?\? 0 :/);
     expect(keeper).toMatch(/const best = helped !== null \? undefined :/);
   });
 });

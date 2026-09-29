@@ -2,7 +2,8 @@ import { historyPath } from "@/lib/gomoku/slugs";
 import { readMonth, readWeek } from "@/lib/history/recordMonth";
 
 import { PUZZLE_SPECS } from "./puzzles.constants";
-import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import { isPuzzleClock } from "./puzzleClock";
 
 /**
  * A PUZZLE'S RECORD, AS AN ADDRESS: `/games/<slug>/history?member=…&size=…`.
@@ -21,6 +22,7 @@ export const PUZZLE_RECORD_PARAMS = {
   member: "member",
   size: "size",
   level: "level",
+  clock: "clock",
   month: "month",
   week: "week",
   sort: "sort",
@@ -36,6 +38,8 @@ export type PuzzleRecordAsked = {
   member: string | null;
   size: number | null;
   level: PuzzleLevel | null;
+  /** The countdown the solves were played on, "none" included: each clock's fastest table leads to its own. */
+  clock: PuzzleClock | null;
   /** "2026-09": the solves finished in that month, as the monthly board counts them. */
   month: string | null;
   /** "2026-09-21": the solves finished in the week starting that Monday, UTC, as the weekly board counts them. */
@@ -68,10 +72,12 @@ export function puzzleRecordAsked(kind: PuzzleKind, query: Query): PuzzleRecordA
   const size = Number(one(PUZZLE_RECORD_PARAMS.size));
   const level = one(PUZZLE_RECORD_PARAMS.level) as PuzzleLevel;
   const page = Number(one(PUZZLE_RECORD_PARAMS.page));
+  const clock = one(PUZZLE_RECORD_PARAMS.clock);
   return {
     member: member !== "" && member.length <= MEMBER_MAX ? member : null,
     size: spec.sizes.includes(size) ? size : null,
     level: spec.levels.includes(level) ? level : null,
+    clock: isPuzzleClock(clock) ? clock : null,
     month: readMonth(one(PUZZLE_RECORD_PARAMS.month)),
     week: readWeek(one(PUZZLE_RECORD_PARAMS.week)),
     sort: one(PUZZLE_RECORD_PARAMS.sort) === PUZZLE_RECORD_SORTS.fastest ? PUZZLE_RECORD_SORTS.fastest : PUZZLE_RECORD_SORTS.newest,
@@ -85,6 +91,7 @@ export function puzzleRecordHref(kind: PuzzleKind | string, asked: Partial<Puzzl
   if (asked.member) query.set(PUZZLE_RECORD_PARAMS.member, asked.member);
   if (asked.size) query.set(PUZZLE_RECORD_PARAMS.size, String(asked.size));
   if (asked.level) query.set(PUZZLE_RECORD_PARAMS.level, asked.level);
+  if (asked.clock) query.set(PUZZLE_RECORD_PARAMS.clock, asked.clock);
   if (asked.month) query.set(PUZZLE_RECORD_PARAMS.month, asked.month);
   if (asked.week) query.set(PUZZLE_RECORD_PARAMS.week, asked.week);
   if (asked.sort === PUZZLE_RECORD_SORTS.fastest) query.set(PUZZLE_RECORD_PARAMS.sort, PUZZLE_RECORD_SORTS.fastest);

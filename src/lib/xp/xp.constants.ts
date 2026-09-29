@@ -417,12 +417,13 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      2026-09-25: "losing the game should give you 0 points... and you probably
      get at least 1 XP or something." A fifth of `puzzleSolved`, so trying is
      worth something and finding is worth far more; keyed on the grid like the
-     solve, so one word pays once, and under the same daily allowance. */
+     solve, so one word pays once, and under the same daily allowance. A
+     puzzle whose countdown ran out (`puzzleClock.ts`) is played out too. */
   puzzleEnded: {
     points: 5,
     label: "Puzzle played out",
     kanji: "挑戦",
-    blurb: "For playing a word to its last guess without finding it. The same word pays once.",
+    blurb: "For playing a puzzle to its end without solving it: a word to its last guess, or any puzzle until its clock runs out. The same puzzle pays once.",
     sentence: "A puzzle played to the end.",
     cap: 6,
   },

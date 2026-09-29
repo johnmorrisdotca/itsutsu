@@ -5,6 +5,7 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
+import { clockWord } from "@/lib/puzzles/puzzleClock";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import type { RecordSolve } from "@/lib/puzzles/server/puzzleRecord";
@@ -76,7 +77,12 @@ export function RecordSolvesTable({
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
                     <SolveTime kind={kind} solveId={solve.id} elapsedMs={solve.elapsedMs} mine={mine} testId="record-solve-time" />
-                    {solve.solved ? null : <span className="ml-1 text-xs text-muted">not found</span>}
+                    {solve.solved ? null : <span className="ml-1 text-xs text-muted">{solve.guesses === null ? "not solved" : "not found"}</span>}
+                    {clockWord(solve.clock) === "" ? null : (
+                      <span className="ml-1 text-xs text-muted" data-testid="record-solve-clock">
+                        {clockWord(solve.clock)}
+                      </span>
+                    )}
                     {solve.guesses === null || !solve.solved ? null : <span className="ml-1 text-xs text-muted tabular-nums">{guessesText(solve.guesses)}</span>}
                     {solve.raceId === null ? null : <span className="ml-1 text-xs text-muted">race</span>}
                     {solve.helped === null ? null : (
