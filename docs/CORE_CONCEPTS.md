@@ -74,6 +74,16 @@ Tenka, world conquest for two to six, is the second: a game of chance, so its
 dice are drawn from a seed kept with its moves, and a kept game is thrown
 again exactly as it fell. `docs/plans/party-games/README.md` has the reasoning.
 
+**And a language or a word list is a setting, never a game.** Gomoji in French,
+German, kana or its Pop culture list is stored as a kind of its own
+(`gomojiMot`, `gomojiWort`, `gomojiKana`, `gomojiPop`) — its runs, solves,
+fastest times and days' words stay apart — but the catalogue lists ONE Gomoji:
+`EVERY_GAME_KEY` leaves the settings out, `EVERY_KIND_KEY` keeps them, and
+`src/lib/catalogue/gameSettings.ts` says which kind is which language and list
+of which game. Their addresses are the game's with the setting in the query
+(`/games/gomoji/play?language=french`), and the four old front doors lead on
+(`formerAddresses.ts`).
+
 ## 2. A game is its moves
 
 A stored game is **its settings plus its move list, never a board**. A board

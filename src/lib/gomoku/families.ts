@@ -1,5 +1,6 @@
 // Relative, not `@/`: the browser specs import this file, and Playwright resolves no alias in what it imports.
 import { type GameKey, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
+import { listedGameOf } from "../catalogue/gameSettings";
 
 import { ALSO_LISTED_IN } from "./familyShelves";
 import type { GameFamily, ShelvedGame } from "./families.types";
@@ -264,7 +265,8 @@ export const GAME_FAMILIES: GameFamily[] = [
     kanji: "その他",
     blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, tiles to build into your own crossword, and six words to swap into a lattice.",
     /* Tsunagi and Kumimoji joined 2026-09-26, and Koushi the same day: puzzles for one with no digits in them, and Numbers already holds its eight. */
-    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "gomojiPop", "tsunagi", "kumimoji", "koushi"],
+    /* One Gomoji: its languages and word lists are settings of it, chosen on its set-up (`gameSettings.ts`, John, 2026-09-28). */
+    games: ["gomoji", "tsunagi", "kumimoji", "koushi"],
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];
@@ -419,9 +421,10 @@ export function boardGamesShownIn(family: GameFamily): (ShelvedGame & { variant:
 
 /** The other games in the family a variant belongs to, for "also try" links. */
 export function siblingsOf(variant: GameKey): { family: (typeof GAME_FAMILIES)[number]; games: GameKey[] } | null {
-  const family = GAME_FAMILIES.find((entry) => entry.games.includes(variant));
+  const listed = listedGameOf(variant) as GameKey;
+  const family = GAME_FAMILIES.find((entry) => entry.games.includes(listed));
   if (family === undefined) return null;
-  return { family, games: family.games.filter((game) => game !== variant) };
+  return { family, games: family.games.filter((game) => game !== listed) };
 }
 
 /**
@@ -433,7 +436,9 @@ export function siblingsOf(variant: GameKey): { family: (typeof GAME_FAMILIES)[n
  * wrong about the family. Two questions, two functions.
  */
 export function familyOf(variant: GameKey): (typeof GAME_FAMILIES)[number] | null {
-  return GAME_FAMILIES.find((entry) => entry.games.includes(variant)) ?? null;
+  // A setting of a game (a Gomoji in French, `gameSettings.ts`) is in its game's family.
+  const listed = listedGameOf(variant) as GameKey;
+  return GAME_FAMILIES.find((entry) => entry.games.includes(listed)) ?? null;
 }
 
 /**

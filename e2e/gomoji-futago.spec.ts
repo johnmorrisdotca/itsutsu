@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, playPath, PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { dayKeyOf } from "../src/lib/puzzles/dailyWords/dailyDay";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { isWord } from "../src/lib/puzzles/gomoji/code";
@@ -107,7 +107,7 @@ test.describe("Gomoji Futago", () => {
     const puzzle = generatePuzzle("gomojiKana", 3, "easy", seed);
     const hidden = hiddenWordsOf("gomojiKana", 3, puzzle.givens)!;
     expect(hidden.words).toHaveLength(2);
-    await page.goto(`/games/${PUZZLE_SLUGS.gomojiKana}/play?size=3&level=easy&seed=${seed}`);
+    await page.goto(joinQuery(playPath("gomojiKana"), `?size=3&level=easy&seed=${seed}`));
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("word-part")).toHaveCount(2);
     for (const word of hidden.words) {

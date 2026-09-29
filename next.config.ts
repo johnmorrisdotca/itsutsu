@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+import { formerSettingAddresses } from "./src/lib/catalogue/formerAddresses";
 import { readLadderFingerprint } from "./src/lib/gomoku/ladderFingerprint";
 
 /**
@@ -14,6 +15,13 @@ const embedAllowList = process.env.EMBED_ALLOWED_ORIGINS?.trim();
 const frameAncestors = embedAllowList ? `'self' ${embedAllowList}` : "'self'";
 
 const nextConfig: NextConfig = {
+  /*
+   * The four Gomoji front doors of before 2026-09-28, each now a setting of the
+   * one Gomoji: see `formerAddresses.ts` for why these, and only these, lead on.
+   */
+  async redirects() {
+    return formerSettingAddresses();
+  },
   /*
    * THE SUITE'S RELIEF, HANDED TO THE BROWSER.
    *

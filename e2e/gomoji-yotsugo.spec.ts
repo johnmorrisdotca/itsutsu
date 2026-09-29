@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, playPath, PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { hiddenWordsOf, wordsShown } from "../src/lib/puzzles/gomoji/futago";
@@ -141,7 +141,7 @@ test.describe("Gomoji Yotsugo", () => {
     // Left by the site's own navigation, half way, and another game begun.
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
     await expect(page).toHaveURL(/\/play$/);
-    await page.goto(`/games/${PUZZLE_SLUGS.numberPlace}/play?size=4&level=easy`);
+    await page.goto(joinQuery(playPath("numberPlace"), `?size=4&level=easy`));
     await ready(page, "puzzle-play");
 
     // And from that game, back through My games.
@@ -164,7 +164,7 @@ test.describe("Gomoji Yotsugo", () => {
     const puzzle = generatePuzzle("gomojiKana", 3, "easy", seed);
     const hidden = hiddenWordsOf("gomojiKana", 3, puzzle.givens)!;
     expect(hidden.words).toHaveLength(4);
-    await page.goto(`/games/${PUZZLE_SLUGS.gomojiKana}/play?size=3&level=easy&seed=${seed}`);
+    await page.goto(joinQuery(playPath("gomojiKana"), `?size=3&level=easy&seed=${seed}`));
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("word-part")).toHaveCount(4);
     for (const word of hidden.words) {

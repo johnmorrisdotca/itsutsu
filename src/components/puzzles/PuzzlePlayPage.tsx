@@ -7,7 +7,7 @@ import { appearanceFor } from "@/lib/auth/members";
 import { onlineOfferFor } from "@/lib/party/online/server/onlineOffer";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { gamePath, joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
@@ -41,7 +41,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
     const today = new Date();
     // A Futago's day has two words at a seed of its own (`futagoSeed.ts`), and a Yotsugo's four at another (`yotsugoSeed.ts`).
     const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : dailySeedOf(asked.words ?? 1, dayKeyOf(today));
-    redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed })}`);
+    redirect(joinQuery(playPath(kind), puzzleQuery({ ...asked, seed })));
   }
   const reader = await currentReader();
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */

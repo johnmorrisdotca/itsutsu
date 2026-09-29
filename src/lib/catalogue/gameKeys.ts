@@ -6,6 +6,7 @@ import { PARTY_DISPLAY, PARTY_KIND_LIST } from "../party/party.constants";
 import type { PartyKind } from "../party/party.types";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST } from "../puzzles/puzzles.constants";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
+import { isSettingKind } from "./gameSettings";
 
 /**
  * A game in the catalogue is one of three things: a rule variant the engine
@@ -44,12 +45,26 @@ export function isRuleVariant(key: string): key is RuleVariant {
   return VARIANTS.has(key);
 }
 
-/** Every game, puzzle and party game, in that order: the whole catalogue, what the cards and the lists show. */
-export const EVERY_GAME_KEY: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST, ...PARTY_KIND_LIST];
+/**
+ * Every kind a game, a solve or a run can be stored as: every game, puzzle and
+ * party game, and every setting of one (`gameSettings.ts`) — a Gomoji in
+ * French is stored as `gomojiMot`. What a stored row, a picture or a date is
+ * kept by; never what a list of games shows.
+ */
+export const EVERY_KIND_KEY: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST, ...PARTY_KIND_LIST];
+
+/**
+ * Every game, puzzle and party game, in that order: the whole catalogue, what
+ * the cards and the lists show — one each. A language or a word list is a
+ * setting of its game, never a game of its own (`gameSettings.ts`), so the
+ * five Gomoji kinds are one Gomoji here.
+ */
+export const EVERY_GAME_KEY: readonly GameKey[] = EVERY_KIND_KEY.filter((key) => !isSettingKind(key));
 
 /**
  * THE GAMES THIS SITE KEEPS A RECORD OF: the rule variants and the puzzles,
- * whose games and solves are rows a member earns by. A party game is played
+ * whose games and solves are rows a member earns by — every stored kind, a
+ * Gomoji's languages each counted as they are kept (`gameSettings.ts`). A party game is played
  * and kept in one browser and never reaches the server, so it can never be
  * counted towards anything — `everyVariantPlayed` counts these, and a game
  * nobody could ever be seen to play would make it a prize nobody could finish.

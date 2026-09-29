@@ -92,7 +92,7 @@ describe("the set-up preview", () => {
     expect(puzzle).toContain("SET_UP_PREVIEW_BOX");
     expect(puzzle).toContain("<BoardFrame");
     // One row of preview and sizes, on the screen that chooses among every game and on a puzzle's own set-up.
-    expect(read("src/components/puzzles/PuzzleSetUp.tsx")).toContain("<PuzzleBoardPreview kind={kind} size={size}");
+    expect(read("src/components/puzzles/PuzzleBoardAndSizes.tsx")).toContain("<PuzzleBoardPreview kind={kind} size={size}");
     expect(read("src/components/live/PuzzleHere.tsx")).toContain("<PuzzleBoardAndSizes kind={puzzle} size={size}");
     expect(read("src/components/puzzles/PuzzleSetUp.tsx")).toContain("<PuzzleBoardAndSizes kind={kind} size={size}");
   });

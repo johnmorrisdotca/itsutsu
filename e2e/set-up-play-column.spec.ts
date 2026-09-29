@@ -14,7 +14,7 @@ import { ready } from "./support";
  */
 test("the Play column's first button sits at the top of its column, not centred, on a desk", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/games/gomoji-mot/new");
+  await page.goto("/games/gomoji/new?language=french");
   await ready(page, "puzzle-set-up");
 
   const column = await page.getByTestId("puzzle-play-buttons").boundingBox();

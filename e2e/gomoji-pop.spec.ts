@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { PUZZLE_SLUGS, playPath, setUpPath } from "../src/lib/gomoku/slugs";
 import { markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { popCategoryOf } from "../src/lib/puzzles/gomoji/popWords";
@@ -20,19 +20,28 @@ test.beforeAll(loadEveryWordList);
  * screen's two shelves of sizes.
  */
 const KIND = "gomojiPop";
+// Its address from before 2026-09-28, which leads on to the one Gomoji (`formerAddresses.ts`).
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
+// Where it is played now: the one Gomoji's board and set-up, the setting in the query (`gameSettings.ts`).
+const PLAY = playPath(KIND);
+const SET_UP = setUpPath(KIND);
 const NAME = PUZZLE_DISPLAY[KIND].label;
 
 test.describe("Pop Gomoji", () => {
-  test("its front door names it and what it is our version of, and never a trademark as its name", async ({ page }) => {
+  test("its old front door leads to the one Gomoji, which names it among its languages and word lists", async ({ page }) => {
     await page.goto(AT);
-    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
-    expect(NAME).not.toMatch(/wordle/i);
+    // One Gomoji now: its old address is a setting of it (John, 2026-09-28: "just have 1 and allow language selection").
+    await expect(page).toHaveURL(/\/games\/gomoji\?list=pop$/);
+    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toHaveText(/^Gomoji/);
     await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
+    await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.locator('[data-testid="word-setting-row"][data-kind="gomojiPop"]')).toContainText("English · Pop culture");
+    // Its own name, kept on its solves and records, is never a trademark.
+    expect(NAME).not.toMatch(/wordle/i);
   });
 
   test("the set-up offers three to six letters, turns to four to seven, and seven opens a seven-letter board", async ({ page }) => {
-    await page.goto(`${AT}/new`);
+    await page.goto(SET_UP);
     await ready(page, "puzzle-set-up");
     const sizes = page.getByTestId("set-up-size");
     await expect(sizes).toHaveCount(4);
@@ -65,7 +74,7 @@ test.describe("Pop Gomoji", () => {
         const level = "medium";
         const seed = freshPuzzleSeed();
         const puzzle = generatePuzzle(KIND, size, level, seed);
-        await page.goto(`${AT}/play?size=${size}&level=${level}&seed=${seed}`);
+        await page.goto(`${PLAY}&size=${size}&level=${level}&seed=${seed}`);
         await ready(page, "puzzle-play");
         await expect(page.getByTestId("word-tile")).toHaveCount(size * guessesFor("gomoji", size, level, 0));
 

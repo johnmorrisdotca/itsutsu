@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DailyDayPage } from "@/components/puzzles/DailyDayPage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { DAILY_WORDS_EPOCH, dayKeyOf, isDayKey } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLanguageOf, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -23,9 +24,9 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/dail
  * something that is not a date answers 404: a day to come has no page, so no
  * address can be tried to see whether tomorrow's word is out.
  */
-export default async function DailyDayRoute({ params }: PageProps<"/games/[slug]/daily/[day]">) {
+export default async function DailyDayRoute({ params, searchParams }: PageProps<"/games/[slug]/daily/[day]">) {
   const { slug, day } = await params;
-  const kind = puzzleFor(slug);
+  const kind = puzzleForAddress(slug, await searchParams);
   if (kind === null || dailyLanguageOf(kind) === null) notFound();
   const today = dayKeyOf(new Date());
   if (!isDayKey(day) || day < DAILY_WORDS_EPOCH || day > today) notFound();

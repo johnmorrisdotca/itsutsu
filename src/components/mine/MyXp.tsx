@@ -12,6 +12,7 @@ import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpMoreHref, xpParamsFrom } from "@/lib/xp/xpHistory";
 import { xpLedgerPage } from "@/lib/xp/xpHistoryPage";
 import { xpStanding } from "@/lib/xp/xpCurve";
+import { XP_VARIANTS_TO_PLAY } from "@/lib/xp/xpGame";
 import { xpForBadge } from "@/lib/xp/xpScope";
 import type { XpLedgerRow } from "@/lib/xp/xpHistory.types";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
@@ -276,12 +277,12 @@ export async function MyXp({
                       The shape, and the way in. Not a hidden panel and not a
                       sentence apologising for the absence: "nobody has earned
                       anything here yet" is a true fact about this member, and
-                      every one of the site's forty games is a first play
-                      somebody has not had.
+                      every one of the site's games is a first play
+                      somebody has not had — counted from `XP_VARIANTS_TO_PLAY`, never typed.
                     */}
                     <td colSpan={4} className="py-3 text-sm text-muted" data-testid="my-xp-empty">
                       Nothing yet. XP comes from turning up and trying things — every game you
-                      finish, and every one of the forty here you try for the first time.{" "}
+                      finish, and every one of the {XP_VARIANTS_TO_PLAY} here you try for the first time, each of Gomoji&apos;s languages among them.{" "}
                       <Link href="/games" className="underline underline-offset-4">
                         Pick a game and start earning
                       </Link>

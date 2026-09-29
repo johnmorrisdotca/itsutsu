@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, playPath, setUpPath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
@@ -27,7 +27,7 @@ function miss(answer: string): string {
 
 test.describe("Gomoji 6", () => {
   test("six letters is a size on the set-up screen, and opens a six-letter board", async ({ page }) => {
-    await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/new`);
+    await page.goto(setUpPath("gomoji"));
     await ready(page, "puzzle-set-up");
     const six = page.locator(`[data-testid="set-up-size"][data-size="${SIZE}"]`);
     await expect(six).toHaveCount(1);
@@ -49,7 +49,7 @@ test.describe("Gomoji 6", () => {
       const level = "medium";
       const seed = freshPuzzleSeed();
       const puzzle = generatePuzzle("gomoji", SIZE, level, seed);
-      await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/play?size=${SIZE}&level=${level}&seed=${seed}`);
+      await page.goto(joinQuery(playPath("gomoji"), `?size=${SIZE}&level=${level}&seed=${seed}`));
       await ready(page, "puzzle-play");
       await expect(page.getByTestId("word-tile")).toHaveCount(SIZE * guessesFor("gomoji", SIZE, level, 0));
 
@@ -73,7 +73,7 @@ test.describe("Gomoji 6", () => {
   });
 
   test("the play area's border and, in the Gomoku style, its four star points stand around six letters in every style", async ({ page }) => {
-    await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/play?size=${SIZE}&level=hard&seed=${freshPuzzleSeed()}`);
+    await page.goto(joinQuery(playPath("gomoji"), `?size=${SIZE}&level=hard&seed=${freshPuzzleSeed()}`));
     await ready(page, "puzzle-play");
     for (const style of ["tiles", "reversi", "gomoku"] as const) {
       await page.getByTestId(`word-style-${style}`).click();
@@ -99,7 +99,7 @@ test.describe("Gomoji 6", () => {
         const level = "easy";
         const seed = freshPuzzleSeed();
         const puzzle = generatePuzzle(kind, SIZE, level, seed);
-        await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${SIZE}&level=${level}&seed=${seed}`);
+        await page.goto(joinQuery(playPath(kind), `?size=${SIZE}&level=${level}&seed=${seed}`));
         await ready(page, "puzzle-play");
         await expect(page.getByTestId("word-tile")).toHaveCount(SIZE * guessesFor("gomoji", SIZE, level, 0));
         for (const letter of puzzle.solution) await page.getByTestId(`word-key-${letter}`).click();

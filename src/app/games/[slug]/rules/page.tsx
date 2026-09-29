@@ -188,6 +188,12 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           <Part heading={say.pair("rules.board", "盤")} lines={page.board} />
           <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
           <Part heading={say.pair("rules.house", "細則")} lines={page.house} />
+          {/* A Gomoji's other languages and word lists, a section each, on the one rules page the one game has (`gameSettings.ts`). */}
+          {(page.settings ?? []).map((setting) => (
+            <div key={setting.id} id={setting.id} data-testid="rules-setting">
+              <Part heading={{ text: setting.heading, kanji: setting.kanji }} lines={setting.lines} />
+            </div>
+          ))}
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
             {/*
               The ways out that are not "start one", which is the big Play under

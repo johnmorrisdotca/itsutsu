@@ -9,7 +9,8 @@ import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
-import { gamePath, historyPath, playPath, puzzleFor, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PuzzleStandingsPage } from "@/components/puzzles/PuzzleStandingsPage";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
@@ -41,10 +42,10 @@ const LEADERS = 50;
  * now, one segment under the game's own address, and the panel on the game's
  * front door leads here for the whole of it.
  */
-export default async function GameChampionsPage({ params }: PageProps<"/games/[slug]/standings">) {
+export default async function GameChampionsPage({ params, searchParams }: PageProps<"/games/[slug]/standings">) {
   const { slug } = await params;
-  // A puzzle's standings are its fastest solves, not a ladder: see `PuzzleStandingsPage`.
-  const puzzle = puzzleFor(slug);
+  // A puzzle's standings are its fastest solves, not a ladder: see `PuzzleStandingsPage`. A Gomoji's are one language's.
+  const puzzle = puzzleForAddress(slug, await searchParams);
   if (puzzle !== null) return <PuzzleStandingsPage kind={puzzle} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();

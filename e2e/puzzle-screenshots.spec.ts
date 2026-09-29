@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 
 import { expect, test } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, playPath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { markKanaGuess } from "../src/lib/puzzles/gomojiKana/kanaMarks";
 import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
@@ -117,7 +117,7 @@ test.describe("puzzle screenshots", () => {
   for (const scene of SCENES) {
     test(scene.kind, async ({ page }) => {
       mkdirSync(OUT, { recursive: true });
-      await page.goto(`/games/${PUZZLE_SLUGS[scene.kind]}/play?size=${scene.size}&level=${scene.level}&seed=${scene.seed}`);
+      await page.goto(joinQuery(playPath(scene.kind), `?size=${scene.size}&level=${scene.level}&seed=${scene.seed}`));
       await ready(page, "puzzle-play");
       /*
        * NO XP NOTICES IN A PICTURE OF A GAME. The operator this runs as earns XP

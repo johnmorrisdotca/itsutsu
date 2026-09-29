@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -128,10 +128,10 @@ export function PuzzlePlay({
     if (seed !== null) return;
     // A puzzle of fixed levels has no seed to draw: no level asked is the board of levels to choose one on.
     if (PUZZLE_SPECS[kind].fixedLevels === true) {
-      router.replace(`${setUpPath(kind)}?size=${size}`);
+      router.replace(joinQuery(setUpPath(kind), `?size=${size}`));
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })}`);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })));
   }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */

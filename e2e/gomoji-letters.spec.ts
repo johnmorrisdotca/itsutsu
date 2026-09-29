@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { joinQuery, playPath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
 import { hiddenWordsOf } from "../src/lib/puzzles/gomoji/futago";
 import { freshFutagoSeed } from "../src/lib/puzzles/gomoji/futagoSeed";
@@ -74,7 +74,7 @@ test.describe("Gomoji's letters on a phone", () => {
       const seed = each.words === 4 ? freshYotsugoSeed() : each.words === 2 ? freshFutagoSeed() : freshPuzzleSeed();
       const puzzle = generatePuzzle(each.kind, each.size, "medium", seed);
       const words = hiddenWordsOf(each.kind, each.size, puzzle.givens)!.words;
-      await page.goto(`/games/${each.kind === "gomojiKana" ? PUZZLE_SLUGS.gomojiKana : PUZZLE_SLUGS.gomoji}/play?size=${each.size}&level=medium&seed=${seed}`);
+      await page.goto(joinQuery(playPath(each.kind), `?size=${each.size}&level=medium&seed=${seed}`));
       await ready(page, "puzzle-play");
       // The phone's keys showing, as a player has them.
       const keys = page.getByTestId("word-keys-box");

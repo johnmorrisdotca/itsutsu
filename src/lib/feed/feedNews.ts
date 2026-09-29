@@ -1,4 +1,4 @@
-import { EVERY_GAME_KEY } from "@/lib/catalogue/gameKeys";
+import { EVERY_KIND_KEY } from "@/lib/catalogue/gameKeys";
 
 import { DAY_MS, FEED_KINDS, FEED_OUTCOMES } from "./feed.constants";
 import type { FeedEntry, FeedNewsEntry, FeedPerson } from "./feed.types";
@@ -156,7 +156,8 @@ export function addedEntries(added: Readonly<Record<string, string>>, now: Date,
   const first = new Date(now.getTime() - windowDays * DAY_MS).toISOString().slice(0, 10);
   const last = now.toISOString().slice(0, 10);
   const byDay = new Map<string, string[]>();
-  const order = EVERY_GAME_KEY as readonly string[];
+  // Every stored kind, a Gomoji's languages among them: news of a day names what arrived, in the catalogue's order.
+  const order = EVERY_KIND_KEY as readonly string[];
   for (const [key, day] of Object.entries(added)) {
     if (day === opened || day < first || day > last) continue;
     byDay.set(day, [...(byDay.get(day) ?? []), key]);
