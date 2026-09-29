@@ -1,7 +1,8 @@
 # Party games: a third kind of game
 
 **Status: the kind and its first game, Dots and Boxes, built 2026-09-28 on
-branch `party-dots`; Superghost, the second, the same day on `party-ghost`.**
+branch `party-dots`; Superghost, the second, the same day on `party-ghost`;
+and Mancala (Kalah and Oware), the third, the same day on `party-mancala`.**
 
 John is filling the Party games 団欒 shelf: games a group plays round one
 phone or tablet. Until now that shelf held only guests — Chinese Checkers for
@@ -144,7 +145,8 @@ until a challenge nobody can answer, so every round ends and every game does.
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,
    `PARTY_DISPLAY`, `PARTY_SPECS` and `PARTY_SLUGS`; the compiler lists the
-   rest (`PartyPlays`, `PARTY_RULES`, `PARTY_KIND_TABLES`, `GAME_ADDED`).
+   rest (`PartyPlays`, `PARTY_RULES`, `PARTY_KIND_TABLES`, `GAME_ADDED`, and
+   in `partyRulesPage.ts` `OFFERED_WORDS` and `TABLE_WORDS`).
 2. Write its rules under `src/lib/party/<game>/` against `PartyRules`, with
    tests. A word game's list comes from a real dictionary (AGENTS.md).
 3. Its table, card and Play offer under `src/components/party/`, drawn inside
@@ -152,6 +154,46 @@ until a challenge nobody can answer, so every round ends and every game does.
 4. Put it in the Party games family, a scene in `e2e/party-screenshots.spec.ts`,
    run `pnpm screenshots:party` and `pnpm games:added`, and write its browser
    spec. The gate says what is still missing.
+
+## Mancala: two rule sets as two boards
+
+Mancala (board row mancala-kalah-oware-pass-and-play; John, 2026-09-28: "I
+think more games is nice") is the third party game, for two passing one
+device. It offers the two best-known sowing games, and was added as rows,
+not a second mechanism:
+
+- **The rule set is the board.** `PartySpec.sizes` is the one per-game
+  choice the gate plays out at every value, so Mancala's sizes count the
+  holes a seed is sown into: 14 on Kalah's board (twelve pits and both
+  stores) and 12 on Oware's (the pits alone; its stores only keep captures).
+  `MANCALA_BOARDS` names them, and the gate plays sixty games of each.
+- **What a front door and a rules page say of a table is a row** in
+  `partyRulesPage.ts`, as Superghost made it: `OFFERED_WORDS` ("by Kalah
+  (the default) or Oware rules", read from the spec's sizes) and
+  `TABLE_WORDS` (how a turn is taken, and that every hole shows its count).
+- **Rules**: `src/lib/party/mancala/` — `sowing.ts` sows once under each
+  rule set, `mancala.ts` settles the turn and the end and keeps the game as
+  its board, table and sowings. `mancala.test.ts` tests each rule below.
+- **Kalah** (the default): four seeds a pit; sow counter-clockwise into your
+  own store but never your opponent's, and on laps back into the pit you
+  left; last seed in your store, sow again; last seed alone in an empty pit
+  of yours with seeds opposite, take both (nothing opposite, nothing taken);
+  over the moment either row is empty, each player taking what is left on
+  their side; most seeds wins, level is a draw.
+- **Oware, by the Abapa rules**: four seeds a pit; never sown into a store;
+  twelve or more seeds skip the pit sown from; the last seed making two or
+  three in an opponent's pit takes them and every consecutive pit before it
+  on their row holding two or three; a capture that would take all the
+  opponent's seeds takes none (grand slam); an empty row must be fed if any
+  sowing can, and if none can the player to move takes the seeds on their
+  side and the game ends; 25 wins, 24 each is a draw. Where Abapa leaves an
+  endless cycle to the players' agreement, the table is given a rule: the
+  same position (every pit, same player to move) a third time since the last
+  capture ends it, each player taking the seeds on their side.
+- **The screen**: `MancalaBoard` inside `BoardFrame`, the first player's row
+  along the bottom and store on the right, each hole's count as a number, the
+  sowing drawn seed by seed in about half a second (`useSowing`; none under
+  reduced motion), the game kept before the first seed is drawn.
 
 ## Decisions to review
 
@@ -169,3 +211,15 @@ until a challenge nobody can answer, so every round ends and every game does.
 - The kanji 陣取り ("taking ground") for Dots and Boxes.
 - `/games/dots-and-boxes/family` answers nothing, since its family has its
   own page.
+- Mancala: Kalah is the default, since most sets sold as Mancala in North
+  America follow it; Oware is the second choice. No other rule sets.
+- Mancala's rule set is chosen as its "board size" (14 Kalah, 12 Oware), not
+  through a new kind of set-up choice.
+- Kalah takes nothing when the pit opposite is empty (the last seed stays).
+- Kalah ends as soon as either row is empty, whoever is to move.
+- Oware's endless cycle ends at the third repetition of a position, each
+  player taking their own side's seeds; there is no "agree to end" button.
+- The board is drawn the same way round for both players (first player at
+  the bottom) rather than turning for whoever holds the device.
+- The kanji 種まき ("sowing seeds") for Mancala, and no country flag, since
+  the family is played on three continents.

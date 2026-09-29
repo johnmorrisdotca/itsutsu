@@ -23,7 +23,7 @@ export const metadata: Metadata = { title: PARTY === undefined ? "Party games" :
  * a shelf first: most games on it live in the family that says what kind of
  * game it is, and are shown here too for the one thing a group wants to know,
  * that the whole table can play it on one device. The games at home here are
- * the party games (`PartyKind`: Dots and Boxes), played round one device and
+ * the party games (`PartyKind`: Dots and Boxes, Mancala), played round one device and
  * never recorded, whose own `/family` is not answered. So its page is an
  * address of its own, in the catalogue's own space, which the gate already
  * opens to anybody: it names games and nobody who plays them.

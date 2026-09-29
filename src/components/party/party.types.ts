@@ -6,6 +6,7 @@ import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 import type { BlocksHold, BlocksPieceKey, BlocksPreview, PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import type { PartyRaceRules, PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
+import type { MancalaGame } from "@/lib/party/mancala/mancala.types";
 import type { GhostEnd, GhostGame, GhostJudge, GhostMove } from "@/lib/party/superghost/superghost.types";
 
 /** One player's marble: its colour, the letter it carries, and the ink the letter is written in. */
@@ -190,4 +191,34 @@ export type GhostKeysProps = {
   onMove: (move: GhostMove) => void;
   /** The judge, once the list is here; null while it is being fetched. */
   judge: GhostJudge | null;
+};
+
+/** What Mancala's board is handed: the game, and what to do with a pit tapped. */
+export type MancalaBoardProps = {
+  game: MancalaGame;
+  appearance: Appearance;
+  /** The seeds to draw when they are not the game's own: a sowing part way through (`useSowing`). */
+  holes?: readonly number[] | null;
+  /** The hole a seed has just fallen into, while a sowing is drawn. */
+  landing?: number | null;
+  /** A pit tapped by the player to move. */
+  onPit?: (pit: number) => void;
+  /** A preview: the table set out, nothing to tap. */
+  readOnly?: boolean;
+};
+
+export type MancalaSetUpProps = {
+  appearance: Appearance;
+  onStart: (game: MancalaGame) => void;
+  /** The hydration mark (`readyMark`), on the form a test fills in. */
+  ready: { "data-ready": string };
+};
+
+/** A sowing being drawn seed by seed: the board at each step, and which step is showing. */
+export type SowingShown = {
+  frames: readonly (readonly number[])[];
+  index: number;
+  path: readonly number[];
+  /** How many sowings the game it is drawn for had made, counting this one: it is drawn over that game and no other. */
+  moves: number;
 };

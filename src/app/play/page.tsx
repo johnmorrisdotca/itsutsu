@@ -143,7 +143,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
           for two, the Chinese Checkers table for up to six (`PartyCheckersCard`),
           Pair Go's two teams of two (`PairGoCard`), Halma for four
           (`PartyHalmaCard`), Block Five for four (`PartyBlocksCard`), and every party game's own table, each with the
-          card its row in `PARTY_KIND_TABLES` names (Dots and Boxes).
+          card its row in `PARTY_KIND_TABLES` names (Dots and Boxes, Mancala).
         */
         local={
           <>

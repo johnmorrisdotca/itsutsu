@@ -2,6 +2,7 @@ import { gameArtPath } from "@/lib/gomoku/artwork";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
+import { mancalaBoardName } from "./mancala/mancala.constants";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 
@@ -22,12 +23,19 @@ function listed(items: readonly string[], join = "and"): string {
 /**
  * WHAT A PARTY GAME'S SET-UP OFFERS BEYOND ITS PLAYERS, in words, from its
  * spec: "on 3×3, 4×4, 5×5 and 6×6 boxes"; "in English or Japanese, where a
- * word of 4 letters or more loses". Each game says what its sizes count.
+ * word of 4 letters or more loses"; "by Kalah (the default) or Oware rules".
+ * Each game says what its sizes count — for Mancala, which rules it is played
+ * by (`MANCALA_BOARDS`).
  */
 const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   dotsAndBoxes: (spec) => `on ${listed(spec.sizes.map((size) => `${size}×${size}`))} boxes`,
   superghost: (spec) =>
     `in ${listed((spec.languages ?? []).map((language) => LANGUAGE_WORDS[language]), "or")}, where a word of ${listed(spec.sizes.map(String), "or")} letters or more loses`,
+  mancala: (spec) =>
+    `by ${listed(
+      spec.sizes.map((size) => `${mancalaBoardName(size) ?? size}${size === spec.defaultSize ? " (the default)" : ""}`),
+      "or",
+    )} rules`,
 };
 
 /** The boards, or the words, a party game's set-up offers: "on 3×3, 4×4, 5×5 and 6×6 boxes". */
@@ -48,6 +56,10 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string }> = {
     turn: "The line at the top says whose turn it is, by name, colour and letter. Tap a letter on the keyboard, then Add before or Add after; or press Challenge. When challenged, type the word you had in mind and press Enter: the game checks it against its word list.",
     house:
       "The site checks every word against its own list: SCOWL's English words, and the readings of JMdict for Japanese. A word named that is not in the list is handed back to try again, rather than losing the round to a typo; say you cannot name one to give the round up. Each player's letters are written out beside their name, and a player who is out is struck through as well as greyed.",
+  },
+  mancala: {
+    turn: "The line at the top names whose turn it is and which rules are being played. Tap one of your own pits, ringed in your colour, to sow it: the seeds fall one at a time, and the line beneath says what the last one did, another turn or how many were captured.",
+    house: "Every pit and store shows how many seeds it holds as a number beside the seeds themselves, so nobody has to count them.",
   },
 };
 

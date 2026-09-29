@@ -91,14 +91,16 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
 };
 
 /**
- * The party games' places in the same paths: /games/dots-and-boxes, with its
- * rules and its table (`/pass-and-play`) under it, as every game has. A party
+ * The party games' places in the same paths: /games/dots-and-boxes and
+ * /games/mancala, each with its rules and its table (`/pass-and-play`)
+ * under it, as every game has. A party
  * game's family page is its family's own address (`familyPagePath`), so
  * nothing is answered at /games/<slug>/family for one.
  */
 export const PARTY_SLUGS: Record<PartyKind, string> = {
   dotsAndBoxes: "dots-and-boxes",
   superghost: "superghost",
+  mancala: "mancala",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

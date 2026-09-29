@@ -48,8 +48,8 @@ function headingOf(game: string, title: string): string {
  * because it is its own game — more players than the two seats a board has —
  * and only the games in `PARTY_PLAY_GAMES` answer here, each through its row
  * in `PARTY_TABLES`. And every party game (`PartyKind`: Dots and Boxes for
- * two to six), for which this table is the only way to play, through its row
- * in `PARTY_KIND_TABLES`.
+ * two to six, Mancala for two), for which this table is the only way to
+ * play, through its row in `PARTY_KIND_TABLES`.
  *
  * Playing is for members, as every board is: the gate lets nobody in here
  * without an invite, and the game's own page, which a stranger can read, is

@@ -54,6 +54,15 @@ describe("the board frame", () => {
     expect(read("src/components/party/DotsSetUp.tsx")).not.toMatch(/<GameThumb|<img|\.jpg/);
   });
 
+  it("holds Mancala's pits and stores, on the reader's own wood", () => {
+    const mancala = read("src/components/party/MancalaBoard.tsx");
+    expect(mancala).toContain("<BoardFrame");
+    expect(mancala).not.toContain("boxShadow");
+    // Its set-up's preview is that live board under the rules chosen, never a picture of one.
+    expect(read("src/components/party/MancalaSetUp.tsx")).toContain("<MancalaBoard game={preview}");
+    expect(read("src/components/party/MancalaSetUp.tsx")).not.toMatch(/<GameThumb|<img|\.jpg/);
+  });
+
   it("holds every puzzle grid, on white paper", () => {
     for (const grid of ["src/components/puzzles/PuzzleGrid.tsx", "src/components/puzzles/HiddenStonesGrid.tsx"]) {
       expect(read(grid), `${grid} draws its grid off the board`).toContain("<PuzzleBoard");

@@ -201,12 +201,20 @@ export const GAME_FAMILIES: GameFamily[] = [
      * table IS the game — so it lives here, at home, and the guests are shown
      * after it. Nothing of it is ever recorded, so this family still counts
      * towards no award (`RECORDED_FAMILIES`) and keeps its own page.
+     *
+     * Mancala joined it the same day: Kalah or Oware for two, passed across
+     * one device, a party game rather than a rule variant because a sowing is
+     * nothing the engine's stones-on-points can play.
      */
     title: "Party games",
     kanji: "団欒",
     blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on.",
-    /* And Superghost (2026-09-28), the word game for two to eight, in English or Japanese: the second at home here. */
-    games: ["dotsAndBoxes", "superghost"],
+    /*
+     * And Superghost (2026-09-28), the word game for two to eight, in English
+     * or Japanese: the second at home here. And Mancala the same day, Kalah or
+     * Oware for two.
+     */
+    games: ["dotsAndBoxes", "superghost", "mancala"],
     notOnSetUp:
       "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
