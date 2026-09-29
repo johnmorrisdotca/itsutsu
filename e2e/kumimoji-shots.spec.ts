@@ -10,7 +10,9 @@ import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
 import { wordsInHand } from "../src/lib/puzzles/kumimoji/help";
 import { KUMIMOJI_SHOTS, type KumimojiShot } from "../src/lib/puzzles/kumimoji/shots.constants";
 import { KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
-import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+// This process has no browser: the lists are read from their modules (`tileWordsModule.ts`).
+import { loadTileWordsFromModule as loadTileWords } from "../src/lib/puzzles/kumimoji/tileWordsModule";
 import { dayOf, kumimojiWallpaperSvg, wallpaperCrosswords, wallpaperTitle } from "../src/lib/puzzles/kumimoji/wallpaper";
 import { KUMIMOJI_WALLPAPER_COPY } from "../src/lib/puzzles/kumimoji/wallpaper.constants";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";

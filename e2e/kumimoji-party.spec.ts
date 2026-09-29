@@ -9,7 +9,9 @@ import { partyTilesLeft, startParty } from "../src/lib/puzzles/kumimoji/party";
 import type { PartyGame } from "../src/lib/puzzles/kumimoji/party.types";
 import { endTurn, handCanSpell } from "../src/lib/puzzles/kumimoji/partyTurns";
 import { KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
-import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+// This process has no browser: the lists are read from their modules (`tileWordsModule.ts`).
+import { loadTileWordsFromModule as loadTileWords } from "../src/lib/puzzles/kumimoji/tileWordsModule";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**

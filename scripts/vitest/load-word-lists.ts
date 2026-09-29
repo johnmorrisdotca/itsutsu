@@ -1,4 +1,6 @@
 import { loadWordData } from "../../src/lib/puzzles/gomoji/wordData";
+// Kumimoji's lists, read from their modules where there is no browser (`tileWordsModule.ts`).
+import "../../src/lib/puzzles/kumimoji/tileWordsModule";
 
 /*
  * GOMOJI'S WORD LISTS, LOADED BEFORE EVERY TEST FILE. The site loads a list

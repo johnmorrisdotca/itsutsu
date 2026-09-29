@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { generatePuzzle, prepareEveryPuzzle } from "../generate";
+import { generatePuzzle } from "../generate";
+import { prepareEveryPuzzle } from "../prepareEvery";
 import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
 import { foundBonus } from "../gomoji/wordScore";
 import { pointsFor } from "../puzzlePoints";

@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS, playPath } from "../src/lib/gomoku/slugs";
-import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { prepareEveryPuzzle } from "../src/lib/puzzles/prepareEvery";
 import { decodeKanaGivens, KANA_ROWS } from "../src/lib/puzzles/gomojiKana/kanaCode";
 import { kanaBase, markKanaGuess } from "../src/lib/puzzles/gomojiKana/kanaMarks";
 import { kanaScore } from "../src/lib/puzzles/gomojiKana/kanaScore";

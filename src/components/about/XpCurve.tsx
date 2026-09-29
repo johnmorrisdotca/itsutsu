@@ -1,17 +1,12 @@
 import { LEVEL_MILESTONES } from "@/lib/xp/levelLadder";
 import { xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS, xpForLevel } from "@/lib/xp/xpCurve";
+import { thousands } from "@/lib/ui/thousands";
 
 const WIDTH = 560;
 const HEIGHT = 250;
 const PAD = { left: 52, right: 18, top: 18, bottom: 34 };
 
-/**
- * A whole number with its thousands marked, the same on the server and in the
- * browser. Not `toLocaleString`: the two can disagree about the separator, and
- * `localTime.coverage.test.ts` keeps it out of anything a page draws.
- */
-export const thousands = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 /** The share of the whole ladder the last ten rungs cost, read from the table. */
 export const LAST_TEN_SHARE = (xpForLevel(XP_LEVELS) - xpForLevel(XP_LEVELS - 10)) / xpForLevel(XP_LEVELS);

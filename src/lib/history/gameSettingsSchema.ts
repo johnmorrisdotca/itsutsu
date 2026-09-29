@@ -89,24 +89,9 @@ export const sharedOpeningSchema = z
   .enum([OPENING_RULES.free, OPENING_RULES.pro, OPENING_RULES.longPro])
   .default(OPENING_RULES.free);
 
-/** Per-move time limits a shared game may use, in milliseconds. Null is no clock. */
-export const MOVE_TIME_OPTIONS = [
-  null,
-  5 * 60_000,
-  30 * 60_000,
-  60 * 60_000,
-  6 * 60 * 60_000,
-  24 * 60 * 60_000,
-  3 * 24 * 60 * 60_000,
-  7 * 24 * 60 * 60_000,
-] as const;
-
-/** "turn": forfeit the move. "game": lose the game. "game-strict": lose the game, and vacation days do not delay it. */
-export const TIMEOUT_PENALTIES = ["turn", "game", "game-strict"] as const;
-export type TimeoutPenalty = (typeof TIMEOUT_PENALTIES)[number];
-
-/** Three missed turns in a row lose the game under the graceful penalty. */
-export const FORFEITS_TO_LOSE = 3;
+// The clock's plain values live beside the schemas, not in them, so a page can name one without importing zod.
+import { FORFEITS_TO_LOSE, MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES, type TimeoutPenalty } from "./moveTime.constants";
+export { FORFEITS_TO_LOSE, MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES, type TimeoutPenalty };
 
 export const moveTimeSchema = z
   .number()

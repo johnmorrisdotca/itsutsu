@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { generatePuzzle, prepareEveryPuzzle } from "./generate";
+import { generatePuzzle } from "./generate";
+import { prepareEveryPuzzle } from "./prepareEvery";
 
 // The kana Gomoji is made from a list loaded a length at a time: load them all before anything is made.
 beforeAll(prepareEveryPuzzle);

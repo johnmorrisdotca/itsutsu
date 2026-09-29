@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import { joinQuery, playPath, PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { dayKeyOf } from "../src/lib/puzzles/dailyWords/dailyDay";
-import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { prepareEveryPuzzle } from "../src/lib/puzzles/prepareEvery";
 import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { hiddenWordsOf } from "../src/lib/puzzles/gomoji/futago";
 import { freshFutagoSeed, futagoDailySeed } from "../src/lib/puzzles/gomoji/futagoSeed";

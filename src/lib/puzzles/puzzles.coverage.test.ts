@@ -9,7 +9,8 @@ import { gameArtPath, gameThumbPath } from "@/lib/gomoku/artwork";
 import { GAME_FAMILIES, boardGamesOf, familyOf } from "@/lib/gomoku/families";
 import { PUZZLE_SLUGS, slugFor } from "@/lib/gomoku/slugs";
 
-import { generatePuzzle, prepareEveryPuzzle } from "./generate";
+import { generatePuzzle } from "./generate";
+import { prepareEveryPuzzle } from "./prepareEvery";
 
 // The kana Gomoji is made from a list loaded a length at a time: load them all before anything is made.
 beforeAll(prepareEveryPuzzle);
