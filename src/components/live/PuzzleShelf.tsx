@@ -1,7 +1,7 @@
 import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { GameThumb } from "@/components/games/GameThumb";
 import { OneName } from "@/components/i18n/OneName";
-import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import type { Family } from "./picker";
@@ -41,7 +41,8 @@ export function PuzzleShelf({
         {family.blurb}
       </span>
       <div className={PICK_TILE_GRID} role="radiogroup" aria-label={family.title}>
-        {(family.games as PuzzleKind[]).map((kind) => {
+        {/* The puzzles alone: a party game on the same shelf (Cards' family games) is set up at its own table, from its own page. */}
+        {family.games.filter(isPuzzleKind).map((kind) => {
           const copy = gameCopyFor(kind);
           return (
             <label

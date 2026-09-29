@@ -185,8 +185,10 @@ test.describe("the card games at the table", () => {
       await page.waitForTimeout(300);
     }
     if ((await movesMade(page)) === before) {
+      // Nothing but an eight could go, and an eight let go on the table waits, chosen, for its suit to be called.
+      const call = page.locator('[data-testid^="cards-call-"]:enabled');
       const draw = page.getByTestId("cards-draw");
-      await (await draw.count() > 0 ? draw : page.getByTestId("cards-pass")).click();
+      await ((await call.count()) > 0 ? call.first() : (await draw.count()) > 0 ? draw : page.getByTestId("cards-pass")).click();
     }
     await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
     await clearKept(page);

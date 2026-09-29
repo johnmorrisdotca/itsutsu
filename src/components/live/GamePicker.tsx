@@ -1,5 +1,6 @@
 "use client";
 
+import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
@@ -160,7 +161,8 @@ export function GamePicker({
    */
   const openFamily = (entry: Family) => {
     if (PUZZLE_SHELVES.includes(entry)) {
-      if (entry !== puzzles) onPuzzle?.(entry.games[0] as PuzzleKind);
+      // The shelf's first puzzle: a party game on it (Cards' family games) is set up at its own table.
+      if (entry !== puzzles) onPuzzle?.((entry.games.find(isPuzzleKind) ?? entry.games[0]) as PuzzleKind);
       return;
     }
     onPuzzle?.(null);
