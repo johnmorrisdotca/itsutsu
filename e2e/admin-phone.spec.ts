@@ -74,7 +74,7 @@ test.describe("Admin on a phone", () => {
       // Shut the account asks, inside the row and the screen too.
       await row.getByTestId("ban-member").click();
       await onScreen(row.getByTestId("ban-member-confirm"), "the shut question");
-      await onScreen(row.getByTestId("ban-member-yes"), "Shut it");
+      await onScreen(row.getByTestId("ban-member-yes"), "Suspend");
       await row.getByTestId("ban-member-no").click();
       await expect(row.getByTestId("ban-member-confirm")).toHaveCount(0);
       await noSidewaysScroll(page, "Members, after asking");

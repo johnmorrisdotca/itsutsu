@@ -162,7 +162,7 @@ export function AdminMembers() {
                 </span>
                 {member.bannedAt === null ? null : (
                   <span className="shrink-0 rounded-full border border-shu/40 px-2 py-0.5 text-[0.65rem] font-semibold text-shu">
-                    Shut 停止
+                    Suspended 停止
                   </span>
                 )}
               </span>
@@ -263,9 +263,9 @@ export function AdminMembers() {
             )}
             {account === null || member.name.trim() === "" ? null : (
               <ConfirmButton
-                label="Take the name off"
+                label="Remove name"
                 question={`Take ${member.name.trim()}'s name off? They keep the account, the games and the rating; only the name goes, and they are asked for a new one.`}
-                confirm="Take it off"
+                confirm="Remove it"
                 onConfirm={() => void change({ id: account, name: "" }, account)}
                 disabled={busy === member.id}
                 testId="take-name-off"
@@ -292,9 +292,9 @@ export function AdminMembers() {
               </span>
             ) : member.bannedAt === null ? (
               <ConfirmButton
-                label="Shut the account"
+                label="Suspend account"
                 question={`Shut ${member.name.trim() || member.email}'s account? It stops working on their next request and the invite they came in by is revoked. Their games and their rating stay exactly as they are.`}
-                confirm="Shut it"
+                confirm="Suspend"
                 onConfirm={() => void change({ id: account, banned: true }, account)}
                 disabled={busy === member.id}
                 strong
@@ -306,7 +306,7 @@ export function AdminMembers() {
                 disabled={busy === member.id}
                 data-testid="ban-member"
               >
-                Open it again
+                Reactivate
               </Button>
             )}
             </RowActions>

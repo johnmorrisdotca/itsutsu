@@ -455,7 +455,7 @@ function Shutter({ maintenance }: { maintenance: Loaded["maintenance"] | undefin
   const { on, variable } = maintenance;
   return (
     <PanelRow
-      label="Being worked on"
+      label="Maintenance mode"
       kanji="整備"
       tone={on ? "alarm" : "plain"}
       testId="site-maintenance"
