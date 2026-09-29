@@ -333,6 +333,37 @@ export function tsunagiWash(pair: number, marks: TsunagiMarks): string {
 export const TSUNAGI_MARBLE =
   "flex size-[74%] items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-[0_1px_2px_rgba(0,0,0,0.5)]";
 
+/**
+ * The cell a marble sits in, as a container its number is measured against:
+ * `cqw` is then a percent of the cell's width, and a marble is 74 of them.
+ */
+export const TSUNAGI_MARBLE_CELL = "@container";
+
+/** How wide a marble a board's marble is, in its cell's `cqw`: `TSUNAGI_MARBLE`'s 74%. */
+export const TSUNAGI_MARBLE_ACROSS = "74cqw";
+
+/** A waypoint's ring: three pixels, or less on a cell too small to spare them. */
+export const TSUNAGI_WAYPOINT_RING = "min(3px, 6cqw)";
+
+/** A number's font size as a share of its marble's width, by how many digits it has. */
+const NUMBER_TO_MARBLE = [0.6, 0.52, 0.4] as const;
+
+/**
+ * A number's type, sized from the marble it is written on and how many digits
+ * it has, so a 16 on a 12×12 board sits inside its marble as a 3 does on a 4×4
+ * one. John, 2026-09-28: "higher levels have numbers that are too big since the
+ * squares have gotten smaller" — they were a fixed size, whatever the marble.
+ * `across` is the marble's width as a CSS length; `largest` keeps a big
+ * marble's number at an ordinary size rather than a poster's. Two or more
+ * digits are drawn a touch closer together, Geist having no condensed figures.
+ */
+export function tsunagiNumberType(value: number, across: string, largest = "1rem"): { fontSize: string; letterSpacing?: string } {
+  const digits = String(value).length;
+  const share = NUMBER_TO_MARBLE[Math.min(digits, NUMBER_TO_MARBLE.length) - 1]!;
+  const fontSize = `min(calc(${across} * ${share}), ${largest})`;
+  return digits === 1 ? { fontSize } : { fontSize, letterSpacing: "-0.04em" };
+}
+
 /** A marble on a line's way: a little smaller than the ends, so the two a line joins still stand out. */
 export const TSUNAGI_BEAD = "size-[56%] rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.45)]";
 
