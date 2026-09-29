@@ -79,6 +79,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
+| `docs/plans/dominoes/README.md` | agents, engineers | `src/lib/party/mexicanTrain/**`, `src/components/party/Train*.tsx`, `src/components/party/train*.ts`, `src/components/party/DominoFace.tsx`, `src/app/games/dominoes/page.tsx`, `src/lib/gomoku/families.ts` (Dominoes) |
 | `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
 | `docs/plans/party-online/README.md` | agents, engineers | `src/lib/party/online/**`, `src/components/party/online/**`, `src/app/api/tables/**`, `src/app/games/[slug]/tables/**`, `prisma/schema.prisma` (`PartyTable`, `PartySeat`, `PartyAction`), `src/components/live/pollCadence.ts`, `src/components/live/live.constants.ts` |
 | `docs/plans/plain-english/GLOSSARY.md` | agents, anyone writing a label | any button, tab, heading, table header or page title in `src/app/**`, `src/components/**` or `src/lib/i18n/i18n.constants.ts`: a new label uses the word the glossary already chose, and a changed one gets its row |

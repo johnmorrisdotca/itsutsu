@@ -90,6 +90,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Small boards | 6 |
 | Numbers | 3 |
 | Logic puzzles | 2 |
+| Dominoes | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
