@@ -45,7 +45,7 @@ export function StripGames({ memberId }: { memberId: string }) {
       */}
       {data === undefined ? null : going + moves + offers === 0 ? (
         <Link href="/play" className={ITEM} data-testid="strip-waiting">
-          Nothing going
+          No games in progress
         </Link>
       ) : (
         <>
@@ -61,7 +61,7 @@ export function StripGames({ memberId }: { memberId: string }) {
           ) : null}
           {going > 0 ? (
             <Link href="/play" className={ITEM} data-testid="strip-going" data-going={going}>
-              {going} going
+              {going} in progress
             </Link>
           ) : null}
         </>

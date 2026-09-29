@@ -163,9 +163,9 @@ test.describe("rules and learning", () => {
 
   test("the record is reached from a game, not from the header", async ({ page }) => {
     await page.goto("/games");
-    await expect(page.getByRole("navigation").getByRole("link", { name: /^Record/ })).toHaveCount(0);
+    await expect(page.getByRole("navigation").getByRole("link", { name: /^Game history/ })).toHaveCount(0);
     // It is still one click away at the foot of every page.
-    await page.getByTestId("site-footer").getByRole("link", { name: "Record" }).click();
+    await page.getByTestId("site-footer").getByRole("link", { name: "Game history" }).click();
     await expect(page).toHaveURL(/\/history$/);
   });
 

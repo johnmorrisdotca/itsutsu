@@ -108,9 +108,9 @@ export const PHRASES = {
 
   "nav.about": "About",
   "nav.rules": "Rules",
-  "nav.record": "Record",
+  "nav.record": "Game history",
   "nav.players": "Players",
-  "nav.everyGame": "Every game",
+  "nav.everyGame": "All games",
   "nav.play": "My games",
   "nav.newGame": "New game",
   "nav.games": "Games",

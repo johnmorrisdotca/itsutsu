@@ -21,7 +21,7 @@ export const SITE_PAGES: readonly SitePage[] = [
   { path: "/about", name: "About", kanji: "五つについて", what: "This page: where the site and its games came from.", open: true },
   { path: "/join", name: "Join", kanji: "入会", what: "Use an invite code, or ask for one.", open: true },
   { path: "/play", name: "My games", kanji: "対局", what: "Your games: your move beside theirs, and open seats to take; completed games, pass and play, and puzzles each on a tab.", open: false },
-  { path: "/history", name: "Record", kanji: "棋譜", what: "Every finished game, replayable move by move.", open: false },
+  { path: "/history", name: "Game history", kanji: "棋譜", what: "Every finished game, replayable move by move.", open: false },
   { path: "/players", name: "Players", kanji: "対局者", what: "Everybody who plays, the ladder, and the bots.", open: false },
   { path: "/champions", name: "Champions", kanji: "名人", what: "Who stands at the top of each game.", open: false },
   { path: "/famous", name: "Famous games", kanji: "名局", what: "Championship and historic games, replayed through this site's own rules.", open: false },

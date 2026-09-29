@@ -208,10 +208,10 @@ English half was the redundant one. Listed for completeness, not for review.
 | --- | --- | --- |
 | About | 五つについて | the About page's own heading |
 | Admin | 管理 | the Admin page's own heading, the join form, and the operator badge |
-| Every game | 全種目 | the Every game heading on /games, over the catalogue |
+| All games | 全種目 | the Every game heading on /games, over the catalogue |
 | Learn | 学び | the Learn heading on its own page; the Learn panel in a game's rules sidebar |
 | Players | 対局者 | the Players page heading |
-| Record | 棋譜 | the Record page's title |
+| Game history | 棋譜 | the Record page's title |
 | Rules | 規則 | the Rules trail and heading on a game's rules page; the Rules field in the record's filter bar |
 | Board | 盤 | the Board section of every rules page |
 | House rules | 細則 | the House rules section of every rules page |
