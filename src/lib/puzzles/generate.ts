@@ -1,6 +1,7 @@
 import { generateBridges } from "./bridges/generate";
 import { generatePictureLogic } from "./pictureLogic/generate";
 import { generateHiddenStones } from "./hiddenStones/generate";
+import { generateMahjong } from "./mahjong/generate";
 import { loadWordData } from "./gomoji/wordData";
 import { generateMoreOrLess } from "./moreOrLess/generate";
 import { generateJigsaw } from "./jigsaw/generate";
@@ -68,6 +69,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return generateBridges(size, level, seed);
     case "pictureLogic":
       return generatePictureLogic(size, level, seed);
+    case "mahjong":
+      // A layout dealt in reverse, five times, the level choosing among them by how forgiving each is.
+      return generateMahjong(size, level, seed);
   }
 }
 

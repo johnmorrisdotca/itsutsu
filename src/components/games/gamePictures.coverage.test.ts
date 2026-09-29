@@ -281,6 +281,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/famous/page.tsx": { GameThumb: "small" },
   "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },
   "src/components/mine/LocalPartyCard.tsx": { GameThumb: "small" },
+  "src/components/mine/MahjongTableCard.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleRuns.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleSolves.tsx": { GameThumb: "small" },
   "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },

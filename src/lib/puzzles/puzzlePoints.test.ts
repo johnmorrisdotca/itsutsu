@@ -21,7 +21,8 @@ describe("pointsFor", () => {
       const made = generatePuzzle(kind, size, "easy", 9);
       const filled = cellsFilled(kind, size, made.givens);
       expect(filled, kind).toBeGreaterThan(0);
-      expect(filled, kind).toBeLessThanOrEqual(size * size);
+      // A Mahjong size is a layout's width, not a side: its most is the tiles the layout holds.
+      expect(filled, kind).toBeLessThanOrEqual(PUZZLE_SPECS[kind].layouts === true ? made.givens.length : size * size);
     }
   });
 

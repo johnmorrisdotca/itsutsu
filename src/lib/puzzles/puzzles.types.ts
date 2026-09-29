@@ -26,7 +26,8 @@ export type PuzzleKind =
   | "kumimoji"
   | "koushi"
   | "bridges"
-  | "pictureLogic";
+  | "pictureLogic"
+  | "mahjong";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -117,6 +118,19 @@ export type PuzzleSpec = {
    * so it has many answers rather than one. Absent is a grid with one answer.
    */
   tiles?: true;
+  /**
+   * Whether the puzzle's size names a LAYOUT rather than the side of a grid:
+   * Mahjong Solitaire's stacks of tiles (`mahjong/layouts.ts`), whose size is
+   * a layout's width in tiles and whose deal is a face a slot. Absent is a
+   * square grid.
+   */
+  layouts?: true;
+  /**
+   * Whether Check is offered beside Hint. Absent is yes. Mahjong offers Hint
+   * (a free pair lit) and no Check: nothing on its table can be wrong, only
+   * not yet taken, so there is nothing for a Check to count.
+   */
+  checks?: false;
   /**
    * Whether the puzzle is played with stones, drawn as the game boards draw
    * theirs (`StoneMark`) in the reader's own stone set. Absent is no.

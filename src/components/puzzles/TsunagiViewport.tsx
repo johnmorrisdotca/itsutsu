@@ -46,8 +46,23 @@ function zoomedAbout(view: View, factor: number, px: number, py: number, box: nu
  * Bridges' two big boards are looked at through the same box (`name`
  * "bridges"), so there is one zoom for a board too big for a thumb, not two.
  */
-export function TsunagiViewport({ size, name = "tsunagi", children }: { size: number; /** The game, for its test ids: `<name>-viewport`, `<name>-fit` and the pad's. */ name?: string; children: ReactNode }) {
-  const enabled = size >= TSUNAGI_ZOOM_FROM;
+export function TsunagiViewport({
+  size,
+  name = "tsunagi",
+  zoomFrom = TSUNAGI_ZOOM_FROM,
+  aspect = "1 / 1",
+  children,
+}: {
+  size: number;
+  /** The game, for its test ids: `<name>-viewport`, `<name>-fit` and the pad's. */
+  name?: string;
+  /** The smallest size looked at through the box: Mahjong's Turtle alone, fifteen tiles across (`MahjongSolve`). */
+  zoomFrom?: number;
+  /** The box's width to height, where the board is not square: a Mahjong layout is wider than it is tall. */
+  aspect?: string;
+  children: ReactNode;
+}) {
+  const enabled = size >= zoomFrom;
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [view, setView] = useState<View>(FITTED);
@@ -124,8 +139,8 @@ export function TsunagiViewport({ size, name = "tsunagi", children }: { size: nu
     <div className="flex flex-col gap-2">
       <div
         ref={box}
-        className="relative aspect-square w-full overflow-hidden"
-        style={{ touchAction: "none" }}
+        className="relative w-full overflow-hidden"
+        style={{ touchAction: "none", aspectRatio: aspect }}
         onPointerDown={(event) => (held.current = { pointer: event.pointerId, x: event.clientX, y: event.clientY, target: event.target })}
         onPointerMove={follow}
         onPointerUp={() => (held.current = null)}

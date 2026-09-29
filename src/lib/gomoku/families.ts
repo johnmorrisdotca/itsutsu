@@ -206,6 +206,21 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["bridges", "pictureLogic"],
   },
   {
+    key: "mahjong",
+    /*
+     * MAHJONG 麻雀. John, 2026-09-29: "MahJong game where you match up piles of
+     * those CHIPS things… this can be family style as well." A family for the
+     * games played with a mahjong set, opened with the tile-matching patience
+     * game, Mahjong Solitaire, which a table of two to four can also play by
+     * turns. The four-player game of hands, Riichi, would be at home here
+     * later (docs/plans/mahjong/README.md says what it would take).
+     */
+    title: "Mahjong",
+    kanji: "麻雀",
+    blurb: "Games with a mahjong set of 144 tiles: take matching pairs of free tiles off a stacked layout, alone against the clock or in turns round one device.",
+    games: ["mahjong"],
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to
