@@ -4,11 +4,12 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { nameOf, passViewStart, stepView } from "@/lib/puzzles/kumimoji/party";
+import { isComputer, nameOf, passViewStart, stepView } from "@/lib/puzzles/kumimoji/party";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { winnersOf } from "@/lib/puzzles/kumimoji/partyTurns";
 import { tileDescription, tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 
+import { ComputerMark } from "./KumimojiDeskParts";
 import { KumimojiTable } from "./KumimojiTable";
 import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { PARTY_ALL_GRID, PARTY_HAND_TILE_PX, PARTY_PASS_LAYER, TILE, TILE_PICTURE_BOX, tileLetterPx } from "./kumimoji.constants";
@@ -43,7 +44,10 @@ export function PartyBoard({ game, at, theme, overTable = null }: { game: PartyG
       data-resigned={game.resigned.includes(at) ? "true" : undefined}
     >
       <figcaption className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-2 text-sm">
-        <span className="min-w-0 max-w-full truncate font-semibold">{nameOf(game, at)}</span>
+        <span className="flex min-w-0 max-w-full items-center gap-1.5">
+          <span className="min-w-0 truncate font-semibold">{nameOf(game, at)}</span>
+          {isComputer(game, at) ? <ComputerMark /> : null}
+        </span>
         <span className="shrink-0 text-xs text-muted tabular-nums" data-testid="kumimoji-party-board-counts">
           {player.tiles.size} laid · {player.hand.length} in hand
           {standingOf(game, at)}

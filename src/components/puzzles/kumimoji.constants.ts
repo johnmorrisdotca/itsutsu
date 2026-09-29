@@ -97,3 +97,16 @@ export const PARTY_HAND_TILE_PX = 24;
 /** A number of players on the set-up screen: eight to a row, so it is a narrow chip of its own rather than a word chip. */
 export const PARTY_PLAYERS_CHIP =
   "flex min-h-11 w-full items-center justify-center rounded-xl border text-sm tabular-nums transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50";
+
+/**
+ * A computer's turn in a pass-and-play game is shown one step at a time
+ * (`KumimojiPartyComputer`): this long between steps, so a watcher sees each
+ * word land. At most `COMPUTER_STEPS_MOST` steps and Done, so a turn takes
+ * about three seconds. A fixed pause, never a poll: nothing is asked of the
+ * server, and nothing runs while the tab is hidden.
+ */
+export const COMPUTER_PAUSE_MS = 320;
+
+/** The mark beside a computer's name: a small robot and BOT, the site's one word for a program. */
+export const COMPUTER_MARK =
+  "inline-flex shrink-0 items-center gap-1 rounded-full border border-ochre/50 bg-ochre-soft px-1.5 py-0.5 text-[0.65rem] font-semibold tracking-[0.06em] text-ink uppercase";

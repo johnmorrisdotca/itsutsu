@@ -7,6 +7,7 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { partyAddress } from "@/components/puzzles/KumimojiPartyScreens";
 import { useKeptParty } from "@/components/puzzles/kumimojiPartyKept";
+import { nameOf } from "@/lib/puzzles/kumimoji/party";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { MY_GAMES_COPY } from "./mine.constants";
 
@@ -19,7 +20,6 @@ import { MY_GAMES_COPY } from "./mine.constants";
 export function LocalPartyCard() {
   const game = useKeptParty();
   if (game === null || game.ending !== null) return null;
-  const next = game.players[game.turn];
   return (
     <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="local-party">
       <GameThumb variant="kumimoji" size="small" />
@@ -28,7 +28,7 @@ export function LocalPartyCard() {
           <Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>
         <span className="text-sm font-medium">
-          <GameName variant="kumimoji" /> · {game.players.length} players{next === undefined ? "" : ` · ${next.name} to play`}
+          <GameName variant="kumimoji" /> · {game.players.length} {game.players.length === 1 ? "player" : "players"} · {nameOf(game, game.turn)} to play
         </span>
       </div>
       <Link href={partyAddress(game)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="local-party-continue">
