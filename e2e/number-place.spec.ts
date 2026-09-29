@@ -224,7 +224,8 @@ test.describe("the first puzzle", () => {
     // Every family as a newcomer finds it: the families a reader opened stay open (`familyFolds.ts`).
     await forgetFamilyFolds(page);
     await page.goto("/games");
-    const family = page.getByTestId("lobby-family").filter({ hasText: "Numbers" });
+    // By its key, not its word: Logic puzzles' own line names Numbers too (2026-09-28).
+    const family = page.locator('[data-testid="lobby-family"][data-family="numbers"]');
     await expect(family).toHaveCount(1);
     await expect(family.locator('[data-testid="family-game"][data-variant="numberPlace"]')).toHaveCount(1);
     // Folded shut like every family but the first: open it, then its line is there to read.
