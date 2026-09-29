@@ -9,8 +9,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { GameCatalogue } from "@/components/games/GameCatalogue";
 import type { CatalogueFamily } from "@/components/games/games.types";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
-import { fetchCatalogueStats } from "@/lib/catalogue/catalogueStats";
-import { forReader } from "@/lib/catalogue/catalogueReader";
+import { strangerCatalogueStats } from "@/lib/catalogue/publicCatalogueStats";
 import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
 import type { CatalogueView } from "@/lib/gomoku/catalogueView";
 import type { Speaker } from "@/lib/i18n/i18n";
@@ -57,8 +56,8 @@ function gameCopy(variant: CatalogueFamily["games"][number]["variant"]): Catalog
 }
 
 /**
- * /games for somebody with no invite: the catalogue, and one query rather
- * than the whole lobby's.
+ * /games for somebody with no invite: the catalogue, and its figures from a
+ * copy kept for an hour rather than the whole lobby's reads.
  *
  * A SEPARATE COMPONENT RATHER THAN A HANDFUL OF CONDITIONS, because the
  * property worth having is one somebody can check by reading: the seats, the
@@ -75,13 +74,14 @@ function gameCopy(variant: CatalogueFamily["games"][number]["variant"]): Catalog
  * and a stranger was told none of it had ever been played, on the one page
  * whose whole job is to invite them in.
  *
- * The PEOPLE are not, and `forReader(stats, false)` is where that is decided,
- * once: no top player's name, no last game's match. The open pages name no
+ * The PEOPLE are not, and `forReader(…, false)` is where that is decided,
+ * once, inside `strangerCatalogueStats`: no top player's name, no last game's
+ * match. The open pages name no
  * member — `e2e/gate.spec.ts` holds /games to that — so a stranger is told
  * there is somebody at the top of each game, and invited in to see who.
  */
 export async function PublicCatalogue({ view, say }: { view: CatalogueView; say: Speaker }) {
-  const stats = forReader(await fetchCatalogueStats(), false);
+  const stats = await strangerCatalogueStats();
 
   return (
     <Page>
