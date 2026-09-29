@@ -27,7 +27,18 @@ import { PLAY } from "./mine.constants";
  * two sentences of history that use the word in another sense.
  */
 
+/** Superghost's challenge is a move with that name, inside a game already going: nothing is offered by it. */
+const GHOST_MOVE = "Superghost's challenge, the move the game's rules are named for, made at a table already playing — not an offer of a game";
+
 const EXCEPTIONS: readonly { file: string; text: string; why: string }[] = [
+  { file: "src/components/party/party.constants.ts", text: "or Add after — or challenge.", why: GHOST_MOVE },
+  { file: "src/components/party/party.constants.ts", text: "Challenge", why: `${GHOST_MOVE}: the button, "Challenge" and "Challenge Ann"` },
+  { file: "src/components/party/party.constants.ts", text: "Nothing to challenge until somebody adds a letter.", why: GHOST_MOVE },
+  { file: "src/components/party/party.constants.ts", text: "${challenger} challenged ${name}.", why: GHOST_MOVE },
+  { file: "src/components/party/party.constants.ts", text: "so ${challenger} takes a letter.", why: GHOST_MOVE },
+  { file: "src/lib/party/party.constants.ts", text: "you may challenge the player who added the last one", why: `${GHOST_MOVE}, in its rules` },
+  { file: "src/lib/party/party.constants.ts", text: "the challenger loses the round", why: `${GHOST_MOVE}, in its rules` },
+  { file: "src/lib/party/partyRulesPage.ts", text: "or press Challenge. When challenged,", why: `${GHOST_MOVE}, on its rules page` },
   {
     file: "src/lib/famous/famousGames.data.ts",
     text: "Google DeepMind Challenge Match",

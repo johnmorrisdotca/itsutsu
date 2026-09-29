@@ -1,6 +1,7 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import { DOTS_RULES } from "./dotsAndBoxes/dotsAndBoxes";
 import type { PartyKind, PartyPlays, PartyRules } from "./party.types";
+import { SUPERGHOST_RULES } from "./superghost/ghostRules";
 
 /**
  * EVERY PARTY GAME'S RULES, by kind: what the New Game Gate plays out at every
@@ -9,4 +10,5 @@ import type { PartyKind, PartyPlays, PartyRules } from "./party.types";
  */
 export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], PartyPlays[K]["move"]> } = {
   dotsAndBoxes: DOTS_RULES,
+  superghost: SUPERGHOST_RULES,
 };
