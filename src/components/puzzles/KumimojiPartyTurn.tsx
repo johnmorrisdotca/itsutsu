@@ -96,19 +96,22 @@ export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyG
           </button>
         </span>
       </div>
-      <KumimojiTable
-        tiles={play.tiles}
-        theme={theme}
-        misspelt={verdict.misspelt}
-        apart={verdict.apart}
-        chosen={desk.chosenSquare}
-        cursor={desk.cursor}
-        turn={desk.turn}
-        onTurn={desk.turnTable}
-        onSquare={desk.onSquare}
-        onTileDown={desk.onTableDown}
-        handle={table}
-      />
+      {/* The table's column for the size chooser (`BoardScale`): at Large and Full it takes the width, and the hand moves beside it. */}
+      <div data-scale-board data-scale-stack>
+        <KumimojiTable
+          tiles={play.tiles}
+          theme={theme}
+          misspelt={verdict.misspelt}
+          apart={verdict.apart}
+          chosen={desk.chosenSquare}
+          cursor={desk.cursor}
+          turn={desk.turn}
+          onTurn={desk.turnTable}
+          onSquare={desk.onSquare}
+          onTileDown={desk.onTableDown}
+          handle={table}
+        />
+      </div>
       <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
         {desk.helpSaid ?? said}
       </p>

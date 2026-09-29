@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -80,7 +81,10 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
         kanji={table.kanji}
         lead={table.lead}
       />
-      <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
+      {/* The table at the size this reader keeps for this kind of screen (`BoardScaled`), once a game is on it. */}
+      <BoardScaled>
+        <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
+      </BoardScaled>
     </Page>
   );
 }

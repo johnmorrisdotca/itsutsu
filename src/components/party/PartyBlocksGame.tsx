@@ -57,12 +57,14 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="party-blocks"
       data-state={game.status}
       data-moves={game.moves.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board>
         <PartyBlocksTurnLine game={game} />
         <PartyBlocksBoard
           game={game}

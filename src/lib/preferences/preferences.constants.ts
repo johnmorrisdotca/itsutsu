@@ -3,7 +3,7 @@ import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
-import { BOARD_SIZES, BOARD_SIZE_LIST } from "./boardSize";
+import { BOARD_SCALE_SPECS } from "./boardScale";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 import { MOVE_FORMAT_CHOICES } from "@/lib/record/moveFormats";
 import { WORD_STYLES, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
@@ -163,12 +163,14 @@ export const PREFERENCE_SPECS = {
   moveConfirmComputer: { options: MOVE_CONFIRM_LIST, fallback: MOVE_CONFIRM.preview },
 
   /*
-   * How big the board is drawn on a desk: fit the screen, or small, medium,
-   * large. See `boardSize.ts`. On the account for the reason this registry is:
-   * the size chosen at one desk is the size at the next, and a phone, which
-   * never applies it, is left alone.
+   * How big a board is drawn on a wide screen — Regular, Large or Full — one
+   * row a kind of screen (`boardScale.laptop`, `.desk`, `.wide`), so a laptop
+   * and a big monitor each keep their own and every screen of one kind on the
+   * account shares it. See `boardScale.ts`. A phone, which never applies it,
+   * is left alone. It replaced `boardSize` (Fit, S, M, L on the live board
+   * alone); a row still holding that key is a key the registry ignores.
    */
-  boardSize: { options: BOARD_SIZE_LIST, fallback: BOARD_SIZES.fit },
+  ...BOARD_SCALE_SPECS,
 
   /*
    * How a game's record writes its moves: ours, one a line, or two a line as

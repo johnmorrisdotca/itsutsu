@@ -188,7 +188,8 @@ export function GameView({
       >
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
-          <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3" data-focus-board>
+          {/* The board's column for the size chooser (`BoardScale`): Large and Full take its cap off, the sidebar beside it keeps its width. */}
+          <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3" data-focus-board data-scale-board>
             <ReviewBanner session={session} actions={actions} />
             <BranchPrompt session={session} actions={actions} />
             <Board

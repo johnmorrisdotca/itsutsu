@@ -402,6 +402,98 @@ html[data-bare="true"] [data-strippable] [data-board-column] {
 }
 
 /*
+ * A BOARD AT LARGE OR FULL (`BoardScale`). John, 2026-09-28: "Desktop should
+ * get the offer to have multiple sizes... giving the user more real estate.
+ * and hopefully make the boxes bigger too."
+ *
+ * Only on a desk (`lg`, where the chooser is drawn), never in just the board
+ * (which sizes the board to the screen itself), and only while there is a
+ * board in the play (`data-scale-board`): a party table's set-up and a puzzle
+ * still being made are left as they were.
+ *
+ * - The play takes the width `BoardScale` worked out (`--scale-w`), centred on
+ *   the page and past its frame where the window has room: the one place a
+ *   page is wider than PAGE_WIDTH, and it is the board's, on the reader's say.
+ * - The board's column gives up its cap, so the board takes what is left once
+ *   the side matter has its fixed width.
+ * - A table's side matter stays beside the board (`data-scale-desk`), at a
+ *   width of its own.
+ * - A puzzle's controls — the clock, the keypad, the keyboard, the tray —
+ *   move beside the board (`data-scale-stack`), so a bigger board does not
+ *   push them off the bottom of the screen. The board spans every row; the
+ *   rest fill the column beside it from the top, and the last row, a flexible
+ *   one, takes up whatever height the board has over them, so the controls
+ *   stay together at the top rather than spreading down its side.
+ */
+@media (min-width: 64rem) {
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]):has([data-scale-board]) {
+    width: var(--scale-w, 100%);
+    max-width: none;
+    margin-inline: calc((100% - var(--scale-w, 100%)) / 2);
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-scale-board] {
+    max-width: none;
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-scale-desk] {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) :has(> [data-scale-board][data-scale-stack]) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    grid-template-rows: repeat(8, auto) minmax(0, 1fr);
+    column-gap: 2rem;
+    align-items: start;
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) :has(> [data-scale-board][data-scale-stack]) > [data-scale-board] {
+    grid-column: 1;
+    grid-row: 1 / -1;
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) :has(> [data-scale-board][data-scale-stack]) > :not([data-scale-board]) {
+    grid-column: 2;
+  }
+  /*
+   * TEXT IN A SQUARE GROWS WITH THE SQUARE. A number puzzle's grid prints its
+   * digits, sums, marks and clues at a fixed size (`puzzleCellText` and the
+   * PUZZLE_* classes, whose `sm:` sizes these repeat), so at Large and Full
+   * each is multiplied by how many times Regular's the board is drawn
+   * (`--board-grow`, from `BoardScale`). A board drawn as one picture —
+   * every game's `Board`, the party tables — grows its text with it already.
+   * `boardScale.coverage.test.ts` holds these sizes to the classes.
+   */
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-testid="puzzle-grid"] [data-testid="puzzle-cell"] {
+    font-size: calc(1.25rem * var(--board-grow, 1));
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-testid="puzzle-grid"]:not([data-size="3"], [data-size="4"], [data-size="5"], [data-size="6"], [data-size="7"], [data-size="8"], [data-size="9"]) [data-testid="puzzle-cell"] {
+    font-size: calc(1rem * var(--board-grow, 1));
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-testid="puzzle-cage-sum"] {
+    font-size: calc(0.65rem * var(--board-grow, 1));
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-testid="puzzle-mark"] {
+    width: calc(1.5rem * var(--board-grow, 1));
+    height: calc(1.5rem * var(--board-grow, 1));
+    font-size: calc(1.125rem * var(--board-grow, 1));
+  }
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-testid="puzzle-tower-clue"] {
+    font-size: calc(1.25rem * var(--board-grow, 1));
+  }
+  /*
+   * KUMIMOJI'S TABLE IS A BOARD AT LARGE AND FULL. At Regular it is a band of
+   * table a fixed 34rem tall that pans; made bigger, it is a square like every
+   * other board, so it grows down as well as across and its fitted squares
+   * grow with it (`fittedMost` in `tableView.ts`).
+   */
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-testid="kumimoji-table"] {
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+/* Nothing to size while there is no board: the chooser waits for one. */
+[data-board-scaling]:not(:has([data-scale-board])) > [data-board-scale-chooser] {
+  display: none;
+}
+
+/*
  * THE RIVALRY BOARD — components/history/RivalryBoard. The VS badge lands and
  * the two scores rise to meet it, once, when the board is drawn. Nothing
  * loops: a scoreboard that kept moving would be asking to be looked at after

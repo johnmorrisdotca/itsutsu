@@ -1,4 +1,5 @@
 import Link from "@/components/ui/Link";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 
@@ -98,7 +99,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
       </section>
 
       {seat !== null && mine !== null && mine.state === "solving" ? (
-        <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
+        <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
           <PuzzlePlayClient
             kind={kind}
             size={race.size}
@@ -111,7 +112,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
             hasAccount={reader.hasAccount}
             race={{ id, since: mine.since.getTime(), givens: race.givens, checksAllowed: race.checksAllowed }}
           />
-        </div>
+        </BoardScaled>
       ) : null}
 
       {seat === null && !reader.hasAccount ? (

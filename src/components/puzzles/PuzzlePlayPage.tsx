@@ -23,6 +23,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrailNav } from "@/components/games/GameTrail";
+import { BoardScaled } from "@/components/board/BoardScaled";
 
 /**
  * /games/<slug>/play for a puzzle: the solve, at the size, level and seed the
@@ -73,11 +74,12 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }}
         steps={[{ label: "Set up", href: setUpPath(kind) }, { label: "Play" }]}
       />
-      <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
+      {/* The solve at the size this reader keeps for this kind of screen (`BoardScaled`): Regular is the column it always had. */}
+      <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
           <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} clock={asked.clock ?? "none"} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
-      </div>
+      </BoardScaled>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
       {tsunagi && asked.seed !== null ? <TsunagiLevelFastest size={asked.size} level={asked.seed} /> : null}
       <footer className="border-t border-rule pt-5 text-sm text-muted">

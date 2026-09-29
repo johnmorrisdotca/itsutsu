@@ -6,6 +6,7 @@ import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 
 import { GameViewClient } from "@/components/game/GameViewClient";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -63,21 +64,24 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
         />
       </div>
       <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Play" }]} />
-      <GameViewClient
-        variant={variant}
-        trackPath
-        appearance={board}
-        /*
-          AN ACCOUNT, NOT A SESSION, because the one thing this decides is
-          whether a board choice is written back to the account — and
-          PATCH /api/me answers 401 to an invite holder, who has none. It was
-          named `signedIn` and read off the address, which happened to give the
-          right answer under the wrong name.
-        */
-        savesToAccount={reader.hasAccount}
-        defaults={defaults}
-        moveFormat={moveFormat}
-      />
+      {/* The board and its sidebar at the size this reader keeps for this kind of screen (`BoardScaled`). */}
+      <BoardScaled>
+        <GameViewClient
+          variant={variant}
+          trackPath
+          appearance={board}
+          /*
+            AN ACCOUNT, NOT A SESSION, because the one thing this decides is
+            whether a board choice is written back to the account — and
+            PATCH /api/me answers 401 to an invite holder, who has none. It was
+            named `signedIn` and read off the address, which happened to give the
+            right answer under the wrong name.
+          */
+          savesToAccount={reader.hasAccount}
+          defaults={defaults}
+          moveFormat={moveFormat}
+        />
+      </BoardScaled>
       {/* The game's name, its rules and its family: furniture that just the board leaves out. */}
       <footer data-chrome className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
         <p>
