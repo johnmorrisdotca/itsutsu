@@ -1,4 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
+
+/** A cell of the row holding no link or button, so a tap on it is a tap on the row and nothing else. */
+function plainCell(row: Locator): Locator {
+  return row.locator("td:not([data-row-actions])").filter({ hasNot: row.page().locator("a, button") }).first();
+}
 
 /**
  * A TABLE ROW'S BUTTONS FLOAT OVER ITS END, AND ONLY ON HOVER. John,
@@ -46,16 +51,24 @@ test.describe("the members list on a phone", () => {
     await page.goto("/players");
     const table = page.getByTestId("directory");
     await expect(table).toBeVisible();
-    const row = table.locator("tr").filter({ has: page.locator("td[data-row-actions] button, td[data-row-actions] a") }).first();
+    const withButtons = table.locator("tr").filter({ has: page.locator("td[data-row-actions] button, td[data-row-actions] a") });
+    const row = withButtons.first();
     const buttons = row.locator("td[data-row-actions] > *");
+    await row.scrollIntoViewIfNeeded();
     await expect(buttons).toHaveCSS("opacity", "0");
 
-    // The first tap lands where the unseen buttons sit: it opens them and goes nowhere.
-    await row.scrollIntoViewIfNeeded();
+    // Unseen, they take no press: a tap where they sit reaches the row beneath them, never a button of theirs.
     const at = (await buttons.boundingBox())!;
+    const beneath = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest("[data-row-actions]") === null,
+      [at.x + at.width / 2, at.y + at.height / 2],
+    );
+    expect(beneath, "an unseen button is where a tap lands").toBe(true);
+
+    // A tap on the row (a cell with no link of its own) gives it the focus, by which the buttons come up —
+    // not by a hover the browser makes up for a tap: iPhone's Safari makes up none for a row.
     const address = page.url();
-    await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
-    // By the focus, not by a hover the browser makes up for a tap: iPhone's Safari makes up none for a row.
+    await plainCell(row).tap();
     await expect(row).toBeFocused();
     await expect(buttons).toHaveCSS("opacity", "1");
     await expect(buttons).toHaveCSS("pointer-events", "auto");
@@ -63,8 +76,8 @@ test.describe("the members list on a phone", () => {
     await page.screenshot({ path: test.info().outputPath("members-tap-390.png") });
 
     // A tap on another row moves them there.
-    const other = table.locator("tr").filter({ has: page.locator("td[data-row-actions] button, td[data-row-actions] a") }).nth(1);
-    await other.locator("td").nth(1).tap();
+    const other = withButtons.nth(1);
+    await plainCell(other).tap();
     await expect(other.locator("td[data-row-actions] > *")).toHaveCSS("opacity", "1");
     await expect(buttons).toHaveCSS("opacity", "0");
   });
