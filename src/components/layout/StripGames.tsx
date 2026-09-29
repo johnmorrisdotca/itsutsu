@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 import useSWR from "swr";
 
-import { thousands } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 import { GameCount } from "@/components/games/GameCount";
 import { MINE_KEY } from "@/components/mine/mine.constants";
 import type { RatedRecord } from "@/lib/rating/ratedRecord";

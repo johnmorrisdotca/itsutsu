@@ -3,7 +3,8 @@ import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 import { joinQuery, playPath } from "../src/lib/gomoku/slugs";
-import { generatePuzzle, prepareEveryPuzzle } from "../src/lib/puzzles/generate";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { prepareEveryPuzzle } from "../src/lib/puzzles/prepareEvery";
 import { markKanaGuess } from "../src/lib/puzzles/gomojiKana/kanaMarks";
 import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";

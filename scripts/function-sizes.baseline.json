@@ -2,7 +2,7 @@
   "functions": [
     {
       "name": "_not-found",
-      "mb": 36.2,
+      "mb": 35.8,
       "sample": [
         "_not-found",
         "about",
@@ -18,7 +18,7 @@
     },
     {
       "name": "api/admin/members/[id]/claim",
-      "mb": 27.8,
+      "mb": 28.8,
       "sample": [
         "api/admin/members/[id]/claim",
         "api/admin/members/[id]/phrase",
@@ -34,7 +34,7 @@
     },
     {
       "name": "apple-icon.png.rsc",
-      "mb": 23,
+      "mb": 23.1,
       "sample": [
         "apple-icon.png",
         "favicon.ico",
@@ -46,7 +46,7 @@
     },
     {
       "name": "_global-error.rsc",
-      "mb": 22.4,
+      "mb": 22.5,
       "sample": [
         "_global-error"
       ]

@@ -1,6 +1,6 @@
 import Link from "@/components/ui/Link";
 
-import { thousands } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 import { gamesHref } from "@/components/games/GameCount";
 import type { IpScope } from "@/lib/points/ipBoards";
 import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";

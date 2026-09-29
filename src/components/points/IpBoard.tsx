@@ -1,7 +1,7 @@
 import { connection } from "next/server";
 import Link from "@/components/ui/Link";
 
-import { thousands } from "@/components/about/XpCurve";
+import { thousands } from "@/lib/ui/thousands";
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";

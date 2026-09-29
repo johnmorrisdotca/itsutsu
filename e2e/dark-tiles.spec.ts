@@ -3,7 +3,9 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
 import { KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
-import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
+// This process has no browser: the lists are read from their modules (`tileWordsModule.ts`).
+import { loadTileWordsFromModule as loadTileWords } from "../src/lib/puzzles/kumimoji/tileWordsModule";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { preparePuzzle } from "@/lib/puzzles/generate";
+import { preparePuzzleOnServer } from "@/lib/puzzles/prepareOnServer";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { progressFits, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
 
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     const language = kind === "kumimoji" ? parsed.data.language ?? "english" : "english";
-    await preparePuzzle(kind, size, language);
+    await preparePuzzleOnServer(kind, size, language);
 
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer, level);

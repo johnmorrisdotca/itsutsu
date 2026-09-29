@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { generatePuzzle, prepareEveryPuzzle } from "../generate";
+import { generatePuzzle } from "../generate";
+import { prepareEveryPuzzle } from "../prepareEvery";
 import { decodeKanaGivens } from "../gomojiKana/kanaCode";
 import { kanaBase } from "../gomojiKana/kanaMarks";
 import { withHeadStart } from "../keyMarks";

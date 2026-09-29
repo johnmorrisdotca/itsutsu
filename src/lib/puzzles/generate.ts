@@ -11,14 +11,14 @@ import { generateBlackAndWhite } from "./blackAndWhite/generate";
 import { generateGomoji } from "./gomoji/generate";
 import { generateGomojiKana } from "./gomojiKana/generate";
 import { generateKoushi } from "./koushi/generate";
-import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
-import { loadEveryTsunagiLevel, loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
+import { loadKanaWords } from "./gomojiKana/kanaWords";
+import { loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
 import { generateKumimoji } from "./kumimoji/generate";
 import type { KumimojiLanguage, KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { loadTileWords } from "./kumimoji/tileWords";
 import { loadDailyPools } from "./dailyWords/dailyPools";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
-import { POP_OWN_GUESS_LENGTHS, loadPopGuesses } from "./gomoji/popWords";
+import { loadPopGuesses } from "./gomoji/popWords";
 
 /**
  * A puzzle of any kind, from a seed: the one door the solve page, the
@@ -101,6 +101,3 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   if (kind === "gomojiPop") await loadPopGuesses(size);
 }
 
-export async function prepareEveryPuzzle(): Promise<void> {
-  await Promise.all([loadWordData("en"), loadWordData("fr"), loadWordData("de"), ...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords(), loadTileWords("japanese"), ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size))]);
-}

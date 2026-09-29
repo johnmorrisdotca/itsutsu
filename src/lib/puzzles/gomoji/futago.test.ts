@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { dailyFutagoWordsOf, dailyWordOf } from "../dailyWords/dailyPools";
 import { dailyWordSeed, dayAfter, dayOfDailyWordSeed } from "../dailyWords/dailyDay";
-import { generatePuzzle, prepareEveryPuzzle } from "../generate";
+import { generatePuzzle } from "../generate";
+import { prepareEveryPuzzle } from "../prepareEvery";
 import { decodeKanaGivens } from "../gomojiKana/kanaCode";
 import { markKanaGuess } from "../gomojiKana/kanaMarks";
 import { kanaWordsOf } from "../gomojiKana/kanaWords";

@@ -1,5 +1,5 @@
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES, type TimeoutPenalty } from "./gameSettingsSchema";
+import { MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES, type TimeoutPenalty } from "./moveTime.constants";
 import type { GameSummary } from "./gameHistory.types";
 
 /**
