@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.411.0 — 2026-09-29
+- Kumimoji's page shows it being played, lets you try a hand right there, and its rules count every English and Japanese tile
+
 ## 0.410.0 — 2026-09-29
 - Kumimoji pass and play: two to eight players round one device, every table face up, a last turn for everyone once somebody goes out
 
