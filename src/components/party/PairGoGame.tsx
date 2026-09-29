@@ -12,12 +12,14 @@ import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { canPass } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, RULE_VARIANTS, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { againPairGo, pairPass, pairPlay, pairPlayerToMove, pairPlayers, pairResign } from "@/lib/gomoku/party/pairGo";
 import type { PairGoGame as PairGoGameState } from "@/lib/gomoku/party/pairGo.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
 import { PairGoSetUp } from "./PairGoSetUp";
 import { PairGoTurnLine, teamWords } from "./PairGoStatus";
 import { PairStone } from "./PairStone";
@@ -193,6 +195,9 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
             </button>
           )}
         </div>
+        {playing || game.state.winner === null ? null : (
+          <TableWallpaper game={RULE_VARIANTS.go} result={resultLine([teamWords(game, STONES.black), teamWords(game, STONES.white)], [game.state.winner === STONES.black ? 0 : 1])} />
+        )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {PAIR_GO_COPY.about}

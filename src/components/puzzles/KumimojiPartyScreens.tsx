@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { WinCoverOver } from "@/components/game/WinCover";
 import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import { TableWallpaper } from "@/components/party/TableWallpaper";
 import type { WinNews } from "@/components/game/winCover.types";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
@@ -203,6 +204,8 @@ export function KumimojiPartyFinish({
           <PressLabel words={WIN_COVER_COPY.againSamePlayers} kanji="再" />
         </button>
       )}
+      {/* Every crossword at the table as a wallpaper; a table on several devices offers its own beside its seats. */}
+      {onAgain === undefined ? null : <TableWallpaper game="kumimoji" result={headline(game)} />}
     </div>
   );
 }

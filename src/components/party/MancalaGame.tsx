@@ -15,6 +15,8 @@ import type { MancalaGame as MancalaGameState } from "@/lib/party/mancala/mancal
 import { storeOf } from "@/lib/party/mancala/sowing";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
 import { MancalaBoard } from "./MancalaBoard";
 import { MancalaSetUp } from "./MancalaSetUp";
 import { MancalaTurnLine } from "./MancalaTurnLine";
@@ -149,6 +151,9 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
             </button>
           )}
         </div>
+        {game.status === MANCALA_STATUS.playing ? null : (
+          <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners, game.winners.length > 1)} />
+        )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {MANCALA_COPY.about} →

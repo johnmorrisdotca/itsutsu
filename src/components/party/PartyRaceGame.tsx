@@ -14,6 +14,8 @@ import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
 import { MarbleChip } from "./MarbleChip";
 import { PartySetUp } from "./PartySetUp";
 import { PARTY_COPY } from "./party.constants";
@@ -175,6 +177,9 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
             </button>
           )}
         </div>
+        {game.status === PARTY_STATUS.won && game.winner !== null ? (
+          <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index)), [game.winner])} />
+        ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {kind.copy.about} →

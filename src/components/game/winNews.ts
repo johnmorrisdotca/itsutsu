@@ -64,3 +64,8 @@ export function tableNews(input: {
         : WIN_COVER_COPY.wins(named(winners[0]!));
   return { tone, mark, headline: { label, kanji: WIN_COVER_COPY.winKanji }, detail, next: input.next };
 }
+
+/** How a table's game ended, as one line said to nobody in particular: "Aiko wins", "Draw" — the words a wallpaper's title bar carries. */
+export function resultLine(names: readonly string[], winners: readonly number[], draw = false): string {
+  return tableNews({ names, winners, you: null, draw, next: null })?.headline.label ?? "";
+}

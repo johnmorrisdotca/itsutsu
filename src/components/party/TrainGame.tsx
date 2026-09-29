@@ -15,6 +15,8 @@ import type { Domino, TrainGame as TrainGameState, TrainMove } from "@/lib/party
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
 import { MarbleChip } from "./MarbleChip";
 import { PARTY_COPY, TRAIN_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
@@ -182,6 +184,9 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
           )}
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        {game.phase === TRAIN_PHASES.finished ? (
+          <TableWallpaper game="mexicanTrain" result={resultLine(game.players.map((_, seat) => trainPlayerName(game, seat)), game.winners)} />
+        ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {TRAIN_COPY.about} →

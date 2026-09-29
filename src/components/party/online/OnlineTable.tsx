@@ -7,7 +7,8 @@ import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { useCallback, useMemo, useState } from "react";
 
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
-import { tableNews } from "@/components/game/winNews";
+import { resultLine, tableNews } from "@/components/game/winNews";
+import { TableWallpaper } from "../TableWallpaper";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { ONLINE_SEAT_KINDS, ONLINE_STATUS } from "@/lib/party/online/online.constants";
@@ -182,6 +183,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
             )}
           </div>
         ) : null}
+        {view.status === ONLINE_STATUS.finished ? <TableWallpaper game={view.game} result={resultLine(view.seats.map((seat, at) => seat.name || `Player ${at + 1}`), view.winners)} /> : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {ONLINE_COPY.about} →

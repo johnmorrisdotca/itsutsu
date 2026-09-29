@@ -3,6 +3,8 @@ import type { PartyCheckersState, PartyPlayerCount } from "@/lib/gomoku/party/pa
 import { PARTY_HALMA_RULES } from "@/lib/gomoku/party/partyHalma";
 import type { PartyHalmaCount, PartyHalmaState } from "@/lib/gomoku/party/partyHalma.types";
 
+import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
+
 import { PartySquareBoard } from "./PartySquareBoard";
 import { PartyStarBoard } from "./PartyStarBoard";
 import { PARTY_GAME_COPY } from "./party.constants";
@@ -23,6 +25,7 @@ export const CHECKERS_RACE: PartyRaceKind<PartyCheckersState, PartyPlayerCount> 
   rules: PARTY_CHECKERS_RULES,
   Board: PartyStarBoard,
   useKept: useKeptPartyGame,
+  variant: RULE_VARIANTS.chineseCheckers,
   testId: "party-checkers",
   copy: PARTY_GAME_COPY.chineseCheckers,
 };
@@ -32,6 +35,7 @@ export const HALMA_RACE: PartyRaceKind<PartyHalmaState, PartyHalmaCount> = {
   rules: PARTY_HALMA_RULES,
   Board: PartySquareBoard,
   useKept: useKeptHalmaParty,
+  variant: RULE_VARIANTS.halma,
   testId: "party-halma",
   copy: PARTY_GAME_COPY.halma,
 };

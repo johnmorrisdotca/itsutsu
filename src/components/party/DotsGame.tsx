@@ -12,6 +12,8 @@ import { DOTS_STATUS, dotsAgain, dotsLineCount, dotsPlayerName, drawLine } from 
 import type { DotsGame as DotsGameState } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { TableWallpaper } from "./TableWallpaper";
+import { resultLine } from "@/components/game/winNews";
 import { DotsBoard } from "./DotsBoard";
 import { DotsSetUp } from "./DotsSetUp";
 import { DotsTurnLine } from "./DotsTurnLine";
@@ -132,6 +134,10 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
             </button>
           )}
         </div>
+        {/* The finished board as a desktop or phone wallpaper, as every board game offers its positions. */}
+        {game.status === DOTS_STATUS.playing ? null : (
+          <TableWallpaper game="dotsAndBoxes" result={resultLine(game.players.map((_, seat) => dotsPlayerName(game, seat)), game.winners)} />
+        )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {DOTS_COPY.about} →
