@@ -7,7 +7,7 @@ import { ready } from "./support";
  * A puzzle's set-up keeps what was chosen through a reload.
  *
  * John, 2026-09-26: "selected Board Size is not preserved on reload" — the
- * choice lived only in the page, so a reload began again at 7, Usual. Each
+ * choice lived only in the page, so a reload began again at 7, Standard. Each
  * choice now writes itself into the address, which the set-up already opened
  * on. The reload IS the subject here, which is the one case a spec reloads.
  * It drives the tiles as a reader does, then checks the way back as well as

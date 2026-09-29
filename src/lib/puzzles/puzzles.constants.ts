@@ -143,7 +143,7 @@ export function offersClock(kind: PuzzleKind): boolean {
 }
 
 /**
- * Hidden Stones is made at eight sides and offered at four — Beginner, Usual,
+ * Hidden Stones is made at eight sides and offered at four — Beginner, Standard,
  * Long and Longest — because the set-up screen keeps room for four boards and
  * no more (see `offered`). John, 2026-09-26: "is it possible to add a 12x12
  * game? and a beginner 4x4 game?" The two new ones took the ends, and 9×9
@@ -349,7 +349,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     4: { label: "Beginner", kanji: "入門" },
     5: { label: "Quick", kanji: "速" },
     6: { label: "Short", kanji: "短" },
-    7: { label: "Usual", kanji: "定番" },
+    7: { label: "Standard", kanji: "定番" },
     8: { label: "Longer", kanji: "長め" },
     9: { label: "Long", kanji: "長" },
     10: { label: "Evening", kanji: "夜長" },
@@ -357,14 +357,14 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   },
   moreOrLess: {
     4: { label: "Quick", kanji: "速" },
-    5: { label: "Usual", kanji: "定番" },
+    5: { label: "Standard", kanji: "定番" },
     6: { label: "Longer", kanji: "長め" },
     7: { label: "Long", kanji: "長" },
   },
   jigsaw: {
     5: { label: "Quick", kanji: "速" },
     6: { label: "Short", kanji: "短" },
-    7: { label: "Usual", kanji: "定番" },
+    7: { label: "Standard", kanji: "定番" },
     9: { label: "Classic", kanji: "本格" },
   },
   diagonal: {
@@ -377,13 +377,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   },
   towers: {
     4: { label: "Quick", kanji: "速" },
-    5: { label: "Usual", kanji: "定番" },
+    5: { label: "Standard", kanji: "定番" },
     6: { label: "Longer", kanji: "長め" },
     7: { label: "Long", kanji: "長" },
   },
   blackAndWhite: {
     6: { label: "Quick", kanji: "速" },
-    8: { label: "Usual", kanji: "定番" },
+    8: { label: "Standard", kanji: "定番" },
     10: { label: "Long", kanji: "長" },
     12: { label: "Longest", kanji: "最長" },
   },
@@ -418,7 +418,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     4: { label: "First", kanji: "初" },
     5: { label: "Quick", kanji: "速" },
     6: { label: "Short", kanji: "短" },
-    7: { label: "Usual", kanji: "定番" },
+    7: { label: "Standard", kanji: "定番" },
     8: { label: "Long", kanji: "長" },
     9: { label: "Longer", kanji: "長大" },
     10: { label: "Big", kanji: "大" },
@@ -435,13 +435,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   },
   bridges: {
     7: { label: "Quick", kanji: "速" },
-    9: { label: "Usual", kanji: "定番" },
+    9: { label: "Standard", kanji: "定番" },
     11: { label: "Long", kanji: "長" },
     13: { label: "Longest", kanji: "最長" },
   },
   pictureLogic: {
     5: { label: "Quick", kanji: "速" },
-    10: { label: "Usual", kanji: "定番" },
+    10: { label: "Standard", kanji: "定番" },
     15: { label: "Long", kanji: "長" },
     20: { label: "Longest", kanji: "最長" },
   },

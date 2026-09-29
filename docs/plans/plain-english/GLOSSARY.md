@@ -177,6 +177,7 @@ something uses the word already chosen for it.
 | Your solves | Your own solves | — | `PuzzleFrontDoor.tsx` | same as the page it opens |
 | Leaderboard · All solves | Fastest · Record | — | `WordSettingsPanel.tsx` (the Gomoji language rows) | the pages they open are the Leaderboard and All solves |
 | First tap | What a tap does first | — | `puzzles.constants.ts` (Picture logic's pen chooser) | plain |
+| Standard | Usual | 定番 (kept) | `lib/puzzles/puzzles.constants.ts` (the middle board size on the set-up tiles of Hidden Stones, More or less, Jigsaw, Towers and others) | the ordinary size is "Standard"; John, 2026-09-29: "Standard OK" |
 | Sort: | Order: | — | `PuzzleRecordPage.tsx` | the usual word |
 | Normal | As made | 爆 (unchanged) | `TsunagiHelpPickers.tsx` | plain; "Softer" beside it reads fine and stays |
 
