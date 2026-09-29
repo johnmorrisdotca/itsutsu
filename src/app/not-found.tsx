@@ -13,7 +13,7 @@ export default function NotFound() {
       <BrandAvatar className="size-20 opacity-90" />
       <div className="flex flex-col gap-2">
         <h1 className="font-mincho text-3xl font-bold">
-          何もない <span className="text-base font-normal text-muted">nothing here</span>
+          何もない <span className="text-base font-normal text-muted">Page not found</span>
         </h1>
         <p className="max-w-sm text-sm text-muted" data-width-reason="a short notice centred on a page with no frame">
           There is no page at this address. It may have been a game that does not exist, or a
@@ -23,13 +23,13 @@ export default function NotFound() {
       <BrandStones className="opacity-70" />
       <nav className="flex flex-wrap justify-center gap-4 text-sm">
         <Link href="/games" className="underline underline-offset-4">
-          The games
+          Games
         </Link>
         <Link href="/" className="underline underline-offset-4">
-          The board
+          Home
         </Link>
         <Link href="/history" className="underline underline-offset-4">
-          The record
+          Game history
         </Link>
       </nav>
     </div>

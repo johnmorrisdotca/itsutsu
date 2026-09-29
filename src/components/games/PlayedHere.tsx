@@ -136,7 +136,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-played-here">
       <h2 className={`flex items-baseline justify-between gap-2 ${SECTION_TITLE}`}>
         <span>
-          Played here <span className="font-mincho normal-case tracking-normal">棋譜</span>
+          Game history <span className="font-mincho normal-case tracking-normal">棋譜</span>
         </span>
         {/*
           The count leads to all of them, which is this site's own rule about a
@@ -196,7 +196,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
       {people.length > 0 ? (
         <div className="flex flex-col gap-1.5 border-t border-rule pt-2" data-testid="played-here-people">
           <h3 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            Anyone for a game <span className="font-mincho normal-case tracking-normal">対局募集</span>
+            Looking for a game <span className="font-mincho normal-case tracking-normal">対局募集</span>
           </h3>
           <ul className="flex flex-col gap-1 text-sm">
             {people.map(({ name, member }) => (

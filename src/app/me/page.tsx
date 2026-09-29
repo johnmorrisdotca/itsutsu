@@ -39,7 +39,7 @@ import { gameEmailsOn } from "@/lib/site/gameEmails";
 import { mailKindsFrom } from "@/lib/mail/mailStop";
 import { WelcomeMail } from "@/components/mine/WelcomeMail";
 
-export const metadata = { title: "You" };
+export const metadata = { title: "Your account" };
 export const dynamic = "force-dynamic";
 
 /**

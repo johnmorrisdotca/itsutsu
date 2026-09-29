@@ -14,7 +14,7 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Set up a game" };
+export const metadata: Metadata = { title: "New game" };
 
 /**
  * Setting a game up when no game has been chosen yet, at /games/new.

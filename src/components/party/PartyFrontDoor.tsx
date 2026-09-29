@@ -73,7 +73,7 @@ export function PartyFrontDoor({ kind }: { kind: PartyKind }) {
           </div>
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
-              The object <span className="font-mincho normal-case tracking-normal">目的</span>
+              Objective <span className="font-mincho normal-case tracking-normal">目的</span>
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
               {page.object.map((line) => (
@@ -82,7 +82,7 @@ export function PartyFrontDoor({ kind }: { kind: PartyKind }) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                The whole rules of {page.title} <span className="font-mincho">規則</span> →
+                Full rules of {page.title} <span className="font-mincho">規則</span> →
               </Link>
             </p>
           </section>
@@ -93,7 +93,7 @@ export function PartyFrontDoor({ kind }: { kind: PartyKind }) {
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
             <h2 className={SECTION_TITLE}>
-              All of it <span className="font-mincho normal-case tracking-normal">一覧</span>
+              More on this game <span className="font-mincho normal-case tracking-normal">一覧</span>
             </h2>
             <div className="-mx-2 flex flex-col">
               <Facet href={rulesPath(kind)}>
@@ -102,7 +102,7 @@ export function PartyFrontDoor({ kind }: { kind: PartyKind }) {
               {/* Its family's own page: a family of party games has one address of its own (`familyPagePath`). */}
               {family !== null ? (
                 <Facet href={familyPagePath(family)} testId="facet-family">
-                  Its family <span className="font-mincho opacity-70">同族</span>
+                  Family <span className="font-mincho opacity-70">同族</span>
                 </Facet>
               ) : null}
               <Facet href={backgroundPath(kind)} testId="facet-background">

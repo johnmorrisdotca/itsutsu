@@ -74,7 +74,7 @@ export async function WhatWeHold({
   return (
     <section className="flex flex-col gap-3 border-t border-rule pt-4" data-testid="what-we-hold">
       <h3 className="text-sm font-semibold">
-        What Itsutsu holds about you <span className="font-mincho text-muted">保存情報</span>
+        Your data <span className="font-mincho text-muted">保存情報</span>
       </h3>
       <p className="text-xs text-muted">
         Everything, in plain words. The privacy page says who can see each of these and why we keep it.

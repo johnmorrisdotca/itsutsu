@@ -141,7 +141,7 @@ function TableStores({ game }: { game: MancalaGameState }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="mancala-players">
       <h2 className={SECTION_TITLE}>
-        At the table <span className="font-mincho normal-case tracking-normal">席</span>
+        Players <span className="font-mincho normal-case tracking-normal">席</span>
       </h2>
       <ol className="flex flex-col gap-1.5">
         {game.players.map((_, seat) => (

@@ -8,9 +8,9 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /** The four parts of a rules page, the same headings as `/games/<slug>/rules`. */
 const PARTS = [
-  { key: "object", heading: "Object", kanji: "目的" },
+  { key: "object", heading: "Objective", kanji: "目的" },
   { key: "board", heading: "Board", kanji: "盤" },
-  { key: "play", heading: "Play", kanji: "手順" },
+  { key: "play", heading: "How to play", kanji: "手順" },
   { key: "house", heading: "House rules", kanji: "細則" },
 ] as const;
 

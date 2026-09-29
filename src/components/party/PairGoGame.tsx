@@ -111,7 +111,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
       <aside className="flex min-w-0 flex-col gap-4">
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="pairgo-players">
           <h2 className={SECTION_TITLE}>
-            At the board <span className="font-mincho normal-case tracking-normal">席</span>
+            Players <span className="font-mincho normal-case tracking-normal">席</span>
           </h2>
           <ol className="flex flex-col gap-1.5">
             {pairPlayers(game).map((player) => (

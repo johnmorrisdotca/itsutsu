@@ -177,7 +177,7 @@ test.describe("a finished game offers to be played again", () => {
      * anchor rather than a control this test is not about.
      */
     await page.goto(`/games/gomoku/match/${game.id}`);
-    await expect(page.getByRole("link", { name: "Back to the record" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to game history" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Play again as/ })).toHaveCount(0);
     /*
      * Nobody played this game — its seats carry plain names and no member

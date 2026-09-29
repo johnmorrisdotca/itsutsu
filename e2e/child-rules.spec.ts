@@ -55,7 +55,7 @@ test("a child keeps nothing that says where they are, and only their own buddies
     await own.goto("/me/settings");
     await ready(own, "settings-form");
     await expect(own.getByTestId("child-settings-note")).toBeVisible();
-    await expect(own.getByRole("checkbox", { name: "Show when I am here" })).toHaveCount(0);
+    await expect(own.getByRole("checkbox", { name: "Show when I'm online" })).toHaveCount(0);
 
     // A stranger: no game, no message box, and the line saying why; the route refuses the same.
     await page.goto(playerPath(child.name, childId));

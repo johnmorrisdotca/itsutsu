@@ -77,7 +77,7 @@ test.describe("a control is named by its label", () => {
 
     // Every checkbox, which are the shared `Toggle`: being here, and the email rows (`MailChoices`).
     for (const [label, hint] of [
-      ["Show when I am here", "Listed on the players page while you are on the site."],
+      ["Show when I'm online", "Listed on the players page while you are on the site."],
       ["Email from Itsutsu", "Off, and the site never writes to you"],
       ["When it is my move", "Never while you are on the site"],
       ["When a game of mine finishes", "Who won and why"],

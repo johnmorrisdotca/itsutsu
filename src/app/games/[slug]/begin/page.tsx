@@ -218,7 +218,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
           <>
             {copy.tagline}{" "}
             <Link href={rulesPath(variant)} className="underline underline-offset-4">
-              How it is played
+              How to play
             </Link>
             .
           </>

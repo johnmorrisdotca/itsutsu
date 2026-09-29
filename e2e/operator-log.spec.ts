@@ -42,7 +42,7 @@ test.describe("the operator log", () => {
     await row.getByTestId("ban-member").click();
     // One row asks at a time, so the confirm is found on the page rather than guessed inside the row.
     await page.getByTestId("ban-member-yes").click();
-    await expect(row.getByTestId("ban-member")).toHaveText(/Open it again/);
+    await expect(row.getByTestId("ban-member")).toHaveText(/Reactivate/);
 
     await openTab(page, "Log");
     await expect(page).toHaveURL(/\/log$/);
@@ -57,7 +57,7 @@ test.describe("the operator log", () => {
     await ready(page, "admin-members");
     const again = page.getByTestId("admin-member").filter({ hasText: member.name });
     await again.getByTestId("ban-member").click();
-    await expect(again.getByTestId("ban-member")).toHaveText(/Shut the account/);
+    await expect(again.getByTestId("ban-member")).toHaveText(/Suspend account/);
 
     await openTab(page, "Log");
     await expect(rows("restore"), "the opening was not kept").toHaveCount(1);

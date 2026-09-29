@@ -19,14 +19,14 @@ export const ONLINE_COPY = {
     fillable
       ? "Kept on the site: it waits on everybody's My games, and nothing here is rated."
       : "Add buddies first: a member under 13 fills the other seats with people from their own buddy list.",
-  start: "Set the table",
-  starting: "Setting the table…",
-  couldNotStart: "The table could not be set.",
+  start: "Start online game",
+  starting: "Starting…",
+  couldNotStart: "The game could not be started.",
   /** The page. */
-  title: "At a table",
+  title: "Online table",
   kanji: "卓",
   lead: "Each player on their own device. Only the seat whose turn it is can move; everybody else sees it arrive.",
-  seatsHeading: "At the table",
+  seatsHeading: "Players",
   yours: "(you)",
   openSeat: "Open seat",
   openNote: "Waiting for somebody to open its link.",
@@ -58,14 +58,14 @@ export const ONLINE_COPY = {
   /** Where an ended or finished table's page points next. */
   about: "About the game and its rules",
   /** On My games. */
-  myHeading: "At a table",
+  myHeading: "Online tables",
   myHint: "Party games on several devices. Your move first.",
-  myFinishedHeading: "Tables finished",
+  myFinishedHeading: "Finished tables",
   myFinishedHint: "The newest twenty party tables you sat at.",
   myYourMove: "Your move",
   myTheirMove: (name: string) => `${name}’s move`,
   myOpen: "Waiting for the open seat",
-  myNone: "No tables going.",
+  myNone: "No online tables.",
   myNoneFinished: "No tables finished yet.",
   myFind: "Find a party game",
   myOpenTable: "Open",

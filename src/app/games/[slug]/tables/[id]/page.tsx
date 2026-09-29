@@ -21,7 +21,7 @@ import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
 export const metadata = {
-  title: "At a table",
+  title: "Online table",
   // A table can be reached from a seat link; neither should be indexed.
   robots: { index: false, follow: false },
 };

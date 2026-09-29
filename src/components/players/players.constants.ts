@@ -29,8 +29,8 @@ export const XP_BLANK_BECAUSE = {
  * an empty list prints. `who` is named from `WHO_DISPLAY`, the chips' own words.
  */
 export const NARROWING_WORDS = {
-  settled: { chip: "Settled ratings", clause: "has a settled rating" },
-  active: { chip: "Seen lately", clause: (days: number) => `has been seen in the last ${days} days` },
+  settled: { chip: "Established ratings", clause: "has an established rating" },
+  active: { chip: "Recently active", clause: (days: number) => `has been seen in the last ${days} days` },
   remembered: "as you chose last time",
 } as const;
 

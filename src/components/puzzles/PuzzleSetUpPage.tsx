@@ -73,7 +73,7 @@ export async function PuzzleSetUpPage({
           <>
             {copy.tagline}{" "}
             <Link href={rulesPath(kind)} className="underline underline-offset-4">
-              How it is played
+              How to play
             </Link>
             .
           </>

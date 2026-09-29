@@ -81,6 +81,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
 | `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
 | `docs/plans/party-online/README.md` | agents, engineers | `src/lib/party/online/**`, `src/components/party/online/**`, `src/app/api/tables/**`, `src/app/games/[slug]/tables/**`, `prisma/schema.prisma` (`PartyTable`, `PartySeat`, `PartyAction`), `src/components/live/pollCadence.ts`, `src/components/live/live.constants.ts` |
+| `docs/plans/plain-english/GLOSSARY.md` | agents, anyone writing a label | any button, tab, heading, table header or page title in `src/app/**`, `src/components/**` or `src/lib/i18n/i18n.constants.ts`: a new label uses the word the glossary already chose, and a changed one gets its row |
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
 | `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |

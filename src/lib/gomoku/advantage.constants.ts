@@ -117,7 +117,7 @@ export const UNREADABLE_DISPLAY: Record<
 
 /** How the reading heads its two-sided threat verdict. */
 export const LEAD_DISPLAY = {
-  level: { label: "Level", kanji: "互角" },
+  level: { label: "Even", kanji: "互角" },
   decided: { label: "Already decided", kanji: "決着" },
 } as const;
 

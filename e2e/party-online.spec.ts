@@ -96,7 +96,7 @@ test.describe("Dots and Boxes on several devices", () => {
     await a.page.getByTestId("online-where-several").click();
     await expect(a.page.locator('[data-testid="online-seat-choice"][data-seat="0"]')).toHaveText("You");
     await a.page.locator('[data-testid="online-seat-choice"][data-seat="1"]').selectOption(`buddy:${guestId}`);
-    await expect(a.page.getByTestId("dots-start")).toContainText("Set the table");
+    await expect(a.page.getByTestId("dots-start")).toContainText("Start online game");
     await fitsThePhone(a.page);
     if (SHOTS) await a.page.screenshot({ path: `${SHOTS}/online-invite-390.png`, fullPage: true });
     await a.page.getByTestId("dots-start").click();

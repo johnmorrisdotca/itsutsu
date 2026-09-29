@@ -123,7 +123,7 @@ test.describe("turning the board round", () => {
     await expect(white.getByRole("button", { name: /^[A-J]\d+, / }).first()).toHaveAccessibleName(
       /^A9, /,
     );
-    await expect(white.getByTestId("turn-board")).toHaveText(/Turn the board round/);
+    await expect(white.getByTestId("turn-board")).toHaveText(/Flip the board(?! back)/);
   });
 
   test("the record shows the game the way it was being read", async ({ page, request }) => {
@@ -143,7 +143,7 @@ test.describe("turning the board round", () => {
     await request.post(`/api/games/${live.id}/resign`, { data: { token: live.whiteToken } });
     await page.goto(`/games/gomoku/match/${live.id}`);
     await expect(page.getByRole("button", { name: /^[A-J]\d+, / }).first()).toHaveAccessibleName(/^J1, /);
-    await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
+    await expect(page.getByTestId("turn-board")).toHaveText(/Flip the board back/);
   });
 
   test("is remembered for that game, and not for another", async ({ page, request }) => {
@@ -154,15 +154,15 @@ test.describe("turning the board round", () => {
     await page.waitForURL(boardOf(one.id));
     await ready(page, "shared-game");
     await page.getByTestId("turn-board").click();
-    await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
+    await expect(page.getByTestId("turn-board")).toHaveText(/Flip the board back/);
 
     // Still turned when you come back to it.
     await page.reload();
-    await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
+    await expect(page.getByTestId("turn-board")).toHaveText(/Flip the board back/);
 
     // A different game is a different sitting, and is left alone.
     await page.goto(`/games/gomoku/match/${two.id}/seat/${two.blackToken}`);
     await page.waitForURL(boardOf(two.id));
-    await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board round/);
+    await expect(page.getByTestId("turn-board")).toHaveText(/Flip the board(?! back)/);
   });
 });

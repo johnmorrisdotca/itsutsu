@@ -167,7 +167,7 @@ function Standing({ xp }: { xp: number }) {
           className="underline underline-offset-4"
           data-testid="my-xp-ladder-link"
         >
-          All hundred levels <span className="font-mincho">百級</span>
+          All 100 levels <span className="font-mincho">百級</span>
         </Link>
         {" · "}
         <Link href="/xp" className="underline underline-offset-4" data-testid="my-xp-leaderboard-link">

@@ -240,7 +240,7 @@ export function Doorstep({
 
       {/*
         THE PRESS, THEN THE WAY BACK, STACKED ON A PHONE. Begin filled a third
-        of the row and "Change something" sat beside it as a text link, which
+        of the row and "Change settings" sat beside it as a text link, which
         on glass is a small target next to a smaller one. Begin takes the
         column here and the way back sits under it, both a fingertip tall.
       */}

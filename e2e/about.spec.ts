@@ -19,7 +19,7 @@ const CHAPTERS: Record<string, readonly string[]> = {
     "Experience and levels",
     "How a move is written down",
   ],
-  programs: ["The players that are not people", "One engine, every game"],
+  programs: ["How strong the bots are", "One engine, every game"],
 };
 
 /**
@@ -59,8 +59,8 @@ test.describe("about", () => {
     await page.goto("/about");
     await expect(page.getByRole("heading", { name: "Where this comes from" })).toBeVisible();
     await ready(page, "tabs");
-    await page.getByTestId("tabs").getByRole("link", { name: /Programs/ }).click();
-    await expect(page.getByRole("heading", { name: "The players that are not people" })).toBeVisible();
+    await page.getByTestId("tabs").getByRole("link", { name: /Bots/ }).click();
+    await expect(page.getByRole("heading", { name: "How strong the bots are" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Where this comes from" })).toHaveCount(0);
   });
 
@@ -99,7 +99,7 @@ test.describe("about", () => {
     await page.goto("/about/programs");
     const section = page
       .getByTestId("about-section")
-      .filter({ has: page.getByRole("heading", { name: "The players that are not people" }) });
+      .filter({ has: page.getByRole("heading", { name: "How strong the bots are" }) });
 
     // The five grades, gentlest first, read from the same rows the chooser draws.
     for (const grade of ["Razryad", "Kyu", "Dan", "Meijin", "Guoshou"]) {

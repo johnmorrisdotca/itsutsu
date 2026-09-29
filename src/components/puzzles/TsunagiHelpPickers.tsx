@@ -5,7 +5,7 @@ import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/liv
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice } from "./puzzles.constants";
 
 const EXPLOSIONS: readonly { choice: TsunagiExplosionsChoice; label: string; kanji: string }[] = [
-  { choice: "on", label: "As made", kanji: "爆" },
+  { choice: "on", label: "Normal", kanji: "爆" },
   { choice: "soft", label: "Softer", kanji: "弱" },
   { choice: "off", label: "Off", kanji: "無" },
 ];

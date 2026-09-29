@@ -41,7 +41,7 @@ export const START_RETURNING: readonly StartLink[] = [
   },
   {
     href: `/about/${ABOUT_CHAPTERS.programs}`,
-    label: "Meet the programs",
+    label: "Meet the bots",
     note: "five graded bots and two specialists, and how they were measured",
   },
 ];

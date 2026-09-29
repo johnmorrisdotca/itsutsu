@@ -95,7 +95,7 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
       </div>
       </BoardFocus>
       <Button onClick={onClose} data-testid="famous-replay-close">
-        Fold the moves away
+        Hide moves
       </Button>
     </>
   );

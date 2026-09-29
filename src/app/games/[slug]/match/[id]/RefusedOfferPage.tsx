@@ -77,7 +77,7 @@ export async function RefusedOfferPage({ game }: { game: GameDetail }) {
               Your games
             </Link>
             <Link href="/games/new" className="font-medium underline underline-offset-4">
-              Set up a game 対局設定
+              New game 新規対局
             </Link>
           </p>
         </div>
