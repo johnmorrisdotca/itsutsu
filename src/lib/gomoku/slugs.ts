@@ -110,6 +110,11 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   superghost: "superghost",
   mancala: "mancala",
   tenka: "tenka",
+  hearts: "hearts",
+  bigTwo: "big-two",
+  president: "president",
+  goFish: "go-fish",
+  crazyEights: "crazy-eights",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

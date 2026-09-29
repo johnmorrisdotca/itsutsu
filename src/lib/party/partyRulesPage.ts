@@ -42,7 +42,21 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       spec.sizes.map((rounds) => (rounds === TENKA_WORLD_ROUNDS ? "to the last player standing" : `${rounds} rounds`)),
       "or",
     )}`,
+  // The family card games: how long a game lasts, in each one's own terms.
+  hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
+  president: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} rounds`,
+  goFish: () => "in one deal, until every book is down",
+  crazyEights: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
 };
+
+/** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
+function defaulted(spec: PartySpec, word: (size: number) => string, join: string): string {
+  return listed(
+    spec.sizes.map((size) => `${word(size)}${size === spec.defaultSize && spec.sizes.length > 1 ? " (the usual game)" : ""}`),
+    join,
+  );
+}
 
 /** The boards, or the words, a party game's set-up offers: "on 3×3, 4×4, 5×5 and 6×6 boxes". */
 export function partyBoardsWords(kind: PartyKind): string {
@@ -76,6 +90,29 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
       "The defender always throws as many dice as allowed — two with two armies or more, one with one — since more never hurts a defence. Dice are thrown by the game, not by a person, and a reloaded page throws nothing again: every die is kept with the game.",
       "A card shows a territory and one of three kinds: land, sea or air. A set that includes a territory you hold puts two more armies straight onto it. Cards traded in go back under the deck once it runs out.",
     ],
+  },
+  hearts: {
+    turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: ["The computer never tries to shoot the moon, though it will be charged the twenty-six if you do."],
+  },
+  bigTwo: {
+    turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Choose every card of a pair or a five-card hand before pressing Play; Pass gives up the trick.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: ["The lowest card dealt leads every deal, not the winner of the deal before."],
+  },
+  president: {
+    turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Choose every card of a pair or a set before pressing Play; Pass gives up the trick. Handing cards over, choose them and press Give.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+  },
+  goFish: {
+    turn: "The line over the table says whose turn it is, by name. Tap a card in your hand to choose its rank, then tap the player to ask, or choose them and press Ask. Everything asked and answered is written under the table, as it would be said aloud.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+  },
+  crazyEights: {
+    turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. An eight asks which suit to call. Press Draw when you cannot play, and Pass when the card you drew cannot be played either.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: ["You may draw only when you cannot play, one card at a time, and may play the card you drew if it matches.", "The first player moves one seat round the table each hand."],
   },
 };
 

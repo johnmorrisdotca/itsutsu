@@ -21,8 +21,15 @@ import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
 import type { MancalaGame } from "./mancala/mancala.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 import type { TenkaGame, TenkaMove } from "./tenka/tenka.types";
+import type { CardGameKind } from "../cardGames/cardGames.constants";
+import type { CardGamePlays } from "../cardGames/cardGameRules";
 
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka";
+/**
+ * The party games, and the family card games among them (`CardGameKind`:
+ * Hearts, Big Two, President, Go Fish, Crazy Eights), which are party games
+ * too — a table round one device — with a computer in any empty seat.
+ */
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | CardGameKind;
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -112,4 +119,4 @@ export type PartyPlays = {
   superghost: { game: GhostGame; move: GhostMove };
   mancala: { game: MancalaGame; move: number };
   tenka: { game: TenkaGame; move: TenkaMove };
-};
+} & CardGamePlays;

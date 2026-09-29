@@ -4,6 +4,7 @@ import { MANCALA_RULES } from "./mancala/mancala";
 import type { PartyKind, PartyPlays, PartyRules } from "./party.types";
 import { SUPERGHOST_RULES } from "./superghost/ghostRules";
 import { TENKA_RULES } from "./tenka/tenkaRules";
+import { CARD_GAME_RULES } from "../cardGames/cardGameRules";
 
 /**
  * EVERY PARTY GAME'S RULES, by kind: what the New Game Gate plays out at every
@@ -15,4 +16,5 @@ export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], 
   superghost: SUPERGHOST_RULES,
   mancala: MANCALA_RULES,
   tenka: TENKA_RULES,
+  ...CARD_GAME_RULES,
 };

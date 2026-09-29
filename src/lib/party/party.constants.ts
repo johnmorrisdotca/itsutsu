@@ -4,6 +4,8 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { MANCALA_BOARDS } from "./mancala/mancala.constants";
 import type { PartyKind, PartySpec } from "./party.types";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
+import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
+import { CARD_GAME_DISPLAY } from "../cardGames/cardGames.copy";
 
 /**
  * THE PARTY GAMES: a table of people round one phone or tablet, each a game
@@ -20,10 +22,11 @@ export const PARTY_KINDS = {
   superghost: "superghost",
   mancala: "mancala",
   tenka: "tenka",
+  ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
-/** Every party game, in the order its family shows them. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka];
+/** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -107,6 +110,8 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "One map of the modern world, forty-two territories in six continents. For a quick game choose ten rounds; twenty for an evening; the whole world to play until one player holds it (counted at round sixty if it ever gets that far).",
   },
+  // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
+  ...CARD_GAME_DISPLAY,
 };
 
 /**
@@ -155,4 +160,6 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
     sizes: [TENKA_SHORT_ROUNDS, TENKA_MEDIUM_ROUNDS, TENKA_WORLD_ROUNDS],
     defaultSize: TENKA_WORLD_ROUNDS,
   },
+  // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
+  ...CARD_GAME_SPECS,
 };

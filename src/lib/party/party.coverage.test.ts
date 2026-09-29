@@ -258,13 +258,27 @@ describe("every party game is finished, not just declared", () => {
     expect(page.image).toBe(gameArtPath(kind));
   });
 
-  it.each(PARTY_KIND_LIST)("%s belongs to a family no award counts, so its shelf shows it and nothing pays for it", (kind) => {
+  it.each(PARTY_KIND_LIST)("%s belongs to a family, and counts towards no award itself, so its shelf shows it and nothing pays for it", (kind) => {
     const family = familyOf(kind);
     expect(family, `${kind} is in no family, so no index page shows it`).not.toBeNull();
-    // Nothing of a party game is recorded: a family some recorded game calls home would count it towards a prize.
-    expect(familyKeepsRecords(family!)).toBe(false);
-    expect(RECORDED_FAMILIES).not.toContain(family);
-    expect(familyPagePath(family!)).toBe(`/games/${family!.key}`);
+    /*
+     * NOTHING OF A PARTY GAME IS RECORDED, so it is never among the games an
+     * award counts (`RECORDED_GAME_KEYS`, below). Its family may be one no
+     * award counts (Party games, with its own page at /games/<key>), or one a
+     * recorded game also calls home: Cards (2026-09-29), where Solitaire is
+     * recorded and the family card games are not. There the family's first is
+     * paid by Solitaire alone, and its page is Solitaire's (`familyPagePath`),
+     * as a family with a recorded game's always is. The line was "its family
+     * keeps no records" until then; what it protects is that nothing unrecorded
+     * is counted, and that is asked of the game itself.
+     */
+    if (familyKeepsRecords(family!)) {
+      expect(RECORDED_FAMILIES).toContain(family);
+      expect(family!.games.some((game) => RECORDED_GAME_KEYS.includes(game))).toBe(true);
+    } else {
+      expect(RECORDED_FAMILIES).not.toContain(family);
+      expect(familyPagePath(family!)).toBe(`/games/${family!.key}`);
+    }
     expect(EVERY_GAME_KEY).toContain(kind);
     expect(RECORDED_GAME_KEYS).not.toContain(kind);
     expect(isPartyKind(kind)).toBe(true);
