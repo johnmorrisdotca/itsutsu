@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass
   return { title: variant === null || table === null ? "Games" : headingOf(RULE_VARIANT_DISPLAY[variant].label, table.title) };
 }
 
-/** "Chinese Checkers, pass and play"; "Pair Go", which names its game already. */
+/** "Chinese Checkers, pass and play"; "Pair Go" and "Block Five for four", which name their game already. */
 function headingOf(game: string, title: string): string {
   return title.includes(game) ? title : `${game}, ${title.toLowerCase()}`;
 }
@@ -28,7 +28,8 @@ function headingOf(game: string, title: string): string {
  *
  * Chinese Checkers for two, three, four or six, passed round one phone or
  * tablet (John, 2026-09-28), Pair Go: Go for two teams of two, taking
- * turns, and Halma for four racing corner to corner. Beside `/play`, the practice board for two: this is its own address
+ * turns, Halma for four racing corner to corner, and Block Five for four
+ * laying shapes out from their corners. Beside `/play`, the practice board for two: this is its own address
  * because it is its own game — more players than the two seats a board has —
  * and only the games in `PARTY_PLAY_GAMES` answer here, each through its row
  * in `PARTY_TABLES`.

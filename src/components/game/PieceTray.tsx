@@ -2,13 +2,25 @@
 
 import { Paired } from "@/components/i18n/Paired";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import type { Piece, PieceCell } from "@/lib/gomoku/gomoku.types";
+import type { Piece, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { PieceHand } from "./usePieceHand";
 
-/** A piece drawn small, as a grid of its bounding box. */
-function PieceGlyph({ cells, scale = 1 }: { cells: readonly PieceCell[]; scale?: number }) {
+/**
+ * A piece drawn small, as a grid of its bounding box: each stone in its own
+ * colour, or — for a table's pieces, which are one player's colour all
+ * through (`PartyBlocksTray`) — every square in the one `paint` given.
+ */
+export function PieceGlyph({
+  cells,
+  scale = 1,
+  paint,
+}: {
+  cells: readonly (Point & { stone?: PieceCell["stone"] })[];
+  scale?: number;
+  paint?: { fill: string; label: string };
+}) {
   const rows = Math.max(...cells.map((cell) => cell.row)) + 1;
   const cols = Math.max(...cells.map((cell) => cell.col)) + 1;
   const size = `${1.1 * scale}rem`;
@@ -19,7 +31,7 @@ function PieceGlyph({ cells, scale = 1 }: { cells: readonly PieceCell[]; scale?:
         gridTemplateColumns: `repeat(${cols}, ${size})`,
         gridTemplateRows: `repeat(${rows}, ${size})`,
       }}
-      aria-label={cells.map((cell) => STONE_DISPLAY[cell.stone].label).join(", ")}
+      aria-label={paint?.label ?? cells.map((cell) => (cell.stone === undefined ? "" : STONE_DISPLAY[cell.stone].label)).join(", ")}
       role="img"
     >
       {Array.from({ length: rows * cols }, (_, index) => {
@@ -32,10 +44,13 @@ function PieceGlyph({ cells, scale = 1 }: { cells: readonly PieceCell[]; scale?:
             className={`rounded-full ${
               cell === undefined
                 ? ""
-                : cell.stone === "black"
-                  ? "bg-ink shadow-sm"
-                  : "border border-rule-strong bg-ivory shadow-sm"
+                : paint !== undefined
+                  ? "shadow-sm"
+                  : cell.stone === "black"
+                    ? "bg-ink shadow-sm"
+                    : "border border-rule-strong bg-ivory shadow-sm"
             }`}
+            style={cell !== undefined && paint !== undefined ? { background: paint.fill } : undefined}
           />
         );
       })}

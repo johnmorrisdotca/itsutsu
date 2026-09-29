@@ -5,7 +5,8 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 /**
  * A PASS-AND-PLAY GAME KEPT IN THIS BROWSER, one game at a time under its own
  * key: Chinese Checkers round the star (`partyCheckersStore.ts`), Pair Go
- * (`pairGoStore.ts`), and Halma round the square (`partyHalmaStore.ts`).
+ * (`pairGoStore.ts`), Halma round the square (`partyHalmaStore.ts`), and Block
+ * Five for four (`partyBlocksStore.ts`).
  *
  * One game at a time, in `localStorage`, as text the game's own module writes
  * and reads back (never the board, which the moves make again), and nowhere

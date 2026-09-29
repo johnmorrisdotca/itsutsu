@@ -117,6 +117,18 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
       why: "Pass and play for four: a corner each, every player racing thirteen pieces into the corner opposite, round one device.",
     },
   ],
+  /*
+   * BLOCK FIVE FOR FOUR. The rated game is a line game for two; its own page
+   * also offers the four-player shape game — a corner each, twenty-one pieces
+   * each that may meet their own only at the corners — passed round one device
+   * (`/games/block-five/pass-and-play`).
+   */
+  blockFive: [
+    {
+      family: "party",
+      why: "Pass and play for four: a corner each, every player laying twenty-one shapes that may touch their own only corner to corner, round one device.",
+    },
+  ],
   /* KUMIMOJI, whose pass and play for up to eight landed in 0.410.0: a shelf lists what the game offers today. */
   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
 };

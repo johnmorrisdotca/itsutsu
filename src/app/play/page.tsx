@@ -10,6 +10,7 @@ import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { PartyCheckersCard } from "@/components/party/PartyCheckersGame";
 import { PartyHalmaCard } from "@/components/party/PartyHalmaGame";
 import { PairGoCard } from "@/components/party/PairGoCard";
+import { PartyBlocksCard } from "@/components/party/PartyBlocksCard";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenSeatsSection } from "@/components/mine/OpenSeatsSection";
 import { readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
@@ -138,8 +139,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         /*
           The games kept in this browser rather than on the server: the board
           for two, the Chinese Checkers table for up to six (`PartyCheckersCard`),
-          Pair Go's two teams of two (`PairGoCard`), and Halma for four
-          (`PartyHalmaCard`).
+          Pair Go's two teams of two (`PairGoCard`), Halma for four
+          (`PartyHalmaCard`), and Block Five for four (`PartyBlocksCard`).
         */
         local={
           <>
@@ -147,6 +148,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
             <PartyCheckersCard />
             <PairGoCard />
             <PartyHalmaCard />
+            <PartyBlocksCard />
           </>
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
