@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
@@ -71,6 +72,12 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
+        {game.status === DOTS_STATUS.playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={dotsPlayerName(game, game.toPlay)} playing={game.players.length} />
+          </div>
+        ) : null}
         <TableScores game={game} />
         <div className="flex flex-wrap gap-2">
           {game.status === DOTS_STATUS.playing ? null : (

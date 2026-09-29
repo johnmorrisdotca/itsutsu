@@ -1,12 +1,14 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
+import { PlayerCountChoice } from "./PlayerCountChoice";
+import { SeatColourButton } from "./SeatColourButton";
 import { useState } from "react";
 
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { PARTY_NAME_MOST } from "@/lib/gomoku/party/partyRace";
 import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 
-import { MarbleChip } from "./MarbleChip";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
 import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
@@ -20,6 +22,8 @@ import type { PartySetUpProps } from "./party.types";
  * one — so choosing four shows exactly where the four sit.
  */
 export function PartySetUp<S extends PartyRaceState, C extends number>({ kind, appearance, onStart, ready, online }: PartySetUpProps<S, C>) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const { rules, Board } = kind;
   const [count, setCount] = useState<C>(rules.firstCount);
   const [names, setNames] = useState<string[]>(() => new Array(PARTY_MARBLES.length).fill(""));
@@ -47,34 +51,15 @@ export function PartySetUp<S extends PartyRaceState, C extends number>({ kind, a
         }}
       >
         <WhereChoice offer={online} several={several} onChange={setSeveral} />
-        <fieldset className="flex flex-col gap-2">
-          <legend className={SECTION_TITLE}>{PARTY_COPY.howMany}</legend>
-          <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={PARTY_COPY.howMany}>
-            {rules.counts.map((option) => (
-              <button
-                key={option}
-                type="button"
-                role="radio"
-                onClick={() => setCount(option)}
-                aria-checked={option === count}
-                data-testid="party-count"
-                data-count={option}
-                className={`min-h-11 rounded-lg border text-base font-semibold ${
-                  option === count ? "border-ink bg-ink text-paper" : "border-rule-strong bg-ivory text-ink hover:bg-rule/60"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        {/* How many are playing: the one row every table uses (`PlayerCountChoice`). */}
+        <PlayerCountChoice counts={rules.counts} value={count} onChange={setCount} testId="party-count" />
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{severalOffer !== undefined ? ONLINE_COPY.seats : PARTY_COPY.names}</legend>
           {preview.players.map((_, index) => (
             <label key={rules.seatOf(preview, index)} className="flex items-center gap-2 text-sm">
-              <MarbleChip player={index} />
+              <SeatColourButton player={index} playing={count} />
               <span className="sr-only">
-                Player {index + 1}, {PARTY_MARBLES[index].label}
+                Player {index + 1}, {marbles[index].label}
               </span>
               {severalOffer !== undefined ? (
                 <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />

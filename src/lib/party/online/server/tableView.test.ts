@@ -32,9 +32,9 @@ function row(overrides: Record<string, unknown> = {}) {
     finishedAt: null,
     lastMoverId: "m0",
     seats: [
-      { tableId: "abcd-efgh", seat: 0, kind: "member", memberId: "m0", name: "Aiko", token: null, joinedAt: AT },
-      { tableId: "abcd-efgh", seat: 1, kind: "member", memberId: "m1", name: "Ben Hayashi", token: null, joinedAt: AT },
-      { tableId: "abcd-efgh", seat: 2, kind: "open", memberId: null, name: "", token: "tok123", joinedAt: null },
+      { tableId: "abcd-efgh", seat: 0, kind: "member", memberId: "m0", name: "Aiko", token: null, joinedAt: AT, colour: null },
+      { tableId: "abcd-efgh", seat: 1, kind: "member", memberId: "m1", name: "Ben Hayashi", token: null, joinedAt: AT, colour: null },
+      { tableId: "abcd-efgh", seat: 2, kind: "open", memberId: null, name: "", token: "tok123", joinedAt: null, colour: null },
     ],
     ...overrides,
   };

@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
+import { PartySeatColour } from "../PartySeatColour";
 
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -98,6 +100,12 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
       </div>
 
       <aside className="flex min-w-0 flex-col gap-3">
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
+        {playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={tenkaPlayerName(game, game.toPlay)} playing={game.players.length} />
+          </div>
+        ) : null}
         {/* On a phone the phase bar carries the dice, where the thumb and the eye already are. */}
         <div className="hidden lg:contents">
           <TenkaDice game={game} />

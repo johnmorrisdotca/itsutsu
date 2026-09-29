@@ -1,9 +1,12 @@
+"use client";
+
+import { usePartyMarbles } from "./partyMarbles";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { DOTS_STATUS, dotsPlayerName, drawsAgain } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 
 import { MarbleChip } from "./MarbleChip";
-import { DOTS_COPY, PARTY_MARBLES } from "./party.constants";
+import { DOTS_COPY } from "./party.constants";
 
 /**
  * WHOSE TURN IT IS, by name, colour and letter — and, when the line just drawn
@@ -12,6 +15,8 @@ import { DOTS_COPY, PARTY_MARBLES } from "./party.constants";
  * winner, or everybody level on the most sharing it.
  */
 export function DotsTurnLine({ game }: { game: DotsGame }) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   if (game.status === DOTS_STATUS.finished) {
     const names = game.winners.map((seat) => dotsPlayerName(game, seat));
     const most = DOTS_COPY.boxes(game.scores[game.winners[0]]);
@@ -28,7 +33,7 @@ export function DotsTurnLine({ game }: { game: DotsGame }) {
       </p>
     );
   }
-  const marble = PARTY_MARBLES[game.toPlay];
+  const marble = marbles[game.toPlay];
   const again = drawsAgain(game);
   return (
     <p

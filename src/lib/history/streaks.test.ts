@@ -17,6 +17,7 @@ function game(
     // A streak is read off the names a listing SHOWS, so the fixture's two are
     // the same: this file is about runs of wins, not about renaming.
     playedAs: { black: blackName, white: whiteName },
+    colours: {},
     size: 15,
     winLength: 5,
     variant: "freestyle",

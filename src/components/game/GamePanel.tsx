@@ -1,6 +1,10 @@
 "use client";
 
 import { StartSharedGame } from "@/components/live/StartSharedGame";
+import { SeatColoursPanel } from "./SeatColoursPanel";
+import type { SeatColours } from "@/lib/pieces/seatColours";
+import type { PieceColour } from "@/lib/pieces/pieceColours";
+import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameDefaults } from "./gameDefaults";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { describeRules } from "@/components/live/rulesSummary";
@@ -30,8 +34,15 @@ export function GameSidebar({
   postSeat = false,
   practice = false,
   defaults,
+  seatColours,
   ...props
-}: GamePanelProps & { postSeat?: boolean; practice?: boolean; defaults: GameDefaults }) {
+}: GamePanelProps & {
+  postSeat?: boolean;
+  practice?: boolean;
+  defaults: GameDefaults;
+  /** Both seats' piece colours at this one screen, and how to change one (`useLocalSeatColours`). */
+  seatColours?: { colours: SeatColours; choose: (side: Stone, colour: PieceColour | null) => void };
+}) {
   return (
     /*
       IN JUST THE BOARD, WHAT PLAYS THE BOARD STAYS (`data-bare-keep`), under
@@ -53,6 +64,12 @@ export function GameSidebar({
       <div className={PANEL_CLASS}>
         <GameStatus session={props.session} />
       </div>
+      {/* Each seat's piece colour, any time; furniture in just the board. */}
+      {seatColours !== undefined ? (
+        <div data-chrome>
+          <SeatColoursPanel colours={seatColours.colours} appearance={props.session.appearance} onChoose={seatColours.choose} />
+        </div>
+      ) : null}
       {/*
         THE MOVES, THIRD, AND NOT LAST.
         John asked for a practice board where "you get to click around on any

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useLocalSeatColours } from "@/components/game/useLocalSeatColours";
+import { SeatColoursPanel } from "@/components/game/SeatColoursPanel";
+import { StoneColoursProvider } from "@/components/board/seatColourContext";
 
 import { Board } from "@/components/board/Board";
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -37,6 +40,7 @@ type Confirming = "resign" | "new" | null;
 export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptPairGo();
+  const teams = useLocalSeatColours("pairgo");
   const [confirming, setConfirming] = useState<Confirming>(null);
   const playing = game !== undefined && game !== null && game.state.status === GAME_STATUS.playing;
 
@@ -59,6 +63,8 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
   };
 
   return (
+    // Each team's stone colour, chosen at this one table and kept in this browser (`useLocalSeatColours`).
+    <StoneColoursProvider colours={teams.colours}>
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start`}
       // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
@@ -77,6 +83,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
           readOnly={!playing}
           onPlay={(point) => act(pairPlay(game, point))}
           viewer={null}
+          colours={teams.colours}
         />
         {playing ? (
           <div className="flex flex-wrap gap-2">
@@ -109,6 +116,10 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* Each team's colour, any time; furniture in just the board. */}
+        <div data-chrome>
+          <SeatColoursPanel colours={teams.colours} appearance={appearance} onChoose={teams.choose} />
+        </div>
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="pairgo-players">
           <h2 className={SECTION_TITLE}>
             Players <span className="font-mincho normal-case tracking-normal">席</span>
@@ -173,5 +184,6 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
       {/* Asked on every surface a person plays on; nothing here is timed, so being away loses nothing. */}
       <AskIfAway watching={playing} detail={PAIR_GO_COPY.idleDetail} kept={PAIR_GO_COPY.away} />
     </section>
+    </StoneColoursProvider>
   );
 }

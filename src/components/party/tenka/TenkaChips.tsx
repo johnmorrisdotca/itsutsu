@@ -1,6 +1,7 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
+import { usePartyMarbles } from "../partyMarbles";
 
 import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
@@ -11,13 +12,13 @@ import { centredBaseline } from "@/lib/ui/svgText";
 
 import { TENKA_CHIP, TENKA_NEUTRAL_MARBLE } from "./tenka.constants";
 import type { MapMarks } from "./tenka.types";
-import { PARTY_MARBLES } from "../party.constants";
+
 import type { PartyMarble } from "../party.types";
 import { chipRadius, chipWidth, laidOutChips } from "./tenkaView";
 
-/** An owner's marble: a player's, or the neutral army's grey. */
-export function ownerMarble(owner: number): PartyMarble {
-  return owner === TENKA_NEUTRAL ? TENKA_NEUTRAL_MARBLE : PARTY_MARBLES[owner];
+/** An owner's marble, as this table shows it (`usePartyMarbles`): a player's, or the neutral army's grey. */
+export function ownerMarble(owner: number, marbles: readonly PartyMarble[]): PartyMarble {
+  return owner === TENKA_NEUTRAL ? TENKA_NEUTRAL_MARBLE : marbles[owner]!;
 }
 
 /** The territories whose counters matter most, first: what is chosen and what it reaches, then the player to move's, then the biggest armies. */
@@ -37,6 +38,8 @@ function counterOrder(game: TenkaGame, marks: MapMarks): number[] {
  * (`laidOutChips`); either way it is a button, named in full.
  */
 export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGame; marks: MapMarks; scale: number; onTerritory?: (territory: number) => void }) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const radius = chipRadius(scale);
   const dots = laidOutChips(TENKA_SHAPES.labels, game.armies, scale, counterOrder(game, marks));
   const reach = new Set(marks.reach);
@@ -53,7 +56,7 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
       {order.map((territory) => {
         const [x, y] = TENKA_SHAPES.labels[territory];
         const owner = game.owners[territory];
-        const marble = ownerMarble(owner);
+        const marble = ownerMarble(owner, marbles);
         const armies = game.armies[territory];
         const name = TENKA_TERRITORIES[territory].name;
         const whose = owner === TENKA_NEUTRAL ? "the neutral army's" : `${tenkaPlayerName(game, owner)}'s`;

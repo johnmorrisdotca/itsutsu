@@ -1,3 +1,4 @@
+import type { PieceColour } from "@/lib/pieces/pieceColours";
 /**
  * The vocabulary of a party table played on several devices — see
  * docs/plans/party-online/README.md for the design, and `onlineGames.ts` for
@@ -111,6 +112,8 @@ export type OnlineSeatView = {
   yours: boolean;
   /** An open seat's link, as a path, for the members at the table to hand out; null otherwise. */
   link: string | null;
+  /** The colour this place chose for its marbles, or null for its table colour (`tableColours.ts`). */
+  colour: PieceColour | null;
 };
 
 /**

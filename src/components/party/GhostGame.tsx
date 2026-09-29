@@ -1,6 +1,8 @@
 "use client";
 
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { partyPlayerName } from "@/lib/party/partyNames";
+import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -103,6 +105,12 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
+        {playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay)} playing={game.players.length} />
+          </div>
+        ) : null}
         <GhostPlayers game={game} />
         <div className="flex flex-wrap gap-2">
           {playing ? null : (

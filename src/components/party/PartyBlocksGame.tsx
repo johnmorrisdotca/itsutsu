@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
+import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import Link from "@/components/ui/Link";
@@ -78,6 +80,12 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
 
       {/* In just the board the tray stays, being how a shape is laid; who is at the table and the new game go (`data-chrome`). */}
       <aside className="flex min-w-0 flex-col gap-4" data-bare-keep>
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
+        {playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game.players, game.toPlay)} playing={game.players.length} />
+          </div>
+        ) : null}
         {playing && hold !== null ? (
           <PartyBlocksTray
             game={game}

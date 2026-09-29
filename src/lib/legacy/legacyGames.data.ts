@@ -66,6 +66,8 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
      * are not merely equal here — they are the only name there is.
      */
     playedAs: { black: keptGameName(game.black), white: keptGameName(game.white) },
+    // Nobody chose a colour on another site: both sides are the reader's own stones.
+    colours: {},
     size: game.size,
     winLength: 5,
     variant: game.variant,

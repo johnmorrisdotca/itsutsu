@@ -1,3 +1,4 @@
+import type { SeatColours } from "@/lib/pieces/seatColours";
 import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 import type { Cursor, SortDirection } from "@/lib/api/paging.types";
 import type { GameSortField } from "./gameHistory.sort";
@@ -152,6 +153,11 @@ export type GameSummary = {
    */
   blackTag?: NameTag;
   whiteTag?: NameTag;
+  /**
+   * The colour each seat chose for its pieces, shared by both players and
+   * anyone watching; a seat absent from it keeps the reader's own stones.
+   */
+  colours: SeatColours;
   /**
    * The names as they were PLAYED, straight off the row.
    *

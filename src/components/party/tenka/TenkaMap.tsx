@@ -1,6 +1,7 @@
 "use client";
 
 import { useImperativeHandle, useRef, type MouseEvent } from "react";
+import { usePartyMarbles } from "../partyMarbles";
 
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
@@ -49,6 +50,8 @@ const { width: MAP_W, height: MAP_H } = TENKA_SHAPES;
  * enough that every counter there is drawn whole.
  */
 export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: preview = false, handle }: TenkaMapProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
   const box = useRef<HTMLDivElement>(null);
   const readOnly = preview || onTerritory === undefined;
@@ -114,7 +117,7 @@ export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: previ
                   <path
                     key={territory}
                     d={outline}
-                    fill={ownerMarble(game.owners[territory]).fill}
+                    fill={ownerMarble(game.owners[territory], marbles).fill}
                     fillOpacity={TENKA_LAND_OPACITY}
                     stroke="rgba(20,20,20,0.55)"
                     strokeWidth={TENKA_LINES.territory / view.scale}

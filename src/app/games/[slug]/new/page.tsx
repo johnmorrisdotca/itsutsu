@@ -16,6 +16,7 @@ import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import { preferredColour } from "@/lib/pieces/pieceColours";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +84,8 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
         signedIn={reader.signedIn}
         appearance={appearance ?? undefined}
         wordStyle={preferences.wordStyle ?? null}
+        // The colour this member last gave their own pieces, offered first.
+        pieceColour={preferredColour(preferences.pieceColour)}
         canAsk={reader.hasAccount}
         opponent={from.opponent}
         again={from.again}

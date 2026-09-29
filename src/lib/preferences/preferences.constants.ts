@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
 import { BOARD_SCALE_SPECS } from "./boardScale";
+import { PIECE_COLOUR_PREFERENCES } from "@/lib/pieces/pieceColours";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 import { MOVE_FORMAT_CHOICES } from "@/lib/record/moveFormats";
 import { WORD_STYLES, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
@@ -171,6 +172,16 @@ export const PREFERENCE_SPECS = {
    * alone); a row still holding that key is a key the registry ignores.
    */
   ...BOARD_SCALE_SPECS,
+
+  /*
+   * The colour this member likes their own pieces in, from the palette
+   * (`pieceColours.ts`), or `none` for the game's own look. It fills in the
+   * set-up screen's choice and a first move's, and changes whenever one of
+   * them is chosen, so the colour picked last time is offered first next
+   * time. Never forced on anybody: each game's seat keeps the colour chosen
+   * for it, and `none` until a member says otherwise.
+   */
+  pieceColour: { options: PIECE_COLOUR_PREFERENCES, fallback: "none" },
 
   /*
    * How a game's record writes its moves: ours, one a line, or two a line as

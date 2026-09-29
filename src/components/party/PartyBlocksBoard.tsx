@@ -1,6 +1,8 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
+import type { PartyMarble } from "./party.types";
 import { BoardLines } from "@/components/board/BoardLines";
 import { boardThemeFor, gridFor } from "@/components/board/appearance";
 import { playingAreaInset } from "@/components/board/margin";
@@ -12,7 +14,7 @@ import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 
 import { PartyHole } from "./PartyHole";
-import { HOME_TINT_OPACITY, PARTY_MARBLES } from "./party.constants";
+import { HOME_TINT_OPACITY } from "./party.constants";
 import type { PartyBlocksBoardProps } from "./party.types";
 
 const SIZE = BLOCKS_PARTY_SIZE;
@@ -36,6 +38,8 @@ const keyOf = (point: { row: number; col: number }) => point.row * SIZE + point.
  * colours are black and white all the way down.
  */
 export function PartyBlocksBoard({ game, appearance, preview, starts, onSquare, onAim, readOnly = false }: PartyBlocksBoardProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const spec = VARIANT_SPECS.blockFive;
   const theme = boardThemeFor(appearance, spec);
   const cells = gridFor(appearance, spec) === BOARD_GRIDS.cells;
@@ -62,7 +66,7 @@ export function PartyBlocksBoard({ game, appearance, preview, starts, onSquare, 
                 y={corner.row}
                 width={1}
                 height={1}
-                fill={PARTY_MARBLES[index].fill}
+                fill={marbles[index].fill}
                 opacity={HOME_TINT_OPACITY}
               />
             );
@@ -77,7 +81,7 @@ export function PartyBlocksBoard({ game, appearance, preview, starts, onSquare, 
                 key={index}
                 point={point}
                 owner={owner}
-                label={squareLabel(game, point, owner)}
+                label={squareLabel(game, point, owner, marbles)}
                 target={startKeys.has(index) && ghost === undefined}
                 picked={false}
                 last={lastLaid.has(index)}
@@ -96,7 +100,7 @@ export function PartyBlocksBoard({ game, appearance, preview, starts, onSquare, 
 }
 
 /** A square's name as the two-player board says it — "C13, empty" — and whose piece covers it. */
-function squareLabel(game: PartyBlocksState, point: { row: number; col: number }, owner: number | null): string {
+function squareLabel(game: PartyBlocksState, point: { row: number; col: number }, owner: number | null, marbles: readonly PartyMarble[]): string {
   const where = pointName(SIZE, point);
-  return owner === null ? `${where}, empty` : `${where}, ${partyPlayerName(game.players, owner)}'s ${PARTY_MARBLES[owner].label.toLowerCase()} piece`;
+  return owner === null ? `${where}, empty` : `${where}, ${partyPlayerName(game.players, owner)}'s ${marbles[owner].label.toLowerCase()} piece`;
 }
