@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
+import { boardOf } from "../src/lib/puzzles/bridges/code";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
 
@@ -17,14 +19,21 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
   test(`${kind}: one check, spent, and then there are none`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;
     // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.
-    await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=easy&seed=${freshPuzzleSeed()}&checks=1`);
+    const seed = freshPuzzleSeed();
+    await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=easy&seed=${seed}&checks=1`);
     await ready(page, "puzzle-play");
     const check = page.getByTestId("puzzle-check");
     await expect(check).toHaveAttribute("data-left", "1");
     await expect(check).toBeDisabled();
 
     // The clock starts on the first entry: a number in an empty cell, or a stone — on a cell nothing was printed in.
-    if (kind === "hiddenStones") await page.getByTestId("puzzle-cell").first().click();
+    if (kind === "bridges") {
+      // A bridge, laid by tapping two islands in line: the first island and the partner of any span it has.
+      const islands = page.getByTestId("bridges-island");
+      const board = boardOf(generatePuzzle(kind, size, "easy", seed).givens, size)!;
+      await islands.nth(board.spans[0]!.a).click();
+      await islands.nth(board.spans[0]!.b).click();
+    } else if (kind === "hiddenStones") await page.getByTestId("puzzle-cell").first().click();
     else if (kind === "blackAndWhite") await page.locator('[data-testid="puzzle-cell"][data-given="false"]').first().click();
     else {
       await page.locator('[data-testid="puzzle-cell"][data-value=""]').first().click();

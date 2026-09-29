@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { BLACK, WHITE, decodeBlackAndWhite } from "../src/lib/puzzles/blackAndWhite/code";
+import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
@@ -25,8 +26,37 @@ test.beforeAll(loadEveryWordList);
  * and a kept one opens where it was left).
  */
 
-/** Puts one wrong entry on the grid, and says which cell. */
+/** A Bridges puzzle's islands and spans, and how many bridges its answer lays on each span. */
+function bridgesAnswer(size: number, seed: number) {
+  const puzzle = generatePuzzle("bridges", size, "easy", seed);
+  const board = boardOf(puzzle.givens, size)!;
+  return { board, answer: decodeBridges(board, puzzle.solution)! };
+}
+
+/** One bridge laid as a reader lays one: a tap on the span's first island, then on its other. */
+async function tapBridge(page: Page, size: number, seed: number, span: number) {
+  const { board } = bridgesAnswer(size, seed);
+  const islands = page.getByTestId("bridges-island");
+  await islands.nth(board.spans[span]!.a).click();
+  await expect(islands.nth(board.spans[span]!.a)).toHaveAttribute("data-chosen", "true");
+  await islands.nth(board.spans[span]!.b).click();
+}
+
+/** What Show marks: a cell, or on Bridges the span a wrong bridge was drawn on. */
+function marked(page: Page, kind: PuzzleKind, index: number) {
+  if (kind === "bridges") return page.locator(`[data-testid="bridges-bridge"][data-span="${index}"]`);
+  return page.getByTestId("puzzle-cell").nth(index);
+}
+
+/** Puts one wrong entry on the grid, and says which cell (on Bridges, which span). */
 async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number): Promise<number> {
+  if (kind === "bridges") {
+    // A bridge on a span the answer leaves empty: nothing is drawn yet, so it crosses nothing.
+    const span = bridgesAnswer(size, seed).answer.findIndex((count) => count === 0);
+    await tapBridge(page, size, seed, span);
+    await expect(marked(page, kind, span)).toHaveAttribute("data-count", "1");
+    return span;
+  }
   const puzzle = generatePuzzle(kind, size, "easy", seed);
   if (kind === "hiddenStones") {
     // A stone in the first row, one along from where its answer is.
@@ -50,8 +80,14 @@ async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number
   return index;
 }
 
-/** How many cells on the page hold what the answer has there: the measure a hint moves by one. */
+/** How many cells on the page hold what the answer has there (on Bridges, spans drawn as it has them): the measure a hint moves by one. */
 async function rightCells(page: Page, kind: PuzzleKind, size: number, seed: number): Promise<number> {
+  if (kind === "bridges") {
+    const { answer } = bridgesAnswer(size, seed);
+    const drawn = await page.getByTestId("bridges-bridge").evaluateAll((all) => all.map((bridge) => [Number(bridge.getAttribute("data-span")), Number(bridge.getAttribute("data-count"))] as const));
+    const counts = new Map(drawn);
+    return answer.filter((want, span) => (counts.get(span) ?? 0) === want).length;
+  }
   const puzzle = generatePuzzle(kind, size, "easy", seed);
   const cells = page.getByTestId("puzzle-cell");
   if (kind === "hiddenStones") {
@@ -79,7 +115,7 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
     const show = page.getByTestId("puzzle-show");
 
     const index = await oneWrong(page, kind, size, seed);
-    const cell = page.getByTestId("puzzle-cell").nth(index);
+    const cell = marked(page, kind, index);
     await expect(show).toBeEnabled();
     await show.click();
     await expect(cell).toHaveAttribute("data-wrong", "true");
@@ -87,7 +123,8 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
     await expect(page.getByTestId("puzzle-check")).toHaveAttribute("data-left", "2");
 
     // Changed, and the mark goes with the change.
-    if (kind === "hiddenStones" || kind === "blackAndWhite") await cell.click();
+    if (kind === "bridges") await tapBridge(page, size, seed, index);
+    else if (kind === "hiddenStones" || kind === "blackAndWhite") await cell.click();
     else await page.getByTestId("puzzle-key-clear").click();
     await expect(cell).not.toHaveAttribute("data-wrong", "true");
   });
