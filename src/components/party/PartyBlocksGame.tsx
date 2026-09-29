@@ -64,7 +64,7 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
       data-moves={game.moves.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3" data-scale-board>
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PartyBlocksTurnLine game={game} />
         <PartyBlocksBoard
           game={game}
@@ -76,7 +76,8 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
         />
       </div>
 
-      <aside className="flex min-w-0 flex-col gap-4">
+      {/* In just the board the tray stays, being how a shape is laid; who is at the table and the new game go (`data-chrome`). */}
+      <aside className="flex min-w-0 flex-col gap-4" data-bare-keep>
         {playing && hold !== null ? (
           <PartyBlocksTray
             game={game}
@@ -87,8 +88,10 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
             refusal={preview?.refusal == null ? null : PARTY_BLOCKS_COPY.refusals[preview.refusal]}
           />
         ) : null}
-        <PartyBlocksPlayers game={game} />
-        <div className="flex flex-wrap gap-2">
+        <div data-chrome>
+          <PartyBlocksPlayers game={game} />
+        </div>
+        <div className="flex flex-wrap gap-2" data-chrome>
           {playing ? null : (
             <button type="button" onClick={() => keep(againBlocksParty(game))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="blocks-again">
               {PARTY_BLOCKS_COPY.again}

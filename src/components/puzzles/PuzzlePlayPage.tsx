@@ -63,7 +63,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   // Levels solved only in a way that opens nothing (explosions off): solved, never counted to open a block.
   const closed = Object.entries(solved?.[asked.size] ?? {}).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]));
   return (
-    <Page>
+    // A board page whose play draws "Just the board" beside its size (`BoardScale`).
+    <Page board="play">
       <SiteHeader />
       {/*
         A board page, like a game's: the grid is the page and there is no title
@@ -81,8 +82,13 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         </WordStyleProvider>
       </BoardScaled>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
-      {tsunagi && asked.seed !== null ? <TsunagiLevelFastest size={asked.size} level={asked.seed} /> : null}
-      <footer className="border-t border-rule pt-5 text-sm text-muted">
+      {tsunagi && asked.seed !== null ? (
+        <div data-chrome>
+          <TsunagiLevelFastest size={asked.size} level={asked.seed} />
+        </div>
+      ) : null}
+      {/* Furniture, for just the board. */}
+      <footer data-chrome className="border-t border-rule pt-5 text-sm text-muted">
         <p>
           {copy.tagline}{" "}
           {/* Over the puzzle, not a page away from it: see `RulesModal`. */}

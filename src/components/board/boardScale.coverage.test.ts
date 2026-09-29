@@ -105,6 +105,48 @@ describe("every board a person plays on offers Regular, Large and Full", () => {
   });
 });
 
+/**
+ * EVERY BOARD A PERSON PLAYS ON OFFERS JUST THE BOARD, BESIDE ITS SIZE.
+ *
+ * John, 2026-09-28: "we also have the standing rule that all games should
+ * offer the standalone modal option/mode where it's in a modal with just bare
+ * minimum stuff (like scrubber) and a few buttons." The switch is `BareBoard`,
+ * drawn by the play itself beside the size chooser (`BoardScale`) on a page
+ * that says `board="play"`, so the two ways of viewing a board sit together
+ * and the page draws no second one at its foot. A board read rather than
+ * played (NOT_A_PLAY above) keeps the page's own switch where it has one — a
+ * finished game's replay and the famous games do, as `board`.
+ */
+describe("every board a person plays on offers just the board", () => {
+  it("draws the switch beside the size, once, on every play", () => {
+    const scale = readFileSync("src/components/board/BoardScale.tsx", "utf8");
+    expect(scale, "the size chooser no longer draws Just the board beside it").toContain("<BareBoard />");
+    const page = readFileSync("src/components/layout/Page.tsx", "utf8");
+    expect(page, "a play page would draw a second switch at its foot").toContain("board === true ? <BareBoard />");
+  });
+
+  it("makes every page that lays out a play a board page whose play draws the switch", () => {
+    const plays = FILES.filter(({ text }) => PLAY_SURFACE.test(text) && text.includes("<Page"));
+    expect(plays.length).toBeGreaterThan(4);
+    const unstrippable = plays.filter(({ text }) => !text.includes('<Page board="play">')).map(({ path }) => path);
+    expect(
+      unstrippable,
+      'A page laying out a play without <Page board="play">: nothing on it can be stripped back to the board, or the switch is drawn twice.',
+    ).toEqual([]);
+  });
+
+  it("sizes every play's board for the modal, and keeps what plays a board from its side column", () => {
+    const tables = FILES.filter(({ path }) => path.startsWith(join("src", "components", "party")) && path.endsWith("Game.tsx"));
+    const unsized = tables.filter(({ text }) => !text.includes("data-bare-board") && !text.includes("<PartyRaceGame")).map(({ path }) => path);
+    expect(unsized, "a party table whose board just the board cannot find: put data-bare-board on its board's column").toEqual([]);
+    expect(readFileSync("src/components/puzzles/solveShared.tsx", "utf8")).toContain("data-scale-board data-scale-stack data-bare-board");
+    expect(readFileSync("src/components/game/GameView.tsx", "utf8")).toContain("data-bare-board");
+    // Played from the side column: its presses stay in the modal, its furniture goes.
+    expect(readFileSync("src/components/game/GamePanel.tsx", "utf8")).toContain("data-bare-keep");
+    expect(readFileSync("src/components/party/PartyBlocksGame.tsx", "utf8")).toContain("data-bare-keep");
+  });
+});
+
 describe("text a number puzzle prints in its squares grows with them", () => {
   const css = readFileSync("src/app/globals.css", "utf8");
 

@@ -263,7 +263,7 @@ export async function LiveMatch({
      * The same frame as every other page, a big screen included: see
      * `PAGE_WIDTH`. The board fits that column; see `BoardColumn`.
      */
-    <Page board>
+    <Page board="play">
       <SiteHeader />
       <GameTrailNav
         game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}

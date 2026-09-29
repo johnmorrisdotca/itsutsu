@@ -33,13 +33,23 @@ export function GameSidebar({
   ...props
 }: GamePanelProps & { postSeat?: boolean; practice?: boolean; defaults: GameDefaults }) {
   return (
-    <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80">
+    /*
+      IN JUST THE BOARD, WHAT PLAYS THE BOARD STAYS (`data-bare-keep`), under
+      it: whose turn it is, the clock, the piece tray and the controls. The
+      rest — what this board is, the record, pasting, the computer, the
+      advantage, starting a real game, notes — is furniture (`data-chrome`).
+    */
+    <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80" data-bare-keep>
       {/*
         WHAT THIS BOARD IS, before anything about what to do on it. A practice
         board is the same board a match is played on — that is the point, and
         the danger. See `PracticeMark`.
       */}
-      {practice ? <PracticeMark variant={props.session.state.settings.variant} /> : null}
+      {practice ? (
+        <div data-chrome>
+          <PracticeMark variant={props.session.state.settings.variant} />
+        </div>
+      ) : null}
       <div className={PANEL_CLASS}>
         <GameStatus session={props.session} />
       </div>
@@ -55,15 +65,15 @@ export function GameSidebar({
         Above the opponent because it is about the game in front of you, and
         the opponent is about the next one.
       */}
-      <div className={PANEL_CLASS}>
+      <div className={PANEL_CLASS} data-chrome>
         <MoveHistory {...props} />
       </div>
       {practice ? (
-        <div className={PANEL_CLASS}>
+        <div className={PANEL_CLASS} data-chrome>
           <PasteMoves {...props} />
         </div>
       ) : null}
-      <div className={PANEL_CLASS}>
+      <div className={PANEL_CLASS} data-chrome>
         <ComputerOpponentPanel session={props.session} actions={props.actions} />
       </div>
       {props.session.settings.timeControl !== "none" ? (
@@ -72,7 +82,7 @@ export function GameSidebar({
         </div>
       ) : null}
       {props.session.settings.showAdvantage ? (
-        <div className={PANEL_CLASS}>
+        <div className={PANEL_CLASS} data-chrome>
           <AdvantagePanel session={props.session} />
         </div>
       ) : null}
@@ -91,10 +101,10 @@ export function GameSidebar({
       <div className={PANEL_CLASS}>
         <GameControls {...props} />
       </div>
-      <div className={PANEL_CLASS}>
+      <div className={PANEL_CLASS} data-chrome>
         <StartSharedGame settings={props.session.state.settings} postSeat={postSeat} defaults={defaults} />
       </div>
-      <div className={PANEL_CLASS}>
+      <div className={PANEL_CLASS} data-chrome>
         <NotesPanel gameKey={`local:${props.session.state.settings.seed}`} />
       </div>
     </aside>

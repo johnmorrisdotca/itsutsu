@@ -393,7 +393,7 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
       it takes the width, and the controls around it in the solve move beside
       it (`data-scale-stack`, globals.css).
     */
-    <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"} data-scale-board data-scale-stack>
+    <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"} data-scale-board data-scale-stack data-bare-board>
       <div className={pausing.paused ? "invisible" : undefined} aria-hidden={pausing.paused || undefined}>
         {children}
       </div>

@@ -69,7 +69,7 @@ export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
       data-size={game.state.settings.size}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3" data-scale-board>
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PairGoTurnLine game={game} appearance={appearance} />
         <Board
           state={game.state}

@@ -17,6 +17,7 @@ import {
 } from "@/lib/preferences/boardScale";
 import { SCALE_TOP_PX, scaledPlayWidths } from "@/lib/preferences/boardScaleFit";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { BareBoard } from "@/components/layout/BareBoard";
 
 import { boardColumnIn, measurePlay, reachRunsOff, regularDrawingIn } from "./boardScaleMeasure";
 
@@ -230,9 +231,15 @@ export function BoardScale({
       data-width-reason={widthReason ?? "the play is as wide as its board and the controls beside it, at the size the reader chose"}
       {...readyMark(hydrated && device !== null ? layout.settled : hydrated)}
     >
-      {/* Furniture: just the board sizes the board to the screen itself, and a phone never shows it. */}
-      <div data-chrome data-board-scale-chooser className="hidden items-center justify-end lg:flex">
-        <fieldset className="flex items-center gap-1" data-testid="board-scale">
+      {/*
+        THE TWO WAYS OF VIEWING THE BOARD, TOGETHER: its size, and just the
+        board (`BareBoard`), at the play's top right. The size is furniture —
+        just the board sizes the board to the screen itself, and a phone never
+        shows it — so it alone is `data-chrome`; the switch stays, because a
+        mode you cannot leave is a trap, and when bare it is the modal's Close.
+      */}
+      <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1" data-board-scale-chooser>
+        <fieldset data-chrome data-board-scale-sizes className="hidden items-center gap-1 lg:flex" data-testid="board-scale">
           <legend className="sr-only">Board size</legend>
           <span className="mr-1 text-xs text-muted" aria-hidden="true">
             Board <span className="font-mincho">盤</span>
@@ -263,6 +270,7 @@ export function BoardScale({
             </label>
           ))}
         </fieldset>
+        <BareBoard />
       </div>
       {children}
     </div>

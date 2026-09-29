@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { playSequence, ready, winningSequence } from "./support";
+import { freshPuzzleSeed, playSequence, ready, winningSequence } from "./support";
 
 /**
  * Reading a page as the board alone.
@@ -26,7 +26,10 @@ test.describe("just the board", () => {
     // Hidden, not removed: the stylesheet takes them off the page rather than
     // the components declining to render, so count them as seen or not seen.
     await expect(header).toBeHidden();
-    for (const aside of await page.locator("aside").all()) await expect(aside).toBeHidden();
+    for (const aside of await page.locator("aside:not([data-bare-keep])").all()) await expect(aside).toBeHidden();
+    // The practice board's side column keeps what plays the board — whose turn it is — and loses its furniture.
+    await expect(page.getByTestId("to-play")).toBeVisible();
+    await expect(page.getByTestId("practice-mark")).toBeHidden();
 
     // The switch is the one thing that stays: a mode you cannot leave is a trap.
     const toggle = page.getByTestId("bare-board-toggle");
@@ -200,3 +203,81 @@ test.describe("just the board", () => {
     await expect(page.locator("[data-chrome]").first()).toBeVisible();
   });
 });
+
+/*
+ * EVERY GAME OFFERS JUST THE BOARD. John, 2026-09-28: "we also have the
+ * standing rule that all games should offer the standalone modal option/mode
+ * where it's in a modal with just bare minimum stuff (like scrubber) and a few
+ * buttons." Opened from the switch beside the board's size, on a phone and on
+ * a laptop, with what plays each board still there, and left both ways: Close
+ * and Esc.
+ */
+const PLAYS = [
+  {
+    name: "a Number Place",
+    open: async (page: import("@playwright/test").Page) => {
+      await page.goto(`/games/number-place/play?size=9&level=easy&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+    },
+    // The keys a number is written with, and the scrubber through the steps.
+    stays: ["puzzle-keys", "puzzle-grid"],
+  },
+  {
+    name: "Kumimoji",
+    open: async (page: import("@playwright/test").Page) => {
+      await page.goto(`/games/kumimoji/play?seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+    },
+    // The table and the hand its tiles are laid from.
+    stays: ["kumimoji-table", "kumimoji-tray"],
+  },
+  {
+    name: "a Dots and Boxes table",
+    open: async (page: import("@playwright/test").Page) => {
+      await page.goto("/games/dots-and-boxes/pass-and-play");
+      await ready(page, "dots-set-up");
+      await page.getByTestId("dots-start").click();
+      await ready(page, "dots-game");
+    },
+    // Whose turn it is, and the board; who is at the table is side matter.
+    stays: ["dots-turn", "dots-board"],
+  },
+];
+
+for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
+  test.describe(`just the board on every play, ${viewport.width} wide`, () => {
+    test.use({ viewport });
+    for (const play of PLAYS) {
+      test(`${play.name}: opened beside the board's size, keeps what plays it, and leaves by Close and by Esc`, async ({ page }) => {
+        await play.open(page);
+        await ready(page, "board-scaling");
+        await ready(page, "bare-board");
+        // One switch, in the row with the board's size, not a second at the page's foot.
+        await expect(page.getByTestId("bare-board-toggle")).toHaveCount(1);
+        await expect(page.getByTestId("board-scaling").getByTestId("bare-board-toggle")).toBeVisible();
+
+        await page.getByTestId("bare-board-toggle").click();
+        await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+        await expect(page.locator("header[data-chrome]").first()).toBeHidden();
+        for (const id of play.stays) await expect(page.getByTestId(id).first(), `${id} went with the furniture`).toBeVisible();
+        await expect(page.getByTestId("board-scale"), "the board's size is offered inside just the board").toBeHidden();
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(overflow, "just the board scrolls sideways").toBeLessThanOrEqual(0);
+
+        // Close, at the top right.
+        const close = page.getByTestId("bare-board-toggle");
+        await expect(close).toHaveAttribute("aria-pressed", "true");
+        await close.click();
+        await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
+        await expect(page.locator("header[data-chrome]").first()).toBeVisible();
+
+        // And Esc.
+        await page.getByTestId("bare-board-toggle").click();
+        await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+        await page.keyboard.press("Escape");
+        await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
+        for (const id of play.stays) await expect(page.getByTestId(id).first()).toBeVisible();
+      });
+    }
+  });
+}

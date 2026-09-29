@@ -97,7 +97,7 @@ export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyG
         </span>
       </div>
       {/* The table's column for the size chooser (`BoardScale`): at Large and Full it takes the width, and the hand moves beside it. */}
-      <div data-scale-board data-scale-stack>
+      <div data-scale-board data-scale-stack data-bare-board>
         <KumimojiTable
           tiles={play.tiles}
           theme={theme}

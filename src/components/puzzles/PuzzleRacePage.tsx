@@ -57,8 +57,11 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
       : null;
 
   return (
-    <Page>
+    // A board page whose play draws "Just the board" beside its size (`BoardScale`).
+    <Page board="play">
       <SiteHeader />
+      {/* Furniture, for just the board; the seats and their Start stay, being what starts the race. */}
+      <div data-chrome>
       <PageTitle
         title={`Race at ${copy.label}`}
         kanji="競解"
@@ -66,6 +69,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
         lead={`${sizeWord(race.size, kind)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${kumimojiMode}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
         testId="puzzle-race"
       />
+      </div>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="race-seats">
         <h2 className={SECTION_TITLE}>

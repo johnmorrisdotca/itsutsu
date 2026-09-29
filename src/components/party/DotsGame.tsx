@@ -64,7 +64,7 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
       data-lines={game.lines.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3" data-scale-board>
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <DotsTurnLine game={game} />
         <DotsBoard game={game} appearance={appearance} onLine={onLine} />
         {game.status === DOTS_STATUS.playing ? <p className="text-xs text-muted">{DOTS_COPY.tap}</p> : null}

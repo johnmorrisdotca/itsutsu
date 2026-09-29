@@ -265,8 +265,24 @@ body {
  * navigation with no way to get it back.
  */
 html[data-bare="true"] [data-strippable] [data-chrome],
-html[data-bare="true"] [data-strippable] aside {
+html[data-bare="true"] [data-strippable] aside:not([data-bare-keep]) {
   display: none;
+}
+
+/*
+ * SIDE MATTER THAT PLAYS THE BOARD STAYS, UNDER IT. Where a game is played
+ * from its side column — the practice board's whose turn it is, its clock,
+ * its piece tray and its take-back; Block Five's tray — the column is
+ * `data-bare-keep`: its furniture is `data-chrome` and goes, the presses stay,
+ * and it moves under the board, because the modal is as narrow as the board.
+ */
+html[data-bare="true"] [data-strippable] :has(> [data-bare-keep]) {
+  display: flex;
+  flex-direction: column;
+}
+html[data-bare="true"] [data-strippable] [data-bare-keep] {
+  position: static;
+  width: 100%;
 }
 
 /*
@@ -317,6 +333,15 @@ html[data-bare="true"] [data-bare-frame] > [data-strippable] {
   border-radius: 0.75rem;
   background: var(--paper);
   box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.45);
+}
+
+/*
+ * A puzzle's board leaves room under it for the keys, the keyboard or the tray
+ * a puzzle is played with, which sit under the board in the modal: about
+ * 7rem more than a game's board leaves for its one row of presses.
+ */
+html[data-bare="true"] [data-strippable] [data-scale-stack][data-bare-board] {
+  width: min(100%, calc(100dvh - 24rem));
 }
 
 /* The review banner says "latest position" until a move is stepped back to; in the modal it is only drawn while it has something to say. */
@@ -488,8 +513,8 @@ html[data-bare="true"] [data-strippable] [data-board-column] {
     aspect-ratio: 1 / 1;
   }
 }
-/* Nothing to size while there is no board: the chooser waits for one. */
-[data-board-scaling]:not(:has([data-scale-board])) > [data-board-scale-chooser] {
+/* Nothing to size while there is no board: the sizes wait for one (just the board stays, so it can always be left). */
+[data-board-scaling]:not(:has([data-scale-board])) > [data-board-scale-chooser] > [data-board-scale-sizes] {
   display: none;
 }
 

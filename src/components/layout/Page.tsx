@@ -30,8 +30,12 @@ export function Page({
    * masthead may be stripped. It used to follow from the page being wide,
    * until /players needed the room without having a board; now that there is
    * one width, it is only this. A board page says `board`.
+   *
+   * `"play"` is a board page whose play draws the switch itself, beside the
+   * board's size (`BoardScale`), so the two ways of viewing the board sit
+   * together; the page then draws no second one at its foot.
    */
-  board?: boolean;
+  board?: boolean | "play";
   children: ReactNode;
 }) {
   return (
@@ -76,7 +80,7 @@ export function Page({
           lands under the board's own controls, which is where somebody who
           has just been playing will look for it.
         */}
-        {board ? <BareBoard /> : null}
+        {board === true ? <BareBoard /> : null}
         <SiteFooter />
       </main>
     </div>

@@ -55,7 +55,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   const { moveFormat } = await preferencesFor();
 
   return (
-    <Page board>
+    <Page board="play">
       <SiteHeader />
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>

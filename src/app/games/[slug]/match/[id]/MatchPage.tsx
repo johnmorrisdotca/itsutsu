@@ -136,7 +136,7 @@ export async function MatchPage({
     // How the record writes its moves, as this member last chose (`moveFormats.ts`).
     const { moveFormat } = await preferencesFor();
     return (
-      <Page board>
+      <Page board="play">
         <SiteHeader />
         <GameTrailNav
           game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}

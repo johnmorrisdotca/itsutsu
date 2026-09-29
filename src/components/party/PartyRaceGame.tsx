@@ -81,7 +81,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
       data-moves={game.moves.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3" data-scale-board>
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
         <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} />
         {game.status === PARTY_STATUS.playing ? <p className="text-xs text-muted">{PARTY_COPY.pick}</p> : null}
