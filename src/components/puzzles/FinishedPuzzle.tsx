@@ -170,7 +170,8 @@ function GridReplay({
   const last = frames === null ? 0 : frames.length - 1;
   const viewing = at === null ? last : Math.min(at, last);
   const shown: Frame = frames?.[viewing] ?? dealt.finished ?? dealt.start;
-  const state = answer !== null ? (frames !== null && frames.length > 1 ? "replay" : "finished") : worked !== null ? "worked-out" : derive && !hydrated ? "working" : "dealt";
+  /* Steps and no answer: a grid that ended unsolved, its clock run out, kept as it stood (`/api/puzzles/solved`, `outOfTime`). */
+  const state = answer !== null ? (frames !== null && frames.length > 1 ? "replay" : "finished") : frames !== null ? "unsolved" : worked !== null ? "worked-out" : derive && !hydrated ? "working" : "dealt";
 
   return (
     <Focused story={story} hydrated={hydrated} testId="solve-board" state={state}>
@@ -200,6 +201,7 @@ const NOTES: Record<string, string> = {
   "worked-out": "Solved before its grid was kept. Every puzzle here has one answer, so this is that answer, worked out from the puzzle.",
   working: "",
   dealt: "Its finished grid was not kept, so this is the puzzle as it was dealt.",
+  unsolved: "It ended unsolved, when its clock ran out: this is where it stood, and the scrubber steps back through how it got there.",
 };
 
 /** What a step wrote in a cell, for the list of steps: "7", "a stone", "white", "cleared". */

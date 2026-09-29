@@ -1332,9 +1332,17 @@ model PuzzleSolve {
   /// existed truly was. A helped solve counts as solved but scores no points and
   /// stays off the fastest tables; with explosions off it opens no next block.
   helped        String?
+  /// The countdown it was played on (`PuzzleClock`): "none", "tortoise",
+  /// "fox" or "rabbit". "none" for every solve kept before clocks existed,
+  /// which truly had none. Each clock has its own fastest table: a Rabbit
+  /// solve and one with no clock are not one race. A solve that ran out of
+  /// time is kept with `solved` false.
+  clock         String   @default("none")
 
   @@index([memberId, finishedAt])
   @@index([kind, size, level, elapsedMs])
+  /// The fastest table's read, now that each clock has its own.
+  @@index([kind, size, level, clock, elapsedMs], map: "PuzzleSolve_clock_fastest_idx")
   @@index([kind, memberId, givens])
 }
 
@@ -1355,6 +1363,9 @@ model PuzzleRun {
   doubleSet     Boolean  @default(false)
   /// Kumimoji's Diagonals: its diagonal runs of three or more were read too.
   diagonals     Boolean  @default(false)
+  /// The countdown it is being played on (`PuzzleClock`), so Continue opens it
+  /// on the same clock with what it had left; "none" for no clock.
+  clock         String   @default("none")
   /// The Check allowance it is being solved under, or null for no limit.
   checksAllowed Int?
   checksUsed    Int      @default(0)
@@ -1377,7 +1388,13 @@ model PuzzleRun {
 
   /// One run per member per game as it was set up. Named short (`map`), since
   /// Postgres keeps only 63 characters of a name and Prisma's own would differ.
+  /// Superseded by `runClockKey`, which adds the clock; kept while the code
+  /// before it may still be live (a deploy migrates before it switches), and
+  /// dropped by a later migration once nothing upserts on it.
   @@unique([memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed], name: "runKey", map: "PuzzleRun_run_key")
+  /// One run per member per game as it was set up, its clock included. Named
+  /// short (`map`), since Postgres keeps only 63 characters of a name.
+  @@unique([memberId, kind, size, language, gameLength, doubleSet, diagonals, clock, level, seed], name: "runClockKey", map: "PuzzleRun_run_clock_key")
   @@index([memberId, updatedAt])
 }
 

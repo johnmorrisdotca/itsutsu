@@ -83,6 +83,15 @@ export const REGION_FILLS: readonly string[] = [
  */
 export const PUZZLE_CLOCK = "inline-block min-w-[5ch] text-right font-mono text-lg tabular-nums";
 
+/**
+ * A countdown's last ten seconds (`isUrgent`): vermilion, AND bold inside a
+ * ring, so it reads as urgent without the colour — the ring is a shadow, not
+ * a border, so the clock does not change width as it appears. The rounding and
+ * the little padding are on every countdown, urgent or not, for the same reason.
+ */
+export const PUZZLE_COUNTDOWN = "rounded px-1";
+export const PUZZLE_COUNTDOWN_URGENT = "font-bold text-shu ring-2 ring-current motion-safe:animate-pulse";
+
 /** How often the clock is redrawn: once a second, in the browser, and never on a server. */
 export const PUZZLE_CLOCK_TICK_MS = 1000;
 

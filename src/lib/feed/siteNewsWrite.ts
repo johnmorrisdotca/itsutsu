@@ -154,19 +154,22 @@ export async function tellFirstPlace(
 }
 
 /** A solve about to be kept, as much as a best time needs. */
-export type NewsSolve = { memberId: string; kind: string; size: number; level: string; elapsedMs: number; solved: boolean };
+export type NewsSolve = { memberId: string; kind: string; size: number; level: string; elapsedMs: number; solved: boolean; clock?: string };
 
 /**
- * The fastest solve so far at this kind, size and level, read before the new
- * one is kept: one row off `PuzzleSolve_kind_size_level_elapsedMs_idx`, as
- * the fastest board reads it. Null where there is none; undefined where it
+ * The fastest untimed solve so far at this kind, size and level, read before
+ * the new one is kept: one row off `PuzzleSolve_clock_fastest_idx`, as the
+ * fastest board reads it. Null where there is none; undefined where it
  * could not be read, which tells nothing.
  */
 export async function bestBefore(solve: NewsSolve): Promise<number | null | undefined> {
-  if (!solve.solved) return undefined;
+  /* The feed's best time is the untimed table's: its line names a size and a
+     level and no clock, so a Rabbit's best told there would read as a record
+     it is not. A clocked best is on its own clock's table. */
+  if (!solve.solved || (solve.clock ?? "none") !== "none") return undefined;
   try {
     const best = await prisma.puzzleSolve.findFirst({
-      where: { kind: solve.kind, size: solve.size, level: solve.level, solved: true, helped: null },
+      where: { kind: solve.kind, size: solve.size, level: solve.level, clock: "none", solved: true, helped: null },
       orderBy: { elapsedMs: "asc" },
       select: { elapsedMs: true },
     });

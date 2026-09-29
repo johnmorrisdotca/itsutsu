@@ -73,7 +73,9 @@ export const DAILY_FASTEST_SHOWN = 10;
 
 /**
  * The fastest finds of one word at one length, whenever they were played —
- * on its day or later from the archive — at any level, which each row says.
+ * on its day or later from the archive — at any level, which each row says,
+ * and with no countdown: the day's buttons start the word untimed, and a find
+ * on a clock is a different race (`puzzleClock.ts`), on that clock's table.
  * One query on the kind and size, narrowed to the word's givens.
  */
 export async function fastestOfWord(kind: PuzzleKind, size: number, word: string): Promise<DailyFastest[]> {
@@ -83,6 +85,7 @@ export async function fastestOfWord(kind: PuzzleKind, size: number, word: string
       kind,
       size,
       solved: true,
+      clock: "none",
       OR: [{ givens: givens.exactly }, ...(givens.before === undefined ? [] : [{ givens: { startsWith: givens.before } }])],
     },
     orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],

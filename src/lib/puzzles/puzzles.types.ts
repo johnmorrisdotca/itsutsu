@@ -29,6 +29,16 @@ export type PuzzleKind =
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
 
+/**
+ * A puzzle's countdown, chosen on its set-up: none (the clock counts up, as it
+ * always did), or a Tortoise, Fox or Rabbit counting down from five minutes,
+ * three or one (`PUZZLE_CLOCK_DISPLAY`). Part of what a solve was, like its
+ * size and level: in the address, the kept run and the kept solve, and a table
+ * of fastest solves of its own. John, 2026-09-26: "a TURTLE mode, RABBIT mode
+ * and some other animal in between… it can be used on ANY of the games".
+ */
+export type PuzzleClock = "none" | "tortoise" | "fox" | "rabbit";
+
 export type PuzzleSpec = {
   /**
    * The sides a puzzle of this kind can be made and checked at, smallest first:
@@ -93,6 +103,12 @@ export type PuzzleSpec = {
    * `sizesOffered`, so a front door never lists fewer boards than its set-up.
    */
   shelves?: true;
+  /**
+   * Whether a countdown is offered (`PuzzleClock`). Absent is yes. A puzzle
+   * with its own measure of a player (Tsunagi's fixed levels, each with its
+   * own table; Kumimoji, which already scores its speed) keeps its own.
+   */
+  clock?: false;
   /**
    * Whether the puzzle is a tile game (Kumimoji): its size is the hand it opens
    * with, not the side of a grid, and any sound grid of its tiles finishes it,

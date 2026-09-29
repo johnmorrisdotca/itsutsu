@@ -9,7 +9,8 @@ import { playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import type { Puzzle, PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { clockFor } from "@/lib/puzzles/puzzleClock";
 import { freshSeed } from "@/lib/puzzles/random";
 import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 
@@ -21,6 +22,7 @@ import { KumimojiParty } from "./KumimojiParty";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
+import { PuzzleClockProvider } from "./PuzzleClockContext";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
@@ -62,12 +64,15 @@ export function PuzzlePlay({
   doubleSet = false,
   diagonals = false,
   players = 1,
+  clock = "none",
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
 }: {
   /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
   players?: number;
+  /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
+  clock?: PuzzleClock;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
@@ -120,8 +125,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players, clock })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players, clock, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -162,48 +167,54 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${diagonals}-${players}`;
-  // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
-  const seat = race ?? null;
-  const headStarted = seat === null && headStart;
-  switch (kind) {
-    case "hiddenStones":
-      return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
-    case "blackAndWhite":
-      return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
-    case "gomoji":
-    case "gomojiMot":
-    case "gomojiWort":
-    case "gomojiPop":
-      return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    case "tsunagi":
-      return (
-        <TsunagiSolve
-          key={key}
-          puzzle={puzzle}
-          hasAccount={hasAccount}
-          race={seat}
-          resumed={race === null ? resumed : null}
-          appearance={appearance}
-          known={tsunagi?.known}
-          attempts={tsunagi?.attempts}
-          bestSolves={tsunagi?.bestSolves}
-          marksChosen={tsunagi?.marks ?? null}
-          fillChosen={tsunagi?.fill ?? null}
-          closed={tsunagi?.closed}
-          explosionsChosen={tsunagi?.explosions ?? null}
-          cheatsChosen={tsunagi?.cheats ?? null}
-        />
-      );
-    case "kumimoji":
-      // Pass and play is local and never a race: a race's address carries no players.
-      if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} />;
-      return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
-    case "gomojiKana":
-      return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    case "koushi":
-      return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
-    default:
-      return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${diagonals}-${players}-${clock}`;
+  // A race is its own contest and never on a countdown; a puzzle that offers none has none (`clockFor`).
+  const timed = race === null ? clockFor(kind, clock) : "none";
+  return <PuzzleClockProvider value={timed}>{solveOf(puzzle)}</PuzzleClockProvider>;
+
+  function solveOf(puzzle: Puzzle) {
+    // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
+    const seat = race ?? null;
+    const headStarted = seat === null && headStart;
+    switch (kind) {
+      case "hiddenStones":
+        return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+      case "blackAndWhite":
+        return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+      case "gomoji":
+      case "gomojiMot":
+      case "gomojiWort":
+      case "gomojiPop":
+        return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "tsunagi":
+        return (
+          <TsunagiSolve
+            key={key}
+            puzzle={puzzle}
+            hasAccount={hasAccount}
+            race={seat}
+            resumed={race === null ? resumed : null}
+            appearance={appearance}
+            known={tsunagi?.known}
+            attempts={tsunagi?.attempts}
+            bestSolves={tsunagi?.bestSolves}
+            marksChosen={tsunagi?.marks ?? null}
+            fillChosen={tsunagi?.fill ?? null}
+            closed={tsunagi?.closed}
+            explosionsChosen={tsunagi?.explosions ?? null}
+            cheatsChosen={tsunagi?.cheats ?? null}
+          />
+        );
+      case "kumimoji":
+        // Pass and play is local and never a race: a race's address carries no players.
+        if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} />;
+        return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
+      case "gomojiKana":
+        return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "koushi":
+        return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      default:
+        return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+    }
   }
 }

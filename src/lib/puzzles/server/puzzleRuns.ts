@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import type { KumimojiLanguage, KumimojiLength } from "../kumimoji/kumimoji.types";
 
 /**
@@ -27,6 +27,8 @@ export type KeptRun = {
   gameLength?: KumimojiLength;
   doubleSet?: boolean;
   diagonals?: boolean;
+  /** The countdown it is played on; none where absent. */
+  clock?: PuzzleClock;
   checksAllowed: number | null;
   checksUsed: number;
   hintsAllowed: boolean;
@@ -45,10 +47,18 @@ export async function keepRun(run: KeptRun): Promise<void> {
   const gameLength = kind === "kumimoji" ? run.gameLength ?? "short" : "short";
   const doubleSet = kind === "kumimoji" && (run.doubleSet ?? false);
   const diagonals = kind === "kumimoji" && (run.diagonals ?? false);
+  const clock = run.clock ?? "none";
+  /*
+   * THE SAME GRID ON ANOTHER CLOCK GIVES WAY, while the key without the clock
+   * (`runKey`) still stands: it lets one row per grid whatever the clock, so a
+   * Rabbit run of a grid kept as untimed would be refused rather than kept.
+   * Goes with that key, in the migration that drops it.
+   */
+  await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed, NOT: { clock } } });
   await prisma.puzzleRun.upsert({
-    where: { runKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed } },
-    create: { ...run, language, gameLength, doubleSet, diagonals },
-    update: { ...rest, language, gameLength, doubleSet, diagonals },
+    where: { runClockKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, clock, level, seed } },
+    create: { ...run, language, gameLength, doubleSet, diagonals, clock },
+    update: { ...rest, language, gameLength, doubleSet, diagonals, clock },
   });
   const over = await prisma.puzzleRun.findMany({
     where: { memberId },
@@ -60,9 +70,9 @@ export async function keepRun(run: KeptRun): Promise<void> {
 }
 
 /** The run of this grid, for the solve page to open where it was left, or null. */
-export async function runOf(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english", diagonals = false) {
+export async function runOf(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english", diagonals = false, clock: PuzzleClock = "none") {
   return prisma.puzzleRun.findUnique({
-    where: { runKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed } },
+    where: { runClockKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, clock, level, seed } },
     select: { checksAllowed: true, checksUsed: true, hintsUsed: true, progress: true, steps: true, elapsedMs: true, language: true, gameLength: true, doubleSet: true, diagonals: true },
   });
 }
@@ -73,7 +83,7 @@ export async function runsOf(memberId: string) {
     where: { memberId },
     orderBy: { updatedAt: "desc" },
     take: RUNS_KEPT,
-    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, elapsedMs: true, updatedAt: true, language: true, gameLength: true, doubleSet: true, diagonals: true },
+    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, elapsedMs: true, updatedAt: true, language: true, gameLength: true, doubleSet: true, diagonals: true, clock: true },
   });
 }
 
@@ -82,11 +92,11 @@ export async function latestRunOf(memberId: string, kind: PuzzleKind) {
   return prisma.puzzleRun.findFirst({
     where: { memberId, kind },
     orderBy: { updatedAt: "desc" },
-    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, language: true, gameLength: true, doubleSet: true, diagonals: true },
+    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, language: true, gameLength: true, doubleSet: true, diagonals: true, clock: true },
   });
 }
 
 /** A grid finished: it is no longer going. */
-export async function dropRun(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english", diagonals = false): Promise<void> {
-  await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, level, seed, language, gameLength, doubleSet, diagonals } });
+export async function dropRun(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english", diagonals = false, clock: PuzzleClock = "none"): Promise<void> {
+  await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, level, seed, language, gameLength, doubleSet, diagonals, clock } });
 }

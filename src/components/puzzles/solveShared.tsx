@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "@/components/ui/Link";
-import { helpOpensOn, SOLVE_HELP_SAYS, type SolveHelp } from "@/lib/puzzles/solveHelp";
+import type { SolveHelp } from "@/lib/puzzles/solveHelp";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -13,17 +12,11 @@ import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
-import { mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { clockLimitMs } from "@/lib/puzzles/puzzleClock";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import { clockText } from "@/lib/puzzles/clockText";
-import { freshSeed } from "@/lib/puzzles/random";
-import { isFutagoGivens } from "@/lib/puzzles/gomoji/futago";
-import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
-import { PuzzleWayBack } from "./PuzzleWayBack";
+import { usePuzzleClock } from "./PuzzleClockContext";
 
 /**
  * What every kind of solve shares: the clock, handing the answer in, and the
@@ -39,8 +32,10 @@ export type Done = {
   elapsedMs: number;
   paid: { points: number; awards: string[] } | null;
   problem: string | null;
-  /** Ended without being solved: a word whose guesses ran out. Nothing is paid and nothing kept. */
+  /** Ended without being solved: a word whose guesses ran out, or any puzzle whose countdown did. Kept, and paid for playing it out. */
   outOfGuesses?: true;
+  /** Ended by its countdown reaching nought (`puzzleClock.ts`); `outOfGuesses` is set too, as the ending every kind already draws. */
+  outOfTime?: true;
   /** The kept solve, once the site has said which it is: the card opens it again, replay and all. */
   solveId?: string | null;
   /** How the solve was helped (`solveHelp.ts`), or null for none: the card says what that costs it. */
@@ -123,11 +118,27 @@ export function useSolve(
   const [pausedAt, setPausedAt] = useState<number | null>(null);
   const canPause = race === null && startedAt !== null && done === null;
 
+  /*
+   * THE COUNTDOWN, where one was chosen (`puzzleClock.ts`): not a timer of its
+   * own but this clock read against the allowance, checked on the tick the
+   * clock already makes. So it stops when the clock stops — a pause, Are you
+   * still there, the page left — and starts on the first entry, as the clock
+   * does. Never in a race, which is a contest already.
+   */
+  const chosenClock = usePuzzleClock();
+  const clock = race === null ? chosenClock : "none";
+  const limit = clockLimitMs(clock);
+  const ranOut = useRef<() => void>(() => undefined);
+
   useEffect(() => {
     if (startedAt === null || done !== null || pausedAt !== null) return;
-    const timer = window.setInterval(() => setNow(Date.now()), PUZZLE_CLOCK_TICK_MS);
+    const timer = window.setInterval(() => {
+      const at = Date.now();
+      setNow(at);
+      if (limit !== null && carriedMs + at - startedAt - pausedMs >= limit) ranOut.current();
+    }, PUZZLE_CLOCK_TICK_MS);
     return () => window.clearInterval(timer);
-  }, [startedAt, done, pausedAt]);
+  }, [startedAt, done, pausedAt, limit, carriedMs, pausedMs]);
 
   /* What is kept of this run, when it is paused or its page is left: nothing for a visitor, a race, or a puzzle finished or never started. */
   const keep = useKeptRun(() => {
@@ -148,6 +159,7 @@ export function useSolve(
       ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
       ...(keeping.strict === undefined ? {} : { strict: keeping.strict }),
       ...(keeping.headStart === true ? { headStart: true } : {}),
+      ...(clock === "none" ? {} : { clock }),
       elapsedMs,
     };
   });
@@ -216,6 +228,11 @@ export function useSolve(
   const finish = useCallback(
     async (answer: string, at: number, helped: SolveHelp | null = null) => {
       const elapsedMs = carriedMs + (startedAt === null ? 0 : Math.max(0, at - startedAt - pausedMs));
+      // The last entry made after the countdown reached nought, before the tick that says so: out of time, not solved.
+      if (limit !== null && elapsedMs >= limit) {
+        ranOut.current();
+        return;
+      }
       setDone({ elapsedMs, paid: null, problem: null, helped });
       if (!hasAccount) return;
       try {
@@ -234,6 +251,7 @@ export function useSolve(
                   ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
                   // How it was helped, kept with the solve: solved, and scoring nothing (`solveHelp.ts`).
                   ...(helped === null ? {} : { helped }),
+                  ...(clock === "none" ? {} : { clock }),
                 }
               : { answer, checksUsed: used },
           ),
@@ -250,7 +268,7 @@ export function useSolve(
         setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve.", helped });
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping],
+    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping, clock, limit],
   );
 
   /**
@@ -269,7 +287,7 @@ export function useSolve(
         const answered = await fetch("/api/puzzles/solved", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true }),
+          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true, ...(clock === "none" ? {} : { clock }) }),
         });
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[] } | null;
         if (answered.ok) setDone({ elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, outOfGuesses: true });
@@ -277,8 +295,40 @@ export function useSolve(
         // Nothing is owed that cannot wait: a run left kept is opened again as it was and can be ended again.
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, keeping.headStart],
+    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, keeping.headStart, clock],
   );
+
+  /**
+   * OUT OF TIME: the countdown reached nought. The puzzle ends unsolved, at
+   * exactly its allowance, and what is written on it is handed in to be kept
+   * as it stood (`POST /api/puzzles/solved` with `outOfTime`), which takes the
+   * run off the member's games and pays for playing it out, as a word whose
+   * guesses ran out is paid. A visitor's ends here, kept nowhere.
+   */
+  const timeUp = () => {
+    if (limit === null || done !== null) return;
+    const ended: Done = { elapsedMs: limit, paid: null, problem: null, outOfGuesses: true, outOfTime: true };
+    setDone(ended);
+    if (!hasAccount) return;
+    void fetch("/api/puzzles/solved", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer: keeping.progress, elapsedMs: limit, pausedMs,
+        checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, headStart: keeping.headStart === true, clock, outOfTime: true,
+        ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
+      }),
+    })
+      .then(async (answered) => {
+        const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; error?: string; solveId?: string | null } | null;
+        setDone(answered.ok ? { ...ended, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, solveId: body?.solveId ?? null } : { ...ended, problem: body?.error ?? "The site could not keep it." });
+      })
+      .catch(() => setDone({ ...ended, problem: "The site could not be reached to keep it." }));
+  };
+  // The tick reads the latest, with what is written now, without restarting the clock on every entry.
+  useEffect(() => {
+    ranOut.current = timeUp;
+  });
 
   const elapsedMs = done !== null ? done.elapsedMs : carriedMs + (startedAt === null ? 0 : Math.max(0, (pausedAt ?? now) - startedAt - pausedMs));
   const pausing: Pausing = {
@@ -290,7 +340,7 @@ export function useSolve(
     racing: race !== null,
     keptOnLeaving: hasAccount && race === null,
   };
-  return { startedAt, elapsedMs, done, begin, finish, runOut, pausing, checking, hinting };
+  return { startedAt, elapsedMs, done, begin, finish, runOut, pausing, checking, hinting, clock };
 }
 
 /** Whether the run is paused, whether it may be, and the press that pauses or resumes it. */
@@ -365,105 +415,5 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
   );
 }
 
-/** The card at the end: the time, what was paid, another puzzle or a different size, and the way back to the puzzle's page and its family. */
-export function SolveDone({
-  puzzle,
-  done,
-  hasAccount,
-  race = null,
-  checks = null,
-  strict = false,
-  headStart = false,
-  onward,
-}: {
-  /** Where a puzzle of fixed levels goes on to, in place of Another and the set-up: Tsunagi's next level, and its board of levels. */
-  onward?: { next: { href: string; label: string } | null; all: { href: string; label: string } };
-  puzzle: Puzzle;
-  done: Done;
-  hasAccount: boolean;
-  race?: SolveRace | null;
-  /** The allowance this one was solved under, which Another keeps. */
-  checks?: number | null;
-  /** Gomoji's Strict, which Another keeps too. */
-  strict?: boolean;
-  /** Gomoji's Head start, which Another keeps as well. */
-  headStart?: boolean;
-}) {
-  const router = useRouter();
-  const copy = PUZZLE_DISPLAY[puzzle.kind];
-  const another = () => {
-    // A Futago's Another is two more words (`futago.ts`): its seed says so.
-    const twins = PUZZLE_SPECS[puzzle.kind].wordGrid !== undefined && isFutagoGivens(puzzle.givens);
-    router.push(`${playPath(puzzle.kind)}${puzzleQuery({ size: puzzle.size, level: puzzle.level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, strict, headStart, twins })}`);
-  };
-  return (
-    <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-done" aria-live="polite">
-      <p className="text-lg font-semibold">
-        Solved <span className="font-mincho text-base font-normal opacity-70">解決</span> in {clockText(done.elapsedMs)}.
-      </p>
-      <p className="text-sm text-muted" data-testid="puzzle-paid">
-        {!hasAccount
-          ? "A member is paid XP for a solve. Join, and the next one counts."
-          : done.paid !== null
-            ? done.paid.points > 0
-              ? `+${done.paid.points} XP, for ${awardWords(done.paid.awards)}.`
-              : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
-            : (done.problem ?? "Recording your solve…")}
-      </p>
-      {done.helped == null ? null : (
-        // A helped solve says what it costs, before anybody wonders where its points went.
-        <p className="text-sm" data-testid="puzzle-helped" data-helped={done.helped}>
-          {SOLVE_HELP_SAYS[done.helped]}. It counts as solved, but scores no points and is not on the fastest table
-          {helpOpensOn(done.helped) ? "." : ", and it does not open the next block: solve it with its explosions on for that."}
-        </p>
-      )}
-      {race === null ? null : <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>}
-      <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
-        {race === null && onward !== undefined ? (
-          <>
-            {onward.next === null ? null : (
-              <Link href={onward.next.href} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="puzzle-next-level">
-                {onward.next.label}
-              </Link>
-            )}
-            <Link href={onward.all.href} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-all-levels">
-              {onward.all.label}
-            </Link>
-          </>
-        ) : race === null ? (
-          <>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
-              Another {copy.label} →
-            </button>
-            <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-              Change the size or level
-            </Link>
-            {/* The solve just kept, to watch again step by step, as every past solve opens. */}
-            {done.solveId ? (
-              <Link href={mySolvePath(puzzle.kind, done.solveId)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-see-solve">
-                Replay this solve
-              </Link>
-            ) : null}
-          </>
-        ) : null}
-        <PuzzleWayBack kind={puzzle.kind} />
-      </div>
-    </div>
-  );
-}
-
-const AWARD_WORDS: Record<string, string> = {
-  puzzleSolved: "the solve",
-  puzzleEnded: "playing it out",
-  firstOfVariant: "your first of this puzzle",
-  firstOfFamily: "your first puzzle at all",
-  everyVariantPlayed: "every game on the site played",
-  everyFamilyPlayed: "every family met",
-  raceWon: "winning the race",
-};
-
-function awardWords(awards: readonly string[]): string {
-  const words = awards.map((award) => AWARD_WORDS[award] ?? award);
-  if (words.length <= 1) return words[0] ?? "the solve";
-  return `${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
-}
+// The card at the end lives in its own file; re-exported here for the solves that import it from this one.
+export { SolveDone } from "./SolveDone";

@@ -7,9 +7,10 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { progressFits, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
 import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
-import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
+import { clockFor } from "@/lib/puzzles/puzzleClock";
 import { keepRun } from "@/lib/puzzles/server/puzzleRuns";
 import type { KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
@@ -37,6 +38,8 @@ const bodySchema = z.object({
   doubleSet: z.boolean().optional(),
   /** Kumimoji's Diagonals: its diagonal runs of three or more are read too. */
   diagonals: z.boolean().optional(),
+  /** The countdown it is played on; none where absent, as from a browser from before clocks. */
+  clock: z.enum(PUZZLE_CLOCK_LIST as [string, ...string[]]).optional(),
   checksAllowed: z.number().int().nullable().optional(),
   checksUsed: z.number().int().nonnegative().optional(),
   hintsUsed: z.number().int().nonnegative().optional(),
@@ -85,6 +88,7 @@ export async function POST(request: Request) {
       gameLength: (kind === "kumimoji" ? parsed.data.gameLength ?? "short" : "short") as KumimojiLength,
       doubleSet: kind === "kumimoji" && (parsed.data.doubleSet ?? false),
       diagonals: kind === "kumimoji" && (parsed.data.diagonals ?? false),
+      clock: clockFor(kind, parsed.data.clock),
       checksAllowed,
       checksUsed: Math.min(parsed.data.checksUsed ?? 0, checksAllowed ?? Number.MAX_SAFE_INTEGER),
       hintsAllowed: headStart || (parsed.data.hintsAllowed ?? false),

@@ -15,8 +15,9 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { clockText } from "@/lib/puzzles/clockText";
 import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
-import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { isPuzzleClock } from "@/lib/puzzles/puzzleClock";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
 import { FUTAGO_DISPLAY, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
@@ -77,8 +78,11 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const copy = PUZZLE_DISPLAY[kind];
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
-  const outcome = solve.solved ? (words ? "Found" : "Solved") : "Not found";
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, found.answer);
+  /* Unsolved on a countdown with guesses (or swaps) to spare, or a grid, which has no other way to end unsolved: its clock ran out. */
+  const outOfTime = !solve.solved && solve.clock !== "none" && (taken === null || taken.used < taken.allowed);
+  const outcome = solve.solved ? (words ? "Found" : "Solved") : outOfTime ? "Out of time" : "Not found";
+  const timed = PUZZLE_CLOCK_DISPLAY[solve.clock as PuzzleClock] ?? PUZZLE_CLOCK_DISPLAY.none;
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,
     hintsWords(kind, solve.level, solve.hintsUsed),
@@ -92,6 +96,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size) : "Kept back until tomorrow", testId: "solve-word" }] : []),
     { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
+    ...(timed.ms === null ? [] : [{ label: "Clock", value: `${timed.label} ${timed.kanji}, ${timed.time}`, testId: "solve-clock" }]),
     // A word's guesses, out of the level's allowance: the other half of how it went.
     ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
     { label: "Points", value: String(solve.points), testId: "solve-points" },
@@ -178,8 +183,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
               All their {copy.label}
             </Link>
           )}
-          <Link href={puzzleRecordHref(kind, { size: solve.size, level: solve.level as PuzzleLevel, sort: PUZZLE_RECORD_SORTS.fastest })} className="underline underline-offset-2" data-testid="solve-fastest-here">
-            Fastest at this size
+          <Link href={puzzleRecordHref(kind, { size: solve.size, level: solve.level as PuzzleLevel, clock: isPuzzleClock(solve.clock) ? solve.clock : null, sort: PUZZLE_RECORD_SORTS.fastest })} className="underline underline-offset-2" data-testid="solve-fastest-here">
+            Fastest at this size{timed.ms === null ? "" : ` on the ${timed.label}`}
           </Link>
           <Link href={myGamePath(kind)} className="underline underline-offset-2">
             All your {copy.label}

@@ -29,13 +29,14 @@ import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { freshSeed } from "@/lib/puzzles/random";
 import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor, sizesOffered } from "@/lib/puzzles/puzzles.constants";
-import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
 import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
+import { PuzzleClockChips } from "./PuzzleClockChips";
 import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
 import { useKumimojiChoice } from "./useKumimojiChoice";
@@ -101,6 +102,8 @@ export function PuzzleSetUp({
   const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
   // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
   const [twins, setTwins] = useState(asked?.twins ?? false);
+  // The countdown (`PuzzleClockChips`), none unless chosen; like Strict, not carried into a race.
+  const [clock, setClock] = useState<PuzzleClock>(asked?.clock ?? "none");
   const kumimoji = useKumimojiChoice(asked, size, kind === "kumimoji");
   const { language, gameLength, doubleSet, diagonals, players } = kumimoji;
   /*
@@ -114,7 +117,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, diagonals, players });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, diagonals, players, clock });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -335,6 +338,7 @@ export function PuzzleSetUp({
         </div>
           </>
         )}
+        <PuzzleClockChips kind={kind} chosen={clock} onChoose={setClock} />
       </SetUpSection>
 
       {/*
@@ -352,7 +356,7 @@ export function PuzzleSetUp({
         <SetUpResume href={resumeHref} />
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, diagonals, players })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, diagonals, players, clock })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

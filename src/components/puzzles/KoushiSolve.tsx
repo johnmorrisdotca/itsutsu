@@ -72,7 +72,7 @@ export function KoushiSolve({
   const grid = useMemo(() => replay(asked.scramble, swaps), [asked, swaps]);
   const marks = useMemo(() => markLattice(grid, asked.solution), [grid, asked]);
   const [chosen, setChosen] = useState<number | null>(null);
-  const { elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodePlay(grid, swaps), resumed });
+  const { elapsedMs, done, begin, finish, runOut, pausing, clock } = useSolve(puzzle, hasAccount, race, null, { progress: encodePlay(grid, swaps), resumed });
   const closed = done !== null || pausing.paused;
   const left = allowed - swaps.length;
 
@@ -135,8 +135,8 @@ export function KoushiSolve({
         </>
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="koushi-out">
-          <p className="text-base">
-            Out of swaps. The words were{" "}
+          <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+            {done.outOfTime ? "Out of time" : "Out of swaps"}. The words were{" "}
             <strong className="uppercase tracking-wide" data-testid="koushi-words">
               {words.join(" · ")}
             </strong>
@@ -153,7 +153,7 @@ export function KoushiSolve({
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
-            <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="koushi-another">
+            <Link href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, clock })}`} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="koushi-another">
               Another lattice →
             </Link>
             <PuzzleWayBack kind={kind} />
