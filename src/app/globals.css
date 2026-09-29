@@ -354,9 +354,20 @@ html[data-bare="true"] [data-strippable] [data-testid="review-banner"][data-revi
  * allows, room kept for its controls, centred in the modal's panel.
  */
 [data-board-focus="open"] [data-focus-board] {
-  width: min(100%, calc(100dvh - 11rem));
+  width: min(100%, calc(100dvh - 18rem));
   max-width: none;
   margin-inline: auto;
+}
+/*
+ * The room above is the header line and the window's padding; below it, a
+ * finished puzzle's scrubber and its note. 11rem left none for them, so a
+ * square board on a desk ran past the window's foot — John, 2026-09-29, on a
+ * finished Solitaire: "is so big we see scrollbars in desktop". The window
+ * is as narrow as the board it holds, as a played game's review is.
+ */
+[data-board-focus="open"] > [role="dialog"]:has([data-focus-board]) {
+  width: min(100%, calc(100dvh - 18rem + 2.5rem));
+  max-width: 100%;
 }
 /* A live game's board has whose turn it is and the turn button above it in the same box, so it leaves them room. */
 [data-board-focus="open"] [data-bare-board]:not([data-bare-only]):not([data-focus-board]) {

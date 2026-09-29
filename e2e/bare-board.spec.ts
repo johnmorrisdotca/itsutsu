@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { mySolvePath } from "../src/lib/gomoku/slugs";
+import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { freshPuzzleSeed, playSequence, ready, winningSequence } from "./support";
 
 /**
@@ -176,6 +178,33 @@ test.describe("just the board", () => {
       await expect(page.getByRole("button", { name: "Back" })).toHaveText("‹");
     });
   }
+
+  /*
+   * A finished puzzle opened on its own (⤢) fits the window. John,
+   * 2026-09-29, on a finished Solitaire at a desk: "is so big we see
+   * scrollbars in desktop". Its square board took the window's width and ran
+   * past the bottom; the whole window must fit with nothing to scroll.
+   */
+  test("a finished puzzle opened on its own fits a desk's window with nothing to scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const seed = freshPuzzleSeed();
+    const puzzle = generatePuzzle("numberPlace", 9, "easy", seed);
+    const handed = await page.request.post("/api/puzzles/solved", {
+      data: { kind: "numberPlace", size: 9, level: "easy", seed, givens: puzzle.givens, answer: puzzle.solution, elapsedMs: 61_000 },
+    });
+    expect(handed.ok(), await handed.text()).toBe(true);
+    const { solveId } = (await handed.json()) as { solveId: string };
+    await page.goto(mySolvePath("numberPlace", solveId));
+    await ready(page, "solve-board");
+    const box = page.getByTestId("board-focus").first();
+    await box.hover();
+    await box.getByTestId("board-focus-toggle").click();
+    const window = page.locator('[data-board-focus="open"]');
+    await expect(window).toBeVisible();
+    await expect.poll(() => window.evaluate((element) => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
+    await page.keyboard.press("Escape");
+    await expect(page.locator('[data-board-focus="open"]')).toHaveCount(0);
+  });
 
   test("is not offered on a page with nothing to strip", async ({ page }) => {
     // The wide pages are the ones with a board or a table and a sidebar.
