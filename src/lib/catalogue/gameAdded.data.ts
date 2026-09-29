@@ -56,6 +56,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   numberPlace: "2026-09-24",
   obstacleFive: "2026-09-07",
   omok: "2026-09-07",
+  pictureLogic: "2026-09-29",
   poolCheckers: "2026-09-14",
   renju: "2026-09-07",
   reversi: "2026-09-07",

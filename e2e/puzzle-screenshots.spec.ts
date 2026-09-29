@@ -15,6 +15,7 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
+import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
 import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
@@ -73,6 +74,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "koushi", size: 5, level: "medium", seed: 20260926, fill: 4 },
   // A 9×9 Bridges with every other bridge of its answer laid: ringed islands, singles and doubles, and the full ones filled.
   { kind: "bridges", size: 9, level: "medium", seed: 20260928, fill: 2 },
+  // A 10×10 Picture logic with every other row of its picture shaded and a ✕ or two: the clue panels, some struck through, and the picture half out.
+  { kind: "pictureLogic", size: 10, level: "medium", seed: 20260929, fill: 2 },
 ];
 
 /**
@@ -265,6 +268,21 @@ test.describe("puzzle screenshots", () => {
           for (let bridge = 0; bridge < count; bridge += 1) {
             await islands.nth(board.spans[span]!.a).click();
             await islands.nth(board.spans[span]!.b).click();
+          }
+          filled += 1;
+        }
+      } else if (scene.kind === "pictureLogic") {
+        // Every other row of the picture shaded, a tap a square, and the first empty square of each such row marked ✕ (two taps).
+        const picture = decodePicture(puzzle.solution, scene.size)!;
+        const squares = page.getByTestId("picture-cell");
+        for (let row = 0; row < scene.size; row += scene.fill) {
+          const empty = picture.slice(row * scene.size, (row + 1) * scene.size).indexOf(false);
+          for (let col = 0; col < scene.size; col += 1) {
+            if (picture[row * scene.size + col]) await squares.nth(row * scene.size + col).click();
+          }
+          if (empty !== -1) {
+            await squares.nth(row * scene.size + empty).click();
+            await squares.nth(row * scene.size + empty).click();
           }
           filled += 1;
         }

@@ -1,6 +1,8 @@
 import { decodeBlackAndWhite } from "./blackAndWhite/code";
 import { boardOf, decodeBridges } from "./bridges/code";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
+import { decodeCells as decodePictureCells, decodePicture } from "./pictureLogic/code";
+import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { readNumberGivens, type NumberGivens } from "./numberGivens";
 import { decodeCells } from "./puzzleCode";
 import { decodeBlackAndWhiteProgress, decodeNumberProgress, decodeStoneProgress, type StoneMarkCode } from "./puzzleProgress";
@@ -17,7 +19,8 @@ export type Frame =
   | { kind: "numbers"; asked: NumberGivens; cells: number[] }
   | { kind: "stones"; regions: number[]; cells: StoneMarkCode[] }
   | { kind: "blackAndWhite"; printed: number[]; cells: number[] }
-  | { kind: "bridges"; givens: string; cells: string[] };
+  | { kind: "bridges"; givens: string; cells: string[] }
+  | { kind: "pictureLogic"; givens: string; cells: CellState[] };
 
 export type FinishedFrames = {
   /** The grid as dealt, and as it ended where the answer reads: what a page draws with no steps. */
@@ -71,6 +74,15 @@ export function finishedFrames(kind: PuzzleKind, size: number, givens: string, a
     const finished = solved === null ? null : frame(solved);
     const kept = readSteps(steps, cells, drawing);
     return assemble(frame([...givens]), finished, kept?.map(frame) ?? null, () => finished);
+  }
+
+  if (kind === "pictureLogic") {
+    // The player's grid, a character a cell; the answer drawn as the clean picture, shaded and nothing else.
+    const frame = (states: CellState[]): Frame => ({ kind: "pictureLogic", givens, cells: states });
+    const picture = answer === null ? null : decodePicture(answer, size);
+    const finished = picture === null ? null : frame(picture.map((shaded): CellState => (shaded ? 1 : 0)));
+    const kept = readSteps(steps, cells, (code) => decodePictureCells(code, size));
+    return assemble(frame(new Array<CellState>(cells).fill(0)), finished, kept?.map(frame) ?? null, () => finished);
   }
 
   const asked = readNumberGivens(kind, givens, size);

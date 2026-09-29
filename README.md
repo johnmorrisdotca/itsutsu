@@ -89,7 +89,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Territory and races | 4 |
 | Small boards | 6 |
 | Numbers | 3 |
-| Logic puzzles | 1 |
+| Logic puzzles | 2 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -130,7 +130,7 @@ same gates: `puzzles.coverage.test.ts` asks a puzzle what
 
 Everything that thinks runs in the browser. The generators, the uniqueness
 checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`,
-`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`, `bridges/`; Hidden
+`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`, `bridges/`, `pictureLogic/`; Hidden
 Stones grows its regions out from a placed answer and then tightens the grid
 until the solver counts one; Futoshiki adds givens until it is a puzzle and then takes away every one it does not need), seeded
 so the same number makes the same grid in every browser,
@@ -167,6 +167,17 @@ yields to counting, medium needs the joining rule (no group of islands may be
 closed off), hard needs a bridge tried. The answer and a run kept half way are
 one drawing, a character a cell (`- = | H` for the bridges), which the server
 checks in O(cells) without the solver (`bridges/check.ts`).
+
+The second is **Picture logic** 絵解き (`src/lib/puzzles/pictureLogic/`), our
+version of the grid picture puzzle known in English as the nonogram, under a
+name of our own (several of its names are trademarks). A picture is drawn
+from a seed out of whole shapes — a mirrored figure, hills under a sun, or a
+heaped cloud — and its row and column clues are kept only when a solver that
+never guesses finishes them, which proves the picture is the one answer; easy
+yields to sliding each line's runs to its ends, medium needs a whole line read
+at once, hard needs one square tried and followed. 5×5, 10×10, 15×15 and
+20×20; the givens are the two panels of clues and the answer is the picture,
+checked in O(cells) against the clues (`pictureLogic/check.ts`).
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
