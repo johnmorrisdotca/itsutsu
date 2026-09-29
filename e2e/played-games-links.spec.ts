@@ -158,7 +158,8 @@ test("a puzzle's standings lead to each solve, to the solves a score was made of
     // A size and level on the fastest board opens every solve at it, fastest first.
     await page.goto(`/games/${SLUG}/standings`);
     await page.locator(`[data-testid="puzzle-fastest-row"][data-size="${OWN_SIZE}"][data-level="easy"] [data-testid="puzzle-fastest-every"]`).click();
-    await expect(page).toHaveURL(new RegExp(`size=${OWN_SIZE}&level=easy&sort=fastest`));
+    // The untimed table's row leads to untimed solves only: `clock=none` is part of what it counted.
+    await expect(page).toHaveURL(new RegExp(`size=${OWN_SIZE}&level=easy&clock=none&sort=fastest`));
     await expect(page.locator('[data-testid="record-narrowing"][data-narrowing="sort"]')).toContainText("fastest first");
     await expect(page.locator('[data-testid="record-narrowing"][data-narrowing="size"]')).toBeVisible();
 

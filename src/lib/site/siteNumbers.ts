@@ -6,6 +6,7 @@ import { computerSeatIds } from "@/lib/history/gameHistory";
 import { buildGameWhere, toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { prisma } from "@/lib/prisma";
 import { RECENCY_MINUTES } from "@/lib/social/presence";
+import { reliefAllowed } from "@/lib/suiteServer";
 
 /**
  * THREE NUMBERS ON THE FRONT PAGE, the way Pente.org prints them — players,
@@ -28,9 +29,9 @@ import { RECENCY_MINUTES } from "@/lib/social/presence";
  * production database is billed for every minute it is awake and sleeps after
  * five idle ones, so a visit every few minutes woke it round the clock
  * (September 2026). Two minutes everywhere else, where the suite counts what
- * it has just made.
+ * it has just made — its own production build included (`reliefAllowed`).
  */
-export const SITE_NUMBERS_SECONDS = process.env.NODE_ENV === "production" ? 3600 : 120;
+export const SITE_NUMBERS_SECONDS = reliefAllowed() ? 120 : 3600;
 
 export type SiteNumbers = { players: number; games: number; hereNow: number };
 

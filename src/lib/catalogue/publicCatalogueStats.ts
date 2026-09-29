@@ -2,6 +2,8 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import { reliefAllowed } from "@/lib/suiteServer";
+
 import { forReader } from "./catalogueReader";
 import { fetchCatalogueStats } from "./catalogueStats";
 import type { CatalogueStats } from "./catalogue.types";
@@ -25,9 +27,13 @@ import type { CatalogueStats } from "./catalogue.types";
  * to tell somebody deciding whether to join, and "last played today" is decided
  * by the calendar day.
  *
- * NOT OUTSIDE PRODUCTION. The browser suite seeds a finished game and reads
- * /games as a stranger in the same minute (`e2e/games-stats.spec.ts`); a kept
- * answer there would be a test about the cache. A failed read is never kept.
+ * NOT OUTSIDE PRODUCTION, AND NOT ON THE SUITE'S OWN BUILD. The browser suite
+ * seeds a finished game and reads /games as a stranger in the same minute
+ * (`e2e/games-stats.spec.ts`); a kept answer there would be a test about the
+ * cache. The suite runs against a production build, so "production" alone kept
+ * one there (0.420.1's first deploy run went red on it): `reliefAllowed` is
+ * the one answer to "is this the live site?" (never on Vercel). A failed read
+ * is never kept.
  */
 export const STRANGER_STATS_SECONDS = 3600;
 
@@ -38,5 +44,5 @@ async function readForStranger(): Promise<CatalogueStats> {
 const kept = unstable_cache(readForStranger, ["catalogue-stats-stranger"], { revalidate: STRANGER_STATS_SECONDS });
 
 export async function strangerCatalogueStats(): Promise<CatalogueStats> {
-  return process.env.NODE_ENV === "production" ? kept() : readForStranger();
+  return reliefAllowed() ? readForStranger() : kept();
 }
