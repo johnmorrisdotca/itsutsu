@@ -270,7 +270,7 @@ export function BoardScale({
             </label>
           ))}
         </fieldset>
-        <BareBoard />
+        <BareBoard compact />
       </div>
       {children}
     </div>

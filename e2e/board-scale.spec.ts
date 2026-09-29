@@ -1,6 +1,7 @@
 import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
 
-import { memberContext, removeMember } from "./members";
+import { memberContext, memberIdFor, removeMember } from "./members";
+import { removeTables } from "./tables";
 import { freshPuzzleSeed, matchIdIn, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
@@ -127,6 +128,25 @@ const BOARDS: Board[] = [
     controls: (page) => page.getByTestId("dots-turn"),
   },
   {
+    name: "a Bridges puzzle",
+    open: async (page) => {
+      await page.goto(`/games/bridges/play?size=7&level=easy&seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+    },
+    square: (page) => page.getByTestId("puzzle-play").getByTestId("board-surface").first(),
+    controls: (page) => page.getByTestId("puzzle-check"),
+  },
+  {
+    name: "a Mancala table",
+    open: async (page) => {
+      await page.goto("/games/mancala/pass-and-play");
+      await page.getByTestId("mancala-start").click();
+      await expect(page.getByTestId("mancala-turn")).toBeVisible();
+    },
+    square: (page) => page.locator("[data-scale-board]").getByTestId("board-surface").first(),
+    controls: (page) => page.getByTestId("mancala-turn"),
+  },
+  {
     name: "a gomoku practice board",
     open: async (page) => {
       await page.goto("/games/gomoku/play");
@@ -203,6 +223,83 @@ test.describe("a number puzzle's digits", () => {
     } finally {
       await context.close();
       await removeMember(email);
+    }
+  });
+});
+
+test.describe("Gomoji's letters", () => {
+  test("are sized from their squares, so they grow at Large and Full and shrink back", async ({ browser, baseURL }) => {
+    const { context, page, email } = await freshMember(browser, baseURL!, WIDE);
+    try {
+      await BOARDS[1]!.open(page);
+      await ready(page, "board-scaling");
+      await page.keyboard.type("a");
+      const typed = page.locator('[data-testid="word-tile"][data-mark="typed"]').first();
+      await expect(typed).toContainText(/a/i);
+      // The element the letter is drawn in, wherever the style puts it.
+      const size = () =>
+        typed.evaluate((tile) => {
+          const drawn = [tile, ...tile.querySelectorAll("*")].find((node) => node.children.length === 0 && /^a$/i.test(node.textContent?.trim() ?? ""));
+          return parseFloat(getComputedStyle(drawn ?? tile).fontSize);
+        });
+      const regular = await size();
+      await choose(page, "large");
+      const large = await size();
+      expect(large, "a letter stayed its size in a bigger square").toBeGreaterThan(regular * 1.15);
+      await choose(page, "full");
+      expect(await size()).toBeGreaterThan(large);
+      await choose(page, "regular");
+      expect(Math.abs((await size()) - regular)).toBeLessThan(0.5);
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+});
+
+test.describe("a table played online", () => {
+  const made: string[] = [];
+  test.afterAll(async () => {
+    await removeTables(made);
+  });
+
+  test("grows at Large and Full with whose turn it is on the screen, and opens and leaves just the board", async ({ browser, baseURL }) => {
+    const stamp = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
+    const guest = { email: `board-scale-guest-${stamp}@example.test`, name: `Guest-${stamp}` };
+    const { context, page, email } = await freshMember(browser, baseURL!, WIDE);
+    const other = await memberContext(browser, baseURL!, guest, { viewport: WIDE });
+    try {
+      const guestId = await memberIdFor(guest.email);
+      expect((await context.request.post("/api/buddies", { data: { memberId: guestId } })).status()).toBeLessThan(300);
+      await page.goto("/games/dots-and-boxes/pass-and-play");
+      await ready(page, "dots-set-up");
+      await page.getByTestId("online-where-several").click();
+      await page.locator('[data-testid="online-seat-choice"][data-seat="1"]').selectOption(`buddy:${guestId}`);
+      await page.getByTestId("dots-start").click();
+      await expect(page).toHaveURL(/\/games\/dots-and-boxes\/tables\/[a-z0-9]{4}-[a-z0-9]{4}$/);
+      made.push(new URL(page.url()).pathname.split("/").at(-1)!);
+      await ready(page, "online-table");
+      await ready(page, "board-scaling");
+      const surface = () => page.getByTestId("online-table").getByTestId("board-surface");
+      const regular = await widthOf(surface());
+      await choose(page, "large");
+      expect(await widthOf(surface())).toBeGreaterThan(regular * 1.04);
+      await choose(page, "full");
+      expect(await widthOf(surface())).toBeGreaterThan(regular * 1.08);
+      await onScreen(page, page.getByTestId("online-status"), "whose turn it is at the online table, at Full");
+      await choose(page, "regular");
+
+      await page.getByTestId("bare-board-toggle").click();
+      await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+      await expect(page.getByTestId("online-status")).toBeVisible();
+      await expect(page.getByTestId("dots-board")).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
+    } finally {
+      await other.close();
+      await context.close();
+      await removeMember(email);
+      await removeMember(guest.email);
     }
   });
 });

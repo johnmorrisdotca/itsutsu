@@ -15,8 +15,8 @@ import { PUZZLE_CAGE_SUM, PUZZLE_MARK_RIGHT, PUZZLE_TOWER_CLUE, puzzleCellText }
  *
  * - every file that lays out a play — the practice and hot-seat board
  *   (`GameViewClient`), a live game (`SharedGame`), a puzzle's solve and a
- *   race's seat (`PuzzlePlayClient`), a pass-and-play table — wraps it in
- *   `BoardScaled`;
+ *   race's seat (`PuzzlePlayClient`), a pass-and-play table, a table played
+ *   online (`OnlineTable`) — wraps it in `BoardScaled`;
  * - every play marks the column its board is drawn in (`data-scale-board`),
  *   so the size has something to grow: each party table's own component, the
  *   puzzles' shared `SolvePaused`, the practice board's column, the live
@@ -41,7 +41,7 @@ function filesUnder(dir: string): string[] {
 const FILES = ROOTS.flatMap(filesUnder).map((path) => ({ path, text: readFileSync(path, "utf8") }));
 
 /** A play being laid out on a page: the component that plays each kind of board. */
-const PLAY_SURFACE = /<(GameViewClient|PuzzlePlayClient|SharedGame)\b|<Game appearance=/;
+const PLAY_SURFACE = /<(GameViewClient|PuzzlePlayClient|SharedGame|OnlineTable)\b|<Game appearance=/;
 
 /**
  * BOARDS DRAWN TO BE READ, NOT PLAYED, and so offered no size. Each is a file
@@ -56,6 +56,16 @@ const NOT_A_PLAY: Record<string, string> = {
   "src/components/puzzles/PuzzleSolvePage.tsx": "a finished puzzle's record: the grid as it was handed in, not played",
   "src/components/live/PuzzleBoardPreview.tsx":
     "the set-up screen's preview, in the one fixed box (SET_UP_PREVIEW_BOX) so nothing on that screen changes height",
+};
+
+/**
+ * A PLAY WITH NO BOARD TO SIZE. Its page still wraps it in `BoardScaled`, so
+ * it has Just the board beside where the size would be, and the sizes are not
+ * drawn: there is no board column for them to grow (globals.css).
+ */
+const NO_BOARD_TO_SIZE: Record<string, string> = {
+  [join("src", "components", "party", "GhostGame.tsx")]:
+    "Superghost is a word being spelt and the keys it is spelt with, at a reading size: no board, no squares to grow",
 };
 
 describe("every board a person plays on offers Regular, Large and Full", () => {
@@ -73,8 +83,10 @@ describe("every board a person plays on offers Regular, Large and Full", () => {
   it("marks the column every party table draws its board in", () => {
     const tables = FILES.filter(({ path }) => path.startsWith(join("src", "components", "party")) && path.endsWith("Game.tsx"));
     expect(tables.length).toBeGreaterThan(3);
-    // A table that hands its game to the race table's component is marked there.
-    const unmarked = tables.filter(({ text }) => !text.includes("data-scale-board") && !text.includes("<PartyRaceGame")).map(({ path }) => path);
+    // A table that hands its game to the race table's component is marked there; one with no board says why.
+    const unmarked = tables
+      .filter(({ path, text }) => !text.includes("data-scale-board") && !text.includes("<PartyRaceGame") && !Object.hasOwn(NO_BOARD_TO_SIZE, path))
+      .map(({ path }) => path);
     expect(unmarked, "a party table whose board the size chooser cannot find: put data-scale-board on its board's column, and data-scale-desk on the table").toEqual([]);
   });
 
@@ -89,8 +101,8 @@ describe("every board a person plays on offers Regular, Large and Full", () => {
     expect(party).toContain("data-scale-board data-scale-stack");
   });
 
-  it("marks the practice board's column and the live board's column", () => {
-    for (const file of ["src/components/game/GameView.tsx", "src/components/live/BoardColumn.tsx"]) {
+  it("marks the practice board's column, the live board's column and an online table's", () => {
+    for (const file of ["src/components/game/GameView.tsx", "src/components/live/BoardColumn.tsx", "src/components/party/online/OnlineTable.tsx"]) {
       expect(readFileSync(file, "utf8"), file).toContain("data-scale-board");
     }
   });
@@ -120,7 +132,7 @@ describe("every board a person plays on offers Regular, Large and Full", () => {
 describe("every board a person plays on offers just the board", () => {
   it("draws the switch beside the size, once, on every play", () => {
     const scale = readFileSync("src/components/board/BoardScale.tsx", "utf8");
-    expect(scale, "the size chooser no longer draws Just the board beside it").toContain("<BareBoard />");
+    expect(scale, "the size chooser no longer draws Just the board beside it").toContain("<BareBoard compact />");
     const page = readFileSync("src/components/layout/Page.tsx", "utf8");
     expect(page, "a play page would draw a second switch at its foot").toContain("board === true ? <BareBoard />");
   });

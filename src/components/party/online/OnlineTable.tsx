@@ -89,6 +89,8 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
   return (
     <section
       className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="online-table"
       data-game={view.game}
       data-state={view.status}
@@ -99,7 +101,8 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       data-poll-hurrying={hurrying ? "true" : undefined}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      {/* The board's column, for the size chooser and for just the board. */}
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <StatusLine view={view} sending={sending} />
         {game === null ? null : <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />}
         {problem !== null ? (

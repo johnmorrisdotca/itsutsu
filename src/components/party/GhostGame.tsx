@@ -79,7 +79,13 @@ export function GhostGame({ gameHref }: PartyTableGameProps) {
       data-words={words}
       {...readyMark(hydrated && words === "ready")}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      {/*
+        No board to size: a word being spelt and the keys it is spelt with,
+        drawn at a reading size, so the board size chooser offers nothing here
+        (the column is not marked as a board's). Just the board keeps the column — whose turn,
+        the word, the keys — and loses who is at the table.
+      */}
+      <div className="flex min-w-0 flex-col gap-3" data-bare-board>
         {/* The turn line and the letters: what the whole table watches, and the game's picture (`party-screenshots.spec.ts`). */}
         <div className="flex flex-col gap-3" data-testid="ghost-stage">
           <GhostTurnLine game={game} judge={judge} />

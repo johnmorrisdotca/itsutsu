@@ -242,6 +242,17 @@ const PLAYS = [
     // Whose turn it is, and the board; who is at the table is side matter.
     stays: ["dots-turn", "dots-board"],
   },
+  {
+    name: "Superghost",
+    open: async (page: import("@playwright/test").Page) => {
+      await page.goto("/games/superghost/pass-and-play");
+      await ready(page, "ghost-set-up");
+      await page.getByTestId("ghost-start").click();
+      await ready(page, "ghost-game");
+    },
+    // Whose turn and the word being spelt, and the keys it is spelt with; a word game has no board to size.
+    stays: ["ghost-stage", "ghost-turn-keys"],
+  },
 ];
 
 for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {

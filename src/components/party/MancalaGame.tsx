@@ -64,6 +64,8 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="mancala-game"
       data-state={game.status}
       data-rules={game.ruleSet}
@@ -71,7 +73,7 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
       data-sowing={shown.sowing ? "true" : undefined}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <MancalaTurnLine game={game} sowing={shown.sowing} />
         <MancalaBoard game={game} appearance={appearance} holes={shown.holes} landing={shown.landing} onPit={onPit} />
         {game.status === MANCALA_STATUS.playing ? (
