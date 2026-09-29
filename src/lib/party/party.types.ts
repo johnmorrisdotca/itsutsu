@@ -59,16 +59,6 @@ export type PartySpec = {
   languages?: readonly PartyLanguage[];
 };
 
-/** Its sizes as words, after "on": "3×3, 4×4, 5×5 and 6×6 boxes". */
-  sizes: (sizes: readonly number[]) => string;
-  /** What the rules page's Board says before them: "Boards:", or "Played on". */
-  sizesLead: string;
-  /** How its table is played, the last line of the rules page's Play. */
-  table: string;
-  /** The rules page's House: what does and does not count. */
-  house: readonly string[];
-};
-
 /**
  * WHAT EVERY PARTY GAME'S RULES ANSWER, whatever the game: enough for the New
  * Game Gate (`party.coverage.test.ts`) to play any of them out at every table
