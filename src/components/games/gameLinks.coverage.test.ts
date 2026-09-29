@@ -541,6 +541,8 @@ const POINTS_EXCEPTIONS: Record<string, string> = {
   "src/components/puzzles/PuzzleRecordPage.tsx": "the sum of the page the reader is on, its counted rows marked",
   // An XP award in the reader's own ledger of XP: experience, not a score of games or solves, and the row is the award.
   "src/components/mine/MyXp.tsx": "an XP award in the XP ledger itself, not a score of games",
+  // A pair's worth at a Mahjong table round one device: the table's own score, kept in this browser and recorded nowhere, so there is nothing to open.
+  "src/components/puzzles/MahjongTableGame.tsx": "a pair's worth at a pass-and-play table, a score the site never records",
 };
 
 function figuresIn(source: string, pattern: RegExp): number[] {

@@ -16,9 +16,10 @@ import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
 import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
-import { decodeMoves, replay } from "../src/lib/puzzles/solitaire/code";
+import { decodeMoves as decodeSolitaireMoves, replay } from "../src/lib/puzzles/solitaire/code";
 import { solitaireRules } from "../src/lib/puzzles/solitaire/generate";
 import { carriedFrom, columnAt, isColumnPile } from "../src/lib/puzzles/solitaire/klondike";
+import { decodeMoves } from "../src/lib/puzzles/mahjong/moves";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
 import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
@@ -82,6 +83,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   // A Solitaire turning one card, the first thirty moves of its winning line played: runs down the columns, the
   // foundations begun, the stock and the waste, and the Itsutsu backs on the cards still face down.
   { kind: "solitaire", size: 1, level: "easy", seed: 20260929, fill: 30 },
+  // The classic Turtle with its first eight pairs taken, as a person takes them: a tile, then its match. Free tiles lit.
+  { kind: "mahjong", size: 15, level: "medium", seed: 20260929, fill: 8 },
 ];
 
 /**
@@ -142,7 +145,7 @@ test.describe("puzzle screenshots", () => {
         // The first moves of the winning line, each tapped as a person plays it: the stock, or a card and where it goes.
         const rules = solitaireRules(scene.size, scene.level);
         const pile = (id: string) => page.locator(`[data-card-pile="${id}"][role="group"] > button`);
-        for (const move of decodeMoves(puzzle.solution)!.slice(0, scene.fill)) {
+        for (const move of decodeSolitaireMoves(puzzle.solution)!.slice(0, scene.fill)) {
           const played = (await page.getByTestId("puzzle-play").getAttribute("data-moves")) ?? "";
           const table = replay(puzzle.givens, rules, played)!.at(-1)!;
           if (move.kind !== "carry") await pile("s").last().click();
@@ -285,6 +288,16 @@ test.describe("puzzle screenshots", () => {
           await page.locator(`[data-testid="koushi-tile"][data-koushi-cell="${b}"]`).click();
           filled += 1;
         }
+      } else if (scene.kind === "mahjong") {
+        const moves = decodeMoves(puzzle.solution, puzzle.givens.length)!;
+        const tiles = page.getByTestId("mahjong-board");
+        for (const move of moves.slice(0, scene.fill)) {
+          if (!("pair" in move)) continue;
+          await tiles.locator(`[data-slot="${move.pair[0]}"]`).click();
+          await tiles.locator(`[data-slot="${move.pair[1]}"]`).click();
+          await expect(tiles.locator(`[data-slot="${move.pair[1]}"]`)).toHaveCount(0);
+          filled += 1;
+        }
       } else if (scene.kind === "bridges") {
         // Every other bridge of the answer, each tapped as a person lays one: an island, then its partner, once a bridge.
         const board = boardOf(puzzle.givens, scene.size)!;
@@ -354,7 +367,7 @@ test.describe("puzzle screenshots", () => {
         if (feltBefore !== null && feltBefore !== "felt-wood") await page.getByTestId(feltBefore).click();
         return;
       }
-      const grid = page.getByTestId("puzzle-grid");
+      const grid = page.getByTestId(scene.kind === "mahjong" ? "mahjong-board-frame" : "puzzle-grid");
       await expect(grid).toBeVisible();
       // The board in its wood and nothing round it, as a game's picture is taken (game-screenshots.spec.ts):
       // the letters and numbers along a played board's edges are for playing it, not for its picture.

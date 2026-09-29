@@ -1,6 +1,7 @@
 import { checkBridges } from "./bridges/check";
 import { checkPictureLogic } from "./pictureLogic/check";
 import { checkSolitaire, checkSolitaireGivenUp } from "./solitaire/check";
+import { checkMahjong } from "./mahjong/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -74,6 +75,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "solitaire":
       // A replay of the moves from the deal: every one allowed, and every card home at the end.
       return checkSolitaire(size, givens, answer, level ?? "easy");
+    case "mahjong":
+      return checkMahjong(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

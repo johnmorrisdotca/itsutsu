@@ -5,7 +5,8 @@ import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 import { solvedAnswerOf } from "./solvedAnswer";
 
-const GRIDS = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].helps !== false) as PuzzleKind[];
+// Not a Mahjong deal, which can be cleared in many orders: a solve of one keeps the order it was cleared in, and its page draws the deal.
+const GRIDS = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].helps !== false && PUZZLE_SPECS[kind].layouts !== true) as PuzzleKind[];
 
 /*
  * An old solve kept no answer, and its page drew the grid as dealt. Every grid

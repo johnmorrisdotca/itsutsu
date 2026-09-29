@@ -36,6 +36,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   pictureLogic: 0.2,
   // Five a card brought home (`cellsFilled`): every won deal is 260 points, so about 100 IP, as a medium solve is.
   solitaire: 0.38,
+  // Five a tile taken (`cellsFilled`): Fuji, the default layout, is 100 tiles, so about 500 points.
+  mahjong: 0.2,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

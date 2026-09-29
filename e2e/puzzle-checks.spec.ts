@@ -15,7 +15,8 @@ import { freshPuzzleSeed, ready } from "./support";
  * Running out takes Check away and leaves the puzzle going.
  */
 // Every puzzle that offers help (`PuzzleSpec.helps`): a Gomoji answers each guess as it is made, and has no Check.
-for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false)) {
+// Not Mahjong (`checks: false`): nothing on its table can be wrong, only not yet taken, so it has no Check or Show; its Hint is driven in `mahjong.spec.ts`.
+for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !== false && PUZZLE_SPECS[each].checks !== false)) {
   test(`${kind}: one check, spent, and then there are none`, async ({ page }) => {
     const size = PUZZLE_SPECS[kind].defaultSize;
     // A grid of its own: this leaves its puzzle unfinished, and an unfinished puzzle is kept.

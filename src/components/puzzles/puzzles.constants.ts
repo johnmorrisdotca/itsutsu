@@ -1,5 +1,6 @@
 import { STONE_SETS } from "@/components/board/Board.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
+import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 
 /*
  * The look of a puzzle: the grid, its cells and the keys under it.
@@ -106,6 +107,8 @@ export function sizeWord(size: number, kind?: PuzzleKind): string {
   if (kind === "koushi") return "6 words";
   // A Solitaire's is how many cards the stock turns at a time.
   if (kind === "solitaire") return `draw ${size}`;
+  // A Mahjong size is a layout, called by its name; its width in tiles is only the number on its picture.
+  if (kind === "mahjong") return PUZZLE_SIZE_NAMES.mahjong[size]?.label ?? `${size} across`;
   return `${size}×${size}`;
 }
 

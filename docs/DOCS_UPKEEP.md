@@ -79,6 +79,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
+| `docs/plans/mahjong/README.md` | agents, engineers | `src/lib/puzzles/mahjong/**`, `src/components/puzzles/Mahjong*.tsx`, `src/components/puzzles/mahjong*.ts`, `src/components/mine/MahjongTableCard.tsx`, `src/lib/puzzles/puzzles.constants.ts` (`mahjong`), `src/lib/gomoku/families.ts` (Mahjong) |
 | `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
 | `docs/plans/cards/README.md` | agents, engineers | `src/lib/cards/**`, `src/components/cards/**`, `src/lib/puzzles/solitaire/**`, `src/components/puzzles/Solitaire*.tsx`, `src/lib/gomoku/families.ts` (the Cards family) |
 | `docs/plans/party-online/README.md` | agents, engineers | `src/lib/party/online/**`, `src/components/party/online/**`, `src/app/api/tables/**`, `src/app/games/[slug]/tables/**`, `prisma/schema.prisma` (`PartyTable`, `PartySeat`, `PartyAction`), `src/components/live/pollCadence.ts`, `src/components/live/live.constants.ts` |

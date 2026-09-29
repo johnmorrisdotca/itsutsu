@@ -6,7 +6,8 @@ import { GAME_SETTINGS, WORD_LANGUAGE_DISPLAY, WORD_LIST_DISPLAY, listedGameOf, 
 
 import { futagoRule } from "./gomoji/futago";
 import { yotsugoRule } from "./gomoji/yotsugo";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
+import { layoutFor } from "./mahjong/layouts";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -45,8 +46,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
   // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
-  // A card game's is how many cards the stock turns (`PuzzleSpec.cards`).
-  const sizes = sizesOffered(kind).map((size) => (spec.tiles === true ? `${size} tiles in hand` : spec.cards === true ? `draw ${size}` : `${size}×${size}`)).join(", ");
+  const sizes = sizesOffered(kind).map((size) => sizeText(kind, size)).join(", ");
   const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];
@@ -56,6 +56,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
       : spec.cards === true
       ? "Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won."
+      : spec.layouts === true
+      ? "Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well."
       : spec.tiles === true
       ? "Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well."
       : "Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none.",
@@ -95,4 +97,16 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     image: gameArtPath(kind),
     ...(settingSections(kind).length === 0 ? {} : { settings: settingSections(kind) }),
   };
+}
+
+/**
+ * A size as a rules page says it: a grid's side, a tile game's hand, a
+ * layout's name and how many tiles it holds (`PuzzleSpec.layouts`), or how
+ * many cards a card game's stock turns (`PuzzleSpec.cards`).
+ */
+function sizeText(kind: PuzzleKind, size: number): string {
+  const spec = PUZZLE_SPECS[kind];
+  if (spec.cards === true) return `draw ${size}`;
+  if (spec.layouts === true) return `${PUZZLE_SIZE_NAMES[kind][size]?.label ?? size} (${layoutFor(size)?.slots.length ?? 0} tiles)`;
+  return spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`;
 }

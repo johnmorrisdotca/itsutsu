@@ -44,6 +44,9 @@ import { generatePictureLogic } from "@/lib/puzzles/pictureLogic/generate";
 import { SolitaireTable } from "@/components/puzzles/SolitaireTable";
 import { dealOfSeed, deckOf } from "@/lib/puzzles/solitaire/code";
 import { dealKlondike, playKlondike } from "@/lib/puzzles/solitaire/klondike";
+import { MahjongBoard, mahjongViewBox } from "@/components/puzzles/MahjongBoard";
+import { useMahjongFree } from "@/components/puzzles/mahjongFree";
+import { generateMahjong } from "@/lib/puzzles/mahjong/generate";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -121,6 +124,8 @@ export function PuzzleBoardPreview({
           <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
         ) : spec.cards === true ? (
           <SolitairePreview draw={size} appearance={appearance} />
+        ) : kind === "mahjong" ? (
+          <MahjongPreview size={size} appearance={appearance} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
@@ -128,7 +133,7 @@ export function PuzzleBoardPreview({
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
-        {spec.cards === true ? SET_UP_COPY.previewCards(PUZZLE_DISPLAY[kind].label) : SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
+        {spec.cards === true ? SET_UP_COPY.previewCards(PUZZLE_DISPLAY[kind].label) : kind === "mahjong" ? SET_UP_COPY.previewMahjong : SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
         {(!onBoard && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">
@@ -248,6 +253,30 @@ function SolitairePreview({ draw, appearance }: { draw: number; appearance: Appe
     return playKlondike(dealt, { kind: "draw" }) ?? dealt;
   }, [draw]);
   return <SolitaireTable table={table} theme={BOARD_THEMES[appearance.boardTheme] ?? BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} readOnly />;
+}
+
+/**
+ * Mahjong before it is dealt: a real deal of this layout from a fixed seed, on
+ * the board the solve draws (`MahjongBoard`), the free tiles lit or not as the
+ * reader has chosen, with nothing to press. Dealt once a layout and kept, since
+ * the Turtle takes a moment to deal.
+ */
+const MAHJONG_PREVIEWS = new Map<number, string>();
+function MahjongPreview({ size, appearance }: { size: number; appearance: Appearance }) {
+  const showFree = useMahjongFree();
+  const box = mahjongViewBox(size);
+  const cells = useMemo(() => {
+    if (!MAHJONG_PREVIEWS.has(size)) MAHJONG_PREVIEWS.set(size, generateMahjong(size, "easy", 7).givens);
+    return MAHJONG_PREVIEWS.get(size)!;
+  }, [size]);
+  return (
+    // A square, whatever the layout's shape, so choosing another layout never moves the page (`e2e/set-up-steady.spec.ts`).
+    <div className="flex aspect-square w-full items-center justify-center" data-testid="mahjong-preview">
+      <div style={{ width: `${Math.min(1, box.width / box.height) * 100}%` }}>
+        <MahjongBoard size={size} cells={cells} theme={BOARD_THEMES[appearance.boardTheme]} showFree={showFree} readOnly />
+      </div>
+    </div>
+  );
 }
 
 /** Koushi's lattice before it is made: 21 blank tiles and four holes, in the board colour chosen under it. Nothing on it can be pressed. */

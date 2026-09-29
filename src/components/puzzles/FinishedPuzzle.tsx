@@ -27,6 +27,7 @@ import { PictureLogicGrid } from "./PictureLogicGrid";
 import { HiddenStonesGrid } from "./HiddenStonesGrid";
 import { KoushiGrid } from "./KoushiGrid";
 import { KumimojiTable } from "./KumimojiTable";
+import { MahjongBoard } from "./MahjongBoard";
 import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { BRIDGES_CELL_WORDS, PICTURE_CELL_WORDS } from "./puzzles.constants";
@@ -140,6 +141,16 @@ export function FinishedPuzzle({
         </Focused>
       );
     }
+  }
+  // A Mahjong deal as it was dealt: its answer is the order it was cleared in, and a cleared table is an empty one.
+  if (kind === "mahjong") {
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state="dealt">
+        <div className="mx-auto w-full" data-focus-board>
+          <MahjongBoard size={size} cells={givens} theme={BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} readOnly />
+        </div>
+      </Focused>
+    );
   }
   if (kind === "kumimoji") {
     const tiles = (answer === null ? null : decodeGrid(answer)) ?? new Map<string, string>();

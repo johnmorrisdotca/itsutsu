@@ -382,8 +382,8 @@ describe("the families a win can complete", () => {
     // of one game would have to move it.
     const winnable = GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null);
     expect(winnable).toHaveLength(GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).length);
-    // Numbers, Logic puzzles, Cards and Other are families of games for one, which are solved and never won as a family; Party games holds only games that are never recorded.
-    expect(winnable.length).toBe(RECORDED_FAMILIES.length - 4);
+    // Numbers, Logic puzzles, Mahjong, Cards and Other are families of games for one, which are solved and never won as a family; Party games holds only games that are never recorded.
+    expect(winnable.length).toBe(RECORDED_FAMILIES.length - 5);
   });
 });
 
@@ -403,8 +403,8 @@ describe("the tour covers the site", () => {
     // Forty-eight since the two rock games, Scattered Rocks and Rockfall, on 2026-09-26.
     expect(XP_VARIANTS_TO_PLAY).toBe(48 + PUZZLE_KIND_LIST.length);
     // Nine since Other opened with Gomoji on 2026-09-25 — the families a game is played from, which Party games, recording nothing, is not.
-    // Ten since Logic puzzles opened with Bridges on 2026-09-28, and eleven since Cards opened with Solitaire on 2026-09-29.
-    expect(RECORDED_FAMILIES.length).toBe(11);
+    // Ten since Logic puzzles opened with Bridges on 2026-09-28, eleven since Mahjong and twelve since Cards on 2026-09-29.
+    expect(RECORDED_FAMILIES.length).toBe(12);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {
