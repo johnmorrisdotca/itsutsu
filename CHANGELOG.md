@@ -10,6 +10,39 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.433.0 — 2026-09-29
+- Pair Go, Kumimoji, Superghost and Mancala can be played on several devices, with a Go program or a Kumimoji computer in a seat
+
+## 0.432.0 — 2026-09-29
+- Gomoji is one game: choose English, French, German or Japanese, and the pop-culture word list, on its set-up
+
+## 0.431.0 — 2026-09-29
+- Every game and puzzle offers Just the board: the board and its few controls, nothing else
+
+## 0.430.0 — 2026-09-29
+- On a wide screen every board can be drawn Regular, Large or Full, and the choice is remembered for that kind of screen
+
+## 0.429.0 — 2026-09-29
+- Tenka 天下: take the world a territory at a time, for two to six round one phone or tablet
+
+## 0.428.0 — 2026-09-29
+- Picture logic 絵解き: shade the squares the clues ask for and a picture appears, from 5×5 to 20×20, every puzzle with one answer
+
+## 0.427.0 — 2026-09-29
+- Dots and Boxes, Chinese Checkers, Halma and Block Five can be played on several devices: invite buddies or send a link to each seat
+
+## 0.426.4 — 2026-09-29
+- On a phone the account menu sits at the top right beside the logo, and New game shares the row with the tabs
+
+## 0.426.3 — 2026-09-29
+- Gomoji gives every word length the same number of rows at each level, and Futago on a phone is one board whose letters fit their squares
+
+## 0.426.2 — 2026-09-29
+- Buttons, labels and the pieces you play with no longer turn blue when you drag across them or press Select All; words you might copy still can be
+
+## 0.426.1 — 2026-09-29
+- Bridges' Check, Show and Hint are tested the way a reader uses them, by laying a bridge
+
 ## 0.426.0 — 2026-09-29
 - Mancala 種まき for two, by Kalah or Oware rules, round one device
 

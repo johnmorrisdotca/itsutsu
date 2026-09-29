@@ -6,12 +6,13 @@
 
 /**
  * THE GAMES THAT CAN BE PLAYED ON SEVERAL DEVICES, by their catalogue key
- * (`GameKey`): Dots and Boxes, and the three tables of the rule variants that
- * the race and the tray share. A game joins by a row in `ONLINE_GAMES` and a
+ * (`GameKey`): Dots and Boxes, the three tables of the rule variants that the
+ * race and the tray share, Go as Pair Go, Kumimoji's pass and play,
+ * Superghost and Mancala. A game joins by a row in `ONLINE_GAMES` and a
  * board in the client's `ONLINE_VIEWS`, both `Record`s over this, so a key
  * added here without either does not compile.
  */
-export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive";
+export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala";
 
 /** Who sits in a seat: a member, nobody yet (its link is out), or a computer. */
 export type OnlineSeatKind = "member" | "open" | "computer";
@@ -34,8 +35,13 @@ export type OnlineRules<S, M> = {
   sizes: readonly number[];
   /** How many players a table may seat. */
   counts: readonly number[];
-  /** A new game at this size for this many, or null for a table the game is not offered for. */
-  start: (size: number, count: number) => S | null;
+  /**
+   * A new game at this size for this many, or null for a table the game is
+   * not offered for. `extra` is what some games need beyond a size and a
+   * count: `setup`, sent by the set-up and checked here (Kumimoji's settings
+   * and the bag its browser dealt), and which seats are computers.
+   */
+  start: (size: number, count: number, extra?: { setup?: unknown; computers?: readonly number[] }) => S | null;
   /** The game as the text it is kept as — the very text a browser keeps it as on one device. */
   encode: (game: S) => string;
   /** The kept text read back, or null for anything these rules cannot play out again. */
@@ -46,6 +52,8 @@ export type OnlineRules<S, M> = {
   winners: (game: S) => readonly number[];
   /** How many moves have been made. */
   moveCount: (game: S) => number;
+  /** The longest a move may be as JSON, where a game's are longer than `ONLINE_MOVE_LONGEST` (a Kumimoji turn carries its table). */
+  moveLongest?: number;
   /** A move as a browser sent it, checked for its shape only, or null. Whether it may be made is `play`'s. */
   readMove: (sent: unknown) => M | null;
   /** The game after the seat to play makes this move, or null when the rules refuse it. */
@@ -57,10 +65,39 @@ export type OnlineRules<S, M> = {
    */
   named: (game: S, names: readonly string[]) => S;
   /**
-   * A computer player's move for this seat, worked out in a browser; absent
-   * for a game with no computer player, which then offers no computer seat.
+   * The game's computer players, where it has any; absent, the game offers no
+   * computer seat. Their moves are worked out in a browser at the table
+   * (`computerDriver`, in a worker), never on the server.
    */
-  computer?: (game: S, seat: number) => M | null;
+  computers?: OnlineComputers<S, M>;
+};
+
+/**
+ * A GAME'S COMPUTER PLAYERS, as a table seats them: which there are, who each
+ * sits as, and the move one makes. A level is the game's own word for which
+ * player — for a game the site's ladder plays, a `BotTier`, and the seat is
+ * then that program's own member row, so its name leads to its page.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- typed by its row's game and move, as `OnlineComputerPlay` beside it is.
+export type OnlineComputers<S, M> = {
+  /** Every computer player a seat may be given, weakest first. */
+  levels: readonly string[];
+  /** Who a computer at this level sits as: the member it plays as, where it is one, and the name the table shows. */
+  seat: (level: string) => { memberId: string | null; name: string };
+  /** The level a computer's seat holds, read back from who sits there; null for a seat that is no computer of this game's. */
+  levelOf: (seat: { memberId: string | null; name: string }) => string | null;
+};
+
+/**
+ * HOW A GAME'S COMPUTER MOVES, for the worker alone (`onlineComputerMoves.ts`):
+ * never imported by a route, so a computer's search and its word lists are
+ * never in a server function's bundle, let alone run there.
+ */
+export type OnlineComputerPlay<S, M> = {
+  /** What must be ready before a computer can move — a word list, loaded — run in the worker first. */
+  prepare?: (game: S) => Promise<void>;
+  /** The computer's move for this seat at this level, or null when it has none to make. */
+  move: (game: S, seat: number, level: string) => M | null;
 };
 
 /** One seat as a page is shown it. */
@@ -108,7 +145,7 @@ export type OnlineTableView = {
 };
 
 /** A seat as the set-up asks for it: the maker's own, a buddy by member id, a link, or a computer. */
-export type OnlineSeatAsk = { kind: "me" } | { kind: "buddy"; memberId: string } | { kind: "link" } | { kind: "computer" };
+export type OnlineSeatAsk = { kind: "me" } | { kind: "buddy"; memberId: string } | { kind: "link" } | { kind: "computer"; level: string };
 
 /** A buddy the set-up can seat by name. */
 export type OnlineBuddy = { id: string; name: string };
@@ -116,7 +153,7 @@ export type OnlineBuddy = { id: string; name: string };
 /**
  * WHAT A GAME'S SET-UP IS OFFERED FOR SEVERAL DEVICES, from the page: which
  * game, the reader's buddies to seat by name, whether they may hand out a link
- * (not a member under 13), and whether the game has a computer player. Absent
+ * (not a member under 13), and the game's computer players. Absent
  * where the game cannot be played on several devices, or for a reader with no
  * account.
  */
@@ -124,5 +161,6 @@ export type OnlineOffer = {
   game: OnlineGameKey;
   buddies: readonly OnlineBuddy[];
   links: boolean;
-  computer: boolean;
+  /** The game's computer players a seat may be given, by level and the name each plays under; empty where it has none. */
+  computers: readonly { level: string; name: string }[];
 };

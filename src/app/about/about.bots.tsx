@@ -51,7 +51,7 @@ const GRADES = (
 );
 
 export const BOTS_SECTION: AboutSection = {
-  title: "The players that are not people",
+  title: "How strong the bots are",
   chapter: ABOUT_CHAPTERS.programs,
   kanji: "棋力",
   paragraphs: [

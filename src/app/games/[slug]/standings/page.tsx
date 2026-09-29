@@ -9,7 +9,8 @@ import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
-import { gamePath, historyPath, playPath, puzzleFor, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PuzzleStandingsPage } from "@/components/puzzles/PuzzleStandingsPage";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
@@ -24,7 +25,7 @@ import { ignoredMemberIds } from "@/lib/social/ignores";
 import { closedToReader } from "@/lib/social/childReach";
 import { GameTrail } from "@/components/games/GameTrail";
 
-export const metadata = { title: "Standings 名人" };
+export const metadata = { title: "Leaderboard 番付" };
 
 // The ladder is read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -41,10 +42,10 @@ const LEADERS = 50;
  * now, one segment under the game's own address, and the panel on the game's
  * front door leads here for the whole of it.
  */
-export default async function GameChampionsPage({ params }: PageProps<"/games/[slug]/standings">) {
+export default async function GameChampionsPage({ params, searchParams }: PageProps<"/games/[slug]/standings">) {
   const { slug } = await params;
-  // A puzzle's standings are its fastest solves, not a ladder: see `PuzzleStandingsPage`.
-  const puzzle = puzzleFor(slug);
+  // A puzzle's standings are its fastest solves, not a ladder: see `PuzzleStandingsPage`. A Gomoji's are one language's.
+  const puzzle = puzzleForAddress(slug, await searchParams);
   if (puzzle !== null) return <PuzzleStandingsPage kind={puzzle} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
@@ -116,12 +117,12 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Standings" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Leaderboard" }]} />}
       >
         <p className="text-sm font-medium">{copy.tagline}</p>
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">record</Link>
+          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">history</Link>
           <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
         </p>
       </PageTitle>

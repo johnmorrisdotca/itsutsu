@@ -41,7 +41,7 @@ test.describe("drops and pieces", () => {
     const tray = page.getByTestId("piece-tray");
     await expect(tray).toBeVisible();
     await expect(tray.getByTestId("next-pieces").getByRole("img")).toHaveCount(3);
-    await expect(page.getByTestId("variant-line")).toContainText("Lay the piece in hand");
+    await expect(page.getByTestId("variant-line")).toContainText("Place the piece in hand");
 
     // A domino laid flat with its corner on H8 covers H8 and J8.
     await page.getByRole("button", { name: /^H8, empty$/ }).click();

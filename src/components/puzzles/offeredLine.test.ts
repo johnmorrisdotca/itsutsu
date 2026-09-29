@@ -41,6 +41,6 @@ describe("the line under a puzzle's description", () => {
     const tsunagi = readFileSync("src/components/puzzles/TsunagiSetUp.tsx", "utf8");
     expect(tsunagi).toContain('sizesOffered("tsunagi")');
     expect(tsunagi).not.toContain("spec.sizes");
-    expect(readFileSync("src/components/puzzles/PuzzleSetUp.tsx", "utf8")).toContain("sizesOffered(kind)");
+    expect(readFileSync("src/components/puzzles/PuzzleBoardAndSizes.tsx", "utf8")).toContain("sizesOffered(kind)");
   });
 });

@@ -5,35 +5,27 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import type { Appearance, Felt } from "@/components/board/board.types";
+import type { Appearance } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
-import { PuzzleBoardPreview } from "@/components/live/PuzzleBoardPreview";
 import { START_PRESS } from "@/components/live/live.constants";
-import {
-  PICK_BOARD_PREVIEW,
-  PICK_BOARD_ROW,
-  PICK_BOARD_ROW_UNDER_FAMILIES,
-  PICK_CHIP_OPEN,
-  PICK_CHIP_SHUT,
-  PICK_WORD_CHIP,
-  SET_UP_OPTIONS_AND_PLAY,
-  SET_UP_PLAY_COLUMN,
-} from "@/components/live/picker.constants";
+import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { PressLabel } from "@/components/ui/PressLabel";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { playPath } from "@/lib/gomoku/slugs";
+import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
+import { GAME_SETTINGS, settingQuery } from "@/lib/catalogue/gameSettings";
+import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
 import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
-import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
-import { BoardPicker } from "@/components/live/BoardPicker";
 import { SetUpSection } from "@/components/live/SetUpSection";
 
+import { PuzzleBoardAndSizes, PuzzleSizes } from "./PuzzleBoardAndSizes";
+import { WordSettingChips } from "./WordSettingChips";
 import { FutagoChips } from "./FutagoChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { PuzzleClockChips } from "./PuzzleClockChips";
@@ -42,7 +34,6 @@ import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
 import { useKumimojiChoice } from "./useKumimojiChoice";
 import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";
-import { sizeWord } from "./puzzles.constants";
 
 
 /**
@@ -63,6 +54,7 @@ export function PuzzleSetUp({
   appearance = DEFAULT_APPEARANCE,
   asked,
   resumeHref = null,
+  onKind,
 }: {
   kind: PuzzleKind;
   /** A race is between two members, so a session with no account is told so rather than offered one. */
@@ -80,13 +72,20 @@ export function PuzzleSetUp({
   asked?: PuzzleAsked;
   /** The reader's puzzle of this kind already going, if any: offered first, above Start (`SetUpResume`). */
   resumeHref?: string | null;
+  /**
+   * A word game's language or word list chosen (`WordSettingChips`): another
+   * kind of the same game. Left out, the game's own set-up opens that
+   * setting's address, keeping what else was chosen.
+   */
+  onKind?: (kind: PuzzleKind) => void;
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
   const spec = PUZZLE_SPECS[kind];
   const copy = PUZZLE_DISPLAY[kind];
   const [ownSize, setOwnSize] = useState(asked?.size ?? spec.defaultSize);
-  const size = sized?.size ?? ownSize;
+  // A size another language had and this one has not (kana stops at five) is this one's usual size, until one it has is chosen.
+  const size = sized?.size ?? (spec.sizes.includes(ownSize) ? ownSize : spec.defaultSize);
   const [chosenLevel, setLevel] = useState<PuzzleLevel>(asked?.level ?? spec.defaultLevel);
   /* The level asked for, unless this size cannot be made at it (a 4×4 Hidden
      Stones is easy only): then the first it can, and the choice comes back
@@ -123,9 +122,17 @@ export function PuzzleSetUp({
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
-    if (window.location.search !== query) window.history.replaceState(window.history.state, "", `${window.location.pathname}${query}`);
-  }, [query]);
+    // A Gomoji's language and list stay in the address beside the rest (`settingQuery`).
+    const here = joinQuery(query, settingQuery(kind));
+    if (window.location.search !== here) window.history.replaceState(window.history.state, "", `${window.location.pathname}${here}`);
+  }, [query, kind]);
   const { style, setStyle } = useWordStyle();
+  /* Another language or list on the game's own set-up: its address, with the size, level and the rest carried over where it has them. */
+  const openSetting = (next: PuzzleKind) => {
+    const nextSpec = PUZZLE_SPECS[next];
+    const carried = puzzleQuery({ size: nextSpec.sizes.includes(size) ? size : nextSpec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(next, level), words: count, clock });
+    router.replace(joinQuery(setUpPath(next), carried), { scroll: false });
+  };
   const [racing, setRacing] = useState<"" | "making" | string>("");
   // The board's colour, chosen under the preview and kept on the account, as on a game's set-up (`useFeltChoice`).
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -190,9 +197,14 @@ export function PuzzleSetUp({
       */}
       <div className={SET_UP_OPTIONS_AND_PLAY}>
       <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
-        <p className="text-xs text-muted" data-testid="puzzle-size-note">
-          {copy.board}
-        </p>
+        {/* A word game's language and word list come first, with a line of their own in place of the board's (`WordSettingChips`). */}
+        {GAME_SETTINGS[kind] === undefined ? (
+          <p className="text-xs text-muted" data-testid="puzzle-size-note">
+            {copy.board}
+          </p>
+        ) : (
+          <WordSettingChips kind={kind} onKind={onKind ?? openSetting} />
+        )}
         {kind === "kumimoji" ? (
           <KumimojiSetUpOptions size={size} hints={hints} setHints={setHints} {...kumimoji} />
         ) : null}
@@ -216,7 +228,7 @@ export function PuzzleSetUp({
           ))}
         </div>
         )}
-        <p className="text-xs text-muted" data-testid="puzzle-level-blurb">
+        <p className={`${spec.wordGrid === undefined ? "" : "min-h-8"} text-xs text-muted`} data-testid="puzzle-level-blurb">
           {levelBlurb(kind, level)}
         </p>
         {/*
@@ -358,7 +370,7 @@ export function PuzzleSetUp({
         <SetUpResume href={resumeHref} />
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock })}`}
+          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock }))}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
@@ -391,94 +403,5 @@ export function PuzzleSetUp({
   );
 }
 
-/**
- * A puzzle's sizes, as the tiles every board size on this site is chosen
- * from: `BoardPicker`, with the big number in the board's own lattice
- * (`BoardSizeMark`), the chosen mark, and a name for what the size is for.
- *
- * John, 2026-09-24, on these tiles as they first shipped — a picture of their
- * own with "4×4" printed under it: "Why does those size boards look different
- * than every other single size board we have ever created." They were drawn by
- * a second component the puzzles brought with them; `boardSizeMark.coverage`
- * now refuses a size picture that is not `BoardSizeMark`. What each size is
- * for is said in the settings below (`PuzzleSetUp`), not under the tiles.
- */
-/**
- * A puzzle's live preview with its sizes beside it: the row a game's board and
- * its boards stand in (`PICK_BOARD_ROW`), on the set-up screen that chooses
- * among every game (`PuzzleHere`, under the families) and on a puzzle's own.
- */
-export function PuzzleBoardAndSizes({
-  kind,
-  size,
-  onSize,
-  level,
-  appearance,
-  onFelt,
-  underFamilies = false,
-  words = 1,
-}: {
-  kind: PuzzleKind;
-  size: number;
-  onSize: (size: number) => void;
-  level?: PuzzleLevel;
-  appearance?: Appearance;
-  onFelt?: (felt: Felt) => void;
-  /** How many words a Gomoji hides: a Futago's preview is two boards (`futago.ts`), a Yotsugo's two boards of two quarters (`yotsugo.ts`). */
-  words?: WordCount;
-  /** Under the row of families, where from a laptop's width the pair joins that row (`PICK_BOARD_ROW_UNDER_FAMILIES`). */
-  underFamilies?: boolean;
-}) {
-  return (
-    <div className={`${PICK_BOARD_ROW} py-2 ${underFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`}>
-      <div className={PICK_BOARD_PREVIEW}>
-        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} wordCount={words} />
-      </div>
-      {/* A puzzle's own page turns its shelves; under the families the row keeps one height, so it shows the first shelf only. */}
-      <PuzzleSizes kind={kind} size={size} onSize={onSize} beside shelves={!underFamilies} />
-    </div>
-  );
-}
-
-/**
- * A PUZZLE'S SIZES, four tiles at a time. A puzzle with more sizes than the
- * four the set-up keeps room for (`shelves`: Pop Gomoji's three to seven
- * letters) shows them a shelf at a time, first to fourth and then last four,
- * with a press to turn between them, as Tsunagi's board of levels does
- * (`TsunagiSetUp`). Where `shelves` is off, the first shelf alone.
- */
-export function PuzzleSizes({
-  kind,
-  size,
-  onSize,
-  beside = false,
-  shelves = false,
-}: {
-  kind: PuzzleKind;
-  size: number;
-  onSize: (size: number) => void;
-  beside?: boolean;
-  shelves?: boolean;
-}) {
-  const spec = PUZZLE_SPECS[kind];
-  const every = sizesOffered(kind);
-  const shelved = shelves && every.length > spec.offered.length;
-  const [second, setSecond] = useState(shelved && !spec.offered.includes(size));
-  const shown = !shelved ? spec.offered : second ? every.slice(every.length - spec.offered.length) : every.slice(0, spec.offered.length);
-  const turn = () => {
-    const next = !second;
-    setSecond(next);
-    const sizes = next ? every.slice(every.length - spec.offered.length) : every.slice(0, spec.offered.length);
-    if (!sizes.includes(size)) onSize(next ? sizes[sizes.length - 1]! : sizes[0]!);
-  };
-  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} />;
-  if (!shelved) return picker;
-  return (
-    <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="puzzle-sizes-shelved">
-      {picker}
-      <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turn} data-testid="puzzle-more-sizes">
-        {second ? `← Shorter, from ${sizeWord(every[0]!, kind)}` : `Longer, to ${sizeWord(every[every.length - 1]!, kind)} →`}
-      </button>
-    </div>
-  );
-}
+// The preview and its sizes live beside this in their own file; kept importable from here for the set-up screen that hosts a puzzle (`PuzzleHere`).
+export { PuzzleBoardAndSizes, PuzzleSizes };

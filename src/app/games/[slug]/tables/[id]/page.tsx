@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -11,7 +12,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
-import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, partyKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { isOnlineGame } from "@/lib/party/online/onlineGames";
 import { tablePath } from "@/lib/party/online/onlinePaths";
 import { readTableView } from "@/lib/party/online/server/tableRead";
@@ -20,7 +21,7 @@ import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
 export const metadata = {
-  title: "At a table",
+  title: "Online table",
   // A table can be reached from a seat link; neither should be indexed.
   robots: { index: false, follow: false },
 };
@@ -43,7 +44,7 @@ function seatNotice(said: string | string[] | undefined, reason: string | string
 export default async function TablePage({ params, searchParams }: PageProps<"/games/[slug]/tables/[id]">) {
   const { slug, id } = await params;
   const asked = await searchParams;
-  const key = partyKindFor(slug) ?? variantFor(slug);
+  const key = partyKindFor(slug) ?? variantFor(slug) ?? puzzleFor(slug);
   if (key === null || !isOnlineGame(key)) notFound();
   const readerId = await currentMemberId();
   const notice = seatNotice(asked.seat, asked.reason);
@@ -69,23 +70,30 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
   const tags = Object.fromEntries(await nameTagsOf(view.seats.map((seat) => seat.memberId)));
 
   return (
-    <Page board>
+    // A board page whose play draws "Just the board" beside its size (`BoardScale`).
+    <Page board="play">
       <SiteHeader />
       <GameTrailNav game={{ label: copy.label, href: gamePath(view.game) }} steps={[{ label: ONLINE_COPY.title }]} />
-      <PageTitle title={`${copy.label}, ${ONLINE_COPY.title.toLowerCase()}`} kanji={ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
+      {/* Furniture, for just the board. */}
+      <div data-chrome>
+        <PageTitle title={`${copy.label}, ${ONLINE_COPY.title.toLowerCase()}`} kanji={ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
+      </div>
       {notice !== null ? (
         <p className={`${PANEL_CLASS} text-sm`} data-testid="online-seat-notice">
           {notice}
         </p>
       ) : null}
-      <OnlineTable
-        initial={view}
-        appearance={appearance ?? DEFAULT_APPEARANCE}
-        intervals={intervals}
-        gameHref={gamePath(view.game)}
-        gameLabel={copy.label}
-        tags={tags}
-      />
+      {/* The table at the size this reader keeps for this kind of screen (`BoardScaled`). */}
+      <BoardScaled>
+        <OnlineTable
+          initial={view}
+          appearance={appearance ?? DEFAULT_APPEARANCE}
+          intervals={intervals}
+          gameHref={gamePath(view.game)}
+          gameLabel={copy.label}
+          tags={tags}
+        />
+      </BoardScaled>
     </Page>
   );
 }

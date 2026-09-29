@@ -218,7 +218,8 @@ describe("a size is drawn by BoardSizeMark and chosen from BoardPicker, and noth
   });
 
   it("chooses a puzzle's size from the board games' own tiles", () => {
-    const setUp = SOURCES.find(({ path }) => path === "src/components/puzzles/PuzzleSetUp.tsx");
+    // The sizes beside the preview, in their own file since 2026-09-28; the set-up draws them from there.
+    const setUp = SOURCES.find(({ path }) => path === "src/components/puzzles/PuzzleBoardAndSizes.tsx");
     expect(setUp, "the puzzle set-up").toBeDefined();
     expect(setUp!.source).toContain("<BoardPicker");
   });

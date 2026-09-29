@@ -56,13 +56,15 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="dots-game"
       data-state={game.status}
       data-players={game.players.length}
       data-lines={game.lines.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <DotsTurnLine game={game} />
         <DotsBoard game={game} appearance={appearance} onLine={onLine} />
         {game.status === DOTS_STATUS.playing ? <p className="text-xs text-muted">{DOTS_COPY.tap}</p> : null}
@@ -126,7 +128,7 @@ function TableScores({ game }: { game: DotsGameState }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="dots-players">
       <h2 className={SECTION_TITLE}>
-        At the table <span className="font-mincho normal-case tracking-normal">席</span>
+        Players <span className="font-mincho normal-case tracking-normal">席</span>
       </h2>
       <ol className="flex flex-col gap-1.5">
         {game.players.map((_, seat) => (

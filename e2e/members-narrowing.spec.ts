@@ -128,7 +128,7 @@ test.describe("narrowing the members list", () => {
     // The row that stays, waited for before the row that goes.
     await expect(named(page, SETTLED_AWAY)).toHaveCount(1);
     await expect(named(page, NEW_HERE)).toHaveCount(0);
-    await expect(page.getByTestId("directory-narrowed")).toContainText("Settled ratings");
+    await expect(page.getByTestId("directory-narrowed")).toContainText("Established ratings");
 
     await page.getByTestId("only-active").click();
     await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "true");
@@ -142,7 +142,7 @@ test.describe("narrowing the members list", () => {
     const empty = page.getByTestId("directory-empty");
     await expect(empty).toBeVisible();
     // Why, in words — both narrowings — under headings that are still drawn.
-    await expect(empty).toContainText("settled rating");
+    await expect(empty).toContainText("established rating");
     await expect(empty).toContainText(`seen in the last ${AWAY_AFTER_DAYS} days`);
     await expect(page.getByTestId("directory").locator("thead")).toContainText("Rating");
     await expect(named(page, SETTLED_AWAY)).toHaveCount(0);

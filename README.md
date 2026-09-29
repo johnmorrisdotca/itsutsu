@@ -89,23 +89,25 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Territory and races | 4 |
 | Small boards | 6 |
 | Numbers | 3 |
-| Logic puzzles | 1 |
+| Logic puzzles | 2 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
 discovery (`ALSO_LISTED_IN`), while it belongs to one. Party games is mostly a
 shelf of such guests — games a group plays round one device, at
 `/games/party` — with the party games of its own at home in it: Dots and
-Boxes for two to six (`/games/dots-and-boxes`) and Mancala for two, by Kalah's
-or Oware's rules (`/games/mancala`), a third kind of game
+Boxes for two to six (`/games/dots-and-boxes`), Mancala for two, by Kalah's
+or Oware's rules (`/games/mancala`), and Tenka, world conquest for two to six
+on a map of the modern world (`/games/tenka`), a third kind of game
 (`PartyKind`, `src/lib/party/`, see `docs/plans/party-games/README.md`). The
 guests include Chinese Checkers for two, three, four or six
 players passed round one phone (`/games/chinese-checkers/pass-and-play`),
 Pair Go, Go for two teams of two taking turns (`/games/go/pass-and-play`),
-Halma for four, or two, racing corner to corner (`/games/halma/pass-and-play`),
 and Block Five for four, each laying twenty-one shapes out from their own
 corner of a twenty-square board, touching their own only corner to corner
-(`/games/block-five/pass-and-play`) — each kept in the browser, never rated (`src/lib/gomoku/party/`; the two
+(`/games/block-five/pass-and-play`). Halma for four, or two, racing corner to
+corner (`/games/halma/pass-and-play`), is offered from Halma's own page. Each is
+kept in the browser, never rated (`src/lib/gomoku/party/`; the two
 races share `partyRace.ts`). Which shelves a game is shown on besides its home
 is `src/lib/gomoku/familyShelves.ts`. The **Games** button
 opens a browser over the board with each rule set spelled out, and picking one
@@ -130,7 +132,7 @@ same gates: `puzzles.coverage.test.ts` asks a puzzle what
 
 Everything that thinks runs in the browser. The generators, the uniqueness
 checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`,
-`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`, `bridges/`; Hidden
+`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`, `bridges/`, `pictureLogic/`; Hidden
 Stones grows its regions out from a placed answer and then tightens the grid
 until the solver counts one; Futoshiki adds givens until it is a puzzle and then takes away every one it does not need), seeded
 so the same number makes the same grid in every browser,
@@ -168,6 +170,17 @@ closed off), hard needs a bridge tried. The answer and a run kept half way are
 one drawing, a character a cell (`- = | H` for the bridges), which the server
 checks in O(cells) without the solver (`bridges/check.ts`).
 
+The second is **Picture logic** 絵解き (`src/lib/puzzles/pictureLogic/`), our
+version of the grid picture puzzle known in English as the nonogram, under a
+name of our own (several of its names are trademarks). A picture is drawn
+from a seed out of whole shapes — a mirrored figure, hills under a sun, or a
+heaped cloud — and its row and column clues are kept only when a solver that
+never guesses finishes them, which proves the picture is the one answer; easy
+yields to sliding each line's runs to its ends, medium needs a whole line read
+at once, hard needs one square tried and followed. 5×5, 10×10, 15×15 and
+20×20; the givens are the two panels of clues and the answer is the picture,
+checked in O(cells) against the clues (`pictureLogic/check.ts`).
+
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
 found on a board eight rows tall (eight or nine squares across), each guess
@@ -182,7 +195,17 @@ from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an
 English borrowing (`scripts/word-lists-fr-de.mjs`); kana from JMdict.
-**Pop Gomoji** 五文字・流行 hides a pop-culture word of three to seven letters and
+It is ONE game in the catalogue, with one card, one front door at
+`/games/gomoji` and one rules page: its language (English, Français, Deutsch,
+日本語 かな) and its word list (Everyday, or Pop culture in English) are chosen
+on its set-up and carried in its addresses (`?language=french`, `?list=pop`),
+as a language or a word list is a setting of a game, never a game of its own
+(`src/lib/catalogue/gameSettings.ts`). Underneath, each is still the kind it
+was stored as — `gomoji`, `gomojiMot`, `gomojiWort`, `gomojiKana`,
+`gomojiPop` — with its own runs, solves, fastest times and days' words, and
+the four front doors they had until 2026-09-28 lead on for good to the same
+page under `/games/gomoji` (`src/lib/catalogue/formerAddresses.ts`).
+Its **Pop culture** list 五文字・流行 hides a pop-culture word of three to seven letters and
 shows its category as the clue. Its answers are one list kept by hand,
 `scripts/pop-corpus.txt`, checked and written by `scripts/word-lists-pop.mjs`;
 any English word of the length may be guessed too, from SCOWL, with the

@@ -63,6 +63,19 @@ describe("the board frame", () => {
     expect(read("src/components/party/MancalaSetUp.tsx")).not.toMatch(/<GameThumb|<img|\.jpg/);
   });
 
+  it("holds Tenka's map of the world, on the reader's own wood, its shape following the map's", () => {
+    const map = read("src/components/party/tenka/TenkaMap.tsx");
+    expect(map).toContain("<BoardFrame");
+    expect(map).not.toContain("boxShadow");
+    // Its shape is the frame's own to set (`aspect`, `BOARD_ASPECTS`), never reached into from outside it.
+    expect(map).toContain('aspect="map"');
+    expect(map).not.toContain("board-surface]");
+    expect(read("src/components/board/BoardFrame.tsx")).toContain("BOARD_ASPECTS[");
+    // Its set-up's preview is that live map, dealt for the table chosen, never a picture of one.
+    expect(read("src/components/party/tenka/TenkaSetUp.tsx")).toContain("<TenkaMap game={preview}");
+    expect(read("src/components/party/tenka/TenkaSetUp.tsx")).not.toMatch(/<GameThumb|<img|\.jpg/);
+  });
+
   it("holds every puzzle grid, on white paper", () => {
     for (const grid of ["src/components/puzzles/PuzzleGrid.tsx", "src/components/puzzles/HiddenStonesGrid.tsx"]) {
       expect(read(grid), `${grid} draws its grid off the board`).toContain("<PuzzleBoard");
@@ -79,7 +92,7 @@ describe("the set-up preview", () => {
     expect(puzzle).toContain("SET_UP_PREVIEW_BOX");
     expect(puzzle).toContain("<BoardFrame");
     // One row of preview and sizes, on the screen that chooses among every game and on a puzzle's own set-up.
-    expect(read("src/components/puzzles/PuzzleSetUp.tsx")).toContain("<PuzzleBoardPreview kind={kind} size={size}");
+    expect(read("src/components/puzzles/PuzzleBoardAndSizes.tsx")).toContain("<PuzzleBoardPreview kind={kind} size={size}");
     expect(read("src/components/live/PuzzleHere.tsx")).toContain("<PuzzleBoardAndSizes kind={puzzle} size={size}");
     expect(read("src/components/puzzles/PuzzleSetUp.tsx")).toContain("<PuzzleBoardAndSizes kind={kind} size={size}");
   });

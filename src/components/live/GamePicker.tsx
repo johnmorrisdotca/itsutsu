@@ -1,5 +1,6 @@
 "use client";
 
+import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
@@ -146,7 +147,7 @@ export function GamePicker({
    * the board and Begin went on describing the last game.
    */
   const shelves = onPuzzle === undefined ? SET_UP_FAMILIES : ROW_FAMILIES;
-  const puzzles = puzzle === null ? null : (PUZZLE_SHELVES.find((shelf) => (shelf.games as string[]).includes(puzzle)) ?? null);
+  const puzzles = puzzle === null ? null : (PUZZLE_SHELVES.find((shelf) => (shelf.games as string[]).includes(listedGameOf(puzzle))) ?? null);
   const opened = puzzles ?? family;
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
   // The chosen game when this shelf is not its home, for the "also under" on the line under the games.

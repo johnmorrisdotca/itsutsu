@@ -171,19 +171,19 @@ export async function RecordPage({
         title={
           variant !== undefined && copy !== null ? (
             <>
-              Record<span className={PAGE_TITLE_KANJI}>棋譜</span>
+              Game history<span className={PAGE_TITLE_KANJI}>棋譜</span>
               <span className="text-lg font-normal" data-testid="record-game">
                 <GameName variant={variant} kanji />
               </span>
             </>
           ) : (
-            "Record"
+            "Game history"
           )
         }
         kanji={variant !== undefined && copy !== null ? "" : "棋譜"}
         crumb={
           variant !== undefined && copy !== null ? (
-            <GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: impliedPlayer === undefined ? "Record" : "Yours" }]} />
+            <GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: impliedPlayer === undefined ? "Game history" : "Yours" }]} />
           ) : undefined
         }
         lead={

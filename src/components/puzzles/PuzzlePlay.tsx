@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/generate";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -16,10 +16,12 @@ import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { BridgesSolve } from "./BridgesSolve";
+import { PictureLogicSolve } from "./PictureLogicSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiParty } from "./KumimojiParty";
+import type { OnlineOffer } from "@/lib/party/online/online.types";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
@@ -65,6 +67,7 @@ export function PuzzlePlay({
   doubleSet = false,
   diagonals = false,
   players = 1,
+  online,
   clock = "none",
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
@@ -72,6 +75,8 @@ export function PuzzlePlay({
 }: {
   /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
   players?: number;
+  /** Kumimoji's pass and play on several devices instead, where the reader has an account (`OnlineOffer`). */
+  online?: OnlineOffer;
   /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
   clock?: PuzzleClock;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
@@ -123,10 +128,10 @@ export function PuzzlePlay({
     if (seed !== null) return;
     // A puzzle of fixed levels has no seed to draw: no level asked is the board of levels to choose one on.
     if (PUZZLE_SPECS[kind].fixedLevels === true) {
-      router.replace(`${setUpPath(kind)}?size=${size}`);
+      router.replace(joinQuery(setUpPath(kind), `?size=${size}`));
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })}`);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })));
   }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
@@ -184,6 +189,8 @@ export function PuzzlePlay({
         return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
       case "bridges":
         return <BridgesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+      case "pictureLogic":
+        return <PictureLogicSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
       case "gomoji":
       case "gomojiMot":
       case "gomojiWort":
@@ -210,7 +217,7 @@ export function PuzzlePlay({
         );
       case "kumimoji":
         // Pass and play is local and never a race: a race's address carries no players.
-        if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} />;
+        if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} online={online} />;
         return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
       case "gomojiKana":
         return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;

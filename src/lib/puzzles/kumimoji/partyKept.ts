@@ -68,7 +68,8 @@ export function encodeParty(game: PartyGame): string {
 const isCount = (value: unknown, most: number): value is number => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= most;
 const isTiles = (value: unknown): value is string => typeof value === "string" && /^[a-zA-Z*-]*$/.test(value);
 
-function readSettings(value: unknown): PartySettings | null {
+/** A game's settings as something outside this browser sent them — a table on several devices, a kept game — checked, or null. */
+export function readSettings(value: unknown): PartySettings | null {
   if (typeof value !== "object" || value === null) return null;
   const s = value as Record<string, unknown>;
   const sizes: readonly number[] = Object.values(KUMIMOJI_HANDS);

@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { GameViewClient } from "@/components/game/GameViewClient";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { FiledMatchPage } from "./FiledMatchPage";
 import { LiveMatch } from "./LiveMatch";
 import { SEAT_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
@@ -135,23 +136,26 @@ export async function MatchPage({
     // How the record writes its moves, as this member last chose (`moveFormats.ts`).
     const { moveFormat } = await preferencesFor();
     return (
-      <Page board>
+      <Page board="play">
         <SiteHeader />
         <GameTrailNav
           game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
           steps={[{ label: "Match" }]}
         />
         <SeatFullNotice shown={seatFull} />
-        <GameViewClient
-          variant={game.variant as RuleVariant}
-          trackPath
-          match={{ game, at: move }}
-          appearance={board}
-          // An account to write the board back to, not a session — see /games/<slug>/play.
-          savesToAccount={reader.hasAccount}
-          defaults={defaults}
-          moveFormat={moveFormat}
-        />
+        {/* The board and its sidebar at the size this reader keeps for this kind of screen (`BoardScaled`). */}
+        <BoardScaled>
+          <GameViewClient
+            variant={game.variant as RuleVariant}
+            trackPath
+            match={{ game, at: move }}
+            appearance={board}
+            // An account to write the board back to, not a session — see /games/<slug>/play.
+            savesToAccount={reader.hasAccount}
+            defaults={defaults}
+            moveFormat={moveFormat}
+          />
+        </BoardScaled>
       </Page>
     );
   }

@@ -160,7 +160,7 @@ export function privacySections(days: number): readonly PrivacySection[] {
       paragraphs: [
         "We keep your account and everything in it for as long as the account exists, and finished games for as long as the site does, because a game belongs to both people who played it.",
         "To remove your account, open your own page, choose Profile, and use Remove this account at the bottom; or write to " + CONTACT + " and the operator removes it for you. Your profile, your messages, your lists, your experience points and your puzzle solves go, and so does any game still waiting for you, which is resigned or called off first. Your finished games stay in the record, because each belongs to the other player too, with your account taken off them: you choose whether your name stays on them or is taken off as well.",
-        "What we hold about you is listed on the same page, under What Itsutsu holds about you, in plain words and in counts. There is nothing we hold that this page does not describe.",
+        "What we hold about you is listed on the same page, under Your data, in plain words and in counts. There is nothing we hold that this page does not describe.",
       ],
     },
     {

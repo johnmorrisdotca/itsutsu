@@ -25,6 +25,14 @@ export const TABLE = {
   zoomLeast: 12,
   /** The largest a fitted tile is drawn: a first word does not fill a desk. */
   tileMost: 56,
+  /**
+   * The shorter side of a table past which `tileMost` grows with it (`fittedMost`):
+   * the Regular desk table's height, 34rem. No phone's or tablet's table is taller
+   * or wider across its shorter side, so none changes; only a table the player made
+   * bigger with the board size chooser (`BoardScale`) grows its squares, in
+   * proportion to the table everybody had.
+   */
+  growsFrom: 544,
   /** The largest a player may zoom a tile to by hand. */
   zoomMost: 88,
   /** How near an edge of the table a dragged tile starts it panning, and how fast, in pixels a frame. */
@@ -56,13 +64,26 @@ export function tableArea(tiles: Tiles, also: readonly string[] = []): Area {
 }
 
 /**
+ * The largest a fitted tile is drawn in a table this big. `tileMost` in any
+ * table up to `growsFrom` across its shorter side, which is every phone's and
+ * the Regular desk table; past that, in proportion, so a table the player asked
+ * to be Large or Full (`BoardScale`) draws bigger squares rather than only more
+ * of them — never past what a hand may zoom to.
+ */
+export function fittedMost(width: number, height: number): number {
+  const side = Math.min(width, height);
+  if (!(side > TABLE.growsFrom)) return TABLE.tileMost;
+  return Math.min(TABLE.zoomMost, Math.floor((TABLE.tileMost * side) / TABLE.growsFrom));
+}
+
+/**
  * The view that shows the whole area, centred, its tiles as big as fit between
  * the least and the most. A picture nobody presses (a finished grid, the
  * set-up preview) passes a smaller least, so a whole grid fits its box.
  */
 export function fitView(area: Area, width: number, height: number, least: number = TABLE.tileLeast): View {
   const fits = Math.min(width / area.cols, height / area.rows);
-  const tile = Math.max(least, Math.min(TABLE.tileMost, Math.floor(fits)));
+  const tile = Math.max(least, Math.min(fittedMost(width, height), Math.floor(fits)));
   return {
     tile,
     x: Math.round((width - area.cols * tile) / 2 - area.left * tile),

@@ -38,6 +38,9 @@ import { generateTowers } from "@/lib/puzzles/towers/generate";
 import { BridgesGrid } from "@/components/puzzles/BridgesGrid";
 import { boardOf } from "@/lib/puzzles/bridges/code";
 import { generateBridges } from "@/lib/puzzles/bridges/generate";
+import { PictureLogicGrid } from "@/components/puzzles/PictureLogicGrid";
+import { decodeClues } from "@/lib/puzzles/pictureLogic/code";
+import { generatePictureLogic } from "@/lib/puzzles/pictureLogic/generate";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -111,6 +114,8 @@ export function PuzzleBoardPreview({
           <LatticePreview appearance={appearance} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
+        ) : kind === "pictureLogic" ? (
+          <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
@@ -211,6 +216,18 @@ function BridgesPreview({ size }: { size: number }) {
   const board = useMemo(() => boardOf(generateBridges(size, "easy", 7).givens, size), [size]);
   if (board === null) return null;
   return <BridgesGrid board={board} counts={board.spans.map(() => 0)} done readOnly />;
+}
+
+/**
+ * Picture logic before it is made: the clues of a real puzzle at this size and
+ * level, from a fixed seed, on the board the solve draws (`PictureLogicGrid`),
+ * with nothing shaded and nothing to press. A few milliseconds, and only a
+ * picture: the one to uncover is kept for the solve.
+ */
+function PictureLogicPreview({ size, level }: { size: number; level: PuzzleLevel }) {
+  const clues = useMemo(() => decodeClues(generatePictureLogic(size, level, 7).givens, size), [size, level]);
+  if (clues === null) return null;
+  return <PictureLogicGrid clues={clues} cells={new Array(size * size).fill(0)} done readOnly />;
 }
 
 /** Koushi's lattice before it is made: 21 blank tiles and four holes, in the board colour chosen under it. Nothing on it can be pressed. */

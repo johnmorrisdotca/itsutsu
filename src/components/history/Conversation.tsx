@@ -56,7 +56,7 @@ export function Conversation({
           >
             <span className="w-24 shrink-0 text-xs text-muted">
               {entry.moveNumber === null ? (
-                "Before the first stone"
+                "Before the game"
               ) : (
                 <Link
                   href={`${basePath}/${entry.moveNumber}`}

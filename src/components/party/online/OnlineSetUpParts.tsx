@@ -59,9 +59,9 @@ export function WhereChoice({ offer, several, onChange }: { offer: OnlineOffer |
 
 /**
  * One seat's chooser, in the row where its name would be typed: "You" for
- * seat 1, and for every other a link, a buddy by name, or a computer — each
- * buddy offered only in one seat at a time, a link only to a member who may
- * hand one out, and a computer only where the game has one.
+ * seat 1, and for every other a link, a buddy by name, or one of the game's
+ * computer players by the name it plays under — each buddy offered only in
+ * one seat at a time, and a link only to a member who may hand one out.
  */
 export function SeatChoiceSelect({
   offer,
@@ -105,14 +105,19 @@ export function SeatChoiceSelect({
           </option>
         );
       })}
-      {offer.computer ? <option value="computer">{ONLINE_COPY.computer}</option> : null}
+      {offer.computers.map((computer) => (
+        <option key={computer.level} value={`computer:${computer.level}`}>
+          {ONLINE_COPY.computerLabel(computer.name)}
+        </option>
+      ))}
     </select>
   );
 }
 
 /** A seat choice as the route asks for it. */
 export function seatAskOf(choice: SeatChoice): OnlineSeatAsk {
-  if (choice === "me" || choice === "link" || choice === "computer") return { kind: choice };
+  if (choice === "me" || choice === "link") return { kind: choice };
+  if (choice.startsWith("computer:")) return { kind: "computer", level: choice.slice("computer:".length) };
   return { kind: "buddy", memberId: choice.slice("buddy:".length) };
 }
 
@@ -124,7 +129,7 @@ export function useStartTable(offer: OnlineOffer | undefined) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const start = async (size: number, choices: readonly SeatChoice[]) => {
+  const start = async (size: number, choices: readonly SeatChoice[], setup?: unknown) => {
     if (offer === undefined) return;
     setStarting(true);
     setProblem(null);
@@ -132,7 +137,7 @@ export function useStartTable(offer: OnlineOffer | undefined) {
       const answer = await fetch("/api/tables", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ game: offer.game, size, seats: choices.map(seatAskOf) }),
+        body: JSON.stringify({ game: offer.game, size, seats: choices.map(seatAskOf), setup }),
       });
       const body = (await answer.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (answer.ok && body?.at) {
@@ -150,5 +155,5 @@ export function useStartTable(offer: OnlineOffer | undefined) {
 
 /** Whether every seat but the reader's can be filled: a member under 13 with no buddies has nobody to seat. */
 export function seatsFillable(offer: OnlineOffer, count: number): boolean {
-  return offer.links || offer.computer || offer.buddies.length >= count - 1;
+  return offer.links || offer.computers.length > 0 || offer.buddies.length >= count - 1;
 }

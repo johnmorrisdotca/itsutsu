@@ -109,7 +109,7 @@ export function ghostShown(letters: string, language: PartyLanguage): string {
 
 /** What Superghost's table says, beyond what every table says (`PARTY_COPY`). */
 export const GHOST_COPY = {
-  lead: "Superghost for two to eight people round one phone or tablet, in English or Japanese. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Superghost for two to eight people round one phone or tablet, in English or Japanese. Take your turn, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
   language: "Which language?",
   languages: {
     english: { name: "English", letters: "A–Z", words: "SCOWL's English words" },
@@ -171,7 +171,7 @@ export const MANCALA_SEED_TONES: readonly string[] = ["#f4efe4", "#dcd3c1", "#c9
 
 /** What Mancala's table says, beyond what every table says (`PARTY_COPY`). */
 export const MANCALA_COPY = {
-  lead: "Mancala for two, passed across one phone or tablet: Kalah, the default, or Oware. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Mancala for two, passed across one phone or tablet: Kalah, the default, or Oware. Take your turn, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
   rules: "Which rules?",
   names: "Names, if you like",
   /** Each rule set in a line, on its set-up tile. */

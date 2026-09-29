@@ -75,12 +75,13 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, "The API" | integrators | `src/app/api/**` (new or removed routes) |
 | `README.md`, "Deploying", "Scripts", "Getting started" | engineers | `.github/workflows/**`, `package.json` scripts, `.env.example`, `next.config.ts` |
 | `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
-| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
+| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/catalogue/gameSettings.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
 | `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
 | `docs/plans/party-online/README.md` | agents, engineers | `src/lib/party/online/**`, `src/components/party/online/**`, `src/app/api/tables/**`, `src/app/games/[slug]/tables/**`, `prisma/schema.prisma` (`PartyTable`, `PartySeat`, `PartyAction`), `src/components/live/pollCadence.ts`, `src/components/live/live.constants.ts` |
+| `docs/plans/plain-english/GLOSSARY.md` | agents, anyone writing a label | any button, tab, heading, table header or page title in `src/app/**`, `src/components/**` or `src/lib/i18n/i18n.constants.ts`: a new label uses the word the glossary already chose, and a changed one gets its row |
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
 | `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
@@ -100,6 +101,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | game pictures | `public/art/games/*`, from `pnpm screenshots:games` | the board drawing changes | `boardArt.coverage.test.ts` |
 | puzzle pictures | `public/art/games/<puzzle>.jpg`, from `pnpm screenshots:puzzles` | the puzzle grid's drawing changes | `puzzleArt.coverage.test.ts` |
 | party game pictures | `public/art/games/<party game>.jpg`, from `pnpm screenshots:party` | a party game's board drawing changes | `party.coverage.test.ts` |
+| Tenka's map | `src/lib/party/tenka/tenkaWorld.data.ts` and `tenkaShapes.data.ts`, from `node scripts/tenka-map.mjs` (Natural Earth, public domain) | a territory, a cut, a sea link or a counter's place changes; never edit the files by hand | `tenkaMap.test.ts`, `tenkaView.test.ts`, then `pnpm screenshots:party` |
 | About screenshots | `public/art/about/*`, listed in `src/app/about/about.shots.ts` | a page one of them shows changes shape: the board, the replay panel, the picture window, the set-up screen, a player's page | `about.coverage.test.ts` (each file exists, at the size the page reserves) |
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |

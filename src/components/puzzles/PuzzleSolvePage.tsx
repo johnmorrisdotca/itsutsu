@@ -107,7 +107,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   ];
   const day = solve.finishedAt.toISOString().slice(0, 10);
   const levelWord = (PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level).toLowerCase();
-  const trail = own ? [{ label: "Yours", href: myGamePath(kind) }, { label: day }] : [{ label: "Record", href: historyPath(kind) }, { label: day }];
+  const trail = own ? [{ label: "Yours", href: myGamePath(kind) }, { label: day }] : [{ label: "All solves", href: historyPath(kind) }, { label: day }];
   return (
     <Page>
       <SiteHeader />

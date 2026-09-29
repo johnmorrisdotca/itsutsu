@@ -1,4 +1,4 @@
-import { historyPath } from "@/lib/gomoku/slugs";
+import { historyPath, joinQuery } from "@/lib/gomoku/slugs";
 import { readMonth, readWeek } from "@/lib/history/recordMonth";
 
 import { PUZZLE_SPECS } from "./puzzles.constants";
@@ -97,5 +97,5 @@ export function puzzleRecordHref(kind: PuzzleKind | string, asked: Partial<Puzzl
   if (asked.sort === PUZZLE_RECORD_SORTS.fastest) query.set(PUZZLE_RECORD_PARAMS.sort, PUZZLE_RECORD_SORTS.fastest);
   if (asked.page !== undefined && asked.page > 1) query.set(PUZZLE_RECORD_PARAMS.page, String(asked.page));
   const search = query.toString();
-  return search === "" ? historyPath(kind) : `${historyPath(kind)}?${search}`;
+  return search === "" ? historyPath(kind) : joinQuery(historyPath(kind), `?${search}`);
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { squareAt } from "./grid";
-import { TABLE, edgePan, fitView, keepInReach, overflows, panView, squareUnder, tableArea, zoomView } from "./tableView";
+import { TABLE, edgePan, fitView, fittedMost, keepInReach, overflows, panView, squareUnder, tableArea, zoomView } from "./tableView";
 
 /** A kumimoji table with tiles on these squares. */
 const tilesOn = (...squares: [number, number][]) => new Map(squares.map(([row, col]) => [squareAt(row, col), "a"]));
@@ -24,6 +24,19 @@ describe("the kumimoji table", () => {
     const wider = fitView(tableArea(tilesOn([0, 0], [0, 6])), 358, 480);
     expect(wider.tile).toBeLessThan(small.tile);
     expect(wider.tile).toBe(Math.floor(358 / 11));
+  });
+
+  it("draws bigger squares on a table made bigger, and none bigger on a phone's or a desk's Regular one", () => {
+    // A phone's table and the Regular desk table (34rem, 544px) keep the cap they always had.
+    expect(fittedMost(358, 480)).toBe(TABLE.tileMost);
+    expect(fittedMost(576, 544)).toBe(TABLE.tileMost);
+    expect(fittedMost(992, 544)).toBe(TABLE.tileMost);
+    expect(fittedMost(TABLE.growsFrom, TABLE.growsFrom)).toBe(TABLE.tileMost);
+    // A square table at Large or Full grows its cap in proportion, and never past what a hand may zoom to.
+    expect(fittedMost(800, 800)).toBe(Math.floor((TABLE.tileMost * 800) / TABLE.growsFrom));
+    expect(fittedMost(2000, 1400)).toBe(TABLE.zoomMost);
+    const area = tableArea(tilesOn([0, 0], [0, 1], [0, 2]));
+    expect(fitView(area, 800, 800).tile).toBeGreaterThan(fitView(area, 576, 544).tile);
   });
 
   it("never draws a tile smaller than a thumb, and pans past that", () => {

@@ -6,6 +6,7 @@ import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 
 import { GameViewClient } from "@/components/game/GameViewClient";
+import { BoardScaled } from "@/components/board/BoardScaled";
 import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -14,6 +15,7 @@ import { siblingsOf } from "@/lib/gomoku/families";
 import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { BoardMasthead } from "@/components/board/BoardMasthead";
@@ -38,8 +40,10 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/play
 export default async function PlayPage({ params, searchParams }: PageProps<"/games/[slug]/play">) {
   const { slug } = await params;
   // A puzzle's solve: the size, level and seed in the query, the grid made in the browser.
-  const puzzle = puzzleFor(slug);
-  if (puzzle !== null) return <PuzzlePlayPage kind={puzzle} query={await searchParams} />;
+  const query = await searchParams;
+  // A Gomoji's language and word list are in the query (`gameSettings.ts`).
+  const puzzle = puzzleForAddress(slug, query);
+  if (puzzle !== null) return <PuzzlePlayPage kind={puzzle} query={query} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
@@ -54,7 +58,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   const { moveFormat } = await preferencesFor();
 
   return (
-    <Page board>
+    <Page board="play">
       <SiteHeader />
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
@@ -62,22 +66,25 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
           story={{ kind: "Practice board", kanji: "試し打ち", title: copy.label, source: "On Itsutsu: both sides are yours, and nothing here is rated" }}
         />
       </div>
-      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Play" }]} />
-      <GameViewClient
-        variant={variant}
-        trackPath
-        appearance={board}
-        /*
-          AN ACCOUNT, NOT A SESSION, because the one thing this decides is
-          whether a board choice is written back to the account — and
-          PATCH /api/me answers 401 to an invite holder, who has none. It was
-          named `signedIn` and read off the address, which happened to give the
-          right answer under the wrong name.
-        */
-        savesToAccount={reader.hasAccount}
-        defaults={defaults}
-        moveFormat={moveFormat}
-      />
+      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Practice board" }]} />
+      {/* The board and its sidebar at the size this reader keeps for this kind of screen (`BoardScaled`). */}
+      <BoardScaled>
+        <GameViewClient
+          variant={variant}
+          trackPath
+          appearance={board}
+          /*
+            AN ACCOUNT, NOT A SESSION, because the one thing this decides is
+            whether a board choice is written back to the account — and
+            PATCH /api/me answers 401 to an invite holder, who has none. It was
+            named `signedIn` and read off the address, which happened to give the
+            right answer under the wrong name.
+          */
+          savesToAccount={reader.hasAccount}
+          defaults={defaults}
+          moveFormat={moveFormat}
+        />
+      </BoardScaled>
       {/* The game's name, its rules and its family: furniture that just the board leaves out. */}
       <footer data-chrome className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
         <p>

@@ -4,7 +4,7 @@ import { RecordPage } from "@/components/history/RecordPage";
 import { recordGameRedirect } from "@/lib/history/recordAddress";
 
 export const metadata = {
-  title: "Record 棋譜",
+  title: "Game history 棋譜",
   description: "Every game played, with the stones in the order they were laid.",
 };
 

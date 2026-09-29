@@ -6,7 +6,7 @@ export const MY_GAMES_COPY = {
   title: { label: "Your games", kanji: "対局中" },
   /** The tabs of /play (`myGamesViews.ts`). */
   views: {
-    going: { label: "Going", kanji: "対局中" },
+    going: { label: "In progress", kanji: "対局中" },
     completed: { label: "Completed", kanji: "終局" },
     "pass-and-play": { label: "Pass and play", kanji: "対面" },
   },
@@ -16,7 +16,7 @@ export const MY_GAMES_COPY = {
     theirMove: "Nothing waiting on them.",
     completed: "Nothing finished yet.",
     passAndPlay: "No games on this screen. Try the board on any game's page starts one.",
-    puzzles: "No puzzles going.",
+    puzzles: "No puzzles in progress.",
   },
   groups: {
     /*
@@ -43,7 +43,7 @@ export const MY_GAMES_COPY = {
      * play, and it has a tab of its own now, away from the account's games.
      */
     hotSeat: { label: "Pass and play", kanji: "対面", hint: "Two people taking turns on this screen. Never rated." },
-    finished: { label: "Completed", kanji: "終局", hint: "Filed in the record." },
+    finished: { label: "Completed", kanji: "終局", hint: "Saved in game history." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   /** The starred games, first on the Completed tab (`FavouritesPanel`); not a group of the queue, so apart from the seven. */
   favourites: {
@@ -102,7 +102,7 @@ export const MY_GAMES_COPY = {
   localParty: { label: "Pass and play", kanji: "回し" },
   /** The puzzles a member started and left unfinished, kept on the account (`MyPuzzleRuns`). */
   puzzlesGoing: {
-    label: "Puzzles going",
+    label: "Puzzles in progress",
     kanji: "解きかけ",
     hint: "Left part way, kept where you left them. Open one to carry on.",
   },
@@ -114,7 +114,7 @@ export const MY_GAMES_COPY = {
     empty: "Nothing solved yet.",
   },
   openBoard: {
-    label: "Open seats",
+    label: "Open games",
     kanji: "対局募集",
     hint: "Games somebody has posted for anyone. Sit down and it is yours.",
     /** The hover on a poster's rating that the computer players earned, which is not a place on the ladder. */
@@ -248,7 +248,7 @@ export const START_COPY = {
   anyone: "anyone",
   atThisScreen: "someone at this screen",
   hereNow: {
-    label: "Here now",
+    label: "Online now",
     kanji: "在室",
     /* The fold under the first few, printing what it holds — see HereNowPanel. */
     more: (count: number) => `and ${count} more, seen lately`,

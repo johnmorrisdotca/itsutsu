@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { BLACK, WHITE, decodeBlackAndWhite } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
+import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
@@ -45,6 +46,7 @@ async function tapBridge(page: Page, size: number, seed: number, span: number) {
 /** What Show marks: a cell, or on Bridges the span a wrong bridge was drawn on. */
 function marked(page: Page, kind: PuzzleKind, index: number) {
   if (kind === "bridges") return page.locator(`[data-testid="bridges-bridge"][data-span="${index}"]`);
+  if (kind === "pictureLogic") return page.locator(`[data-testid="picture-cell"][data-index="${index}"]`);
   return page.getByTestId("puzzle-cell").nth(index);
 }
 
@@ -58,6 +60,13 @@ async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number
     return span;
   }
   const puzzle = generatePuzzle(kind, size, "easy", seed);
+  if (kind === "pictureLogic") {
+    // A square the picture leaves empty, shaded by one tap.
+    const index = decodePicture(puzzle.solution, size)!.findIndex((shaded) => !shaded);
+    await marked(page, kind, index).click();
+    await expect(marked(page, kind, index)).toHaveAttribute("data-state", "shaded");
+    return index;
+  }
   if (kind === "hiddenStones") {
     // A stone in the first row, one along from where its answer is.
     const column = (decodeStones(puzzle.solution, size)![0]! + 1) % size;
@@ -82,6 +91,11 @@ async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number
 
 /** How many cells on the page hold what the answer has there (on Bridges, spans drawn as it has them): the measure a hint moves by one. */
 async function rightCells(page: Page, kind: PuzzleKind, size: number, seed: number): Promise<number> {
+  if (kind === "pictureLogic") {
+    const picture = decodePicture(generatePuzzle(kind, size, "easy", seed).solution, size)!;
+    const states = await page.getByTestId("picture-cell").evaluateAll((all) => all.map((cell) => [Number(cell.getAttribute("data-index")), cell.getAttribute("data-state")] as const));
+    return states.filter(([index, state]) => (picture[index] ? state === "shaded" : state === "marked empty")).length;
+  }
   if (kind === "bridges") {
     const { answer } = bridgesAnswer(size, seed);
     const drawn = await page.getByTestId("bridges-bridge").evaluateAll((all) => all.map((bridge) => [Number(bridge.getAttribute("data-span")), Number(bridge.getAttribute("data-count"))] as const));
@@ -124,7 +138,7 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
 
     // Changed, and the mark goes with the change.
     if (kind === "bridges") await tapBridge(page, size, seed, index);
-    else if (kind === "hiddenStones" || kind === "blackAndWhite") await cell.click();
+    else if (kind === "hiddenStones" || kind === "blackAndWhite" || kind === "pictureLogic") await cell.click();
     else await page.getByTestId("puzzle-key-clear").click();
     await expect(cell).not.toHaveAttribute("data-wrong", "true");
   });

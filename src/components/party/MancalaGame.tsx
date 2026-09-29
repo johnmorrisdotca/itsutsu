@@ -35,7 +35,7 @@ import { useSowing } from "./useSowing";
  * asks them what a sowing does, keeps the answer at once, and draws the seeds
  * falling (`useSowing`) on the way to it.
  */
-export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
+export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptMancalaGame();
   const [confirming, setConfirming] = useState(false);
@@ -48,7 +48,7 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="mancala-game" data-state="set-up">
-        <MancalaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <MancalaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }
@@ -64,6 +64,8 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="mancala-game"
       data-state={game.status}
       data-rules={game.ruleSet}
@@ -71,7 +73,7 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
       data-sowing={shown.sowing ? "true" : undefined}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <MancalaTurnLine game={game} sowing={shown.sowing} />
         <MancalaBoard game={game} appearance={appearance} holes={shown.holes} landing={shown.landing} onPit={onPit} />
         {game.status === MANCALA_STATUS.playing ? (
@@ -139,7 +141,7 @@ function TableStores({ game }: { game: MancalaGameState }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="mancala-players">
       <h2 className={SECTION_TITLE}>
-        At the table <span className="font-mincho normal-case tracking-normal">席</span>
+        Players <span className="font-mincho normal-case tracking-normal">席</span>
       </h2>
       <ol className="flex flex-col gap-1.5">
         {game.players.map((_, seat) => (

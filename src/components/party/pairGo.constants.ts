@@ -8,7 +8,7 @@ export const PAIR_GO_COPY = {
   /** On Go's own page, the way in. */
   offer: "Pair Go: two teams of two on this device",
   resume: "Continue the Pair Go game",
-  lead: "Go for four: two teams of two, Black and White, round one phone or tablet. The turns go round the table — Black's first player, White's first, Black's second, White's second — and partners may not talk. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Go for four: two teams of two, Black and White, round one phone or tablet. The turns go round the table — Black's first player, White's first, Black's second, White's second — and partners may not talk. Or choose Several devices, and each plays on their own, with the site's Go programs in any seat you like. Nothing here is rated.",
   teams: "The two teams",
   /** Beside each name box: the seat's colour, and where its first turn comes. */
   seatLabel: (colour: string, turn: number) => `${colour}, plays ${["first", "second", "third", "fourth"][turn]}`,

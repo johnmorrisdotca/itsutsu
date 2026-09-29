@@ -2,6 +2,8 @@ import { gameArtPath } from "@/lib/gomoku/artwork";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
+import { GAME_SETTINGS, WORD_LANGUAGE_DISPLAY, WORD_LIST_DISPLAY, listedGameOf, settingsOf } from "@/lib/catalogue/gameSettings";
+
 import { futagoRule } from "./gomoji/futago";
 import { yotsugoRule } from "./gomoji/yotsugo";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
@@ -16,6 +18,29 @@ import type { PuzzleKind } from "./puzzles.types";
  * description that could drift: the sizes are `PUZZLE_SPECS`'s, the levels
  * are `PUZZLE_LEVEL_DISPLAY`'s words.
  */
+/**
+ * THE OTHER LANGUAGES AND WORD LISTS of a game with settings, a section each,
+ * on the one rules page (`gameSettings.ts`): where the words come from, and
+ * whatever plays differently there — kana's arrows and yellow, French's folded
+ * accents, German's Ä, Ö and Ü, Pop culture's categories. Only on the game's
+ * own page; a setting's rules are its game's.
+ */
+function settingSections(kind: PuzzleKind): { id: string; heading: string; kanji: string; lines: string[] }[] {
+  if (listedGameOf(kind) !== kind) return [];
+  const own = PUZZLE_DISPLAY[kind];
+  return settingsOf(kind)
+    .filter((each) => each !== kind)
+    .map((each) => {
+      const setting = GAME_SETTINGS[each]!;
+      const copy = PUZZLE_DISPLAY[each];
+      const named = setting.list === "everyday" ? WORD_LANGUAGE_DISPLAY[setting.language] : { label: WORD_LIST_DISPLAY[setting.list].label, kanji: WORD_LIST_DISPLAY[setting.list].kanji, english: WORD_LIST_DISPLAY[setting.list].label };
+      const heading = named.english === named.label ? named.label : `${named.label} · ${named.english}`;
+      // What this setting says that the game as it comes does not: its own rules, never the shared ones twice.
+      const differs = copy.rules.filter((line) => !own.rules.includes(line));
+      return { id: `setting-${setting.language}-${setting.list}`, heading, kanji: named.kanji, lines: [copy.tagline, copy.board, ...differs] };
+    });
+}
+
 export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
@@ -61,5 +86,6 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     play,
     house,
     image: gameArtPath(kind),
+    ...(settingSections(kind).length === 0 ? {} : { settings: settingSections(kind) }),
   };
 }

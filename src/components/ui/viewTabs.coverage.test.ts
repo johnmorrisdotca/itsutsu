@@ -24,6 +24,7 @@ const ALLOWED: Record<string, string> = {
   "src/components/party/DotsSetUp.tsx": "how many are playing at Dots and Boxes, a form's answer before the game starts, drawn as the other tables' set-up draws its own",
   "src/components/party/GhostSetUp.tsx": "how many are playing at Superghost, a form's answer before the game starts, drawn as Dots and Boxes' set-up draws its own",
   "src/components/party/online/OnlineSetUpParts.tsx": "where a party table is played, this device or several: a form's answer before the game starts, drawn as the count beside it is",
+  "src/components/party/tenka/TenkaSetUp.tsx": "how many are playing at Tenka, for how long and how the armies go down: a form's answers before the game starts, drawn as the other tables' set-ups draw theirs",
 };
 
 const FILLED_PILL = /border-ink bg-ink text-paper/;

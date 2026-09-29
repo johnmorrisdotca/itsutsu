@@ -121,13 +121,13 @@ describe("the trail under a game", () => {
   it("opens with Games, then the game, then the page's own steps, each a link but the last", () => {
     const html = renderToStaticMarkup(
       createElement(GameTrail, {
-        game: { label: "Gomoji Mot", href: "/games/gomoji-mot" },
-        steps: [{ label: "Set up", href: "/games/gomoji-mot/new" }, { label: "Play" }],
+        game: { label: "Gomoji", href: "/games/gomoji" },
+        steps: [{ label: "Set up", href: "/games/gomoji/new?language=french" }, { label: "Play" }],
       }),
     );
     const text = html.replace(/<[^>]+>/g, "");
-    expect(text).toBe("Games / Gomoji Mot / Set up / Play");
-    expect([...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(["/games", "/games/gomoji-mot", "/games/gomoji-mot/new"]);
+    expect(text).toBe("Games / Gomoji / Set up / Play");
+    expect([...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(["/games", "/games/gomoji", "/games/gomoji/new?language=french"]);
     // On the game's own page the game is where the reader is, not a link.
     const home = renderToStaticMarkup(createElement(GameTrail, { game: { label: "Gomoku" } }));
     expect(home.replace(/<[^>]+>/g, "")).toBe("Games / Gomoku");

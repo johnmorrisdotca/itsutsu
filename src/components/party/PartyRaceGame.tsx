@@ -73,13 +73,15 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid={kind.testId}
       data-state={game.status}
       data-players={game.players.length}
       data-moves={game.moves.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
         <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} />
         {game.status === PARTY_STATUS.playing ? <p className="text-xs text-muted">{PARTY_COPY.pick}</p> : null}
@@ -88,7 +90,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
       <aside className="flex min-w-0 flex-col gap-4">
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="party-players">
           <h2 className={SECTION_TITLE}>
-            At the table <span className="font-mincho normal-case tracking-normal">席</span>
+            Players <span className="font-mincho normal-case tracking-normal">席</span>
           </h2>
           <ol className="flex flex-col gap-1.5">
             {game.players.map((_, index) => (

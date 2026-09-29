@@ -52,8 +52,9 @@ describe("the archive of past words", () => {
     const row = week!.days[0]!;
     // One word a length the puzzle offers, read from its spec as the archive does (6 joined on 2026-09-26).
     expect(row.words.map((each) => each.size)).toEqual(dailyLengths("gomojiMot"));
-    expect(row.words[0]!.href).toMatch(/^\/games\/gomoji-mot\/play\?size=4&level=medium&seed=10\d{8}$/);
-    expect(row.dayHref).toBe(`/games/gomoji-mot/daily/${row.day}`);
+    // French is a setting of the one Gomoji: its addresses are Gomoji's, with the language in the query (`gameSettings.ts`).
+    expect(row.words[0]!.href).toMatch(/^\/games\/gomoji\/play\?language=french&size=4&level=medium&seed=10\d{8}$/);
+    expect(row.dayHref).toBe(`/games/gomoji/daily/${row.day}?language=french`);
     expect(row.words[0]!.word).toBe(row.words[0]!.word.toUpperCase());
   });
 

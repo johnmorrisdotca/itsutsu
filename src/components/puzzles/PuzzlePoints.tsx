@@ -78,7 +78,9 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
           ? `Every letter you find scores, more the sooner and more in its place; the word itself more the bigger the board, and more for guesses left and speed. A word not found still scores its letters, and a head start costs ${POINTS_A_HELP}. Your best of each word counts.`
           : kind === "bridges"
             ? `${POINTS_A_CELL} for each end of every bridge the answer has — every island's number, added up — and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
-            : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
+            : kind === "pictureLogic"
+              ? `${POINTS_A_CELL} for every square of the grid, each one decided, shaded or empty, and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
+              : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
       </p>
       {whole ? null : (
         <p className="text-sm">

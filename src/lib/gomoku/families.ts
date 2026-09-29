@@ -1,5 +1,6 @@
 // Relative, not `@/`: the browser specs import this file, and Playwright resolves no alias in what it imports.
 import { type GameKey, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
+import { listedGameOf } from "../catalogue/gameSettings";
 
 import { ALSO_LISTED_IN } from "./familyShelves";
 import type { GameFamily, ShelvedGame } from "./families.types";
@@ -195,11 +196,14 @@ export const GAME_FAMILIES: GameFamily[] = [
      * family's key, and moving one would make that family's award a thing a
      * newcomer earns from a different set of games than everybody before.
      * Say so, and leave the decision to John.
+     *
+     * Picture logic 絵解き (2026-09-29) is the second: the picture to uncover
+     * from its row and column counts the first note promised.
      */
     title: "Logic puzzles",
     kanji: "理詰め",
-    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, and more to come. A few clues, one answer, and nothing to do but reason it out.",
-    games: ["bridges"],
+    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, and more to come. A few clues, one answer, and nothing to do but reason it out.",
+    games: ["bridges", "pictureLogic"],
   },
   {
     key: "party",
@@ -234,6 +238,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      * Mancala joined it the same day: Kalah or Oware for two, passed across
      * one device, a party game rather than a rule variant because a sowing is
      * nothing the engine's stones-on-points can play.
+     *
+     * And Tenka 天下, world conquest for two to six, the same day.
      */
     title: "Party games",
     kanji: "団欒",
@@ -241,9 +247,9 @@ export const GAME_FAMILIES: GameFamily[] = [
     /*
      * And Superghost (2026-09-28), the word game for two to eight, in English
      * or Japanese: the second at home here. And Mancala the same day, Kalah or
-     * Oware for two.
+     * Oware for two; and Tenka, world conquest for two to six.
      */
-    games: ["dotsAndBoxes", "superghost", "mancala"],
+    games: ["dotsAndBoxes", "superghost", "mancala", "tenka"],
     notOnSetUp:
       "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
@@ -259,7 +265,8 @@ export const GAME_FAMILIES: GameFamily[] = [
     kanji: "その他",
     blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, tiles to build into your own crossword, and six words to swap into a lattice.",
     /* Tsunagi and Kumimoji joined 2026-09-26, and Koushi the same day: puzzles for one with no digits in them, and Numbers already holds its eight. */
-    games: ["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "gomojiPop", "tsunagi", "kumimoji", "koushi"],
+    /* One Gomoji: its languages and word lists are settings of it, chosen on its set-up (`gameSettings.ts`, John, 2026-09-28). */
+    games: ["gomoji", "tsunagi", "kumimoji", "koushi"],
     notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];
@@ -414,9 +421,10 @@ export function boardGamesShownIn(family: GameFamily): (ShelvedGame & { variant:
 
 /** The other games in the family a variant belongs to, for "also try" links. */
 export function siblingsOf(variant: GameKey): { family: (typeof GAME_FAMILIES)[number]; games: GameKey[] } | null {
-  const family = GAME_FAMILIES.find((entry) => entry.games.includes(variant));
+  const listed = listedGameOf(variant) as GameKey;
+  const family = GAME_FAMILIES.find((entry) => entry.games.includes(listed));
   if (family === undefined) return null;
-  return { family, games: family.games.filter((game) => game !== variant) };
+  return { family, games: family.games.filter((game) => game !== listed) };
 }
 
 /**
@@ -428,7 +436,9 @@ export function siblingsOf(variant: GameKey): { family: (typeof GAME_FAMILIES)[n
  * wrong about the family. Two questions, two functions.
  */
 export function familyOf(variant: GameKey): (typeof GAME_FAMILIES)[number] | null {
-  return GAME_FAMILIES.find((entry) => entry.games.includes(variant)) ?? null;
+  // A setting of a game (a Gomoji in French, `gameSettings.ts`) is in its game's family.
+  const listed = listedGameOf(variant) as GameKey;
+  return GAME_FAMILIES.find((entry) => entry.games.includes(listed)) ?? null;
 }
 
 /**

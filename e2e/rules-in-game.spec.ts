@@ -19,7 +19,7 @@ test("a puzzle's Rules open over the puzzle, with no Play, and close back to it"
   await page.getByTestId("open-rules").click();
   const dialog = page.getByTestId("rules-dialog");
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText("Object");
+  await expect(dialog).toContainText("Objective");
   await expect(dialog).toContainText("House rules");
   // Checked once the rules are drawn: the modal is the rules and nothing else.
   await expect(dialog.getByRole("link")).toHaveCount(0);
@@ -35,7 +35,7 @@ test("a game's Rules open over the board, and Escape closes them", async ({ page
   await ready(page, "open-rules");
   await page.getByTestId("open-rules").click();
   const dialog = page.getByTestId("rules-dialog");
-  await expect(dialog).toContainText("Object");
+  await expect(dialog).toContainText("Objective");
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   await expect(page).toHaveURL(/\/games\/gomoku\/play$/);

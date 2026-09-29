@@ -8,7 +8,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { readReleases } from "@/lib/backlog/releasesFile";
 import { VERSION } from "@/lib/version";
 
-export const metadata = { title: "What has shipped" };
+export const metadata = { title: "What's new" };
 
 // Read from the changelog on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function ReleasesPage() {
     <Page>
       <SiteHeader />
       <PageTitle
-        title="What has shipped"
+        title="What's new"
         kanji="更新履歴"
         lead="Newest first, in a player’s words. Read from the changelog itself, which is written in the same commit as the work, so this list cannot fall behind the site it describes. The edition you are being served is marked."
       />

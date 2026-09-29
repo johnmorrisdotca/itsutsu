@@ -63,6 +63,12 @@ export type RulesPage = {
   house: string[];
   /** The screenshot, if one has been taken for this game. */
   image: string;
+  /**
+   * A section for each setting of the game other than the one it comes as —
+   * a Gomoji's languages and word lists (`gameSettings.ts`), each with where
+   * its words come from and what plays differently. Absent for a game with none.
+   */
+  settings?: { id: string; heading: string; kanji: string; lines: string[] }[];
 };
 
 /**

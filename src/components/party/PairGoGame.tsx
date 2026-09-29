@@ -34,7 +34,7 @@ type Confirming = "resign" | "new" | null;
  * the game is kept in this browser after every move (`pairGoStore.ts`) — never
  * rated, never on an account, never sent to a server.
  */
-export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
+export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptPairGo();
   const [confirming, setConfirming] = useState<Confirming>(null);
@@ -47,7 +47,7 @@ export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="pairgo" data-state="set-up">
-        <PairGoSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <PairGoSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }
@@ -61,13 +61,15 @@ export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="pairgo"
       data-state={game.state.status}
       data-moves={game.state.moves.length}
       data-size={game.state.settings.size}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PairGoTurnLine game={game} appearance={appearance} />
         <Board
           state={game.state}
@@ -109,7 +111,7 @@ export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
       <aside className="flex min-w-0 flex-col gap-4">
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="pairgo-players">
           <h2 className={SECTION_TITLE}>
-            At the board <span className="font-mincho normal-case tracking-normal">席</span>
+            Players <span className="font-mincho normal-case tracking-normal">席</span>
           </h2>
           <ol className="flex flex-col gap-1.5">
             {pairPlayers(game).map((player) => (

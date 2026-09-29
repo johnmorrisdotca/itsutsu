@@ -2,7 +2,9 @@
 
 **Status: the kind and its first game, Dots and Boxes, built 2026-09-28 on
 branch `party-dots`; Superghost, the second, the same day on `party-ghost`;
-and Mancala (Kalah and Oware), the third, the same day on `party-mancala`.**
+Mancala (Kalah and Oware), the third, the same day on `party-mancala`; and
+Tenka 天下, world conquest for two to six, the fourth, on `party-tenka` (see
+"Tenka" below).**
 
 John is filling the Party games 団欒 shelf: games a group plays round one
 phone or tablet. Until now that shelf held only guests — Chinese Checkers for
@@ -141,6 +143,73 @@ one" gives the round up. The random player of the gate takes every letter at
 either end and the challenge with equal chance: fragments grow into nonsense
 until a challenge nobody can answer, so every round ends and every game does.
 
+## Tenka 天下: a game of chance on a map
+
+John, 2026-09-28, asking for the classic world-conquest game by the name of
+its best-known boxed version: "Pass and play first… it should work just like
+the real [one], but if there are copyright issues, we change obviously the
+Name, the map can just use the modern map and be more Modern". The rules of a
+game are nobody's; its name, art and wording are, and none of them is used
+anywhere here. Tenka is from 天下取り, tenka-tori, "taking the realm".
+
+- **Rules** (`src/lib/party/tenka/`): the classic ones. Starting armies 40 each
+  for two (with a neutral third holding a third of the world and 40 armies,
+  which never moves and only defends), 35 for three, 30, 25, 20 for six;
+  territories dealt round the table; armies placed at random (the default) or
+  by hand one at a time in turn. A turn: one army per three territories (at
+  least three) plus continent bonuses plus cards traded; attack as often as
+  you like, up to three dice against the defender's up to two (the defender
+  always throws the most allowed), ties to the defender, or "roll until
+  decided" as one move; move in at least as many as dice thrown; one
+  fortifying move through your own land. A card for a turn that took a
+  territory; sets of three alike, one of each, or with a wild, trade for 4,
+  6, 8, 10, 12, 15 then five more each, two more armies onto a traded card's
+  territory you hold; five cards must be traded; knocking a player out takes
+  their cards, and six or more are traded at once. The world taken — every
+  other player out — wins.
+- **Lengths of game** are its sizes: 10 or 20 rounds, most territories at the
+  count (most armies breaking a tie), or the whole world, counted at round 60
+  if it gets that far.
+- **A game of chance is still its moves.** Every shuffle, deal and die is
+  drawn from a seeded random whose state is part of the game (`tenkaDice.ts`),
+  and the kept text is the table, the seed and the moves; read back, the
+  moves are thrown again exactly as they fell. `PartyRules.start` takes a
+  fourth, optional argument, `seed`, for this; a game with no dice ignores it.
+- **The gate plays it with a sensible random player** (`PartyRules.sensible`,
+  `tenkaPolicy.ts`). Chosen uniformly among every move offered — end the
+  attack at random, one army at a time on a random territory — a game of
+  conquest never ends, as no person plays it. The sensible player still plays
+  at random, among the moves a person might make: trade when it can, pile the
+  turn's armies on one front, attack only with more armies than the defender,
+  move everything in, fortify from behind the lines. The gate holds its move to
+  be one offered, and still has the rules take a uniformly random offered move
+  at every step. Measured over the gate's 60 games per table: every game ends;
+  at the whole-world length all two-player and most three-player games end by
+  conquest, and between a quarter and a half of those with four to six are
+  decided by the count at round 60 — escalating card sets make armies of thousands that the dice
+  wear down slowly.
+- **The map** is Natural Earth's admin-0 countries at 1:110m (public domain),
+  built by `node scripts/tenka-map.mjs` into two static files: the world the
+  rules read (names, continents, neighbours by land and the twenty named sea
+  links, 5 KB) and the outlines only the browser's board draws (30 KB). The
+  script gives every country's polygons to a territory, cuts Canada (97°W),
+  the United States (100°W), Russia (59°E and 100°E) and Australia (129°E)
+  along meridians, merges each territory's countries into one outline, and
+  finds land neighbours from shared edges.
+- **The frame.** The map is drawn inside `BoardFrame` like every board, with
+  no coordinates, and `BoardFrame` has one typed prop for the shape of its
+  wood (`aspect: "square" | "map"`, `BOARD_ASPECTS`): the map's is 4:3 on a
+  phone and 2:1 from a laptop, since a square board would be half sea.
+- **Played on a phone.** Army counters are 17 pixels tall on the screen however
+  far the map is zoomed; at the whole-world view the ones with no room (the
+  middle of Europe, the isthmus, Southeast Asia's islands) are dots with the
+  owner's letter, the player to move's and anything chosen drawn whole first
+  (`laidOutChips`). A row under the map looks at the world or one continent
+  with a tap; choosing where an attack or a move comes from frames it and
+  what it can reach, close enough for every counter to be whole; a tap on the
+  sea goes to the nearest territory within a fingertip; and the phase bar
+  carries the dice.
+
 ## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,
@@ -223,3 +292,15 @@ not a second mechanism:
   the bottom) rather than turning for whoever holds the device.
 - The kanji 種まき ("sowing seeds") for Mancala, and no country flag, since
   the family is played on three continents.
+- Tenka: the name and kanji 天下; three players as the set-up's default; the
+  whole world as the default length and 60 rounds as its count; armies placed
+  at random unless "in turn" is chosen; the defender always throws the most
+  dice allowed; the card kinds land, sea and air; the forty-two territories,
+  six continents, bonuses (5, 2, 5, 4, 7, 2) and twenty sea links in
+  `tenkaMap.ts` and the map script; the wood's shape following the map
+  (`BoardFrame`'s `aspect`); on a phone, the whole world first, counters that
+  do not fit drawn as dots, and the map coming close when a territory is
+  chosen to attack or move from, rather than opening on the player's own
+  region; Halma for four taken off the Party games shelf to keep it at eight
+  (it is still offered from Halma's own page); the device passed between turns by name, with nobody's
+  cards shown until the player named says they have it.

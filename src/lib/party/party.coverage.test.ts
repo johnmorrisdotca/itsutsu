@@ -76,7 +76,31 @@ function seeded(start: number): () => number {
   };
 }
 
-/** Plays one game out at random, moving only as the rules offer; the game at its end, and how many moves it took. */
+/** Whether two moves are the same move: the same value, or the same fields with the same values (a list compared in order). */
+function sameMove(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false;
+  const left = a as Record<string, unknown>;
+  const right = b as Record<string, unknown>;
+  const keys = Object.keys(left);
+  if (keys.length !== Object.keys(right).length) return false;
+  return keys.every((key) => {
+    const [x, y] = [left[key], right[key]];
+    return Array.isArray(x) ? Array.isArray(y) && x.length === y.length && x.every((value, at) => value === y[at]) : x === y;
+  });
+}
+
+/**
+ * Plays one game out at random, moving only as the rules offer; the game at
+ * its end, and how many moves it took.
+ *
+ * Uniformly among every move offered — unless the game says how a sensible
+ * random player chooses (`PartyRules.sensible`: Tenka, which a player ending
+ * attacks and placing armies at random would play for ever). Then its move is
+ * played, and held to be one the rules offered; and at every step the rules
+ * must still take a uniformly random offered move too, so "every move offered
+ * is one the rules take" is asked of every game either way.
+ */
 function playOut<S, M>(
   rules: PartyRules<S, M>,
   size: number,
@@ -86,7 +110,6 @@ function playOut<S, M>(
   language?: PartyLanguage,
 ): { end: S; moves: number; mid: S | null } {
   const random = seeded(seed);
-  // The seed too, so a game dealt from a shuffle is dealt afresh each game (a game with nothing hidden ignores it).
   let game = rules.start(size, new Array<string>(count).fill(""), language, seed);
   if (game === null) throw new Error(`no table of ${count} at size ${size}`);
   let mid: S | null = null;
@@ -94,7 +117,15 @@ function playOut<S, M>(
   while (!rules.over(game) && moves < most) {
     const offered = rules.moves(game);
     if (offered.length === 0) throw new Error("a game not over offers no move");
-    const next = rules.play(game, offered[Math.floor(random() * offered.length)]);
+    const anyOffered = offered[Math.floor(random() * offered.length)];
+    let move = anyOffered;
+    if (rules.sensible !== undefined) {
+      if (rules.play(game, anyOffered) === null) throw new Error("the rules refused a move they offered");
+      move = rules.sensible(game, random);
+      // Every seventh step, not all: a turn's placing offers hundreds of moves, and the sensible one is among them by construction.
+      if (moves % 7 === 0 && !offered.some((one) => sameMove(one, move))) throw new Error(`the sensible player chose a move not offered: ${JSON.stringify(move)}`);
+    }
+    const next = rules.play(game, move);
     if (next === null) throw new Error("the rules refused a move they offered");
     game = next;
     moves += 1;
@@ -134,27 +165,41 @@ describe("every party game is finished, not just declared", () => {
     expect(unitTests, `no unit test under src/lib/party names ${kind}: test the rule that makes it a game`).toContain(kind);
   });
 
-  it.each(PARTY_KIND_LIST)("%s ends, at every board, table and language it offers, and every seat can win", (kind) => {
-    const rules = PARTY_RULES[kind] as PartyRules<unknown, unknown>;
+  /*
+   * One case for every table a game offers — each language, board and number
+   * of players — rather than one for the whole game: Tenka's whole-world
+   * table for six is sixty games of a few thousand moves, and a case each
+   * keeps every one well inside the time a case is allowed, however busy the
+   * machine running the gate.
+   */
+  const tables = PARTY_KIND_LIST.flatMap((kind) => {
     const spec = PARTY_SPECS[kind];
-    for (const [language, tongue] of (spec.languages ?? [undefined]).entries()) for (const size of spec.sizes) {
-      for (let count = spec.fewestPlayers; count <= spec.mostPlayers; count += 1) {
-        const won = new Set<number>();
-        for (let game = 0; game < 60; game += 1) {
-          const { end, moves } = playOut(rules, size, count, 100_000 * language + 1000 * size + 100 * count + game, 10_000, tongue);
-          expect(rules.over(end), `${kind} ${size} ${tongue ?? ""} for ${count}: still going after ${moves} moves`).toBe(true);
-          expect(rules.moves(end), "a game over offers no move").toEqual([]);
-          const winners = rules.winners(end);
-          expect(winners.length, "a game over names somebody").toBeGreaterThan(0);
-          for (const seat of winners) {
-            expect(seat).toBeGreaterThanOrEqual(0);
-            expect(seat).toBeLessThan(count);
-            won.add(seat);
-          }
-        }
-        expect(won.size, `${kind} ${size} ${tongue ?? ""} for ${count}: some seat never won in 60 games`).toBe(count);
+    return [...(spec.languages ?? [undefined]).entries()].flatMap(([language, tongue]) =>
+      spec.sizes.flatMap((size) =>
+        Array.from(
+          { length: spec.mostPlayers - spec.fewestPlayers + 1 },
+          (_, at): [PartyKind, string, number, number, number, PartyLanguage | undefined] => [kind, tongue ?? "", size, spec.fewestPlayers + at, language, tongue],
+        ),
+      ),
+    );
+  });
+
+  it.each(tables)("%s %s at size %i for %i ends, and every seat can win", (kind, _words, size, count, language, tongue) => {
+    const rules = PARTY_RULES[kind] as PartyRules<unknown, unknown>;
+    const won = new Set<number>();
+    for (let game = 0; game < 60; game += 1) {
+      const { end, moves } = playOut(rules, size, count, 100_000 * language + 1000 * size + 100 * count + game, 10_000, tongue);
+      expect(rules.over(end), `${kind} ${size} ${tongue ?? ""} for ${count}: still going after ${moves} moves`).toBe(true);
+      expect(rules.moves(end), "a game over offers no move").toEqual([]);
+      const winners = rules.winners(end);
+      expect(winners.length, "a game over names somebody").toBeGreaterThan(0);
+      for (const seat of winners) {
+        expect(seat).toBeGreaterThanOrEqual(0);
+        expect(seat).toBeLessThan(count);
+        won.add(seat);
       }
     }
+    expect(won.size, `${kind} ${size} ${tongue ?? ""} for ${count}: some seat never won in 60 games`).toBe(count);
   });
 
   it.each(PARTY_KIND_LIST)("%s is kept and read back exactly, and refuses what it cannot play out", (kind) => {

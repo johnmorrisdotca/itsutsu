@@ -10,6 +10,8 @@ import type { DotsGame } from "../dotsAndBoxes/dotsAndBoxes.types";
 
 import { ONLINE_GAMES, ONLINE_GAME_LIST, hasComputer, isOnlineGame, onlineRulesOf, readPoint } from "./onlineGames";
 import { standingOf } from "./onlineSeats";
+import { computerPlayOf } from "./onlineComputerMoves";
+import type { PairGoMove } from "./onlinePairGo";
 
 /**
  * THE GAMES ON SEVERAL DEVICES ARE PLAYED BY THE SAME RULES AS ON ONE. Each
@@ -29,13 +31,14 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
   });
 
-  it.each(ONLINE_GAME_LIST)("%s starts at every table it offers, and keeps a game it can read back", (key) => {
+  // Kumimoji starts from the bag its set-up dealt, and has its own cases below.
+  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
     const rules = onlineRulesOf(key);
     for (const size of rules.sizes.length === 0 ? [0] : rules.sizes) {
       for (const count of rules.counts) {
@@ -65,8 +68,11 @@ describe("every game on several devices", () => {
     }
   });
 
-  it("offers no computer seat yet: none of these games has a computer player", () => {
-    for (const key of ONLINE_GAME_LIST) expect(hasComputer(key)).toBe(false);
+  it("offers a computer seat only at Pair Go and Kumimoji, the games with a computer player, and the worker can move for each", () => {
+    for (const key of ONLINE_GAME_LIST) {
+      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji");
+      expect(computerPlayOf(key) !== undefined, key).toBe(hasComputer(key));
+    }
   });
 
   it("writes the seats' names into a game for a page, and never into what is kept", () => {
@@ -167,5 +173,107 @@ describe("a point as a browser sent it", () => {
     expect(readPoint({ row: 1.5, col: 0 }, 5)).toBeNull();
     expect(readPoint({ row: "1", col: 0 }, 5)).toBeNull();
     expect(readPoint(null, 5)).toBeNull();
+  });
+});
+
+describe("Pair Go on several devices", () => {
+  const rules = ONLINE_GAMES.go;
+
+  it("seats four in the order round the table: Black 1, White 1, Black 2, White 2", () => {
+    const game = rules.start(9, 4)!;
+    expect(rules.start(9, 2)).toBeNull();
+    expect(rules.start(8, 4)).toBeNull();
+    expect(rules.toPlay(game)).toBe(0);
+    const one = rules.play(game, { kind: "stone", row: 4, col: 4 })!;
+    expect(rules.toPlay(one)).toBe(1);
+    const two = rules.play(one, { kind: "stone", row: 2, col: 2 })!;
+    expect(rules.toPlay(two)).toBe(2);
+    const three = rules.play(two, { kind: "pass" })!;
+    expect(rules.toPlay(three)).toBe(3);
+    // A point taken already is refused by the engine.
+    expect(rules.play(three, { kind: "stone", row: 4, col: 4 })).toBeNull();
+    const named = rules.named(game, ["Aiko", "Ben", "Chloe", "Dan"]);
+    expect(named.teams).toEqual({ black: ["Aiko", "Chloe"], white: ["Ben", "Dan"] });
+  });
+
+  it("reads a stone, a pass or a resignation, and nothing else", () => {
+    expect(rules.readMove({ kind: "stone", row: 3, col: 5 })).toEqual({ kind: "stone", row: 3, col: 5 });
+    expect(rules.readMove({ kind: "pass" })).toEqual({ kind: "pass" });
+    expect(rules.readMove({ kind: "resign" })).toEqual({ kind: "resign" });
+    expect(rules.readMove({ kind: "stone", row: 30, col: 5 })).toBeNull();
+    expect(rules.readMove({ kind: "undo" })).toBeNull();
+    // A point past a small board is read, and refused when played.
+    expect(rules.play(rules.start(9, 4)!, { kind: "stone", row: 12, col: 0 })).toBeNull();
+  });
+
+  it("a resignation ends it, and the other team's two seats win", () => {
+    const game = rules.play(rules.start(9, 4)!, { kind: "stone", row: 4, col: 4 })!;
+    const resigned = rules.play(game, { kind: "resign" })!;
+    expect(rules.toPlay(resigned)).toBeNull();
+    expect(standingOf(rules, resigned)).toMatchObject({ status: "finished", winners: [0, 2] });
+    expect(rules.moveCount(resigned)).toBe(2);
+    expect(rules.decode(rules.encode(resigned))).not.toBeNull();
+  });
+
+  it("seats the site's Go programs, each as itself, and a program's move is one the engine takes", () => {
+    const computers = rules.computers!;
+    expect(computers.levels.length).toBeGreaterThan(0);
+    const level = computers.levels[0];
+    const seat = computers.seat(level);
+    expect(seat.memberId).not.toBeNull();
+    expect(computers.levelOf(seat)).toBe(level);
+    expect(computers.levelOf({ memberId: "somebody", name: "Somebody" })).toBeNull();
+    const game = rules.play(rules.start(9, 4)!, { kind: "stone", row: 4, col: 4 })!;
+    const move = computerPlayOf("go")!.move(game, 1, level) as PairGoMove | null;
+    expect(move).not.toBeNull();
+    expect(rules.play(game, move!)).not.toBeNull();
+  });
+});
+
+describe("Superghost on several devices", () => {
+  const rules = ONLINE_GAMES.superghost;
+
+  it("starts in the language the set-up asked for, and in no language it does not offer", () => {
+    expect(rules.start(4, 3, { setup: { language: "japanese" } })!.language).toBe("japanese");
+    expect(rules.start(4, 3)!.language).toBe("english");
+    expect(rules.start(4, 3, { setup: { language: "klingon" } })).toBeNull();
+    expect(rules.start(4, 1)).toBeNull();
+  });
+
+  it("plays a move on the browser's word for the word, and checks everything else itself", () => {
+    const game = rules.start(4, 2)!;
+    const a = rules.play(game, { move: { kind: "letter", letter: "c", end: "after" }, word: false })!;
+    expect(rules.toPlay(a)).toBe(1);
+    expect(rules.moveCount(a)).toBeGreaterThan(0);
+    // A letter of no alphabet, and a challenge before any letter, are the rules' to refuse.
+    expect(rules.play(game, { move: { kind: "letter", letter: "9", end: "after" }, word: false })).toBeNull();
+    expect(rules.play(game, { move: { kind: "challenge" }, word: false })).toBeNull();
+    // An answer that does not hold the fragment is refused whatever the browser says of it.
+    const challenged = rules.play(a, { move: { kind: "challenge" }, word: false })!;
+    expect(rules.toPlay(challenged)).toBe(0);
+    expect(rules.play(challenged, { move: { kind: "answer", word: "dogs" }, word: true })).toBeNull();
+    const named = rules.play(challenged, { move: { kind: "answer", word: "cats" }, word: true })!;
+    expect(rules.decode(rules.encode(named))).not.toBeNull();
+  });
+
+  it("reads a move's shape and nothing else", () => {
+    expect(rules.readMove({ move: { kind: "letter", letter: "a", end: "before" }, word: false })).not.toBeNull();
+    expect(rules.readMove({ move: { kind: "letter", letter: "ab", end: "before" }, word: false })).toBeNull();
+    expect(rules.readMove({ move: { kind: "concede" } })).toBeNull();
+  });
+});
+
+describe("Mancala on several devices", () => {
+  const rules = ONLINE_GAMES.mancala;
+
+  it("is its party rules, a move a pit", () => {
+    const game = rules.start(14, 2)!;
+    expect(rules.start(14, 3)).toBeNull();
+    expect(rules.toPlay(game)).toBe(0);
+    const pit = [0, 1, 2, 3, 4, 5].find((one) => rules.play(game, one) !== null)!;
+    const next = rules.play(game, pit)!;
+    expect(rules.moveCount(next)).toBe(1);
+    expect(rules.readMove(3)).toBe(3);
+    expect(rules.readMove("3")).toBeNull();
   });
 });

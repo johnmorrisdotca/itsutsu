@@ -181,7 +181,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-        <SectionHeading title="Standing here" kanji="居る" />
+        <SectionHeading title="Players at this level" kanji="在籍" />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label="Which players the rung lists" />
           <RecordScopeBar
@@ -192,7 +192,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
           />
           {who !== DIRECTORY_WHO.everyone ? (
             <p className="text-xs text-muted" data-testid="level-narrowed">
-              Narrowed to {XP_WHO_SAID[who]}.{" "}
+              Filtered by {XP_WHO_SAID[who]}.{" "}
               <Link href={xpWhoHref(levelPath(level), query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
                 Show everyone
               </Link>

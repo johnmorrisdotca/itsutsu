@@ -63,7 +63,7 @@ export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[
                 <span className="flex flex-wrap gap-x-1 text-xs text-muted">
                   {table.seats.map((seat, index) => (
                     <span key={seat.seat} className={RAISED_LINK}>
-                      {seat.kind === ONLINE_SEAT_KINDS.member ? (
+                      {seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null) ? (
                         <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={seat.memberId === null ? undefined : tags.get(seat.memberId)} testId="my-table-player" />
                       ) : seat.kind === ONLINE_SEAT_KINDS.computer ? (
                         ONLINE_COPY.computerSeat
@@ -81,7 +81,7 @@ export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[
                       ? ONLINE_COPY.myYourMove
                       : toPlay?.kind === ONLINE_SEAT_KINDS.open
                         ? ONLINE_COPY.myOpen
-                        : ONLINE_COPY.myTheirMove(toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : toPlay?.name || "The next player")}
+                        : ONLINE_COPY.myTheirMove(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : "The next player"))}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">

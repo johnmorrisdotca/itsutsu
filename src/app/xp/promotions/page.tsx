@@ -24,7 +24,7 @@ import { XP_WHO_PARAM, XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
 import { xpWhoFor } from "@/lib/xp/xpWhoServer";
 
 export const metadata = {
-  title: "Recent promotions",
+  title: "Recent level-ups",
   description: "Who went up an experience level on Itsutsu lately, newest first: from which level to which, and when.",
 };
 
@@ -87,12 +87,12 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
       <SiteHeader />
 
       <PageTitle
-        title="Recent promotions"
+        title="Recent level-ups"
         kanji="昇級"
         aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
-              Who is where <span className="font-mincho">経験値</span>
+              XP leaderboard <span className="font-mincho">経験値</span>
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
               All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
@@ -123,7 +123,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
           {narrowed ? (
             /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
             <p className="text-xs text-muted" data-testid="promotions-narrowed">
-              Narrowed to {XP_WHO_SAID[who]}.{" "}
+              Filtered by {XP_WHO_SAID[who]}.{" "}
               <Link href={pageHref(DIRECTORY_WHO.everyone, scope, null)} className="underline underline-offset-4">
                 Show everyone
               </Link>
@@ -182,7 +182,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
         <div className="flex flex-wrap items-center gap-3">
           {page.next === null ? null : (
             <Link href={pageHref(who, scope, page.next)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="promotions-older">
-              Show older promotions
+              Show older level-ups
             </Link>
           )}
           {cursor === null ? null : (

@@ -21,8 +21,9 @@ import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
 import type { MancalaGame } from "./mancala/mancala.types";
 import type { TrainGame, TrainMove } from "./mexicanTrain/mexicanTrain.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
+import type { TenkaGame, TenkaMove } from "./tenka/tenka.types";
 
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "mexicanTrain";
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain";
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -45,7 +46,8 @@ export type PartySpec = {
    * height). What a size counts is the game's own: boxes along a side, for
    * Dots and Boxes; the shortest word that loses, for Superghost; for Mancala
    * the holes a seed is sown into, 14 on Kalah's board and 12 on Oware's, so
-   * the board chosen is the rule set played (`MANCALA_BOARDS`).
+   * the board chosen is the rule set played (`MANCALA_BOARDS`); rounds before
+   * the count, for Tenka, whose one board is the world.
    */
   sizes: readonly number[];
   /** The board the set-up opens on. */
@@ -69,10 +71,10 @@ export type PartyRules<S, M> = {
   /**
    * A new game at this board size for these names (one a seat), in this
    * language when the game offers languages, or null for a table the game is
-   * not offered for. A game dealt from a shuffle (Mexican Train's tiles) takes
-   * the `seed` it is drawn from, so the gate plays a different deal each game
-   * and a kept game deals the same again; a game with nothing hidden has no
-   * use for one.
+   * not offered for. A game of chance takes a `seed` too, which the gate gives
+   * each game it plays, and a kept game deals or throws the same again: Tenka's
+   * dice, Mexican Train's shuffled tiles. A game with nothing hidden and no
+   * dice ignores it.
    */
   start: (size: number, players: readonly string[], language?: PartyLanguage, seed?: number) => S | null;
   /** Every move the player to move may make now; none once the game is over. */
@@ -92,6 +94,16 @@ export type PartyRules<S, M> = {
    * kept game back never waits for it (`decode` judges nothing).
    */
   prepare?: () => Promise<void>;
+  /**
+   * For a game that a player choosing uniformly among every move offered
+   * would never finish — Tenka's, where ending an attack at random and
+   * placing one army at a time on a random territory goes on for ever, as
+   * no person plays — a random move a sensible player might make, which the
+   * gate plays instead. Every move it chooses is one `moves` offers, and the
+   * gate still has the rules take a uniformly random offered move at every
+   * step. A game that ends at uniform random has none.
+   */
+  sensible?: (game: S, random: () => number) => M;
 };
 
 /** Each party game's game and move, so its rules can be named with their own types (`PARTY_RULES`). */
@@ -99,5 +111,6 @@ export type PartyPlays = {
   dotsAndBoxes: { game: DotsGame; move: number };
   superghost: { game: GhostGame; move: GhostMove };
   mancala: { game: MancalaGame; move: number };
+  tenka: { game: TenkaGame; move: TenkaMove };
   mexicanTrain: { game: TrainGame; move: TrainMove };
 };

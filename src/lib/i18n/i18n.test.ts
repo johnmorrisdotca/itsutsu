@@ -29,7 +29,7 @@ describe("filling a sentence in", () => {
 
 describe("saying something", () => {
   it("says it in English when English is asked for", () => {
-    expect(speaker("en").say("rules.object")).toBe("Object");
+    expect(speaker("en").say("rules.object")).toBe("Objective");
   });
 
   it("says it in the reader's language", () => {

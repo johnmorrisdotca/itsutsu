@@ -15,6 +15,8 @@ import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
 import { KumimojiTiles } from "@/components/puzzles/KumimojiTiles";
+import { TenkaWorldTable } from "@/components/party/tenka/TenkaWorldTable";
+import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
@@ -186,6 +188,12 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           <Part heading={say.pair("rules.board", "盤")} lines={page.board} />
           <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
           <Part heading={say.pair("rules.house", "細則")} lines={page.house} />
+          {/* A Gomoji's other languages and word lists, a section each, on the one rules page the one game has (`gameSettings.ts`). */}
+          {(page.settings ?? []).map((setting) => (
+            <div key={setting.id} id={setting.id} data-testid="rules-setting">
+              <Part heading={{ text: setting.heading, kanji: setting.kanji }} lines={setting.lines} />
+            </div>
+          ))}
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
             {/*
               The ways out that are not "start one", which is the big Play under
@@ -225,6 +233,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
         </article>
         {/* Kumimoji's two sets of tiles, counted and drawn, and every form a kana tile plays as: see `KumimojiTiles`. */}
         {puzzle === PUZZLE_KINDS.kumimoji ? <KumimojiTiles /> : null}
+        {/* Tenka's world: its continents, their bonuses and their territories, from the table the rules read. */}
+        {party === PARTY_KINDS.tenka ? <TenkaWorldTable /> : null}
         </div>
 
         {/*

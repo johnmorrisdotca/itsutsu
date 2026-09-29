@@ -72,7 +72,7 @@ function MoveList({
   return (
     <details className="group flex flex-col gap-2" data-testid="move-list">
       <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
-        Move list <span className="font-mincho normal-case tracking-normal">棋譜</span>
+        Moves <span className="font-mincho normal-case tracking-normal">棋譜</span>
         <span className="ml-1 opacity-60 group-open:hidden">+</span>
         <span className="ml-1 hidden opacity-60 group-open:inline">−</span>
       </summary>
@@ -342,7 +342,7 @@ export function GameReplay({
         </MovesFold>
 
         <Button onClick={() => writeTurned(game.id, !turned)} strong={turned} data-testid="turn-board">
-          {turned ? "Turn the board back" : "Turn the board round"}
+          {turned ? "Flip the board back" : "Flip the board"}
         </Button>
         <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers} data-testid="show-move-numbers">
           {showNumbers ? "Hide" : "Show"} move numbers

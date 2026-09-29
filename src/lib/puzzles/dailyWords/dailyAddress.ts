@@ -1,4 +1,5 @@
-import { gamePath, playPath } from "@/lib/gomoku/slugs";
+import { settingQuery } from "@/lib/catalogue/gameSettings";
+import { gamePath, joinQuery, playPath } from "@/lib/gomoku/slugs";
 
 import { DAILY_PARAM } from "../daily";
 import { toKatakana } from "../gomojiKana/kanaCode";
@@ -18,19 +19,19 @@ import { yotsugoDailySeed } from "../gomoji/yotsugoSeed";
  * alphabet Gomojis, easy for kana), as "Today's word" always was.
  */
 
-/** /games/<slug>/daily — every past day's words. */
+/** /games/<slug>/daily — every past day's words, in the language asked (`settingQuery`). */
 export function dailyWordsPath(kind: PuzzleKind): string {
-  return `${gamePath(kind)}/daily`;
+  return joinQuery(`${gamePath(kind)}/daily`, settingQuery(kind));
 }
 
-/** /games/<slug>/daily/<day> — one day's words and the fastest at each. */
+/** /games/<slug>/daily/<day> — one day's words and the fastest at each, in the language asked. */
 export function dailyDayPath(kind: PuzzleKind, day: string): string {
-  return `${dailyWordsPath(kind)}/${day}`;
+  return joinQuery(`${gamePath(kind)}/daily/${day}`, settingQuery(kind));
 }
 
 /** The address a day's word is played at, at a length: an ordinary solve with the day's seed. */
 export function dailyPlayPath(kind: PuzzleKind, size: number, day: string): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: dailyWordSeed(day) })}`;
+  return joinQuery(playPath(kind), puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: dailyWordSeed(day) }));
 }
 
 /**
@@ -39,27 +40,27 @@ export function dailyPlayPath(kind: PuzzleKind, size: number, day: string): stri
  * it is opened, so the link is right on whatever day it is followed.
  */
 export function todayPlayPath(kind: PuzzleKind, size: number): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null })}&${DAILY_PARAM}=1`;
+  return joinQuery(playPath(kind), `${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null })}&${DAILY_PARAM}=1`);
 }
 
 /** The address a day's Futago is played at, at a length: its two words, at the day's Futago seed (`futagoDailySeed`). */
 export function dailyFutagoPlayPath(kind: PuzzleKind, size: number, day: string): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: futagoDailySeed(day), words: 2 })}`;
+  return joinQuery(playPath(kind), puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: futagoDailySeed(day), words: 2 }));
 }
 
 /** Today's Futago at a length, for a page drawn before anybody asked: `?daily=1` with `twins=1` turns into today's Futago seed. */
 export function todayFutagoPlayPath(kind: PuzzleKind, size: number): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, words: 2 })}&${DAILY_PARAM}=1`;
+  return joinQuery(playPath(kind), `${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, words: 2 })}&${DAILY_PARAM}=1`);
 }
 
 /** The address a day's Yotsugo is played at, at a length: its four words, at the day's Yotsugo seed (`yotsugoDailySeed`). */
 export function dailyYotsugoPlayPath(kind: PuzzleKind, size: number, day: string): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: yotsugoDailySeed(day), words: 4 })}`;
+  return joinQuery(playPath(kind), puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: yotsugoDailySeed(day), words: 4 }));
 }
 
 /** Today's Yotsugo at a length, for a page drawn before anybody asked: `?daily=1` with `quadruplets=1` turns into today's Yotsugo seed. */
 export function todayYotsugoPlayPath(kind: PuzzleKind, size: number): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, words: 4 })}&${DAILY_PARAM}=1`;
+  return joinQuery(playPath(kind), `${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, words: 4 })}&${DAILY_PARAM}=1`);
 }
 
 /** The givens a solve of this word was kept with, for a query: exactly, or as the start before a kana puzzle's grey word. */

@@ -31,7 +31,7 @@ export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Standings" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Leaderboard" }]} />}
         lead="Everybody's points at it, all time and this month, then the fastest solves at every size and level. A solve on your own is timed by your browser; a race by the site."
       >
         <p className="flex flex-wrap gap-x-3 text-xs">

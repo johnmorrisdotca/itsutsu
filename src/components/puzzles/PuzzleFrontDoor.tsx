@@ -11,7 +11,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { Suspense } from "react";
 
-import { backgroundPath, familyPath, historyPath, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { backgroundPath, familyPath, historyPath, joinQuery, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { DAILY_PARAM } from "@/lib/puzzles/daily";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { PUZZLE_KINDS, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -21,6 +21,7 @@ import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 
 import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsLive";
+import { WordSettingsPanel } from "./WordSettingsPanel";
 import { PuzzleFastest } from "./PuzzleFastest";
 import { PuzzlePlayOrResume } from "./PuzzlePlayOrResume";
 import { PuzzlePoints } from "./PuzzlePoints";
@@ -83,7 +84,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               ) : (
                 /* The same puzzle for everybody today (`daily.ts`), at the usual size and level. */
                 <Link
-                  href={`${playPath(kind)}?size=${spec.defaultSize}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`}
+                  href={joinQuery(playPath(kind), `?size=${spec.defaultSize}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`)}
                   className="text-center text-sm font-medium underline underline-offset-4"
                   data-testid="game-daily"
                 >
@@ -122,7 +123,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
           <div className="flex min-w-0 flex-col gap-4">
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
-              The object <span className="font-mincho normal-case tracking-normal">目的</span>
+              Objective <span className="font-mincho normal-case tracking-normal">目的</span>
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
               {page.object.map((line) => (
@@ -131,7 +132,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                The whole rules of {page.title} <span className="font-mincho">規則</span> →
+                Full rules of {page.title} <span className="font-mincho">規則</span> →
               </Link>
             </p>
           </section>
@@ -162,11 +163,14 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             <PuzzleFastest kind={kind} title={page.title} />
           </Suspense>
 
+          {/* A game with languages and word lists names each here, with its own set-up and tables (`WordSettingsPanel`). */}
+          <WordSettingsPanel game={kind} />
+
           <GameFamily variant={kind} />
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
             <h2 className={SECTION_TITLE}>
-              All of it <span className="font-mincho normal-case tracking-normal">一覧</span>
+              More on this game <span className="font-mincho normal-case tracking-normal">一覧</span>
             </h2>
             <div className="-mx-2 flex flex-col">
               <Facet href={rulesPath(kind)}>
@@ -176,7 +180,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 Fastest solves <span className="font-mincho opacity-70">最速</span>
               </Facet>
               <Facet href={historyPath(kind)} testId="facet-record">
-                Every solve here <span className="font-mincho opacity-70">棋譜</span>
+                All solves <span className="font-mincho opacity-70">棋譜</span>
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
                 {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" ? (
@@ -185,7 +189,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                   </>
                 ) : (
                   <>
-                    Your own solves <span className="font-mincho opacity-70">自分の解</span>
+                    Your solves <span className="font-mincho opacity-70">自分の解</span>
                   </>
                 )}
               </Facet>
@@ -195,7 +199,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 </Facet>
               ) : null}
               <Facet href={familyPath(kind)} testId="facet-family">
-                Its family <span className="font-mincho opacity-70">同族</span>
+                Family <span className="font-mincho opacity-70">同族</span>
               </Facet>
               <Facet href={backgroundPath(kind)} testId="facet-background">
                 Background <span className="font-mincho opacity-70">背景</span>

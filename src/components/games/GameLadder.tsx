@@ -196,7 +196,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
 function Heading() {
   return (
     <h2 className={SECTION_TITLE}>
-      Who is best at it <span className="font-mincho normal-case tracking-normal">名人</span>
+      Leaderboard <span className="font-mincho normal-case tracking-normal">番付</span>
     </h2>
   );
 }
@@ -207,7 +207,7 @@ function Heading() {
  *
  * UNDER the table rather than beside the heading, which is both the shape a
  * reader expects of a leaderboard and the only one that fits: a 288px column
- * broke "Who is best at it 名人" across two lines to make room for it.
+ * broke "Who is best at it 名人", the heading this had before, across two lines to make room for it.
  *
  * It is here whether or not the ladder has anybody on it. A side-view that led
  * nowhere would be the dead end this site has a gate against, and an empty one
@@ -221,7 +221,7 @@ function WholeLadder({ variant }: { variant: string }) {
         className="text-muted underline-offset-2 hover:underline"
         data-testid="game-ladder-all"
       >
-        The whole ladder →
+        Full leaderboard →
       </Link>
     </p>
   );

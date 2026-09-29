@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { lastPastDay } from "../src/lib/puzzles/dailyWords/dailyArchive";
 import { dailyWordSeed, dayAfter, dayKeyOf } from "../src/lib/puzzles/dailyWords/dailyDay";
 import { dailyLengths, dailyWordOf, loadDailyPools } from "../src/lib/puzzles/dailyWords/dailyPools";
+import { setUpPath } from "../src/lib/gomoku/slugs";
 import { ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 
@@ -58,7 +59,8 @@ test.describe("today's words", () => {
   });
 
   test("the kana Gomoji has a button for each of its three lengths, each playing that length today", async ({ page }) => {
-    await page.goto("/games/gomoji-kana");
+    // Kana is a language of the one Gomoji: its day's words are on its set-up, the language chosen (`gameSettings.ts`).
+    await page.goto(setUpPath("gomojiKana"));
     await expect(page.getByTestId("daily-row")).toHaveCount(3);
     for (const size of [3, 4, 5]) {
       const link = page.locator(`[data-testid="daily-row"][data-size="${size}"]`).getByTestId("daily-play");
@@ -68,7 +70,7 @@ test.describe("today's words", () => {
   });
 
   test("the set-up page offers the same buttons under the chooser", async ({ page }) => {
-    await page.goto("/games/gomoji-mot/new");
+    await page.goto(setUpPath("gomojiMot"));
     await ready(page, "puzzle-set-up");
     const panel = page.getByTestId("daily-words");
     await expect(panel.getByTestId("daily-play")).toHaveCount(dailyLengths("gomojiMot").length);
@@ -77,7 +79,7 @@ test.describe("today's words", () => {
 
   test("the buttons fit a phone", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/games/gomoji-kana");
+    await page.goto(setUpPath("gomojiKana"));
     await expect(page.getByTestId("daily-row")).toHaveCount(3);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
@@ -116,7 +118,7 @@ test.describe("the archive of past words", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test("the archive is open and never shows today's words, even in its source", async ({ page }) => {
-      const response = await page.goto("/games/gomoji-wort/daily");
+      const response = await page.goto("/games/gomoji/daily?language=german");
       expect(response?.status()).toBe(200);
       await ready(page, "daily-archive");
       const source = (await page.content()).toLowerCase();

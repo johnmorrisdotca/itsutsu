@@ -7,7 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import type { Appearance } from "@/components/board/board.types";
-import { playPath } from "@/lib/gomoku/slugs";
+import { joinQuery, playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -277,7 +277,7 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, clock })}`}
+              href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, clock }))}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >

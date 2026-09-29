@@ -131,7 +131,7 @@ export function TurnBanner({
         data-testid="turn-banner"
         data-awaiting="true"
       >
-        <span className="font-semibold">Posted, and waiting for somebody 募集中.</span>{" "}
+        <span className="font-semibold">Waiting for an opponent 募集中.</span>{" "}
         Your seat link is below — send it to somebody, or leave it on the board and you will be
         told when it is taken. You may play your first move now if you would rather.
       </p>

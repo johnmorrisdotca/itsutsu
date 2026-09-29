@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { PuzzleSolvePage } from "@/components/puzzles/PuzzleSolvePage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 
 // Who is reading, and whether they may see this solve, is read on every request.
@@ -19,9 +20,9 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/hist
  * match lives at /games/<slug>/match/<id>, so for a game this address is
  * nothing.
  */
-export default async function SolveOfRecordPage({ params }: PageProps<"/games/[slug]/history/[id]">) {
+export default async function SolveOfRecordPage({ params, searchParams }: PageProps<"/games/[slug]/history/[id]">) {
   const { slug, id } = await params;
-  const puzzle = puzzleFor(slug);
+  const puzzle = puzzleForAddress(slug, await searchParams);
   if (puzzle === null) notFound();
   return <PuzzleSolvePage kind={puzzle} solveId={id} whose="anyone" />;
 }

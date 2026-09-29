@@ -40,6 +40,8 @@ async function tapBridge(page: Page, { board }: Laid, span: number) {
 /** One bridge by dragging, a finger's way: pressed on one island, moved across the water, lifted on the other. */
 async function dragBridge(page: Page, { board }: Laid, span: number) {
   const islands = page.getByTestId("bridges-island");
+  // The whole board on the screen first, as a player would have it before reaching across it.
+  await page.getByTestId("bridges-board").scrollIntoViewIfNeeded();
   const from = (await islands.nth(board.spans[span]!.a).boundingBox())!;
   const to = (await islands.nth(board.spans[span]!.b).boundingBox())!;
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
@@ -211,7 +213,8 @@ test.describe("the Bridges puzzle", () => {
     const logic = page.getByTestId("set-up-family").filter({ hasText: "Logic puzzles" });
     await logic.click();
     await expect(logic).toHaveAttribute("data-open", "true");
-    await expect(page.getByTestId("set-up-puzzle")).toHaveCount(1);
+    // Bridges first, then Picture logic (2026-09-29): the shelf opens on its first.
+    await expect(page.getByTestId("set-up-puzzle")).toHaveCount(2);
     await expect(page.getByTestId("set-up-puzzle").first()).toHaveAttribute("data-kind", KIND);
     await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", KIND);
 

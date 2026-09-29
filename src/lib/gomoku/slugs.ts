@@ -1,4 +1,8 @@
 import type { GameKey } from "../catalogue/gameKeys";
+import { isSettingKind, listedGameOf, settingQuery } from "../catalogue/gameSettings";
+import { joinQuery } from "./addressQuery";
+
+export { joinQuery };
 import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
 
@@ -89,6 +93,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   kumimoji: "kumimoji",
   koushi: "koushi",
   bridges: "bridges",
+  pictureLogic: "picture-logic",
 };
 
 /**
@@ -102,6 +107,7 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   dotsAndBoxes: "dots-and-boxes",
   superghost: "superghost",
   mancala: "mancala",
+  tenka: "tenka",
   mexicanTrain: "mexican-train",
 };
 
@@ -110,7 +116,8 @@ const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
 );
 
 const PUZZLE_BY_SLUG = new Map<string, PuzzleKind>(
-  (Object.entries(PUZZLE_SLUGS) as [PuzzleKind, string][]).map(([kind, slug]) => [slug, kind]),
+  // A setting of a game (a Gomoji in French) has no address of its own: its game's, with the setting in the query (`gameSettings.ts`).
+  (Object.entries(PUZZLE_SLUGS) as [PuzzleKind, string][]).filter(([kind]) => !isSettingKind(kind)).map(([kind, slug]) => [slug, kind]),
 );
 
 const PARTY_BY_SLUG = new Map<string, PartyKind>(
@@ -173,29 +180,46 @@ export function passAndPlayPath(variant: string): string {
   return `${gamePath(variant)}/pass-and-play`;
 }
 
-/** /games/<slug> — the game. The front door, and where every game's name leads. */
+/**
+ * WHERE A SETTING OF A GAME LIVES: under its game, with the setting in the
+ * query. A Gomoji in French is played at /games/gomoji/play?language=french,
+ * never at an address of its own (John, 2026-09-28: "just have 1 and allow
+ * language selection"). The game's own pages — its front door, rules, family
+ * and art — are one for every setting; the pages that are about one setting's
+ * puzzles — a board, a set-up, a record, a table of the fastest, a member's
+ * own, the days' words, one solve — carry it (`settingQuery`).
+ */
+function gameBase(variant: string): string {
+  return `/games/${slugFor(listedGameOf(variant))}`;
+}
+
+function withSetting(path: string, variant: string): string {
+  return joinQuery(path, settingQuery(variant));
+}
+
+/** /games/<slug> — the game. The front door, and where every game's name leads: one for all of a game's settings. */
 export function gamePath(variant: string): string {
-  return `/games/${slugFor(variant)}`;
+  return gameBase(variant);
 }
 
-/** /games/<slug>/rules — what it is and how a turn goes. */
+/** /games/<slug>/rules — what it is and how a turn goes, every setting's in one document. */
 export function rulesPath(variant: string): string {
-  return `${gamePath(variant)}/rules`;
+  return `${gameBase(variant)}/rules`;
 }
 
-/** /games/<slug>/history — every finished game of it, by everybody. */
+/** /games/<slug>/history — every finished game of it, by everybody: one setting's, where it has settings. */
 export function historyPath(variant: string): string {
-  return `${gamePath(variant)}/history`;
+  return withSetting(`${gameBase(variant)}/history`, variant);
 }
 
-/** /games/<slug>/me — the reader's own games of it. */
+/** /games/<slug>/me — the reader's own games of it, one setting's where it has settings. */
 export function myGamePath(variant: string): string {
-  return `${gamePath(variant)}/me`;
+  return withSetting(`${gameBase(variant)}/me`, variant);
 }
 
-/** One of the reader's own finished puzzles, under their solves of it: the grid as it ended, and how. */
+/** One of the reader's own finished puzzles, under their solves of it: the grid as it ended, and how, in its setting. */
 export function mySolvePath(kind: string, solveId: string): string {
-  return `${myGamePath(kind)}/${solveId}`;
+  return withSetting(`${gameBase(kind)}/me/${solveId}`, kind);
 }
 
 /**
@@ -205,32 +229,32 @@ export function mySolvePath(kind: string, solveId: string): string {
  * same page. Members only, like the record it sits under (`src/proxy.ts`).
  */
 export function solvePath(kind: string, solveId: string): string {
-  return `${historyPath(kind)}/${solveId}`;
+  return withSetting(`${gameBase(kind)}/history/${solveId}`, kind);
 }
 
-/** /games/<slug>/standings — this game's own ladder, in full. */
+/** /games/<slug>/standings — this game's own ladder, in full; one setting's fastest, where it has settings. */
 export function standingsPath(variant: string): string {
-  return `${gamePath(variant)}/standings`;
+  return withSetting(`${gameBase(variant)}/standings`, variant);
 }
 
 /** /games/<slug>/family — the family it belongs to, and its siblings. */
 export function familyPath(variant: string): string {
-  return `${gamePath(variant)}/family`;
+  return `${gameBase(variant)}/family`;
 }
 
 /** /games/<slug>/background — the art. A place kept, whether or not there is a picture in it yet. */
 export function backgroundPath(variant: string): string {
-  return `${gamePath(variant)}/background`;
+  return `${gameBase(variant)}/background`;
 }
 
-/** /games/<slug>/play — a board, now, in this browser. */
+/** /games/<slug>/play — a board, now, in this browser, in the setting asked for. */
 export function playPath(variant: string): string {
-  return `${gamePath(variant)}/play`;
+  return withSetting(`${gameBase(variant)}/play`, variant);
 }
 
 /** /games/<slug>/new — setting a shared game up, before it exists. */
 export function setUpPath(variant: string): string {
-  return `${gamePath(variant)}/new`;
+  return withSetting(`${gameBase(variant)}/new`, variant);
 }
 
 /**

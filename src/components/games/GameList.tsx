@@ -115,8 +115,8 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                         <span className="flex flex-wrap gap-x-3 text-xs">
                           <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
                           <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
-                          <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>record</Link>
-                          <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>standings</Link>
+                          <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>history</Link>
+                          <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>leaderboard</Link>
                           <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
                         </span>
                       </>

@@ -1,4 +1,3 @@
-import { BOARD_SIZES, type BoardSize } from "@/lib/preferences/boardSize";
 
 /**
  * The words the screens around a shared game use.
@@ -266,7 +265,7 @@ export const SET_UP_COPY = {
    * the doorstep, because the rules being agreed to there are somebody else's.
    */
   /** The press after a game has already been begun from this address, in this tab. */
-  board: "Open the board 対局へ",
+  board: "Go to game 対局へ",
   /** The same press where somebody is already asking for exactly this game. */
   continueToSeat: (who: string) => `Continue to sit down with ${who} 次へ`,
   /* Which seat the asker takes, where it is theirs to choose — see `colourChoice.ts`. */
@@ -274,7 +273,7 @@ export const SET_UP_COPY = {
     label: "You play",
     black: "Black, and move first",
     white: "White, and move second",
-    lot: "Drawn by lot",
+    lot: "Random",
   },
   /**
    * How many games at once, as GoldToken asks it: No / Two-game / Four-game /
@@ -290,8 +289,8 @@ export const SET_UP_COPY = {
   },
   /** The headings over the screen's groups, in the order they are drawn. */
   sections: {
-    opponent: { title: "Who you play", kanji: "対戦相手" },
-    rules: { title: "The rules", kanji: "規則" },
+    opponent: { title: "Opponent", kanji: "対戦相手" },
+    rules: { title: "Rules", kanji: "規則" },
     handicap: { title: "Handicap", kanji: "ハンデ" },
   },
   /**
@@ -404,18 +403,18 @@ export const ASK_NEEDS_ACCOUNT =
  * reading.
  */
 export const DOORSTEP_COPY = {
-  title: "Before the first stone",
+  title: "Ready to start",
   kanji: "確認",
   /** Above the table of rows, saying why nothing on this page can be changed here. */
   note: "This is what will be played. Nothing has been written yet.",
   /** Taking a seat somebody has already posted, rather than making a second game. */
   sit: (who: string) => `Sit down with ${who} 着席`,
-  change: "Change something 変更",
+  change: "Change settings 変更",
   /** Who a game against a computer player drawn at random is against, before the draw. */
   drawnFrom: (names: readonly string[]) =>
     `a bot drawn at random from ${names.join(", ")} when you press Start`,
   /** Once this doorstep has made its game, the same control opens its board. */
-  board: "Open the board 対局へ",
+  board: "Go to game 対局へ",
   made: "You have already begun this game. The button below opens its board rather than making a second one.",
   another: "Start another like this one",
   refused: "That game could not be started.",
@@ -548,17 +547,14 @@ export const LIVE_MOVE_COPY = {
 } as const;
 
 /**
- * THE BOARD'S COLUMN, AND HOW WIDE IT MAY GROW ON A DESK.
+ * THE BOARD'S COLUMN, AND HOW WIDE IT IS ON A DESK AT REGULAR.
  *
  * Below a laptop's width the board fills its column up to 36rem, exactly as it
  * always has: a phone's board is the phone, and there is nothing to choose. From
- * `lg` the member's `boardSize` decides, and each is a CAP rather than a size —
- * `min(100%, …)` — so a choice larger than the room there is fills the room and
- * never overflows it. On a 1440px laptop the column is 800px, so Medium and
- * Large come out nearly alike there. The page no longer widens on a 27-inch
- * screen (one width everywhere, see `PAGE_WIDTH`), so they stay close there
- * too; that is the column being honest about what it has, not a bug in the
- * choice.
+ * `lg` it is FITTED: as wide as lets the board end at the bottom of the screen,
+ * and a CAP rather than a size — `min(100%, …)` — so it never overflows the
+ * room beside the side matter. Large and Full (`BoardScale`) take the cap off
+ * and give the column a width of their own.
  *
  * FIT IS MEASURED AGAINST THE SCREEN'S HEIGHT, because on a desk the board runs
  * off the bottom long before it runs out of width. What sits above the board is
@@ -567,12 +563,9 @@ export const LIVE_MOVE_COPY = {
  * over as `--board-room`. Until then, `100dvh - 19rem` stands in: the distance
  * from the top of a 1440×900 match page to its board, measured.
  *
- * NEVER SMALLER THAN THE BOARD EVERYBODY HAD, which is 36rem. Fit is the
- * default, so it is the size every member gets without asking, and on a
- * 1440×900 laptop the screen's height alone would have made it 524px against
- * the 546 it replaced — the default getting worse on the commonest desk there
- * is. Floored at Small, it is today's board where the screen is short and a
- * bigger one wherever there is room: 1,064px on a 2560×1440 screen.
+ * NEVER SMALLER THAN THE BOARD EVERYBODY HAD, which is 36rem: on a 1440×900
+ * laptop the screen's height alone would have made it 524px against the 546 it
+ * replaced — the default getting worse on the commonest desk there is.
  *
  * Whole class strings, never assembled: Tailwind finds a class by reading the
  * source, and one built from pieces is a class it never generates.
@@ -585,30 +578,16 @@ export const LIVE_MOVE_COPY = {
  */
 export const BOARD_COLUMN = "mx-auto flex w-full max-w-[min(100%,36rem)] flex-col gap-2 lg:mx-0";
 
-export const BOARD_COLUMN_SIZE: Record<BoardSize, string> = {
-  [BOARD_SIZES.fit]: "lg:max-w-[min(100%,72rem,max(36rem,var(--board-room,calc(100dvh-19rem))))]",
-  [BOARD_SIZES.small]: "lg:max-w-[min(100%,36rem)]",
-  [BOARD_SIZES.medium]: "lg:max-w-[min(100%,48rem)]",
-  [BOARD_SIZES.large]: "lg:max-w-[min(100%,72rem)]",
-};
+export const BOARD_COLUMN_FIT = "lg:max-w-[min(100%,72rem,max(36rem,var(--board-room,calc(100dvh-19rem))))]";
 
-/** What the size chooser says, short on the button and whole to a screen reader. */
-export const BOARD_SIZE_WORDS: Record<BoardSize, { short: string; whole: string }> = {
-  [BOARD_SIZES.fit]: { short: "Fit", whole: "Fit the board to the screen" },
-  [BOARD_SIZES.small]: { short: "S", whole: "Small board" },
-  [BOARD_SIZES.medium]: { short: "M", whole: "Medium board" },
-  [BOARD_SIZES.large]: { short: "L", whole: "Large board" },
-};
-
-export const BOARD_SIZE_LEGEND = "Board size";
-
-/** The custom property `BoardColumn` sets for Fit, read by `BOARD_COLUMN_SIZE.fit`. */
+/** The custom property `BoardColumn` sets for its fit, read by `BOARD_COLUMN_FIT`. */
 export const BOARD_FIT_ROOM = "--board-room";
 
 /**
  * Kept free under a fitted board for the row a placed stone brings up — Submit,
  * Take back — plus a little paper, so the press that sends the move is on the
- * same screen as the board. Allowed for rather than measured: see `roomFor`.
+ * same screen as the board. Allowed for rather than measured: see `roomFor`,
+ * and `BoardScale`, which keeps the same room under a live board at Large and Full.
  */
 export const BOARD_FIT_BELOW_PX = 72;
 

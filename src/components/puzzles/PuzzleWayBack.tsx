@@ -25,7 +25,7 @@ export function PuzzleWayBack({ kind }: { kind: PuzzleKind }) {
       {family === null ? null : (
         <Link href={familyPath(kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-way-family">
           {/* In the words the game's own page links it with; a family's title alone ("Other") says nothing as a button. */}
-          Its family <span className="font-mincho opacity-70">同族</span>
+          Family <span className="font-mincho opacity-70">同族</span>
         </Link>
       )}
     </>

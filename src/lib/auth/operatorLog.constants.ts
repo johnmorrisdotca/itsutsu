@@ -37,8 +37,8 @@ export const OPERATOR_ACTIONS = {
 
 /** What the Admin tab says for each act, in the site's paired English and kanji. */
 export const OPERATOR_ACTION_DISPLAY: Record<OperatorActionName, { label: string; kanji: string }> = {
-  shut: { label: "Shut the account", kanji: "停止" },
-  restore: { label: "Opened the account", kanji: "再開" },
+  shut: { label: "Suspended the account", kanji: "停止" },
+  restore: { label: "Reactivated the account", kanji: "再開" },
   wordsSet: { label: "Set four words", kanji: "合言葉" },
   wordsPickOpened: { label: "Opened a four-word pick", kanji: "選択" },
   rename: { label: "Changed the name", kanji: "改名" },

@@ -19,10 +19,16 @@ import {
 import type { PairTeams } from "@/lib/gomoku/party/pairGo.types";
 
 import { PairStone } from "./PairStone";
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
+import { ONLINE_COPY } from "./online/online.constants";
+import type { SeatChoice } from "./online/online.types";
 import { PAIR_GO_COPY } from "./pairGo.constants";
 import type { PairGoSetUpProps } from "./party.types";
 
 const NO_NAMES: PairTeams = { black: ["", ""], white: ["", ""] };
+
+/** Four at the board, always. */
+const PAIR_PLAYERS = 4;
 
 /**
  * THE TWO TEAMS, BEFORE A STONE IS PLAYED: four names, if the table wants
@@ -34,9 +40,19 @@ const NO_NAMES: PairTeams = { black: ["", ""], white: ["", ""] };
  * first turn comes, since the order round the table — Black, White, Black,
  * White — is the one thing about Pair Go a table has to agree before it starts.
  */
-export function PairGoSetUp({ appearance, onStart, ready }: PairGoSetUpProps) {
+export function PairGoSetUp({ appearance, onStart, ready, online }: PairGoSetUpProps) {
   const [size, setSize] = useState(PAIR_GO_DEFAULT_SIZE);
   const [teams, setTeams] = useState<PairTeams>(NO_NAMES);
+  /*
+   * Several devices: a seat chooser in each name's box, a seat being its place
+   * in the order round the table (Black first is seat 1, and the maker's), and
+   * Start sets the table on the server (`OnlineSetUpParts`).
+   */
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, PAIR_PLAYERS));
+  const table = useStartTable(online);
+  const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
+  const severalOffer = several ? online : undefined;
 
   const rename = (stone: Stone, place: 0 | 1, name: string) =>
     setTeams((was) => ({ ...was, [stone]: place === 0 ? [name, was[stone][1]] : [was[stone][0], name] }));
@@ -52,9 +68,11 @@ export function PairGoSetUp({ appearance, onStart, ready }: PairGoSetUpProps) {
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          onStart(startPairGo(size, teams));
+          if (severalOffer !== undefined) void table.start(size, choices);
+          else onStart(startPairGo(size, teams));
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex min-w-0 flex-col gap-3">
           <legend className={SECTION_TITLE}>{PAIR_GO_COPY.teams}</legend>
           {[STONES.black, STONES.white].map((stone) => (
@@ -68,17 +86,21 @@ export function PairGoSetUp({ appearance, onStart, ready }: PairGoSetUpProps) {
                 return (
                   <label key={place} className="flex min-w-0 flex-col gap-0.5 text-xs text-muted">
                     {PAIR_GO_COPY.seatLabel(STONE_DISPLAY[stone].label, seat.turnOrder)}
-                    <input
-                      type="text"
-                      value={teams[stone][place]}
-                      maxLength={PAIR_NAME_MOST}
-                      placeholder={seat.name}
-                      onChange={(event) => rename(stone, place, event.target.value)}
-                      className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base text-ink"
-                      data-testid="pairgo-name"
-                      data-stone={stone}
-                      data-place={place}
-                    />
+                    {severalOffer !== undefined ? (
+                      <SeatChoiceSelect offer={severalOffer} seat={seat.turnOrder} choices={choices} onChoose={onChoose} />
+                    ) : (
+                      <input
+                        type="text"
+                        value={teams[stone][place]}
+                        maxLength={PAIR_NAME_MOST}
+                        placeholder={seat.name}
+                        onChange={(event) => rename(stone, place, event.target.value)}
+                        className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base text-ink"
+                        data-testid="pairgo-name"
+                        data-stone={stone}
+                        data-place={place}
+                      />
+                    )}
                   </label>
                 );
               })}
@@ -86,10 +108,20 @@ export function PairGoSetUp({ appearance, onStart, ready }: PairGoSetUpProps) {
           ))}
         </fieldset>
         <BoardPicker value={size} sizes={PAIR_GO_SIZES} onChange={setSize} />
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="pairgo-start">
-          {PAIR_GO_COPY.start} →
+        <button
+          type="submit"
+          className={`${BUTTON_LEAD} ${BUTTON_STRONG}`}
+          data-testid="pairgo-start"
+          disabled={table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, PAIR_PLAYERS))}
+        >
+          {severalOffer === undefined ? PAIR_GO_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PAIR_GO_COPY.kept}</p>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
+        <p className="text-xs text-muted">{severalOffer === undefined ? PAIR_GO_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, PAIR_PLAYERS))}</p>
       </form>
     </div>
   );

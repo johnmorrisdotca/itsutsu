@@ -159,7 +159,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               */}
               <PlayButton href={setUpPath(variant)} />
               <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="game-play">
-                Try the board 試し打ち
+                Practice board 試し打ち
               </Link>
               {/*
                 A GAME FOR THE WHOLE TABLE, where the game has one: Chinese
@@ -204,7 +204,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           */}
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
-              The object <span className="font-mincho normal-case tracking-normal">目的</span>
+              Objective <span className="font-mincho normal-case tracking-normal">目的</span>
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
               {page.object.map((line) => (
@@ -213,7 +213,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(variant)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                The whole rules of {page.title} <span className="font-mincho">規則</span> →
+                Full rules of {page.title} <span className="font-mincho">規則</span> →
               </Link>
             </p>
           </section>
@@ -271,7 +271,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
             <h2 className={SECTION_TITLE}>
-              All of it <span className="font-mincho normal-case tracking-normal">一覧</span>
+              More on this game <span className="font-mincho normal-case tracking-normal">一覧</span>
             </h2>
             {/*
               Every facet of this game, named once, so that nothing about it is
@@ -283,16 +283,16 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                 Rules <span className="font-mincho opacity-70">規則</span>
               </Facet>
               <Facet href={historyPath(variant)} testId="facet-history">
-                Every game played here <span className="font-mincho opacity-70">棋譜</span>
+                Game history <span className="font-mincho opacity-70">棋譜</span>
               </Facet>
               <Facet href={myGamePath(variant)} testId="facet-me">
-                Your own games of it <span className="font-mincho opacity-70">自分の棋譜</span>
+                Your games <span className="font-mincho opacity-70">自分の棋譜</span>
               </Facet>
               <Facet href={standingsPath(variant)} testId="facet-standings">
-                Standings <span className="font-mincho opacity-70">名人</span>
+                Leaderboard <span className="font-mincho opacity-70">番付</span>
               </Facet>
               <Facet href={familyPath(variant)} testId="facet-family">
-                Its family <span className="font-mincho opacity-70">同族</span>
+                Family <span className="font-mincho opacity-70">同族</span>
               </Facet>
               <Facet href={backgroundPath(variant)} testId="facet-background">
                 Background <span className="font-mincho opacity-70">背景</span>
@@ -324,7 +324,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
 }
 
 /**
- * One facet in the "All of it" panel: a whole row that opens, wearing the
+ * One facet in the "More on this game" panel: a whole row that opens, wearing the
  * arrow every row that opens carries. Six words in a column said nothing
  * about being anything but words; a row that shades under the pointer with a
  * chevron at its end is a list of places, which is what this is. The Link is

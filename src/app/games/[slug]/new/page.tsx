@@ -12,6 +12,7 @@ import { appearanceFor } from "@/lib/auth/memberAccount";
 import { PuzzleSetUpPage } from "@/components/puzzles/PuzzleSetUpPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
@@ -21,7 +22,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/new">): Promise<Metadata> {
   const { slug } = await params;
   const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
-  return { title: copy === null ? "Set up a game" : `Set up ${copy.label}` };
+  return { title: copy === null ? "New game" : `New game of ${copy.label}` };
 }
 
 /**
@@ -45,7 +46,8 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
   const [{ slug }, asked] = await Promise.all([params, searchParams]);
   const reader = await currentReader();
   // A puzzle is set up with a size and a level, and nothing a game asks: see `PuzzleSetUp`.
-  const puzzle = puzzleFor(slug);
+  // A Gomoji's language and word list are in the query (`gameSettings.ts`).
+  const puzzle = puzzleForAddress(slug, asked);
   if (puzzle !== null) return <PuzzleSetUpPage kind={puzzle} hasAccount={reader.hasAccount} memberId={reader.memberId} query={asked} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();

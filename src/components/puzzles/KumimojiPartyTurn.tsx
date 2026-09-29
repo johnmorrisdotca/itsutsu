@@ -6,6 +6,7 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { judgeTiles } from "@/lib/puzzles/kumimoji/computerPlay";
 import { drawAll, mayDrawAll, nameOf, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
+import type { GridVerdict } from "@/lib/puzzles/kumimoji/grid";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { doneRefused, endTurn, goesOut, handCanSpell, isLastTurn, lastStanding, mayResign, resign } from "@/lib/puzzles/kumimoji/partyTurns";
 import type { TilePlay } from "@/lib/puzzles/kumimoji/play";
@@ -23,6 +24,30 @@ import { sayState, useKumimojiDesk } from "./useKumimojiDesk";
 const NOTHING_SPENT = () => undefined;
 
 /**
+ * WHERE A TURN'S PRESSES GO: on one device, straight into the game this
+ * browser keeps; at a table on several devices, a change within the turn stays
+ * on this device and Draw, Done and Resign are sent (`KumimojiOnline`). The
+ * rules of each press are the same either way.
+ */
+export type PartyTurnHands = {
+  /** A change within the turn — laid, lifted, turned, traded — as the game it makes. */
+  change: (next: PartyGame) => void;
+  /** Draw: everybody takes a tile, from the game as it stands and the table's verdict. */
+  draw: (game: PartyGame, verdict: GridVerdict) => void;
+  /** Done, with the table's verdict and whether the hand spells a word. */
+  done: (game: PartyGame, verdict: GridVerdict, spells: boolean) => void;
+  resign: (game: PartyGame) => void;
+};
+
+/** The presses of a game kept in this browser. */
+export const KEPT_HANDS: PartyTurnHands = {
+  change: (next) => keepParty(next),
+  draw: (game) => keepParty(drawAll(game)),
+  done: (game, verdict, spells) => keepParty(endTurn(game, verdict, () => spells)),
+  resign: (game) => keepParty(resign(game)),
+};
+
+/**
  * ONE PLAYER'S TURN in a pass-and-play game: their table and their hand, on
  * the same desk the solo game plays on (`useKumimojiDesk`), with Done under
  * the tray. Mounted afresh for every turn (keyed on the turn's number), so
@@ -33,11 +58,27 @@ const NOTHING_SPENT = () => undefined;
  * Every move is written straight to the kept game (`keepParty`), which is the
  * one copy of it: this component holds only the view.
  */
-export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyGame; words: TileWords; theme: BoardThemeTokens; onHide: () => void }) {
+export function KumimojiPartyTurn({
+  game,
+  words,
+  theme,
+  onHide,
+  hands = KEPT_HANDS,
+  busy = false,
+}: {
+  game: PartyGame;
+  words: TileWords;
+  theme: BoardThemeTokens;
+  /** Back to the pass screen; absent at a table on several devices, where there is nobody to pass to. */
+  onHide?: () => void;
+  hands?: PartyTurnHands;
+  /** A press on its way to the table: nothing more is pressed until it answers. */
+  busy?: boolean;
+}) {
   const play = seatPlay(game);
   // Every table is read by the rules the game was set up with: with Diagonals, along its diagonals too.
   const verdict = useMemo(() => judgeTiles(play.tiles, words, { diagonals: game.settings.diagonals }), [play.tiles, words, game.settings.diagonals]);
-  const apply = useCallback((next: (now: TilePlay) => TilePlay) => keepParty(withSeatPlay(game, next(seatPlay(game)))), [game]);
+  const apply = useCallback((next: (now: TilePlay) => TilePlay) => hands.change(withSeatPlay(game, next(seatPlay(game)))), [game, hands]);
   /* All tables, zoomed out over the desk: nothing on the desk answers while it is up. */
   const [looking, setLooking] = useState(false);
   const root = useRef<HTMLElement>(null);
@@ -56,10 +97,10 @@ export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyG
     ...desk.presses,
     trade: { ...desk.presses.trade, urge: refused === "trade" },
     draw: {
-      can: mayDrawAll(game, verdict),
+      can: !busy && mayDrawAll(game, verdict),
       run: () => {
         desk.clear();
-        keepParty(drawAll(game));
+        hands.draw(game, verdict);
       },
     },
   };
@@ -91,24 +132,29 @@ export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyG
             All tables <span className="font-mincho opacity-70">全</span>
           </button>
           {/* Handed over too soon, or to the wrong person: the pass screen again, with nothing played or lost. */}
-          <button type="button" className="text-muted underline underline-offset-2" onClick={onHide} data-testid="kumimoji-party-hide">
-            Pass back
-          </button>
+          {onHide === undefined ? null : (
+            <button type="button" className="text-muted underline underline-offset-2" onClick={onHide} data-testid="kumimoji-party-hide">
+              Pass back
+            </button>
+          )}
         </span>
       </div>
-      <KumimojiTable
-        tiles={play.tiles}
-        theme={theme}
-        misspelt={verdict.misspelt}
-        apart={verdict.apart}
-        chosen={desk.chosenSquare}
-        cursor={desk.cursor}
-        turn={desk.turn}
-        onTurn={desk.turnTable}
-        onSquare={desk.onSquare}
-        onTileDown={desk.onTableDown}
-        handle={table}
-      />
+      {/* The table's column for the size chooser (`BoardScale`): at Large and Full it takes the width, and the hand moves beside it. */}
+      <div data-scale-board data-scale-stack data-bare-board>
+        <KumimojiTable
+          tiles={play.tiles}
+          theme={theme}
+          misspelt={verdict.misspelt}
+          apart={verdict.apart}
+          chosen={desk.chosenSquare}
+          cursor={desk.cursor}
+          turn={desk.turn}
+          onTurn={desk.turnTable}
+          onSquare={desk.onSquare}
+          onTileDown={desk.onTableDown}
+          handle={table}
+        />
+      </div>
       <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
         {desk.helpSaid ?? said}
       </p>
@@ -119,7 +165,7 @@ export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyG
           {resigning ? (
             <>
               <span>Resign, and play no more turns this game?</span>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={() => keepParty(resign(game))} data-testid="kumimoji-party-resign-yes">
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={() => hands.resign(game)} disabled={busy} data-testid="kumimoji-party-resign-yes">
                 Yes, resign
               </button>
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setResigning(false)} data-testid="kumimoji-party-resign-no">
@@ -144,8 +190,8 @@ export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyG
         onTray={desk.onTray}
         done={{
           label: out ? "Done, and go out" : "Done",
-          can: refused === null,
-          run: () => keepParty(endTurn(game, verdict, handSpells)),
+          can: !busy && refused === null,
+          run: () => hands.done(game, verdict, spellable),
           note,
         }}
       />

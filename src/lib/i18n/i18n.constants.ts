@@ -108,9 +108,9 @@ export const PHRASES = {
 
   "nav.about": "About",
   "nav.rules": "Rules",
-  "nav.record": "Record",
+  "nav.record": "Game history",
   "nav.players": "Players",
-  "nav.everyGame": "Every game",
+  "nav.everyGame": "All games",
   "nav.play": "My games",
   "nav.newGame": "New game",
   "nav.games": "Games",
@@ -122,7 +122,7 @@ export const PHRASES = {
   "account.signIn": "Sign in",
   "account.signOut": "Sign out",
 
-  "filter.narrowedTo": "Narrowed to",
+  "filter.narrowedTo": "Filtered by",
   "filter.player": "Player",
   "filter.result": "Result",
   "filter.board": "Board",
@@ -131,9 +131,9 @@ export const PHRASES = {
   "filter.any": "Any",
   "filter.searchNames": "Search names",
 
-  "rules.object": "Object",
+  "rules.object": "Objective",
   "rules.board": "Board",
-  "rules.play": "Play",
+  "rules.play": "How to play",
   "rules.house": "House rules",
   "rules.learn": "Learn",
   "rules.inspiredBy":
@@ -160,7 +160,7 @@ export const PHRASES = {
   "setup.opponent": "Opponent",
   "setup.anyoneMeans": "Whoever comes along first takes the other seat.",
   "setup.askedFor": "Asked for",
-  "setup.hereNow": "Here now",
+  "setup.hereNow": "Online now",
   "setup.playersYouKnow": "Players you know",
   "setup.theComputer": "Bots",
   "setup.showAll": "Show all {count}",
@@ -301,7 +301,7 @@ export const PHRASES = {
   "catalogue.joinToSeeWho": "Join to see who →",
   /** The way into a game of it, from its card on the catalogue. */
   "catalogue.play": "Play →",
-  "catalogue.standings": "Standings →",
+  "catalogue.standings": "Leaderboard →",
   "catalogue.wonTitle": "The rated games they won on this ladder",
   "catalogue.lostTitle": "The rated games they lost on this ladder",
   "catalogue.drawnTitle": "The rated games they drew on this ladder",

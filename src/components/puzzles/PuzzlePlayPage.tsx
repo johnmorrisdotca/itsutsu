@@ -4,9 +4,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { currentReader } from "@/lib/auth/currentReader";
 import { appearanceFor } from "@/lib/auth/members";
+import { onlineOfferFor } from "@/lib/party/online/server/onlineOffer";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { gamePath, joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
@@ -23,6 +24,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrailNav } from "@/components/games/GameTrail";
+import { BoardScaled } from "@/components/board/BoardScaled";
 
 /**
  * /games/<slug>/play for a puzzle: the solve, at the size, level and seed the
@@ -39,12 +41,14 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
     const today = new Date();
     // A Futago's day has two words at a seed of its own (`futagoSeed.ts`), and a Yotsugo's four at another (`yotsugoSeed.ts`).
     const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : dailySeedOf(asked.words ?? 1, dayKeyOf(today));
-    redirect(`${playPath(kind)}${puzzleQuery({ ...asked, seed })}`);
+    redirect(joinQuery(playPath(kind), puzzleQuery({ ...asked, seed })));
   }
   const reader = await currentReader();
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   /* A pass-and-play Kumimoji is kept in the browser, never on the server (`kumimojiPartyKept.ts`): no read for it. */
   const party = (asked.players ?? 1) > 1;
+  // Kumimoji's pass and play may be played on several devices instead: what its names screen offers for that (`onlineOfferFor`).
+  const online = party ? await onlineOfferFor(kind, reader.memberId) : undefined;
   const kept = reader.memberId !== null && asked.seed !== null && !party ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed, asked.gameLength, asked.doubleSet, asked.language, asked.diagonals, asked.clock) : null;
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis, and for Kumimoji's table, which is drawn on the same choice of board. */
@@ -62,7 +66,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   // Levels solved only in a way that opens nothing (explosions off): solved, never counted to open a block.
   const closed = Object.entries(solved?.[asked.size] ?? {}).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]));
   return (
-    <Page>
+    // A board page whose play draws "Just the board" beside its size (`BoardScale`).
+    <Page board="play">
       <SiteHeader />
       {/*
         A board page, like a game's: the grid is the page and there is no title
@@ -73,14 +78,20 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }}
         steps={[{ label: "Set up", href: setUpPath(kind) }, { label: "Play" }]}
       />
-      <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
+      {/* The solve at the size this reader keeps for this kind of screen (`BoardScaled`): Regular is the column it always had. */}
+      <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} clock={asked.clock ?? "none"} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} online={online} clock={asked.clock ?? "none"} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
-      </div>
+      </BoardScaled>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
-      {tsunagi && asked.seed !== null ? <TsunagiLevelFastest size={asked.size} level={asked.seed} /> : null}
-      <footer className="border-t border-rule pt-5 text-sm text-muted">
+      {tsunagi && asked.seed !== null ? (
+        <div data-chrome>
+          <TsunagiLevelFastest size={asked.size} level={asked.seed} />
+        </div>
+      ) : null}
+      {/* Furniture, for just the board. */}
+      <footer data-chrome className="border-t border-rule pt-5 text-sm text-muted">
         <p>
           {copy.tagline}{" "}
           {/* Over the puzzle, not a page away from it: see `RulesModal`. */}

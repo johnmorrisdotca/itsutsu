@@ -57,12 +57,14 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
   return (
     <section
       className={`${PLAY_SURFACE} grid gap-6 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start`}
+      // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
+      data-scale-desk
       data-testid="party-blocks"
       data-state={game.status}
       data-moves={game.moves.length}
       {...readyMark(hydrated)}
     >
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PartyBlocksTurnLine game={game} />
         <PartyBlocksBoard
           game={game}
@@ -74,7 +76,8 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
         />
       </div>
 
-      <aside className="flex min-w-0 flex-col gap-4">
+      {/* In just the board the tray stays, being how a shape is laid; who is at the table and the new game go (`data-chrome`). */}
+      <aside className="flex min-w-0 flex-col gap-4" data-bare-keep>
         {playing && hold !== null ? (
           <PartyBlocksTray
             game={game}
@@ -85,8 +88,10 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
             refusal={preview?.refusal == null ? null : PARTY_BLOCKS_COPY.refusals[preview.refusal]}
           />
         ) : null}
-        <PartyBlocksPlayers game={game} />
-        <div className="flex flex-wrap gap-2">
+        <div data-chrome>
+          <PartyBlocksPlayers game={game} />
+        </div>
+        <div className="flex flex-wrap gap-2" data-chrome>
           {playing ? null : (
             <button type="button" onClick={() => keep(againBlocksParty(game))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="blocks-again">
               {PARTY_BLOCKS_COPY.again}

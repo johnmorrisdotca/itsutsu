@@ -48,6 +48,14 @@ export type Appearance = {
   flipped: boolean | null;
 };
 
+/**
+ * The shape of a board's wood: square, as every game's is, or `map`, a map
+ * of the world's — four by three on a phone, where the height is wanted for
+ * pinching into a continent, and two by one from a laptop, where the whole
+ * world fills it (Tenka, `BOARD_ASPECTS`).
+ */
+export type BoardAspect = "square" | "map";
+
 /** The CSS custom properties a board theme sets on its container. */
 export type BoardThemeTokens = {
   label: string;

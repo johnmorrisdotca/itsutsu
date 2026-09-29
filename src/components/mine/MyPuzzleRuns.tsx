@@ -5,7 +5,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { sizeWord } from "@/components/puzzles/puzzles.constants";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
-import { familyPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { familyPath, joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
@@ -48,7 +48,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
           const kind = run.kind as PuzzleKind;
           const level = run.level as PuzzleLevel;
           const asked = keptRunAsked(kind, run);
-          const href = `${playPath(kind)}${puzzleQuery(asked)}`;
+          const href = joinQuery(playPath(kind), puzzleQuery(asked));
           return (
             <li key={run.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-going" data-kind={kind} data-seed={run.seed}>
               {/* The whole card carries on, as a game's row opens its game; the name above it leads to the puzzle. */}
@@ -71,7 +71,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
                 {PUZZLE_SPECS[kind].fixedLevels === true ? (
-                  <Link href={`${setUpPath(kind)}?size=${run.size}`} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
+                  <Link href={joinQuery(setUpPath(kind), `?size=${run.size}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
                     All levels
                   </Link>
                 ) : null}

@@ -38,7 +38,7 @@ export function RecordText({ text }: { text: string }) {
   return (
     <details className="group flex flex-col gap-2" data-testid="record-text" {...readyMark(hydrated)}>
       <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
-        The whole record as text <span className="font-mincho normal-case tracking-normal">記録</span>
+        Moves as text <span className="font-mincho normal-case tracking-normal">記録</span>
         <span className="ml-1 opacity-60 group-open:hidden">+</span>
         <span className="ml-1 hidden opacity-60 group-open:inline">−</span>
       </summary>

@@ -331,7 +331,7 @@ export function SetUpGame({
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="set-up-game" {...readyMark(ready)}>
-      {/* No heading of its own: the page's "Set up a game" is right above it (John, 2026-09-25: "we repeat 'Set up the Game' twice"). */}
+      {/* No heading of its own: the page's "New game" is right above it (John, 2026-09-25: "we repeat 'Set up the Game' twice"). */}
       <SetUpNotices
         problem={problem}
         again={again}

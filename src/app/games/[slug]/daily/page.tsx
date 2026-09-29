@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DailyArchivePage } from "@/components/puzzles/DailyArchivePage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
+import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/dail
  */
 export default async function DailyWordsPage({ params, searchParams }: PageProps<"/games/[slug]/daily">) {
   const [{ slug }, asked] = await Promise.all([params, searchParams]);
-  const kind = puzzleFor(slug);
+  const kind = puzzleForAddress(slug, asked);
   if (kind === null || dailyLanguageOf(kind) === null) notFound();
   const month = Array.isArray(asked.month) ? asked.month[0] : asked.month;
   return <DailyArchivePage kind={kind} monthAsked={month} />;

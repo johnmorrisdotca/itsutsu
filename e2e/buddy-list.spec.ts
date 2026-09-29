@@ -69,7 +69,7 @@ test.describe("the buddy list", () => {
     // Their name leads to their page, like a player's name anywhere here.
     await expect(row.getByTestId("player-name")).toHaveAttribute("href", `/players/${theirId}`);
     // And nothing is going yet, said as itself rather than left blank.
-    await expect(row.getByTestId("buddy-going")).toHaveText("no games going");
+    await expect(row.getByTestId("buddy-going")).toHaveText("no games in progress");
 
     await context.close();
   });
@@ -146,7 +146,7 @@ test.describe("the buddy list", () => {
 
     await page.goto("/players/buddies");
     const going = row.getByTestId("buddy-going-link");
-    await expect(going).toContainText("1 going");
+    await expect(going).toContainText("1 in progress");
     await going.click();
 
     // Narrowed, said, and exactly one game — the one just made — with the way off.
