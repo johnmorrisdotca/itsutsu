@@ -122,8 +122,9 @@ describe("what the server checks", () => {
     expect(decodeGomojiProgress("slatecrane", 5)).toEqual(["slate", "crane"]);
     expect(progressFits("gomoji", 5, "")).toBe(true);
     expect(progressFits("gomoji", 5, "slat")).toBe(false);
-    expect(progressFits("gomoji", 5, "slate".repeat(10))).toBe(true);
-    expect(progressFits("gomoji", 5, "slate".repeat(11))).toBe(false);
+    // Up to the most any Gomoji has: a Yotsugo's eleven at easy (`yotsugo.ts`).
+    expect(progressFits("gomoji", 5, "slate".repeat(11))).toBe(true);
+    expect(progressFits("gomoji", 5, "slate".repeat(12))).toBe(false);
     expect(decodeGuesses("SLATE", 5)).toBeNull();
     expect(rowsFor(4)).toBe(5);
     // Six letters stop at the published six, not seven (`baseGuesses`).

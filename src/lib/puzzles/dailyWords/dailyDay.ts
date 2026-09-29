@@ -87,13 +87,20 @@ export function dailyWordSeed(day: string): number {
 }
 
 /**
+ * The seeds past the last day the daily words name: the year 3000 on, which
+ * is a Yotsugo's block (`yotsugoSeed.ts`), four words at once.
+ */
+const PAST_THE_LAST_DAY = 30_000_000;
+
+/**
  * The day a seed names, or null for a seed that names none: outside the
- * block, not a real date, or before the first daily word. Null is the answer
- * for every ordinary seed, and it means "draw the word as always".
+ * block, not a real date, before the first daily word, or from the year 3000
+ * on. Null is the answer for every ordinary seed, and it means "draw the word
+ * as always".
  */
 export function dayOfDailyWordSeed(seed: number): string | null {
   const offset = seed - DAILY_SEED_BLOCK.from;
-  if (!Number.isInteger(offset) || offset < 0 || offset >= DAILY_SEED_BLOCK.size) return null;
+  if (!Number.isInteger(offset) || offset < 0 || offset >= Math.min(DAILY_SEED_BLOCK.size, PAST_THE_LAST_DAY)) return null;
   const digits = String(offset).padStart(8, "0");
   const day = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
   if (!isDayKey(day) || dayIndexOf(day) < 0) return null;

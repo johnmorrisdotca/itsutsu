@@ -1,4 +1,6 @@
 import type { PuzzleLevel } from "../puzzles.types";
+import type { WordCount } from "./words.types";
+import { YOTSUGO_MORE_GUESSES } from "./yotsugo";
 
 /**
  * HOW BIG A GOMOJI BOARD IS, HOW MANY GUESSES IT GIVES, AND WHERE PLAY SITS
@@ -82,8 +84,14 @@ export type GomojiLayout = {
  * and its board is two squares taller than one word's, so easy stays a guess
  * or two ahead of medium: a Futago of five letters is 7, 8 and 9, of four 6, 7
  * and 8, and of six 7, 8 and 10 on a board of ten.
+ *
+ * YOTSUGO, FOUR WORDS AT ONCE (`yotsugo.ts`), gives three more than one word
+ * at hard, four at medium and five at easy — 9, 10 and 11 for five letters —
+ * and each of its two boards holds two words side by side, so the board is
+ * the square that fits two words across and every row (`yotsugoLayout`).
  */
-export function gomojiLayout(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards = 1): GomojiLayout {
+export function gomojiLayout(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards: WordCount = 1): GomojiLayout {
+  if (boards === 4) return yotsugoLayout(kind, size, level, free);
   const more = boards - 1;
   const base = baseGuesses(kind, size) + more;
   const room = boardSpan(size, Math.max(LEAST_SPAN, base + free + 2 * more)) - free;
@@ -91,13 +99,23 @@ export function gomojiLayout(kind: "gomoji" | "gomojiKana", size: number, level:
   return { ...playPlace(size, free + guesses), guesses, free };
 }
 
-/** The guesses a puzzle of this kind, size and level allows, with or without its free word, for one word or a Futago's two. */
-export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards = 1): number {
+/** How many words wide a Yotsugo's board is: two quarters side by side. */
+export const YOTSUGO_ACROSS = 2;
+
+/** A Yotsugo's board: two quarters across, a guess row for each guess and the free grey word, its span grown to hold them. */
+function yotsugoLayout(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number): GomojiLayout {
+  const base = baseGuesses(kind, size) + YOTSUGO_MORE_GUESSES;
+  const guesses = level === "easy" ? base + 2 : level === "medium" ? base + 1 : base;
+  return { ...playPlace(YOTSUGO_ACROSS * size, free + guesses), guesses, free };
+}
+
+/** The guesses a puzzle of this kind, size and level allows, with or without its free word, for one word, a Futago's two or a Yotsugo's four. */
+export function guessesFor(kind: "gomoji" | "gomojiKana", size: number, level: PuzzleLevel, free: number, boards: WordCount = 1): number {
   return gomojiLayout(kind, size, level, free, boards).guesses;
 }
 
-/** The most guesses any Gomoji can have — a Futago of six letters at easy — what a kept run's guesses are checked against before its level is known. */
-export const MOST_GUESSES = 10;
+/** The most guesses any Gomoji can have — a Yotsugo of six letters or kana at easy — what a kept run's guesses are checked against before its level is known. */
+export const MOST_GUESSES = 11;
 
 /** The longest word any Gomoji hides, in letters or kana: seven, for Pop Gomoji's longest. */
 export const LONGEST_WORD = 7;

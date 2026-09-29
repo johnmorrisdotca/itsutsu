@@ -4,6 +4,7 @@ import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/liv
 import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
+import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 /**
@@ -19,15 +20,15 @@ export function HeadStartChips({
   level,
   chosen,
   onChoose,
-  twins = false,
+  words = 1,
 }: {
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
   chosen: boolean;
   onChoose: (chosen: boolean) => void;
-  /** A Futago chosen (`futago.ts`): the keys greyed are in neither word. */
-  twins?: boolean;
+  /** How many words were chosen — a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`): the keys greyed are in none of them. */
+  words?: WordCount;
 }) {
   const offered = offersHeadStart(kind, level);
   // As many as the word has (`headStartKeys`): the size chosen above.
@@ -55,7 +56,7 @@ export function HeadStartChips({
         {!offered
           ? "A head start is for easy: choose Easy to have one."
           : chosen
-            ? `${size} ${unit} not in ${twins ? "either word" : "the word"} start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`
+            ? `${size} ${unit} not in ${words === 4 ? "any of the four words" : words === 2 ? "either word" : "the word"} start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`
             : "Nothing is ruled out on the keyboard until the board rules it out."}
       </p>
     </>

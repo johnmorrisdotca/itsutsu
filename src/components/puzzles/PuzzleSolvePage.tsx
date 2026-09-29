@@ -19,6 +19,7 @@ import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPEC
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isPuzzleClock } from "@/lib/puzzles/puzzleClock";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
+import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
 import { FUTAGO_DISPLAY, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 
@@ -27,10 +28,11 @@ import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
-/** A word puzzle's hidden word, or a Futago's two (`futago.ts`), in the case it is played in. */
+/** A word puzzle's hidden word, a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`), in the case it is played in. */
 function wordOf(kind: PuzzleKind, givens: string, size: number): string {
   const words = hiddenWordsOf(kind, size, givens)?.words ?? [];
-  return words.length > 1 ? `${wordsShown(kind, words)} (${FUTAGO_DISPLAY.label} ${FUTAGO_DISPLAY.kanji})` : wordsShown(kind, words);
+  const mode = words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
+  return words.length > 1 ? `${wordsShown(kind, words)} (${mode.label} ${mode.kanji})` : wordsShown(kind, words);
 }
 
 /** Whether a moment falls on today's date in UTC, the day today's puzzle is everybody's (`dailySeed`). */

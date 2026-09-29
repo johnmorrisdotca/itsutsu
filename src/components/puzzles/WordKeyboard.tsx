@@ -28,7 +28,8 @@ const MARK_WORDS: Record<LetterMark, string> = { hit: "in its place", near: "in 
  * drawing the keyboard it always has.
  *
  * A Futago's keyboard (`futago.ts`) is handed `split`, each board's marks,
- * and draws every key in two halves, one board's colour each (`FutagoKey`).
+ * and draws every key in two halves, one board's colour each (`FutagoKey`);
+ * a Yotsugo's (`yotsugo.ts`) in four corners, one quarter's colour each.
  */
 export function WordKeyboard({
   known,
@@ -44,8 +45,8 @@ export function WordKeyboard({
   onBack,
 }: {
   known: ReadonlyMap<string, LetterMark>;
-  /** A Futago's two boards' marks, the first board's on the left half of each key and the second's on the right; null for one word. */
-  split?: readonly [ReadonlyMap<string, LetterMark>, ReadonlyMap<string, LetterMark>] | null;
+  /** Each board's marks: a Futago's two, a half of each key each, or a Yotsugo's four, a corner each (`FutagoKeyHalves`); null for one word. */
+  split?: readonly ReadonlyMap<string, LetterMark>[] | null;
   /** How many of each letter the guesses prove the word holds (`knownCounts`): a count on the letter from two. */
   counted?: ReadonlyMap<string, number>;
   /** How often each letter is in the row being typed (`typedCounts`): its key is ringed, and counted from two. */
@@ -76,7 +77,7 @@ export function WordKeyboard({
             const mark = known.get(letter);
             const count = typed.get(letter) ?? 0;
             const proven = counted.get(letter) ?? 0;
-            const halves = split === null ? null : ([split[0].get(letter), split[1].get(letter)] as const);
+            const halves = split === null ? null : split.map((board) => board.get(letter));
             const face = halves !== null ? FUTAGO_KEY : mark === undefined ? WORD_KEY_PLAIN : marked[mark];
             return (
               <button
@@ -93,7 +94,7 @@ export function WordKeyboard({
                 aria-label={halves === null ? keyLabel(letter, proven, count) : `${keyLabel(letter, proven, count) ?? letter.toUpperCase()}, ${futagoKeyWords(halves, MARK_WORDS)}`}
               >
                 {halves === null ? null : <FutagoKeyHalves marks={halves} marked={marked} />}
-                {halves === null || (halves[0] === undefined && halves[1] === undefined) ? (
+                {halves === null || halves.every((each) => each === undefined) ? (
                   <KeyFace letter={letter} known={proven} />
                 ) : (
                   <span className={FUTAGO_KEY_LETTER}>

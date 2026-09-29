@@ -11,19 +11,20 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
-import type { LetterMark } from "@/lib/puzzles/gomoji/code";
 import { breaksHardRule, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { futagoScore } from "@/lib/puzzles/gomoji/futagoScore";
+import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
-import { knownCounts, letterKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
+import { knownCounts, letterKeyMarks, splitLetterKeyMarks, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
 
 import { FutagoBoards } from "./FutagoBoards";
+import { YotsugoBoards } from "./YotsugoBoards";
 import { GomojiGrid } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
@@ -52,7 +53,9 @@ import { PopClue } from "./PopClue";
  * A FUTAGO (`futago.ts`) is the same solve with two words: each guess goes to
  * both boards until a board's word is found, Strict holds a guess to what each
  * board still being played has found, the keys are split one board to a half,
- * and the puzzle is found when both words are.
+ * and the puzzle is found when both words are. A YOTSUGO (`yotsugo.ts`) is
+ * the same with four, in the quarters of two boards (`YotsugoBoards`), each
+ * key split in four corners.
  */
 export function GomojiSolve({
   puzzle,
@@ -86,7 +89,9 @@ export function GomojiSolve({
   // One word, or a Futago's two (`futago.ts`).
   const words = useMemo(() => hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null }, [kind, size, puzzle.givens]);
   const hidden = words.words[0]!;
-  const twins = words.words.length > 1;
+  // One word, a Futago's two or a Yotsugo's four: the address and Another ask for the same count again.
+  const count = asWordCount(words.words.length);
+  const many = count > 1;
   // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a Futago gives a guess more.
   const rows = wordRowsOf(kind, size, level, words);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size, lang)) ?? []);
@@ -118,11 +123,11 @@ export function GomojiSolve({
   const given = useMemo(() => (headStart ? headStartKeys(kind, size, puzzle.givens) : []), [headStart, kind, size, puzzle.givens]);
   const known = useMemo(() => withHeadStart(letterKeyMarks(guesses, hidden), given, "miss"), [guesses, hidden, given]);
   const split = useMemo(
-    () => (twins ? ([0, 1] as const).map((at) => withHeadStart(letterKeyMarks(boards[at]!.rows, boards[at]!.word), given, "miss")) as [Map<string, LetterMark>, Map<string, LetterMark>] : null),
-    [twins, boards, given],
+    () => (many ? splitLetterKeyMarks(guesses, words.words, given) : null),
+    [many, guesses, words, given],
   );
   // How many of a letter the marks on the board prove, never the hidden word: a count on its key from two. Not for a Futago, whose two words hold different counts.
-  const counted = useMemo(() => (twins ? new Map<string, number>() : knownCounts(guesses, marks)), [twins, guesses, marks]);
+  const counted = useMemo(() => (many ? new Map<string, number>() : knownCounts(guesses, marks)), [many, guesses, marks]);
 
   const playRoot = usePlayInView(engaged && done === null, typing);
   const closed = done !== null || pausing.paused;
@@ -207,7 +212,11 @@ export function GomojiSolve({
       {/* Pop Gomoji's clue: each hidden word's category, from the first guess (`PopClue`). */}
       {kind === "gomojiPop" ? <PopClue words={words.words} /> : null}
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
-      {done === null && twins ? (
+      {done === null && count === 4 ? (
+        <SolvePaused pausing={pausing}>
+          <YotsugoBoards size={size} rows={rows} boards={boards} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
+        </SolvePaused>
+      ) : done === null && many ? (
         <SolvePaused pausing={pausing}>
           <FutagoBoards size={size} rows={rows} boards={boards} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
         </SolvePaused>
@@ -240,7 +249,7 @@ export function GomojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `Type a ${size}-letter word and press Enter${twins ? ": it goes to both boards" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
+            {said ?? `Type a ${size}-letter word and press Enter${count === 4 ? ": it goes to all four words" : many ? ": it goes to both boards" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} split={split} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
@@ -254,7 +263,7 @@ export function GomojiSolve({
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
-            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {twins ? "The words were" : "The word was"}{" "}
+            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {many ? "The words were" : "The word was"}{" "}
             <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
           </p>
           <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />
@@ -271,11 +280,11 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins, clock })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, clock })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
-              {twins ? "Two more words →" : "Another word →"}
+              {count === 4 ? "Four more words →" : many ? "Two more words →" : "Another word →"}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>

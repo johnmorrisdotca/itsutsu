@@ -8,6 +8,8 @@ export type DailyButtonRow = {
   status: DailyStatus | null;
   /** The same length's Futago today, two words at once (`futago.ts`): its button and the reader's standing with it. */
   futago: { href: string; status: DailyStatus | null };
+  /** The same length's Yotsugo today, four words at once (`yotsugo.ts`). */
+  yotsugo: { href: string; status: DailyStatus | null };
 };
 
 export type DailyWordButtonsProps = {
