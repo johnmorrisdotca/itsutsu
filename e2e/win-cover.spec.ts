@@ -141,6 +141,21 @@ test.describe("the win's cover", () => {
     await expect(page.getByTestId("win-cover")).toHaveCount(0);
   });
 
+  test("in just the board the cover comes up too, and Esc closes the cover before the modal", async ({ page }) => {
+    await page.goto(`/games/${PUZZLE_SLUGS.numberPlace}/play?size=4&level=easy&seed=${freshPuzzleSeed()}`);
+    await ready(page, "bare-board");
+    await page.getByTestId("bare-board-toggle").first().click();
+    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+    await solveNumberPlace(page);
+    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+    await coverComesUp(page, page.getByTestId("puzzle-pausable"), /^Solved 解決 in \d+:\d\d$/);
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("win-cover")).toHaveCount(0);
+    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+    await page.keyboard.press("Escape");
+    await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
+  });
+
   test("a reader who asks for less motion sees no flash: a calm fade, then the cover", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await solveNumberPlace(page);
