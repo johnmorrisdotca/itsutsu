@@ -48,18 +48,22 @@ export async function createTable({
   size,
   asks,
   maker,
+  setup,
 }: {
   game: OnlineGameKey;
   size: number;
   asks: readonly OnlineSeatAsk[];
   maker: Maker;
+  /** What the game's set-up sends beyond a size and the seats (Kumimoji's settings and bag), checked by its rules. */
+  setup?: unknown;
 }): Promise<{ refused: string; status: 403 | 404 | 422 } | { id: string }> {
   const rules = onlineRulesOf(game);
   const band = await prisma.member.findUnique({ where: { id: maker.id }, select: { ageBand: true } });
   const shape = seatAsksRefusal(asks, { counts: rules.counts, levels: rules.computers?.levels ?? [], links: !isChild(band?.ageBand), makerId: maker.id });
   if (shape !== null) return { refused: shape, status: 422 };
   const boardSize = rules.sizes.length === 0 ? 0 : size;
-  const started = rules.start(boardSize, asks.length);
+  const computers = asks.flatMap((ask, seat) => (ask.kind === "computer" ? [seat] : []));
+  const started = rules.start(boardSize, asks.length, { setup, computers });
   if (started === null) return { refused: "That game is not offered at that size.", status: 422 };
 
   const mine = await tablesCapRefusal(maker.id, "you");

@@ -20,6 +20,7 @@ import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiParty } from "./KumimojiParty";
+import type { OnlineOffer } from "@/lib/party/online/online.types";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
@@ -65,6 +66,7 @@ export function PuzzlePlay({
   doubleSet = false,
   diagonals = false,
   players = 1,
+  online,
   clock = "none",
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
@@ -72,6 +74,8 @@ export function PuzzlePlay({
 }: {
   /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
   players?: number;
+  /** Kumimoji's pass and play on several devices instead, where the reader has an account (`OnlineOffer`). */
+  online?: OnlineOffer;
   /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
   clock?: PuzzleClock;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
@@ -210,7 +214,7 @@ export function PuzzlePlay({
         );
       case "kumimoji":
         // Pass and play is local and never a race: a race's address carries no players.
-        if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} />;
+        if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} online={online} />;
         return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
       case "gomojiKana":
         return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;

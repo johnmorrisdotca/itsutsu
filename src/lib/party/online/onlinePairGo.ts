@@ -3,9 +3,7 @@ import { botTierFor } from "@/lib/bots/bots";
 import { GAME_STATUS, RULE_VARIANTS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { tiersFor } from "@/lib/gomoku/expert/experts";
-import { chooseTurn } from "@/lib/gomoku/opponent";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
-import { BROWSER_MOVE_MILLIS } from "@/lib/gomoku/botWorker.constants";
 import {
   PAIR_GO_SIZES,
   decodePairGo,
@@ -94,16 +92,6 @@ export const PAIR_GO_ONLINE: OnlineRules<PairGoGame, PairGoMove> = {
     levelOf: (seat) => {
       const tier = botTierFor(seat.memberId);
       return tier !== null && GO_LEVELS.includes(tier) ? tier : null;
-    },
-    /*
-     * The ladder's chooser, on the browser's budget. It plays the colour the
-     * engine has to move, which is this seat's; a program with nothing to
-     * play passes, as the live board's does.
-     */
-    move: (game, _seat, level) => {
-      const turn = chooseTurn(game.state, level as BotTier, Math.random, { millis: BROWSER_MOVE_MILLIS });
-      if (turn === null || turn.kind === "pass") return { kind: "pass" };
-      return turn.kind === "place" ? { kind: "stone", row: turn.row, col: turn.col } : { kind: "pass" };
     },
   },
 };

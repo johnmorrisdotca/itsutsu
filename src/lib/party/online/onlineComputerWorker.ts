@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
 import type { OnlineGameKey } from "./online.types";
+import { computerPlayOf } from "./onlineComputerMoves";
 import { onlineRulesOf } from "./onlineGames";
 
 /**
@@ -16,13 +17,15 @@ export type ComputerAsk = { id: number; game: OnlineGameKey; state: string; seat
 
 export type ComputerAnswer = { id: number; seat: number; move: unknown };
 
-self.addEventListener("message", (event: MessageEvent<ComputerAsk>) => {
+self.addEventListener("message", async (event: MessageEvent<ComputerAsk>) => {
   const ask = event.data;
   let move: unknown = null;
   try {
     const rules = onlineRulesOf(ask.game);
     const game = rules.decode(ask.state);
-    move = game === null || rules.computers === undefined ? null : rules.computers.move(game, ask.seat, ask.level);
+    const computer = computerPlayOf(ask.game);
+    if (game !== null) await computer?.prepare?.(game);
+    move = game === null || computer === undefined ? null : computer.move(game, ask.seat, ask.level);
   } catch (error) {
     // A computer that cannot move says so by answering nothing; the page waits for a person to notice, as the live board does.
     console.error(error);

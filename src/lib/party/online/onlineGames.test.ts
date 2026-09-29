@@ -10,6 +10,8 @@ import type { DotsGame } from "../dotsAndBoxes/dotsAndBoxes.types";
 
 import { ONLINE_GAMES, ONLINE_GAME_LIST, hasComputer, isOnlineGame, onlineRulesOf, readPoint } from "./onlineGames";
 import { standingOf } from "./onlineSeats";
+import { computerPlayOf } from "./onlineComputerMoves";
+import type { PairGoMove } from "./onlinePairGo";
 
 /**
  * THE GAMES ON SEVERAL DEVICES ARE PLAYED BY THE SAME RULES AS ON ONE. Each
@@ -29,13 +31,14 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
   });
 
-  it.each(ONLINE_GAME_LIST)("%s starts at every table it offers, and keeps a game it can read back", (key) => {
+  // Kumimoji starts from the bag its set-up dealt, and has its own cases below.
+  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
     const rules = onlineRulesOf(key);
     for (const size of rules.sizes.length === 0 ? [0] : rules.sizes) {
       for (const count of rules.counts) {
@@ -65,8 +68,11 @@ describe("every game on several devices", () => {
     }
   });
 
-  it("offers a computer seat only at Pair Go, whose computers are the site's Go programs", () => {
-    for (const key of ONLINE_GAME_LIST) expect(hasComputer(key), key).toBe(key === "go");
+  it("offers a computer seat only at Pair Go and Kumimoji, the games with a computer player, and the worker can move for each", () => {
+    for (const key of ONLINE_GAME_LIST) {
+      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji");
+      expect(computerPlayOf(key) !== undefined, key).toBe(hasComputer(key));
+    }
   });
 
   it("writes the seats' names into a game for a page, and never into what is kept", () => {
@@ -218,7 +224,7 @@ describe("Pair Go on several devices", () => {
     expect(computers.levelOf(seat)).toBe(level);
     expect(computers.levelOf({ memberId: "somebody", name: "Somebody" })).toBeNull();
     const game = rules.play(rules.start(9, 4)!, { kind: "stone", row: 4, col: 4 })!;
-    const move = computers.move(game, 1, level);
+    const move = computerPlayOf("go")!.move(game, 1, level) as PairGoMove | null;
     expect(move).not.toBeNull();
     expect(rules.play(game, move!)).not.toBeNull();
   });

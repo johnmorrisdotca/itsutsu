@@ -12,6 +12,7 @@ import { CHECKERS_RACE, HALMA_RACE } from "../partyRaces";
 import { DotsOnline } from "./DotsOnline";
 import { RaceOnline } from "./RaceOnline";
 import { BlocksOnline, blocksStanding } from "./BlocksOnline";
+import { KumimojiOnline, kumimojiStanding } from "./KumimojiOnline";
 import { PairGoOnline, pairGoStanding } from "./PairGoOnline";
 
 /**
@@ -39,4 +40,5 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   } satisfies OnlineView<PartyHalmaState, RaceMove>,
   blockFive: { Board: BlocksOnline, standing: blocksStanding, testId: "party-blocks" },
   go: { Board: PairGoOnline, standing: pairGoStanding, testId: "pairgo" },
+  kumimoji: { Board: KumimojiOnline, standing: kumimojiStanding, testId: "kumimoji-online" },
 };

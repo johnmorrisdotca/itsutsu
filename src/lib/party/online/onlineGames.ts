@@ -7,6 +7,7 @@ import type { PartyRaceRules, PartyRaceState } from "../../gomoku/party/partyRac
 import type { PartyCheckersState } from "../../gomoku/party/partyCheckers.types";
 import type { PartyHalmaState } from "../../gomoku/party/partyHalma.types";
 import type { PairGoGame } from "../../gomoku/party/pairGo.types";
+import type { PartyGame } from "../../puzzles/kumimoji/party.types";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";
 import type { BlocksPieceKey, PartyBlocksState } from "../../gomoku/party/partyBlocks.types";
@@ -16,6 +17,7 @@ import { PARTY_SPECS } from "../party.constants";
 import type { PartyRules } from "../party.types";
 
 import type { OnlineGameKey, OnlineRules } from "./online.types";
+import { KUMIMOJI_ONLINE, type KumimojiMove } from "./onlineKumimoji";
 import { PAIR_GO_ONLINE, type PairGoMove } from "./onlinePairGo";
 import { readPoint } from "./onlinePoints";
 
@@ -138,6 +140,7 @@ type OnlinePlays = {
   halma: { game: PartyHalmaState; move: RaceMove };
   blockFive: { game: PartyBlocksState; move: BlocksLay };
   go: { game: PairGoGame; move: PairGoMove };
+  kumimoji: { game: PartyGame; move: KumimojiMove };
 };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
@@ -147,6 +150,7 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   halma: raceOnline(PARTY_HALMA_RULES),
   blockFive: BLOCKS_ONLINE,
   go: PAIR_GO_ONLINE,
+  kumimoji: KUMIMOJI_ONLINE,
 };
 
 /**

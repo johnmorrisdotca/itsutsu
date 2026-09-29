@@ -11,7 +11,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
-import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, partyKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { isOnlineGame } from "@/lib/party/online/onlineGames";
 import { tablePath } from "@/lib/party/online/onlinePaths";
 import { readTableView } from "@/lib/party/online/server/tableRead";
@@ -43,7 +43,7 @@ function seatNotice(said: string | string[] | undefined, reason: string | string
 export default async function TablePage({ params, searchParams }: PageProps<"/games/[slug]/tables/[id]">) {
   const { slug, id } = await params;
   const asked = await searchParams;
-  const key = partyKindFor(slug) ?? variantFor(slug);
+  const key = partyKindFor(slug) ?? variantFor(slug) ?? puzzleFor(slug);
   if (key === null || !isOnlineGame(key)) notFound();
   const readerId = await currentMemberId();
   const notice = seatNotice(asked.seat, asked.reason);

@@ -171,16 +171,19 @@ function headline(game: PartyGame): string {
  * their hand, on the same grid as All tables. Play again deals a new bag to
  * the same players.
  */
-export function KumimojiPartyFinish({ game, theme, onAgain }: { game: PartyGame; theme: BoardThemeTokens; onAgain: () => void }) {
+export function KumimojiPartyFinish({ game, theme, onAgain }: { game: PartyGame; theme: BoardThemeTokens; onAgain?: () => void }) {
   return (
     <div className="flex flex-col gap-4" data-testid="kumimoji-party-finish" data-ending={game.ending ?? ""}>
       <h2 className={SECTION_HEADING} data-testid="kumimoji-party-winner">
         {headline(game)}
       </h2>
       <KumimojiPartyAll game={game} theme={theme} />
-      <button type="button" className={PLAY_BUTTON} onClick={onAgain} data-testid="kumimoji-party-again">
-        <PressLabel words="Play again, same players" kanji="再" />
-      </button>
+      {/* Again deals a new bag in this browser; a table on several devices is set again from its set-up. */}
+      {onAgain === undefined ? null : (
+        <button type="button" className={PLAY_BUTTON} onClick={onAgain} data-testid="kumimoji-party-again">
+          <PressLabel words="Play again, same players" kanji="再" />
+        </button>
+      )}
     </div>
   );
 }

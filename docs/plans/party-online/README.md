@@ -3,9 +3,9 @@
 **Status (2026-09-29): the layer, Dots and Boxes, Chinese Checkers, Halma
 and Block Five (branch `party-online`), and Pair Go with the site's Go
 programs in computer seats (branch `party-online-2`) are built and
-browser-tested. Kumimoji (John decided its two questions, below), Superghost
-and Mancala are next, in that order; Tenka joins when its own agent has
-finished it.**
+browser-tested, and so is Kumimoji's pass and play with its own computer
+player (John decided its two questions, below). Superghost and Mancala are
+next; Tenka joins when its own agent has finished it.**
 
 John, 2026-09-28: "all our Pass and Play games should ultimately get an agent
 to make the Multi-device (invite a buddy / bot). so that they can be played on
@@ -258,7 +258,8 @@ it.
    engine's own Go (`onlinePairGo.ts`); a seat is a place in the order round
    the table (Black 1, White 1, Black 2, White 2), a move is a stone, a pass or
    a resignation, and a seat may be one of the site's Go programs.
-4. **Next: Kumimoji pass and play, with its computer players.** John decided
+4. **Done: Kumimoji pass and play, with its computer player**
+   (`onlineKumimoji.ts`, `e2e/party-online-kumimoji.spec.ts`). John decided
    both questions on 2026-09-29, in his words: **"yes, all hands visible and
    browser checks to save $$$."** So:
    - **Every seat sees every hand**, as on one device. There is no redacted
@@ -270,11 +271,28 @@ it.
      seat's hand or the pool it says it came from. A made-up word from a
      member's own browser is the one thing it cannot catch, and that is the
      trade John chose.
-   - Its moves are whole turns (tiles laid and traded, then Done or Resign),
-     so `readMove` reads a turn and `play` replays it with `turn.ts`, taking
-     the verdict the browser sent rather than asking the word lists.
-   - Its three computer players (`computerTurn.ts`) become `computers` on its
-     row; the worker loads the word lists the way the page does.
+   - A move is a press: Draw (everybody takes a tile, and the turn goes on),
+     Done or Resign, carrying the seat as the turn left it — hand, table and
+     the pool's counters. Laying, lifting, turning a wild and trading stay on
+     the mover's device until then. The server checks the seat tile by tile
+     (`withSeat`: what it holds is what it held, plus what it took from the
+     pool, less what it gave back, with no more than three taken for each
+     given), then runs the game's own `drawAll`, `endTurn` or `resign` with
+     the browser's word for "the table is sound" and "the hand spells a
+     word". A tile's family is read without the lists (`tileFamily.ts`).
+   - The table starts from the bag the set-up's browser dealt from the
+     address's seed (the deal needs the word lists); the server checks it is
+     a bag of the game's — every tile one of the set's, as many tiles and
+     wilds as that game is dealt, enough to deal to that many.
+   - Its computer (`planComputerTurn`) plays a whole turn in one move: every
+     Draw it pressed, then its Done or Resign. The worker loads the word list
+     first. A computer's move and the lists are in the worker's own module
+     (`onlineComputerMoves.ts`), never in a route's bundle.
+   - Offered from Kumimoji's pass-and-play page, above the names, where the
+     number of players is already chosen. English only in practice: the kept
+     game's reader (`decodeParty`) accepts only English tiles, so a Japanese
+     table is refused at Start rather than stored unreadable — true of the
+     game kept on one device too, and worth a look of its own.
 5. **Then Superghost and Mancala**, both already on the merge head: a row in
    `ONLINE_GAMES` through `fromPartyRules` (their `PartyRules` and the four
    things `PartyRules` does not say), a board in `ONLINE_VIEWS`, the set-up's
@@ -302,6 +320,10 @@ it.
 - A Pair Go computer seat is a program at the browser's two-second budget, the
   live board's; nothing stronger is offered at a table.
 - In Pair Go both players of the winning team are told they "shared the win".
+- Kumimoji: a turn's laying stays on the mover's device until Draw, Done or
+  Resign, so the others see a turn when it is pressed, not tile by tile.
+- Kumimoji's bag is the host browser's word for its letters (the server
+  checks its size, its wilds and that every tile is one of the set's).
 - Names at a table are the name the site prints (`shownName`: first name and
   an initial); the whole name never leaves the server.
 - The pass-and-play leads now say "or choose Several devices"; Pair Go's,

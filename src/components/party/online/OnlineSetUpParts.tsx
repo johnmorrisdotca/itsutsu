@@ -129,7 +129,7 @@ export function useStartTable(offer: OnlineOffer | undefined) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const start = async (size: number, choices: readonly SeatChoice[]) => {
+  const start = async (size: number, choices: readonly SeatChoice[], setup?: unknown) => {
     if (offer === undefined) return;
     setStarting(true);
     setProblem(null);
@@ -137,7 +137,7 @@ export function useStartTable(offer: OnlineOffer | undefined) {
       const answer = await fetch("/api/tables", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ game: offer.game, size, seats: choices.map(seatAskOf) }),
+        body: JSON.stringify({ game: offer.game, size, seats: choices.map(seatAskOf), setup }),
       });
       const body = (await answer.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (answer.ok && body?.at) {
