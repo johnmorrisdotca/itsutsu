@@ -1,7 +1,8 @@
 import type { GomojiLanguage } from "./gomoji/code";
 import { guessesOf, hiddenWordsOf, wordGridOf, wordRowsOf } from "./gomoji/futago";
 import { futagoKanaScore, futagoScore } from "./gomoji/futagoScore";
-import { baseGuesses } from "./gomoji/layout";
+import { guessesFor } from "./gomoji/layout";
+import { asWordCount } from "./gomoji/wordsSeed";
 import { kumimojiPoints } from "./kumimoji/check";
 import { koushiPoints } from "./koushi/check";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -39,7 +40,7 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
  * for more, the word itself, the rows it did not need and the time it took
  * (`wordScore`), and a word lost scores what it found. Read from the guesses,
  * run together as they are handed in. A Futago scores each of its two boards
- * so and adds them (`futagoScore.ts`).
+ * so and adds them, and a Yotsugo each of its four (`futagoScore.ts`).
  */
 export function wordPoints(size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel, lang: GomojiLanguage = "en"): number {
   return wordsPoints(lang === "fr" ? "gomojiMot" : lang === "de" ? "gomojiWort" : lang === "pop" ? "gomojiPop" : "gomoji", size, givens, answer, elapsedMs, level);
@@ -54,9 +55,9 @@ function wordsPoints(kind: PuzzleKind, size: number, givens: string, answer: str
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);
   if (hidden === null || guesses === null) return 0;
-  // Weighed by the guesses the level gave (`layout.ts`); with no level, the published count, and one more for a Futago. Mot and Wort are laid out as English is.
+  // Weighed by the guesses the level gave (`layout.ts`); with no level, hard's count: the published one, a guess more for each word past the first. Mot and Wort are laid out as English is.
   const grid = wordGridOf(kind);
-  const rows = level === undefined ? baseGuesses(grid, size) + hidden.words.length - 1 : wordRowsOf(kind, size, level, hidden);
+  const rows = level === undefined ? guessesFor(grid, size, "hard", 0, asWordCount(hidden.words.length)) : wordRowsOf(kind, size, level, hidden);
   const score = grid === "gomojiKana" ? futagoKanaScore : futagoScore;
   return score(hidden.words, guesses, rows, elapsedMs).total;
 }

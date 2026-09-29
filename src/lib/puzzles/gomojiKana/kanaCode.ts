@@ -91,9 +91,10 @@ export function greyWordFor(words: KanaWords, word: string | readonly string[], 
   return lowest(seed, words.answers, allGrey) ?? lowest(seed, words.allowed, allGrey);
 }
 
-/** A Futago's second word (`futago.ts`): the one the seed would hide next, never the first again. */
-export function otherKanaWordFor(words: KanaWords, easy: boolean, seed: number, first: string): string {
-  const word = lowest(seed, easy ? words.easy : words.answers, (each) => each !== first);
+/** A Futago's second word (`futago.ts`), or a Yotsugo's next (`yotsugo.ts`): the one the seed would hide next, never one already taken. */
+export function otherKanaWordFor(words: KanaWords, easy: boolean, seed: number, taken: string | readonly string[]): string {
+  const before = typeof taken === "string" ? [taken] : taken;
+  const word = lowest(seed, easy ? words.easy : words.answers, (each) => !before.includes(each));
   if (word === null) throw new Error("A kana list of one word.");
   return word;
 }

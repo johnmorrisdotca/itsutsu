@@ -11,8 +11,8 @@ import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/genera
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { Puzzle, PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { clockFor } from "@/lib/puzzles/puzzleClock";
-import { freshSeed } from "@/lib/puzzles/random";
-import { freshFutagoSeed } from "@/lib/puzzles/gomoji/futagoSeed";
+import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
+import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
@@ -58,7 +58,7 @@ export function PuzzlePlay({
   hints = false,
   strict = false,
   headStart = false,
-  twins = false,
+  words = 1,
   gameLength = "short",
   language = "english",
   doubleSet = false,
@@ -75,8 +75,8 @@ export function PuzzlePlay({
   clock?: PuzzleClock;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
-  /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
-  twins?: boolean;
+  /** How many words a Gomoji was asked for — a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`): read only to draw a seed, which says it from then on. */
+  words?: WordCount;
   gameLength?: KumimojiLength;
   language?: KumimojiLanguage;
   doubleSet?: boolean;
@@ -125,8 +125,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players, clock })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players, clock, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);

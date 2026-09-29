@@ -1,4 +1,5 @@
 import { markGuess, type LetterMark } from "./gomoji/code";
+import { boardGuesses } from "./gomoji/futago";
 import { kanaBase, markKanaGuess, type KanaMark } from "./gomojiKana/kanaMarks";
 
 /**
@@ -21,6 +22,17 @@ export function letterKeyMarks(guesses: readonly string[], hidden: string): Map<
     });
   }
   return best;
+}
+
+/**
+ * A KEY SPLIT BETWEEN SEVERAL WORDS — a Futago's two halves, a Yotsugo's four
+ * corners (`FutagoKeyHalves`): for each word, in order, the best mark its
+ * letter has had on that word's own board, which shows every guess up to the
+ * one that found the word and none after (`boardGuesses`). A head start's keys
+ * are grey on every board, as a guess of them would have left them.
+ */
+export function splitLetterKeyMarks(guesses: readonly string[], words: readonly string[], headStart: readonly string[] = []): Map<string, LetterMark>[] {
+  return words.map((word) => withHeadStart(letterKeyMarks(boardGuesses(guesses, word), word), headStart, "miss"));
 }
 
 /**

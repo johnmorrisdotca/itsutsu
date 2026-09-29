@@ -21,6 +21,7 @@ import { guessesTaken } from "./guessesTaken";
 import { headStartKeys } from "./headStart";
 import { MOST_GUESSES, guessesFor } from "./layout";
 import { wordScore } from "./wordScore";
+import type { WordCount } from "./words.types";
 
 beforeAll(prepareEveryPuzzle);
 
@@ -135,7 +136,7 @@ describe("drawing a Futago in every language", () => {
 
 describe("a Futago gives a guess more, and a board takes guesses until its word is found", () => {
   it("gives one more guess than one word at hard and medium, and easy the whole of a taller board", () => {
-    const count = (size: number, level: PuzzleLevel, boards: number) => guessesFor("gomoji", size, level, 0, boards);
+    const count = (size: number, level: PuzzleLevel, boards: WordCount) => guessesFor("gomoji", size, level, 0, boards);
     expect([count(5, "hard", 2), count(5, "medium", 2), count(5, "easy", 2)]).toEqual([7, 8, 9]);
     expect([count(4, "hard", 2), count(4, "medium", 2), count(4, "easy", 2)]).toEqual([6, 7, 8]);
     expect([count(6, "hard", 2), count(6, "medium", 2), count(6, "easy", 2)]).toEqual([7, 8, 10]);
@@ -205,11 +206,10 @@ describe("scoring and counting a Futago", () => {
     expect(wordRowsOf("gomojiKana", 4, "medium", { words: ["a", "b"], grey: "c" })).toBe(guessesFor("gomojiKana", 4, "medium", 1, 2));
   });
 
-  it("keeps a run of a Futago's easy guesses, the most any Gomoji has", () => {
+  it("keeps a run of a Futago's easy guesses, within the most any Gomoji has (a Yotsugo's, `yotsugo.test.ts`)", () => {
     const ten = "crane".repeat(10);
     expect(decodeGomojiProgress(ten, 5)).toHaveLength(10);
     expect(progressFits("gomoji", 5, ten)).toBe(true);
-    expect(progressFits("gomoji", 5, "crane".repeat(11))).toBe(false);
   });
 
   it("greys a head start's keys in neither word", () => {
@@ -225,13 +225,13 @@ describe("scoring and counting a Futago", () => {
 
 describe("a Futago's address", () => {
   it("asks for two words by twins=1 until a seed is drawn, and from then the seed says it", () => {
-    expect(puzzleAsked("gomoji", { size: "5", level: "medium", twins: "1" }).twins).toBe(true);
-    expect(puzzleAsked("gomoji", { size: "5", level: "medium" }).twins).toBe(false);
-    expect(puzzleAsked("gomoji", { size: "5", level: "medium", seed: String(A_FUTAGO) }).twins).toBe(true);
-    expect(puzzleAsked("gomoji", { size: "5", level: "medium", seed: "12345", twins: "1" }).twins).toBe(false);
+    expect(puzzleAsked("gomoji", { size: "5", level: "medium", twins: "1" }).words).toBe(2);
+    expect(puzzleAsked("gomoji", { size: "5", level: "medium" }).words).toBe(1);
+    expect(puzzleAsked("gomoji", { size: "5", level: "medium", seed: String(A_FUTAGO) }).words).toBe(2);
+    expect(puzzleAsked("gomoji", { size: "5", level: "medium", seed: "12345", twins: "1" }).words).toBe(1);
     // A puzzle that is not a word has no Futago.
-    expect(puzzleAsked("numberPlace", { size: "9", level: "medium", twins: "1" }).twins).toBe(false);
-    expect(puzzleQuery({ size: 5, level: "medium", seed: null, twins: true })).toBe("?size=5&level=medium&twins=1");
+    expect(puzzleAsked("numberPlace", { size: "9", level: "medium", twins: "1" }).words).toBe(1);
+    expect(puzzleQuery({ size: 5, level: "medium", seed: null, words: 2 })).toBe("?size=5&level=medium&twins=1");
   });
 });
 

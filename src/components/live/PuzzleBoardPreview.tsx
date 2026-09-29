@@ -16,6 +16,7 @@ import { cageOutline } from "@/lib/puzzles/killer/outline";
 import { NUMBER_PLACE_BOXES } from "@/lib/puzzles/numberPlace/boxes";
 import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
@@ -76,12 +77,16 @@ export function PuzzleBoardPreview({
   level,
   appearance = DEFAULT_APPEARANCE,
   onFelt,
-  twins = false,
+  wordCount = 1,
 }: {
   kind: PuzzleKind;
   size: number;
-  /** A Gomoji's Futago (`futago.ts`): its two boards side by side, in the same box, so choosing it moves nothing. */
-  twins?: boolean;
+  /**
+   * How many words a Gomoji hides: a Futago's two boards side by side
+   * (`futago.ts`), or a Yotsugo's two boards of two quarters one over the
+   * other (`yotsugo.ts`), in the same box.
+   */
+  wordCount?: WordCount;
   /** The level chosen, where it changes the board: a Gomoji's guesses are its rows. The kind's own level when left out. */
   level?: PuzzleLevel;
   /** The reader's board, so a puzzle drawn on the board itself shows the colour they chose. */
@@ -104,7 +109,7 @@ export function PuzzleBoardPreview({
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
-          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} boards={twins ? 2 : 1} />
+          <WordGridPreview layout={words} size={size} level={level ?? spec.defaultLevel} style={style} appearance={appearance} boards={wordCount} />
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
@@ -141,10 +146,22 @@ function WordGridPreview({
   level: PuzzleLevel;
   style: WordStyle;
   appearance: Appearance;
-  /** One board, or a Futago's two side by side. */
-  boards: 1 | 2;
+  /** One board, a Futago's two side by side, or a Yotsugo's four quarters on two boards. */
+  boards: WordCount;
 }) {
   const free = layout === "gomojiKana" && level !== "hard" ? 1 : 0;
+  if (boards === 4) {
+    // Two boards, one over the other, each half the box's side and nothing between, so the four quarters stand in exactly the square one word's board fills.
+    const rows = free + guessesFor(layout, size, level, free, 4);
+    const quarter = (at: number) => ({ at, guesses: [], marks: [], done: true, found: false });
+    return (
+      <div className="mx-auto flex w-1/2 flex-col" data-testid="set-up-yotsugo-preview">
+        {[0, 2].map((first) => (
+          <GomojiGrid key={first} size={size} rows={rows} parts={[quarter(first), quarter(first + 1)]} typing={emptyRow(size)} done style={style} appearance={appearance} onChoose={NOTHING} />
+        ))}
+      </div>
+    );
+  }
   const grid = (
     <GomojiGrid
       size={size}
@@ -160,7 +177,8 @@ function WordGridPreview({
   );
   if (boards === 1) return grid;
   return (
-    <div className="grid h-full w-full grid-cols-2 items-center gap-1.5" data-testid="set-up-futago-preview">
+    // Square, the two boards level across its middle: the room one word's board takes, so choosing two words moves nothing under it.
+    <div className="grid aspect-square w-full grid-cols-2 items-center gap-1.5" data-testid="set-up-futago-preview">
       {grid}
       {grid}
     </div>

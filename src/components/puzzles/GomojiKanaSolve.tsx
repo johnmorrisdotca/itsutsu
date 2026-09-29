@@ -14,6 +14,7 @@ import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProg
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { futagoKanaScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { breaksKanaHardRule, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMark, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
@@ -26,6 +27,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
 import { FutagoBoards } from "./FutagoBoards";
+import { YotsugoBoards } from "./YotsugoBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
@@ -99,7 +101,9 @@ export function GomojiKanaSolve({
   // One word, or a Futago's two (`futago.ts`), and the free grey word.
   const given = useMemo(() => hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null }, [kind, size, puzzle.givens]);
   const hidden = given.words[0]!;
-  const twins = given.words.length > 1;
+  // One word, a Futago's two or a Yotsugo's four: the address and Another ask for the same count again.
+  const count = asWordCount(given.words.length);
+  const many = count > 1;
   const free = given.grey === null ? 0 : 1;
   const rows = wordRowsOf(kind, size, level, given);
   const words = useMemo(() => kanaWordsOf(size), [size]);
@@ -129,19 +133,19 @@ export function GomojiKanaSolve({
     [given, guesses],
   );
   const split = useMemo(
-    () => (twins ? ([0, 1] as const).map((at) => withHeadStart(kanaKeyMarks(boards[at]!.rows, boards[at]!.word), started, "miss")) as [Map<string, KanaMark>, Map<string, KanaMark>] : null),
-    [twins, boards, started],
+    () => (many ? boards.map((board): ReadonlyMap<string, KanaMark> => withHeadStart(kanaKeyMarks(board.rows, board.word), started, "miss")) : null),
+    [many, boards, started],
   );
   // How many of a kana the marks on the board prove, by base as the keys are: a count on its key from two.
   // Not for a Futago, whose two words hold different counts.
   const counted = useMemo(
     () =>
-      twins ? new Map<string, number>() : knownCounts(
+      many ? new Map<string, number>() : knownCounts(
         shown,
         marked.map((row) => row.map((each) => each.mark)),
         kanaBase,
       ),
-    [twins, shown, marked],
+    [many, shown, marked],
   );
 
   const playRoot = usePlayInView(engaged && done === null, typing);
@@ -255,7 +259,11 @@ export function GomojiKanaSolve({
     <section ref={playRoot} className="flex flex-col gap-4" data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
-      {done === null && twins ? (
+      {done === null && count === 4 ? (
+        <SolvePaused pausing={pausing}>
+          <YotsugoBoards size={size} rows={free + rows} boards={boards} free={free} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
+        </SolvePaused>
+      ) : done === null && many ? (
         <SolvePaused pausing={pausing}>
           <FutagoBoards
             size={size}
@@ -291,7 +299,7 @@ export function GomojiKanaSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `${free === 1 ? `The first word is free, grey everywhere${twins ? " on both boards" : ""}. ` : ""}${twins ? "Every guess goes to both boards. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
+            {said ?? `${free === 1 ? `The first word is free, grey everywhere${count === 4 ? " in all four quarters" : many ? " on both boards" : ""}. ` : ""}${count === 4 ? "Every guess goes to all four words. " : many ? "Every guess goes to both boards. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
             {romaji === "" ? null : (
               <span className="ml-2 font-mono text-ink" data-testid="kana-romaji">
                 {romaji}…
@@ -323,7 +331,7 @@ export function GomojiKanaSolve({
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="word-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
-            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {twins ? "The words were" : "The word was"}{" "}
+            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {many ? "The words were" : "The word was"}{" "}
             <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.
           </p>
           <WordScoreLine score={score!} headStart={headStart} />
@@ -339,11 +347,11 @@ export function GomojiKanaSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, twins, clock })}`}
+              href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, clock })}`}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
-              {twins ? "Two more words →" : "Another word →"}
+              {count === 4 ? "Four more words →" : many ? "Two more words →" : "Another word →"}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>

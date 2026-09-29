@@ -25,19 +25,28 @@ export const FUTAGO_KEY_LETTER = "relative z-10 rounded bg-ivory/85 px-1 leading
  * 2026-09-26: "each keyboard key is split into two halves showing each
  * board's colour." Drawn under the letter, filling the key, and taking no
  * room, so a split keyboard is exactly as big as a plain one.
+ *
+ * A YOTSUGO'S KEY (`yotsugo.ts`) is split in four corners the same way, each
+ * corner the quarter of the board it stands for: the first word's top left,
+ * the second's top right, the third's bottom left and the fourth's bottom
+ * right, as the four words stand on the two boards above.
  */
-export function FutagoKeyHalves<Mark extends string>({ marks, marked }: { marks: readonly [Mark | undefined, Mark | undefined]; marked: Record<Mark, string> }) {
+export function FutagoKeyHalves<Mark extends string>({ marks, marked }: { marks: readonly (Mark | undefined)[]; marked: Record<Mark, string> }) {
+  const corners = marks.length > 2;
   return (
-    <span className="pointer-events-none absolute inset-0 flex" aria-hidden="true" data-testid="futago-key-halves">
+    <span className={`pointer-events-none absolute inset-0 ${corners ? "grid grid-cols-2 grid-rows-2" : "flex"}`} aria-hidden="true" data-testid="futago-key-halves">
       {marks.map((mark, board) => (
-        <span key={board} className={`h-full w-1/2 ${mark === undefined ? HALF_PLAIN : marked[mark]}`} data-board={board} data-mark={mark ?? ""} />
+        <span key={board} className={`${corners ? "h-full w-full" : "h-full w-1/2"} ${mark === undefined ? HALF_PLAIN : marked[mark]}`} data-board={board} data-mark={mark ?? ""} />
       ))}
     </span>
   );
 }
 
-/** What a screen reader hears of a split key's two halves: "first word: in its place; second word: not in it". */
-export function futagoKeyWords<Mark extends string>(marks: readonly [Mark | undefined, Mark | undefined], words: Record<Mark, string>): string {
+/** Each word's place in words, for a screen reader: "first word", up to "fourth word". */
+const WORD_PLACES = ["first", "second", "third", "fourth"] as const;
+
+/** What a screen reader hears of a split key's parts: "first word: in its place; second word: not in it", and so on to a fourth. */
+export function futagoKeyWords<Mark extends string>(marks: readonly (Mark | undefined)[], words: Record<Mark, string>): string {
   const said = (mark: Mark | undefined) => (mark === undefined ? "not tried" : words[mark]);
-  return `first word: ${said(marks[0])}; second word: ${said(marks[1])}`;
+  return marks.map((mark, at) => `${WORD_PLACES[at] ?? `word ${at + 1}`} word: ${said(mark)}`).join("; ");
 }

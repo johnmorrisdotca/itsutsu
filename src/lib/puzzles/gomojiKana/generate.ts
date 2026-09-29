@@ -1,9 +1,9 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { encodeKanaGivens, greyWordFor, kanaWordFor, otherKanaWordFor } from "./kanaCode";
-import { encodeKanaFutagoGivens } from "../gomoji/futago";
-import { isFutagoSeed } from "../gomoji/futagoSeed";
+import { encodeKanaWordsGivens } from "../gomoji/futago";
+import { wordCountOfSeed } from "../gomoji/wordsSeed";
 import { kanaWordsOf } from "./kanaWords";
-import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { dailyManyWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
 
 /**
  * Making a kana Gomoji puzzle from a seed: the word, and on easy and medium
@@ -15,15 +15,22 @@ import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPool
  */
 export function generateGomojiKana(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const words = kanaWordsOf(size);
-  /* A Futago's two words (`futago.ts`), and a free grey word grey against both of them. */
-  if (isFutagoSeed(seed)) {
+  /* A Futago's two words (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`), and a free grey word grey against every one of them. */
+  const count = wordCountOfSeed(seed);
+  if (count > 1) {
     const easy = level === "easy";
-    const first = kanaWordFor(words, easy, seed);
-    const pair = dailyFutagoWordsOfSeed("gomojiKana", size, seed) ?? ([first, otherKanaWordFor(words, easy, seed, first)] as const);
-    const grey = level === "hard" ? null : greyWordFor(words, pair, seed);
-    return { kind: "gomojiKana", size, level, seed, givens: encodeKanaFutagoGivens(pair, grey), solution: pair.join("") };
+    const drawn = dailyManyWordsOfSeed("gomojiKana", size, seed) ?? drawSeveral(count, (taken) => (taken.length === 0 ? kanaWordFor(words, easy, seed) : otherKanaWordFor(words, easy, seed, taken)));
+    const grey = level === "hard" ? null : greyWordFor(words, drawn, seed);
+    return { kind: "gomojiKana", size, level, seed, givens: encodeKanaWordsGivens(drawn, grey), solution: drawn.join("") };
   }
   const word = dailyWordOfSeed("gomojiKana", size, seed) ?? kanaWordFor(words, level === "easy", seed);
   const grey = level === "hard" ? null : greyWordFor(words, word, seed);
   return { kind: "gomojiKana", size, level, seed, givens: encodeKanaGivens(word, grey), solution: word };
+}
+
+/** Several different words, each the next the seed would hide past the ones already taken. */
+function drawSeveral(count: number, next: (taken: readonly string[]) => string): string[] {
+  const taken: string[] = [];
+  while (taken.length < count) taken.push(next(taken));
+  return taken;
 }

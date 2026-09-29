@@ -1,8 +1,8 @@
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom } from "../random";
-import { dailyFutagoWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
-import { encodeFutagoGivens } from "./futago";
-import { isFutagoSeed } from "./futagoSeed";
+import { dailyManyWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { encodeWordsGivens } from "./futago";
+import { wordCountOfSeed } from "./wordsSeed";
 import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
 
 /**
@@ -24,24 +24,35 @@ import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
  * (`dailyWords/`), never from the live list.
  *
  * A FUTAGO'S SEED (`futagoSeed.ts`) hides two words, never one twice: two
- * drawn from the level's list, or a day's two from the pool.
+ * drawn from the level's list, or a day's two from the pool. A YOTSUGO'S
+ * (`yotsugoSeed.ts`) hides four the same way.
  */
 export function generateGomoji(size: number, level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "gomoji"): Puzzle {
   const words = answersFor(size, level === "easy", lang);
   if (words.length === 0) throw new Error(`No ${size}-letter words.`);
-  if (isFutagoSeed(seed)) {
-    const pair = dailyFutagoWordsOfSeed(kind, size, seed) ?? drawTwo(words, seed);
-    // Found when both are: the first guessed, then the second (`futago.ts`).
-    return { kind, size, level, seed, givens: encodeFutagoGivens(pair), solution: pair.join("") };
+  const count = wordCountOfSeed(seed);
+  if (count > 1) {
+    const drawn = dailyManyWordsOfSeed(kind, size, seed) ?? drawSeveral(words, count, seed);
+    // Found when every one is, in the order of the boards (`futago.ts`, `yotsugo.ts`).
+    return { kind, size, level, seed, givens: encodeWordsGivens(drawn), solution: drawn.join("") };
   }
   const word = dailyWordOfSeed(kind, size, seed) ?? words[Math.floor(seededRandom(seed)() * words.length)]!;
   return { kind, size, level, seed, givens: encodeHidden(word), solution: word };
 }
 
-/** Two different words from a list, the seed deciding which. */
-function drawTwo(words: readonly string[], seed: number): [string, string] {
+/**
+ * Different words from a list, the seed deciding which: each drawn from the
+ * words not yet taken. For two, exactly the draw a Futago has always made,
+ * so no kept Futago changes its words.
+ */
+function drawSeveral(words: readonly string[], count: number, seed: number): string[] {
   const random = seededRandom(seed);
-  const first = Math.floor(random() * words.length);
-  const second = Math.floor(random() * (words.length - 1));
-  return [words[first]!, words[second >= first ? second + 1 : second]!];
+  const taken: number[] = [];
+  for (let at = 0; at < count; at += 1) {
+    let pick = Math.floor(random() * (words.length - at));
+    // Step over the places already taken, lowest first, so the draw lands on the pick-th word still free.
+    for (const place of [...taken].sort((a, b) => a - b)) if (pick >= place) pick += 1;
+    taken.push(pick);
+  }
+  return taken.map((place) => words[place]!);
 }

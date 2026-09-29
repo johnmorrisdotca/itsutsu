@@ -7,6 +7,7 @@ import { playPlace } from "@/lib/puzzles/gomoji/layout";
 import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
+import type { GridPart } from "./gomojiGrid.types";
 import { PuzzleBoard } from "./PuzzleBoard";
 import {
   WORD_FOCUS,
@@ -68,8 +69,8 @@ export function feltOrWoodTheme(appearance: Appearance): BoardThemeTokens {
 export function GomojiGrid({
   size,
   rows,
-  guesses,
-  marks,
+  guesses = [],
+  marks = [],
   typing,
   done,
   style,
@@ -77,11 +78,12 @@ export function GomojiGrid({
   arrows = [],
   free = 0,
   appearance = DEFAULT_APPEARANCE,
+  parts,
 }: {
   size: number;
   rows: number;
-  guesses: readonly string[];
-  marks: readonly (readonly CellMark[])[];
+  guesses?: readonly string[];
+  marks?: readonly (readonly CellMark[])[];
   typing: TypingRow;
   done: boolean;
   style: WordStyle;
@@ -93,94 +95,133 @@ export function GomojiGrid({
   free?: number;
   /** The reader's board colour, chosen on the same felt patches a Reversi or Gomoku board offers (`feltOrWoodTheme`). */
   appearance?: Appearance;
+  /**
+   * Several words side by side on the one board, each in a play area of its
+   * own with its own heavy border (a Yotsugo's quarters, `YotsugoBoards`), in
+   * place of `guesses`, `marks` and `arrows`. Left out, the board holds one word.
+   */
+  parts?: readonly GridPart[];
 }) {
   const tiles = style === WORD_STYLES.tiles;
+  const sides: readonly GridPart[] = parts ?? [{ at: 0, guesses, marks, arrows, done, found: false }];
+  const lone = parts === undefined;
+  const across = size * sides.length;
   // A board of stones is a whole board, play centred across on whole squares and a spare row over to the top (`playPlace`); tiles are paper.
-  // Tiles stand centred across the board (`justify-center` below), so the play area's border starts where they do, not at the board's edge.
-  const { span, top, left } = tiles ? { span: rows, top: 0, left: (rows - size) / 2 } : playPlace(size, rows);
+  // One word's tiles stand centred across the board (`justify-center` below), so the play area's border starts where they do, not at the board's edge.
+  // Several words' tiles stand where stones would, each word in its own part of the play.
+  const { span, top, left } = tiles && lone ? { span: rows, top: 0, left: (rows - size) / 2 } : playPlace(across, rows);
   const theme = feltOrWoodTheme(appearance);
-  const found = foundInPlace(guesses, marks, size);
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={span} theme={theme}>
         <div className="relative flex h-full w-full items-center justify-center">
-          {tiles ? null : <GridLines span={span} size={size} rows={rows} left={left} top={top} style={style} theme={theme} />}
-          <PlayAreaBorder span={span} size={size} rows={rows} left={left} top={top} style={style} theme={theme} />
-          <div
-            className={tiles ? "relative grid h-full gap-1 p-1" : "absolute grid"}
-            style={{
-              ...(tiles
-                ? { width: `${(size / rows) * 100}%` }
-                : { left: `${(left / span) * 100}%`, top: `${(top / span) * 100}%`, width: `${(size / span) * 100}%`, height: `${(rows / span) * 100}%` }),
-              gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-            }}
-          >
-            {Array.from({ length: rows }, (_, row) => {
-              const guessed = guesses[row];
-              const live = guessed === undefined && row === guesses.length && !done;
-              const letters: ArrayLike<string> = guessed ?? (live ? typing.slots : []);
-              return Array.from({ length: size }, (_, at) => {
-                const letter = letters[at] ?? "";
-                const mark = guessed === undefined ? null : marks[row]![at]!;
-                // A letter typed where an earlier guess already found it green is drawn green at once: it cannot be anything else.
-                const known = live && letter !== "" && found[at] === letter;
-                const shown = mark ?? (known ? "hit" : null);
-                const arrow = mark === null ? "" : (arrows[row]?.[at] ?? "");
-                const label =
-                  letter === ""
-                    ? "empty"
-                    : `${letter.toUpperCase()}${mark === null ? "" : `, ${MARK_WORDS[mark]}`}${arrow === "" ? "" : `, ${ARROW_WORDS[arrow]}`}${row < free ? ", given free" : ""}`;
-                const focused = live && typing.at === at;
-                const said = {
-                  "data-testid": "word-tile",
-                  "data-row": row,
-                  "data-mark": mark ?? (letter === "" ? "empty" : "typed"),
-                  "data-arrow": arrow === "" ? undefined : arrow,
-                  "data-free": row < free ? "true" : undefined,
-                  "data-known": known ? "hit" : undefined,
-                  "data-focus": focused ? "true" : undefined,
-                  "aria-label": live ? `${label}, letter ${at + 1}${focused ? ", chosen" : ""}` : label,
-                };
-                // Inside the stone or tile, at its lower right, in its letter's colour: read with the kana, not beside it.
-                const badge = arrow === "" ? null : <ArrowMark arrow={arrow} />;
-                const face = tiles ? (
-                  <>
-                    {letter}
-                    {badge}
-                  </>
-                ) : letter === "" ? (
-                  focused ? <span className={`${WORD_STONE_SIZE[style]} ${WORD_FOCUS.stoneEmpty}`} aria-hidden="true" /> : null
-                ) : (
-                  <span
-                    className={`relative ${WORD_STONE} ${WORD_STONE_SIZE[style]} ${focused ? WORD_FOCUS.stoneFilled : ""}`}
-                    style={WORD_STONE_LOOK[shown ?? "typed"]}
-                    aria-hidden="true"
-                  >
-                    {letter}
-                    {badge}
-                  </span>
-                );
-                const look = tiles
-                  ? `relative ${WORD_TILE} ${shown !== null ? WORD_TILE_MARK[shown] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY} ${focused ? (letter === "" ? WORD_FOCUS.tileEmpty : WORD_FOCUS.tileFilled) : ""}`
-                  : "relative flex items-center justify-center";
-                // A place on the row being typed is a press; every other cell is only drawn.
-                return live ? (
-                  <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} {...said}>
-                    {face}
-                  </button>
-                ) : (
-                  <div key={`${row}-${at}`} className={look} {...said}>
-                    {face}
-                  </div>
-                );
-              });
-            })}
-          </div>
+          {tiles ? null : <GridLines span={span} size={across} rows={rows} left={left} top={top} style={style} theme={theme} />}
+          {sides.map((side, at) => (
+            <PlayAreaBorder key={side.at} span={span} size={size} rows={rows} left={left + at * size} top={top} style={style} theme={theme} />
+          ))}
+          {sides.map((side, at) => (
+            <div
+              key={side.at}
+              className={tiles && lone ? "relative grid h-full gap-1 p-1" : tiles ? "absolute grid gap-[2px] p-[2px]" : "absolute grid"}
+              style={{
+                ...(tiles && lone
+                  ? { width: `${(size / rows) * 100}%` }
+                  : { left: `${((left + at * size) / span) * 100}%`, top: `${(top / span) * 100}%`, width: `${(size / span) * 100}%`, height: `${(rows / span) * 100}%` }),
+                gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+                gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+              }}
+              {...(lone ? {} : { "data-testid": "word-part", "data-part": side.at, "data-found": side.found ? "true" : "false" })}
+            >
+              <PartRows side={side} size={size} rows={rows} free={free} typing={typing} style={style} onChoose={onChoose} />
+            </div>
+          ))}
         </div>
       </PuzzleBoard>
     </div>
   );
+}
+
+/** One word's rows on the board: its guesses marked, the row being typed while it takes one, and the rest empty. */
+function PartRows({
+  side,
+  size,
+  rows,
+  free,
+  typing,
+  style,
+  onChoose,
+}: {
+  side: GridPart;
+  size: number;
+  rows: number;
+  free: number;
+  typing: TypingRow;
+  style: WordStyle;
+  onChoose: (place: number) => void;
+}) {
+  const tiles = style === WORD_STYLES.tiles;
+  const { guesses, marks, arrows = [], done } = side;
+  const found = foundInPlace(guesses, marks, size);
+  return Array.from({ length: rows }, (_, row) => {
+    const guessed = guesses[row];
+    const live = guessed === undefined && row === guesses.length && !done;
+    const letters: ArrayLike<string> = guessed ?? (live ? typing.slots : []);
+    return Array.from({ length: size }, (_, at) => {
+      const letter = letters[at] ?? "";
+      const mark = guessed === undefined ? null : marks[row]![at]!;
+      // A letter typed where an earlier guess already found it green is drawn green at once: it cannot be anything else.
+      const known = live && letter !== "" && found[at] === letter;
+      const shown = mark ?? (known ? "hit" : null);
+      const arrow = mark === null ? "" : (arrows[row]?.[at] ?? "");
+      const label =
+        letter === ""
+          ? "empty"
+          : `${letter.toUpperCase()}${mark === null ? "" : `, ${MARK_WORDS[mark]}`}${arrow === "" ? "" : `, ${ARROW_WORDS[arrow]}`}${row < free ? ", given free" : ""}`;
+      const focused = live && typing.at === at;
+      const said = {
+        "data-testid": "word-tile",
+        "data-row": row,
+        "data-mark": mark ?? (letter === "" ? "empty" : "typed"),
+        "data-arrow": arrow === "" ? undefined : arrow,
+        "data-free": row < free ? "true" : undefined,
+        "data-known": known ? "hit" : undefined,
+        "data-focus": focused ? "true" : undefined,
+        "aria-label": live ? `${label}, letter ${at + 1}${focused ? ", chosen" : ""}` : label,
+      };
+      // Inside the stone or tile, at its lower right, in its letter's colour: read with the kana, not beside it.
+      const badge = arrow === "" ? null : <ArrowMark arrow={arrow} />;
+      const face = tiles ? (
+        <>
+          {letter}
+          {badge}
+        </>
+      ) : letter === "" ? (
+        focused ? <span className={`${WORD_STONE_SIZE[style]} ${WORD_FOCUS.stoneEmpty}`} aria-hidden="true" /> : null
+      ) : (
+        <span
+          className={`relative ${WORD_STONE} ${WORD_STONE_SIZE[style]} ${focused ? WORD_FOCUS.stoneFilled : ""}`}
+          style={WORD_STONE_LOOK[shown ?? "typed"]}
+          aria-hidden="true"
+        >
+          {letter}
+          {badge}
+        </span>
+      );
+      const look = tiles
+        ? `relative ${WORD_TILE} ${shown !== null ? WORD_TILE_MARK[shown] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY} ${focused ? (letter === "" ? WORD_FOCUS.tileEmpty : WORD_FOCUS.tileFilled) : ""}`
+        : "relative flex items-center justify-center";
+      // A place on the row being typed is a press; every other cell is only drawn.
+      return live ? (
+        <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} {...said}>
+          {face}
+        </button>
+      ) : (
+        <div key={`${row}-${at}`} className={look} {...said}>
+          {face}
+        </div>
+      );
+    });
+  });
 }
 
 /**

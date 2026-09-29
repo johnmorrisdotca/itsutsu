@@ -7,6 +7,7 @@ import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { dailyWordSeed } from "./dailyDay";
 import { futagoDailySeed } from "../gomoji/futagoSeed";
+import { yotsugoDailySeed } from "../gomoji/yotsugoSeed";
 
 /**
  * WHERE THE DAILY WORDS ARE, and how a kept solve is matched to a day's word.
@@ -43,12 +44,22 @@ export function todayPlayPath(kind: PuzzleKind, size: number): string {
 
 /** The address a day's Futago is played at, at a length: its two words, at the day's Futago seed (`futagoDailySeed`). */
 export function dailyFutagoPlayPath(kind: PuzzleKind, size: number, day: string): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: futagoDailySeed(day), twins: true })}`;
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: futagoDailySeed(day), words: 2 })}`;
 }
 
 /** Today's Futago at a length, for a page drawn before anybody asked: `?daily=1` with `twins=1` turns into today's Futago seed. */
 export function todayFutagoPlayPath(kind: PuzzleKind, size: number): string {
-  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, twins: true })}&${DAILY_PARAM}=1`;
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, words: 2 })}&${DAILY_PARAM}=1`;
+}
+
+/** The address a day's Yotsugo is played at, at a length: its four words, at the day's Yotsugo seed (`yotsugoDailySeed`). */
+export function dailyYotsugoPlayPath(kind: PuzzleKind, size: number, day: string): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: yotsugoDailySeed(day), words: 4 })}`;
+}
+
+/** Today's Yotsugo at a length, for a page drawn before anybody asked: `?daily=1` with `quadruplets=1` turns into today's Yotsugo seed. */
+export function todayYotsugoPlayPath(kind: PuzzleKind, size: number): string {
+  return `${playPath(kind)}${puzzleQuery({ size, level: PUZZLE_SPECS[kind].defaultLevel, seed: null, words: 4 })}&${DAILY_PARAM}=1`;
 }
 
 /** The givens a solve of this word was kept with, for a query: exactly, or as the start before a kana puzzle's grey word. */

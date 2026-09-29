@@ -250,8 +250,8 @@ export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string
 }
 
 /**
- * Every Gomoji, in any language and with one word or a Futago's two
- * (`futago.ts`): every guess a word of the list, in order, no more of them
+ * Every Gomoji, in any language and with one word, a Futago's two or a
+ * Yotsugo's four (`futago.ts`, `yotsugo.ts`): every guess a word of the list, in order, no more of them
  * than the rows allow — and either every word was guessed and the last guess
  * found the last of them ("found"), or every row is spent and some word was
  * never guessed ("spent"). Marking the letters is the browser's; the server
@@ -264,7 +264,9 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   const kana = kind === "gomojiKana";
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);
-  const twins = hidden !== null && hidden.words.length > 1;
+  const many = hidden !== null && hidden.words.length > 1;
+  // "both words" for a Futago's two, "all four words" for a Yotsugo's four.
+  const every = hidden !== null && hidden.words.length === 2 ? "both words" : "all four words";
   if (hidden === null) return { ok: false, reason: kana ? "the givens are not a hidden kana word" : "the givens are not a hidden word" };
   if (guesses === null || guesses.length === 0) return { ok: false, reason: kana ? "the answer is not whole guesses in hiragana" : "the answer is not whole guesses" };
   // How many guesses the level gave: refused, never guessed at, without one.
@@ -285,13 +287,13 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
   const firstFound = hidden.words.map((word) => guesses.indexOf(word));
   if (ending === "found") {
-    if (firstFound.includes(-1)) return { ok: false, reason: twins ? "a word was not guessed" : "the word was not guessed" };
-    if (Math.max(...firstFound) !== guesses.length - 1) return { ok: false, reason: twins ? "guesses go on after both words were found" : "guesses go on after the word was found" };
+    if (firstFound.includes(-1)) return { ok: false, reason: many ? "a word was not guessed" : "the word was not guessed" };
+    if (Math.max(...firstFound) !== guesses.length - 1) return { ok: false, reason: many ? `guesses go on after ${every} were found` : "guesses go on after the word was found" };
     return { ok: true };
   }
-  if (!firstFound.includes(-1)) return { ok: false, reason: twins ? "both words were found" : "the word was found" };
+  if (!firstFound.includes(-1)) return { ok: false, reason: many ? `${every} were found` : "the word was found" };
   // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
-  if (guesses.length !== rows && (twins || guesses.length !== baseGuesses(wordGridOf(kind), size))) return { ok: false, reason: "there are guesses left" };
+  if (guesses.length !== rows && (many || guesses.length !== baseGuesses(wordGridOf(kind), size))) return { ok: false, reason: "there are guesses left" };
   return { ok: true };
 }
 

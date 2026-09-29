@@ -11,12 +11,15 @@ import { guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { boardGuesses, hiddenWordsOf } from "@/lib/puzzles/gomoji/futago";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
+import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
+import { YOTSUGO_BOARDS } from "@/lib/puzzles/gomoji/yotsugo";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { kanaBase, markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
 import { FutagoBoards } from "./FutagoBoards";
+import { YotsugoBoards } from "./YotsugoBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordKeyboard } from "./WordKeyboard";
 
@@ -74,7 +77,7 @@ export function WordReplay({
   const kana = kind === "gomojiKana";
   const lang = languageOf(kind);
 
-  // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours — for each board of a Futago (`futago.ts`).
+  // What each kind draws at this step: its rows, their marks and arrows, and the keys' colours — for each board of a Futago (`futago.ts`) or quarter of a Yotsugo (`yotsugo.ts`).
   const hidden = hiddenWordsOf(kind, size, givens) ?? { words: [""], grey: null };
   const grey = kana ? hidden.grey : null;
   const free = grey !== null ? 1 : 0;
@@ -88,18 +91,20 @@ export function WordReplay({
     );
     return { word, guessed, rows, marks, arrows, found: guessed.includes(word) };
   });
-  const twins = boards.length > 1;
+  const many = boards.length > 1;
   const { word, rows, marks, arrows } = boards[0]!;
   // How many of a letter the marks drawn at this step prove, by base for kana: a count on its key from two. Not for a Futago's two words.
-  const counted = twins ? NONE : knownCounts(rows, marks, kana ? kanaBase : undefined);
+  const counted = many ? NONE : knownCounts(rows, marks, kana ? kanaBase : undefined);
   const started = headStart ? headStartKeys(kind, size, givens) : [];
   const lettersOf = (board: (typeof boards)[number]) => withHeadStart(letterKeyMarks(board.guessed, board.word), started, "miss");
   const kanaOf = (board: (typeof boards)[number]) => withHeadStart(kanaKeyMarks(board.rows, board.word), started, "miss");
-  const allowed = free + Math.max(guesses.length, guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free, boards.length));
+  const allowed = free + Math.max(guesses.length, guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free, asWordCount(boards.length)));
 
   return (
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
-      {twins ? (
+      {boards.length === YOTSUGO_BOARDS ? (
+        <YotsugoBoards size={size} rows={allowed} boards={boards} free={free} typing={emptyRow(size)} done style={style} onChoose={NOTHING} appearance={appearance} />
+      ) : many ? (
         <FutagoBoards size={size} rows={allowed} boards={boards} free={free} typing={emptyRow(size)} done style={style} onChoose={NOTHING} appearance={appearance} />
       ) : (
         <GomojiGrid
@@ -120,7 +125,7 @@ export function WordReplay({
       {kana ? (
         <KanaKeyboard
           known={withHeadStart(kanaKeyMarks(rows, word), started, "miss")}
-          split={twins ? [kanaOf(boards[0]!), kanaOf(boards[1]!)] : null}
+          split={many ? boards.map(kanaOf) : null}
           counted={counted}
           typed={NONE}
           style={style}
@@ -135,7 +140,7 @@ export function WordReplay({
       ) : (
         <WordKeyboard
           known={withHeadStart(letterKeyMarks(played, word), started, "miss")}
-          split={twins ? [lettersOf(boards[0]!), lettersOf(boards[1]!)] : null}
+          split={many ? boards.map(lettersOf) : null}
           counted={counted} style={style} lang={lang} disabled={false} readOnly onLetter={NOTHING} onEnter={NOTHING} onBack={NOTHING} />
       )}
     </div>
