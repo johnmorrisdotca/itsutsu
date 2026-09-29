@@ -47,7 +47,8 @@ export function finderAgreement(variant: RuleVariant): { compared: number; found
           if (onBoard !== null) found += 1;
         }
       }
-      const turn = chooseTurn(state, game % 2 === 0 ? "kyu" : "dan", random, { nodes: 300 });
+      // Positions, never the clock: a clock plays other games on a busy machine, and the bar below is a count of what they find.
+      const turn = chooseTurn(state, game % 2 === 0 ? "kyu" : "dan", random, { nodes: 300, millis: Infinity });
       if (turn === null) break;
       state = applyTurn(state, turn);
     }
