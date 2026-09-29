@@ -1,5 +1,6 @@
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { TenkaGame, TenkaOwner } from "@/lib/party/tenka/tenka.types";
+import { usePartyMarbles } from "../partyMarbles";
 import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
 import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
@@ -12,7 +13,9 @@ const PIPS: Record<number, readonly number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8
 
 /** One die, in its thrower's colour: the pips drawn, the number said to a screen reader. */
 function Die({ value, owner, small }: { value: number; owner: TenkaOwner; small: boolean }) {
-  const marble = ownerMarble(owner);
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
+  const marble = ownerMarble(owner, marbles);
   return (
     <svg viewBox="0 0 30 30" className={`${small ? "size-7" : "size-9"} shrink-0`} role="img" aria-label={String(value)} data-testid="tenka-die" data-value={value}>
       <rect x={1} y={1} width={28} height={28} rx={6} fill={marble.fill} stroke="rgba(0,0,0,0.55)" strokeWidth={1.2} />

@@ -23,6 +23,19 @@ import { describe, expect, it } from "vitest";
 
 const PARTY = join("src", "components", "party");
 
+/** Every .tsx under the party components, a table's own folder (Tenka's, the online tables') included. */
+function partyFiles(dir: string = PARTY): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+    entry.isDirectory() ? partyFiles(join(dir, entry.name)) : entry.name.endsWith(".tsx") ? [join(dir, entry.name)] : [],
+  );
+}
+
+/**
+ * A table whose game is played in a component not named `*Game.tsx`: Tenka's
+ * table hands the playing of it to `TenkaPlay`.
+ */
+const PLAYED_IN: readonly string[] = [join(PARTY, "tenka", "TenkaPlay.tsx")];
+
 function read(path: string): string {
   return readFileSync(path, "utf8");
 }
@@ -44,8 +57,8 @@ describe("every game with pieces a player owns offers them a colour", () => {
   });
 
   it("offers the place to play its colour at every pass-and-play table, and at every table's set-up", () => {
-    const files = readdirSync(PARTY).filter((name) => name.endsWith(".tsx"));
-    const games = files.filter((name) => name.endsWith("Game.tsx")).map((name) => join(PARTY, name));
+    const files = partyFiles();
+    const games = [...files.filter((path) => path.endsWith("Game.tsx")), ...PLAYED_IN];
     expect(games.length).toBeGreaterThan(5);
     const silent = games.filter((path) => {
       const text = read(path);
@@ -53,17 +66,14 @@ describe("every game with pieces a player owns offers them a colour", () => {
     });
     expect(silent, "a table whose players cannot choose a colour on their turn: draw <PartySeatColour> in its side column").toEqual([]);
     // Pair Go's set-up names four players in two teams; its colours are the teams', chosen on the board (NO_OWNED_PIECES).
-    const setUps = files.filter((name) => name.endsWith("SetUp.tsx") && name !== "PairGoSetUp.tsx").map((name) => join(PARTY, name));
+    const setUps = files.filter((path) => path.endsWith("SetUp.tsx") && !path.endsWith("PairGoSetUp.tsx"));
     expect(setUps.length).toBeGreaterThan(3);
     const plain = setUps.filter((path) => !read(path).includes("<SeatColourButton"));
     expect(plain, "a set-up whose marbles do not choose a colour: draw <SeatColourButton> beside each name").toEqual([]);
   });
 
   it("reads a table's marbles through the place's own choice everywhere at a table", () => {
-    const reading = readdirSync(PARTY)
-      .filter((name) => name.endsWith(".tsx"))
-      .map((name) => join(PARTY, name))
-      .filter((path) => /PARTY_MARBLES\[/.test(read(path)));
+    const reading = partyFiles().filter((path) => /PARTY_MARBLES\[/.test(read(path)));
     // The two that must read a place's DEFAULT marble: the chooser's first circle, on the table and on the set-up.
     expect(reading.sort()).toEqual([join(PARTY, "PartySeatColour.tsx"), join(PARTY, "SeatColourButton.tsx")].sort());
   });

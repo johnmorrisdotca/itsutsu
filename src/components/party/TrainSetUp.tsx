@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { usePartyMarbles } from "./partyMarbles";
+import { SeatColourButton } from "./SeatColourButton";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -11,8 +13,7 @@ import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
-import { MarbleChip } from "./MarbleChip";
-import { PARTY_COPY, PARTY_MARBLES, TRAIN_COPY } from "./party.constants";
+import { PARTY_COPY, TRAIN_COPY } from "./party.constants";
 import { TrainTable } from "./TrainTable";
 import type { TrainSetUpProps } from "./train.types";
 
@@ -88,6 +89,8 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
  * so choosing three rather than eight moves nothing below them.
  */
 export function TrainSetUp({ appearance, onStart, ready }: TrainSetUpProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const [set, setSet] = useState(SPEC.defaultSize);
   const [count, setCount] = useState(SPEC.defaultPlayers);
   const [names, setNames] = useState<string[]>(() => new Array<string>(SPEC.mostPlayers).fill(""));
@@ -159,10 +162,10 @@ export function TrainSetUp({ appearance, onStart, ready }: TrainSetUpProps) {
             const away = seat >= count;
             return (
               <div key={seat} className={`flex items-center gap-2 text-sm ${away ? "invisible" : ""}`} aria-hidden={away ? true : undefined} data-testid="train-seat" data-seat={seat}>
-                <MarbleChip player={seat} />
+                <SeatColourButton player={seat} playing={count} />
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
-                    Player {seat + 1}, {PARTY_MARBLES[seat].label}
+                    Player {seat + 1}, {marbles[seat].label}
                   </span>
                   <input
                     type="text"
