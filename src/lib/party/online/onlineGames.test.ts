@@ -29,7 +29,7 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
@@ -65,8 +65,8 @@ describe("every game on several devices", () => {
     }
   });
 
-  it("offers no computer seat yet: none of these games has a computer player", () => {
-    for (const key of ONLINE_GAME_LIST) expect(hasComputer(key)).toBe(false);
+  it("offers a computer seat only at Pair Go, whose computers are the site's Go programs", () => {
+    for (const key of ONLINE_GAME_LIST) expect(hasComputer(key), key).toBe(key === "go");
   });
 
   it("writes the seats' names into a game for a page, and never into what is kept", () => {
@@ -167,5 +167,59 @@ describe("a point as a browser sent it", () => {
     expect(readPoint({ row: 1.5, col: 0 }, 5)).toBeNull();
     expect(readPoint({ row: "1", col: 0 }, 5)).toBeNull();
     expect(readPoint(null, 5)).toBeNull();
+  });
+});
+
+describe("Pair Go on several devices", () => {
+  const rules = ONLINE_GAMES.go;
+
+  it("seats four in the order round the table: Black 1, White 1, Black 2, White 2", () => {
+    const game = rules.start(9, 4)!;
+    expect(rules.start(9, 2)).toBeNull();
+    expect(rules.start(8, 4)).toBeNull();
+    expect(rules.toPlay(game)).toBe(0);
+    const one = rules.play(game, { kind: "stone", row: 4, col: 4 })!;
+    expect(rules.toPlay(one)).toBe(1);
+    const two = rules.play(one, { kind: "stone", row: 2, col: 2 })!;
+    expect(rules.toPlay(two)).toBe(2);
+    const three = rules.play(two, { kind: "pass" })!;
+    expect(rules.toPlay(three)).toBe(3);
+    // A point taken already is refused by the engine.
+    expect(rules.play(three, { kind: "stone", row: 4, col: 4 })).toBeNull();
+    const named = rules.named(game, ["Aiko", "Ben", "Chloe", "Dan"]);
+    expect(named.teams).toEqual({ black: ["Aiko", "Chloe"], white: ["Ben", "Dan"] });
+  });
+
+  it("reads a stone, a pass or a resignation, and nothing else", () => {
+    expect(rules.readMove({ kind: "stone", row: 3, col: 5 })).toEqual({ kind: "stone", row: 3, col: 5 });
+    expect(rules.readMove({ kind: "pass" })).toEqual({ kind: "pass" });
+    expect(rules.readMove({ kind: "resign" })).toEqual({ kind: "resign" });
+    expect(rules.readMove({ kind: "stone", row: 30, col: 5 })).toBeNull();
+    expect(rules.readMove({ kind: "undo" })).toBeNull();
+    // A point past a small board is read, and refused when played.
+    expect(rules.play(rules.start(9, 4)!, { kind: "stone", row: 12, col: 0 })).toBeNull();
+  });
+
+  it("a resignation ends it, and the other team's two seats win", () => {
+    const game = rules.play(rules.start(9, 4)!, { kind: "stone", row: 4, col: 4 })!;
+    const resigned = rules.play(game, { kind: "resign" })!;
+    expect(rules.toPlay(resigned)).toBeNull();
+    expect(standingOf(rules, resigned)).toMatchObject({ status: "finished", winners: [0, 2] });
+    expect(rules.moveCount(resigned)).toBe(2);
+    expect(rules.decode(rules.encode(resigned))).not.toBeNull();
+  });
+
+  it("seats the site's Go programs, each as itself, and a program's move is one the engine takes", () => {
+    const computers = rules.computers!;
+    expect(computers.levels.length).toBeGreaterThan(0);
+    const level = computers.levels[0];
+    const seat = computers.seat(level);
+    expect(seat.memberId).not.toBeNull();
+    expect(computers.levelOf(seat)).toBe(level);
+    expect(computers.levelOf({ memberId: "somebody", name: "Somebody" })).toBeNull();
+    const game = rules.play(rules.start(9, 4)!, { kind: "stone", row: 4, col: 4 })!;
+    const move = computers.move(game, 1, level);
+    expect(move).not.toBeNull();
+    expect(rules.play(game, move!)).not.toBeNull();
   });
 });

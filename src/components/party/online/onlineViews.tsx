@@ -12,6 +12,7 @@ import { CHECKERS_RACE, HALMA_RACE } from "../partyRaces";
 import { DotsOnline } from "./DotsOnline";
 import { RaceOnline } from "./RaceOnline";
 import { BlocksOnline, blocksStanding } from "./BlocksOnline";
+import { PairGoOnline, pairGoStanding } from "./PairGoOnline";
 
 /**
  * EACH GAME'S BOARD AT A TABLE ON SEVERAL DEVICES, by game: a `Record` over
@@ -37,4 +38,5 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
     testId: HALMA_RACE.testId,
   } satisfies OnlineView<PartyHalmaState, RaceMove>,
   blockFive: { Board: BlocksOnline, standing: blocksStanding, testId: "party-blocks" },
+  go: { Board: PairGoOnline, standing: pairGoStanding, testId: "pairgo" },
 };

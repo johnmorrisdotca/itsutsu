@@ -1,10 +1,11 @@
 # Party games on several devices
 
-**Status (2026-09-29, branch `party-online`): stages 1 and 2 are built and
-browser-tested — the layer, Dots and Boxes, Chinese Checkers, Halma and Block
-Five. Stages 3 to 5 (Kumimoji with its computers, Pair Go, and the party kinds
-still being built) are next, written out at the end with what each has to
-decide first.**
+**Status (2026-09-29): the layer, Dots and Boxes, Chinese Checkers, Halma
+and Block Five (branch `party-online`), and Pair Go with the site's Go
+programs in computer seats (branch `party-online-2`) are built and
+browser-tested. Kumimoji (John decided its two questions, below), Superghost
+and Mancala are next, in that order; Tenka joins when its own agent has
+finished it.**
 
 John, 2026-09-28: "all our Pass and Play games should ultimately get an agent
 to make the Multi-device (invite a buddy / bot). so that they can be played on
@@ -166,16 +167,26 @@ against. That is the same trust the practice board and the live board's
 browser-played computer moves already give, and it is written down here as a
 decision.
 
-**Which games have a computer player today:** none of the games online so far.
+**The move is worked out in a worker** (`onlineComputerWorker.ts`): the page
+hands it the table's game as its rules keep it, the seat and the computer's
+level, and sends back what it answers, so a search on the browser's budget
+never freezes the board. A game's computers are a row's `computers`
+(`OnlineComputers`): the levels a seat may be given, who each sits as, and the
+move. For a game the site's ladder plays, a level is a `BotTier` and the seat
+is that program's own member row, so its name leads to its page — no column
+was added for it.
+
+**Which games have computer players today:** Pair Go, whose seats may be given
+to the site's Go programs (`tiersFor(go)`, the same list Go's own set-up
+offers), each choosing its move with the ladder's chooser on the browser's
+two-second budget (`chooseTurn`). `e2e/party-online-go.spec.ts` is the first
+browser spec that drives a computer seat: after a member's stone both
+programs are to play, the table records that the browser which sent their
+moves was that member's, and the other member's device sees all three arrive.
 Dots and Boxes, Chinese Checkers, Halma and Block Five have no computer player
-for a table of more than two anywhere on the site, so their set-ups do not
-offer a computer seat (and the server refuses one: `ONLINE_GAMES[key].computer`
-is absent). Kumimoji's pass and play has three (`computerPlay.ts`,
-`computerTurn.ts`), and Pair Go can seat the rated Go ladder's programs; both
-join in the stages below, and their computers with them. The machinery — the
-seat kind, the server's acceptance, `computerDriver` and `useComputerTurn` — is
-built now and held by unit tests with a stand-in game; it is not driven by a
-browser spec until a game with a computer joins.
+for a table of more than two anywhere on the site, so their set-ups offer
+none and the server refuses one. Kumimoji's three (`computerTurn.ts`) join with
+it.
 
 ## Who may sit where
 
@@ -243,44 +254,33 @@ browser spec until a game with a computer joins.
    left open, the table then waiting on them. The races are not played to
    their end in a browser (a whole race is hundreds of taps); the end of a
    table is game-agnostic and is driven end to end at Dots and Boxes.
-3. **Next: Kumimoji pass and play, with its computer players.** Two things to
-   settle before code, both of which change cost:
-   - **Its hands are hidden.** The stored state holds every hand and the bag,
-     so the server must send each seat a view with the other hands and the
-     bag blanked: a `redact(state, seat)` beside `encode` on its row, used by
-     `viewOf`, and a browser that decodes a redacted game (so `decode` must
-     accept one, or the page decodes a separate "view" encoding). A redacted
-     view means the poll's answer differs by reader, which the tag already
-     allows (it is per reader).
-   - **A turn is judged against the dictionary.** Placing tiles is free;
-     pressing Done asks `endTurn(game, verdict, handSpells)`, whose verdict
-     reads the word lists. Checking it on the server means the server loads
-     the lists for that language — megabytes in the function bundle and a
-     load per cold start (see "Function Size" in AGENTS.md; the puzzles
-     already check words server-side for `word-lists-server.spec.ts`, so
-     measure against that first). The alternative, a turn judged in the
-     browser and only its shape checked on the server, is the one place this
-     layer would trust a browser with an outcome, and needs John's word.
+3. **Done: Pair Go** (branch `party-online-2`). Two teams of two over the
+   engine's own Go (`onlinePairGo.ts`); a seat is a place in the order round
+   the table (Black 1, White 1, Black 2, White 2), a move is a stone, a pass or
+   a resignation, and a seat may be one of the site's Go programs.
+4. **Next: Kumimoji pass and play, with its computer players.** John decided
+   both questions on 2026-09-29, in his words: **"yes, all hands visible and
+   browser checks to save $$$."** So:
+   - **Every seat sees every hand**, as on one device. There is no redacted
+     view; the table state is sent whole, as for every other game.
+   - **The browser checks the words, and the server takes its word for
+     them.** The dictionary is never loaded on the server. What the server
+     still checks, because it is cheap: the move's shape, whose turn it is,
+     the game the page drew it from, and that every tile moved was in that
+     seat's hand or the pool it says it came from. A made-up word from a
+     member's own browser is the one thing it cannot catch, and that is the
+     trade John chose.
    - Its moves are whole turns (tiles laid and traded, then Done or Resign),
-     so `readMove` reads a turn, and `play` replays it with `turn.ts`.
-   - Its three computer players (`computerTurn.ts`, `planComputerTurn`)
-     become `computer` on its row; the set-up then offers a computer seat and
-     `useComputerTurn` drives it. Its spec is the first to drive a computer
-     seat: a turn worked out in the browser of the member whose move handed it
-     the turn, arriving on the other device.
-4. **Then: Pair Go.** Two teams of two over the engine's own Go
-   (`pairGo.ts`); a seat is one player of a team (`PAIR_SEATS`), `toPlay` is
-   `pairPlayerToMove`, a move is a point, a pass or a resignation, and
-   `play` is `pairPlay` / `pairPass` / `pairResign`, all already pure. A
-   computer seat can be one of the Go ladder's programs, chosen in the
-   browser by the chooser the live board already uses for a program's move
-   (`BotCatchUp` and the live board's browser bot) — that is the game where a
-   computer at a table costs nothing new.
-5. **Superghost, Mancala, Tenka** join when their tables land: a row in
-   `ONLINE_GAMES` (for a party kind, `fromPartyRules` builds it from its
-   `PartyRules` and the four things `PartyRules` does not say), a board in
-   `ONLINE_VIEWS`, the set-up's `WhereChoice` and `SeatChoiceSelect`, and one
-   browser case. Superghost's words raise the dictionary question of stage 3.
+     so `readMove` reads a turn and `play` replays it with `turn.ts`, taking
+     the verdict the browser sent rather than asking the word lists.
+   - Its three computer players (`computerTurn.ts`) become `computers` on its
+     row; the worker loads the word lists the way the page does.
+5. **Then Superghost and Mancala**, both already on the merge head: a row in
+   `ONLINE_GAMES` through `fromPartyRules` (their `PartyRules` and the four
+   things `PartyRules` does not say), a board in `ONLINE_VIEWS`, the set-up's
+   `WhereChoice` and `SeatChoiceSelect`, and one browser case. Superghost's
+   words follow John's Kumimoji rule: checked in the browser.
+6. **Tenka** joins the same way once its own agent has finished it.
 
 ## Decisions to review
 
@@ -299,6 +299,9 @@ browser spec until a game with a computer joins.
   into the two-player "Your move" and "Their move" columns.
 - A computer's move is a browser's word for it: legal, checked, but not proven
   to be the move the computer would have chosen.
+- A Pair Go computer seat is a program at the browser's two-second budget, the
+  live board's; nothing stronger is offered at a table.
+- In Pair Go both players of the winning team are told they "shared the win".
 - Names at a table are the name the site prints (`shownName`: first name and
   an initial); the whole name never leaves the server.
 - The pass-and-play leads now say "or choose Several devices"; Pair Go's,

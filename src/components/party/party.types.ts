@@ -93,6 +93,8 @@ export type PairGoSetUpProps = {
   onStart: (game: PairGoGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };
 
 /** A stone the size of a line of text, in the reader's own stones. */

@@ -34,7 +34,7 @@ type Confirming = "resign" | "new" | null;
  * the game is kept in this browser after every move (`pairGoStore.ts`) — never
  * rated, never on an account, never sent to a server.
  */
-export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
+export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptPairGo();
   const [confirming, setConfirming] = useState<Confirming>(null);
@@ -47,7 +47,7 @@ export function PairGoGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="pairgo" data-state="set-up">
-        <PairGoSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <PairGoSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

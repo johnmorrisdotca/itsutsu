@@ -92,22 +92,22 @@ export function standingOf<S, M>(rules: OnlineRules<S, M>, game: S): { status: O
 
 /**
  * THE SEATS THE SET-UP ASKED FOR, checked for their shape: seat 1 is the
- * maker's, every other a buddy, a link or a computer — a computer only where
- * the game has one, a link only where the maker may hand one out (not a member
+ * maker's, every other a buddy, a link or a computer — a computer only one
+ * the game has, a link only where the maker may hand one out (not a member
  * under 13), each buddy once and never the maker — and as many as the game
  * seats. The reason, or null. Whether each buddy may be reached is the
  * server's, from the database.
  */
 export function seatAsksRefusal(
   asks: readonly OnlineSeatAsk[],
-  { counts, computer, links, makerId }: { counts: readonly number[]; computer: boolean; links: boolean; makerId: string },
+  { counts, levels, links, makerId }: { counts: readonly number[]; levels: readonly string[]; links: boolean; makerId: string },
 ): string | null {
   if (!counts.includes(asks.length)) return "That game is not played by that many.";
   if (asks[0]?.kind !== "me") return "Seat 1 is yours.";
   const buddies = new Set<string>();
   for (const ask of asks.slice(1)) {
     if (ask.kind === "me") return "You can sit in one seat.";
-    if (ask.kind === "computer" && !computer) return "That game has no computer player.";
+    if (ask.kind === "computer" && !levels.includes(ask.level)) return "That game has no such computer player.";
     if (ask.kind === "link" && !links) return "A member under 13 invites buddies by name rather than by a link anybody could open.";
     if (ask.kind === "buddy") {
       if (ask.memberId === makerId) return "You can sit in one seat.";
@@ -121,8 +121,9 @@ export function seatAsksRefusal(
 /** A seat ask as a browser sent it, checked for its shape, or null. */
 export function readSeatAsk(sent: unknown): OnlineSeatAsk | null {
   if (typeof sent !== "object" || sent === null) return null;
-  const { kind, memberId } = sent as { kind?: unknown; memberId?: unknown };
-  if (kind === "me" || kind === "link" || kind === "computer") return { kind };
+  const { kind, memberId, level } = sent as { kind?: unknown; memberId?: unknown; level?: unknown };
+  if (kind === "me" || kind === "link") return { kind };
+  if (kind === "computer" && typeof level === "string" && level.length > 0 && level.length <= 64) return { kind, level };
   if (kind === "buddy" && typeof memberId === "string" && memberId.length > 0 && memberId.length <= 64) return { kind, memberId };
   return null;
 }

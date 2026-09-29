@@ -72,7 +72,8 @@ export function OnlineSeats({
 
 /** A seat's name: the member's, leading to their page; or what an open or a computer's seat is. */
 function SeatName({ seat, tag }: { seat: OnlineSeatView; tag: NameTag | undefined }) {
-  if (seat.kind === ONLINE_SEAT_KINDS.member) {
+  // A member's seat, or a computer that is one of the site's programs: the name leads to their page.
+  if (seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null)) {
     return <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={tag} testId="online-seat-name" />;
   }
   if (seat.kind === ONLINE_SEAT_KINDS.computer) return <span>{ONLINE_COPY.computerSeat}</span>;

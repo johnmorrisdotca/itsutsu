@@ -58,6 +58,10 @@ const PASS_AND_ONLY_A_PASS = new Map([
   ["src/lib/gomoku/opponent.ts", "scores a computer's candidate turn, never a stored move"],
   ["src/lib/bots/botPlay.ts", "turns a computer's chosen turn into a request, and no computer chooses a forfeit"],
   [
+    "src/lib/party/online/onlinePairGo.ts",
+    "reads a Pair Go table's MOVE as a browser sent it (a stone, a pass or a resignation) and a computer's chosen turn; a table has no clock, so there is no forfeit to send",
+  ],
+  [
     "src/components/live/postTurn.ts",
     "the same turn-into-a-request as botPlay.ts, done in the browser instead of on the server — for the board answering the computer opposite and for the games page making the move nobody stayed for; a BotTurn is place, move, piece or pass and has no forfeit in it",
   ],

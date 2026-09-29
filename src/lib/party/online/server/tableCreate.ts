@@ -56,7 +56,7 @@ export async function createTable({
 }): Promise<{ refused: string; status: 403 | 404 | 422 } | { id: string }> {
   const rules = onlineRulesOf(game);
   const band = await prisma.member.findUnique({ where: { id: maker.id }, select: { ageBand: true } });
-  const shape = seatAsksRefusal(asks, { counts: rules.counts, computer: rules.computer !== undefined, links: !isChild(band?.ageBand), makerId: maker.id });
+  const shape = seatAsksRefusal(asks, { counts: rules.counts, levels: rules.computers?.levels ?? [], links: !isChild(band?.ageBand), makerId: maker.id });
   if (shape !== null) return { refused: shape, status: 422 };
   const boardSize = rules.sizes.length === 0 ? 0 : size;
   const started = rules.start(boardSize, asks.length);
@@ -98,7 +98,11 @@ export async function createTable({
             const buddy = buddies.find((one) => one.id === ask.memberId)!;
             return { seat, kind: ONLINE_SEAT_KINDS.member, memberId: buddy.id, name: buddy.name, joinedAt: now };
           }
-          if (ask.kind === "computer") return { seat, kind: ONLINE_SEAT_KINDS.computer, name: COMPUTER_SEAT_NAME };
+          if (ask.kind === "computer") {
+            // Who the computer sits as: for a game the site's ladder plays, that program's own member row and name.
+            const sitting = rules.computers?.seat(ask.level) ?? { memberId: null, name: COMPUTER_SEAT_NAME };
+            return { seat, kind: ONLINE_SEAT_KINDS.computer, memberId: sitting.memberId, name: sitting.name };
+          }
           return { seat, kind: ONLINE_SEAT_KINDS.open, token: seatToken() };
         }),
       },
