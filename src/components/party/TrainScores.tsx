@@ -1,4 +1,4 @@
-import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_HEADING, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { TRAIN_PHASES, trainPlayerName, trainTotals } from "@/lib/party/mexicanTrain/mexicanTrain";
 import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
 
@@ -60,10 +60,11 @@ export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext: () =
   const winners = game.winners.map((seat) => trainPlayerName(game, seat));
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="train-round-over" data-round={game.results.length} data-finished={finished ? "true" : undefined}>
-      <h2 className="text-lg font-semibold">{TRAIN_COPY.roundOver(game.results.length)}</h2>
+      <h2 className={SECTION_HEADING}>{TRAIN_COPY.roundOver(game.results.length)}</h2>
       <p className="text-sm" data-testid="train-round-ending">
         {result.out === null ? TRAIN_COPY.blocked : TRAIN_COPY.wentOut(trainPlayerName(game, result.out))}
       </p>
+      <div className={TABLE_SCROLL}>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-muted">
@@ -87,6 +88,7 @@ export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext: () =
           ))}
         </tbody>
       </table>
+      </div>
       {finished ? (
         <p className="text-base font-semibold" data-testid="train-winners">
           {winners.length === 1 ? TRAIN_COPY.wins(winners[0]) : TRAIN_COPY.share(inALine(winners))}

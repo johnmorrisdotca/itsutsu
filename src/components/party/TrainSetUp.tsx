@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 
+import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { TRAIN_DEFAULT_OPTIONS, trainSetName } from "@/lib/party/mexicanTrain/mexicanTrain.constants";
 import { startTrain } from "@/lib/party/mexicanTrain/mexicanTrain";
@@ -144,7 +145,7 @@ export function TrainSetUp({ appearance, onStart, ready }: TrainSetUpProps) {
                 data-testid="train-count"
                 data-count={option}
                 className={`min-h-11 rounded-lg border text-base font-semibold ${
-                  option === count ? "border-ink bg-ink text-paper" : "border-rule-strong bg-ivory text-ink hover:bg-rule/60"
+                  option === count ? PICK_CHIP_OPEN : PICK_CHIP_SHUT
                 }`}
               >
                 {option}
@@ -180,7 +181,7 @@ export function TrainSetUp({ appearance, onStart, ready }: TrainSetUpProps) {
                   disabled={away}
                   onClick={() => setComputers((was) => was.map((one, at) => (at === seat ? !one : one)))}
                   className={`min-h-11 shrink-0 rounded-lg border px-2.5 text-xs font-semibold ${
-                    computers[seat] ? "border-ink bg-ink text-paper" : "border-rule-strong bg-ivory text-ink hover:bg-rule/60"
+                    computers[seat] ? PICK_CHIP_OPEN : PICK_CHIP_SHUT
                   }`}
                   title={TRAIN_COPY.computerHelp}
                   data-testid="train-computer"

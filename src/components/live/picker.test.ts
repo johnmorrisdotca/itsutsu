@@ -62,7 +62,7 @@ describe("what a click on a family chooses", () => {
   it("offers every family with a game two people can play, and only those", () => {
     // Numbers, Logic puzzles and Other hold puzzles for one, and Party games holds no game of its own; the set-up screen makes games between two.
     expect(SET_UP_FAMILIES.map((family) => family.key)).toEqual(
-      GAME_FAMILIES.filter((family) => !["numbers", "logic", "other", "party"].includes(family.key)).map((family) => family.key),
+      GAME_FAMILIES.filter((family) => !["numbers", "logic", "other", "dominoes", "party"].includes(family.key)).map((family) => family.key),
     );
     expect(GAME_FAMILIES.some((family) => family.key === "numbers")).toBe(true);
   });

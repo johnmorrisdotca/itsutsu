@@ -206,6 +206,27 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["bridges", "pictureLogic"],
   },
   {
+    key: "dominoes",
+    /*
+     * DOMINOES. John, 2026-09-29: "Let's create 3 new types of game (card,
+     * mahjong, dominos)", and "Mexican Train DOminos family game. Options you
+     * can decide." A family for the games played with a set of dominoes,
+     * opened with Mexican Train for two to eight. ドミノ, as the word is written
+     * in Japanese, the way Checkers is チェッカー.
+     *
+     * Its games are party games, played round one device and never recorded,
+     * so, like Party games, it counts towards no award (`RECORDED_FAMILIES`),
+     * has a page of its own at /games/dominoes, and stays off the set-up
+     * screen, which makes games between two.
+     */
+    title: "Dominoes",
+    kanji: "ドミノ",
+    blurb: "Games with a set of dominoes: match the ends, build your own train out of the hub, and go out first with the fewest pips.",
+    games: ["mexicanTrain"],
+    notOnSetUp:
+      "A dominoes game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to

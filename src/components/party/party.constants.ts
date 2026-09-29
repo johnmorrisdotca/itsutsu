@@ -242,7 +242,7 @@ export const TRAIN_COPY = {
   set: "Which set?",
   setLine: { 9: "55 tiles, 10 rounds. Quicker, with fewer pips.", 12: "91 tiles, 13 rounds. The set the game is sold with.", 15: "136 tiles, 16 rounds. A long evening." } as Record<number, string>,
   howMany: "How many are playing?",
-  seats: "Who is at the table",
+  seats: "Players",
   computer: "Computer",
   computerHelp: "A computer plays this seat",
   house: "House rules",

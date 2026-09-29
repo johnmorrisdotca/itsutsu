@@ -13,6 +13,9 @@ import type { TenkaGame } from "../src/lib/party/tenka/tenka.types";
 import { encodeTenka } from "../src/lib/party/tenka/tenkaKeep";
 import { sensibleTenkaMove } from "../src/lib/party/tenka/tenkaPolicy";
 import { startTenka } from "../src/lib/party/tenka/tenkaStart";
+import { playTrain, startTrain } from "../src/lib/party/mexicanTrain/mexicanTrain";
+import { encodeTrain } from "../src/lib/party/mexicanTrain/trainCodec";
+import { computerMove } from "../src/lib/party/mexicanTrain/trainComputer";
 import { ready } from "./support";
 
 /**
@@ -35,6 +38,21 @@ const GHOST_KEPT = "itsutsu.superghost";
 const MANCALA_KEPT = "itsutsu.mancala";
 /** And Tenka's: `TENKA_STORAGE_KEY`. */
 const TENKA_KEPT = "itsutsu.tenka";
+/** And Mexican Train's: `TRAIN_STORAGE_KEY`. */
+const TRAIN_KEPT = "itsutsu.mexicanTrain";
+
+/**
+ * Four people on a double-twelve set, thirty moves into the first round, each
+ * move the computer player's choice from a fixed seed: every train started,
+ * some past the tiles a row shows, and the Mexican Train begun. Four people
+ * rather than computers, so the table waits on the picture rather than
+ * playing on while it is taken.
+ */
+function trainScene(): string {
+  let game = startTrain(12, ["Ann", "Ben", "Cy", "Dee"], 20260929, undefined, [false, false, false, false])!;
+  for (let move = 0; move < 30; move += 1) game = playTrain(game, computerMove(game))!;
+  return encodeTrain(game);
+}
 
 /**
  * Four players, five rounds into a game of the whole world, played by the
@@ -90,6 +108,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     table: "tenka-game",
     shot: "board-surface",
     stored: tenkaScene(),
+  },
+  {
+    // Four at a double-twelve table, thirty moves into the first round: the hub, every train under way, the Mexican Train begun.
+    kind: "mexicanTrain",
+    key: TRAIN_KEPT,
+    table: "train-game",
+    shot: "board-surface",
+    stored: trainScene(),
   },
 ];
 
