@@ -191,8 +191,9 @@ export function PuzzlePlay({
       </section>
     );
   }
-  /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${diagonals}-${players}-${clock}`;
+  /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over — on the puzzle's own seed, so
+     the address being put right to name it (a winnable Solitaire's, above) is not a new solve. */
+  const key = `${kind}-${size}-${level}-${puzzle.seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${diagonals}-${players}-${clock}`;
   // A race is its own contest and never on a countdown; a puzzle that offers none has none (`clockFor`).
   const timed = race === null ? clockFor(kind, clock) : "none";
   return <PuzzleClockProvider value={timed}>{solveOf(puzzle)}</PuzzleClockProvider>;

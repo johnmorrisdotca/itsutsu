@@ -88,7 +88,8 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                   className="text-center text-sm font-medium underline underline-offset-4"
                   data-testid="game-daily"
                 >
-                  Today&apos;s puzzle →
+                  {/* A card game has a deal, not a puzzle: today's deal, the same winnable one for everybody. */}
+                  {spec.cards === true ? "Today's deal →" : "Today's puzzle →"}
                 </Link>
               )}
             </div>

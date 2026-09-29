@@ -59,6 +59,16 @@ async function dragMove(page: Page, table: KlondikeTable, move: KlondikeMove & {
   await page.mouse.up();
 }
 
+/**
+ * A winnable deal's address is put right to name the deal's own seed once it is found (`PuzzlePlay`): wait for
+ * the address to name the seed on the table, so nothing below races that one replace.
+ */
+async function settled(page: Page) {
+  await ready(page, "puzzle-play");
+  const seed = await page.getByTestId("puzzle-play").getAttribute("data-seed");
+  await expect(page).toHaveURL(new RegExp(`seed=${seed}(&|$)`));
+}
+
 async function movesOnPage(page: Page): Promise<string> {
   return (await page.getByTestId("puzzle-play").getAttribute("data-moves")) ?? "";
 }
@@ -88,7 +98,7 @@ test.describe("the Solitaire game", () => {
     await page.getByTestId("puzzle-solve").click();
     await expect(page).toHaveURL(/size=1/);
     await expect(page).toHaveURL(/seed=\d+/);
-    await ready(page, "puzzle-play");
+    await settled(page);
     await expect(page.getByTestId("solitaire-table")).toHaveAttribute("data-draw", "1");
 
     const seed = Number(await page.getByTestId("puzzle-play").getAttribute("data-seed"));
@@ -129,7 +139,7 @@ test.describe("the Solitaire game", () => {
 
   test("a card let go where it cannot go stays, Undo takes a move back, and the stock turns", async ({ page }) => {
     await page.goto(`${AT}/play?size=3&level=medium&seed=${freshPuzzleSeed()}`);
-    await ready(page, "puzzle-play");
+    await settled(page);
     await expect(page.getByTestId("solitaire-table")).toHaveAttribute("data-draw", "3");
     await expect(page.getByTestId("solitaire-move-count")).toHaveText("0 moves");
     // Three cards turned, the top one playable.
@@ -151,7 +161,7 @@ test.describe("the Solitaire game", () => {
   test("left half way, it waits in My games and opens where it was left", async ({ page }) => {
     const seed = freshPuzzleSeed();
     await page.goto(`${AT}/play?size=1&level=medium&seed=${seed}`);
-    await ready(page, "puzzle-play");
+    await settled(page);
     const dealt = Number(await page.getByTestId("puzzle-play").getAttribute("data-seed"));
     await pileButtons(page, "s").last().click();
     await pileButtons(page, "s").last().click();

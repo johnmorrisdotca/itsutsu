@@ -90,6 +90,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Small boards | 6 |
 | Numbers | 3 |
 | Logic puzzles | 2 |
+| Cards | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -180,6 +181,17 @@ yields to sliding each line's runs to its ends, medium needs a whole line read
 at once, hard needs one square tried and followed. 5×5, 10×10, 15×15 and
 20×20; the givens are the two panels of clues and the answer is the picture,
 checked in O(cells) against the clues (`pictureLogic/check.ts`).
+
+**Cards** 札 (2026-09-29) is the shelf for games played with the site's own
+deck (`src/lib/cards/`, `src/components/cards/`: faces and backs drawn by us,
+the backs tiled with the Itsutsu stones), opened with **Solitaire** ソリティア
+(`src/lib/puzzles/solitaire/`): Klondike, turning one card or three, as often
+through the stock as you like, three times or once. A deal is the shuffle of its
+seed; a winnable deal is the first from its seed that our solver wins in a fixed
+number of tables, and any deal is dealt as it falls. The answer and a run kept
+half way are the moves, two characters a carry, which the server replays from
+the deal (`solitaire/check.ts`). Why it is a puzzle kind and not a new one is in
+`docs/plans/cards/README.md`.
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
