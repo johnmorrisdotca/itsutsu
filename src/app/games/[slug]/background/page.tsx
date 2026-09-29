@@ -6,7 +6,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { EVERY_GAME_KEY, gameCopyOf, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, gameCopyOf, isRuleVariant } from "@/lib/catalogue/gameKeys";
 import { gameKeyFor, gamePath, rulesPath, slugFor } from "@/lib/gomoku/slugs";
 import { backgroundFor } from "@/lib/gomoku/backgrounds";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -43,7 +43,7 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
   const variant = gameKeyFor((await params).slug);
   if (variant === null) notFound();
   const copy = gameCopyOf(variant)!;
-  const art = isPuzzleKind(variant) ? null : backgroundFor(variant);
+  const art = isRuleVariant(variant) ? backgroundFor(variant) : null;
 
   return (
     <Page>

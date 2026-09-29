@@ -17,7 +17,8 @@ import {
   type CatalogueView,
 } from "@/lib/gomoku/catalogueView";
 import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
-import { EVERY_GAME_KEY, gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, gameCopyFor, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { PartyLine } from "@/components/party/PartyLine";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
 import { shelfCountWords } from "@/lib/gomoku/families";
@@ -249,6 +250,8 @@ function FamilyGameCard({
         */}
         {isPuzzleKind(game.variant) ? (
           <PuzzleLine kind={game.variant} signedIn={signedIn} />
+        ) : isPartyKind(game.variant) ? (
+          <PartyLine kind={game.variant} signedIn={signedIn} />
         ) : (
           <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
         )}
@@ -269,6 +272,8 @@ const CARDS: GameCard[] = EVERY_GAME_KEY.map((variant) => {
   // A puzzle is won by nothing: it is solved. Its kind is its own chip on the bar.
   const kind: GameCardKind = isPuzzleKind(variant)
     ? "puzzle"
+    : isPartyKind(variant)
+    ? "party"
     : VARIANT_SPECS[variant].flips
       ? "flips"
       : (String(VARIANT_SPECS[variant].winLength ?? 5) as GameCardKind);

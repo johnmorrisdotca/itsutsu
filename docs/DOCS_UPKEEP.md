@@ -64,6 +64,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 |---|---|---|
 | `README.md`, headline, "What it does", "Forty-five games…" | visitors, engineers | `src/lib/gomoku/gomoku.constants.ts` (`RULE_VARIANT_LIST`), `src/lib/gomoku/families.ts`, `src/lib/gomoku/variants.constants.ts` |
 | `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
+| `README.md`, "Forty-five games…" (Party games) | visitors, engineers | `src/lib/party/**`, `src/components/party/**`, `src/lib/gomoku/party/**`, `src/lib/gomoku/familyShelves.ts` |
 | `README.md`, "Openings", "Handicaps", "The board…" | engineers, players | `src/lib/gomoku/rules/**`, `src/lib/gomoku/engine.ts` |
 | `README.md`, "Players, ratings and records" | engineers, players | `src/lib/rating/**`, `src/lib/record/**`, `src/lib/xp/**`, `src/lib/legacy/**` |
 | `README.md`, "The computer players" | engineers, players | `src/lib/bots/**` |
@@ -74,10 +75,11 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, "The API" | integrators | `src/app/api/**` (new or removed routes) |
 | `README.md`, "Deploying", "Scripts", "Getting started" | engineers | `.github/workflows/**`, `package.json` scripts, `.env.example`, `next.config.ts` |
 | `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
-| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
+| `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
+| `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
 | `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
@@ -96,6 +98,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `/games` | `src/app/games/PublicCatalogue.tsx` | a game or family is added | `publicCatalogue.coverage.test.ts` |
 | game pictures | `public/art/games/*`, from `pnpm screenshots:games` | the board drawing changes | `boardArt.coverage.test.ts` |
 | puzzle pictures | `public/art/games/<puzzle>.jpg`, from `pnpm screenshots:puzzles` | the puzzle grid's drawing changes | `puzzleArt.coverage.test.ts` |
+| party game pictures | `public/art/games/<party game>.jpg`, from `pnpm screenshots:party` | a party game's board drawing changes | `party.coverage.test.ts` |
 | About screenshots | `public/art/about/*`, listed in `src/app/about/about.shots.ts` | a page one of them shows changes shape: the board, the replay panel, the picture window, the set-up screen, a player's page | `about.coverage.test.ts` (each file exists, at the size the page reserves) |
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |

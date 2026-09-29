@@ -1,5 +1,5 @@
 // Relative, not `@/`: the browser specs import this file, and Playwright resolves no alias in what it imports.
-import { type GameKey, isPuzzleKind } from "../catalogue/gameKeys";
+import { type GameKey, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
 
 import { ALSO_LISTED_IN } from "./familyShelves";
 import type { GameFamily, ShelvedGame } from "./families.types";
@@ -194,10 +194,18 @@ export const GAME_FAMILIES: GameFamily[] = [
      * family round its table of an evening — which is exactly a phone passed
      * round, and says nothing of the drink that 宴 (a banquet) would.
      */
+    /*
+     * AND THE GAMES THAT ARE NOTHING BUT A PARTY GAME, 2026-09-28: Dots and
+     * Boxes for two to six, the first `PartyKind` (`lib/party/`). It is not a
+     * game between two colours with a table mode, as Chinese Checkers is — the
+     * table IS the game — so it lives here, at home, and the guests are shown
+     * after it. Nothing of it is ever recorded, so this family still counts
+     * towards no award (`RECORDED_FAMILIES`) and keeps its own page.
+     */
     title: "Party games",
     kanji: "団欒",
     blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on.",
-    games: [],
+    games: ["dotsAndBoxes"],
     notOnSetUp:
       "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
@@ -219,38 +227,59 @@ export const GAME_FAMILIES: GameFamily[] = [
 ];
 
 /**
- * THE FAMILIES THAT ARE SOME GAME'S HOME: every family but a shelf of guests.
- *
- * What a member can play a game FROM, so what "every family" means wherever
- * one is counted towards an award or a tour — `everyFamilyPlayed` is paid for
- * a first game in each of these, and a family nobody can play a game from
- * (Party games) would make it a prize no member could ever finish. Anything
- * that SHOWS the families reads `GAME_FAMILIES`.
+ * Whether any of a family's own games is one this site keeps a record of — a
+ * rule variant or a puzzle — rather than only party games, which are played
+ * and kept in one browser (`isPartyKind`). A shelf of guests keeps none.
+ */
+export function familyKeepsRecords(family: GameFamily): boolean {
+  return family.games.some((game) => !isPartyKind(game));
+}
+
+/**
+ * THE FAMILIES THAT ARE SOME GAME'S HOME: every family but a shelf of guests
+ * alone. What a list of every game, each once under its home, is drawn from
+ * (`GameList`), so a party game has its section like any other.
  */
 export const HOME_FAMILIES: GameFamily[] = GAME_FAMILIES.filter((family) => family.games.length > 0);
 
 /**
- * WHERE A FAMILY'S PAGE IS. For a family that is some game's home, under
+ * THE FAMILIES A RECORDED GAME IS PLAYED FROM: the families some rule variant
+ * or puzzle calls home.
+ *
+ * What "every family" means wherever one is counted towards an award or a
+ * tour — `everyFamilyPlayed` is paid for a first game in each of these — so a
+ * family nobody can be seen to play a game from (Party games, whose own games
+ * never reach the server) would make it a prize no member could ever finish.
+ * Two lists rather than one name covering both: "where a game lives" and
+ * "where a game is counted" stopped being the same families the day Dots and
+ * Boxes moved in.
+ */
+export const RECORDED_FAMILIES: GameFamily[] = GAME_FAMILIES.filter(familyKeepsRecords);
+
+/**
+ * WHERE A FAMILY'S PAGE IS. For a family some recorded game calls home, under
  * the first of its games — `/games/<slug>/family`, the address it has always
- * had, since "the family Renju is in" is a question about Renju. A shelf of
- * guests has no game of its own to be found under, so it has an address of
- * its own at `/games/<key>`: an address the gate already reads as the
- * catalogue's, open to anybody, and a folder of its own under `src/app/games`
- * (`families.coverage.test.ts` holds every such family to one).
+ * had, since "the family Renju is in" is a question about Renju. A family with
+ * no recorded game — Party games, a shelf of guests and the party games at
+ * home in it — has an address of its own at `/games/<key>`: an address the
+ * gate already reads as the catalogue's, open to anybody, and a folder of its
+ * own under `src/app/games` (`families.coverage.test.ts` holds every such
+ * family to one). A party game's own `/family` is not answered: its family
+ * already has this one.
  */
 export function familyPagePath(family: GameFamily): string {
-  const first = family.games[0];
+  const first = family.games.find((game) => !isPartyKind(game));
   return first === undefined ? `/games/${family.key}` : familyPath(first);
 }
 
 /**
- * The games in a family the engine plays: its rule variants, its puzzles
- * left out. The two-player set-up, a ladder, a record and the played-figures
- * read this; anything that names or counts a family's games reads
- * `family.games`.
+ * The games in a family the engine plays: its rule variants, its puzzles and
+ * party games left out. The two-player set-up, a ladder, a record and the
+ * played-figures read this; anything that names or counts a family's games
+ * reads `family.games`.
  */
 export function boardGamesOf(family: GameFamily): RuleVariant[] {
-  return family.games.filter((game): game is RuleVariant => !isPuzzleKind(game));
+  return family.games.filter(isRuleVariant);
 }
 
 /**
@@ -337,12 +366,12 @@ export function gamesShownIn(family: GameFamily): ShelvedGame[] {
 }
 
 /**
- * A family's shelf with its puzzles left off: what the two-player set-up
- * screen draws. A puzzle on that screen would be a tile the board cannot
- * show; a puzzle is set up from its own page.
+ * A family's shelf with its puzzles and party games left off: what the
+ * two-player set-up screen draws. Either on that screen would be a tile the
+ * board cannot show; each is set up from its own page.
  */
 export function boardGamesShownIn(family: GameFamily): (ShelvedGame & { variant: RuleVariant })[] {
-  return gamesShownIn(family).filter((shown): shown is ShelvedGame & { variant: RuleVariant } => !isPuzzleKind(shown.variant));
+  return gamesShownIn(family).filter((shown): shown is ShelvedGame & { variant: RuleVariant } => isRuleVariant(shown.variant));
 }
 
 /** The other games in the family a variant belongs to, for "also try" links. */

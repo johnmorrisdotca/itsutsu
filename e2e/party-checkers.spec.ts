@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { ALSO_LISTED_IN } from "../src/lib/gomoku/familyShelves";
 import { ready } from "./support";
 
@@ -166,7 +167,9 @@ test.describe("the Party games shelf", () => {
     await expect(card.getByTestId("family-game-home")).toContainText("Territory and races");
     // Read from the shelf's own table, never typed: Kumimoji joined it after this was written.
     const guests = Object.values(ALSO_LISTED_IN).filter((listings) => (listings ?? []).some((listing) => listing.family === "party")).length;
-    await expect(page.getByTestId("family-guest-count")).toContainText(`${guests} ${guests === 1 ? "game" : "games"} from other families`);
+    // And the party games at home on it counted first, apart from the guests (Dots and Boxes, 2026-09-28).
+    const home = GAME_FAMILIES.find((family) => family.key === "party")!.games.length;
+    await expect(page.getByTestId("family-guest-count")).toContainText(`${home} ${home === 1 ? "game" : "games"}, and ${guests} from other families`);
     await expect(page.getByTestId("family-game-kumimoji").getByTestId("family-game-why")).toContainText("Pass and play for up to eight");
 
     // The name leads to the game's own page, where the table is offered.

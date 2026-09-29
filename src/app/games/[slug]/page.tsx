@@ -17,12 +17,14 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { PuzzleFrontDoor } from "@/components/puzzles/PuzzleFrontDoor";
+import { PartyFrontDoor } from "@/components/party/PartyFrontDoor";
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
   backgroundPath,
   familyPath,
   historyPath,
   myGamePath,
+  partyKindFor,
   passAndPlayPath,
   playPath,
   puzzleFor,
@@ -39,13 +41,13 @@ import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? "");
   if (copy === null) return { title: "Games" };
   return { title: `${copy.label} ${copy.kanji}`, description: copy.tagline };
 }
 
 export function generateStaticParams() {
-  // The puzzles have front doors at the same address shape as the games.
+  // The puzzles and the party games have front doors at the same address shape as the games.
   return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
 }
 
@@ -83,6 +85,13 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
    */
   const puzzle = puzzleFor(slug);
   if (puzzle !== null) return <PuzzleFrontDoor kind={puzzle} />;
+  /*
+   * A party game likewise: a table round one device, with no ladder and no
+   * record either — see `PartyFrontDoor`, and docs/plans/party-games for why
+   * it is a kind of its own.
+   */
+  const party = partyKindFor(slug);
+  if (party !== null) return <PartyFrontDoor kind={party} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const page = rulesPageFor(variant);

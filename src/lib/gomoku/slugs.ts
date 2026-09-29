@@ -1,4 +1,5 @@
 import type { GameKey } from "../catalogue/gameKeys";
+import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
 
 import type { RuleVariant } from "./gomoku.types";
@@ -89,6 +90,16 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   koushi: "koushi",
 };
 
+/**
+ * The party games' places in the same paths: /games/dots-and-boxes, with its
+ * rules and its table (`/pass-and-play`) under it, as every game has. A party
+ * game's family page is its family's own address (`familyPagePath`), so
+ * nothing is answered at /games/<slug>/family for one.
+ */
+export const PARTY_SLUGS: Record<PartyKind, string> = {
+  dotsAndBoxes: "dots-and-boxes",
+};
+
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
   (Object.entries(GAME_SLUGS) as [RuleVariant, string][]).map(([variant, slug]) => [slug, variant]),
 );
@@ -97,14 +108,23 @@ const PUZZLE_BY_SLUG = new Map<string, PuzzleKind>(
   (Object.entries(PUZZLE_SLUGS) as [PuzzleKind, string][]).map(([kind, slug]) => [slug, kind]),
 );
 
+const PARTY_BY_SLUG = new Map<string, PartyKind>(
+  (Object.entries(PARTY_SLUGS) as [PartyKind, string][]).map(([kind, slug]) => [slug, kind]),
+);
+
+/** The party game a slug names, or null for an address that names none. */
+export function partyKindFor(slug: string): PartyKind | null {
+  return PARTY_BY_SLUG.get(slug) ?? null;
+}
+
 /** The puzzle a slug names, or null for an address that names no puzzle. */
 export function puzzleFor(slug: string): PuzzleKind | null {
   return PUZZLE_BY_SLUG.get(slug) ?? null;
 }
 
-/** The game or puzzle a slug names, or null. */
+/** The game, puzzle or party game a slug names, or null. */
 export function gameKeyFor(slug: string): GameKey | null {
-  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? null;
+  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? PARTY_BY_SLUG.get(slug) ?? null;
 }
 
 /**
@@ -113,7 +133,7 @@ export function gameKeyFor(slug: string): GameKey | null {
  * key falls back to itself rather than throwing a whole page away.
  */
 export function slugFor(variant: string): string {
-  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? variant;
+  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? PARTY_SLUGS[variant as PartyKind] ?? variant;
 }
 
 /** The variant a slug names, or null for an address that names nothing. */
@@ -140,8 +160,9 @@ export function variantFor(slug: string): RuleVariant | null {
  * /games/<slug>/pass-and-play — the game for a whole table on one device, where
  * a game has one (`PARTY_PLAY_GAMES`): Chinese Checkers for two to six, Pair
  * Go for two teams of two, Halma for four or two, and Block Five for four.
- * Kept in the browser,
- * never rated; beside `playPath`, the practice board for two.
+ * Kept in the browser, never rated; beside `playPath`, the practice board for
+ * two. And every party game's one table (`PARTY_KIND_LIST`), Dots and Boxes
+ * for two to six, which has no board for two to be beside.
  */
 export function passAndPlayPath(variant: string): string {
   return `${gamePath(variant)}/pass-and-play`;

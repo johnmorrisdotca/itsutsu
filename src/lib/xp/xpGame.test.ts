@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES, HOME_FAMILIES, boardGamesOf, familyKeyOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, RECORDED_FAMILIES, boardGamesOf, familyKeyOf } from "@/lib/gomoku/families";
 import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { BOT_SPECIALIST_LIST, BOT_TIERS, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
@@ -382,8 +382,8 @@ describe("the families a win can complete", () => {
     // of one game would have to move it.
     const winnable = GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null);
     expect(winnable).toHaveLength(GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).length);
-    // Numbers and Other are families of puzzles, which are solved and never won; Party games holds no game of its own.
-    expect(winnable.length).toBe(HOME_FAMILIES.length - 2);
+    // Numbers and Other are families of puzzles, which are solved and never won; Party games holds only games that are never recorded.
+    expect(winnable.length).toBe(RECORDED_FAMILIES.length - 2);
   });
 });
 
@@ -402,8 +402,8 @@ describe("the tour covers the site", () => {
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
     // Forty-eight since the two rock games, Scattered Rocks and Rockfall, on 2026-09-26.
     expect(XP_VARIANTS_TO_PLAY).toBe(48 + PUZZLE_KIND_LIST.length);
-    // Nine since Other opened with Gomoji on 2026-09-25 — the families a game is played from, which a shelf of guests is not.
-    expect(HOME_FAMILIES.length).toBe(9);
+    // Nine since Other opened with Gomoji on 2026-09-25 — the families a game is played from, which Party games, recording nothing, is not.
+    expect(RECORDED_FAMILIES.length).toBe(9);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {

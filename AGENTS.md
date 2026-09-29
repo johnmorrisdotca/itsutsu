@@ -268,6 +268,15 @@ puzzle with exactly one answer at every size and level it offers, in a browser's
 time, and that `checkSolution` refuses a wrong grid. Everything that thinks about
 a puzzle runs in the browser; the server checks a finished grid in O(cells) and
 pays. The reasoning is in `docs/plans/numbers/README.md`.
+**Nor is a party game, and it has a gate of its own too.** Dots and Boxes
+(2026-09-28) is a `PartyKind` under `src/lib/party/`: a table of two to six
+round one device, kept only in that browser, never rated or recorded. It is
+joined into `GameKey` beside the other two, lives in Party games (a family no
+award counts: `RECORDED_FAMILIES`), has a front door, rules and a table at
+`/games/<slug>/pass-and-play`, waits on My games through its row in
+`PARTY_KIND_TABLES`, and `party.coverage.test.ts` plays its rules out at every
+table it offers and asks it every question above in its own terms. The
+reasoning, and how to add the next one, is in `docs/plans/party-games/README.md`.
 A word puzzle's list in any language comes from a real dictionary of that
 language, with a frequency count only ranking it: a count of film subtitles
 alone once made RUDD a French word (John, 2026-09-26), and

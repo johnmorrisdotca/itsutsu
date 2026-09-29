@@ -5,7 +5,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 import Link from "@/components/ui/Link";
-import { GAME_FAMILIES, familyPagePath, siblingsOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyPagePath, gamesShownIn, siblingsOf } from "@/lib/gomoku/families";
 import { ALSO_LISTED_IN } from "@/lib/gomoku/familyShelves";
 
 /**
@@ -39,14 +39,20 @@ export function GameFamily({ variant }: { variant: GameKey }) {
    * data (AGENTS.md, "Show The Data"), and a page that hides its family
    * panel for one game is a page with a hole where the family should be.
    */
-  const alone = siblings.games.length === 0;
+  /*
+   * A game alone at home on a shelf of guests — Dots and Boxes on Party games —
+   * lists the guests instead, since they are what a reader opening its family
+   * finds beside it. Anywhere else a family's own games are its rows.
+   */
+  const rows = siblings.games.length > 0 ? siblings.games : gamesShownIn(family).map((shown) => shown.variant).filter((game) => game !== variant);
+  const alone = rows.length === 0;
   /* The other shelves it is shown on (`ALSO_LISTED_IN`), each leading to that family's page. */
   const shelves = (ALSO_LISTED_IN[variant] ?? []).flatMap((listing) => GAME_FAMILIES.filter((one) => one.key === listing.family));
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-family">
       <h2 className={SECTION_TITLE}>
-        {alone ? "Its family" : "Also in this family"} <span className="font-mincho normal-case tracking-normal">同族</span>
+        {alone ? "Its family" : siblings.games.length > 0 ? "Also in this family" : "Also on its shelf"} <span className="font-mincho normal-case tracking-normal">同族</span>
       </h2>
       <div className="flex items-center gap-3">
         <FamilyMark family={family.title} size="regular" />
@@ -86,7 +92,7 @@ export function GameFamily({ variant }: { variant: GameKey }) {
         </p>
       ) : null}
       <ul className="-mx-2 flex flex-col text-sm">
-        {siblings.games.map((game) => (
+        {rows.map((game) => (
           <li key={game} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1`}>
             <span className="flex min-w-0 items-center gap-2">
               <GameThumb variant={game} size="small" />

@@ -5,6 +5,7 @@ import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 import type { BlocksHold, BlocksPieceKey, BlocksPreview, PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import type { PartyRaceRules, PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
+import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 
 /** One player's marble: its colour, the letter it carries, and the ink the letter is written in. */
 export type PartyMarble = { label: string; letter: string; fill: string; ink: string };
@@ -136,6 +137,23 @@ export type PartyBlocksTrayProps = {
 export type PartyBlocksSetUpProps = {
   appearance: Appearance;
   onStart: (game: PartyBlocksState) => void;
+  /** The hydration mark (`readyMark`), on the form a test fills in. */
+  ready: { "data-ready": string };
+};
+
+/** What Dots and Boxes' board is handed: the game, and what to do with a line tapped. */
+export type DotsBoardProps = {
+  game: DotsGame;
+  appearance: Appearance;
+  /** A line tapped by the player to move. */
+  onLine?: (line: number) => void;
+  /** A preview: the table set out, nothing to tap. */
+  readOnly?: boolean;
+};
+
+export type DotsSetUpProps = {
+  appearance: Appearance;
+  onStart: (game: DotsGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
 };

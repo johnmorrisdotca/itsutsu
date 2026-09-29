@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES, HOME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, RECORDED_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { PUZZLE_KIND_LIST } from "@/lib/puzzles/puzzles.constants";
 
 import {
@@ -184,8 +184,8 @@ describe("the economy holds its shape", () => {
     const perPuzzle = PUZZLE_KIND_LIST.length;
     // Read from the table rather than written down, so a merge or a new family
     // moves this figure instead of quietly leaving it true of nothing.
-    // The families a game is played FROM: Party games (2026-09-28) is a shelf of guests, met in no game's first.
-    const perFamily = HOME_FAMILIES.length;
+    // The families a game is played FROM: Party games (2026-09-28) records nothing, so is met in no game's first.
+    const perFamily = RECORDED_FAMILIES.length;
     expect(perFamily).toBe(9);
     // A family won is only for a family of more than one BOARD game: puzzles are not won.
     const familiesToWin = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 1).length;

@@ -1,6 +1,6 @@
 import { TAB_FROM_PATH } from "@/lib/ui/tabs";
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
-import { type GameKey, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { type GameKey, isPuzzleKind, isRuleVariant } from "@/lib/catalogue/gameKeys";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
@@ -241,7 +241,7 @@ export function xpAboutFor(type: XpEventType, subject: string): XpAbout {
   if (at <= 0 || at === subject.length - 1) return { of: "words", said: subject, stale: true };
   const variant = asVariant(subject.slice(at + 1));
   // A rivalry is at a board game: nobody is anybody's rival at a puzzle.
-  if (variant === null || isPuzzleKind(variant)) return { of: "words", said: subject, stale: true };
+  if (variant === null || !isRuleVariant(variant)) return { of: "words", said: subject, stale: true };
   return { of: "rivalry", memberId: subject.slice(0, at), variant };
 }
 

@@ -45,6 +45,15 @@ describe("the board frame", () => {
     expect(square).not.toContain("boxShadow");
   });
 
+  it("holds Dots and Boxes' dots and lines, on the reader's own wood, with its dots on the crossings", () => {
+    const dots = read("src/components/party/DotsBoard.tsx");
+    expect(dots).toContain("<BoardFrame");
+    expect(dots).not.toContain("boxShadow");
+    // Its set-up's preview is that live board at the chosen size, never a picture of one.
+    expect(read("src/components/party/DotsSetUp.tsx")).toContain("<DotsBoard game={preview}");
+    expect(read("src/components/party/DotsSetUp.tsx")).not.toMatch(/<GameThumb|<img|\.jpg/);
+  });
+
   it("holds every puzzle grid, on white paper", () => {
     for (const grid of ["src/components/puzzles/PuzzleGrid.tsx", "src/components/puzzles/HiddenStonesGrid.tsx"]) {
       expect(read(grid), `${grid} draws its grid off the board`).toContain("<PuzzleBoard");
