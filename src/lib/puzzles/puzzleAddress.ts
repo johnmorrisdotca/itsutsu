@@ -8,6 +8,9 @@ import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
 import { partyPlayersAsked } from "./kumimoji/party";
+import { bonusRuleOfSeed } from "./mahjong/generate";
+import type { MahjongBonusRule } from "./mahjong/mahjong.types";
+import { tablePlayersAsked } from "./mahjong/table";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.
@@ -68,9 +71,15 @@ export type PuzzleAsked = {
    * reload keep it.
    */
   clock?: PuzzleClock;
+  /**
+   * Mahjong's flowers and seasons: the usual rule, or Identical. Asked for by
+   * the address (`flowers=same`) until a seed is drawn, and from then said by
+   * the seed itself (`bonusRuleOfSeed`), as a Futago's word count is.
+   */
+  bonus?: MahjongBonusRule;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -107,6 +116,11 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const diagonals = one(PUZZLE_PARAMS.diagonals) === "1";
   const players = partyPlayersAsked(one(PUZZLE_PARAMS.players));
   const clock = clockFor(kind, one(PUZZLE_PARAMS.clock));
+  if (kind === "mahjong") {
+    const tablePlayers = tablePlayersAsked(one(PUZZLE_PARAMS.players));
+    const bonus: MahjongBonusRule = seed === null ? (one(PUZZLE_PARAMS.bonus) === "same" ? "same" : "group") : bonusRuleOfSeed(seed);
+    return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, bonus, ...(tablePlayers > 1 ? { players: tablePlayers } : {}) };
+  }
   return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
 }
 
@@ -126,6 +140,8 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.language === "japanese") params.set(PUZZLE_PARAMS.language, asked.language);
   if (asked.players !== undefined && asked.players > 1) params.set(PUZZLE_PARAMS.players, String(asked.players));
   if (asked.clock !== undefined && asked.clock !== "none") params.set(PUZZLE_PARAMS.clock, asked.clock);
+  // Only until a seed is drawn: from then the seed says it.
+  if (asked.bonus === "same" && asked.seed === null) params.set(PUZZLE_PARAMS.bonus, asked.bonus);
   return `?${params.toString()}`;
 }
 

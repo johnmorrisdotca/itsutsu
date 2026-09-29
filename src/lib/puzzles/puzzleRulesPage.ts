@@ -4,7 +4,8 @@ import type { RulesPage } from "@/lib/learn/rulesPage";
 
 import { futagoRule } from "./gomoji/futago";
 import { yotsugoRule } from "./gomoji/yotsugo";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
+import { layoutFor } from "./mahjong/layouts";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -20,7 +21,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
   // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
-  const sizes = sizesOffered(kind).map((size) => (spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`)).join(", ");
+  const sizes = sizesOffered(kind).map((size) => sizeText(kind, size)).join(", ");
   const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];
@@ -28,6 +29,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     `Sizes: ${sizes}. ${copy.board}`,
     spec.fixedLevels === true
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
+      : spec.layouts === true
+      ? "Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well."
       : spec.tiles === true
       ? "Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well."
       : "Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none.",
@@ -62,4 +65,14 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     house,
     image: gameArtPath(kind),
   };
+}
+
+/**
+ * A size as a rules page says it: a grid's side, a tile game's hand, or a
+ * layout's name and how many tiles it holds (`PuzzleSpec.layouts`).
+ */
+function sizeText(kind: PuzzleKind, size: number): string {
+  const spec = PUZZLE_SPECS[kind];
+  if (spec.layouts === true) return `${PUZZLE_SIZE_NAMES[kind][size]?.label ?? size} (${layoutFor(size)?.slots.length ?? 0} tiles)`;
+  return spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`;
 }

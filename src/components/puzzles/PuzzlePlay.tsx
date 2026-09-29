@@ -13,6 +13,8 @@ import type { Puzzle, PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles
 import { clockFor } from "@/lib/puzzles/puzzleClock";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
+import type { MahjongBonusRule } from "@/lib/puzzles/mahjong/mahjong.types";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { BridgesSolve } from "./BridgesSolve";
@@ -22,6 +24,8 @@ import { GomojiSolve } from "./GomojiSolve";
 import { KumimojiParty } from "./KumimojiParty";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
+import { MahjongSolve } from "./MahjongSolve";
+import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
@@ -65,6 +69,7 @@ export function PuzzlePlay({
   doubleSet = false,
   diagonals = false,
   players = 1,
+  bonus = "group",
   clock = "none",
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
@@ -72,6 +77,8 @@ export function PuzzlePlay({
 }: {
   /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
   players?: number;
+  /** Mahjong's flowers and seasons, from the address: read only to draw a seed, which says it from then on (`bonusRuleOfSeed`). */
+  bonus?: MahjongBonusRule;
   /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
   clock?: PuzzleClock;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
@@ -126,8 +133,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: kind === "mahjong" ? freshMahjongSeed(bonus) : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, bonus, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -214,6 +221,10 @@ export function PuzzlePlay({
         return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
       case "gomojiKana":
         return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "mahjong":
+        // A table round this device is local and never a race, as Kumimoji's pass and play is.
+        if (players > 1 && race === null) return <MahjongTableGame key={key} puzzle={puzzle} players={players} appearance={appearance} />;
+        return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} hints={hints} appearance={appearance} />;
       case "koushi":
         return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
       default:

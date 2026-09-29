@@ -83,9 +83,10 @@ describe("every puzzle is finished, not just declared", () => {
         // givens (every one drawn in a word grid, Pop Gomoji's too) are its one word, whose length is its size:
         // a word has letters, not a square of cells. A kana
         // Gomoji's are its word and its free grey word. A tile game's (Kumimoji) are its bag, more tiles than the
-        // hand its size names, and any sound grid of them is an answer: the solution only proves there is one.
+        // hand its size names, and any sound grid of them is an answer: the solution only proves there is one. A
+        // layout's (Mahjong) are a face a tile, however many tiles its width in tiles holds.
         expect(puzzle.givens.length).toBeGreaterThanOrEqual(
-          spec.wordGrid !== undefined || spec.tiles === true ? size : size * size,
+          spec.wordGrid !== undefined || spec.tiles === true || spec.layouts === true ? size : size * size,
         );
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
         expect(checkSolution(kind, size, puzzle.givens, puzzle.solution, level), `${kind} ${size} ${level}`).toEqual({ ok: true });

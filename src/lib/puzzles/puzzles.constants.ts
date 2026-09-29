@@ -3,6 +3,7 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
 import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS, KUMIMOJI_WILDS, kumimojiTileCount } from "./kumimoji/tiles.constants";
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
+import { layoutFor } from "./mahjong/layouts";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -44,7 +45,13 @@ export const PUZZLE_KINDS = {
   kumimoji: "kumimoji",
   koushi: "koushi",
   bridges: "bridges",
+  mahjong: "mahjong",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
+
+/** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
+function mahjongTiles(size: number): number {
+  return layoutFor(size)?.slots.length ?? 0;
+}
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
 export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
@@ -65,6 +72,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.kumimoji,
   PUZZLE_KINDS.koushi,
   PUZZLE_KINDS.bridges,
+  PUZZLE_KINDS.mahjong,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -232,6 +240,23 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * big ones zoomed (`TsunagiViewport`).
    */
   bridges: { sizes: [7, 9, 11, 13], offered: [7, 9, 11, 13], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 169 },
+  /*
+   * A size is a layout, named by its width in tiles (`mahjong/layouts.ts`):
+   * Torii 8, Fuji 9, Castle 10 and the Turtle's 15. The square of eight, 4
+   * across, is the browser tests' own, made and checked like any other and
+   * never offered. An answer is its moves, four characters a pair and one a
+   * shuffle: the Turtle's 72 pairs and a shuffle each at the very most is 360.
+   */
+  mahjong: {
+    sizes: [4, 8, 9, 10, 15],
+    offered: [8, 9, 10, 15],
+    defaultSize: 9,
+    levels: PUZZLE_LEVEL_LIST,
+    defaultLevel: "medium",
+    mostCells: 360,
+    layouts: true,
+    checks: false,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -376,6 +401,14 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     11: { label: "Long", kanji: "長" },
     13: { label: "Longest", kanji: "最長" },
   },
+  // A Mahjong layout by its own name, the width in tiles being the big number in its picture.
+  mahjong: {
+    4: { label: "Tiny", kanji: "極小" },
+    8: { label: "Torii", kanji: "鳥居" },
+    9: { label: "Fuji", kanji: "富士" },
+    10: { label: "Castle", kanji: "城" },
+    15: { label: "Turtle", kanji: "亀" },
+  },
 };
 
 /**
@@ -418,6 +451,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     easy: "Counting alone: every island against what the islands in line with it can still give.",
     medium: "Counting, and the joining rule: no group of islands may close itself off from the rest.",
     hard: "Somewhere counting and joining both run out, and a bridge has to be tried and seen.",
+  },
+  // A Mahjong level is how forgiving its deal is, ranked among five (`mahjong/generate.ts`).
+  mahjong: {
+    easy: "The most forgiving of five deals: a pair taken carelessly seldom leaves you stuck.",
+    medium: "A middling deal: now and then a pair taken too soon closes off another.",
+    hard: "The least forgiving of five deals: take the wrong pair early and you will need Undo or Shuffle.",
   },
   koushi: {
     easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
@@ -760,5 +799,34 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "9×9 is the usual size. 7×7 is quick; 11×11 and 13×13 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
+  },
+  /*
+   * MAHJONG SOLITAIRE, the tile-matching patience game (John, 2026-09-29:
+   * "MahJong game where you match up piles of those CHIPS things"). The name
+   * is the generic one it is searched for by; the names it is sold under
+   * belong to their owners and are not used here. The set is the Japanese
+   * one, drawn for this site (`MahjongTileFace`). 牌合わせ, "matching tiles".
+   */
+  mahjong: {
+    label: "Mahjong Solitaire",
+    kanji: "牌合わせ",
+    tagline: "Clear a stack of mahjong tiles two at a time: take matching pairs of free tiles until the table is empty.",
+    inspiredBy: "mahjong solitaire, first made by Brodie Lockard as Mah-Jongg in 1981",
+    alsoKnownAs: ["Mah-Jongg", "The Turtle"],
+    origin:
+      "The patience game played with a mahjong set: the tiles are stacked into a shape and taken off two at a time. Brodie Lockard first made it as a computer game on the PLATO system in 1981, and it has been played on every kind of screen since. The tiles here are a full set of 144 in the Japanese style, drawn for this site; the deals and the layouts are our own.",
+    wikipedia: "Mahjong solitaire",
+    rules: [
+      "The tiles are stacked in a layout of up to five layers. Take them off two at a time, in matching pairs, until none are left.",
+      "Only a free tile can be taken: nothing lying on it, not even half a tile, and its left side or its right side open. A tile covered, or held on both sides, waits until the tiles around it are gone.",
+      "Two tiles match when they are the same: the same number of the same suit, the same wind or the same dragon. Any flower matches any flower and any season any season, or, with Identical chosen on the set-up screen, only the same one.",
+      "Tap a free tile and then its match, or drag one onto the other. Double-tap a free tile to take it with its match, when it has one free. A blocked tile shakes and stays where it is.",
+      "Stuck, with no free pair? Shuffle lays the tiles left in the places they fill, so play can go on, and lays them so they can be finished whenever the places allow. Undo takes back the last move, as often as you like.",
+      "Choose Hints on the set-up screen and Hint lights a free pair, at a hint's cost in points. Free tiles lit, the usual choice, dims every blocked tile so the free ones stand out; turn it off for the classic look.",
+      "Every deal can be cleared: it is laid out pair by pair in reverse before you see it. Your time is your score.",
+      "For a table: choose two, three or four players on the set-up screen and pass one device round. Each turn takes one pair, scored to whoever took it: a plain suit tile 1, a one or a nine 2, a wind 3, a dragon 4, and a flower or season 2 and another turn. With no pair to take, the tiles are shuffled and the same player goes on. When the table is clear, or no shuffle can free what is left, the most points wins, and a tie shares it. Any seat can be a computer. Nothing is secret, so nobody hides the screen.",
+    ],
+    board:
+      `Four layouts. Torii 鳥居 (${mahjongTiles(8)} tiles, eight across) and Fuji 富士 (${mahjongTiles(9)}, nine across) are quick and fit a phone; Castle 城 (${mahjongTiles(10)}, ten across) is longer; the Turtle 亀 is the classic ${mahjongTiles(15)}, fifteen across, and on a phone it zooms, with Fit and the arrows under the board. A smaller layout uses pairs drawn from the full set of 144.`,
   },
 };

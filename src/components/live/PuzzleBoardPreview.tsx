@@ -38,6 +38,9 @@ import { generateTowers } from "@/lib/puzzles/towers/generate";
 import { BridgesGrid } from "@/components/puzzles/BridgesGrid";
 import { boardOf } from "@/lib/puzzles/bridges/code";
 import { generateBridges } from "@/lib/puzzles/bridges/generate";
+import { MahjongBoard, mahjongViewBox } from "@/components/puzzles/MahjongBoard";
+import { useMahjongFree } from "@/components/puzzles/mahjongFree";
+import { generateMahjong } from "@/lib/puzzles/mahjong/generate";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -111,6 +114,8 @@ export function PuzzleBoardPreview({
           <LatticePreview appearance={appearance} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
+        ) : kind === "mahjong" ? (
+          <MahjongPreview size={size} appearance={appearance} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
@@ -211,6 +216,30 @@ function BridgesPreview({ size }: { size: number }) {
   const board = useMemo(() => boardOf(generateBridges(size, "easy", 7).givens, size), [size]);
   if (board === null) return null;
   return <BridgesGrid board={board} counts={board.spans.map(() => 0)} done readOnly />;
+}
+
+/**
+ * Mahjong before it is dealt: a real deal of this layout from a fixed seed, on
+ * the board the solve draws (`MahjongBoard`), the free tiles lit or not as the
+ * reader has chosen, with nothing to press. Dealt once a layout and kept, since
+ * the Turtle takes a moment to deal.
+ */
+const MAHJONG_PREVIEWS = new Map<number, string>();
+function MahjongPreview({ size, appearance }: { size: number; appearance: Appearance }) {
+  const showFree = useMahjongFree();
+  const box = mahjongViewBox(size);
+  const cells = useMemo(() => {
+    if (!MAHJONG_PREVIEWS.has(size)) MAHJONG_PREVIEWS.set(size, generateMahjong(size, "easy", 7).givens);
+    return MAHJONG_PREVIEWS.get(size)!;
+  }, [size]);
+  return (
+    // A square, whatever the layout's shape, so choosing another layout never moves the page (`e2e/set-up-steady.spec.ts`).
+    <div className="flex aspect-square w-full items-center justify-center" data-testid="mahjong-preview">
+      <div style={{ width: `${Math.min(1, box.width / box.height) * 100}%` }}>
+        <MahjongBoard size={size} cells={cells} theme={BOARD_THEMES[appearance.boardTheme]} showFree={showFree} readOnly />
+      </div>
+    </div>
+  );
 }
 
 /** Koushi's lattice before it is made: 21 blank tiles and four holes, in the board colour chosen under it. Nothing on it can be pressed. */

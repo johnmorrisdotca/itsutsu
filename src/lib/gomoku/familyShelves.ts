@@ -130,5 +130,12 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
     },
   ],
   /* KUMIMOJI, whose pass and play for up to eight landed in 0.410.0: a shelf lists what the game offers today. */
+  /*
+   * NOT ON PARTY GAMES YET, though Mahjong plays two to four round one device:
+   * that shelf already shows its eight. Found at home, where the Mahjong
+   * family's blurb says it is played in turns. When the shelf has room, the
+   * listing is: mahjong: [{ family: "party", why: "Two to four take turns on
+   * one layout, a pair each, and the dragons and winds score most." }].
+   */
   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
 };

@@ -28,6 +28,7 @@ import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -39,6 +40,8 @@ import { HeadStartChips } from "./HeadStartChips";
 import { PuzzleClockChips } from "./PuzzleClockChips";
 import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
+import { MahjongSetUpOptions, useMahjongChoice } from "./MahjongSetUpOptions";
+import { MahjongTableResume } from "./MahjongTableSeats";
 import { useKumimojiChoice } from "./useKumimojiChoice";
 import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";
@@ -107,7 +110,11 @@ export function PuzzleSetUp({
   // The countdown (`PuzzleClockChips`), none unless chosen; like Strict, not carried into a race.
   const [clock, setClock] = useState<PuzzleClock>(asked?.clock ?? "none");
   const kumimoji = useKumimojiChoice(asked, size, kind === "kumimoji");
-  const { language, gameLength, doubleSet, diagonals, players } = kumimoji;
+  const mahjong = useMahjongChoice(asked);
+  const { language, gameLength, doubleSet, diagonals } = kumimoji;
+  // How many play is Kumimoji's choice or Mahjong's; the flowers' rule is Mahjong's alone.
+  const players = kind === "mahjong" ? mahjong.players : kumimoji.players;
+  const bonus = kind === "mahjong" ? mahjong.bonus : undefined;
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -119,7 +126,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -139,7 +146,7 @@ export function PuzzleSetUp({
     setRacing("making");
     try {
       await preparePuzzle(kind, size, language);
-      const made = generatePuzzle(kind, size, level, freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
+      const made = generatePuzzle(kind, size, level, kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -196,6 +203,7 @@ export function PuzzleSetUp({
         {kind === "kumimoji" ? (
           <KumimojiSetUpOptions size={size} hints={hints} setHints={setHints} {...kumimoji} />
         ) : null}
+        {kind === "mahjong" ? <MahjongSetUpOptions {...mahjong} /> : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
         <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Level">
@@ -299,6 +307,7 @@ export function PuzzleSetUp({
           why running out takes the help away rather than ending the puzzle. A
           race carries it too, the same for both seats.
         */}
+        {spec.checks === false ? null : (
         <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Checks">
           {PUZZLE_CHECK_ALLOWANCES.map((each) => {
             const words = checkAllowanceWords(each);
@@ -317,6 +326,7 @@ export function PuzzleSetUp({
             );
           })}
         </div>
+        )}
         {/*
           HINT, chosen here or not at all. John, 2026-09-24: "when a user wants a
           HINT button they can add as an option for these games... and when
@@ -357,8 +367,9 @@ export function PuzzleSetUp({
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <SetUpResume href={resumeHref} />
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
+        {kind === "mahjong" ? <MahjongTableResume /> : null}
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
