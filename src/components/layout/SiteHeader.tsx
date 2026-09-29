@@ -59,19 +59,15 @@ async function HeaderCountsFromServer() {
   return <HeaderCountsSeed counts={counts} />;
 }
 
+/**
+ * The site's sections and New game. Everything about the reader's own account
+ * is `Account`, beside it rather than inside it, so a phone can lift the
+ * account to the logo's row while the sections keep a row of their own.
+ */
 async function Nav() {
-  const [who, admit, say] = await Promise.all([whoIsHere(), admitsOnArrival(), currentSpeaker()]);
-  const { semver } = versionStamps();
   return (
-    <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+    <nav className="order-3 flex w-full items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:order-none sm:w-auto sm:flex-wrap sm:gap-x-4 sm:text-sm">
       <NavLinks />
-      {/* Everything about the reader's own account, the operator's links among it, so the bar is the same for everybody. */}
-      <AccountMenu
-        initial={who}
-        admit={admit}
-        languages={{ options: languageOptions(), current: say.locale, param: LANG_PARAM, label: say.say("site.language") }}
-        version={{ stage: STAGE, semver }}
-      />
       {/*
         Draws nothing. Here rather than beside the two mastheads below because
         `Nav` is the one thing both of them render, so this is mounted exactly
@@ -90,6 +86,43 @@ async function Nav() {
         <HeaderCountsFromServer />
       </Suspense>
     </nav>
+  );
+}
+
+/** Everything about the reader's own account, the operator's links among it, so the bar is the same for everybody. */
+async function Account({ className }: { className: string }) {
+  const [who, admit, say] = await Promise.all([whoIsHere(), admitsOnArrival(), currentSpeaker()]);
+  const { semver } = versionStamps();
+  return (
+    <span className={`flex items-center text-sm ${className}`} data-testid="account-slot">
+      <AccountMenu
+        initial={who}
+        admit={admit}
+        languages={{ options: languageOptions(), current: say.locale, param: LANG_PARAM, label: say.say("site.language") }}
+        version={{ stage: STAGE, semver }}
+      />
+    </span>
+  );
+}
+
+/**
+ * THE BAR, AND WHERE THE ACCOUNT SITS IN IT.
+ *
+ * John, 2026-09-28, at a phone header four rows deep: "In mobile, the User
+ * Name dropdown should flow to the top right of the page, rather than below
+ * the first row." So below `sm` the wrapper is `contents`: the sections and
+ * the account become the masthead's own items, the account is ordered onto
+ * the logo's row at its right (or pinned to the hero's top right corner on the
+ * front page), and the sections take the full row under it. At `sm` and up
+ * the wrapper is the one flex row it always was — sections, New game, account
+ * — and wraps as one, so the desktop header is unchanged.
+ */
+function Bar({ hero }: { hero: boolean }) {
+  return (
+    <div className="contents sm:flex sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1">
+      <Nav />
+      <Account className={hero ? "absolute top-0 right-0 sm:static" : "order-2 sm:order-none"} />
+    </div>
   );
 }
 
@@ -113,15 +146,20 @@ export async function SiteHeader({
   if (hero) {
     return (
       <>
-        <header data-chrome className="flex flex-col items-center gap-3 border-b border-rule pb-6">
-          <Link href="/" aria-label="Itsutsu home" className="block w-full max-w-2xl">
+        <header data-chrome className="relative flex flex-col items-center gap-3 border-b border-rule pb-6">
+          {/*
+            On a phone the hero keeps to the left and leaves the right-hand
+            corner to the account, which is pinned there: centred at full
+            width, the wordmark ran under the account's face.
+          */}
+          <Link href="/" aria-label="Itsutsu home" className="block w-[calc(100%-4rem)] max-w-2xl self-start sm:w-full sm:self-auto">
             <BrandHero className="w-full" />
           </Link>
           <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
             Five in a row, and the games that grew from it.
             <BetaMark />
           </p>
-          <Nav />
+          <Bar hero />
         </header>
         {/* No member line under the hero: John, 2026-09-24, "don't bother showing it in the Home page". */}
         <XpFlashToasts heldBy={xpHeldBy} />
@@ -139,20 +177,20 @@ export async function SiteHeader({
         subheader").
       */}
       <div className="flex flex-col gap-2.5">
-        <header data-chrome className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
+        <header data-chrome className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule pb-5 sm:items-end sm:gap-y-4">
           {/*
             The Beta mark on the wordmark's own row, beside it — John: "should be
             same row inline". It widens the masthead's first row by the pill, so
             where the bar was already a tight fit it wraps a line sooner; the
             header spec measures that it never lands on the bar.
           */}
-          <span className="flex items-center gap-2">
+          <span className="order-1 flex items-center gap-2 sm:order-none">
             <Link href="/" aria-label="Itsutsu home" className="block">
               <BrandWordmark className="h-9 w-auto sm:h-10" />
             </Link>
             <BetaMark />
           </span>
-          <Nav />
+          <Bar hero={false} />
         </header>
         {/* The member's own figures, one quiet line: see `MemberStrip`. */}
         <MemberStrip />

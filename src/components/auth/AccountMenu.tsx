@@ -128,7 +128,8 @@ export function AccountMenu({
   if (data === undefined) return null;
   if (data === null || !data.signedIn) {
     return (
-      <Link href="/join" className="whitespace-nowrap font-medium hover:underline underline-offset-4" data-testid="sign-in">
+      // A fingertip's height on a phone, where it stands alone in the corner of the logo's row.
+      <Link href="/join" className={`inline-flex items-center whitespace-nowrap font-medium hover:underline underline-offset-4 ${TAP_HEIGHT}`} data-testid="sign-in">
         {say.say("account.signIn")}
       </Link>
     );
@@ -188,11 +189,18 @@ export function AccountMenu({
         aria-expanded={open}
         aria-controls="account-menu-panel"
         title={data.email ?? undefined}
+        // The name is the button's words at `sm` and up; below it only the face shows, so it is said here instead.
+        aria-label={label}
         className={`inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full py-0.5 pl-0.5 pr-2 text-ink-soft hover:bg-rule/40 hover:text-ink ${TAP_HEIGHT}`}
         data-testid="account-menu-button"
       >
         <Face picture={data.picture} label={label} />
-        <span className="max-w-32 truncate">{label}</span>
+        {/*
+          The face and the chevron alone on a phone, in the corner of the logo's
+          row: a name there would push the row past 320 pixels, and the popup
+          opens with it anyway.
+        */}
+        <span className="hidden max-w-32 truncate sm:inline">{label}</span>
         <svg aria-hidden viewBox="0 0 12 12" className={`size-3 text-muted transition-transform ${open ? "rotate-180" : ""}`}>
           <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

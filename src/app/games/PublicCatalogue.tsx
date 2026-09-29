@@ -106,7 +106,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
           And the way in for somebody with no invite at all, who until now had
           only a door marked for people who already have one.
         */}
-        <span className="flex shrink-0 flex-wrap items-baseline gap-x-4 gap-y-2">
+        <span className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
           <Link href={ASK_FOR_INVITE_PATH} className="text-sm underline-offset-2 hover:underline" data-testid="games-ask-for-invite">
             No invite? Ask for one
           </Link>
