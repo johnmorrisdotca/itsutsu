@@ -54,14 +54,20 @@ export function PieceColourPicker({
       data-testid="piece-colour"
       data-colour={key}
       data-chosen={chosen ? "true" : "false"}
-      className={`size-6 shrink-0 cursor-pointer rounded-full outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed ${
-        chosen ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : "hover:ring-1 hover:ring-rule-strong hover:ring-offset-1 hover:ring-offset-paper"
-      } ${why !== null ? "opacity-30" : ""}`}
-      style={{ background: face, boxShadow: chosen ? undefined : "0 1px 2px rgba(0,0,0,0.35)" }}
-    />
+      // A fingertip on a phone (44px, as every control there is) around a swatch drawn at its own size; the ring shows on the swatch.
+      className="group flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full outline-none disabled:cursor-not-allowed sm:size-7"
+    >
+      <span
+        aria-hidden
+        className={`block size-6 rounded-full transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-moss ${
+          chosen ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : "group-hover:ring-1 group-hover:ring-rule-strong group-hover:ring-offset-1 group-hover:ring-offset-paper"
+        } ${why !== null ? "opacity-30" : ""}`}
+        style={{ background: face, boxShadow: chosen ? undefined : "0 1px 2px rgba(0,0,0,0.35)" }}
+      />
+    </button>
   );
   return (
-    <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={label} data-testid={testId}>
+    <div className="flex flex-wrap items-center gap-0.5 sm:gap-1" role="radiogroup" aria-label={label} data-testid={testId}>
       {swatch("usual", usual.face, usual.name, value === null, null, () => onChoose(null))}
       {PIECE_COLOUR_LIST.map((colour) => {
         const { label: name, kanji } = PIECE_COLOURS[colour];
