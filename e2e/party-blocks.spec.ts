@@ -75,7 +75,7 @@ test.describe("Block Five for four, pass and play", () => {
     await page.getByTestId("blocks-flip").tap();
     await expect(page.getByTestId("blocks-in-hand")).toHaveAttribute("data-flipped", "true");
     await lay(page, [0, 0], [[0, 0], [0, 1], [0, 2], [0, 3], [1, 3]]);
-    for (const cell of [[0, 0], [0, 1], [0, 2], [0, 3], [1, 3]] as const) await expect(square(page, ...cell)).toHaveAttribute("data-owner", "0");
+    for (const [row, col] of [[0, 0], [0, 1], [0, 2], [0, 3], [1, 3]] as const) await expect(square(page, row, col)).toHaveAttribute("data-owner", "0");
     await expect(square(page, 1, 0)).toHaveAttribute("data-owner", "");
 
     // The turn passes clockwise, by name, and Ben's tray is his own twenty-one.
