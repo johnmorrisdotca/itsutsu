@@ -195,7 +195,7 @@ test.describe("party game screenshots", () => {
         // The ways of looking round a big board (Fit, the arrows) are for the player, not the picture.
         await page.addStyleTag({ content: '[data-testid$="-fit"], [data-testid$="-arrows"] { visibility: hidden !important; }' });
         // And a card game's presses and the line under its hand are for playing, not for its picture.
-        await page.addStyleTag({ content: '[data-testid="cards-actions"] { visibility: hidden !important; }' });
+        await page.addStyleTag({ content: '[data-testid="cards-actions"], [data-testid="cards-hand-panel"] > p { visibility: hidden !important; }' });
         await page.mouse.move(0, 0);
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         // The board in its wood, or the letters the table watches, and nothing round it, as a game's picture is taken (game-screenshots.spec.ts).
