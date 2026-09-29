@@ -56,6 +56,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/lib/puzzles/pictureLogic/lines.ts",
   "src/lib/puzzles/pictureLogic/code.ts",
   "src/lib/puzzles/solitaire/generate.ts",
+  "src/lib/puzzles/solitaire/rules.ts",
   "src/lib/puzzles/solitaire/solve.ts",
   "src/lib/puzzles/solitaire/klondike.ts",
   "src/lib/puzzles/solitaire/code.ts",

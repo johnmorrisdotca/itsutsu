@@ -1,10 +1,14 @@
-import { seededRandom, DAILY_SEED_BLOCK, SEED_MOST } from "../random";
+import { seededRandom, DAILY_SEED_BLOCK } from "../random";
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 
 import { dealOfSeed, deckOf, encodeMoves } from "./code";
 import { dealKlondike } from "./klondike";
 import { solveKlondike } from "./solve";
 import type { KlondikeRules } from "./solitaire.types";
+import { ANY_DEAL_BLOCK, isAnyDeal, solitaireRules } from "./rules";
+
+// Kept importable from here, where they were first written.
+export { ANY_DEAL_BLOCK, isAnyDeal, SOLITAIRE_PASSES, solitaireRules } from "./rules";
 
 /**
  * A SOLITAIRE DEAL FROM A SEED, as every puzzle is made: in the browser, the
@@ -29,11 +33,6 @@ import type { KlondikeRules } from "./solitaire.types";
  * one pass, with no search.
  */
 
-/** Easy, medium and hard: as many passes through the stock as you like, three, or one. */
-export const SOLITAIRE_PASSES: Record<PuzzleLevel, number> = { easy: Infinity, medium: 3, hard: 1 };
-
-/** The seeds of deals dealt as they fall, winnable or not: the top quarter of the range, clear of the daily words' block. */
-export const ANY_DEAL_BLOCK = { from: 1_600_000_000, size: SEED_MOST - 1_600_000_000 + 1 } as const;
 
 /**
  * The tables the solver looks at before it gives a deal up as not known to be
@@ -52,13 +51,6 @@ export const SOLVER_BUDGET = 4000;
 /** How many deals the winnable search looks at before it stops; far past anything the measured rules need (`generate.test.ts`). */
 const MOST_TRIED = 400;
 
-export function solitaireRules(size: number, level: PuzzleLevel): KlondikeRules {
-  return { draw: size === 3 ? 3 : 1, passes: SOLITAIRE_PASSES[level] };
-}
-
-export function isAnyDeal(seed: number): boolean {
-  return seed >= ANY_DEAL_BLOCK.from;
-}
 
 /**
  * A new seed for a game nobody asked for by number, drawn in the browser: in
