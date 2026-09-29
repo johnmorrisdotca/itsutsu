@@ -4,6 +4,8 @@ import { useState } from "react";
 import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { DOTS_STATUS, dotsAgain, dotsLineCount, dotsPlayerName, drawLine } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
@@ -36,6 +38,8 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
   const hydrated = useHydrated();
   const [game, keep] = useKeptDotsGame();
   const [confirming, setConfirming] = useState(false);
+  // The cover over the board, when the last box is closed here (`WinCover`); never on a finished table opened again.
+  const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.status === DOTS_STATUS.playing ? "playing" : "ended");
 
   // Not read yet: the server has no browser to ask, so it draws the room the game will take and says nothing.
   if (game === undefined) {
@@ -67,7 +71,21 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <DotsTurnLine game={game} />
-        <DotsBoard game={game} appearance={appearance} onLine={onLine} />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, seat) => dotsPlayerName(game, seat)),
+                  winners: game.winners,
+                  you: null,
+                  next: { label: PARTY_COPY.again, onPress: () => keep(dotsAgain(game)) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <DotsBoard game={game} appearance={appearance} onLine={onLine} />
+        </WinCoverOver>
         {game.status === DOTS_STATUS.playing ? <p className="text-xs text-muted">{DOTS_COPY.tap}</p> : null}
       </div>
 

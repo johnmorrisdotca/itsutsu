@@ -5,9 +5,11 @@ import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { againBlocksParty, layBlocks } from "@/lib/gomoku/party/partyBlocks";
+import { BLOCKS_STATUS, againBlocksParty, blocksLeaders, layBlocks } from "@/lib/gomoku/party/partyBlocks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PartyBlocksBoard } from "./PartyBlocksBoard";
@@ -43,6 +45,8 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
     if (next !== null) keep(next);
   });
   const { playing, hold, preview } = hand;
+  // The cover over the board, when the last piece is laid here (`WinCover`); never on a finished table opened again.
+  const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.status === BLOCKS_STATUS.over ? "ended" : "playing");
 
   // Not read yet: the server has no browser to ask, so it keeps the room the game will take and says nothing.
   if (game === undefined) {
@@ -68,14 +72,28 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PartyBlocksTurnLine game={game} />
-        <PartyBlocksBoard
-          game={game}
-          appearance={appearance}
-          preview={preview}
-          starts={hand.starts}
-          onSquare={hand.onSquare}
-          onAim={hand.onAim}
-        />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, player) => partyPlayerName(game.players, player)),
+                  winners: blocksLeaders(game),
+                  you: null,
+                  next: { label: PARTY_BLOCKS_COPY.again, onPress: () => keep(againBlocksParty(game)) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <PartyBlocksBoard
+            game={game}
+            appearance={appearance}
+            preview={preview}
+            starts={hand.starts}
+            onSquare={hand.onSquare}
+            onAim={hand.onAim}
+          />
+        </WinCoverOver>
       </div>
 
       {/* In just the board the tray stays, being how a shape is laid; who is at the table and the new game go (`data-chrome`). */}

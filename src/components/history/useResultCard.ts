@@ -25,6 +25,15 @@ function closedBefore(gameId: string): boolean {
   }
 }
 
+/**
+ * Marks a game's result as already said in this browser, so its card does not
+ * open when the finished game's page is next loaded: the practice board's win
+ * cover (`GameView`) has said it, over the board it was won on.
+ */
+export function markResultSeen(gameId: string): void {
+  rememberClosed(gameId);
+}
+
 function rememberClosed(gameId: string): void {
   try {
     window.localStorage.setItem(`${KEY_PREFIX}${gameId}`, "closed");

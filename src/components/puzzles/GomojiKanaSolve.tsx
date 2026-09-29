@@ -36,6 +36,7 @@ import { WordStylePicker } from "./WordStylePicker";
 import { usePlayInView } from "./usePlayInView";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { PuzzleWayBack } from "./PuzzleWayBack";
+import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 
 
@@ -281,7 +282,10 @@ export function GomojiKanaSolve({
             />
         </SolvePaused>
       ) : (
-        <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} headStart={headStart} style={style} appearance={dressed} />
+        // The board over, as its replay: the cell a win's cover is drawn over (`PuzzleWinSlot`).
+        <WinStack>
+          <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} headStart={headStart} style={style} appearance={dressed} />
+        </WinStack>
       )}
       {done === null ? (
         <>

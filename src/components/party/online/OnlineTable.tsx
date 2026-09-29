@@ -6,6 +6,8 @@ import { PartySeatColour } from "../PartySeatColour";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { useCallback, useMemo, useState } from "react";
 
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { ONLINE_SEAT_KINDS, ONLINE_STATUS } from "@/lib/party/online/online.constants";
@@ -87,6 +89,21 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
   };
 
   const playing = view.status === ONLINE_STATUS.playing;
+  /*
+   * THE WIN COVER over the board (`WinCover`), when this page sees the table
+   * finish — by the reader's own move or at the next poll — and never on a
+   * finished table opened again. Said to the reader: "You win", or the quieter
+   * cover naming who did. A table somebody ended has no winner, and no cover.
+   */
+  const moment = useWinMoment(playing ? "playing" : view.status === ONLINE_STATUS.finished ? "ended" : "unknown");
+  const news = moment.open
+    ? tableNews({
+        names: view.seats.map((seat, at) => seat.name || (seat.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : `Player ${at + 1}`)),
+        winners: view.winners,
+        you: view.mySeat,
+        next: null,
+      })
+    : null;
   const canMove = playing && view.toPlay === view.mySeat && !sending;
   // Every place's colour as the server keeps it, and how this reader changes their own (`setTableColour`).
   const colours = view.seats.map((one) => one.colour);
@@ -114,7 +131,11 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       {/* The board's column, for the size chooser and for just the board. */}
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <StatusLine view={view} sending={sending} thinking={thinking} />
-        {game === null ? null : <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />}
+        {game === null ? null : (
+          <WinCoverOver news={news} onClose={moment.close}>
+            <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />
+          </WinCoverOver>
+        )}
         {problem !== null ? (
           <p className="text-sm text-shu" role="alert" data-testid="online-problem">
             {problem}

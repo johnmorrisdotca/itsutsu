@@ -7,10 +7,12 @@ import { StoneColoursProvider } from "@/components/board/seatColourContext";
 
 import { Board } from "@/components/board/Board";
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { canPass } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { againPairGo, pairPass, pairPlay, pairPlayerToMove, pairPlayers, pairResign } from "@/lib/gomoku/party/pairGo";
 import type { PairGoGame as PairGoGameState } from "@/lib/gomoku/party/pairGo.types";
@@ -43,6 +45,8 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
   const teams = useLocalSeatColours("pairgo");
   const [confirming, setConfirming] = useState<Confirming>(null);
   const playing = game !== undefined && game !== null && game.state.status === GAME_STATUS.playing;
+  // The cover over the board, when the game ends here (`WinCover`), naming the winning team; never on a finished table opened again.
+  const moment = useWinMoment(game === undefined || game === null ? "unknown" : playing ? "playing" : "ended");
 
   // Not read yet: the server has no browser to ask, so it keeps the room the game will take and says nothing.
   if (game === undefined) {
@@ -77,14 +81,28 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PairGoTurnLine game={game} appearance={appearance} />
-        <Board
-          state={game.state}
-          appearance={appearance}
-          readOnly={!playing}
-          onPlay={(point) => act(pairPlay(game, point))}
-          viewer={null}
-          colours={teams.colours}
-        />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: [teamWords(game, STONES.black), teamWords(game, STONES.white)],
+                  winners: game.state.winner === null ? [] : [game.state.winner === STONES.black ? 0 : 1],
+                  you: null,
+                  next: { label: PAIR_GO_COPY.again, onPress: () => act(againPairGo(game)) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <Board
+            state={game.state}
+            appearance={appearance}
+            readOnly={!playing}
+            onPlay={(point) => act(pairPlay(game, point))}
+            viewer={null}
+            colours={teams.colours}
+          />
+        </WinCoverOver>
         {playing ? (
           <div className="flex flex-wrap gap-2">
             <button

@@ -7,7 +7,11 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle } from "@/lib/puzzles/generate";
-import { isComputer, partyLength, startParty } from "@/lib/puzzles/kumimoji/party";
+import { isComputer, nameOf, partyLength, startParty } from "@/lib/puzzles/kumimoji/party";
+import { winnersOf } from "@/lib/puzzles/kumimoji/partyTurns";
+import { useWinMoment } from "@/components/game/WinCover";
+import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import { tableNews } from "@/components/game/winNews";
 import type { PartyGame, PartySeat, PartySettings } from "@/lib/puzzles/kumimoji/party.types";
 import { holdsItsBag, isPartyFor } from "@/lib/puzzles/kumimoji/partyKept";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
@@ -90,6 +94,9 @@ export function KumimojiParty({
   const [several, setSeveral] = useState(false);
   /* Which turn has been uncovered, by its number: a new turn is covered until its player says they are there. */
   const [uncovered, setUncovered] = useState<number | null>(null);
+  // The cover over every crossword when the game ends on this page (`WinCover`); never on a finished game opened again.
+  const moment = useWinMoment(game === null ? "unknown" : game.ending !== null ? "ended" : "playing");
+  const people = game === null ? [] : game.players.flatMap((_, at) => (isComputer(game, at) ? [] : [at]));
 
   const begin = (seats: PartySeat[]) => {
     rememberNames(seats.map((seat) => (seat.computer === true ? "" : seat.name)));
@@ -130,7 +137,24 @@ export function KumimojiParty({
           )}
         </>
       ) : game.ending !== null ? (
-        <KumimojiPartyFinish game={game} theme={theme} onAgain={again} />
+        <KumimojiPartyFinish
+          game={game}
+          theme={theme}
+          onAgain={again}
+          cover={{
+            news: moment.open
+              ? tableNews({
+                  names: game.players.map((_, at) => nameOf(game, at)),
+                  winners: winnersOf(game),
+                  // One person among computers is "you"; several people round the device are each named.
+                  you: people.length === 1 ? people[0]! : null,
+                  draw: game.ending === "tied",
+                  next: { label: WIN_COVER_COPY.againSamePlayers, onPress: again },
+                })
+              : null,
+            onClose: moment.close,
+          }}
+        />
       ) : isComputer(game, game.turn) ? (
         <KumimojiPartyComputer key={game.turns} game={game} words={words} theme={theme}>
           {underneath(game)}

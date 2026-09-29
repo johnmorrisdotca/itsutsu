@@ -140,12 +140,9 @@ test.describe("just the board", () => {
     );
     expect(new Set(tops).size, "the scrubber's buttons wrapped to a second line").toBe(1);
 
-    // Esc closes the top layer first: the result card this game opened with, and the modal stays.
-    await expect(page.getByTestId("result-card")).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(page.getByTestId("result-card")).toBeHidden();
-    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
-    // The next Esc takes the modal away, and the page is back as it was.
+    // The win was said over the practice board as it was played (`WinCover`), so the filed game opens on no result card.
+    await expect(page.getByTestId("result-card")).toHaveCount(0);
+    // Esc takes the modal away, and the page is back as it was.
     await page.keyboard.press("Escape");
     await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
     await expect(panel).not.toHaveAttribute("role", "dialog");

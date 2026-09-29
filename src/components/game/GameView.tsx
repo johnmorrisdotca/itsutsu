@@ -8,8 +8,13 @@ import { boardSettingsFrom, type GameDefaults } from "./gameDefaults";
 import { Board } from "@/components/board/Board";
 import { FeltUnderBoard } from "@/components/board/FeltPatches";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
-import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { GAME_STATUS, SEATS, SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import type { RuleVariant, Seat } from "@/lib/gomoku/gomoku.types";
+import { markResultSeen } from "@/components/history/useResultCard";
+import { WinCoverOver, useWinMoment } from "./WinCover";
+import { GAME_COPY } from "./game.constants";
+import { WIN_COVER_COPY } from "./winCover.constants";
+import { tableNews } from "./winNews";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { snapshotFromMatch } from "./matchSnapshot";
@@ -141,6 +146,35 @@ export function GameView({
   const showIdle = idle && session.state.status === GAME_STATUS.playing;
 
   /*
+   * THE WIN COVER over the board (`WinCover`), when the game ends here: read
+   * from the last position of the line, not the one being looked at, so
+   * stepping back through a finished game and forward again does not say it
+   * twice. A computer at the board makes the person "you"; two people at it
+   * are each named, as the result card names a colour at one screen. The game
+   * is filed as a match from its first stone, so its result card is marked as
+   * said here, and a reload of the finished game's page does not say it again.
+   */
+  const [computerSeat, setComputerSeat] = useState<Seat | null>(null);
+  const latest = session.timeline.at(-1) ?? session.state;
+  const moment = useWinMoment(latest.status === GAME_STATUS.playing ? "playing" : "ended");
+  useEffect(() => {
+    if (moment.open && kept.matchId !== null) markResultSeen(kept.matchId);
+  }, [moment.open, kept.matchId]);
+  const seatName = (seat: Seat) =>
+    session.names[seat].trim() || (seat === computerSeat ? WIN_COVER_COPY.computer : SEAT_DISPLAY[seat].label);
+  const winnerSeat = latest.status === GAME_STATUS.won && latest.winner !== null ? latest.seats[latest.winner] : null;
+  const news = moment.open
+    ? tableNews({
+        names: [seatName(SEATS.one), seatName(SEATS.two)],
+        winners: winnerSeat === null ? [] : [winnerSeat === SEATS.one ? 0 : 1],
+        you: computerSeat === null ? null : computerSeat === SEATS.one ? 1 : 0,
+        draw: latest.status === GAME_STATUS.draw,
+        detail: latest.winner === null ? null : `${STONE_DISPLAY[latest.winner].label} ${STONE_DISPLAY[latest.winner].kanji}`,
+        next: { label: GAME_COPY.newGame.label, onPress: () => actions.reset() },
+      })
+    : null;
+
+  /*
    * The piece games from the keyboard: R turns the piece, F flips it, S lays
    * a single stone instead, as the on-screen buttons do. Typing in a field is
    * left alone.
@@ -199,35 +233,45 @@ export function GameView({
           <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3" data-focus-board data-scale-board data-bare-board>
             <ReviewBanner session={session} actions={actions} />
             <BranchPrompt session={session} actions={actions} />
-            <Board
-              state={session.state}
-              appearance={session.appearance}
-              marks={session.marks}
-              readOnly={session.boardReadOnly}
-              onPlay={actions.play}
-              onTwist={actions.twist}
-              selected={session.selected}
-              footprintFor={session.hand.piece !== null ? session.hand.footprintFor : undefined}
-              placing={session.placing}
-              /*
-               * NOBODY SITS AT A PRACTICE BOARD, so it is drawn the standard
-               * way — A1 at the bottom left, as a chess or go diagram is —
-               * rather than turned for the opener. It used to be turned, from
-               * John's Halma complaint that his camp was the far corner; then,
-               * with three boards side by side, he found A1 top-right on one and
-               * bottom-left on the next and asked for one standard. A LIVE game
-               * still faces its player (`SharedGame`), which is the chess
-               * situation: Black sees a1 top-right because the board is turned,
-               * and the coordinates are the board's, not the viewer's. Here you
-               * play both sides, and "Turn the board round" is one press away.
-               */
-              viewer={null}
-              colours={seatColours.colours}
-            />
+            <WinCoverOver news={news} onClose={moment.close}>
+              <Board
+                state={session.state}
+                appearance={session.appearance}
+                marks={session.marks}
+                readOnly={session.boardReadOnly}
+                onPlay={actions.play}
+                onTwist={actions.twist}
+                selected={session.selected}
+                footprintFor={session.hand.piece !== null ? session.hand.footprintFor : undefined}
+                placing={session.placing}
+                /*
+                 * NOBODY SITS AT A PRACTICE BOARD, so it is drawn the standard
+                 * way — A1 at the bottom left, as a chess or go diagram is —
+                 * rather than turned for the opener. It used to be turned, from
+                 * John's Halma complaint that his camp was the far corner; then,
+                 * with three boards side by side, he found A1 top-right on one and
+                 * bottom-left on the next and asked for one standard. A LIVE game
+                 * still faces its player (`SharedGame`), which is the chess
+                 * situation: Black sees a1 top-right because the board is turned,
+                 * and the coordinates are the board's, not the viewer's. Here you
+                 * play both sides, and "Turn the board round" is one press away.
+                 */
+                viewer={null}
+                colours={seatColours.colours}
+              />
+            </WinCoverOver>
             <FeltUnderBoard appearance={session.appearance} variant={session.state.settings.variant} onChoose={(felt) => actions.setAppearance({ felt })} />
           </div>
         </div>
-        <GameSidebar session={session} actions={actions} postSeat={postSeat} practice={match === null} defaults={defaults} seatColours={seatColours} />
+        <GameSidebar
+          session={session}
+          actions={actions}
+          postSeat={postSeat}
+          practice={match === null}
+          defaults={defaults}
+          seatColours={seatColours}
+          computer={{ seat: computerSeat, choose: setComputerSeat }}
+        />
       </div>
       </BoardFocus>
       </StoneColoursProvider>

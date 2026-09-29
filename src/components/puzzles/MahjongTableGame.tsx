@@ -6,6 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import { tableNews } from "@/components/game/winNews";
 import { PARTY_COPY } from "@/components/party/party.constants";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, PLAY_SURFACE, SECTION_HEADING } from "@/components/ui/ui.constants";
@@ -51,6 +54,8 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
   const state = useMemo(() => (table === null ? null : readTable(table)), [table]);
   const pairs = useMemo(() => (table === null || state === null ? [] : tablePairs(table, state)), [table, state]);
   const computerTurn = table !== null && state !== null && !state.over && isComputerSeat(table, state.turn);
+  // The cover over the layout when its last pair is taken here (`WinCover`); never on a finished table opened again.
+  const moment = useWinMoment(table === null || state === null ? "unknown" : state.over ? "ended" : "playing");
 
   /* A computer's turn plays itself, a moment after the last move so a watcher sees each pair go. */
   useEffect(() => {
@@ -118,6 +123,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
     setChosen(null);
   };
   const last = state.taken[state.taken.length - 1];
+  const people = table.seats.flatMap((_, at) => (isComputerSeat(table, at) ? [] : [at]));
   const again = () => {
     keep(null);
     router.push(setUpPath("mahjong"));
@@ -152,23 +158,38 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         {state.shuffledAfter !== null && state.shuffledAfter === state.taken.length && !state.over ? <span className="text-muted"> {MAHJONG_COPY.shuffled}</span> : null}
         {said !== null && human ? <span className="text-muted"> {said}</span> : null}
       </p>
-      <TsunagiViewport size={table.size} name="mahjong" zoomFrom={15} aspect={mahjongAspect(table.size)}>
-        <MahjongBoard
-          size={table.size}
-          cells={state.cells}
-          theme={BOARD_THEMES[appearance.boardTheme]}
-          chosen={human ? chosen : null}
-          showFree={showFree}
-          readOnly={!human}
-          onTap={tap}
-          onPair={(a, b) => human && !take(a, b) && setSaid(MAHJONG_COPY.noMatch)}
-          onDouble={double}
-          onBlocked={() => setSaid(MAHJONG_COPY.blocked)}
-        />
-      </TsunagiViewport>
+<WinCoverOver
+        news={
+          moment.open
+            ? tableNews({
+                names: table.seats.map((_, at) => seatName(table.seats, at)),
+                winners: state.winners,
+                // One person among computers is "you"; several people round the device are each named.
+                you: people.length === 1 ? people[0]! : null,
+                next: { label: WIN_COVER_COPY.playAgain, onPress: again },
+              })
+            : null
+        }
+        onClose={moment.close}
+      >
+        <TsunagiViewport size={table.size} name="mahjong" zoomFrom={15} aspect={mahjongAspect(table.size)}>
+          <MahjongBoard
+            size={table.size}
+            cells={state.cells}
+            theme={BOARD_THEMES[appearance.boardTheme]}
+            chosen={human ? chosen : null}
+            showFree={showFree}
+            readOnly={!human}
+            onTap={tap}
+            onPair={(a, b) => human && !take(a, b) && setSaid(MAHJONG_COPY.noMatch)}
+            onDouble={double}
+            onBlocked={() => setSaid(MAHJONG_COPY.blocked)}
+          />
+        </TsunagiViewport>
+      </WinCoverOver>
       {state.over ? (
         <button type="button" className={PLAY_BUTTON} onClick={again} data-testid="mahjong-table-again">
-          <PressLabel words="Play again" kanji="再" />
+          <PressLabel words={WIN_COVER_COPY.playAgain} kanji="再" />
         </button>
       ) : (
         <div className="flex flex-wrap items-center gap-2">

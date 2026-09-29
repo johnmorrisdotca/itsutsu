@@ -2,6 +2,12 @@
 
 import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+
+import { WinCover } from "@/components/game/WinCover";
+import type { WinStep } from "@/components/game/winCover.types";
+import { solvedNews } from "@/components/game/winNews";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SELECTABLE } from "@/components/ui/ui.constants";
 import { viewHref } from "@/lib/history/myGamesViews";
@@ -17,6 +23,7 @@ import { freshSolitaireSeed, isAnyDeal } from "@/lib/puzzles/solitaire/generate"
 
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PuzzleWayBack } from "./PuzzleWayBack";
+import { useWinSlot } from "./PuzzleWinSlot";
 import type { Done, SolveRace } from "./solveShared";
 
 /**
@@ -74,7 +81,37 @@ export function SolveDone({
   const cards = PUZZLE_SPECS[puzzle.kind].cards === true;
   const gaveUp = cards && done.outOfGuesses === true && done.outOfTime !== true;
   const moveWords = moves === undefined ? "" : `, in ${moves} ${moves === 1 ? "move" : "moves"}`;
+  const anotherLabel = `${cards ? "Deal again" : `Another ${copy.label}`} →`;
+
+  /*
+   * THE COVER OVER THE BOARD, for a win made on this page (`WinCover`): this
+   * card mounts only when a solve finishes here, so it opens with the card and
+   * never on a page opened on a finished one. Solved, a helped solve included,
+   * or a card game won — never out of time, out of guesses or given up, which
+   * end with this card alone as before; and never in a race, whose result is
+   * the race's to say above. It offers the first way on this card offers.
+   */
+  const slot = useWinSlot();
+  const [covered, setCovered] = useState(true);
+  const won = race === null && done.outOfGuesses !== true;
+  const firstStep: WinStep | null =
+    onward !== undefined ? (onward.next ?? onward.all) : { label: anotherLabel, onPress: another };
+  const cover =
+    won && covered && slot !== null ? (
+      <WinCover
+        news={solvedNews({
+          cards,
+          elapsed: clockText(done.elapsedMs),
+          moves,
+          xp: !hasAccount || done.problem !== null ? undefined : done.paid === null ? null : done.paid.points > 0 ? `+${done.paid.points} XP, for ${awardWords(done.paid.awards)}.` : undefined,
+          next: firstStep,
+        })}
+        onClose={() => setCovered(false)}
+      />
+    ) : null;
   return (
+    <>
+    {cover === null || slot === null ? null : createPortal(cover, slot)}
     <div className={`${PANEL_CLASS} ${SELECTABLE} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
       {gaveUp ? (
         <p className="text-lg font-semibold" data-testid="puzzle-given-up">
@@ -141,7 +178,7 @@ export function SolveDone({
         ) : race === null ? (
           <>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={another} data-testid="puzzle-another">
-              {cards ? "Deal again" : `Another ${copy.label}`} →
+              {anotherLabel}
             </button>
             <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
               {cards ? "Change the draw or passes" : "Change the size or level"}
@@ -157,6 +194,7 @@ export function SolveDone({
         <PuzzleWayBack kind={puzzle.kind} />
       </div>
     </div>
+    </>
   );
 }
 

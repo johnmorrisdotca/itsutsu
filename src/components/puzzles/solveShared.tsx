@@ -10,6 +10,7 @@ import { useIdleWatch } from "@/components/game/useIdleWatch";
 
 import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
+import { WinStack } from "./PuzzleWinSlot";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { clockLimitMs } from "@/lib/puzzles/puzzleClock";
@@ -394,9 +395,8 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
       it (`data-scale-stack`, globals.css).
     */
     <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"} data-scale-board data-scale-stack data-bare-board>
-      <div className={pausing.paused ? "invisible" : undefined} aria-hidden={pausing.paused || undefined}>
-        {children}
-      </div>
+      {/* The board, in a cell it shares with the cover the card at the end draws when it is won (`PuzzleWinSlot`). */}
+      <WinStack hidden={pausing.paused}>{children}</WinStack>
       {pausing.paused ? (
         <div className={`${PANEL_CLASS} absolute inset-0 flex flex-col items-center justify-center gap-3 text-center`} data-testid="puzzle-paused">
           <p className="text-lg font-semibold">

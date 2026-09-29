@@ -4,7 +4,7 @@ import { StartSharedGame } from "@/components/live/StartSharedGame";
 import { SeatColoursPanel } from "./SeatColoursPanel";
 import type { SeatColours } from "@/lib/pieces/seatColours";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
-import type { Stone } from "@/lib/gomoku/gomoku.types";
+import type { Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameDefaults } from "./gameDefaults";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { describeRules } from "@/components/live/rulesSummary";
@@ -35,8 +35,11 @@ export function GameSidebar({
   practice = false,
   defaults,
   seatColours,
+  computer,
   ...props
 }: GamePanelProps & {
+  /** The seat a computer holds at this board, kept by the board so its win cover knows who "you" are. */
+  computer?: { seat: Seat | null; choose: (seat: Seat | null) => void };
   postSeat?: boolean;
   practice?: boolean;
   defaults: GameDefaults;
@@ -91,7 +94,7 @@ export function GameSidebar({
         </div>
       ) : null}
       <div className={PANEL_CLASS} data-chrome>
-        <ComputerOpponentPanel session={props.session} actions={props.actions} />
+        <ComputerOpponentPanel session={props.session} actions={props.actions} computer={computer} />
       </div>
       {props.session.settings.timeControl !== "none" ? (
         <div className={PANEL_CLASS}>

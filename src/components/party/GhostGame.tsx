@@ -6,6 +6,8 @@ import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { ghostJudge } from "@/lib/party/superghost/ghostWords";
@@ -44,6 +46,8 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
   const [pending, setPending] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const words = useGhostWords(game === undefined || game === null ? null : game.language);
+  // The cover over the letters, when the last player standing wins here (`WinCover`); never on a finished table opened again.
+  const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.phase === GHOST_PHASE.finished ? "ended" : "playing");
 
   // Not read yet: the server has no browser to ask, so it draws the room the game will take and says nothing.
   if (game === undefined) {
@@ -89,10 +93,24 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
       */}
       <div className="flex min-w-0 flex-col gap-3" data-bare-board>
         {/* The turn line and the letters: what the whole table watches, and the game's picture (`party-screenshots.spec.ts`). */}
-        <div className="flex flex-col gap-3" data-testid="ghost-stage">
-          <GhostTurnLine game={game} judge={judge} />
-          <GhostFragment game={game} pending={playing ? pending : null} onEnd={onEnd} note={<GhostRoundOver game={game} judge={judge} />} />
-        </div>
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, seat) => partyPlayerName(game, seat)),
+                  winners: game.winners,
+                  you: null,
+                  next: { label: PARTY_COPY.again, onPress: () => keep(ghostAgain(game)) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <div className="flex flex-col gap-3" data-testid="ghost-stage">
+            <GhostTurnLine game={game} judge={judge} />
+            <GhostFragment game={game} pending={playing ? pending : null} onEnd={onEnd} note={<GhostRoundOver game={game} judge={judge} />} />
+          </div>
+        </WinCoverOver>
         {words === "loading" ? <p className="text-sm text-muted" data-testid="ghost-words-loading">{GHOST_COPY.loading}</p> : null}
         {words === "failed" ? (
           <p className="text-sm font-semibold" role="alert" data-testid="ghost-words-failed">

@@ -623,6 +623,74 @@ html[data-bare="true"] [data-strippable] [data-board-column] {
 }
 
 /*
+ * THE WIN'S FLASH AND COVER — components/game/WinCover. The winning move
+ * lands, the board glows once in the site's warm ochre and fades, and then the
+ * wash and the card come up (`WIN_FLASH_MS`). One glow, never a strobe: a
+ * flash more than three times a second can hurt a photosensitive reader.
+ *
+ * A reader who asks for less motion gets no glow at all: the wash fades in,
+ * calmly, and the card after it. The rule above stills every animation for
+ * them; these name their own duration so the fade is still a fade, and the
+ * class outranks the universal selector there.
+ */
+@keyframes win-flash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes win-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes win-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.win-flash {
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in oklab, var(--ochre) 45%, transparent) 0%,
+    color-mix(in oklab, var(--ochre) 18%, transparent) 70%,
+    transparent 100%
+  );
+  box-shadow: inset 0 0 3rem color-mix(in oklab, var(--ochre) 65%, transparent);
+  animation: win-flash 700ms ease-out both;
+}
+.win-wash {
+  animation: win-fade-in 180ms ease-out both;
+}
+.win-card {
+  animation: win-card-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .win-flash {
+    background: color-mix(in oklab, var(--paper) 45%, transparent);
+    box-shadow: none;
+    animation: win-fade-in 300ms ease-out both !important;
+  }
+  .win-wash,
+  .win-card {
+    animation: win-fade-in 200ms ease-out both !important;
+  }
+}
+
+/*
  * XP TOASTS — components/xp. The movement only; the clock is in the host.
  *
  * A toast drops in from above the page and, when its time is up, fades and
