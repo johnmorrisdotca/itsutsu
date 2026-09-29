@@ -104,6 +104,10 @@ test.describe("the card games at the table", () => {
 
   test("two people at a table: every hand is covered, and the device is asked for by name", async ({ page }) => {
     await start(page, "hearts", 4, 2);
+    // Two people: even the first hand waits for its player to say they have the device.
+    await expect(page.getByTestId("cards-pass-device")).toContainText("Player 1");
+    await expect(page.getByTestId("cards-hand-panel")).toHaveCount(0);
+    await page.getByTestId("cards-ready").click();
     await myTurn(page);
     const cards = handCards(page);
     for (const at of [0, 1, 2]) await cards.nth(at).click({ position: { x: 8, y: 12 } });
@@ -156,7 +160,7 @@ test.describe("the card games at the table", () => {
 
     await page.goto("/play");
     await ready(page, "tabs");
-    await page.locator('[data-testid="tab"][data-tab="party"]').click();
+    await page.locator('[data-testid="tab"][data-tab="pass-and-play"]').click();
     const card = page.locator('[data-testid="party-game"][data-variant="goFish"]');
     await expect(card).toBeVisible();
     await card.getByTestId("party-game-continue").click();

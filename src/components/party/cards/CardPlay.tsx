@@ -140,7 +140,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         target={target}
         onTarget={(seat) => setAimed({ at: moves, value: seat })}
       />
-      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
+      <div className="mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-3" data-width-reason="a card table wider than a hand of cards spreads the trick past where the eye can take it in with the hand" data-scale-board data-bare-board data-testid="cards-board">
         <CardTableSurface appearance={appearance}>
           <adapter.Centre game={game} viewer={viewer} players={names} />
         </CardTableSurface>

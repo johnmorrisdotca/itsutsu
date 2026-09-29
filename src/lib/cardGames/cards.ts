@@ -1,7 +1,7 @@
-import { RANK_DISPLAY } from "@/lib/cards/cards.constants";
-import type { Card } from "@/lib/cards/cards.types";
-import { cardFromId, cardId, cardName, freshDeck, shuffledDeck as shuffledCards } from "@/lib/cards/deck";
-import { seededRandom, shuffled } from "@/lib/puzzles/random";
+import { RANK_DISPLAY } from "../cards/cards.constants";
+import type { Card } from "../cards/cards.types";
+import { cardFromId, cardId, cardName, freshDeck, shuffledDeck as shuffledCards } from "../cards/deck";
+import { seededRandom, shuffled } from "../puzzles/random";
 
 import type { CardId, CardRank, CardSuit } from "./cardGames.types";
 

@@ -20,7 +20,7 @@ export const COMPUTER_PAUSE_MS = 650;
 export const PREVIEW_SEED = 2026;
 
 /** The widest a card in a hand is drawn, in pixels: a phone's row of thirteen overlaps, a desk's barely does. */
-export const HAND_CARD_PX = 64;
+export const HAND_CARD_PX = 80;
 
 /**
  * THE TABLE IN THE MIDDLE: a board of the reader's own wood, as every table on

@@ -1,5 +1,5 @@
-import type { Rank } from "@/lib/cards/cards.types";
-import type { PartyRules } from "@/lib/party/party.types";
+import type { Rank } from "../cards/cards.types";
+import type { PartyRules } from "../party/party.types";
 
 /**
  * THE FAMILY CARD GAMES' VOCABULARY: Hearts, Big Two, President, Go Fish and
