@@ -1,7 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { mySolvePath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { freshPuzzleSeed, playSequence, ready, winningSequence } from "./support";
+import { gamesMade } from "./tidy";
 
 /**
  * Reading a page as the board alone.
@@ -85,12 +86,16 @@ test.describe("just the board", () => {
     await expect(page.getByTestId("live-moves")).toBeHidden();
     await expect(page.getByTestId("open-mosaic")).toBeHidden();
     await expect(page.getByTestId("resign")).toBeHidden();
-    // Still there: whose turn it is, and the board, in the middle of the screen and all of it in view.
+    // Still there: whose turn it is, and the board, all of it in view, in a modal in the middle of the screen —
+    // on a desk with whose turn it is beside the board, where the move being made comes up without pushing it down.
     await expect(page.getByTestId("turn-banner")).toBeVisible();
     const board = await page.locator("[data-bare-board]").boundingBox();
+    const modal = await page.locator("main[data-strippable]").boundingBox();
     const view = page.viewportSize()!;
-    expect(Math.abs(board!.x + board!.width / 2 - view.width / 2)).toBeLessThan(24);
+    expect(Math.abs(modal!.x + modal!.width / 2 - view.width / 2)).toBeLessThan(24);
     expect(board!.y + board!.height).toBeLessThanOrEqual(view.height);
+    const turn = await page.getByTestId("turn-banner").boundingBox();
+    expect(turn!.x, "whose turn it is is not beside the board on a desk").toBeGreaterThanOrEqual(board!.x + board!.width - 1);
 
     await page.getByTestId("bare-board-toggle").click();
     await expect(page.getByTestId("live-moves")).toBeVisible();
@@ -333,45 +338,179 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
 }
 
 /*
- * NO MODAL HAS A DEAD HALF. John, 2026-09-29, at Tenka's just the board: "notice
- * in Modal mode it also doesn't even make sense to have the empty space." A
- * table's side matter stood beside its board on a desk, and just the board hid
- * it and kept its column: on a big monitor a third of the modal was empty
- * paper. What is drawn in the modal — every picture, button and line of words —
- * spans it, or sits in its middle, with no empty column down one side.
+ * NO MODAL SCROLLS ON A DESK, AND NONE HAS A DEAD HALF. John, 2026-09-29, on
+ * a board opened on its own: "is so big we see scrollbars in desktop. It
+ * should probably be slightly less." And at Tenka's just the board: "notice in
+ * Modal mode it also doesn't even make sense to have the empty space."
+ *
+ * Every play there is, opened as a reader opens it and then read as just the
+ * board, at a laptop's window and a big monitor's: the modal fits the window
+ * with nothing to scroll either way, and what is drawn in it — every picture,
+ * button and line of words — sits in its middle with no empty column down one
+ * side. The list is every board game's kind of play (the practice board, a
+ * live game), every puzzle with an address of its own, and every party and
+ * card table; `bareSurvey.coverage.test.ts` holds the list to the catalogue.
  */
-test.describe("just the board on a big monitor", () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
-  for (const play of PLAYS) {
-    test(`${play.name}: the modal holds its play with no empty column beside it`, async ({ page }) => {
-      await play.open(page);
+const tidyAway = gamesMade();
+
+type Survey = {
+  name: string;
+  open: (page: Page) => Promise<void>;
+  /** A move made inside the modal that brings up what a play shows under its board mid-move, measured again after it. */
+  then?: (page: Page) => Promise<void>;
+};
+
+/** A pass-and-play table, started from its set-up by the start button it names. */
+function table(slug: string, start: string): Survey {
+  return {
+    name: `/games/${slug}/pass-and-play`,
+    open: async (page) => {
+      await page.goto(`/games/${slug}/pass-and-play`);
       await ready(page, "board-scaling");
-      await ready(page, "bare-board");
-      await page.getByTestId("bare-board-toggle").click();
-      await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
-      for (const id of play.stays) await expect(page.getByTestId(id).first()).toBeVisible();
-      const { left, right, width } = await page.locator("main[data-strippable]").evaluate((panel) => {
-        const box = panel.getBoundingClientRect();
-        const style = getComputedStyle(panel);
-        const inner = { left: box.left + parseFloat(style.paddingLeft), right: box.right - parseFloat(style.paddingRight) };
-        let most = -Infinity;
-        let least = Infinity;
-        for (const element of panel.querySelectorAll("*")) {
-          const tag = element.tagName.toLowerCase();
-          const drawn = tag === "svg" || tag === "img" || tag === "button" || element.getAttribute("data-testid") === "board-surface" || [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent!.trim() !== "");
-          if (!drawn || (tag !== "svg" && element.closest("svg") !== null) || element.closest('[data-testid="bare-board"]') !== null) continue;
-          const rect = element.getBoundingClientRect();
-          if (rect.width === 0 || rect.height === 0 || getComputedStyle(element).visibility === "hidden") continue;
-          most = Math.max(most, rect.right);
-          least = Math.min(least, rect.left);
+      await page.getByTestId(start).click();
+      await expect(page.locator("[data-bare-board]").first()).toBeVisible();
+    },
+  };
+}
+
+/** A puzzle's solve, at the size and level its address asks for or its own. */
+function puzzle(slug: string, query = ""): Survey {
+  return {
+    name: `/games/${slug}/play${query === "" ? "" : `?${query}`}`,
+    open: async (page) => {
+      await page.goto(`/games/${slug}/play?${query === "" ? "" : `${query}&`}seed=${freshPuzzleSeed()}`);
+      await ready(page, "puzzle-play");
+    },
+  };
+}
+
+const SURVEYED_PUZZLES = [
+  "number-place",
+  "hidden-stones",
+  "more-or-less",
+  "jigsaw",
+  "diagonal",
+  "sum-cages",
+  "towers",
+  "black-and-white",
+  "gomoji",
+  "kumimoji",
+  "koushi",
+  "bridges",
+  "picture-logic",
+  "solitaire",
+  "mahjong",
+] as const;
+
+const SURVEY: Survey[] = [
+  {
+    name: "the practice board",
+    open: async (page) => {
+      await page.goto("/games/gomoku/play");
+      await ready(page, "game-view");
+    },
+  },
+  {
+    name: "a 19×19 practice board",
+    open: async (page) => {
+      await page.goto("/games/go/play");
+      await ready(page, "game-view");
+    },
+  },
+  {
+    name: "a live game",
+    open: async (page) => {
+      const made = await page.request.post("/api/games/live", { data: { size: 15 } });
+      expect(made.status(), await made.text()).toBe(201);
+      const game = (await made.json()) as { id: string; blackToken: string };
+      tidyAway(game.id);
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+      await ready(page, "shared-game");
+    },
+    // A stone placed: the row that confirms or takes it back comes up under the board.
+    then: async (page) => {
+      await page.getByRole("button", { name: /^H8, empty$/ }).click();
+    },
+  },
+  ...SURVEYED_PUZZLES.map((slug) => puzzle(slug)),
+  puzzle("number-place", "size=16&level=easy"),
+  // Tsunagi's levels are fixed boards: its first, as a new player meets it.
+  { name: "/games/tsunagi/play", open: async (page) => {
+    await page.goto("/games/tsunagi/play?size=4&level=easy&seed=6");
+    await ready(page, "puzzle-play");
+  } },
+  table("dots-and-boxes", "dots-start"),
+  table("superghost", "ghost-start"),
+  table("mancala", "mancala-start"),
+  table("tenka", "tenka-start"),
+  table("mexican-train", "train-start"),
+  table("hearts", "cards-start"),
+  table("big-two", "cards-start"),
+  table("president", "cards-start"),
+  table("go-fish", "cards-start"),
+  table("crazy-eights", "cards-start"),
+  table("chinese-checkers", "party-start"),
+  table("halma", "party-start"),
+  table("block-five", "blocks-start"),
+  table("go", "pairgo-start"),
+];
+
+for (const viewport of [{ width: 1280, height: 800 }, { width: 1920, height: 1080 }]) {
+  test.describe(`just the board at ${viewport.width}×${viewport.height}`, () => {
+    test.use({ viewport });
+    for (const play of SURVEY) {
+      test(`${play.name}: fits the window with nothing to scroll, and no empty column`, async ({ page }) => {
+        // A table kept from another case would open as that game, not a new one: every case starts from nothing.
+        await page.goto("/about");
+        await page.evaluate(() => {
+          for (const key of Object.keys(window.localStorage)) window.localStorage.removeItem(key);
+        });
+        await play.open(page);
+        await ready(page, "board-scaling");
+        await ready(page, "bare-board");
+        await page.getByTestId("bare-board-toggle").click();
+        await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+        await expect(page.locator("[data-bare-board]").first()).toBeVisible();
+        // Measured once the layout has had a frame to settle: a board sized from the window is drawn a frame after it opens.
+        const scrolls = () =>
+          page.evaluate(() => {
+            const frame = document.querySelector("[data-bare-frame]") as HTMLElement;
+            return frame.scrollHeight - frame.clientHeight;
+          });
+        await expect.poll(scrolls, { message: `${play.name}: just the board scrolls` }).toBeLessThanOrEqual(1);
+        if (play.then !== undefined) {
+          await play.then(page);
+          await page.waitForTimeout(300);
+          expect(await scrolls(), `${play.name}: just the board scrolls mid-move`).toBeLessThanOrEqual(1);
         }
-        return { left: least - inner.left, right: inner.right - most, width: inner.right - inner.left };
+        const across = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(across, `${play.name}: the page scrolls sideways`).toBeLessThanOrEqual(0);
+        const { left, right, width } = await page.locator("main[data-strippable]").evaluate((panel) => {
+          const box = panel.getBoundingClientRect();
+          const style = getComputedStyle(panel);
+          const inner = { left: box.left + parseFloat(style.paddingLeft), right: box.right - parseFloat(style.paddingRight) };
+          let most = -Infinity;
+          let least = Infinity;
+          for (const element of panel.querySelectorAll("*")) {
+            const tag = element.tagName.toLowerCase();
+            const style = getComputedStyle(element);
+            const rect = element.getBoundingClientRect();
+            // A surface is drawn too: a felt table or a panel is a coloured box with its words inside it.
+            const surface = rect.width >= 100 && rect.height >= 100 && (style.backgroundImage !== "none" || !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(style.backgroundColor));
+            const drawn = surface || tag === "svg" || tag === "img" || tag === "button" || element.getAttribute("data-testid") === "board-surface" || [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent!.trim() !== "");
+            if (!drawn || (tag !== "svg" && element.closest("svg") !== null) || element.closest('[data-testid="bare-board"]') !== null) continue;
+            if (rect.width === 0 || rect.height === 0 || style.visibility === "hidden") continue;
+            most = Math.max(most, rect.right);
+            least = Math.min(least, rect.left);
+          }
+          return { left: least - inner.left, right: inner.right - most, width: inner.right - inner.left };
+        });
+        // No empty column down one side: the play is in the middle of the modal, and nothing near a quarter of it is bare paper.
+        expect(right, `${play.name}: an empty column on the right of the modal`).toBeLessThan(width / 4);
+        expect(Math.abs(right - left), `${play.name}: the play sits to one side of the modal`).toBeLessThan(width / 10);
+        await page.keyboard.press("Escape");
+        await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
       });
-      // No empty column down one side: the play is in the middle of the modal, and nothing near a quarter of it is bare paper.
-      expect(right, `${play.name}: an empty column on the right of the modal`).toBeLessThan(width / 4);
-      expect(Math.abs(right - left), `${play.name}: the play sits to one side of the modal`).toBeLessThan(width / 10);
-      await page.keyboard.press("Escape");
-      await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
-    });
-  }
-});
+    }
+  });
+}

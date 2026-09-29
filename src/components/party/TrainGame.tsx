@@ -125,7 +125,8 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
         )}
         {covered ? <TrainCover game={game} onReveal={() => setShownTurn(game.turn)} /> : null}
         {handSeat === null || !playing ? null : (
-          <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="train-desk">
+          // Beside the table in just the board on a desk, where under it would run past the window's foot (globals.css).
+          <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="train-desk" data-bare-beside>
             <TrainHand game={game} seat={handSeat} active={active} chosen={active ? chosen : null} onChoose={setChosen} onLay={(tile, train) => play({ kind: "play", tile, train })} onDragging={setDragging} />
             <p className="min-h-10 text-xs text-muted" data-testid="train-hint">
               {!active ? "" : mustDraw ? TRAIN_COPY.mustDraw : mustPass ? TRAIN_COPY.mustPass(game.drew) : chosen !== null ? TRAIN_COPY.pick(tileWords(chosen)) : TRAIN_COPY.tap}
