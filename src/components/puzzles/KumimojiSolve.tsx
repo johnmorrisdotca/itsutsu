@@ -233,7 +233,7 @@ export function KumimojiSolve({
       offered: hinting.allowed,
       can: hinting.allowed && play.hand.length > 1,
       run: () => {
-        if (helpWords.length === 0) return setHelpSaid("No word in this hand. Trade a tile, or build it onto the table.");
+        if (helpWords.length === 0) return setHelpSaid("No word in this hand: trade a tile for three.");
         const word = helpWords[helpAt.current % helpWords.length]!;
         helpAt.current += 1;
         hinting.spend();
