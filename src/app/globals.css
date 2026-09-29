@@ -15,8 +15,21 @@
  * token, so a component says `bg-ivory` once and gets both themes. The dark
  * theme is not an inversion: paper becomes charcoal, ivory becomes a slightly
  * raised charcoal, and the accents are lifted so they keep their contrast.
+ *
+ * A SURFACE THAT IS LIGHT IN BOTH THEMES carries the light theme's tokens:
+ * `surface-light`. A letter tile, a puzzle's white writing paper and a tile
+ * of a fixed pale colour stay pale at night, so the ink written on them must
+ * stay dark — and `text-ink` alone turned ivory, which on a white tile is
+ * nothing at all (John, 2026-09-28, of Kumimoji in dark mode: "The tiles
+ * seem to be all clear! BUG: MAJOR"). The class re-declares this block's
+ * values on the surface, and the dark block below is written for `:root`
+ * alone, so everything drawn on the surface — its letter, its rim, a chosen
+ * or misspelt wash — reads the light values by the same names, and nothing
+ * on it needs a colour of its own. `e2e/dark-tiles.spec.ts` measures the
+ * letters against their tiles in both themes.
  */
-:root {
+:root,
+.surface-light {
   --paper: #f7f5f1;
   --ivory: #fffef9;
   --ink: #22231f;
@@ -103,6 +116,33 @@
     --ochre-soft: #3f3320;
     --shade: rgba(255, 254, 249, 0.07);
   }
+}
+
+/*
+ * The page's own accent, for a mark drawn ROUND a light surface rather than on
+ * it — a chosen tile's ring stands on the tray, which does turn charcoal. Set
+ * on :root alone, it keeps the page's value inside a `surface-light`, where
+ * `--moss` itself is the light theme's.
+ */
+:root {
+  --page-moss: var(--moss);
+}
+
+/* Text on a light surface that names no colour of its own inherits the light ink, not the page's. In the base layer, so any `text-*` on the surface still wins. */
+@layer base {
+  .surface-light {
+    color: var(--ink);
+  }
+}
+
+/*
+ * A board's letters and numbers, in their strips on the page beside it: the
+ * page's ink tinted by the board's own coordinate colour (`--board-coordinate`,
+ * set by `BoardFrame`), so they read on the paper by day and the charcoal by
+ * night, on every surface. Mostly ink, because the strips are small type.
+ */
+.board-coordinates {
+  color: color-mix(in oklab, var(--board-coordinate) 35%, var(--ink));
 }
 
 body {

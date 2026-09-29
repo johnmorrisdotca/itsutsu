@@ -12,7 +12,8 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /** The grid itself: a bordered square, cells edge to edge. */
 // White paper inside the wood (`PuzzleBoard`): the frame is the board's, so the grid carries no border of its own.
-export const PUZZLE_GRID = "grid h-full w-full select-none bg-white";
+// White in both themes, so it carries the light theme's inks (`surface-light`): its numbers, rules, marks and washes read by night too.
+export const PUZZLE_GRID = "surface-light grid h-full w-full select-none bg-white";
 
 /**
  * A cell: a square button with a thin rule on its left and top, so the grid
@@ -112,11 +113,11 @@ export const PUZZLE_CAGE_LINES = "pointer-events-none absolute inset-0 h-full w-
 /** A cage's sum, small in the top-left corner of its first cell. */
 export const PUZZLE_CAGE_SUM = "pointer-events-none absolute top-[4%] left-[6%] text-[0.55rem] leading-none font-semibold text-ink sm:text-[0.65rem]";
 
-/** A Towers clue, on the wood beside the row or column it looks along: printed like a given, and never pressed. */
-export const PUZZLE_TOWER_CLUE = "flex select-none items-center justify-center text-lg font-bold tabular-nums leading-none text-ink sm:text-xl";
+/** A Towers clue, on the wood beside the row or column it looks along: printed like a given, and never pressed. The puzzle's wood is kaya, light in both themes, so its ink is the light theme's (`surface-light`). */
+export const PUZZLE_TOWER_CLUE = "surface-light flex select-none items-center justify-center text-lg font-bold tabular-nums leading-none text-ink sm:text-xl";
 
 /** The square inside a Towers ring: a hairline edge, so the white paper reads as a square on the wood and not a hole in it. */
-export const PUZZLE_TOWER_SQUARE = "relative ring-1 ring-ink/60";
+export const PUZZLE_TOWER_SQUARE = "surface-light relative ring-1 ring-ink/60";
 
 /** A Black and White cell: a square button ruled on its left and top, as the number grid's are. */
 export const PUZZLE_STONE_CELL =
@@ -166,13 +167,14 @@ export const PUZZLE_CELL_WRONG = "ring-2 ring-inset ring-shu bg-shu-soft/50";
  */
 export const WORD_TILE =
   "flex aspect-square items-center justify-center rounded-sm border-2 text-xl font-bold uppercase leading-none tabular-nums sm:text-2xl";
-export const WORD_TILE_EMPTY = "border-rule bg-white text-ink";
-export const WORD_TILE_TYPED = "border-ink-soft bg-white text-ink";
+// A white tile in both themes, so the light theme's inks (`surface-light`): a typed letter was ivory on white by night.
+export const WORD_TILE_EMPTY = "surface-light border-rule bg-white text-ink";
+export const WORD_TILE_TYPED = "surface-light border-ink-soft bg-white text-ink";
 export const WORD_TILE_MARK: Record<"hit" | "near" | "kin" | "miss", string> = {
   hit: "border-moss bg-moss text-ivory",
   near: "border-ochre bg-ochre text-ivory",
   // The kana version's yellow: the word's kana here is in this one's column. Brighter than ochre's orange, dark ink on it.
-  kin: "border-[#d8b23a] bg-[#e3c24f] text-ink",
+  kin: "surface-light border-[#d8b23a] bg-[#e3c24f] text-ink",
   miss: "border-muted bg-muted text-ivory",
 };
 
@@ -373,7 +375,7 @@ export const TSUNAGI_BEAD = "size-[56%] rounded-full shadow-[0_1px_2px_rgba(0,0,
  * neither of its words — is a white tile, as a letter typed and not yet marked
  * is in Gomoji, since here it is still to be placed rather than ruled out.
  */
-export const KOUSHI_TILE_PLAIN = "border-ink-soft bg-white text-ink";
+export const KOUSHI_TILE_PLAIN = "surface-light border-ink-soft bg-white text-ink";
 /** The tile picked first, waiting for the one it will change places with: lifted, and ringed in ink. */
 export const KOUSHI_TILE_CHOSEN = "-translate-y-0.5 shadow-lg ring-2 ring-ink ring-offset-2 ring-offset-transparent";
 /** The tile a dragged one is over, which it will change places with if let go there. */

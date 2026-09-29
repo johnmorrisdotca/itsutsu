@@ -13,7 +13,7 @@ import type { Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
 import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { ViewPad, type PadKey } from "./ViewPad";
-import { TABLE_BOX, TABLE_CURSOR, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, tileLetterPx } from "./kumimoji.constants";
+import { TABLE_BOX, TABLE_CURSOR, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, TILE_TYPING, tileLetterPx } from "./kumimoji.constants";
 import { useWordStyle } from "./WordStyleContext";
 
 /** What the solve asks of the table while a tile is dragged: pan toward the edge it is held near. */
@@ -346,7 +346,7 @@ export function KumimojiTable({
             const glyph = tileFaceOf.glyph;
             const description = tileDescription(letter);
             const mark = misspelt.has(square) ? "misspelt" : apart.has(square) ? "apart" : "ok";
-            const look = `${TILE} relative ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typingHere !== null ? "outline-2 outline-offset-1 outline-moss" : ""}`;
+            const look = `${TILE} relative ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typingHere !== null ? TILE_TYPING : ""}`;
             const face = wildStyle(tileFaceOf, { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) });
             /*
              * A table nobody presses still says where each tile stands. The last
