@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -19,6 +19,7 @@ import { TenkaHand } from "./TenkaHand";
 import { TenkaMap } from "./TenkaMap";
 import { TenkaPlayers } from "./TenkaPlayers";
 import { TenkaTurnLine } from "./TenkaTurnLine";
+import type { TenkaMapHandle } from "./tenka.types";
 import { NO_CHOICE, choiceNow, marksFor, tapTerritory } from "./tenkaTaps";
 import { freshTenkaSeed } from "./tenkaStore";
 
@@ -41,6 +42,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
   const [choice, setChoice] = useState(NO_CHOICE);
   const [handedFor, setHandedFor] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const map = useRef<TenkaMapHandle>(null);
   const handed = game.phase === TENKA_PHASES.setUp || game.phase === TENKA_PHASES.over || handedFor === turnKey(game);
 
   /** The moves, one after another, kept once at the end; nothing if the rules refuse any. */
@@ -63,6 +65,9 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
     if (!handed) return;
     const tapped = tapTerritory(game, choice, territory);
     setChoice(tapped.choice);
+    // Where an attack or a move comes from, newly chosen: on a phone, look at it and what it can reach.
+    const from = tapped.choice.from;
+    if (from !== null && from !== choiceNow(game, choice).from) map.current?.frameAround([from, ...marksFor(game, tapped.choice).reach]);
     if (tapped.move !== null) act(tapped.move);
   };
 
@@ -81,7 +86,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
     >
       <div className="flex min-w-0 flex-col gap-3">
         <TenkaTurnLine game={game} />
-        <TenkaMap game={game} appearance={appearance} marks={marksFor(game, choice)} onTerritory={playing ? onTerritory : undefined} />
+        <TenkaMap game={game} appearance={appearance} marks={marksFor(game, choice)} onTerritory={playing ? onTerritory : undefined} handle={map} />
         <TenkaBar
           game={game}
           choice={choice}
@@ -93,7 +98,10 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
       </div>
 
       <aside className="flex min-w-0 flex-col gap-3">
-        <TenkaDice game={game} />
+        {/* On a phone the phase bar carries the dice, where the thumb and the eye already are. */}
+        <div className="hidden lg:contents">
+          <TenkaDice game={game} />
+        </div>
         <TenkaHand game={game} handed={handed} onMove={act} />
         <TenkaPlayers game={game} />
         <div className="flex flex-wrap gap-2">

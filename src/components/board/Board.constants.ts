@@ -1,5 +1,6 @@
 import type {
   Appearance,
+  BoardAspect,
   BoardMarkKind,
   BoardThemeTokens,
   GridStyle,
@@ -493,6 +494,18 @@ export const LABEL_GUTTER = "1.5rem";
 
 /** The wooden frame round a board: a box-shadow outside the box, so the grid reserves this much beside and below it. */
 export const BOARD_FRAME = "0.4rem";
+
+/**
+ * EACH SHAPE OF WOOD A BOARD MAY HAVE, as the class that sets it
+ * (`BoardFrame`'s `aspect`). Square is every game's and the default. A map of
+ * the world is twice as wide as it is tall, so a square board would be half
+ * sea above and below: its wood is four by three on a phone and two by one
+ * from a laptop, the same frame, rim and shadow round it.
+ */
+export const BOARD_ASPECTS: Record<BoardAspect, string> = {
+  square: "aspect-square",
+  map: "aspect-[4/3] lg:aspect-[2/1]",
+};
 
 /**
  * How far a coordinate strip stands off the board.

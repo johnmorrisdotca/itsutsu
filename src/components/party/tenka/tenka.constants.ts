@@ -1,3 +1,5 @@
+import type { TenkaContinentKey } from "@/lib/party/tenka/tenka.types";
+
 import type { PartyMarble } from "../party.types";
 
 /**
@@ -23,29 +25,44 @@ export const TENKA_LAND_OPACITY = 0.78;
 export const TENKA_LINES = { territory: 1.2, continent: 3.2, sea: 2.4, seaDash: "7 6", chosen: 3, reach: 2.5 } as const;
 
 /**
- * An army counter's radius, in map units: ten screen pixels where it can be,
- * never smaller than nine map units nor larger than eighteen — at eighteen
- * the counters of Europe's crowded middle stand clear of each other at a
- * whole-world view, and pinching in makes them grow to a thumb's size.
+ * AN ARMY COUNTER, drawn the same size on the screen however far the map is
+ * zoomed: seventeen pixels tall (`screen` is its radius), readable at the
+ * whole-world view on a phone. `apart` is the largest radius, in map units,
+ * at which no two counters on the map cover each other (`tenkaView.test.ts`
+ * measures it), so from `screen / apart` pixels to a map unit up every
+ * counter is drawn whole; below it, where the world is too small for them
+ * all, the ones that would cover another are drawn as a dot with the owner's
+ * letter until the map is zoomed (`laidOutChips`). A dot is `dot` of a
+ * counter's radius.
  */
-export const TENKA_CHIP = { screen: 10, least: 9, most: 18 } as const;
+export const TENKA_CHIP = { screen: 8.5, apart: 18, dot: 0.62 } as const;
+
+/** How far from a tap, in screen pixels, the nearest territory's counter still takes it: about a fingertip. */
+export const TENKA_TAP_REACH = 26;
+
+/** A box narrower than this, in pixels, is a phone's: choosing where an attack or a move comes from frames it with what it can reach. */
+export const TENKA_NARROW_BOX = 640;
+
+/** The row of places to look at under the map: the whole world, and each continent by a name short enough for a phone. */
+export const TENKA_REGION_NAMES: Record<TenkaContinentKey, string> = {
+  northAmerica: "N. America",
+  southAmerica: "S. America",
+  europe: "Europe",
+  africa: "Africa",
+  asia: "Asia",
+  oceania: "Oceania",
+};
+export const TENKA_REGION_BUTTON =
+  "min-h-9 rounded-full border border-rule-strong bg-ivory px-3 text-xs font-medium hover:bg-rule/60 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-paper";
+
+/** How much sea to keep round what a view frames, in map units. */
+export const TENKA_FRAME_PAD = 40;
 
 /** How far the map may be zoomed in, as a multiple of the whole world fitted to its box. */
 export const TENKA_ZOOM_MOST = 8;
 
 /** How far a finger may move and still be a tap, in pixels. */
 export const TENKA_TAP_SLOP = 6;
-
-/**
- * THE BOX THE MAP IS LOOKED AT THROUGH. The site's wooden board (`BoardFrame`)
- * is square, and a map of the world is twice as wide as it is tall: in a
- * square, half the board would be sea above and below. So the map is drawn
- * inside the same frame — the same wood, rim and shadow — with only its
- * shape following the map's: four by three on a phone, where the height is
- * needed for pinching into a continent, and two by one from a laptop, where
- * the whole world fills it.
- */
-export const TENKA_FRAME_SHAPE = "[&_[data-testid=board-surface]]:aspect-[4/3] lg:[&_[data-testid=board-surface]]:aspect-[2/1]";
 
 /** What Tenka's table says, beyond what every table says (`PARTY_COPY`). */
 export const TENKA_COPY = {
@@ -89,4 +106,6 @@ export const TENKA_COPY = {
   out: "out",
   map: "Map of the world",
   fit: "Move and zoom the map",
+  regions: "Look at",
+  world: "World",
 } as const;

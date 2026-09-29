@@ -588,6 +588,13 @@ for (const [a, b, options = {}] of SEA_LINKS) {
 
 const labels = TERRITORIES.map((_, at) => labelFor(at));
 const shapes = outlines.map((outline) => pathOf(outline.rings));
+/* Each territory's extent, for a view to frame it or its continent. */
+const boxes = outlines.map(({ rings }) => {
+  const points = rings.flat();
+  const xs = points.map(([x]) => x);
+  const ys = points.map(([, y]) => y);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+});
 const bordersPath = continentBorders.map(([a, b]) => `M${a[0]} ${a[1]}L${b[0]} ${b[1]}`).join("");
 
 // No date in the header: the same source makes the same files, so a rebuild that changes nothing shows nothing.
@@ -624,7 +631,7 @@ writeFileSync(
     ``,
     `/**`,
     ` * How Tenka's world is drawn: Miller's projection from ${-WEST}°W round to ${EAST}°E, ${WIDTH} by ${HEIGHT} units.`,
-    ` * One outline per territory, in the order of \`TENKA_TERRITORY_DATA\`; where its army counter stands; the`,
+    ` * One outline per territory, in the order of \`TENKA_TERRITORY_DATA\`; where its army counter stands; its extent; the`,
     ` * sea links' dashed lines; and the borders between continents, drawn heavier. Read only by the board in`,
     ` * the browser, so none of it is carried by a page the server renders for the rules.`,
     ` */`,
@@ -632,6 +639,7 @@ writeFileSync(
     `  width: ${WIDTH},`,
     `  height: ${HEIGHT},`,
     `  labels: ${JSON.stringify(labels)},`,
+    `  boxes: ${JSON.stringify(boxes)},`,
     `  seaLines: ${JSON.stringify(seaLines)},`,
     `  continentBorders: ${JSON.stringify(bordersPath)},`,
     `  outlines: [`,

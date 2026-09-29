@@ -1,61 +1,100 @@
 "use client";
 
-import { useRef } from "react";
+import { useImperativeHandle, useRef, type MouseEvent } from "react";
 
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import { ViewPad } from "@/components/puzzles/ViewPad";
-import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
-import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
+import { TENKA_CONTINENTS, TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
 import { TENKA_SHAPES } from "@/lib/party/tenka/tenkaShapes.data";
-import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
-import { centredBaseline } from "@/lib/ui/svgText";
 
-import { PARTY_MARBLES } from "../party.constants";
-import type { PartyMarble } from "../party.types";
-import { TENKA_COPY, TENKA_FRAME_SHAPE, TENKA_LAND_OPACITY, TENKA_LINES, TENKA_NEUTRAL_MARBLE, TENKA_SEA, TENKA_SEA_DARK } from "./tenka.constants";
+import {
+  TENKA_COPY,
+  TENKA_LAND_OPACITY,
+  TENKA_LINES,
+  TENKA_NARROW_BOX,
+  TENKA_REGION_BUTTON,
+  TENKA_REGION_NAMES,
+  TENKA_SEA,
+  TENKA_SEA_DARK,
+  TENKA_TAP_REACH,
+} from "./tenka.constants";
 import type { TenkaMapProps } from "./tenka.types";
-import { chipRadius } from "./tenkaView";
+import { TenkaChips, ownerMarble } from "./TenkaChips";
+import { READABLE_SCALE, areaAround, nearestTerritory } from "./tenkaView";
 import { useMapView } from "./useMapView";
 
-/** An owner's marble: a player's, or the neutral army's grey. */
-export function ownerMarble(owner: number): PartyMarble {
-  return owner === TENKA_NEUTRAL ? TENKA_NEUTRAL_MARBLE : PARTY_MARBLES[owner];
-}
+const { width: MAP_W, height: MAP_H } = TENKA_SHAPES;
 
 /**
  * THE WORLD, ON THE SITE'S OWN BOARD.
  *
  * "Every board is the same board" (AGENTS.md): the wood, the rim and the
- * shadow are `BoardFrame`, in the reader's own board theme, with no
- * coordinates — a map has no letters and numbers. Only its shape follows the
- * map's (`TENKA_FRAME_SHAPE`): a map of the world is twice as wide as it is
- * tall, and a square board would be half sea.
+ * shadow are `BoardFrame`'s, in the reader's own board theme, with no
+ * coordinates — a map has no letters and numbers — and the wood the shape of
+ * a map (`aspect="map"`): four by three on a phone, two by one from a laptop.
  *
  * Inside, a plain chart: every territory filled in its owner's colour, the
- * borders between continents drawn heavier, the sea links dashed, and on each
- * territory a counter with the owner's letter and the armies there, so no
- * territory is told apart by colour alone. The chosen territory is ringed, the
- * ones it can reach outlined, a target ringed again.
+ * borders between continents heavier, the sea links dashed, and on each
+ * territory its counter (`TenkaChips`), the same size on the screen however
+ * far the map is zoomed. The chosen territory is ringed, what it can reach
+ * outlined, a target ringed again.
  *
- * Looked at through the box with pinch, drag, wheel and Fit (`useMapView`,
- * `ViewPad`). Every territory, and its counter, is a button to a finger, a
- * keyboard and a screen reader, named by its name, owner and armies. The
- * outlines come from Natural Earth by `scripts/tenka-map.mjs`, and only this
- * component, in the browser, carries them.
+ * MADE TO BE PLAYED ON A PHONE. Pinch, drag, the wheel and Fit
+ * (`useMapView`, `ViewPad`); a row under the map to look at the whole world
+ * or one continent with a tap; a tap on the sea takes the nearest territory
+ * within a fingertip (`TENKA_TAP_REACH`), so an island or a sliver of Europe
+ * never has to be hit exactly; and on a phone, choosing where an attack or a
+ * move comes from frames it with what it can reach (`frameAround`), close
+ * enough that every counter there is drawn whole.
  */
-export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: preview = false }: TenkaMapProps) {
+export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: preview = false, handle }: TenkaMapProps) {
   const theme = BOARD_THEMES[appearance.boardTheme];
   const box = useRef<HTMLDivElement>(null);
   const readOnly = preview || onTerritory === undefined;
-  const { view, fitted, fit, press, onPointerDown, onClickCapture } = useMapView(box, TENKA_SHAPES.width, TENKA_SHAPES.height, readOnly);
-  const radius = chipRadius(view?.scale ?? 1);
+  const tap = readOnly ? undefined : onTerritory;
+  const { view, frame, fitted, fit, frameTo, press, onPointerDown, onClickCapture } = useMapView(box, MAP_W, MAP_H, readOnly);
   const reach = new Set(marks.reach);
-  const last = game.lastRoll;
+
+  useImperativeHandle(
+    handle,
+    () => ({
+      frameAround: (territories) => {
+        // Only on a phone: a laptop's whole world is already big enough to play on.
+        if (territories.length === 0 || frame.width === 0 || frame.width >= TENKA_NARROW_BOX) return;
+        // The first, then the rest nearest first, as many as still fit with every counter drawn whole: a neighbour
+        // across the Bering Strait or the Atlantic is left for a pan rather than shrinking the view to hold it.
+        const [first, ...rest] = territories;
+        const middle = (area: readonly number[]) => [(area[0] + area[2]) / 2, (area[1] + area[3]) / 2];
+        const [fx, fy] = middle(TENKA_SHAPES.boxes[first]);
+        const nearest = [...rest].sort((a, b) => {
+          const [ax, ay] = middle(TENKA_SHAPES.boxes[a]);
+          const [bx, by] = middle(TENKA_SHAPES.boxes[b]);
+          return Math.hypot(ax - fx, ay - fy) - Math.hypot(bx - fx, by - fy);
+        });
+        let around = TENKA_SHAPES.boxes[first];
+        for (const territory of nearest) {
+          const wider = areaAround([around, TENKA_SHAPES.boxes[territory]]);
+          if ((wider[2] - wider[0]) * READABLE_SCALE > frame.width || (wider[3] - wider[1]) * READABLE_SCALE > frame.height) continue;
+          around = wider;
+        }
+        frameTo(around, READABLE_SCALE);
+      },
+    }),
+    [frame, frameTo],
+  );
+
+  /* A tap on the sea: the nearest territory within a fingertip takes it. */
+  const onSea = (event: MouseEvent<SVGRectElement>) => {
+    if (tap === undefined || view === null || box.current === null) return;
+    const rect = box.current.getBoundingClientRect();
+    const territory = nearestTerritory(TENKA_SHAPES.labels, (event.clientX - rect.left - view.x) / view.scale, (event.clientY - rect.top - view.y) / view.scale, TENKA_TAP_REACH / view.scale);
+    if (territory !== null) tap(territory);
+  };
 
   return (
-    <div className={`w-full ${TENKA_FRAME_SHAPE}`}>
-      <BoardFrame size={1} theme={theme} flipped={false} inset={0} lattice={false} shape="rhombus" coordinates={false}>
+    <div className="flex w-full flex-col gap-2">
+      <BoardFrame size={1} theme={theme} flipped={false} inset={0} lattice={false} shape="rhombus" coordinates={false} aspect="map">
         <div
           ref={box}
           className="absolute inset-0 touch-none select-none"
@@ -65,31 +104,27 @@ export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: previ
           data-testid="tenka-map"
           data-fitted={fitted ? "true" : "false"}
           data-scale={view === null ? undefined : view.scale.toFixed(3)}
+          data-readable={view !== null && view.scale >= READABLE_SCALE ? "true" : "false"}
         >
           {view === null ? null : (
             <svg className="absolute inset-0 h-full w-full" role="group" aria-label={TENKA_COPY.map}>
               <g transform={`translate(${view.x} ${view.y}) scale(${view.scale})`}>
-                {TENKA_SHAPES.outlines.map((outline, territory) => {
-                  const owner = game.owners[territory];
-                  const marble = ownerMarble(owner);
-                  const chosen = marks.chosen === territory || marks.target === territory;
-                  return (
-                    <path
-                      key={territory}
-                      d={outline}
-                      fill={marble.fill}
-                      fillOpacity={TENKA_LAND_OPACITY}
-                      stroke="rgba(20,20,20,0.55)"
-                      strokeWidth={TENKA_LINES.territory / view.scale}
-                      strokeLinejoin="round"
-                      className={readOnly ? undefined : "cursor-pointer"}
-                      onClick={readOnly ? undefined : () => onTerritory?.(territory)}
-                      data-testid="tenka-land"
-                      data-territory={TENKA_TERRITORIES[territory].key}
-                      data-chosen={chosen ? "true" : undefined}
-                    />
-                  );
-                })}
+                <rect x={-MAP_W} y={-MAP_H} width={MAP_W * 3} height={MAP_H * 3} fill="transparent" onClick={tap === undefined ? undefined : onSea} data-testid="tenka-sea" />
+                {TENKA_SHAPES.outlines.map((outline, territory) => (
+                  <path
+                    key={territory}
+                    d={outline}
+                    fill={ownerMarble(game.owners[territory]).fill}
+                    fillOpacity={TENKA_LAND_OPACITY}
+                    stroke="rgba(20,20,20,0.55)"
+                    strokeWidth={TENKA_LINES.territory / view.scale}
+                    strokeLinejoin="round"
+                    className={tap === undefined ? undefined : "cursor-pointer"}
+                    onClick={tap === undefined ? undefined : () => tap(territory)}
+                    data-testid="tenka-land"
+                    data-territory={TENKA_TERRITORIES[territory].key}
+                  />
+                ))}
                 <path d={TENKA_SHAPES.continentBorders} fill="none" stroke="rgba(10,10,10,0.8)" strokeWidth={TENKA_LINES.continent / view.scale} strokeLinecap="round" pointerEvents="none" />
                 {TENKA_SHAPES.seaLines.map(([x1, y1, x2, y2], line) => (
                   <line
@@ -108,85 +143,49 @@ export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: previ
                 {TENKA_SHAPES.outlines.map((outline, territory) => {
                   const ring = marks.chosen === territory || marks.target === territory ? TENKA_LINES.chosen : reach.has(territory) ? TENKA_LINES.reach : 0;
                   if (ring === 0) return null;
+                  const onlyReach = reach.has(territory) && marks.target !== territory;
                   return (
                     <path
                       key={territory}
                       d={outline}
-                      fill={reach.has(territory) && marks.target !== territory ? "rgba(255,255,255,0.22)" : "none"}
-                      stroke={marks.target === territory ? theme.winning : reach.has(territory) ? "#ffffff" : "#111111"}
+                      fill={onlyReach ? "rgba(255,255,255,0.22)" : "none"}
+                      stroke={marks.target === territory ? theme.winning : onlyReach ? "#ffffff" : "#111111"}
                       strokeWidth={ring / view.scale}
-                      strokeDasharray={reach.has(territory) && marks.target !== territory ? `${6 / view.scale} ${4 / view.scale}` : undefined}
+                      strokeDasharray={onlyReach ? `${6 / view.scale} ${4 / view.scale}` : undefined}
                       pointerEvents="none"
-                      data-testid={reach.has(territory) ? "tenka-reach" : "tenka-chosen"}
+                      data-testid={onlyReach ? "tenka-reach" : "tenka-chosen"}
                       data-territory={TENKA_TERRITORIES[territory].key}
                     />
                   );
                 })}
-                {TENKA_SHAPES.labels.map(([x, y], territory) => {
-                  const owner = game.owners[territory];
-                  const marble = ownerMarble(owner);
-                  const armies = game.armies[territory];
-                  const name = TENKA_TERRITORIES[territory].name;
-                  const whose = owner === TENKA_NEUTRAL ? "the neutral army's" : `${tenkaPlayerName(game, owner)}'s`;
-                  // The pill: the owner's letter, then the armies, each in room of its own.
-                  const digits = String(armies).length;
-                  const width = radius * (0.45 + 0.75 + 0.1 + 0.74 * digits + 0.45);
-                  const letterX = -width / 2 + radius * (0.45 + 0.375);
-                  const numberX = -width / 2 + radius * (0.45 + 0.75 + 0.1 + 0.37 * digits);
-                  const fought = last !== null && (last.from === territory || last.to === territory);
-                  return (
-                    <g
-                      key={territory}
-                      transform={`translate(${x} ${y})`}
-                      role={readOnly ? undefined : "button"}
-                      tabIndex={readOnly ? undefined : 0}
-                      aria-label={`${name}, ${whose} (${marble.label}, ${marble.letter}), ${armies} ${armies === 1 ? "army" : "armies"}`}
-                      className={readOnly ? undefined : "cursor-pointer outline-none"}
-                      onClick={readOnly ? undefined : () => onTerritory?.(territory)}
-                      onKeyDown={
-                        readOnly
-                          ? undefined
-                          : (event) => {
-                              if (event.key !== "Enter" && event.key !== " ") return;
-                              event.preventDefault();
-                              onTerritory?.(territory);
-                            }
-                      }
-                      data-testid="tenka-territory"
-                      data-territory={TENKA_TERRITORIES[territory].key}
-                      data-name={name}
-                      data-owner={owner}
-                      data-armies={armies}
-                      data-reach={reach.has(territory) ? "true" : undefined}
-                      data-chosen={marks.chosen === territory ? "true" : undefined}
-                      data-target={marks.target === territory ? "true" : undefined}
-                    >
-                      <rect
-                        x={-width / 2}
-                        y={-radius}
-                        width={width}
-                        height={radius * 2}
-                        rx={radius}
-                        fill={marble.fill}
-                        stroke={fought ? theme.winning : "rgba(0,0,0,0.7)"}
-                        strokeWidth={(fought ? 2.4 : 1) / view.scale}
-                      />
-                      <text x={letterX} y={centredBaseline(0, radius * 1.05)} fontSize={radius * 1.05} fontWeight={600} textAnchor="middle" fill={marble.ink} opacity={0.8} aria-hidden="true">
-                        {marble.letter}
-                      </text>
-                      <text x={numberX} y={centredBaseline(0, radius * 1.25)} fontSize={radius * 1.25} fontWeight={700} textAnchor="middle" fill={marble.ink} aria-hidden="true">
-                        {armies}
-                      </text>
-                      <title>{`${name}: ${whose}, ${armies}`}</title>
-                    </g>
-                  );
-                })}
+                <TenkaChips game={game} marks={marks} scale={view.scale} onTerritory={tap} />
               </g>
             </svg>
           )}
           {readOnly ? null : <ViewPad fitted={fitted} onFit={fit} onPress={press} label={TENKA_COPY.fit} testId="tenka" />}
         </div>
       </BoardFrame>
+      {readOnly ? null : (
+        /* One tap to look at a continent, or the whole world again: the regions a finger would otherwise pinch to. */
+        <nav className="flex flex-wrap items-center gap-1.5" aria-label={TENKA_COPY.regions} data-testid="tenka-regions">
+          <span className="text-xs text-muted">{TENKA_COPY.regions}</span>
+          <button type="button" onClick={fit} className={TENKA_REGION_BUTTON} aria-pressed={fitted} data-testid="tenka-region" data-region="world">
+            {TENKA_COPY.world}
+          </button>
+          {TENKA_CONTINENTS.map((continent) => (
+            <button
+              key={continent.key}
+              type="button"
+              onClick={() => frameTo(areaAround(continent.territories.map((territory) => TENKA_SHAPES.boxes[territory])), 0)}
+              className={TENKA_REGION_BUTTON}
+              data-testid="tenka-region"
+              data-region={continent.key}
+            >
+              {TENKA_REGION_NAMES[continent.key]}
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

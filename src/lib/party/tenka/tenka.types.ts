@@ -35,6 +35,8 @@ export type TenkaShapes = {
   height: number;
   /** Where each territory's army counter stands. */
   labels: readonly (readonly number[])[];
+  /** Each territory's extent, left, top, right, bottom: what a view frames to show it. */
+  boxes: readonly (readonly number[])[];
   /** Each sea link's dashed line, x1 y1 x2 y2; the crossing of the Bering Strait is two, one off each edge. */
   seaLines: readonly (readonly number[])[];
   /** The borders between continents, one SVG path, drawn heavier. */

@@ -5,10 +5,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { columnLetter, rowNumber } from "@/lib/gomoku/notation";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
-import { BOARD_FRAME, COORDINATE_GAP, LABEL_GUTTER } from "./Board.constants";
+import { BOARD_ASPECTS, BOARD_FRAME, COORDINATE_GAP, LABEL_GUTTER } from "./Board.constants";
 import { layoutOrder } from "./flip";
 import { labelTracks, latticeLabelTracks, type LatticeShape } from "./margin";
-import type { BoardThemeTokens } from "./board.types";
+import type { BoardAspect, BoardThemeTokens } from "./board.types";
 
 /**
  * The coordinate strips sit outside the board's own box, so the rim that
@@ -129,6 +129,7 @@ export function BoardFrame({
   children,
   footer = null,
   rows,
+  aspect: shapeOfWood = "square",
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -149,6 +150,12 @@ export function BoardFrame({
    * its squares; left out, the board is square, as every game's is.
    */
   rows?: number;
+  /**
+   * The shape of the wood (`BOARD_ASPECTS`): square, as every game's is, or a
+   * map of the world's, wider than it is tall (Tenka). Ignored when `rows`
+   * already makes the board oblong.
+   */
+  aspect?: BoardAspect;
 }) {
   const tall = rows ?? size;
   const oblong = tall !== size;
@@ -197,7 +204,7 @@ export function BoardFrame({
         <div />
       )}
       <div
-        className={`relative rounded-md ${oblong ? "" : "aspect-square"}`}
+        className={`relative rounded-md ${oblong ? "" : BOARD_ASPECTS[shapeOfWood]}`}
         // Which surface is drawn, by name, for a test to read: a gradient is no way to ask.
         data-testid="board-surface"
         data-surface={theme.label}

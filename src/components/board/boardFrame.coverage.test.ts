@@ -67,6 +67,10 @@ describe("the board frame", () => {
     const map = read("src/components/party/tenka/TenkaMap.tsx");
     expect(map).toContain("<BoardFrame");
     expect(map).not.toContain("boxShadow");
+    // Its shape is the frame's own to set (`aspect`, `BOARD_ASPECTS`), never reached into from outside it.
+    expect(map).toContain('aspect="map"');
+    expect(map).not.toContain("board-surface]");
+    expect(read("src/components/board/BoardFrame.tsx")).toContain("BOARD_ASPECTS[");
     // Its set-up's preview is that live map, dealt for the table chosen, never a picture of one.
     expect(read("src/components/party/tenka/TenkaSetUp.tsx")).toContain("<TenkaMap game={preview}");
     expect(read("src/components/party/tenka/TenkaSetUp.tsx")).not.toMatch(/<GameThumb|<img|\.jpg/);

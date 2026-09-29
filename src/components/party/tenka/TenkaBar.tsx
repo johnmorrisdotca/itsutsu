@@ -10,6 +10,7 @@ import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 
 import { MarbleChip } from "../MarbleChip";
+import { TenkaDice } from "./TenkaDice";
 import { TENKA_COPY } from "./tenka.constants";
 import type { TenkaBarProps } from "./tenka.types";
 import { choiceNow } from "./tenkaTaps";
@@ -78,7 +79,19 @@ export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: Te
           </button>
         </div>
       ) : (
-        <BarActions game={game} now={now} onMove={onMove} onArmies={onArmies} />
+        <>
+          {/* The dice of this turn, on a phone, where the panel beside the map is out of sight. */}
+          {game.phase === TENKA_PHASES.attack || game.phase === TENKA_PHASES.occupy ? (
+            <div className="lg:hidden">
+              <TenkaDice game={game} compact />
+            </div>
+          ) : null}
+          {/*
+            Keyed by the step, so a step's buttons are its own and never the last step's re-dressed: "Move 3 in" once
+            stood where "Roll until decided" had been and faded in from its pale colour, reading as disabled for a moment.
+          */}
+          <BarActions key={game.phase} game={game} now={now} onMove={onMove} onArmies={onArmies} />
+        </>
       )}
     </section>
   );

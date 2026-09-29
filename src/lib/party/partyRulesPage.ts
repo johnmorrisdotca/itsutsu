@@ -69,7 +69,7 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     house: "Every pit and store shows how many seeds it holds as a number beside the seeds themselves, so nobody has to count them.",
   },
   tenka: {
-    turn: "The bar under the map says whose turn it is and what comes next: Place, Attack, Fortify, End turn. Tap a territory to choose it — the ones it can reach light up — then tap where to go. Pinch, scroll or double-tap to zoom, drag to look round, Fit to see the whole world again.",
+    turn: "The bar under the map says whose turn it is and what comes next: Place, Attack, Fortify, End turn. Tap a territory to choose it — the ones it can reach light up — then tap where to go. On a phone the map comes close when you choose where to attack or move from; tap a continent's name under the map to look at it, pinch or scroll to zoom, drag to look round, and World to see it all again. A tap on the sea takes the nearest territory within a fingertip.",
     house: "Every territory shows its owner's letter as well as their colour, so nobody has to tell two colours apart to count. The neutral army is grey, with N.",
     more: [
       "Starting armies: forty each for two players (and forty for the neutral army), thirty-five each for three, thirty for four, twenty-five for five, twenty for six. They are placed at random to start quickly, or by hand, one at a time round the table, if you choose.",

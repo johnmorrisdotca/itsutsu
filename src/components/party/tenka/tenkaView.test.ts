@@ -5,7 +5,7 @@ import { TENKA_SHAPES } from "@/lib/party/tenka/tenkaShapes.data";
 
 import { TENKA_CHIP, TENKA_ZOOM_MOST } from "./tenka.constants";
 import type { MapBox } from "./tenka.types";
-import { chipRadius, fitView, isFitted, keptView, pannedBy, zoomedAbout } from "./tenkaView";
+import { READABLE_SCALE, areaAround, nearestTerritory, chipRadius, chipWidth, fitView, framedView, isFitted, keptView, laidOutChips, pannedBy, zoomedAbout } from "./tenkaView";
 
 /** How Tenka's map is looked at: Fit, the zoom's limits, and counters that never cover each other. */
 
@@ -44,16 +44,13 @@ describe("the map's view", () => {
     expect(keptView({ ...fitView(phone), x: 50 }, phone)).toEqual(fitView(phone));
   });
 
-  it("draws a counter ten pixels across where it can, within the map's own limits", () => {
-    expect(chipRadius(1)).toBe(TENKA_CHIP.screen);
-    expect(chipRadius(0.1)).toBe(TENKA_CHIP.most);
-    expect(chipRadius(5)).toBe(TENKA_CHIP.least);
+  it("draws a counter the same size on the screen however far the map is zoomed", () => {
+    for (const scale of [0.1, 0.5, 2]) expect(chipRadius(scale) * scale).toBeCloseTo(TENKA_CHIP.screen);
   });
 
-  it("never lays one army counter over another, even at its largest with two figures", () => {
-    const r = TENKA_CHIP.most;
-    // The pill as `TenkaMap` draws it: padding, the letter, a gap, two figures, padding; two radii tall.
-    const width = r * (0.45 + 0.75 + 0.1 + 0.74 * 2 + 0.45);
+  it("never lays one army counter over another at its largest, two figures each, from the readable scale up", () => {
+    const r = TENKA_CHIP.apart;
+    const width = r * chipWidth(2);
     const labels = TENKA_SHAPES.labels;
     for (let a = 0; a < labels.length; a += 1) {
       for (let b = a + 1; b < labels.length; b += 1) {
@@ -61,5 +58,55 @@ describe("the map's view", () => {
         expect(apart, `${TENKA_TERRITORIES[a].key} and ${TENKA_TERRITORIES[b].key}`).toBe(true);
       }
     }
+    expect(READABLE_SCALE).toBeCloseTo(TENKA_CHIP.screen / TENKA_CHIP.apart);
+  });
+
+  it("turns a crowded counter into a dot at the whole-world view on a phone, the more important one kept whole, and none from the readable scale up", () => {
+    const armies = new Array<number>(TENKA_TERRITORIES.length).fill(12);
+    const everyone = TENKA_TERRITORIES.map((_, territory) => territory);
+    const phoneWorld = fitView(phone).scale;
+    const dots = laidOutChips(TENKA_SHAPES.labels, armies, phoneWorld, everyone);
+    expect(dots.size).toBeGreaterThan(0);
+    expect(dots.size).toBeLessThan(TENKA_TERRITORIES.length);
+    // The first in the order is never a dot; put Central Europe first and it is drawn whole.
+    const central = TENKA_TERRITORIES.findIndex((territory) => territory.key === "centralEurope");
+    expect(laidOutChips(TENKA_SHAPES.labels, armies, phoneWorld, [central, ...everyone.filter((one) => one !== central)]).has(central)).toBe(false);
+    expect(laidOutChips(TENKA_SHAPES.labels, armies, READABLE_SCALE, everyone).size).toBe(0);
+    // And the counters drawn whole at the whole-world view cover none of each other.
+    const r = chipRadius(phoneWorld);
+    const whole = everyone.filter((territory) => !dots.has(territory));
+    for (const a of whole) {
+      for (const b of whole) {
+        if (a >= b) continue;
+        const [ax, ay] = TENKA_SHAPES.labels[a];
+        const [bx, by] = TENKA_SHAPES.labels[b];
+        expect(Math.abs(ax - bx) >= r * chipWidth(2) || Math.abs(ay - by) >= 2 * r).toBe(true);
+      }
+    }
+  });
+
+  it("frames a continent on a phone close enough that every counter there is whole", () => {
+    const europe = TENKA_TERRITORIES.flatMap((territory, at) => (territory.continent === "europe" ? [at] : []));
+    const view = framedView(areaAround(europe.map((territory) => TENKA_SHAPES.boxes[territory])), phone, 0);
+    expect(view.scale).toBeGreaterThanOrEqual(READABLE_SCALE);
+    // Every European counter is on the screen.
+    for (const territory of europe) {
+      const [x, y] = TENKA_SHAPES.labels[territory];
+      expect(view.x + x * view.scale).toBeGreaterThan(0);
+      expect(view.x + x * view.scale).toBeLessThan(phone.width);
+      expect(view.y + y * view.scale).toBeGreaterThan(0);
+      expect(view.y + y * view.scale).toBeLessThan(phone.height);
+    }
+    // Asked for no less than the readable scale, a wide area is framed at it.
+    expect(framedView([0, 0, 2000, 984], phone, READABLE_SCALE).scale).toBeCloseTo(READABLE_SCALE);
+  });
+
+  it("gives a tap on the sea to the nearest territory within a fingertip, and to nobody further out", () => {
+    const japan = TENKA_TERRITORIES.findIndex((territory) => territory.key === "japan");
+    const [x, y] = TENKA_SHAPES.labels[japan];
+    // Twenty map units east of Japan's counter, out in the Pacific, with a reach of thirty: Japan.
+    expect(nearestTerritory(TENKA_SHAPES.labels, x + 20, y, 30)).toBe(japan);
+    // Mid-Pacific, nothing within reach.
+    expect(nearestTerritory(TENKA_SHAPES.labels, 50, 700, 30)).toBeNull();
   });
 });

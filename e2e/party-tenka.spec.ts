@@ -164,6 +164,9 @@ test.describe("Tenka, pass and play", () => {
     await expect(page.getByTestId("tenka-roll-words")).toContainText("threw");
     await expect(chip(page, plan.to)).toHaveAttribute("data-owner", String(start.toPlay));
     await expect(game(page)).toHaveAttribute("data-phase", "occupy");
+    // Moving in is plainly a button to press, at the count offered: all but one.
+    await expect(page.getByTestId("tenka-occupy")).toBeEnabled();
+    await expect(page.getByTestId("tenka-occupy")).toHaveText(/^Move \d+ in$/);
     await page.getByTestId("tenka-occupy").click();
     await expect(game(page)).toHaveAttribute("data-phase", "attack");
 
@@ -216,6 +219,69 @@ test.describe("Tenka, pass and play", () => {
       await expect(page.getByTestId("tenka-bar")).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     }
+  });
+});
+
+const EUROPE = ["britain", "nordic", "westernEurope", "centralEurope", "southernEurope", "easternEurope", "westernRussia"];
+
+test.describe("Tenka on a phone", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test("counters stay readable at the whole world, a continent is one tap away, and choosing where from brings it close", async ({ page }) => {
+    await page.goto("/games/tenka");
+    await page.evaluate((key) => window.localStorage.removeItem(key), KEPT);
+    await page.goto("/games/tenka/pass-and-play");
+    await ready(page, "tenka-set-up");
+    await page.getByTestId("tenka-start").tap();
+    await ready(page, "tenka-game");
+    await page.getByTestId("tenka-ready").tap();
+    const map = page.getByTestId("tenka-map");
+    await expect(map).toHaveAttribute("data-fitted", "true");
+
+    // THE WHOLE WORLD: every counter drawn whole is seventeen pixels tall on the glass; the crowded ones wait as dots.
+    const whole = page.locator('[data-testid="tenka-territory"]:not([data-dot])');
+    expect(await whole.count()).toBeGreaterThan(20);
+    for (const height of await whole.evaluateAll((chips) => chips.map((chip) => chip.getBoundingClientRect().height))) {
+      expect(height).toBeGreaterThanOrEqual(15);
+      expect(height).toBeLessThanOrEqual(20);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+    // ONE TAP ON EUROPE: close enough that every European counter is drawn whole, and World goes back.
+    await page.locator('[data-testid="tenka-region"][data-region="europe"]').tap();
+    await expect(map).toHaveAttribute("data-readable", "true");
+    for (const key of EUROPE) await expect(page.locator(`[data-testid="tenka-territory"][data-territory="${key}"]`)).not.toHaveAttribute("data-dot", "true");
+    await page.locator('[data-testid="tenka-region"][data-region="world"]').tap();
+    await expect(map).toHaveAttribute("data-fitted", "true");
+
+    // CHOOSING WHERE FROM: place the turn's armies on one territory, then choose it to attack from; the map comes close.
+    const start = await kept(page);
+    const from = planConquest(start).from;
+    await chip(page, from).tap();
+    await page.getByTestId("tenka-place-all").tap();
+    await expect(game(page)).toHaveAttribute("data-phase", "attack");
+    await chip(page, from).tap();
+    await expect(chip(page, from)).toHaveAttribute("data-chosen", "true");
+    await expect(map).toHaveAttribute("data-readable", "true");
+    await expect(map).toHaveAttribute("data-fitted", "false");
+    // Every territory it can reach has its counter whole, to be tapped.
+    const reach = page.locator('[data-testid="tenka-territory"][data-reach="true"]');
+    expect(await reach.count()).toBeGreaterThan(0);
+    await expect(page.locator('[data-testid="tenka-territory"][data-reach="true"][data-dot="true"]')).toHaveCount(0);
+    // At least one of them is on the glass without a pan (one across an ocean may need one); tap it.
+    const box = (await map.boundingBox())!;
+    const onScreen = await reach.evaluateAll(
+      (chips, [left, top, right, bottom]) =>
+        chips.map((chip) => chip.getBoundingClientRect()).map((rect) => rect.left >= left && rect.right <= right && rect.top >= top && rect.bottom <= bottom),
+      [box.x, box.y, box.x + box.width, box.y + box.height],
+    );
+    expect(onScreen).toContain(true);
+    // And the dice of a throw are in the phase bar, where the thumb is.
+    await reach.nth(onScreen.indexOf(true)).tap();
+    await page.getByTestId("tenka-roll").first().tap();
+    await expect(page.getByTestId("tenka-bar-dice")).toHaveAttribute("data-rolled", "true");
+    await expect(page.getByTestId("tenka-bar-dice").getByTestId("tenka-die").first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });
 

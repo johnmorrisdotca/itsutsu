@@ -197,9 +197,18 @@ anywhere here. Tenka is from 天下取り, tenka-tori, "taking the realm".
   along meridians, merges each territory's countries into one outline, and
   finds land neighbours from shared edges.
 - **The frame.** The map is drawn inside `BoardFrame` like every board, with
-  no coordinates, and only the box's shape follows the map's (4:3 on a phone,
-  2:1 from a laptop), since a square board would be half sea
-  (`TENKA_FRAME_SHAPE`).
+  no coordinates, and `BoardFrame` has one typed prop for the shape of its
+  wood (`aspect: "square" | "map"`, `BOARD_ASPECTS`): the map's is 4:3 on a
+  phone and 2:1 from a laptop, since a square board would be half sea.
+- **Played on a phone.** Army counters are 17 pixels tall on the screen however
+  far the map is zoomed; at the whole-world view the ones with no room (the
+  middle of Europe, the isthmus, Southeast Asia's islands) are dots with the
+  owner's letter, the player to move's and anything chosen drawn whole first
+  (`laidOutChips`). A row under the map looks at the world or one continent
+  with a tap; choosing where an attack or a move comes from frames it and
+  what it can reach, close enough for every counter to be whole; a tap on the
+  sea goes to the nearest territory within a fingertip; and the phase bar
+  carries the dice.
 
 ## Adding the next one
 
@@ -288,6 +297,10 @@ not a second mechanism:
   at random unless "in turn" is chosen; the defender always throws the most
   dice allowed; the card kinds land, sea and air; the forty-two territories,
   six continents, bonuses (5, 2, 5, 4, 7, 2) and twenty sea links in
-  `tenkaMap.ts` and the map script; the box's shape following the map inside
-  the wooden frame; the device passed between turns by name, with nobody's
+  `tenkaMap.ts` and the map script; the wood's shape following the map
+  (`BoardFrame`'s `aspect`); on a phone, the whole world first, counters that
+  do not fit drawn as dots, and the map coming close when a territory is
+  chosen to attack or move from, rather than opening on the player's own
+  region; Halma for four taken off the Party games shelf to keep it at eight
+  (it is still offered from Halma's own page); the device passed between turns by name, with nobody's
   cards shown until the player named says they have it.

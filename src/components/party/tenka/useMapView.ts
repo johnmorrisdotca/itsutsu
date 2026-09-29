@@ -6,7 +6,7 @@ import type { PadKey } from "@/components/puzzles/ViewPad";
 
 import { TENKA_TAP_SLOP } from "./tenka.constants";
 import type { MapBox, MapView } from "./tenka.types";
-import { fitView, isFitted, keptView, pannedBy, zoomedAbout } from "./tenkaView";
+import { fitView, framedView, isFitted, keptView, pannedBy, zoomedAbout } from "./tenkaView";
 
 /**
  * PINCH, DRAG, WHEEL AND THE PAD, for the map's box — Kumimoji's table's way
@@ -130,8 +130,14 @@ export function useMapView(box: RefObject<HTMLDivElement | null>, mapWidth: numb
 
   return {
     view,
+    /** The box looked through, and the map's size. */
+    frame,
     fitted: view === null || isFitted(view, frame),
     fit: () => setFree(null),
+    /** Look at an area of the map ([left, top, right, bottom]), never further out than `least` pixels to a map unit. */
+    frameTo: (area: readonly number[], least: number) => {
+      if (size.width > 0) setFree(framedView(area, frame, least));
+    },
     press,
     onPointerDown,
     onClickCapture,

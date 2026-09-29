@@ -1,3 +1,5 @@
+import type { Ref } from "react";
+
 import type { Appearance } from "@/components/board/board.types";
 import type { TenkaGame, TenkaMove } from "@/lib/party/tenka/tenka.types";
 
@@ -22,6 +24,14 @@ export type TenkaMapProps = {
   onTerritory?: (territory: number) => void;
   /** A preview: the table set out, nothing to tap, and no view to move. */
   readOnly?: boolean;
+  /** What the table asks of the map's view: to frame territories just chosen (`TenkaMapHandle`). */
+  handle?: Ref<TenkaMapHandle>;
+};
+
+/** What the table asks of the map's view. */
+export type TenkaMapHandle = {
+  /** On a phone, look at these territories — the first chosen, then what it can reach — close enough to read every counter. */
+  frameAround: (territories: readonly number[]) => void;
 };
 
 /** What the table's player chose on the map, before it is a move: the two territories of an attack or a fortifying move, and how many. */
