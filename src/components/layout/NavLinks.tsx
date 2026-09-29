@@ -138,46 +138,57 @@ export function NavLinks() {
   const here = currentHref(pathname);
   return (
     <>
-      {NAV.map((item) => {
-        const current = item.href === here;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={current ? "page" : undefined}
-            /*
-             * `relative` so the waiting count has something to hang off.
-             *
-             * The badge is a pip over this link's top corner rather than a word
-             * appended to the bar, because the bar has no room for one: it is
-             * read in the browser and arrives after the page, and in the flow
-             * those pixels wrapped the whole masthead at an iPad's width. See
-             * `YourTurnBadge`, which carries the measurement. A positioned
-             * inline element with no offsets of its own draws exactly as it did
-             * before, so every row keeps the class and only Play uses it.
-             */
-            className={`relative whitespace-nowrap underline-offset-4 hover:underline ${
-              current ? "font-semibold underline decoration-moss decoration-2" : ""
-            }`}
-          >
-            {/*
-              No kanji here any more. Play was the last entry carrying one and
-              John asked for it to go, so the branch that drew them went with
-              it rather than sitting unused and untyped — every remaining entry
-              is one word, Admin included.
+      {/*
+        THE TABS IN A BOX OF THEIR OWN ON A PHONE, SO NEW GAME CAN STAND BESIDE
+        THEM. John, 2026-09-28, at a phone header where the button had a row
+        to itself: "The New Game button is still alone". Below `sm` the tabs
+        take what the button leaves and wrap inside that, so on the narrowest
+        phones they go to two short lines with the button beside both, never
+        under them. At `sm` and up the box is `contents`, and the bar is the
+        one flat row of tabs and button it always was.
+      */}
+      <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-1 sm:contents">
+        {NAV.map((item) => {
+          const current = item.href === here;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={current ? "page" : undefined}
+              /*
+               * `relative` so the waiting count has something to hang off.
+               *
+               * The badge is a pip over this link's top corner rather than a word
+               * appended to the bar, because the bar has no room for one: it is
+               * read in the browser and arrives after the page, and in the flow
+               * those pixels wrapped the whole masthead at an iPad's width. See
+               * `YourTurnBadge`, which carries the measurement. A positioned
+               * inline element with no offsets of its own draws exactly as it did
+               * before, so every row keeps the class and only Play uses it.
+               */
+              className={`relative whitespace-nowrap underline-offset-4 hover:underline ${
+                current ? "font-semibold underline decoration-moss decoration-2" : ""
+              }`}
+            >
+              {/*
+                No kanji here any more. Play was the last entry carrying one and
+                John asked for it to go, so the branch that drew them went with
+                it rather than sitting unused and untyped — every remaining entry
+                is one word, Admin included.
 
-              One word each, in the reader's own language: a Japanese reader
-              gets 遊ぶ where an English reader gets Play. That is the same
-              decision, not a reversal of it — what he took out of the bar was
-              two scripts at once, and there is still only ever one here.
-            */}
-            {NAV_PHRASE[item.href] === undefined ? item.label : say.say(NAV_PHRASE[item.href])}
-            {/* The count of games waiting on you belongs beside the page that
-                holds them, not beside the one that starts new ones. */}
-            {item.href === "/play" ? <YourTurnBadge /> : null}
-          </Link>
-        );
-      })}
+                One word each, in the reader's own language: a Japanese reader
+                gets 遊ぶ where an English reader gets Play. That is the same
+                decision, not a reversal of it — what he took out of the bar was
+                two scripts at once, and there is still only ever one here.
+              */}
+              {NAV_PHRASE[item.href] === undefined ? item.label : say.say(NAV_PHRASE[item.href])}
+              {/* The count of games waiting on you belongs beside the page that
+                  holds them, not beside the one that starts new ones. */}
+              {item.href === "/play" ? <YourTurnBadge /> : null}
+            </Link>
+          );
+        })}
+      </span>
       {/*
         NEW GAME IS A BUTTON, NOT A TAB. John, 2026-09-24: "New Game should be
         prominent, since its a good page." A tab among tabs read as a third
@@ -188,7 +199,7 @@ export function NavLinks() {
       <Link
         href={NEW_GAME_HREF}
         aria-current={pathname === NEW_GAME_HREF ? "page" : undefined}
-        className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT} px-3 py-1 text-sm whitespace-nowrap`}
+        className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT} shrink-0 px-2.5 py-1 text-[0.8125rem] whitespace-nowrap sm:px-3 sm:text-sm`}
         data-testid="nav-new-game"
       >
         {say.say("nav.newGame")}
