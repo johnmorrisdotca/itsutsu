@@ -8,6 +8,7 @@ import { answerOfCells, decodeCells, decodeClues, decodePicture, encodeCells } f
 import { hintedState, pictureChecked, pictureHint, pictureWrong } from "@/lib/puzzles/pictureLogic/help";
 import { painted, type Pen } from "@/lib/puzzles/pictureLogic/paint";
 import type { CellState } from "@/lib/puzzles/pictureLogic/pictureLogic.types";
+import { encodePictureLogicProgress } from "@/lib/puzzles/puzzleProgress";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -67,7 +68,7 @@ export function PictureLogicSolve({
   const shown = useMemo(() => decodeCells(history.shown, size) ?? current, [history.shown, size, current]);
 
   const { startedAt, elapsedMs, done, begin, finish, pausing, checking, hinting } = useSolve(puzzle, hasAccount, race, checks, {
-    progress: drawing,
+    progress: encodePictureLogicProgress(current),
     steps: () => encodeStepLog(history.steps),
     resumed,
   }, hints);

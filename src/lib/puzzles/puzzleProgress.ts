@@ -3,7 +3,8 @@ import type { BridgeCounts, BridgesBoard } from "./bridges/bridges.types";
 import { ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO, MOST_BRIDGES, WATER, encodeBridges } from "./bridges/code";
 import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
 import { wordCountOfSeed } from "./gomoji/wordsSeed";
-import { decodeCells as decodePictureCells } from "./pictureLogic/code";
+import { decodeCells as decodePictureCells, encodeCells as encodePictureCells } from "./pictureLogic/code";
+import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesFor } from "./gomoji/layout";
@@ -53,6 +54,11 @@ export function decodeStoneProgress(code: string, size: number): StoneMarkCode[]
 /** Bridges writes its drawing as its answer is written: every island's number, and each water cell's bridge or none. */
 export function encodeBridgesProgress(board: BridgesBoard, counts: BridgeCounts): string {
   return encodeBridges(board, counts);
+}
+
+/** Picture logic writes the player's grid, a character a cell: "." untouched, "#" shaded, "x" marked empty. */
+export function encodePictureLogicProgress(cells: readonly CellState[]): string {
+  return encodePictureCells(cells);
 }
 
 export function encodeBlackAndWhiteProgress(stones: readonly number[]): string {
