@@ -10,13 +10,14 @@ import dynamic from "next/dynamic";
  */
 export const LocalGameCardClient = dynamic(
   () =>
-    Promise.all([import("./LocalGameCard"), import("./LocalPartyCard")]).then(([board, party]) => {
-      /* The board kept on this device, and the pass-and-play Kumimoji: both wait on Pass and play. */
+    Promise.all([import("./LocalGameCard"), import("./LocalPartyCard"), import("./MahjongTableCard")]).then(([board, party, mahjong]) => {
+      /* The board kept on this device, the pass-and-play Kumimoji and the Mahjong table: all wait on Pass and play. */
       function LocalGames() {
         return (
           <>
             <board.LocalGameCard />
             <party.LocalPartyCard />
+            <mahjong.MahjongTableCard />
           </>
         );
       }

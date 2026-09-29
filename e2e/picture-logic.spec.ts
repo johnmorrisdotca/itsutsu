@@ -45,6 +45,9 @@ function rowRuns(picture: boolean[], size: number): [number, number][] {
 
 /** A drag, a finger's way: pressed on one square, moved along the row, lifted on the last. */
 async function drag(page: Page, from: number, to: number) {
+  // On screen first: the mouse only reaches what the window shows, and rows above the board can push a row below the fold.
+  await square(page, to).scrollIntoViewIfNeeded();
+  await square(page, from).scrollIntoViewIfNeeded();
   const a = (await square(page, from).boundingBox())!;
   const b = (await square(page, to).boundingBox())!;
   await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);

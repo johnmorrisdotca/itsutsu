@@ -46,6 +46,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   jigsaw: "2026-09-24",
   koushi: "2026-09-26",
   kumimoji: "2026-09-26",
+  mahjong: "2026-09-29",
   makerBreaker: "2026-09-07",
   mancala: "2026-09-28",
   mexicanTrain: "2026-09-29",

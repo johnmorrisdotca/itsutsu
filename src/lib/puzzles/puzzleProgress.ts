@@ -5,6 +5,9 @@ import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
 import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { decodeCells as decodePictureCells, encodeCells as encodePictureCells } from "./pictureLogic/code";
 import type { CellState } from "./pictureLogic/pictureLogic.types";
+import { layoutFor } from "./mahjong/layouts";
+import type { MahjongMove } from "./mahjong/mahjong.types";
+import { decodeMoves, encodeMoves } from "./mahjong/moves";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesEverAllowed } from "./gomoji/layout";
@@ -49,6 +52,11 @@ export function decodeStoneProgress(code: string, size: number): StoneMarkCode[]
     else return null;
   }
   return marks;
+}
+
+/** Mahjong writes its moves so far as its answer is written: every pair taken and every shuffle (`mahjong/moves.ts`). */
+export function encodeMahjongProgress(moves: readonly MahjongMove[]): string {
+  return encodeMoves(moves);
 }
 
 /** Bridges writes its drawing as its answer is written: every island's number, and each water cell's bridge or none. */
@@ -108,6 +116,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "bridges") return bridgesCodeFits(code, size);
   // Picture logic keeps the player's grid, one character a cell: "." untouched, "#" shaded, "x" marked empty (`pictureLogic/code.ts`).
   if (kind === "pictureLogic") return decodePictureCells(code, size) !== null;
+  // Mahjong keeps its moves so far, as its answer is written (`mahjong/moves.ts`); played on its deal when opened.
+  if (kind === "mahjong") return layoutFor(size) !== null && decodeMoves(code, layoutFor(size)!.slots.length) !== null;
   // Koushi keeps the grid as it stands and the swaps so far, as its answer is written.
   if (kind === "koushi") return decodePlay(code) !== null;
   return decodeNumberProgress(code, size) !== null;

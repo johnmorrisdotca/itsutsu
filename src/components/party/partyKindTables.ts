@@ -17,8 +17,7 @@ import { TenkaCard } from "./tenka/TenkaCard";
 import { TENKA_COPY } from "./tenka/tenka.constants";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
-import { TrainCard } from "./TrainCard";
-import { TrainGame } from "./TrainGame";
+import { TrainCardClient, TrainGameClient } from "./trainClient";
 import { TrainOffer } from "./TrainOffer";
 
 /**
@@ -66,8 +65,9 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     title: PARTY_COPY.title,
     kanji: PARTY_COPY.kanji,
     lead: TRAIN_COPY.lead,
-    Game: TrainGame,
+    // Loaded in the browser only (`trainClient.tsx`): the kept game is the browser's, and the rules stay out of the server's bundle.
+    Game: TrainGameClient,
     Offer: TrainOffer,
-    Card: TrainCard,
+    Card: TrainCardClient,
   },
 };

@@ -40,6 +40,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.
   if (kind === "kumimoji") return givens.length;
+  // Every tile of a Mahjong deal is taken by the player: its givens are the deal, a face a tile.
+  if (kind === "mahjong") return givens.length;
   return [...givens.slice(0, area)].filter((cell) => cell === ".").length;
 }
 
