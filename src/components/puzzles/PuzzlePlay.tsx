@@ -17,6 +17,7 @@ import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { HiddenStonesSolve } from "./HiddenStonesSolve";
 import { GomojiKanaSolve } from "./GomojiKanaSolve";
 import { GomojiSolve } from "./GomojiSolve";
+import { KumimojiParty } from "./KumimojiParty";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
@@ -59,10 +60,13 @@ export function PuzzlePlay({
   gameLength = "short",
   language = "english",
   doubleSet = false,
+  players = 1,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
 }: {
+  /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
+  players?: number;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
   /** Whether a Gomoji's Futago was asked for, two words at once (`futago.ts`): read only to draw a seed, which says it from then on. */
@@ -113,8 +117,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet, players })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, players, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -155,7 +159,7 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${players}`;
   // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
   const seat = race ?? null;
   const headStarted = seat === null && headStart;
@@ -189,6 +193,8 @@ export function PuzzlePlay({
         />
       );
     case "kumimoji":
+      // Pass and play is local and never a race: a race's address carries no players.
+      if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} />;
       return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
     case "gomojiKana":
       return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;

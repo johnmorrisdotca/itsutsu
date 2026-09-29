@@ -5,6 +5,7 @@ import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 import { isFutagoSeed } from "./gomoji/futagoSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
+import { partyPlayersAsked } from "./kumimoji/party";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.
@@ -49,9 +50,15 @@ export type PuzzleAsked = {
   language?: KumimojiLanguage;
   /** Kumimoji's second English tile set. */
   doubleSet?: boolean;
+  /**
+   * Kumimoji's pass and play: two to eight people round this device
+   * (`party.ts`). Left out, and 1, for the solo game. The names are never in
+   * the address: they are typed on the play page and stay in the browser.
+   */
+  players?: number;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", gameLength: "length", language: "language", doubleSet: "double" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", gameLength: "length", language: "language", doubleSet: "double", players: "players" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -84,7 +91,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const requestedLanguage = one(PUZZLE_PARAMS.language);
   const language: KumimojiLanguage = requestedLanguage === "japanese" ? "japanese" : "english";
   const doubleSet = one(PUZZLE_PARAMS.doubleSet) === "1";
-  return { size, level, seed, checks, hints, strict, headStart, twins, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet } : {}) };
+  const players = partyPlayersAsked(one(PUZZLE_PARAMS.players));
+  return { size, level, seed, checks, hints, strict, headStart, twins, ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, ...(players > 1 ? { players } : {}) } : {}) };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -99,6 +107,7 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.doubleSet === true) params.set(PUZZLE_PARAMS.doubleSet, "1");
   if (asked.gameLength !== undefined && asked.gameLength !== "short") params.set(PUZZLE_PARAMS.gameLength, asked.gameLength);
   if (asked.language === "japanese") params.set(PUZZLE_PARAMS.language, asked.language);
+  if (asked.players !== undefined && asked.players > 1) params.set(PUZZLE_PARAMS.players, String(asked.players));
   return `?${params.toString()}`;
 }
 
