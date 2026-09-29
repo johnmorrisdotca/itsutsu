@@ -18,9 +18,10 @@
  */
 
 import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
+import type { MancalaGame } from "./mancala/mancala.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 
-export type PartyKind = "dotsAndBoxes" | "superghost";
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala";
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -38,10 +39,12 @@ export type PartySpec = {
   /** The player count the set-up opens on. */
   defaultPlayers: number;
   /**
-   * The boards the set-up offers, smallest first, at most four (the set-up
-   * rule every game and puzzle keeps: four tiles, a steady height). What a
-   * size counts is the game's own: boxes along a side, for Dots and Boxes;
-   * the shortest word that loses, for Superghost.
+   * The boards the set-up offers, in the order its tiles show them, at most
+   * four (the set-up rule every game and puzzle keeps: four tiles, a steady
+   * height). What a size counts is the game's own: boxes along a side, for
+   * Dots and Boxes; the shortest word that loses, for Superghost; for Mancala
+   * the holes a seed is sown into, 14 on Kalah's board and 12 on Oware's, so
+   * the board chosen is the rule set played (`MANCALA_BOARDS`).
    */
   sizes: readonly number[];
   /** The board the set-up opens on. */
@@ -91,4 +94,5 @@ export type PartyRules<S, M> = {
 export type PartyPlays = {
   dotsAndBoxes: { game: DotsGame; move: number };
   superghost: { game: GhostGame; move: GhostMove };
+  mancala: { game: MancalaGame; move: number };
 };

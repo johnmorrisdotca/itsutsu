@@ -153,3 +153,47 @@ export const GHOST_COPY = {
   continue: "Continue →",
   about: "About Superghost and its rules",
 } as const;
+
+/** Where this browser keeps its game of Mancala: one at a time, apart from every other table's. */
+export const MANCALA_STORAGE_KEY = "itsutsu.mancala";
+
+/**
+ * How long a sowing takes to draw: one step a seed, never slower than this a
+ * step, and the whole of it about half a second whatever its length — well
+ * under a second, so a table is never kept waiting. Under
+ * `prefers-reduced-motion` it is not drawn at all (`useSowing`).
+ */
+export const MANCALA_SOW_STEP_MS = 90;
+export const MANCALA_SOW_TOTAL_MS = 520;
+
+/** The seeds' own colours, a handful of pale stones: no seed belongs to anybody, so none carries a player's colour. */
+export const MANCALA_SEED_TONES: readonly string[] = ["#f4efe4", "#dcd3c1", "#c9b99b", "#e9dcc3", "#d2c7b5"];
+
+/** What Mancala's table says, beyond what every table says (`PARTY_COPY`). */
+export const MANCALA_COPY = {
+  lead: "Mancala for two, passed across one phone or tablet: Kalah, the default, or Oware. Take your turn, then pass it on. Nothing here is rated or kept anywhere but this browser.",
+  rules: "Which rules?",
+  names: "Names, if you like",
+  /** Each rule set in a line, on its set-up tile. */
+  ruleLine: { kalah: "Sow into your store. Last seed home: sow again. Last in an empty pit: capture across.", oware: "Stores keep captures only. Make 2 or 3 on their side: take them. 25 wins." },
+  tap: "Tap one of your pits, ringed in your colour, to sow its seeds.",
+  feed: (hungry: string) => `${hungry} has no seeds: you must sow into their row if you can.`,
+  again: (name: string) => `Another turn: ${name}'s last seed fell in their store.`,
+  captured: (name: string, seeds: number) => `${name} captured ${seeds}.`,
+  grandSlam: (name: string, other: string) => `Grand slam: it would take all ${other}'s seeds, so ${name} takes none.`,
+  seeds: (count: number) => `${count} ${count === 1 ? "seed" : "seeds"}`,
+  sowings: (count: number) => `${count} ${count === 1 ? "sowing" : "sowings"}`,
+  /** Why the game ended, for the winner's line. */
+  ending: {
+    rowEmpty: "A row ran out of seeds, and each player took what was left on their side.",
+    majority: "More than half the seeds were taken.",
+    even: "Twenty-four each.",
+    cannotFeed: "One row was empty and nothing could be sown into it, so each player took the seeds on their side.",
+    repeated: "The same position came round a third time, so each player took the seeds on their side.",
+  },
+  store: "store",
+  taken: "taken",
+  play: "Play →",
+  continue: "Continue →",
+  about: "About Mancala and its rules",
+} as const;

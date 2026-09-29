@@ -7,8 +7,9 @@ import { fingerprintOf } from "../gomoku/ladderFingerprint.ts";
  * The files that decide how a party game's picture looks: its board, its
  * colours and the scene the picture is taken of. The same idea as
  * `boardArtFingerprint.ts` for the boards and `puzzleArtFingerprint.ts` for
- * the puzzles, kept apart so that a change to Dots and Boxes' board asks for
- * the party games' pictures to be re-taken and nothing else's.
+ * the puzzles, kept apart so that a change to Dots and Boxes' board or
+ * Mancala's asks for the party games' pictures to be re-taken and nothing
+ * else's.
  */
 export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/DotsBoard.tsx",
@@ -17,6 +18,10 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/party.constants.ts",
   "src/lib/party/dotsAndBoxes/dotsAndBoxes.ts",
   "src/lib/party/superghost/superghost.ts",
+  "src/components/party/MancalaBoard.tsx",
+  "src/components/party/mancalaLayout.ts",
+  "src/lib/party/mancala/sowing.ts",
+  "src/lib/party/mancala/mancala.ts",
   "e2e/party-screenshots.spec.ts",
 ];
 

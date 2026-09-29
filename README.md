@@ -96,7 +96,8 @@ holds that — and a game may also be listed on a second family's shelf for
 discovery (`ALSO_LISTED_IN`), while it belongs to one. Party games is mostly a
 shelf of such guests — games a group plays round one device, at
 `/games/party` — with the party games of its own at home in it: Dots and
-Boxes for two to six (`/games/dots-and-boxes`), a third kind of game
+Boxes for two to six (`/games/dots-and-boxes`) and Mancala for two, by Kalah's
+or Oware's rules (`/games/mancala`), a third kind of game
 (`PartyKind`, `src/lib/party/`, see `docs/plans/party-games/README.md`). The
 guests include Chinese Checkers for two, three, four or six
 players passed round one phone (`/games/chinese-checkers/pass-and-play`),

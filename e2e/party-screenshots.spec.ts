@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 import { PARTY_SLUGS } from "../src/lib/gomoku/slugs";
 import { encodeDots, replayDots } from "../src/lib/party/dotsAndBoxes/dotsAndBoxes";
 import { encodeGhost, replayGhost } from "../src/lib/party/superghost/superghost";
+import { encodeMancala, replayMancala } from "../src/lib/party/mancala/mancala";
 import type { PartyKind } from "../src/lib/party/party.types";
 import { ready } from "./support";
 
@@ -22,9 +23,10 @@ import { ready } from "./support";
  */
 const OUT = "public/art/games";
 
-/** Where each table keeps its game: `DOTS_STORAGE_KEY` and `GHOST_STORAGE_KEY`, which a spec cannot import from a client module. */
+/** Where each table keeps its game: `DOTS_STORAGE_KEY`, `GHOST_STORAGE_KEY` and `MANCALA_STORAGE_KEY`, which a spec cannot import from a client module. */
 const DOTS_KEPT = "itsutsu.dotsAndBoxes";
 const GHOST_KEPT = "itsutsu.superghost";
+const MANCALA_KEPT = "itsutsu.mancala";
 
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
 const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; width?: number; scale?: number }[] = [
@@ -48,6 +50,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     // Drawn at twice the pixels, so the picture is as sharp as a board's, which is photographed wider.
     scale: 2,
     stored: encodeGhost(replayGhost(4, ["Ann", "Ben", "Cy", "Dee"], "english", 0, [">c>a>t>s!", ">x>q?#", ">p>l>a?=plate."], ">s<e<h<c<r>t>r>a>t>i>o")!),
+  },
+  {
+    // Kalah, sixteen sowings in, Ann to sow: seeds in every store and most pits, a pit of ten, and Ben's capture just made.
+    kind: "mancala",
+    key: MANCALA_KEPT,
+    table: "mancala-game",
+    shot: "board-surface",
+    stored: encodeMancala(replayMancala(14, ["Ann", "Ben"], 0, [5, 12, 3, 8, 10, 2, 12, 5, 9, 4, 10, 5, 1, 7, 1, 11])!),
   },
 ];
 

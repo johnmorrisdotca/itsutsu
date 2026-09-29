@@ -8,7 +8,10 @@ import { DotsOffer } from "./DotsOffer";
 import { GhostCard } from "./GhostCard";
 import { GhostGame } from "./GhostGame";
 import { GhostOffer } from "./GhostOffer";
-import { DOTS_COPY, GHOST_COPY, PARTY_COPY } from "./party.constants";
+import { MancalaCard } from "./MancalaCard";
+import { MancalaGame } from "./MancalaGame";
+import { MancalaOffer } from "./MancalaOffer";
+import { DOTS_COPY, GHOST_COPY, MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTable } from "./party.types";
 
 /**
@@ -35,5 +38,13 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Game: GhostGame,
     Offer: GhostOffer,
     Card: GhostCard,
+  },
+  mancala: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: MANCALA_COPY.lead,
+    Game: MancalaGame,
+    Offer: MancalaOffer,
+    Card: MancalaCard,
   },
 };

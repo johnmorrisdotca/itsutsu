@@ -1,6 +1,7 @@
 // Relative, not `@/`: `gameKeys.ts` imports this, `families.ts` imports that, and the browser specs import that.
 import type { VariantCopy } from "../gomoku/variants.constants";
 
+import { MANCALA_BOARDS } from "./mancala/mancala.constants";
 import type { PartyKind, PartySpec } from "./party.types";
 
 /**
@@ -16,10 +17,11 @@ import type { PartyKind, PartySpec } from "./party.types";
 export const PARTY_KINDS = {
   dotsAndBoxes: "dotsAndBoxes",
   superghost: "superghost",
+  mancala: "mancala",
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -59,6 +61,25 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "Two to eight players, in English or in Japanese. In Japanese the letters are the kana of the Japanese Kumimoji: が is played as か, ゃ as や and を as お, so a player never has to choose between them.",
   },
+  mancala: {
+    label: "Mancala",
+    kanji: "種まき",
+    tagline: "Sow seeds round the board, one to a pit, and gather more into your store than your opponent.",
+    origin:
+      "Sowing games are among the oldest board games still played, known right across Africa, the Middle East and South and Southeast Asia; the name comes from the Arabic naqala, to move. Oware is the Akan game of Ghana, played across West Africa and the Caribbean. Kalah was published in the United States by William Julius Champion Jr. in the 1940s, and is the version most sets sold as Mancala in North America follow. Nobody owns either.",
+    alsoKnownAs: ["Kalah", "Kalaha", "Oware", "Awari", "Ayo"],
+    wikipedia: "Mancala",
+    rules: [
+      "The board is two rows of six pits with four seeds in each, and a store at each end. The near row is the first player's, the far row the second's, and each player's store is at their right-hand end.",
+      "On your turn, lift every seed from one of your pits and sow them one to a pit, counter-clockwise, into the pits that follow.",
+      "Kalah, the default: sow into your own store as you pass it, never your opponent's. If the last seed lands in your store, you sow again. If it lands in an empty pit of yours and the pit opposite holds seeds, you take that seed and all of those into your store.",
+      "Oware: the stores are never sown into; they keep only what you take. A sowing of twelve or more goes round past the pit it came from and leaves it empty. If the last seed makes two or three in your opponent's pit, you take them, and the pit before it too, and so on back along their row, for as long as each holds two or three.",
+      "Oware's two courtesies: a sowing that would take every seed your opponent has takes none (the grand slam), and when your opponent's row is empty you must sow seeds into it if you can. If you cannot, you take the seeds on your side and the game is over.",
+      "Kalah ends when either row is empty, and each player adds what is left on their side to their store. Oware ends when somebody has 25, when both have 24, or when the same position comes round a third time, and then each takes the seeds on their side. The most seeds wins; level is a draw.",
+    ],
+    board:
+      "Kalah is the one most sets sold as Mancala in North America follow, and the quicker to learn. Oware is the older and deeper game, played in tournaments across West Africa and the Caribbean: choose it once both players know Kalah.",
+  },
 };
 
 /**
@@ -88,4 +109,10 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
    * would let a round run long past what a table remembers.
    */
   superghost: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 3, sizes: [4], defaultSize: 4, languages: ["english", "japanese"] },
+  /*
+   * Mancala for two, by Kalah's rules or Oware's, the choice made as a board
+   * is (`MANCALA_BOARDS`): Kalah first and the default, since it is the game
+   * most North American sets call Mancala and the quicker to pick up.
+   */
+  mancala: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: [MANCALA_BOARDS.kalah, MANCALA_BOARDS.oware], defaultSize: MANCALA_BOARDS.kalah },
 };
