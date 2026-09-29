@@ -2,11 +2,13 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
+import { TABLE } from "../src/lib/puzzles/kumimoji/tableView";
 import { lettersOf, sameLetters } from "../src/lib/puzzles/kumimoji/grid";
 import { KUMIMOJI_BAG, KUMIMOJI_HANDS } from "../src/lib/puzzles/kumimoji/tiles.constants";
 import { loadTileWords, tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
+import { suiteOperator } from "./operator";
 import { loadEveryWordList } from "./wordLists";
 
 // Words worked out here, in node, need Gomoji's lists loaded (`wordLists.ts`).
@@ -50,6 +52,22 @@ function classicGame(from: number): { seed: number; hand: string; word: string }
       if (word !== null) return { seed, hand, word };
     }
   }
+}
+
+async function japaneseGame(from: number): Promise<{ seed: number; wildAt: number; formsAt: number; forms: string }> {
+  const words = await loadTileWords("japanese");
+  for (let seed = from; seed < from + 1_000; seed += 1) {
+    try {
+      const puzzle = generateKumimoji(KUMIMOJI_HANDS.quick, "medium", seed, { language: "japanese" });
+      const hand = [...puzzle.givens.slice(0, KUMIMOJI_HANDS.quick)];
+      const wildAt = hand.findIndex(words.isWild);
+      const formsAt = hand.findIndex((tile) => words.formsOf(tile) !== "");
+      if (wildAt >= 0 && formsAt >= 0) return { seed, wildAt, formsAt, forms: words.formsOf(hand[formsAt]!) };
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("Could not find a Japanese hand with a wild and a tile of several forms.");
 }
 
 /**
@@ -109,6 +127,105 @@ test.describe("Kumimoji", () => {
     await expect(page).toHaveURL(/size=7/);
     await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(KUMIMOJI_HANDS.quick);
     await expect(page.getByTestId("kumimoji-bag")).toHaveAttribute("data-left", String(KUMIMOJI_BAG[KUMIMOJI_HANDS.quick]! - KUMIMOJI_HANDS.quick));
+  });
+
+  test("the / key and Sort put the hand in order, and a table tile tapped twice goes back to it", async ({ page }) => {
+    const { seed, word } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const hand = page.getByTestId("kumimoji-hand-tile");
+    const inOrder = async () => {
+      const letters = await hand.evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute("data-letter")!));
+      const plain = letters.filter((letter) => letter !== "*");
+      expect(plain).toEqual([...plain].sort());
+      expect(letters.slice(plain.length).every((letter) => letter === "*")).toBe(true);
+    };
+    await page.keyboard.press("/");
+    await inOrder();
+
+    // Laid, then tapped twice: back in the hand, at its end, and Sort puts it in its place.
+    await lay(page, word[0]!, "0,0");
+    await expect(hand).toHaveCount(CLASSIC - 1);
+    await page.locator('[data-testid="kumimoji-tile"][data-square="0,0"]').dblclick();
+    await expect(page.getByTestId("kumimoji-tile")).toHaveCount(0);
+    await expect(hand).toHaveCount(CLASSIC);
+    await page.getByTestId("kumimoji-sort").click();
+    await inOrder();
+  });
+
+  test("Help, chosen on the set-up screen, arranges the hand into a word, a different one each press", async ({ page }) => {
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    await page.getByTestId("kumimoji-help-on").click();
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /hints=1/);
+    // The address the set-up built, on a bag of this spec's own: a hand can be all consonants and spell nothing, which Help rightly says.
+    const href = (await page.getByTestId("puzzle-solve").getAttribute("href"))!;
+    const { seed } = classicGame(freshPuzzleSeed());
+    await page.goto(`${href}&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    const help = page.getByTestId("kumimoji-help");
+    await expect(help).toHaveAttribute("data-offered", "true");
+    const said = page.getByTestId("kumimoji-said");
+    const shown = async () => (await said.innerText()).split(" ")[0]!.toLowerCase();
+    const front = async (length: number) => (await page.getByTestId("kumimoji-hand-tile").evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute("data-letter")!))).slice(0, length).join("");
+
+    await help.click();
+    await expect(said).toContainText("is at the front of your hand");
+    const first = await shown();
+    expect(isWord(first), `${first} is a word`).toBe(true);
+    expect(await front(first.length)).toBe(first);
+
+    await help.click();
+    await expect.poll(shown).not.toBe(first);
+    const second = await shown();
+    expect(isWord(second), `${second} is a word`).toBe(true);
+    expect(await front(second.length)).toBe(second);
+  });
+
+  test("Help is on the tray but cannot be pressed when it was not chosen", async ({ page }) => {
+    const { seed } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await expect(page.getByTestId("kumimoji-help")).toHaveAttribute("data-offered", "false");
+    await expect(page.getByTestId("kumimoji-help")).toBeDisabled();
+  });
+
+  test.describe("Japanese play", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("keeps the language in the address, shows the forms a tile also plays as, and gives a wild its reading", async ({ page }) => {
+      const operator = suiteOperator();
+      const signIn = await page.request.post("/api/session", {
+        data: { kind: "admin", email: operator.email, token: process.env.ADMIN_TOKEN ?? "local-operator-token" },
+      });
+      expect(signIn.ok(), `operator sign-in answered ${signIn.status()}`).toBe(true);
+      const cookie = signIn.headers()["set-cookie"]?.match(/itsutsu_session=([^;]+)/)?.[1];
+      expect(cookie, "operator sign-in did not return a session cookie").toBeTruthy();
+      await page.context().addCookies([{ name: "itsutsu_session", value: cookie!, url: new URL(signIn.url()).origin }]);
+      const game = await japaneseGame(freshPuzzleSeed());
+      await page.route("**/api/puzzles/runs", (route) => route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' }));
+      await page.goto(`${AT}/new`);
+      await ready(page, "puzzle-set-up");
+      await page.getByTestId("kumimoji-language-japanese").click();
+      await expect(page.getByTestId("kumimoji-length-short")).toContainText(String(KUMIMOJI_BAG[CLASSIC]));
+      await expect(page.getByTestId("kumimoji-double-on")).toBeDisabled();
+      await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /language=japanese/);
+      await page.goto(`${AT}/play?size=${KUMIMOJI_HANDS.quick}&level=medium&seed=${game.seed}&language=japanese`);
+      await ready(page, "puzzle-play");
+      await expect(page).toHaveURL(/language=japanese/);
+
+      const hand = page.getByTestId("kumimoji-hand-tile");
+      await expect(hand).toHaveCount(KUMIMOJI_HANDS.quick);
+      // ゆ says ゅ, は says ば and ぱ: the tile plays them all, with nothing to choose.
+      await expect(hand.nth(game.formsAt).getByTestId("kumimoji-tile-forms")).toHaveText(game.forms);
+      await expect(page.getByTestId("kumimoji-tile-reading")).toHaveCount(0);
+
+      // The wild is the 五 until it is given a kana.
+      await expect(hand.nth(game.wildAt)).toHaveAccessibleName("Wild, unassigned in your hand");
+      await hand.nth(game.wildAt).click();
+      await page.getByTestId("kumimoji-tile-reading").selectOption({ label: "か" });
+      await expect(hand.nth(game.wildAt)).toHaveAccessibleName("Wild, か in your hand");
+    });
   });
 
   test.describe("on a phone", () => {
@@ -280,7 +397,9 @@ test.describe("Kumimoji", () => {
     const tilePx = async () => Number(await table.getAttribute("data-tile-px"));
     await fills();
 
-    // Each arrow moves the view, and the board goes with it.
+    // The arrows are out of sight until asked for; then each moves the view, and the board goes with it.
+    await expect(page.getByTestId("kumimoji-pad")).toHaveCount(0);
+    await page.getByTestId("kumimoji-arrows").click();
     for (const key of ["right", "down", "left", "up"] as const) {
       const before = await place();
       await page.getByTestId(`kumimoji-pad-${key}`).click();
@@ -289,10 +408,9 @@ test.describe("Kumimoji", () => {
     }
     await expect(table).toHaveAttribute("data-fitted", "false");
 
-    // Zoomed out as far as it goes, then panned: still a board to the edges.
-    const fitTile = await tilePx();
-    for (let press = 0; press < 6; press += 1) await page.getByTestId("kumimoji-pad-out").click();
-    await expect.poll(tilePx).toBeLessThan(fitTile + 1);
+    // Zoomed out as far as it goes, past the size Fit stops at, then panned: still a board to the edges.
+    for (let press = 0; press < 12; press += 1) await page.getByTestId("kumimoji-pad-out").click();
+    await expect.poll(tilePx).toBe(TABLE.zoomLeast);
     await page.getByTestId("kumimoji-pad-left").click();
     await page.getByTestId("kumimoji-pad-left").click();
     await fills();
@@ -316,6 +434,90 @@ test.describe("Kumimoji", () => {
     await expect.poll(place).toBe(reversiAt);
   });
 
+  /*
+   * TURN THE TABLE, EVERY TILE UPRIGHT. John, 2026-09-28: "if you rotate the
+   * board like flip it 180° for example then all the tiles will flip 180° to
+   * right themselves directly just so that they're not backwards for you or
+   * upside down." Driven by the press and the finger, measured on the screen.
+   */
+  test("Turn turns the table a quarter a press with every tile upright, and a tap or an arrow key goes where the screen says", async ({ page }) => {
+    const { seed, word } = classicGame(freshPuzzleSeed());
+    await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    for (const [at, letter] of [...word].entries()) await lay(page, letter, `0,${at}`);
+    const table = page.getByTestId("kumimoji-table");
+    const tileAt = (square: string) => page.locator(`[data-testid="kumimoji-tile"][data-square="${square}"]`);
+    const middles = async () => {
+      const out: { x: number; y: number }[] = [];
+      for (let at = 0; at < word.length; at += 1) {
+        const box = (await tileAt(`0,${at}`).boundingBox())!;
+        out.push({ x: box.x + box.width / 2, y: box.y + box.height / 2 });
+      }
+      return out;
+    };
+    await expect(table).toHaveAttribute("data-turn", "0");
+    const unturned = await middles();
+    for (let at = 1; at < word.length; at += 1) expect(unturned[at]!.x).toBeGreaterThan(unturned[at - 1]!.x);
+
+    // A quarter: the word runs down the screen.
+    await page.getByTestId("kumimoji-turn").click();
+    await expect(table).toHaveAttribute("data-turn", "1");
+    const quarter = await middles();
+    for (let at = 1; at < word.length; at += 1) {
+      expect(quarter[at]!.y).toBeGreaterThan(quarter[at - 1]!.y);
+      expect(Math.abs(quarter[at]!.x - quarter[0]!.x)).toBeLessThan(1);
+    }
+
+    // Half: the word stands right to left, on one line.
+    await page.getByTestId("kumimoji-turn").click();
+    await expect(table).toHaveAttribute("data-turn", "2");
+    const half = await middles();
+    for (let at = 1; at < word.length; at += 1) {
+      expect(half[at]!.x, "the word is not right to left after half a turn").toBeLessThan(half[at - 1]!.x);
+      expect(Math.abs(half[at]!.y - half[0]!.y)).toBeLessThan(1);
+    }
+    // Every tile is drawn upright: nothing on it, in it or over it is turned.
+    const turned = await page.locator('[data-testid="kumimoji-tile"]').evaluateAll((tiles) =>
+      tiles.flatMap((tile) => {
+        const all: Element[] = [tile, ...tile.querySelectorAll("*")];
+        for (let up = tile.parentElement; up !== null && up !== document.body; up = up.parentElement) all.push(up);
+        return all.map((element) => getComputedStyle(element)).filter((style) => style.transform !== "none" || style.rotate !== "none").map((style) => `${style.transform} ${style.rotate}`);
+      }),
+    );
+    expect(turned, "a tile or what holds it is rotated").toEqual([]);
+
+    // A tile tapped onto the square under the finger: below the first letter on the screen, which is above it in the grid.
+    const spare = (await page.getByTestId("kumimoji-hand-tile").first().getAttribute("data-letter"))!;
+    await page.getByTestId("kumimoji-hand-tile").first().click();
+    const first = (await tileAt("0,0").boundingBox())!;
+    await page.mouse.click(first.x + first.width / 2, first.y + first.height * 1.5);
+    await expect(tileAt("-1,0")).toHaveAttribute("data-letter", spare);
+    const laid = (await tileAt("-1,0").boundingBox())!;
+    const firstNow = (await tileAt("0,0").boundingBox())!;
+    expect(laid.y).toBeGreaterThan(firstNow.y);
+    expect(Math.abs(laid.x - firstNow.x)).toBeLessThan(1);
+
+    // Typing runs across the grid, which is leftward on this screen, and its arrow says so; the arrow keys go the way they point.
+    const lastNow = (await tileAt(`0,${word.length - 1}`).boundingBox())!;
+    await page.mouse.click(lastNow.x + lastNow.width / 2, lastNow.y - lastNow.height / 2);
+    const typing = page.locator("[data-typing]");
+    await expect(typing).toHaveAttribute("data-typing", "left");
+    await expect(typing).toHaveText("←");
+    await expect(typing).toHaveAttribute("data-square", `1,${word.length - 1}`);
+    const before = (await typing.boundingBox())!;
+    await page.keyboard.press("ArrowRight");
+    await expect(typing).toHaveAttribute("data-square", `1,${word.length - 2}`);
+    expect((await typing.boundingBox())!.x).toBeGreaterThan(before.x);
+
+    // Four presses in all: back as it was.
+    await page.keyboard.press("Escape");
+    await page.getByTestId("kumimoji-turn").click();
+    await page.getByTestId("kumimoji-turn").click();
+    await expect(table).toHaveAttribute("data-turn", "0");
+    const back = await middles();
+    for (let at = 1; at < word.length; at += 1) expect(back[at]!.x).toBeGreaterThan(back[at - 1]!.x);
+  });
+
   test.describe("on a phone", () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
@@ -323,8 +525,9 @@ test.describe("Kumimoji", () => {
       const { seed } = classicGame(freshPuzzleSeed());
       await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
       await ready(page, "puzzle-play");
+      await page.getByTestId("kumimoji-arrows").click();
       const outer = (await page.getByTestId("kumimoji-table").boundingBox())!;
-      for (const id of ["kumimoji-fit", "kumimoji-pad"]) {
+      for (const id of ["kumimoji-turn", "kumimoji-fit", "kumimoji-arrows", "kumimoji-pad"]) {
         const inner = (await page.getByTestId(id).boundingBox())!;
         expect(inner.x).toBeGreaterThanOrEqual(outer.x);
         expect(inner.x + inner.width).toBeLessThanOrEqual(outer.x + outer.width + 0.5);
@@ -333,6 +536,32 @@ test.describe("Kumimoji", () => {
       const before = await page.getByTestId("kumimoji-ruling").evaluate((element) => getComputedStyle(element).backgroundPosition);
       await page.getByTestId("kumimoji-pad-down").click();
       await expect.poll(() => page.getByTestId("kumimoji-ruling").evaluate((element) => getComputedStyle(element).backgroundPosition)).not.toBe(before);
+    });
+
+    test("Turn sits in the table's corner beside Arrows and Fit, and turning moves nothing on the page", async ({ page }) => {
+      const { seed, word } = classicGame(freshPuzzleSeed());
+      await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
+      await ready(page, "puzzle-play");
+      for (const [at, letter] of [...word].entries()) await lay(page, letter, `0,${at}`);
+      const table = page.getByTestId("kumimoji-table");
+      const outer = (await table.boundingBox())!;
+      const corner = await Promise.all(["kumimoji-turn", "kumimoji-arrows", "kumimoji-fit"].map(async (id) => (await page.getByTestId(id).boundingBox())!));
+      // One row, inside the table, none over another.
+      for (const [at, box] of corner.entries()) {
+        expect(box.x).toBeGreaterThanOrEqual(outer.x);
+        expect(box.x + box.width).toBeLessThanOrEqual(outer.x + outer.width + 0.5);
+        expect(Math.abs(box.y - corner[0]!.y)).toBeLessThan(1);
+        if (at > 0) expect(box.x).toBeGreaterThanOrEqual(corner[at - 1]!.x + corner[at - 1]!.width);
+      }
+      await expect(page.getByTestId("kumimoji-turn")).toHaveAccessibleName(/turn the table a quarter turn clockwise/i);
+      const tray = (await page.getByTestId("kumimoji-tray").boundingBox())!;
+      await page.getByTestId("kumimoji-turn").click();
+      await expect(table).toHaveAttribute("data-turn", "1");
+      const after = (await table.boundingBox())!;
+      expect(after.height).toBe(outer.height);
+      expect(after.y).toBe(outer.y);
+      expect((await page.getByTestId("kumimoji-tray").boundingBox())!.y).toBe(tray.y);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     });
   });
 });

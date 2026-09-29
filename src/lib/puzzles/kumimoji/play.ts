@@ -1,5 +1,7 @@
 import { decodeGrid, encodeGrid, lettersOf, sameLetters, type GridVerdict, type Tiles } from "./grid";
+import { tileFace } from "./tileFace";
 import { KUMIMOJI_DRAW, KUMIMOJI_TRADE } from "./tiles.constants";
+import { tileWords } from "./tileWords";
 
 /**
  * A KUMIMOJI BEING PLAYED: the bag, the tiles traded back into it, how many
@@ -52,6 +54,20 @@ export function placeFromHand(play: TilePlay, handAt: number, square: string): T
   return { ...play, tiles: withTiles(play, (tiles) => tiles.set(square, letter)), hand: play.hand.filter((_, at) => at !== handAt) };
 }
 
+/** Give a hand tile its chosen reading, without changing which physical tile it is. */
+export function assignHandTile(play: TilePlay, handAt: number, face: string): TilePlay {
+  if (play.hand[handAt] === undefined || face.length !== 1) return play;
+  const hand = [...play.hand];
+  hand[handAt] = face;
+  return { ...play, hand };
+}
+
+/** Give a tile on the table its chosen reading, without changing its square. */
+export function assignTableTile(play: TilePlay, square: string, face: string): TilePlay {
+  if (!play.tiles.has(square) || face.length !== 1) return play;
+  return { ...play, tiles: withTiles(play, (tiles) => tiles.set(square, face)) };
+}
+
 /** A tile on the table to another square: to an empty one it moves, onto a tile the two change places. */
 export function moveOnTable(play: TilePlay, from: string, to: string): TilePlay {
   const moving = play.tiles.get(from);
@@ -87,6 +103,16 @@ export function liftToHand(play: TilePlay, square: string): TilePlay {
 /** Every tile on the table back to the hand. */
 export function liftAll(play: TilePlay): TilePlay {
   return { ...play, tiles: new Map(), hand: [...play.hand, ...play.tiles.values()] };
+}
+
+/**
+ * The hand in order (John, 2026-09-28: "it gets sorted for letters
+ * alphabetically"): English A to Z, Japanese あいうえお, which is the order
+ * of the kana's tile codes, and the wilds last as they came.
+ */
+export function sortHand(play: TilePlay): TilePlay {
+  const hand = [...play.hand].sort((a, b) => Number(tileFace(a).wild) - Number(tileFace(b).wild) || (tileFace(a).wild ? 0 : a < b ? -1 : a > b ? 1 : 0));
+  return { ...play, hand };
 }
 
 /** Whether Draw may be pressed: the hand used, the grid sound, and a tile left to draw. */
@@ -136,7 +162,7 @@ export function readTileProgress(code: string): { taken: number; returned: strin
   const parts = code.split(":");
   if (parts.length !== 4) return null;
   const [takenText, returned, hand, grid] = parts as [string, string, string, string];
-  if (!/^\d{1,3}$/.test(takenText) || !/^[a-z]*$/.test(returned) || !/^[a-z]*$/.test(hand)) return null;
+  if (!/^\d{1,3}$/.test(takenText) || !/^[a-zA-Z*\uE000-\uF8FF]*$/.test(returned) || !/^[a-zA-Z*\uE000-\uF8FF]*$/.test(hand)) return null;
   const tiles = decodeGrid(grid);
   if (tiles === null) return null;
   return { taken: Number(takenText), returned, hand: [...hand], tiles };
@@ -148,14 +174,20 @@ export function readTileProgress(code: string): { taken: number; returned: strin
  * and not given back. Null opens the game fresh rather than on a grid that
  * never came out of this bag.
  */
-export function decodeTileProgress(code: string, bag: string): TilePlay | null {
+export function decodeTileProgress(code: string, bag: string, language: "english" | "japanese" = "english"): TilePlay | null {
   const read = readTileProgress(code);
   if (read === null) return null;
+  const words = tileWords(language);
   const line = bag + read.returned;
   if (read.taken > line.length) return null;
-  const held = lettersOf(line.slice(0, read.taken));
-  for (const letter of read.returned) held.set(letter, (held.get(letter) ?? 0) - 1);
-  for (const [letter, count] of held) if (count === 0) held.delete(letter);
-  if (!sameLetters(held, lettersOf([...read.hand, ...read.tiles.values()]))) return null;
+  const held = lettersOf([...line.slice(0, read.taken)].map(words.familyKey).filter((tile): tile is string => tile !== null));
+  for (const tile of read.returned) {
+    const identity = words.familyKey(tile);
+    if (identity === null) return null;
+    held.set(identity, (held.get(identity) ?? 0) - 1);
+  }
+  for (const [tile, count] of held) if (count === 0) held.delete(tile);
+  const played = [...read.hand, ...read.tiles.values()].map(words.familyKey);
+  if (played.some((tile) => tile === null) || !sameLetters(held, lettersOf(played as string[]))) return null;
   return { bag, returned: read.returned, taken: read.taken, tiles: read.tiles, hand: read.hand };
 }

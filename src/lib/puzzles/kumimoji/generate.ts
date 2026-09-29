@@ -1,7 +1,8 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled, type Random } from "../random";
 import { encodeGrid, squareAt } from "./grid";
-import { KUMIMOJI_BAG, TILE_MIX } from "./tiles.constants";
+import { kumimojiTileCount, kumimojiWildCount, TILE_MIX_TOTAL } from "./tiles.constants";
+import type { KumimojiLanguage, KumimojiLength } from "./kumimoji.types";
 import { tileWords, type TileWords } from "./tileWords";
 
 /**
@@ -25,21 +26,34 @@ import { tileWords, type TileWords } from "./tileWords";
  * Deterministic in the seed, like every generator here: two browsers in a
  * race, or one tomorrow, deal the same bag in the same order.
  */
-export function generateKumimoji(size: number, level: PuzzleLevel, seed: number): Puzzle {
-  const tiles = KUMIMOJI_BAG[size];
-  if (tiles === undefined) throw new Error(`No Kumimoji with a hand of ${size}.`);
-  const words = tileWords();
+export function generateKumimoji(size: number, level: PuzzleLevel, seed: number, options: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage } = {}): Puzzle {
+  const gameLength = options.gameLength ?? "short";
+  const language = options.language ?? "english";
+  const doubleSet = language === "english" && (options.doubleSet ?? false);
+  const multiplier = doubleSet ? 2 : 1;
+  const words = tileWords(language);
+  const setSize = [...words.mix.values()].reduce((sum, count) => sum + count, 0);
+  const tiles = kumimojiTileCount(size, gameLength, language === "english" ? TILE_MIX_TOTAL : setSize, doubleSet);
+  const wilds = kumimojiWildCount(size, level, tiles);
   const random = seededRandom(seed);
+  const side = layingSideFor(tiles);
+  let bestProgress = 0;
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    const squares = layCrossword(tiles, random, words);
+    const squares = layCrossword(tiles, random, words, side, multiplier, words.mix, (laid) => { bestProgress = Math.max(bestProgress, laid); });
     if (squares === null) continue;
-    const bag = shuffled(
-      squares.filter((letter) => letter !== ""),
-      random,
-    );
-    return { kind: "kumimoji", size, level, seed, givens: bag.join(""), solution: encodeGrid(tilesOf(squares)) };
+    const positions = shuffled(squares.flatMap((tile, at) => tile === "" ? [] : [at]), random);
+    const wildAt = new Set(positions.slice(0, wilds));
+    const bag = squares.flatMap((tile, at) => {
+      if (tile === "") return [];
+      if (!wildAt.has(at)) return [tile];
+      const assigned = words.wildFor(words.soundOf(tile) ?? tile);
+      if (assigned === null) throw new Error(`No wild tile can represent ${tile}.`);
+      squares[at] = assigned;
+      return ["*"];
+    });
+    return { kind: "kumimoji", size, level, seed, givens: shuffled(bag, random).join(""), solution: encodeGrid(tilesOf(squares, side)), gameLength, doubleSet, language };
   }
-  throw new Error(`Could not lay a Kumimoji of ${tiles} tiles from seed ${seed}.`);
+  throw new Error(`Could not lay a Kumimoji of ${tiles} tiles from seed ${seed}; furthest attempt laid ${bestProgress}.`);
 }
 
 /**
@@ -47,13 +61,17 @@ export function generateKumimoji(size: number, level: PuzzleLevel, seed: number)
  * the middle out; only where the tiles stand beside each other is kept
  * (`encodeGrid`), so the square is scaffolding and not a board.
  */
-const LAYING_SIDE = 21;
+const MIN_LAYING_SIDE = 21;
+
+function layingSideFor(tiles: number): number {
+  return Math.max(MIN_LAYING_SIDE, Math.ceil(Math.sqrt(tiles * 4)));
+}
 
 /** The laid square's tiles, by row and column. */
-function tilesOf(squares: readonly string[]): Map<string, string> {
+function tilesOf(squares: readonly string[], side: number): Map<string, string> {
   const tiles = new Map<string, string>();
   squares.forEach((letter, index) => {
-    if (letter !== "") tiles.set(squareAt(Math.floor(index / LAYING_SIDE), index % LAYING_SIDE), letter);
+    if (letter !== "") tiles.set(squareAt(Math.floor(index / side), index % side), letter);
   });
   return tiles;
 }
@@ -63,17 +81,18 @@ const LONGEST_LAID = 7;
 /** How many tiles it tries to cross from, and how many words of a length it reads for each. */
 const ANCHORS_TRIED = 8;
 const WORDS_READ = 60;
+const FINISH_BRANCHES = 40;
+const FINISH_NODES = 2_000;
 
 type Placement = { word: string; start: number; across: boolean; fresh: number[]; score: number };
 
 /** A crossword of exactly `tiles` tiles, or null where this try got stuck (the caller tries again). */
-function layCrossword(tiles: number, random: Random, words: TileWords): string[] | null {
-  const side = LAYING_SIDE;
+function layCrossword(tiles: number, random: Random, words: TileWords, side: number, multiplier: number, mix: ReadonlyMap<string, number>, progress: (laid: number) => void): string[] | null {
   const squares = new Array<string>(side * side).fill("");
   // What the set still holds of each letter, and the handful drawn from it that the words are chosen to use.
-  const left = new Map(Object.entries(TILE_MIX));
+  const left = new Map([...mix].map(([letter, count]) => [letter, count * multiplier]));
   const wanted = new Map<string, number>();
-  const set = Object.entries(TILE_MIX).flatMap(([letter, count]) => new Array<string>(count).fill(letter));
+  const set = [...mix].flatMap(([letter, count]) => new Array<string>(count * multiplier).fill(letter));
   for (const letter of shuffled(set, random).slice(0, tiles)) wanted.set(letter, (wanted.get(letter) ?? 0) + 1);
 
   const lay = (placement: Placement) => {
@@ -87,43 +106,84 @@ function layCrossword(tiles: number, random: Random, words: TileWords): string[]
     });
   };
 
+  const lift = (placement: Placement) => {
+    const step = placement.across ? 1 : side;
+    [...placement.word].forEach((letter, at) => {
+      const index = placement.start + at * step;
+      if (!placement.fresh.includes(index)) return;
+      squares[index] = "";
+      left.set(letter, (left.get(letter) ?? 0) + 1);
+      wanted.set(letter, (wanted.get(letter) ?? 0) + 1);
+    });
+  };
+
   // The first word, across the middle.
   const firstLength = Math.min(tiles, 3 + Math.floor(random() * 4));
   const first = bestOf(
     sample(words.byLength.get(firstLength) ?? [], WORDS_READ * 4, random).map((word) => {
       const start = Math.floor(side / 2) * side + Math.floor((side - firstLength) / 2);
-      return scored(word, start, true, Array.from({ length: word.length }, (_, at) => start + at), left, wanted, random);
+      return scored(word, start, true, Array.from({ length: word.length }, (_, at) => start + at), left, wanted, random, undefined, side);
     }),
   );
   if (first === null) return null;
   lay(first);
   let laid = firstLength;
+  progress(laid);
 
-  while (laid < tiles) {
-    const room = tiles - laid;
+  const placementsFor = (room: number, exhaustive: boolean): Placement[] => {
     const anchors = shuffled(
       squares.flatMap((letter, index) => (letter === "" ? [] : [index])),
       random,
-    ).slice(0, ANCHORS_TRIED);
+    ).slice(0, exhaustive ? squares.length : ANCHORS_TRIED);
     const found: Placement[] = [];
     for (const anchor of anchors) {
       for (const across of [true, false]) {
-        for (let length = 2; length <= Math.min(LONGEST_LAID, room + 1); length += 1) {
+        for (let length = 2; length <= LONGEST_LAID; length += 1) {
           const letter = squares[anchor]!;
-          for (const word of sample(words.byLength.get(length) ?? [], WORDS_READ, random, letter)) {
+          const candidates = words.byLength.get(length) ?? [];
+          for (const word of sample(candidates, exhaustive ? candidates.length : WORDS_READ, random, letter)) {
             for (let at = 0; at < word.length; at += 1) {
               if (word[at] !== letter) continue;
-              const placement = fit(squares, word, anchor, at, across, room, left, wanted, random);
+              const placement = fit(squares, word, anchor, at, across, room, left, wanted, random, side);
               if (placement !== null) found.push(placement);
             }
           }
         }
       }
     }
-    const next = bestOf(found);
+    return found;
+  };
+
+  let finishNodes = 0;
+  const finish = (room: number): boolean => {
+    if (room === 0) return true;
+    if (finishNodes >= FINISH_NODES) return false;
+    finishNodes += 1;
+    const placements = placementsFor(room, true)
+      .sort((a, b) => b.score - a.score || b.fresh.length - a.fresh.length)
+      .slice(0, FINISH_BRANCHES);
+    for (const placement of placements) {
+      lay(placement);
+      const nextRoom = room - placement.fresh.length;
+      progress(tiles - nextRoom);
+      if (finish(nextRoom)) return true;
+      lift(placement);
+    }
+    return false;
+  };
+
+  while (laid < tiles) {
+    const room = tiles - laid;
+    if (room <= 10) {
+      if (!finish(room)) return null;
+      laid = tiles;
+      break;
+    }
+    const next = bestOf(placementsFor(room, false));
     if (next === null) return null;
     lay(next);
     laid += next.fresh.length;
+    progress(laid);
   }
   return squares;
 }
@@ -156,8 +216,8 @@ function fit(
   left: Map<string, number>,
   wanted: Map<string, number>,
   random: Random,
+  side: number,
 ): Placement | null {
-  const side = LAYING_SIDE;
   const row = Math.floor(anchor / side);
   const col = anchor % side;
   const first = across ? col - at : row - at;
@@ -181,7 +241,7 @@ function fit(
     fresh.push(index);
   }
   if (fresh.length === 0 || fresh.length > room) return null;
-  return scored(word, start, across, fresh, left, wanted, random, squares);
+  return scored(word, start, across, fresh, left, wanted, random, squares, side);
 }
 
 /** A placement's worth: a letter drawn from the mix is worth two, any other costs three, and the set's own counts are a wall. */
@@ -194,8 +254,9 @@ function scored(
   wanted: Map<string, number>,
   random: Random,
   squares?: readonly string[],
+  side = MIN_LAYING_SIDE,
 ): Placement | null {
-  const step = across ? 1 : LAYING_SIDE;
+  const step = across ? 1 : side;
   const using = new Map<string, number>();
   let score = 0;
   for (let k = 0; k < word.length; k += 1) {
@@ -205,7 +266,7 @@ function scored(
     const count = (using.get(letter) ?? 0) + 1;
     using.set(letter, count);
     if (count > (left.get(letter) ?? 0)) return null;
-    score += count <= (wanted.get(letter) ?? 0) ? 2 : -3;
+    score += (count <= (wanted.get(letter) ?? 0) ? 2 : -3) + 8 / Math.max(1, left.get(letter) ?? 0);
   }
   return { word, start, across, fresh, score: score + 0.3 * fresh.length + 0.5 * random() };
 }

@@ -77,6 +77,9 @@ test.describe("Tsunagi at 10×10 on a phone", () => {
     const lines = linesOfAnswer(decodeLayout(code, SIZE)!, answer)!;
     await openLevel(page, 3);
     const viewport = page.getByTestId("tsunagi-viewport");
+    // The arrows are out of sight until asked for.
+    await expect(page.getByTestId("tsunagi-pad-in")).toHaveCount(0);
+    await page.getByTestId("tsunagi-arrows").click();
     await page.getByTestId("tsunagi-pad-in").click();
     await expect(viewport).toHaveAttribute("data-zoom", "1.50");
     await expect(page.getByTestId("tsunagi-fit")).toHaveAttribute("aria-pressed", "false");

@@ -69,6 +69,9 @@ const bodySchema = z.object({
   hintsUsed: z.number().int().nonnegative().optional(),
   /** The grid's seed, so the unfinished run kept of it (if any) is taken off the member's games. */
   seed: z.number().int().optional(),
+  language: z.enum(["english", "japanese"]).optional(),
+  gameLength: z.enum(["short", "medium", "full"]).optional(),
+  doubleSet: z.boolean().optional(),
   /**
    * A word puzzle whose guesses ran out: ended, not solved. Checked as a solve
    * is (`checkOutOfGuesses`), kept with `solved` false for the letters it
@@ -126,7 +129,8 @@ export async function POST(request: Request) {
     const hintsUsed = words ? (headStart ? HEAD_START_HINTS : 0) : (parsed.data.hintsUsed ?? 0);
 
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
-    await preparePuzzle(kind, size);
+    const language = kind === "kumimoji" ? parsed.data.language ?? "english" : "english";
+    await preparePuzzle(kind, size, language);
 
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
@@ -150,7 +154,7 @@ export async function POST(request: Request) {
         answer,
         solved: false,
       });
-      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed);
+      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language);
       const now = new Date();
       const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
       await awardTourBonuses({ memberId, paid, variant: kind, now });
@@ -160,7 +164,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const verdict = checkSolution(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
+    const verdict = checkSolution(kind, size, givens, answer, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], {
+      gameLength: parsed.data.gameLength ?? "short",
+      language,
+      doubleSet: parsed.data.doubleSet ?? false,
+    });
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
     const helped = parsed.data.helped ?? null;
     if (helped !== null && kind !== "tsunagi") return unprocessable("No help is offered on this puzzle.");
@@ -188,7 +196,7 @@ export async function POST(request: Request) {
       helped,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
-    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed);
+    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language);
     const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens), now });
     /* The tour, as after a finished game: a first solve of a puzzle can complete
        every game played, and a first puzzle at all can complete every family. */

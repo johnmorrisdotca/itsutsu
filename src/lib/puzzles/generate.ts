@@ -12,6 +12,7 @@ import { generateKoushi } from "./koushi/generate";
 import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
 import { loadEveryTsunagiLevel, loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
 import { generateKumimoji } from "./kumimoji/generate";
+import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
 import { loadTileWords } from "./kumimoji/tileWords";
 import { loadDailyPools } from "./dailyWords/dailyPools";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -23,7 +24,7 @@ import { POP_OWN_GUESS_LENGTHS, loadPopGuesses } from "./gomoji/popWords";
  * lives beside its solver; this is only the dispatch, so a kind that is
  * listed with no generator fails to compile rather than to run.
  */
-export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number): Puzzle {
+export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, kumimoji?: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage }): Puzzle {
   switch (kind) {
     case "numberPlace":
       return generateNumberPlace(size, level, seed);
@@ -57,7 +58,7 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return tsunagiPuzzle(size, seed);
     case "kumimoji":
       // Its bag is laid out as a crossword first, from its word list (`loadTileWords`); see its generator.
-      return generateKumimoji(size, level, seed);
+      return generateKumimoji(size, level, seed, kumimoji);
     case "koushi":
       // One size, the lattice: `size` is always its 5, and the level decides the swaps.
       return generateKoushi(level, seed);
@@ -82,18 +83,18 @@ export function puzzleLoads(kind: PuzzleKind): boolean {
   return kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "gomojiKana" || kind === "koushi" || kind === "kumimoji" || kind === "tsunagi";
 }
 
-export async function preparePuzzle(kind: PuzzleKind, size: number): Promise<void> {
+export async function preparePuzzle(kind: PuzzleKind, size: number, language: KumimojiLanguage = "english"): Promise<void> {
   // Gomoji's lists (`wordData.ts`): French for Mot, German for Wort, English for Gomoji, Pop's dictionary guesses, Koushi's lattice and Kumimoji's grid check.
   if (kind === "gomojiMot") await loadWordData("fr");
   if (kind === "gomojiWort") await loadWordData("de");
   if (kind === "gomoji" || kind === "gomojiPop" || kind === "koushi" || kind === "kumimoji") await loadWordData("en");
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
-  if (kind === "kumimoji") await loadTileWords();
+  if (kind === "kumimoji") await loadTileWords(language);
   // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).
   if (kind === "gomojiPop") await loadPopGuesses(size);
 }
 
 export async function prepareEveryPuzzle(): Promise<void> {
-  await Promise.all([loadWordData("en"), loadWordData("fr"), loadWordData("de"), ...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords(), ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size))]);
+  await Promise.all([loadWordData("en"), loadWordData("fr"), loadWordData("de"), ...KANA_SIZES.map((size) => loadKanaWords(size)), loadDailyPools("gomojiKana", KANA_SIZES), loadEveryTsunagiLevel(), loadTileWords(), loadTileWords("japanese"), ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size))]);
 }

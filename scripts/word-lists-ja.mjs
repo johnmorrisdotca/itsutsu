@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * WRITES THE KANA GOMOJI LISTS from JMdict, so the list in the repository is
- * a machine's output anybody can make again, never a hand-kept table. See
- * docs/plans/other/WORD-04-kana.md.
+ * WRITES THE KANA GOMOJI LISTS AND KUMIMOJI'S JAPANESE WORDS AND TILE MIX
+ * from JMdict, so the lists in the repository are machine output anybody can
+ * make again, never hand-kept tables. See docs/plans/other/WORD-04-kana.md.
  *
  *   curl -sL -o JMdict_e.gz http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz
  *   node scripts/word-lists-ja.mjs JMdict_e.gz
@@ -49,9 +49,13 @@ if (SOURCE === undefined) {
   process.exit(1);
 }
 const OUT = (length) => `src/lib/puzzles/gomojiKana/words.ja.${length}.data.ts`;
+const TILE_WORDS_OUT = "src/lib/puzzles/kumimoji/words.ja.data.ts";
 const LENGTHS = [3, 4, 5];
 const EASY = 900;
 const ANSWERS = 2000;
+const TILE_WORD_MIN = 2;
+const TILE_WORD_MAX = 15;
+const JAPANESE_SET_SIZE = 144;
 /** Where a commonness mark with no newspaper band stands among the bands. */
 const BAND = { ichi1: 12, spec1: 12, gai1: 16, spec2: 30 };
 
@@ -83,6 +87,31 @@ if (created === undefined) throw new Error("No JMdict release date in the file."
 const allowed = Object.fromEntries(LENGTHS.map((length) => [length, new Set()]));
 /** Each reading fit to hide, and its best rank: lower is commoner. */
 const ranked = Object.fromEntries(LENGTHS.map((length) => [length, new Map()]));
+const tileWords = new Set();
+
+/**
+ * KUMIMOJI'S TILES ARE THE 45 BASE KANA, and every other kana is one of them
+ * played another way (John, 2026-09-28: "any letters can have it work like the
+ * HA letter"): a voiced or half-voiced kana is its base (が is か, ば and ぱ are
+ * は), a small kana is its large one (ゃ is や, っ is つ), and を is お, which
+ * it sounds like. So a line of tiles is a word when it spells one read that
+ * way — the rule Japanese crosswords have always kept for small kana. ゐ and
+ * ゑ, which no modern word uses, read as い and え.
+ */
+const BASE_KANA = [..."あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわん"];
+const SMALL_TO_LARGE = { ぁ: "あ", ぃ: "い", ぅ: "う", ぇ: "え", ぉ: "お", っ: "つ", ゃ: "や", ゅ: "ゆ", ょ: "よ", ゎ: "わ", ゕ: "か", ゖ: "け", を: "お", ゐ: "い", ゑ: "え" };
+function tileKanaOf(reading) {
+  const folded = [];
+  for (const kana of reading.normalize("NFD").replace(/[\u3099\u309a]/gu, "").normalize("NFC")) {
+    const base = SMALL_TO_LARGE[kana] ?? kana;
+    if (!BASE_KANA.includes(base)) return null;
+    folded.push(base);
+  }
+  return folded.join("");
+}
+/** One printable character a base kana in the packed list. */
+const TILE_CODES = CODES.slice(0, BASE_KANA.length);
+
 for (const entry of xml.split("<entry>").slice(1)) {
   const pos = [...entry.matchAll(/<pos>&([^;]+);<\/pos>/g)].map((match) => match[1]);
   const misc = [...entry.matchAll(/<misc>&([^;]+);<\/misc>/g)].map((match) => match[1]);
@@ -91,6 +120,9 @@ for (const entry of xml.split("<entry>").slice(1)) {
   for (const [, element] of entry.matchAll(/<r_ele>([\s\S]*?)<\/r_ele>/g)) {
     const reading = toHiragana(/<reb>([^<]+)<\/reb>/.exec(element)[1]);
     if (!HIRAGANA.test(reading)) continue;
+    // A reading with ー is a loanword spelt in katakana, and there is no ー tile.
+    const tiles = tileKanaOf(reading);
+    if (tiles !== null && tiles.length >= TILE_WORD_MIN && tiles.length <= TILE_WORD_MAX) tileWords.add(tiles);
     const length = [...reading].length;
     if (!LENGTHS.includes(length)) continue;
     allowed[length].add(reading);
@@ -148,4 +180,83 @@ export const JA_WORDS_${length} = {
 `,
   );
 }
+
+if (tileWords.size === 0) throw new Error("JMdict produced no Japanese Kumimoji words.");
+
+/*
+ * THE MIX IT MEASURES: 144 tiles, as in English, shared among the 45 kana in proportion to
+ * how often each is used in the words people know — every answer the kana
+ * Gomoji hides, 3 to 5 kana, each kana read as its tile — with one tile of any
+ * kana that comes out below one. Measured the same way, English comes out the
+ * shape of the published 144: Q, Z, X and J at the floor, E, A, R, T, I, O, N
+ * on top. So ぬ, へ, ね, ろ, れ, む and の are Japanese's hard tiles, one each,
+ * and う, ん, い and し, the kana that end and join everything, are the E's.
+ *
+ * Printed, never written: the set is `JAPANESE_TILE_MIX` in
+ * src/lib/puzzles/kumimoji/tiles.constants.ts, fixed, because a kept game's
+ * bag is checked against it and a monthly refresh must not change the tiles
+ * under a game somebody is half way through. Read this line after a refresh,
+ * and change the table by hand only if the words have really moved.
+ */
+const kanaUse = new Map(BASE_KANA.map((kana) => [kana, 0]));
+for (const length of LENGTHS) {
+  for (const word of tiers[length].answers) {
+    const tiles = tileKanaOf(word);
+    if (tiles !== null) for (const kana of tiles) kanaUse.set(kana, kanaUse.get(kana) + 1);
+  }
+}
+const useTotal = [...kanaUse.values()].reduce((sum, count) => sum + count, 0);
+const shares = BASE_KANA.map((kana) => ({ kana, share: (JAPANESE_SET_SIZE * kanaUse.get(kana)) / useTotal }));
+const mix = new Map(shares.map(({ kana, share }) => [kana, Math.max(1, Math.floor(share))]));
+let dealt = [...mix.values()].reduce((sum, count) => sum + count, 0);
+const byRemainder = shares.filter(({ share }) => share >= 1).sort((a, b) => b.share - Math.floor(b.share) - (a.share - Math.floor(a.share)) || (a.kana < b.kana ? -1 : 1));
+for (let at = 0; dealt < JAPANESE_SET_SIZE; at += 1, dealt += 1) mix.set(byRemainder[at].kana, mix.get(byRemainder[at].kana) + 1);
+if (dealt !== JAPANESE_SET_SIZE) throw new Error(`Japanese Kumimoji mix has ${dealt} tiles, expected ${JAPANESE_SET_SIZE}.`);
+
+const byTileLength = new Map();
+for (const word of tileWords) {
+  if (!byTileLength.has(word.length)) byTileLength.set(word.length, []);
+  byTileLength.get(word.length).push([...word].map((kana) => TILE_CODES[BASE_KANA.indexOf(kana)]).join(""));
+}
+
+/* Front-coded, as the English list is: a hex digit of letters shared with the word before, then the rest. */
+function packTileWords(words) {
+  const sorted = [...new Set(words)].sort();
+  let out = "";
+  let before = "";
+  sorted.forEach((word, at) => {
+    let shared = 0;
+    while (shared < word.length - 1 && shared < 15 && before[shared] === word[shared]) shared += 1;
+    if (at > 0 && at % 200 === 0) out += "\n";
+    out += shared.toString(16) + word.slice(shared);
+    before = word;
+  });
+  return out;
+}
+
+const packedByLength = [...byTileLength.entries()]
+  .sort((a, b) => a[0] - b[0])
+  .map(([length, words]) => `    ${length}: ${JSON.stringify(packTileWords(words))},`)
+  .join("\n");
+writeFileSync(
+  TILE_WORDS_OUT,
+  `/**
+ * JAPANESE KUMIMOJI WORDS AND TILE MIX, written by scripts/word-lists-ja.mjs.
+ * Derived from JMdict release ${created}, and under CC BY-SA 4.0 with EDRDG's
+ * conditions: https://www.edrdg.org/edrdg/licence.html. Never edited by hand.
+ * ${tileWords.size} hiragana readings of ${TILE_WORD_MIN}–${TILE_WORD_MAX} kana, each spelt in the 45
+ * tiles (が as か, ゃ as や, を as お), one character a kana through \`codes\`,
+ * front-coded by length. The tiles are \`JAPANESE_TILE_MIX\` (tiles.constants.ts).
+ */
+export const TILE_WORDS_JA = {
+  release: ${JSON.stringify(created)},
+  kana: ${JSON.stringify(BASE_KANA.join(""))},
+  codes: ${JSON.stringify(TILE_CODES.join(""))},
+  byLength: {
+${packedByLength}
+  },
+};
+`,
+);
+console.log(`Kumimoji Japanese: ${tileWords.size} words; measured mix (compare JAPANESE_TILE_MIX) ${BASE_KANA.map((kana) => `${kana}${mix.get(kana)}`).join(" ")}`);
 console.log(`JMdict ${created}: ${counts.join("; ")}`);

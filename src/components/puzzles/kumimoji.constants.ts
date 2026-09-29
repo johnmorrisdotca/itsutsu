@@ -19,6 +19,12 @@ export const TILE_APART = "border-dashed opacity-80";
 /** The tile chosen to move, in the hand or on the table. */
 export const TILE_CHOSEN = "ring-4 ring-moss ring-offset-1 ring-offset-transparent";
 
+/** Two taps on one table tile inside this many milliseconds send it back to the hand. */
+export const DOUBLE_TAP_MS = 350;
+
+/** The key that sorts the hand: not a letter, since a letter lays its tile. */
+export const SORT_KEY = "/";
+
 /** The letter's size on a tile of this side. */
 export function tileLetterPx(side: number): number {
   return Math.round(side * 0.56);

@@ -17,6 +17,12 @@ export const TABLE = {
   margin: 2,
   /** The smallest a tile is drawn, in CSS pixels: a comfortable thumb. */
   tileLeast: 32,
+  /**
+   * The smallest a player may zoom a tile to by hand, to see a big crossword
+   * whole: too small to press, and not meant to be (John, 2026-09-28: "I would
+   * like to zoom out even further"). Fit never goes below `tileLeast`.
+   */
+  zoomLeast: 12,
   /** The largest a fitted tile is drawn: a first word does not fill a desk. */
   tileMost: 56,
   /** The largest a player may zoom a tile to by hand. */
@@ -71,7 +77,7 @@ export function overflows(area: Area, view: View, width: number, height: number)
 
 /** Zoomed by `factor` about the point (px, py) on the screen, which stays over the same spot of the table. */
 export function zoomView(view: View, factor: number, px: number, py: number): View {
-  const tile = Math.max(TABLE.tileLeast, Math.min(TABLE.zoomMost, view.tile * factor));
+  const tile = Math.max(TABLE.zoomLeast, Math.min(TABLE.zoomMost, view.tile * factor));
   const scale = tile / view.tile;
   return { tile, x: px - (px - view.x) * scale, y: py - (py - view.y) * scale };
 }

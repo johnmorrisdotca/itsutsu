@@ -11,6 +11,7 @@ import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS,
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
 import { keepRun } from "@/lib/puzzles/server/puzzleRuns";
+import type { KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
 /**
  * An unfinished puzzle, kept: sent when it is paused or its page is left (by
@@ -31,6 +32,9 @@ const bodySchema = z.object({
   size: z.number().int(),
   level: z.enum(PUZZLE_LEVEL_LIST as [string, ...string[]]),
   seed: z.number().int(),
+  language: z.enum(["english", "japanese"]).optional(),
+  gameLength: z.enum(["short", "medium", "full"]).optional(),
+  doubleSet: z.boolean().optional(),
   checksAllowed: z.number().int().nullable().optional(),
   checksUsed: z.number().int().nonnegative().optional(),
   hintsUsed: z.number().int().nonnegative().optional(),
@@ -75,6 +79,9 @@ export async function POST(request: Request) {
       size,
       level,
       seed,
+      language: kind === "kumimoji" ? parsed.data.language ?? "english" : "english",
+      gameLength: (kind === "kumimoji" ? parsed.data.gameLength ?? "short" : "short") as KumimojiLength,
+      doubleSet: kind === "kumimoji" && (parsed.data.doubleSet ?? false),
       checksAllowed,
       checksUsed: Math.min(parsed.data.checksUsed ?? 0, checksAllowed ?? Number.MAX_SAFE_INTEGER),
       hintsAllowed: headStart || (parsed.data.hintsAllowed ?? false),

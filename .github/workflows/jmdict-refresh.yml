@@ -1,13 +1,13 @@
 name: JMdict refresh
 
-# THE KANA GOMOJI'S WORDS, KEPT CURRENT. JMdict's licence (EDRDG, clause 4,
+# THE KANA GOMOJI AND KUMIMOJI JAPANESE WORDS, KEPT CURRENT. JMdict's licence (EDRDG, clause 4,
 # https://www.edrdg.org/edrdg/licence.html, read 2026-09-25) asks a site using
 # its data for "a procedure for regular updating… at least once a month";
 # John chose that on 2026-09-25 (docs/plans/other/WORD-04-kana.md).
 #
 # On the 1st of each month this fetches the newest JMdict and writes the kana
-# lists again (scripts/word-lists-ja.mjs). If they changed, it pushes them to a
-# branch, data/jmdict-YYYY-MM, and FAILS on purpose, so the failure is the
+# lists and Japanese tile mix again (scripts/word-lists-ja.mjs). If they changed,
+# it pushes them to a branch, data/jmdict-YYYY-MM, and FAILS on purpose, so the failure is the
 # reminder: an agent lands the branch through the ordinary gated release.
 # It opens no pull request and never pushes to main (John, 2026-09-25: "don't
 # make any prs without my permission"), the way UmaKuma's EDRDG refresh works.
@@ -32,19 +32,19 @@ jobs:
           node-version: 24
       - name: Fetch the newest JMdict
         run: curl -sSfL -o "$RUNNER_TEMP/JMdict_e.gz" http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz
-      - name: Write the kana lists
+      - name: Write the kana lists, Kumimoji dictionary and tile mix
         run: node scripts/word-lists-ja.mjs "$RUNNER_TEMP/JMdict_e.gz"
       - name: Leave the new lists on a branch, and say so by failing
         run: |
-          if git diff --quiet -- src/lib/puzzles/gomojiKana; then
-            echo "The kana lists are what JMdict's newest release makes. Nothing to land."
+          if git diff --quiet -- src/lib/puzzles/gomojiKana src/lib/puzzles/kumimoji/words.ja.data.ts; then
+            echo "The Japanese word and tile data are what JMdict's newest release makes. Nothing to land."
             exit 0
           fi
           branch="data/jmdict-$(date -u +%Y-%m)"
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git checkout -b "$branch"
-          git add src/lib/puzzles/gomojiKana
+          git add src/lib/puzzles/gomojiKana src/lib/puzzles/kumimoji/words.ja.data.ts
           git commit -m "The kana word lists from JMdict's newest release"
           git push --force origin "$branch"
           echo "::error::JMdict changed the kana lists. Land $branch through the ordinary release (pnpm release:take), then delete the branch."

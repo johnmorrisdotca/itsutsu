@@ -66,3 +66,27 @@ describe("a level the size cannot be made at", () => {
     expect(puzzleAsked("hiddenStones", { size: "7", level: "hard" }).level).toBe("hard");
   });
 });
+
+describe("Kumimoji language in its address", () => {
+  it("round-trips Japanese mode while keeping English and Double as defaults", () => {
+    expect(puzzleAsked("kumimoji", { size: "7", level: "medium" })).toMatchObject({ language: "english", doubleSet: false });
+    const query = puzzleQuery({ size: 7, level: "medium", seed: 9, language: "japanese", gameLength: "full", doubleSet: true });
+    expect(query).toBe("?size=7&level=medium&seed=9&double=1&length=full&language=japanese");
+    expect(puzzleAsked("kumimoji", Object.fromEntries(new URLSearchParams(query.slice(1)))))
+      .toMatchObject({ language: "japanese", gameLength: "full", doubleSet: false });
+  });
+
+  it("restores language and length from a kept run", () => {
+    expect(keptRunAsked("kumimoji", {
+      size: 7,
+      level: "medium",
+      seed: 9,
+      checksAllowed: null,
+      hintsAllowed: false,
+      strict: false,
+      language: "japanese",
+      gameLength: "medium",
+      doubleSet: false,
+    })).toMatchObject({ language: "japanese", gameLength: "medium", doubleSet: false });
+  });
+});

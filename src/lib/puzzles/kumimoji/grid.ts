@@ -8,8 +8,9 @@ import { KUMIMOJI_GRID_MOST } from "./tiles.constants";
  *
  * As a string, for an answer and a kept game, the grid is drawn from its own
  * top-left tile: its rows in order, joined by "/", each row written as runs of
- * empty squares (a number) and tiles (lower-case letters), with nothing after
- * its last tile — `cat/2o/2w` is CAT across and COW down from its C. Only
+ * empty squares (a number) and tiles. English letters keep their short form;
+ * other tiles are URI-escaped between `~` and `;`. `cat/2o/2w` is CAT across
+ * and COW down from its C. Only
  * where the tiles stand beside one another is written, never where on the
  * table they were, so one grid has one spelling however far it was dragged.
  */
@@ -54,7 +55,8 @@ export function encodeGrid(tiles: Tiles): string {
         gap += 1;
         continue;
       }
-      line += `${gap > 0 ? gap : ""}${letter}`;
+      if (letter === "") throw new Error("A Kumimoji tile cannot be empty.");
+      line += `${gap > 0 ? gap : ""}${/^[a-z]$/.test(letter) ? letter : `~${encodeURIComponent(letter)};`}`;
       gap = 0;
     }
     rows.push(line);
@@ -74,12 +76,32 @@ export function decodeGrid(code: string): Map<string, string> | null {
   const rows = code.split("/");
   if (rows.length > KUMIMOJI_GRID_MOST) return null;
   for (const [row, line] of rows.entries()) {
-    if (!/^(\d*[a-z])*$/.test(line)) return null;
     let col = 0;
-    for (const [, gap, letter] of line.matchAll(/(\d*)([a-z])/g)) {
+    let at = 0;
+    while (at < line.length) {
+      const gapStart = at;
+      while (at < line.length && /\d/.test(line[at]!)) at += 1;
+      const gap = line.slice(gapStart, at);
+      let letter: string;
+      if (/^[a-z]$/.test(line[at] ?? "")) {
+        letter = line[at]!;
+        at += 1;
+      } else if (line[at] === "~") {
+        const end = line.indexOf(";", at + 1);
+        if (end === -1) return null;
+        try {
+          letter = decodeURIComponent(line.slice(at + 1, end));
+        } catch {
+          return null;
+        }
+        if (letter.length === 0 || letter.length > 8) return null;
+        at = end + 1;
+      } else {
+        return null;
+      }
       col += gap === "" ? 0 : Number(gap);
       if (col >= KUMIMOJI_GRID_MOST) return null;
-      tiles.set(squareAt(row, col), letter!);
+      tiles.set(squareAt(row, col), letter);
       col += 1;
     }
   }
@@ -165,12 +187,12 @@ export type GridVerdict = {
   notWords: readonly string[];
 };
 
-export function judgeGrid(tiles: Tiles, isWord: (word: string) => boolean): GridVerdict {
+export function judgeGrid(tiles: Tiles, isWord: (word: string) => boolean, readable: (word: string) => string = (word) => word): GridVerdict {
   const misspelt = new Set<string>();
   const notWords: string[] = [];
   for (const run of runsOf(tiles)) {
     if (isWord(run.word)) continue;
-    notWords.push(run.word);
+    notWords.push(readable(run.word));
     for (const at of run.squares) misspelt.add(at);
   }
   const groups = groupsOf(tiles);

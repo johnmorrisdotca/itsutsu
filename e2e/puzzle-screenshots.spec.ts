@@ -234,7 +234,7 @@ test.describe("puzzle screenshots", () => {
         }
       } else if (scene.kind === "kumimoji") {
         // Tapped from the hand onto the table, as a player lays them; Fit and the pad are controls, not part of the picture.
-        await page.addStyleTag({ content: '[data-testid="kumimoji-fit"], [data-testid="kumimoji-pad"] { display: none !important; }' });
+        await page.addStyleTag({ content: '[data-testid="kumimoji-fit"], [data-testid="kumimoji-arrows"], [data-testid="kumimoji-pad"] { display: none !important; }' });
         // On the default board, ruled as the default Reversi board is: John, 2026-09-26, "grid lines, and the default light brown board".
         // The operator's colour is put back after the picture, since it is kept on the account every other scene reads.
         feltBefore = await page.locator('[data-testid="felt-patches"] [aria-checked="true"]').first().getAttribute("data-testid");

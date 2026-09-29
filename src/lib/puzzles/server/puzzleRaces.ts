@@ -11,6 +11,7 @@ import { preparePuzzle } from "../generate";
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS, levelsFor } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
+import type { KumimojiLanguage, KumimojiLength } from "../kumimoji/kumimoji.types";
 import { type RaceOutcome, type RaceSeat, type SeatState, canFinish, canStart, raceOutcome, seatState } from "../raceState";
 import { keepSolve } from "./puzzleSolves";
 
@@ -46,6 +47,9 @@ export async function createRace(input: {
   size: number;
   level: PuzzleLevel;
   seed: number;
+  language?: KumimojiLanguage;
+  gameLength?: KumimojiLength;
+  doubleSet?: boolean;
   givens: string;
   solution: string;
   checksAllowed: number | null;
@@ -53,14 +57,17 @@ export async function createRace(input: {
   hostName: string;
 }): Promise<{ id: string; guestToken: string } | { refused: string }> {
   const spec = PUZZLE_SPECS[input.kind];
+  const language = input.kind === "kumimoji" ? input.language ?? "english" : "english";
+  const gameLength = input.kind === "kumimoji" ? input.gameLength ?? "short" : "short";
+  const doubleSet = input.kind === "kumimoji" && language === "english" && (input.doubleSet ?? false);
   if (!spec.sizes.includes(input.size) || !levelsFor(input.kind, input.size).includes(input.level)) return { refused: "no such puzzle" };
   if (input.givens.length > spec.mostCells || input.solution.length > spec.mostCells) return { refused: "not a grid of that size" };
-  await preparePuzzle(input.kind, input.size);
-  const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level);
+  await preparePuzzle(input.kind, input.size, language);
+  const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level, { gameLength, language, doubleSet });
   if (!verdict.ok) return { refused: `the answer does not solve the puzzle: ${verdict.reason}` };
   const id = await freeRaceId();
   const row = await prisma.puzzleRace.create({
-    data: { id, ...input },
+    data: { id, ...input, language, gameLength, doubleSet },
     select: { id: true, guestToken: true },
   });
   return row;
@@ -138,8 +145,9 @@ export async function finishSeat(
   const mine = seat === "host" ? before.host : before.guest;
   if (!canFinish(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "the sitting is over" : "not started", status: 409 };
   if (answer.length > PUZZLE_SPECS[kind].mostCells) return { ok: false, reason: "not a grid of that size", status: 422 };
-  await preparePuzzle(kind, race.size);
-  const verdict = checkSolution(kind, race.size, race.givens, answer, level);
+  const language = kind === "kumimoji" ? race.language as KumimojiLanguage : "english";
+  await preparePuzzle(kind, race.size, language);
+  const verdict = checkSolution(kind, race.size, race.givens, answer, level, { gameLength: race.gameLength as KumimojiLength, language, doubleSet: race.doubleSet });
   if (!verdict.ok) return { ok: false, reason: verdict.reason, status: 422 };
 
   const stamped = await prisma.puzzleRace.updateMany({

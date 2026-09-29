@@ -12,6 +12,7 @@ import { requestOrigin } from "@/lib/requestOrigin";
 import { gamePath, seatPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import type { KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { RACE_SEATS, type RaceSeat, type SeatState } from "@/lib/puzzles/raceState";
 import { raceFor, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 
@@ -39,6 +40,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
   const read = readRace(race);
   const copy = PUZZLE_DISPLAY[kind];
   const level = race.level as PuzzleLevel;
+  const kumimojiMode = kind === "kumimoji" ? ` · ${race.language === "japanese" ? "Japanese · ひらがな" : "English"} · ${race.gameLength} · ${race.givens.length} tiles${race.doubleSet ? " · Double" : ""}` : "";
   const names: Record<RaceSeat, { name: string; memberId: string | null }> = {
     host: { name: race.hostName, memberId: race.hostMemberId },
     guest: { name: race.guestName, memberId: race.guestMemberId },
@@ -60,7 +62,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
         title={`Race at ${copy.label}`}
         kanji="競解"
         crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "race-up" }} steps={[{ label: "Race" }]} />}
-        lead={`${sizeWord(race.size, kind)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
+        lead={`${sizeWord(race.size, kind)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${kumimojiMode}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
         testId="puzzle-race"
       />
 
@@ -102,6 +104,9 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
             size={race.size}
             level={level}
             seed={race.seed}
+            language={race.language === "japanese" ? "japanese" : "english"}
+            gameLength={race.gameLength as KumimojiLength}
+            doubleSet={race.doubleSet}
             hasAccount={reader.hasAccount}
             race={{ id, since: mine.since.getTime(), givens: race.givens, checksAllowed: race.checksAllowed }}
           />
