@@ -247,6 +247,13 @@ test.describe("Kumimoji pass and play", () => {
     await page.getByTestId("kumimoji-party-continue").click();
     await ready(page, "kumimoji-party");
     await passFor(page, "Ben");
+
+    // And it waits in My games, on Pass and play, until it is finished (AGENTS.md "Anything a person plays is kept").
+    await page.goto("/play/pass-and-play");
+    await expect(page.getByTestId("local-party")).toContainText("Ben to play");
+    await page.getByTestId("local-party-continue").click();
+    await ready(page, "kumimoji-party");
+    await passFor(page, "Ben");
   });
 
   test("a hand that spells nothing is traded before Done", async ({ page }) => {

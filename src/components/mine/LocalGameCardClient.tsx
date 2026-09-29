@@ -9,6 +9,18 @@ import dynamic from "next/dynamic";
  * correct itself.
  */
 export const LocalGameCardClient = dynamic(
-  () => import("./LocalGameCard").then((module) => module.LocalGameCard),
+  () =>
+    Promise.all([import("./LocalGameCard"), import("./LocalPartyCard")]).then(([board, party]) => {
+      /* The board kept on this device, and the pass-and-play Kumimoji: both wait on Pass and play. */
+      function LocalGames() {
+        return (
+          <>
+            <board.LocalGameCard />
+            <party.LocalPartyCard />
+          </>
+        );
+      }
+      return LocalGames;
+    }),
   { ssr: false },
 );

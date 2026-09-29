@@ -98,6 +98,8 @@ export const MY_GAMES_COPY = {
   cancel: { label: "Cancel", kanji: "取消" },
   cancelConfirm: "Call off this game? Nothing has been played, so nobody wins and no rating moves.",
   localGame: { label: "Your game", kanji: "続き" },
+  /** The pass-and-play Kumimoji kept in this browser (`LocalPartyCard`). */
+  localParty: { label: "Pass and play", kanji: "回し" },
   /** The puzzles a member started and left unfinished, kept on the account (`MyPuzzleRuns`). */
   puzzlesGoing: {
     label: "Puzzles going",
