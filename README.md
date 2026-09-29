@@ -103,10 +103,11 @@ on a map of the modern world (`/games/tenka`), a third kind of game
 guests include Chinese Checkers for two, three, four or six
 players passed round one phone (`/games/chinese-checkers/pass-and-play`),
 Pair Go, Go for two teams of two taking turns (`/games/go/pass-and-play`),
-Halma for four, or two, racing corner to corner (`/games/halma/pass-and-play`),
 and Block Five for four, each laying twenty-one shapes out from their own
 corner of a twenty-square board, touching their own only corner to corner
-(`/games/block-five/pass-and-play`) — each kept in the browser, never rated (`src/lib/gomoku/party/`; the two
+(`/games/block-five/pass-and-play`). Halma for four, or two, racing corner to
+corner (`/games/halma/pass-and-play`), is offered from Halma's own page. Each is
+kept in the browser, never rated (`src/lib/gomoku/party/`; the two
 races share `partyRace.ts`). Which shelves a game is shown on besides its home
 is `src/lib/gomoku/familyShelves.ts`. The **Games** button
 opens a browser over the board with each rule set spelled out, and picking one

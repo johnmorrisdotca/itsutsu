@@ -106,17 +106,11 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
    */
   go: [{ family: "party", why: "Pair Go: two teams of two, taking turns, no talking." }],
   /*
-   * HALMA FOR FOUR. The rated game is for two, but Halma was made in 1883 for
-   * two or four, and its own page offers the four-player game — a corner each,
-   * racing into the corner opposite — passed round one device
-   * (`/games/halma/pass-and-play`).
+   * HALMA FOR FOUR is offered from Halma's own page (`/games/halma/pass-and-play`)
+   * and is no longer on the Party games shelf. Tenka (2026-09-28) made it nine
+   * where John allows eight, and Chinese Checkers for up to six already shows a
+   * table what a race across the board round one device is.
    */
-  halma: [
-    {
-      family: "party",
-      why: "Pass and play for four: a corner each, every player racing thirteen pieces into the corner opposite, round one device.",
-    },
-  ],
   /*
    * BLOCK FIVE FOR FOUR. The rated game is a line game for two; its own page
    * also offers the four-player shape game — a corner each, twenty-one pieces
