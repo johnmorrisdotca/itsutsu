@@ -22,9 +22,16 @@ import { RECENCY_MINUTES } from "@/lib/social/presence";
  *   are the same set;
  * - here now: people seen in the last few minutes who show themselves online.
  *
- * CACHED FOR TWO MINUTES and asked for only when the page renders — never
- * polled. "Online now" is the kind of number that quietly becomes a bill.
+ * CACHED FOR AN HOUR ON THE LIVE SITE and asked for only when the page renders
+ * — never polled. "Online now" is the kind of number that quietly becomes a
+ * bill, and at two minutes it was one: the front page is open to anybody, the
+ * production database is billed for every minute it is awake and sleeps after
+ * five idle ones, so a visit every few minutes woke it round the clock
+ * (September 2026). Two minutes everywhere else, where the suite counts what
+ * it has just made.
  */
+export const SITE_NUMBERS_SECONDS = process.env.NODE_ENV === "production" ? 3600 : 120;
+
 export type SiteNumbers = { players: number; games: number; hereNow: number };
 
 /** The record's people-only filter, as /history?pool=people reads it. */
@@ -45,4 +52,4 @@ async function countSiteNumbers(): Promise<SiteNumbers> {
   return { players, games, hereNow };
 }
 
-export const siteNumbers = unstable_cache(countSiteNumbers, ["site-numbers"], { revalidate: 120 });
+export const siteNumbers = unstable_cache(countSiteNumbers, ["site-numbers"], { revalidate: SITE_NUMBERS_SECONDS });

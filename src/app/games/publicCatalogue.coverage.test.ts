@@ -30,6 +30,8 @@ import { describe, expect, it } from "vitest";
  */
 const SOURCE = readFileSync("src/app/games/PublicCatalogue.tsx", "utf8");
 const LOBBY = readFileSync("src/app/games/page.tsx", "utf8");
+/* Where the stranger's figures are read and shaped, and kept for an hour. */
+const KEPT = readFileSync("src/lib/catalogue/publicCatalogueStats.ts", "utf8");
 
 // Just the stranger's half — everything from PublicCatalogue's own definition
 // onward, so a correct computation anywhere above it cannot make this pass for
@@ -55,15 +57,17 @@ describe("the public catalogue", () => {
     // Not a private figure — nobody's name is in a count of finished games —
     // so a stranger gets the real numbers from the same reads, not a second
     // set invented for this path.
-    expect(PUBLIC).toContain("fetchCatalogueStats()");
+    expect(PUBLIC).toContain("strangerCatalogueStats()");
+    expect(KEPT).toContain("fetchCatalogueStats()");
     expect(LOBBY).toContain("fetchCatalogueStats()");
   });
 
   it("shapes them for a reader with no session before drawing them", () => {
     // `forReader(…, false)` is where the names come off. Handing the raw
     // figures to the catalogue would put members' names on an open page.
-    expect(PUBLIC).toMatch(/forReader\([^;]*?,\s*false\)/);
-    expect(PUBLIC).not.toMatch(/forReader\([^;]*?,\s*true\)/);
+    expect(KEPT).toMatch(/return forReader\([^;]*?,\s*false\)/);
+    expect(KEPT).not.toMatch(/forReader\([^;]*?,\s*true\)/);
+    expect(PUBLIC).not.toContain("fetchCatalogueStats");
     expect(PUBLIC).toContain("stats={stats}");
   });
 });
