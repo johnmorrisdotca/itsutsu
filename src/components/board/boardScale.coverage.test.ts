@@ -63,6 +63,30 @@ const NOT_A_PLAY: Record<string, string> = {
  * it has Just the board beside where the size would be, and the sizes are not
  * drawn: there is no board column for them to grow (globals.css).
  */
+/**
+ * A table whose game is played in a component not named `*Game.tsx`: Tenka's
+ * table hands the playing of it to `TenkaPlay` (as `pieceColours.coverage`
+ * says too). Missing from this gate until 2026-09-29, which is how Tenka's
+ * map was the one party board with no size and a modal with a dead column.
+ */
+const PLAYED_IN: readonly string[] = [join("src", "components", "party", "tenka", "TenkaPlay.tsx")];
+
+/** Every party table's play: each `*Game.tsx`, and those played in another component. */
+function partyTables() {
+  return FILES.filter(({ path }) => (path.startsWith(join("src", "components", "party")) && path.endsWith("Game.tsx")) || PLAYED_IN.includes(path));
+}
+
+/**
+ * A WIDE BOARD (`data-scale-wide`), wider than it is tall, and so laid out
+ * with nothing beside it on a desk and a modal as wide as it is (globals.css).
+ * Each with the reason it is wide; see `boardScale.ts` for how wide relates to
+ * Regular, Large and Full, and for the boards judged and found not wide.
+ */
+const WIDE_BOARDS: Record<string, string> = {
+  [join("src", "components", "party", "tenka", "TenkaPlay.tsx")]:
+    "Tenka's map of the world is twice as wide as it is tall on a desk (BOARD_ASPECTS.map), so a column beside it takes width the map needs",
+};
+
 const NO_BOARD_TO_SIZE: Record<string, string> = {
   [join("src", "components", "party", "GhostGame.tsx")]:
     "Superghost is a word being spelt and the keys it is spelt with, at a reading size: no board, no squares to grow",
@@ -81,8 +105,9 @@ describe("every board a person plays on offers Regular, Large and Full", () => {
   });
 
   it("marks the column every party table draws its board in", () => {
-    const tables = FILES.filter(({ path }) => path.startsWith(join("src", "components", "party")) && path.endsWith("Game.tsx"));
+    const tables = partyTables();
     expect(tables.length).toBeGreaterThan(3);
+    for (const path of PLAYED_IN) expect(tables.map((table) => table.path), path).toContain(path);
     // A table that hands its game to the race table's component is marked there; one with no board says why.
     const unmarked = tables
       .filter(({ path, text }) => !text.includes("data-scale-board") && !text.includes("<PartyRaceGame") && !Object.hasOwn(NO_BOARD_TO_SIZE, path))
@@ -148,7 +173,7 @@ describe("every board a person plays on offers just the board", () => {
   });
 
   it("sizes every play's board for the modal, and keeps what plays a board from its side column", () => {
-    const tables = FILES.filter(({ path }) => path.startsWith(join("src", "components", "party")) && path.endsWith("Game.tsx"));
+    const tables = partyTables();
     const unsized = tables.filter(({ text }) => !text.includes("data-bare-board") && !text.includes("<PartyRaceGame")).map(({ path }) => path);
     expect(unsized, "a party table whose board just the board cannot find: put data-bare-board on its board's column").toEqual([]);
     expect(readFileSync("src/components/puzzles/solveShared.tsx", "utf8")).toContain("data-scale-board data-scale-stack data-bare-board");
@@ -178,5 +203,30 @@ describe("text a number puzzle prints in its squares grows with them", () => {
     expect(css).toContain("width: calc(1.5rem * var(--board-grow, 1));");
     expect(css).toContain("font-size: calc(1.125rem * var(--board-grow, 1));");
     expect(PUZZLE_TOWER_CLUE).toContain("sm:text-xl");
+  });
+});
+
+describe("a wide board is laid out as one, on a desk and in the modal", () => {
+  const css = readFileSync("src/app/globals.css", "utf8");
+
+  it("is declared by the boards named here, on the column the size grows and the modal keeps, and by nothing else", () => {
+    const declaring = FILES.filter(({ text }) => text.includes("data-scale-wide")).map(({ path }) => path).filter((path) => !path.endsWith("BoardScale.tsx"));
+    expect(declaring.sort(), "a board declared wide without a reason here, or a reason for one no longer wide").toEqual(Object.keys(WIDE_BOARDS).sort());
+    for (const [path, reason] of Object.entries(WIDE_BOARDS)) {
+      expect(reason.length, path).toBeGreaterThan(20);
+      // One element: the board's column is the one that is wide, grown at Large and Full, and kept in the modal.
+      expect(readFileSync(path, "utf8"), path).toMatch(/data-scale-board data-scale-wide data-bare-board/);
+    }
+  });
+
+  it("sizes the modal to the map's own shape: two by one on a desk, four by three below one", async () => {
+    const { BOARD_ASPECTS } = await import("./Board.constants");
+    expect(BOARD_ASPECTS.map).toBe("aspect-[4/3] lg:aspect-[2/1]");
+    expect(css).toContain("width: min(100%, calc((100dvh - 24rem) * 4 / 3 + 2rem));");
+    expect(css).toContain("width: min(100%, calc((100dvh - 24rem) * 2 + 2rem));");
+  });
+
+  it("leaves no dead column in the modal: the side column goes, and what holds the board is one column there", () => {
+    expect(css).toMatch(/html\[data-bare="true"\] \[data-strippable\] :has\(> \[data-bare-board\]\) \{\s*grid-template-columns: minmax\(0, 1fr\);/);
   });
 });

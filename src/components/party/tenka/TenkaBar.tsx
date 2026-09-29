@@ -79,10 +79,13 @@ export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: Te
           </button>
         </div>
       ) : (
-        <>
-          {/* The dice of this turn, on a phone, where the panel beside the map is out of sight. */}
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
+          {/*
+            The dice of this turn, on a phone, where the panel beside the bar is out of sight — and in just the board
+            (`data-bare-shows`), where that panel is furniture; there, on a desk, beside the step's buttons.
+          */}
           {game.phase === TENKA_PHASES.attack || game.phase === TENKA_PHASES.occupy ? (
-            <div className="lg:hidden">
+            <div className="lg:order-last lg:hidden" data-bare-shows>
               <TenkaDice game={game} compact />
             </div>
           ) : null}
@@ -91,7 +94,7 @@ export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: Te
             stood where "Roll until decided" had been and faded in from its pale colour, reading as disabled for a moment.
           */}
           <BarActions key={game.phase} game={game} now={now} onMove={onMove} onArmies={onArmies} />
-        </>
+        </div>
       )}
     </section>
   );

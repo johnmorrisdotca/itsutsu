@@ -272,6 +272,19 @@ const PLAYS = [
     stays: ["dots-turn", "dots-board"],
   },
   {
+    name: "a Tenka table",
+    open: async (page: import("@playwright/test").Page) => {
+      await page.goto("/games/tenka");
+      await page.evaluate(() => window.localStorage.removeItem("itsutsu.tenka"));
+      await page.goto("/games/tenka/pass-and-play");
+      await ready(page, "tenka-set-up");
+      await page.getByTestId("tenka-start").click();
+      await ready(page, "tenka-game");
+    },
+    // Whose turn, the map, the places to look at and the phase bar; the hand and the players are side matter.
+    stays: ["tenka-turn", "tenka-map", "tenka-regions", "tenka-bar"],
+  },
+  {
     name: "Superghost",
     open: async (page: import("@playwright/test").Page) => {
       await page.goto("/games/superghost/pass-and-play");
@@ -321,3 +334,47 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
     }
   });
 }
+
+/*
+ * NO MODAL HAS A DEAD HALF. John, 2026-09-29, at Tenka's just the board: "notice
+ * in Modal mode it also doesn't even make sense to have the empty space." A
+ * table's side matter stood beside its board on a desk, and just the board hid
+ * it and kept its column: on a big monitor a third of the modal was empty
+ * paper. What is drawn in the modal — every picture, button and line of words —
+ * spans it, or sits in its middle, with no empty column down one side.
+ */
+test.describe("just the board on a big monitor", () => {
+  test.use({ viewport: { width: 1920, height: 1080 } });
+  for (const play of PLAYS) {
+    test(`${play.name}: the modal holds its play with no empty column beside it`, async ({ page }) => {
+      await play.open(page);
+      await ready(page, "board-scaling");
+      await ready(page, "bare-board");
+      await page.getByTestId("bare-board-toggle").click();
+      await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+      for (const id of play.stays) await expect(page.getByTestId(id).first()).toBeVisible();
+      const { left, right, width } = await page.locator("main[data-strippable]").evaluate((panel) => {
+        const box = panel.getBoundingClientRect();
+        const style = getComputedStyle(panel);
+        const inner = { left: box.left + parseFloat(style.paddingLeft), right: box.right - parseFloat(style.paddingRight) };
+        let most = -Infinity;
+        let least = Infinity;
+        for (const element of panel.querySelectorAll("*")) {
+          const tag = element.tagName.toLowerCase();
+          const drawn = tag === "svg" || tag === "img" || tag === "button" || element.getAttribute("data-testid") === "board-surface" || [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent!.trim() !== "");
+          if (!drawn || (tag !== "svg" && element.closest("svg") !== null) || element.closest('[data-testid="bare-board"]') !== null) continue;
+          const rect = element.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0 || getComputedStyle(element).visibility === "hidden") continue;
+          most = Math.max(most, rect.right);
+          least = Math.min(least, rect.left);
+        }
+        return { left: least - inner.left, right: inner.right - most, width: inner.right - inner.left };
+      });
+      // No empty column down one side: the play is in the middle of the modal, and nothing near a quarter of it is bare paper.
+      expect(right, `${play.name}: an empty column on the right of the modal`).toBeLessThan(width / 4);
+      expect(Math.abs(right - left), `${play.name}: the play sits to one side of the modal`).toBeLessThan(width / 10);
+      await page.keyboard.press("Escape");
+      await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
+    });
+  }
+});

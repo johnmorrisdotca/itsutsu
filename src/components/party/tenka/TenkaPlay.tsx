@@ -25,13 +25,35 @@ import type { TenkaMapHandle } from "./tenka.types";
 import { NO_CHOICE, choiceNow, marksFor, tapTerritory } from "./tenkaTaps";
 import { freshTenkaSeed } from "./tenkaStore";
 
+/**
+ * What must stay on the screen under the map at Large and Full, in pixels: the
+ * row of places to look at, and the phase bar at its tallest step (a throw's
+ * buttons, or the stepper and Move in) with the dice beside it. Declared rather
+ * than measured (`data-scale-below`), because the bar changes height from step
+ * to step and the size is worked out once. Here rather than in
+ * `tenka.constants.ts`, whose every change asks for the party pictures again
+ * (`partyArtFingerprint.ts`), since it draws nothing.
+ */
+const TENKA_BELOW_PX = 200;
+
 /** Whose turn the device was last handed for: the round and the seat. */
 const turnKey = (game: TenkaGame) => `${game.round}:${game.toPlay}`;
 
 /**
  * A GAME OF TENKA BEING PLAYED: the map with the turn over it, the phase bar
- * under it, and beside them (under them on a phone) the dice, the hand and
- * the table.
+ * and the dice under it, and under those the hand and the table.
+ *
+ * A WIDE BOARD (`data-scale-wide`). John, 2026-09-29, at Tenka on a desk:
+ * "some games on desktop should have full width/height option. where once
+ * play starts the map/board can be wider/bigger." A map of the world is twice
+ * as wide as it is tall, so a column beside it takes the width the map needs
+ * and gives it nothing it could use. So on a desk nothing sits beside the
+ * map: it is as wide as the page at Regular, and past the page at Large and
+ * Full (`BoardScale`); what is read at a glance — whose turn, the step of the
+ * turn, the dice — is on the lines just above and below it, and the hand and
+ * the players are a row of three under those. On a phone it is the column it
+ * always was. In just the board the modal is as wide as the map, which is as
+ * large as the window's height allows (globals.css).
  *
  * Everything a move does is the rules' (`playTenka`): this keeps what the
  * player has chosen on the map (`tenkaTaps.ts`), hands the rules the move,
@@ -76,7 +98,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
   const playing = game.phase !== TENKA_PHASES.over;
   return (
     <section
-      className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start"
+      className="flex flex-col gap-4"
       data-testid="tenka-game"
       data-state={playing ? "playing" : "finished"}
       data-phase={game.phase}
@@ -86,68 +108,81 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
       data-handed={handed ? "true" : "false"}
       {...ready}
     >
-      <div className="flex min-w-0 flex-col gap-3">
-        <TenkaTurnLine game={game} />
-        <TenkaMap game={game} appearance={appearance} marks={marksFor(game, choice)} onTerritory={playing ? onTerritory : undefined} handle={map} />
-        <TenkaBar
+      {/*
+        The board's column (`data-scale-board`, grown at Large and Full), wide (`data-scale-wide`), and what just the board
+        keeps (`data-bare-board`). What must stay in reach under the map is declared, not measured: the phase bar is as tall
+        as its step, and the size is worked out once, not on every step (`TENKA_BELOW_PX`).
+      */}
+      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-scale-wide data-bare-board data-scale-below={TENKA_BELOW_PX}>
+        <TenkaTurnLine
           game={game}
-          choice={choice}
-          onMove={act}
-          onArmies={(armies) => setChoice({ ...choiceNow(game, choice), armies })}
-          handed={handed}
-          onReady={() => setHandedFor(turnKey(game))}
+          colour={
+            playing ? (
+              // The colour of whoever is to play, on their turn, as a small control beside whose turn it is; furniture in just the board.
+              <div data-chrome>
+                <PartySeatColour seat={game.toPlay} name={tenkaPlayerName(game, game.toPlay)} playing={game.players.length} align="end" />
+              </div>
+            ) : null
+          }
         />
+        <TenkaMap game={game} appearance={appearance} marks={marksFor(game, choice)} onTerritory={playing ? onTerritory : undefined} handle={map} />
+        {/* The phase bar and, beside it on a desk, the dice; on a phone (and in just the board) the bar carries them. */}
+        <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start" data-bare-column>
+          <TenkaBar
+            game={game}
+            choice={choice}
+            onMove={act}
+            onArmies={(armies) => setChoice({ ...choiceNow(game, choice), armies })}
+            handed={handed}
+            onReady={() => setHandedFor(turnKey(game))}
+          />
+          <div className={`hidden lg:block ${playing ? "" : "lg:col-span-2"}`} data-chrome>
+            <TenkaDice game={game} />
+          </div>
+        </div>
       </div>
 
-      <aside className="flex min-w-0 flex-col gap-3">
-        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
-        {playing ? (
-          <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={tenkaPlayerName(game, game.toPlay)} playing={game.players.length} />
-          </div>
-        ) : null}
-        {/* On a phone the phase bar carries the dice, where the thumb and the eye already are. */}
-        <div className="hidden lg:contents">
-          <TenkaDice game={game} />
-        </div>
+      <aside className="grid min-w-0 gap-3 lg:grid-cols-3 lg:items-start">
         <TenkaHand game={game} handed={handed} onMove={act} />
         <TenkaPlayers game={game} />
-        <div className="flex flex-wrap gap-2">
-          {playing ? null : (
-            <button type="button" onClick={() => keep(tenkaAgain(game, freshTenkaSeed()))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="tenka-again">
-              {PARTY_COPY.again}
-            </button>
-          )}
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="tenka-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="tenka-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-2">
+            {playing ? null : (
+              <button type="button" onClick={() => keep(tenkaAgain(game, freshTenkaSeed()))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="tenka-again">
+                {PARTY_COPY.again}
               </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
+            )}
+            {confirming ? (
+              <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="tenka-confirm-new">
+                <span>{PARTY_COPY.confirmNew}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    keep(null);
+                    setConfirming(false);
+                  }}
+                  className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
+                  data-testid="tenka-new-yes"
+                >
+                  {PARTY_COPY.confirmYes}
+                </button>
+                <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
+                  {PARTY_COPY.confirmNo}
+                </button>
+              </span>
+            ) : (
+              <button type="button" onClick={() => (playing ? setConfirming(true) : keep(null))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tenka-new">
+                {PARTY_COPY.newGame}
               </button>
-            </span>
-          ) : (
-            <button type="button" onClick={() => (playing ? setConfirming(true) : keep(null))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tenka-new">
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+            )}
+          </div>
+          <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+          <p className="text-sm">
+            <Link href={gameHref} className="underline underline-offset-4">
+              {TENKA_COPY.about} →
+            </Link>
+          </p>
         </div>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
-        <p className="text-sm">
-          <Link href={gameHref} className="underline underline-offset-4">
-            {TENKA_COPY.about} →
-          </Link>
-        </p>
       </aside>
       {/*
         "ARE YOU STILL THERE?", as every board a person plays on asks

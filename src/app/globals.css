@@ -344,6 +344,52 @@ html[data-bare="true"] [data-strippable] [data-scale-stack][data-bare-board] {
   width: min(100%, calc(100dvh - 24rem));
 }
 
+/*
+ * A PLAY IS ONE COLUMN IN THE MODAL. A party table lays its side matter beside
+ * the board on a desk, Superghost its players beside the word; just the board
+ * hides that side matter, and the column it stood in was left as a dead half
+ * of the modal. John, 2026-09-29: "notice in Modal mode it also doesn't even
+ * make sense to have the empty space." So whatever holds the board's column
+ * (`data-bare-board`) is one column there, and the modal is as wide as its
+ * board.
+ */
+html[data-bare="true"] [data-strippable] :has(> [data-bare-board]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/*
+ * A WIDE BOARD IN THE MODAL (`data-scale-wide`: Tenka's map, twice as wide as
+ * it is tall on a desk, four by three below one). The modal is as wide as the
+ * map, and the map as large as the window's height allows with what plays it
+ * — whose turn, the row of places to look at, the phase bar — on the screen
+ * with it, never scrolled to: 24rem is those rows, the modal's padding and
+ * the backdrop's. The board's column takes the modal's whole width, so there
+ * is nothing beside the map to be empty.
+ */
+html[data-bare="true"] [data-strippable] [data-scale-wide][data-bare-board] {
+  width: 100%;
+}
+html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-wide]) {
+  width: min(100%, calc((100dvh - 24rem) * 4 / 3 + 2rem));
+}
+@media (min-width: 64rem) {
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-wide]) {
+    width: min(100%, calc((100dvh - 24rem) * 2 + 2rem));
+  }
+}
+
+/* A row laid out beside something that is furniture in the modal is one column there (`data-bare-column`): Tenka's phase bar, whose dice beside it go, and it carries them. */
+html[data-bare="true"] [data-strippable] [data-bare-column] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* What the page draws only on a phone and just the board draws on a desk too: a map's dice, in its phase bar. */
+html[data-bare="true"] [data-strippable] [data-bare-shows] {
+  display: block;
+}
+
 /* The review banner says "latest position" until a move is stepped back to; in the modal it is only drawn while it has something to say. */
 html[data-bare="true"] [data-strippable] [data-testid="review-banner"][data-reviewing="false"] {
   display: none;
@@ -413,6 +459,15 @@ html[data-bare="true"] [data-strippable] [data-testid="review-banner"][data-revi
 [data-board-focus="open"] > [role="dialog"]:has([data-testid="game-replay"]) {
   width: min(100%, calc(100dvh - 17rem + 2.5rem));
   max-width: 100%;
+}
+
+/*
+ * The row the board's size and the switch share takes no room in the modal:
+ * the sizes are furniture and the switch is the Close fixed at the screen's
+ * corner, so the empty row would only push the board down by its gap.
+ */
+html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
+  display: contents;
 }
 
 /* Just the board is already the board alone, so the button that opens one board on its own is not drawn inside it. */

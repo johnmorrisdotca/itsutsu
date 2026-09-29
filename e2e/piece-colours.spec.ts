@@ -150,18 +150,24 @@ test.describe("each player's piece colour", () => {
     await expect(page.locator('[data-testid="set-up-seat-colour"][data-seat="0"]')).toHaveAttribute("data-colour", "teal");
     await page.getByTestId("party-start").click();
     await ready(page, "party-checkers");
-    // In the game, on their turn: Player 1 changes to Plum; the turn line's marble follows.
+    // In the game, on their turn: the colours are one small control, closed until asked for (John: "I don't think we need some stuff like the Colour picker once the game has started").
     const mine = page.getByTestId("party-seat-colour");
     await expect(mine).toHaveAttribute("data-seat", "0");
     await expect(mine).toHaveAttribute("data-colour", "teal");
-    await mine.locator('[data-colour="plum"]').click();
+    await expect(mine).toHaveAttribute("data-open", "false");
+    await expect(page.getByTestId("party-seat-colour-picker")).toHaveCount(0);
+    // Asked for, the picker opens; Player 1 changes to Plum, it closes, and the turn line's marble follows.
+    await mine.getByTestId("party-seat-colour-toggle").click();
+    await mine.getByTestId("party-seat-colour-picker").locator('[data-colour="plum"]').click();
     await expect(mine).toHaveAttribute("data-colour", "plum");
+    await expect(mine).toHaveAttribute("data-open", "false");
     await expect(page.getByTestId("party-turn")).toContainText("Plum");
     await page.reload();
     await ready(page, "party-checkers");
     await expect(page.getByTestId("party-seat-colour")).toHaveAttribute("data-colour", "plum");
     // Back to the table's own red, so the next spec at this table finds it as it was.
-    await page.getByTestId("party-seat-colour").locator('[data-colour="usual"]').click();
+    await page.getByTestId("party-seat-colour-toggle").click();
+    await page.getByTestId("party-seat-colour-picker").locator('[data-colour="usual"]').click();
     await expect(page.getByTestId("party-seat-colour")).toHaveAttribute("data-colour", "usual");
   });
 });

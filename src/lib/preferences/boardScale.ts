@@ -20,6 +20,26 @@
  * Both bigger sizes are worked out from the window in the browser
  * (`boardScaleFit.ts`); what is kept is only which of the three was chosen.
  *
+ * A WIDE BOARD HAS THE SAME THREE, LAID OUT WIDE. John, 2026-09-29, at
+ * Tenka on a desk: "some games on desktop should have full width/height
+ * option. where once play starts the map/board can be wider/bigger… the game
+ * has to be drawn up differently." A board wider than it is tall declares
+ * itself (`data-scale-wide` on its column), and on a desk nothing sits beside
+ * it at any of the three: at Regular it is the page's whole width, with what
+ * is read at a glance just above and below it and the rest in a row under
+ * those; Large and Full take it past the page, halfway and all the way to
+ * what the window's height allows, by the same arithmetic as every board. So
+ * wide is how the board is laid out, not a fourth size: one chooser still
+ * says how big. Just the board holds it across the whole modal, as large as
+ * the window's height allows (globals.css).
+ *
+ * Judged wide: Tenka's map, two by one. Judged not: Mexican Train's table and
+ * Mancala's board (square wood), Mahjong's Turtle (about four by three, and at
+ * Full its controls beside it leave it a bigger board than under it would),
+ * and the card tables (two by one, but held to a hand's width on purpose, so
+ * the trick and the hand are taken in at one glance — `CardPlay`'s
+ * `data-width-reason`). `boardScale.coverage.test.ts` holds the list.
+ *
  * THIS REPLACES the four sizes the live board alone offered (Fit, S, M, L, on
  * one `boardSize` preference). Their Fit is this Regular on a live board;
  * a stored `boardSize` is a key the registry no longer declares, so it is

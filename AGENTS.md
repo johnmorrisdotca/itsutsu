@@ -436,6 +436,21 @@ is not finished until it does; a coverage check holds it (board row
 every-game-offers-the-just-the-board-mode). The same goes for the desktop
 board size (Regular, Large, Full), remembered per kind of device.
 
+**The modal has no dead half, and a wide board is laid out wide.** John,
+2026-09-29, at Tenka on a desk: "some games on desktop should have full
+width/height option… notice in Modal mode it also doesn't even make sense to
+have the empty space." Whatever holds a board's column (`data-bare-board`) is
+one column in the modal, so hidden side matter leaves no empty column. A board
+wider than it is tall declares itself (`data-scale-wide` on that column; Tenka's
+map is the one, and `boardScale.ts` says which others were judged and why not):
+on a desk nothing sits beside it at Regular, Large or Full — it is the page's
+width at Regular and past it at the other two — and the modal is as wide as
+the map, as large as the window's height allows. Set-up furniture goes once
+play starts: a table's colour choice is one small control, the place's marble
+and "Change colour", that opens the picker when asked (`PartySeatColour`).
+Held by `boardScale.coverage.test.ts`, `e2e/wide-mode.spec.ts` and the big
+monitor cases in `e2e/bare-board.spec.ts`.
+
 ### Every Table Of Players Shows XP, And The Programs Are Players
 
 John, 2026-09-14, looking at a site where the members list had an XP column

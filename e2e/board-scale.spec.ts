@@ -147,6 +147,18 @@ const BOARDS: Board[] = [
     controls: (page) => page.getByTestId("mancala-turn"),
   },
   {
+    // A wide board (`data-scale-wide`): at Regular already the page's width, with nothing beside it; Large and Full go past the page.
+    name: "a Tenka table",
+    open: async (page) => {
+      await page.goto("/games/tenka/pass-and-play");
+      await ready(page, "tenka-set-up");
+      await page.getByTestId("tenka-start").click();
+      await ready(page, "tenka-game");
+    },
+    square: (page) => page.getByTestId("tenka-game").getByTestId("board-surface"),
+    controls: (page) => page.getByTestId("tenka-bar"),
+  },
+  {
     name: "a gomoku practice board",
     open: async (page) => {
       await page.goto("/games/gomoku/play");
@@ -161,9 +173,11 @@ const BOARDS: Board[] = [
  * THE PRACTICE BOARD ON A LAPTOP IS ALREADY AS TALL AS THE WINDOW at Regular:
  * its board ends at the bottom of an 800-pixel screen with the record above it,
  * so Full has nothing to give it there and says so by staying the same size.
- * It is measured on the wide screen, where there is room.
+ * It is measured on the wide screen, where there is room. So is Tenka's map:
+ * a wide board is the page's whole width at Regular, 1024 by 512, which is as
+ * tall as an 800-pixel window has room for with its phase bar under it.
  */
-const HEIGHT_BOUND_ON_A_LAPTOP = new Set(["a gomoku practice board"]);
+const HEIGHT_BOUND_ON_A_LAPTOP = new Set(["a gomoku practice board", "a Tenka table"]);
 
 for (const viewport of [LAPTOP, WIDE]) {
   test.describe(`at ${viewport.width}×${viewport.height}`, () => {
