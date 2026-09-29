@@ -130,7 +130,14 @@ export const NO_GAME_HERE: Readonly<Record<string, string>> = {
   "Hit&Miss Salvo": HIDDEN_FLEET,
   Skat: CARDS,
   Whist: CARDS,
-  "Euro Domination": "GoldToken's game of conquest on a map of Europe; nothing like it is played here.",
+  /*
+   * The nearest game here is Tenka (2026-09-28), world conquest for a table
+   * round one device — but it is played on the whole world, not Europe, and a
+   * party game is never recorded, so a record of Euro Domination has no games
+   * here to lead to. Decided, not overlooked.
+   */
+  "Euro Domination":
+    "GoldToken's game of conquest on a map of Europe, played between members and recorded; Tenka here is world conquest round one device, on a map of the world and never recorded.",
   GoldFences: "GoldToken's fences game; nothing like it is played here.",
   Inverticade: "A GoldToken game of its own; nothing like it is played here.",
 };

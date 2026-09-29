@@ -5,6 +5,7 @@ import type { RulesPage } from "@/lib/learn/rulesPage";
 import { mancalaBoardName } from "./mancala/mancala.constants";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
+import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
 export function partyPlayersWords(kind: PartyKind): string {
@@ -36,6 +37,11 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       spec.sizes.map((size) => `${mancalaBoardName(size) ?? size}${size === spec.defaultSize ? " (the default)" : ""}`),
       "or",
     )} rules`,
+  tenka: (spec) =>
+    `on a map of the modern world, ${listed(
+      spec.sizes.map((rounds) => (rounds === TENKA_WORLD_ROUNDS ? "to the last player standing" : `${rounds} rounds`)),
+      "or",
+    )}`,
 };
 
 /** The boards, or the words, a party game's set-up offers: "on 3×3, 4×4, 5×5 and 6×6 boxes". */
@@ -45,9 +51,10 @@ export function partyBoardsWords(kind: PartyKind): string {
 
 /**
  * What each table says of itself on its rules page: how a turn is made on
- * it, and its house rules — the ways this site's table keeps the game.
+ * it, and its house rules — the ways this site's table keeps the game, and
+ * (`more`) any rule of the game's own the table has had to settle.
  */
-const TABLE_WORDS: Record<PartyKind, { turn: string; house: string }> = {
+const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: readonly string[] }> = {
   dotsAndBoxes: {
     turn: "The line at the top says whose turn it is, by name, colour and letter. Tap between two dots to draw; when you close a box it says so, and it is still your turn.",
     house: "Every claimed box carries its owner's letter as well as their colour, so nobody has to tell two colours apart to count.",
@@ -60,6 +67,15 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string }> = {
   mancala: {
     turn: "The line at the top names whose turn it is and which rules are being played. Tap one of your own pits, ringed in your colour, to sow it: the seeds fall one at a time, and the line beneath says what the last one did, another turn or how many were captured.",
     house: "Every pit and store shows how many seeds it holds as a number beside the seeds themselves, so nobody has to count them.",
+  },
+  tenka: {
+    turn: "The bar under the map says whose turn it is and what comes next: Place, Attack, Fortify, End turn. Tap a territory to choose it — the ones it can reach light up — then tap where to go. Pinch, scroll or double-tap to zoom, drag to look round, Fit to see the whole world again.",
+    house: "Every territory shows its owner's letter as well as their colour, so nobody has to tell two colours apart to count. The neutral army is grey, with N.",
+    more: [
+      "Starting armies: forty each for two players (and forty for the neutral army), thirty-five each for three, thirty for four, twenty-five for five, twenty for six. They are placed at random to start quickly, or by hand, one at a time round the table, if you choose.",
+      "The defender always throws as many dice as allowed — two with two armies or more, one with one — since more never hurts a defence. Dice are thrown by the game, not by a person, and a reloaded page throws nothing again: every die is kept with the game.",
+      "A card shows a territory and one of three kinds: land, sea or air. A set that includes a territory you hold puts two more armies straight onto it. Cards traded in go back under the deck once it runs out.",
+    ],
   },
 };
 
@@ -78,6 +94,7 @@ export function partyRulesPage(kind: PartyKind): RulesPage {
   const play = [...copy.rules.slice(0, -1), TABLE_WORDS[kind].turn];
   const house = [
     TABLE_WORDS[kind].house,
+    ...(TABLE_WORDS[kind].more ?? []),
     "The game is kept in the browser it is played in, after every move: close the tab, answer a call, and it is there when you come back, waiting on My games under Pass and play.",
     "Nothing is rated, nothing is sent to the site, and no ladder counts a game. A party game is for the people round the table.",
   ];
