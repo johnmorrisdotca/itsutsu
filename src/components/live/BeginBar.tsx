@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/Controls";
+import { PieceColourPicker } from "@/components/board/PieceColourPicker";
+import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { COLOUR_CHOICES, type ColourChoice } from "./colourChoice";
 import { MATCH_SIZES, type MatchSize } from "@/lib/history/liveMatch";
@@ -34,7 +36,14 @@ export function BeginBar({
   waiting,
   colour,
   games,
+  pieceColour = null,
 }: {
+  /**
+   * The colour of the asker's own pieces, offered whenever there is a game to
+   * make — the same row whatever else is chosen, so the screen never changes
+   * height for it. Null where nothing can be made from here.
+   */
+  pieceColour?: { value: PieceColour | null; onChange: (colour: PieceColour | null) => void; usual: string } | null;
   /** Who sits where, in a sentence: the fact people most want before a board. */
   sitting: string;
   /** The game this address has already made, where it has — see `useSetUpPress`. */
@@ -121,6 +130,26 @@ export function BeginBar({
               {count === 1 ? SET_UP_COPY.games.one : SET_UP_COPY.games.many(count)}
             </button>
           ))}
+        </div>
+      ) : null}
+      {/*
+        YOUR PIECES' COLOUR: John, 2026-09-29, "allow people to select their
+        Marble colour when they lay their first move, or at Options setup".
+        Optional — the first circle is the game's own stones — and changeable
+        on the board at the first move or any time after.
+      */}
+      {pieceColour !== null ? (
+        <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="set-up-piece-colour">
+          <span className="text-muted">
+            Your pieces <span className="font-mincho">色</span>
+          </span>
+          <PieceColourPicker
+            value={pieceColour.value}
+            onChoose={pieceColour.onChange}
+            usual={{ face: pieceColour.usual, name: "The game's own stones" }}
+            label="The colour of your pieces"
+            testId="set-up-piece-colours"
+          />
         </div>
       ) : null}
       {made !== null ? (

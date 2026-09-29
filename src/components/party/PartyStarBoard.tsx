@@ -1,6 +1,8 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
+import type { PartyMarble } from "./party.types";
 import { BoardLines, hexagonPoints } from "@/components/board/BoardLines";
 import { LINE_WIDTH, latticeFitFor } from "@/components/board/Board.constants";
 import { LatticeGround } from "@/components/board/LatticeGround";
@@ -14,7 +16,7 @@ import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { STAR_TIPS, inStar, starTipCells } from "@/lib/gomoku/rules/chineseCheckers";
 
 import { PartyHole } from "./PartyHole";
-import { HOME_TINT_OPACITY, PARTY_MARBLES } from "./party.constants";
+import { HOME_TINT_OPACITY } from "./party.constants";
 import type { PartyBoardProps } from "./party.types";
 
 /** The star, cut from its square the way the two-player board is. */
@@ -43,6 +45,8 @@ const HOLES = Array.from({ length: PARTY_SIZE * PARTY_SIZE }, (_, index) => ({
  * one of those.
  */
 export function PartyStarBoard({ game, appearance, selected, targets, onHole, readOnly = false }: PartyBoardProps<PartyCheckersState>) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const spec = VARIANT_SPECS.chineseCheckers;
   const theme = boardThemeFor(appearance, spec);
   const inset = playingAreaInset(PARTY_SIZE, gridFor(appearance, spec) === BOARD_GRIDS.cells);
@@ -78,7 +82,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
                   <g key={`${point.row}:${point.col}`}>
                     <polygon points={points} fill={theme.playSquare} stroke={theme.line} strokeWidth={LINE_WIDTH} strokeLinejoin="round" />
                     {owner === undefined ? null : (
-                      <polygon points={points} fill={PARTY_MARBLES[owner].fill} opacity={HOME_TINT_OPACITY} stroke="none" />
+                      <polygon points={points} fill={marbles[owner].fill} opacity={HOME_TINT_OPACITY} stroke="none" />
                     )}
                   </g>
                 );
@@ -106,7 +110,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
               key={index}
               point={point}
               owner={owner}
-              label={holeLabel(point, owner, game.players)}
+              label={holeLabel(point, owner, game.players, marbles)}
               target={target}
               picked={picked}
               last={last !== null && last.row === point.row && last.col === point.col}
@@ -121,7 +125,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
   );
 }
 
-function holeLabel(point: Point, owner: number | null, players: PartyCheckersState["players"]): string {
+function holeLabel(point: Point, owner: number | null, players: PartyCheckersState["players"], marbles: readonly PartyMarble[]): string {
   const where = `row ${point.row + 1}, hole ${point.col + 1}`;
-  return owner === null ? `Empty hole, ${where}` : `${partyPlayerName(players, owner)}'s ${PARTY_MARBLES[owner].label.toLowerCase()} piece, ${where}`;
+  return owner === null ? `Empty hole, ${where}` : `${partyPlayerName(players, owner)}'s ${marbles[owner].label.toLowerCase()} piece, ${where}`;
 }

@@ -305,6 +305,7 @@ export async function LiveMatch({
               appearance={appearance}
               turnFlow={turnFlow}
               poll={poll}
+              keepsColour={reader !== null}
             />
           </BoardColumn>
         </div>

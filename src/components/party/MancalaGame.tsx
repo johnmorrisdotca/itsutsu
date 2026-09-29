@@ -1,6 +1,7 @@
 "use client";
 
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -84,6 +85,12 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
+        {game.status === MANCALA_STATUS.playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay)} playing={2} />
+          </div>
+        ) : null}
         <TableStores game={game} />
         <div className="flex flex-wrap gap-2">
           {game.status === MANCALA_STATUS.playing ? null : (

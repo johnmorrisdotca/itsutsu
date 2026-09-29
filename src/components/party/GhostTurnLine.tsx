@@ -1,10 +1,13 @@
+"use client";
+
+import { usePartyMarbles } from "./partyMarbles";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { GHOST_LOSS, GHOST_PHASE, ghostStillIn } from "@/lib/party/superghost/superghost";
 import type { GhostGame, GhostJudge, GhostRound } from "@/lib/party/superghost/superghost.types";
 
 import { MarbleChip } from "./MarbleChip";
-import { GHOST_COPY, PARTY_MARBLES, ghostShown } from "./party.constants";
+import { GHOST_COPY, ghostShown } from "./party.constants";
 
 /**
  * WHOSE TURN IT IS, by name, colour and letter — or who must name a word. At
@@ -13,6 +16,8 @@ import { GHOST_COPY, PARTY_MARBLES, ghostShown } from "./party.constants";
  * round was lost is said where its letters were (`GhostRoundOver`).
  */
 export function GhostTurnLine({ game, judge }: { game: GhostGame; judge: GhostJudge | null }) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const last = game.rounds.at(-1) ?? null;
   if (game.phase === GHOST_PHASE.finished) {
     const winner = game.winners[0];
@@ -26,7 +31,7 @@ export function GhostTurnLine({ game, judge }: { game: GhostGame; judge: GhostJu
       </div>
     );
   }
-  const marble = PARTY_MARBLES[game.toPlay];
+  const marble = marbles[game.toPlay];
   const answering = game.phase === GHOST_PHASE.answering;
   return (
     <div

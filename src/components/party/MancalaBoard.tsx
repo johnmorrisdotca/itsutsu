@@ -1,5 +1,6 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import { MANCALA_RULE_NAMES } from "@/lib/party/mancala/mancala.constants";
@@ -9,7 +10,7 @@ import { MANCALA_HOLES, pitOwner, storeOf } from "@/lib/party/mancala/sowing";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { BOARD_UNITS, COUNT_SIZE, NAME_BOTTOM, NAME_TOP, SEED_RADIUS, countAt, holeBox, pitCell, seedSpots } from "./mancalaLayout";
-import { MANCALA_COPY, MANCALA_SEED_TONES, PARTY_MARBLES } from "./party.constants";
+import { MANCALA_COPY, MANCALA_SEED_TONES } from "./party.constants";
 import type { MancalaBoardProps } from "./party.types";
 
 const NAME_SIZE = 5.2;
@@ -32,13 +33,15 @@ const HOLES = Array.from({ length: MANCALA_HOLES }, (_, hole) => hole);
  * it is and how many seeds it holds.
  */
 export function MancalaBoard({ game, appearance, holes: drawn = null, landing = null, onPit, readOnly = false }: MancalaBoardProps) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
   const holes = drawn ?? game.holes;
   const sowing = drawn !== null;
   const playing = game.status === MANCALA_STATUS.playing;
   const legal = new Set(!readOnly && playing ? legalPits(game) : []);
   const sow = !readOnly && playing && !sowing ? onPit : undefined;
-  const mover = PARTY_MARBLES[game.toPlay];
+  const mover = marbles[game.toPlay];
   const lastHole = !sowing && game.last !== null ? (game.last.path.at(-1) ?? null) : null;
   const cup = theme.dark ? "rgba(255,255,255,0.10)" : "rgba(58,32,8,0.20)";
   const rim = theme.dark ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.28)";
@@ -56,7 +59,7 @@ export function MancalaBoard({ game, appearance, holes: drawn = null, landing = 
       >
         {/* EACH PLAYER'S NAME ALONG THEIR OWN EDGE, with their colour and the way their seeds go. */}
         {[1, 0].map((seat) => {
-          const marble = PARTY_MARBLES[seat];
+          const marble = marbles[seat];
           const y = seat === 0 ? NAME_BOTTOM : NAME_TOP;
           const name = `${partyPlayerName(game, seat)} ${seat === 0 ? "→" : "←"}`;
           return (

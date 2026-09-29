@@ -55,6 +55,8 @@ export type SharedGameProps = {
    * `POLL_FAST_MS` and `POLL_MS`.
    */
   poll?: LiveBoardIntervals;
+  /** Whether there is an account to keep a colour chosen here as the member's usual (`pieceColour`). */
+  keepsColour?: boolean;
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */

@@ -20,6 +20,7 @@ import {
   STONE_SETS,
 } from "./Board.constants";
 import { boardThemeFor, gridFor } from "./appearance";
+import { seatStones } from "./seatStones";
 import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
@@ -92,13 +93,15 @@ export function Board({
   footprintFor,
   placing = null,
   viewer = null,
+  colours,
 }: BoardProps) {
   const [hovered, setHovered] = useState<Point | null>(null);
   const { size } = state.settings;
   const spec = VARIANT_SPECS[state.settings.variant];
   // Wood, or the felt of a Reversi board (`boardThemeFor`).
   const theme = boardThemeFor(appearance, spec);
-  const stones = STONE_SETS[appearance.stoneSet];
+  // The reader's stones, with each seat's own colour over its side where one was chosen (`seatStones`).
+  const stones = seatStones(STONE_SETS[appearance.stoneSet], colours);
   // In the squares or on the crossings: the game's own custom, from its spec, unless the reader chose one look for all.
   const cells = gridFor(appearance, spec) === BOARD_GRIDS.cells;
 

@@ -28,6 +28,7 @@ import type {
   Pagination,
   PlayerSuggestion,
 } from "./gameHistory.types";
+import { seatColoursFrom } from "@/lib/pieces/seatColours";
 
 /** The listing projection: everything a row shows, and no move rows. */
 export const SUMMARY_SELECT = {
@@ -36,6 +37,9 @@ export const SUMMARY_SELECT = {
   status: true,
   blackName: true,
   whiteName: true,
+  // The colour each seat chose for its pieces, where one did (`seatColours.ts`).
+  blackColour: true,
+  whiteColour: true,
   size: true,
   winLength: true,
   variant: true,
@@ -138,9 +142,10 @@ export function toGameMove(row: MoveRow): GameMove {
  * says so out loud.
  */
 export function toSummary(row: SummaryRow, names: CurrentNames): GameSummary {
-  const { blackForfeits, whiteForfeits, ...rest } = row;
+  const { blackForfeits, whiteForfeits, blackColour, whiteColour, ...rest } = row;
   return {
     ...rest,
+    colours: seatColoursFrom(blackColour, whiteColour),
     blackName: seatName(row.blackName, row.blackMemberId, names),
     whiteName: seatName(row.whiteName, row.whiteMemberId, names),
     /*

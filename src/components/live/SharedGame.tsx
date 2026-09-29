@@ -27,6 +27,7 @@ import { ReactionBubbles, ReactionLog } from "./Reactions";
 import { ColourChooser, GoPassButton, RuleNotes, TurnBoardButton } from "./SharedGameControls";
 import { SharedGameFooter } from "./SharedGameFooter";
 import type { SharedGameProps } from "./sharedGame.types";
+import { LiveSeatColour } from "./SeatColourChooser";
 import { TurnBanner } from "./TurnBanner";
 import { readQuiet, subscribeQuiet } from "./quiet";
 import { settleFromRecord, settledSinceRendered } from "@/lib/history/settle";
@@ -83,6 +84,7 @@ export function SharedGame({
   appearance = DEFAULT_APPEARANCE,
   turnFlow = DEFAULT_TURN_FLOW,
   poll = DEFAULT_POLL,
+  keepsColour = false,
 }: SharedGameProps) {
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
@@ -123,6 +125,8 @@ export function SharedGame({
   const [selected, setSelected] = useState<Point | null>(null);
   const { hand, rotate, flip, toggleSingle } = usePieceHand(state);
   const choosesColour = VARIANT_SPECS[state.settings.variant].anyColour;
+  // The colour this reader's seat chose for its pieces, asked on its first move and changeable after (`SeatColourChooser`).
+  const seatColour = { gameId: initial.id, seat, token, colours: detail.colours, appearance: board, state, yourTurn, saves: keepsColour, onChanged: (colours: GameDetail["colours"]) => void mutate((now) => (now === undefined ? now : { ...now, colours }), { revalidate: false }) };
   const [placing, setPlacing] = useState<Stone>(STONES.black);
 
   // A move played is a board finished with, so long as the turn actually ended
@@ -356,6 +360,7 @@ export function SharedGame({
         finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />
       {notice}
+      <LiveSeatColour place="first" {...seatColour} />
 
       {/* How the board is keeping up, and anything that went wrong — see `LiveStatusLines`. */}
       <LiveStatusLines
@@ -406,8 +411,10 @@ export function SharedGame({
         selected={selected}
         footprintFor={hand.piece !== null ? hand.footprintFor : undefined}
         placing={choosesColour ? placing : null}
+        colours={detail.colours}
       />
       </div>
+      <div data-chrome className="contents"><LiveSeatColour place="later" {...seatColour} /></div>
 
       {choosesColour && playable ? <ColourChooser placing={placing} onChoose={setPlacing} /> : null}
 

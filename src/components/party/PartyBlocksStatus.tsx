@@ -1,10 +1,13 @@
+"use client";
+
+import { usePartyMarbles } from "./partyMarbles";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BLOCKS_STATUS, blocksLeaders, blocksScores } from "@/lib/gomoku/party/partyBlocks";
 import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 
 import { MarbleChip } from "./MarbleChip";
-import { PARTY_COPY, PARTY_MARBLES } from "./party.constants";
+import { PARTY_COPY } from "./party.constants";
 import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
 
 /** Names joined as a sentence says them: "Aiko", "Aiko and Ben", "Aiko, Ben and Chloe". */
@@ -19,6 +22,8 @@ function namesOf(game: PartyBlocksState, players: readonly number[]): string {
  * and by how many squares.
  */
 export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   if (game.status === BLOCKS_STATUS.over) {
     const leaders = blocksLeaders(game);
     const squares = blocksScores(game)[leaders[0]].squares;
@@ -36,7 +41,7 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
       </div>
     );
   }
-  const marble = PARTY_MARBLES[game.toPlay];
+  const marble = marbles[game.toPlay];
   const out = game.out.flatMap((isOut, player) => (isOut ? [player] : []));
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-1`} data-testid="blocks-turn" data-player={game.toPlay} aria-live="polite">

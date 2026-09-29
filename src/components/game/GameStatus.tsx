@@ -35,6 +35,8 @@ import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 import { FORBIDDEN_PATTERN_DISPLAY, HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { StoneMark } from "@/components/board/StoneMark";
 import { STONE_SETS } from "@/components/board/Board.constants";
+import { seatStones } from "@/components/board/seatStones";
+import { useStoneColours } from "@/components/board/seatColourContext";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { AWARENESS_LEVELS, GAME_COPY } from "./game.constants";
 import { openingPrompt } from "./openingCopy";
@@ -43,7 +45,8 @@ import type { GameSession } from "./game.types";
 /** Whose move it is, drawn with the stone they are actually holding. */
 function ToPlay({ session }: { session: GameSession }) {
   const { state, names } = session;
-  const stones = STONE_SETS[session.appearance.stoneSet];
+  // The reader's stones with each seat's chosen colour over its side, as the board draws them (`seatStones`).
+  const stones = seatStones(STONE_SETS[session.appearance.stoneSet], useStoneColours());
 
   if (state.status === GAME_STATUS.draw) {
     /*

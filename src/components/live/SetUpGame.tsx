@@ -18,7 +18,9 @@ import { OpponentChoice } from "./OpponentChoice";
 import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
 import { BeginBar } from "./BeginBar";
 import { BoardPreview } from "./BoardPreview";
-import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
+import type { PieceColour } from "@/lib/pieces/pieceColours";
+import { rememberPieceColour } from "./rememberPieceColour";
 import type { Appearance } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
@@ -92,7 +94,10 @@ export function SetUpGame({
   problem = null,
   appearance = DEFAULT_APPEARANCE,
   wordStyle = null,
+  pieceColour: usualColour = null,
 }: {
+  /** The colour this member last gave their pieces (`pieceColour`), offered first; null for the game's own. */
+  pieceColour?: PieceColour | null;
   /** How the reader last drew a Gomoji grid, for a puzzle chosen here (`PuzzleHere`). */
   wordStyle?: WordStyle | null;
   /** The reader's board, so the preview is dressed as their game will be and a Reversi's felt can be chosen. */
@@ -193,6 +198,8 @@ export function SetUpGame({
   const [colour, setColour] = useState<ColourChoice>(colourFromAddress(query.get(SET_UP_PARAMS.colour)));
   /* How many games at once — a match, offered wherever the colour is; see `liveMatch.ts`. */
   const [games, setGames] = useState<MatchSize>(gamesFromAddress(query.get(SET_UP_PARAMS.games)));
+  // The colour of the asker's own pieces, starting at their usual one (`BeginBar`).
+  const [pieceColour, setPieceColour] = useState<PieceColour | null>(usualColour);
   /*
    * Pressed, and on the way. There is nothing here that can fail — the request
    * that could lives on the doorstep — so this screen has no error to show, only
@@ -309,6 +316,7 @@ export function SetUpGame({
     waiting: waiting === undefined ? undefined : { id: waiting.id, who: waiting.who },
     colour,
     games,
+    pieceColour,
   });
   /* Whether the colour is the asker's to choose in THIS game — the control shows only where it is. */
   const colourChosen = colourIsChosen({
@@ -465,6 +473,7 @@ export function SetUpGame({
         sitting={sitting}
         colour={colourChosen ? { value: colour, onChange: setColour } : null}
         games={colourChosen ? { value: games, onChange: setGames } : null}
+        pieceColour={signedIn ? { value: pieceColour, onChange: (next) => { setPieceColour(next); if (canAsk) rememberPieceColour(next); }, usual: STONE_SETS[appearance.stoneSet].black } : null}
         made={made}
         trouble={trouble}
         press={press}

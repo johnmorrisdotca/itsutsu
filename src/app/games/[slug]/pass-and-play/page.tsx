@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { BoardScaled } from "@/components/board/BoardScaled";
+import { PartyColoursTable } from "@/components/party/partyMarbles";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -86,7 +87,10 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
       </div>
       {/* The table at the size this reader keeps for this kind of screen (`BoardScaled`), once a game is on it. */}
       <BoardScaled>
-        <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
+        {/* Each place's own colour at this table, kept in this browser (`PartyColoursTable`). */}
+        <PartyColoursTable tableKey={key}>
+          <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
+        </PartyColoursTable>
       </BoardScaled>
     </Page>
   );

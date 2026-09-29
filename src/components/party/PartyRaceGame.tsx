@@ -1,5 +1,7 @@
 "use client";
 
+import { usePartyMarbles } from "./partyMarbles";
+import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -12,7 +14,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MarbleChip } from "./MarbleChip";
 import { PartySetUp } from "./PartySetUp";
-import { PARTY_COPY, PARTY_MARBLES } from "./party.constants";
+import { PARTY_COPY } from "./party.constants";
 import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
 
 /**
@@ -88,6 +90,12 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
       </div>
 
       <aside className="flex min-w-0 flex-col gap-4">
+        {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
+        {game.status === PARTY_STATUS.playing ? (
+          <div data-chrome>
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game.players, game.toPlay)} playing={game.players.length} />
+          </div>
+        ) : null}
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="party-players">
           <h2 className={SECTION_TITLE}>
             Players <span className="font-mincho normal-case tracking-normal">席</span>
@@ -167,6 +175,8 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
 
 /** Whose turn it is, by name and colour — or who has won. The same line at a table on several devices (`RaceOnline`). */
 export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
+  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const marbles = usePartyMarbles();
   if (game.status === PARTY_STATUS.won && game.winner !== null) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-2 text-base font-semibold`} data-testid="party-winner" data-player={game.winner}>
@@ -184,7 +194,7 @@ export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp:
       </p>
     );
   }
-  const marble = PARTY_MARBLES[game.toPlay];
+  const marble = marbles[game.toPlay];
   return (
     <p className={`${PANEL_CLASS} flex items-center gap-2 text-base`} data-testid="party-turn" data-player={game.toPlay} aria-live="polite">
       <MarbleChip player={game.toPlay} />
