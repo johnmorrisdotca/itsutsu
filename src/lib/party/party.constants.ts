@@ -46,7 +46,8 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     kanji: "幽霊",
     tagline: "Add a letter at either end; finish a word, or bluff and be caught, and you are one step nearer a ghost.",
     origin:
-      "Ghost is an old spoken word game of the English-speaking world, where letters are only ever added at the end. Superghost lets a letter go on at either end, and was made famous by James Thurber's essay about it in The New Yorker, \"Do You Want to Make Something Out of It?\". Nobody owns either.",
+      /* Thurber's essay on Ghost checked 2026-09-28; that it made Superghost itself famous could not be confirmed, so the copy does not say so. */
+      "Ghost is an old spoken word game of the English-speaking world, where letters are only ever added at the end. Superghost lets a letter go on at either end. James Thurber's New Yorker essay \"Do You Want to Make Something Out of It?\" is the best-known account of the game and the people who play it. Nobody owns either.",
     wikipedia: "Ghost (game)",
     rules: [
       "Players take turns adding one letter to either end of a growing string of letters, the fragment. The first player of a round sets down any letter.",
