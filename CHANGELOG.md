@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.424.0 — 2026-09-29
+- Superghost 幽霊 for two to eight, in English or Japanese: add a letter to either end, never finish a word, challenge a bluff
+
 ## 0.423.1 — 2026-09-29
 - Dots and Boxes reaches the site: a set-up check looked for it where only board games are offered
 
