@@ -31,11 +31,13 @@ export const POINTS_A_HELP = 50;
  * cells to fill, so it counts every island's number — each end of every
  * bridge drawn — which is the work its answer is. A Picture logic puzzle has
  * no printed cells, and every cell is decided, shaded or empty, as in Hidden
- * Stones: its whole grid.
+ * Stones: its whole grid. A Solitaire counts the fifty-two cards it brought home.
  */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones" || kind === "pictureLogic") return area;
+  // A Solitaire's work is every card of the deck brought home.
+  if (kind === "solitaire") return 52;
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

@@ -1,4 +1,7 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
+import { solitaireMovesFit } from "./solitaire/check";
+import { encodeMoves } from "./solitaire/code";
+import type { KlondikeMove } from "./solitaire/solitaire.types";
 import type { BridgeCounts, BridgesBoard } from "./bridges/bridges.types";
 import { ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO, MOST_BRIDGES, WATER, encodeBridges } from "./bridges/code";
 import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
@@ -49,6 +52,11 @@ export function decodeStoneProgress(code: string, size: number): StoneMarkCode[]
     else return null;
   }
   return marks;
+}
+
+/** Solitaire writes its moves so far, as its answer is written (`solitaire/code.ts`); a kept run replays them from the deal. */
+export function encodeSolitaireProgress(moves: readonly KlondikeMove[]): string {
+  return encodeMoves(moves);
 }
 
 /** Bridges writes its drawing as its answer is written: every island's number, and each water cell's bridge or none. */
@@ -104,6 +112,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "tsunagi") return linesCodeFits(code, size);
   // A Kumimoji's shape only: its bag is checked when the game is opened again (`decodeTileProgress`).
   if (kind === "kumimoji") return readTileProgress(code) !== null;
+  // Solitaire keeps its moves, as its answer is written; replayed from the deal when it is opened.
+  if (kind === "solitaire") return solitaireMovesFit(code);
   // Bridges keeps its drawing, one character a cell, as its answer is written; read against its islands when opened.
   if (kind === "bridges") return bridgesCodeFits(code, size);
   // Picture logic keeps the player's grid, one character a cell: "." untouched, "#" shaded, "x" marked empty (`pictureLogic/code.ts`).

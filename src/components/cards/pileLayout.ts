@@ -5,7 +5,7 @@ import type { PileCard, PileSpread } from "./cards.types";
 export const DEFAULT_STEP = { faceDown: 0.12, faceUp: FACE_LAYOUT.strip } as const;
 
 /** The least a squeezed face-up step may be, just past the rank's foot: less and a rank is covered, so a long column grows instead. */
-export const LEAST_FACE_UP = 0.27;
+export const LEAST_FACE_UP = 0.265;
 
 /**
  * WHERE EACH CARD OF A PILE SITS, as a multiple of a card's height (`down`) or

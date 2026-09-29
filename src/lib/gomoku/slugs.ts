@@ -94,6 +94,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   koushi: "koushi",
   bridges: "bridges",
   pictureLogic: "picture-logic",
+  solitaire: "solitaire",
 };
 
 /**

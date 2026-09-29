@@ -32,6 +32,7 @@ import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { BRIDGES_CELL_WORDS, PICTURE_CELL_WORDS } from "./puzzles.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PuzzleSteps } from "./PuzzleSteps";
+import { SolitaireReplay } from "./SolitaireReplay";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
 
@@ -88,7 +89,7 @@ export function FinishedPuzzle({
 }) {
   const { style } = useWordStyle();
   const hydrated = useHydrated();
-  // Where a word's replay stands, held out here: opening the box on its own moves what is inside it.
+  // Where a word's or a Solitaire's replay stands, held out here: opening the box on its own moves what is inside it.
   const [wordAt, setWordAt] = useState<number | null>(null);
 
   // A lattice as it ended, in its colours: the grid its swaps made, or the scramble it was dealt.
@@ -97,6 +98,15 @@ export function FinishedPuzzle({
     if (asked === null) return null;
     const grid = readKoushi(givens, answer)?.played.grid ?? asked.scramble;
     return <KoushiGrid grid={grid} marks={markLattice(grid, asked.solution)} done={readOnly} onPress={NOTHING} onSwap={NOTHING} />;
+  }
+
+  // A Solitaire is its moves, played back from the deal a table at a time (`SolitaireReplay`).
+  if (kind === "solitaire") {
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "replay"}>
+        <SolitaireReplay size={size} level={level} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} />
+      </Focused>
+    );
   }
 
   // A word puzzle is replayed guess by guess, its keyboard beside it, as when it ended (`WordReplay`).

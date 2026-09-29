@@ -206,6 +206,26 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["bridges", "pictureLogic"],
   },
   {
+    key: "cards",
+    /*
+     * CARDS. John, 2026-09-29: "Let's create 3 new types of game (card,
+     * mahjong, dominos)", and first of the cards "Solitair classic game". The
+     * shelf for games played with the one deck the site draws
+     * (`src/lib/cards/`, `src/components/cards/`): Solitaire first, a patience
+     * for one kept and timed as a puzzle is, and the family games for a table
+     * of several to follow — Hearts, Big Two, President, Go Fish, Crazy Eights.
+     *
+     * 札 (fuda): a card — the word in karuta and hanafuda, Japan's own card
+     * games. Chosen over トランプ, the everyday word for a Western deck, which
+     * is a loanword with nothing of the table in it; 札 is a card of any kind,
+     * as this shelf will be.
+     */
+    title: "Cards",
+    kanji: "札",
+    blurb: "Games with a deck of cards, drawn by us: Solitaire to start, and the family card games to come.",
+    games: ["solitaire"],
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to

@@ -41,6 +41,9 @@ import { generateBridges } from "@/lib/puzzles/bridges/generate";
 import { PictureLogicGrid } from "@/components/puzzles/PictureLogicGrid";
 import { decodeClues } from "@/lib/puzzles/pictureLogic/code";
 import { generatePictureLogic } from "@/lib/puzzles/pictureLogic/generate";
+import { SolitaireTable } from "@/components/puzzles/SolitaireTable";
+import { dealOfSeed, deckOf } from "@/lib/puzzles/solitaire/code";
+import { dealKlondike, playKlondike } from "@/lib/puzzles/solitaire/klondike";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -116,6 +119,8 @@ export function PuzzleBoardPreview({
           <BridgesPreview size={size} />
         ) : kind === "pictureLogic" ? (
           <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
+        ) : spec.cards === true ? (
+          <SolitairePreview draw={size} appearance={appearance} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
@@ -123,7 +128,7 @@ export function PuzzleBoardPreview({
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
-        {SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
+        {spec.cards === true ? SET_UP_COPY.previewCards(PUZZLE_DISPLAY[kind].label) : SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
         {(!onBoard && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">
@@ -228,6 +233,21 @@ function PictureLogicPreview({ size, level }: { size: number; level: PuzzleLevel
   const clues = useMemo(() => decodeClues(generatePictureLogic(size, level, 7).givens, size), [size, level]);
   if (clues === null) return null;
   return <PictureLogicGrid clues={clues} cells={new Array(size * size).fill(0)} done readOnly />;
+}
+
+/**
+ * Solitaire before it is dealt: a real deal from a fixed seed on the table the
+ * game is played on (`SolitaireTable`), in the reader's wood, the stock turned
+ * once so the waste shows one card or three as the tile chosen says. Square,
+ * as the table always is, in the box every board stands in; nothing on it can
+ * be pressed.
+ */
+function SolitairePreview({ draw, appearance }: { draw: number; appearance: Appearance }) {
+  const table = useMemo(() => {
+    const dealt = dealKlondike(deckOf(dealOfSeed(7))!, { draw: draw === 3 ? 3 : 1, passes: Infinity });
+    return playKlondike(dealt, { kind: "draw" }) ?? dealt;
+  }, [draw]);
+  return <SolitaireTable table={table} theme={BOARD_THEMES[appearance.boardTheme] ?? BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} readOnly />;
 }
 
 /** Koushi's lattice before it is made: 21 blank tiles and four holes, in the board colour chosen under it. Nothing on it can be pressed. */

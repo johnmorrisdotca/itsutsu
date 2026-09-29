@@ -1,0 +1,61 @@
+"use client";
+
+import { useMemo } from "react";
+
+import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { replay } from "@/lib/puzzles/solitaire/code";
+import { solitaireRules } from "@/lib/puzzles/solitaire/generate";
+import { klondikeWon } from "@/lib/puzzles/solitaire/klondike";
+import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+
+import { SolitaireTable } from "./SolitaireTable";
+
+/**
+ * A FINISHED SOLITAIRE, played back: the table as each move left it, from the
+ * deal to the last card home (or to where it was given up), with a scrubber
+ * and a press either side of it. The moves are the game (`solitaire/code.ts`),
+ * so every table on the way is replayed from them here, in the browser; a list
+ * that no longer replays shows the deal and says so, never a table made up.
+ */
+export function SolitaireReplay({ size, level, givens, moves, at, go }: { size: number; level: PuzzleLevel; givens: string; moves: string; at: number | null; go: (at: number) => void }) {
+  const tables = useMemo(() => replay(givens, solitaireRules(size, level), moves) ?? replay(givens, solitaireRules(size, level), ""), [givens, size, level, moves]);
+  if (tables === null) return null;
+  const last = tables.length - 1;
+  const viewing = at === null ? last : Math.max(0, Math.min(at, last));
+  const table = tables[viewing];
+  const step = (to: number) => go(Math.max(0, Math.min(to, last)));
+  return (
+    <>
+      <div className="mx-auto w-full" data-focus-board>
+        <SolitaireTable table={table} theme={BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} readOnly />
+      </div>
+      {last > 0 ? (
+        <div className="flex items-center gap-2" data-testid="solitaire-replay">
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing - 1)} disabled={viewing === 0} aria-label="One move back">
+            ‹
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={last}
+            value={viewing}
+            onChange={(event) => step(Number(event.target.value))}
+            className="min-w-0 flex-1 accent-moss"
+            aria-label="Move"
+            data-testid="solitaire-replay-scrubber"
+          />
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label="One move on">
+            ›
+          </button>
+          <span className="w-24 text-right text-sm tabular-nums text-muted" data-testid="solitaire-replay-at">
+            {viewing === 0 ? "The deal" : `Move ${viewing} of ${last}`}
+          </span>
+        </div>
+      ) : null}
+      <p className="text-sm text-muted">
+        {last === 0 ? "The deal, as it was dealt." : klondikeWon(tables[last]) ? "Step through it with the scrubber, from the deal to the last card home." : "Given up here: step back through how it got there."}
+      </p>
+    </>
+  );
+}

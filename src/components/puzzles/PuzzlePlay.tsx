@@ -13,6 +13,7 @@ import type { Puzzle, PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles
 import { clockFor } from "@/lib/puzzles/puzzleClock";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { BridgesSolve } from "./BridgesSolve";
@@ -25,6 +26,7 @@ import type { OnlineOffer } from "@/lib/party/online/online.types";
 import { KumimojiSolve } from "./KumimojiSolve";
 import { KoushiSolve } from "./KoushiSolve";
 import { NumberSolve } from "./NumberSolve";
+import { SolitaireSolve } from "./SolitaireSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
@@ -69,6 +71,7 @@ export function PuzzlePlay({
   players = 1,
   online,
   clock = "none",
+  anyDeal = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
@@ -79,6 +82,8 @@ export function PuzzlePlay({
   online?: OnlineOffer;
   /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
   clock?: PuzzleClock;
+  /** Solitaire's any deal, read only to draw a seed, which says it from then on (`solitaire/generate.ts`). */
+  anyDeal?: boolean;
   /** Whether Gomoji's Head start was chosen: keys greyed before the first guess (`headStart.ts`), easy only. */
   headStart?: boolean;
   /** How many words a Gomoji was asked for — a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`): read only to draw a seed, which says it from then on. */
@@ -131,8 +136,10 @@ export function PuzzlePlay({
       router.replace(joinQuery(setUpPath(kind), `?size=${size}`));
       return;
     }
-    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words), checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })));
-  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, router]);
+    // A Solitaire's seed is drawn in the block its kind of deal is dealt from (`freshSolitaireSeed`).
+    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })));
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -149,6 +156,18 @@ export function PuzzlePlay({
     () => (seed === null || loaded !== loadedKey ? null : generatePuzzle(kind, size, level, seed, { gameLength, language, doubleSet, diagonals })),
     [kind, size, level, seed, loaded, loadedKey, gameLength, language, doubleSet, diagonals],
   );
+
+  /*
+   * A SEED THAT NAMES ANOTHER: a winnable Solitaire's seed is the first deal
+   * from it the solver wins, which may be a later one (`solitaire/generate.ts`).
+   * The address is put right, so a reload, a share or Continue names the deal
+   * on the table. Every other kind makes its puzzle at its own seed, and
+   * nothing happens.
+   */
+  useEffect(() => {
+    if (puzzle === null || seed === null || puzzle.seed === seed || race !== null) return;
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: puzzle.seed, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock })}`);
+  }, [puzzle, seed, race, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, router]);
 
   if (puzzle === null) {
     return (
@@ -187,6 +206,8 @@ export function PuzzlePlay({
         return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
       case "blackAndWhite":
         return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+      case "solitaire":
+        return <SolitaireSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
       case "bridges":
         return <BridgesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
       case "pictureLogic":

@@ -94,7 +94,7 @@ export function PuzzleSizes({
     const sizes = next ? every.slice(every.length - spec.offered.length) : every.slice(0, spec.offered.length);
     if (!sizes.includes(size)) onSize(next ? sizes[sizes.length - 1]! : sizes[0]!);
   };
-  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} />;
+  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={spec.cards === true ? "Draw" : undefined} />;
   /*
    * A setting of a game whose other settings turn shelves keeps the room the
    * press takes, drawn and hidden, so choosing Pop culture on a Gomoji or

@@ -45,6 +45,8 @@ const PUZZLE_SOLVED: HeldEvent[] = [
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "other", dayKey: "2026-01-01" },
   // Logic puzzles (2026-09-28), met with its first Bridges solve: every family now counts it.
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "logic", dayKey: "2026-01-01" },
+  // Cards (2026-09-29), met with its first Solitaire won.
+  { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "cards", dayKey: "2026-01-01" },
 ];
 /* A Wednesday and the Saturday after it, for the weekend award. */
 const WED = "2026-02-04T12:00:00Z";

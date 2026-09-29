@@ -3,6 +3,7 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
 import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS, KUMIMOJI_WILDS, kumimojiTileCount } from "./kumimoji/tiles.constants";
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
+import { SOLITAIRE_MOVES_MOST } from "./solitaire/check";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -45,6 +46,7 @@ export const PUZZLE_KINDS = {
   koushi: "koushi",
   bridges: "bridges",
   pictureLogic: "pictureLogic",
+  solitaire: "solitaire",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -67,6 +69,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.koushi,
   PUZZLE_KINDS.bridges,
   PUZZLE_KINDS.pictureLogic,
+  PUZZLE_KINDS.solitaire,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -244,6 +247,29 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * the whole board fitted to 390 pixels is about fourteen wide.
    */
   pictureLogic: { sizes: [5, 10, 15, 20], offered: [5, 10, 15, 20], defaultSize: 10, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 400 },
+  /*
+   * KLONDIKE, a deal of cards rather than a grid (`solitaire/`): its "size" is
+   * how many cards the stock turns, one or three, and its level how many times
+   * through the stock — easy as often as you like, medium three, hard one
+   * (`SOLITAIRE_PASSES`). Turning three with one pass is left off: the solver
+   * finds a win in about one deal in sixty, and a winnable deal would take the
+   * browser seconds to find. The givens are the deal, fifty-two letters; the
+   * answer is the moves (`solitaire/code.ts`), checked by replaying them.
+   * No Check or Hint, since a card game answers every move as it is made, and
+   * no countdown: the clock and the move count are its measure.
+   */
+  solitaire: {
+    sizes: [1, 3],
+    offered: [1, 3],
+    defaultSize: 1,
+    levels: PUZZLE_LEVEL_LIST,
+    levelsAt: { 3: ["easy", "medium"] },
+    defaultLevel: "easy",
+    mostCells: SOLITAIRE_MOVES_MOST,
+    helps: false,
+    clock: false,
+    cards: true,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -394,6 +420,11 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     15: { label: "Long", kanji: "長" },
     20: { label: "Longest", kanji: "最長" },
   },
+  // How many cards the stock turns at a time: the big number on the tile is the count.
+  solitaire: {
+    1: { label: "Draw 1", kanji: "一枚" },
+    3: { label: "Draw 3", kanji: "三枚" },
+  },
 };
 
 /**
@@ -435,6 +466,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     hard: "No wild tiles: every tile is the letter or kana printed on it.",
   },
   // A Bridges level is what it takes to finish (`bridges/solve.ts`, `levelOf`): counting, joining, or a trial.
+  // A Solitaire level is how many times through the stock (`SOLITAIRE_PASSES`).
+  solitaire: {
+    easy: "Through the stock as many times as you like.",
+    medium: "Three times through the stock, and no more.",
+    hard: "Once through the stock: every card turned is seen once.",
+  },
   bridges: {
     easy: "Counting alone: every island against what the islands in line with it can still give.",
     medium: "Counting, and the joining rule: no group of islands may close itself off from the rest.",
@@ -816,5 +853,31 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "10×10 is the usual size. 5×5 is quick; 15×15 and 20×20 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
+  },
+  /*
+   * KLONDIKE, by the name most people know it by. "Solitaire" is the family of
+   * one-player card games and the everyday name of this one; the desktop
+   * versions that made it famous carry their makers' names, which this site
+   * does not use. ソリティア is what Japanese players call it.
+   */
+  solitaire: {
+    label: "Solitaire",
+    kanji: "ソリティア",
+    tagline: "Klondike, the Solitaire everybody knows: build the four suits up from their Aces, taking the cards out of seven columns and the stock.",
+    inspiredBy: "Klondike, the traditional patience game",
+    alsoKnownAs: ["Klondike", "Patience"],
+    origin:
+      "A patience game — a card game for one — from the late nineteenth century, named, most accounts say, after the Klondike Gold Rush in Canada's Yukon in the 1890s. It became the most played card game in the world when it came free with desktop computers. The deals here are shuffled and the cards drawn by our own code.",
+    rules: [
+      "Seven columns are dealt, one card in the first to seven in the last, each with its top card face up. The other twenty-four are the stock.",
+      "Build each suit's foundation up from its Ace to its King. The game is won when all fifty-two cards are home.",
+      "On the columns, build down in alternating colours: a red 6 on a black 7. Any face-up run may move as a whole onto a card one higher of the other colour, and only a King, or a run headed by one, may go into an empty column.",
+      "When a column's face-up cards are all moved away, the card under them turns over by itself.",
+      "Turn the stock one card at a time or three, onto the waste; the waste's top card may be played. Once the stock is empty the waste turns back over, as many times as the game allows: as often as you like, three times through, or once.",
+      "A card on a foundation may come back down onto a column.",
+      "Drag any face-up card, and the cards on it go with it; or tap a card and then where it should go. Tap a card twice to send it home. Undo takes back a move, and once every card is face up the game finishes itself.",
+    ],
+    board:
+      "Draw 1 turns one card at a time from the stock, and is the gentler game; Draw 3 turns three and only the top one can be played. Winnable deals are dealt from deals our solver has already won, so every one can be won; choose any deal for the shuffle as it falls, which sometimes cannot be.",
   },
 };

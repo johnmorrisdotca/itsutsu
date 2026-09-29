@@ -1,3 +1,7 @@
+import { CardBack } from "@/components/cards/CardBack";
+import { CardFace } from "@/components/cards/CardFace";
+import type { Card } from "@/lib/cards/cards.types";
+
 import type { PictureSize } from "./games.types";
 import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -28,7 +32,16 @@ type Mark = {
   ink?: string;
   /** The digits' size, in cells, where they sit inside a stone rather than on a cell; 0.75 otherwise. */
   digitSize?: number;
+  /**
+   * Playing cards laid on the board, the site's own (`PlayingCard`'s face and
+   * back): each at its centre, in cells, turned by `angle` degrees; a card of
+   * null is its back. The Cards family's fan.
+   */
+  cards?: { card: Card | null; x: number; y: number; angle: number }[];
 };
+
+/** A card's width in a mark, in cells: two cells and a little, so a fan of three fills the little board. */
+const MARK_CARD_WIDTH = 2.3;
 
 /**
  * One mark per family, drawn the way the About page draws its figures: a
@@ -234,6 +247,22 @@ export const FAMILY_MARKS: Record<string, Mark> = {
       " M 0.92 2.38 L 3.08 2.38 M 0.92 2.62 L 3.08 2.62 M 3.5 2.92 L 3.5 4.08",
   },
   /*
+   * CARDS: a hand of three fanned on the green of a card table — a back with
+   * the Itsutsu stones, a red King and, in front, the Ace of spades that
+   * carries the five stones under its pip: the deck the family is played
+   * with, drawn by the same code that draws it at the table.
+   */
+  Cards: {
+    n: 5,
+    cells: true,
+    stones: [],
+    cards: [
+      { card: null, x: 1.45, y: 2.65, angle: -16 },
+      { card: { suit: "hearts", rank: 13 }, x: 2.5, y: 2.35, angle: 0 },
+      { card: { suit: "spades", rank: 1 }, x: 3.55, y: 2.65, angle: 16 },
+    ],
+  },
+  /*
    * OTHER: a row of letters, the word puzzle's, two tiles lit green for a
    * letter in its place and one gold for a letter elsewhere — the family's
    * first game in one line, and the one mark on the row made of letters.
@@ -344,6 +373,13 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
         <g key={i} stroke="var(--rule-strong)" strokeWidth={0.06}>
           <line x1={0} x2={extent} y1={i} y2={i} />
           <line y1={0} y2={extent} x1={i} x2={i} />
+        </g>
+      ))}
+      {(mark.cards ?? []).map(({ card, x, y, angle }, at) => (
+        <g key={at} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
+          <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
+            {card === null ? <CardBack /> : <CardFace card={card} />}
+          </svg>
         </g>
       ))}
       {mark.ink !== undefined ? <path d={mark.ink} fill="none" stroke="var(--ink)" strokeWidth={0.1} strokeLinecap="round" /> : null}

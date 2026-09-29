@@ -34,6 +34,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   bridges: 0.46,
   // Five a cell, every cell decided (`cellsFilled`): a 10×10 is always 100 cells, so 500 points before any help.
   pictureLogic: 0.2,
+  // Five a card brought home (`cellsFilled`): every won deal is 260 points, so about 100 IP, as a medium solve is.
+  solitaire: 0.38,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

@@ -186,8 +186,9 @@ describe("the economy holds its shape", () => {
     // moves this figure instead of quietly leaving it true of nothing.
     // The families a game is played FROM: Party games (2026-09-28) records nothing, so is met in no game's first.
     // Ten since Logic puzzles opened with Bridges the same day: a family met (+150) and a first solve (+50, among the puzzles below).
+    // Eleven since Cards opened with Solitaire on 2026-09-29: the same again, a family met and a first game won.
     const perFamily = RECORDED_FAMILIES.length;
-    expect(perFamily).toBe(10);
+    expect(perFamily).toBe(11);
     // A family won is only for a family of more than one BOARD game: puzzles are not won.
     const familiesToWin = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 1).length;
     expect(familiesToWin).toBe(7);
@@ -210,7 +211,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points * 2 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
+    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points * 3 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

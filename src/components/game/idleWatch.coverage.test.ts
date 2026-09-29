@@ -33,6 +33,7 @@ const NOT_PLAYED_ON: Record<string, string> = {
   "src/components/party/DotsSetUp.tsx": "Dots and Boxes' set-up: the board beside it is the live board at the size chosen, readOnly (no line to tap), before anybody draws",
   "src/components/party/MancalaSetUp.tsx": "Mancala's set-up: the board beside it is the live board under the rules chosen, readOnly (no pit to tap), before anybody sows",
   "src/components/party/tenka/TenkaSetUp.tsx": "Tenka's set-up: the map beside it is the live map dealt for that many, with nothing to tap, before anybody moves",
+  "src/components/puzzles/SolitaireReplay.tsx": "a Solitaire already won or given up, played back move by move on a readOnly table; nobody is playing it",
 };
 
 /**
@@ -57,8 +58,9 @@ const PART_OF: Record<string, string> = {
  * And Dots and Boxes' board (2026-09-28), the first party game's surface, drawn by its table and its set-up;
  * Superghost's fragment, the letters its table watches, drawn by its table alone; Bridges' grid the same day;
  * and Mancala's board, drawn by its table and its set-up; Picture logic's grid (2026-09-29); and Tenka's map, the same.
+ * And Solitaire's table (2026-09-29), drawn by its solve, its set-up's preview and its replay.
  */
-const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|BridgesGrid|PictureLogicGrid|GomojiGrid|DotsBoard|GhostFragment|MancalaBoard|TenkaMap)[\s>]/;
+const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|BridgesGrid|PictureLogicGrid|GomojiGrid|DotsBoard|GhostFragment|MancalaBoard|TenkaMap|SolitaireTable)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
 function tsxUnder(folder: string): string[] {
@@ -80,6 +82,7 @@ describe("the idle question", () => {
     expect(surfaces).toContain("src/components/puzzles/BlackAndWhiteSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/BridgesSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/PictureLogicSolve.tsx");
+    expect(surfaces).toContain("src/components/puzzles/SolitaireSolve.tsx");
     expect(surfaces).toContain("src/components/party/DotsGame.tsx");
     expect(surfaces).toContain("src/components/party/GhostGame.tsx");
     expect(surfaces).toContain("src/components/party/MancalaGame.tsx");

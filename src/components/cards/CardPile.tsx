@@ -52,6 +52,10 @@ export function CardPile({ id, cards, spread, step, room, showLast, emptyMark, a
         <CardSlot mark={emptyMark} />
       </button>
       {cards.map(({ card, faceUp }, index) => {
+        // A squared-up pile shows its top card, and the one under it for when the top is lifted: the rest are drawn by nobody.
+        if (spread === "stack" && index < cards.length - 2) return null;
+        // And a waste spread only at its last few shows those and the one squared under them.
+        if (spread === "right" && showLast !== undefined && index < cards.length - showLast - 1) return null;
         const spot = { pile: id, index };
         const at = layout.offsets[index];
         const top = index === cards.length - 1;

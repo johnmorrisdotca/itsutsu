@@ -21,7 +21,8 @@ describe("pointsFor", () => {
       const made = generatePuzzle(kind, size, "easy", 9);
       const filled = cellsFilled(kind, size, made.givens);
       expect(filled, kind).toBeGreaterThan(0);
-      expect(filled, kind).toBeLessThanOrEqual(size * size);
+      // A card game's size is its draw, and what it fills is the deck brought home: all fifty-two cards.
+      expect(filled, kind).toBeLessThanOrEqual(PUZZLE_SPECS[kind].cards === true ? 52 : size * size);
     }
   });
 
