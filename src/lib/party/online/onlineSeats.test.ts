@@ -119,7 +119,7 @@ describe("whether a table's page asks, and how fast", () => {
 });
 
 describe("the seats the set-up asks for", () => {
-  const rules = { counts: [2, 3, 4], computer: false, links: true, makerId: "me" };
+  const rules = { counts: [2, 3, 4], levels: [] as string[], links: true, makerId: "me" };
 
   it("seat 1 is the maker's, and each other seat a buddy, a link or a computer", () => {
     expect(seatAsksRefusal([{ kind: "me" }, { kind: "link" }], rules)).toBeNull();
@@ -138,9 +138,10 @@ describe("the seats the set-up asks for", () => {
     expect(seatAsksRefusal([{ kind: "me" }, { kind: "buddy", memberId: "me" }], rules)).not.toBeNull();
   });
 
-  it("a computer only where the game has one", () => {
-    expect(seatAsksRefusal([{ kind: "me" }, { kind: "computer" }], rules)).not.toBeNull();
-    expect(seatAsksRefusal([{ kind: "me" }, { kind: "computer" }], { ...rules, computer: true })).toBeNull();
+  it("a computer only one the game has", () => {
+    expect(seatAsksRefusal([{ kind: "me" }, { kind: "computer", level: "novice" }], rules)).not.toBeNull();
+    expect(seatAsksRefusal([{ kind: "me" }, { kind: "computer", level: "novice" }], { ...rules, levels: ["novice"] })).toBeNull();
+    expect(seatAsksRefusal([{ kind: "me" }, { kind: "computer", level: "meijin" }], { ...rules, levels: ["novice"] })).not.toBeNull();
   });
 
   it("no link for a member under 13, who seats buddies by name", () => {
@@ -153,6 +154,8 @@ describe("the seats the set-up asks for", () => {
     expect(readSeatAsk({ kind: "buddy", memberId: "abc" })).toEqual({ kind: "buddy", memberId: "abc" });
     expect(readSeatAsk({ kind: "buddy" })).toBeNull();
     expect(readSeatAsk({ kind: "admin" })).toBeNull();
+    expect(readSeatAsk({ kind: "computer", level: "novice" })).toEqual({ kind: "computer", level: "novice" });
+    expect(readSeatAsk({ kind: "computer" })).toBeNull();
     expect(readSeatAsk("link")).toBeNull();
   });
 });

@@ -35,7 +35,7 @@ import { useSowing } from "./useSowing";
  * asks them what a sowing does, keeps the answer at once, and draws the seeds
  * falling (`useSowing`) on the way to it.
  */
-export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
+export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptMancalaGame();
   const [confirming, setConfirming] = useState(false);
@@ -48,7 +48,7 @@ export function MancalaGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="mancala-game" data-state="set-up">
-        <MancalaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <MancalaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

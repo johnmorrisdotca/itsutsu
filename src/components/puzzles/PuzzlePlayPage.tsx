@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { currentReader } from "@/lib/auth/currentReader";
 import { appearanceFor } from "@/lib/auth/members";
+import { onlineOfferFor } from "@/lib/party/online/server/onlineOffer";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { gamePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
@@ -45,6 +46,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The run this member kept of this very grid, if they left it unfinished: opened where it was left. One indexed read. */
   /* A pass-and-play Kumimoji is kept in the browser, never on the server (`kumimojiPartyKept.ts`): no read for it. */
   const party = (asked.players ?? 1) > 1;
+  // Kumimoji's pass and play may be played on several devices instead: what its names screen offers for that (`onlineOfferFor`).
+  const online = party ? await onlineOfferFor(kind, reader.memberId) : undefined;
   const kept = reader.memberId !== null && asked.seed !== null && !party ? await runOf(reader.memberId, kind, asked.size, asked.level, asked.seed, asked.gameLength, asked.doubleSet, asked.language, asked.diagonals, asked.clock) : null;
   const resumed = kept === null ? null : { progress: kept.progress, steps: kept.steps, elapsedMs: kept.elapsedMs, checksUsed: kept.checksUsed, hintsUsed: kept.hintsUsed };
   /* How a Gomoji grid is drawn, as this member last chose (`wordStyles.ts`); read only for the four Gomojis, and for Kumimoji's table, which is drawn on the same choice of board. */
@@ -75,7 +78,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       />
       <div className="mx-auto w-full max-w-xl" data-width-reason="a puzzle grid wider than a hand is a grid nobody can reach across">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} clock={asked.clock ?? "none"} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} online={online} clock={asked.clock ?? "none"} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
       </div>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}

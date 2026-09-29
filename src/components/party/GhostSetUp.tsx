@@ -10,6 +10,9 @@ import { startGhost } from "@/lib/party/superghost/superghost";
 
 import { GhostPlayers } from "./GhostPlayers";
 import { MarbleChip } from "./MarbleChip";
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
+import { ONLINE_COPY } from "./online/online.constants";
+import type { SeatChoice } from "./online/online.types";
 import { GHOST_COPY, PARTY_COPY, PARTY_MARBLES } from "./party.constants";
 import type { GhostSetUpProps } from "./party.types";
 
@@ -28,13 +31,19 @@ const LANGUAGES: readonly PartyLanguage[] = SPEC.languages ?? [];
  * name the table could need, and in the preview for every player, the ones
  * past the count chosen kept in their place and hidden.
  */
-export function GhostSetUp({ onStart, ready }: GhostSetUpProps) {
+export function GhostSetUp({ onStart, ready, online }: GhostSetUpProps) {
   const [count, setCount] = useState(SPEC.defaultPlayers);
   const [language, setLanguage] = useState<PartyLanguage>(LANGUAGES[0]!);
   const [names, setNames] = useState<string[]>(() => new Array<string>(SPEC.mostPlayers).fill(""));
   const seated = names.slice(0, count);
   // A table the set-up offers is always one the rules start.
   const preview = startGhost(SPEC.defaultSize, seated, language)!;
+  // Several devices: a seat chooser in each name's row, and Start sets the table on the server (`OnlineSetUpParts`).
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, SPEC.mostPlayers));
+  const table = useStartTable(online);
+  const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
+  const severalOffer = several ? online : undefined;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start">
@@ -44,9 +53,11 @@ export function GhostSetUp({ onStart, ready }: GhostSetUpProps) {
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          onStart(startGhost(SPEC.defaultSize, seated, language)!);
+          if (severalOffer !== undefined) void table.start(SPEC.defaultSize, choices.slice(0, count), { language });
+          else onStart(startGhost(SPEC.defaultSize, seated, language)!);
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{PARTY_COPY.howMany}</legend>
           <div className="grid grid-cols-7 gap-1.5" role="radiogroup" aria-label={PARTY_COPY.howMany}>
@@ -104,24 +115,38 @@ export function GhostSetUp({ onStart, ready }: GhostSetUpProps) {
                 <span className="sr-only">
                   Player {index + 1}, {PARTY_MARBLES[index].label}
                 </span>
-                <input
-                  type="text"
-                  value={name}
-                  maxLength={PARTY_NAME_MOST}
-                  placeholder={`Player ${index + 1}`}
-                  disabled={!sitting}
-                  onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
-                  className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
-                  data-testid="ghost-name"
-                />
+                {severalOffer !== undefined ? (
+                  <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} disabled={!sitting} />
+                ) : (
+                  <input
+                    type="text"
+                    value={name}
+                    maxLength={PARTY_NAME_MOST}
+                    placeholder={`Player ${index + 1}`}
+                    disabled={!sitting}
+                    onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
+                    className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
+                    data-testid="ghost-name"
+                  />
+                )}
               </label>
             );
           })}
         </fieldset>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="ghost-start">
-          {PARTY_COPY.start} →
+        <button
+          type="submit"
+          className={`${BUTTON_LEAD} ${BUTTON_STRONG}`}
+          data-testid="ghost-start"
+          disabled={table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, count))}
+        >
+          {severalOffer === undefined ? PARTY_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
+        <p className="text-xs text-muted">{severalOffer === undefined ? PARTY_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, count))}</p>
       </form>
       <div className="min-w-0" data-testid="ghost-preview">
         <GhostPlayers game={preview} room={SPEC.mostPlayers} />

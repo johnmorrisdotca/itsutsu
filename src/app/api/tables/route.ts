@@ -20,6 +20,8 @@ const bodySchema = z.object({
   game: z.enum(ONLINE_GAME_LIST as [OnlineGameKey, ...OnlineGameKey[]]),
   size: z.number().int().min(0).max(40).default(0),
   seats: z.array(z.unknown()).min(1).max(8),
+  /** What a game's set-up sends beyond a size and the seats (Kumimoji's settings and the bag its browser dealt); its rules check it. */
+  setup: z.unknown().optional(),
 });
 
 export async function POST(request: Request) {
@@ -41,6 +43,7 @@ export async function POST(request: Request) {
       size: parsed.data.size,
       asks: asks.flatMap((ask) => (ask === null ? [] : [ask])),
       maker: { id: me.id, name: me.name ?? "" },
+      setup: parsed.data.setup,
     });
     if ("refused" in made) return NextResponse.json({ error: made.refused }, { status: made.status, headers: NO_STORE });
     return NextResponse.json({ id: made.id, at: tablePath(parsed.data.game, made.id) }, { status: 201, headers: NO_STORE });

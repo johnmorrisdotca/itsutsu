@@ -68,7 +68,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
     },
     [view.id, view.moveCount, mutate],
   );
-  useComputerTurn({ view, game, rules, send, sending });
+  const { thinking } = useComputerTurn({ view, rules, send, sending });
 
   const seatAction = async (what: "leave" | "end") => {
     setProblem(null);
@@ -100,7 +100,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       {...readyMark(hydrated)}
     >
       <div className="flex min-w-0 flex-col gap-3">
-        <StatusLine view={view} sending={sending} />
+        <StatusLine view={view} sending={sending} thinking={thinking} />
         {game === null ? null : <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />}
         {problem !== null ? (
           <p className="text-sm text-shu" role="alert" data-testid="online-problem">
@@ -153,7 +153,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
 }
 
 /** What the table waits on, in words: the reader, somebody by name, an open seat — or how it ended. */
-function StatusLine({ view, sending }: { view: OnlineTableView; sending: boolean }) {
+function StatusLine({ view, sending, thinking }: { view: OnlineTableView; sending: boolean; thinking: boolean }) {
   if (view.status === ONLINE_STATUS.ended) {
     return (
       <p className={`${PANEL_CLASS} text-sm`} data-testid="online-status" data-state="ended">
@@ -166,13 +166,21 @@ function StatusLine({ view, sending }: { view: OnlineTableView; sending: boolean
   const yours = view.toPlay === view.mySeat;
   const words = sending
     ? ONLINE_COPY.sending
+    : thinking
+      ? ONLINE_COPY.computerThinking(toPlay?.name || ONLINE_COPY.computerSeat)
     : yours
       ? ONLINE_COPY.yourTurn
       : toPlay?.kind === ONLINE_SEAT_KINDS.open
         ? ONLINE_COPY.waitingOpen
-        : ONLINE_COPY.waitingOn(toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : toPlay?.name || `Player ${view.toPlay + 1}`);
+        : ONLINE_COPY.waitingOn(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : `Player ${view.toPlay + 1}`));
   return (
-    <p className={`text-sm font-semibold ${yours ? "text-ink" : "text-muted"}`} data-testid="online-status" data-yours={yours ? "true" : undefined} aria-live="polite">
+    <p
+      className={`text-sm font-semibold ${yours ? "text-ink" : "text-muted"}`}
+      data-testid="online-status"
+      data-yours={yours ? "true" : undefined}
+      data-thinking={thinking ? "true" : undefined}
+      aria-live="polite"
+    >
       {words}
     </p>
   );

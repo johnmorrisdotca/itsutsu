@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { currentMemberRow, currentSession } from "@/lib/auth/currentSession";
-import { partyKindFor, variantFor } from "@/lib/gomoku/slugs";
+import { partyKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { isOnlineGame } from "@/lib/party/online/onlineGames";
 import { tablePath, tableSeatPath } from "@/lib/party/online/onlinePaths";
 import { claimSeat } from "@/lib/party/online/server/tableSeats";
@@ -19,7 +19,7 @@ import { claimSeat } from "@/lib/party/online/server/tableSeats";
  */
 export async function GET(request: Request, ctx: RouteContext<"/games/[slug]/tables/[id]/seat/[token]">) {
   const { slug, id, token } = await ctx.params;
-  const game = partyKindFor(slug) ?? variantFor(slug);
+  const game = partyKindFor(slug) ?? variantFor(slug) ?? puzzleFor(slug);
   if (game === null || !isOnlineGame(game)) return new NextResponse(null, { status: 404 });
   const session = await currentSession();
   if (session === null) {

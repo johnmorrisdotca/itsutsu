@@ -11,6 +11,8 @@ export const ONLINE_COPY = {
   you: "You",
   link: "Anyone with the link",
   computer: "Computer",
+  /** A computer in the seat chooser: a program by its name, or a game's one computer player plainly. */
+  computerLabel: (name: string) => (name === "Computer" ? "Computer" : `Computer: ${name}`),
   buddyLabel: (name: string) => `Buddy: ${name}`,
   /** Under Start on several devices: where the table is kept, or why it cannot be set yet. */
   keptNote: (fillable: boolean) =>
@@ -33,6 +35,8 @@ export const ONLINE_COPY = {
   waitingOn: (name: string) => `Waiting on ${name}.`,
   waitingOpen: "Waiting for somebody to take the open seat.",
   sending: "Sending…",
+  /** While this browser works out a computer's move, as the table's arrangement asks it to. */
+  computerThinking: (name: string) => `${name} is thinking, in this browser…`,
   sendLink: "Send this link to whoever you want in the open seat. Whoever opens it, signed in, takes it.",
   linkName: { en: "The open seat", kanji: "空席" },
   linkMessage: (game: string, url: string) => `Sit at my table of ${game}: ${url}`,

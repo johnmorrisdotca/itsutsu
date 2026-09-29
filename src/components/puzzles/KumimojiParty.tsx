@@ -13,6 +13,7 @@ import { holdsItsBag, isPartyFor } from "@/lib/puzzles/kumimoji/partyKept";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
+import type { OnlineOffer } from "@/lib/party/online/online.types";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
@@ -23,6 +24,8 @@ import { KumimojiPartyComputer } from "./KumimojiPartyComputer";
 import { KumimojiPartyFinish, KumimojiPartyNames, KumimojiPartyOrder, partyAddress } from "./KumimojiPartyScreens";
 import { KumimojiPartySeats } from "./KumimojiPartySeats";
 import { KumimojiPartyTurn } from "./KumimojiPartyTurn";
+import { KumimojiOnlineSeats } from "@/components/party/online/KumimojiOnlineSeats";
+import { WhereChoice } from "@/components/party/online/OnlineSetUpParts";
 import { keepParty, rememberNames, useKeptParty, useRememberedNames } from "./kumimojiPartyKept";
 
 /**
@@ -59,6 +62,7 @@ export function KumimojiParty({
   hints = false,
   appearance = DEFAULT_APPEARANCE,
   language = puzzle.language ?? "english",
+  online,
 }: {
   puzzle: Puzzle;
   /** Two to eight, from the address. */
@@ -66,6 +70,8 @@ export function KumimojiParty({
   hints?: boolean;
   appearance?: Appearance;
   language?: KumimojiLanguage;
+  /** Playing on several devices instead, where the reader has an account (`OnlineOffer`): the names screen offers it. */
+  online?: OnlineOffer;
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
@@ -80,6 +86,8 @@ export function KumimojiParty({
   /* A kept game whose tiles did not all come out of its own bag is not opened: the names screen begins a fresh one. */
   const kept = useMemo(() => (stored !== null && holdsItsBag(stored, words.familyKey) ? stored : null), [stored, words]);
   const game = kept !== null && isPartyFor(kept, settings, players) ? kept : null;
+  /* Whether the table is played on several devices, chosen before anybody is named. */
+  const [several, setSeveral] = useState(false);
   /* Which turn has been uncovered, by its number: a new turn is covered until its player says they are there. */
   const [uncovered, setUncovered] = useState<number | null>(null);
 
@@ -112,7 +120,15 @@ export function KumimojiParty({
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-3`} data-testid="kumimoji-party" data-players={players} {...readyMark(hydrated)}>
       {game === null ? (
-        <KumimojiPartyNames count={players} remembered={remembered} replacing={kept !== null && kept.ending === null ? kept : null} onBegin={begin} />
+        <>
+          {/* This device, or several: on several, each seat a buddy, a link or a computer, and the table set on the server. */}
+          <WhereChoice offer={online} several={several} onChange={setSeveral} />
+          {several && online !== undefined ? (
+            <KumimojiOnlineSeats offer={online} count={players} setup={{ settings, bag: puzzle.givens }} />
+          ) : (
+            <KumimojiPartyNames count={players} remembered={remembered} replacing={kept !== null && kept.ending === null ? kept : null} onBegin={begin} />
+          )}
+        </>
       ) : game.ending !== null ? (
         <KumimojiPartyFinish game={game} theme={theme} onAgain={again} />
       ) : isComputer(game, game.turn) ? (

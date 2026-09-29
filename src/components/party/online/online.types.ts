@@ -49,5 +49,5 @@ export type OnlineTableProps = {
   tags: Readonly<Record<string, NameTag>>;
 };
 
-/** A seat as the set-up's picker holds it: the reader's own, a link, a computer, or a buddy by id. */
-export type SeatChoice = "me" | "link" | "computer" | `buddy:${string}`;
+/** A seat as the set-up's picker holds it: the reader's own, a link, a buddy by id, or a computer by level. */
+export type SeatChoice = "me" | "link" | `buddy:${string}` | `computer:${string}`;

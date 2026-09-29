@@ -36,7 +36,7 @@ import { useGhostWords } from "./useGhostWords";
  * rules are all in `lib/party/superghost/superghost.ts`; this asks them what a
  * move does, and draws the answer.
  */
-export function GhostGame({ gameHref }: PartyTableGameProps) {
+export function GhostGame({ gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptGhostGame();
   const [pending, setPending] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function GhostGame({ gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="ghost-game" data-state="set-up">
-        <GhostSetUp onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <GhostSetUp onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

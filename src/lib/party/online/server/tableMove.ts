@@ -53,7 +53,7 @@ export async function moveAtTable(
   if (game === null) throw new Error(`Table ${id} holds a game its rules cannot read.`);
   const read = rules.readMove(move);
   const kept = read === null ? "" : JSON.stringify(read);
-  if (read === null || kept.length > ONLINE_MOVE_LONGEST) return { refused: "That is not a move in this game.", status: 400 };
+  if (read === null || kept.length > (rules.moveLongest ?? ONLINE_MOVE_LONGEST)) return { refused: "That is not a move in this game.", status: 400 };
   const next = rules.play(game, read);
   if (next === null) return { refused: "That move is not allowed.", status: 422 };
   const standing = standingOf(rules, next);

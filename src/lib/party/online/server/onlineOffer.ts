@@ -3,14 +3,14 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { isChild } from "@/lib/social/childRules";
 
-import type { OnlineOffer } from "../online.types";
-import { hasComputer, isOnlineGame } from "../onlineGames";
+import type { OnlineGameKey, OnlineOffer } from "../online.types";
+import { isOnlineGame, onlineRulesOf } from "../onlineGames";
 
 /**
  * WHAT A GAME'S SET-UP OFFERS FOR SEVERAL DEVICES, for this reader: their
  * buddies to seat by name (their own list, most recently seen first), whether
- * they may hand out a link — not a member under 13 — and whether the game has
- * a computer player. Undefined where the game cannot be played on several
+ * they may hand out a link — not a member under 13 — and the game's computer
+ * players, each by the name it plays under. Undefined where the game cannot be played on several
  * devices or the reader has no account: the set-up then offers only this
  * device, exactly as before. One read of the reader's band and one of their
  * buddies, on the set-up page only.
@@ -29,6 +29,12 @@ export async function onlineOfferFor(game: string, memberId: string | null): Pro
     game,
     buddies: buddies.map(({ buddy }) => ({ id: buddy.id, name: buddy.name || "A buddy" })),
     links: !isChild(me?.ageBand),
-    computer: hasComputer(game),
+    computers: computersOf(game),
   };
+}
+
+/** A game's computer players as the set-up offers them: each level, and the name it plays under. */
+function computersOf(game: OnlineGameKey): { level: string; name: string }[] {
+  const computers = onlineRulesOf(game).computers;
+  return computers === undefined ? [] : computers.levels.map((level) => ({ level, name: computers.seat(level).name }));
 }

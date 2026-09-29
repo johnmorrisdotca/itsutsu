@@ -6,15 +6,27 @@ import { PARTY_STATUS } from "../../gomoku/party/partyRace";
 import type { PartyRaceRules, PartyRaceState } from "../../gomoku/party/partyRace.types";
 import type { PartyCheckersState } from "../../gomoku/party/partyCheckers.types";
 import type { PartyHalmaState } from "../../gomoku/party/partyHalma.types";
+import type { PairGoGame } from "../../gomoku/party/pairGo.types";
+import type { PartyGame } from "../../puzzles/kumimoji/party.types";
+import type { MancalaGame } from "../mancala/mancala.types";
+import type { GhostGame } from "../superghost/superghost.types";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";
 import type { BlocksPieceKey, PartyBlocksState } from "../../gomoku/party/partyBlocks.types";
 import { DOTS_RULES, DOTS_STATUS } from "../dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "../dotsAndBoxes/dotsAndBoxes.types";
 import { PARTY_SPECS } from "../party.constants";
-import type { PartyRules } from "../party.types";
 
 import type { OnlineGameKey, OnlineRules } from "./online.types";
+import { fromPartyRules } from "./onlineGames.parts";
+import { KUMIMOJI_ONLINE, type KumimojiMove } from "./onlineKumimoji";
+import { MANCALA_ONLINE, SUPERGHOST_ONLINE, type GhostTableMove } from "./onlineWordGames";
+
+export { fromPartyRules };
+import { PAIR_GO_ONLINE, type PairGoMove } from "./onlinePairGo";
+import { readPoint } from "./onlinePoints";
+
+export { readPoint };
 
 /**
  * EVERY GAME THAT CAN BE PLAYED ON SEVERAL DEVICES, and the rules each is
@@ -23,8 +35,11 @@ import type { OnlineGameKey, OnlineRules } from "./online.types";
  * but them (docs/plans/party-online/README.md).
  *
  * A `Record` over `OnlineGameKey`, so a key without its rules does not
- * compile. No game here has a computer player yet, so none offers a computer
- * seat: Kumimoji's three and Pair Go's Go programs arrive with those games.
+ * compile. Pair Go's seats may be given to the site's Go programs
+ * (`onlinePairGo.ts`); no other game here has a computer player for a table,
+ * so none other offers a computer seat. Pair Go's row reads the ladder, which
+ * is written with the site's aliases, so a browser spec imports the rules it
+ * needs from the games' own modules rather than from here.
  */
 
 /** A move on a race board: a piece from one point to another, both on the board. */
@@ -32,42 +47,6 @@ export type RaceMove = { from: Point; to: Point };
 
 /** A piece laid at Block Five: which, and the squares it covers. */
 export type BlocksLay = { piece: BlocksPieceKey; cells: readonly Point[] };
-
-/** A point as a browser sent it: two whole numbers inside a board of this side, or null. */
-export function readPoint(sent: unknown, side: number): Point | null {
-  if (typeof sent !== "object" || sent === null) return null;
-  const { row, col } = sent as { row?: unknown; col?: unknown };
-  if (!Number.isInteger(row) || !Number.isInteger(col)) return null;
-  const point = { row: row as number, col: col as number };
-  return point.row >= 0 && point.col >= 0 && point.row < side && point.col < side ? point : null;
-}
-
-/**
- * A party kind's rules (`PartyRules`) as a table on several devices asks them.
- * A new party kind — Superghost, Mancala, Tenka — joins with this and the four
- * things `PartyRules` does not say: whose turn it is, how many moves have been
- * made, a move's shape, and where the names go.
- */
-export function fromPartyRules<S, M>(
-  rules: PartyRules<S, M>,
-  spec: { sizes: readonly number[]; counts: readonly number[] },
-  own: Pick<OnlineRules<S, M>, "toPlay" | "moveCount" | "readMove" | "named">,
-): OnlineRules<S, M> {
-  return {
-    sizes: spec.sizes,
-    counts: spec.counts,
-    // A table of blank names: the names are the seats', written in for a page by `named`.
-    start: (size, count) => (spec.counts.includes(count) ? rules.start(size, new Array<string>(count).fill("")) : null),
-    encode: rules.encode,
-    decode: (text) => rules.decode(text),
-    toPlay: (game) => (rules.over(game) ? null : own.toPlay(game)),
-    winners: (game) => (rules.over(game) ? rules.winners(game) : []),
-    moveCount: own.moveCount,
-    readMove: own.readMove,
-    play: rules.play,
-    named: own.named,
-  };
-}
 
 /** Every count from the fewest to the most. */
 function countsBetween(fewest: number, most: number): number[] {
@@ -138,6 +117,10 @@ type OnlinePlays = {
   chineseCheckers: { game: PartyCheckersState; move: RaceMove };
   halma: { game: PartyHalmaState; move: RaceMove };
   blockFive: { game: PartyBlocksState; move: BlocksLay };
+  go: { game: PairGoGame; move: PairGoMove };
+  kumimoji: { game: PartyGame; move: KumimojiMove };
+  superghost: { game: GhostGame; move: GhostTableMove };
+  mancala: { game: MancalaGame; move: number };
 };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
@@ -146,6 +129,10 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   chineseCheckers: raceOnline(PARTY_CHECKERS_RULES),
   halma: raceOnline(PARTY_HALMA_RULES),
   blockFive: BLOCKS_ONLINE,
+  go: PAIR_GO_ONLINE,
+  kumimoji: KUMIMOJI_ONLINE,
+  superghost: SUPERGHOST_ONLINE,
+  mancala: MANCALA_ONLINE,
 };
 
 /**
@@ -168,5 +155,5 @@ export function isOnlineGame(key: string): key is OnlineGameKey {
 
 /** Whether a game has a computer player a seat can be given to. */
 export function hasComputer(key: OnlineGameKey): boolean {
-  return ONLINE_GAMES[key].computer !== undefined;
+  return onlineRulesOf(key).computers !== undefined;
 }
