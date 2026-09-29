@@ -34,6 +34,7 @@ import { usePlayInView } from "./usePlayInView";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { PuzzleWayBack } from "./PuzzleWayBack";
+import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 import { PopClue } from "./PopClue";
 
@@ -232,16 +233,18 @@ export function GomojiSolve({
           />
         </SolvePaused>
       ) : (
-        <WordReplay
-          kind={kind === "gomojiKana" ? "gomojiKana" : kind === "gomojiMot" ? "gomojiMot" : kind === "gomojiWort" ? "gomojiWort" : kind === "gomojiPop" ? "gomojiPop" : "gomoji"}
-          size={size}
-          givens={puzzle.givens}
-          guesses={guesses}
-          level={level}
-          headStart={headStart}
-          style={style}
-          appearance={dressed}
-        />
+        <WinStack>
+          <WordReplay
+            kind={kind === "gomojiKana" ? "gomojiKana" : kind === "gomojiMot" ? "gomojiMot" : kind === "gomojiWort" ? "gomojiWort" : kind === "gomojiPop" ? "gomojiPop" : "gomoji"}
+            size={size}
+            givens={puzzle.givens}
+            guesses={guesses}
+            level={level}
+            headStart={headStart}
+            style={style}
+            appearance={dressed}
+          />
+        </WinStack>
       )}
       {done === null ? (
         <>

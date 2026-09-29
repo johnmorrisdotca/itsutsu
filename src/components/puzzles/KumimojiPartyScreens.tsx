@@ -3,6 +3,9 @@
 import { useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
+import { WinCoverOver } from "@/components/game/WinCover";
+import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import type { WinNews } from "@/components/game/winCover.types";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, SECTION_HEADING, SECTION_HEADING_KANJI } from "@/components/ui/ui.constants";
@@ -171,17 +174,33 @@ function headline(game: PartyGame): string {
  * their hand, on the same grid as All tables. Play again deals a new bag to
  * the same players.
  */
-export function KumimojiPartyFinish({ game, theme, onAgain }: { game: PartyGame; theme: BoardThemeTokens; onAgain?: () => void }) {
+export function KumimojiPartyFinish({
+  game,
+  theme,
+  onAgain,
+  cover = null,
+}: {
+  game: PartyGame;
+  theme: BoardThemeTokens;
+  onAgain?: () => void;
+  /** The win's cover over every player's crossword, when the game ended on this page (`WinCover`); none where the page around draws its own. */
+  cover?: { news: WinNews | null; onClose: () => void } | null;
+}) {
+  const all = <KumimojiPartyAll game={game} theme={theme} />;
   return (
     <div className="flex flex-col gap-4" data-testid="kumimoji-party-finish" data-ending={game.ending ?? ""}>
       <h2 className={SECTION_HEADING} data-testid="kumimoji-party-winner">
         {headline(game)}
       </h2>
-      <KumimojiPartyAll game={game} theme={theme} />
+      {cover === null ? all : (
+        <WinCoverOver news={cover.news} onClose={cover.onClose}>
+          {all}
+        </WinCoverOver>
+      )}
       {/* Again deals a new bag in this browser; a table on several devices is set again from its set-up. */}
       {onAgain === undefined ? null : (
         <button type="button" className={PLAY_BUTTON} onClick={onAgain} data-testid="kumimoji-party-again">
-          <PressLabel words="Play again, same players" kanji="再" />
+          <PressLabel words={WIN_COVER_COPY.againSamePlayers} kanji="再" />
         </button>
       )}
     </div>

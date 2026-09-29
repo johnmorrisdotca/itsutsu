@@ -6,6 +6,8 @@ import { PartySeatColour } from "../PartySeatColour";
 
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { TENKA_MOVES, TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
@@ -45,6 +47,8 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
   const [handedFor, setHandedFor] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const map = useRef<TenkaMapHandle>(null);
+  // The cover over the map when the world is taken here (`WinCover`); never on a finished game opened again.
+  const moment = useWinMoment(game.phase === TENKA_PHASES.over ? "ended" : "playing");
   const handed = game.phase === TENKA_PHASES.setUp || game.phase === TENKA_PHASES.over || handedFor === turnKey(game);
 
   /** The moves, one after another, kept once at the end; nothing if the rules refuse any. */
@@ -88,7 +92,21 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
     >
       <div className="flex min-w-0 flex-col gap-3">
         <TenkaTurnLine game={game} />
-        <TenkaMap game={game} appearance={appearance} marks={marksFor(game, choice)} onTerritory={playing ? onTerritory : undefined} handle={map} />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, seat) => tenkaPlayerName(game, seat)),
+                  winners: game.winners,
+                  you: null,
+                  next: { label: PARTY_COPY.again, onPress: () => keep(tenkaAgain(game, freshTenkaSeed())) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <TenkaMap game={game} appearance={appearance} marks={marksFor(game, choice)} onTerritory={playing ? onTerritory : undefined} handle={map} />
+        </WinCoverOver>
         <TenkaBar
           game={game}
           choice={choice}

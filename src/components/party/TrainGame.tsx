@@ -4,6 +4,8 @@ import { useState } from "react";
 import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
@@ -46,6 +48,8 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
   const [dragging, setDragging] = useState<Domino | null>(null);
   const [confirming, setConfirming] = useState(false);
   useTrainComputer(game, keep);
+  // The cover over the table when the last round is scored here (`WinCover`); never on a finished game opened again.
+  const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.phase === TRAIN_PHASES.finished ? "ended" : "playing");
 
   // Not read yet: the server has no browser to ask, so it keeps the room the game will take and says nothing.
   if (game === undefined) {
@@ -93,7 +97,22 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <TrainTurnLine game={game} />
-        <TrainTable game={game} appearance={appearance} holding={holding} onTrain={(train) => holding !== null && play({ kind: "play", tile: holding, train })} />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, seat) => trainPlayerName(game, seat)),
+                  winners: game.winners,
+                  // One person among computers is "you"; several people at the device are each named.
+                  you: lonePerson,
+                  next: { label: `${PARTY_COPY.again} →`, onPress: () => keep(trainAgain(game, freshSeed())) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <TrainTable game={game} appearance={appearance} holding={holding} onTrain={(train) => holding !== null && play({ kind: "play", tile: holding, train })} />
+        </WinCoverOver>
         {game.phase === TRAIN_PHASES.playing ? null : (
           <>
             <TrainRoundOver game={game} onNext={() => play({ kind: "next" })} />

@@ -5,6 +5,8 @@ import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import type { Point } from "@/lib/gomoku/gomoku.types";
@@ -39,6 +41,8 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   const [selected, setSelected] = useState<Point | null>(null);
   const [confirming, setConfirming] = useState(false);
   const { rules, Board } = kind;
+  // The cover over the board, when the race is won here (`WinCover`); a race nobody can finish ends without one.
+  const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.status === PARTY_STATUS.playing ? "playing" : "ended");
 
   // Not read yet: the server has no browser to ask, so it draws the room the game will take and says nothing.
   if (game === undefined) {
@@ -85,7 +89,21 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
-        <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, index) => partyPlayerName(game.players, index)),
+                  winners: game.status === PARTY_STATUS.won && game.winner !== null ? [game.winner] : [],
+                  you: null,
+                  next: { label: PARTY_COPY.again, onPress: again },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} />
+        </WinCoverOver>
         {game.status === PARTY_STATUS.playing ? <p className="text-xs text-muted">{PARTY_COPY.pick}</p> : null}
       </div>
 

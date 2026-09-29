@@ -8,6 +8,8 @@ import { CardHand } from "@/components/cards/CardHand";
 import type { CardSpot } from "@/components/cards/cards.types";
 import { useCardDrag } from "@/components/cards/useCardDrag";
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { cardOfId } from "@/lib/cardGames/cards";
@@ -65,6 +67,8 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   const chosen = held.at === moves ? held.value : [];
   const target = aimed.at === moves ? aimed.value : null;
   const thinking = useCardComputer(rules, game, keep);
+  // The cover over the table when the last hand is scored here (`WinCover`); a finished game opened again has none.
+  const moment = useWinMoment(over ? "ended" : "playing");
 
   const hand = viewer === null ? [] : adapter.hand(game, viewer);
   const play = (move: unknown | null): boolean => {
@@ -141,9 +145,24 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         onTarget={(seat) => setAimed({ at: moves, value: seat })}
       />
       <div className="mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-3" data-width-reason="a card table wider than a hand of cards spreads the trick past where the eye can take it in with the hand" data-scale-board data-bare-board data-testid="cards-board">
-        <CardTableSurface appearance={appearance}>
-          <adapter.Centre game={game} viewer={viewer} players={names} />
-        </CardTableSurface>
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names,
+                  winners,
+                  // One person among computers is "you"; several people round the device are each named.
+                  you: people.length === 1 ? people[0]! : null,
+                  next: { label: CARD_TABLE_COPY.again, onPress: again },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <CardTableSurface appearance={appearance}>
+            <adapter.Centre game={game} viewer={viewer} players={names} />
+          </CardTableSurface>
+        </WinCoverOver>
         {covered && toPlay !== null ? (
           <div className={`${PANEL_CLASS} flex flex-col items-center gap-2 text-center`} data-testid="cards-pass-device">
             <p className="text-lg font-semibold">{CARD_TABLE_COPY.passTo(name(toPlay))}</p>

@@ -32,6 +32,7 @@ import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
 import { SolitaireSolve } from "./SolitaireSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
+import { WinSlotProvider } from "./PuzzleWinSlot";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
@@ -203,7 +204,12 @@ export function PuzzlePlay({
   const key = `${kind}-${size}-${level}-${puzzle.seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${diagonals}-${players}-${clock}`;
   // A race is its own contest and never on a countdown; a puzzle that offers none has none (`clockFor`).
   const timed = race === null ? clockFor(kind, clock) : "none";
-  return <PuzzleClockProvider value={timed}>{solveOf(puzzle)}</PuzzleClockProvider>;
+  // The place over the board a win's cover is drawn, joining each kind's board to the card at its end (`PuzzleWinSlot`).
+  return (
+    <PuzzleClockProvider value={timed}>
+      <WinSlotProvider>{solveOf(puzzle)}</WinSlotProvider>
+    </PuzzleClockProvider>
+  );
 
   function solveOf(puzzle: Puzzle) {
     // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.

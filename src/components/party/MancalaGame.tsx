@@ -5,6 +5,8 @@ import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
+import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
+import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { MANCALA_STATUS, mancalaAgain, mustFeed, sowMancala } from "@/lib/party/mancala/mancala";
@@ -41,6 +43,10 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
   const [game, keep] = useKeptMancalaGame();
   const [confirming, setConfirming] = useState(false);
   const shown = useSowing(game);
+  // The cover over the board once the last sowing has been drawn here (`WinCover`); never on a finished table opened again.
+  const moment = useWinMoment(
+    game === undefined || game === null ? "unknown" : game.status === MANCALA_STATUS.finished && !shown.sowing ? "ended" : "playing",
+  );
 
   // Not read yet: the server has no browser to ask, so it draws the room the game will take and says nothing.
   if (game === undefined) {
@@ -76,7 +82,23 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <MancalaTurnLine game={game} sowing={shown.sowing} />
-        <MancalaBoard game={game} appearance={appearance} holes={shown.holes} landing={shown.landing} onPit={onPit} />
+        <WinCoverOver
+          news={
+            moment.open
+              ? tableNews({
+                  names: game.players.map((_, seat) => partyPlayerName(game, seat)),
+                  winners: game.winners,
+                  you: null,
+                  // Level on seeds is a draw, as the turn line says it.
+                  draw: game.winners.length > 1,
+                  next: { label: PARTY_COPY.again, onPress: () => keep(mancalaAgain(game)) },
+                })
+              : null
+          }
+          onClose={moment.close}
+        >
+          <MancalaBoard game={game} appearance={appearance} holes={shown.holes} landing={shown.landing} onPit={onPit} />
+        </WinCoverOver>
         {game.status === MANCALA_STATUS.playing ? (
           <p className="text-xs text-muted" data-testid="mancala-hint" data-feed={hungry === null ? undefined : "true"}>
             {hungry === null ? MANCALA_COPY.tap : MANCALA_COPY.feed(hungry)}

@@ -25,8 +25,17 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
  * and a move chosen on the opponent's own machine is a move they could have
  * chosen badly on purpose. `botSeed.ts` is what a checked version would rest on.
  */
-export function ComputerOpponentPanel({ session, actions }: GamePanelProps) {
-  const [seat, setSeat] = useState<Seat | null>(null);
+export function ComputerOpponentPanel({
+  session,
+  actions,
+  computer,
+}: GamePanelProps & {
+  /** The seat the computer holds, kept by the board above so its win cover can say "you" to the person (`GameView`); here when nobody keeps it. */
+  computer?: { seat: Seat | null; choose: (seat: Seat | null) => void };
+}) {
+  const [own, setOwn] = useState<Seat | null>(null);
+  const seat = computer === undefined ? own : computer.seat;
+  const setSeat = computer === undefined ? setOwn : computer.choose;
   const [tier, setTier] = useState<BotTier>(BOT_TIER_LIST[1] ?? BOT_TIER_LIST[0]!);
   const { thinking, failed } = useComputerOpponent({ session, actions, seat, tier });
   const hydrated = useHydrated();

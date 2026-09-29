@@ -76,6 +76,7 @@ const TITLE_DRAWN_BY: Record<string, { by: string; reason: string }> = {
 /** An h2 that is neither a section heading nor a panel's label, and what it is instead. */
 const H2_OF_ITS_OWN: Record<string, string> = {
   "src/components/history/ResultCard.tsx": "the verdict on a result card — WON, LOST, DREW — a headline in the result's colour, not a section",
+  "src/components/game/WinCover.tsx": "the verdict on the win's cover over a board, the result card's own headline for a game played here: in the result's colour, not a section",
 };
 
 /** Pages with no title at all, and why. */
