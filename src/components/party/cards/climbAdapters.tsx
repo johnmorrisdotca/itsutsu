@@ -37,7 +37,7 @@ function ClimbCentre({ game, players }: CardCentreProps<ClimbTrick>) {
             <LaidCard key={card} card={card} left={left + step * at} top={8} width={width} testId="cards-pile-card" />
           ))}
           <TableWords left={20} top={28} width={60}>
-            {players[game.pile.seat]} played
+            Laid by {players[game.pile.seat]}
           </TableWords>
         </>
       )}

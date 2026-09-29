@@ -1,5 +1,7 @@
 "use client";
 
+import { SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
+
 import { MarbleChip } from "../MarbleChip";
 import { CARD_TABLE_COPY } from "./cardTable.constants";
 
@@ -12,9 +14,10 @@ import { CARD_TABLE_COPY } from "./cardTable.constants";
 export function CardScores({ names, scoreWords, standing, winners }: { names: readonly string[]; scoreWords: string; standing: (seat: number) => { score: string; note?: string }; winners: readonly number[] }) {
   return (
     <section className="flex flex-col gap-1" data-testid="cards-scores" aria-label={CARD_TABLE_COPY.scores}>
-      <h2 className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+      <h2 className={SECTION_TITLE}>
         {CARD_TABLE_COPY.scores} <span className="font-normal normal-case tracking-normal">· {scoreWords}</span>
       </h2>
+      <div className={TABLE_SCROLL}>
       <table className="w-full text-sm">
         <tbody>
           {names.map((name, seat) => {
@@ -37,6 +40,7 @@ export function CardScores({ names, scoreWords, standing, winners }: { names: re
           })}
         </tbody>
       </table>
+      </div>
     </section>
   );
 }
