@@ -25,6 +25,8 @@ const bodySchema = z.object({
   language: z.enum(["english", "japanese"]).optional(),
   gameLength: z.enum(["short", "medium", "full"]).optional(),
   doubleSet: z.boolean().optional(),
+  /** Kumimoji's Diagonals: its diagonal runs of three or more are read too. */
+  diagonals: z.boolean().optional(),
   givens: z.string().max(PUZZLE_CODE_LONGEST),
   solution: z.string().max(PUZZLE_CODE_LONGEST),
   /** The Check allowance both seats race under; left out, no limit. */
@@ -54,6 +56,7 @@ export async function POST(request: Request) {
       language: parsed.data.language ?? "english",
       gameLength: parsed.data.gameLength ?? "short",
       doubleSet: parsed.data.doubleSet ?? false,
+      diagonals: parsed.data.diagonals ?? false,
       givens: parsed.data.givens,
       solution: parsed.data.solution,
       checksAllowed,

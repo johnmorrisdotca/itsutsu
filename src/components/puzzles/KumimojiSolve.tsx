@@ -8,7 +8,8 @@ import type { Appearance } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { kumimojiPoints } from "@/lib/puzzles/kumimoji/check";
 import { POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
-import { encodeGrid, judgeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { encodeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { judgeWithWords } from "@/lib/puzzles/kumimoji/judge";
 import { deal, decodeTileProgress, draw, encodeTileProgress, isFinished, mayDraw, tilesLeft, type TilePlay } from "@/lib/puzzles/kumimoji/play";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
@@ -57,17 +58,9 @@ export function KumimojiSolve({
   const theme = tableTheme({ ...appearance, felt });
   const words = useMemo(() => tileWords(language), [language]);
   const [play, setPlay] = useState<TilePlay>(() => (resumed === null ? null : decodeTileProgress(resumed.progress, puzzle.givens, language)) ?? deal(puzzle.givens, puzzle.size));
-  const verdict = useMemo(
-    () => judgeGrid(
-      play.tiles,
-      (codes) => {
-        const word = words.wordOf(codes);
-        return word !== null && words.allowed.has(word);
-      },
-      (codes) => words.wordOf(codes) ?? codes,
-    ),
-    [play.tiles, words],
-  );
+  // Read by the rules it was set up with: with Diagonals, its diagonal runs of three or more too.
+  const diagonals = puzzle.diagonals === true;
+  const verdict = useMemo(() => judgeWithWords(play.tiles, words, { diagonals }), [play.tiles, words, diagonals]);
   const left = tilesLeft(play);
 
   const { elapsedMs, done, begin, finish, pausing, hinting } = useSolve(puzzle, hasAccount, race, null, { progress: encodeTileProgress(play), resumed }, hints, true);

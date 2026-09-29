@@ -130,6 +130,8 @@ export type Puzzle = {
   gameLength?: import("./kumimoji/kumimoji.types").KumimojiLength;
   doubleSet?: boolean;
   language?: import("./kumimoji/kumimoji.types").KumimojiLanguage;
+  /** Kumimoji's Diagonals: its diagonal runs of three or more are read too (`KumimojiOptions`). */
+  diagonals?: boolean;
 };
 
 /** The verdict on a submitted answer, from the one O(cells) check the server also runs. */

@@ -63,7 +63,7 @@ export function KumimojiParty({
   const words = useMemo(() => tileWords(language), [language]);
   const theme = tableTheme(appearance);
   const settings: PartySettings = useMemo(
-    () => ({ size: puzzle.size, level: puzzle.level, seed: puzzle.seed, gameLength: puzzle.gameLength ?? "short", language, doubleSet: puzzle.doubleSet ?? false, hints }),
+    () => ({ size: puzzle.size, level: puzzle.level, seed: puzzle.seed, gameLength: puzzle.gameLength ?? "short", language, doubleSet: puzzle.doubleSet ?? false, diagonals: puzzle.diagonals ?? false, hints }),
     [puzzle, language, hints],
   );
   const stored = useKeptParty();
@@ -82,7 +82,7 @@ export function KumimojiParty({
     if (game === null) return;
     const s = game.settings;
     const next = { ...s, seed: freshSeed() };
-    const made = generatePuzzle("kumimoji", s.size, s.level, next.seed, { gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet });
+    const made = generatePuzzle("kumimoji", s.size, s.level, next.seed, { gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet, diagonals: s.diagonals });
     const fresh = startParty(next, made.givens, game.players.map((player) => player.name));
     keepParty(fresh);
     router.push(partyAddress(fresh));

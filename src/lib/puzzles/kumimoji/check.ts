@@ -1,22 +1,24 @@
 import type { PuzzleCheck } from "../puzzles.types";
-import { decodeGrid, judgeGrid, lettersOf, sameLetters } from "./grid";
+import { decodeGrid, lettersOf, sameLetters } from "./grid";
+import { judgeWithWords } from "./judge";
 import { kumimojiTileCount, kumimojiWildCount, KUMIMOJI_SCORE, TILE_MIX_TOTAL } from "./tiles.constants";
-import type { KumimojiLanguage, KumimojiLength } from "./kumimoji.types";
+import type { KumimojiOptions } from "./kumimoji.types";
 import { tileWords } from "./tileWords";
 
 /**
  * WHETHER A GRID FINISHES A KUMIMOJI: the one check the server also runs.
  * O(squares) and a lookup a word, nothing searched: the grid uses exactly the
  * tiles of the bag, as many of each, it is all one piece, and every run of two
- * or more across or down is in the list. Which tiles were traded on the way
- * does not matter — a finished game holds the whole bag whatever came out of
- * it when — so the answer is the grid alone.
+ * or more across or down is in the list — and, for a game set up with
+ * Diagonals, every run of three or more along a diagonal. Which tiles were
+ * traded on the way does not matter — a finished game holds the whole bag
+ * whatever came out of it when — so the answer is the grid alone.
  *
  * Written out here rather than asked of the play page, which is what made the
  * grid; the list must have been loaded (`loadTileWords`), and a check that
  * cannot read it refuses.
  */
-export function checkKumimoji(size: number, givens: string, answer: string, options: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage; level?: "easy" | "medium" | "hard" } = {}): PuzzleCheck {
+export function checkKumimoji(size: number, givens: string, answer: string, options: KumimojiOptions & { level?: "easy" | "medium" | "hard" } = {}): PuzzleCheck {
   const gameLength = options.gameLength ?? "short";
   const language = options.language ?? "english";
   const doubleSet = language === "english" && (options.doubleSet ?? false);
@@ -47,14 +49,7 @@ export function checkKumimoji(size: number, givens: string, answer: string, opti
   if (bagIdentities.some((tile) => tile === null) || tileIdentities.some((tile) => tile === null) || !sameLetters(lettersOf(tileIdentities as string[]), lettersOf(bagIdentities as string[]))) {
     return { ok: false, reason: "the grid does not use exactly the tiles of the bag" };
   }
-  const verdict = judgeGrid(
-    tiles,
-    (codes) => {
-      const word = words.wordOf(codes);
-      return word !== null && words.allowed.has(word);
-    },
-    (codes) => words.wordOf(codes) ?? codes,
-  );
+  const verdict = judgeWithWords(tiles, words, { diagonals: options.diagonals === true });
   if (verdict.apart.size > 0) return { ok: false, reason: "the tiles are not all joined" };
   if (verdict.notWords.length > 0) return { ok: false, reason: `${verdict.notWords[0]} is not in the word list` };
   if (!verdict.sound) return { ok: false, reason: "the grid is not finished" };

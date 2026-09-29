@@ -122,32 +122,75 @@ export function sameLetters(a: Map<string, number>, b: Map<string, number>): boo
   return true;
 }
 
-/** A run of two or more tiles across or down: the word it spells and the squares it stands on. */
-export type Run = { word: string; squares: string[]; across: boolean };
+/**
+ * THE LINES A RUN MAY LIE ALONG, each read top to bottom (and across, left to
+ * right): across and down always, and the two diagonals when the game was set
+ * up with Diagonals — down to the right, and down to the left.
+ */
+export type RunLine = "across" | "down" | "downRight" | "downLeft";
 
-/** Every run of two or more tiles, across then down. A tile with nothing beside it in a line is no run. */
-export function runsOf(tiles: Tiles): Run[] {
+/** One step along each line, as rows and columns. */
+const STEP: Record<RunLine, readonly [number, number]> = { across: [0, 1], down: [1, 0], downRight: [1, 1], downLeft: [1, -1] };
+
+/**
+ * The fewest tiles a diagonal run needs before it is read. Two tiles touching
+ * at a corner are what every crossword is full of — the letter above a word
+ * and the one beside it — so a pair is free, and only three or more in a
+ * line are a diagonal word.
+ */
+export const DIAGONAL_RUN_LEAST = 3;
+
+/** How a grid is read: whether its diagonals are (`KumimojiOptions.diagonals`). */
+export type GridRules = { diagonals?: boolean };
+
+/** A run of tiles along one line: the word it spells and the squares it stands on, in reading order. */
+export type Run = { word: string; squares: string[]; line: RunLine };
+
+function runsAlong(tiles: Tiles, line: RunLine, least: number): Run[] {
+  const [down, across] = STEP[line];
   const runs: Run[] = [];
-  for (const across of [true, false]) {
-    for (const [square] of tiles) {
-      const { row, col } = placeOf(square);
-      // Only from a run's first tile: nothing before it in this line.
-      const before = across ? squareAt(row, col - 1) : squareAt(row - 1, col);
-      if (tiles.has(before)) continue;
-      const squares: string[] = [];
-      for (let step = 0; ; step += 1) {
-        const at = across ? squareAt(row, col + step) : squareAt(row + step, col);
-        if (!tiles.has(at)) break;
-        squares.push(at);
-      }
-      if (squares.length >= 2) runs.push({ word: squares.map((at) => tiles.get(at)).join(""), squares, across });
+  for (const [square] of tiles) {
+    const { row, col } = placeOf(square);
+    // Only from a run's first tile: nothing before it in this line.
+    if (tiles.has(squareAt(row - down, col - across))) continue;
+    const squares: string[] = [];
+    for (let step = 0; ; step += 1) {
+      const at = squareAt(row + step * down, col + step * across);
+      if (!tiles.has(at)) break;
+      squares.push(at);
     }
+    if (squares.length >= least) runs.push({ word: squares.map((at) => tiles.get(at)).join(""), squares, line });
   }
   return runs;
 }
 
-/** The tiles in groups that touch across or down, largest first. */
-export function groupsOf(tiles: Tiles): string[][] {
+/**
+ * Every run the grid is read by: two or more tiles across, then down, and
+ * with Diagonals three or more down to the right, then down to the left. A
+ * tile with nothing beside it in a line is no run.
+ */
+export function runsOf(tiles: Tiles, rules: GridRules = {}): Run[] {
+  const runs = [...runsAlong(tiles, "across", 2), ...runsAlong(tiles, "down", 2)];
+  if (rules.diagonals === true) runs.push(...runsAlong(tiles, "downRight", DIAGONAL_RUN_LEAST), ...runsAlong(tiles, "downLeft", DIAGONAL_RUN_LEAST));
+  return runs;
+}
+
+/**
+ * The tiles in groups that touch across or down, largest first. With `links`
+ * — the diagonal runs a grid with Diagonals reads — the tiles next to each
+ * other in one of those runs are joined too: a diagonal word holds a
+ * crossword together as a word across does. A pair touching at a corner is
+ * never a link, because it is never read.
+ */
+export function groupsOf(tiles: Tiles, links: readonly Run[] = []): string[][] {
+  const joined = new Map<string, string[]>();
+  const join = (a: string, b: string) => joined.set(a, [...(joined.get(a) ?? []), b]);
+  for (const run of links) {
+    for (let at = 1; at < run.squares.length; at += 1) {
+      join(run.squares[at - 1]!, run.squares[at]!);
+      join(run.squares[at]!, run.squares[at - 1]!);
+    }
+  }
   const seen = new Set<string>();
   const groups: string[][] = [];
   for (const start of tiles.keys()) {
@@ -159,7 +202,7 @@ export function groupsOf(tiles: Tiles): string[][] {
       const at = queue.pop()!;
       group.push(at);
       const { row, col } = placeOf(at);
-      for (const near of [squareAt(row - 1, col), squareAt(row + 1, col), squareAt(row, col - 1), squareAt(row, col + 1)]) {
+      for (const near of [squareAt(row - 1, col), squareAt(row + 1, col), squareAt(row, col - 1), squareAt(row, col + 1), ...(joined.get(at) ?? [])]) {
         if (tiles.has(near) && !seen.has(near)) {
           seen.add(near);
           queue.push(near);
@@ -175,6 +218,9 @@ export function groupsOf(tiles: Tiles): string[][] {
  * WHAT IS WRONG WITH A GRID, tile by tile, so the table can mark it: the tiles
  * in a run that is not a word, the tiles not joined to the main grid, and
  * whether the whole is sound — two tiles or more, all joined, every run a word.
+ * With Diagonals (`rules`), the diagonal runs of three or more are runs too:
+ * each must be a word, a misspelt one is marked as any other is, and each
+ * joins its tiles (`groupsOf`).
  */
 export type GridVerdict = {
   sound: boolean;
@@ -187,15 +233,16 @@ export type GridVerdict = {
   notWords: readonly string[];
 };
 
-export function judgeGrid(tiles: Tiles, isWord: (word: string) => boolean, readable: (word: string) => string = (word) => word): GridVerdict {
+export function judgeGrid(tiles: Tiles, isWord: (word: string) => boolean, readable: (word: string) => string = (word) => word, rules: GridRules = {}): GridVerdict {
   const misspelt = new Set<string>();
   const notWords: string[] = [];
-  for (const run of runsOf(tiles)) {
+  const runs = runsOf(tiles, rules);
+  for (const run of runs) {
     if (isWord(run.word)) continue;
     notWords.push(readable(run.word));
     for (const at of run.squares) misspelt.add(at);
   }
-  const groups = groupsOf(tiles);
+  const groups = groupsOf(tiles, runs.filter((run) => run.line === "downRight" || run.line === "downLeft"));
   const apart = new Set(groups.slice(1).flat());
   return { sound: tiles.size >= 2 && groups.length === 1 && notWords.length === 0, tiles: tiles.size, misspelt, apart, notWords };
 }

@@ -60,6 +60,7 @@ export function PuzzlePlay({
   gameLength = "short",
   language = "english",
   doubleSet = false,
+  diagonals = false,
   players = 1,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
@@ -74,6 +75,8 @@ export function PuzzlePlay({
   gameLength?: KumimojiLength;
   language?: KumimojiLanguage;
   doubleSet?: boolean;
+  /** Kumimoji's Diagonals: its diagonal runs of three or more are read too. */
+  diagonals?: boolean;
   /** Tsunagi's levels already solved at this size on the account, whether it is played by colours or numbers, and with marbles along the lines or not. */
   tsunagi?: {
     known: Record<number, number>;
@@ -117,8 +120,8 @@ export function PuzzlePlay({
       router.replace(`${setUpPath(kind)}?size=${size}`);
       return;
     }
-    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet, players })}`);
-  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, players, router]);
+    router.replace(`${playPath(kind)}${puzzleQuery({ size, level, seed: twins ? freshFutagoSeed() : freshSeed(), checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players })}`);
+  }, [seed, kind, size, level, checks, hints, strict, headStart, twins, gameLength, language, doubleSet, diagonals, players, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -132,8 +135,8 @@ export function PuzzlePlay({
     };
   }, [kind, size, language, loadedKey]);
   const puzzle = useMemo(
-    () => (seed === null || loaded !== loadedKey ? null : generatePuzzle(kind, size, level, seed, { gameLength, language, doubleSet })),
-    [kind, size, level, seed, loaded, loadedKey, gameLength, language, doubleSet],
+    () => (seed === null || loaded !== loadedKey ? null : generatePuzzle(kind, size, level, seed, { gameLength, language, doubleSet, diagonals })),
+    [kind, size, level, seed, loaded, loadedKey, gameLength, language, doubleSet, diagonals],
   );
 
   if (puzzle === null) {
@@ -159,7 +162,7 @@ export function PuzzlePlay({
     );
   }
   /* Keyed on the puzzle, so a new seed is a new solve with nothing carried over. */
-  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${players}`;
+  const key = `${kind}-${size}-${level}-${seed}-${checks ?? "any"}-${strict}-${headStart}-${gameLength}-${language}-${doubleSet}-${diagonals}-${players}`;
   // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
   const seat = race ?? null;
   const headStarted = seat === null && headStart;

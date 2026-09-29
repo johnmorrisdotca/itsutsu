@@ -176,7 +176,11 @@ be finished; any SCOWL word of two to fifteen letters counts
 Japanese the tiles are the 45 base hiragana (`JAPANESE_TILE_MIX`, `kana.ts`),
 each playing as its voiced and small forms, and the words are JMdict's
 (`scripts/word-lists-ja.mjs`). Help, chosen on the set-up screen, arranges the
-hand into a word at a hint's price (`help.ts`).
+hand into a word at a hint's price (`help.ts`). Diagonals, chosen there too,
+reads every diagonal run of three or more tiles as a word as well, and lets a
+diagonal word join the crossword (`runsOf`, `groupsOf` in `grid.ts`); it is
+carried with the game everywhere its language is, and the generator lays the
+proof crossword to the same rule.
 
 Every Gomoji has a word a day at each length it offers, the same for everybody
 and new at midnight UTC: "Today's 4", "Today's 5" and, in kana, "Today's 3", a

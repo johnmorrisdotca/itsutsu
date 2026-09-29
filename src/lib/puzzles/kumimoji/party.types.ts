@@ -12,6 +12,8 @@ export type PartySettings = {
   gameLength: KumimojiLength;
   language: KumimojiLanguage;
   doubleSet: boolean;
+  /** Whether Diagonals was chosen: every table in the game is read along its diagonals too (`judgeGrid`). */
+  diagonals: boolean;
   /** Whether Help was chosen on the set-up screen. */
   hints: boolean;
 };

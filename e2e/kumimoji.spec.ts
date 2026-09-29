@@ -92,6 +92,32 @@ function tinyGame(from: number): { seed: number; across: string; drawn: { letter
   }
 }
 
+/**
+ * A Classic game set up with Diagonals whose hand spells a three-letter word
+ * and three letters that are not one, and the same seed's hand without
+ * Diagonals, with three letters of it that are not a word either. A wild
+ * is never among them: a wild shows the 五 until it is given a letter.
+ */
+function diagonalGame(from: number): { seed: number; word: string; notWord: string; offNotWord: string } {
+  const notWordIn = (hand: string): string | null => {
+    const plain = [...hand].filter((letter) => letter !== "*");
+    for (let a = 0; a < plain.length; a += 1)
+      for (let b = 0; b < plain.length; b += 1)
+        for (let c = 0; c < plain.length; c += 1) {
+          const triple = `${plain[a]}${plain[b]}${plain[c]}`;
+          if (a !== b && b !== c && a !== c && !isWord(triple)) return triple;
+        }
+    return null;
+  };
+  for (let seed = from; ; seed += 1) {
+    const hand = generateKumimoji(CLASSIC, "medium", seed, { diagonals: true }).givens.slice(0, CLASSIC);
+    const word = wordFrom(hand.replaceAll("*", ""), 3);
+    const notWord = notWordIn(hand);
+    const offNotWord = notWordIn(generateKumimoji(CLASSIC, "medium", seed).givens.slice(0, CLASSIC));
+    if (word !== null && notWord !== null && offNotWord !== null) return { seed, word, notWord, offNotWord };
+  }
+}
+
 /** The dev server's own badge sits in a phone's bottom corner, over the tray; it is not the site's, and a production build has none. */
 async function hideDevBadge(page: Page) {
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
@@ -263,6 +289,48 @@ test.describe("Kumimoji", () => {
 
       // Nothing on the page is wider than the phone, the tray included.
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+    });
+
+    test("Diagonals, chosen on the set-up screen, reads a word laid corner to corner, marks one that is not, and without it the same tiles are not read", async ({ page }) => {
+      await page.goto(`${AT}/new`);
+      await ready(page, "puzzle-set-up");
+      await expect(page.getByTestId("kumimoji-diagonals-off")).toHaveAttribute("aria-checked", "true");
+      await page.getByTestId("kumimoji-diagonals-on").click();
+      await expect(page.getByTestId("kumimoji-diagonals-on")).toHaveAttribute("aria-checked", "true");
+      await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /diagonals=1/);
+      // The address the set-up built, on a bag of this spec's own, as Help's case does.
+      const href = (await page.getByTestId("puzzle-solve").getAttribute("href"))!;
+      const game = diagonalGame(freshPuzzleSeed());
+      await page.goto(`${href}&seed=${game.seed}`);
+      await ready(page, "puzzle-play");
+      await hideDevBadge(page);
+      await expect(page).toHaveURL(/diagonals=1/);
+      const diagonal = ["0,0", "1,1", "2,2"];
+      const said = page.getByTestId("kumimoji-said");
+
+      // A word down to the right, touching nothing across or down: read, sound, and one crossword.
+      for (const [at, letter] of [...game.word].entries()) await lay(page, letter, diagonal[at]!);
+      await expect(page.locator('[data-testid="kumimoji-tile"][data-mark="ok"]')).toHaveCount(3);
+      await expect(said).toHaveAttribute("data-sound", "true");
+      await expect(said).toContainText(`${CLASSIC - 3} tiles to lay`);
+
+      // Three letters that are not a word, the same way: all three marked, and the line names them.
+      await page.getByTestId("kumimoji-all-back").click();
+      await expect(page.getByTestId("kumimoji-tile")).toHaveCount(0);
+      for (const [at, letter] of [...game.notWord].entries()) await lay(page, letter, diagonal[at]!);
+      await expect(page.locator('[data-testid="kumimoji-tile"][data-mark="misspelt"]')).toHaveCount(3);
+      await expect(said).toContainText(`Not a word: ${game.notWord.toUpperCase()}`);
+      await expect(said).toHaveAttribute("data-sound", "false");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+
+      // Without Diagonals the same shape is not read at all: nothing misspelt, three tiles apart.
+      await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${game.seed}`);
+      await ready(page, "puzzle-play");
+      await hideDevBadge(page);
+      for (const [at, letter] of [...game.offNotWord].entries()) await lay(page, letter, diagonal[at]!);
+      await expect(said).toContainText("Join every tile into one crossword.");
+      await expect(page.locator('[data-testid="kumimoji-tile"][data-mark="apart"]')).toHaveCount(2);
+      await expect(page.locator('[data-testid="kumimoji-tile"][data-mark="misspelt"]')).toHaveCount(0);
     });
 
     test("a Tiny game is finished by laying the hand, drawing twice, and fitting each tile in", async ({ page }) => {

@@ -9,7 +9,7 @@ import { guessesOf, hiddenWordsOf, wordGridOf, wordRowsOf } from "./gomoji/futag
 import { baseGuesses } from "./gomoji/layout";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { checkKumimoji } from "./kumimoji/check";
-import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
+import type { KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { checkKoushi } from "./koushi/check";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
@@ -33,7 +33,7 @@ import type { PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
  * reads the solver's mind proves only that the solver agrees with itself.
  */
 /** `level` decides how many guesses a Gomoji gives (`layout.ts`); a grid of any other kind does not need it. */
-export function checkSolution(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel, kumimoji?: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage }): PuzzleCheck {
+export function checkSolution(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel, kumimoji?: KumimojiOptions): PuzzleCheck {
   if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
   switch (kind) {
     case "numberPlace":

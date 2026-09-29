@@ -35,6 +35,8 @@ const bodySchema = z.object({
   language: z.enum(["english", "japanese"]).optional(),
   gameLength: z.enum(["short", "medium", "full"]).optional(),
   doubleSet: z.boolean().optional(),
+  /** Kumimoji's Diagonals: its diagonal runs of three or more are read too. */
+  diagonals: z.boolean().optional(),
   checksAllowed: z.number().int().nullable().optional(),
   checksUsed: z.number().int().nonnegative().optional(),
   hintsUsed: z.number().int().nonnegative().optional(),
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
       language: kind === "kumimoji" ? parsed.data.language ?? "english" : "english",
       gameLength: (kind === "kumimoji" ? parsed.data.gameLength ?? "short" : "short") as KumimojiLength,
       doubleSet: kind === "kumimoji" && (parsed.data.doubleSet ?? false),
+      diagonals: kind === "kumimoji" && (parsed.data.diagonals ?? false),
       checksAllowed,
       checksUsed: Math.min(parsed.data.checksUsed ?? 0, checksAllowed ?? Number.MAX_SAFE_INTEGER),
       hintsAllowed: headStart || (parsed.data.hintsAllowed ?? false),

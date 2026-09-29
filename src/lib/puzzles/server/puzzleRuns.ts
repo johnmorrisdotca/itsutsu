@@ -26,6 +26,7 @@ export type KeptRun = {
   language?: KumimojiLanguage;
   gameLength?: KumimojiLength;
   doubleSet?: boolean;
+  diagonals?: boolean;
   checksAllowed: number | null;
   checksUsed: number;
   hintsAllowed: boolean;
@@ -43,10 +44,11 @@ export async function keepRun(run: KeptRun): Promise<void> {
   const language = kind === "kumimoji" ? run.language ?? "english" : "english";
   const gameLength = kind === "kumimoji" ? run.gameLength ?? "short" : "short";
   const doubleSet = kind === "kumimoji" && (run.doubleSet ?? false);
+  const diagonals = kind === "kumimoji" && (run.diagonals ?? false);
   await prisma.puzzleRun.upsert({
-    where: { memberId_kind_size_language_gameLength_doubleSet_level_seed: { memberId, kind, size, language, gameLength, doubleSet, level, seed } },
-    create: { ...run, language, gameLength, doubleSet },
-    update: { ...rest, language, gameLength, doubleSet },
+    where: { runKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed } },
+    create: { ...run, language, gameLength, doubleSet, diagonals },
+    update: { ...rest, language, gameLength, doubleSet, diagonals },
   });
   const over = await prisma.puzzleRun.findMany({
     where: { memberId },
@@ -58,10 +60,10 @@ export async function keepRun(run: KeptRun): Promise<void> {
 }
 
 /** The run of this grid, for the solve page to open where it was left, or null. */
-export async function runOf(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english") {
+export async function runOf(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english", diagonals = false) {
   return prisma.puzzleRun.findUnique({
-    where: { memberId_kind_size_language_gameLength_doubleSet_level_seed: { memberId, kind, size, language, gameLength, doubleSet, level, seed } },
-    select: { checksAllowed: true, checksUsed: true, hintsUsed: true, progress: true, steps: true, elapsedMs: true, language: true, gameLength: true, doubleSet: true },
+    where: { runKey: { memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed } },
+    select: { checksAllowed: true, checksUsed: true, hintsUsed: true, progress: true, steps: true, elapsedMs: true, language: true, gameLength: true, doubleSet: true, diagonals: true },
   });
 }
 
@@ -71,7 +73,7 @@ export async function runsOf(memberId: string) {
     where: { memberId },
     orderBy: { updatedAt: "desc" },
     take: RUNS_KEPT,
-    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, elapsedMs: true, updatedAt: true, language: true, gameLength: true, doubleSet: true },
+    select: { id: true, kind: true, size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, elapsedMs: true, updatedAt: true, language: true, gameLength: true, doubleSet: true, diagonals: true },
   });
 }
 
@@ -80,11 +82,11 @@ export async function latestRunOf(memberId: string, kind: PuzzleKind) {
   return prisma.puzzleRun.findFirst({
     where: { memberId, kind },
     orderBy: { updatedAt: "desc" },
-    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, language: true, gameLength: true, doubleSet: true },
+    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, language: true, gameLength: true, doubleSet: true, diagonals: true },
   });
 }
 
 /** A grid finished: it is no longer going. */
-export async function dropRun(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english"): Promise<void> {
-  await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, level, seed, language, gameLength, doubleSet } });
+export async function dropRun(memberId: string, kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, gameLength: KumimojiLength = "short", doubleSet = false, language: KumimojiLanguage = "english", diagonals = false): Promise<void> {
+  await prisma.puzzleRun.deleteMany({ where: { memberId, kind, size, level, seed, language, gameLength, doubleSet, diagonals } });
 }

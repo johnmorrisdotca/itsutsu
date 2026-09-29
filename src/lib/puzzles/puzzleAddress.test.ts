@@ -76,6 +76,16 @@ describe("Kumimoji language in its address", () => {
       .toMatchObject({ language: "japanese", gameLength: "full", doubleSet: false });
   });
 
+  it("round-trips Diagonals, off and out of the address by default, and restores it from a kept run", () => {
+    expect(puzzleAsked("kumimoji", { size: "7", level: "medium" })).toMatchObject({ diagonals: false });
+    const query = puzzleQuery({ size: 7, level: "medium", seed: 9, diagonals: true });
+    expect(query).toBe("?size=7&level=medium&seed=9&diagonals=1");
+    expect(puzzleQuery({ size: 7, level: "medium", seed: 9, diagonals: false })).toBe("?size=7&level=medium&seed=9");
+    expect(puzzleAsked("kumimoji", Object.fromEntries(new URLSearchParams(query.slice(1))))).toMatchObject({ diagonals: true });
+    expect(puzzleAsked("numberPlace", { size: "9", level: "medium", diagonals: "1" })).not.toHaveProperty("diagonals");
+    expect(keptRunAsked("kumimoji", { size: 7, level: "medium", seed: 9, checksAllowed: null, hintsAllowed: false, strict: false, diagonals: true })).toMatchObject({ diagonals: true });
+  });
+
   it("restores language and length from a kept run", () => {
     expect(keptRunAsked("kumimoji", {
       size: 7,

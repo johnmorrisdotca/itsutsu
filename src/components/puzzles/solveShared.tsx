@@ -139,7 +139,7 @@ export function useSolve(
       size: puzzle.size,
       level: puzzle.level,
       seed: puzzle.seed,
-      ...(puzzle.kind === "kumimoji" ? { gameLength: puzzle.gameLength ?? "short", language: puzzle.language ?? "english", doubleSet: puzzle.doubleSet ?? false } : {}),
+      ...(puzzle.kind === "kumimoji" ? { gameLength: puzzle.gameLength ?? "short", language: puzzle.language ?? "english", doubleSet: puzzle.doubleSet ?? false, diagonals: puzzle.diagonals ?? false } : {}),
       checksAllowed: allowed,
       checksUsed: used,
       hintsAllowed: hinting.allowed,
@@ -228,7 +228,7 @@ export function useSolve(
             race === null
               ? {
                   kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs,
-                  ...(puzzle.kind === "kumimoji" ? { gameLength: puzzle.gameLength ?? "short", language: puzzle.language ?? "english", doubleSet: puzzle.doubleSet ?? false } : {}),
+                  ...(puzzle.kind === "kumimoji" ? { gameLength: puzzle.gameLength ?? "short", language: puzzle.language ?? "english", doubleSet: puzzle.doubleSet ?? false, diagonals: puzzle.diagonals ?? false } : {}),
                   checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, pausedMs, headStart: keeping.headStart === true,
                   // The grids on the way, for the replay on the solve's page: up to the one before the last entry, which the answer is.
                   ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),

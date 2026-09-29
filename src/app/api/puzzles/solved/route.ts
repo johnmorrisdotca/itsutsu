@@ -72,6 +72,8 @@ const bodySchema = z.object({
   language: z.enum(["english", "japanese"]).optional(),
   gameLength: z.enum(["short", "medium", "full"]).optional(),
   doubleSet: z.boolean().optional(),
+  /** Kumimoji's Diagonals: its diagonal runs of three or more are read too. */
+  diagonals: z.boolean().optional(),
   /**
    * A word puzzle whose guesses ran out: ended, not solved. Checked as a solve
    * is (`checkOutOfGuesses`), kept with `solved` false for the letters it
@@ -154,7 +156,7 @@ export async function POST(request: Request) {
         answer,
         solved: false,
       });
-      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language);
+      if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, level, parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language, parsed.data.diagonals ?? false);
       const now = new Date();
       const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens, false), now });
       await awardTourBonuses({ memberId, paid, variant: kind, now });
@@ -168,6 +170,7 @@ export async function POST(request: Request) {
       gameLength: parsed.data.gameLength ?? "short",
       language,
       doubleSet: parsed.data.doubleSet ?? false,
+      diagonals: parsed.data.diagonals ?? false,
     });
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
     const helped = parsed.data.helped ?? null;
@@ -196,7 +199,7 @@ export async function POST(request: Request) {
       helped,
     });
     // Finished, so no longer going: the run kept of this grid comes off the member's games.
-    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language);
+    if (parsed.data.seed !== undefined) await dropRun(memberId, kind, size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed, parsed.data.gameLength ?? "short", parsed.data.doubleSet ?? false, language, parsed.data.diagonals ?? false);
     const paid = await awardXp({ memberId, awards: puzzleAwards(kind, size, givens), now });
     /* The tour, as after a finished game: a first solve of a puzzle can complete
        every game played, and a first puzzle at all can complete every family. */

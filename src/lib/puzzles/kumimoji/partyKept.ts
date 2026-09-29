@@ -70,7 +70,9 @@ function readSettings(value: unknown): PartySettings | null {
   if (s.gameLength !== "short" && s.gameLength !== "medium" && s.gameLength !== "full") return null;
   if (s.language !== "english" && s.language !== "japanese") return null;
   if (typeof s.doubleSet !== "boolean" || typeof s.hints !== "boolean") return null;
-  return { size: s.size as number, level: s.level, seed: s.seed as number, gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet, hints: s.hints };
+  // A game kept before Diagonals existed has no word for it, and was played without.
+  if (s.diagonals !== undefined && typeof s.diagonals !== "boolean") return null;
+  return { size: s.size as number, level: s.level, seed: s.seed as number, gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet, diagonals: s.diagonals === true, hints: s.hints };
 }
 
 /**
@@ -134,6 +136,7 @@ export function isPartyFor(game: PartyGame, settings: PartySettings, players: nu
     a.gameLength === settings.gameLength &&
     a.language === settings.language &&
     a.doubleSet === settings.doubleSet &&
+    a.diagonals === settings.diagonals &&
     a.hints === settings.hints
   );
 }

@@ -1353,6 +1353,8 @@ model PuzzleRun {
   language      String   @default("english")
   gameLength    String   @default("short")
   doubleSet     Boolean  @default(false)
+  /// Kumimoji's Diagonals: its diagonal runs of three or more were read too.
+  diagonals     Boolean  @default(false)
   /// The Check allowance it is being solved under, or null for no limit.
   checksAllowed Int?
   checksUsed    Int      @default(0)
@@ -1373,7 +1375,13 @@ model PuzzleRun {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  /// Superseded by `runKey`, which adds Diagonals; kept while the code before
+  /// it may still be live (a deploy migrates before it switches), and dropped
+  /// by a later migration once nothing upserts on it.
   @@unique([memberId, kind, size, language, gameLength, doubleSet, level, seed])
+  /// One run per member per game as it was set up. Named short (`map`), since
+  /// Postgres keeps only 63 characters of a name and Prisma's own would differ.
+  @@unique([memberId, kind, size, language, gameLength, doubleSet, diagonals, level, seed], name: "runKey", map: "PuzzleRun_run_key")
   @@index([memberId, updatedAt])
 }
 
@@ -1411,6 +1419,8 @@ model PuzzleRace {
   language      String    @default("english")
   gameLength    String    @default("short")
   doubleSet     Boolean   @default(false)
+  /// Kumimoji's Diagonals, the same for both seats.
+  diagonals     Boolean   @default(false)
   givens        String
   /// Kept to check a finish in O(cells); never sent to a browser.
   solution      String

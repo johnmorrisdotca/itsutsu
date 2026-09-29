@@ -1,8 +1,8 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled, type Random } from "../random";
-import { encodeGrid, squareAt } from "./grid";
+import { DIAGONAL_RUN_LEAST, encodeGrid, squareAt } from "./grid";
 import { kumimojiTileCount, kumimojiWildCount, TILE_MIX_TOTAL } from "./tiles.constants";
-import type { KumimojiLanguage, KumimojiLength } from "./kumimoji.types";
+import type { KumimojiOptions } from "./kumimoji.types";
 import { tileWords, type TileWords } from "./tileWords";
 
 /**
@@ -23,13 +23,20 @@ import { tileWords, type TileWords } from "./tileWords";
  * drawn from the mix, and never a letter more times than the whole set holds,
  * so the bag reads like a handful from the full set.
  *
+ * With Diagonals, the crossword must read as a word along its diagonals too:
+ * a new tile that would make a diagonal run of three or more is laid only
+ * where that run is a word (`fit`), so the proof holds under the rule the
+ * game is played by. Without, nothing about the laying changes, and a seed
+ * deals the bag it always dealt.
+ *
  * Deterministic in the seed, like every generator here: two browsers in a
  * race, or one tomorrow, deal the same bag in the same order.
  */
-export function generateKumimoji(size: number, level: PuzzleLevel, seed: number, options: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage } = {}): Puzzle {
+export function generateKumimoji(size: number, level: PuzzleLevel, seed: number, options: KumimojiOptions = {}): Puzzle {
   const gameLength = options.gameLength ?? "short";
   const language = options.language ?? "english";
   const doubleSet = language === "english" && (options.doubleSet ?? false);
+  const diagonals = options.diagonals === true;
   const multiplier = doubleSet ? 2 : 1;
   const words = tileWords(language);
   const setSize = [...words.mix.values()].reduce((sum, count) => sum + count, 0);
@@ -39,7 +46,7 @@ export function generateKumimoji(size: number, level: PuzzleLevel, seed: number,
   const side = layingSideFor(tiles);
   let bestProgress = 0;
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    const squares = layCrossword(tiles, random, words, side, multiplier, words.mix, (laid) => { bestProgress = Math.max(bestProgress, laid); });
+    const squares = layCrossword(tiles, random, words, side, multiplier, words.mix, (laid) => { bestProgress = Math.max(bestProgress, laid); }, diagonals);
     if (squares === null) continue;
     const positions = shuffled(squares.flatMap((tile, at) => tile === "" ? [] : [at]), random);
     const wildAt = new Set(positions.slice(0, wilds));
@@ -51,7 +58,7 @@ export function generateKumimoji(size: number, level: PuzzleLevel, seed: number,
       squares[at] = assigned;
       return ["*"];
     });
-    return { kind: "kumimoji", size, level, seed, givens: shuffled(bag, random).join(""), solution: encodeGrid(tilesOf(squares, side)), gameLength, doubleSet, language };
+    return { kind: "kumimoji", size, level, seed, givens: shuffled(bag, random).join(""), solution: encodeGrid(tilesOf(squares, side)), gameLength, doubleSet, language, ...(diagonals ? { diagonals } : {}) };
   }
   throw new Error(`Could not lay a Kumimoji of ${tiles} tiles from seed ${seed}; furthest attempt laid ${bestProgress}.`);
 }
@@ -83,11 +90,20 @@ const ANCHORS_TRIED = 8;
 const WORDS_READ = 60;
 const FINISH_BRANCHES = 40;
 const FINISH_NODES = 2_000;
+/**
+ * With Diagonals the last tiles are placed from every tile but a sample of
+ * words, and a try that cannot finish is given up sooner: a crossword read
+ * along its diagonals too has fewer ways to finish, and reading every word
+ * from every tile of a full game at each step took minutes where starting
+ * again takes a moment. Measured 2026-09-28, a try that finishes does so in
+ * under ten steps; fifteen keeps a full game to a second or two.
+ */
+const DIAGONAL_FINISH_NODES = 15;
 
 type Placement = { word: string; start: number; across: boolean; fresh: number[]; score: number };
 
 /** A crossword of exactly `tiles` tiles, or null where this try got stuck (the caller tries again). */
-function layCrossword(tiles: number, random: Random, words: TileWords, side: number, multiplier: number, mix: ReadonlyMap<string, number>, progress: (laid: number) => void): string[] | null {
+function layCrossword(tiles: number, random: Random, words: TileWords, side: number, multiplier: number, mix: ReadonlyMap<string, number>, progress: (laid: number) => void, diagonals: boolean): string[] | null {
   const squares = new Array<string>(side * side).fill("");
   // What the set still holds of each letter, and the handful drawn from it that the words are chosen to use.
   const left = new Map([...mix].map(([letter, count]) => [letter, count * multiplier]));
@@ -130,11 +146,17 @@ function layCrossword(tiles: number, random: Random, words: TileWords, side: num
   let laid = firstLength;
   progress(laid);
 
-  const placementsFor = (room: number, exhaustive: boolean): Placement[] => {
+  /*
+   * Where the next word could go: from a few tiles, a sample of words
+   * (`sampled`); from every tile, a sample of words (`wide`, Diagonals only);
+   * or from every tile, every word (`exhaustive`).
+   */
+  const placementsFor = (room: number, reach: "sampled" | "wide" | "exhaustive"): Placement[] => {
+    const exhaustive = reach === "exhaustive";
     const anchors = shuffled(
       squares.flatMap((letter, index) => (letter === "" ? [] : [index])),
       random,
-    ).slice(0, exhaustive ? squares.length : ANCHORS_TRIED);
+    ).slice(0, reach === "sampled" ? ANCHORS_TRIED : squares.length);
     const found: Placement[] = [];
     for (const anchor of anchors) {
       for (const across of [true, false]) {
@@ -144,7 +166,7 @@ function layCrossword(tiles: number, random: Random, words: TileWords, side: num
           for (const word of sample(candidates, exhaustive ? candidates.length : WORDS_READ, random, letter)) {
             for (let at = 0; at < word.length; at += 1) {
               if (word[at] !== letter) continue;
-              const placement = fit(squares, word, anchor, at, across, room, left, wanted, random, side);
+              const placement = fit(squares, word, anchor, at, across, room, left, wanted, random, side, diagonals ? words : null);
               if (placement !== null) found.push(placement);
             }
           }
@@ -157,9 +179,9 @@ function layCrossword(tiles: number, random: Random, words: TileWords, side: num
   let finishNodes = 0;
   const finish = (room: number): boolean => {
     if (room === 0) return true;
-    if (finishNodes >= FINISH_NODES) return false;
+    if (finishNodes >= (diagonals ? DIAGONAL_FINISH_NODES : FINISH_NODES)) return false;
     finishNodes += 1;
-    const placements = placementsFor(room, true)
+    const placements = placementsFor(room, diagonals ? "wide" : "exhaustive")
       .sort((a, b) => b.score - a.score || b.fresh.length - a.fresh.length)
       .slice(0, FINISH_BRANCHES);
     for (const placement of placements) {
@@ -179,7 +201,8 @@ function layCrossword(tiles: number, random: Random, words: TileWords, side: num
       laid = tiles;
       break;
     }
-    const next = bestOf(placementsFor(room, false));
+    /* With Diagonals a few tiles often offer nothing the diagonals allow: every tile is tried before this try is given up. */
+    const next = bestOf(placementsFor(room, "sampled")) ?? (diagonals ? bestOf(placementsFor(room, "wide")) : null);
     if (next === null) return null;
     lay(next);
     laid += next.fresh.length;
@@ -204,7 +227,9 @@ function sample(list: readonly string[], count: number, random: Random, letter?:
  * Where `word` would stand crossing the tile at `anchor` with its letter at
  * `at`, or null where it cannot: off the board, over a different letter, a
  * tile at either end, a new tile with a neighbour at its side, more new tiles
- * than the bag has room for, or a letter the set has run out of.
+ * than the bag has room for, or a letter the set has run out of — and, where
+ * the diagonals are read (`diagonalWords`), a new tile that would stand in a
+ * diagonal run of three or more that is not a word.
  */
 function fit(
   squares: readonly string[],
@@ -217,6 +242,7 @@ function fit(
   wanted: Map<string, number>,
   random: Random,
   side: number,
+  diagonalWords: TileWords | null = null,
 ): Placement | null {
   const row = Math.floor(anchor / side);
   const col = anchor % side;
@@ -241,7 +267,38 @@ function fit(
     fresh.push(index);
   }
   if (fresh.length === 0 || fresh.length > room) return null;
+  if (diagonalWords !== null && !diagonalsRead(squares, word, start, step, fresh, side, diagonalWords)) return null;
   return scored(word, start, across, fresh, left, wanted, random, squares, side);
+}
+
+/**
+ * Whether every diagonal run a placement's new tiles would stand in reads as
+ * a word: walked from its top end down, the word's own letters on its new
+ * squares. Only a run through a new tile can change, and two new tiles of one
+ * word never share a diagonal (they share a row or a column), so each is read
+ * on its own.
+ */
+function diagonalsRead(squares: readonly string[], word: string, start: number, step: number, fresh: readonly number[], side: number, words: TileWords): boolean {
+  const letterAt = (row: number, col: number): string => {
+    if (row < 0 || col < 0 || row >= side || col >= side) return "";
+    const index = row * side + col;
+    if (squares[index] !== "") return squares[index]!;
+    return fresh.includes(index) ? word[(index - start) / step]! : "";
+  };
+  for (const index of fresh) {
+    const row = Math.floor(index / side);
+    const col = index % side;
+    for (const lean of [1, -1]) {
+      let top = 0;
+      while (letterAt(row - top - 1, col - (top + 1) * lean) !== "") top += 1;
+      let run = "";
+      for (let at = -top; letterAt(row + at, col + at * lean) !== ""; at += 1) run += letterAt(row + at, col + at * lean);
+      if (run.length < DIAGONAL_RUN_LEAST) continue;
+      const read = words.wordOf(run);
+      if (read === null || !words.allowed.has(read)) return false;
+    }
+  }
+  return true;
 }
 
 /** A placement's worth: a letter drawn from the mix is worth two, any other costs three, and the set's own counts are a wall. */

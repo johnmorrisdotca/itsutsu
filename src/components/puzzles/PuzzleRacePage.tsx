@@ -40,7 +40,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
   const read = readRace(race);
   const copy = PUZZLE_DISPLAY[kind];
   const level = race.level as PuzzleLevel;
-  const kumimojiMode = kind === "kumimoji" ? ` · ${race.language === "japanese" ? "Japanese · ひらがな" : "English"} · ${race.gameLength} · ${race.givens.length} tiles${race.doubleSet ? " · Double" : ""}` : "";
+  const kumimojiMode = kind === "kumimoji" ? ` · ${race.language === "japanese" ? "Japanese · ひらがな" : "English"} · ${race.gameLength} · ${race.givens.length} tiles${race.doubleSet ? " · Double" : ""}${race.diagonals ? " · Diagonals" : ""}` : "";
   const names: Record<RaceSeat, { name: string; memberId: string | null }> = {
     host: { name: race.hostName, memberId: race.hostMemberId },
     guest: { name: race.guestName, memberId: race.guestMemberId },
@@ -107,6 +107,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
             language={race.language === "japanese" ? "japanese" : "english"}
             gameLength={race.gameLength as KumimojiLength}
             doubleSet={race.doubleSet}
+            diagonals={race.diagonals}
             hasAccount={reader.hasAccount}
             race={{ id, since: mine.since.getTime(), givens: race.givens, checksAllowed: race.checksAllowed }}
           />

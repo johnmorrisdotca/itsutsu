@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { judgeGrid } from "@/lib/puzzles/kumimoji/grid";
+import { judgeWithWords } from "@/lib/puzzles/kumimoji/judge";
 import { drawAll, mayDrawAll, nameOf, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { doneRefused, endTurn, goesOut, handCanSpell, isLastTurn, lastStanding, mayResign, resign } from "@/lib/puzzles/kumimoji/partyTurns";
@@ -35,18 +35,8 @@ const NOTHING_SPENT = () => undefined;
  */
 export function KumimojiPartyTurn({ game, words, theme, onHide }: { game: PartyGame; words: TileWords; theme: BoardThemeTokens; onHide: () => void }) {
   const play = seatPlay(game);
-  const verdict = useMemo(
-    () =>
-      judgeGrid(
-        play.tiles,
-        (codes) => {
-          const word = words.wordOf(codes);
-          return word !== null && words.allowed.has(word);
-        },
-        (codes) => words.wordOf(codes) ?? codes,
-      ),
-    [play.tiles, words],
-  );
+  // Every table is read by the rules the game was set up with: with Diagonals, along its diagonals too.
+  const verdict = useMemo(() => judgeWithWords(play.tiles, words, { diagonals: game.settings.diagonals }), [play.tiles, words, game.settings.diagonals]);
   const apply = useCallback((next: (now: TilePlay) => TilePlay) => keepParty(withSeatPlay(game, next(seatPlay(game)))), [game]);
   /* All tables, zoomed out over the desk: nothing on the desk answers while it is up. */
   const [looking, setLooking] = useState(false);

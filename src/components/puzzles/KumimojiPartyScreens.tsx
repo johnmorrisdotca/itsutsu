@@ -19,7 +19,7 @@ import { useKeptParty } from "./kumimojiPartyKept";
 /** The play page of a kept game: its own settings and number of players, and never a name. */
 export function partyAddress(game: PartyGame): string {
   const s = game.settings;
-  return `${playPath("kumimoji")}${puzzleQuery({ size: s.size, level: s.level, seed: s.seed, hints: s.hints, gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet, players: game.players.length })}`;
+  return `${playPath("kumimoji")}${puzzleQuery({ size: s.size, level: s.level, seed: s.seed, hints: s.hints, gameLength: s.gameLength, language: s.language, doubleSet: s.doubleSet, diagonals: s.diagonals, players: game.players.length })}`;
 }
 
 /**

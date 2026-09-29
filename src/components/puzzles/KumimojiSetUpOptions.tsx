@@ -12,7 +12,8 @@ const LENGTH_WORDS: Record<KumimojiLength, string> = { short: "Short", medium: "
 
 /**
  * KUMIMOJI'S OWN SET-UP CHOICES, under the puzzle's options: how many
- * players, the language, the length of the game, one set or two, and Help.
+ * players, the language, the length of the game, one set or two, Diagonals
+ * and Help.
  * Each is a row of chips, as every choice on the set-up screen is, and each
  * writes into the address the set-up already builds (`puzzleQuery`).
  *
@@ -32,6 +33,8 @@ export function KumimojiSetUpOptions({
   setGameLength,
   doubleSet,
   setDoubleSet,
+  diagonals,
+  setDiagonals,
   hints,
   setHints,
   players,
@@ -46,6 +49,8 @@ export function KumimojiSetUpOptions({
   setGameLength: (length: KumimojiLength) => void;
   doubleSet: boolean;
   setDoubleSet: (double: boolean) => void;
+  diagonals: boolean;
+  setDiagonals: (diagonals: boolean) => void;
   hints: boolean;
   setHints: (hints: boolean) => void;
 }) {
@@ -127,6 +132,29 @@ export function KumimojiSetUpOptions({
             data-testid={`kumimoji-double-${each ? "on" : "off"}`}
           >
             {each ? "Double" : "One set"} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
+          </button>
+        ))}
+      </div>
+      {/*
+        DIAGONALS, chosen here or not at all (John, 2026-09-28: "we could
+        allow people to play diagonally… An option at startup is the right
+        choice"): every diagonal run of three or more tiles must be a word
+        too (`judgeGrid`). Off by default, and part of the game, as the
+        language is: the address, a kept game and a race all carry it.
+      */}
+      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Diagonals" data-testid="kumimoji-diagonals-choice">
+        {[false, true].map((each) => (
+          <button
+            key={String(each)}
+            type="button"
+            role="radio"
+            aria-checked={diagonals === each}
+            className={`${PICK_WORD_CHIP} ${diagonals === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+            onClick={() => setDiagonals(each)}
+            title={each ? "Three or more tiles in a line corner to corner must spell a word too, read downward." : "Words across and down only; tiles may touch at a corner."}
+            data-testid={`kumimoji-diagonals-${each ? "on" : "off"}`}
+          >
+            {each ? "Diagonals" : "No diagonals"} <span className="font-mincho opacity-70">{each ? "斜め有" : "斜め無"}</span>
           </button>
         ))}
       </div>

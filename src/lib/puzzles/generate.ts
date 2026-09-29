@@ -12,7 +12,7 @@ import { generateKoushi } from "./koushi/generate";
 import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
 import { loadEveryTsunagiLevel, loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
 import { generateKumimoji } from "./kumimoji/generate";
-import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
+import type { KumimojiLanguage, KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { loadTileWords } from "./kumimoji/tileWords";
 import { loadDailyPools } from "./dailyWords/dailyPools";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -24,7 +24,7 @@ import { POP_OWN_GUESS_LENGTHS, loadPopGuesses } from "./gomoji/popWords";
  * lives beside its solver; this is only the dispatch, so a kind that is
  * listed with no generator fails to compile rather than to run.
  */
-export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, kumimoji?: { gameLength?: KumimojiLength; doubleSet?: boolean; language?: KumimojiLanguage }): Puzzle {
+export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number, kumimoji?: KumimojiOptions): Puzzle {
   switch (kind) {
     case "numberPlace":
       return generateNumberPlace(size, level, seed);

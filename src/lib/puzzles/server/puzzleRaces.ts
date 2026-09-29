@@ -50,6 +50,7 @@ export async function createRace(input: {
   language?: KumimojiLanguage;
   gameLength?: KumimojiLength;
   doubleSet?: boolean;
+  diagonals?: boolean;
   givens: string;
   solution: string;
   checksAllowed: number | null;
@@ -60,14 +61,15 @@ export async function createRace(input: {
   const language = input.kind === "kumimoji" ? input.language ?? "english" : "english";
   const gameLength = input.kind === "kumimoji" ? input.gameLength ?? "short" : "short";
   const doubleSet = input.kind === "kumimoji" && language === "english" && (input.doubleSet ?? false);
+  const diagonals = input.kind === "kumimoji" && (input.diagonals ?? false);
   if (!spec.sizes.includes(input.size) || !levelsFor(input.kind, input.size).includes(input.level)) return { refused: "no such puzzle" };
   if (input.givens.length > spec.mostCells || input.solution.length > spec.mostCells) return { refused: "not a grid of that size" };
   await preparePuzzle(input.kind, input.size, language);
-  const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level, { gameLength, language, doubleSet });
+  const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level, { gameLength, language, doubleSet, diagonals });
   if (!verdict.ok) return { refused: `the answer does not solve the puzzle: ${verdict.reason}` };
   const id = await freeRaceId();
   const row = await prisma.puzzleRace.create({
-    data: { id, ...input, language, gameLength, doubleSet },
+    data: { id, ...input, language, gameLength, doubleSet, diagonals },
     select: { id: true, guestToken: true },
   });
   return row;
@@ -147,7 +149,7 @@ export async function finishSeat(
   if (answer.length > PUZZLE_SPECS[kind].mostCells) return { ok: false, reason: "not a grid of that size", status: 422 };
   const language = kind === "kumimoji" ? race.language as KumimojiLanguage : "english";
   await preparePuzzle(kind, race.size, language);
-  const verdict = checkSolution(kind, race.size, race.givens, answer, level, { gameLength: race.gameLength as KumimojiLength, language, doubleSet: race.doubleSet });
+  const verdict = checkSolution(kind, race.size, race.givens, answer, level, { gameLength: race.gameLength as KumimojiLength, language, doubleSet: race.doubleSet, diagonals: race.diagonals });
   if (!verdict.ok) return { ok: false, reason: verdict.reason, status: 422 };
 
   const stamped = await prisma.puzzleRace.updateMany({

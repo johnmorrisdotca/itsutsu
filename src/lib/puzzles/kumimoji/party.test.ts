@@ -10,7 +10,7 @@ import { placeFromHand, trade } from "./play";
 import { JAPANESE_TILE_MIX, KUMIMOJI_HANDS, KUMIMOJI_PARTY, kumimojiTileCount, TILE_MIX_TOTAL } from "./tiles.constants";
 import { loadTileWords } from "./tileWords";
 
-const SETTINGS: PartySettings = { size: 3, level: "medium", seed: 7, gameLength: "short", language: "english", doubleSet: false, hints: false };
+const SETTINGS: PartySettings = { size: 3, level: "medium", seed: 7, gameLength: "short", language: "english", doubleSet: false, diagonals: false, hints: false };
 const WORDS = new Set(["cat", "cats", "dog", "sun", "at", "go", "us", "to", "ox"]);
 const judge = (tiles: PartyGame["players"][number]["tiles"]) => judgeGrid(tiles, (word) => WORDS.has(word));
 const family = (tile: string) => (/^[a-z*]$/.test(tile) ? tile : null);
@@ -336,6 +336,18 @@ describe("keeping the game in the browser", () => {
     expect(isPartyFor(back, SETTINGS, 3)).toBe(true);
     expect(isPartyFor(back, { ...SETTINGS, seed: 8 }, 3)).toBe(false);
     expect(isPartyFor(back, SETTINGS, 4)).toBe(false);
+  });
+
+  it("keeps Diagonals with the game, reads a game kept before it as played without, and opens neither for the other", () => {
+    const diagonal = startParty({ ...SETTINGS, diagonals: true }, "catdogsunsox", ["Aiko", "", "Cho"]);
+    const back = decodeParty(encodeParty(diagonal), family)!;
+    expect(back.settings.diagonals).toBe(true);
+    expect(isPartyFor(back, { ...SETTINGS, diagonals: true }, 3)).toBe(true);
+    expect(isPartyFor(back, SETTINGS, 3)).toBe(false);
+    const kept = JSON.parse(encodeParty(startParty(SETTINGS, "catdogsunsox", ["Aiko", "", "Cho"])));
+    delete kept.settings.diagonals;
+    expect(decodeParty(JSON.stringify(kept), family)!.settings.diagonals).toBe(false);
+    expect(decodeParty(JSON.stringify({ ...kept, settings: { ...kept.settings, diagonals: "yes" } }), family)).toBeNull();
   });
 
   it("refuses what is not a kept game, or one whose tiles did not come out of its bag", () => {

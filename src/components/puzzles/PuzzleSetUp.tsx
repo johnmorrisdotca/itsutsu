@@ -101,7 +101,8 @@ export function PuzzleSetUp({
   const [headStart, setHeadStart] = useState(asked?.headStart ?? false);
   // A Gomoji's Futago, two words at once (`futago.ts`), off unless chosen; unlike Strict it is carried into a race, whose seed says it.
   const [twins, setTwins] = useState(asked?.twins ?? false);
-  const { language, setLanguage, gameLength, setGameLength, doubleSet, setDoubleSet, players, setPlayers } = useKumimojiChoice(asked, size, kind === "kumimoji");
+  const kumimoji = useKumimojiChoice(asked, size, kind === "kumimoji");
+  const { language, gameLength, doubleSet, diagonals, players } = kumimoji;
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -113,7 +114,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, players });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, diagonals, players });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -133,11 +134,11 @@ export function PuzzleSetUp({
     setRacing("making");
     try {
       await preparePuzzle(kind, size, language);
-      const made = generatePuzzle(kind, size, level, twins && spec.wordGrid !== undefined ? freshFutagoSeed() : freshSeed(), { gameLength, language, doubleSet });
+      const made = generatePuzzle(kind, size, level, twins && spec.wordGrid !== undefined ? freshFutagoSeed() : freshSeed(), { gameLength, language, doubleSet, diagonals });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, size, level, seed: made.seed, givens: made.givens, solution: made.solution, checksAllowed: checks, gameLength, language, doubleSet }),
+        body: JSON.stringify({ kind, size, level, seed: made.seed, givens: made.givens, solution: made.solution, checksAllowed: checks, gameLength, language, doubleSet, diagonals }),
       });
       const body = (await answered.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (!answered.ok || body?.at === undefined) {
@@ -188,19 +189,7 @@ export function PuzzleSetUp({
           {copy.board}
         </p>
         {kind === "kumimoji" ? (
-          <KumimojiSetUpOptions
-            size={size}
-            language={language}
-            setLanguage={setLanguage}
-            gameLength={gameLength}
-            setGameLength={setGameLength}
-            doubleSet={doubleSet}
-            setDoubleSet={setDoubleSet}
-            hints={hints}
-            setHints={setHints}
-            players={players}
-            setPlayers={setPlayers}
-          />
+          <KumimojiSetUpOptions size={size} hints={hints} setHints={setHints} {...kumimoji} />
         ) : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
@@ -363,7 +352,7 @@ export function PuzzleSetUp({
         <SetUpResume href={resumeHref} />
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         <Link
-          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, players })}`}
+          href={`${playPath(kind)}${puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), twins: twins && spec.wordGrid !== undefined, gameLength, language, doubleSet, diagonals, players })}`}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

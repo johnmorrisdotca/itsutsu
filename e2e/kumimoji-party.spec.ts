@@ -213,6 +213,34 @@ test.describe("Kumimoji pass and play", () => {
     await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(QUICK);
   });
 
+  test("a game set up with Diagonals reads each player's table along its diagonals", async ({ page }) => {
+    await page.goto(`${AT}/new`);
+    await ready(page, "puzzle-set-up");
+    await page.locator(`[data-testid="set-up-size"][data-size="${QUICK}"]`).click();
+    await page.getByTestId("kumimoji-players-2").click();
+    await page.getByTestId("kumimoji-diagonals-on").click();
+    await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /diagonals=1/);
+    await page.getByTestId("puzzle-solve").click();
+
+    await begin(page, ["Aiko", "Ben"]);
+    await expect(page).toHaveURL(/diagonals=1/);
+    const seed = Number(new URL(page.url()).searchParams.get("seed"));
+    const hand = [...generateKumimoji(QUICK, "medium", seed, { diagonals: true }).givens.slice(0, QUICK)].filter((tile) => tile !== "*");
+    let notWord: string | null = null;
+    for (let a = 0; a < hand.length && notWord === null; a += 1)
+      for (let b = 0; b < hand.length && notWord === null; b += 1)
+        for (let c = 0; c < hand.length && notWord === null; c += 1)
+          if (a !== b && b !== c && a !== c && !isWord(hand[a]! + hand[b]! + hand[c]!)) notWord = hand[a]! + hand[b]! + hand[c]!;
+    expect(notWord, `three letters of ${hand.join("")} that are not a word`).not.toBeNull();
+
+    await passFor(page, "Aiko");
+    await uncover(page, "Aiko");
+    // Corner to corner and touching nothing across or down: read, marked, and named.
+    for (const [at, letter] of [...notWord!].entries()) await lay(page, letter, `${at},${at}`);
+    await expect(page.locator('[data-testid="kumimoji-tile"][data-mark="misspelt"]')).toHaveCount(3);
+    await expect(page.getByTestId("kumimoji-said")).toContainText(`Not a word: ${notWord!.toUpperCase()}`);
+  });
+
   test("Draw gives every player a tile, and a reload opens on the pass screen of the same player", async ({ page }) => {
     const { seed, bag, across } = drawGame(freshPuzzleSeed());
     await page.goto(`${AT}/play?size=${TINY}&level=medium&seed=${seed}&length=medium&players=3`);
