@@ -42,8 +42,11 @@ function zoomedAbout(view: View, factor: number, px: number, py: number, box: nu
  * line then carries on under the finger, as though the finger had moved. The
  * board is drawn at the size it is shown, not stretched, so its lines stay
  * crisp. Below 10×10 this is the board alone, as it always was.
+ *
+ * Bridges' two big boards are looked at through the same box (`name`
+ * "bridges"), so there is one zoom for a board too big for a thumb, not two.
  */
-export function TsunagiViewport({ size, children }: { size: number; children: ReactNode }) {
+export function TsunagiViewport({ size, name = "tsunagi", children }: { size: number; /** The game, for its test ids: `<name>-viewport`, `<name>-fit` and the pad's. */ name?: string; children: ReactNode }) {
   const enabled = size >= TSUNAGI_ZOOM_FROM;
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -127,7 +130,7 @@ export function TsunagiViewport({ size, children }: { size: number; children: Re
         onPointerMove={follow}
         onPointerUp={() => (held.current = null)}
         onPointerCancel={() => (held.current = null)}
-        data-testid="tsunagi-viewport"
+        data-testid={`${name}-viewport`}
         data-zoom={view.zoom.toFixed(2)}
       >
         <div className="absolute top-0 left-0" style={{ width: width * view.zoom || "100%", transform: `translate(${view.x}px, ${view.y}px)` }}>
@@ -135,7 +138,7 @@ export function TsunagiViewport({ size, children }: { size: number; children: Re
         </div>
       </div>
       {/* Under the board, never over it: a pad in the corner would cover cells a line must be drawn through. */}
-      <ViewPad fitted={view.zoom === 1} onFit={() => setView(FITTED)} onPress={press} label="Move and zoom the board" testId="tsunagi" inline />
+      <ViewPad fitted={view.zoom === 1} onFit={() => setView(FITTED)} onPress={press} label="Move and zoom the board" testId={name} inline />
     </div>
   );
 }

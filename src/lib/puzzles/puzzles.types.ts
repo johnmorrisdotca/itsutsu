@@ -24,7 +24,8 @@ export type PuzzleKind =
   | "gomojiPop"
   | "tsunagi"
   | "kumimoji"
-  | "koushi";
+  | "koushi"
+  | "bridges";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";

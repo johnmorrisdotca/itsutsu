@@ -1,3 +1,4 @@
+import { generateBridges } from "./bridges/generate";
 import { generateHiddenStones } from "./hiddenStones/generate";
 import { loadWordData } from "./gomoji/wordData";
 import { generateMoreOrLess } from "./moreOrLess/generate";
@@ -62,6 +63,8 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "koushi":
       // One size, the lattice: `size` is always its 5, and the level decides the swaps.
       return generateKoushi(level, seed);
+    case "bridges":
+      return generateBridges(size, level, seed);
   }
 }
 

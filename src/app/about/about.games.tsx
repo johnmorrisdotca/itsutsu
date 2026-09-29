@@ -4,6 +4,7 @@ import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/fa
 import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import Link from "@/components/ui/Link";
 
 import { Game, Inside } from "./about.links";
@@ -32,6 +33,9 @@ const SET_UPS = RULE_VARIANT_LIST.reduce((total, variant) => total + boardSizesF
 
 /** Games with a board of their own to choose from, rather than one fixed board. */
 const CHOICE_OF_BOARD = RULE_VARIANT_LIST.filter((variant) => boardSizesFor(variant).length > 1).length;
+
+/** The families of puzzles for one: Numbers, Logic puzzles and Other, read from the catalogue. */
+const PUZZLE_FAMILIES = GAME_FAMILIES.filter((family) => family.games.length > 0 && family.games.every(isPuzzleKind));
 
 /** How many of the games are decided by something other than a line of stones. */
 const NOT_A_LINE = RULE_VARIANT_LIST.filter((variant) => {
@@ -97,8 +101,9 @@ export const CATALOGUE_SECTION: AboutSection = {
       people’s evenings has no excuse for.
     </>,
     <>
-      One family is not board games at all. Numbers holds {PUZZLE_KIND_LIST.length === 1 ? "a puzzle" : "puzzles"} for
-      one person:{" "}
+      Of the families, {PUZZLE_FAMILIES.length} are not board games at all:{" "}
+      {PUZZLE_FAMILIES.map((family, index) => `${index > 0 ? (index === PUZZLE_FAMILIES.length - 1 ? " and " : ", ") : ""}${family.title}`).join("")} hold{" "}
+      {PUZZLE_KIND_LIST.length === 1 ? "a puzzle" : "puzzles"} for one person:{" "}
       {PUZZLE_KIND_LIST.map((kind, index) => (
         <span key={kind}>
           {index > 0 ? (index === PUZZLE_KIND_LIST.length - 1 ? " and " : ", ") : ""}

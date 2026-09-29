@@ -1,3 +1,4 @@
+import { checkBridges } from "./bridges/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -64,6 +65,8 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkKumimoji(size, givens, answer, { ...kumimoji, level: level ?? "medium" });
     case "koushi":
       return checkKoushi(size, givens, answer, "found", level);
+    case "bridges":
+      return checkBridges(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

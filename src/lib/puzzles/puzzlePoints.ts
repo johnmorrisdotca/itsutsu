@@ -25,10 +25,16 @@ import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 export const POINTS_A_CELL = 5;
 export const POINTS_A_HELP = 50;
 
-/** The cells a solver filled: every cell of a Hidden Stones grid, the letters of a Gomoji word, the unprinted ones of every other. */
+/**
+ * The cells a solver filled: every cell of a Hidden Stones grid, the letters of
+ * a Gomoji word, the unprinted ones of every other. A Bridges puzzle has no
+ * cells to fill, so it counts every island's number — each end of every
+ * bridge drawn — which is the work its answer is.
+ */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
   if (kind === "hiddenStones") return area;
+  if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.
   if (kind === "kumimoji") return givens.length;

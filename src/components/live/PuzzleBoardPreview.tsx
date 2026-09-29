@@ -35,6 +35,9 @@ import { BLACK, decodeBlackAndWhite, EMPTY } from "@/lib/puzzles/blackAndWhite/c
 import { generateBlackAndWhite } from "@/lib/puzzles/blackAndWhite/generate";
 import { decodeTowers, TOWER_SIDES, type TowerClues } from "@/lib/puzzles/towers/code";
 import { generateTowers } from "@/lib/puzzles/towers/generate";
+import { BridgesGrid } from "@/components/puzzles/BridgesGrid";
+import { boardOf } from "@/lib/puzzles/bridges/code";
+import { generateBridges } from "@/lib/puzzles/bridges/generate";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -106,6 +109,8 @@ export function PuzzleBoardPreview({
           <TilePreview size={size} appearance={appearance} />
         ) : spec.lattice === true ? (
           <LatticePreview appearance={appearance} />
+        ) : kind === "bridges" ? (
+          <BridgesPreview size={size} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (
@@ -198,6 +203,17 @@ const TILE_EXAMPLES: Record<number, string> = { 3: "cat", 7: "2g/word/2i/2d", 11
 function TilePreview({ size, appearance }: { size: number; appearance: Appearance }) {
   const tiles = useMemo(() => decodeGrid(TILE_EXAMPLES[size] ?? "") ?? new Map<string, string>(), [size]);
   return <KumimojiTable tiles={tiles} theme={tableTheme(appearance)} readOnly boxClass={TILE_PICTURE_BOX} />;
+}
+
+/**
+ * Bridges before it is made: the islands of a real easy puzzle at this size,
+ * from a fixed seed, on the board the solve draws (`BridgesGrid`), with no
+ * bridge drawn and nothing to press. A millisecond, and only a picture.
+ */
+function BridgesPreview({ size }: { size: number }) {
+  const board = useMemo(() => boardOf(generateBridges(size, "easy", 7).givens, size), [size]);
+  if (board === null) return null;
+  return <BridgesGrid board={board} counts={board.spans.map(() => 0)} done readOnly />;
 }
 
 /** Koushi's lattice before it is made: 21 blank tiles and four holes, in the board colour chosen under it. Nothing on it can be pressed. */

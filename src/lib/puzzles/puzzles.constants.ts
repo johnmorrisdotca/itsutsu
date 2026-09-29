@@ -43,6 +43,7 @@ export const PUZZLE_KINDS = {
   tsunagi: "tsunagi",
   kumimoji: "kumimoji",
   koushi: "koushi",
+  bridges: "bridges",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
@@ -63,6 +64,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.tsunagi,
   PUZZLE_KINDS.kumimoji,
   PUZZLE_KINDS.koushi,
+  PUZZLE_KINDS.bridges,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -222,6 +224,14 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   },
   // One lattice of 21 letters; an answer is the grid and every swap made, two characters each (`lattice.ts`).
   koushi: { sizes: [5], offered: [5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: KOUSHI_ANSWER_MOST, helps: false, lattice: true },
+  /*
+   * Islands and bridges on a square of water, a character a cell for the
+   * givens and for the drawing (`bridges/code.ts`): 169 at 13×13. Every size
+   * and level is made in milliseconds (`bridges/generate.ts` has the
+   * measurements), so the four offered are the four a phone can play, the two
+   * big ones zoomed (`TsunagiViewport`).
+   */
+  bridges: { sizes: [7, 9, 11, 13], offered: [7, 9, 11, 13], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 169 },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -360,6 +370,12 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   koushi: {
     5: { label: "Six words", kanji: "六語" },
   },
+  bridges: {
+    7: { label: "Quick", kanji: "速" },
+    9: { label: "Usual", kanji: "定番" },
+    11: { label: "Long", kanji: "長" },
+    13: { label: "Longest", kanji: "最長" },
+  },
 };
 
 /**
@@ -390,6 +406,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     easy: `The most wild tiles: ${KUMIMOJI_WILDS[KUMIMOJI_HANDS.classic]!.easy} in a Short game from the Classic hand.`,
     medium: `Half as many wild tiles: ${KUMIMOJI_WILDS[KUMIMOJI_HANDS.classic]!.medium} in a Short game from the Classic hand.`,
     hard: "No wild tiles: every tile is the letter or kana printed on it.",
+  },
+  // A Bridges level is what it takes to finish (`bridges/solve.ts`, `levelOf`): counting, joining, or a trial.
+  bridges: {
+    easy: "Counting alone: every island against what the islands in line with it can still give.",
+    medium: "Counting, and the joining rule: no group of islands may close itself off from the rest.",
+    hard: "Somewhere counting and joining both run out, and a bridge has to be tried and seen.",
   },
   koushi: {
     easy: "Solvable in 8 swaps, with 13 to do it in, and the commonest words.",
@@ -707,5 +729,30 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "One lattice, five letters each way, its four holes showing the board beneath. The words come from SCOWL, the spelling lists by Kevin Atkinson, as Gomoji's do: easy and medium use the commonest words, hard a wider list.",
+  },
+  /*
+   * OUR OWN NAME FOR IT. The island-and-bridge puzzle is Nikoli's, first
+   * printed in 1990, and the name it is printed under there is a name this
+   * site does not use, in its copy, its pictures or its code. Bridges is the
+   * plain English for what it is, and 橋 the plain Japanese.
+   */
+  bridges: {
+    label: "Bridges",
+    kanji: "橋",
+    tagline: "Join the islands with straight bridges, one or two at a time, until every island has its number and all of them are one.",
+    inspiredBy: "the island-and-bridge puzzle Nikoli first printed in 1990",
+    origin:
+      "A Japanese pencil puzzle of islands and the bridges between them, first printed by Nikoli in 1990 and found since in puzzle books everywhere under many names. 橋 is simply Japanese for a bridge. The puzzles here are made by our own code, each with exactly one answer.",
+    country: "JP",
+    rules: [
+      "Every circle is an island, and its number is how many bridges it must have.",
+      "A bridge runs straight across or straight down between two islands in line with each other, over water only: never through another island, and never across another bridge.",
+      "Two islands may be joined by one bridge or by two, never more.",
+      "The puzzle is solved when every island has exactly its number and every island can be reached from every other along the bridges. Every puzzle has exactly one answer.",
+      "Tap an island and then another in line with it to lay a bridge; do it again for a second, and a third time to take them both away. Or drag from one island to the other. An island that has its number turns solid, with a tick under it.",
+      "Easy yields to counting alone. Medium needs the joining rule as well: no group of islands may be closed off from the rest, so two 1s are never joined to each other. Hard asks you, somewhere, to try a bridge and see.",
+    ],
+    board:
+      "9×9 is the usual size. 7×7 is quick; 11×11 and 13×13 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
   },
 };
