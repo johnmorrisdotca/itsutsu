@@ -14,18 +14,17 @@ import type { WordGrid } from "./futago";
  * each quarter's word score added (`futagoScore.ts`), and a kept run is told
  * from one or two words by its seed (`yotsugoSeed.ts`).
  *
- * THE BOARD. Four quarters of a word's width and the guesses' height do not
- * make a square, and every board here is a square of wood (`BoardFrame`). So
- * a Yotsugo is two square boards, one over the other, each split down the
+ * THE BOARD. A Yotsugo is two boards, one over the other, each split down the
  * middle into two quarters by the play area's heavy border — the first and
  * second words on the upper board, the third and fourth on the lower — the
- * same `GomojiGrid` every Gomoji is drawn on (`YotsugoBoards`). Each board is
- * two words wide, so a letter is drawn at about the size one word's letters
- * are on its own board: about 33 pixels at five letters on a 390-pixel phone.
+ * same `GomojiGrid` every Gomoji is drawn on (`WordBoards`). Each board is
+ * exactly two words wide and eleven rows tall (`gomojiBoard`), so a square is
+ * about 31 pixels at five letters on a 390-pixel phone, nine tenths of one
+ * word's.
  *
- * THE GUESSES. Three more than one word's at every level, as a Futago gives
- * one more for its second word: nine for five letters at hard, ten at medium
- * and eleven at easy (`gomojiLayout`).
+ * THE GUESSES. Three more than one word's at every level and length, as a
+ * Futago gives one more for its second word: nine at hard, ten at medium and
+ * eleven at easy (`layout.ts`).
  */
 export const YOTSUGO_DISPLAY = { label: "Yotsugo", kanji: "四つ子", words: "Four words" } as const;
 
@@ -39,5 +38,5 @@ export const YOTSUGO_MORE_GUESSES = YOTSUGO_BOARDS - 1;
 export function yotsugoRule(grid: WordGrid): string {
   return grid === "gomojiKana"
     ? "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four kana words at once, in the four quarters of two boards, the free grey word grey against all four: every guess goes to every quarter until its word is found, each kana key is split in four corners to show each quarter's colour, and there are three guesses more than for one word."
-    : "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four words at once, in the four quarters of two boards: every guess goes to every quarter until its word is found, each key is split in four corners to show each quarter's colour, and there are three guesses more than for one word — nine for five letters at hard.";
+    : "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four words at once, in the four quarters of two boards: every guess goes to every quarter until its word is found, each key is split in four corners to show each quarter's colour, and there are three guesses more than for one word — nine at hard at every length.";
 }

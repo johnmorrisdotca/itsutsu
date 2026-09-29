@@ -49,8 +49,7 @@ const NOT_ASKED: Record<string, string> = {
  * every file that draws it to asking, or to being listed as not played on.
  */
 const PART_OF: Record<string, string> = {
-  "src/components/puzzles/FutagoBoards.tsx": "a Futago's two Gomoji grids, drawn only by a Gomoji's solve, which asks, or its replay, which is not played on",
-  "src/components/puzzles/YotsugoBoards.tsx": "a Yotsugo's two Gomoji grids of two quarters each, drawn only by a Gomoji's solve, which asks, or its replay, which is not played on",
+  "src/components/puzzles/WordBoards.tsx": "a Futago's or a Yotsugo's Gomoji grids, two words to a board, drawn only by a Gomoji's solve, which asks, or its replay, which is not played on",
 };
 
 /*

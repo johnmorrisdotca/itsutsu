@@ -6,7 +6,7 @@ import { decodeKiller } from "./killer/code";
 import { decodeTowers, lineFrom, TOWER_SIDES } from "./towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { isWord, languageOf, type GomojiLanguage } from "./gomoji/code";
-import { guessesOf, hiddenWordsOf, wordGridOf, wordRowsOf } from "./gomoji/futago";
+import { formerWordRowsOf, guessesOf, hiddenWordsOf, wordGridOf, wordRowsOf } from "./gomoji/futago";
 import { baseGuesses } from "./gomoji/layout";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { checkKumimoji } from "./kumimoji/check";
@@ -275,7 +275,9 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   // How many guesses the level gave: refused, never guessed at, without one.
   if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
   const rows = wordRowsOf(kind, size, level, hidden);
-  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
+  // The count before 2026-09-28, for a run kept under it: the larger of the two is the most it may hold (`guessesEverAllowed`).
+  const former = formerWordRowsOf(kind, size, level, hidden);
+  if (guesses.length > Math.max(rows, former)) return { ok: false, reason: "more guesses than the rows allow" };
   const lang: GomojiLanguage | "ja" = kana ? "ja" : languageOf(kind);
   let unknown: string | undefined;
   try {
@@ -296,7 +298,7 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   }
   if (!firstFound.includes(-1)) return { ok: false, reason: many ? `${every} were found` : "the word was found" };
   // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
-  if (guesses.length !== rows && (many || guesses.length !== baseGuesses(wordGridOf(kind), size))) return { ok: false, reason: "there are guesses left" };
+  if (guesses.length !== rows && guesses.length !== former && (many || guesses.length !== baseGuesses(wordGridOf(kind), size))) return { ok: false, reason: "there are guesses left" };
   return { ok: true };
 }
 

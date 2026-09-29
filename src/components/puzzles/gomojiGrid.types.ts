@@ -2,7 +2,7 @@ import type { CellArrow, CellMark } from "./GomojiGrid";
 
 /**
  * One word's part of a Gomoji board that holds several side by side (a
- * Yotsugo's quarters, `YotsugoBoards`): the rows it shows, their marks and
+ * Yotsugo's quarters, `WordBoards`): the rows it shows, their marks and
  * arrows, whether it takes the row being typed, and whether its word is found.
  */
 export type GridPart = {
@@ -13,5 +13,13 @@ export type GridPart = {
   arrows?: readonly (readonly CellArrow[])[];
   /** Takes no row being typed: the puzzle is over, or this word is found. */
   done: boolean;
+  found: boolean;
+};
+
+/** One word's board among several (`WordBoards`): the rows it shows, their marks and arrows, and whether its word is found. */
+export type WordBoard = {
+  rows: readonly string[];
+  marks: readonly (readonly CellMark[])[];
+  arrows?: readonly (readonly CellArrow[])[];
   found: boolean;
 };

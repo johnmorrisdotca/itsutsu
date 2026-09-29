@@ -63,7 +63,9 @@ function wordsPoints(kind: PuzzleKind, size: number, givens: string, answer: str
   if (hidden === null || guesses === null) return 0;
   // Weighed by the guesses the level gave (`layout.ts`); with no level, hard's count: the published one, a guess more for each word past the first. Mot and Wort are laid out as English is.
   const grid = wordGridOf(kind);
-  const rows = level === undefined ? guessesFor(grid, size, "hard", 0, asWordCount(hidden.words.length)) : wordRowsOf(kind, size, level, hidden);
+  const counted = level === undefined ? guessesFor(grid, size, "hard", 0, asWordCount(hidden.words.length)) : wordRowsOf(kind, size, level, hidden);
+  // A solve kept under the larger count before 2026-09-28 is weighed by the rows it had, never fewer than the guesses it made.
+  const rows = Math.max(counted, guesses.length);
   const score = grid === "gomojiKana" ? futagoKanaScore : futagoScore;
   return score(hidden.words, guesses, rows, elapsedMs).total;
 }

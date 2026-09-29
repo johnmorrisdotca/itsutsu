@@ -13,7 +13,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
-import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { futagoKanaScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { breaksKanaHardRule, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
@@ -26,8 +26,7 @@ import { kanaKeyMarks, knownCounts, typedCounts, withHeadStart } from "@/lib/puz
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { KanaKeyboard } from "./KanaKeyboard";
-import { FutagoBoards } from "./FutagoBoards";
-import { YotsugoBoards } from "./YotsugoBoards";
+import { WordBoards } from "./WordBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
@@ -105,9 +104,11 @@ export function GomojiKanaSolve({
   const count = asWordCount(given.words.length);
   const many = count > 1;
   const free = given.grey === null ? 0 : 1;
-  const rows = wordRowsOf(kind, size, level, given);
   const words = useMemo(() => kanaWordsOf(size), [size]);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeKanaProgress(resumed.progress, size)) ?? []);
+  // A run kept under the counts before 2026-09-28 may have used today's count already: it opens with a guess left (`rowsResumed`).
+  const [kept] = useState(() => guesses.length);
+  const rows = wordRowsResumed(kind, size, level, given, kept);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [romaji, setRomaji] = useState("");
   const [said, setSaid] = useState<string | null>(null);
@@ -259,23 +260,9 @@ export function GomojiKanaSolve({
     <section ref={playRoot} className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
-      {done === null && count === 4 ? (
+      {done === null && many ? (
         <SolvePaused pausing={pausing}>
-          <YotsugoBoards size={size} rows={free + rows} boards={boards} free={free} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
-        </SolvePaused>
-      ) : done === null && many ? (
-        <SolvePaused pausing={pausing}>
-          <FutagoBoards
-            size={size}
-            rows={free + rows}
-            boards={boards}
-            free={free}
-            typing={typing}
-            done={false}
-            style={style}
-            onChoose={(place) => edit((row) => choose(row, place))}
-            appearance={dressed}
-          />
+          <WordBoards size={size} rows={free + rows} boards={boards} free={free} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
         </SolvePaused>
       ) : done === null ? (
         <SolvePaused pausing={pausing}>
@@ -299,7 +286,7 @@ export function GomojiKanaSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `${free === 1 ? `The first word is free, grey everywhere${count === 4 ? " in all four quarters" : many ? " on both boards" : ""}. ` : ""}${count === 4 ? "Every guess goes to all four words. " : many ? "Every guess goes to both boards. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
+            {said ?? `${free === 1 ? `The first word is free, grey everywhere${count === 4 ? " in all four quarters" : many ? " for both words" : ""}. ` : ""}${count === 4 ? "Every guess goes to all four words. " : many ? "Every guess goes to both words. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
             {romaji === "" ? null : (
               <span className="ml-2 font-mono text-ink" data-testid="kana-romaji">
                 {romaji}…

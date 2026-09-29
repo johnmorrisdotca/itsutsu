@@ -1,5 +1,5 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
-import { guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
+import { formerWordRowsOf, guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
 import { swapsTaken } from "../koushi/check";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
@@ -39,7 +39,10 @@ export function guessesTaken(
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);
   if (hidden === null || guesses === null) return null;
-  return { used: guesses.length, allowed: wordRowsOf(kind, size, level as PuzzleLevel, hidden) };
+  // A solve made under the larger count before 2026-09-28 says that count, never "9/8".
+  const today = wordRowsOf(kind, size, level as PuzzleLevel, hidden);
+  const allowed = guesses.length > today ? Math.max(guesses.length, formerWordRowsOf(kind, size, level as PuzzleLevel, hidden)) : today;
+  return { used: guesses.length, allowed };
 }
 
 /** "3/6", as a board prints it. */

@@ -384,17 +384,23 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
  * common its word is. Every other puzzle reads `PUZZLE_LEVEL_DISPLAY`.
  */
 const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
-  easy: "One of the commonest words, and every row of the board to find it in.",
-  medium: "A wider list of words, and one guess more than the classic game.",
-  hard: "A wider list of words, and the classic count of guesses.",
+  easy: "One of the commonest words, and eight guesses to find it in.",
+  medium: "A wider list of words, and seven guesses.",
+  hard: "A wider list of words, and six guesses, the classic count.",
+};
+/** Kana: the free grey word is one of the level's rows (`layout.ts`), so easy and medium are a guess shorter than their rows. */
+const KANA_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
+  easy: "One of the commonest words, a free grey word and seven guesses: eight rows.",
+  medium: "A wider list of words, a free grey word and six guesses: seven rows.",
+  hard: "A wider list of words, six guesses and no free word.",
 };
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, string>>>> = {
   gomoji: WORD_LEVEL_BLURBS,
-  gomojiKana: WORD_LEVEL_BLURBS,
+  gomojiKana: KANA_LEVEL_BLURBS,
   gomojiPop: {
-    easy: "A word from the pop list with its category shown, and every row of the board to find it in.",
-    medium: "The same list and clue, and one guess more than the classic game.",
-    hard: "The same list and clue, and the classic count of guesses.",
+    easy: "A word from the pop list with its category shown, and eight guesses to find it in.",
+    medium: "The same list and clue, and seven guesses.",
+    hard: "The same list and clue, and six guesses, the classic count.",
   },
   tsunagi: {
     easy: "The first third of a size's levels: every line can be found by looking.",
@@ -579,12 +585,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
-      "Hard gives the classic count: six guesses for five letters, five for four, and six for six, since a longer word gives more away with every guess. Medium gives one more, and easy every row of the board: nine for five letters, eight for four or six. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Easy gives eight guesses, medium seven and hard six, at every length: a short word is no easier to find, since it gives away fewer letters a guess and many four-letter words differ by one letter. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],
     board:
-      "Five letters on a board nine squares across, or four or six on eight. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
+      "Four, five or six letters, on a board eight rows tall at every length and level: eight squares across for four or six letters, nine for five, so the word sits in the middle. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one of a wider list, and any word in the lists may be guessed.",
   },
   gomojiKana: {
     label: "Gomoji Kana",
@@ -594,7 +600,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     origin:
       "Gomoji in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
     rules: [
-      "A word is hidden, three, four or five kana long, in hiragana. Hard gives six guesses, medium seven, and easy every row the board has left; every guess must be a real word.",
+      "A word is hidden, three, four or five kana long, in hiragana. Easy gives eight rows, medium seven and hard six, at every length: on easy and medium the first is the free grey word, so easy is seven guesses and medium six, and hard six with no free word. Every guess must be a real word.",
       "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Grey is none of those.",
       "An arrow means right kana, not quite: down for the wrong size (つ for っ), up for the wrong mark (は for ば or ぱ). The word is found only when every place is plain green.",
       "On easy and medium the puzzle opens with a free word already played that is grey everywhere, so its kana are out before you start.",
@@ -616,12 +622,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
-      "Six guesses for five letters, five for four, six for six. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Eight guesses at easy, seven at medium and six at hard, at every length. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],
     board:
-      "Five letters and six guesses, four letters and five, or six letters and six. Any word in Lexique, a dictionary of about 140,000 French words, may be guessed. The hidden word is one Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words, as Lexique counts them among those French film dialogue uses most (hermitdave's FrequencyWords), and medium and hard one of the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
+      "Four, five or six letters, with eight guesses at easy, seven at medium and six at hard. Any word in Lexique, a dictionary of about 140,000 French words, may be guessed. The hidden word is one Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words, as Lexique counts them among those French film dialogue uses most (hermitdave's FrequencyWords), and medium and hard one of the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
   },
   gomojiWort: {
     label: "Gomoji Wort",
@@ -635,12 +641,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "Ä, Ö and Ü are letters of their own, not vowels with a fold: a guess for ä only matches ä.",
-      "Six guesses for five letters, five for four, six for six. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
+      "Eight guesses at easy, seven at medium and six at hard, at every length. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],
     board:
-      "Five letters and six guesses, four letters and five, or six letters and six. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
+      "Four, five or six letters, with eight guesses at easy, seven at medium and six at hard. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one Wiktionary has too, in its dictionary form: never a plural, an inflection or a word borrowed from English. How often German film dialogue says it (hermitdave's FrequencyWords) decides how common it is: easy hides one of the commoner words, medium and hard one of the wider list. Words spelled with ß are left out, the way French leaves out œ and æ.",
   },  gomojiPop: {
     label: "Pop Gomoji",
     kanji: "五文字・流行",
@@ -652,7 +658,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A word is hidden, three to seven letters long, and its category is shown above the board: a Pokemon, a Greek deity, a musical instrument. Type a word of that length and press Enter to guess it.",
       "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
       "Any English word of the length may be guessed, and any word of the pop list, names included: MARIO and ZELDA are words here.",
-      "Hard gives the classic count of guesses, medium one more, and easy every row of the board. A word the list does not know is refused and costs nothing.",
+      "Easy gives eight guesses, medium seven and hard six, at every length. A word the list does not know is refused and costs nothing.",
       "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
     ],

@@ -3,7 +3,8 @@
 import { BOARD_THEMES, DEFAULT_APPEARANCE, EDGE_LINE_WIDTH, FELTS, LINE_WIDTH, STAR_RADIUS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
 import { foundInPlace, type LetterMark } from "@/lib/puzzles/gomoji/code";
-import { playPlace } from "@/lib/puzzles/gomoji/layout";
+import { gomojiBoard } from "@/lib/puzzles/gomoji/layout";
+import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
@@ -19,6 +20,7 @@ import {
   WORD_TILE_EMPTY,
   WORD_TILE_MARK,
   WORD_TILE_TYPED,
+  wordLetterSize,
 } from "./puzzles.constants";
 
 /** A cell's mark: English's three, and the kana version's yellow, "the word's kana here is in this one's column". */
@@ -79,6 +81,7 @@ export function GomojiGrid({
   free = 0,
   appearance = DEFAULT_APPEARANCE,
   parts,
+  words,
 }: {
   size: number;
   rows: number;
@@ -97,38 +100,41 @@ export function GomojiGrid({
   appearance?: Appearance;
   /**
    * Several words side by side on the one board, each in a play area of its
-   * own with its own heavy border (a Yotsugo's quarters, `YotsugoBoards`), in
+   * own with its own heavy border (a Futago's two words or a Yotsugo's quarters, `WordBoards`), in
    * place of `guesses`, `marks` and `arrows`. Left out, the board holds one word.
    */
   parts?: readonly GridPart[];
+  /** How many words the puzzle hides, which decides the board's height (`gomojiBoard`): one, or with `parts` a Futago's two or a Yotsugo's four. */
+  words?: WordCount;
 }) {
   const tiles = style === WORD_STYLES.tiles;
   const sides: readonly GridPart[] = parts ?? [{ at: 0, guesses, marks, arrows, done, found: false }];
   const lone = parts === undefined;
   const across = size * sides.length;
-  // A board of stones is a whole board, play centred across on whole squares and a spare row over to the top (`playPlace`); tiles are paper.
-  // One word's tiles stand centred across the board (`justify-center` below), so the play area's border starts where they do, not at the board's edge.
-  // Several words' tiles stand where stones would, each word in its own part of the play.
-  const { span, top, left } = tiles && lone ? { span: rows, top: 0, left: (rows - size) / 2 } : playPlace(across, rows);
+  // One board for every style: as tall as the level with the most rows, the play in the middle a spare row over to the top, the words centred across on whole squares (`gomojiBoard`).
+  const { cols, rows: tall, top, left } = gomojiBoard(size, words ?? (lone ? 1 : 2), rows);
   const theme = feltOrWoodTheme(appearance);
   return (
     <div className={WORD_GRID_BOX} data-testid="puzzle-grid" data-size={size} data-style={style} data-done={done ? "true" : "false"}>
-      <PuzzleBoard size={span} theme={theme}>
+      <PuzzleBoard size={cols} rows={tall} theme={theme}>
         <div className="relative flex h-full w-full items-center justify-center">
-          {tiles ? null : <GridLines span={span} size={across} rows={rows} left={left} top={top} style={style} theme={theme} />}
+          {tiles ? null : <GridLines cols={cols} tall={tall} size={across} rows={rows} left={left} top={top} style={style} theme={theme} />}
           {sides.map((side, at) => (
-            <PlayAreaBorder key={side.at} span={span} size={size} rows={rows} left={left + at * size} top={top} style={style} theme={theme} />
+            <PlayAreaBorder key={side.at} cols={cols} tall={tall} size={size} rows={rows} left={left + at * size} top={top} style={style} theme={theme} />
           ))}
           {sides.map((side, at) => (
             <div
               key={side.at}
-              className={tiles && lone ? "relative grid h-full gap-1 p-1" : tiles ? "absolute grid gap-[2px] p-[2px]" : "absolute grid"}
+              className={tiles ? "absolute grid gap-[3px] p-[2px]" : "absolute grid"}
               style={{
-                ...(tiles && lone
-                  ? { width: `${(size / rows) * 100}%` }
-                  : { left: `${((left + at * size) / span) * 100}%`, top: `${(top / span) * 100}%`, width: `${(size / span) * 100}%`, height: `${(rows / span) * 100}%` }),
+                left: `${((left + at * size) / cols) * 100}%`,
+                top: `${(top / tall) * 100}%`,
+                width: `${(size / cols) * 100}%`,
+                height: `${(rows / tall) * 100}%`,
                 gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
                 gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+                // The letters are sized from the squares, which are this box's width over the word's letters (`WORD_LETTER`).
+                containerType: "inline-size",
               }}
               {...(lone ? {} : { "data-testid": "word-part", "data-part": side.at, "data-found": side.found ? "true" : "false" })}
             >
@@ -161,6 +167,7 @@ function PartRows({
 }) {
   const tiles = style === WORD_STYLES.tiles;
   const { guesses, marks, arrows = [], done } = side;
+  const letterSize = wordLetterSize(size);
   const found = foundInPlace(guesses, marks, size);
   return Array.from({ length: rows }, (_, row) => {
     const guessed = guesses[row];
@@ -200,7 +207,7 @@ function PartRows({
       ) : (
         <span
           className={`relative ${WORD_STONE} ${WORD_STONE_SIZE[style]} ${focused ? WORD_FOCUS.stoneFilled : ""}`}
-          style={WORD_STONE_LOOK[shown ?? "typed"]}
+          style={{ ...WORD_STONE_LOOK[shown ?? "typed"], fontSize: letterSize }}
           aria-hidden="true"
         >
           {letter}
@@ -212,11 +219,11 @@ function PartRows({
         : "relative flex items-center justify-center";
       // A place on the row being typed is a press; every other cell is only drawn.
       return live ? (
-        <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} {...said}>
+        <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} style={tiles ? { fontSize: letterSize } : undefined} {...said}>
           {face}
         </button>
       ) : (
-        <div key={`${row}-${at}`} className={look} {...said}>
+        <div key={`${row}-${at}`} className={look} style={tiles ? { fontSize: letterSize } : undefined} {...said}>
           {face}
         </div>
       );
@@ -261,7 +268,7 @@ const EDGE_WEIGHT = EDGE_LINE_WIDTH / LINE_WIDTH;
  * drawn for Tiles, whose letters sit on the board's plain colour with no
  * ruling under them.
  */
-function GridLines({ span, size, rows, left, top, style, theme }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
+function GridLines({ cols, tall, size, rows, left, top, style, theme }: { cols: number; tall: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
   const ink = theme.line;
   const reversi = style === WORD_STYLES.reversi;
   const width = reversi ? 2 : 1.25;
@@ -278,8 +285,8 @@ function GridLines({ span, size, rows, left, top, style, theme }: { span: number
     </g>
   );
   return (
-    <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
-      {ruled(0, 0, span, span, OUT_OF_PLAY, "board")}
+    <svg viewBox={`0 0 ${cols} ${tall}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-lines">
+      {ruled(0, 0, cols, tall, OUT_OF_PLAY, "board")}
       {ruled(left, top, size, rows, 1, "play")}
     </svg>
   );
@@ -300,7 +307,7 @@ function GridLines({ span, size, rows, left, top, style, theme }: { span: number
  * where the word starts and where the guesses run out. Reversi and Tiles keep
  * no star points, because neither game's own board has one.
  */
-function PlayAreaBorder({ span, size, rows, left, top, style, theme }: { span: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
+function PlayAreaBorder({ cols, tall, size, rows, left, top, style, theme }: { cols: number; tall: number; size: number; rows: number; left: number; top: number; style: WordStyle; theme: BoardThemeTokens }) {
   const gomoku = style === WORD_STYLES.gomoku;
   // Gomoku's play area is bounded by its crossings (`at`, one short of the letter and guess counts); Reversi and Tiles by the cell edges (the counts themselves).
   const at = gomoku ? 0.5 : 0;
@@ -317,7 +324,7 @@ function PlayAreaBorder({ span, size, rows, left, top, style, theme }: { span: n
       ]
     : [];
   return (
-    <svg viewBox={`0 0 ${span} ${span}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-play-area">
+    <svg viewBox={`0 0 ${cols} ${tall}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true" data-testid="word-play-area">
       <rect
         x={left + at}
         y={top + at}

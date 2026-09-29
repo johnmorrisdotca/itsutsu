@@ -5,7 +5,7 @@ import { decodeGuesses, languageOf, type GomojiLanguage } from "./gomoji/code";
 import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
 import { readTileProgress } from "./kumimoji/play";
-import { MOST_GUESSES, guessesFor } from "./gomoji/layout";
+import { MOST_GUESSES, guessesEverAllowed } from "./gomoji/layout";
 import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -118,7 +118,8 @@ export function runGuessesFit(kind: PuzzleKind, size: number, level: PuzzleLevel
   if (guesses === null) return false;
   const grid = kind === "gomojiKana" ? "gomojiKana" : "gomoji";
   const free = grid === "gomojiKana" && level !== "hard" ? 1 : 0;
-  return guesses.length <= guessesFor(grid, size, level, free, wordCountOfSeed(seed));
+  // Up to the level's count, or the count before 2026-09-28 for a run kept under it (`guessesEverAllowed`).
+  return guesses.length <= guessesEverAllowed(grid, size, level, free, wordCountOfSeed(seed));
 }
 
 /** Whether a Bridges drawing is a grid of this size in its own characters: islands, water and bridges (`bridges/code.ts`). */

@@ -128,6 +128,7 @@ export function BoardFrame({
   coordinates,
   children,
   footer = null,
+  rows,
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -141,7 +142,19 @@ export function BoardFrame({
   coordinates: boolean;
   children: ReactNode;
   footer?: ReactNode;
+  /**
+   * A board with other than `size` rows: a Gomoji's, eight down however wide
+   * its word (`gomojiBoard`). Its squares stay square and its rim the same
+   * width all round, so the wood is a rectangle a little taller or wider than
+   * its squares; left out, the board is square, as every game's is.
+   */
+  rows?: number;
 }) {
+  const tall = rows ?? size;
+  const oblong = tall !== size;
+  /* The board's height over its width, and the rim as a share of the height: `inset` is its share of the width, and the rim is as wide down the sides as across. */
+  const aspect = oblong ? (1 - 2 * inset) * (tall / size) + 2 * inset : 1;
+  const insetDown = oblong ? inset / aspect : inset;
   /*
    * A LATTICE BOARD'S COORDINATES ARE ON ITS BORDER TILES (`LatticeCoordinates`),
    * so it gets no strips and no gutter for them: the letters and numbers are
@@ -179,16 +192,17 @@ export function BoardFrame({
         <div />
       )}
       {stripsOutside ? (
-        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={lattice} shape={shape} />
+        <RowLabels size={tall} theme={theme} flipped={flipped} inset={insetDown} lattice={lattice} shape={shape} />
       ) : (
         <div />
       )}
       <div
-        className="relative aspect-square rounded-md"
+        className={`relative rounded-md ${oblong ? "" : "aspect-square"}`}
         // Which surface is drawn, by name, for a test to read: a gradient is no way to ask.
         data-testid="board-surface"
         data-surface={theme.label}
         style={{
+          ...(oblong ? { aspectRatio: `1 / ${aspect}` } : {}),
           background: theme.surface,
           /*
            * EVERY BOARD IS A SQUARE OF WOOD IN A FRAME, since 2026-09-22 — the
@@ -198,6 +212,11 @@ export function BoardFrame({
            * diamond shape that also is weird." It is a square board now with
            * the rhombus drawn on it, the way the star and the honeycomb are,
            * over the same faint lattice — see `LatticeGround`.
+           *
+           * The one board that is not square is a Gomoji's (`rows`), since
+           * 2026-09-28: eight rows at every length, so a five-letter word's
+           * board is nine squares across and eight down — the same wood, rim,
+           * coordinates and shadow, its squares still square.
            */
           boxShadow: `0 0 0 ${BOARD_FRAME} ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
         }}
@@ -223,7 +242,7 @@ export function BoardFrame({
           * the transform, which `hexagonFit.test.ts` measures — so this clips
           * only the empty overhang. `e2e/boards-fit-a-phone.spec.ts` holds it.
           */}
-          <div className="absolute overflow-hidden" style={{ inset: `${inset * 100}%` }}>
+          <div className="absolute overflow-hidden" style={{ inset: oblong ? `${insetDown * 100}% ${inset * 100}%` : `${inset * 100}%` }}>
           {children}
         </div>
       </div>

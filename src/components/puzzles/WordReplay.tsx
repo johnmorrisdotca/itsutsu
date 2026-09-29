@@ -12,14 +12,12 @@ import { languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { boardGuesses, hiddenWordsOf } from "@/lib/puzzles/gomoji/futago";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
-import { YOTSUGO_BOARDS } from "@/lib/puzzles/gomoji/yotsugo";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { kanaBase, markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 
 import { KanaKeyboard } from "./KanaKeyboard";
-import { FutagoBoards } from "./FutagoBoards";
-import { YotsugoBoards } from "./YotsugoBoards";
+import { WordBoards } from "./WordBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordKeyboard } from "./WordKeyboard";
 
@@ -102,10 +100,8 @@ export function WordReplay({
 
   return (
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
-      {boards.length === YOTSUGO_BOARDS ? (
-        <YotsugoBoards size={size} rows={allowed} boards={boards} free={free} typing={emptyRow(size)} done style={style} onChoose={NOTHING} appearance={appearance} />
-      ) : many ? (
-        <FutagoBoards size={size} rows={allowed} boards={boards} free={free} typing={emptyRow(size)} done style={style} onChoose={NOTHING} appearance={appearance} />
+      {many ? (
+        <WordBoards size={size} rows={allowed} boards={boards} free={free} typing={emptyRow(size)} done style={style} onChoose={NOTHING} appearance={appearance} />
       ) : (
         <GomojiGrid
           size={size}

@@ -18,7 +18,7 @@ import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
-import { guessesFor } from "@/lib/puzzles/gomoji/layout";
+import { WORDS_A_BOARD, gomojiBoard, guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { FeltPatches } from "@/components/board/FeltPatches";
@@ -85,7 +85,7 @@ export function PuzzleBoardPreview({
   kind: PuzzleKind;
   size: number;
   /**
-   * How many words a Gomoji hides: a Futago's two boards side by side
+   * How many words a Gomoji hides: a Futago's two words side by side on one board
    * (`futago.ts`), or a Yotsugo's two boards of two quarters one over the
    * other (`yotsugo.ts`), in the same box.
    */
@@ -155,37 +155,34 @@ function WordGridPreview({
   boards: WordCount;
 }) {
   const free = layout === "gomojiKana" && level !== "hard" ? 1 : 0;
-  if (boards === 4) {
-    // Two boards, one over the other, each half the box's side and nothing between, so the four quarters stand in exactly the square one word's board fills.
-    const rows = free + guessesFor(layout, size, level, free, 4);
-    const quarter = (at: number) => ({ at, guesses: [], marks: [], done: true, found: false });
-    return (
-      <div className="mx-auto flex w-1/2 flex-col" data-testid="set-up-yotsugo-preview">
-        {[0, 2].map((first) => (
-          <GomojiGrid key={first} size={size} rows={rows} parts={[quarter(first), quarter(first + 1)]} typing={emptyRow(size)} done style={style} appearance={appearance} onChoose={NOTHING} />
-        ))}
-      </div>
-    );
-  }
-  const grid = (
-    <GomojiGrid
-      size={size}
-      rows={free + guessesFor(layout, size, level, free, boards)}
-      guesses={[]}
-      marks={[]}
-      typing={emptyRow(size)}
-      done
-      style={style}
-      appearance={appearance}
-      onChoose={NOTHING}
-    />
-  );
-  if (boards === 1) return grid;
+  const drawn = free + guessesFor(layout, size, level, free, boards);
+  /*
+   * One square box for every length, level and count of words, the boards
+   * fitted inside it: one word's board, a Futago's one board of two words, or
+   * a Yotsugo's two boards one over the other. Each is narrowed until the
+   * whole is no taller than the box is wide, so choosing any of them moves
+   * nothing under the preview.
+   */
+  const { cols, rows: tall } = gomojiBoard(size, boards, drawn);
+  const stacked = boards === 1 ? 1 : boards / WORDS_A_BOARD;
+  const fit = Math.min(1, cols / (tall * stacked));
+  const firsts = Array.from({ length: stacked }, (_, board) => board * WORDS_A_BOARD);
+  const part = (at: number) => ({ at, guesses: [], marks: [], done: true, found: false });
   return (
-    // Square, the two boards level across its middle: the room one word's board takes, so choosing two words moves nothing under it.
-    <div className="grid aspect-square w-full grid-cols-2 items-center gap-1.5" data-testid="set-up-futago-preview">
-      {grid}
-      {grid}
+    <div className="flex aspect-square w-full items-center justify-center overflow-hidden">
+      <div
+        className="flex flex-col"
+        style={{ width: `${fit * 100}%` }}
+        data-testid={boards === 4 ? "set-up-yotsugo-preview" : boards === 2 ? "set-up-futago-preview" : "set-up-word-preview"}
+      >
+        {firsts.map((first) =>
+          boards === 1 ? (
+            <GomojiGrid key={first} size={size} rows={drawn} guesses={[]} marks={[]} typing={emptyRow(size)} done style={style} appearance={appearance} onChoose={NOTHING} />
+          ) : (
+            <GomojiGrid key={first} size={size} rows={drawn} words={boards} parts={[part(first), part(first + 1)]} typing={emptyRow(size)} done style={style} appearance={appearance} onChoose={NOTHING} />
+          ),
+        )}
+      </div>
     </div>
   );
 }

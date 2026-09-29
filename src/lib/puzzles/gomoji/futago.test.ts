@@ -19,7 +19,7 @@ import { futagoScore } from "./futagoScore";
 import { FUTAGO_SEED_BLOCK, dayOfFutagoSeed, freshFutagoSeed, futagoDailySeed, isFutagoSeed } from "./futagoSeed";
 import { guessesTaken } from "./guessesTaken";
 import { headStartKeys } from "./headStart";
-import { MOST_GUESSES, guessesFor } from "./layout";
+import { MOST_GUESSES, guessesEverAllowed, guessesFor } from "./layout";
 import { wordScore } from "./wordScore";
 import type { WordCount } from "./words.types";
 
@@ -135,15 +135,14 @@ describe("drawing a Futago in every language", () => {
 });
 
 describe("a Futago gives a guess more, and a board takes guesses until its word is found", () => {
-  it("gives one more guess than one word at hard and medium, and easy the whole of a taller board", () => {
+  it("gives one more guess than one word at every level and length", () => {
     const count = (size: number, level: PuzzleLevel, boards: WordCount) => guessesFor("gomoji", size, level, 0, boards);
-    expect([count(5, "hard", 2), count(5, "medium", 2), count(5, "easy", 2)]).toEqual([7, 8, 9]);
-    expect([count(4, "hard", 2), count(4, "medium", 2), count(4, "easy", 2)]).toEqual([6, 7, 8]);
-    expect([count(6, "hard", 2), count(6, "medium", 2), count(6, "easy", 2)]).toEqual([7, 8, 10]);
-    expect(guessesFor("gomojiKana", 5, "easy", 1, 2)).toBe(10);
+    for (const size of [4, 5, 6]) expect([count(size, "hard", 2), count(size, "medium", 2), count(size, "easy", 2)]).toEqual([7, 8, 9]);
+    // Kana's free grey word is one of the nine rows.
+    expect(guessesFor("gomojiKana", 5, "easy", 1, 2)).toBe(8);
     for (const size of [3, 4, 5, 6]) for (const level of PUZZLE_LEVEL_LIST) for (const free of [0, 1]) expect(guessesFor("gomojiKana", size, level, free, 2)).toBeLessThanOrEqual(MOST_GUESSES);
-    // One word's counts stay as they were.
-    expect([count(5, "hard", 1), count(5, "medium", 1), count(5, "easy", 1)]).toEqual([6, 7, 9]);
+    // One word's counts, for the difference.
+    expect([count(5, "hard", 1), count(5, "medium", 1), count(5, "easy", 1)]).toEqual([6, 7, 8]);
   });
 
   it("shows a board every guess until its word, and none after", () => {
@@ -246,8 +245,9 @@ describe("a kept run holds no more guesses than its own puzzle has", () => {
     expect(runGuessesFit("gomoji", 6, "easy", one, "planet".repeat(10))).toBe(false);
     expect(runGuessesFit("gomojiMot", 5, "hard", one, "salut".repeat(7))).toBe(false);
     expect(runGuessesFit("gomojiMot", 5, "hard", twins, "salut".repeat(7))).toBe(true);
-    // Kana: the free grey word takes a row below hard, so easy's guesses are the board less one.
-    const kana = guessesFor("gomojiKana", 3, "easy", 1, 1);
+    // Kana: the free grey word takes a row below hard, so easy's guesses are its rows less one — or, for a run kept before 2026-09-28, the count it had then.
+    const kana = guessesEverAllowed("gomojiKana", 3, "easy", 1, 1);
+    expect(kana).toBeGreaterThan(guessesFor("gomojiKana", 3, "easy", 1, 1));
     expect(runGuessesFit("gomojiKana", 3, "easy", one, "さくら".repeat(kana))).toBe(true);
     expect(runGuessesFit("gomojiKana", 3, "easy", one, "さくら".repeat(kana + 1))).toBe(false);
     // Not a word puzzle: nothing to count.

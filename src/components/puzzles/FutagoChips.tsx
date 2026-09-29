@@ -60,7 +60,7 @@ export function FutagoChips({
         {chosen === 4
           ? `Four hidden words, ${guesses} guesses: each goes to all four, and each key shows all four colours.`
           : chosen === 2
-            ? `Two hidden words, ${guesses} guesses: each goes to both boards, and each key shows both colours.`
+            ? `Two hidden words, ${guesses} guesses: each goes to both words, and each key shows both colours.`
             : "One hidden word, one board."}
       </p>
     </>

@@ -12,7 +12,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
-import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { futagoScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
@@ -23,8 +23,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { viewHref } from "@/lib/history/myGamesViews";
 
-import { FutagoBoards } from "./FutagoBoards";
-import { YotsugoBoards } from "./YotsugoBoards";
+import { WordBoards } from "./WordBoards";
 import { GomojiGrid } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
@@ -51,10 +50,10 @@ import { PopClue } from "./PopClue";
  * the word is shown.
  *
  * A FUTAGO (`futago.ts`) is the same solve with two words: each guess goes to
- * both boards until a board's word is found, Strict holds a guess to what each
+ * both words until a word is found, Strict holds a guess to what each
  * board still being played has found, the keys are split one board to a half,
  * and the puzzle is found when both words are. A YOTSUGO (`yotsugo.ts`) is
- * the same with four, in the quarters of two boards (`YotsugoBoards`), each
+ * the same with four, in the quarters of two boards (`WordBoards`), each
  * key split in four corners.
  */
 export function GomojiSolve({
@@ -93,8 +92,10 @@ export function GomojiSolve({
   const count = asWordCount(words.words.length);
   const many = count > 1;
   // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a Futago gives a guess more.
-  const rows = wordRowsOf(kind, size, level, words);
   const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeGomojiProgress(resumed.progress, size, lang)) ?? []);
+  // A run kept under the counts before 2026-09-28 may have used today's count already: it opens with a guess left (`rowsResumed`).
+  const [kept] = useState(() => guesses.length);
+  const rows = wordRowsResumed(kind, size, level, words, kept);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
@@ -212,13 +213,9 @@ export function GomojiSolve({
       {/* Pop Gomoji's clue: each hidden word's category, from the first guess (`PopClue`). */}
       {kind === "gomojiPop" ? <PopClue words={words.words} /> : null}
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
-      {done === null && count === 4 ? (
+      {done === null && many ? (
         <SolvePaused pausing={pausing}>
-          <YotsugoBoards size={size} rows={rows} boards={boards} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
-        </SolvePaused>
-      ) : done === null && many ? (
-        <SolvePaused pausing={pausing}>
-          <FutagoBoards size={size} rows={rows} boards={boards} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
+          <WordBoards size={size} rows={rows} boards={boards} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
         </SolvePaused>
       ) : done === null ? (
         <SolvePaused pausing={pausing}>
@@ -249,7 +246,7 @@ export function GomojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `Type a ${size}-letter word and press Enter${count === 4 ? ": it goes to all four words" : many ? ": it goes to both boards" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
+            {said ?? `Type a ${size}-letter word and press Enter${count === 4 ? ": it goes to all four words" : many ? ": it goes to both words" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left.`}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} split={split} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
