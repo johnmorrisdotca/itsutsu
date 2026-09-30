@@ -277,7 +277,7 @@ it.
      the mover's device until then. The server checks the seat tile by tile
      (`withSeat`: what it holds is what it held, plus what it took from the
      pool, less what it gave back, with no more than three taken for each
-     given), then runs the game's own `drawAll`, `endTurn` or `resign` with
+     given, and one tile given at most in a turn: one trade a turn), then runs the game's own `drawAll`, `endTurn` or `resign` with
      the browser's word for "the table is sound" and "the hand spells a
      word". A tile's family is read without the lists (`tileFamily.ts`).
    - The table starts from the bag the set-up's browser dealt from the
