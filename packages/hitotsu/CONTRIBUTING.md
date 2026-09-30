@@ -3,12 +3,22 @@
 Thank you for wanting to help. Bug reports, rule questions and pull requests
 are all welcome.
 
+## Reporting a bug
+
+Open an issue with the house rules the table played, what happened, and what
+you expected. The seed and the moves (`encodeHitotsu(game)`) replay the game
+exactly, so pasting that line is the quickest way to show a position that
+looks wrong.
+
 ## Setting up
 
 ```sh
-npm install
-npm run check   # types and tests
-npm run site    # build the demo into ./site, then serve it with any static server
+git clone https://github.com/johnmorrisdotca/hitotsu
+cd hitotsu
+pnpm install
+pnpm check            # lint, types and tests: the same as CI
+pnpm site             # builds the demo into ./site
+pnpm dlx serve site   # or any static server
 ```
 
 ## How the code is laid out

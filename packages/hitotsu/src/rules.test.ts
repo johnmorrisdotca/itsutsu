@@ -11,7 +11,7 @@ import { seededRandom } from "./random.ts";
 /** A hitotsu game in a given position: these hands and piles, the first seat to play, published rules unless others are given. */
 function at(hands: string[][], discard: string[], stock: string[], extra: Partial<HitotsuGame> = {}, options: Partial<HitotsuOptions> = {}): HitotsuGame {
   const base = startHitotsu(500, new Array<string>(hands.length).fill(""), 3, { ...HITOTSU_CLASSIC, ...options })!;
-  const top = discard[discard.length - 1];
+  const top = discard[discard.length - 1]!;
   return { ...base, hands, discard, stock, colour: top[0] === "W" ? "R" : (top[0] as HitotsuGame["colour"]), toPlay: 0, ...extra };
 }
 
@@ -37,7 +37,7 @@ describe("hitotsu: the published rules", () => {
   it("deals seven each, five in party mode, and turns up a number card to start", () => {
     expect(startHitotsu(500, ["", "", ""])!.hands.map((hand) => hand.length)).toEqual([7, 7, 7]);
     expect(startHitotsu(1, ["", "", "", ""], 2, HITOTSU_PARTY)!.hands.map((hand) => hand.length)).toEqual([5, 5, 5, 5]);
-    for (let seed = 1; seed < 40; seed += 1) expect(isNumber(startHitotsu(200, ["", ""], seed)!.discard[0])).toBe(true);
+    for (let seed = 1; seed < 40; seed += 1) expect(isNumber(startHitotsu(200, ["", ""], seed)!.discard[0]!)).toBe(true);
     expect(startHitotsu(500, [""])).toBeNull();
     expect(startHitotsu(500, new Array<string>(9).fill(""))).toBeNull();
     expect(startHitotsu(300, ["", ""])).toBeNull();
@@ -189,7 +189,8 @@ function playOut(size: number, count: number, seed: number, options: HitotsuOpti
     const offered = jump.length > 0 ? jump : hitotsuMoves(game);
     expect(offered.length).toBeGreaterThan(0);
     const seat = game.toPlay!;
-    const move = jump.length > 0 ? offered[Math.floor(pick() * offered.length)] : random[seat] ? offered[Math.floor(pick() * offered.length)] : hitotsuComputer(game);
+    const any = () => offered[Math.floor(pick() * offered.length)]!;
+    const move = jump.length > 0 || random[seat] ? any() : hitotsuComputer(game);
     game = play(game, move);
     const computerJump = hitotsuComputerJump(game);
     if (computerJump !== null) game = play(game, computerJump);

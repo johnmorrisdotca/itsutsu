@@ -54,7 +54,8 @@ computer player, its tables on several devices and its cards.
 ## Install
 
 ```sh
-npm install @johnmorrisdotca/hitotsu
+pnpm add @johnmorrisdotca/hitotsu
+# or: npm install @johnmorrisdotca/hitotsu
 ```
 
 ES modules with TypeScript types. The core and the table have no
@@ -208,6 +209,13 @@ Every colour is a CSS variable on `.ht-root`: `--ht-surface`, `--ht-ink`,
 `--ht-accent`, `--ht-accent-ink`, `--ht-playable`, `--ht-radius`, `--ht-card`
 and `--ht-font`. Pass them as `theme`, or set them on any ancestor.
 
+## Browser support
+
+Any browser from the last few years: the core and the table need ES2020, and
+the table CSS custom properties and `aspect-ratio` (Chrome and Edge 88,
+Firefox 89, Safari 15). The core has no DOM and no platform needs at all, so it
+runs the same in Node 20 and later, Deno, Bun, a worker or a server function.
+
 ## Roadmap
 
 - More house rules: seven-card Draw, No Mercy's bigger draw cards, and
@@ -223,9 +231,9 @@ Ideas and pull requests are welcome.
 See [CONTRIBUTING.md](./CONTRIBUTING.md). In short:
 
 ```sh
-npm install
-npm run check   # types and tests
-npm run site    # build the demo into ./site, then serve it
+pnpm install
+pnpm check   # lint, types and tests: the same as CI
+pnpm site    # build the demo into ./site, then serve it
 ```
 
 Please follow the [code of conduct](./CODE_OF_CONDUCT.md).
