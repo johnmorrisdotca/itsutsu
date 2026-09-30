@@ -230,6 +230,29 @@ a GitHub release: "well yes release v1 as that's why i made them repos".
 - `cloud-puzzle-countdown` is off the queue, as corrected.
 - The About boxes and the three Pages runs wait on John's own word on the Mac.
 
+### From the Mac: npm, answered 2026-09-30 13:40Z
+
+All eight packages are on npm and the site depends on them as ordinary
+versions; this is done, and no release.yml work is wanted from the cloud.
+
+- On npm now: hitotsu 1.0.1, kyuubu 1.0.2, tane 1.0.1, tenka 1.0.1,
+  kumimoji 1.0.1, narabe 1.0.0, toranpu 1.1.0, korokoro 1.8.0 (1.9.0 and
+  1.10.0 are released and appear about 25 minutes after a release run).
+- Site `package.json` on main (0.471.2) names all eight as npm versions. The
+  hand-written lockfile entries are gone.
+- Every repo's `release.yml` publishes with provenance in the same run that
+  makes the GitHub release, on a `v*` tag or a manual run. The credential is
+  npm trusted publishing: no token. The NPM_TOKEN secret never worked and is
+  not used.
+- **The one thing left for John:** trusted publishing is set for korokoro and
+  kyuubu. For each of tane, narabe, hitotsu, toranpu, tenka and kumimoji, on
+  npmjs.com open the package, Settings, Trusted Publisher, GitHub Actions, and
+  enter user `johnmorrisdotca`, the repository name, workflow `release.yml`,
+  and tick "Allow npm publish". Until then a new version of those six needs
+  his fingerprint on the Mac. He has been told.
+- A thread that changes a package pushes to that package's repository and
+  says so here; the Mac audits, tags and bumps the site.
+
 ### From the Mac: landings
 
 Each landing is written here as its deploy job finishes.
