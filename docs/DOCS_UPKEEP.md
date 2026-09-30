@@ -106,7 +106,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | game pictures | `public/art/games/*`, from `pnpm screenshots:games` | the board drawing changes | `boardArt.coverage.test.ts` |
 | puzzle pictures | `public/art/games/<puzzle>.jpg`, from `pnpm screenshots:puzzles` | the puzzle grid's drawing changes | `puzzleArt.coverage.test.ts` |
 | party game pictures | `public/art/games/<party game>.jpg`, from `pnpm screenshots:party` | a party game's board drawing changes | `party.coverage.test.ts` |
-| Tenka's map | `packages/tenka/src/tenkaWorld.data.ts` and `tenkaShapes.data.ts`, from `node scripts/map.mjs` in `packages/tenka` (Natural Earth, public domain) | a territory, a cut, a sea link or a counter's place changes; never edit the files by hand | `tenkaMap.test.ts`, `tenkaLinks.test.ts`, `tenkaView.test.ts`, then `pnpm screenshots:party` |
+| Tenka's map | the `@johnmorrisdotca/tenka` release in `package.json`, made in github.com/johnmorrisdotca/tenka by `pnpm map` (Natural Earth, public domain) | a new release of the package is taken; never edit the files by hand | the package's own tests, `tenkaView.test.ts`, then `pnpm screenshots:party` |
 | About screenshots | `public/art/about/*`, listed in `src/app/about/about.shots.ts` | a page one of them shows changes shape: the board, the replay panel, the picture window, the set-up screen, a player's page | `about.coverage.test.ts` (each file exists, at the size the page reserves) |
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |

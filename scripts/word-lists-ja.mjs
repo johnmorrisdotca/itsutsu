@@ -40,7 +40,7 @@
  * nothing between them, one file a length: a 3-kana puzzle loads about fifty
  * kilobytes, where all three lists written out as kana would be over a megabyte.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 
 const SOURCE = process.argv[2];
@@ -49,7 +49,12 @@ if (SOURCE === undefined) {
   process.exit(1);
 }
 const OUT = (length) => `src/lib/puzzles/gomojiKana/words.ja.${length}.data.ts`;
-const TILE_WORDS_OUT = "packages/kumimoji/src/words.ja.data.ts";
+/*
+ * Kumimoji's Japanese list lives in its own repository (github.com/johnmorrisdotca/kumimoji):
+ * written into a checkout of it, KUMIMOJI_REPO or ../kumimoji, and left out when there is none.
+ */
+const KUMIMOJI_REPO = process.env.KUMIMOJI_REPO ?? "../kumimoji";
+const TILE_WORDS_OUT = `${KUMIMOJI_REPO}/src/words.ja.data.ts`;
 const LENGTHS = [3, 4, 5];
 const EASY = 900;
 const ANSWERS = 2000;
@@ -193,7 +198,7 @@ if (tileWords.size === 0) throw new Error("JMdict produced no Japanese Kumimoji 
  * and う, ん, い and し, the kana that end and join everything, are the E's.
  *
  * Printed, never written: the set is `JAPANESE_TILE_MIX` in
- * packages/kumimoji/src/tiles.constants.ts, fixed, because a kept game's
+ * the Kumimoji package's src/tiles.constants.ts, fixed, because a kept game's
  * bag is checked against it and a monthly refresh must not change the tiles
  * under a game somebody is half way through. Read this line after a refresh,
  * and change the table by hand only if the words have really moved.
@@ -238,7 +243,8 @@ const packedByLength = [...byTileLength.entries()]
   .sort((a, b) => a[0] - b[0])
   .map(([length, words]) => `    ${length}: ${JSON.stringify(packTileWords(words))},`)
   .join("\n");
-writeFileSync(
+if (!existsSync(`${KUMIMOJI_REPO}/src`)) console.log(`No Kumimoji checkout at ${KUMIMOJI_REPO}: its Japanese list is left as it is.`);
+else writeFileSync(
   TILE_WORDS_OUT,
   `/**
  * JAPANESE KUMIMOJI WORDS AND TILE MIX, written by scripts/word-lists-ja.mjs.

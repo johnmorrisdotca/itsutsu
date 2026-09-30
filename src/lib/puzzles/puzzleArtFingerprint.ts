@@ -48,7 +48,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/lib/puzzles/towers/generate.ts",
   "src/lib/puzzles/blackAndWhite/generate.ts",
   "src/lib/puzzles/blackAndWhite/solve.ts",
-  "packages/kumimoji/src/generate.ts",
+  "node_modules/@johnmorrisdotca/kumimoji/dist/generate.js",
   "src/lib/puzzles/koushi/generate.ts",
   "src/lib/puzzles/bridges/generate.ts",
   "src/lib/puzzles/bridges/solve.ts",
