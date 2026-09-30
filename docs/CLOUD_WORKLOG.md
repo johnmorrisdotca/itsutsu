@@ -18,7 +18,7 @@ from the Mac (the backup, the branch cleanup) it relies on.
   its thread what the branch holds. itsutsu-19 tests it, takes the release
   number, lands it and watches the deploy. If a branch fails its tests, say so
   (in this file, or to John) and the owning thread fixes it.
-- Four branches below still carry an older prefix, shown as `…/<name>`; their
+- Three branches below still carry an older prefix, shown as `…/<name>`; their
   threads were asked at 08:39Z to move them to `cloud-…` names. Before merging,
   `git ls-remote --heads origin | grep <name>` finds the current one.
 
@@ -79,7 +79,7 @@ Branch heads as of 08:45Z; each thread was told at 08:39Z to rebase on current
 | 6 | Hitotsu, the Uno-style colour-card game (three ways to play, house rules), from `packages/hitotsu` | `cloud-uno-style-08jmb8` | Uno-style game and variants | Party files and e2e import the package by relative path; components by package name. |
 | 7 | Kyuubu: a Cubes family (2×2 to 7×7), "Show me how" step solver for 2×2 and 3×3 (a helped solve scores nothing and stays off the fastest tables), Learn guide "Solve the cube" | `…/rubiks-cube-9raqkb` (older prefix) | Rubik's cube section | 8,476 unit and 176 browser tests green. |
 | 8 | Tenka and Kumimoji engines moved into `packages/tenka` and `packages/kumimoji`; old site paths are forwarding files. One release per package when landing | `cloud-tenka-kumimoji-packages` | Tenka and Kumimoji as packages | Must land AFTER #5: the thread is rebasing it onto the Mac-pieces branch so the new Tenka map sits inside `packages/tenka` (and goes to the tenka repo). Types, lint, 8,576 unit tests green; Tenka, Kumimoji, party and online-table specs 179 of 183, the 4 failures the known `no-select` cases from the cloud's older Chromium. Re-stamp the party and puzzle art fingerprints if moved watched files trip them (`scripts/party-art-stamp.ts`, `puzzle-art-stamp.ts`). |
-| 9 | Tane: every seeded random and daily seed in the site delegates to `packages/tane` | `…/tane-package-v72cpp` (older prefix) | Tane seeded random package | Golden values in `packages/tane/src/*.test.ts` are the site's historical numbers; never change them. |
+| 9 | Tane: puzzles, daily words, board rules and the simulation draw their random numbers from `packages/tane`, every number unchanged. A patch release | `cloud-tane-package` | Tane seeded random package | Rebased on 0.460.0. Lint, types, unit suite, production build and 83 browser specs green. Fresh seeds skip the new Nige and Sakasa blocks. Tenka's dice file is left for the Tenka package. Golden values in `packages/tane/src/*.test.ts` are the site's historical numbers; never change them. |
 | 10 | Toranpu: the deck and nine card games moved into `packages/toranpu` | `…/toranpu-package-r7pvma` (older prefix) | Toranpu playing-cards package | 8,530 unit tests and 27 card browser specs green. |
 | 11 | Narabe: the rules engine of all 48 board games moved into `packages/narabe` (computer players stay in the site) | `cloud-narabe-package` | Narabe board rules package | Rebased on 0.460.0. Types, lint, size gate and 8,570 unit tests green. Board browser specs 142 of 142 before the rebase, not re-run after it (engine untouched): run them before landing. One local-only unit failure the thread traced to its own `.env`, not the change. |
 
