@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.458.0 — 2026-09-30 08:00 UTC
+- Gin Rummy arrives in the Cards family: draw, throw and knock against the computer or a friend on one device, with your melds found and your deadwood counted for you
+
 ## 0.457.0 — 2026-09-30 08:00 UTC
 - Spades arrives with a new Tricks shelf beside Cards: four players in two partnerships bid their tricks and play them out, with a computer in any empty seat, and Hearts moves to Tricks with it
 
