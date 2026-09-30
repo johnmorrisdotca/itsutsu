@@ -210,6 +210,27 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
+  test("Euchre: trumps made round the table, then a card played to a trick against three computers", async ({ page }) => {
+    await start(page, "euchre");
+    await myTurn(page);
+    // The first seat deals, so Ann speaks last in the making: order the card up, or call a suit (a dealer must).
+    const game = page.getByTestId("cards-game");
+    const before = await movesMade(page);
+    if ((await page.getByTestId("cards-order").count()) > 0) await page.getByTestId("cards-order").click();
+    else if ((await page.getByTestId("cards-making").count()) > 0) await page.locator('[data-testid^="cards-call-"]').first().click();
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+    await myTurn(page);
+    // Picked up as dealer: one card thrown away, by a double tap.
+    if ((await page.getByTestId("cards-discard-card").count()) > 0) {
+      await handCards(page).first().dblclick({ position: { x: 8, y: 12 } });
+      await myTurn(page);
+    }
+    await expect(page.getByTestId("cards-trumps")).toBeVisible();
+    await expect(game).toHaveAttribute("data-state", "playing");
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await clearKept(page);
+  });
+
   test("Gin Rummy: a card drawn, then one thrown by a double tap, against the computer", async ({ page }) => {
     await start(page, "ginRummy");
     await myTurn(page);

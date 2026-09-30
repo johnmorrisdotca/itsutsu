@@ -18,7 +18,7 @@ import { ONLINE_COPY } from "./online/online.constants";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
 import { CARD_TABLE_COPY } from "./cards/cardTable.constants";
-import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable } from "./cards/cardTableClient";
+import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, EuchreCard, EuchreOffer, EuchreTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable } from "./cards/cardTableClient";
 import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
@@ -82,6 +82,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   crazyEights: cardTable("crazyEights", CrazyEightsTable, CrazyEightsOffer, CrazyEightsCard),
   spades: cardTable("spades", SpadesTable, SpadesOffer, SpadesCard),
   ginRummy: cardTable("ginRummy", GinRummyTable, GinRummyOffer, GinRummyCard),
+  euchre: cardTable("euchre", EuchreTable, EuchreOffer, EuchreCard),
 };
 
 /** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */

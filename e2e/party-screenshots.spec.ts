@@ -182,6 +182,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("crazyEights", 100, 3, (game: { discard: unknown[]; drawn: unknown }) => game.discard.length >= 7 && game.drawn === null),
   },
+  // Euchre for four, trumps made and two cards on the second trick: Ann to play to it, trumps named on the table.
+  {
+    kind: "euchre",
+    key: "itsutsu.cards.euchre",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("euchre", 10, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 2 && game.played.length >= 4),
+  },
   // Gin Rummy for two, some way into the first hand: the stock, the card on the pile, and Ann's hand to draw to.
   {
     kind: "ginRummy",

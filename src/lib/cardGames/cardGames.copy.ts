@@ -141,4 +141,23 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     ],
     board: "Always two: one person against the computer, or two people passing one device. Choose 100 points for the usual game, 50 for a quick one and 150 for a long one.",
   },
+  euchre: {
+    label: "Euchre",
+    kanji: "ユーカー",
+    tagline: "Make trumps with your partner and take three of the five tricks — where the jacks are the highest cards of all.",
+    origin:
+      "A partnership trick game with a short pack, played in the United States since the early nineteenth century and brought, most likely, by German settlers in Pennsylvania from an Alsatian game called Juckerspiel. It is the game the Joker was added to the pack for, as a top trump. Still the great card game of Ontario, Michigan, Ohio and Indiana. Nobody owns it.",
+    alsoKnownAs: ["Eucre", "Uker"],
+    country: "US",
+    wikipedia: "Euchre",
+    rules: [
+      "Four players in two partnerships, partners across the table, with the twenty-four cards from nine to ace. Five each; the top card of the four left over is turned up.",
+      "From the dealer's left, each player may order that card's suit as trumps, or pass. If it is ordered, the dealer picks the card up and throws one away. If all four pass, the card is turned down and each may name another suit, or pass; the dealer, last, must name one.",
+      "In trumps, the jack is the highest card (the right bower), then the other jack of the same colour (the left bower, a trump and no longer of its own suit), then ace, king, queen, ten and nine. In the other suits, ace is high.",
+      "The dealer's left leads. Follow suit if you can; if you cannot, play anything. The highest trump takes the trick, or else the highest card of the suit led.",
+      "The partnership that made trumps scores one for three or four tricks and two for all five. Take two or fewer and it is euchred: the other partnership scores two.",
+      "The first partnership to the game's total — 5 for a quick game, or the usual 10 — wins.",
+    ],
+    board: "Always four, two against two: one person and three computers, two people as partners against two computers, or four people round one device. Choose 10 points for the usual game, 5 for a quick one.",
+  },
 };

@@ -56,6 +56,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   crazyEights: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   spades: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   ginRummy: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  euchre: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -142,6 +143,14 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     more: [
       "The first player of each hand simply draws, from the stock or the upcard: there is no offering of the first upcard. The first player alternates hand by hand.",
       "When a knock is laid down, the other player's melds are laid first and then whatever fits the knocker's melds is laid off onto them. There are no box, line or game bonuses: the score is the hands' points, and the first to the total wins.",
+    ],
+  },
+  euchre: {
+    turn: "The line over the table says whose turn it is, by name, and who their partner is. While trumps are made, press Order up (Pick up, for the dealer) or Pass, and in the second round a Call button for a suit, or Pass. A dealer who picked the card up chooses one card and presses Throw away. Then tap a card to choose it (it rises) and press Play, drag it onto the table, or tap it twice to play it at once. Trumps, and who made them, are written on the table. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down, and your hand is sorted with trumps last, the left bower among them. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "The dealer must name trumps if everybody passes in the second round (stick the dealer), so every hand is played.",
+      "There is no going alone: every hand is played by all four, and taking all five tricks scores two.",
     ],
   },
 };

@@ -259,7 +259,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Tricks",
     kanji: "トリック",
     blurb: "Card games for a table, won a trick at a time: take none of the hearts, or bid what you and your partner will take. Round one device, with a computer in any empty seat.",
-    games: ["hearts", "spades"],
+    games: ["hearts", "spades", "euchre"],
     notOnSetUp:
       "A trick-taking game is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

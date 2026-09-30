@@ -13,11 +13,12 @@ import type { PartySpec } from "../party/party.types";
  * - Crazy Eights, two to seven: the score that wins, 50, 100 or 200.
  * - Spades, four in two partnerships: the score that wins, 200, 300 or 500.
  * - Gin Rummy, two: the score that wins, 50, 100 or 150.
+ * - Euchre, four in two partnerships: the score that wins, 5 or 10.
  *
  * Every seat may be a person's or a computer's, so a table of one person and
  * three computers is a game of Hearts as much as four people round a phone.
  */
-export type CardGameKind = "hearts" | "bigTwo" | "president" | "goFish" | "crazyEights" | "spades" | "ginRummy";
+export type CardGameKind = "hearts" | "bigTwo" | "president" | "goFish" | "crazyEights" | "spades" | "ginRummy" | "euchre";
 
 export const CARD_GAME_KINDS = {
   hearts: "hearts",
@@ -27,12 +28,14 @@ export const CARD_GAME_KINDS = {
   crazyEights: "crazyEights",
   spades: "spades",
   ginRummy: "ginRummy",
+  euchre: "euchre",
 } as const satisfies Record<CardGameKind, CardGameKind>;
 
 /** Every family card game, in the order its shelf shows them. */
 export const CARD_GAME_LIST: readonly CardGameKind[] = [
   CARD_GAME_KINDS.hearts,
   CARD_GAME_KINDS.spades,
+  CARD_GAME_KINDS.euchre,
   CARD_GAME_KINDS.crazyEights,
   CARD_GAME_KINDS.goFish,
   CARD_GAME_KINDS.bigTwo,
@@ -48,6 +51,7 @@ export const GO_FISH_SIZES = [1] as const;
 export const CRAZY_EIGHTS_SIZES = [50, 100, 200] as const;
 export const SPADES_SIZES = [200, 300, 500] as const;
 export const GIN_SIZES = [50, 100, 150] as const;
+export const EUCHRE_SIZES = [5, 10] as const;
 
 export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
   hearts: { fewestPlayers: 3, mostPlayers: 4, defaultPlayers: 4, sizes: [HEARTS_SIZES.short, HEARTS_SIZES.full], defaultSize: HEARTS_SIZES.full },
@@ -57,4 +61,5 @@ export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
   crazyEights: { fewestPlayers: 2, mostPlayers: 7, defaultPlayers: 3, sizes: CRAZY_EIGHTS_SIZES, defaultSize: 100 },
   spades: { fewestPlayers: 4, mostPlayers: 4, defaultPlayers: 4, sizes: SPADES_SIZES, defaultSize: 500 },
   ginRummy: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: GIN_SIZES, defaultSize: 100 },
+  euchre: { fewestPlayers: 4, mostPlayers: 4, defaultPlayers: 4, sizes: EUCHRE_SIZES, defaultSize: 10 },
 };

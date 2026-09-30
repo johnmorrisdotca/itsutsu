@@ -143,3 +143,13 @@ The classic game for two (`src/lib/cardGames/ginRummy/`, `ginRummyAdapter.tsx`),
 - **After a hand**, the table lays both hands down, melds first, with who scored, until both players have thrown once in the next.
 - **The computer** takes the discard only when it goes straight into a meld, throws the card leaving least deadwood (not one near a card the other player picked up, when another costs the same) and knocks as soon as it can.
 - **The party gate** plays it with `sensible`: random draws and throws, but a knock whenever one is offered, since a uniformly random player almost never knocks and every hand would be drawn.
+
+## Euchre (2026-09-30)
+
+Four players in two partnerships with the twenty-four cards from nine to ace (`src/lib/cardGames/euchre/`, `euchreAdapter.tsx`), at home in Tricks.
+
+- **Making trumps**: five each and one card turned up. From the dealer's left, each orders it up or passes; ordered, the dealer picks it up and throws one card away. If all four pass it is turned down, and each may name another suit or pass. **Stick the dealer**: the dealer, last in that round, must name one, so no hand is thrown in.
+- **The bowers**: in trumps the jack is highest, then the jack of the same colour, which is a trump and no longer of its own suit for following. The hand is sorted that way once trumps are made.
+- **Scoring**: the makers score one for three or four tricks and two for all five; held to two or fewer they are euchred and the other side scores two. To 5 or 10 points (10 the usual).
+- **Left out**, said on the rules page: going alone.
+- **The computer** weighs each suit as trumps (bowers, trump ace and king, side aces, a void it can trump into) and makes trumps with a hand worth about two tricks with its partner's help, counting the turned card for or against it by who deals. Measured over 2,000 hands of four computers: the makers win 81% of them, and take all five in 17%.

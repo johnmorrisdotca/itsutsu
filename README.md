@@ -199,7 +199,7 @@ Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二 
 one device (`src/components/party/cards/`), a computer in any empty seat and
 every hand kept hidden between people; see `docs/plans/family-cards/README.md`.
 **Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,
-**Hearts** ハーツ and **Spades** スペード, split off Cards so neither shelf passes
+**Hearts** ハーツ, **Spades** スペード and **Euchre** ユーカー, split off Cards so neither shelf passes
 eight games.
 
 **Mahjong** 麻雀 (2026-09-29) is the family of games played with a mahjong
