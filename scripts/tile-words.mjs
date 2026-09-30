@@ -34,7 +34,8 @@ if (FINAL === undefined) {
   console.error("Usage: node scripts/tile-words.mjs <scowl>/final");
   process.exit(1);
 }
-const OUT = "src/lib/puzzles/kumimoji/words.en.data.ts";
+// Kumimoji lives in its own repository (github.com/johnmorrisdotca/kumimoji): written into a checkout of it.
+const OUT = `${process.env.KUMIMOJI_REPO ?? "../kumimoji"}/src/words.en.data.ts`;
 const SIZES = [10, 20, 35, 40, 50, 55, 60, 70];
 const SHORTEST = 2;
 const LONGEST = 15;

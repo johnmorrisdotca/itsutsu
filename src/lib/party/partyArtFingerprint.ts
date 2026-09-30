@@ -25,7 +25,7 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/tenka/TenkaMap.tsx",
   "src/components/party/tenka/TenkaWraps.tsx",
   "src/components/party/tenka/tenka.constants.ts",
-  "src/lib/party/tenka/tenkaShapes.data.ts",
+  "node_modules/@johnmorrisdotca/tenka/dist/tenkaShapes.data.js",
   "src/components/party/TrainTable.tsx",
   "src/components/party/DominoFace.tsx",
   "src/components/party/trainLayout.ts",

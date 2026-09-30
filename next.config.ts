@@ -111,6 +111,14 @@ const nextConfig: NextConfig = {
    * `submitReport` refuses a picture over 1 MiB before anything is sent on.
    */
   experimental: { serverActions: { bodySizeLimit: "2mb" } },
+  /*
+   * Tenka and Kumimoji arrive as their own packages, and are compiled as the
+   * site's own code. Kumimoji's word lists load behind `typeof window`, which
+   * the build writes as a constant only in code it compiles: left as a
+   * dependency, the server bundle carried both lists (1.3 MB) and the table's
+   * computer player, whose worker has no `window`, found no words at all.
+   */
+  transpilePackages: ["@johnmorrisdotca/tenka", "@johnmorrisdotca/kumimoji"],
   async headers() {
     return [
       /* The offline keeper (public/sw.js): a device checks it against the site's on every visit, never against a cached copy. */

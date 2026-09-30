@@ -1,6 +1,6 @@
 name: JMdict refresh
 
-# THE KANA GOMOJI AND KUMIMOJI JAPANESE WORDS, KEPT CURRENT. JMdict's licence (EDRDG, clause 4,
+# THE KANA GOMOJI WORDS, KEPT CURRENT (KUMIMOJI'S ARE ITS OWN REPOSITORY'S). JMdict's licence (EDRDG, clause 4,
 # https://www.edrdg.org/edrdg/licence.html, read 2026-09-25) asks a site using
 # its data for "a procedure for regular updating… at least once a month";
 # John chose that on 2026-09-25 (docs/plans/other/WORD-04-kana.md).
@@ -32,11 +32,12 @@ jobs:
           node-version: 24
       - name: Fetch the newest JMdict
         run: curl -sSfL -o "$RUNNER_TEMP/JMdict_e.gz" http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz
-      - name: Write the kana lists, Kumimoji dictionary and tile mix
+      # Kumimoji's Japanese list is its own repository's to refresh (github.com/johnmorrisdotca/kumimoji).
+      - name: Write the kana lists
         run: node scripts/word-lists-ja.mjs "$RUNNER_TEMP/JMdict_e.gz"
       - name: Leave the new lists on a branch, and say so by failing
         run: |
-          if git diff --quiet -- src/lib/puzzles/gomojiKana src/lib/puzzles/kumimoji/words.ja.data.ts; then
+          if git diff --quiet -- src/lib/puzzles/gomojiKana; then
             echo "The Japanese word and tile data are what JMdict's newest release makes. Nothing to land."
             exit 0
           fi
@@ -44,7 +45,7 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git checkout -b "$branch"
-          git add src/lib/puzzles/gomojiKana src/lib/puzzles/kumimoji/words.ja.data.ts
+          git add src/lib/puzzles/gomojiKana
           git commit -m "The kana word lists from JMdict's newest release"
           git push --force origin "$branch"
           echo "::error::JMdict changed the kana lists. Land $branch through the ordinary release (pnpm release:take), then delete the branch."

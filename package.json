@@ -68,7 +68,9 @@
   },
   "dependencies": {
     "@johnmorrisdotca/hitotsu": "https://github.com/johnmorrisdotca/hitotsu/releases/download/v1.0.1/johnmorrisdotca-hitotsu-1.0.1.tgz",
+    "@johnmorrisdotca/kumimoji": "https://github.com/johnmorrisdotca/kumimoji/releases/download/v1.0.1/johnmorrisdotca-kumimoji-1.0.1.tgz",
     "@johnmorrisdotca/kyuubu": "https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz",
+    "@johnmorrisdotca/tenka": "https://github.com/johnmorrisdotca/tenka/releases/download/v1.0.1/johnmorrisdotca-tenka-1.0.1.tgz",
     "@prisma/client": "^6.19.3",
     "next": "16.3.4",
     "next-auth": "^4.24.15",

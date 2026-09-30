@@ -86,6 +86,18 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    */
   ["@johnmorrisdotca/kyuubu", "The server's check of a finished cube, the Learn guide's stages, and a finished solve's replay."],
   ["@johnmorrisdotca/kyuubu/react", "The cube drawn in the Learn guide."],
+  /*
+   * Tenka (260 KB) and Kumimoji (0.4 MB without its two word lists) were the
+   * site's own modules, read and drawn on the server like the other older
+   * tables, and the paths they had forward to the packages now. Kumimoji's
+   * lists (1.3 MB) load behind `typeof window`, which holds only because
+   * `next.config.ts` compiles both packages as the site's own code
+   * (`transpilePackages`); the function's measured size is what says it still
+   * does.
+   */
+  ["@johnmorrisdotca/tenka", "Tenka's rules and map for its rules page, a kept game and a table read on the server."],
+  ["@johnmorrisdotca/tenka/shapes", "The map's outlines, drawn on the server for the table's first paint."],
+  ["@johnmorrisdotca/kumimoji", "Kumimoji's tiles, judging and tables for its pages, as before it was a package; never its word lists."],
 ]);
 
 /*

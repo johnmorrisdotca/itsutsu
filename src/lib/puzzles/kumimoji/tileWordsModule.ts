@@ -1,18 +1,3 @@
-import { loadTileWords, readTileWordsWith, tileWordsFrom, type TileWords } from "./tileWords";
-import type { KumimojiLanguage } from "./kumimoji.types";
-
-/**
- * KUMIMOJI'S LISTS WHERE THERE IS NO BROWSER: a server checking a handed-in
- * solve or a race (`preparePuzzleOnServer`), a unit test, a browser spec's own
- * process. Importing this module is what lets `loadTileWords` answer there; a
- * page's components never import it, so no page's server function carries the
- * lists for the browser's sake (see `loadTileWords`).
- */
-readTileWordsWith(async (language) =>
-  tileWordsFrom(language, language === "english" ? (await import("./words.en.data")).TILE_WORDS_EN : (await import("./words.ja.data")).TILE_WORDS_JA),
-);
-
-/** The list, read from its module: `loadTileWords` for a caller with no browser. */
-export function loadTileWordsFromModule(language: KumimojiLanguage = "english"): Promise<TileWords> {
-  return loadTileWords(language);
-}
+// Kumimoji's rules are their own open-source package (github.com/johnmorrisdotca/kumimoji, installed as @johnmorrisdotca/kumimoji);
+// this module keeps its old address so the site and its browser specs import it unchanged.
+export { loadTileWordsFromModule } from "@johnmorrisdotca/kumimoji/words";
