@@ -21,8 +21,8 @@ importers:
         specifier: 1.0.1
         version: 1.0.1(react@19.2.8)
       '@johnmorrisdotca/kyuubu':
-        specifier: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz
-        version: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz(react@19.2.8)
+        specifier: 1.0.2
+        version: 1.0.2(react@19.2.8)
       '@johnmorrisdotca/narabe':
         specifier: 1.0.0
         version: 1.0.0(react@19.2.8)
@@ -426,9 +426,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/kyuubu@https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz':
-    resolution: {integrity: sha512-vK96IvFYwN3DcZk2qukRuImYOUK/HKAXyIfQTJAtDUvCBQGRt6PHwoOKaK5cEfLsUD5uWb3p/OifIUtKBLtxzQ==, tarball: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz}
-    version: 1.0.1
+  '@johnmorrisdotca/kyuubu@1.0.2':
+    resolution: {integrity: sha512-v/Mgh6RNtwHRzkhwfLv8vDx8NmyXzLorKG0nrhtv0Jckzi3bt0N1oH9iP4qowiO/mIvvJmtWjP/hb5kULAR73g==}
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=18'
@@ -3071,7 +3070,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/kyuubu@https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz(react@19.2.8)':
+  '@johnmorrisdotca/kyuubu@1.0.2(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
