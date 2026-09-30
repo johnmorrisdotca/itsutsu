@@ -312,6 +312,8 @@ it is worth reading before believing a red spec.
    preflight:prod` runs the release checks side by side, and the push follows,
    chained with `&&` so a red gate stops it. Several finished features are
    several releases and one push.
+   The same chain runs from John's Mac or a cloud session; what a cloud
+   session needs for it is `docs/CLOUD_HANDOVER.md`.
 5. **The deploy runs itself.** A push to `main` starts
    `.github/workflows/vercel-deploy.yml`:
 
