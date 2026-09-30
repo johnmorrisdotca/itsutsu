@@ -13,7 +13,7 @@ import { isSeed } from "@/lib/puzzles/random";
 import { decodeStepLog, encodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
-import { SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
+import { helpOffered, SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
 import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 import { cardDealOfSeed } from "@/lib/puzzles/cardDeals";
@@ -247,7 +247,7 @@ export async function POST(request: Request) {
     });
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
     const helped = parsed.data.helped ?? null;
-    if (helped !== null && kind !== "tsunagi") return unprocessable("No help is offered on this puzzle.");
+    if (helped !== null && !helpOffered(kind, helped)) return unprocessable("No help is offered on this puzzle.");
     if ((helped === SOLVE_HELPS.explosionsOff || helped === SOLVE_HELPS.explosionsSoft) && decodeLayout(givens, size)?.explosions == null) {
       return unprocessable("This level has no explosions to ease.");
     }

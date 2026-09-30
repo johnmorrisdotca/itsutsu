@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { helpOpensOn, SOLVE_HELP_LIST, SOLVE_HELP_SAYS, SOLVE_HELPS, solveHelpOf, strongestHelp } from "./solveHelp";
+import { helpOffered, helpOpensOn, SOLVE_HELP_LIST, SOLVE_HELP_SAYS, SOLVE_HELPS, solveHelpOf, strongestHelp } from "./solveHelp";
 
 /**
  * HOW A SOLVE WAS HELPED: one column, read one way. A helped solve counts as
@@ -23,6 +23,16 @@ describe("the helps", () => {
     expect(strongestHelp([SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsSoft])).toBe(SOLVE_HELPS.cheated);
     expect(strongestHelp([SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsOff])).toBe(SOLVE_HELPS.explosionsOff);
     expect(strongestHelp([null, SOLVE_HELPS.explosionsSoft])).toBe(SOLVE_HELPS.explosionsSoft);
+    expect(strongestHelp([SOLVE_HELPS.cheated, SOLVE_HELPS.guided])).toBe(SOLVE_HELPS.guided);
+  });
+
+  it("are offered only by the puzzle each belongs to", () => {
+    expect(helpOpensOn(SOLVE_HELPS.guided)).toBe(true);
+    expect(helpOffered("cube", SOLVE_HELPS.guided)).toBe(true);
+    expect(helpOffered("cube", SOLVE_HELPS.cheated)).toBe(false);
+    expect(helpOffered("tsunagi", SOLVE_HELPS.cheated)).toBe(true);
+    expect(helpOffered("tsunagi", SOLVE_HELPS.guided)).toBe(false);
+    expect(helpOffered("sudoku", SOLVE_HELPS.cheated)).toBe(false);
   });
 
   it("read back only what they are, and each says so", () => {

@@ -7,12 +7,14 @@ import type { KyuubuHandle } from "kyuubu/react";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
-import { encodeCubeProgress } from "@/lib/puzzles/puzzleProgress";
+import { decodeCubeProgress, encodeCubeProgress } from "@/lib/puzzles/puzzleProgress";
+import { SOLVE_HELPS } from "@/lib/puzzles/solveHelp";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { CUBE_COPY, CUBE_INSPECTION_MS } from "./cube.constants";
 import { CubeBoard } from "./CubeBoard";
+import { CubeGuide } from "./CubeGuide";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 
 /**
@@ -43,13 +45,17 @@ export function CubeSolve({
   const hydrated = useHydrated();
   const n = puzzle.size;
   // A kept run's turns are made at once, not played out again.
-  const [moves, setMoves] = useState<CubeMove[]>(() => (resumed === null ? [] : (decodeCubeMoves(resumed.progress) ?? [])));
+  const kept = resumed === null ? null : decodeCubeProgress(resumed.progress);
+  const [moves, setMoves] = useState<CubeMove[]>(() => kept?.moves ?? []);
+  // Shown its steps (`CubeGuide`): kept with the run, and the solve is handed in as guided.
+  const [guided, setGuided] = useState(kept?.guided ?? false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const state = useMemo(() => turnAll(puzzle.givens, n, moves), [puzzle.givens, n, moves]);
   const solved = cubeSolved(state, n);
   const cube = useRef<KyuubuHandle>(null);
   const theme = BOARD_THEMES[appearance.boardTheme] ?? BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
 
-  const { startedAt, elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeCubeProgress(moves), resumed }, false);
+  const { startedAt, elapsedMs, done, begin, finish, runOut, pausing } = useSolve(puzzle, hasAccount, race, null, { progress: encodeCubeProgress(moves, guided), resumed }, false);
   const live = done === null && !pausing.paused;
   const counted = moves.filter(countsAsMove).length;
 
@@ -72,8 +78,8 @@ export function CubeSolve({
   useEffect(() => {
     if (!solved || moves.length === 0 || handedIn.current || done !== null) return;
     handedIn.current = true;
-    void finish(encodeCubeMoves(moves), Date.now());
-  }, [solved, moves, done, finish]);
+    void finish(encodeCubeMoves(moves), Date.now(), guided ? SOLVE_HELPS.guided : null);
+  }, [solved, moves, done, finish, guided]);
 
   const turned = (move: CubeMove) => {
     // A turn of the whole cube is a look, and starts nothing.
@@ -86,6 +92,11 @@ export function CubeSolve({
     if (last === undefined || !live) return;
     cube.current?.turn(undoOf(last));
     setMoves((so) => so.slice(0, -1));
+  };
+
+  const turnFor = (steps: readonly CubeMove[]) => {
+    if (!live) return;
+    for (const move of steps) cube.current?.turn(move, { report: true });
   };
 
   const giveUp = () => {
@@ -133,6 +144,21 @@ export function CubeSolve({
           <p className="min-h-10 text-sm text-muted" data-testid="cube-said" aria-live="polite">
             {said}
           </p>
+          {race === null ? (
+            <CubeGuide
+              state={state}
+              n={n}
+              enabled={live && !solved}
+              open={guideOpen}
+              used={guided}
+              onOpen={() => {
+                setGuided(true);
+                setGuideOpen(true);
+              }}
+              onHide={() => setGuideOpen(false)}
+              onTurnFor={turnFor}
+            />
+          ) : null}
           <p className="text-xs text-muted" data-testid="cube-scramble">
             {CUBE_COPY.scramble}: <span className="font-mono">{movesNotation(undoAll(decodeCubeMoves(puzzle.solution) ?? []), n)}</span>
           </p>

@@ -2,7 +2,7 @@ import { cubeSolved, decodeCubeMoves, encodeCubeMoves, parseMoves, turnAll } fro
 import { describe, expect, it } from "vitest";
 
 import { checkSolution, checkOutOfGuesses } from "../puzzleCheck";
-import { progressFits } from "../puzzleProgress";
+import { decodeCubeProgress, encodeCubeProgress, progressFits } from "../puzzleProgress";
 
 import { checkCube } from "./check";
 import { CUBE_SIZES, SCRAMBLE_LENGTHS, cubeOfSeed, generateCube, scrambleOf } from "./generate";
@@ -52,5 +52,14 @@ describe("the check the server runs on a cube", () => {
     expect(progressFits("cube", 3, cube.solution.slice(0, 9))).toBe(true);
     expect(progressFits("cube", 3, "not turns")).toBe(false);
     expect(turnAll(cube.givens, 3, decodeCubeMoves(cube.solution)!)).toMatch(/^U{9}R{9}F{9}D{9}L{9}B{9}$/);
+  });
+
+  it("keeps whether its steps were shown, so a run opened again is still a helped one", () => {
+    const moves = decodeCubeMoves(cube.solution.slice(0, 9))!;
+    const guided = encodeCubeProgress(moves, true);
+    expect(progressFits("cube", 3, guided)).toBe(true);
+    expect(decodeCubeProgress(guided)).toEqual({ moves, guided: true });
+    expect(decodeCubeProgress(encodeCubeProgress(moves))).toEqual({ moves, guided: false });
+    expect(decodeCubeProgress("guided:not turns")).toBeNull();
   });
 });

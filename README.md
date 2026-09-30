@@ -222,6 +222,11 @@ layer, drag around the cube to look, wheel over a sticker to turn its row
 seed's random turns, fifteen seconds' look comes before the clock, and the
 answer and a kept run are the turns, which the server makes again from the
 scramble (`cube/check.ts`). Whole-cube turns are looks and are not counted.
+On a 2×2 or 3×3, **Show me how** gives the next step of the beginner's method
+(Kyuubu's `solveSteps`) and turns it on request; a solve that used it is kept
+as `guided` (`solveHelp.ts`): solved, no points, off the fastest tables. The
+method is taught at `/learn/cube`, a stage at a time with a cube to practise
+each on (`src/lib/learn/cubeMethod.ts`, `cubePractice.ts`).
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
@@ -462,8 +467,8 @@ them into `public/art/games/`) and links to the strategy guides that apply.
 `/learn` holds the guides: threats, shapes and tempo for the five-in-a-row
 family; Renju's forbidden points and openings; captures; two stones a turn;
 the drop family's parity; the twist games; the small games; and the piece
-games. Written to be learned from, with the Japanese terms where the
-literature uses them. Both sections are linked from the header.
+games; and the cube's beginner's method (`/learn/cube`). Written to be
+learned from, with the Japanese terms where the literature uses them. Both sections are linked from the header.
 
 ### Players, ratings and records
 

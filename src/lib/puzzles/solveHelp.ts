@@ -10,24 +10,27 @@
  *    Solved, and it opens what a solve opens.
  *  - `explosionsOff`: a level with explosions, played with none. Solved, but it
  *    opens no next block: the block's lesson was not played.
+ *  - `guided`: the cube's steps were shown (`CubeGuide`), and may have been
+ *    turned for the solver. Solved, and it opens what a solve opens.
  *
- * All three score no points (so no IP, which is read from points), stay off
+ * All four score no points (so no IP, which is read from points), stay off
  * every fastest table and out of the feed's "a new best time", and say so
  * wherever the solve is shown. Experience is still paid: the time was spent.
  * One help is kept per solve; where two were used, the one that costs more
  * (`strongestHelp`).
  */
-export const SOLVE_HELPS = { cheated: "cheated", explosionsSoft: "explosionsSoft", explosionsOff: "explosionsOff" } as const;
+export const SOLVE_HELPS = { cheated: "cheated", explosionsSoft: "explosionsSoft", explosionsOff: "explosionsOff", guided: "guided" } as const;
 
 export type SolveHelp = (typeof SOLVE_HELPS)[keyof typeof SOLVE_HELPS];
 
-export const SOLVE_HELP_LIST: readonly SolveHelp[] = [SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsSoft, SOLVE_HELPS.explosionsOff];
+export const SOLVE_HELP_LIST: readonly SolveHelp[] = [SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsSoft, SOLVE_HELPS.explosionsOff, SOLVE_HELPS.guided];
 
 /** The help in a few words, for a list of the help a solve took beside its checks and hints. */
 export const SOLVE_HELP_WORDS: Record<SolveHelp, string> = {
   cheated: "Cheat drew a line",
   explosionsSoft: "explosions softened",
   explosionsOff: "explosions off",
+  guided: "the solve's steps were shown",
 };
 
 /** What a helped solve says about itself, wherever it is shown. */
@@ -35,6 +38,7 @@ export const SOLVE_HELP_SAYS: Record<SolveHelp, string> = {
   cheated: `Helped: ${SOLVE_HELP_WORDS.cheated}`,
   explosionsSoft: `Helped: ${SOLVE_HELP_WORDS.explosionsSoft}`,
   explosionsOff: `Helped: ${SOLVE_HELP_WORDS.explosionsOff}`,
+  guided: `Helped: ${SOLVE_HELP_WORDS.guided}`,
 };
 
 /** Whether a solve with this help (or none) opens what a solve opens: every help but explosions off. */
@@ -44,8 +48,14 @@ export function helpOpensOn(help: SolveHelp | null): boolean {
 
 /** The help a solve is kept with when more than one was used: the one that costs more. */
 export function strongestHelp(helps: readonly (SolveHelp | null)[]): SolveHelp | null {
-  for (const help of [SOLVE_HELPS.explosionsOff, SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsSoft] as const) if (helps.includes(help)) return help;
+  for (const help of [SOLVE_HELPS.explosionsOff, SOLVE_HELPS.guided, SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsSoft] as const) if (helps.includes(help)) return help;
   return null;
+}
+
+/** Whether a puzzle offers this help: Tsunagi its Cheat and explosions, the cube its shown steps, nothing else any. */
+export function helpOffered(kind: string, help: SolveHelp): boolean {
+  if (kind === "cube") return help === SOLVE_HELPS.guided;
+  return kind === "tsunagi" && help !== SOLVE_HELPS.guided;
 }
 
 /** A help read from a stored or sent value; null for none or for anything that is not one. */
