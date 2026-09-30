@@ -231,12 +231,17 @@ const KEPT_OVER: Prisma.PartyTableWhereInput = { status: { in: [KEPT_STATUS.fini
  * strictly before `before`: their share of the Completed tab's one list
  * (`completed.ts`), which pages every kind of game by when it ended.
  */
-export async function keptOverOf(memberId: string, before: Date | null, limit: number): Promise<{ entries: HistoryEntry[]; more: boolean }> {
-  const entries = await tablesOf({ memberId, before, limit: limit + 1, where: KEPT_OVER });
+export async function keptOverOf(memberId: string, before: Date | null, limit: number, only: readonly string[] | null = null): Promise<{ entries: HistoryEntry[]; more: boolean }> {
+  const entries = await tablesOf({ memberId, before, limit: limit + 1, where: { ...KEPT_OVER, ...gamesIn(only) } });
   return { entries: entries.slice(0, limit), more: entries.length > limit };
 }
 
 /** How many games round one screen a member has finished or put away. */
-export async function keptOverCount(memberId: string): Promise<number> {
-  return prisma.partyTable.count({ where: { ...tablesWhere(memberId), ...KEPT_OVER } });
+export async function keptOverCount(memberId: string, only: readonly string[] | null = null): Promise<number> {
+  return prisma.partyTable.count({ where: { ...tablesWhere(memberId), ...KEPT_OVER, ...gamesIn(only) } });
+}
+
+/** The games the Completed tab is narrowed to (`completedFilter.ts`), or every one. */
+function gamesIn(only: readonly string[] | null): Prisma.PartyTableWhereInput {
+  return only === null ? {} : { game: { in: [...only] } };
 }

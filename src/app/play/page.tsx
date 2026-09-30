@@ -22,6 +22,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { memberNamed } from "@/lib/auth/members";
 import { myTables } from "@/lib/party/online/server/myTables";
 import { completedBefore } from "@/lib/history/completed";
+import { completedFilter } from "@/lib/history/completedFilter";
 
 export const metadata = { title: "My games 対局" };
 
@@ -69,7 +70,11 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
   // The one page that says how much is new in the inbox: one count, here, not on every page's header.
   const memberId = await currentMemberId();
   // And the party tables they sit at on several devices, going and finished: two indexed reads (`myTables`).
-  const [unread, tables] = await Promise.all([unreadInbox(memberId), memberId === null ? null : myTables(memberId, completedBefore(typeof asked.cursor === "string" ? asked.cursor : null))]);
+  // Completed's page and narrowing, which its finished tables are read to (`completed.ts`, `completedFilter.ts`).
+  const family = typeof asked.family === "string" ? asked.family : null;
+  const game = typeof asked.game === "string" ? asked.game : null;
+  const finishedFrom = completedBefore(typeof asked.cursor === "string" ? asked.cursor : null);
+  const [unread, tables] = await Promise.all([unreadInbox(memberId), memberId === null ? null : myTables(memberId, finishedFrom, completedFilter(family, game).only)]);
   return (
     <Page>
       <SiteHeader />
@@ -164,6 +169,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         tables={withMember === null ? tables : null}
         // Where the History tab was paged to: every game of every kind (`MyHistorySection`).
         historyBefore={typeof asked.before === "string" ? asked.before : null}
+        family={family}
+        game={game}
       />
     </Page>
   );

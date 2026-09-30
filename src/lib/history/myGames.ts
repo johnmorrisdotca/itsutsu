@@ -54,7 +54,12 @@ export async function fetchMyGames(
    * caller could hand over the wrong way round without anything failing.
    * `FilterSeats` is named for the same reason and says it at more length.
    */
-  finished: { limit?: number; cursor?: Cursor | null } = {},
+  finished: {
+    limit?: number;
+    cursor?: Cursor | null;
+    /** The games the Completed tab is narrowed to (`completedFilter.ts`), or null for every game. */
+    only?: readonly string[] | null;
+  } = {},
   /**
    * The queue narrowed to one set a count elsewhere promised, or the whole of it.
    *
@@ -166,13 +171,16 @@ export async function fetchMyGames(
    * BOTH AT ONCE, because they are independent reads and waiting for one before
    * asking for the other would add a round trip to every visit for nothing.
    */
+  // The finished half narrowed to the games asked for; the debt is never narrowed (it is Going).
+  const only = finished.only ?? null;
+  const finishedSeats: Prisma.GameWhereInput = only === null ? seats : { AND: [seats, { variant: { in: [...only] } }] };
   const [debt, page] = await Promise.all([
     prisma.game.findMany({
       where: { AND: [DEBT_ONLY, seats, ...(kept === null ? [] : [kept])] },
       select: QUEUE_SELECT,
     }),
     myFinishedPage({
-      seats,
+      seats: finishedSeats,
       window: kept,
       limit: finished.limit ?? MY_FINISHED_PAGE,
       cursor: finished.cursor ?? null,
@@ -320,6 +328,9 @@ export async function fetchMyGames(
    * most likely to be wondering about — which is how every elder
    * correspondence site ordered them, and why.
    */
+  // A game the engine decided arrives on the debt read, so the narrowing is said again here for it.
+  if (only !== null) groups.finished = groups.finished.filter((item) => only.includes(item.game.variant));
+
   for (const group of MY_GAME_GROUPS) {
     // An offer to you reads oldest first for the same reason your move does:
     // it is a debt, and the one that has been waiting longest is the one
@@ -359,6 +370,6 @@ export async function fetchMyGames(
     const whole = (finished.cursor ?? null) === null && page.next === null;
     if (whole) return groups.finished.length;
     const engineOver = groups.finished.filter((one) => !paged.has(one.game.id)).length;
-    return engineOver + (await myFinishedTotal({ seats, window: kept }));
+    return engineOver + (await myFinishedTotal({ seats: finishedSeats, window: kept }));
   }
 }

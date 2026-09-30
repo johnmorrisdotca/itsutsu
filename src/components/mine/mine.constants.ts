@@ -134,6 +134,15 @@ export const MY_GAMES_COPY = {
     kanji: "解きかけ",
     hint: "Left part way, kept where you left them. Open one to carry on.",
   },
+  /** The Completed tab's filters (`CompletedFilters`): John, 2026-09-30, "Allow filters. For the game type / family". */
+  completedFilters: {
+    family: "Family",
+    game: "Game",
+    every: "Every one",
+    showing: "Showing only",
+    everything: "everything",
+    takeOff: (what: string) => `Show more than ${what}`,
+  },
   openBoard: {
     label: "Open games",
     kanji: "対局募集",

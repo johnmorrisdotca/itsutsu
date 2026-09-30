@@ -9,7 +9,7 @@ import { catchUpSeats } from "@/lib/bots/catchUpSeats";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
 import { MY_GAME_GROUPS, fetchMyGames, pagedGroup, shownGroup, type MyGameGroup } from "@/lib/history/myGames";
-import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, viewHref, type MyGamesView } from "@/lib/history/myGamesViews";
+import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, type MyGamesView } from "@/lib/history/myGamesViews";
 import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { xpEarnedIn } from "@/lib/xp/xpOfGames";
@@ -25,6 +25,10 @@ import { CompletedRowView } from "./CompletedRowView";
 import { mySolvesBefore, mySolvesCount } from "@/lib/puzzles/server/mySolves";
 import { SEATED_ONLY, finishedCursorBefore } from "@/lib/history/myFinished";
 import { completedBefore, completedRows, mergeCompleted } from "@/lib/history/completed";
+import { completedChoices, completedFilter, completedHref } from "@/lib/history/completedFilter";
+import { CompletedFilters } from "./CompletedFilters";
+import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { slugFor } from "@/lib/gomoku/slugs";
 import { keptOverCount, keptOverOf } from "@/lib/history/everyGame";
 import { favouriteGamesOf, favouritesAmong } from "@/lib/history/favourites";
 import { SeatedNarrowing } from "./SeatedNarrowing";
@@ -131,7 +135,12 @@ export async function MyGamesList({
   openSeats = null,
   tables = null,
   historyBefore = null,
+  family = null,
+  game = null,
 }: {
+  /** The family and the game Completed is narrowed to, off the address (`completedFilter.ts`); unchecked here. */
+  family?: string | null;
+  game?: string | null;
   /**
    * One other member, by id: the list becomes the games running between the
    * reader and them — the set a buddy row's "2 going" counts, no more and no
@@ -197,7 +206,9 @@ export async function MyGamesList({
    * puzzles beside them.
    */
   const before = view === "completed" ? completedBefore(cursor) : null;
-  const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor: before === null ? null : finishedCursorBefore(before) } : {};
+  const narrowing = view === "completed" ? completedFilter(family, game) : completedFilter(null, null);
+  const { only } = narrowing;
+  const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor: before === null ? null : finishedCursorBefore(before), only } : {};
   const readQueue = async (at: Date) =>
     withMember !== null
       ? // No cookie seats and no finished window: the set is the two of you, running, and that is all.
@@ -229,13 +240,13 @@ export async function MyGamesList({
   // And on the Completed tab, the starred games for the panel above the list (first page only) and which of the page's rows are starred.
   const completed = view === "completed" && memberId !== null;
   const [favourites, starred, solves, device, solvedCount, deviceCount] = await Promise.all([
-    completed && before === null ? favouriteGamesOf(memberId) : { rows: [], total: 0 },
+    completed && before === null && only === null ? favouriteGamesOf(memberId) : { rows: [], total: 0 },
     completed ? favouritesAmong(memberId, groups.finished.map((item) => item.game.id)) : null,
     // The finished puzzles and the games round one screen that are over, listed only on Completed among the games; counted for its number.
-    completed ? mySolvesBefore(memberId, before, MY_FINISHED_PAGE_OPEN) : null,
-    completed ? keptOverOf(memberId, before, MY_FINISHED_PAGE_OPEN) : null,
-    memberId === null ? 0 : mySolvesCount(memberId),
-    memberId === null ? 0 : keptOverCount(memberId),
+    completed ? mySolvesBefore(memberId, before, MY_FINISHED_PAGE_OPEN, only) : null,
+    completed ? keptOverOf(memberId, before, MY_FINISHED_PAGE_OPEN, only) : null,
+    memberId === null ? 0 : mySolvesCount(memberId, only),
+    memberId === null ? 0 : keptOverCount(memberId, only),
   ]);
   const listed = [...MY_GAME_GROUPS.flatMap((group) => groups[group]), ...favourites.rows];
   const completedTotal = queue.finished.total + solvedCount + (tables?.finishedTotal ?? 0) + deviceCount;
@@ -310,10 +321,10 @@ export async function MyGamesList({
          * two different pages of the same list would be one too many.
          */
         // `?all=finished` opens Completed (`viewOfGroup`), so the one list is the only one that pages.
-        more={view === "completed" && group === "finished" && page.next !== null ? `${viewHref("completed")}?cursor=${encodeURIComponent(page.next)}` : null}
+        more={view === "completed" && group === "finished" && page.next !== null ? completedHref({ family, game }, page.next) : null}
         // The tab is this list, so there is no "Show fewer" to go back to; past the first page, the way to the newest.
         whole={view === "completed" && group === "finished"}
-        newest={view === "completed" && group === "finished" && before !== null ? viewHref("completed") : null}
+        newest={view === "completed" && group === "finished" && before !== null ? completedHref({ family, game }) : null}
       />
     );
   };
@@ -404,7 +415,12 @@ export async function MyGamesList({
       */}
       {view === "completed" ? (
         <div className="flex min-w-0 flex-col gap-4" data-testid="completed-games">
-          {completed && before === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
+          <CompletedFilters
+            choices={completedChoices()}
+            family={narrowing.family === null ? null : { key: narrowing.family.key, title: narrowing.family.title }}
+            game={narrowing.game === null ? null : { slug: slugFor(narrowing.game), label: gameCopyFor(narrowing.game).label }}
+          />
+          {completed && before === null && only === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
           {panel("finished", MY_GAMES_COPY.empty.completed)}
         </div>
       ) : null}

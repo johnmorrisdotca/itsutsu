@@ -43,9 +43,11 @@ export async function myTables(
   memberId: string,
   /** Where the Completed tab's page starts: the finished tables that ended strictly before it, or the newest. */
   finishedBefore: Date | null = null,
+  /** The games the Completed tab is narrowed to (`completedFilter.ts`), or null for every game. */
+  finishedOnly: readonly string[] | null = null,
 ): Promise<{ going: MyTable[]; finished: MyTable[]; finishedMore: boolean; finishedTotal: number; tags: Map<string, NameTag> }> {
   const mine = { seats: { some: { memberId, kind: ONLINE_SEAT_KINDS.member } } };
-  const over = { ...mine, status: { in: [ONLINE_STATUS.finished, ONLINE_STATUS.ended] } };
+  const over = { ...mine, status: { in: [ONLINE_STATUS.finished, ONLINE_STATUS.ended] }, ...(finishedOnly === null ? {} : { game: { in: [...finishedOnly] } }) };
   const include = { seats: { orderBy: { seat: "asc" as const } } };
   const [going, finishedRead, finishedTotal] = await Promise.all([
     prisma.partyTable.findMany({ where: { ...mine, status: ONLINE_STATUS.playing }, include, orderBy: { movedAt: "desc" } }),

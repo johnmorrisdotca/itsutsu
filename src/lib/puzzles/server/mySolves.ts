@@ -48,9 +48,9 @@ export type MySolvesBefore = { solves: MySolve[]; more: boolean };
  * `limit` of them: the puzzles' share of the Completed tab, whose one list pages
  * every kind of game by the time it ended (`completed.ts`).
  */
-export async function mySolvesBefore(memberId: string, before: Date | null, limit: number = MY_SOLVES_PAGE): Promise<MySolvesBefore> {
+export async function mySolvesBefore(memberId: string, before: Date | null, limit: number = MY_SOLVES_PAGE, only: readonly string[] | null = null): Promise<MySolvesBefore> {
   const rows = await prisma.puzzleSolve.findMany({
-    where: { memberId, ...(before === null ? {} : { finishedAt: { lt: before } }) },
+    where: { memberId, ...kindsIn(only), ...(before === null ? {} : { finishedAt: { lt: before } }) },
     orderBy: [{ finishedAt: "desc" }, { id: "desc" }],
     take: limit + 1,
     select: { id: true, kind: true, size: true, level: true, elapsedMs: true, finishedAt: true, points: true, checksUsed: true, hintsUsed: true, raceId: true, solved: true, givens: true, answer: true, helped: true, clock: true },
@@ -62,6 +62,11 @@ export async function mySolvesBefore(memberId: string, before: Date | null, limi
 }
 
 /** How many puzzles a member has finished: the Completed tab's share of its count, read on the tabs that do not list them. */
-export async function mySolvesCount(memberId: string): Promise<number> {
-  return prisma.puzzleSolve.count({ where: { memberId } });
+export async function mySolvesCount(memberId: string, only: readonly string[] | null = null): Promise<number> {
+  return prisma.puzzleSolve.count({ where: { memberId, ...kindsIn(only) } });
+}
+
+/** The puzzles the Completed tab is narrowed to (`completedFilter.ts`), or every one. */
+function kindsIn(only: readonly string[] | null) {
+  return only === null ? {} : { kind: { in: [...only] } };
 }
