@@ -15,9 +15,10 @@ import { CARD_TABLE_STORES } from "./cardTableStores";
 /**
  * A FAMILY CARD GAME PASSED ROUND THE TABLE, at /games/<slug>/pass-and-play:
  * set up first — how many, how long, who sits where — then the game, kept in
- * this browser after every move and nowhere else. No account is asked,
- * nothing is rated, no server is told. Leave half way and it is here when you
- * come back, and waiting on My games meanwhile. One component for all five
+ * this browser after every move, and filed in the player's history as it
+ * starts and ends (`keptRecord.ts`). Nothing is rated, and play never waits on
+ * a server. Leave half way and it is here when you come back, and waiting on
+ * My games meanwhile. One component for all five
  * games; what each plays is its adapter (`cardAdapters.ts`) and its rules.
  */
 export function CardGameTable({ kind, appearance, gameHref }: PartyTableGameProps & { kind: CardGameKind }) {

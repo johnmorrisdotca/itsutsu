@@ -5,6 +5,9 @@ import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
 
 import { keptInBrowser } from "./keptInBrowser";
 import { TRAIN_STORAGE_KEY } from "./party.constants";
+import { MEXICAN_TRAIN_RULES } from "@/lib/party/mexicanTrain/trainRules";
+import { PARTY_KINDS } from "@/lib/party/party.constants";
+import { partyRecord } from "./keptRules";
 
 /**
  * THE GAME OF MEXICAN TRAIN KEPT IN THIS BROWSER: one at a time, as its table,
@@ -13,7 +16,8 @@ import { TRAIN_STORAGE_KEY } from "./party.constants";
  * replays the moves, so it cannot deal a different hand. How it is kept, and
  * why only here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<TrainGame>(TRAIN_STORAGE_KEY, encodeTrain, decodeTrain);
+const kept = keptInBrowser<TrainGame>(TRAIN_STORAGE_KEY, encodeTrain, decodeTrain, partyRecord(PARTY_KINDS.mexicanTrain, MEXICAN_TRAIN_RULES));
 
 /** The kept game (`undefined` until the browser has been asked, null when none) and the way to keep another. */
 export const useKeptTrainGame = kept.useKept;
+export const adoptKeptTrainGame = kept.adopt;

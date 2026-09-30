@@ -163,6 +163,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
         tables={withMember === null ? tables : null}
+        // Where the History tab was paged to: every game of every kind (`MyHistorySection`).
+        historyBefore={typeof asked.before === "string" ? asked.before : null}
       />
     </Page>
   );

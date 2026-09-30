@@ -34,7 +34,7 @@ So it is a third kind, and the smallest honest one:
 
 | Kind | What it is | Played by | Kept |
 |---|---|---|---|
-| `PartyKind` | a table of people round one device (`src/lib/party/`) | the browser, pass and play | only in that browser (`keptInBrowser`), or as a table on the server when played on several devices (`docs/plans/party-online/`); never rated |
+| `PartyKind` | a table of people round one device (`src/lib/party/`) | the browser, pass and play | in that browser (`keptInBrowser`) and filed in its player's history (`src/lib/party/kept/`), or as a table on the server when played on several devices (`docs/plans/party-online/`); never rated |
 
 `GameKey = RuleVariant | PuzzleKind | PartyKind`. The places that only make
 sense for one kind ask `isRuleVariant`, `isPuzzleKind` or `isPartyKind` by
@@ -72,6 +72,16 @@ scopes now ask it directly.
 - **Kept and found again**: the table keeps the game in this browser after
   every move, and its row in `PARTY_KIND_TABLES` names the card that waits on
   My games > Pass and play while one is going.
+- **In the history** (2026-09-30, John: "Should contain all games ever… Even
+  those that aren't completed or just passed around"): the store is given a
+  `KeptRecordRules` (`keptRules.ts`) and files the game with the site when it
+  starts, ends or is put away, and when its page is left — through the
+  device's queue (`keptOutbox.ts`), so a game played offline is filed once the
+  device is back online. The record is a `PartyTable` row under a status of
+  its own (`KEPT_STATUS`), listed on My games › History with every other
+  game, and opened again at `/games/<slug>/kept/<id>` to be carried on with or
+  looked at, on any device. A new party game passes its own store a record,
+  or it is missing from its players' history.
 
 ## Its family
 
