@@ -116,8 +116,8 @@ is not a pnpm workspace and not a dependency. Until those branches land, the
 site still runs its old in-tree code.
 
 **The intended end state:** publish each package to npm as
-`@johnmorrisdotca/<name>` from John's account (his decision, not yet made; a
-thread can prepare the publish commands), make it an ordinary dependency in
+`@johnmorrisdotca/<name>` from John's account (itsutsu-19 handles it, on
+John's word; see section 4), make it an ordinary dependency in
 `package.json`, and delete the `packages/` copy and the tsconfig path.
 
 **Until then, a change to a package's code goes in two places:** the
