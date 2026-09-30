@@ -14,9 +14,9 @@ reproducible: include it, and the moves if you have them.
 ```sh
 git clone https://github.com/johnmorrisdotca/tenka.git
 cd tenka
-npm install
-npm run check    # lint, types and tests, as CI runs them
-npm run site     # build the demo into site/ and open site/index.html
+pnpm install
+pnpm run check    # lint, types and tests, as CI runs them
+pnpm run site     # build the demo into site/ and open site/index.html
 ```
 
 - The rules are pure functions over plain values: a function returns a new
@@ -32,7 +32,7 @@ npm run site     # build the demo into site/ and open site/index.html
 
 Maintainers bump the version in `package.json`, move **Unreleased** in the
 changelog under the new version and date, tag `v<version>`, and publish with
-`npm publish --access public`.
+`pnpm publish --access public`.
 
 By contributing you agree that your work is released under the
 [MIT licence](LICENSE), and to follow the [code of conduct](CODE_OF_CONDUCT.md).

@@ -65,7 +65,7 @@ alone, in races, round one device and across several with this package.
 ## Install
 
 ```sh
-npm install @johnmorrisdotca/kumimoji
+pnpm add @johnmorrisdotca/kumimoji   # or: npm install @johnmorrisdotca/kumimoji
 ```
 
 ES modules with types, and no dependencies. The React components need React 18
@@ -192,10 +192,10 @@ dark mode and needs nothing but a container element.
 ## Develop
 
 ```sh
-npm install
-npm test         # the rules, the lists, the table and the computer player
-npm run build    # dist/
-npm run site     # the demo in site/, as GitHub Pages serves it
+pnpm install
+pnpm test         # the rules, the lists, the table and the computer player
+pnpm run build    # dist/
+pnpm run site     # the demo in site/, as GitHub Pages serves it
 ```
 
 ## Roadmap

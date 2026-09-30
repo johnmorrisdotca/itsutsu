@@ -47,7 +47,7 @@ tables round one device and across several with this package.
 ## Install
 
 ```sh
-npm install @johnmorrisdotca/tenka
+pnpm add @johnmorrisdotca/tenka   # or: npm install @johnmorrisdotca/tenka
 ```
 
 ES modules with types. The rules have no dependencies; the React component needs
@@ -161,7 +161,7 @@ render.
 ## The map
 
 The territories and their outlines are built from Natural Earth's admin-0
-countries at 1:110m, which is in the public domain, by `npm run map`. Never edit
+countries at 1:110m, which is in the public domain, by `pnpm map`. Never edit
 `src/tenkaWorld.data.ts` or `src/tenkaShapes.data.ts` by hand. The outlines are
 their own entry, `@johnmorrisdotca/tenka/shapes`, so code that only plays the
 rules never carries them.
@@ -188,10 +188,10 @@ dark mode and needs nothing but a container element.
 ## Develop
 
 ```sh
-npm install
-npm test         # the rules, the map and the table's drawing
-npm run build    # dist/
-npm run site     # the demo in site/, as GitHub Pages serves it
+pnpm install
+pnpm test         # the rules, the map and the table's drawing
+pnpm run build    # dist/
+pnpm run site     # the demo in site/, as GitHub Pages serves it
 ```
 
 ## Roadmap

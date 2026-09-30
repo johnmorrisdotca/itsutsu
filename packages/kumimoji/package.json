@@ -62,9 +62,9 @@
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check": "npm run lint && npm run typecheck && npm test",
-    "site": "npm run build && node scripts/site.mjs",
-    "prepublishOnly": "npm run check && npm run build"
+    "check": "pnpm run lint && pnpm run typecheck && pnpm test",
+    "site": "pnpm run build && node scripts/site.mjs",
+    "prepublishOnly": "pnpm run check && pnpm run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -85,5 +85,6 @@
     "react": {
       "optional": true
     }
-  }
+  },
+  "packageManager": "pnpm@10.11.0"
 }
