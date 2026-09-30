@@ -23,7 +23,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // The dice roller, an open-source package also at github.com/johnmorrisdotca/korokoro;
+      // imported by name, so publishing it to npm changes no import.
+      "@johnmorrisdotca/korokoro": ["./packages/korokoro/src/index.ts"],
+      "@johnmorrisdotca/korokoro/react": ["./packages/korokoro/src/react.tsx"]
     }
   },
   "include": [

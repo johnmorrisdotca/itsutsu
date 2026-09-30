@@ -110,6 +110,8 @@ describe("the paths that stay open", () => {
       "/privacy",
       // The terms of play, for the same reader.
       "/terms",
+      // The dice roller, which names nobody and keeps nothing on the server.
+      "/dice",
     ]) {
       expect(wouldBeOpen(path), `${path} should be readable without an invite`).toBe(true);
     }
