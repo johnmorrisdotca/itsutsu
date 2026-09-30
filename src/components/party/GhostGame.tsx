@@ -26,6 +26,7 @@ import { useKeptGhostGame } from "./ghostStore";
 import { GHOST_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
 import { useGhostWords } from "./useGhostWords";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * SUPERGHOST PASSED ROUND THE TABLE, at /games/superghost/pass-and-play.
@@ -95,6 +96,8 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
       */}
       <div className="flex min-w-0 flex-col gap-3" data-bare-board>
         {/* The turn line and the letters: what the whole table watches, and the game's picture (`party-screenshots.spec.ts`). */}
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

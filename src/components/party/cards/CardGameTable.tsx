@@ -3,6 +3,7 @@
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import type { PartyTableGameProps } from "../party.types";
@@ -38,5 +39,11 @@ export function CardGameTable({ kind, appearance, gameHref }: PartyTableGameProp
       </section>
     );
   }
-  return <CardPlay adapter={CARD_ADAPTERS[kind]} game={game} keep={keep} appearance={appearance} gameHref={gameHref} gameName={CARD_GAME_DISPLAY[kind].label} ready={readyMark(hydrated)} />;
+  return (
+    <>
+      {/* Quiet around the table while a hand is being played (`PlayingNow`); here rather than in CardPlay, whose every edit asks for the card pictures to be re-taken. */}
+      <PlayingNow on={!CARD_ADAPTERS[kind].rules.over(game)} />
+      <CardPlay adapter={CARD_ADAPTERS[kind]} game={game} keep={keep} appearance={appearance} gameHref={gameHref} gameName={CARD_GAME_DISPLAY[kind].label} ready={readyMark(hydrated)} />
+    </>
+  );
 }

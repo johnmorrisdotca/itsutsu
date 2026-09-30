@@ -242,6 +242,19 @@ body {
 }
 
 /*
+ * QUIET WHILE PLAYING. A game being played draws `PlayingNow` (see it for the
+ * list of what stays and what goes), and the board page holding one hides the
+ * site's sections, New game, the member's figures, a table's title and the
+ * footer — the furniture marked `data-quiet-in-play`. Asked of the page with
+ * `:has`, so a game drawn on the server is quiet from its first paint, and
+ * only inside [data-strippable], the board pages, for the reason Just the
+ * board is scoped there below.
+ */
+[data-strippable]:has([data-playing-now]) [data-quiet-in-play] {
+  display: none;
+}
+
+/*
  * Just the board: the page stripped back to the board and the moves.
  *
  * Said here rather than in each component because what is being hidden — the

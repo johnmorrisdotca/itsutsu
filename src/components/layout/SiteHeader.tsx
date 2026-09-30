@@ -66,7 +66,7 @@ async function HeaderCountsFromServer() {
  */
 async function Nav() {
   return (
-    <nav className="order-3 flex w-full items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:order-none sm:w-auto sm:flex-wrap sm:gap-x-4 sm:text-sm select-none">
+    <nav data-quiet-in-play className="order-3 flex w-full items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:order-none sm:w-auto sm:flex-wrap sm:gap-x-4 sm:text-sm select-none">
       <NavLinks />
       {/*
         Draws nothing. Here rather than beside the two mastheads below because

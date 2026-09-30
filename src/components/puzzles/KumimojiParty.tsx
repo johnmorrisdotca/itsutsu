@@ -31,6 +31,7 @@ import { KumimojiPartyTurn } from "./KumimojiPartyTurn";
 import { KumimojiOnlineSeats } from "@/components/party/online/KumimojiOnlineSeats";
 import { WhereChoice } from "@/components/party/online/OnlineSetUpParts";
 import { keepParty, rememberNames, useKeptParty, useRememberedNames } from "./kumimojiPartyKept";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * KUMIMOJI PASS AND PLAY: two to eight people round one device, at
@@ -126,6 +127,7 @@ export function KumimojiParty({
 
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-3`} data-testid="kumimoji-party" data-players={players} {...readyMark(hydrated)}>
+      <PlayingNow on={moment.playing} />
       {game === null ? (
         <>
           {/* This device, or several: on several, each seat a buddy, a link or a computer, and the table set on the server. */}

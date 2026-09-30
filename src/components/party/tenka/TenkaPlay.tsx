@@ -27,6 +27,7 @@ import { TenkaTurnLine } from "./TenkaTurnLine";
 import type { TenkaMapHandle } from "./tenka.types";
 import { NO_CHOICE, choiceNow, marksFor, tapTerritory } from "./tenkaTaps";
 import { freshTenkaSeed } from "./tenkaStore";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * What must stay on the screen under the map at Large and Full, in pixels: the
@@ -130,6 +131,8 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
             ) : null
           }
         />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

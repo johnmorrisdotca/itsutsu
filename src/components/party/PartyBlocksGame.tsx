@@ -23,6 +23,7 @@ import type { PartyTableGameProps } from "./party.types";
 import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
 import { useKeptBlocksParty } from "./partyBlocksStore";
 import { useBlocksHand } from "./useBlocksHand";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * BLOCK FIVE FOR FOUR, PASSED ROUND THE TABLE.
@@ -75,6 +76,8 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PartyBlocksTurnLine game={game} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

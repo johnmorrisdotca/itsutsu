@@ -26,6 +26,7 @@ import { PairStone } from "./PairStone";
 import { PAIR_GO_COPY } from "./pairGo.constants";
 import { useKeptPairGo } from "./pairGoStore";
 import type { PartyTableGameProps } from "./party.types";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /** What a press on the table is waiting to be sure of, if anything. */
 type Confirming = "resign" | "new" | null;
@@ -83,6 +84,8 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <PairGoTurnLine game={game} appearance={appearance} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

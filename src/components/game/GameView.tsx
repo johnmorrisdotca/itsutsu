@@ -30,6 +30,7 @@ import { useGameSession } from "./useGameSession";
 import { BoardFocus } from "@/components/board/BoardFocus";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 export function GameView({
   variant,
@@ -233,6 +234,8 @@ export function GameView({
           <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3" data-focus-board data-scale-board data-bare-board>
             <ReviewBanner session={session} actions={actions} />
             <BranchPrompt session={session} actions={actions} />
+            {/* Quiet around the game while it is played (`PlayingNow`). */}
+            <PlayingNow on={moment.playing} />
             <WinCoverOver news={news} onClose={moment.close}>
               <Board
                 state={session.state}

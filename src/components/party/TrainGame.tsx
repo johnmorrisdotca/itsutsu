@@ -27,6 +27,7 @@ import { TrainTable } from "./TrainTable";
 import { TrainTurnLine } from "./TrainTurnLine";
 import { useKeptTrainGame } from "./trainStore";
 import { useTrainComputer } from "./useTrainComputer";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * MEXICAN TRAIN ROUND ONE DEVICE, at /games/mexican-train/pass-and-play.
@@ -99,6 +100,8 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <TrainTurnLine game={game} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

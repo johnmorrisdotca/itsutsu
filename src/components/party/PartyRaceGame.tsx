@@ -20,6 +20,7 @@ import { MarbleChip } from "./MarbleChip";
 import { PartySetUp } from "./PartySetUp";
 import { PARTY_COPY } from "./party.constants";
 import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * A RACE PASSED ROUND THE TABLE: Chinese Checkers on the star, or Halma on
@@ -91,6 +92,8 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

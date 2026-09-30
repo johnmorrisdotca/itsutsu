@@ -25,6 +25,7 @@ import { useKeptMancalaGame } from "./mancalaStore";
 import { MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
 import { useSowing } from "./useSowing";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * MANCALA PASSED ACROSS THE TABLE, at /games/mancala/pass-and-play.
@@ -84,6 +85,8 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <MancalaTurnLine game={game} sowing={shown.sowing} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open
