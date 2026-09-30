@@ -135,6 +135,17 @@ describe("buildGameWhere", () => {
     expect(buildGameWhere(parse("")!)).toEqual({ AND: BASE });
   });
 
+  it("leaves out a game with a hidden test member in either seat, and keeps a seat with no member behind it", () => {
+    expect(buildGameWhere(parse("")!, { computers: [], named: [], hidden: ["t1"] })).toEqual({
+      AND: [
+        ...BASE,
+        { OR: [{ blackMemberId: null }, { blackMemberId: { notIn: ["t1"] } }] },
+        { OR: [{ whiteMemberId: null }, { whiteMemberId: { notIn: ["t1"] } }] },
+      ],
+    });
+    expect(buildGameWhere(parse("")!, { computers: [], named: [], hidden: [] })).toEqual({ AND: BASE });
+  });
+
   it("narrows to one week's games by when they finished, Monday to Monday in UTC, as the weekly boards count", () => {
     const where = buildGameWhere(parse("?week=2026-09-21")!);
     expect(where).toEqual({

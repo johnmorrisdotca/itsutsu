@@ -1,5 +1,6 @@
 "use client";
 
+import { ReadyOffline } from "@/components/offline/ReadyOffline";
 import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 
@@ -139,6 +140,7 @@ export function GameCards({
                 <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
               </Link>
               <span className="text-xs text-muted">{copy.tagline}</span>
+              <ReadyOffline game={copy.variant} />
               {copy.inspiredBy !== undefined ? (
                 <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
               ) : null}

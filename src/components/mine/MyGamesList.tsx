@@ -27,6 +27,7 @@ import { SEATED_ONLY } from "@/lib/history/myFinished";
 import { favouriteGamesOf, favouritesAmong } from "@/lib/history/favourites";
 import { SeatedNarrowing } from "./SeatedNarrowing";
 import { MyTables } from "@/components/party/online/MyTables";
+import { MyHistorySection } from "./MyHistorySection";
 import type { MyTable } from "@/lib/party/online/server/myTables";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 
@@ -128,6 +129,7 @@ export async function MyGamesList({
   local = null,
   openSeats = null,
   tables = null,
+  historyBefore = null,
 }: {
   /**
    * One other member, by id: the list becomes the games running between the
@@ -165,6 +167,8 @@ export async function MyGamesList({
   openSeats?: ReactNode;
   /** The party tables the member sits at on several devices (`myTables`): going under Going, finished under Completed. */
   tables?: { going: readonly MyTable[]; finished: readonly MyTable[]; tags: ReadonlyMap<string, NameTag> } | null;
+  /** Where the History tab was paged to (`?before=`, an ISO time), or null for the newest. */
+  historyBefore?: string | null;
 } = {}) {
   const claims = seatClaims((await cookies()).getAll());
   // The member, by id — however they came in. Null for a browser holding only seat cookies.
@@ -314,8 +318,10 @@ export async function MyGamesList({
     going: going + runs.length + (tables?.going.length ?? 0),
     completed: queue.finished.total + (solves?.total ?? solvedCount) + (tables?.finished.length ?? 0),
     "pass-and-play": groups.hotSeat.length,
+    // Counted on its own tab only (`MyHistorySection`): four counts on every visit to /play is a price for a badge.
+    history: Number.NaN,
   };
-  const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, count: counts[key] }));
+  const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, ...(Number.isNaN(counts[key]) ? {} : { count: counts[key] }) }));
   const goingShown = VIEW_GROUPS.going.reduce((n, group) => n + groups[group].length, 0);
 
   return (
@@ -387,6 +393,7 @@ export async function MyGamesList({
           )}
         </div>
       ) : null}
+      {view === "history" && memberId !== null ? <MyHistorySection memberId={memberId} before={historyBefore} /> : null}
       {view === "pass-and-play" ? (
         <>
           {local}

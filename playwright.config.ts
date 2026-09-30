@@ -33,6 +33,13 @@ export default defineConfig({
      * context it opens (`xp-earning`, `game-pages-hydration`), which wins.
      */
     timezoneId: "UTC",
+    /*
+     * The offline keeper (public/sw.js) stays out of every spec but its own
+     * (`offline.spec.ts` allows it). A request a service worker makes is not
+     * one `page.route` sees, so a keeper in the way would quietly unplug the
+     * routes a dozen specs stand in for the site with.
+     */
+    serviceWorkers: "block",
   },
   projects: [
     // Signs in once; every other project reuses the cookies it saves.

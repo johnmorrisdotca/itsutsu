@@ -171,6 +171,8 @@ export type FilterSeats = {
   computers: readonly string[];
   /** Every member who goes by the asked-for `player` name. See `seatIs` in `gameHistoryClauses.ts`. */
   named: readonly string[];
+  /** The test members this reader may not see (`hiddenMemberIds` in `testMode.ts`): a game with one in either seat is left out. */
+  hidden?: readonly string[];
 };
 
 /** Nothing looked up: every id-aware filter falls back to the name alone. */
@@ -201,6 +203,13 @@ export function buildGameWhere(
    * covered by which is checked in `offers.coverage.test.ts`.
    */
   const conditions: Prisma.GameWhereInput[] = [{ status: "finished" }, NOT_A_REFUSED_OFFER];
+  const hidden = seats.hidden ?? [];
+  if (hidden.length > 0) {
+    conditions.push(
+      { OR: [{ blackMemberId: null }, { blackMemberId: { notIn: [...hidden] } }] },
+      { OR: [{ whiteMemberId: null }, { whiteMemberId: { notIn: [...hidden] } }] },
+    );
+  }
 
   /*
    * SEARCH IS ABOUT SPELLINGS and stays that way. It is a substring over the

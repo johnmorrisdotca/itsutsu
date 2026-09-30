@@ -460,6 +460,34 @@ in `e2e/bare-board.spec.ts`, which opens every play at 1280×800 and 1920×1080
 and fails on a scroll or an empty column; `bareSurvey.coverage.test.ts` holds
 its list to the catalogue, so a new play joins it.
 
+### Playing Offline
+
+John, 2026-09-30: "Allow the user to play certain games off-line", then "So
+the site needs an offline mode." The practice board, every pass-and-play
+table, the card and party games at one device and every puzzle solved alone
+ask nothing of the site once their page is open, so what makes them play on a
+train is keeping the page. `public/sw.js` (the keeper) does that, registered
+by `OfflineKeeper` in the root layout, in a production build only.
+
+- **A page is asked of the network first, always**; the kept copy answers only
+  when the network does not. Pages are kept from answers fetched anyway, on
+  first visit, and only the pages a game is found and played from
+  (`KEPT_PAGE`). `/api/` is never answered from the device.
+- **A new kind of play** that runs in the browser is kept if its address is
+  under `/games/<slug>/play` or `/pass-and-play`; anywhere else, add it to
+  `KEPT_PAGE` and to `keptGamesFrom` (`src/lib/offline/offlineKeeper.ts`),
+  which the games list's "Ready offline" marks read.
+- **"Keep every game offline"** on /games (`KeepAllOffline`) keeps the whole
+  list in `offlineGameAddresses` at once, one page at a time — about a
+  hundred pages and 15 MB on 2026-09-30, a hundred server renders paid once
+  when pressed and never on a visit. A new kind of play belongs in that list,
+  and `offlineKeeper.test.ts` fails if a game is missing from it.
+- **Every spec but `e2e/offline.spec.ts` blocks the keeper**
+  (`serviceWorkers: "block"` in `playwright.config.ts`), because a request a
+  service worker makes is not one `page.route` sees.
+- **A cache renamed** is a new `VERSION` in `sw.js`, and
+  `offlineKeeper.test.ts` holds the page side's spelling to it.
+
 ### Every Table Of Players Shows XP, And The Programs Are Players
 
 John, 2026-09-14, looking at a site where the members list had an XP column

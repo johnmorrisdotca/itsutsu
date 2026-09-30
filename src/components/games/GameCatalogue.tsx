@@ -1,3 +1,4 @@
+import { ReadyOffline } from "@/components/offline/ReadyOffline";
 import Link from "@/components/ui/Link";
 import { Suspense } from "react";
 
@@ -238,6 +239,8 @@ function FamilyGameCard({
           </span>
         ) : null}
         <span className="text-xs text-muted">{game.tagline}</span>
+        {/* Whether this device can play it with no connection (`ReadyOffline`). */}
+        <ReadyOffline game={game.variant} />
         {game.inspiredBy !== undefined ? (
           <span className="text-[0.7rem] text-muted italic">Inspired by {game.inspiredBy}</span>
         ) : null}

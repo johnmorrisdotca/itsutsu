@@ -15,13 +15,20 @@ import type { MyGameGroup } from "./myGames";
  * So views of one page. Going is the plain address, because it is what the
  * page is for.
  *
+ * AND HISTORY, EVERY GAME IN ONE LIST. John, 2026-09-30, finding his card
+ * games nowhere: "Should contain all games ever. Card. Maps. Reversi. All
+ * games. Even those that aren't completed or just passed around." The other
+ * tabs sort games by what they wait on; this one is everything the member has
+ * played, of every kind, newest first, each opening to be carried on with or
+ * looked at (`everyGame.ts`).
+ *
  * THREE, NOT FOUR. There was a Puzzles tab, and a finished puzzle was then in
  * two places at once. John, 2026-09-26: "All completed should be in ONE tab,
  * and perhaps differentiated in there... maybe 2 columns Left and Right for
  * games and puzzles... but not two areas." So a puzzle left part way is under
  * Going and a finished one under Completed, each beside the games.
  */
-export const MY_GAMES_VIEWS = ["going", "completed", "pass-and-play"] as const;
+export const MY_GAMES_VIEWS = ["going", "completed", "pass-and-play", "history"] as const;
 export type MyGamesView = (typeof MY_GAMES_VIEWS)[number];
 
 /** Which of the queue's groups each view draws. Puzzles are not in the queue at all: they are drawn beside it. */
@@ -29,6 +36,8 @@ export const VIEW_GROUPS: Record<MyGamesView, readonly MyGameGroup[]> = {
   going: ["offered", "yourMove", "theirMove", "offerSent", "unstarted"],
   completed: ["finished"],
   "pass-and-play": ["hotSeat"],
+  // Every game of every kind, going or over, in one list of its own (`everyGame.ts`), not the queue's groups.
+  history: [],
 };
 
 /** The view a group lives in: where `?all=<group>` opens, and where its "Show fewer" returns to. */

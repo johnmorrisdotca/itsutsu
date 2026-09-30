@@ -108,6 +108,29 @@ describe("dated releases", () => {
     expect(parseReleases("## 0.1.0 — 2026-01-01\n- x\n")[0].date).toBe("2026-01-01");
     expect(parseReleases("## 0.1.0 - 2026-01-01\n- x\n")[0].date).toBe("2026-01-01");
   });
+
+  it("reads the minute beside the day as a UTC instant, and a day alone as no time", () => {
+    const [timed, dayOnly] = parseReleases("## 0.2.0 — 2026-09-30 03:40 UTC\n- x\n\n## 0.1.0 — 2026-09-29\n- y\n");
+    expect(timed).toMatchObject({ date: "2026-09-30", at: "2026-09-30T03:40:00Z" });
+    expect(dayOnly).toMatchObject({ date: "2026-09-29", at: null });
+  });
+
+  it("does not read a time without its zone as a release", () => {
+    expect(parseReleases("## 0.1.0 — 2026-09-30 03:40\n- x\n")).toEqual([]);
+  });
+
+  /*
+   * The real file: every dated heading since the minute was added carries it,
+   * and the only dated ones without are the four split out of 0.221.0 — so a
+   * backfill that went missing, or a release taken by hand, shows here.
+   */
+  it("has a time on every dated release in CHANGELOG.md but the four split from 0.221.0", () => {
+    const markdown = readFileSync(join(process.cwd(), "CHANGELOG.md"), "utf8");
+    const untimed = parseReleases(markdown)
+      .filter((release) => release.date !== null && release.at === null)
+      .map((release) => release.version);
+    expect(untimed).toEqual(["0.225.0", "0.224.0", "0.223.0", "0.222.0"]);
+  });
 });
 
 describe("comparing versions", () => {
@@ -160,10 +183,10 @@ describe("the site's own changelog", () => {
  */
 describe("the edition being served", () => {
   const releases = [
-    { version: "0.64.0", date: null, notes: ["latest"] },
-    { version: "0.63.0", date: null, notes: ["before that"] },
-    { version: "0.55.1", date: null, notes: ["a listed patch"] },
-    { version: "0.55.0", date: null, notes: ["older"] },
+    { version: "0.64.0", date: null, at: null, notes: ["latest"] },
+    { version: "0.63.0", date: null, at: null, notes: ["before that"] },
+    { version: "0.55.1", date: null, at: null, notes: ["a listed patch"] },
+    { version: "0.55.0", date: null, at: null, notes: ["older"] },
   ];
 
   it("marks the release itself when the running version is one", () => {

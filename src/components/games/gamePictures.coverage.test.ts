@@ -287,6 +287,10 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/mine/MahjongTableCard.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleRuns.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleSolves.tsx": { GameThumb: "small" },
+  // Every game of every kind, a row each on the History tab.
+  "src/components/mine/MyHistory.tsx": { GameThumb: "small" },
+  // One game from the history, named as a card is: the page is about that game.
+  "src/app/games/[slug]/kept/[id]/page.tsx": { GameThumb: "regular" },
   "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },
   // A row per game of how this grade measured: a list, so a small picture.
   "src/components/players/LadderStrength.tsx": { GameThumb: "small" },

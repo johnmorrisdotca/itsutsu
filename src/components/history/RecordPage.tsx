@@ -18,6 +18,7 @@ import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { RivalryPanel } from "./RivalryPanel";
 import { GameTrail } from "@/components/games/GameTrail";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -108,9 +109,10 @@ export async function RecordPage({
     againstUnknown,
     againstName,
   } = await resolveMember(parsedAsked);
+  const testMode = await currentTestModeReader();
   const [page, whole] = await Promise.all([
-    fetchGameHistoryPage(asked),
-    fetchWholeRecord(asked),
+    fetchGameHistoryPage(asked, testMode),
+    fetchWholeRecord(asked, testMode),
   ]);
 
   const copy = variant === undefined ? null : RULE_VARIANT_DISPLAY[variant];
