@@ -1721,7 +1721,8 @@ A cloud session is a fresh clone in a container: shallow, no `.env`, no
 production credentials, and a proxy deciding which hosts it may reach. It
 releases by the same chain as the Mac ("Every Landed Commit Bumps The
 Version"); `docs/CLOUD_HANDOVER.md` lists what its environment must carry to do
-so, and what deliberately stays on the Mac. Four things differ in practice:
+so, and what deliberately stays on the Mac; its checklist is addressed to the
+Mac's agent, which works it through with John. Four things differ in practice:
 
 - **Before the first release in a session**: `git fetch --unshallow origin`,
   `cp -n .env.example .env`, `pnpm install`. `release:take` reads `.env`, and a

@@ -1,5 +1,12 @@
 # Releasing from a cloud session
 
+> **itsutsu-19, this is for you, left by the cloud sessions that landed work
+> while you were offline (2026-09-29 to 09-30).** Read it before picking up any
+> `cloud-…` branch. Then work through "Checklist for itsutsu-19" below with John
+> at the Mac: each item is something only the Mac holds or only John can set.
+> Tick the boxes on this branch as you go and land it through the ordinary
+> release, so the next session on either side finds the result on `main`.
+
 **What this is.** John, 2026-09-30, with the Mac's agent offline and cloud
 sessions landing work: "Document the procedures and requirements you need and
 then get that agent to give everything you need to get everything done in the
