@@ -617,6 +617,13 @@ html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
     grid-column: 2;
     grid-row: 1 / -1;
   }
+  /* Yacht: the sheet beside the tray is read at a glance, so in just the board it drops each box's hint and its buttons stand a little lower, and all thirteen rows fit the window. */
+  html[data-bare="true"] [data-bare-beside] [data-yacht-hint] {
+    display: none;
+  }
+  html[data-bare="true"] [data-bare-beside] .yacht-box {
+    min-height: 1.6rem;
+  }
   html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-bare-beside]) {
     width: min(100%, calc(100dvh - 16rem + 24rem + 1.5rem + 2rem));
   }

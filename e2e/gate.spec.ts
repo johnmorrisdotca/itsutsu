@@ -125,6 +125,8 @@ test.describe("the pages that stay open", () => {
       "/games/party",
       // And Dominoes, the other family page at an address of its own.
       "/games/dominoes",
+      // And Dice, another.
+      "/games/dice",
       "/learn",
       "/about",
     ]) {
@@ -182,6 +184,7 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/family",
       "/games/party",
       "/games/dominoes",
+      "/games/dice",
       // Chinese Checkers' own page, which offers the table and remembers a kept one in the browser, never on the server.
       "/games/chinese-checkers",
       // And Halma's, which offers its table for four the same way.

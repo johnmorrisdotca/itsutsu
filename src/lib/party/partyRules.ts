@@ -5,6 +5,7 @@ import { MEXICAN_TRAIN_RULES } from "./mexicanTrain/trainRules";
 import type { PartyKind, PartyPlays, PartyRules } from "./party.types";
 import { SUPERGHOST_RULES } from "./superghost/ghostRules";
 import { TENKA_RULES } from "./tenka/tenkaRules";
+import { YACHT_RULES } from "./yacht/yachtRules";
 import { CARD_GAME_RULES } from "../cardGames/cardGameRules";
 
 /**
@@ -18,5 +19,6 @@ export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], 
   mancala: MANCALA_RULES,
   tenka: TENKA_RULES,
   mexicanTrain: MEXICAN_TRAIN_RULES,
+  yacht: YACHT_RULES,
   ...CARD_GAME_RULES,
 };

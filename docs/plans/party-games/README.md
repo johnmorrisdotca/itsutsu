@@ -220,6 +220,49 @@ anywhere here. Tenka is from 天下取り, tenka-tori, "taking the realm".
   sea goes to the nearest territory within a fingertip; and the phase bar
   carries the dice.
 
+## Yacht 五つ賽: the first dice game, and the Dice shelf
+
+John, 2026-09-30: "Did we create a dice rolling game [where] you just roll a
+dice and have fun that way?" None existed; Tenka's battle dice were the only
+dice on the site. Yacht is the dice game everybody knows, under the name it
+was printed with before a company boxed it (that boxed name appears nowhere).
+
+- **Rules** (`src/lib/party/yacht/`): five dice, up to three rolls a turn,
+  holding any dice between rolls; then the dice go into one empty box of the
+  thirteen, a zero where they do not make it. Upper half (Ones to Sixes) the
+  sum of that number, 35 more at 63; three and four of a kind all five dice;
+  full house 25; small straight 30; large straight 40; Yacht 50; Chance all
+  five. Highest total wins, level totals share it. `yachtScore.ts` is the
+  arithmetic, `yacht.ts` the turns, `yachtCodec.ts` the kept text.
+- **Real randomness, never thrown again.** A game's seed is drawn fresh
+  (`freshSeed`) and each roll from the seed and how many rolls the game has
+  thrown, so nobody knows what is coming and a reload throws exactly what it
+  threw.
+- **Alone, pass and play, or against the computer.** The table seats one to
+  eight (`startYacht`); the party contract's `YACHT_RULES` asks for two or
+  more, since the gate refuses a table of one. The computer
+  (`yachtComputer.ts`) weighs every way of holding the dice by the best box
+  one more roll could make, counted exactly over every fall of the free dice,
+  against what each box usually scores.
+- **The tray** (`components/party/yacht/DiceTray.tsx`) is the reader's wood in
+  `BoardFrame`, wider than tall (the `map` aspect), the dice tumbling and
+  flickering for about two thirds of a second after a roll (none under reduced
+  motion), a held die ringed in vermilion. Tap a die to hold it; tap the tray
+  or Roll to throw. The dice's sound is made in the browser and is off until
+  turned on (`diceSound.ts`).
+- **The Dice family** (`families.data.ts` key `dice`, page `/games/dice`,
+  mark `Dice` in `FamilyMark.tsx`, drawn by `FamilyMarkPieces.tsx`): games
+  played with dice alone. Its own shelf because Party games already shows
+  eight. Like Dominoes it counts toward no award and stays off the set-up
+  screen. The dice roller another thread is building is meant to sit on it
+  too.
+
+Decisions to review: the kanji 五つ賽 ("five dice") for Yacht and 賽子 for the
+family; the thirteen-box sheet with the upper bonus rather than the older
+twelve-box Yacht sheet; no extra points for a second Yacht; two players (a
+person and the computer) as the set-up's default; alone offered as a table of
+one.
+
 ## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,

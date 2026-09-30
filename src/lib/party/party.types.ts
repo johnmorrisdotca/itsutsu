@@ -22,6 +22,7 @@ import type { MancalaGame } from "./mancala/mancala.types";
 import type { TrainGame, TrainMove } from "./mexicanTrain/mexicanTrain.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 import type { TenkaGame, TenkaMove } from "./tenka/tenka.types";
+import type { YachtGame, YachtMove } from "./yacht/yacht.types";
 import type { CardGameKind } from "../cardGames/cardGames.constants";
 import type { CardGamePlays } from "../cardGames/cardGameRules";
 
@@ -30,7 +31,7 @@ import type { CardGamePlays } from "../cardGames/cardGameRules";
  * Hearts, Big Two, President, Go Fish, Crazy Eights), which are party games
  * too — a table round one device — with a computer in any empty seat.
  */
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | CardGameKind;
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "yacht" | CardGameKind;
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -122,4 +123,5 @@ export type PartyPlays = {
   mancala: { game: MancalaGame; move: number };
   tenka: { game: TenkaGame; move: TenkaMove };
   mexicanTrain: { game: TrainGame; move: TrainMove };
+  yacht: { game: YachtGame; move: YachtMove };
 } & CardGamePlays;
