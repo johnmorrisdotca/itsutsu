@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, hiddenMemberIds, shownRatingWhere, type TestModeReader } from "@/lib/testMode/testMode";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { LISTED_ALREADY, ipByGameOf } from "@/lib/points/ipBoards";
@@ -118,7 +119,7 @@ export function scoreForBlack(winner: "black" | "white" | null): GameScore {
  * stands higher, and the name settles the rest — see `fetchLeaders`. Without
  * a total order the same page shows a different fifty each time it is loaded.
  */
-function ladderQuery(variant: string, pool: RatingPool) {
+function ladderQuery(variant: string, pool: RatingPool, hidden: readonly string[]) {
   const columns = POOL_COLUMNS[pool];
   return {
     /*
@@ -130,7 +131,7 @@ function ladderQuery(variant: string, pool: RatingPool) {
      * people would be reading the wrong half of the row and calling it a
      * standing, which is the fault the directory had until tonight.
      */
-    where: { variant, [columns.ratedGames]: { gt: 0 } } as never,
+    where: { variant, [columns.ratedGames]: { gt: 0 }, ...shownRatingWhere(hidden) } as never,
     orderBy: [
       { [columns.rating]: "desc" },
       { [columns.ratedGames]: "desc" },
@@ -142,7 +143,7 @@ function ladderQuery(variant: string, pool: RatingPool) {
 
 /** Who stands first on one game's ladder in one pool, or null when nobody does yet. */
 export async function fetchLadderLeader(variant: string, pool: RatingPool): Promise<{ key: string; memberId: string | null } | null> {
-  return prisma.playerVariantRating.findFirst({ ...ladderQuery(variant, pool), select: { key: true, memberId: true } });
+  return prisma.playerVariantRating.findFirst({ ...ladderQuery(variant, pool, await hiddenMemberIds(HIDES_TEST_MEMBERS)), select: { key: true, memberId: true } });
 }
 
 /** The leaderboard for one game: best first, unrated standings included, in the ladder's order. */
@@ -150,8 +151,9 @@ export async function fetchVariantLeaders(
   variant: string,
   limit: number,
   pool: RatingPool = RATING_POOLS.people,
+  testMode: TestModeReader = HIDES_TEST_MEMBERS,
 ): Promise<LadderStanding[]> {
-  const rows = await prisma.playerVariantRating.findMany({ ...ladderQuery(variant, pool), take: limit });
+  const rows = await prisma.playerVariantRating.findMany({ ...ladderQuery(variant, pool, await hiddenMemberIds(testMode)), take: limit });
   // The XP column, in one further read over this ladder's member ids — see
   // `xpOfMembers.ts` for why it is one query and what a null means.
   const [xp, tags] = await Promise.all([xpByMemberId(rows.map((row) => row.memberId)), nameTagsOf(rows.map((row) => row.memberId))]);
@@ -274,7 +276,7 @@ export function championsOf(standings: readonly VariantStanding[]): Map<string, 
  * has played rated is simply absent. This reads every standing, which is
  * members times games at most — small for a club, and one query.
  */
-export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
+export async function fetchChampions(testMode: TestModeReader = HIDES_TEST_MEMBERS): Promise<Map<string, VariantChampion>> {
   const rows = await prisma.playerVariantRating.findMany({
     // The comment above says a variant nobody has played rated is simply
     // absent, and until this line that was a description of what was meant
@@ -282,7 +284,7 @@ export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
     // whose only games were against a program. A game whose "champion" never
     // beat a person is not a champion, and the players and games tallies
     // beside the name counted the same rows.
-    where: { ratedGames: { gt: 0 } },
+    where: { ratedGames: { gt: 0 }, ...shownRatingWhere(await hiddenMemberIds(testMode)) },
     orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
   });
   const champions = championsOf(rows.map((row) => toStanding(row)));

@@ -52,7 +52,8 @@ the set-up screen for now to ship sooner. Name: John's, "WordDrop".
   list, source, licence and date beside it. See the rows for the candidates, and
   `WORD-04-kana.md` for the Japanese one, which has rules of its own.
 - A word of the day: one seed from the date, the same word for everybody.
-- When Other joins the set-up screen, `PuzzleBoardPreview` needs the word's
-  shape (rows of tiles), which it does not draw yet.
+- Other joined the set-up screen on 2026-09-30, once `PuzzleBoardPreview`
+  drew each of its puzzles.
 - A race seat that runs out of guesses sends nothing and reads as given up
-  after two hours; a race could say "out of guesses" at once instead.
+  after two hours; a race could say "out of guesses" at once instead. Needs
+  a column on `PuzzleRace` (a seat's own "gave up" stamp), so a migration.

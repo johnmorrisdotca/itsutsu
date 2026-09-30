@@ -28,6 +28,7 @@ import { DirectoryEmpty, DirectoryNarrowed } from "./DirectoryNarrowing";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { directoryActions } from "./directoryActions";
 import { closedToReader } from "@/lib/social/childReach";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * One member's row, worked out from their profile and what they played
@@ -271,7 +272,7 @@ export async function Directory({
   const refused = isRefusal(asked);
   const paging = refused ? directoryPagingFallback() : asked;
   const [page, reader] = await Promise.all([
-    fetchDirectoryPage({ paging, filter, now }),
+    currentTestModeReader().then((testMode) => fetchDirectoryPage({ paging, filter, now, testMode })),
     currentReader(),
   ]);
   // By member id, and only for an account: the rows' actions are the ones an invite holder cannot use.

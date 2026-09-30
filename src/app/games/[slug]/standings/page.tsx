@@ -24,6 +24,7 @@ import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { closedToReader } from "@/lib/social/childReach";
 import { GameTrail } from "@/components/games/GameTrail";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 export const metadata = { title: "Leaderboard 番付" };
 
@@ -51,9 +52,10 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
   const siblings = siblingsOf(variant);
+  const testMode = await currentTestModeReader();
   const [standings, againstComputers] = await Promise.all([
-    fetchVariantLeaders(variant, LEADERS),
-    fetchVariantLeaders(variant, LEADERS, RATING_POOLS.computer),
+    fetchVariantLeaders(variant, LEADERS, RATING_POOLS.people, testMode),
+    fetchVariantLeaders(variant, LEADERS, RATING_POOLS.computer, testMode),
   ]);
 
   /*

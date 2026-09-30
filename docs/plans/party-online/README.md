@@ -290,10 +290,9 @@ it.
      first. A computer's move and the lists are in the worker's own module
      (`onlineComputerMoves.ts`), never in a route's bundle.
    - Offered from Kumimoji's pass-and-play page, above the names, where the
-     number of players is already chosen. English only in practice: the kept
-     game's reader (`decodeParty`) accepts only English tiles, so a Japanese
-     table is refused at Start rather than stored unreadable — true of the
-     game kept on one device too, and worth a look of its own.
+     number of players is already chosen, in English or Japanese: the kept
+     game's reader (`decodeParty`) takes a Japanese set's tiles as the solo
+     game does, and `onlineKumimoji.test.ts` starts and plays a Japanese table.
 5. **Done: Superghost and Mancala** (`onlineWordGames.ts`,
    `e2e/party-online-words.spec.ts`). Mancala is a row through
    `fromPartyRules`: its `PartyRules` and the four things they do not say.

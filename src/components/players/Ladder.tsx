@@ -5,6 +5,7 @@ import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
 import { fetchLadderPage, readLadderPaging } from "@/lib/rating/ladder";
 import { isRefusal } from "@/lib/api/paging";
 import type { RecordSort } from "./recordSort";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * The site ladder: everybody by rating, best first — and by any other column
@@ -53,7 +54,7 @@ export async function Ladder({
   const paging = refused
     ? (readLadderPaging(new URLSearchParams()) as Exclude<typeof asked, { error: string }>)
     : asked;
-  const page = await fetchLadderPage(paging);
+  const page = await fetchLadderPage({ ...paging, testMode: await currentTestModeReader() });
 
   const sort: RecordSort = {
     at: "/players/ladder",

@@ -22,6 +22,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchChampions, type VariantChampion } from "@/lib/rating/variantRatings";
 import { SimpleChampions } from "@/components/players/SimpleChampions";
 import { ViewTabs } from "@/components/ui/ViewTabs";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 export const metadata = { title: "Champions" };
 
@@ -122,7 +123,7 @@ export default async function ChampionsPage({ searchParams }: PageProps<"/champi
    * full table, families and tiers and counts, is `?view=full`.
    */
   const full = (await searchParams).view === "full";
-  const champions = await fetchChampions();
+  const champions = await fetchChampions(await currentTestModeReader());
   return (
     <Page>
       <SiteHeader />

@@ -10,6 +10,13 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.444.0 — 2026-09-30
+- Gomoji, Tsunagi, Kumimoji and Koushi can be chosen on the New game screen, under Other, beside every other game and puzzle.
+
+## 0.443.4 — 2026-09-30
+- Test members are left out of the players list, here now, every game's ladder and standings, the champions and the puzzles' fastest tables, unless the operator has Test Mode on.
+- A Japanese Kumimoji table on several devices is held by tests, starting and playing like an English one.
+
 ## 0.443.3 — 2026-09-30
 - Kumimoji's try-it on the front door lists the word a blank wild makes, as the letter it was read as
 

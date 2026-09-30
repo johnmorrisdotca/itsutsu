@@ -10,6 +10,7 @@ import {
 import { isRefusal, parseCursor, parseLimit, parseSort } from "@/lib/api/paging";
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, hiddenMemberIds, shownRatingWhere, type TestModeReader } from "@/lib/testMode/testMode";
 import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
@@ -115,19 +116,23 @@ export async function fetchLadderPage({
   sort,
   limit,
   cursor,
+  testMode = HIDES_TEST_MEMBERS,
 }: {
   sort: LadderSort;
   limit: number;
   cursor: string | null;
+  /** Whether the reader is the operator with Test Mode on; anybody else never sees a test member (`testMode.ts`). */
+  testMode?: TestModeReader;
 }): Promise<LadderPage> {
   const after = cursor === null ? null : decodeCursor(cursor, sort);
+  const listed: Prisma.PlayerWhereInput = { AND: [ON_THE_LADDER, shownRatingWhere(await hiddenMemberIds(testMode))] };
   const where: Prisma.PlayerWhereInput =
     after === null
-      ? ON_THE_LADDER
-      : { AND: [ON_THE_LADDER, keysetWhere(LADDER_SORT_SPEC, sort, after)] };
+      ? listed
+      : { AND: [listed, keysetWhere(LADDER_SORT_SPEC, sort, after)] };
 
   const [total, read] = await Promise.all([
-    prisma.player.count({ where: ON_THE_LADDER }),
+    prisma.player.count({ where: listed }),
     prisma.player.findMany({
       where,
       orderBy: keysetOrderBy(LADDER_SORT_SPEC, sort) as Prisma.PlayerOrderByWithRelationInput[],

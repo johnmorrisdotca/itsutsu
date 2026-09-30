@@ -10,6 +10,7 @@ import {
 import { isRefusal, parseCursor, parseLimit, parseSort } from "@/lib/api/paging";
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, hiddenMembersWhere, type TestModeReader } from "@/lib/testMode/testMode";
 import type { Prisma } from "@prisma/client";
 
 import { DIRECTORY_SORT_SPEC, type DirectorySortField } from "./directory.sort";
@@ -144,11 +145,14 @@ export async function fetchDirectoryPage({
   paging,
   filter,
   now,
+  testMode = HIDES_TEST_MEMBERS,
 }: {
   paging: DirectoryPaging;
   filter: DirectoryFilter;
   /** When "seen lately" is being measured from, so a page is testable. */
   now: Date;
+  /** Whether the reader is the operator with Test Mode on; anybody else never sees a test member (`testMode.ts`). */
+  testMode?: TestModeReader;
 }): Promise<DirectoryPage> {
   const { sort, limit, cursor } = paging;
   /*
@@ -157,7 +161,8 @@ export async function fetchDirectoryPage({
    * nothing at all for the one that costs something.
    */
   const settledIds = filter.settled ? await membersWithSettledRatings() : null;
-  const narrowed = directoryWhere(filter, settledIds, now.getTime());
+  const shown: Prisma.MemberWhereInput = hiddenMembersWhere(testMode);
+  const narrowed: Prisma.MemberWhereInput = { AND: [directoryWhere(filter, settledIds, now.getTime()), shown] };
 
   /*
    * The pin only applies to the order nobody asked for. `asked` is false for a
@@ -180,7 +185,7 @@ export async function fetchDirectoryPage({
     after === null ? paged : { AND: [paged, keysetWhere(DIRECTORY_SORT_SPEC, sort, after)] };
 
   const [total, matching, read, pinned] = await Promise.all([
-    prisma.member.count(),
+    prisma.member.count({ where: shown }),
     narrowsAnything(filter) ? prisma.member.count({ where: narrowed }) : null,
     prisma.member.findMany({
       where,
@@ -204,9 +209,8 @@ export async function fetchDirectoryPage({
   ]);
 
   const { rows, next } = nextCursorFrom(DIRECTORY_SORT_SPEC, sort, read, limit);
-  const shown = [...rows, ...pinned];
   return {
-    items: await toDirectory(shown),
+    items: await toDirectory([...rows, ...pinned]),
     next,
     matching: matching ?? total,
     total,
