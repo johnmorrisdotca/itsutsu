@@ -98,6 +98,8 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/tenka", "Tenka's rules and map for its rules page, a kept game and a table read on the server."],
   ["@johnmorrisdotca/tenka/shapes", "The map's outlines, drawn on the server for the table's first paint."],
   ["@johnmorrisdotca/kumimoji", "Kumimoji's tiles, judging and tables for its pages, as before it was a package; never its word lists."],
+  /* Tane, 48 KB whole (1.0.1): the seeded random and the day's seed, which the server needs to name a daily puzzle and to check a game's dice. */
+  ["@johnmorrisdotca/tane", "The seeded random and the daily seed, used by the server as by the browser."],
 ]);
 
 /*

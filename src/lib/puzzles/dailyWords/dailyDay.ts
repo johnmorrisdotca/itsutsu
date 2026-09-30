@@ -1,3 +1,5 @@
+import { dayKey, dayOfSeed, isDayKey as taneIsDayKey } from "@johnmorrisdotca/tane";
+
 import { DAILY_SEED_BLOCK } from "../random";
 
 /**
@@ -25,14 +27,12 @@ const DAY_MS = 86_400_000;
 
 /** The UTC day a moment falls in, `YYYY-MM-DD`. */
 export function dayKeyOf(now: Date): string {
-  return now.toISOString().slice(0, 10);
+  return dayKey(now);
 }
 
 /** Whether a text is a real date written `YYYY-MM-DD`: 2026-02-30 is not. */
 export function isDayKey(text: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
-  const at = Date.parse(`${text}T00:00:00Z`);
-  return !Number.isNaN(at) && dayKeyOf(new Date(at)) === text;
+  return taneIsDayKey(text);
 }
 
 /** Midnight UTC at the start of a day. */
@@ -87,10 +87,10 @@ export function dailyWordSeed(day: string): number {
 }
 
 /**
- * The seeds past the last day the daily words name: the year 3000 on, which
- * is a Yotsugo's block (`yotsugoSeed.ts`), four words at once.
+ * The first day past the last the daily words name: the year 3000 on, whose
+ * seeds are a Yotsugo's block (`yotsugoSeed.ts`), four words at once.
  */
-const PAST_THE_LAST_DAY = 30_000_000;
+const PAST_THE_LAST_DAY = "3000-01-01";
 
 /**
  * The day a seed names, or null for a seed that names none: outside the
@@ -99,10 +99,7 @@ const PAST_THE_LAST_DAY = 30_000_000;
  * as always".
  */
 export function dayOfDailyWordSeed(seed: number): string | null {
-  const offset = seed - DAILY_SEED_BLOCK.from;
-  if (!Number.isInteger(offset) || offset < 0 || offset >= Math.min(DAILY_SEED_BLOCK.size, PAST_THE_LAST_DAY)) return null;
-  const digits = String(offset).padStart(8, "0");
-  const day = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
-  if (!isDayKey(day) || dayIndexOf(day) < 0) return null;
+  const day = dayOfSeed(seed, DAILY_SEED_BLOCK);
+  if (day === null || day >= PAST_THE_LAST_DAY || dayIndexOf(day) < 0) return null;
   return day;
 }

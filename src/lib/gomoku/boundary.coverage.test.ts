@@ -21,8 +21,11 @@ import { describe, expect, it } from "vitest";
  * not travel with the engine anyway.
  *
  * The allowed outside imports are Node's own modules, which the ladder's
- * fingerprint reads files with at build time. Anything else needs a reason
- * written here.
+ * fingerprint reads files with at build time, and Tane (`@johnmorrisdotca/tane`,
+ * github.com/johnmorrisdotca/tane), the seeded random the rules draw dead squares and next
+ * pieces from: it is already a public, dependency-free package of its own, so
+ * the engine lifted out would name it as a dependency and nothing else would
+ * change. Anything else needs a reason written here.
  */
 
 const ROOT = "src/lib/gomoku";
@@ -41,7 +44,7 @@ function importsOf(text: string): string[] {
 }
 
 function allowed(module: string): boolean {
-  return module.startsWith(".") || module.startsWith("node:");
+  return module.startsWith(".") || module.startsWith("node:") || module === "@johnmorrisdotca/tane";
 }
 
 describe("the engine's boundary", () => {
