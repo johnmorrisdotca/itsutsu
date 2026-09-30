@@ -4,723 +4,726 @@ What changed, in a player's words. Versions follow semver as the site reads it: 
 
 The site calls itself **Beta** whatever the number says: real accounts and persisted ratings are past alpha.
 
-**`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
+**`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date> <time> UTC`, the UTC day and minute it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. The dated headings written before the minute was added (0.450.0) had theirs copied from their release commits; 0.222.0 to 0.225.0 have no commit of their own and keep the day alone. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
 **One feature, one version.** John, 2026-09-21: "each feature is a version increase". A number is what a reader points at — "the one where Honeycomb arrived" — and a release carrying five things is a number that names none of them. `pnpm release:take` refuses a minor with more than one `--summary` for that reason; a **patch** may still carry several, because a pile of small fixes is one release by nature and nobody points at the version a typo went out in. Several releases still land in ONE push: the push is the deployment, the number is not, so this costs no build.
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
-## 0.449.1 — 2026-09-30
+## 0.450.0 — 2026-09-30 04:51 UTC
+- Touching a release's date on the What's new page writes out the day and time it was released, in your own time zone
+
+## 0.449.1 — 2026-09-30 04:50 UTC
 - A browser test no longer leaves Gomoji drawn as Tiles for the tests after it, which had held back the FreeCell and Spider release.
 
-## 0.449.0 — 2026-09-30
+## 0.449.0 — 2026-09-30 03:59 UTC
 - Spider arrives in the Cards family: two decks in ten columns, played with one, two or four suits, making eight runs from King down to Ace, and every deal one that can be won.
 
-## 0.448.0 — 2026-09-30
+## 0.448.0 — 2026-09-30 03:59 UTC
 - FreeCell arrives in the Cards family: every card face up in eight columns, with four, three or two free cells to work with, and every deal one that can be won.
 
-## 0.447.0 — 2026-09-30
+## 0.447.0 — 2026-09-30 03:48 UTC
 - Itsutsu can live on a phone's home screen like an app: it opens full screen on the games list with its own icon and launch screen, and the games list shows how to add it, with the phone's own steps.
 
-## 0.446.0 — 2026-09-30
+## 0.446.0 — 2026-09-30 03:36 UTC
 - Mexican Train can be played on several devices: seat buddies, anyone with the link or the computer, and each player lays from their own phone or computer, seeing only their own tiles.
 
-## 0.445.0 — 2026-09-30
+## 0.445.0 — 2026-09-30 03:36 UTC
 - Tenka can be played on several devices: choose Several devices at its set-up, seat a buddy or anyone with the link, and each player takes their turns on their own phone or computer, seeing their own cards.
 
-## 0.444.0 — 2026-09-30
+## 0.444.0 — 2026-09-30 03:12 UTC
 - Gomoji, Tsunagi, Kumimoji and Koushi can be chosen on the New game screen, under Other, beside every other game and puzzle.
 
-## 0.443.4 — 2026-09-30
+## 0.443.4 — 2026-09-30 03:12 UTC
 - Test members are left out of the players list, here now, every game's ladder and standings, the champions and the puzzles' fastest tables, unless the operator has Test Mode on.
 - A Japanese Kumimoji table on several devices is held by tests, starting and playing like an English one.
 
-## 0.443.3 — 2026-09-30
+## 0.443.3 — 2026-09-30 01:58 UTC
 - Kumimoji's try-it on the front door lists the word a blank wild makes, as the letter it was read as
 
-## 0.443.2 — 2026-09-30
+## 0.443.2 — 2026-09-30 01:39 UTC
 - While a game is played, My games and Report a problem stay in the bar, so a game left half way can be found and a problem met in play reported
 
-## 0.443.1 — 2026-09-30
+## 0.443.1 — 2026-09-30 01:05 UTC
 - Tsunagi bridges: the line going down passes under the bridge
 
-## 0.443.0 — 2026-09-30
+## 0.443.0 — 2026-09-30 01:05 UTC
 - While a game is played the site steps back: the sections, New game, your figures, a table's title and the footer hide, and come back for set-up and the finished table
 
-## 0.442.3 — 2026-09-30
+## 0.442.3 — 2026-09-30 01:05 UTC
 - Kumimoji tables side by side start level, and an empty hand says it has no tiles
 
-## 0.442.2 — 2026-09-30
+## 0.442.2 — 2026-09-30 01:05 UTC
 - Kumimoji at a table: one trade a turn
 
-## 0.442.1 — 2026-09-30
+## 0.442.1 — 2026-09-30 01:04 UTC
 - Kumimoji: a wild laid without a letter reads as whichever letter makes the word, so D, a blank wild, O, N, E is DRONE rather than refused
 
-## 0.442.0 — 2026-09-29
+## 0.442.0 — 2026-09-29 15:32 UTC
 - Every finished game now offers its wallpaper, for a desk or a phone: puzzles, card games, Solitaire, Mahjong and the tables, not only the board games.
 
-## 0.441.1 — 2026-09-29
+## 0.441.1 — 2026-09-29 15:32 UTC
 - Just the board no longer scrolls on a desk for any game: the board fits the window's height and its controls sit beside it.
 
-## 0.441.0 — 2026-09-29
+## 0.441.0 — 2026-09-29 15:32 UTC
 - Winning is marked on the board: it flashes once, then a card over the board says you won, with your time, the XP and the next step, in the puzzles, card games, Solitaire, Mexican Train, Tenka and the other tables.
 
-## 0.440.1 — 2026-09-29
+## 0.440.1 — 2026-09-29 15:32 UTC
 - In the players tables, Play and ⋯ no longer take a column: they float over the end of a row when you hover it with a mouse or tap it on a phone, so every figure shows whole.
 
-## 0.440.0 — 2026-09-29
+## 0.440.0 — 2026-09-29 15:32 UTC
 - Wide mode on a desk: Tenka's map takes the page's width once play starts, and the colour picker shrinks to a small control beside whose turn it is.
 
-## 0.439.2 — 2026-09-29
+## 0.439.2 — 2026-09-29 15:32 UTC
 - A board opened on its own (⤢) now fits a desk's window with nothing to scroll, a finished puzzle included.
 
-## 0.439.1 — 2026-09-29
+## 0.439.1 — 2026-09-29 15:32 UTC
 - The puzzles' middle board size is called Standard, not Usual.
 
-## 0.439.0 — 2026-09-29
+## 0.439.0 — 2026-09-29 10:29 UTC
 - Five family card games round one device: Hearts, Big Two, President, Go Fish and Crazy Eights, with a computer in any seat
 
-## 0.438.1 — 2026-09-29
+## 0.438.1 — 2026-09-29 10:18 UTC
 - The piece colour buttons are big enough for a finger on a phone
 
-## 0.438.0 — 2026-09-29
+## 0.438.0 — 2026-09-29 10:04 UTC
 - Choose the colour of your own pieces, Deep Red, Blue, Green, Plum and more, at set-up or on your first move, and change it whenever you like
 
-## 0.437.0 — 2026-09-29
+## 0.437.0 — 2026-09-29 09:51 UTC
 - Mexican Train: dominoes for two to eight round one device, with computer players in any seat
 
-## 0.436.0 — 2026-09-29
+## 0.436.0 — 2026-09-29 09:51 UTC
 - Solitaire: classic Klondike on our own cards, draw one or three, every card draggable, winnable deals by default
 
-## 0.435.0 — 2026-09-29
+## 0.435.0 — 2026-09-29 09:51 UTC
 - Mahjong Solitaire 牌合わせ: clear the tiles in matching pairs from four layouts, alone or taking turns with up to three others
 
-## 0.434.0 — 2026-09-29
+## 0.434.0 — 2026-09-29 09:51 UTC
 - Buttons, labels and titles across the site say things the way you would expect: Leaderboard, Game history, Objective, Practice board, Online now
 
-## 0.433.2 — 2026-09-29
+## 0.433.2 — 2026-09-29 09:32 UTC
 - The site's largest server function is 4 MB smaller: the header no longer carries a whole validation library nine times, and the word lists a browser fetches stay out of the server
 
-## 0.433.1 — 2026-09-29
+## 0.433.1 — 2026-09-29 08:46 UTC
 - The browser checks that held 0.433.0 now scroll Picture logic's rows into view before dragging, and accept each Gomoji mode's number of guesses
 
-## 0.433.0 — 2026-09-29
+## 0.433.0 — 2026-09-29 08:25 UTC
 - Pair Go, Kumimoji, Superghost and Mancala can be played on several devices, with a Go program or a Kumimoji computer in a seat
 
-## 0.432.0 — 2026-09-29
+## 0.432.0 — 2026-09-29 08:25 UTC
 - Gomoji is one game: choose English, French, German or Japanese, and the pop-culture word list, on its set-up
 
-## 0.431.0 — 2026-09-29
+## 0.431.0 — 2026-09-29 08:25 UTC
 - Every game and puzzle offers Just the board: the board and its few controls, nothing else
 
-## 0.430.0 — 2026-09-29
+## 0.430.0 — 2026-09-29 08:25 UTC
 - On a wide screen every board can be drawn Regular, Large or Full, and the choice is remembered for that kind of screen
 
-## 0.429.0 — 2026-09-29
+## 0.429.0 — 2026-09-29 08:25 UTC
 - Tenka 天下: take the world a territory at a time, for two to six round one phone or tablet
 
-## 0.428.0 — 2026-09-29
+## 0.428.0 — 2026-09-29 08:25 UTC
 - Picture logic 絵解き: shade the squares the clues ask for and a picture appears, from 5×5 to 20×20, every puzzle with one answer
 
-## 0.427.0 — 2026-09-29
+## 0.427.0 — 2026-09-29 07:34 UTC
 - Dots and Boxes, Chinese Checkers, Halma and Block Five can be played on several devices: invite buddies or send a link to each seat
 
-## 0.426.4 — 2026-09-29
+## 0.426.4 — 2026-09-29 07:34 UTC
 - On a phone the account menu sits at the top right beside the logo, and New game shares the row with the tabs
 
-## 0.426.3 — 2026-09-29
+## 0.426.3 — 2026-09-29 07:34 UTC
 - Gomoji gives every word length the same number of rows at each level, and Futago on a phone is one board whose letters fit their squares
 
-## 0.426.2 — 2026-09-29
+## 0.426.2 — 2026-09-29 07:34 UTC
 - Buttons, labels and the pieces you play with no longer turn blue when you drag across them or press Select All; words you might copy still can be
 
-## 0.426.1 — 2026-09-29
+## 0.426.1 — 2026-09-29 07:34 UTC
 - Bridges' Check, Show and Hint are tested the way a reader uses them, by laying a bridge
 
-## 0.426.0 — 2026-09-29
+## 0.426.0 — 2026-09-29 07:00 UTC
 - Mancala 種まき for two, by Kalah or Oware rules, round one device
 
-## 0.425.0 — 2026-09-29
+## 0.425.0 — 2026-09-29 07:00 UTC
 - Bridges 橋, a new logic puzzle: join numbered islands with bridges, in a new family, Logic puzzles 理詰め
 
-## 0.424.2 — 2026-09-29
+## 0.424.2 — 2026-09-29 07:00 UTC
 - Tsunagi's marble numbers fit inside their marbles on every board, 4x4 to 12x12
 
-## 0.424.1 — 2026-09-29
+## 0.424.1 — 2026-09-29 07:00 UTC
 - In dark mode, tiles, puzzle paper and board coordinates read again: letters on white were drawn in the dark theme's pale ink
 
-## 0.424.0 — 2026-09-29
+## 0.424.0 — 2026-09-29 06:22 UTC
 - Superghost 幽霊 for two to eight, in English or Japanese: add a letter to either end, never finish a word, challenge a bluff
 
-## 0.423.1 — 2026-09-29
+## 0.423.1 — 2026-09-29 05:41 UTC
 - Dots and Boxes reaches the site: a set-up check looked for it where only board games are offered
 
-## 0.423.0 — 2026-09-29
+## 0.423.0 — 2026-09-29 05:30 UTC
 - Dots and Boxes 陣取り for two to six, round one device: close a box to claim it and draw again
 
-## 0.422.1 — 2026-09-29
+## 0.422.1 — 2026-09-29 05:20 UTC
 - A puzzle can be kept once on each clock, the old key without the clock removed
 
-## 0.422.0 — 2026-09-29
+## 0.422.0 — 2026-09-29 05:20 UTC
 - Block Five for four 四人積み: a corner each, twenty-one pieces each, touching your own only corner to corner, round one device
 
-## 0.421.1 — 2026-09-29
+## 0.421.1 — 2026-09-29 05:00 UTC
 - The suite's own build reads the games list fresh, as the live site's hour-long cache must not be tested; the untimed fastest times lead to untimed solves only
 
-## 0.421.0 — 2026-09-29
+## 0.421.0 — 2026-09-29 04:42 UTC
 - Gomoji Yotsugo 四つ子: four hidden words at once, every guess marked against all four
 
-## 0.420.1 — 2026-09-29
+## 0.420.1 — 2026-09-29 04:42 UTC
 - Reading the games list or the front page without an account no longer wakes the database, which costs less to run
 
-## 0.420.0 — 2026-09-29
+## 0.420.0 — 2026-09-29 04:42 UTC
 - A countdown on every puzzle: no clock, Tortoise 亀 5:00, Fox 狐 3:00 or Rabbit 兎 1:00, each with its own fastest table
 
-## 0.419.0 — 2026-09-29
+## 0.419.0 — 2026-09-29 04:42 UTC
 - Halma for two or four players, passed round one device, each racing to the far corner
 
-## 0.418.2 — 2026-09-29
+## 0.418.2 — 2026-09-29 04:18 UTC
 - A kept puzzle's old database key, replaced when Kumimoji's Diagonals arrived, is removed
 
-## 0.418.1 — 2026-09-29
+## 0.418.1 — 2026-09-29 04:18 UTC
 - Signing up and the join page ask for the site's settings once in ten minutes instead of every time, which costs less to run
 
-## 0.418.0 — 2026-09-29
+## 0.418.0 — 2026-09-29 04:17 UTC
 - Pair Go ペア碁: two teams of two take turns at Go on one device, no talking
 
-## 0.417.1 — 2026-09-29
+## 0.417.1 — 2026-09-29 02:37 UTC
 - A Full or Double Kumimoji is made in about a second; one could take minutes on 'Making your puzzle…'
 
-## 0.417.0 — 2026-09-29
+## 0.417.0 — 2026-09-29 02:16 UTC
 - Kumimoji's Diagonals: a set-up choice where words also run corner to corner, three letters and up
 
-## 0.416.0 — 2026-09-29
+## 0.416.0 — 2026-09-29 01:34 UTC
 - Kumimoji: six or more players choose the Double set's 288 tiles, marked recommended
 
-## 0.415.0 — 2026-09-29
+## 0.415.0 — 2026-09-29 01:34 UTC
 - Kumimoji pass and play: any seat can be a computer, playing its turn in your browser
 
-## 0.414.0 — 2026-09-29
+## 0.414.0 — 2026-09-29 01:34 UTC
 - Kumimoji pass and play: players join and leave between turns, and a leaver's tiles go back in the bag
 
-## 0.413.0 — 2026-09-29
+## 0.413.0 — 2026-09-29 01:06 UTC
 - Party games 団欒: a shelf of the games a group plays round one device, starting with Chinese Checkers and Kumimoji
 
-## 0.412.0 — 2026-09-29
+## 0.412.0 — 2026-09-29 01:06 UTC
 - Chinese Checkers for two, three, four or six players, passed round one phone or tablet
 
-## 0.411.0 — 2026-09-29
+## 0.411.0 — 2026-09-29 01:06 UTC
 - Kumimoji's page shows it being played, lets you try a hand right there, and its rules count every English and Japanese tile
 
-## 0.410.0 — 2026-09-29
+## 0.410.0 — 2026-09-29 00:45 UTC
 - Kumimoji pass and play: two to eight players round one device, every table face up, a last turn for everyone once somebody goes out
 
-## 0.409.1 — 2026-09-29
+## 0.409.1 — 2026-09-29 00:21 UTC
 - Kumimoji's settings reach the site: its saved-game index is given the name the database check expects
 
-## 0.409.0 — 2026-09-29
+## 0.409.0 — 2026-09-29 00:11 UTC
 - Kumimoji's table zooms out much further, to see a big crossword whole
 
-## 0.408.0 — 2026-09-29
+## 0.408.0 — 2026-09-29 00:11 UTC
 - The move-and-zoom arrows on Kumimoji's table and Tsunagi's big boards stay out of sight until you ask for them
 
-## 0.407.0 — 2026-09-29
+## 0.407.0 — 2026-09-29 00:11 UTC
 - A wallpaper of the Kumimoji crosswords you have built, to download for a desktop or a phone
 
-## 0.406.0 — 2026-09-29
+## 0.406.0 — 2026-09-29 00:11 UTC
 - Kumimoji's Turn turns the table a quarter at a time, and every tile stays upright
 
-## 0.405.0 — 2026-09-29
+## 0.405.0 — 2026-09-29 00:11 UTC
 - Kumimoji's Help, chosen before the game, arranges your hand into a word, a different one each press
 
-## 0.404.0 — 2026-09-29
+## 0.404.0 — 2026-09-29 00:11 UTC
 - Tap a Kumimoji tile on the table twice and it goes straight back to your hand
 
-## 0.403.0 — 2026-09-29
+## 0.403.0 — 2026-09-29 00:11 UTC
 - Kumimoji's Sort puts your hand in order, A to Z or あいうえお, and the / key does the same
 
-## 0.402.0 — 2026-09-29
+## 0.402.0 — 2026-09-29 00:11 UTC
 - Kumimoji's wild tiles, the 五 of the logo over its five stones: plenty at Easy, fewer at Medium, none at Hard
 
-## 0.401.0 — 2026-09-29
+## 0.401.0 — 2026-09-29 00:11 UTC
 - Kumimoji in Japanese: 144 hiragana tiles, each playing as its voiced and small forms, and every word from JMdict
 
-## 0.400.0 — 2026-09-29
+## 0.400.0 — 2026-09-29 00:10 UTC
 - Kumimoji plays Short, Medium or Full games, and in English a Double set of 288 tiles
 
-## 0.399.1 — 2026-09-28
+## 0.399.1 — 2026-09-28 22:56 UTC
 - Gomoji's word lists load only when a puzzle needs them, one copy each, so the site's server code is smaller.
 
-## 0.399.0 — 2026-09-27
+## 0.399.0 — 2026-09-27 02:44 UTC
 - Tsunagi's set-up shows the chosen level's own board as you pick it from the block below, and Start plays that level.
 
-## 0.398.1 — 2026-09-27
+## 0.398.1 — 2026-09-27 02:24 UTC
 - A puzzle's header keeps its width while you play, so the board never jumps under your finger when the attempts or the clock tick over.
 
-## 0.398.0 — 2026-09-27
+## 0.398.0 — 2026-09-27 01:50 UTC
 - Tsunagi at 12×12: 128 levels with every lesson but wrap, four more colours to sixteen, and the board sizes shown four to a page.
 
-## 0.397.0 — 2026-09-27
+## 0.397.0 — 2026-09-27 00:19 UTC
 - Tsunagi has Allow cheating at set-up and a Cheat button that draws one line for you; a cheated solve counts but earns no points and stays off the fastest tables.
 
-## 0.396.0 — 2026-09-27
+## 0.396.0 — 2026-09-27 00:19 UTC
 - Tsunagi's explosions can be softened or switched off at set-up; a solve made that way counts but earns no points, and with them off it opens no new block.
 
-## 0.395.0 — 2026-09-26
+## 0.395.0 — 2026-09-26 23:43 UTC
 - Tsunagi has a stroke limit and sparse boards of few, long lines, two more lessons up the ladder.
 
-## 0.394.0 — 2026-09-26
+## 0.394.0 — 2026-09-26 23:14 UTC
 - Tsunagi has hexagon boards: six neighbours a cell, a later lesson at 5×5, 7×7 and 9×9.
 
-## 0.393.0 — 2026-09-26
+## 0.393.0 — 2026-09-26 22:48 UTC
 - Tsunagi has explosions: every so many strokes a drawn line breaks, the fifth lesson up the ladder.
 
-## 0.392.2 — 2026-09-26
+## 0.392.2 — 2026-09-26 22:33 UTC
 - Tsunagi's locked level numbers are readable on every board colour.
 
-## 0.392.1 — 2026-09-26
+## 0.392.1 — 2026-09-26 22:14 UTC
 - A Tsunagi solve's page shows its board: the marbles as dealt while its answer is kept back, and its lines once you have solved that level.
 
-## 0.392.0 — 2026-09-26
+## 0.392.0 — 2026-09-26 22:14 UTC
 - Tsunagi at 10×10 and 11×11, with buttons to zoom, move and fit the board, and the wheel zooming it.
 
-## 0.391.3 — 2026-09-26
+## 0.391.3 — 2026-09-26 21:40 UTC
 - The checks give Tsunagi's level proofs the time they need on the build machines.
 
-## 0.391.2 — 2026-09-26
+## 0.391.2 — 2026-09-26 21:37 UTC
 - The checks give Tsunagi's level proofs the time they need on the build machines.
 
-## 0.391.1 — 2026-09-26
+## 0.391.1 — 2026-09-26 21:30 UTC
 - Tsunagi's 9×9 levels with walls keep their solves again: since 0.388.0 thirteen of them were refused as too long.
 
-## 0.391.0 — 2026-09-26
+## 0.391.0 — 2026-09-26 21:17 UTC
 - Tsunagi has wrap-around boards: a line leaving one edge comes back on the other, the fourth lesson up the ladder.
 
-## 0.390.0 — 2026-09-26
+## 0.390.0 — 2026-09-26 21:17 UTC
 - Tsunagi has waypoints: a ring its colour's line must pass through, the third lesson up the ladder.
 
-## 0.389.0 — 2026-09-26
+## 0.389.0 — 2026-09-26 20:48 UTC
 - Every Tsunagi level shows its difficulty and its challenges in a row of chips, and the board of levels marks each block's new lesson and its test.
 
-## 0.388.0 — 2026-09-26
+## 0.388.0 — 2026-09-26 20:48 UTC
 - Tsunagi has walls and blocked cells, the next lesson up the ladder.
 
-## 0.387.0 — 2026-09-26
+## 0.387.0 — 2026-09-26 20:48 UTC
 - Tsunagi has bridges: a cell where one line crosses another, taught at a block's 15th level and tested at its 16th.
 
-## 0.386.0 — 2026-09-26
+## 0.386.0 — 2026-09-26 20:08 UTC
 - Tsunagi has 256 levels at each size (192 at 4×4), in blocks of 16, ranked easiest to hardest by a measured difficulty; every solve stays on the board it was played on.
 
-## 0.385.3 — 2026-09-26
+## 0.385.3 — 2026-09-26 19:51 UTC
 - Admin's members list keeps each member's buttons in their row on every width.
 
-## 0.385.2 — 2026-09-26
+## 0.385.2 — 2026-09-26 19:42 UTC
 - My games: each row's main button is Your move or Open, and Resign is in a small menu, never one tap away.
 - Admin's Access and Members pages fit a phone.
 - A game's full-screen review shows only the board and its scrubber, centred.
 
-## 0.385.1 — 2026-09-26
+## 0.385.1 — 2026-09-26 19:24 UTC
 - Tsunagi's next level is always the lowest one you have not finished, and it says so.
 - A player's page keeps its tab when the Include worldwide box is pressed.
 
-## 0.385.0 — 2026-09-26
+## 0.385.0 — 2026-09-26 19:24 UTC
 - Tsunagi has a Check button that flashes every pair not yet joined.
 
-## 0.384.0 — 2026-09-26
+## 0.384.0 — 2026-09-26 19:24 UTC
 - Tsunagi: a solved level opens on its finished board, Restart plays it again, and your attempts at each level are counted.
 
-## 0.383.2 — 2026-09-26
+## 0.383.2 — 2026-09-26 19:06 UTC
 - My games' rows keep their Resign question inside the card on every page width.
 
-## 0.383.1 — 2026-09-26
+## 0.383.1 — 2026-09-26 18:56 UTC
 - Admin's tabs have short, plain names: Access, Settings, Members, Bots, Tickets, Reports, Log.
 - Open seats on a phone: a game's name and its time limit no longer overlap.
 - My games on a phone: the Resign question wraps inside its card.
 
-## 0.383.0 — 2026-09-26
+## 0.383.0 — 2026-09-26 18:56 UTC
 - Every tab has an address of its own: /admin/settings, /me/profile, /players/bots, /play/completed, /games/list, a player's /goldtoken.
 
-## 0.382.0 — 2026-09-26
+## 0.382.0 — 2026-09-26 18:56 UTC
 - A master switch for game emails on Admin's settings, off by default and locked off wherever email is not set up.
 
-## 0.381.1 — 2026-09-26
+## 0.381.1 — 2026-09-26 11:29 UTC
 - Tsunagi's page names every board it offers, up to 9×9.
 - Tsunagi's board sizes never run off the page: they wrap under the board of levels where there is no room beside it.
 - The email a finished game will send says who won and why, how long it took, and links to the final position and a rematch.
 
-## 0.381.0 — 2026-09-26
+## 0.381.0 — 2026-09-26 11:29 UTC
 - Choose what Itsutsu emails you about, one kind at a time, in Settings and when you join.
 
-## 0.380.0 — 2026-09-26
+## 0.380.0 — 2026-09-26 11:29 UTC
 - Every email from Itsutsu says how to stop getting it: one press, no sign-in, and your mail program's own Unsubscribe works too.
 
-## 0.379.0 — 2026-09-26
+## 0.379.0 — 2026-09-26 11:29 UTC
 - Pop Gomoji: find a hidden pop-culture word of three to seven letters, with its category as the clue.
 
-## 0.378.0 — 2026-09-26
+## 0.378.0 — 2026-09-26 11:29 UTC
 - Tsunagi fills every line with marbles of its colour, so a finished board is a board of marbles; turn it off with Lines.
 
-## 0.377.0 — 2026-09-26
+## 0.377.0 — 2026-09-26 10:36 UTC
 - Every player's name looks the same in every list: name, flag, badge and level, on Buddies and the ladder too.
 
-## 0.376.1 — 2026-09-26
+## 0.376.1 — 2026-09-26 10:31 UTC
 - A puzzle's set-up screen leads with Resume when you have one of it going, as its own page does.
 - Kumimoji's picture shows its ruled light-brown board.
 - Every board-colour picker lists your own gold board first.
 
-## 0.376.0 — 2026-09-26
+## 0.376.0 — 2026-09-26 10:31 UTC
 - Kumimoji has buttons beside Fit to move and zoom the table.
 
-## 0.375.0 — 2026-09-26
+## 0.375.0 — 2026-09-26 10:31 UTC
 - Kumimoji's table is a Reversi board to its edges, with Gomoku as a choice.
 
-## 0.374.1 — 2026-09-26
+## 0.374.1 — 2026-09-26 10:17 UTC
 - The Families tab remembers which families you opened and which you closed.
 - A puzzle's set-up keeps the board, level and options chosen when the page is reloaded.
 - Hidden Stones and Black and White draw the site's real stones, not flat circles.
 - Tsunagi's board of levels is ruled on all four sides.
 
-## 0.374.0 — 2026-09-26
+## 0.374.0 — 2026-09-26 10:17 UTC
 - Hidden Stones has Lines beside Hint: a line from every stone along its row and column, so the cells it rules out show at a glance.
 
-## 0.373.0 — 2026-09-26
+## 0.373.0 — 2026-09-26 10:17 UTC
 - Hidden Stones comes in a 4×4 for beginners and a 12×12 for a long evening.
 
-## 0.372.0 — 2026-09-26
+## 0.372.0 — 2026-09-26 10:17 UTC
 - Koushi: six words woven into a lattice with their letters scrambled; swap two at a time to put every word right before the swaps run out.
 
-## 0.371.0 — 2026-09-26
+## 0.371.0 — 2026-09-26 10:17 UTC
 - Gomoji Futago: two hidden words at once, every guess going to both boards, in every Gomoji language and with its own daily pair.
 
-## 0.370.1 — 2026-09-26
+## 0.370.1 — 2026-09-26 09:34 UTC
 - A game's Fastest solves panel fits its narrow desktop column: names stay on one line and nothing runs off the edge.
 
-## 0.370.0 — 2026-09-26
+## 0.370.0 — 2026-09-26 09:34 UTC
 - This week's points open exactly that week's games and solves, with a chip saying which week.
 
-## 0.369.1 — 2026-09-26
+## 0.369.1 — 2026-09-26 09:25 UTC
 - Gomoji's picture spells GOMOJI on every row, going green a row at a time.
 
-## 0.369.0 — 2026-09-26
+## 0.369.0 — 2026-09-26 09:25 UTC
 - Every table that shows a player's XP now shows their IP beside it: the members list, the ladders, each game's standings, the bots, the champions, open seats and the level rungs.
 
-## 0.368.1 — 2026-09-26
+## 0.368.1 — 2026-09-26 09:14 UTC
 - Players and XP: 'Include worldwide' is one checkbox instead of a second row of tabs, and computer players are called bots.
 - The Players tabs read Champs, Bots and Honors, short enough for a phone.
 - Every tab shows the pointer on hover.
 - A finished Kumimoji keeps showing where each tile stands.
 - Times on the daily-word and Tsunagi tables open the solve they came from.
 
-## 0.368.0 — 2026-09-26
+## 0.368.0 — 2026-09-26 09:14 UTC
 - A Gomoji word a day at every length, with a Today's button for each on the game's page, and a page of past days' words by week and month that can be searched.
 
-## 0.367.0 — 2026-09-26
+## 0.367.0 — 2026-09-26 09:14 UTC
 - Gomoji 6: six-letter words in English, French and German.
 
-## 0.366.0 — 2026-09-26
+## 0.366.0 — 2026-09-26 09:14 UTC
 - Every puzzle's fastest solves are a proper table: rank, player, time, guesses for a word, points, and a Replay.
 
-## 0.365.0 — 2026-09-26
+## 0.365.0 — 2026-09-26 09:13 UTC
 - Played games and puzzles can be opened from everywhere they are counted, and a finished puzzle replays from its first step to its answer, with a scrubber and a window of its own.
 
-## 0.364.2 — 2026-09-26
+## 0.364.2 — 2026-09-26 08:31 UTC
 - Gomoji's keyboard shows a small count on a letter the guesses prove is in the word more than once
 
-## 0.364.1 — 2026-09-26
+## 0.364.1 — 2026-09-26 08:31 UTC
 - IP won shows in both feeds, a day at a time, and beside XP on the XP board
 
-## 0.364.0 — 2026-09-26
+## 0.364.0 — 2026-09-26 08:31 UTC
 - A new word game, Kumimoji 組文字: build your own crossword from a hand of letter tiles, drawing more until the bag is empty
 
-## 0.363.0 — 2026-09-26
+## 0.363.0 — 2026-09-26 08:31 UTC
 - A new puzzle, Tsunagi 繋ぎ: join each pair of marbles with a line and fill the board, a hundred levels at each size from 4x4 to 9x9
 
-## 0.362.2 — 2026-09-26
+## 0.362.2 — 2026-09-26 07:59 UTC
 - My games has three tabs: puzzles in progress are under Going and finished ones under Completed, beside the games
 - The Games tabs read Families, Cards, List, Learning and Famous, the kind filter says Puzzles, and About's tabs are one word each
 - Obstacle Five's and Hot Drop's rules say what the game does: a stone counts only for its own colour
 
-## 0.362.1 — 2026-09-26
+## 0.362.1 — 2026-09-26 07:59 UTC
 - The strip under the menu shows your IP beside your XP
 
-## 0.362.0 — 2026-09-26
+## 0.362.0 — 2026-09-26 07:59 UTC
 - Every leaderboard shows all time, this month and this week side by side, three columns on a wide screen
 
-## 0.361.0 — 2026-09-26
+## 0.361.0 — 2026-09-26 07:22 UTC
 - Gomoji at Easy offers a Head start: as many letters as the word is long are greyed out on the keyboard before the first guess
 
-## 0.360.0 — 2026-09-26
+## 0.360.0 — 2026-09-26 07:14 UTC
 - A new game, Rockfall 落石五目: five in a row on an open board until twenty rocks and two hotspots fall after the eighth stone
 
-## 0.359.0 — 2026-09-26
+## 0.359.0 — 2026-09-26 07:14 UTC
 - A new game, Scattered Rocks 乱石五目: five in a row around twelve rocks and two hotspots laid before the first move
 
-## 0.358.1 — 2026-09-26
+## 0.358.1 — 2026-09-26 06:46 UTC
 - In Gomoji, a letter typed where an earlier guess already found it green shows green straight away
 
-## 0.358.0 — 2026-09-26
+## 0.358.0 — 2026-09-26 06:26 UTC
 - A live board shows the other player's move within about three seconds while they are on the site, and the operator can change both of a board's intervals on the site panel
 
-## 0.357.6 — 2026-09-26
+## 0.357.6 — 2026-09-26 06:16 UTC
 - A page view no longer asks the server who is signed in a second time, except for a browser from before accounts, which is made a member
 
-## 0.357.5 — 2026-09-26
+## 0.357.5 — 2026-09-26 06:08 UTC
 - A Gomoji solved on the seventh guess or later, or lost, is kept and paid again; since 25 September those were refused with 'Not a grid of that size'
 
-## 0.357.4 — 2026-09-26
+## 0.357.4 — 2026-09-26 06:02 UTC
 - The header's game counts come with the page instead of a second request on every page view
 - A player from before accounts is made a member on their next visit again, which 0.357.3 had stopped
 
-## 0.357.3 — 2026-09-26
+## 0.357.3 — 2026-09-26 05:37 UTC
 - A page view no longer asks the server again for the sign-in it has just drawn, one call fewer on every page
 
-## 0.357.2 — 2026-09-26
+## 0.357.2 — 2026-09-26 05:31 UTC
 - The puzzles' pictures on the games pages show the board alone, with no letters or numbers round it, like the games' pictures
 
-## 0.357.1 — 2026-09-26
+## 0.357.1 — 2026-09-26 05:21 UTC
 - Links no longer prefetch every page in the header and footer on each page view, which cut sixty-odd server requests from every visit
 - The browser suite that gates each deploy runs against a production build, about two minutes faster
 
-## 0.357.0 — 2026-09-26
+## 0.357.0 — 2026-09-26 05:20 UTC
 - The game wallpaper window carries the Itsutsu logo and a title, shows the picture in the middle with its choices under it, and can show the opening moves
 
-## 0.356.3 — 2026-09-26
+## 0.356.3 — 2026-09-26 05:13 UTC
 - Gomoji's board letters and on-screen keys can no longer be selected as text
 
-## 0.356.2 — 2026-09-26
+## 0.356.2 — 2026-09-26 05:07 UTC
 - Gomoji's French and German words come from real dictionaries, so names and English words like RUDD are never the answer and cannot be guessed
 - Gomoji's English and Kana answers leave out slurs, insults and English written in katakana
 
-## 0.356.1 — 2026-09-26
+## 0.356.1 — 2026-09-26 04:47 UTC
 - The retired test-player column is dropped from the database
 
-## 0.356.0 — 2026-09-26
+## 0.356.0 — 2026-09-26 04:47 UTC
 - The Everyone feed tells the site's news: each day's new games, a game's first player, a new first place, a top computer player beaten, first wins and losses, and new best times, naming only players 18 or over
 
-## 0.355.1 — 2026-09-26
+## 0.355.1 — 2026-09-26 04:36 UTC
 - The board preview on every set-up screen is the full width of a phone
 - Member.isTest stays one more release, read by nothing, so the deploy can drop it safely next time
 
-## 0.355.0 — 2026-09-26
+## 0.355.0 — 2026-09-26 04:36 UTC
 - A player's page shows the IP they have won and their place on the site's board, all time and this month
 
-## 0.354.1 — 2026-09-26
+## 0.354.1 — 2026-09-26 04:16 UTC
 - The Gomoji games' pictures show the board as it is drawn now
 
-## 0.354.0 — 2026-09-26
+## 0.354.0 — 2026-09-26 04:11 UTC
 - A Gomoji's set-up Options choose Reversi, Gomoku or Tiles; the preview shows that style in the chosen colour, and the game opens in both
 
-## 0.353.3 — 2026-09-26
+## 0.353.3 — 2026-09-26 04:11 UTC
 - Gomoji's play area border stands round the tiles in Tiles style, centred, instead of starting at the board's left edge
 - Simulated test players are a kind of member with their own badge, rather than a separate flag
 
-## 0.353.2 — 2026-09-26
+## 0.353.2 — 2026-09-26 03:56 UTC
 - The learning shelf's cards show the picture of the game each guide is about, as the cards on Games do
 
-## 0.353.1 — 2026-09-26
+## 0.353.1 — 2026-09-26 03:49 UTC
 - The game as one picture carries the Itsutsu logo on its title bar instead of words typed in a font
 
-## 0.353.0 — 2026-09-26
+## 0.353.0 — 2026-09-26 03:49 UTC
 - Every puzzle board has row numbers and column letters down its sides, as a game's board does
 
-## 0.352.2 — 2026-09-26
+## 0.352.2 — 2026-09-26 03:49 UTC
 - On a set-up screen the Play buttons sit at the top right, not low down beside the options
 
-## 0.352.1 — 2026-09-26
+## 0.352.1 — 2026-09-26 03:49 UTC
 - Gomoji's Reversi and Tiles styles keep the board colour inside a dark play-area border
 
-## 0.352.0 — 2026-09-26
+## 0.352.0 — 2026-09-26 03:49 UTC
 - Gomoji boards take a board colour like Gomoku and Reversi, with dark corner spots on the start and end rows and a dark border round the play area
 
-## 0.351.0 — 2026-09-26
+## 0.351.0 — 2026-09-26 03:36 UTC
 - Admin can see a year of 1000 simulated players' XP and IP, and a Test mode keeps simulated members out of every list unless it is switched on.
 
-## 0.350.3 — 2026-09-26
+## 0.350.3 — 2026-09-26 03:13 UTC
 - A finished puzzle offers the way back: its own page and its family, beside Another.
 
-## 0.350.2 — 2026-09-26
+## 0.350.2 — 2026-09-26 03:13 UTC
 - Play on a game's page leads to its set-up, and Start begins the game, one size on every set-up screen.
 
-## 0.350.1 — 2026-09-26
+## 0.350.1 — 2026-09-26 03:13 UTC
 - Every page under a game starts its trail with Games, so the way back to the catalogue is never lost.
 
-## 0.350.0 — 2026-09-26
+## 0.350.0 — 2026-09-26 03:12 UTC
 - Puzzle set-up screens show the live preview board, and Gomoji's board colours under it.
 
-## 0.349.1 — 2026-09-26
+## 0.349.1 — 2026-09-26 03:12 UTC
 - Board colour choices are small squares of the board, and every colour or picture choice shows a pointer.
 
-## 0.349.0 — 2026-09-26
+## 0.349.0 — 2026-09-26 03:11 UTC
 - A board shown on its own carries a small Itsutsu header saying what it is, the game, and where it was played or recorded.
 
-## 0.348.2 — 2026-09-26
+## 0.348.2 — 2026-09-26 02:49 UTC
 - Every Gomoji time says how many guesses it took: 3/6 guesses.
 
-## 0.348.1 — 2026-09-26
+## 0.348.1 — 2026-09-26 02:44 UTC
 - A board's corner button no longer confuses the check that boards are drawn A1 at the bottom left.
 
-## 0.348.0 — 2026-09-26
+## 0.348.0 — 2026-09-26 02:27 UTC
 - An IP leaderboard on every game's page, every family's, and the whole site's at /points.
 
-## 0.347.0 — 2026-09-26
+## 0.347.0 — 2026-09-26 02:27 UTC
 - Every finished game now pays IP, Itsutsu Points: a score for results only, shown on each game in My games.
 
-## 0.346.0 — 2026-09-26
+## 0.346.0 — 2026-09-26 02:27 UTC
 - The game as one picture has a title bar, comes in landscape and phone shapes, and ends on its last move.
 
-## 0.345.0 — 2026-09-26
+## 0.345.0 — 2026-09-26 02:27 UTC
 - Any board opens on its own: the button in the corner of a board's box makes the board, its scrubber and its controls a full-screen view.
 
-## 0.344.3 — 2026-09-26
+## 0.344.3 — 2026-09-26 01:47 UTC
 - Admin's site settings are one condensed control panel: access, notices and modes, a row each.
 
-## 0.344.2 — 2026-09-26
+## 0.344.2 — 2026-09-26 01:45 UTC
 - The simple champions table shows each leader's level, as every table of players does.
 - The computer ladder is measured again for Chinese checkers, domino five and drop four.
 
-## 0.344.1 — 2026-09-26
+## 0.344.1 — 2026-09-26 01:33 UTC
 - Every choice of what a page shows is drawn as tabs, from who is listed to how a record is written.
 - The computer ladder is measured again for block five and checkers.
 - Written up for later: the games vint.ee has that we lack, and a plan for eleven more languages.
 
-## 0.344.0 — 2026-09-25
+## 0.344.0 — 2026-09-25 17:49 UTC
 - Champions open as a simple table, a line a game: game, leader, rating and XP, with the full table one press away.
 
-## 0.343.0 — 2026-09-25
+## 0.343.0 — 2026-09-25 17:43 UTC
 - Draughts games download as PDN, and a capture is written with a colon, the whole jump shown.
 
-## 0.342.2 — 2026-09-25
+## 0.342.2 — 2026-09-25 17:21 UTC
 - The record's filters sit on one row, the player search included.
 - A game with one move says 1 move, not 1 moves.
 
-## 0.342.1 — 2026-09-25
+## 0.342.1 — 2026-09-25 17:17 UTC
 - Play from move N sits under Advanced at the foot of a finished game, and its set-up screen shows the position it starts from.
 
-## 0.342.0 — 2026-09-25
+## 0.342.0 — 2026-09-25 17:17 UTC
 - Hex Five: five in a row on a hexagon of hexagons, at four sizes.
 
-## 0.341.0 — 2026-09-25
+## 0.341.0 — 2026-09-25 16:57 UTC
 - Star a finished game and it stays at the top of My games' Completed tab.
 
-## 0.340.1 — 2026-09-25
+## 0.340.1 — 2026-09-25 16:47 UTC
 - Deploys reach the site sooner: the browser tests are shared out by how long each takes.
 
-## 0.340.0 — 2026-09-25
+## 0.340.0 — 2026-09-25 16:39 UTC
 - Reversi boards are green felt, and a row of colour patches under the board picks green, blue, red, black or your own wood.
 
-## 0.339.1 — 2026-09-25
+## 0.339.1 — 2026-09-25 16:34 UTC
 - A finished game remembers Show move numbers after a refresh.
 - A finished game's moves can be written in each format the live record offers: Itsutsu, IYT or GT style.
 - A finished game's moves fold away, and stay folded on the next game.
 
-## 0.339.0 — 2026-09-25
+## 0.339.0 — 2026-09-25 16:21 UTC
 - Gomoji in French and German: Gomoji Mot and Gomoji Wort, with AZERTY and QWERTZ keys.
 
-## 0.338.1 — 2026-09-25
+## 0.338.1 — 2026-09-25 16:21 UTC
 - Gomoji's clock starts at the first letter you type, on the keys or a keyboard.
 
-## 0.338.0 — 2026-09-25
+## 0.338.0 — 2026-09-25 15:58 UTC
 - Gomoji boards are at least eight rows tall, easy uses every row as a guess, medium gets one more guess, and Strict is a choice at every level.
 
-## 0.337.2 — 2026-09-25
+## 0.337.2 — 2026-09-25 15:55 UTC
 - About describes Just the board as the modal it now is.
 
-## 0.337.1 — 2026-09-25
+## 0.337.1 — 2026-09-25 15:43 UTC
 - The Numbers and Other family pictures draw their digits and letters in their squares on an iPhone.
 
-## 0.337.0 — 2026-09-25
+## 0.337.0 — 2026-09-25 15:43 UTC
 - Just the board is a modal: the board alone over the page, a finished game's scrubber under it, and Esc or Close to leave.
 
-## 0.336.2 — 2026-09-25
+## 0.336.2 — 2026-09-25 15:40 UTC
 - A replay's buttons stay on one line: arrows to step, Play in words.
 
-## 0.336.1 — 2026-09-25
+## 0.336.1 — 2026-09-25 15:17 UTC
 - Gomoji's disc style and the site's own labels say Reversi, not Othello.
 
-## 0.336.0 — 2026-09-25
+## 0.336.0 — 2026-09-25 15:01 UTC
 - WordDrop is now Gomoji (五文字), and Gomoji Kana; every word you have played comes with it.
 
-## 0.335.1 — 2026-09-25
+## 0.335.1 — 2026-09-25 14:52 UTC
 - On a phone the letters you type stay in view, and 小 and ゛゜ show the kana they will make.
 
-## 0.335.0 — 2026-09-25
+## 0.335.0 — 2026-09-25 14:45 UTC
 - In WordDrop a key used more than once in the word you are typing carries a count.
 
-## 0.334.1 — 2026-09-25
+## 0.334.1 — 2026-09-25 14:45 UTC
 - The WordDrop board fills a phone's width like every other board.
 
-## 0.334.0 — 2026-09-25
+## 0.334.0 — 2026-09-25 14:33 UTC
 - When a WordDrop ends, the keyboard stays and a scrubber replays your guesses.
 
-## 0.333.0 — 2026-09-25
+## 0.333.0 — 2026-09-25 14:33 UTC
 - WordDrop rings the keys of the letters you are typing, in English and kana.
 
-## 0.332.0 — 2026-09-25
+## 0.332.0 — 2026-09-25 14:33 UTC
 - WordDrop boards are ruled whole: the places in play dark, the rest of the board faint.
 
-## 0.331.3 — 2026-09-25
+## 0.331.3 — 2026-09-25 14:33 UTC
 - A finished puzzle opens as it ended, from My games, Your solves and Your words.
 - In WordDrop Kana a key takes the best colour its kana has had on the board, yellow included.
 
-## 0.331.2 — 2026-09-25
+## 0.331.2 — 2026-09-25 14:14 UTC
 - A puzzle picked up again from My games keeps its steps, so the scrubber goes back past the moment it was left
 
-## 0.331.1 — 2026-09-25
+## 0.331.1 — 2026-09-25 13:58 UTC
 - Deploys are quicker: the checks and browser tests run in more, shorter lanes side by side
 
-## 0.331.0 — 2026-09-25
+## 0.331.0 — 2026-09-25 13:28 UTC
 - WordDrop Kana: find a hidden Japanese word in six guesses, with colours for the right kana and its column, and arrows for the wrong size or mark
 
-## 0.330.0 — 2026-09-25
+## 0.330.0 — 2026-09-25 12:49 UTC
 - Puzzles have a scrubber under the board, with its controls under it and the steps folded until you open them
 
-## 0.329.1 — 2026-09-25
+## 0.329.1 — 2026-09-25 12:49 UTC
 - On a puzzle the clock sits left of Pause, and Pause is there from the start, so it never moves
 
-## 0.329.0 — 2026-09-25
+## 0.329.0 — 2026-09-25 12:30 UTC
 - WordDrop keeps every word you have played, with your guesses and what each scored
 
-## 0.328.0 — 2026-09-25
+## 0.328.0 — 2026-09-25 12:25 UTC
 - WordDrop scores every word you play: each letter found, sooner for more, and a word not found still counts
 
-## 0.327.0 — 2026-09-25
+## 0.327.0 — 2026-09-25 12:09 UTC
 - In WordDrop a typed letter can be tapped and changed, or cleared with Space or Delete, before the guess goes in
 
-## 0.326.0 — 2026-09-25
+## 0.326.0 — 2026-09-25 12:04 UTC
 - WordDrop's letter keys are out on a phone and can be put away on a computer
 
-## 0.325.0 — 2026-09-25
+## 0.325.0 — 2026-09-25 12:03 UTC
 - WordDrop can be drawn as Othello discs, Gomoku stones or letter tiles, and remembers which
 
-## 0.324.0 — 2026-09-25
+## 0.324.0 — 2026-09-25 11:53 UTC
 - Every rated game now records what it did to both players' ratings, shown as +10 or −10 on My games' Completed rows and on the result card
 
-## 0.323.0 — 2026-09-25
+## 0.323.0 — 2026-09-25 11:32 UTC
 - Puzzles have Check, Show and Hint: Check counts mistakes, Show marks them, and Hint puts in one right cell
 
-## 0.322.0 — 2026-09-25
+## 0.322.0 — 2026-09-25 11:32 UTC
 - Today's word and today's puzzle: one grid a day, the same for everybody, from each puzzle's page
 
-## 0.321.1 — 2026-09-25
+## 0.321.1 — 2026-09-25 11:32 UTC
 - A race's seat link no longer loops for a signed-in reader with no account; the race says the seat needs one
 - A puzzle you have started says Resume on its page, and opens the grid where you left it
 
-## 0.321.0 — 2026-09-25
+## 0.321.0 — 2026-09-25 11:16 UTC
 - Each completed game on My games shows the XP it earned you
 
-## 0.320.0 — 2026-09-25
+## 0.320.0 — 2026-09-25 11:16 UTC
 - My games' Puzzles tab shows the puzzles you have going and the ones you have solved, each with its points, time and help
 
-## 0.319.0 — 2026-09-25
+## 0.319.0 — 2026-09-25 11:16 UTC
 - Step through a famous game's moves on its card: the board at any move, a scrubber and the move list
 
-## 0.318.0 — 2026-09-25
+## 0.318.0 — 2026-09-25 11:16 UTC
 - A famous game's picture opens in a window of its own, with an expand icon on its corner, Close, and Esc to come back
 
-## 0.317.0 — 2026-09-25
+## 0.317.0 — 2026-09-25 11:16 UTC
 - The move list can be written our way, IYT style or GT style, and remembers which you chose
 
-## 0.316.1 — 2026-09-25
+## 0.316.1 — 2026-09-25 11:16 UTC
 - The Games page's Families, Cards and Plain list are tabs, with the Learning shelf and Famous games as two more
 - The game page holds still: the banner over the board is always there, and the panel above the record keeps its height, so the board and scrubber never jump
 - A game's page and its rules page share one picture size and one right-hand column
@@ -728,455 +731,455 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 - A game's own page shows the trail, Games / its name, as the pages under it do
 - Play alone 独 and Play a friend 友
 
-## 0.316.0 — 2026-09-25
+## 0.316.0 — 2026-09-25 10:51 UTC
 - WordDrop, a word puzzle of our own, opens the Other family: find the hidden word in six guesses, each coloured letter by letter
 
-## 0.315.1 — 2026-09-25
+## 0.315.1 — 2026-09-25 10:50 UTC
 - Every name shows its flag and, for a computer player, a BOT badge, the same on every page
 - Champions is a tab of Players
 - On a phone every tab is in view, and My games rows keep Resign and the arrow together under the game
 - My games' Completed tab shows twenty games a page with Older and Newest arrows
 
-## 0.315.0 — 2026-09-25
+## 0.315.0 — 2026-09-25 09:43 UTC
 - My games is in tabs: Going shows your move beside theirs with big counts, and Completed, Pass and play and Puzzles each have a tab of their own
 
-## 0.314.0 — 2026-09-25
+## 0.314.0 — 2026-09-25 09:24 UTC
 - In a game or a puzzle, Rules open over the board instead of taking you away from it
 
-## 0.313.1 — 2026-09-25
+## 0.313.1 — 2026-09-25 09:24 UTC
 - A puzzle you Continue from My games starts running straight away instead of opening paused
 - While a puzzle is paused its number keys are switched off too, not just Check and Hint
 
-## 0.313.0 — 2026-09-25
+## 0.313.0 — 2026-09-25 09:24 UTC
 - Every game's page and rules page has one big Play button under its picture, and a puzzle's set-up is just Options beside two big buttons, Play alone and Play a friend
 
-## 0.312.0 — 2026-09-25
+## 0.312.0 — 2026-09-25 07:05 UTC
 - Sudoku comes in a Giant size: 16×16, with boxes four by four and the letters A to G after 9
 
-## 0.311.0 — 2026-09-25
+## 0.311.0 — 2026-09-25 07:05 UTC
 - The puzzles go by the names you know: Sudoku, Jigsaw Sudoku, Diagonal Sudoku, Killer Sudoku, Futoshiki and Skyscrapers
 
-## 0.310.0 — 2026-09-25
+## 0.310.0 — 2026-09-25 06:09 UTC
 - Every puzzle's page leads with its leaderboard, all time and this month: five points a cell you fill, less fifty a Check or Hint.
 
-## 0.309.1 — 2026-09-25
+## 0.309.1 — 2026-09-25 05:24 UTC
 - The Number Place picture no longer has XP notices across its grid.
 
-## 0.309.0 — 2026-09-25
+## 0.309.0 — 2026-09-25 05:10 UTC
 - Number puzzles can have a Hint: choose it when you set the puzzle up, and it marks which cells are wrong.
 
-## 0.308.1 — 2026-09-25
+## 0.308.1 — 2026-09-25 04:26 UTC
 - Each release on the releases page is its number and date on one line and its title under them, and opens when it has more to say.
 
-## 0.308.0 — 2026-09-25
+## 0.308.0 — 2026-09-25 04:26 UTC
 - A feed of what you and your buddies have been playing, and a page of finished games from everyone, one line each.
 
-## 0.307.1 — 2026-09-25
+## 0.307.1 — 2026-09-25 04:00 UTC
 - The local development server moves to port 6700, out of the range another of John's projects uses.
 
-## 0.307.0 — 2026-09-25
+## 0.307.0 — 2026-09-25 04:00 UTC
 - Three clear places: My games for the games you have going, New game as the button that starts one, and Games as the library of every game.
 
-## 0.306.0 — 2026-09-25
+## 0.306.0 — 2026-09-25 04:00 UTC
 - My games shows how many games you have going, and the line under the header says it too, instead of Nothing waiting.
 
-## 0.305.0 — 2026-09-25
+## 0.305.0 — 2026-09-25 04:00 UTC
 - Black and White joins Numbers: fill the grid with black and white stones, half of each in every line and never three in a row.
 
-## 0.304.0 — 2026-09-25
+## 0.304.0 — 2026-09-25 04:00 UTC
 - Towers joins Numbers: every number is a tower's height, and the clues around the edge say how many you can see.
 
-## 0.303.0 — 2026-09-25
+## 0.303.0 — 2026-09-25 04:00 UTC
 - Sum Cages joins Numbers: our Killer Sudoku, with nothing printed but the sums of dashed cages.
 
-## 0.302.0 — 2026-09-25
+## 0.302.0 — 2026-09-25 02:54 UTC
 - An unfinished puzzle is kept when you pause it or leave, waits in My games, and opens where you left it.
 
-## 0.301.0 — 2026-09-25
+## 0.301.0 — 2026-09-25 02:26 UTC
 - Number puzzles let you choose how many Checks you get: no limit, three or one. Running out takes the help away; the puzzle goes on.
 
-## 0.300.1 — 2026-09-25
+## 0.300.1 — 2026-09-25 02:04 UTC
 - A solved 9×9 Jigsaw or 7×7 More or Less is now kept and paid; the site had been refusing them.
 
-## 0.300.0 — 2026-09-25
+## 0.300.0 — 2026-09-25 01:50 UTC
 - Live games and puzzles now ask "Are you still there?" after a couple of quiet minutes, as practice games always have; a puzzle pauses while you are away.
 
-## 0.299.0 — 2026-09-25
+## 0.299.0 — 2026-09-25 01:50 UTC
 - Number puzzles have a Pause: the clock stops and the grid is covered until you resume.
 
-## 0.298.0 — 2026-09-25
+## 0.298.0 — 2026-09-25 01:50 UTC
 - In a number puzzle, tapping the chosen cell again counts it up: 1, 2, 3 … then empty, then 1 again.
 
-## 0.297.0 — 2026-09-25
+## 0.297.0 — 2026-09-25 01:50 UTC
 - A game's page puts its champions, family and links level with the game's name at the top, instead of below it.
 
-## 0.296.0 — 2026-09-25
+## 0.296.0 — 2026-09-25 01:14 UTC
 - The set-up screen no longer moves when you choose a family, a game or a board: every tile is the same size, a family's games sit in one row on a desk, and a puzzle's level has its own section below.
 
-## 0.295.1 — 2026-09-24
+## 0.295.1 — 2026-09-24 22:55 UTC
 - A browser-free test of the email rules now runs the way the checks do, so the last release can go out.
 
-## 0.295.0 — 2026-09-24
+## 0.295.0 — 2026-09-24 22:14 UTC
 - Members under 13 are kept private: no city, country or bio, never shown as online, never emailed, and only the friends on their own buddy list can write to them or offer them a game.
 
-## 0.294.0 — 2026-09-24
+## 0.294.0 — 2026-09-24 21:38 UTC
 - Diagonal joins the Numbers family: Number Place where the two long diagonals must hold each number once as well.
 
-## 0.293.0 — 2026-09-24
+## 0.293.0 — 2026-09-24 21:38 UTC
 - Jigsaw joins the Numbers family: Number Place with its boxes cut into irregular regions, at five, six, seven or nine.
 
-## 0.292.1 — 2026-09-24
+## 0.292.1 — 2026-09-24 21:38 UTC
 - The puzzles are drawn on the same wooden board as every game, with white paper to write on, and the set-up screen previews the chosen puzzle at the chosen size, in the same place as a game's board, so the page no longer jumps.
 
-## 0.292.0 — 2026-09-24
+## 0.292.0 — 2026-09-24 17:54 UTC
 - Your account has a Settings tab beside Profile: Profile is who you are, Settings is how the site behaves for you, and the account menu offers both.
 
-## 0.291.0 — 2026-09-24
+## 0.291.0 — 2026-09-24 17:44 UTC
 - Terms of play, beside the privacy page: one account each, your own moves, kindness at the board, and how an account is shut or ended.
 
-## 0.290.0 — 2026-09-24
+## 0.290.0 — 2026-09-24 17:44 UTC
 - Your own page lists what Itsutsu holds about you, and you can remove your account from it; the operator can do the same on request.
 
-## 0.289.0 — 2026-09-24
+## 0.289.0 — 2026-09-24 17:14 UTC
 - Race a friend at any puzzle: the same grid, two clocks kept by the site, and the faster correct solve wins. Every solve is kept, with the fastest on the puzzle's page.
 
-## 0.288.0 — 2026-09-24
+## 0.288.0 — 2026-09-24 16:51 UTC
 - A new member is asked their age band before anything else, and a member under 13 needs a parent's or guardian's consent to keep an account.
 
-## 0.287.2 — 2026-09-24
+## 0.287.2 — 2026-09-24 16:46 UTC
 - A puzzle's sizes are chosen from the same tiles as every board on the site: the big number in the board's grid, a check on the chosen one, and a word for what the size is for.
 
-## 0.287.1 — 2026-09-24
+## 0.287.1 — 2026-09-24 16:36 UTC
 - Choosing Numbers on the set-up screen now turns the screen to the puzzle: its name at the top, its picture where the board preview was, and its size, level and Solve in place of the opponent, the rules and Begin.
 - A puzzle's set-up marks the size that is chosen.
 
-## 0.287.0 — 2026-09-24
+## 0.287.0 — 2026-09-24 15:41 UTC
 - A finished game's replay, and a game played on one screen, have Start, Back, Play, Forward and End beside the scrubber. Play steps through the game on its own and stops at the last move.
 
-## 0.286.2 — 2026-09-24
+## 0.286.2 — 2026-09-24 15:41 UTC
 - A browser test expects the Numbers family on the set-up screen, where the last release put it; that test had stopped the release going live.
 
-## 0.286.1 — 2026-09-24
+## 0.286.1 — 2026-09-24 15:27 UTC
 - A browser test counts all eight families on the set-up screen, Numbers included.
 
-## 0.286.0 — 2026-09-24
+## 0.286.0 — 2026-09-24 15:13 UTC
 - More or Less joins Numbers: fill the square so every row and column holds each number once and every more-than mark between two cells is true, at 4×4 to 7×7.
 
-## 0.285.2 — 2026-09-24
+## 0.285.2 — 2026-09-24 15:13 UTC
 - The set-up screen shows Numbers as its eighth family, and each puzzle there leads to its own set-up.
 - Two browser tests bring their own games, so a fresh test database no longer fails them.
 
-## 0.285.1 — 2026-09-24
+## 0.285.1 — 2026-09-24 14:39 UTC
 - Two browser tests make a member of their own, so two runs at once no longer take each other's away.
 
-## 0.285.0 — 2026-09-24
+## 0.285.0 — 2026-09-24 14:39 UTC
 - Hidden Stones joins Numbers: one black stone hides in every row, column and region, no two touch, made and timed in your browser at 5×5 to 10×10.
 
-## 0.284.0 — 2026-09-24
+## 0.284.0 — 2026-09-24 14:39 UTC
 - Every page now opens the same way: one title at one size, its tabs under it, and its tables and lists in panels.
 
-## 0.283.1 — 2026-09-24
+## 0.283.1 — 2026-09-24 14:19 UTC
 - A browser test chooses its family among the games the set-up screen offers, now that the Numbers family holds a puzzle.
 
-## 0.283.0 — 2026-09-24
+## 0.283.0 — 2026-09-24 14:06 UTC
 - A new family, Numbers, opens with Number Place, our Sudoku: 4×4, 6×6 and 9×9 at three levels, made and timed in your browser, and paid in XP when the site checks it.
 
-## 0.282.1 — 2026-09-24
+## 0.282.1 — 2026-09-24 13:20 UTC
 - The line under the header sits the same distance from it on every page, and the home page no longer shows it.
 - The account menu's items have room between them.
 - My games no longer repeats the Games link, and offers the inbox only when something in it is unread.
 
-## 0.282.0 — 2026-09-24
+## 0.282.0 — 2026-09-24 13:19 UTC
 - Halma and Chinese Checkers join Go and Hex in one family, Territory and races.
 
-## 0.281.1 — 2026-09-24
+## 0.281.1 — 2026-09-24 13:03 UTC
 - The browser test for the XP toast in Japanese reads it the moment it appears; 0.280.2 kept the toast's place on the page but was not what made that test fail.
 
-## 0.281.0 — 2026-09-24
+## 0.281.0 — 2026-09-24 12:44 UTC
 - A line under the header shows your games waiting, your record, your level and your XP, each one a link.
 
-## 0.280.3 — 2026-09-24
+## 0.280.3 — 2026-09-24 12:00 UTC
 - A browser test finds the game's warning banner by what it is, now that every page carries the XP announcer.
 
-## 0.280.2 — 2026-09-24
+## 0.280.2 — 2026-09-24 11:48 UTC
 - An XP toast is no longer taken off the screen when the page it is on is drawn again.
 - The site's server code is a third smaller again, carrying its own changelog and no other package's.
 
-## 0.280.1 — 2026-09-24
+## 0.280.1 — 2026-09-24 07:27 UTC
 - Choosing a language in the account menu no longer closes it, and the menu offers About and Profile and points at its button.
 
-## 0.280.0 — 2026-09-24
+## 0.280.0 — 2026-09-24 07:12 UTC
 - A Privacy page says what the site keeps about you, who can see it and how to have it removed, open to anyone.
 
-## 0.279.0 — 2026-09-24
+## 0.279.0 — 2026-09-24 06:38 UTC
 - A report of a problem can carry a screenshot, added or pasted, and the operator sees it beside the report.
 
-## 0.278.2 — 2026-09-24
+## 0.278.2 — 2026-09-24 06:38 UTC
 - The Report a problem window uses the site's own buttons and shows the page, version and date that go with the report.
 
-## 0.278.1 — 2026-09-24
+## 0.278.1 — 2026-09-24 05:28 UTC
 - The Report a problem link is easy to tap on a phone.
 
-## 0.278.0 — 2026-09-24
+## 0.278.0 — 2026-09-24 05:14 UTC
 - Anybody can report a problem from the foot of any page, and the operator reads the reports on the Admin page.
 
-## 0.277.1 — 2026-09-24
+## 0.277.1 — 2026-09-24 05:13 UTC
 - A computer player's page opens even before anybody has visited the list of players.
 
-## 0.277.0 — 2026-09-24
+## 0.277.0 — 2026-09-24 05:13 UTC
 - Every page is one width, with text running across it, and the offer of a game says Play everywhere.
 
-## 0.276.0 — 2026-09-24
+## 0.276.0 — 2026-09-24 04:28 UTC
 - The About page has a Playing here chapter, with pictures of the board, the move slider, a game as one picture, and playing with people.
 
-## 0.275.0 — 2026-09-24
+## 0.275.0 — 2026-09-24 03:18 UTC
 - The Beta badge leads to the thank-you page, which now also says how to help test and how to ask for an invite.
 
-## 0.274.0 — 2026-09-24
+## 0.274.0 — 2026-09-24 03:00 UTC
 - The thank-you page for the beta testers is open to everybody, and the front page links it.
 
-## 0.273.1 — 2026-09-24
+## 0.273.1 — 2026-09-24 02:05 UTC
 - The XP awards for playing every game now say how many games there are, instead of a number that went out of date.
 
-## 0.273.0 — 2026-09-24
+## 0.273.0 — 2026-09-24 02:04 UTC
 - The About page explains how to get started, charts the games, and adds a glossary, the XP ladder and how the computer players think.
 
-## 0.272.0 — 2026-09-24
+## 0.272.0 — 2026-09-24 02:04 UTC
 - A thank-you page credits the beta testers by name, and the front page says people are helping test.
 
-## 0.271.0 — 2026-09-24
+## 0.271.0 — 2026-09-24 02:04 UTC
 - The front page says what is on the site, shows every family of games, and says how to ask for an invite or help test the beta.
 
-## 0.270.2 — 2026-09-24
+## 0.270.2 — 2026-09-24 00:30 UTC
 - The site's server code is about a third of the size it was, and each release checks it stays small.
 
-## 0.270.1 — 2026-09-23
+## 0.270.1 — 2026-09-23 22:37 UTC
 - Release notes use the full width of their panel instead of stopping part of the way across.
 
-## 0.270.0 — 2026-09-23
+## 0.270.0 — 2026-09-23 22:23 UTC
 - Your name in the header now opens one menu with your page, your inbox, the language, the version and signing out, so the header is the same for everybody.
 
-## 0.269.0 — 2026-09-23
+## 0.269.0 — 2026-09-23 21:54 UTC
 - A game from ItsYourTurn or GoldToken can be pasted onto the practice board and walked through, read by that site's own lettering.
 
-## 0.268.3 — 2026-09-23
+## 0.268.3 — 2026-09-23 21:47 UTC
 - A game's picture of every position opens in a window from beside the move list, instead of standing under the board.
 - A game played on one screen has a slider from the first move to the last, and its picture of every position.
 
-## 0.268.2 — 2026-09-23
+## 0.268.2 — 2026-09-23 21:34 UTC
 - The Beta mark sits beside the wordmark, on the same row.
 
-## 0.268.1 — 2026-09-23
+## 0.268.1 — 2026-09-23 21:10 UTC
 - A game's picture of every position is always there, drawn by itself after every move, on a game in play and a finished one.
 - A live game's moves sit in the panel beside the board.
 - Just the board shows the board, centred, and what it takes to play — nothing else — and stays on from game to game.
 
-## 0.268.0 — 2026-09-23
+## 0.268.0 — 2026-09-23 21:10 UTC
 - A small Beta mark in the home page's hero and in the header of every page, so everybody knows the site is still being built.
 
-## 0.267.1 — 2026-09-23
+## 0.267.1 — 2026-09-23 20:34 UTC
 - Famous games now shows only games from records whose owners allow it: the Othello championship games are taken out until permission is asked for.
 
-## 0.267.0 — 2026-09-23
+## 0.267.0 — 2026-09-23 20:22 UTC
 - A game in play can show every position so far as one picture, from under its move list.
 
-## 0.266.0 — 2026-09-23
+## 0.266.0 — 2026-09-23 20:11 UTC
 - Famous games: world Othello finals, AlphaGo against Lee Sedol and more, each replayed here and made into a picture of every move.
 
-## 0.265.0 — 2026-09-23
+## 0.265.0 — 2026-09-23 19:48 UTC
 - Your games of one kind, each as it ended, on one picture — won, lost or all — drawn in your browser from your own page.
 
-## 0.264.0 — 2026-09-23
+## 0.264.0 — 2026-09-23 19:33 UTC
 - A finished game can be made into one picture of every move, drawn in your browser and yours to download.
 
-## 0.263.1 — 2026-09-23
+## 0.263.1 — 2026-09-23 19:12 UTC
 - At Go the computer no longer fills in ground it has already walled in.
 - A live board that is checking for a move no longer makes the server rebuild the whole game when nothing has changed.
 - The computer players' code is kept apart from the rest of the site, and the strength tables are measured again.
 
-## 0.263.0 — 2026-09-23
+## 0.263.0 — 2026-09-23 19:12 UTC
 - Connect6 gets a specialist of its own: Ichen Wuyi, who counts the stones it would take to stop every threat.
 
-## 0.262.0 — 2026-09-23
+## 0.262.0 — 2026-09-23 19:12 UTC
 - Go gets a specialist of its own: Shūsaku Hondō, who counts ground rather than lines.
 
-## 0.261.0 — 2026-09-23
+## 0.261.0 — 2026-09-23 19:12 UTC
 - Checkers and every draughts game get a specialist of their own: Marion Tinsdale, who reads the board as a draughts player does.
 
-## 0.260.0 — 2026-09-23
+## 0.260.0 — 2026-09-23 19:12 UTC
 - The computer players open from a book, so no two games against them start the same way.
 
-## 0.259.0 — 2026-09-23
+## 0.259.0 — 2026-09-23 18:50 UTC
 - Each game's page shows the game made of its own games: the final positions of the last twelve played here, each one a way into that game.
 
-## 0.258.0 — 2026-09-23
+## 0.258.0 — 2026-09-23 18:30 UTC
 - Messages between members: write to another player from their page, and it reaches their inbox. Ignoring somebody stops their messages both ways.
 
-## 0.257.0 — 2026-09-23
+## 0.257.0 — 2026-09-23 18:12 UTC
 - An inbox: what happened in your games while you were away — a game finished, a challenge asked or answered, a seat you posted taken, a note sent to you — kept for thirty days.
 
-## 0.256.0 — 2026-09-23
+## 0.256.0 — 2026-09-23 17:45 UTC
 - The front page says how many players and games there are and who is here now, as an early release by invitation, counting people only.
 
-## 0.255.0 — 2026-09-23
+## 0.255.0 — 2026-09-23 17:45 UTC
 - A note to your opponent can go with your move: pick an emoji and write a line beside Submit, and it arrives with the move.
 
-## 0.254.0 — 2026-09-23
+## 0.254.0 — 2026-09-23 17:33 UTC
 - Go marks the board for a beginner: a cross where a stone may not go, and a ring on the point that captures or saves a group in atari.
 
-## 0.253.0 — 2026-09-23
+## 0.253.0 — 2026-09-23 17:21 UTC
 - Go helps a beginner: the board says when your opponent has passed and the game can end, names any group about to be captured, and warns before a stone fills your own eye or leaves your group in atari.
 
-## 0.252.1 — 2026-09-23
+## 0.252.1 — 2026-09-23 16:45 UTC
 - The computer players judge Halma and Chinese Checkers by the real number of steps each piece has left, instead of a count that was wrong on both boards.
 
-## 0.252.0 — 2026-09-23
+## 0.252.0 — 2026-09-23 15:52 UTC
 - Paired games: play a match of two, four or six games at once against the same player, taking each colour in turn so neither side keeps the advantage of moving first.
 
-## 0.251.1 — 2026-09-23
+## 0.251.1 — 2026-09-23 14:38 UTC
 - A member who is already signed in is no longer asked for an invitation at the bottom of the home page.
 
-## 0.251.0 — 2026-09-23
+## 0.251.0 — 2026-09-23 07:41 UTC
 - The computer players now look ahead in the piece games and the twist games, so a higher grade is a stronger opponent there too.
 
-## 0.250.3 — 2026-09-23
+## 0.250.3 — 2026-09-23 07:15 UTC
 - A browser check that could close its own message before reading it no longer stops a release from reaching the site.
 
-## 0.250.2 — 2026-09-23
+## 0.250.2 — 2026-09-23 07:03 UTC
 - Sixty-five finished requests on the board now say which release shipped them; forty-four that could not be matched with confidence are left blank rather than guessed.
 
-## 0.250.1 — 2026-09-23
+## 0.250.1 — 2026-09-23 06:44 UTC
 - Releases reach the site faster: each push runs its browser tests once instead of twice.
 
-## 0.250.0 — 2026-09-23
+## 0.250.0 — 2026-09-23 06:33 UTC
 - Against the computer, you can have a move go down as soon as you touch the board: a switch on the board turns confirming off or on, and it is remembered.
 
-## 0.249.4 — 2026-09-23
+## 0.249.4 — 2026-09-23 06:27 UTC
 - Releases reach the site faster again: the browser tests now run in twelve parts at once.
 - The README and the email notes describe the site as it is now.
 
-## 0.249.3 — 2026-09-23
+## 0.249.3 — 2026-09-23 05:43 UTC
 - Releases reach the site faster: the checks run side by side and the browser tests are split eight ways instead of four.
 
-## 0.249.2 — 2026-09-23
+## 0.249.2 — 2026-09-23 05:27 UTC
 - A release now reaches the site only after its browser tests pass.
 - What a visitor with no invite may see is written down: the games, not the people.
 
-## 0.249.1 — 2026-09-23
+## 0.249.1 — 2026-09-23 02:54 UTC
 - An account made with an invite code is reminded on its own page, after the welcome too, that it lives in one browser until Google is linked.
 
-## 0.249.0 — 2026-09-23
+## 0.249.0 — 2026-09-23 02:51 UTC
 - A visitor with no invite can ask for one from the join page, the games page or a game's ladder, and the request is emailed to the site's owner.
 
-## 0.248.1 — 2026-09-23
+## 0.248.1 — 2026-09-23 02:04 UTC
 - No family shows more than eight games; Chinese Checkers is no longer also listed under Strange boards.
 
-## 0.248.0 — 2026-09-23
+## 0.248.0 — 2026-09-23 02:04 UTC
 - On a big screen a live game's board fits the screen by default, and S, M and L let you pick another size, remembered on your account for your other desks.
 
-## 0.247.3 — 2026-09-23
+## 0.247.3 — 2026-09-23 01:59 UTC
 - On a desk, the set-up screen's first row is symmetrical: families on the left, the board in the middle, its sizes on the right.
 - After pressing Begin, Back returns to the set-up screen again, instead of sometimes skipping it and leaving the site.
 
-## 0.247.2 — 2026-09-23
+## 0.247.2 — 2026-09-23 01:51 UTC
 - On a desk, the set-up screen's first row is the families in two columns, the board, and its sizes, so the board no longer moves as you browse families.
 - Opening the rules, the handicap or a list of opponents keeps every answer in its column, with the choices opening underneath the row.
 
-## 0.247.1 — 2026-09-23
+## 0.247.1 — 2026-09-23 01:37 UTC
 - On a phone, a big board's row numbers stay beside the board instead of running on past its bottom edge.
 - A browser test that still expected the family called Flips now reads the family's name from the catalogue.
 
-## 0.247.0 — 2026-09-23
+## 0.247.0 — 2026-09-23 01:24 UTC
 - On a tablet or desk, who you play sits in one row, and the rules and handicap in another; opening one of them shows its choices underneath the row.
 
-## 0.246.0 — 2026-09-23
+## 0.246.0 — 2026-09-23 01:24 UTC
 - On a tablet or desk, the set-up screen shows the games first and the board beside its sizes, so you can see the board while you choose how big it is.
 
-## 0.245.2 — 2026-09-23
+## 0.245.2 — 2026-09-23 01:23 UTC
 - The About page's computer-ladder figure is checked by its half line again, after three measured pairings came out exactly level.
 
-## 0.245.1 — 2026-09-23
+## 0.245.1 — 2026-09-23 00:45 UTC
 - The measured strength tables now cover twelve boards instead of six, so more games show how the graded players actually did against each other.
 
-## 0.245.0 — 2026-09-23
+## 0.245.0 — 2026-09-23 00:41 UTC
 - The games are grouped into eight families instead of eleven: Reversi and Ninuki sit together under Turn and take, the queue and twist games join the strange boards, and Go and Hex share Territory.
 
-## 0.244.1 — 2026-09-22
+## 0.244.1 — 2026-09-22 23:42 UTC
 - The coordinates on Hex's biggest board fit their tiles instead of running into each other.
 - The letters and numbers around every board stand a pixel clear of the frame rather than touching it.
 - Hex, Hexversi and Chinese Checkers are on the Strange boards shelf, and Chinese Checkers is on the Checkers shelf too.
 
-## 0.244.0 — 2026-09-22
+## 0.244.0 — 2026-09-22 21:57 UTC
 - Halma and Chinese Checkers have a player of their own: Howard Monkton counts the steps every piece has left, gives each one a square of the far camp to aim for, and plays for the piece you leave behind.
 
-## 0.243.1 — 2026-09-22
+## 0.243.1 — 2026-09-22 13:38 UTC
 - The hexagons on the star, the honeycomb, Hexversi and Hex are hexagons again, and so is the honeycomb behind them: every cell was drawn with a five-degree lean and three different edge lengths.
 
-## 0.243.0 — 2026-09-22
+## 0.243.0 — 2026-09-22 12:14 UTC
 - The board says when it will next check for your opponent's move.
 
-## 0.242.0 — 2026-09-22
+## 0.242.0 — 2026-09-22 12:14 UTC
 - Choose which seat you take when you make a game: black, white, or drawn by lot.
 
-## 0.241.0 — 2026-09-22
+## 0.241.0 — 2026-09-22 12:14 UTC
 - The games you have going with one person are a page of their own, and the count beside their name leads to it.
 
-## 0.240.2 — 2026-09-22
+## 0.240.2 — 2026-09-22 12:13 UTC
 - The browser suite runs as four shards, so a whole run takes about thirteen minutes instead of fifty.
 - Five games that had shipped with no browser test have one, and the gate that asks for one now checks.
 - From somebody's own page, starting a game with them is two presses, and a case says so.
 - The specs that page the record and the ladder play the games they page through, rather than relying on rows other tests left behind.
 
-## 0.240.1 — 2026-09-22
+## 0.240.1 — 2026-09-22 10:12 UTC
 - Three browser specs brought up to date: two that still asserted the site as it was two releases ago, and one that raced itself.
 
-## 0.240.0 — 2026-09-22
+## 0.240.0 — 2026-09-22 10:12 UTC
 - The three hexagon boards — Chinese Checkers, Honeycomb and Hex — are drawn one way: a faint lattice across the whole board, the playable shape in tiles, Hex's edges as a ring of them, and the coordinates on the board in the ring.
 
-## 0.239.0 — 2026-09-22
+## 0.239.0 — 2026-09-22 10:12 UTC
 - Who is here now folds past the first few, and the fold says how many more — /games is half the phone screens it was.
 
-## 0.238.0 — 2026-09-22
+## 0.238.0 — 2026-09-22 10:12 UTC
 - A graph of the computer ladder on the About page: how often each grade beat the grade below it, at every game that has been measured.
 
-## 0.237.0 — 2026-09-22
+## 0.237.0 — 2026-09-22 10:12 UTC
 - Begin sits you down at a stranger's seat that matches exactly what you chose, instead of a page that says it all again.
 
-## 0.236.0 — 2026-09-22
+## 0.236.0 — 2026-09-22 10:12 UTC
 - The practice board lists its moves where you can find them, takes a pasted game in the formats these games are published in — however badly it is formatted — and says plainly that nothing on it is a match.
 
-## 0.235.0 — 2026-09-22
+## 0.235.0 — 2026-09-22 10:12 UTC
 - Every game's picture is a picture of the board as it is drawn now, and the build fails when it is not.
 
-## 0.234.0 — 2026-09-22
+## 0.234.0 — 2026-09-22 00:17 UTC
 - The About page reads a chapter at a time — the story, the games, where they came from, Japan, the numbers and the programs — instead of thirty-four phone screens in one scroll.
 
-## 0.233.0 — 2026-09-22
+## 0.233.0 — 2026-09-22 00:17 UTC
 - The board and the Send button fit one phone screen: while a move waits, the row that sends it stays at the bottom of the screen.
 
-## 0.232.0 — 2026-09-22
+## 0.232.0 — 2026-09-22 00:17 UTC
 - Every button, list and box on a phone is now big enough to hit with a thumb.
 
-## 0.231.0 — 2026-09-22
+## 0.231.0 — 2026-09-22 00:17 UTC
 - A stone placed on a phone says which point it landed on, and four arrows move it a point at a time before you send it.
 
-## 0.230.0 — 2026-09-22
+## 0.230.0 — 2026-09-22 00:17 UTC
 - Chinese Checkers fills its board: the star was drawn at half the width and under a third of the wood, with seventeen column letters pointing at nothing.
 
-## 0.229.1 — 2026-09-21
+## 0.229.1 — 2026-09-21 23:24 UTC
 - One feature, one version: 0.221.0 is split into the five releases it carried, and a release names one feature from here on.
 - A release commit carries no co-author trailer.
 
-## 0.229.0 — 2026-09-21
+## 0.229.0 — 2026-09-21 23:24 UTC
 - Nothing pushes a phone sideways any more: the honeycomb board and every table of records fit a 390-pixel screen, so no page is shrunk to fit.
 
-## 0.228.0 — 2026-09-21
+## 0.228.0 — 2026-09-21 23:24 UTC
 - No way into a game takes more than two presses — from the front door, a game's card, the members list or a buddy — and "Be the first to play" now starts a real game.
 
-## 0.227.0 — 2026-09-21
+## 0.227.0 — 2026-09-21 23:24 UTC
 - A buddy list page: the people you know, whether they are about, the games running between you and how many wait on you, and Play beside each name.
 
-## 0.226.0 — 2026-09-21
+## 0.226.0 — 2026-09-21 23:24 UTC
 - The honeycomb fills its board at every size instead of floating in a square frame, and every list of boards is in numerical order.
 
 ## 0.225.0 — 2026-09-21
@@ -1191,55 +1194,55 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 ## 0.222.0 — 2026-09-21
 - A new game: Honeycomb 蜂の巣, Reversi on a hexagon of hexagons — six directions to bracket a run along instead of eight, six corners that can never be turned, and four boards from 37 cells to 127.
 
-## 0.221.0 — 2026-09-21
+## 0.221.0 — 2026-09-21 19:38 UTC
 - A board is named for the shape it really is — a hexagon says how many cells it has rather than pretending to be a square.
 
-## 0.220.0 — 2026-09-21
+## 0.220.0 — 2026-09-21 14:39 UTC
 - The computer players now say what they actually do at each game: a measured round robin against the rungs above and below, shown on each one's page and beside the opponent you are choosing — and where two grades are level, it says level rather than pretending one is stronger.
 
-## 0.219.1 — 2026-09-21
+## 0.219.1 — 2026-09-21 14:10 UTC
 - The site now has one way of sending email, with the caps on it: game notices go through the same sender as an invitation, and cannot grow a way out of their own.
 
-## 0.219.0 — 2026-09-21
+## 0.219.0 — 2026-09-21 13:23 UTC
 - Computer players keep to the time they are given: the check that stops a program handing you the game now shares the move's clock instead of running before it, so a move costs what it says it costs.
 - A game against a computer is answered with one reading of the board rather than two.
 
-## 0.218.0 — 2026-09-18
+## 0.218.0 — 2026-09-18 18:27 UTC
 - Setting a game up is shorter: a choice you have already made — the opening, who you play, whether it counts — folds to one line saying what it is, with Change beside it.
 
-## 0.217.0 — 2026-09-18
+## 0.217.0 — 2026-09-18 13:13 UTC
 - A game against a computer player no longer stalls when you close the tab mid-move: the move is made in your own browser the moment you open your games again.
 - The board no longer shows a seat link or a QR code for a seat somebody already holds — a computer player's chair, or a player you challenged by name.
 
-## 0.216.1 — 2026-09-17
+## 0.216.1 — 2026-09-17 20:52 UTC
 - When the strongest computer players have to refuse the move they first chose, they now fall back on the next move their own reading liked, rather than on the best-looking shape.
 
-## 0.216.0 — 2026-09-17
+## 0.216.0 — 2026-09-17 19:54 UTC
 - The strongest computer players find a forced win faster, reading it on the board they are already thinking on: against the grade they replace, fifteen wins to four over twenty games.
 
-## 0.215.0 — 2026-09-17
+## 0.215.0 — 2026-09-17 17:02 UTC
 - The strongest computer players think about nine times faster: they keep one board up to date as they read ahead instead of rebuilding it for every position, and spend the time they save looking further — the top grade now reads twelve moves deep.
 
-## 0.214.0 — 2026-09-17
+## 0.214.0 — 2026-09-17 16:04 UTC
 - In a sharp position the strongest computer players now read only the moves that answer the threat, so they see forcing sequences many moves deeper — they stop throwing away won games and stop walking into lost ones.
 
-## 0.213.0 — 2026-09-17
+## 0.213.0 — 2026-09-17 11:59 UTC
 - The strongest computer players now see wins built from open threes as well as fours — theirs to play, and yours to stop — several moves before anything is forced.
 
-## 0.212.1 — 2026-09-17
+## 0.212.1 — 2026-09-17 11:22 UTC
 - The practice board no longer stutters after each move: reading the position for threats is about six times faster, and it is worked out once instead of twice.
 
-## 0.212.0 — 2026-09-17
+## 0.212.0 — 2026-09-17 02:24 UTC
 - The strongest computer players now see a win by fours coming — theirs to play, and yours to stop — however many moves away the chain ends.
 
-## 0.211.0 — 2026-09-17
+## 0.211.0 — 2026-09-17 01:56 UTC
 - The computer players think faster: they remember positions they have already read and stop weighing a move the moment it is refuted, so in the same time they see further ahead — about five times faster at the top grade's full depth, choosing the same moves.
 
-## 0.210.0 — 2026-09-17
+## 0.210.0 — 2026-09-17 01:28 UTC
 - In a live game against a computer player, it now thinks on your own device for a couple of seconds rather than a quarter of a second on the server — a much stronger opponent, and the board stays put while it answers.
 - If you close the tab while the computer is thinking, its move is made for it the next time you look at your games.
 
-## 0.209.0 — 2026-09-17
+## 0.209.0 — 2026-09-17 01:12 UTC
 - Computer opponents search about four times further in the same time: they read each line of the board from a table built once, and pick the moves worth trying without listing the rest.
 - The grades that promise never to blunder now play tic-tac-toe, Wild tic-tac-toe and Notakto perfectly.
 - Six computer players with their own names, faces, home towns and styles — attackers, defenders, and one whose mood changes mid-game.
@@ -1247,457 +1250,457 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 - The set-up screen shows the board you are about to play on.
 - The site can send email, and the About page says how to bring your record over from another site.
 
-## 0.208.0 — 2026-09-15
+## 0.208.0 — 2026-09-15 16:53 UTC
 - The tickets page loads only the tickets it shows.
 
-## 0.207.0 — 2026-09-15
+## 0.207.0 — 2026-09-15 16:00 UTC
 - An open game page asks the server far less often, stops asking when nobody is looking, and says so with a Check now button.
 
-## 0.206.2 — 2026-09-15
+## 0.206.2 — 2026-09-15 15:46 UTC
 - A player row's ⋯ menu no longer closes the moment it opens when pressing it scrolled the page.
 
-## 0.206.1 — 2026-09-15
+## 0.206.1 — 2026-09-15 15:34 UTC
 - Each release's deploy now finishes cleanly, instead of reporting a failure after the site was already live.
 
-## 0.206.0 — 2026-09-15
+## 0.206.0 — 2026-09-15 15:20 UTC
 - The operator can attach a game record kept under a name nobody had an account for to the member it belongs to.
 
-## 0.205.0 — 2026-09-15
+## 0.205.0 — 2026-09-15 15:08 UTC
 - The Admin page keeps a log of what the operator did to an account: shutting it, opening it again, taking a name off or setting one, and setting somebody's words.
 
-## 0.204.1 — 2026-09-15
+## 0.204.1 — 2026-09-15 14:57 UTC
 - A stalled Chinese Checkers game is now a draw by the no-progress rule, in the same words as Halma.
 - Old copies of the site are no longer kept after each release, so hosting stays inside its free allowance.
 
-## 0.204.0 — 2026-09-15
+## 0.204.0 — 2026-09-15 14:09 UTC
 - A stalled game now says which rule drew it, the way chess names the fifty-move rule: draughts its move count, Halma its no-progress rule, Square Four its sliding rule; and Chinese Checkers allows twice as long without progress before calling a stall.
 
-## 0.203.2 — 2026-09-15
+## 0.203.2 — 2026-09-15 13:53 UTC
 - Code tidying: the three longest page files are split into smaller ones; nothing a player sees changes.
 
-## 0.203.1 — 2026-09-15
+## 0.203.1 — 2026-09-15 12:58 UTC
 - Code tidying: five of the longest source files are split into smaller ones, with nothing changed that a player would see.
 
-## 0.203.0 — 2026-09-15
+## 0.203.0 — 2026-09-15 12:50 UTC
 - A player who joins with an invite code now gets a full member account: buddies, ignores, applause, saved settings and everything else a Google member can do, with a welcome that says how to keep it.
 
-## 0.202.0 — 2026-09-15
+## 0.202.0 — 2026-09-15 12:05 UTC
 - A weaker player can be given a head start: free turns at the start of any game, or the traditional handicap in Go, Othello and draughts; a head-start game does not count toward ratings.
 
-## 0.201.1 — 2026-09-15
+## 0.201.1 — 2026-09-15 11:01 UTC
 - A saved preference no longer overwrites another saved at the same moment, and the browser suite can reach the tickets board and site settings.
 
-## 0.201.0 — 2026-09-15
+## 0.201.0 — 2026-09-15 10:58 UTC
 - Mini Reversi and Twist Four also appear under Small boards, and every game keeps one home family.
 - Tables and lists show small game pictures, half the regular size, so rows stay compact.
 
-## 0.200.0 — 2026-09-15
+## 0.200.0 — 2026-09-15 09:11 UTC
 - Every game, family, board and opening picture now comes in just two sizes, regular and large, with its name on one line.
 
-## 0.199.0 — 2026-09-15
+## 0.199.0 — 2026-09-15 08:53 UTC
 - Keep a full board of twenty games moving and earn Full House, Clean Sweep and day combos.
 
-## 0.198.1 — 2026-09-15
+## 0.198.1 — 2026-09-15 08:44 UTC
 - Five long code files are split by what they do; nothing changes for players.
 - A report-only runner measures how long Chinese Checkers games go without progress.
 
-## 0.198.0 — 2026-09-15
+## 0.198.0 — 2026-09-15 08:35 UTC
 - Players who joined with an invite code are signed in everywhere: they can post a seat for anyone and see who they can play.
 - A practice game you win is saved even if you close the tab right away.
 - A board theme you pick is kept even if you reload or leave straight away.
 - The twenty-games-at-once limit is now covered by a browser test, and test servers no longer lift it for everyone.
 
-## 0.197.0 — 2026-09-15
+## 0.197.0 — 2026-09-15 08:31 UTC
 - Every player's page has an XP tab showing how their XP was earned, day by day, with each day's total and the running total.
 - The XP board shows how much each player gained today and over the last 7 days, and how far behind the next player they are.
 - Recent promotions can be counted Everywhere or Itsutsu only, and XP credited from other sites is marked as imported rather than shown as earned today.
 - Twelve XP levels have new names: ColecoVision, TurboGrafx-16, Intellivision, Uno, Solitaire, You Sunk My Battleship, Triple Word Score, Shoot the Moon, Doubling Cube, T-Spin, Mahjong and Royal Flush.
 - The imported-XP payer allows enough time to pay a long record in one go.
 
-## 0.196.2 — 2026-09-15
+## 0.196.2 — 2026-09-15 08:14 UTC
 - The site's settings, who may sign up and the join notice, now live on Sumilabu too; if they cannot be read, signing up stays invite-only
 
-## 0.196.1 — 2026-09-15
+## 0.196.1 — 2026-09-15 08:05 UTC
 - The tickets board now lives on Sumilabu, the board every site shares: the board page and the ticket tools read and write it there
 
-## 0.196.0 — 2026-09-14
+## 0.196.0 — 2026-09-14 17:08 UTC
 - Players imported from other sites now earn XP for the record they built there, and the XP board and every badge can count Everywhere or Itsutsu only.
 
-## 0.195.1 — 2026-09-14
+## 0.195.1 — 2026-09-14 16:20 UTC
 - On the players list and standings, each row keeps Challenge or Play in view and puts Buddy and Ignore behind a ⋯ menu, so nothing is cut off.
 
-## 0.195.0 — 2026-09-14
+## 0.195.0 — 2026-09-14 16:10 UTC
 - The games page has a waiting room: one table of everyone waiting for a game, with rating, time limit and country, and Sit down shows you the game before you join.
 - Players who joined with an invite code can press Begin again.
 
-## 0.194.4 — 2026-09-14
+## 0.194.4 — 2026-09-14 15:49 UTC
 - Open seats on the games page show each player's rating and XP level, so you can pick an even match.
 
-## 0.194.3 — 2026-09-14
+## 0.194.3 — 2026-09-14 15:46 UTC
 - Opening the result card no longer jumps the page, and XP pop-ups no longer block the links behind them.
 
-## 0.194.2 — 2026-09-14
+## 0.194.2 — 2026-09-14 15:28 UTC
 - A game played with a handicap no longer changes anyone's rating, and the set-up page says so before you start.
 
-## 0.194.1 — 2026-09-14
+## 0.194.1 — 2026-09-14 15:21 UTC
 - A player who runs out of time mid-move (choosing a colour, turning a quarter, or partway through a capture chain) loses that turn cleanly instead of stalling the game.
 
-## 0.194.0 — 2026-09-14
+## 0.194.0 — 2026-09-14 14:59 UTC
 - A new Recent promotions page under XP shows who went up a level lately, newest first.
 - On a rematch, the set-up heading changes as soon as you pick someone else.
 
-## 0.193.2 — 2026-09-14
+## 0.193.2 — 2026-09-14 14:56 UTC
 - swap2 and other opening choices work again: a pending choice is never passed.
 
-## 0.193.1 — 2026-09-14
+## 0.193.1 — 2026-09-14 14:44 UTC
 - The result card shows the whole XP a game earned, with any level-up, and the XP pop-ups no longer cover it.
 
-## 0.193.0 — 2026-09-14
+## 0.193.0 — 2026-09-14 14:29 UTC
 - When a game ends, a card over the board says who won and why, with your XP and a Rematch button; close it to see the final board.
 
-## 0.192.1 — 2026-09-14
+## 0.192.1 — 2026-09-14 14:25 UTC
 - Choosing someone else on a rematch now starts a new game against them, and the pages say it isn't a rematch.
 
-## 0.192.0 — 2026-09-14
+## 0.192.0 — 2026-09-14 14:06 UTC
 - When you have no legal move, the site passes your turn for you and both boards say so; a game where neither side can move ends in a draw.
 
-## 0.191.1 — 2026-09-14
+## 0.191.1 — 2026-09-14 14:06 UTC
 - liveGame split into three files by responsibility, nothing a player sees changes.
 
-## 0.191.0 — 2026-09-14
+## 0.191.0 — 2026-09-14 13:54 UTC
 - The set-up page shows who you play and every rule at once, adds a random computer player, and its button says Continue.
 
-## 0.190.1 — 2026-09-14
+## 0.190.1 — 2026-09-14 13:54 UTC
 - The set-up page keeps what you chose through a refresh, Back, and a shared link.
 
-## 0.190.0 — 2026-09-14
+## 0.190.0 — 2026-09-14 13:41 UTC
 - When a capture is forced, or you have only one or two moves, the board marks them and dims the rest, and says why.
 
-## 0.189.0 — 2026-09-14
+## 0.189.0 — 2026-09-14 13:22 UTC
 - Russian draughts and Pool checkers join the draughts family, completing the five new checkers games.
 
-## 0.188.0 — 2026-09-14
+## 0.188.0 — 2026-09-14 13:03 UTC
 - Three new draughts games join Checkers: International (10×10), Brazilian (8×8) and Canadian (12×12), each on its own federation's rules.
 
-## 0.187.4 — 2026-09-14
+## 0.187.4 — 2026-09-14 12:39 UTC
 - The players list no longer opens empty because of a filter pressed on an earlier visit, and says plainly what it's narrowed to.
 
-## 0.187.3 — 2026-09-14
+## 0.187.3 — 2026-09-14 10:45 UTC
 - A test now guards that sitting down, answering an offer and claiming on time never reload the board.
 
-## 0.187.2 — 2026-09-14
+## 0.187.2 — 2026-09-14 10:45 UTC
 - Every release, patches included, now has its own dated line on the releases page.
 
-## 0.187.1 — 2026-09-14
+## 0.187.1 — 2026-09-14 10:28 UTC
 - The games page only suggests sitting at a posted game whose rules match what you'd set up.
 
-## 0.187.0 — 2026-09-14
+## 0.187.0 — 2026-09-14 10:28 UTC
 - Every list, card and table that names a game now shows its board picture, and family icons are one larger size everywhere.
 
-## 0.186.4 — 2026-09-14
+## 0.186.4 — 2026-09-14 10:23 UTC
 - Records from ItsYourTurn now link Checkers and Halma 10x10 to the games here.
 
-## 0.186.3 — 2026-09-14
+## 0.186.3 — 2026-09-14 10:15 UTC
 - Choosing an opening, a clock or friendly play no longer seats you at somebody's posted game played under different rules.
 
-## 0.186.2 — 2026-09-14
+## 0.186.2 — 2026-09-14 10:11 UTC
 - When a game ends while you watch, your board turns into the finished record in place, without reloading or getting stuck.
 
-## 0.186.1 — 2026-09-14
+## 0.186.1 — 2026-09-14 10:11 UTC
 - The Go pass test reads each result before the board hands itself back.
 
-## 0.186.0 — 2026-09-14
+## 0.186.0 — 2026-09-14 09:56 UTC
 - The last page before a game now shows a larger picture of the board you chose, with its big number.
 
-## 0.185.0 — 2026-09-14
+## 0.185.0 — 2026-09-14 09:30 UTC
 - Every board on the set-up screen is now a big number with its name, the same whether a game has one board or several.
 
-## 0.184.4 — 2026-09-14
+## 0.184.4 — 2026-09-14 09:17 UTC
 - A set-up choice with only one option, like Checkers' one board, now shows as chosen.
 
-## 0.184.3 — 2026-09-14
+## 0.184.3 — 2026-09-14 09:04 UTC
 - Games between computer players no longer ask to send anyone an email.
 
-## 0.184.2 — 2026-09-14
+## 0.184.2 — 2026-09-14 08:55 UTC
 - A turn lost to the clock now replays correctly, so a game that had a timeout can carry on.
 
-## 0.184.1 — 2026-09-14
+## 0.184.1 — 2026-09-14 08:51 UTC
 - Go is back in the computer players' mixed batch, with the biggest board kept to the quicker players.
 
-## 0.184.0 — 2026-09-14
+## 0.184.0 — 2026-09-14 08:45 UTC
 - Every game on the games page shows how much it has been played and who leads it, with a way to the standings and an invitation where nobody has played yet
 
-## 0.183.0 — 2026-09-14
+## 0.183.0 — 2026-09-14 08:00 UTC
 - A head-to-head scoreboard shows how two players stand against each other above their games, before a game starts and after it ends
 
-## 0.182.1 — 2026-09-14
+## 0.182.1 — 2026-09-14 07:40 UTC
 - A live game of Go can be passed, and two passes in a row end it by count.
 
-## 0.182.0 — 2026-09-14
+## 0.182.0 — 2026-09-14 07:29 UTC
 - The computer players earn XP from their games and show their level like everyone, and the XP board can show people, computers or everyone
 
-## 0.181.0 — 2026-09-14
+## 0.181.0 — 2026-09-14 07:18 UTC
 - The computer players can play a mixed batch of every game nobody has played yet, and Tamenoki no longer freezes at the start of Classic Reversi
 
-## 0.180.0 — 2026-09-14
+## 0.180.0 — 2026-09-14 07:11 UTC
 - Every board size on the set-up screen carries its number in the middle of the board picture, so the icon alone says how big it is
 
-## 0.179.0 — 2026-09-14
+## 0.179.0 — 2026-09-14 06:51 UTC
 - The rest of the rules on the set-up screen are pictures too: the opening, whether it counts, and who you play
 
-## 0.178.0 — 2026-09-14
+## 0.178.0 — 2026-09-14 06:05 UTC
 - A finished game of Go, Othello, five in a row or Hex can be downloaded as an SGF file from its replay
 
-## 0.177.1 — 2026-09-14
+## 0.177.1 — 2026-09-14 06:00 UTC
 - A computer player's tier and rating now agree on every page: both come from the same games
 
-## 0.177.0 — 2026-09-14
+## 0.177.0 — 2026-09-14 05:51 UTC
 - Every table of players now shows XP right after the rating, and a player's page opens with their level and XP beside their record
 
-## 0.176.3 — 2026-09-14
+## 0.176.3 — 2026-09-14 04:22 UTC
 - A done row closed before the release tool existed can now be stamped with the release that carried it, through the board's own door
 
-## 0.176.2 — 2026-09-14
+## 0.176.2 — 2026-09-14 04:17 UTC
 - Every release now gets its own test run on GitHub, instead of most being silently replaced before they started
 
-## 0.176.1 — 2026-09-14
+## 0.176.1 — 2026-09-14 04:05 UTC
 - The two gentlest computer players race home in Halma and Chinese Checkers instead of wandering, so their games end in hundreds of moves rather than a thousand
 
-## 0.176.0 — 2026-09-14
+## 0.176.0 — 2026-09-14 03:58 UTC
 - The points notice now speaks Japanese to a reader who chose it: the unit, the level lines, the button and its name for a screen reader
 
-## 0.175.0 — 2026-09-14
+## 0.175.0 — 2026-09-14 03:36 UTC
 - Hex is drawn as a triangular lattice with the stones on the crossings, the way a wooden board is ruled
 - The star in Chinese Checkers stands on the same lattice, so its rows now sit evenly spaced
 
-## 0.174.8 — 2026-09-14
+## 0.174.8 — 2026-09-14 03:21 UTC
 - A note in the bot runner stops saying Reversi's ladder runs backwards, which stopped being true at 0.149.0
 
-## 0.174.7 — 2026-09-14
+## 0.174.7 — 2026-09-14 03:15 UTC
 - Three browser tests that were red on every fresh database now bring their own games and click the way a person does
 
-## 0.174.6 — 2026-09-14
+## 0.174.6 — 2026-09-14 02:46 UTC
 - The test for somebody's whole record now brings its own games, instead of reading the account of whoever owns the machine
 
-## 0.174.5 — 2026-09-14
+## 0.174.5 — 2026-09-14 02:40 UTC
 - A time zone you chose yourself is now remembered as your choice, so nothing quietly replaces it with a guess from your country
 
-## 0.174.4 — 2026-09-14
+## 0.174.4 — 2026-09-14 02:34 UTC
 - The browser tests now sign in as a test account of their own, instead of borrowing whoever owns the machine
 
-## 0.174.3 — 2026-09-14
+## 0.174.3 — 2026-09-14 02:28 UTC
 - Three admin boxes now say what they are for, instead of borrowing the words of the example inside them
 
-## 0.174.2 — 2026-09-14
+## 0.174.2 — 2026-09-14 02:21 UTC
 - The test that watches a game end now reads the result the live board announces, instead of racing the page that replaces it
 
-## 0.174.1 — 2026-09-14
+## 0.174.1 — 2026-09-14 02:11 UTC
 - release:take can retry closing a board row on its own, and a changelog line now starts with a capital
 
-## 0.174.0 — 2026-09-14
+## 0.174.0 — 2026-09-14 02:00 UTC
 - The experience ladder now runs to 999,999 points at Level 100, and gets harder after Level 10 and again after Level 20
 - Everyone's level drops with this change: past experience keeps what it paid, and the new rungs are steeper
 - Winning every game in a family now pays, and beating somebody rated above you pays more
 
-## 0.173.8 — 2026-09-14
+## 0.173.8 — 2026-09-14 01:52 UTC
 - a note beside a control is now its description rather than part of its name, so a screen reader says "Invite code" and then the note
 
-## 0.173.7 — 2026-09-14
+## 0.173.7 — 2026-09-14 01:45 UTC
 - the reactions test stays on the board it is talking about, so a green run means the bubble really arrived
 
-## 0.173.6 — 2026-09-14
+## 0.173.6 — 2026-09-14 01:38 UTC
 - The tool that takes a version now commits it, so work can no longer land with nothing naming it.
 
-## 0.173.5 — 2026-09-14
+## 0.173.5 — 2026-09-14 01:25 UTC
 - A record narrowed to somebody who does not exist is refused rather than answered with everybody's games, and two more dates read the same way on the server and in the browser.
 
-## 0.173.4 — 2026-09-14
+## 0.173.4 — 2026-09-14 01:15 UTC
 - The browser suite takes away the names it plays under, so a run leaves no rating rows behind.
 
-## 0.173.3 — 2026-09-14
+## 0.173.3 — 2026-09-14 00:55 UTC
 - Every number that counts games now leads to exactly those games: the games-at-once count opens the games it counted, a game named in a list is a link to that game, and a record narrowed to somebody says so when the link names nobody
 
-## 0.173.2 — 2026-09-14
+## 0.173.2 — 2026-09-14 00:50 UTC
 - Dates and clocks on the game pages no longer disagree between what the server drew and what your browser draws: the page arrives reading UTC and switches to your own zone once the browser takes over
 
-## 0.173.1 — 2026-09-14
+## 0.173.1 — 2026-09-14 00:37 UTC
 - Play apart uses the same rules panel as every other way into a game, so the clock, the ratings choice and the resigning rule are worded and behave identically wherever you start from
 
-## 0.173.0 — 2026-09-14
+## 0.173.0 — 2026-09-14 00:23 UTC
 - A board with only one size now draws its number inside the board picture itself, large and centred, instead of printing the size twice underneath
 
-## 0.172.0 — 2026-09-14
+## 0.172.0 — 2026-09-14 00:16 UTC
 - The members list shows everyone's experience points beside their record, sortable, with their level beside their name — and a member who has earned nothing is Level 1 rather than blank
 
-## 0.171.0 — 2026-09-14
+## 0.171.0 — 2026-09-14 00:13 UTC
 - Your day now ends where you live rather than at five in the afternoon: a member's time zone is their own choice, then their device, then a good guess from their country — and the profile and XP tabs say which it is
 - Signing in no longer spends the day it grants: the daily visit is paid from the day as it stood before the sign-in, so a member who signs in each day can actually earn it
 
-## 0.170.8 — 2026-09-14
+## 0.170.8 — 2026-09-14 00:02 UTC
 - A control's hint is no longer read out as part of its name by a screen reader, and every tab of your own page is now checked for the kind of mismatch that made the profile form disagree with itself
 
-## 0.170.7 — 2026-09-12
+## 0.170.7 — 2026-09-12 22:15 UTC
 - A new game's address names the game it actually is, and three labels that were typed out twice are now said once
 
-## 0.170.6 — 2026-09-12
+## 0.170.6 — 2026-09-12 22:06 UTC
 - A posted seat's game cannot be changed underneath the link that points at it: the board, clock and rules may still be settled before the first stone, but the game itself is decided when the seat is posted
 
-## 0.170.5 — 2026-09-12
+## 0.170.5 — 2026-09-12 21:42 UTC
 - Two more browser tests bring their own world instead of playing as the site's owner and being carried off to whatever game was waiting for him
 
-## 0.170.4 — 2026-09-12
+## 0.170.4 — 2026-09-12 21:21 UTC
 - The builders' note on the test sweep now gives both counts with the rule behind each
 
-## 0.170.3 — 2026-09-12
+## 0.170.3 — 2026-09-12 21:19 UTC
 - A number in the builders' notes corrected to the one actually counted, with how it was counted
 
-## 0.170.2 — 2026-09-12
+## 0.170.2 — 2026-09-12 21:16 UTC
 - The browser tests now wait for the page to be ready before pressing things, across the suite rather than in two files — a false pass and a race were found on the way
 
-## 0.170.1 — 2026-09-12
+## 0.170.1 — 2026-09-12 20:13 UTC
 - A fork of a game against a computer player is a real game against that computer player again — rated in the computer pool, the program answering when the position says so — and a rematch against a program now opens with the program's move instead of waiting for yours
 
-## 0.170.0 — 2026-09-12
+## 0.170.0 — 2026-09-12 19:42 UTC
 - Your finished games page instead of piling up: the first twenty newest, then Older finished games, with the true count — and the page that lists them reads a fraction of what it did for anyone who keeps games for ever
 
-## 0.169.4 — 2026-09-12
+## 0.169.4 — 2026-09-12 19:25 UTC
 - Three small things: the ticket board refuses a change it cannot apply instead of saying OK; a fork with nobody to challenge no longer offers a rating it will not honour; and a leaderboard test that assumed its rows were on page one reads the order it actually sees
 
-## 0.169.3 — 2026-09-12
+## 0.169.3 — 2026-09-12 18:47 UTC
 - Your games page reads only the finished games inside the window you keep, instead of every game you ever played and trimming afterwards — the same list, a fraction of the work for anyone who has played a lot
 
-## 0.169.2 — 2026-09-12
+## 0.169.2 — 2026-09-12 18:39 UTC
 - Two more notes for the people who build this site: check whose server is on your port before trusting a test against it, and what a stale database client looks like after a rebase
 
-## 0.169.1 — 2026-09-12
+## 0.169.1 — 2026-09-12 18:36 UTC
 - A game played at one screen can no longer be stored as rated, whoever asks — a fork with nobody to challenge was the last way in — and the rules panel of such a game says it will not count instead of Rated
 
-## 0.169.0 — 2026-09-12
+## 0.169.0 — 2026-09-12 18:33 UTC
 - Every heading on the players page sorts — by name, games played, won, lost, drawn, when they joined — and the list pages instead of stopping at the two hundred most recently seen
 
-## 0.168.1 — 2026-09-12
+## 0.168.1 — 2026-09-12 18:24 UTC
 - A game's result is now written to the ladder and the per-game standing in one transaction, so the two can no longer drift apart by one game for ever — and a tool that names any pair already apart
 
-## 0.168.0 — 2026-09-12
+## 0.168.0 — 2026-09-12 18:18 UTC
 - Choose your language once: a signed-in member's choice is kept on their account and follows them to every device, with no extra cost per page
 
-## 0.167.1 — 2026-09-12
+## 0.167.1 — 2026-09-12 18:15 UTC
 - The mapping from every closed ticket to the release that shipped it, derived from the changelog and git with its evidence, ready to be stamped once the board has a door for it
 
-## 0.167.0 — 2026-09-12
+## 0.167.0 — 2026-09-12 16:34 UTC
 - A game you propose to a person — a challenge, a rematch or a fork — is an offer until they accept it: it waits in their list with Accept and Decline, declining costs them nothing, you can withdraw it, and nothing is bound to them until they say yes
 
-## 0.166.0 — 2026-09-12
+## 0.166.0 — 2026-09-12 16:07 UTC
 - Your level has its name everywhere now: in the toast when you reach one, on your own page with the rung ahead a click away, beside every name on the players page and the Computers and Bots tabs, and on a player's page with their total — and each name leads to its rung on the ladder
 
-## 0.165.0 — 2026-09-12
+## 0.165.0 — 2026-09-12 15:25 UTC
 - The operator has a Site tab: registration can be invite-only as today, open to anyone with a Google account, or an approval queue; a notice can be shown on the join page; and maintenance mode is documented there — everyone but the operator sees a page saying so while it is on
 
-## 0.164.4 — 2026-09-12
+## 0.164.4 — 2026-09-12 15:10 UTC
 - A Resign or Cancel question you have opened stays put: the board no longer moves on to your next game underneath it until you have answered or dismissed it
 
-## 0.164.3 — 2026-09-12
+## 0.164.3 — 2026-09-12 15:07 UTC
 - Notes for the people who build this site: three ways a fresh working copy goes wrong before any code runs, each learned the hard way today
 
-## 0.164.2 — 2026-09-12
+## 0.164.2 — 2026-09-12 15:04 UTC
 - The Play count in the masthead no longer shifts every page down as it arrives, and it no longer asks the server every half minute — it refreshes when you come back to the tab
 - Every row on the players page is the same height, the list fits the page at desktop widths, and the Computers tab shows the streak it knows
 
-## 0.164.1 — 2026-09-12
+## 0.164.1 — 2026-09-12 15:01 UTC
 - The tool that can replay everyone's history through the XP rules, in order, so games played before XP existed can earn what they would have — built and rehearsed; it runs only when asked twice, and on production only on the owner's word
 
-## 0.164.0 — 2026-09-12
+## 0.164.0 — 2026-09-12 14:58 UTC
 - The XP ladder: all hundred levels with their names, what each costs to reach, and who is standing on each rung — with your own rung marked
 - The XP leaderboard: every member ranked by experience with their level name, sortable by points, level, last earned or name, and linked to the person
 
-## 0.163.0 — 2026-09-12
+## 0.163.0 — 2026-09-12 13:06 UTC
 - Start the game leads to a doorstep, not a board: a page that states exactly what is about to happen — the game, the board, the rules, the clock, whether it counts, who you are playing and which colour you hold — with one button, Begin, and one way back that keeps every choice. Nothing is created until Begin
 - The board means playing: the settings form beside a shared game is gone, and the rules are shown as a statement
 - A link that names a board is honoured on the setup page: a single seat already waiting at that game no longer moves the board to its own size over the one the address said
 
-## 0.162.1 — 2026-09-12
+## 0.162.1 — 2026-09-12 13:03 UTC
 - A test that had been red on every fresh database since the setup-first work turned out to be the test, not the site: resigning from the board has always ended the game
 
-## 0.162.0 — 2026-09-12
+## 0.162.0 — 2026-09-12 12:53 UTC
 - Every finished game now pays experience points — for playing, for a first game of each kind and each family, for touring all of them, for winning over a person, over a buddy, after losing to them, for a streak, for beating each computer grade — and for showing up: a daily return, a run of days, a weekend game, coming back after time away
 - Points show as a toast sliding from the top the moment they land, with a level-up marked when one is reached — no polling, no timers beyond the toast's own dismissal
 - Points for belonging too: a first buddy, a challenge sent and answered, a rematch or a fork played, applause given, your name, country, bio and four words set, a seat claimed on somebody else's device
 
-## 0.161.0 — 2026-09-12
+## 0.161.0 — 2026-09-12 12:50 UTC
 - Your own page has an XP tab: your points, your level and the distance to the next, then every award you have earned, newest first, each saying what it was for and linking to the game or the person behind it
 
-## 0.160.0 — 2026-09-12
+## 0.160.0 — 2026-09-12 12:39 UTC
 - The record of games and the ladder can be sorted by their column headings, and the record loads the next page as you reach the end of it — no reload, no waiting
 - Every list on the site now pages and sorts the same way, by one convention: sort=<column>, an opaque cursor, and a page that stays put while new games arrive above it
 - Your games page opens a capped group in place — showing 5 of 14 becomes all 14 with one press
 
-## 0.159.0 — 2026-09-12
+## 0.159.0 — 2026-09-12 12:18 UTC
 - The operator can set a member's four words from the Members list — the same picker the member would use, words shown once at save, and an existing phrase is never replaced without being asked first
 - Admin splits the computer players into their own Bots tab, with each program's grade, games, rating and last game, and the Members list counts people only
 
-## 0.158.9 — 2026-09-12
+## 0.158.9 — 2026-09-12 12:14 UTC
 - The hundred XP level names are written, from cool to coolest ever, ready to appear beside a level the moment levels are shown
 
-## 0.158.8 — 2026-09-12
+## 0.158.8 — 2026-09-12 12:08 UTC
 - The fork button no longer sits on the last move of a finished game offering to replay the end of a loss: it appears only when you have stepped back to an earlier position, and only if you were one of the players — a watcher is never offered a fork
 
-## 0.158.7 — 2026-09-12
+## 0.158.7 — 2026-09-12 11:50 UTC
 - Choosing a family on the setup page now moves the boards with it — click Drops and you see Drop Four's boards, not the last game's — and a game with only one board shows that board instead of nothing
 - Each family on the setup page carries its one-line description, and the family row sits apart from the games under it
 
-## 0.158.6 — 2026-09-12
+## 0.158.6 — 2026-09-12 11:45 UTC
 - A note for the people who build this site: a control character in source code is written as its escape, never as the raw byte, or the file goes dark to every tool that reads it
 
-## 0.158.5 — 2026-09-12
+## 0.158.5 — 2026-09-12 11:41 UTC
 - Every member now earns experience points — for joining, for each day they visit, for every game finished and every game won — kept in a ledger nothing can double-count; nothing shows it yet, and the level names, the toast and the leaderboard follow
 
-## 0.158.4 — 2026-09-12
+## 0.158.4 — 2026-09-12 11:29 UTC
 - The toast that will announce XP points, built and tested but not yet shown anywhere — the ledger that feeds it comes next
 
-## 0.158.3 — 2026-09-12
+## 0.158.3 — 2026-09-12 11:22 UTC
 - The last of the count and filter faults: a game's own history page names its filter in the address instead of hiding it, an outcome chip never claims to filter what it did not, a kept player's page tells the truth about games it can see, the /me per-game table says its scope, and the replay scrubber's move number stays right for twist games and swap openings
 
-## 0.158.2 — 2026-09-12
+## 0.158.2 — 2026-09-12 10:16 UTC
 - A group header on your games page counts the whole bucket, not just the few it is showing — 14, showing 5 — and the played counts everywhere stop including abandoned games and start linking to the games behind them
 - The ladder's Played column says in a word that it counts rated games against people, so it no longer silently disagrees with the members list's every-game count under the same heading
 
-## 0.158.1 — 2026-09-12
+## 0.158.1 — 2026-09-12 09:40 UTC
 - Your own record no longer says No games yet when you have played only friendly games: the line is shown when you have played anything, not only when you hold a rating
 
-## 0.158.0 — 2026-09-12
+## 0.158.0 — 2026-09-12 08:34 UTC
 - A streak now counts every game you have played, not only your rated ones, so the members list and your own record show a run where they showed a dash — the count and the streak beside it finally mean the same set of games
 
-## 0.157.0 — 2026-09-12
+## 0.157.0 — 2026-09-12 08:29 UTC
 - Signed out, the games page shows how many games each family has really had here, not zero on every one
 - The Computers tab counts every game a computer player has played, matching the members list, instead of only its rated ones
 - A computer player's own page shows the rating it earned rather than a default 1600 nobody set
 - The front page counts the games from the catalogue itself, so it and the games list always agree on how many there are
 - The embedded record counts a game against yourself once, matching every other page
 
-## 0.156.1 — 2026-09-12
+## 0.156.1 — 2026-09-12 08:27 UTC
 - A branch that changes many routes gets its full browser run on a pull request against a fresh database, so a real regression can be told from the noise before it reaches main
 
-## 0.156.0 — 2026-09-12
+## 0.156.0 — 2026-09-12 06:28 UTC
 - Every way into a game goes through the setup page first: Play on a player's page, Challenge anywhere, Rematch, Fork, the Computers tab, the one-line sentence, New game in the navigation — all fourteen land on the setup screen with whatever is already decided filled in, and nothing is written until you press Start
 - A handicap can be set when you set up a game, and a challenge's rules are settled the moment it is sent — the other side can no longer change the board or the clock after handing it over
 
-## 0.155.2 — 2026-09-12
+## 0.155.2 — 2026-09-12 06:24 UTC
 - The release history counts 167 releases, which is how many there have been: one version had two headings, and now has one
 
-## 0.155.1 — 2026-09-12
+## 0.155.1 — 2026-09-12 06:20 UTC
 - Two working rules written where the next session reads them: Intl belongs in a handler and never in render, and how to run one browser spec without sweeping the shared database
 
-## 0.155.0 — 2026-09-12
+## 0.155.0 — 2026-09-12 06:16 UTC
 - The profile page is a form that was looked at: a field is as wide as what goes in it — the two away dates on one row, city beside country, the time zone sized to a time zone — and the whole thing reads as three short groups rather than eleven full-width rows
 
-## 0.154.0 — 2026-09-12
+## 0.154.0 — 2026-09-12 06:09 UTC
 - Your four words have a tab of their own on your page — Words 合言葉 — built like a screen showing you a code: four big boxes as the centrepiece, four large word tiles to pick from, a refresh icon for four others, and you can drag a word into any of the four spots, by touch or by keyboard. The order is yours to arrange and never changes the words themselves
 
-## 0.153.0 — 2026-09-12
+## 0.153.0 — 2026-09-12 06:06 UTC
 - Choosing a game to set up is two rows of pictures rather than a dropdown of thirty-nine names: every family with its mark, then that family's games with their boards — and the board size is a row of blocks drawn at their real density
 - The five settings you rarely change sit behind one line that reads their current values — Free opening, No clock, Rated, Post for anyone — closed by default so the Start button is above the fold on an iPad, and one tap to open
 
-## 0.152.0 — 2026-09-12
+## 0.152.0 — 2026-09-12 06:02 UTC
 - The board's release history says which day each version shipped, and a row a release closes says shipped in rather than marked done in
 - Closing a row is part of taking a release number now, not a step somebody remembers afterwards — the fifteen that shipped and stayed open cannot happen again
 

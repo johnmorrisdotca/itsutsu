@@ -96,7 +96,7 @@ describe("planRelease", () => {
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
     expect(plan.version).toBe("0.151.0");
-    expect(plan.changelog).toContain("## 0.151.0 — 2026-09-12\n- A thing a player would notice");
+    expect(plan.changelog).toContain("## 0.151.0 — 2026-09-12 03:04 UTC\n- A thing a player would notice");
     // Above the existing heading, not below it.
     expect(plan.changelog.indexOf("0.151.0")).toBeLessThan(plan.changelog.indexOf("0.150.0"));
     expect(plan.packageJson).toContain('"version": "0.151.0"');
@@ -131,7 +131,7 @@ describe("planRelease", () => {
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
     expect(plan.version).toBe("0.150.1");
-    expect(plan.changelog).toContain("## 0.150.1 — 2026-09-12");
+    expect(plan.changelog).toContain("## 0.150.1 — 2026-09-12 03:04 UTC");
   });
 
   it("refuses a patch with no summary, as it refuses a minor — 0.186.1 shipped with no heading that way", () => {
@@ -158,7 +158,7 @@ describe("planRelease", () => {
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
     expect(plan.changelog).toContain(
-      "## 0.150.1 — 2026-09-12\n- The Go pass test reads each result before the board hands itself back\n\n## 0.150.0",
+      "## 0.150.1 — 2026-09-12 03:04 UTC\n- The Go pass test reads each result before the board hands itself back\n\n## 0.150.0",
     );
     expect(plan.packageJson).toContain('"version": "0.150.1"');
   });
@@ -202,7 +202,7 @@ describe("planRelease", () => {
     });
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
-    expect(plan.changelog).toContain("## 0.150.1 — 2026-09-12\n- First thing\n- Second thing\n");
+    expect(plan.changelog).toContain("## 0.150.1 — 2026-09-12 03:04 UTC\n- First thing\n- Second thing\n");
   });
 
   /*
@@ -259,7 +259,7 @@ describe("a summary's case: the title as written, the changelog bullet capitalis
   it("gives a lower-case summary a lower-case title and a capitalised bullet, proper nouns untouched", () => {
     const { title, changelog } = titleAndEntry("the Paired gate sees every name");
     expect(title).toBe("0.151.0 — the Paired gate sees every name");
-    expect(changelog).toContain("## 0.151.0 — 2026-09-12\n- The Paired gate sees every name\n");
+    expect(changelog).toContain("## 0.151.0 — 2026-09-12 03:04 UTC\n- The Paired gate sees every name\n");
   });
 
   it("leaves a summary starting with a backtick-quoted identifier unchanged in both", () => {

@@ -57,6 +57,17 @@ const READER_FORMAT: Record<WhenStyle, Intl.DateTimeFormatOptions> = {
   dateTime: { dateStyle: "medium", timeStyle: "short" },
   date: { dateStyle: "medium" },
   time: { timeStyle: "short" },
+  // Not `dateStyle: "full"` with a `timeStyle`: neither names the zone, and a
+  // time written out for a reader who asked must say which zone it is in.
+  full: {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  },
 };
 
 /**
