@@ -218,7 +218,12 @@ rows; a Futago's two words a row more and a Yotsugo's four three more; and
 Strict at any level holds each guess to the letters already found
 (`src/lib/puzzles/gomoji/layout.ts`). Head start, at easy only, greys as many
 keys as the word is long before the first guess, none of them in the word,
-for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). English words
+for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). Two other
+ways to play one word, chosen on the set-up in every language but Pop culture:
+**Nige** 逃げ, where no word is hidden until the guesses leave only one
+(`src/lib/puzzles/gomoji/dodge.ts`), and **Sakasa** 逆さ, where every row must
+be filled without typing the hidden word (`src/lib/puzzles/gomoji/backwards.ts`),
+each in a seed block of its own with a daily game at every length. English words
 from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an
