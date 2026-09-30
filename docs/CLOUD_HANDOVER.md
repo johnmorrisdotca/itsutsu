@@ -140,6 +140,33 @@ machine) owns deploys, production migrations and backups from here.
 - Before each merge the Mac reads `git ls-remote --heads origin` for a newer
   `cloud-…` twin of an older branch name.
 
+### From the Mac, 2026-09-30 09:40Z: no copies of a package on `main`
+
+John, 09:30Z, on hearing that each package branch adds `packages/<name>`: "wait!
+i don't want 2 copies... we created those repos so that the code leaves our
+site". So:
+
+- **No branch lands with a `packages/<name>` copy or a tsconfig path to one.**
+  The site depends on each package from its own repository at a pinned version,
+  and the code is in one place.
+- **How, without npm (John's npm step is a ticket for the week of 5 October):**
+  proposed, and waiting on John's word because it publishes a release in a
+  public repository: each package repository gets a `release.yml` that, on a
+  `v*` tag, runs its checks, builds, `pnpm pack`s and attaches the tarball to a
+  GitHub release; the site's `package.json` then names that file, e.g.
+  `"@johnmorrisdotca/korokoro": "https://github.com/johnmorrisdotca/korokoro/releases/download/v1.0.0/johnmorrisdotca-korokoro-1.0.0.tgz"`.
+  Built files only, nothing built on install, the lockfile holds the integrity.
+  Korokoro packs to 35 KB this way (tried on the Mac, not pushed).
+- **So the package branches wait**: `cloud-dice-roller-korokoro`,
+  `cloud-uno-style`, the cube, `cloud-tenka-kumimoji-packages`,
+  `cloud-tane-package`, `cloud-toranpu-package`, `cloud-narabe-package`. Once
+  John has said yes to the way in, each wants reworking to import the package by
+  its name from `node_modules`, with no `packages/` folder, no tsconfig path and
+  no relative import into it from `src/` or `e2e/`.
+- **Landing now:** `cloud-dice-game-bt6fty` (Yacht, Pachisi), which has no
+  package in it. `cloud-friends-history-6aef1c` conflicts with `main` in
+  `src/components/mine/MyHistory.tsx` and is waiting for its rebase.
+
 ### Chores for you
 
 - [x] Delete the stale remote branches `cloud-deploy-probe` and
