@@ -52,9 +52,10 @@ const PATIENCE_MS = 6000;
  * The pages worth keeping: the front page, My games (whose games kept on this
  * device are read from the device, so they are current offline too), the
  * games list in its views, a game's front door, its set-up, its practice board
- * or solve, and its pass-and-play table.
+ * or solve, and its pass-and-play table. And the dice roller, which rolls in
+ * the browser and so needs nothing from the site once kept.
  */
-const KEPT_PAGE = /^\/(play|games(\/(cards|list|party|dominoes|new))?|games\/[^/]+(\/(new|play|pass-and-play))?)?$/;
+const KEPT_PAGE = /^\/(play|dice|games(\/(cards|list|party|dominoes|new))?|games\/[^/]+(\/(new|play|pass-and-play))?)?$/;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
