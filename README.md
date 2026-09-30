@@ -94,6 +94,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Mahjong | 1 |
 | Dominoes | 1 |
 | Colour cards | 1 |
+| Cubes | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -211,6 +212,24 @@ pair a turn round one device, with computers for empty seats. Every deal is
 laid pair by pair in reverse, so it can be cleared; the answer and a kept run
 are the moves, which the server plays through to check. The tiles are our own
 Japanese-style SVG. See `docs/plans/mahjong/README.md`.
+
+**Cubes** 立方 (2026-09-30) is the shelf for the turning cube, opened with the
+**Cube** 立方体 (`src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 5×5, drawn in
+CSS 3D by **Kyuubu** キューブ (`@johnmorrisdotca/kyuubu`), a framework-free package
+with a thin React wrapper and its own repository (github.com/johnmorrisdotca/kyuubu).
+The site installs it from a GitHub release's tarball, pinned in `package.json`;
+a change to it is a commit and a new version there, then a one-line bump of that
+address here. Drag a sticker to turn its
+layer, drag around the cube to look, wheel over a sticker to turn its row
+(Ctrl its column, Shift its face), or type the notation. A scramble is the
+seed's random turns, fifteen seconds' look comes before the clock, and the
+answer and a kept run are the turns, which the server makes again from the
+scramble (`cube/check.ts`). Whole-cube turns are looks and are not counted.
+On a 2×2 or 3×3, **Show me how** gives the next step of the beginner's method
+(Kyuubu's `solveSteps`) and turns it on request; a solve that used it is kept
+as `guided` (`solveHelp.ts`): solved, no points, off the fastest tables. The
+method is taught at `/learn/cube`, a stage at a time with a cube to practise
+each on (`src/lib/learn/cubeMethod.ts`, `cubePractice.ts`).
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
@@ -456,8 +475,8 @@ them into `public/art/games/`) and links to the strategy guides that apply.
 `/learn` holds the guides: threats, shapes and tempo for the five-in-a-row
 family; Renju's forbidden points and openings; captures; two stones a turn;
 the drop family's parity; the twist games; the small games; and the piece
-games. Written to be learned from, with the Japanese terms where the
-literature uses them. Both sections are linked from the header.
+games; and the cube's beginner's method (`/learn/cube`). Written to be
+learned from, with the Japanese terms where the literature uses them. Both sections are linked from the header.
 
 ### Players, ratings and records
 

@@ -1,4 +1,5 @@
 import type { Card } from "@/lib/cards/cards.types";
+import type { MarkCubeProps } from "./MarkCube";
 
 import type { MarkDie, MarkDomino } from "./games.types";
 
@@ -39,4 +40,6 @@ export type Mark = {
   dominoes?: MarkDomino[];
   /** Dice, each its top-left corner (a cell and a half square), its face, and whether it is held: the Dice family's throw. */
   dice?: MarkDie[];
+  /** A cube seen from above one corner (`MarkCube`): the Cubes family's. */
+  cube?: MarkCubeProps;
 };

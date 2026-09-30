@@ -77,6 +77,10 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/lib/puzzles/mahjong/deal.ts",
   "src/lib/puzzles/mahjong/layouts.ts",
   "src/lib/puzzles/mahjong/tiles.ts",
+  "src/lib/puzzles/cube/generate.ts",
+  "src/components/puzzles/CubeBoard.tsx",
+  // Kyuubu draws the cube; its version says when its drawing may have changed.
+  "node_modules/@johnmorrisdotca/kyuubu/package.json",
   "src/lib/puzzles/numberPlace/layout.ts",
   "src/lib/puzzles/numberPlace/solve.ts",
   "e2e/puzzle-screenshots.spec.ts",

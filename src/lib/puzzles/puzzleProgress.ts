@@ -1,3 +1,5 @@
+import { decodeCubeMoves, encodeCubeMoves, type CubeMove } from "@johnmorrisdotca/kyuubu";
+
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { solitaireMovesFit } from "./solitaire/check";
 import { freeCellMovesFit } from "./freecell/check";
@@ -11,6 +13,7 @@ import { wordCountOfSeed } from "./gomoji/wordsSeed";
 import { decodeCells as decodePictureCells, encodeCells as encodePictureCells } from "./pictureLogic/code";
 import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { layoutFor } from "./mahjong/layouts";
+import { cubeMovesFit } from "./cube/check";
 import type { MahjongMove } from "./mahjong/mahjong.types";
 import { decodeMoves, encodeMoves } from "./mahjong/moves";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
@@ -62,6 +65,21 @@ export function decodeStoneProgress(code: string, size: number): StoneMarkCode[]
 /** Solitaire writes its moves so far, as its answer is written (`solitaire/code.ts`); a kept run replays them from the deal. */
 export function encodeSolitaireProgress(moves: readonly KlondikeMove[]): string {
   return encodeSolitaireMoves(moves);
+}
+
+/** Before a kept cube's turns when its steps were shown (`CubeGuide`), so a run left and opened again is still a helped one. */
+const CUBE_GUIDED = "guided:";
+
+/** A cube writes its turns so far, as its answer is written (`encodeCubeMoves`); a kept run turns them from the scramble. */
+export function encodeCubeProgress(moves: readonly CubeMove[], guided = false): string {
+  return `${guided ? CUBE_GUIDED : ""}${encodeCubeMoves(moves)}`;
+}
+
+/** A kept cube's turns, and whether its steps had been shown; null for a code that is not one. */
+export function decodeCubeProgress(code: string): { moves: CubeMove[]; guided: boolean } | null {
+  const guided = code.startsWith(CUBE_GUIDED);
+  const moves = decodeCubeMoves(guided ? code.slice(CUBE_GUIDED.length) : code);
+  return moves === null ? null : { moves, guided };
 }
 
 /** Mahjong writes its moves so far as its answer is written: every pair taken and every shuffle (`mahjong/moves.ts`). */
@@ -122,6 +140,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "tsunagi") return linesCodeFits(code, size);
   // A Kumimoji's shape only: its bag is checked when the game is opened again (`decodeTileProgress`).
   if (kind === "kumimoji") return readTileProgress(code) !== null;
+  // A cube keeps its turns, as its answer is written; turned from the scramble when it is opened.
+  if (kind === "cube") return cubeMovesFit(code.startsWith(CUBE_GUIDED) ? code.slice(CUBE_GUIDED.length) : code);
   // Solitaire keeps its moves, as its answer is written; replayed from the deal when it is opened.
   if (kind === "solitaire") return solitaireMovesFit(code);
   // FreeCell and Spider keep their moves the same way (`freecell/code.ts`, `spider/code.ts`).

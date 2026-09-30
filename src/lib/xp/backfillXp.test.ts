@@ -49,6 +49,8 @@ const PUZZLE_SOLVED: HeldEvent[] = [
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "cards", dayKey: "2026-01-01" },
   // Mahjong (2026-09-29), met with its first Mahjong Solitaire solve.
   { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "mahjong", dayKey: "2026-01-01" },
+  // Cubes (2026-09-30), met with its first cube solved.
+  { memberId: "a", type: XP_EVENTS.firstOfFamily, subject: "cubes", dayKey: "2026-01-01" },
 ];
 /* A Wednesday and the Saturday after it, for the weekend award. */
 const WED = "2026-02-04T12:00:00Z";

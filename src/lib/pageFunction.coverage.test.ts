@@ -78,6 +78,14 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    */
   ["@johnmorrisdotca/hitotsu", "Sizes and rules for the rules page, and the several-devices table read on the server."],
   ["@johnmorrisdotca/hitotsu/react", "The Colour cards family mark, and the several-devices table drawn on the server."],
+  /*
+   * Kyuubu, 124 KB whole (1.0.1). The server checks a finished cube by
+   * replaying its turns, as it checks every puzzle (`puzzles.constants.ts`);
+   * the Learn guide draws each stage's cube; and a finished solve's page
+   * replays it.
+   */
+  ["@johnmorrisdotca/kyuubu", "The server's check of a finished cube, the Learn guide's stages, and a finished solve's replay."],
+  ["@johnmorrisdotca/kyuubu/react", "The cube drawn in the Learn guide."],
 ]);
 
 /*

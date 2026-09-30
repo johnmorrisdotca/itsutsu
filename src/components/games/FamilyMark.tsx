@@ -3,6 +3,7 @@ import { CardFace } from "@/components/cards/CardFace";
 import { HitotsuCardDrawing } from "@johnmorrisdotca/hitotsu/react";
 
 import type { PictureSize } from "./games.types";
+import { MarkCube } from "./MarkCube";
 import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
 
@@ -103,6 +104,7 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           </text>
         </g>
       ))}
+      {mark.cube === undefined ? null : <MarkCube {...mark.cube} />}
       <MarkDominoes dominoes={mark.dominoes ?? []} />
       <MarkDice dice={mark.dice ?? []} />
       {mark.path !== undefined ? (

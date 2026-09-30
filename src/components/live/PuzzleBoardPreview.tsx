@@ -48,6 +48,7 @@ import { dealKlondike, playKlondike } from "@/lib/puzzles/solitaire/klondike";
 import { MahjongBoard, mahjongViewBox } from "@/components/puzzles/MahjongBoard";
 import { useMahjongFree } from "@/components/puzzles/mahjongFree";
 import { generateMahjong } from "@/lib/puzzles/mahjong/generate";
+import { CubePreview } from "@/components/puzzles/CubePreview";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -129,6 +130,8 @@ export function PuzzleBoardPreview({
           <SolitairePreview draw={size} appearance={appearance} />
         ) : kind === "mahjong" ? (
           <MahjongPreview size={size} appearance={appearance} />
+        ) : spec.cube === true ? (
+          <CubePreview size={size} level={level ?? spec.defaultLevel} appearance={appearance} />
         ) : words === undefined ? (
           <PaperGrid kind={kind} size={size} stones={STONE_SETS[appearance.stoneSet]} />
         ) : (

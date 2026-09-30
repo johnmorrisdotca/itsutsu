@@ -13,8 +13,9 @@ import { isSeed } from "@/lib/puzzles/random";
 import { decodeStepLog, encodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
-import { SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
+import { helpOffered, SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 import { cardDealOfSeed } from "@/lib/puzzles/cardDeals";
 import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
@@ -148,6 +149,11 @@ export async function POST(request: Request) {
     if (spec.cards === true && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cardDealOfSeed(kind, size, parsed.data.seed) !== givens)) {
       return unprocessable("Not the deal of that seed.");
     }
+    /* A cube's scramble is its seed's (`cube/generate.ts`), so the one it names is checked the same way:
+       a solve of some other cube is not a solve of this one. */
+    if (kind === "cube" && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cubeOfSeed(size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed) !== givens)) {
+      return unprocessable("Not the cube of that seed.");
+    }
 
     const checksAllowed = parsed.data.checksAllowed ?? null;
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
@@ -241,7 +247,7 @@ export async function POST(request: Request) {
     });
     if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
     const helped = parsed.data.helped ?? null;
-    if (helped !== null && kind !== "tsunagi") return unprocessable("No help is offered on this puzzle.");
+    if (helped !== null && !helpOffered(kind, helped)) return unprocessable("No help is offered on this puzzle.");
     if ((helped === SOLVE_HELPS.explosionsOff || helped === SOLVE_HELPS.explosionsSoft) && decodeLayout(givens, size)?.explosions == null) {
       return unprocessable("This level has no explosions to ease.");
     }

@@ -1,4 +1,5 @@
 import type { Mark } from "./familyMark.types";
+import { CUBES_MARK } from "./MarkCube";
 
 /**
  * One mark per family, drawn the way the About page draws its figures: a
@@ -303,6 +304,8 @@ export const FAMILY_MARKS: Record<string, Mark> = {
    * near end matching the one before it — the six against the double six,
    * then a four, then a two — the game's one rule in a picture.
    */
+  // CUBES: a cube part way to solved (`MarkCube`).
+  Cubes: { n: 5, cells: true, stones: [], cube: CUBES_MARK },
   Dominoes: {
     n: 5,
     cells: true,
