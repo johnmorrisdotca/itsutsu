@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -31,7 +33,14 @@ export function Group({
   whole = false,
   newest = null,
   starred = null,
+  rows = null,
 }: {
+  /**
+   * The rows to draw in place of the bucket's games: the Completed tab's one
+   * list, where a finished game sits among tables, games round one screen and
+   * puzzles, newest first (`completed.ts`). The heading still counts the bucket.
+   */
+  rows?: readonly ReactNode[] | null;
   /** The reader's starred games among these rows, where the rows offer a star (finished games, a member); null for none. */
   starred?: ReadonlySet<string> | null;
   group: MyGameGroup;
@@ -65,7 +74,7 @@ export function Group({
         label={copy.label}
         kanji={copy.kanji}
         total={bucket.total}
-        showing={bucket.hidden > 0 ? bucket.items.length : null}
+        showing={bucket.hidden > 0 ? (rows?.length ?? bucket.items.length) : null}
         waiting={group === "yourMove" || group === "offered"}
         testId={`my-games-${group}`}
       />
@@ -76,9 +85,10 @@ export function Group({
         </p>
       ) : null}
       <ul className="flex flex-col gap-1.5">
-        {bucket.items.map((item) => (
-          <Row key={item.game.id} item={item} now={now} tags={tags} earned={earned?.get(item.game.id)} starred={starred === null ? null : starred.has(item.game.id)} />
-        ))}
+        {rows ??
+          bucket.items.map((item) => (
+            <Row key={item.game.id} item={item} now={now} tags={tags} earned={earned?.get(item.game.id)} starred={starred === null ? null : starred.has(item.game.id)} />
+          ))}
       </ul>
       {/*
         NOTHING AT ALL WHEN THERE IS NOTHING TO OFFER, which is the ordinary case

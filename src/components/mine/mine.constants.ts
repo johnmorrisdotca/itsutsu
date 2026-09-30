@@ -44,7 +44,7 @@ export const MY_GAMES_COPY = {
      * play, and it has a tab of its own now, away from the account's games.
      */
     hotSeat: { label: "Pass and play", kanji: "対面", hint: "Two people taking turns on this screen. Never rated." },
-    finished: { label: "Completed", kanji: "終局", hint: "Saved in game history." },
+    finished: { label: "Completed", kanji: "終局", hint: "Everything you have finished, newest first: games, tables, games passed round one screen and puzzles." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   /** The starred games, first on the Completed tab (`FavouritesPanel`); not a group of the queue, so apart from the seven. */
   favourites: {
@@ -133,13 +133,6 @@ export const MY_GAMES_COPY = {
     label: "Puzzles in progress",
     kanji: "解きかけ",
     hint: "Left part way, kept where you left them. Open one to carry on.",
-  },
-  /** The puzzles solved, with what each was worth: John, 2026-09-25, "where will the completed puzzles go… where are the scores?!" */
-  puzzlesSolved: {
-    label: "Puzzles solved",
-    kanji: "解いた",
-    hint: "Newest first, each with its points on the leaderboard, its time and the help it took.",
-    empty: "Nothing solved yet.",
   },
   openBoard: {
     label: "Open games",

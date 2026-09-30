@@ -47,7 +47,7 @@ import { NOT_A_REFUSED_OFFER } from "./offers";
 /** How many games a page of the history shows. */
 export const HISTORY_PAGE = 30;
 
-type Reading = { memberId: string; before: Date | null; limit: number };
+type Reading = { memberId: string; before: Date | null; limit: number; where?: Prisma.PartyTableWhereInput };
 
 /** A member's games between two seats: not one they hid, not an offer refused, not one nobody has answered yet. */
 function gamesWhere(memberId: string): Prisma.GameWhereInput {
@@ -124,9 +124,9 @@ export function tableState(status: string, seat: number, toPlay: number | null, 
 }
 
 /** Tables, on several devices or filed from one: the member's seat at each. */
-async function tablesOf({ memberId, before, limit }: Reading): Promise<HistoryEntry[]> {
+async function tablesOf({ memberId, before, limit, where = {} }: Reading): Promise<HistoryEntry[]> {
   const rows = await prisma.partyTable.findMany({
-    where: { ...tablesWhere(memberId), ...(before === null ? {} : { updatedAt: { lt: before } }) },
+    where: { ...tablesWhere(memberId), ...where, ...(before === null ? {} : { updatedAt: { lt: before } }) },
     orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
     take: limit,
     include: { seats: { orderBy: { seat: "asc" } } },
@@ -221,4 +221,22 @@ export async function historyTotal(memberId: string): Promise<number> {
     prisma.puzzleRun.count({ where: { memberId } }),
   ]);
   return counts.reduce((sum, count) => sum + count, 0);
+}
+
+/** The games filed from one device that are over: finished, or put away part way. */
+const KEPT_OVER: Prisma.PartyTableWhereInput = { status: { in: [KEPT_STATUS.finished, KEPT_STATUS.left] } };
+
+/**
+ * The games a member played round one screen that are over, newest first,
+ * strictly before `before`: their share of the Completed tab's one list
+ * (`completed.ts`), which pages every kind of game by when it ended.
+ */
+export async function keptOverOf(memberId: string, before: Date | null, limit: number): Promise<{ entries: HistoryEntry[]; more: boolean }> {
+  const entries = await tablesOf({ memberId, before, limit: limit + 1, where: KEPT_OVER });
+  return { entries: entries.slice(0, limit), more: entries.length > limit };
+}
+
+/** How many games round one screen a member has finished or put away. */
+export async function keptOverCount(memberId: string): Promise<number> {
+  return prisma.partyTable.count({ where: { ...tablesWhere(memberId), ...KEPT_OVER } });
 }

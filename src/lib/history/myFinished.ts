@@ -315,3 +315,16 @@ export async function myFinishedTotal(input: {
     },
   });
 }
+
+/**
+ * The cursor for "every finished game that ended strictly before this time".
+ *
+ * The Completed tab pages one list of every kind of game by when each ended
+ * (`completed.ts`), so a page's start is a time rather than a row. "~" sorts
+ * after every game id, so the game the last page ended on is not read again;
+ * as in `everyGame.ts`, two games ending in one millisecond at a page's edge
+ * is a thing one person cannot do.
+ */
+export function finishedCursorBefore(before: Date): Cursor {
+  return encodeCursor({ value: before.toISOString(), id: "~", sort: { param: NEWEST_FIRST.column.param, direction: NEWEST_FIRST.direction } });
+}

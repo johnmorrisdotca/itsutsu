@@ -61,42 +61,9 @@ export function MyHistory({ page, total, now, tags, older, newest }: { page: His
         </p>
       ) : null}
       <ul className="flex flex-col gap-1.5">
-        {page.entries.map((entry) => {
-          const going = GOING.includes(entry.state);
-          return (
-            <li
-              key={entry.key}
-              className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`}
-              data-testid="history-entry"
-              data-source={entry.source}
-              data-game={entry.game}
-              data-state={entry.state}
-            >
-              <Link href={entry.href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={going ? copy.open.going : copy.open.over} />
-              <GameThumb variant={entry.game} size="small" />
-              <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
-                <span className="truncate font-medium">
-                  <GameName variant={entry.game} raised />
-                </span>
-                <span className="flex flex-wrap gap-x-1 text-xs text-muted">
-                  <Others entry={entry} tags={tags} />
-                </span>
-                <span className="text-xs">
-                  <span className="font-semibold" data-testid="history-state">
-                    {copy.state[entry.state]}
-                  </span>
-                  <span className="text-muted"> · {ago(entry.at, now)}</span>
-                </span>
-              </span>
-              <span className="ml-auto flex shrink-0 items-center gap-2">
-                <Link href={entry.href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="history-open">
-                  {going ? copy.open.going : copy.open.over} →
-                </Link>
-                <CardArrow />
-              </span>
-            </li>
-          );
-        })}
+        {page.entries.map((entry) => (
+          <HistoryRow key={entry.key} entry={entry} now={now} tags={tags} />
+        ))}
       </ul>
       {newest !== null || older !== null ? (
         <div className="flex gap-2">
@@ -113,5 +80,43 @@ export function MyHistory({ page, total, now, tags, older, newest }: { page: His
         </div>
       ) : null}
     </section>
+  );
+}
+
+/** One game of the history: its picture and name, who else was in it, how it stands and when, opening to carry on or look back. */
+export function HistoryRow({ entry, now, tags }: { entry: HistoryEntry; now: Date; tags: ReadonlyMap<string, NameTag> }) {
+  const copy = MY_GAMES_COPY.history;
+  const going = GOING.includes(entry.state);
+  return (
+    <li
+      className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`}
+      data-testid="history-entry"
+      data-source={entry.source}
+      data-game={entry.game}
+      data-state={entry.state}
+    >
+      <Link href={entry.href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={going ? copy.open.going : copy.open.over} />
+      <GameThumb variant={entry.game} size="small" />
+      <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
+        <span className="truncate font-medium">
+          <GameName variant={entry.game} raised />
+        </span>
+        <span className="flex flex-wrap gap-x-1 text-xs text-muted">
+          <Others entry={entry} tags={tags} />
+        </span>
+        <span className="text-xs">
+          <span className="font-semibold" data-testid="history-state">
+            {copy.state[entry.state]}
+          </span>
+          <span className="text-muted"> · {ago(entry.at, now)}</span>
+        </span>
+      </span>
+      <span className="ml-auto flex shrink-0 items-center gap-2">
+        <Link href={entry.href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="history-open">
+          {going ? copy.open.going : copy.open.over} →
+        </Link>
+        <CardArrow />
+      </span>
+    </li>
   );
 }
