@@ -111,3 +111,15 @@ export async function keptGameOf(id: string, memberId: string) {
   if (row === null || !isKeptStatus(row.status) || row.hostMemberId !== memberId) return null;
   return row;
 }
+
+/**
+ * A game filed from one device, whoever filed it, for a member reading
+ * somebody else's history (`PlayerHistory`) — or null when there is no such
+ * record. Looked at only: the page offers the game back to a device only to
+ * the member who played it (`keptGameOf`).
+ */
+export async function keptGameToRead(id: string) {
+  const row = await prisma.partyTable.findUnique({ where: { id }, include: { seats: { orderBy: { seat: "asc" } } } });
+  if (row === null || !isKeptStatus(row.status)) return null;
+  return row;
+}

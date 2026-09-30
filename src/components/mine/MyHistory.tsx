@@ -46,12 +46,29 @@ function Others({ entry, tags }: { entry: HistoryEntry; tags: ReadonlyMap<string
  * A page at a time, newest first; an empty history keeps its heading and says
  * so, with the way to a first game.
  */
-export function MyHistory({ page, total, now, tags, older, newest }: { page: HistoryPage; total: number; now: Date; tags: ReadonlyMap<string, NameTag>; older: string | null; newest: string | null }) {
+export function MyHistory({
+  page,
+  total,
+  now,
+  tags,
+  older,
+  newest,
+  theirs = false,
+}: {
+  page: HistoryPage;
+  total: number;
+  now: Date;
+  tags: ReadonlyMap<string, NameTag>;
+  older: string | null;
+  newest: string | null;
+  /** Somebody else's history, read by the reader (`PlayerHistory`): their side's words, and watching rather than carrying on. */
+  theirs?: boolean;
+}) {
   const copy = MY_GAMES_COPY.history;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="history">
       <GroupHeading label={copy.label} kanji={copy.kanji} total={total} showing={page.entries.length < total ? page.entries.length : null} testId="history" />
-      <p className="text-xs text-muted">{copy.hint}</p>
+      <p className="text-xs text-muted">{theirs ? copy.theirs.hint : copy.hint}</p>
       {page.entries.length === 0 ? (
         <p className="text-sm text-muted" data-testid="history-empty">
           {copy.empty}{" "}
@@ -62,7 +79,7 @@ export function MyHistory({ page, total, now, tags, older, newest }: { page: His
       ) : null}
       <ul className="flex flex-col gap-1.5">
         {page.entries.map((entry) => (
-          <HistoryRow key={entry.key} entry={entry} now={now} tags={tags} />
+          <HistoryRow key={entry.key} entry={entry} now={now} tags={tags} theirs={theirs} />
         ))}
       </ul>
       {newest !== null || older !== null ? (
@@ -84,8 +101,10 @@ export function MyHistory({ page, total, now, tags, older, newest }: { page: His
 }
 
 /** One game of the history: its picture and name, who else was in it, how it stands and when, opening to carry on or look back. */
-export function HistoryRow({ entry, now, tags }: { entry: HistoryEntry; now: Date; tags: ReadonlyMap<string, NameTag> }) {
+export function HistoryRow({ entry, now, tags, theirs = false }: { entry: HistoryEntry; now: Date; tags: ReadonlyMap<string, NameTag>; theirs?: boolean }) {
   const copy = MY_GAMES_COPY.history;
+  // Somebody else's game reads from their side, and a game still going is watched rather than carried on with.
+  const words = theirs ? { state: { ...copy.state, ...copy.theirs.state }, open: copy.theirs.open } : copy;
   const going = GOING.includes(entry.state);
   return (
     <li
@@ -95,7 +114,7 @@ export function HistoryRow({ entry, now, tags }: { entry: HistoryEntry; now: Dat
       data-game={entry.game}
       data-state={entry.state}
     >
-      <Link href={entry.href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={going ? copy.open.going : copy.open.over} />
+      <Link href={entry.href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={going ? words.open.going : words.open.over} />
       <GameThumb variant={entry.game} size="small" />
       <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
         <span className="truncate font-medium">
@@ -106,14 +125,14 @@ export function HistoryRow({ entry, now, tags }: { entry: HistoryEntry; now: Dat
         </span>
         <span className="text-xs">
           <span className="font-semibold" data-testid="history-state">
-            {copy.state[entry.state]}
+            {words.state[entry.state]}
           </span>
           <span className="text-muted"> · {ago(entry.at, now)}</span>
         </span>
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-2">
         <Link href={entry.href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="history-open">
-          {going ? copy.open.going : copy.open.over} →
+          {going ? words.open.going : words.open.over} →
         </Link>
         <CardArrow />
       </span>

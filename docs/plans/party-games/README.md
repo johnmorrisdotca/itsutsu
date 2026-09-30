@@ -80,7 +80,10 @@ scopes now ask it directly.
   device is back online. The record is a `PartyTable` row under a status of
   its own (`KEPT_STATUS`), listed on My games › History with every other
   game, and opened again at `/games/<slug>/kept/<id>` to be carried on with or
-  looked at, on any device. A new party game passes its own store a record,
+  looked at, on any device. The same History is on each member's player page
+  for every other member (`PlayerHistory`), where a filed game opens to be
+  looked at and is never offered to the reader's device. A new party game
+  passes its own store a record,
   or it is missing from its players' history.
 
 ## Its family
