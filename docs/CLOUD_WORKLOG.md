@@ -143,21 +143,34 @@ pages.
   the same line.
 - Moving files the art fingerprints watch means re-stamping them.
 
-## 4. Still for John (bugs and features only; do not ask him about the rest)
+## 4. Decisions John has made, and what is still his
 
-- **The child-reach rule in Test Mode**, left alone on purpose because it is a
-  child-safety rule; his call.
-- **Which further packages to split out.** Candidates surveyed in
-  `/mnt/project-files/packages/split-candidates.md` (Hitoriasobi, Yomi,
-  Nazotoki, Kanamoji, Asobiba, Kurikaeshi, Shoubu, Rusuban). Never split: the
-  several-devices sync, the share-alike word lists and kanji data, the Pop
-  brand-name list and the WaniKani radical names.
-- **npm publishing** of the eight, from his account.
-- **GitHub settings on the eight repos**: the About box (description, website,
-  topics) is set on none; Pages is on for kumimoji (built) and kyuubu, toranpu,
-  tane, tenka (each needs its Pages workflow re-run), and off for korokoro,
-  hitotsu, narabe (Settings → Pages → Source "GitHub Actions"). The exact text
-  to paste is in `/mnt/project-files/packages/repo-settings.md`.
+John, 2026-09-30 09:05Z: "npm - tell the ITS Agent to deal with this. Mroe
+packages? tell the ITS agent to orchestrate it. REpo settings? you can help
+with this only".
+
+- **npm publishing is itsutsu-19's.** Publish the eight as
+  `@johnmorrisdotca/<name>` from John's npm account (Narabe first, as the Mac
+  suggested: every new game touches it). Once one is on npm, the site takes it
+  as an ordinary dependency and its `packages/<name>` copy and tsconfig path go.
+  Then the Tane follow-ups apply: Tenka's dice and Kumimoji's shuffle move onto
+  Tane, and Toranpu and Narabe drop their own RNG copy for Tane.
+- **Further packages are itsutsu-19's to orchestrate.** The survey is
+  `docs/plans/packages/split-candidates.md`: Hitoriasobi (solitaire), Yomi
+  (computer players for Narabe), Nazotoki (logic puzzles), Kanamoji (kana),
+  Asobiba (pass-and-play table games), Kurikaeshi, Shoubu, Rusuban. Never split:
+  the several-devices sync, the share-alike word lists and kanji data, the Pop
+  brand-name word list and the WaniKani radical names. Cloud threads can build
+  any package it assigns, on `cloud-…` branches, through the project
+  coordinator; John creates each new repo on GitHub when asked by name.
+- **GitHub settings on the eight repos stay with John, with the cloud's help.**
+  The About box (description, website, topics) is set on none. Pages is on for
+  kumimoji (built) and for kyuubu, toranpu, tane and tenka, each of which needs
+  its Pages workflow re-run. It is off for korokoro, hitotsu and narabe
+  (Settings, Pages, Source "GitHub Actions"). The text to paste is in the
+  project's shared `packages/repo-settings.md`.
+- **The child-reach rule in Test Mode** was left alone on purpose because it is
+  a child-safety rule. The cloud is explaining it to John; do not change it.
 
 ## 5. Things learned today worth keeping
 

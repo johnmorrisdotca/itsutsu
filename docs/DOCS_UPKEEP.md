@@ -77,6 +77,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
 | `docs/CLOUD_HANDOVER.md` | agents, John | `.github/workflows/vercel-deploy.yml`, `scripts/release-take.ts`, `scripts/preflight.mjs`, `scripts/neon-production.mjs`, `package.json` scripts, `.env.example`, AGENTS.md "Back It Up Before You Migrate It" |
 | `docs/CLOUD_WORKLOG.md` | agents | a dated log, true as of 2026-09-30; not kept current, superseded by `CHANGELOG.md` once its branches land |
+| `docs/plans/packages/split-candidates.md` | itsutsu-19, John | a dated survey (2026-09-30) of what else to split into packages; re-measure before acting on it |
 | `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/catalogue/gameSettings.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
