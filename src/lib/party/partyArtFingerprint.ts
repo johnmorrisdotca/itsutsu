@@ -54,11 +54,8 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/hitotsu/HitotsuPlay.tsx",
   "src/components/party/hitotsu/HitotsuDesk.tsx",
   "src/components/party/hitotsu/hitotsu.constants.ts",
-  "packages/hitotsu/src/card.ts",
-  "packages/hitotsu/src/react.tsx",
-  "packages/hitotsu/src/deck.ts",
-  "packages/hitotsu/src/rules.ts",
-  "packages/hitotsu/src/computer.ts",
+  // Hitotsu's cards are drawn by its package; a new release is a new version here.
+  "node_modules/@johnmorrisdotca/hitotsu/package.json",
   "e2e/party-screenshots.spec.ts",
 ];
 

@@ -1,4 +1,4 @@
-import { decodeHitotsu, encodeHitotsu, type HitotsuGame, type HitotsuMove, hitotsuWinners, namedTable, playHitotsu, readTableMove, startTable, tableToPlay } from "../../../../packages/hitotsu/src/index.ts";
+import { decodeHitotsu, encodeHitotsu, type HitotsuGame, type HitotsuMove, hitotsuWinners, namedTable, playHitotsu, readTableMove, startTable, tableToPlay } from "@johnmorrisdotca/hitotsu";
 import { PARTY_SPECS } from "../party.constants";
 
 import { COMPUTER_SEAT_NAME } from "./online.constants";
@@ -6,7 +6,7 @@ import type { OnlineRules } from "./online.types";
 
 /**
  * HITOTSU AT A TABLE ON SEVERAL DEVICES (docs/plans/hitotsu/README.md): the
- * package's own table (`packages/hitotsu/src/table.ts`) on the site's tables.
+ * package's own table (`src/table.ts` in the Hitotsu repository) on the site's tables.
  * The same pure rules the table on one device plays (`playHitotsu`), and the
  * same text it keeps a game as (`encodeHitotsu`: the table, the house rules,
  * the seed and the moves, every hand and the stock made again from them).

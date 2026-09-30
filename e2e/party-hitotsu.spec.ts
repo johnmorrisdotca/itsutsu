@@ -1,6 +1,6 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-import { encodeHitotsu, startHitotsu } from "../packages/hitotsu/src/index.ts";
+import { encodeHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { memberContext, memberIdFor, removeMember } from "./members";
 import { ready } from "./support";
 import { removeTables } from "./tables";

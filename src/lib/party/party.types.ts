@@ -22,7 +22,7 @@ import type { MancalaGame } from "./mancala/mancala.types";
 import type { TrainGame, TrainMove } from "./mexicanTrain/mexicanTrain.types";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 import type { TenkaGame, TenkaMove } from "./tenka/tenka.types";
-import type { HitotsuGame, HitotsuMove } from "../../../packages/hitotsu/src/index.ts";
+import type { HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 import type { CardGameKind } from "../cardGames/cardGames.constants";
 import type { CardGamePlays } from "../cardGames/cardGameRules";
 

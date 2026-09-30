@@ -23,11 +23,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      // Hitotsu is its own open-source package, kept here as well as in its
-      // own repository; imported by name, so the site uses it as published.
-      "@johnmorrisdotca/hitotsu": ["./packages/hitotsu/src/index.ts"],
-      "@johnmorrisdotca/hitotsu/react": ["./packages/hitotsu/src/react.tsx"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [

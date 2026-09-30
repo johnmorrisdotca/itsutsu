@@ -20,18 +20,21 @@ the call a player makes with one card left, and a sibling of 五つ, itsutsu.
 The deck is ours: 108 cards, four colours, each carrying one of the five
 elements in its corners (火 red, 土 yellow, 木 green, 水 blue), so a card is
 never told by colour alone; wilds in ink with all four, and a back marked 一つ.
-Drawn once, as shapes, in `packages/hitotsu/src/card.ts`, not with the French
+Drawn once, as shapes, in the package's `src/card.ts`, not with the French
 deck the family card games share.
 
-## The package: packages/hitotsu
+## The package: @johnmorrisdotca/hitotsu
 
-John, 2026-09-30: "I'll make hitotsu". The game is its own open-source
-package, `@johnmorrisdotca/hitotsu` (MIT, John Morris), laid out as Korokoro
-is: kept here under `packages/hitotsu/` and pushed to its own repository,
+John, 2026-09-30: "I'll make hitotsu", then "release v1 as that's why i made
+them repos". The game is its own open-source package,
+`@johnmorrisdotca/hitotsu` (MIT, John Morris), in its own repository,
 github.com/johnmorrisdotca/hitotsu, whose Pages workflow publishes its demo.
-The site imports it by name (`tsconfig.json` paths), or by relative path under
-`src/lib/party` and `e2e`, which the browser specs import. The package holds
-everything that is the game, the site everything that is Itsutsu:
+Nothing of it is kept here. Each version is a GitHub release carrying the
+built package, and the site's `package.json` names that file, pinned:
+`https://github.com/johnmorrisdotca/hitotsu/releases/download/v1.0.1/johnmorrisdotca-hitotsu-1.0.1.tgz`,
+with its integrity in `pnpm-lock.yaml`. Everything under `src/` and `e2e/`
+imports it by that name. The package holds everything that is the game, the
+site everything that is Itsutsu:
 
 - The package: the rules (`rules.ts`: `startHitotsu`, `hitotsuMoves`,
   `hitotsuJumpIns`, `playHitotsu`, `hitotsuWinners`), the deck (`deck.ts`),
@@ -46,8 +49,13 @@ everything that is the game, the site everything that is Itsutsu:
   (`src/components/party/hitotsu/`), the online row and board, the family,
   the picture, My games and the browser tests.
 
-A change to the rules or the card is made in the package, released there with
-a line in its `CHANGELOG.md`, and pushed to its repository as well as here.
+A change to the rules or the card is made in the package's repository: a
+commit, a line in its `CHANGELOG.md`, a new version and its tag (or, from a
+checkout that cannot push tags, Actions, Release, Run workflow on `main`,
+which tags the commit with `package.json`'s version). The release attaches the
+tarball, and the site takes it with a one-line change of that URL here and
+`pnpm install`. The party pictures' fingerprint reads the installed package's
+`package.json`, so a new version asks for them to be re-taken.
 
 ## The kind: a PartyKind of its own
 
@@ -59,9 +67,9 @@ as text, `PartyTable.game`).
 
 - Rules: the package (above); the party row `HITOTSU_RULES` in
   `src/lib/party/hitotsu/hitotsuRules.ts` and its copy in `hitotsu.copy.ts`.
-  Tests: `packages/hitotsu/src/rules.test.ts` (the published rules, each house
-  rule, play-outs, the computer beating a random player, the codec),
-  `table.test.ts`, `card.test.ts`.
+  Tests, in the package's repository: `src/rules.test.ts` (the published
+  rules, each house rule, play-outs, the computer beating a random player, the
+  codec), `table.test.ts`, `card.test.ts`.
 - The table (`src/components/party/hitotsu/`): `HitotsuTable` (set-up or
   play), `HitotsuSetUp`, `HitotsuPlay`, `HitotsuDesk` (a hand and its presses,
   shared with the online board), `HitotsuTableTop`, `HitotsuSeats`,
