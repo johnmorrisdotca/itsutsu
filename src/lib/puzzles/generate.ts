@@ -5,6 +5,7 @@ import { generateFreeCell } from "./freecell/generate";
 import { generateSpider } from "./spider/generate";
 import { generateHiddenStones } from "./hiddenStones/generate";
 import { generateMahjong } from "./mahjong/generate";
+import { generateCube } from "./cube/generate";
 import { loadWordData } from "./gomoji/wordData";
 import { generateMoreOrLess } from "./moreOrLess/generate";
 import { generateJigsaw } from "./jigsaw/generate";
@@ -84,6 +85,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "mahjong":
       // A layout dealt in reverse, five times, the level choosing among them by how forgiving each is.
       return generateMahjong(size, level, seed);
+    case "cube":
+      // A scramble, not a grid: the seed's turns from solved, taken back as its solution (`cube/generate.ts`).
+      return generateCube(size, level, seed);
   }
 }
 

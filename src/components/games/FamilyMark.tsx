@@ -3,6 +3,7 @@ import { CardFace } from "@/components/cards/CardFace";
 import type { Card } from "@/lib/cards/cards.types";
 
 import type { PictureSize } from "./games.types";
+import { CUBES_MARK, MarkCube, type MarkCubeProps } from "./MarkCube";
 import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
 
@@ -42,6 +43,8 @@ type Mark = {
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
   /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Dominoes family's train. */
   dominoes?: { x: number; y: number; ends: readonly [number, number] }[];
+  /** A cube seen from above one corner (`MarkCube`): the Cubes family's. */
+  cube?: MarkCubeProps;
 };
 
 /** Where a domino end's pips sit in its square, for nought to six, in that square's 0..1. */
@@ -301,6 +304,8 @@ export const FAMILY_MARKS: Record<string, Mark> = {
       { r: 2, c: 5, letter: "I", tile: "hit" },
     ],
   },
+  // CUBES: a cube part way to solved (`MarkCube`).
+  Cubes: { n: 5, cells: true, stones: [], cube: CUBES_MARK },
   /*
    * MAHJONG: a little stack of tiles, three on the table, two on them and
    * one on top, and the two red dragons 中 that are free — the top tile and
@@ -455,6 +460,7 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           </text>
         </g>
       ))}
+      {mark.cube === undefined ? null : <MarkCube {...mark.cube} />}
       {(mark.dominoes ?? []).map((domino) => (
         <g key={`${domino.x}-${domino.y}`}>
           <rect x={domino.x} y={domino.y} width={2.3} height={1.15} rx={0.14} fill="#fffdf6" stroke="var(--ink)" strokeWidth={0.06} />

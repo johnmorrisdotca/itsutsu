@@ -42,6 +42,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   spider: 0.19,
   // Five a tile taken (`cellsFilled`): Fuji, the default layout, is 100 tiles, so about 500 points.
   mahjong: 0.2,
+  // Five a sticker (`cellsFilled`): a 3×3 is 270 points, so about 100 IP, as a medium solve is.
+  cube: 0.37,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

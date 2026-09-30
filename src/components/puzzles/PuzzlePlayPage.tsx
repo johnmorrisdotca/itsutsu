@@ -59,7 +59,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   /* The reader's board colour, so the picker starts where a Reversi or Gomoku board's would (`feltOrWoodTheme`), and their stone set for a
      puzzle played with stones; read only for a puzzle drawn on the board, Kumimoji's table, and the stone puzzles. */
   // And Solitaire's table, laid on the reader's own wood (`SolitaireTable`).
-  const appearance = drawnOnBoard(kind) || kind === "kumimoji" || kind === "mahjong" || PUZZLE_SPECS[kind].stones === true || PUZZLE_SPECS[kind].cards === true ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
+  const appearance = drawnOnBoard(kind) || kind === "kumimoji" || kind === "mahjong" || PUZZLE_SPECS[kind].stones === true || PUZZLE_SPECS[kind].cards === true || PUZZLE_SPECS[kind].cube === true ? ((await appearanceFor(reader.memberId)) ?? DEFAULT_APPEARANCE) : DEFAULT_APPEARANCE;
   /* Tsunagi's levels this member has solved, so a level past the open rows is shut and a solved one opens solved (`TsunagiSolve`), and their attempts at each: two reads, for Tsunagi only. */
   const [solved, attempts] = tsunagi && reader.memberId !== null ? await Promise.all([tsunagiSolvedBy(reader.memberId), tsunagiAttemptsBy(reader.memberId)]) : [null, null];
   const known = Object.fromEntries(Object.entries(solved?.[asked.size] ?? {}).map(([level, best]) => [level, best.elapsedMs]));

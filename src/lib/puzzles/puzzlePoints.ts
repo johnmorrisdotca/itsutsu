@@ -32,7 +32,8 @@ export const POINTS_A_HELP = 50;
  * bridge drawn — which is the work its answer is. A Picture logic puzzle has
  * no printed cells, and every cell is decided, shaded or empty, as in Hidden
  * Stones: its whole grid. A Solitaire or a FreeCell counts the fifty-two cards
- * it brought home, and a Spider the hundred and four of its eight runs.
+ * it brought home, a Spider the hundred and four of its eight runs, and a cube
+ * every sticker it put back on its face.
  */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
@@ -41,6 +42,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (kind === "solitaire" || kind === "freecell") return 52;
   // A Spider's is both decks, made into eight runs.
   if (kind === "spider") return 104;
+  // A cube's work is every sticker back on its own face: six faces of size × size.
+  if (kind === "cube") return 6 * area;
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

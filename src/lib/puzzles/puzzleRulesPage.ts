@@ -58,6 +58,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
       ? "Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not."
       : spec.cards === true
       ? "Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won."
+      : spec.cube === true
+      ? "Every scramble can be solved: it is made by turning a solved cube, so turning back the way it came always solves it, and any other way to every face one colour counts as well."
       : spec.layouts === true
       ? "Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well."
       : spec.tiles === true
@@ -73,7 +75,9 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
       : "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
   ];
   const house = [
-    spec.cards === true
+    spec.cube === true
+      ? "A solved cube is checked by the site, turn by turn from the scramble, and a member is paid XP for it, once per scramble."
+      : spec.cards === true
       ? "A won game is checked by the site, move by move from the deal, and a member is paid XP for it, once per deal."
       : "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
     spec.fixedLevels === true

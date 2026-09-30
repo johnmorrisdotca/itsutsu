@@ -30,7 +30,8 @@ export type PuzzleKind =
   | "solitaire"
   | "freecell"
   | "spider"
-  | "mahjong";
+  | "mahjong"
+  | "cube";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";
@@ -136,6 +137,12 @@ export type PuzzleSpec = {
    * square grid.
    */
   layouts?: true;
+  /**
+   * Whether the puzzle is a turning cube (`cube/`): drawn in three dimensions,
+   * not on a grid, whose size is the cube's side and whose answer is its
+   * turns, checked by turning them. Absent is a grid.
+   */
+  cube?: true;
   /**
    * Whether Check is offered beside Hint. Absent is yes. Mahjong offers Hint
    * (a free pair lit) and no Check: nothing on its table can be wrong, only

@@ -23,6 +23,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   clearDrop: "2026-09-07",
   connect6: "2026-09-07",
   crazyEights: "2026-09-29",
+  cube: "2026-09-30",
   diagonal: "2026-09-24",
   dominoFive: "2026-09-07",
   dotsAndBoxes: "2026-09-28",

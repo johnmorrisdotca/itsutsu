@@ -35,6 +35,7 @@ import { PuzzleGrid } from "./PuzzleGrid";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { PatienceReplay } from "./PatienceReplay";
 import { SolitaireReplay } from "./SolitaireReplay";
+import { CubeReplay } from "./CubeReplay";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
 
@@ -107,6 +108,15 @@ export function FinishedPuzzle({
     return (
       <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "replay"}>
         <SolitaireReplay size={size} level={level} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} />
+      </Focused>
+    );
+  }
+
+  // A cube is its turns, played back from the scramble a turn at a time (`CubeReplay`).
+  if (kind === "cube") {
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "replay"}>
+        <CubeReplay size={size} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} />
       </Focused>
     );
   }

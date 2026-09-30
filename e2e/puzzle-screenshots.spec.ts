@@ -21,6 +21,7 @@ import { decodeMoves as decodeSolitaireMoves, replay } from "../src/lib/puzzles/
 import { solitaireRules } from "../src/lib/puzzles/solitaire/generate";
 import { carriedFrom, columnAt, isColumnPile } from "../src/lib/puzzles/solitaire/klondike";
 import { decodeMoves } from "../src/lib/puzzles/mahjong/moves";
+import { decodeCubeMoves, moveNotation } from "../packages/kyuubu/src/index";
 import { decodeMoves as decodeFreeCellMoves, replayFreeCell } from "../src/lib/puzzles/freecell/code";
 import { decodeMoves as decodeSpiderMoves, replaySpider } from "../src/lib/puzzles/spider/code";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
@@ -88,6 +89,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "solitaire", size: 1, level: "easy", seed: 20260929, fill: 30 },
   // The classic Turtle with its first eight pairs taken, as a person takes them: a tile, then its match. Free tiles lit.
   { kind: "mahjong", size: 15, level: "medium", seed: 20260929, fill: 8 },
+  // A 3×3 cube part way to solved: a medium scramble with its last few turns taken back, so a face or two nearly done.
+  { kind: "cube", size: 3, level: "medium", seed: 20260930, fill: 3 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
   { kind: "freecell", size: 4, level: "medium", seed: 20260930, fill: 20 },
   // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
@@ -195,6 +198,20 @@ test.describe("puzzle screenshots", () => {
           filled += 1;
         }
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+        await page.getByTestId("puzzle-play").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
+      if (scene.kind === "cube") {
+        // The scramble's last turns taken back, each typed in cubers' notation as a person would.
+        for (const move of decodeCubeMoves(puzzle.solution)!.slice(0, scene.fill)) {
+          const typed = moveNotation(move, scene.size);
+          await page.keyboard.press(typed.endsWith("'") ? `Shift+${typed[0]}` : typed[0].toLowerCase());
+          if (typed.endsWith("2")) await page.keyboard.press(typed[0].toLowerCase());
+          filled += 1;
+        }
+        await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-moves", /.+/);
+        // Every turn finished drawing, so the picture is of a still cube.
+        await expect(page.locator("[data-kyuubu]")).toHaveAttribute("data-turning", "false");
         await page.getByTestId("puzzle-play").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
         return;
       }

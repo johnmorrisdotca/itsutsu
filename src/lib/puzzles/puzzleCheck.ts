@@ -4,6 +4,7 @@ import { checkSolitaire, checkSolitaireGivenUp } from "./solitaire/check";
 import { checkFreeCell, checkFreeCellGivenUp } from "./freecell/check";
 import { checkSpider, checkSpiderGivenUp } from "./spider/check";
 import { checkMahjong } from "./mahjong/check";
+import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -83,6 +84,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       return checkSpider(size, givens, answer);
     case "mahjong":
       return checkMahjong(size, givens, answer);
+    case "cube":
+      // The turns, turned from the scramble: every face one colour at the end.
+      return checkCube(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -261,6 +265,8 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
   // A Solitaire given up: its moves allowed, at least one made, and not won.
   if (kind === "solitaire") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkSolitaireGivenUp(size, givens, answer, level ?? "easy") : { ok: false, reason: `no ${kind} at ${size}` };
+  // A cube given up: its turns all turns the cube has, at least one made, and not solved.
+  if (kind === "cube") return checkCubeGivenUp(size, givens, answer);
   // FreeCell and Spider given up, the same way; each refuses a size it is not played at.
   if (kind === "freecell") return checkFreeCellGivenUp(size, givens, answer);
   if (kind === "spider") return checkSpiderGivenUp(size, givens, answer);
