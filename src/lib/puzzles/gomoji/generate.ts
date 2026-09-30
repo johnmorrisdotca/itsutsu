@@ -3,10 +3,14 @@ import { seededRandom } from "../random";
 import { dailyManyWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
 import { encodeWordsGivens } from "./futago";
 import { wordCountOfSeed } from "./wordsSeed";
-import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
+import { answersFor, encodeHidden, languageOf, type GomojiLanguage } from "./code";
 import { pinDown } from "./dodge";
 import { dodgeGuesses, dodgeMarkerOf, dodgePool, dodgeSample } from "./dodgePlay";
 import { encodeDodgeGivens, isDodgeSeed, offersDodge } from "./dodgeSeed";
+import { kanaWordsOf } from "../gomojiKana/kanaWords";
+import { encodeKanaGivens } from "../gomojiKana/kanaCode";
+import { backwardsGuesses, survive } from "./backwards";
+import { encodeBackwardsGivens, isBackwardsSeed } from "./backwardsSeed";
 
 /**
  * Making a Gomoji puzzle, in the browser, from a seed: one word, drawn
@@ -32,6 +36,7 @@ import { encodeDodgeGivens, isDodgeSeed, offersDodge } from "./dodgeSeed";
  */
 export function generateGomoji(size: number, level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "gomoji"): Puzzle {
   if (offersDodge(kind) && isDodgeSeed(seed)) return generateDodge(kind, size, level, seed);
+  if (offersDodge(kind) && isBackwardsSeed(seed)) return generateBackwards(kind, size, level, seed);
   const words = answersFor(size, level === "easy", lang);
   if (words.length === 0) throw new Error(`No ${size}-letter words.`);
   const count = wordCountOfSeed(seed);
@@ -77,4 +82,30 @@ export function generateDodge(kind: PuzzleKind, size: number, level: PuzzleLevel
   const way = pinDown(pool, seed, mark, greens, most, dodgeSample(kind)) ?? pinDown(pool, seed, mark, greens, most, 4 * dodgeSample(kind));
   if (way === null) throw new Error(`No way found to pin down dodger ${seed} at ${size} ${level}.`);
   return { kind, size, level, seed, givens: encodeDodgeGivens(seed), solution: way.join("") };
+}
+
+/**
+ * A GOMOJI SAKASA 逆さ, played backwards (`backwards.ts`), from a seed in its
+ * block: a word drawn from the level's list — never a day's word, which a
+ * Sakasa would give away — and, as its solution, a way through every row
+ * without it (`survive`). No free grey word in kana: a Sakasa is all grey
+ * words. A word with no way through is passed over for the next the seed
+ * draws; thrown, never guessed at, if a dozen have none; the tests hold
+ * that one always is.
+ */
+export function generateBackwards(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number): Puzzle {
+  const easy = level === "easy";
+  const rows = backwardsGuesses(kind, size, level);
+  const random = seededRandom(seed);
+  const words = kind === "gomojiKana" ? (easy ? kanaWordsOf(size).easy : kanaWordsOf(size).answers) : answersFor(size, easy, languageOf(kind));
+  if (words.length === 0) throw new Error(`No ${size}-letter words.`);
+  // A word with no way through is no puzzle: the next the seed draws is tried, the same in every browser.
+  for (let tries = 0; tries < 12; tries += 1) {
+    const word = words[Math.floor(random() * words.length)]!;
+    const way = survive(kind, size, word, rows, seed + tries) ?? survive(kind, size, word, rows, seed + tries, 240);
+    if (way === null) continue;
+    const givens = kind === "gomojiKana" ? encodeKanaGivens(word, null) : encodeHidden(word);
+    return { kind, size, level, seed, givens: encodeBackwardsGivens(seed, givens), solution: way.join("") };
+  }
+  throw new Error(`No way through a ${kind} Sakasa at ${seed}.`);
 }

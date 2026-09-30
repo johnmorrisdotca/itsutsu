@@ -12,6 +12,8 @@ import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
 import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
+import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
 import { SolveTime } from "./SolveTime";
@@ -42,7 +44,7 @@ function readWord(kind: WordKind, word: OwnWord): { hidden: string; boards: { gu
   const marksAgainst = (hidden: string) => (guess: string) =>
     kind === "gomojiKana" ? markKanaGuess([...guess], [...hidden]).map((each) => each.mark) : markGuess(guess, hidden);
   return {
-    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${(words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY).kanji}` : dodging ? `${words[0]!} ${DODGE_DISPLAY.kanji}` : words[0]!,
+    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${(words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY).kanji}` : dodging ? `${words[0]!} ${DODGE_DISPLAY.kanji}` : isBackwardsGivens(word.givens) ? `${words[0]!} ${BACKWARDS_DISPLAY.kanji}` : words[0]!,
     boards: guesses === null ? null : words.map((hidden) => ({ guesses: boardGuesses(guesses, hidden), marks: marksAgainst(hidden) })),
   };
 }

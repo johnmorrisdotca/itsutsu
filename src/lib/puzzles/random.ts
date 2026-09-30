@@ -44,8 +44,11 @@ export const DAILY_SEED_BLOCK = { from: 1_000_000_000, size: 100_000_000 } as co
  */
 export const DODGE_SEED_BLOCK = { from: 1_500_000_000, size: 100_000_000 } as const;
 
+/** Gomoji Sakasa 逆さ, played backwards (`gomoji/backwardsSeed.ts`), from sixteen hundred million, just past Nige's. */
+export const BACKWARDS_SEED_BLOCK = { from: 1_600_000_000, size: 100_000_000 } as const;
+
 /** Every block `freshSeed` keeps out of, lowest first. */
-const KEPT_SEED_BLOCKS: readonly { from: number; size: number }[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK];
+const KEPT_SEED_BLOCKS: readonly { from: number; size: number }[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK];
 
 /** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {

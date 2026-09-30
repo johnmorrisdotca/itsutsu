@@ -17,6 +17,8 @@ import { futagoScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { dodgeGuesses, readDodge } from "@/lib/puzzles/gomoji/dodgePlay";
 import { decodeDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { backwardsGuesses, breaksBackwardsRule } from "@/lib/puzzles/gomoji/backwards";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
@@ -29,6 +31,7 @@ import { WordBoards } from "./WordBoards";
 import { GomojiGrid } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
+import { SakasaScoreLine } from "./SakasaScoreLine";
 import { WordKeyboard } from "./WordKeyboard";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
@@ -93,6 +96,8 @@ export function GomojiSolve({
   // A Gomoji Nige 逃げ hides nothing: every guess is answered by the dodger (`dodgePlay.ts`), its seed in the givens.
   const dodging = useMemo(() => decodeDodgeGivens(puzzle.givens), [puzzle.givens]);
   const dodge = useMemo(() => (dodging === null ? null : readDodge(kind, size, level, dodging, guesses)), [dodging, kind, size, level, guesses]);
+  // A Sakasa, played backwards (`backwards.ts`), hides its word as ever and is won by never typing it.
+  const backwards = isBackwardsGivens(puzzle.givens);
   // One word, or a Futago's two (`futago.ts`); a dodger's the one it stands for after these guesses.
   const words = useMemo(
     () => (dodge !== null ? { words: [dodge.word], grey: null } : (hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null })),
@@ -104,8 +109,8 @@ export function GomojiSolve({
   const many = count > 1;
   // A run kept under the counts before 2026-09-28 may have used today's count already: it opens with a guess left (`rowsResumed`).
   const [kept] = useState(() => guesses.length);
-  // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a Futago gives a guess more, and a dodger its own count.
-  const rows = dodging === null ? wordRowsResumed(kind, size, level, words, kept) : dodgeGuesses(kind, size);
+  // Mot and Wort are laid out as English Gomoji is (`layout.ts`); a Futago gives a guess more, a dodger its own count, and a Sakasa its levels the other way round.
+  const rows = dodging !== null ? dodgeGuesses(kind, size) : backwards ? backwardsGuesses(kind, size, level) : wordRowsResumed(kind, size, level, words, kept);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [said, setSaid] = useState<string | null>(null);
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
@@ -176,9 +181,10 @@ export function GomojiSolve({
       return;
     }
     // Strict holds a guess to what every board still being played has found; a found board asks nothing more.
-    const breaks = strict ? (boards.filter((board) => !board.found).map((board) => breaksHardRule(board.rows, board.word, word)).find((each) => each !== null) ?? null) : null;
+    // A Sakasa holds every guess to what the rows uncovered, whatever Strict says (`breaksBackwardsRule`).
+    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word) : strict ? (boards.filter((board) => !board.found).map((board) => breaksHardRule(board.rows, board.word, word)).find((each) => each !== null) ?? null) : null;
     if (breaks !== null) {
-      setSaid(`Strict: ${breaks}.`);
+      setSaid(`${backwards ? "Sakasa" : "Strict"}: ${breaks}.`);
       return;
     }
     const at = begin();
@@ -188,9 +194,13 @@ export function GomojiSolve({
     setSaid(null);
     // A dodger is found only when the guess left it nowhere else to go (`dodgeFound`).
     const found = dodging === null ? everyWordFound(next, words.words) : readDodge(kind, size, level, dodging, next).found;
-    if (found) void finish(next.join(""), at);
+    // Backwards, the word typed is the loss and every row filled without it the win.
+    if (backwards) {
+      if (word === hidden) void runOut(next.join(""), at);
+      else if (next.length === rows) void finish(next.join(""), at);
+    } else if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, typing, size, strict, guesses, words, boards, lang, begin, finish, runOut, rows, dodging, kind, level]);
+  }, [closed, typing, size, strict, guesses, words, boards, lang, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level]);
 
   /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
@@ -260,9 +270,11 @@ export function GomojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `Type a ${size}-letter word and press Enter${count === 4 ? ": it goes to all four words" : many ? ": it goes to both words" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left${
+            {said ?? (backwards
+              ? `Type any ${size}-letter word but the hidden one, keeping every letter uncovered. ${rows - guesses.length} ${rows - guesses.length === 1 ? "row" : "rows"} to get through.`
+              : `Type a ${size}-letter word and press Enter${count === 4 ? ": it goes to all four words" : many ? ": it goes to both words" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left${
               dodge === null ? "" : `, and ${dodge.standing} ${dodge.standing === 1 ? "word" : "words"} for it to hide among`
-            }.`}
+            }.`)}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} split={split} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
@@ -275,12 +287,18 @@ export function GomojiSolve({
         </>
       ) : done.outOfGuesses ? (
         <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
-          <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
-            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}.{" "}
-            {many ? "The words were" : dodge === null || dodge.standing <= 1 ? "The word was" : `It was still hiding among ${dodge.standing} words, one of them`}{" "}
-            <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
-          </p>
-          <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />
+          {backwards && !done.outOfTime ? (
+            <p className="text-base">
+              Caught on row {guesses.length} of {rows}: <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong> was the word.
+            </p>
+          ) : (
+            <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+              {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}.{" "}
+              {many ? "The words were" : dodge === null || dodge.standing <= 1 ? "The word was" : `It was still hiding among ${dodge.standing} words, one of them`}{" "}
+              <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
+            </p>
+          )}
+          {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />}
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
@@ -294,7 +312,7 @@ export function GomojiSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, dodge: dodging !== null, clock }))}
+              href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, dodge: dodging !== null, backwards, clock }))}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
@@ -302,11 +320,11 @@ export function GomojiSolve({
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>
-          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : `Out of ${rows} guesses`} />
+          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : backwards ? `Caught on row ${guesses.length}` : `Out of ${rows} guesses`} />
         </div>
       ) : (
         <>
-          <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />
+          {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>
       )}

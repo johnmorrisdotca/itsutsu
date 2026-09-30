@@ -20,6 +20,7 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { wordCountOfGivens } from "@/lib/puzzles/gomoji/futago";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 import { freshDodgeSeed, isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { freshBackwardsSeed, isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { freshSolitaireSeed, isAnyDeal } from "@/lib/puzzles/solitaire/generate";
 
 import { usePuzzleClock } from "./PuzzleClockContext";
@@ -71,10 +72,11 @@ export function SolveDone({
     // A Futago's Another is two more words (`futago.ts`), a Yotsugo's four more (`yotsugo.ts`): its seed says so.
     const words = PUZZLE_SPECS[puzzle.kind].wordGrid === undefined ? 1 : wordCountOfGivens(puzzle.givens);
     // A Solitaire's Another is another deal of the same kind, winnable or any (`isAnyDeal`).
-    // A dodger's Another is another dodger (`dodge.ts`): its seed says so.
+    // A dodger's Another is another dodger (`dodge.ts`), a Sakasa's another Sakasa (`backwards.ts`): its seed says so.
     const dodge = isDodgeGivens(puzzle.givens);
-    const seed = puzzle.kind === "solitaire" ? freshSolitaireSeed(isAnyDeal(puzzle.seed)) : dodge ? freshDodgeSeed() : freshSeedOf(words);
-    router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed, checks, strict, headStart, words, dodge, clock })));
+    const backwards = isBackwardsGivens(puzzle.givens);
+    const seed = puzzle.kind === "solitaire" ? freshSolitaireSeed(isAnyDeal(puzzle.seed)) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(words);
+    router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed, checks, strict, headStart, words, dodge, backwards, clock })));
   };
   const timed = PUZZLE_CLOCK_DISPLAY[clock];
   /*

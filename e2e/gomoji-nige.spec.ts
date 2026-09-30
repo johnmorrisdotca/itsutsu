@@ -26,11 +26,11 @@ test("choosing Nige at set-up switches Head start off and starts a word that dod
   await ready(page, "puzzle-set-up");
   await page.getByTestId("puzzle-level-easy").click();
   const start = page.getByTestId("puzzle-solve");
-  await expect(page.getByTestId("puzzle-dodge-off")).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByTestId("puzzle-way-find")).toHaveAttribute("aria-checked", "true");
   await expect(start).not.toHaveAttribute("href", /nige=/);
 
   await page.getByTestId("puzzle-dodge-on").click();
-  await expect(page.getByTestId("puzzle-dodge-blurb")).toContainText(/dodge/i);
+  await expect(page.getByTestId("puzzle-way-blurb")).toContainText(/dodge/i);
   await expect(start).toHaveAttribute("href", /nige=1/);
   // Nothing is hidden, so there is nothing for a head start to grey.
   await expect(page.getByTestId("puzzle-head-start-on")).toBeDisabled();

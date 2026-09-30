@@ -25,6 +25,8 @@ import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { loadKanaWords } from "@/lib/puzzles/gomojiKana/kanaWords";
 import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
+import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
@@ -38,6 +40,8 @@ function wordOf(kind: PuzzleKind, givens: string, size: number, level: string, a
     const word = wordOfPlay(kind, size, level as PuzzleLevel, givens, answer === null ? [] : (guessesOf(kind, size, answer) ?? []));
     return word === null ? "" : `${wordsShown(kind, [word])} (${DODGE_DISPLAY.label} ${DODGE_DISPLAY.kanji})`;
   }
+  // A Sakasa's word, the one it was played to avoid (`backwards.ts`).
+  if (isBackwardsGivens(givens)) return `${wordsShown(kind, hiddenWordsOf(kind, size, givens)?.words ?? [])} (${BACKWARDS_DISPLAY.label} ${BACKWARDS_DISPLAY.kanji})`;
   const words = hiddenWordsOf(kind, size, givens)?.words ?? [];
   const mode = words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
   return words.length > 1 ? `${wordsShown(kind, words)} (${mode.label} ${mode.kanji})` : wordsShown(kind, words);
@@ -92,8 +96,11 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, found.answer);
   /* Unsolved on a countdown with guesses (or swaps) to spare, or a grid, which has no other way to end unsolved: its clock ran out. */
-  const outOfTime = !solve.solved && solve.clock !== "none" && (taken === null || taken.used < taken.allowed);
-  const outcome = solve.solved ? (words ? "Found" : "Solved") : outOfTime ? "Out of time" : "Not found";
+  // A Sakasa is won by getting through and lost by typing its word (`backwards.ts`): caught, when its last guess was the word.
+  const sakasa = isBackwardsGivens(solve.givens);
+  const caught = sakasa && found.answer !== null && (guessesOf(kind, solve.size, found.answer) ?? []).at(-1) === hiddenWordsOf(kind, solve.size, solve.givens)?.words[0];
+  const outOfTime = !solve.solved && !caught && solve.clock !== "none" && (taken === null || taken.used < taken.allowed);
+  const outcome = solve.solved ? (sakasa ? "Got through" : words ? "Found" : "Solved") : outOfTime ? "Out of time" : caught ? "Caught" : "Not found";
   const timed = PUZZLE_CLOCK_DISPLAY[solve.clock as PuzzleClock] ?? PUZZLE_CLOCK_DISPLAY.none;
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,

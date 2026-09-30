@@ -9,6 +9,8 @@ import { FUTAGO_DISPLAY, wordCountOfGivens } from "@/lib/puzzles/gomoji/futago";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
+import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
@@ -49,6 +51,10 @@ export function SolveHeader({
             {PUZZLE_SPECS[puzzle.kind].wordGrid === undefined ? null : isDodgeGivens(puzzle.givens) ? (
               <span data-testid="puzzle-asked-dodge">
                 {" "}· {DODGE_DISPLAY.label} <span className="font-mincho">{DODGE_DISPLAY.kanji}</span>
+              </span>
+            ) : isBackwardsGivens(puzzle.givens) ? (
+              <span data-testid="puzzle-asked-backwards">
+                {" "}· {BACKWARDS_DISPLAY.label} <span className="font-mincho">{BACKWARDS_DISPLAY.kanji}</span>
               </span>
             ) : wordCountOfGivens(puzzle.givens) === 4 ? (
               <span data-testid="puzzle-asked-yotsugo">
