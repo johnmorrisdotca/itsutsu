@@ -21,6 +21,7 @@ const read = (path: string) => readFileSync(path, "utf8");
  */
 const DRAWN_BY_CALLER: Readonly<Record<string, string>> = {
   "src/components/party/cards/CardPlay.tsx": "src/components/party/cards/CardGameTable.tsx",
+  "src/components/party/hitotsu/HitotsuPlay.tsx": "src/components/party/hitotsu/HitotsuTable.tsx",
 };
 
 /** Every play that knows when it is being played: the ones that cover their board at the end (`useWinMoment`). */

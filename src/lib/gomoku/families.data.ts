@@ -266,6 +266,30 @@ export const GAME_FAMILIES: GameFamily[] = [
       "A game here is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
+    key: "colour-cards",
+    /*
+     * COLOUR CARDS 色札. Hitotsu (2026-09-30), John: "since we have built card
+     * games now, we should build Uno and party Uno versions." Its deck is not
+     * the French one Cards is played with but a deck of its own — four
+     * colours, numbers and action cards, drawn by us — and Cards already held
+     * the eight a shelf holds when it arrived (Solitaire, FreeCell, Spider and
+     * the five family games). So a shelf for the games played with that deck,
+     * as Mahjong and Dominoes are the shelves for theirs: 色 colour, and 札 the
+     * card, Cards' own word.
+     *
+     * Its games are party games, never recorded, so, like Dominoes, it counts
+     * towards no award, has a page of its own at /games/colour-cards, and stays
+     * off the set-up screen. Crazy Eights, the game Hitotsu grew out of, is
+     * also shown here (`ALSO_LISTED_IN`).
+     */
+    title: "Colour cards",
+    kanji: "色札",
+    blurb: "Games with a deck of four colours, numbers and action cards, drawn by us: match the colour or the number, and be first to empty your hand. Round one device, or on several, with a computer in any empty seat.",
+    games: ["hitotsu"],
+    notOnSetUp:
+      "A colour-card game is played by a table of people and computers on one device or several, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },
+  {
     key: "mahjong",
     /*
      * MAHJONG 麻雀. John, 2026-09-29: "MahJong game where you match up piles of

@@ -18,6 +18,7 @@ import { MancalaOnline, mancalaStanding } from "./MancalaOnline";
 import { PairGoOnline, pairGoStanding } from "./PairGoOnline";
 import { TenkaOnline, tenkaStanding } from "./TenkaOnline";
 import { TrainOnline, trainStanding } from "./TrainOnline";
+import { HitotsuOnline, hitotsuStanding } from "./HitotsuOnline";
 
 /**
  * EACH GAME'S BOARD AT A TABLE ON SEVERAL DEVICES, by game: a `Record` over
@@ -49,4 +50,5 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   mancala: { Board: MancalaOnline, standing: mancalaStanding, testId: "mancala-game" },
   tenka: { Board: TenkaOnline, standing: tenkaStanding, testId: "tenka-game", wide: true },
   mexicanTrain: { Board: TrainOnline, standing: trainStanding, testId: "train-game" },
+  hitotsu: { Board: HitotsuOnline, standing: hitotsuStanding, testId: "hitotsu-game" },
 };

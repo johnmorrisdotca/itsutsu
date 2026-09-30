@@ -53,6 +53,7 @@ export const ROUTES: Record<string, Route> = {
   "/games/list": { url: () => "/games/list" },
   "/games/party": { url: () => "/games/party" },
   "/games/dominoes": { url: () => "/games/dominoes" },
+  "/games/colour-cards": { url: () => "/games/colour-cards" },
   "/games/tricks": { url: () => "/games/tricks" },
   "/games/dice": { url: () => "/games/dice" },
   "/games/[slug]": { url: () => "/games/gomoku", also: ["/games/number-place"] },

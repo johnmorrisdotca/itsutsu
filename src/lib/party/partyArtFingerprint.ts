@@ -54,6 +54,14 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/pachisi/PachisiBoard.tsx",
   "src/components/party/pachisi/pachisiLayout.ts",
   "src/lib/party/pachisi/pachisi.ts",
+  "src/components/party/hitotsu/HitotsuCardView.tsx",
+  "src/components/party/hitotsu/HitotsuHand.tsx",
+  "src/components/party/hitotsu/HitotsuTableTop.tsx",
+  "src/components/party/hitotsu/HitotsuPlay.tsx",
+  "src/components/party/hitotsu/HitotsuDesk.tsx",
+  "src/components/party/hitotsu/hitotsu.constants.ts",
+  // Hitotsu's cards are drawn by its package; a new release is a new version here.
+  "node_modules/@johnmorrisdotca/hitotsu/package.json",
   "e2e/party-screenshots.spec.ts",
 ];
 

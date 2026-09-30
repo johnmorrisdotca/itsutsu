@@ -12,6 +12,7 @@ import type { MancalaGame } from "../mancala/mancala.types";
 import type { GhostGame } from "../superghost/superghost.types";
 import type { TenkaGame } from "../tenka/tenka.types";
 import type { TrainGame, TrainMove } from "../mexicanTrain/mexicanTrain.types";
+import type { HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";
 import type { BlocksPieceKey, PartyBlocksState } from "../../gomoku/party/partyBlocks.types";
@@ -25,6 +26,7 @@ import { KUMIMOJI_ONLINE, type KumimojiMove } from "./onlineKumimoji";
 import { MANCALA_ONLINE, SUPERGHOST_ONLINE, type GhostTableMove } from "./onlineWordGames";
 import { TENKA_ONLINE, type TenkaTableMove } from "./onlineTenka";
 import { TRAIN_ONLINE } from "./onlineTrain";
+import { HITOTSU_ONLINE } from "./onlineHitotsu";
 
 export { fromPartyRules };
 import { PAIR_GO_ONLINE, type PairGoMove } from "./onlinePairGo";
@@ -128,6 +130,7 @@ type OnlinePlays = {
   mancala: { game: MancalaGame; move: number };
   tenka: { game: TenkaGame; move: TenkaTableMove };
   mexicanTrain: { game: TrainGame; move: TrainMove };
+  hitotsu: { game: HitotsuGame; move: HitotsuMove };
 };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
@@ -142,6 +145,7 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   mancala: MANCALA_ONLINE,
   tenka: TENKA_ONLINE,
   mexicanTrain: TRAIN_ONLINE,
+  hitotsu: HITOTSU_ONLINE,
 };
 
 /**

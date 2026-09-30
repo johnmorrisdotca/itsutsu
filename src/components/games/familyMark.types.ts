@@ -31,6 +31,8 @@ export type Mark = {
    * null is its back. The Cards family's fan.
    */
   cards?: { card: Card | null; x: number; y: number; angle: number }[];
+  /** Hitotsu's cards, laid as `cards` are, from its own deck (`HitotsuCardDrawing`): a card id, or null for its back. The Colour cards family's fan. */
+  colourCards?: { card: string | null; x: number; y: number; angle: number }[];
   /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
   /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Dominoes family's train. */

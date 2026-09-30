@@ -1,5 +1,6 @@
 import { CardBack } from "@/components/cards/CardBack";
 import { CardFace } from "@/components/cards/CardFace";
+import { HitotsuCardDrawing } from "@johnmorrisdotca/hitotsu/react";
 
 import type { PictureSize } from "./games.types";
 import { pictureBox } from "./picture";
@@ -69,6 +70,13 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
         <g key={at} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
           <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
             {card === null ? <CardBack /> : <CardFace card={card} />}
+          </svg>
+        </g>
+      ))}
+      {(mark.colourCards ?? []).map(({ card, x, y, angle }, at) => (
+        <g key={`colour-${at}`} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
+          <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
+            <HitotsuCardDrawing card={card} />
           </svg>
         </g>
       ))}

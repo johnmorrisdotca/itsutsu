@@ -23,6 +23,7 @@ import { encodePachisi } from "../src/lib/party/pachisi/pachisiCodec";
 import { pachisiComputerMove } from "../src/lib/party/pachisi/pachisiComputer";
 import { playYacht, startYacht } from "../src/lib/party/yacht/yacht";
 import { encodeYacht } from "../src/lib/party/yacht/yachtCodec";
+import { encodeHitotsu, hitotsuComputer, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { ready } from "./support";
 
 /**
@@ -118,6 +119,19 @@ function cardScene(kind: CardGameKind, size: number, seats: number, when: (game:
   let game = rules.start(size, names, undefined, 20260929, names.map((_, seat) => seat > 0));
   for (let move = 0; move < 2000 && !(rules.toPlay(game) === 0 && when(game as never)); move += 1) game = rules.play(game, rules.computer(game));
   return rules.encode(game);
+}
+
+/**
+ * Hitotsu for four, Ann and three computers, played by the computer player —
+ * Ann's turns too — until eight cards are down, one of them an action card
+ * or a wild, and it is Ann's turn with nothing drawn: the table waits for
+ * her, and the picture is the stock, the pile and her hand under it.
+ */
+function hitotsuScene(): string {
+  let game = startHitotsu(500, ["Ann", "Ben", "Cy", "Dee"], 20260930, undefined, [false, true, true, true])!;
+  const waiting = () => game.toPlay === 0 && game.challenge === null && game.drawn === null && game.pending === 0 && game.discard.length >= 8 && game.discard.some((card) => !/\d/.test(card[1]!));
+  for (let move = 0; move < 2000 && !waiting(); move += 1) game = playHitotsu(game, hitotsuComputer(game))!;
+  return encodeHitotsu(game);
 }
 
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
@@ -231,6 +245,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("crazyEights", 100, 3, (game: { discard: unknown[]; drawn: unknown }) => game.discard.length >= 7 && game.drawn === null),
   },
+  // Hitotsu for four, eight cards down and an action card among them: the stock, the pile, the colour to follow and Ann's hand.
+  {
+    kind: "hitotsu",
+    key: "itsutsu.hitotsu",
+    table: "hitotsu-game",
+    shot: "hitotsu-board",
+    stored: hitotsuScene(),
+  },
   // Euchre for four, trumps made and two cards on the second trick: Ann to play to it, trumps named on the table.
   {
     kind: "euchre",
@@ -284,7 +306,7 @@ test.describe("party game screenshots", () => {
         // The ways of looking round a big board (Fit, the arrows) are for the player, not the picture.
         await page.addStyleTag({ content: '[data-testid$="-fit"], [data-testid$="-arrows"] { visibility: hidden !important; }' });
         // And a card game's presses and the line under its hand are for playing, not for its picture.
-        await page.addStyleTag({ content: '[data-testid="cards-actions"], [data-testid="cards-hand-panel"] > p { visibility: hidden !important; }' });
+        await page.addStyleTag({ content: '[data-testid="cards-actions"], [data-testid="cards-hand-panel"] > p, [data-testid="hitotsu-actions"], [data-testid="hitotsu-call"] { visibility: hidden !important; }' });
         await page.mouse.move(0, 0);
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         // The board in its wood, or the letters the table watches, and nothing round it, as a game's picture is taken (game-screenshots.spec.ts).

@@ -316,6 +316,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/games/FamilyShelf.tsx": { GameThumb: "regular" },
   "src/app/games/party/page.tsx": { FamilyMark: "regular" },
   "src/app/games/dominoes/page.tsx": { FamilyMark: "regular" },
+  "src/app/games/colour-cards/page.tsx": { FamilyMark: "regular" },
   "src/app/games/tricks/page.tsx": { FamilyMark: "regular" },
   "src/app/games/dice/page.tsx": { FamilyMark: "regular" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
@@ -333,6 +334,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/party/TrainCard.tsx": { GameThumb: "small" },
   "src/components/party/yacht/YachtCard.tsx": { GameThumb: "small" },
   "src/components/party/pachisi/PachisiCard.tsx": { GameThumb: "small" },
+  "src/components/party/hitotsu/HitotsuCard.tsx": { GameThumb: "small" },
   // The party tables on several devices, rows of a list on My games.
   "src/components/party/online/MyTables.tsx": { GameThumb: "small" },
   // And Tenka's.

@@ -7,6 +7,7 @@ import { trainSetName } from "./mexicanTrain/mexicanTrain.constants";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
+import { HITOTSU_ONE_HAND } from "@johnmorrisdotca/hitotsu";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
 export function partyPlayersWords(kind: PartyKind): string {
@@ -50,6 +51,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
     )} set`,
   yacht: () => "with five dice and a sheet of thirteen boxes, alone or at a table",
   pachisi: () => "with two dice and four pawns each, round a cross of sixty-eight squares",
+  hitotsu: (spec) => defaulted(spec, (size) => (size === HITOTSU_ONE_HAND ? "for one hand" : `to ${size} points`), "or"),
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
@@ -121,6 +123,21 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     house:
       "Dice are thrown by the game from a fresh random seed, and every throw is kept with the game, so a reloaded page throws nothing again. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice is off until you turn it on.",
     more: ["A pawn entering onto its own entry square takes a lone opponent standing there, though the entry square is otherwise safe.", "Two players sit on opposite arms of the cross."],
+  },
+  hitotsu: {
+    turn: "The line over the table says whose turn it is, which colour to follow, and which way play is going round. Your hand is along the foot of the table: tap a card to choose it (it rises) and press Play, or tap a card twice to play it at once. A wild asks which colour to call, and a seven, with sevens and zeros on, which player to swap hands with. With two cards left, press Hitotsu! before you play. Facing a draw, press Take it — or stack, or Challenge a Wild Draw Four. A computer plays its own seat by itself, a moment after its turn comes.",
+    house:
+      "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every card carries its colour's element in its corners — 火 red, 土 yellow, 木 green, 水 blue — so colour is never the only sign of it. Choose Several devices at the set-up and each player plays on their own phone or computer: a buddy, anyone with the link or a computer in any seat, each seeing only their own hand.",
+    more: [
+      "The house rules, each a choice at the set-up, the published rule first:",
+      "Stacking: off (the published rule); the same card, a Draw Two on a Draw Two and a Wild Draw Four on a Wild Draw Four; or any draw card (progressive draw), a Wild Draw Four on a Draw Two too, and a Draw Two of the colour called on a Wild Draw Four. The next player who cannot stack takes the whole total.",
+      "Jump-in: a card identical to the one on top, the same colour and the same number or symbol, may be played out of turn by anybody holding one, and play goes on from them. Played at a table of one person with computers, where the other hands are the computers'.",
+      "Sevens and zeros: a seven swaps your hand with a player of your choice, and a zero passes every hand on, in the direction of play.",
+      "Draw until you can play: draw until a card goes, rather than one.",
+      "No bluffing: a Wild Draw Four may go down only when you hold nothing of the colour on top, and it cannot be challenged.",
+      "Party mode: five cards each, one hand, and stacking, jumping in and sevens and zeros on.",
+      "The first card turned up is always a number; an action card or a wild turned up goes back under the stock. A draw card played as your last card is still taken by the next player, and counts against them.",
+    ],
   },
   hearts: {
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",

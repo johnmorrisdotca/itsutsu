@@ -5,7 +5,7 @@ and Block Five (branch `party-online`), and Pair Go with the site's Go
 programs in computer seats (branch `party-online-2`) are built and
 browser-tested, and so are Kumimoji's pass and play with its own computer
 player (John decided its two questions, below), Superghost, Mancala, Tenka
-and Mexican Train (2026-09-30).**
+and Mexican Train (2026-09-30), and Hitotsu (2026-09-30).**
 
 John, 2026-09-28: "all our Pass and Play games should ultimately get an agent
 to make the Multi-device (invite a buddy / bot). so that they can be played on
@@ -184,7 +184,7 @@ browser spec that drives a computer seat: after a member's stone both
 programs are to play, the table records that the browser which sent their
 moves was that member's, and the other member's device sees all three arrive.
 Mexican Train's seats may be given to its own computer player, one move at a
-time (`computerMove`). Dots and Boxes, Chinese Checkers, Halma and Block Five have no computer player
+time (`computerMove`), and so may Hitotsu's (`hitotsuComputer`). Dots and Boxes, Chinese Checkers, Halma and Block Five have no computer player
 for a table of more than two anywhere on the site, so their set-ups offer
 none and the server refuses one. Kumimoji's three (`computerTurn.ts`) join with
 it.
@@ -336,6 +336,10 @@ it.
    `e2e/party-online-train.spec.ts`), with its own computer player in any
    seat. The details are in `docs/plans/dominoes/README.md`, "Several
    devices".
+8. **Done: Hitotsu** (`onlineHitotsu.ts`, `HitotsuOnline.tsx`, the several
+   devices case in `e2e/party-hitotsu.spec.ts`), with its own computer player
+   in any seat and no jumping in. The details are in
+   `docs/plans/hitotsu/README.md`.
 
 ## Decisions to review
 

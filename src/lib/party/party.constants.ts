@@ -6,9 +6,11 @@ import { TRAIN_SETS } from "./mexicanTrain/mexicanTrain.constants";
 import type { PartyKind, PartySpec } from "./party.types";
 import { PACHISI_TRACK } from "./pachisi/pachisi.constants";
 import { YACHT_SHEET } from "./yacht/yacht.constants";
+import { HITOTSU_DEFAULT_SIZE, HITOTSU_SIZES } from "@johnmorrisdotca/hitotsu";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "../cardGames/cardGames.copy";
+import { HITOTSU_DISPLAY } from "./hitotsu/hitotsu.copy";
 
 /**
  * THE PARTY GAMES: a table of people round one phone or tablet, each a game
@@ -28,11 +30,12 @@ export const PARTY_KINDS = {
   mexicanTrain: "mexicanTrain",
   yacht: "yacht",
   pachisi: "pachisi",
+  hitotsu: "hitotsu",
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -188,6 +191,7 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "A cross of sixty-eight squares round a middle, with a home path of seven for each colour. Two sit opposite each other; three or four take an arm each. Pass one phone round, or put the computer in any seat.",
   },
+  hitotsu: HITOTSU_DISPLAY,
   // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
   ...CARD_GAME_DISPLAY,
 };
@@ -257,6 +261,12 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
    */
   yacht: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 2, sizes: [YACHT_SHEET], defaultSize: YACHT_SHEET },
   pachisi: { fewestPlayers: 2, mostPlayers: 4, defaultPlayers: 2, sizes: [PACHISI_TRACK], defaultSize: PACHISI_TRACK },
+  /*
+   * Hitotsu for two to eight — eight, the most any table here seats, one
+   * colour a player — to 200 or 500 points (500 the published total, and the
+   * default), or a single hand, which party mode opens on.
+   */
+  hitotsu: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 4, sizes: HITOTSU_SIZES, defaultSize: HITOTSU_DEFAULT_SIZE },
   // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
   ...CARD_GAME_SPECS,
 };

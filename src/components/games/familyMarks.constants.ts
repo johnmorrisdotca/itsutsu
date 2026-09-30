@@ -236,6 +236,21 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
+   * COLOUR CARDS: a hand of three from Hitotsu's own deck, fanned as the Cards
+   * family's is — its back with 一つ, a red Draw Two, and in front the wild,
+   * the four colours quartered — drawn by the code that draws them at the table.
+   */
+  "Colour cards": {
+    n: 5,
+    cells: true,
+    stones: [],
+    colourCards: [
+      { card: null, x: 1.45, y: 2.65, angle: -16 },
+      { card: "RD0", x: 2.5, y: 2.35, angle: 0 },
+      { card: "WW0", x: 3.55, y: 2.65, angle: 16 },
+    ],
+  },
+  /*
    * OTHER: a row of letters, the word puzzle's, two tiles lit green for a
    * letter in its place and one gold for a letter elsewhere — the family's
    * first game in one line, and the one mark on the row made of letters.
