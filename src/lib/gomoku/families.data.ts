@@ -260,8 +260,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Tricks",
     kanji: "トリック",
-    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, or peg your way to 121 at cribbage. Round one device, with a computer in any empty seat.",
-    games: ["hearts", "spades", "euchre", "cribbage"],
+    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, bid exactly what you alone will take, or peg your way to 121 at cribbage. Round one device, with a computer in any empty seat.",
+    games: ["hearts", "spades", "euchre", "ohHell", "cribbage"],
     notOnSetUp:
       "A game here is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

@@ -15,11 +15,12 @@ import type { PartySpec } from "../party/party.types";
  * - Gin Rummy, two: the score that wins, 50, 100 or 150.
  * - Euchre, four in two partnerships: the score that wins, 5 or 10.
  * - Cribbage, for two: the score that wins, 61 (once round the board) or 121.
+ * - Oh Hell, three or four each for themselves: how many deals, 7 (one card up to seven) or 13 (and back down).
  *
  * Every seat may be a person's or a computer's, so a table of one person and
  * three computers is a game of Hearts as much as four people round a phone.
  */
-export type CardGameKind = "hearts" | "bigTwo" | "president" | "goFish" | "crazyEights" | "spades" | "ginRummy" | "euchre" | "cribbage";
+export type CardGameKind = "hearts" | "bigTwo" | "president" | "goFish" | "crazyEights" | "spades" | "ginRummy" | "euchre" | "cribbage" | "ohHell";
 
 export const CARD_GAME_KINDS = {
   hearts: "hearts",
@@ -31,6 +32,7 @@ export const CARD_GAME_KINDS = {
   ginRummy: "ginRummy",
   euchre: "euchre",
   cribbage: "cribbage",
+  ohHell: "ohHell",
 } as const satisfies Record<CardGameKind, CardGameKind>;
 
 /** Every family card game, in the order its shelf shows them. */
@@ -39,6 +41,7 @@ export const CARD_GAME_LIST: readonly CardGameKind[] = [
   CARD_GAME_KINDS.spades,
   CARD_GAME_KINDS.euchre,
   CARD_GAME_KINDS.cribbage,
+  CARD_GAME_KINDS.ohHell,
   CARD_GAME_KINDS.crazyEights,
   CARD_GAME_KINDS.goFish,
   CARD_GAME_KINDS.bigTwo,
@@ -56,6 +59,7 @@ export const SPADES_SIZES = [200, 300, 500] as const;
 export const GIN_SIZES = [50, 100, 150] as const;
 export const EUCHRE_SIZES = [5, 10] as const;
 export const CRIBBAGE_SIZES = [61, 121] as const;
+export const OH_HELL_DEALS = [7, 13] as const;
 
 export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
   hearts: { fewestPlayers: 3, mostPlayers: 4, defaultPlayers: 4, sizes: [HEARTS_SIZES.short, HEARTS_SIZES.full], defaultSize: HEARTS_SIZES.full },
@@ -67,4 +71,5 @@ export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
   ginRummy: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: GIN_SIZES, defaultSize: 100 },
   euchre: { fewestPlayers: 4, mostPlayers: 4, defaultPlayers: 4, sizes: EUCHRE_SIZES, defaultSize: 10 },
   cribbage: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: CRIBBAGE_SIZES, defaultSize: 121 },
+  ohHell: { fewestPlayers: 3, mostPlayers: 4, defaultPlayers: 4, sizes: OH_HELL_DEALS, defaultSize: 13 },
 };

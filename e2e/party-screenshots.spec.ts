@@ -206,6 +206,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("cribbage", 121, 2, (game: { phase: string; run: unknown[]; peg: unknown }) => game.phase === "pegging" && game.run.length === 3 && game.peg !== null),
   },
+  // Oh Hell for four, the fifth deal under way: the turned card naming trumps, and two cards on the trick.
+  {
+    kind: "ohHell",
+    key: "itsutsu.cards.ohHell",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("ohHell", 13, 4, (game: { phase: string; cards: number; trick: unknown[] }) => game.phase === "playing" && game.cards === 5 && game.trick.length === 2),
+  },
 ];
 
 test.describe("party game screenshots", () => {
