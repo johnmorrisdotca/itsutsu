@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.455.0 — 2026-09-30 07:06 UTC
+- Gomoji Sakasa 逆さ: Gomoji played backwards, where every row must be filled without ever typing the hidden word, chosen on Gomoji's set-up in every language, with a Sakasa of the day at every length.
+
 ## 0.454.0 — 2026-09-30 07:06 UTC
 - Gomoji Nige 逃げ: a word that dodges every guess until your guesses leave it nowhere to hide, chosen on Gomoji's set-up in every language, with a Nige of the day at every length.
 
