@@ -173,16 +173,15 @@ already counts only members with no `unclaimableBecause` at all.
   to prevent does not apply here in the same way. Worth wiring anyway so the
   Members tab can be TOLD which rows are test members and filtered when Test
   Mode is off, but it is not a leak today.
-- `src/lib/feed/feedRead.ts` — the activity feed.
-- `src/lib/history/activeGames.ts`, `currentNames.ts`, `gameHistory.ts`,
-  `posterStandingRead.ts` — the game record and its active-game bookkeeping.
-- `src/lib/phrase/phraseStore.ts`, `seatPick.ts` — four-word credential rows and
-  the picker's candidate names.
-- `src/lib/record/rivalryRead.ts` — head-to-head between two named members.
-- `src/lib/site/siteNumbers.ts` — the site's own headline counts (About, the home
-  page). Worth doing early once seeding actually runs at scale: 1000 test members
-  would otherwise inflate "how many people play here" on the most-read page on
-  the site.
+**And the game record, 2026-09-30:** `/history` and its plain-text listing
+leave out a game with a test member in either seat (`filterSeats` reads
+`hiddenMemberIds`, `buildGameWhere` applies it). The rest of this group was
+read the same day and needs nothing: the Everyone feed already names no test
+member (`mayName`), and `activeGames`, `currentNames`, `posterStandingRead`,
+`phraseStore`, `seatPick`, `rivalryRead` and `playedRun` read members by ids
+already chosen, by one name, or only members with no `unclaimableBecause` — each
+reason is written in the coverage test's `EXCEPTIONS`.
+
 - `src/lib/social/childReach.ts` — who a child member may reach. Deliberately
   UNTOUCHED until reviewed with John rather than converted reflexively: this is a
   safety rule (`children-default-to-stricter`, per standing instruction), and
@@ -346,10 +345,8 @@ That check was made on 2026-09-25, when `/xp` was the one surface converted.
 fastest tables were converted on 2026-09-30 and have not yet been checked
 against seeded test members the same way.
 
-**Before running the seeding step anywhere but `itsutsu_sim`**: the feed, the
-game record, head-to-head and the four-word picker are still NOT converted (see
-the surface list above), so on any database those read from, a test member who
-has played shows up to EVERY VISITOR there, not only an admin with Test Mode on.
-That is safe on `itsutsu_sim` because nobody else ever reads it. It is NOT safe
-on the shared development database or production until those are converted —
-say so plainly before anyone reaches for `TEST_MEMBERS_RUN=1` anywhere else.
+**Before running the seeding step anywhere but `itsutsu_sim`**: every surface
+above is converted except the operator's own Admin lists and `childReach.ts`,
+which waits on John. Those conversions have not yet been checked against seeded
+test members in a browser the way `/xp` was, so check them on a database nobody
+else reads before anyone reaches for `TEST_MEMBERS_RUN=1` anywhere shared.

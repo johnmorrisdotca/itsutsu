@@ -9,6 +9,7 @@ import {
   takeFor,
 } from "@/lib/api/paging.cursor";
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, hiddenMemberIds, type TestModeReader } from "@/lib/testMode/testMode";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { GAME_SORT_SPEC, gameSortChoice } from "./gameHistory.sort";
@@ -225,12 +226,13 @@ async function membersNamed(player: string | null): Promise<string[]> {
 }
 
 /** The two lookups a filter needs, together, so neither is forgotten on its own. */
-async function filterSeats(query: GameHistoryQuery): Promise<FilterSeats> {
-  const [computers, named] = await Promise.all([
+async function filterSeats(query: GameHistoryQuery, testMode: TestModeReader): Promise<FilterSeats> {
+  const [computers, named, hidden] = await Promise.all([
     query.pool === "all" ? [] : computerSeatIds(),
     membersNamed(query.player),
+    hiddenMemberIds(testMode),
   ]);
-  return { computers, named };
+  return { computers, named, hidden };
 }
 
 /**
@@ -255,11 +257,13 @@ async function filterSeats(query: GameHistoryQuery): Promise<FilterSeats> {
  */
 export async function fetchGameHistoryPage(
   asked: GameHistoryQuery,
+  /** Whether the reader is the operator with Test Mode on; anybody else never sees a test member's games (`testMode.ts`). */
+  testMode: TestModeReader = HIDES_TEST_MEMBERS,
 ): Promise<GameHistoryPage> {
   // `?member=<id>` is the same narrowing as `?player=<name>` with nobody's name
   // in the address; it becomes one before any clause is built. See `nameForMember`.
   const query = await withMemberResolved(asked);
-  const filters = buildGameWhere(query, await filterSeats(query));
+  const filters = buildGameWhere(query, await filterSeats(query, testMode));
   const sort = gameSortChoice(query);
   const after = query.cursor === null ? null : decodeCursor(query.cursor, sort);
 
@@ -328,9 +332,10 @@ export async function fetchGameHistoryPage(
  */
 export async function fetchWholeRecord(
   asked: GameHistoryQuery,
+  testMode: TestModeReader = HIDES_TEST_MEMBERS,
 ): Promise<{ items: GameSummary[]; total: number }> {
   const query = await withMemberResolved(asked);
-  const where = buildGameWhere(query, await filterSeats(query));
+  const where = buildGameWhere(query, await filterSeats(query, testMode));
   const [total, rows] = await Promise.all([
     prisma.game.count({ where }),
     prisma.game.findMany({
