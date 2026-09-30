@@ -189,7 +189,7 @@ anywhere here. Tenka is from 天下取り, tenka-tori, "taking the realm".
   decided by the count at round 60 — escalating card sets make armies of thousands that the dice
   wear down slowly.
 - **The map** is Natural Earth's admin-0 countries at 1:110m (public domain),
-  built by `node scripts/tenka-map.mjs` into two static files: the world the
+  built by `node scripts/map.mjs`, run in `packages/tenka`, into two static files: the world the
   rules read (names, continents, neighbours by land and the twenty named sea
   links, 5 KB) and the outlines only the browser's board draws (30 KB). The
   script gives every country's polygons to a territory, cuts Canada (97°W),

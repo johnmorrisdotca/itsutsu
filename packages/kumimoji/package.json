@@ -1,0 +1,77 @@
+{
+  "name": "@johnmorrisdotca/kumimoji",
+  "version": "0.1.0",
+  "description": "Kumimoji 組み文字: the race to build a crossword from a bag of letter tiles, in English or Japanese, alone or at a table of two to eight. Seeded deals, word checking, wild tiles, trades, a computer player, a plain-DOM table and React views.",
+  "license": "MIT",
+  "author": "John Morris <john@johnmorris.ca>",
+  "homepage": "https://johnmorrisdotca.github.io/kumimoji/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnmorrisdotca/kumimoji.git"
+  },
+  "bugs": {
+    "url": "https://github.com/johnmorrisdotca/kumimoji/issues"
+  },
+  "type": "module",
+  "sideEffects": [
+    "./dist/words.js",
+    "./dist/tileWordsModule.js"
+  ],
+  "keywords": [
+    "word-game",
+    "crossword",
+    "tiles",
+    "anagram",
+    "japanese",
+    "kana",
+    "game-engine",
+    "seeded",
+    "react"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./words": {
+      "types": "./dist/words.d.ts",
+      "import": "./dist/words.js"
+    },
+    "./ui": {
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "WORDS-LICENCE.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "site": "npm run build && node scripts/site.mjs",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

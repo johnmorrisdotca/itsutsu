@@ -24,7 +24,7 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/lib/party/mancala/mancala.ts",
   "src/components/party/tenka/TenkaMap.tsx",
   "src/components/party/tenka/tenka.constants.ts",
-  "src/lib/party/tenka/tenkaShapes.data.ts",
+  "packages/tenka/src/tenkaShapes.data.ts",
   "src/components/party/TrainTable.tsx",
   "src/components/party/DominoFace.tsx",
   "src/components/party/trainLayout.ts",

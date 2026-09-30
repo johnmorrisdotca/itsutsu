@@ -34,6 +34,9 @@ const eslintConfig = defineConfig([
      * thousands of problems in minified output and buries the real ones.
      */
     ".vercel/**",
+    // A package's own build and Pages demo, made by its own scripts and gitignored there.
+    "packages/*/dist/**",
+    "packages/*/site/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
