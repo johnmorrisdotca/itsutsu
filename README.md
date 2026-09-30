@@ -187,7 +187,7 @@ at once, hard needs one square tried and followed. 5×5, 10×10, 15×15 and
 checked in O(cells) against the clues (`pictureLogic/check.ts`).
 
 **Cards** 札 (2026-09-29) is the shelf for games played with the site's own
-deck (`src/lib/cards/`, `src/components/cards/`: faces and backs drawn by us,
+deck (Toranpu's, below, and `src/components/cards/`: faces and backs drawn by us,
 the backs tiled with the Itsutsu stones), opened with **Solitaire** ソリティア
 (`src/lib/puzzles/solitaire/`): Klondike, turning one card or three, as often
 through the stock as you like, three times or once. A deal is the shuffle of its
@@ -200,6 +200,12 @@ Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二 
 大富豪, and **Gin Rummy** ジンラミー for two — are party games (`src/lib/cardGames/`), one table for all of them round
 one device (`src/components/party/cards/`), a computer in any empty seat and
 every hand kept hidden between people; see `docs/plans/family-cards/README.md`.
+The deck and every card game's rules and computer player are **Toranpu**
+トランプ, an open-source package at github.com/johnmorrisdotca/toranpu; the
+site installs it from that repository's release tarball (`package.json` names
+the version) and imports it by name (`@johnmorrisdotca/toranpu`), and `src/lib/cards/` and
+`src/lib/cardGames/` forward to it, keeping the site's own copy, shelf order and
+party-table typing.
 **Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,
 **Hearts** ハーツ, **Spades** スペード, **Euchre** ユーカー and **Oh Hell** オーヘル, with **Cribbage** クリベッジ beside them, split off Cards so neither shelf passes
 eight games.

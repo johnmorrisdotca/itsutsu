@@ -100,6 +100,14 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/kumimoji", "Kumimoji's tiles, judging and tables for its pages, as before it was a package; never its word lists."],
   /* Tane, 48 KB whole (1.0.1): the seeded random and the day's seed, which the server needs to name a daily puzzle and to check a game's dice. */
   ["@johnmorrisdotca/tane", "The seeded random and the daily seed, used by the server as by the browser."],
+  /*
+   * Toranpu, 620 KB whole (1.1.0): the deck and ten card games. A kept card
+   * game's page and a rules page print from a game's rules, and the Cards
+   * family mark is drawn from the deck; the tables themselves are loaded in
+   * the browser only. The measured function says what this costs.
+   */
+  ["@johnmorrisdotca/toranpu", "A card game's rules for its rules page and for a kept game read on the server."],
+  ["@johnmorrisdotca/toranpu/deck", "The cards drawn in the Cards and Tricks family marks."],
 ]);
 
 /*

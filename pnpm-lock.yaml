@@ -26,6 +26,9 @@ importers:
       '@johnmorrisdotca/tenka':
         specifier: https://github.com/johnmorrisdotca/tenka/releases/download/v1.0.1/johnmorrisdotca-tenka-1.0.1.tgz
         version: https://github.com/johnmorrisdotca/tenka/releases/download/v1.0.1/johnmorrisdotca-tenka-1.0.1.tgz(react@19.2.8)
+      '@johnmorrisdotca/toranpu':
+        specifier: https://github.com/johnmorrisdotca/toranpu/releases/download/v1.1.0/johnmorrisdotca-toranpu-1.1.0.tgz
+        version: https://github.com/johnmorrisdotca/toranpu/releases/download/v1.1.0/johnmorrisdotca-toranpu-1.1.0.tgz(react@19.2.8)
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -433,6 +436,16 @@ packages:
   '@johnmorrisdotca/tenka@https://github.com/johnmorrisdotca/tenka/releases/download/v1.0.1/johnmorrisdotca-tenka-1.0.1.tgz':
     resolution: {integrity: sha512-prJBqzeFyaxbeTowX8It1ko3jH4Bdj0nO392pmUPnmEHj/ZWHAYlbI0I0E8k5r4k0TsyilOhqw113tj0aJjgnw==, tarball: https://github.com/johnmorrisdotca/tenka/releases/download/v1.0.1/johnmorrisdotca-tenka-1.0.1.tgz}
     version: 1.0.1
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
+
+  '@johnmorrisdotca/toranpu@https://github.com/johnmorrisdotca/toranpu/releases/download/v1.1.0/johnmorrisdotca-toranpu-1.1.0.tgz':
+    resolution: {integrity: sha512-AyaIQk99Yp0qnPT0i2vy3OCtwN1sVj0Si5O/bBLFMSLZLWOOUd+3llPFJAlr/l6vO9kBQSooBDaUGEYECKgkXw==, tarball: https://github.com/johnmorrisdotca/toranpu/releases/download/v1.1.0/johnmorrisdotca-toranpu-1.1.0.tgz}
+    version: 1.1.0
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=18'
@@ -3044,6 +3057,10 @@ snapshots:
       react: 19.2.8
 
   '@johnmorrisdotca/tenka@https://github.com/johnmorrisdotca/tenka/releases/download/v1.0.1/johnmorrisdotca-tenka-1.0.1.tgz(react@19.2.8)':
+    optionalDependencies:
+      react: 19.2.8
+
+  '@johnmorrisdotca/toranpu@https://github.com/johnmorrisdotca/toranpu/releases/download/v1.1.0/johnmorrisdotca-toranpu-1.1.0.tgz(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
