@@ -249,6 +249,7 @@ every "Was" in this file, are held by `src/lib/i18n/plainEnglish.coverage.test.t
 | Fox countdown, 2:10 left | fox, 2:10 left | — | `MyPuzzleRuns.tsx` | same |
 | Sudoku (9×9, hard) | Sudoku 9×9 hard, Solitaire draw 1 easy | — | the feed's best times (`FeedNewsLine.tsx`) | a size and a level run together are not English |
 | draw 1, easy | draw 1 easy | — | the fastest table and your solves (`RecordSolvesTable.tsx`, `PuzzleMePage.tsx`) | same |
+| All your games · Your history | Every game | 履歴 (unchanged) | the History tab's heading (`mine.constants.ts`) and a kept game's way back (`kept.constants.ts`) | "Every game" was retired for the catalogue; this list is one reader's own |
 | Carry on with Sudoku · Your Sudoku, finished 3 days ago | Carry on with numberPlace · Your numberPlace of 2026-09-30 | — | screen-reader labels on My games rows | the code's name for a game was read aloud |
 
 ## Left as they are, on purpose

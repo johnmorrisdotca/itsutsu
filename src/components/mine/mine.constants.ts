@@ -104,7 +104,7 @@ export const MY_GAMES_COPY = {
   /** The puzzles a member started and left unfinished, kept on the account (`MyPuzzleRuns`). */
   /** The History tab: every game of every kind (`everyGame.ts`). */
   history: {
-    label: "Every game",
+    label: "All your games",
     kanji: "履歴",
     hint: "Everything you have played here, of every kind, newest first: games against people and computers, card and party games passed round one screen, tables on several devices, puzzles. Open one to carry on with it, or to look back at how it went.",
     empty: "Nothing played yet.",
