@@ -5,6 +5,8 @@ import type { CardGameRules } from "./cardGames.types";
 import type { ClimbMove } from "./climbing/climbing.types";
 import type { CrazyEightsGame, CrazyEightsMove } from "./crazyEights/crazyEights.types";
 import { CRAZY_EIGHTS_RULES } from "./crazyEights/crazyEightsRules";
+import type { CribbageGame, CribbageMove } from "./cribbage/cribbage.types";
+import { CRIBBAGE_RULES } from "./cribbage/cribbageRules";
 import type { EuchreGame, EuchreMove } from "./euchre/euchre.types";
 import { EUCHRE_RULES } from "./euchre/euchreRules";
 import type { GinGame, GinMove } from "./ginRummy/ginRummy.types";
@@ -28,6 +30,7 @@ export type CardGamePlays = {
   spades: { game: SpadesGame; move: SpadesMove };
   ginRummy: { game: GinGame; move: GinMove };
   euchre: { game: EuchreGame; move: EuchreMove };
+  cribbage: { game: CribbageGame; move: CribbageMove };
 };
 
 /**
@@ -44,4 +47,5 @@ export const CARD_GAME_RULES: { [K in CardGameKind]: CardGameRules<CardGamePlays
   spades: SPADES_RULES,
   ginRummy: GIN_RUMMY_RULES,
   euchre: EUCHRE_RULES,
+  cribbage: CRIBBAGE_RULES,
 };

@@ -10,6 +10,7 @@ export const CARD_TABLE_KEYS: Record<CardGameKind, string> = {
   spades: "itsutsu.cards.spades",
   ginRummy: "itsutsu.cards.ginRummy",
   euchre: "itsutsu.cards.euchre",
+  cribbage: "itsutsu.cards.cribbage",
 };
 
 /**

@@ -9,7 +9,7 @@ import type { PartyRules } from "./party.types";
 
 /**
  * THE FAMILY CARD GAMES AS PARTY GAMES: hearts, spades, bigTwo, president,
- * goFish, crazyEights, ginRummy and euchre are party kinds, their rules the party table's rules, and what
+ * goFish, crazyEights, ginRummy, euchre and cribbage are party kinds, their rules the party table's rules, and what
  * makes a card game at the party table — a deal shuffled from the seed, and a
  * computer in any seat — holds through the party contract. The rules of each
  * game are tested beside them (`src/lib/cardGames/*`).

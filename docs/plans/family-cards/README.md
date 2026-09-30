@@ -153,3 +153,13 @@ Four players in two partnerships with the twenty-four cards from nine to ace (`s
 - **Scoring**: the makers score one for three or four tricks and two for all five; held to two or fewer they are euchred and the other side scores two. To 5 or 10 points (10 the usual).
 - **Left out**, said on the rules page: going alone.
 - **The computer** weighs each suit as trumps (bowers, trump ace and king, side aces, a void it can trump into) and makes trumps with a hand worth about two tricks with its partner's help, counting the turned card for or against it by who deals. Measured over 2,000 hands of four computers: the makers win 81% of them, and take all five in 17%.
+
+## Cribbage (2026-09-30)
+
+The two-player game (`src/lib/cardGames/cribbage/`, `cribbageAdapter.tsx`), shelved in Tricks: it is not a trick-taking game, but it is played a card at a time round the table, and Cards was full at eight. Worth John's look when he reviews the shelves.
+
+- **A hand**: six each, two laid to the dealer's crib (the other player first), the starter cut (a jack is two to the dealer), then the pegging and the show. Seat one deals the first hand, and the deal alternates.
+- **The pegging** scores fifteen, thirty-one, pairs (2, 6, 12) and runs in any order. A go is not a press: when neither player can lay a card, whoever played last scores one and the count starts again, and the last card of all scores one. The table writes the count and what the last card scored.
+- **The show** is counted for both players: fifteens, pairs, runs (each way a run can be made), four for a flush in the hand or five with the starter (the crib only with five), and nobs. The other player first, then the dealer, then the crib, and the game ends the moment someone reaches the total, even partway through. The next hand opens with the last show laid out on the table until the crib is laid.
+- **Length**: 121 (the usual) or 61. The score is numbers beside each name, no pegboard. No muggins, since nothing is claimed by hand.
+- **The computer** keeps the four cards whose show averages most over every starter it could be cut, counting the two thrown for its own crib or against the other's; pegging, it takes the most points now, keeps the count off five and twenty-one, and leads low. Measured over 200 games against random play it wins 99.5%, its hands averaging 8.1 points; a game runs about nine hands.

@@ -111,3 +111,15 @@ export function EuchreOffer({ href }: { href: string }) {
 export function EuchreCard() {
   return <Card kind="euchre" />;
 }
+
+export function CribbageTable(props: PartyTableGameProps) {
+  return <Table kind="cribbage" {...props} />;
+}
+
+export function CribbageOffer({ href }: { href: string }) {
+  return <Offer kind="cribbage" href={href} />;
+}
+
+export function CribbageCard() {
+  return <Card kind="cribbage" />;
+}
