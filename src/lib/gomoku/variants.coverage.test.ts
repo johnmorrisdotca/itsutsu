@@ -43,7 +43,7 @@ function engineTestSources(): string {
   };
   walk(join(process.cwd(), "src", "lib", "gomoku"));
   // The rules themselves, and the tests beside them, are the package's.
-  walk(join(process.cwd(), "packages", "narabe", "src"));
+  walk(join(process.cwd(), "node_modules", "@johnmorrisdotca", "narabe", "src"));
   return found.join("\n");
 }
 

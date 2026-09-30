@@ -23,12 +23,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      // The rules engine is its own open-source package, kept here until it has
-      // a repository of its own; imported by name so that day changes no import.
-      "@johnmorrisdotca/narabe": ["./packages/narabe/src/index.ts"],
-      "@johnmorrisdotca/narabe/react": ["./packages/narabe/src/react.ts"],
-      "@johnmorrisdotca/narabe/*": ["./packages/narabe/src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [

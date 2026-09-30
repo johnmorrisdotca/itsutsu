@@ -69,7 +69,7 @@ Three services beyond the database:
 | `src/app/games/[slug]/` | A game's own pages: its front door, rules, family, standings, a board, a match |
 | `src/components/` | UI by area: `board/`, `game/` (one screen), `live/` (shared games), `players/`, `xp/` and more |
 | `src/lib/gomoku/` | The engine, analysis, notation, replay, the computer players' search. Pure |
-| `packages/narabe/` | Narabe, the engine, as an open-source package: the rule modules it consults (lines, forbidden shapes, captures, flips, jumps, Go, Hex, openings, handicaps), the rules tables, and the simulator. `src/lib/gomoku/` re-exports it at the old paths |
+| `@johnmorrisdotca/narabe` | Narabe, the engine, an open-source package in its own repository and a dependency at a released version: the rule modules it consults (lines, forbidden shapes, captures, flips, jumps, Go, Hex, openings, handicaps), the rules tables, and the simulator. `src/lib/gomoku/` re-exports it at the old paths |
 | `src/lib/history/` | Games on the server: creating, moving, ending, listing, the record |
 | `src/lib/rating/` | Elo, the two pools, per-game standings, streaks, the members directory |
 | `src/lib/bots/` | The computer players as members: who they are, the seats they take |
@@ -94,7 +94,7 @@ shared constants rather than string literals.
 
 ## The engine
 
-The engine, Narabe (`packages/narabe/src/engine.ts`, reached as `src/lib/gomoku/engine.ts`), is the only place a rule is decided. It exports
+The engine, Narabe (its `src/engine.ts`, reached as `src/lib/gomoku/engine.ts`), is the only place a rule is decided. It exports
 functions like `placePiece`, `movePiece`, `twistBoard`, `passTurn`,
 `isLegalMove` and `playMove`, each taking a `GameState` and returning a new
 one. The rule modules under `rules/` do the specialised work and are unit

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DRAW_LIMIT_DISPLAY, DRAW_LIMIT_LIST, DRAW_LIMIT_SHARE } from "./gomoku.constants";
 
-// The rule is Narabe's (packages/narabe, `rules/drawLimit.test.ts`); the words for it are the site's.
+// The rule is Narabe's (its own repository, `src/rules/drawLimit.test.ts`); the words for it are the site's.
 describe("the words for a draw limit", () => {
   it.each(DRAW_LIMIT_LIST)("%s has a label, a name in kanji and a sentence", (limit) => {
     const copy = DRAW_LIMIT_DISPLAY[limit];

@@ -1,10 +1,14 @@
 import { defineConfig } from "vitest/config";
 
+import { narabeDirect } from "./scripts/vitest/narabe-direct.mts";
+
 /**
  * Unit tests for the pure game engine. Anything that needs a browser is a
  * Playwright test instead.
  */
 export default defineConfig({
+  // See scripts/vitest/narabe-direct.mts — a module that only re-exports the rules engine is skipped under test.
+  plugins: [narabeDirect()],
   resolve: {
     tsconfigPaths: true,
     // See scripts/vitest/server-only.ts — the real package throws outside a
@@ -17,7 +21,7 @@ export default defineConfig({
     // Every *.test.ts under either tree runs in test:unit, so a runner that
     // writes anything must guard itself, writing nothing unless asked, as
     // src/lib/bots/botSeries.play.test.ts does behind BOT_GAMES_RUN=1.
-    include: ["src/**/*.test.ts", "scripts/**/*.test.ts", "packages/*/src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
     environment: "node",
     // Gomoji's word lists are loaded when a puzzle needs them (`wordData.ts`); the tests that make and check puzzles directly have them loaded first.
     setupFiles: ["./scripts/vitest/load-word-lists.ts"],

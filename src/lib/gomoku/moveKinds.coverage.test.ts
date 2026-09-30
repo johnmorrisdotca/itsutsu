@@ -39,7 +39,7 @@ function sources(dir: string, found: string[] = []): string[] {
   return found;
 }
 
-const files = [...sources("src"), ...sources(join("packages", "narabe", "src"))].map((path) => ({ path, text: readFileSync(path, "utf8") }));
+const files = [...sources("src"), ...sources(join("node_modules", "@johnmorrisdotca", "narabe", "src"))].map((path) => ({ path, text: readFileSync(path, "utf8") }));
 
 /** A kind compared with a pass, by constant or by string. */
 const ASKS_FOR_A_PASS = /\bkind\s*[!=]==\s*(?:MOVE_KINDS\.pass\b|["']pass["'])/;
@@ -50,7 +50,7 @@ const ACCOUNTS_FOR_A_FORFEIT = /MOVE_KINDS\.forfeit\b|\bleavesNoStone\(|\bstonel
  */
 const PASS_AND_ONLY_A_PASS = new Map([
   [
-    "packages/narabe/src/engine.ts",
+    "node_modules/@johnmorrisdotca/narabe/src/engine.ts",
     "passTurn asks whether the move before was a PASS, since two in a row end the game; a turn lost on time is not the first of two",
   ],
   ["src/lib/history/liveGame.ts", "reads a REQUEST's kind; there is no request for a forfeit, so the pass branch is the whole of it"],
@@ -69,8 +69,8 @@ const PASS_AND_ONLY_A_PASS = new Map([
     "the same turn-into-a-request as botPlay.ts, done in the browser instead of on the server — for the board answering the computer opposite and for the games page making the move nobody stayed for; a BotTurn is place, move, piece or pass and has no forfeit in it",
   ],
   ["src/lib/history/gameRecord.ts", "a filed game's move schema has no forfeit in its enum, so no move reaching that check can be one"],
-  ["packages/narabe/src/simulation/checks.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
-  ["packages/narabe/src/simulation/go.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
+  ["node_modules/@johnmorrisdotca/narabe/src/simulation/checks.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
+  ["node_modules/@johnmorrisdotca/narabe/src/simulation/go.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
   [
     "src/components/live/goReading.ts",
     "tells a Go player the other side has just PASSED, so a pass now ends the game; a turn lost on time is not the first of two passes, so it is rightly not told that",
@@ -96,7 +96,7 @@ const PASS_AND_ONLY_A_PASS = new Map([
  */
 const NAMES_A_FORFEIT_KIND = /kind:\s*MOVE_KINDS\.forfeit\b/;
 const MAY_NAME_A_FORFEIT_KIND = new Map([
-  ["packages/narabe/src/rules/seats.ts", "forfeitTurn: the engine making one, which the claim then writes as it settled it"],
+  ["node_modules/@johnmorrisdotca/narabe/src/rules/seats.ts", "forfeitTurn: the engine making one, which the claim then writes as it settled it"],
   ["src/lib/history/forfeitRows.ts", "the one-off repair of passes a claim wrote before this kind existed"],
   ["src/lib/history/liveAgainst.ts", "a fork COUNTING forfeits in a position, to refuse carrying one into a game with no clock; it writes none"],
 ]);

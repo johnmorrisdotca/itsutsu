@@ -22,14 +22,15 @@ import { describe, expect, it } from "vitest";
  *
  * The allowed outside imports are Node's own modules, which the ladder's
  * fingerprint reads files with at build time, and Narabe, the rules engine,
- * which that day came: it is its own package in packages/narabe, and the
+ * which that day came: it is its own package, installed from its repository's
+ * release with its source beside the build, and the
  * computer players and the modules that re-export it here import it by name.
  * The package is held to the stricter rule, relative and Node imports only,
  * since it stands on nothing at all. Anything else needs a reason written here.
  */
 
 const ROOT = "src/lib/gomoku";
-const PACKAGE = "packages/narabe/src";
+const PACKAGE = "node_modules/@johnmorrisdotca/narabe/src";
 const NARABE = "@johnmorrisdotca/narabe";
 
 function sources(dir: string): string[] {

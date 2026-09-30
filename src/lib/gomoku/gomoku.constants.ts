@@ -1,6 +1,6 @@
 /*
- * The rules tables are Narabe's, the site's rules engine, kept as its own
- * package in packages/narabe; everything here re-exports them, so domain values
+ * The rules tables are Narabe's, the site's rules engine, which is its own
+ * package (github.com/johnmorrisdotca/narabe); everything here re-exports them, so domain values
  * are still compared through this module. What stays is the site's own: the
  * words a player reads for a colour, a seat, a first move, a board and a draw
  * limit. The words for each game are in variants.constants.ts.
