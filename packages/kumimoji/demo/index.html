@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kumimoji word tiles</title>
+    <meta name="description" content="Kumimoji 組み文字: build one crossword from every tile in the bag, in English or Japanese." />
+    <meta name="theme-color" content="#2f5d4a" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232f5d4a%22/%3E%3Ctext x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22white%22%3E組%3C/text%3E%3C/svg%3E" />
+    <style>
+      :root { color-scheme: light dark; --page: #f4efe4; --ink: #1f2320; }
+      @media (prefers-color-scheme: dark) { :root { --page: #141614; --ink: #ece8dc; } }
+      body { margin: 0; background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+      main { max-width: 900px; margin: 0 auto; padding: 20px 16px 48px; }
+      header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+      h1 { margin: 0; font-size: 1.8rem; }
+      h1 span { font-size: 1rem; opacity: .6; margin-left: 6px; font-weight: 500; }
+      header p { margin: 0; opacity: .7; }
+      form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+      select, button { font: inherit; padding: 6px 10px; border-radius: 8px; }
+      nav { margin-left: auto; display: flex; gap: 14px; font-size: .9rem; }
+      footer { margin-top: 32px; font-size: .85rem; opacity: .7; }
+      a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Kumimoji<span lang="ja">組み文字</span></h1>
+        <p>One crossword from every tile in the bag.</p>
+        <nav>
+          <a href="https://github.com/johnmorrisdotca/kumimoji">GitHub</a>
+          <a href="https://github.com/johnmorrisdotca/kumimoji#readme">Docs</a>
+          <a href="https://www.npmjs.com/package/@johnmorrisdotca/kumimoji">npm</a>
+        </nav>
+      </header>
+      <form id="setup">
+        <label>Words <select name="language"><option value="english">English</option><option value="japanese">日本語</option></select></label>
+        <label>Hand <select name="hand"><option value="3">3 tiles</option><option value="7" selected>7 tiles</option><option value="11">11 tiles</option></select></label>
+        <label>Wilds <select name="level"><option value="easy">Most</option><option value="medium" selected>Some</option><option value="hard">None</option></select></label>
+        <label><input type="checkbox" name="diagonals" /> Diagonals</label>
+        <button type="submit">New game</button>
+      </form>
+      <div id="table"></div>
+      <footer>
+        Tap a tile in your hand, then a square. Tap a tile on the table to move it, or twice to take it back.
+        When your hand is empty and every run is a word, draw the next tile. <a href="https://github.com/johnmorrisdotca/kumimoji">Open source</a> under the MIT licence, by John Morris;
+        the English words are from SCOWL and the Japanese from JMdict (CC BY-SA 4.0), <a href="https://github.com/johnmorrisdotca/kumimoji/blob/main/NOTICE.md">as set out here</a>.
+      </footer>
+    </main>
+    <script type="module">
+      import { mountKumimoji } from "./dist/ui.js";
+      const form = document.getElementById("setup");
+      const read = () => ({
+        language: form.language.value,
+        hand: Number(form.hand.value),
+        level: form.level.value,
+        diagonals: form.diagonals.checked,
+      });
+      const table = mountKumimoji(document.getElementById("table"), read());
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        table.newGame(read());
+      });
+    </script>
+  </body>
+</html>

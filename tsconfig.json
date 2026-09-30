@@ -23,7 +23,17 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // Tenka and Kumimoji are their own open-source packages, kept here until
+      // each is published; imported by name so that day changes no import.
+      "@johnmorrisdotca/tenka": ["./packages/tenka/src/index.ts"],
+      "@johnmorrisdotca/tenka/shapes": ["./packages/tenka/src/shapes.ts"],
+      "@johnmorrisdotca/tenka/ui": ["./packages/tenka/src/ui.ts"],
+      "@johnmorrisdotca/tenka/react": ["./packages/tenka/src/react.tsx"],
+      "@johnmorrisdotca/kumimoji": ["./packages/kumimoji/src/index.ts"],
+      "@johnmorrisdotca/kumimoji/words": ["./packages/kumimoji/src/words.ts"],
+      "@johnmorrisdotca/kumimoji/ui": ["./packages/kumimoji/src/ui.ts"],
+      "@johnmorrisdotca/kumimoji/react": ["./packages/kumimoji/src/react.tsx"]
     }
   },
   "include": [

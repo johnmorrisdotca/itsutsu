@@ -1,0 +1,85 @@
+{
+  "name": "@johnmorrisdotca/tenka",
+  "version": "0.1.0",
+  "description": "Tenka 天下: the classic world-conquest game for two to six on a map of the modern world. Pure, seeded rules with a computer player, a replayable record, a plain-DOM table and a React map. No dependencies.",
+  "license": "MIT",
+  "author": "John Morris <john@johnmorris.ca>",
+  "homepage": "https://johnmorrisdotca.github.io/tenka/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnmorrisdotca/tenka.git"
+  },
+  "bugs": {
+    "url": "https://github.com/johnmorrisdotca/tenka/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "board-game",
+    "strategy",
+    "world-conquest",
+    "map",
+    "dice",
+    "game-engine",
+    "seeded",
+    "react"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./shapes": {
+      "types": "./dist/shapes.d.ts",
+      "import": "./dist/shapes.js"
+    },
+    "./ui": {
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm test",
+    "site": "pnpm run build && node scripts/site.mjs",
+    "map": "node scripts/map.mjs",
+    "prepublishOnly": "pnpm run check && pnpm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/react": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^16.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "packageManager": "pnpm@10.11.0"
+}

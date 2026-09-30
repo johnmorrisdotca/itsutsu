@@ -49,7 +49,7 @@ if (SOURCE === undefined) {
   process.exit(1);
 }
 const OUT = (length) => `src/lib/puzzles/gomojiKana/words.ja.${length}.data.ts`;
-const TILE_WORDS_OUT = "src/lib/puzzles/kumimoji/words.ja.data.ts";
+const TILE_WORDS_OUT = "packages/kumimoji/src/words.ja.data.ts";
 const LENGTHS = [3, 4, 5];
 const EASY = 900;
 const ANSWERS = 2000;
@@ -193,7 +193,7 @@ if (tileWords.size === 0) throw new Error("JMdict produced no Japanese Kumimoji 
  * and う, ん, い and し, the kana that end and join everything, are the E's.
  *
  * Printed, never written: the set is `JAPANESE_TILE_MIX` in
- * src/lib/puzzles/kumimoji/tiles.constants.ts, fixed, because a kept game's
+ * packages/kumimoji/src/tiles.constants.ts, fixed, because a kept game's
  * bag is checked against it and a monthly refresh must not change the tiles
  * under a game somebody is half way through. Read this line after a refresh,
  * and change the table by hand only if the words have really moved.
