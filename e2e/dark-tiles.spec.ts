@@ -211,6 +211,9 @@ for (const scheme of ["light", "dark"] as const) {
       await expect(page.locator('[data-testid="word-tile"][data-row="0"]').nth(2)).toHaveText(/o/i);
       await screenshotAt(page, `dark-gomoji-${scheme}`);
       await expectReadable(page.locator('[data-testid="word-tile"][data-row="0"]'), READABLE, "typed tiles");
+      // The style is kept on the account every spec plays as: put it back, or a later spec meets Tiles where it expects the default.
+      await page.getByTestId("word-style-reversi").click();
+      await expect(page.getByTestId("word-style-reversi")).toHaveAttribute("aria-pressed", "true");
     });
 
     test("Koushi: the lattice's tiles", async ({ page }) => {

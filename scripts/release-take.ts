@@ -150,9 +150,14 @@ export function changelogBullet(summary: string): string {
   return PLAIN_FIRST_WORD.test(firstWord) ? `${summary[0]!.toUpperCase()}${summary.slice(1)}` : summary;
 }
 
-/** The heading and its bullets, in the shape `releases.ts` parses back. */
-function composeEntry(version: string, day: string, summaries: readonly string[]): string {
-  return `## ${version} — ${day}\n${summaries.map((line) => `- ${changelogBullet(line)}`).join("\n")}\n\n`;
+/**
+ * The heading and its bullets, in the shape `releases.ts` parses back. The
+ * heading is dated to the minute in UTC (`2026-09-30 03:40 UTC`): /releases
+ * shows the day, and a reader who touches it is shown the time in their own.
+ */
+function composeEntry(version: string, now: Date, summaries: readonly string[]): string {
+  const stamp = now.toISOString();
+  return `## ${version} — ${stamp.slice(0, 10)} ${stamp.slice(11, 16)} UTC\n${summaries.map((line) => `- ${changelogBullet(line)}`).join("\n")}\n\n`;
 }
 
 /** The changelog with one new entry inserted above the first existing heading. */
@@ -247,7 +252,7 @@ export function planRelease(input: PlanInput): PlanResult {
    * does not hold. A stock line for such a patch would put the heading back and
    * say nothing true about what shipped, so the line is asked for instead.
    */
-  const changelog = insertEntry(input.changelog, composeEntry(version, input.now.toISOString().slice(0, 10), summaries));
+  const changelog = insertEntry(input.changelog, composeEntry(version, input.now, summaries));
 
   const from = `"version": "${input.published}"`;
   if (!input.packageJson.includes(from)) {
