@@ -1,5 +1,7 @@
 import type { Card } from "@/lib/cards/cards.types";
 
+import type { MarkDie, MarkDomino } from "./games.types";
+
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 export type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
 
@@ -32,5 +34,7 @@ export type Mark = {
   /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
   /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Dominoes family's train. */
-  dominoes?: { x: number; y: number; ends: readonly [number, number] }[];
+  dominoes?: MarkDomino[];
+  /** Dice, each its top-left corner (a cell and a half square), its face, and whether it is held: the Dice family's throw. */
+  dice?: MarkDie[];
 };

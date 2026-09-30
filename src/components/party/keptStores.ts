@@ -16,6 +16,8 @@ const STORES: Record<string, () => Promise<Adopt>> = {
   mancala: async () => (await import("./mancalaStore")).adoptKeptMancalaGame,
   tenka: async () => (await import("./tenka/tenkaStore")).adoptKeptTenkaGame,
   mexicanTrain: async () => (await import("./trainStore")).adoptKeptTrainGame,
+  yacht: async () => (await import("./yacht/yachtStore")).adoptKeptYachtGame,
+  pachisi: async () => (await import("./pachisi/pachisiStore")).adoptKeptPachisiGame,
   chineseCheckers: async () => (await import("./partyCheckersStore")).adoptKeptPartyGame,
   halma: async () => (await import("./partyHalmaStore")).adoptKeptHalmaParty,
   blockFive: async () => (await import("./partyBlocksStore")).adoptKeptBlocksParty,

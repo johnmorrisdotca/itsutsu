@@ -4,6 +4,8 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { MANCALA_BOARDS } from "./mancala/mancala.constants";
 import { TRAIN_SETS } from "./mexicanTrain/mexicanTrain.constants";
 import type { PartyKind, PartySpec } from "./party.types";
+import { PACHISI_TRACK } from "./pachisi/pachisi.constants";
+import { YACHT_SHEET } from "./yacht/yacht.constants";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "../cardGames/cardGames.copy";
@@ -24,11 +26,13 @@ export const PARTY_KINDS = {
   mancala: "mancala",
   tenka: "tenka",
   mexicanTrain: "mexicanTrain",
+  yacht: "yacht",
+  pachisi: "pachisi",
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -132,6 +136,58 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "Double-twelve is the set the game is sold with, and the one to start with. Double-nine makes a quicker game of larger pips, and double-fifteen a long one for a big table. A short game plays half the rounds, from the highest double down.",
   },
+  /*
+   * YACHT, 2026-09-30. John: "Did we create a dice rolling game [where] you
+   * just roll a dice and have fun that way?" The dice game everybody knows,
+   * by the name it was printed under before any company boxed it: five dice,
+   * three rolls, a sheet of thirteen boxes. The boxed version's name is its
+   * owner's and appears nowhere here; the rules of a game are nobody's. Its
+   * kanji, 五つ賽 (itsutsu-sai), is "five dice", and says the site's name.
+   */
+  yacht: {
+    label: "Yacht",
+    kanji: "五つ賽",
+    tagline: "Five dice, three rolls, thirteen boxes: hold what you like, roll the rest, and fill your sheet for the highest score.",
+    origin:
+      /* Checked 2026-09-30: Yacht is in books of game rules from the 1930s; the thirteen-box sheet with the upper bonus is the one most tables now play. */
+      "A dice game of the poker-dice family, in books of game rules since the 1930s under the name Yacht, and played round kitchen tables ever since; Yams in France and Generala in Latin America are its close cousins. The sheet played here is the thirteen-box one most tables use today, with the bonus for the upper half. Nobody owns it.",
+    alsoKnownAs: ["Yams", "Generala"],
+    wikipedia: "Yacht (dice game)",
+    rules: [
+      "On your turn, roll all five dice. Then roll again any of them you like, holding the rest where they lie: up to three rolls in all. Tap a die to hold it, and tap it again to let it go.",
+      "After your last roll, or sooner if you like what you see, write the dice into one empty box on your sheet. Every box is filled once, and dice that do not make a box's combination score nothing there, which is sometimes the best a turn can do.",
+      "The upper half is Ones to Sixes: each scores the total of that number among the five. Reach 63 there (three of every number) and earn 35 more.",
+      "The lower half: three of a kind and four of a kind score all five dice; a full house (three of one number and two of another) 25; a small straight (four in a row) 30; a large straight (five in a row) 40; a Yacht (all five the same) 50; and Chance, anything at all, scores all five dice.",
+      "Thirteen turns fill every sheet. The highest total wins; players level on the highest share the win.",
+    ],
+    board:
+      "One sheet of thirteen boxes. Play alone to beat your best, pass one phone round a table of up to eight, or put the computer in any seat.",
+  },
+  /*
+   * PACHISI, the cross-and-circle race game of India, by its own old name:
+   * the boxed Western version's name is its owner's and appears nowhere here.
+   * Its kanji, 二十五, is "twenty-five", which is what pachisi means: the
+   * highest throw of the cowries it was first played with.
+   */
+  pachisi: {
+    label: "Pachisi",
+    kanji: "二十五",
+    tagline: "Two dice, four pawns each and a cross-shaped track: race them all home, and send anyone you land on back to the start.",
+    origin:
+      /* Checked 2026-09-30: pachisi is played in India from at least the sixteenth century; the two-dice Western form with bonuses of 20 and 10 is the one played here. */
+      "The national game of India, played on a cloth cross for centuries: Akbar is said to have played it in his palace courtyard with people for pawns. It came west in the nineteenth century as a boxed game with two dice, and Spain plays it as Parchís. The form here is that Western one, with its blockades, safe squares and bonuses. Nobody owns it.",
+    alsoKnownAs: ["Parchís", "Chaupar"],
+    wikipedia: "Pachisi",
+    rules: [
+      "Each player has four pawns in their nest. On your turn throw two dice; each die moves one pawn on its own, the same pawn or two, in the order you like. A pawn comes out of the nest onto your entry square on a 5, or on two dice that add up to five.",
+      "Pawns go round the shared track, then up your own home path to the middle; a pawn must reach home by the exact count. A value no pawn can use is lost.",
+      "Land on a lone opponent's pawn on an ordinary square and it goes back to its nest, and you move 20 more with any pawn. The ringed squares are safe: nobody is taken there. Bring a pawn home and move 10 more.",
+      "Two of your pawns on one square are a blockade: no pawn may pass it or land there, yours included.",
+      "Doubles throw again. A third double in one turn sends your leading pawn on the track back to its nest. The first with all four pawns home wins.",
+    ],
+    board:
+      "A cross of sixty-eight squares round a middle, with a home path of seven for each colour. Two sit opposite each other; three or four take an arm each. Pass one phone round, or put the computer in any seat.",
+  },
   // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
   ...CARD_GAME_DISPLAY,
 };
@@ -194,6 +250,13 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
     sizes: [TRAIN_SETS.nine, TRAIN_SETS.twelve, TRAIN_SETS.fifteen],
     defaultSize: TRAIN_SETS.twelve,
   },
+  /*
+   * Yacht on its one sheet of thirteen boxes, for two to eight at the gate's
+   * table; the table itself seats one alone too (`startYacht`). Two is where
+   * the set-up opens: a person and the computer.
+   */
+  yacht: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 2, sizes: [YACHT_SHEET], defaultSize: YACHT_SHEET },
+  pachisi: { fewestPlayers: 2, mostPlayers: 4, defaultPlayers: 2, sizes: [PACHISI_TRACK], defaultSize: PACHISI_TRACK },
   // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
   ...CARD_GAME_SPECS,
 };

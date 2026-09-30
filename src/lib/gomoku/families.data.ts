@@ -302,6 +302,29 @@ export const GAME_FAMILIES: GameFamily[] = [
       "A dominoes game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
+    key: "dice",
+    /*
+     * DICE 賽子. John, 2026-09-30: "Did we create a dice rolling game [where]
+     * you just roll a dice and have fun that way?" A family for the games
+     * played with dice alone, opened with Yacht: five dice, three rolls, a
+     * sheet of thirteen boxes, alone or round one device. Its own shelf rather than Party games, which already
+     * shows its eight. 賽子 (saikoro) is the everyday word for a die. Pachisi,
+     * the race game of the cross and circle, joined it the same day (John:
+     * "I think Parcheesi was another one from the past").
+     *
+     * Its games are party games, played round one device and never recorded,
+     * so, like Dominoes, it counts towards no award (`RECORDED_FAMILIES`),
+     * has a page of its own at /games/dice, and stays off the set-up screen,
+     * which makes games between two.
+     */
+    title: "Dice",
+    kanji: "賽子",
+    blurb: "Games the dice decide: roll, hold the ones you want and score what they make, or race your pawns home by what they show.",
+    games: ["yacht", "pachisi"],
+    notOnSetUp:
+      "A dice game is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to

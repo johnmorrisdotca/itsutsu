@@ -23,6 +23,12 @@ import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
 import { TrainOffer } from "./TrainOffer";
+import { PACHISI_COPY } from "./pachisi/pachisi.constants";
+import { PachisiCardClient, PachisiTableClient } from "./pachisi/pachisiClient";
+import { PachisiOffer } from "./pachisi/PachisiOffer";
+import { YACHT_COPY } from "./yacht/yacht.constants";
+import { YachtCardClient, YachtTableClient } from "./yacht/yachtClient";
+import { YachtOffer } from "./yacht/YachtOffer";
 
 /**
  * EACH PARTY GAME'S TABLE, one row a `PartyKind`: what its table page at
@@ -73,6 +79,24 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Game: TrainGameClient,
     Offer: TrainOffer,
     Card: TrainCardClient,
+  },
+  yacht: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: YACHT_COPY.lead,
+    // Loaded in the browser only (`yachtClient.tsx`), as Mexican Train's table is.
+    Game: YachtTableClient,
+    Offer: YachtOffer,
+    Card: YachtCardClient,
+  },
+  pachisi: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: PACHISI_COPY.lead,
+    // Loaded in the browser only (`pachisiClient.tsx`), as Yacht's table is.
+    Game: PachisiTableClient,
+    Offer: PachisiOffer,
+    Card: PachisiCardClient,
   },
   // The family card games, one table for all five (`cards/CardGameTable.tsx`), loaded in the browser only.
   hearts: cardTable("hearts", HeartsTable, HeartsOffer, HeartsCard),

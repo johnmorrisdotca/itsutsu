@@ -48,6 +48,8 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       spec.sizes.map((size) => `${(trainSetName(size) ?? `double-${size}`).toLowerCase()}${size === spec.defaultSize ? " (the default)" : ""}`),
       "or",
     )} set`,
+  yacht: () => "with five dice and a sheet of thirteen boxes, alone or at a table",
+  pachisi: () => "with two dice and four pawns each, round a cross of sixty-eight squares",
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
@@ -107,6 +109,18 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     turn: "Hands are secret: between two people's turns the table covers the hand and names who to pass the device to, and it shows only once that player says it is them. Drag a tile onto the end of a train, or tap the tile and then the train; tap a tile twice to lay it on the only train it fits, when there is just one. The trains it may go on are lit. With nothing to lay, press Draw, then lay the tile drawn or press Pass.",
     house:
       "Each train shows its last few tiles and how many are laid on it before them, so the table fits a phone and every open end is where it always is; a marker out is drawn at the train's start. Pips are drawn in a colour of their own for each number, as most double-twelve sets are, so a nine and a twelve are told apart at a glance. The set-up offers the common house rules: a short game of half the rounds, chained doubles, and a Mexican Train that only opens once your own train has started. Computer players can take any seat, and play in the browser. Choose Several devices at the set-up and each player plays on their own phone or computer, a buddy, anyone with the link or a computer in any seat, and sees only their own tiles; the table waits on My games between turns.",
+  },
+  yacht: {
+    turn: "The line at the top says whose turn it is and which roll this is. Press Roll, or tap the dice tray, to throw; tap a die to hold it (it is ringed and marked HELD) and tap again to let it go. Every box you could write the dice into shows what it would score; tap one to write it down, and the dice pass on.",
+    house:
+      "Dice are thrown by the game from a fresh random seed, and every roll is kept with the game, so a reloaded page throws nothing again. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice is off until you turn it on.",
+    more: ["A second Yacht scores nothing more: once the Yacht box is filled, five of a kind is written into another box like any other throw."],
+  },
+  pachisi: {
+    turn: "The line at the top says whose turn it is. Press Roll the dice to throw. The values you may use appear under the dice: choose one (the first that can move is chosen for you), then tap a ringed pawn to move it that far. A 20 or a 10 you earn joins them. When both dice add up to five, a button enters a pawn with the two together.",
+    house:
+      "Dice are thrown by the game from a fresh random seed, and every throw is kept with the game, so a reloaded page throws nothing again. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice is off until you turn it on.",
+    more: ["A pawn entering onto its own entry square takes a lone opponent standing there, though the entry square is otherwise safe.", "Two players sit on opposite arms of the cross."],
   },
   hearts: {
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",

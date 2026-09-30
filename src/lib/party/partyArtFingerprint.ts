@@ -48,6 +48,11 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/cards/CardBack.tsx",
   "src/components/cards/CardHand.tsx",
   "src/components/cards/Cards.constants.ts",
+  "src/components/party/yacht/DiceTray.tsx",
+  "src/lib/party/yacht/yacht.ts",
+  "src/components/party/pachisi/PachisiBoard.tsx",
+  "src/components/party/pachisi/pachisiLayout.ts",
+  "src/lib/party/pachisi/pachisi.ts",
   "e2e/party-screenshots.spec.ts",
 ];
 

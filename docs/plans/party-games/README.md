@@ -220,6 +220,82 @@ anywhere here. Tenka is from 天下取り, tenka-tori, "taking the realm".
   sea goes to the nearest territory within a fingertip; and the phase bar
   carries the dice.
 
+## Yacht 五つ賽: the first dice game, and the Dice shelf
+
+John, 2026-09-30: "Did we create a dice rolling game [where] you just roll a
+dice and have fun that way?" None existed; Tenka's battle dice were the only
+dice on the site. Yacht is the dice game everybody knows, under the name it
+was printed with before a company boxed it (that boxed name appears nowhere).
+
+- **Rules** (`src/lib/party/yacht/`): five dice, up to three rolls a turn,
+  holding any dice between rolls; then the dice go into one empty box of the
+  thirteen, a zero where they do not make it. Upper half (Ones to Sixes) the
+  sum of that number, 35 more at 63; three and four of a kind all five dice;
+  full house 25; small straight 30; large straight 40; Yacht 50; Chance all
+  five. Highest total wins, level totals share it. `yachtScore.ts` is the
+  arithmetic, `yacht.ts` the turns, `yachtCodec.ts` the kept text.
+- **Real randomness, never thrown again.** A game's seed is drawn fresh
+  (`freshSeed`) and each roll from the seed and how many rolls the game has
+  thrown, so nobody knows what is coming and a reload throws exactly what it
+  threw.
+- **Alone, pass and play, or against the computer.** The table seats one to
+  eight (`startYacht`); the party contract's `YACHT_RULES` asks for two or
+  more, since the gate refuses a table of one. The computer
+  (`yachtComputer.ts`) weighs every way of holding the dice by the best box
+  one more roll could make, counted exactly over every fall of the free dice,
+  against what each box usually scores.
+- **The tray** (`components/party/yacht/DiceTray.tsx`) is the reader's wood in
+  `BoardFrame`, wider than tall (the `map` aspect), the dice tumbling and
+  flickering for about two thirds of a second after a roll (none under reduced
+  motion), a held die ringed in vermilion. Tap a die to hold it; tap the tray
+  or Roll to throw. The dice's sound is made in the browser and is off until
+  turned on (`diceSound.ts`).
+- **The Dice family** (`families.data.ts` key `dice`, page `/games/dice`,
+  mark `Dice` in `FamilyMark.tsx`, drawn by `FamilyMarkPieces.tsx`): games
+  played with dice alone. Its own shelf because Party games already shows
+  eight. Like Dominoes it counts toward no award and stays off the set-up
+  screen. The dice roller another thread is building is meant to sit on it
+  too.
+
+Decisions to review: the kanji 五つ賽 ("five dice") for Yacht and 賽子 for the
+family; the thirteen-box sheet with the upper bonus rather than the older
+twelve-box Yacht sheet; no extra points for a second Yacht; two players (a
+person and the computer) as the set-up's default; alone offered as a table of
+one.
+
+## Pachisi 二十五: the race game of the cross and circle
+
+John, relayed 2026-09-30: "I think Parcheesi was another one from the past."
+It is here under its own old name, Pachisi (key and address `pachisi`): the
+boxed Western game's name is its owner's, as Tenka's and Yacht's are.
+
+- **Rules** (`src/lib/party/pachisi/`): the Western form with two dice. Four
+  pawns each; a pawn comes out on a 5 or two dice adding to five, goes round a
+  shared track of 68 squares and up its own home path of seven, home by the
+  exact count. Twelve safe squares; a lone opponent landed on elsewhere goes
+  back to its nest, for 20 to move; a pawn home earns 10. Two pawns of one
+  colour are a blockade nobody passes. Doubles throw again, and a third
+  double sends the leading pawn on the track home to its nest. A pawn is one
+  number, its progress; its square is read from its arm (`squareOf`).
+- **Throws** are drawn from the game's seed and how many throws came before,
+  as Yacht's are, so a reload throws nothing new. The codec keeps `r`, `e<pawn>`
+  and `m<pawn>.<use>`.
+- **The computer** (`pachisiComputer.ts`) tries every offered move and keeps
+  the one leaving the board best for it: progress, pawns out and home, safe
+  squares, out of an opponent's reach, opponents sent back.
+- **The board** (`components/party/pachisi/PachisiBoard.tsx`) is nineteen
+  cells square inside `BoardFrame`, laid out by `pachisiLayout.ts`: each
+  seat's nest, path and corner of the middle in their marble's colour, an arm
+  nobody sits at shaded grey. Two players sit on opposite arms.
+- **A turn** is a throw and then its values spent one at a time: the values
+  are buttons under the dice (the first usable one chosen), and the pawns
+  that value can move are ringed. Both dice together enter a pawn when they
+  add to five and neither is spent yet.
+
+Decisions to review: the name Pachisi rather than the boxed name; the kanji
+二十五 ("twenty-five", what pachisi means); the Western two-dice rules rather
+than the Indian cowrie throws; two to four players, no alone game.
+
 ## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,
