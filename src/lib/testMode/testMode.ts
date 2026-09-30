@@ -5,6 +5,7 @@ import type { Prisma } from "@prisma/client";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
+import { prisma } from "@/lib/prisma";
 
 /**
  * TEST MODE: THE ONE RULE.
@@ -87,4 +88,27 @@ export function hiddenMembersWhere(reader: TestModeReader): Prisma.MemberWhereIn
   return reader.showsTestMembers
     ? {}
     : { OR: [{ unclaimableBecause: null }, { unclaimableBecause: { not: UNCLAIMABLE_REASONS.test } }] };
+}
+
+/**
+ * The same rule for a table that names its member by a bare id with no
+ * relation to join through — a rating row (`Player`, `PlayerVariantRating`),
+ * a puzzle solve. The ids of every test member this reader may not see, read
+ * once for the page: none at all for the operator in Test Mode, and on a
+ * database no test member was ever seeded into, an empty list and no filter.
+ */
+export async function hiddenMemberIds(reader: TestModeReader): Promise<string[]> {
+  if (reader.showsTestMembers) return [];
+  const rows = await prisma.member.findMany({ where: { unclaimableBecause: UNCLAIMABLE_REASONS.test }, select: { id: true } });
+  return rows.map((row) => row.id);
+}
+
+/** A rating row whose name may have no member behind it: kept unless its member is one of `hidden`. */
+export function shownRatingWhere(hidden: readonly string[]): { OR?: [{ memberId: null }, { memberId: { notIn: string[] } }] } {
+  return hidden.length === 0 ? {} : { OR: [{ memberId: null }, { memberId: { notIn: [...hidden] } }] };
+}
+
+/** A row that always has a member (a puzzle solve): kept unless that member is one of `hidden`. */
+export function shownSolveWhere(hidden: readonly string[]): { memberId?: { notIn: string[] } } {
+  return hidden.length === 0 ? {} : { memberId: { notIn: [...hidden] } };
 }

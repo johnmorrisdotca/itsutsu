@@ -2,6 +2,7 @@ import "server-only";
 
 import { bestBefore, tellSolve } from "@/lib/feed/siteNewsWrite";
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, hiddenMemberIds, shownSolveWhere, type TestModeReader } from "@/lib/testMode/testMode";
 
 import { pointsFor } from "../puzzlePoints";
 import { PUZZLE_SPECS } from "../puzzles.constants";
@@ -103,12 +104,13 @@ export function fastestKey(size: number, level: string, clock: string): string {
 
 export const FASTEST_SHOWN = 3;
 
-export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
+export async function fastestSolvesOf(kind: PuzzleKind, testMode: TestModeReader = HIDES_TEST_MEMBERS): Promise<FastestBoard> {
   const spec = PUZZLE_SPECS[kind];
   const board: FastestBoard = new Map();
+  const shown = shownSolveWhere(await hiddenMemberIds(testMode));
   const counts = await prisma.puzzleSolve.groupBy({
     by: ["size", "level", "clock"],
-    where: { kind, solved: true },
+    where: { kind, solved: true, ...shown },
     _count: { _all: true },
   });
   for (const row of counts) board.set(fastestKey(row.size, row.level, row.clock), { fastest: [], solves: row._count._all });
@@ -120,7 +122,7 @@ export async function fastestSolvesOf(kind: PuzzleKind): Promise<FastestBoard> {
       if (!spec.sizes.includes(Number(size))) return;
       const rows = await prisma.puzzleSolve.findMany({
         // Unhelped only: a helped solve is solved, and no time to beat.
-        where: { kind, size: Number(size), level, clock, solved: true, helped: null },
+        where: { kind, size: Number(size), level, clock, solved: true, helped: null, ...shown },
         /* Koushi ranks the fewest swaps first and then the time, which its stored points already say (`koushiPoints`). */
         orderBy: kind === "koushi" ? [{ points: "desc" }, { elapsedMs: "asc" }, { finishedAt: "asc" }] : [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
         take: FASTEST_SHOWN,

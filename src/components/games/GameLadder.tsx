@@ -11,6 +11,8 @@ import { findMemberById } from "@/lib/auth/members";
 import { playPath, standingsPath } from "@/lib/gomoku/slugs";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchVariantLeaders } from "@/lib/rating/variantRatings";
+import { RATING_POOLS } from "@/lib/rating/pools";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * Where everybody stands at one game, in the side column of that game's page.
@@ -106,7 +108,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
    */
   const myId = await currentMemberId();
   const [standings, me] = await Promise.all([
-    fetchVariantLeaders(variant, SHOWN),
+    currentTestModeReader().then((testMode) => fetchVariantLeaders(variant, SHOWN, RATING_POOLS.people, testMode)),
     myId === null ? Promise.resolve(null) : findMemberById(myId),
   ]);
 

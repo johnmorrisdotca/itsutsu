@@ -36,6 +36,8 @@ vi.mock("@/lib/prisma", () => ({
         return earlierGame;
       },
     },
+    // The test members a ladder leaves out (`hiddenMemberIds`): none here.
+    member: { findMany: async () => [] },
     playerVariantRating: {
       findFirst: async (args: unknown) => {
         asked.push({ model: "playerVariantRating", args });

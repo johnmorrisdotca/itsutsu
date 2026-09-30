@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { HIDES_TEST_MEMBERS, hiddenMembersWhere, type TestModeReader } from "@/lib/testMode/testMode";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 import { tagOf } from "@/lib/xp/nameTagsOf";
 import { AGE_BANDS } from "./ageBand.constants";
@@ -61,7 +62,7 @@ export function localTimeIn(timeZone: string, now = new Date()): string | null {
  * listed, most recent first. "Here" is measured by the pages they load, so it
  * is a few minutes behind at most.
  */
-export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
+export async function fetchHereNow(now = new Date(), testMode: TestModeReader = HIDES_TEST_MEMBERS): Promise<HereNow[]> {
   const since = new Date(now.getTime() - RECENCY_MINUTES.today * 60_000);
   const rows = await prisma.member.findMany({
     /*
@@ -72,7 +73,7 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
     where: {
       showOnline: true,
       lastSeenAt: { gte: since },
-      OR: [{ ageBand: null }, { ageBand: { not: AGE_BANDS.under13 } }],
+      AND: [{ OR: [{ ageBand: null }, { ageBand: { not: AGE_BANDS.under13 } }] }, hiddenMembersWhere(testMode)],
     },
     orderBy: { lastSeenAt: "desc" },
     take: HERE_MAX,

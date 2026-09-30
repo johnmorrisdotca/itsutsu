@@ -156,21 +156,16 @@ changes, so no cache anybody else reads is thrown away.
 **Named, with the reason it is not converted yet — this is the real remaining
 work, roughly in the order it matters:**
 
-- `src/lib/rating/directoryPage.ts`, `directoryRows.ts`, `directorySettled.ts` —
-  **the players directory (`/players`), the highest-priority surface left.**
-  `fetchComputerPlayers`, `fetchDirectory` and the paged query in
-  `directoryPage.ts` all need a `reader` threaded from `/players/page.tsx`, which
-  already reads several other per-request filters (`directoryFilterFor`,
-  `currentReader`) the same way — the pattern is proven, this is volume of call
-  sites (three tabs: members, computers, and the paged list itself) more than
-  difficulty.
-- `src/lib/rating/players.ts` — **a game's own ladder.** Named explicitly in the
-  task as a next surface; not started.
-- `src/lib/social/presence.ts` — **"here now".** Named explicitly; not started.
-- `src/lib/puzzles/server/puzzleSolves.ts` — **the puzzle leaderboards.** Named
-  explicitly; not started. The same shape as `xpBoard.ts` — a `groupBy` per
-  puzzle kind and size — so it is likely the next-cheapest conversion after the
-  directory.
+**Converted 2026-09-30:** the players directory (`fetchDirectoryPage`, its
+total and its narrowed count, with `/players` passing the reader), "here now"
+(`fetchHereNow`), a game's ladders (`ladder.ts`, and `variantRatings.ts` for a
+game's ladder, its standings page and `/champions`), and the puzzles' fastest
+tables (`fastestSolvesOf`). Rating rows and solves name their member by a bare
+id with no relation to join through, so those read `hiddenMemberIds(reader)` once
+and filter with `shownRatingWhere` / `shownSolveWhere` — no ids, no filter, on a
+database no test member was seeded into. `siteNumbers.ts` needed nothing: it
+already counts only members with no `unclaimableBecause` at all.
+
 - `src/lib/auth/memberRoster.ts`, `members.ts`, `operatorLog.ts` — the operator's
   own Members tab and audit log. Lower priority: an admin with Test Mode on is
   exactly who should see everything there, and nobody else can reach `/admin` at
@@ -205,9 +200,6 @@ work, roughly in the order it matters:**
   converted, and are named here so nobody re-adds them to a future version of
   this list by habit.
 
-**Champions and a game's own standings** (`/champions`, `/games/[slug]/standings`)
-read through `src/lib/rating/players.ts` and `directoryRows.ts` above, so they are
-covered by finishing those two rather than needing their own line.
 
 ## The coverage test
 
@@ -349,17 +341,15 @@ machine, at `localhost:55434`, that nothing else reads — in this session:
    confirmed hidden once more — the whole mechanism, checked in both
    directions.
 
-This is the one surface that could be checked end-to-end today: `/players`,
-`/champions` and a game's own standings are not yet converted (see the
-surface list above), so they were not part of this check — seeding 1000 test
-members made them show on those pages regardless of Test Mode, which is
-exactly the gap the warning below is about.
+That check was made on 2026-09-25, when `/xp` was the one surface converted.
+`/players`, `/champions`, a game's standings, "here now" and the puzzles'
+fastest tables were converted on 2026-09-30 and have not yet been checked
+against seeded test members the same way.
 
-**Before running the seeding step anywhere but `itsutsu_sim`**: `/players`,
-`/champions` and a game's own standings are NOT YET converted (see the surface
-list above), so on any database those pages read from, seeding test members
-makes them show up to EVERY VISITOR, not only an admin with Test Mode on. That is
-safe on `itsutsu_sim` because nobody else ever reads it. It is NOT safe on the
-shared development database or production until the directory and the ladder are
-converted — say so plainly before anyone reaches for `TEST_MEMBERS_RUN=1`
-anywhere else.
+**Before running the seeding step anywhere but `itsutsu_sim`**: the feed, the
+game record, head-to-head and the four-word picker are still NOT converted (see
+the surface list above), so on any database those read from, a test member who
+has played shows up to EVERY VISITOR there, not only an admin with Test Mode on.
+That is safe on `itsutsu_sim` because nobody else ever reads it. It is NOT safe
+on the shared development database or production until those are converted —
+say so plainly before anyone reaches for `TEST_MEMBERS_RUN=1` anywhere else.

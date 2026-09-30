@@ -2,6 +2,7 @@
 import { PlayerName } from "@/components/players/PlayerName";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchHereNow } from "@/lib/social/presence";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * Who is about, right now.
@@ -18,7 +19,7 @@ import { fetchHereNow } from "@/lib/social/presence";
  */
 const NAMES_SHOWN = 12;
 export async function HereNow({ now }: { now: Date }) {
-  const here = await fetchHereNow(now);
+  const here = await fetchHereNow(now, await currentTestModeReader());
   const hereNow = here.filter((entry) => entry.recency === "now").length;
 
   return (

@@ -45,7 +45,7 @@ describe("every reader that ranks solves by time leaves helped ones out", () => 
 
   it("the fastest tables, the level's leaderboard, the record's fastest order and the feed's best time", () => {
     // Each clock's own table (`puzzleClock.ts`) asks the same.
-    expect(read("puzzles/server/puzzleSolves.ts")).toMatch(/where: \{ kind, size: Number\(size\), level, clock, solved: true, helped: null \}/);
+    expect(read("puzzles/server/puzzleSolves.ts")).toMatch(/where: \{ kind, size: Number\(size\), level, clock, solved: true, helped: null, \.\.\.shown \}/);
     expect(read("puzzles/server/tsunagiRecords.ts")).toMatch(/givens, solved: true, helped: null \}/);
     expect(read("puzzles/server/puzzleRecord.ts")).toMatch(/\{ solved: true, helped: null \}/);
     expect(read("feed/siteNewsWrite.ts")).toMatch(/solved: true, helped: null \}/);

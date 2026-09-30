@@ -15,6 +15,7 @@ import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import { FastestTable } from "./PuzzleFastest";
 import { PuzzlePoints } from "./PuzzlePoints";
 import { GameTrail } from "@/components/games/GameTrail";
+import { currentTestModeReader } from "@/lib/testMode/testMode";
 
 /**
  * /games/<slug>/standings for a puzzle: the whole leaderboard, all time and
@@ -23,7 +24,7 @@ import { GameTrail } from "@/components/games/GameTrail";
  */
 export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
   const copy = PUZZLE_DISPLAY[kind];
-  const [board, me] = await Promise.all([fastestSolvesOf(kind), currentMemberId()]);
+  const [board, me] = await Promise.all([currentTestModeReader().then((testMode) => fastestSolvesOf(kind, testMode)), currentMemberId()]);
   const { names, tags } = await namesAndTagsOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
   return (
     <Page>
