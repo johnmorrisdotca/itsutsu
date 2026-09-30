@@ -54,8 +54,6 @@
     "bots:eval-tune": "vitest run src/lib/bots/evalTune.play.test.ts --disable-console-intercept",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",
-    "board:export": "node --env-file-if-exists=.env scripts/board-export.ts",
-    "board:export:prod": "node scripts/board-export-prod.mjs",
     "rated:audit": "RATED_AUDIT=1 vitest run src/lib/rating/ratedButRefused.play.test.ts --disable-console-intercept",
     "xp:backfill": "XP_BACKFILL=1 vitest run src/lib/xp/backfillXp.play.test.ts --disable-console-intercept",
     "standings:reconcile": "STANDINGS_RECONCILE=1 vitest run src/lib/rating/reconcileStandings.play.test.ts --disable-console-intercept",

@@ -747,8 +747,8 @@ checks are made in three places and stated once.
   `pnpm task`, `pnpm release:take --done`, and the page through `backlogStore.ts` and
   its Server Functions (`backlog.actions.ts`) — and the service enforces the contract,
   `docs/plans/board-convergence/BOARD_RULES.md`: the caps, the table of moves, the lease
-  and the claim condition. The `BacklogItem` table stays in the schema, read by nothing,
-  until a later step drops it with a Neon branch taken first.
+  and the claim condition. The old `BacklogItem` table was dropped on 2026-09-30,
+  with a Neon branch and a DS1 dump taken first.
 - **A status move is checked, not trusted.** The row's select is built from `movesFrom`,
   the page's Server Function asks `moveProblems` before it writes, and Sumilabu refuses
   anything its own table forbids — so a proposal cannot reach `done` without having been
