@@ -1,3 +1,5 @@
+import { dailySeed as taneDailySeed } from "@johnmorrisdotca/tane";
+
 /**
  * TODAY'S PUZZLE: one seed a day, the same for everybody.
  *
@@ -10,10 +12,11 @@
  *
  * The Gomojis' daily words have seeds of their own, one word a day at every
  * length, drawn so that no word comes round twice until all have been used:
- * see `dailyWords/`. This seed is every other puzzle's.
+ * see `dailyWords/`. This seed is every other puzzle's. The arithmetic is
+ * Tane's (github.com/johnmorrisdotca/tane), whose tests pin it.
  */
 export function dailySeed(now: Date): number {
-  return now.getUTCFullYear() * 10_000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
+  return taneDailySeed(now);
 }
 
 /** The address flag that asks for today's puzzle rather than a seed. */
