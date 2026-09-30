@@ -120,7 +120,14 @@ site still runs its old in-tree code.
 John's word; see section 4), make it an ordinary dependency in
 `package.json`, and delete the `packages/` copy and the tsconfig path.
 
-**Until then, a change to a package's code goes in two places:** the
+**Since 10:15Z the way in is a GitHub release, not a copy** (itsutsu-19's
+note in `CLOUD_HANDOVER.md`, John: "release v1 as that's why i made them
+repos"). All eight repos have a `release.yml`; Korokoro v1.0.0 is released. Each
+package thread tags its repo, deletes `packages/<name>` from its branch and
+depends on the release tarball's URL instead. npm publishing waits on John's
+"publish yes" to itsutsu-19; then the URLs become version numbers.
+
+**Until a branch is reworked that way, a change to a package's code goes in two places:** the
 `packages/<name>` copy here and the package's own repo, as one change each,
 authored as John.
 
