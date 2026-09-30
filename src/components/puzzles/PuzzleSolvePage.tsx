@@ -186,7 +186,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
           )
         }
       />
-      <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"} data-own={own ? "true" : "false"}>
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-width-reason="one finished puzzle: its board, the facts beside it and the lead that says how it ended, kept to the width the board is drawn at" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"} data-own={own ? "true" : "false"}>
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={false}>
           <FinishedPuzzle
             kind={kind}

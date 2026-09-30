@@ -287,7 +287,8 @@ export function GameReplay({
       <aside className="flex w-full flex-col gap-4 lg:w-72">
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted">
-            <MoveCount at={moveNumber} last={game.moveCount} />
+            Move <span className="font-mono tabular-nums">{moveNumber}</span> of{" "}
+            <span className="font-mono tabular-nums">{game.moveCount}</span>
             {current !== undefined ? (
               <>
                 {" · "}

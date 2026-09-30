@@ -92,7 +92,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               </span>
 
               {/* The archive is nobody's side of a game, so a win is a tick and the colour is named. */}
-              <span className="inline-flex items-center gap-1 justify-self-end rounded-full border border-rule px-2.5 py-0.5 text-xs font-medium" data-testid="history-result">
+              <span className="inline-flex items-center gap-1 justify-self-end rounded-full border border-rule px-2.5 py-0.5 text-xs font-medium" data-testid="history-row-result">
                 <ResultMark kind={seatResult(game.result, null, result.label).mark} />
                 <Paired en={result.label} kanji={result.kanji} kanjiClassName="ml-1.5 text-muted" />
               </span>
