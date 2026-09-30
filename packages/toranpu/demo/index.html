@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Toranpu トランプ: nine card games with computer players</title>
+    <meta name="description" content="Play a hand of Hearts, Spades, Euchre, Cribbage, Crazy Eights, Go Fish, Big Two, President or Gin Rummy against computer players, all run by the Toranpu TypeScript package." />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">♠♥</span>
+        <div>
+          <h1>Toranpu <span lang="ja">トランプ</span></h1>
+          <p>A deck of playing cards and nine card games, each with a computer player. Pick a game and play a hand.</p>
+        </div>
+      </div>
+      <nav class="links">
+        <a href="https://github.com/johnmorrisdotca/toranpu">GitHub</a>
+        <a href="https://www.npmjs.com/package/@johnmorrisdotca/toranpu">npm</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="choose" aria-label="Choose a game">
+        <div class="games" id="games" role="tablist"></div>
+        <div class="setup">
+          <label>Players <select id="players"></select></label>
+          <label>Seed <input id="seed" type="number" min="1" inputmode="numeric" /></label>
+          <button id="deal" class="primary">Deal</button>
+        </div>
+        <p class="blurb" id="blurb"></p>
+      </section>
+
+      <section class="table" aria-live="polite">
+        <div class="seats" id="seats"></div>
+        <div class="felt" id="felt"></div>
+        <div class="status" id="status"></div>
+        <div class="hand" id="hand" aria-label="Your hand"></div>
+        <div class="moves" id="moves"></div>
+      </section>
+
+      <section class="log">
+        <h2>What happened</h2>
+        <ol id="log"></ol>
+      </section>
+    </main>
+
+    <footer>
+      <code>pnpm add @johnmorrisdotca/toranpu</code>
+      <span>MIT licence · by <a href="https://johnmorris.ca">John Morris</a> · every deal here comes from its seed, so a seed can be shared</span>
+    </footer>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

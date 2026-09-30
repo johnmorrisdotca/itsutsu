@@ -1,0 +1,98 @@
+{
+  "name": "@johnmorrisdotca/toranpu",
+  "version": "1.0.0",
+  "description": "A deck of playing cards and nine card games with computer players: Hearts, Spades, Euchre, Cribbage, Crazy Eights, Go Fish, Big Two, President and Gin Rummy. Pure TypeScript rules, seeded deals, saved games as text. No dependencies.",
+  "keywords": [
+    "playing-cards",
+    "cards",
+    "card-game",
+    "deck",
+    "shuffle",
+    "hearts",
+    "spades",
+    "euchre",
+    "cribbage",
+    "crazy-eights",
+    "go-fish",
+    "big-two",
+    "president",
+    "gin-rummy",
+    "trick-taking",
+    "game-ai",
+    "bot",
+    "typescript",
+    "react"
+  ],
+  "homepage": "https://johnmorrisdotca.github.io/toranpu/",
+  "bugs": {
+    "url": "https://github.com/johnmorrisdotca/toranpu/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnmorrisdotca/toranpu.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "John Morris",
+    "email": "john@johnmorris.ca",
+    "url": "https://johnmorris.ca"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./deck": { "types": "./dist/deck.d.ts", "import": "./dist/deck.js" },
+    "./react": { "types": "./dist/react.d.ts", "import": "./dist/react.js" },
+    "./hearts": { "types": "./dist/hearts.d.ts", "import": "./dist/hearts.js" },
+    "./spades": { "types": "./dist/spades.d.ts", "import": "./dist/spades.js" },
+    "./euchre": { "types": "./dist/euchre.d.ts", "import": "./dist/euchre.js" },
+    "./cribbage": { "types": "./dist/cribbage.d.ts", "import": "./dist/cribbage.js" },
+    "./crazyEights": { "types": "./dist/crazyEights.d.ts", "import": "./dist/crazyEights.js" },
+    "./goFish": { "types": "./dist/goFish.d.ts", "import": "./dist/goFish.js" },
+    "./bigTwo": { "types": "./dist/bigTwo.d.ts", "import": "./dist/bigTwo.js" },
+    "./president": { "types": "./dist/president.d.ts", "import": "./dist/president.js" },
+    "./ginRummy": { "types": "./dist/ginRummy.d.ts", "import": "./dist/ginRummy.js" }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "test": "vitest run",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "site": "pnpm build && node scripts/site.mjs",
+    "prepublishOnly": "pnpm check && pnpm build"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/react": "^19.0.0",
+    "eslint": "^9.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@10.11.0"
+}

@@ -23,7 +23,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // The playing cards and the family card games are Toranpu, an open-source
+      // package kept here until it has a repository of its own; imported by name
+      // so that day changes no import. Each game is its own entry point.
+      "@johnmorrisdotca/toranpu": ["./packages/toranpu/src/index.ts"],
+      "@johnmorrisdotca/toranpu/*": ["./packages/toranpu/src/*.ts"]
     }
   },
   "include": [

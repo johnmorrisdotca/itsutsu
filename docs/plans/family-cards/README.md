@@ -18,7 +18,7 @@ What a card game adds to a party game:
 - **A computer in any seat.** `PartyRules.start` takes the seats a computer plays (`computers`, one a seat) after the seed. Every table needs at least one person.
 - **Hands nobody else may see.** This is the table's job, not the rules'. With two or more people, the table covers every hand between turns and asks for the device by name, as Tenka and Mexican Train do. A table of one person and computers never asks.
 
-The rules are in `src/lib/cardGames/`, one folder a game. They are pure: every move returns a new game. Each game is kept as its table, its seed and its moves (`cardGameCodec.ts`), and a game read back is replayed from them. So a reload re-deals exactly, and can never re-deal.
+The rules are Toranpu's (`packages/toranpu/src/games/`, one folder a game, the open-source card package); `src/lib/cardGames/` forwards to them, so every import of the old paths still works, and keeps the site's copy (`cardGames.copy.ts`), shelf order and party typing. They are pure: every move returns a new game. Each game is kept as its table, its seed and its moves (`cardGameCodec.ts`), and a game read back is replayed from them. So a reload re-deals exactly, and can never re-deal.
 
 `CardGameRules<S, M>` is `PartyRules` plus three things:
 
@@ -39,7 +39,7 @@ The table, its Play button and its My games card are all loaded in the browser o
 
 `PARTY_RULES` names the card rules, and only the gate imports it.
 
-Rules code a browser spec may import (`src/lib/cardGames/`, `src/lib/cards/`) uses relative imports only.
+Rules code a browser spec may import (`src/lib/cardGames/`, `src/lib/cards/`) uses relative imports or the Toranpu package name (`@johnmorrisdotca/toranpu`, which Playwright resolves through `tsconfig.json`), never `@/`. A rule change is made in `packages/toranpu` with its test there, and the package's CHANGELOG gets a line.
 
 ## The table
 
