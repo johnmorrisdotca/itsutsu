@@ -22,7 +22,8 @@ import { puzzleQuery } from "../puzzles/puzzleAddress";
  * only when the button is pressed, never on a visit.
  */
 export function offlineGameAddresses(): string[] {
-  const pages = ["/games", "/games/cards", "/games/list", "/games/new", "/play"];
+  // The dice roller too: every roll is made in the browser, so kept, it rolls on a plane.
+  const pages = ["/games", "/games/cards", "/games/list", "/games/new", "/play", "/dice"];
   for (const key of EVERY_GAME_KEY) {
     if (isPuzzleKind(key)) {
       const spec = PUZZLE_SPECS[key];

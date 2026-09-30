@@ -68,6 +68,7 @@
   },
   "dependencies": {
     "@johnmorrisdotca/hitotsu": "https://github.com/johnmorrisdotca/hitotsu/releases/download/v1.0.1/johnmorrisdotca-hitotsu-1.0.1.tgz",
+    "@johnmorrisdotca/korokoro": "1.3.0",
     "@johnmorrisdotca/kumimoji": "https://github.com/johnmorrisdotca/kumimoji/releases/download/v1.0.1/johnmorrisdotca-kumimoji-1.0.1.tgz",
     "@johnmorrisdotca/kyuubu": "https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz",
     "@johnmorrisdotca/narabe": "https://github.com/johnmorrisdotca/narabe/releases/download/v1.0.0/johnmorrisdotca-narabe-1.0.0.tgz",

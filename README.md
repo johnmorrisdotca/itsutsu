@@ -484,6 +484,13 @@ the drop family's parity; the twist games; the small games; and the piece
 games; and the cube's beginner's method (`/learn/cube`). Written to be
 learned from, with the Japanese terms where the literature uses them. Both sections are linked from the header.
 
+`/dice` is the dice roller, a tab of Games: up to ten dice from a d4 to a
+d100, tapped to roll, with the exact odds, a history kept in the browser and
+stats. It is Korokoro (github.com/johnmorrisdotca/korokoro: MIT, no
+dependencies, its own README and a GitHub Pages demo), an ordinary dependency
+from npm, `@johnmorrisdotca/korokoro`, at the version in `package.json`. A
+change to the roller is a release of that package and a version bump here.
+
 ### Players, ratings and records
 
 Two numbers sit beside a player's rating, and they are kept apart on purpose.
@@ -865,8 +872,8 @@ curl 'localhost:6700/api/games?search=aki&result=black&sort=moves:asc&limit=5'
 ## Getting in
 
 Reading is open and playing is gated. A visitor with no invite can read the
-games: `/games`, every game's page, its rules, family and background, `/about`
-and `/learn`. Everything else — playing, the players, the ladders, the record —
+games: `/games`, every game's page, its rules, family and background, `/about`,
+`/learn` and the dice roller at `/dice`. Everything else — playing, the players, the ladders, the record —
 needs a signed session cookie, enforced in `src/proxy.ts` before a route is
 reached, so a new endpoint is private by default rather than private only if
 someone remembers to guard it. A visitor who knows nobody here can ask for an
