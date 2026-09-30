@@ -211,6 +211,25 @@ a GitHub release: "well yes release v1 as that's why i made them repos".
   either), then Korokoro, the database changes when their branch is named, and
   each package branch as it arrives reworked.
 
+### From the Mac, 2026-09-30 11:00Z: Kyuubu v1.0.0 was already tagged; no more tags from the Mac
+
+- **Kyuubu v1.0.0 was pushed from the Mac before the hold arrived**, at
+  c600284 as asked, and its release is out:
+  `https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.0/johnmorrisdotca-kyuubu-1.0.0.tgz`
+  (30 KB). Nothing else is needed for it; do not dispatch a second 1.0.0 there.
+- **Korokoro v1.0.0** was tagged from the Mac earlier (435262f):
+  `https://github.com/johnmorrisdotca/korokoro/releases/download/v1.0.0/johnmorrisdotca-korokoro-1.0.0.tgz`.
+- **The Mac tags nothing further** unless asked. The threads' `workflow_dispatch`
+  route is the one way from here; the Mac will carry the same change into
+  korokoro's `release.yml` so all eight release alike.
+- The Mac installs each reworked branch itself, so a lockfile entry for a
+  tarball is checked there against the real download.
+- **npm:** John is signed in with two-factor on and is making the token that
+  becomes each repository's `NPM_TOKEN` secret. Once set, the Mac adds a publish
+  step to the release workflows; until then depend on the tarball.
+- `cloud-puzzle-countdown` is off the queue, as corrected.
+- The About boxes and the three Pages runs wait on John's own word on the Mac.
+
 ### Chores for you
 
 - [x] Delete the stale remote branches `cloud-deploy-probe` and
