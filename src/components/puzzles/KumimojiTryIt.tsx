@@ -6,7 +6,8 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
-import { judgeGrid, runsOf } from "@/lib/puzzles/kumimoji/grid";
+import { runsOf } from "@/lib/puzzles/kumimoji/grid";
+import { judgeWithWords } from "@/lib/puzzles/kumimoji/judge";
 import type { Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { assignHandTile, assignTableTile, deal, draw, isFinished, liftAll, liftToHand, mayDraw, moveOnTable, placeFromHand, sortHand, swapWithHand, tilesLeft, type TilePlay } from "@/lib/puzzles/kumimoji/play";
 import { TRY_IT } from "@/lib/puzzles/kumimoji/showcase";
@@ -31,7 +32,7 @@ const NONE: ReadonlySet<string> = new Set();
  * A KUMIMOJI OF TEN TILES, ON THE FRONT DOOR, for a reader to try before
  * setting a game up. The game's own table (`KumimojiTable`: it grows, zooms,
  * pans and turns), the game's own moves (`play.ts`) and the game's own word
- * check (`judgeGrid` over the list the game loads), on a fixed bag
+ * check (`judgeWithWords` over the list the game loads), on a fixed bag
  * (`TRY_IT`): a hand of seven, three to draw, the last a wild.
  *
  * COST: nothing on the server, ever. The page is prerendered; the list is a
@@ -52,10 +53,7 @@ export function KumimojiTryIt() {
     () =>
       words === null
         ? null
-        : judgeGrid(play.tiles, (codes) => {
-            const word = words.wordOf(codes);
-            return word !== null && words.allowed.has(word);
-          }),
+        : judgeWithWords(play.tiles, words),
     [play.tiles, words],
   );
   const found = useMemo(() => {
@@ -226,7 +224,7 @@ export function KumimojiTryIt() {
 }
 
 /** The line under the table: what the first tap will fetch, then what to do next, as the game says it. */
-function said(list: List, play: TilePlay, verdict: ReturnType<typeof judgeGrid> | null, left: number, finished: boolean): string {
+function said(list: List, play: TilePlay, verdict: ReturnType<typeof judgeWithWords> | null, left: number, finished: boolean): string {
   if (list.state === "idle") return `Tap a tile, then a square. Your first tap fetches the game's English word list, about ${TRY_IT_LIST_KB} KB, once; nothing is sent anywhere.`;
   if (list.state === "loading") return "Fetching the word list…";
   if (list.state === "failed") return "The word list could not be fetched just now. Reload the page to try again.";
