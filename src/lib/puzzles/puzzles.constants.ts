@@ -3,7 +3,9 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { LONGEST_WORD, MOST_GUESSES } from "./gomoji/layout";
 import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS, KUMIMOJI_WILDS, kumimojiTileCount } from "./kumimoji/tiles.constants";
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
+import { FREECELL_MOVES_MOST } from "./freecell/check";
 import { SOLITAIRE_MOVES_MOST } from "./solitaire/check";
+import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "./mahjong/layouts";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
@@ -48,6 +50,8 @@ export const PUZZLE_KINDS = {
   bridges: "bridges",
   pictureLogic: "pictureLogic",
   solitaire: "solitaire",
+  freecell: "freecell",
+  spider: "spider",
   mahjong: "mahjong",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
@@ -77,6 +81,8 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.bridges,
   PUZZLE_KINDS.pictureLogic,
   PUZZLE_KINDS.solitaire,
+  PUZZLE_KINDS.freecell,
+  PUZZLE_KINDS.spider,
   PUZZLE_KINDS.mahjong,
 ];
 
@@ -279,6 +285,42 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     cards: true,
   },
   /*
+   * FREECELL, a deal of cards (`freecell/`): its "size" is how many free cells
+   * the table has, four as the game is known or three or two for a harder one.
+   * One level, since every card is face up from the start and the cells are
+   * what make a deal hard. Every deal is one the solver has won with those
+   * cells. The givens are the deal, fifty-two letters; the answer the moves,
+   * checked by replaying them. No Check, Hint or countdown, as Solitaire.
+   */
+  freecell: {
+    sizes: [2, 3, 4],
+    offered: [2, 3, 4],
+    defaultSize: 4,
+    levels: ["medium"],
+    defaultLevel: "medium",
+    mostCells: FREECELL_MOVES_MOST,
+    helps: false,
+    clock: false,
+    cards: true,
+  },
+  /*
+   * SPIDER, two decks of cards (`spider/`): its "size" is how many suits the
+   * decks are made of, one, two or four, which is what makes it hard; so it has
+   * one level. Every deal is one the solver has won. The givens are the deal, a
+   * hundred and four letters; the answer the moves, checked by replaying them.
+   */
+  spider: {
+    sizes: [1, 2, 4],
+    offered: [1, 2, 4],
+    defaultSize: 1,
+    levels: ["medium"],
+    defaultLevel: "medium",
+    mostCells: SPIDER_MOVES_MOST,
+    helps: false,
+    clock: false,
+    cards: true,
+  },
+  /*
    * A size is a layout, named by its width in tiles (`mahjong/layouts.ts`):
    * Torii 8, Fuji 9, Castle 10 and the Turtle's 15. The square of eight, 4
    * across, is the browser tests' own, made and checked like any other and
@@ -450,6 +492,18 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     1: { label: "Draw 1", kanji: "一枚" },
     3: { label: "Draw 3", kanji: "三枚" },
   },
+  // How many free cells the table has: the big number on the tile is the count. 枠, a place to put something.
+  freecell: {
+    2: { label: "2 cells", kanji: "二枠" },
+    3: { label: "3 cells", kanji: "三枠" },
+    4: { label: "4 cells", kanji: "四枠" },
+  },
+  // How many suits the two decks are made of: the big number on the tile is the count.
+  spider: {
+    1: { label: "1 suit", kanji: "一種" },
+    2: { label: "2 suits", kanji: "二種" },
+    4: { label: "4 suits", kanji: "四種" },
+  },
   // A Mahjong layout by its own name, the width in tiles being the big number in its picture.
   mahjong: {
     4: { label: "Tiny", kanji: "極小" },
@@ -505,6 +559,13 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: "Three times through the stock, and no more.",
     hard: "Once through the stock: every card turned is seen once.",
   },
+  // FreeCell's and Spider's one level: what makes a deal hard is the size tile, the cells or the suits.
+  freecell: {
+    medium: "Every card is face up from the start: fewer free cells make the deal harder.",
+  },
+  spider: {
+    medium: "More suits make the game harder: a run moves as a whole only while it is all one suit.",
+  },
   bridges: {
     easy: "Counting alone: every island against what the islands in line with it can still give.",
     medium: "Counting, and the joining rule: no group of islands may close itself off from the rest.",
@@ -527,6 +588,18 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: "Solvable in 10 swaps, with 15 to do it in, and the commonest words.",
     hard: "Solvable in 12 swaps, with 17 to do it in, and a wider list of words.",
   },
+};
+
+/**
+ * WHAT A CARD GAME'S SIZE IS (`PuzzleSpec.cards`): the cards Solitaire's stock
+ * turns, FreeCell's free cells, or the suits Spider's decks are made of. The
+ * heading over the size tiles, the word for one size, and the rules page's
+ * heading for the list of them.
+ */
+export const CARD_SIZE_WORDS: Partial<Record<PuzzleKind, { legend: string; heading: string; word: (size: number) => string }>> = {
+  solitaire: { legend: "Draw", heading: "Draws", word: (size) => `draw ${size}` },
+  freecell: { legend: "Free cells", heading: "Free cells", word: (size) => `${size} ${size === 1 ? "cell" : "cells"}` },
+  spider: { legend: "Suits", heading: "Suits", word: (size) => `${size} ${size === 1 ? "suit" : "suits"}` },
 };
 
 /** The line under the level chips on the set-up screen, for this puzzle. */
@@ -918,6 +991,54 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "Draw 1 turns one card at a time from the stock, and is the gentler game; Draw 3 turns three and only the top one can be played. Winnable deals are dealt from deals our solver has already won, so every one can be won; choose any deal for the shuffle as it falls, which sometimes cannot be.",
+  },
+  /*
+   * FREECELL, by the name it has had since Paul Alfille's program of 1978,
+   * which gave the old game its free cells. フリーセル is the Japanese name.
+   */
+  freecell: {
+    label: "FreeCell",
+    kanji: "フリーセル",
+    tagline: "Every card face up from the start: bring the four suits home through four free cells, and nearly every deal can be won.",
+    inspiredBy: "FreeCell, the patience game Paul Alfille made in 1978",
+    alsoKnownAs: ["Free Cell"],
+    origin:
+      "A patience game of the older family where the whole deck is dealt face up. Paul Alfille wrote it as FreeCell on the PLATO system in 1978, and it became famous when it came free with desktop computers. Almost every deal can be won, so it is a game of thinking ahead more than of luck. The deals here are shuffled and the cards drawn by our own code.",
+    wikipedia: "FreeCell",
+    rules: [
+      "The whole deck is dealt face up into eight columns: seven cards in each of the first four and six in the rest.",
+      "Build each suit's foundation up from its Ace to its King. The game is won when all fifty-two cards are home.",
+      "On the columns, build down in alternating colours: a red 6 on a black 7. Any card may go into an empty column.",
+      "A free cell holds any one card. Only the top card of a column or a cell's card can move.",
+      "A run in order may move as a whole when there is room to move it a card at a time: one more card than the empty cells, doubled for every empty column it is not going into.",
+      "Drag a card, and the run on it goes with it; or tap a card and then where it should go. Tap a card twice to send it home. Undo takes back a move, and once every card left can go home in turn the game finishes itself.",
+    ],
+    board:
+      "4 cells is FreeCell as it is usually played; 3 cells and 2 cells leave less room to work in, and are harder. Every deal is one our solver has already won with those cells, so every one can be won.",
+  },
+  /*
+   * SPIDER, by its own name, which it has had since the nineteenth century
+   * for its eight foundations, a spider's legs. スパイダー is the Japanese name.
+   */
+  spider: {
+    label: "Spider",
+    kanji: "スパイダー",
+    tagline: "Two decks, ten columns: build full runs of one suit from King down to Ace, and clear all eight off the table.",
+    inspiredBy: "Spider, the traditional two-deck patience game",
+    alsoKnownAs: ["Spider Solitaire"],
+    origin:
+      "A two-deck patience game played since at least the nineteenth century and named, it is said, for its eight foundations, as many as a spider's legs. It became one of the most played card games of all when it came free with desktop computers. Played with one suit it is gentle; with all four it is one of the hardest patience games there is. The deals here are shuffled and the cards drawn by our own code.",
+    wikipedia: "Spider (solitaire)",
+    rules: [
+      "Two decks are dealt into ten columns: six cards in each of the first four and five in the rest, only the top card of each face up. The other fifty are the stock.",
+      "A card may go onto any card one higher, of any suit, or into an empty column. A run moves as a whole only if it is all one suit, in order.",
+      "A full run of one suit, from King down to Ace, is taken off the table by itself. Clear all eight to win.",
+      "When a column's face-up cards are all moved away, the card under them turns over by itself.",
+      "Tap the stock to deal one card onto every column at once, five times in all. It cannot deal while a column is empty.",
+      "Drag a card, and the run on it goes with it; or tap a card and then the column it should go on. Tap a card twice to move its run to the best column that takes it. Undo takes back a move, and once every card is dealt and face up the game finishes itself where it can.",
+    ],
+    board:
+      "1 suit plays both decks as eight sets of spades, and is the gentle game; 2 suits is spades and hearts; 4 suits is the full two decks, and hard. Every deal is one our solver has already won, so every one can be won.",
   },
   /*
    * MAHJONG SOLITAIRE, the tile-matching patience game (John, 2026-09-29:

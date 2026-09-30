@@ -30,7 +30,9 @@ import { KoushiSolve } from "./KoushiSolve";
 import { MahjongSolve } from "./MahjongSolve";
 import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
+import { FreeCellSolve } from "./FreeCellSolve";
 import { SolitaireSolve } from "./SolitaireSolve";
+import { SpiderSolve } from "./SpiderSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
 import { WinSlotProvider } from "./PuzzleWinSlot";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
@@ -167,7 +169,8 @@ export function PuzzlePlay({
 
   /*
    * A SEED THAT NAMES ANOTHER: a winnable Solitaire's seed is the first deal
-   * from it the solver wins, which may be a later one (`solitaire/generate.ts`).
+   * from it the solver wins, which may be a later one (`solitaire/generate.ts`),
+   * and so is every FreeCell's and Spider's (`nextWinnableTry`).
    * The address is put right, so a reload, a share or Continue names the deal
    * on the table. Every other kind makes its puzzle at its own seed, and
    * nothing happens.
@@ -222,6 +225,10 @@ export function PuzzlePlay({
         return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
       case "solitaire":
         return <SolitaireSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "freecell":
+        return <FreeCellSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+      case "spider":
+        return <SpiderSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
       case "bridges":
         return <BridgesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
       case "pictureLogic":

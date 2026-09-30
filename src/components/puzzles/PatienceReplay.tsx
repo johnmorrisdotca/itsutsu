@@ -1,0 +1,71 @@
+"use client";
+
+import { useMemo, type ReactNode } from "react";
+
+import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { BoardThemeTokens } from "@/components/board/board.types";
+import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { replayFreeCell } from "@/lib/puzzles/freecell/code";
+import { freeCellWon } from "@/lib/puzzles/freecell/rules";
+import { replaySpider } from "@/lib/puzzles/spider/code";
+import { spiderWon } from "@/lib/puzzles/spider/rules";
+
+import { FreeCellTable } from "./FreeCellTable";
+import { SpiderTable } from "./SpiderTable";
+
+/**
+ * A FINISHED FREECELL OR SPIDER, played back, as a finished Solitaire is
+ * (`SolitaireReplay`): the table as each move left it, from the deal to the
+ * last card home (or to where it was given up), with a scrubber and a press
+ * either side of it. A list that no longer replays shows the deal, never a
+ * table made up.
+ */
+export function PatienceReplay({ kind, size, givens, moves, at, go }: { kind: "freecell" | "spider"; size: number; givens: string; moves: string; at: number | null; go: (at: number) => void }) {
+  const theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
+  const played = useMemo(() => {
+    if (kind === "freecell") {
+      const tables = replayFreeCell(givens, size, moves) ?? replayFreeCell(givens, size, "");
+      return tables === null ? null : { count: tables.length, won: freeCellWon(tables[tables.length - 1]), draw: (at: number, look: BoardThemeTokens) => <FreeCellTable table={tables[at]} theme={look} readOnly /> };
+    }
+    const tables = replaySpider(givens, size, moves) ?? replaySpider(givens, size, "");
+    return tables === null ? null : { count: tables.length, won: spiderWon(tables[tables.length - 1]), draw: (at: number, look: BoardThemeTokens) => <SpiderTable table={tables[at]} theme={look} readOnly /> };
+  }, [kind, givens, size, moves]);
+  if (played === null) return null;
+  const last = played.count - 1;
+  const viewing = at === null ? last : Math.max(0, Math.min(at, last));
+  const step = (to: number) => go(Math.max(0, Math.min(to, last)));
+  const table: ReactNode = played.draw(viewing, theme);
+  return (
+    <>
+      <div className="mx-auto w-full" data-focus-board>
+        {table}
+      </div>
+      {last > 0 ? (
+        <div className="flex items-center gap-2" data-testid="patience-replay">
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing - 1)} disabled={viewing === 0} aria-label="One move back">
+            ‹
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={last}
+            value={viewing}
+            onChange={(event) => step(Number(event.target.value))}
+            className="min-w-0 flex-1 accent-moss"
+            aria-label="Move"
+            data-testid="patience-replay-scrubber"
+          />
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label="One move on">
+            ›
+          </button>
+          <span className="w-24 text-right text-sm tabular-nums text-muted" data-testid="patience-replay-at">
+            {viewing === 0 ? "The deal" : `Move ${viewing} of ${last}`}
+          </span>
+        </div>
+      ) : null}
+      <p className="text-sm text-muted">
+        {last === 0 ? "The deal, as it was dealt." : played.won ? "Step through it with the scrubber, from the deal to the last card home." : "Given up here: step back through how it got there."}
+      </p>
+    </>
+  );
+}

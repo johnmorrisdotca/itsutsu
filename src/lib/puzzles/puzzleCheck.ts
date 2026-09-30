@@ -1,6 +1,8 @@
 import { checkBridges } from "./bridges/check";
 import { checkPictureLogic } from "./pictureLogic/check";
 import { checkSolitaire, checkSolitaireGivenUp } from "./solitaire/check";
+import { checkFreeCell, checkFreeCellGivenUp } from "./freecell/check";
+import { checkSpider, checkSpiderGivenUp } from "./spider/check";
 import { checkMahjong } from "./mahjong/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
@@ -75,6 +77,10 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "solitaire":
       // A replay of the moves from the deal: every one allowed, and every card home at the end.
       return checkSolitaire(size, givens, answer, level ?? "easy");
+    case "freecell":
+      return checkFreeCell(size, givens, answer);
+    case "spider":
+      return checkSpider(size, givens, answer);
     case "mahjong":
       return checkMahjong(size, givens, answer);
     default:
@@ -255,6 +261,9 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
   // A Solitaire given up: its moves allowed, at least one made, and not won.
   if (kind === "solitaire") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkSolitaireGivenUp(size, givens, answer, level ?? "easy") : { ok: false, reason: `no ${kind} at ${size}` };
+  // FreeCell and Spider given up, the same way; each refuses a size it is not played at.
+  if (kind === "freecell") return checkFreeCellGivenUp(size, givens, answer);
+  if (kind === "spider") return checkSpiderGivenUp(size, givens, answer);
   if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop" && kind !== "koushi") {
     return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   }

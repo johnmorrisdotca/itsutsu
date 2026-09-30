@@ -226,14 +226,16 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Cards",
     kanji: "札",
-    blurb: "Games with a deck of cards, drawn by us: Solitaire for one, and the family card games round one device, with a computer in any empty seat.",
+    blurb: "Games with a deck of cards, drawn by us: Solitaire, FreeCell and Spider for one, and the family card games round one device, with a computer in any empty seat.",
     /*
      * And the family card games (2026-09-29), party games at home here rather
      * than on Party games: a card game is the kind of game it is, and who is
      * round the table is how it is played. Nothing of them is recorded, so
-     * this family's first and its award are still Solitaire's alone.
+     * this family's first and its award are still the patience games' alone.
+     * FreeCell and Spider (2026-09-30) sit beside Solitaire, the three
+     * patience games first, kept and timed as it is.
      */
-    games: ["solitaire", "hearts", "crazyEights", "goFish", "bigTwo", "president"],
+    games: ["solitaire", "freecell", "spider", "hearts", "crazyEights", "goFish", "bigTwo", "president"],
   },
   {
     key: "mahjong",

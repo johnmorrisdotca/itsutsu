@@ -2,6 +2,8 @@ import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { formerWordRowsOf, guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
 import { swapsTaken } from "../koushi/check";
 import { decodeMoves } from "../solitaire/code";
+import { decodeMoves as decodeFreeCellMoves } from "../freecell/code";
+import { decodeMoves as decodeSpiderMoves } from "../spider/code";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
 export type GuessesTaken = {
@@ -35,8 +37,8 @@ export function guessesTaken(
 ): GuessesTaken | null {
   if (answer === null) return null;
   // A won Solitaire's moves, every one standing: the other half of how it went, as a word's guesses are.
-  if (kind === "solitaire") {
-    const moves = decodeMoves(answer);
+  if (kind === "solitaire" || kind === "freecell" || kind === "spider") {
+    const moves = kind === "solitaire" ? decodeMoves(answer) : kind === "freecell" ? decodeFreeCellMoves(answer) : decodeSpiderMoves(answer);
     return moves === null ? null : { used: moves.length, allowed: 0, unit: "moves" };
   }
   if (kind === "koushi") {

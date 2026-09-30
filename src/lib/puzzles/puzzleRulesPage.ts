@@ -7,7 +7,7 @@ import { GAME_SETTINGS, WORD_LANGUAGE_DISPLAY, WORD_LIST_DISPLAY, listedGameOf, 
 import { futagoRule } from "./gomoji/futago";
 import { yotsugoRule } from "./gomoji/yotsugo";
 import { layoutFor } from "./mahjong/layouts";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
+import { CARD_SIZE_WORDS, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -51,9 +51,11 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
 
   const object = [copy.tagline, copy.rules[0]];
   const board = [
-    `${spec.cards === true ? "Draws" : "Sizes"}: ${sizes}. ${copy.board}`,
+    `${CARD_SIZE_WORDS[kind]?.heading ?? "Sizes"}: ${sizes}. ${copy.board}`,
     spec.fixedLevels === true
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
+      : spec.cards === true && kind !== "solitaire"
+      ? "Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not."
       : spec.cards === true
       ? "Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won."
       : spec.layouts === true
@@ -102,11 +104,12 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
 /**
  * A size as a rules page says it: a grid's side, a tile game's hand, a
  * layout's name and how many tiles it holds (`PuzzleSpec.layouts`), or how
- * many cards a card game's stock turns (`PuzzleSpec.cards`).
+ * what a card game's size tiles choose (`CARD_SIZE_WORDS`).
  */
 function sizeText(kind: PuzzleKind, size: number): string {
   const spec = PUZZLE_SPECS[kind];
-  if (spec.cards === true) return `draw ${size}`;
+  const cards = CARD_SIZE_WORDS[kind];
+  if (cards !== undefined) return cards.word(size);
   if (spec.layouts === true) return `${PUZZLE_SIZE_NAMES[kind][size]?.label ?? size} (${layoutFor(size)?.slots.length ?? 0} tiles)`;
   return spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`;
 }
