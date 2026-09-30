@@ -1125,8 +1125,10 @@ release. It never opens a pull request or pushes to `main`. See
 Every landed commit takes a version, and ONE FEATURE IS ONE VERSION:
 `pnpm release:take:prod --summary "…"` takes the number, dates the changelog,
 commits both and closes the board row it ships, immediately before the push.
-Several features are several runs of it and then one push. See AGENTS.md,
-"Every Landed Commit Bumps The Version".
+Several features are several runs of it and then one push, to `main` and
+`its-board-focus`. See AGENTS.md, "Every Landed Commit Bumps The Version". The
+same procedure runs from John's Mac or a cloud session; what a cloud session
+needs to follow it is in `docs/CLOUD_HANDOVER.md`.
 `pnpm db:drift:check` compares the committed schema with whatever
 `DATABASE_URL` points at and prints the SQL it is missing.
 

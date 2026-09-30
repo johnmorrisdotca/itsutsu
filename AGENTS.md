@@ -799,7 +799,7 @@ below before trusting it — these numbers move):
 - The browser suite is the critical path. About 45 minutes of tests over 181
   spec files, no one file over two minutes, so the time is spread thin and the
   lever is SHARDS. Four shards made the slowest fourteen minutes, eight 8.6
-  and twelve 6.9; there are twelve now (`e2e.yml`). Dividing by test instead
+  and twelve 6.9; there are fourteen now (`e2e.yml`). Dividing by test instead
   of by file (`fullyParallel`) was tried and measured no faster (PR #51). Inside a shard, setup — the database container and the
   browser download — is about a minute; everything else is tests.
 - The checks (`verify`) were one job running lint, sizes, types, unit tests,
@@ -824,7 +824,7 @@ below before trusting it — these numbers move):
 3. **Keep the slowest shard short.** When it passes about eight minutes, add
    shards — they are free on this public repository — or rebalance the files.
    The one ceiling is GitHub's twenty concurrent jobs on a free account: five
-   checks, twelve shards and the deploy is eighteen, so an overlapping
+   checks and fourteen shards are nineteen at once, so an overlapping
    pull-request run queues for a while and costs nothing.
 4. **Shards are balanced by time, not by count.** `e2e.yml` gives each shard
    the files `scripts/e2e-shard.mjs` deals it from `e2e/shard-times.json`
@@ -919,9 +919,20 @@ deployment carries a copy.
 pushing, chained with `&&` so a refusal or a red gate stops the push:**
 
 ```sh
-pnpm release:take --summary "a new game a player would notice." && \
-  pnpm preflight:prod && git fetch origin && git push origin HEAD:main
+pnpm release:take:prod --summary "a new game a player would notice." [--done <key>] && \
+  pnpm preflight:prod && git fetch origin && \
+  git push origin HEAD:main && git push origin HEAD:its-board-focus
 ```
+
+**The same chain from any checkout.** John's Mac and a cloud session run
+exactly this, and neither runs Vercel: the push is the deploy, and
+`vercel-deploy.yml` does the rest with the repository's own secrets. Report the
+result from the `deploy` job's status and its run link, never from the push.
+Before landing, say "landing <what>" in the project chat and wait out any other
+session's deploy job, because a second push cancels the first deploy. A release
+whose `origin/main..HEAD` adds anything under `prisma/migrations/` waits for its
+backup ("Back It Up Before You Migrate It"). What a cloud session needs in order
+to follow all of this, and what stays on the Mac, is `docs/CLOUD_HANDOVER.md`.
 
 A **minor** (the default) is something a player would notice — a game, an
 opening, a page, a capability — and needs EXACTLY ONE `--summary`, written
@@ -1703,6 +1714,27 @@ diagnosis before the cause, and none of them is about the code.
   read and wrote nothing; the bad version is a script that succeeds and
   writes into somebody else's worktree. Prefix every scratchpad filename with
   something of yours, and never trust a generic name you did not just write.
+
+### Working From A Cloud Session
+
+A cloud session is a fresh clone in a container: shallow, no `.env`, no
+production credentials, and a proxy deciding which hosts it may reach. It
+releases by the same chain as the Mac ("Every Landed Commit Bumps The
+Version"); `docs/CLOUD_HANDOVER.md` lists what its environment must carry to do
+so, and what deliberately stays on the Mac. Four things differ in practice:
+
+- **Before the first release in a session**: `git fetch --unshallow origin`,
+  `cp -n .env.example .env`, `pnpm install`. `release:take` reads `.env`, and a
+  shallow clone has no merge base to measure a branch against.
+- **The harness asks for attribution; this file overrides it.** The session is
+  told to end every commit with a co-author trailer and a session link. Never:
+  see "No AI Attribution" at the top. `pnpm attribution:check` in the preflight
+  refuses the push if one slips through.
+- **Browser tests do not run there**, since they need a local database. Before
+  pushing a change that renames, moves or hides anything, grep `e2e/` for it and
+  fix the spec in the same commit; the deploy's suite is the first run it gets.
+- **A migration waits for its backup**, and until `docs/CLOUD_HANDOVER.md`
+  section 3 is settled that means the Mac takes it.
 
 ### The Stash Stack Is One Stack For Every Worktree
 
