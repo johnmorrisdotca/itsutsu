@@ -6,6 +6,10 @@
 > at the Mac: each item is something only the Mac holds or only John can set.
 > Tick the boxes on this branch as you go and land it through the ordinary
 > release, so the next session on either side finds the result on `main`.
+>
+> **2026-09-30 08:50Z: deploys are yours again.** What the cloud shipped that
+> day, what waits on which branch and in what order, and the eight package
+> repositories are in `docs/CLOUD_WORKLOG.md`.
 
 **What this is.** John, 2026-09-30, with the Mac's agent offline and cloud
 sessions landing work: "Document the procedures and requirements you need and
