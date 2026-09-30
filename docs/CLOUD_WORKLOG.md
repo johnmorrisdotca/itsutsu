@@ -134,7 +134,9 @@ the tag and the release together. The thread pushes that change as John and
 starts the run from GitHub's Actions dispatch (release.yml, ref main). Tane
 v1.0.0 came out this way:
 https://github.com/johnmorrisdotca/tane/releases/download/v1.0.0/johnmorrisdotca-tane-1.0.0.tgz.
-So the Mac does not tag package repos unless asked; a tag pushed by hand would
+Kyuubu v1.0.0 was the one exception, tagged from the Mac at c600284d just before this route was found:
+https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.0/johnmorrisdotca-kyuubu-1.0.0.tgz.
+From here the Mac does not tag package repos unless asked; a tag pushed by hand would
 collide with the one the workflow makes. Korokoro's `release.yml` may want the
 same `workflow_dispatch` so all eight release alike.
 
