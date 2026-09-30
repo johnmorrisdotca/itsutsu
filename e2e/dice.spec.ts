@@ -13,6 +13,15 @@ async function openRoller(page: Page) {
   await expect(page.getByTestId("kk-tray")).toBeVisible();
 }
 
+/**
+ * A throw, as a person makes one: a tap on the felt beside the dice. Once the
+ * dice have been thrown they lie on the felt, and a tap on a die holds it
+ * rather than throwing, so the tap goes to the felt's corner, where no die is.
+ */
+async function throwDice(page: Page) {
+  await page.getByTestId("kk-tray").click({ position: { x: 12, y: 12 } });
+}
+
 /** The faces showing, read off the dice themselves. */
 async function faces(page: Page): Promise<number[]> {
   return (await page.getByTestId("kk-die").evaluateAll((dice) => dice.map((d) => Number(d.getAttribute("data-face")))));
@@ -26,14 +35,14 @@ test("tapping the felt throws the chosen dice, and the history, stats and odds f
 
   await page.getByTestId("kk-count").getByRole("button", { name: "3", exact: true }).click();
   await expect(page.getByTestId("kk-die")).toHaveCount(3);
-  await page.getByTestId("kk-tray").click();
+  await throwDice(page);
   await expect(page.getByTestId("kk-history-row")).toHaveCount(1);
   const thrown = await faces(page);
   expect(thrown).toHaveLength(3);
   for (const face of thrown) expect(face >= 1 && face <= 6).toBe(true);
   await expect(page.getByTestId("kk-total")).toContainText(String(thrown.reduce((a, b) => a + b, 0)));
 
-  await page.getByTestId("kk-tray").click();
+  await throwDice(page);
   await expect(page.getByTestId("kk-history-row")).toHaveCount(2);
 
   await page.getByTestId("kk-tab-stats").click();
@@ -57,7 +66,7 @@ test("tapping the felt throws the chosen dice, and the history, stats and odds f
 test("the history is kept on this device, and clearing it asks first", async ({ page }) => {
   await page.goto("/dice");
   await openRoller(page);
-  await page.getByTestId("kk-tray").click();
+  await throwDice(page);
   await expect(page.getByTestId("kk-history-row")).toHaveCount(1);
 
   // Coming back is the subject here, so this reload is the test rather than a shortcut past it.
@@ -85,7 +94,7 @@ test.describe("with no invite", () => {
     expect(await faces(page)).toEqual([3, 4]);
     await expect(page.getByTestId("kk-history-empty")).toBeVisible();
 
-    await page.getByTestId("kk-tray").click();
+    await throwDice(page);
     await expect(page.getByTestId("kk-history-row")).toHaveCount(1);
   });
 });

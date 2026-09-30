@@ -15,14 +15,14 @@ importers:
         specifier: 1.0.1
         version: 1.0.1(react@19.2.8)
       '@johnmorrisdotca/korokoro':
-        specifier: 1.3.0
-        version: 1.3.0(react@19.2.8)
+        specifier: 1.12.0
+        version: 1.12.0(react@19.2.8)
       '@johnmorrisdotca/kumimoji':
         specifier: 1.0.1
         version: 1.0.1(react@19.2.8)
       '@johnmorrisdotca/kyuubu':
-        specifier: 1.0.2
-        version: 1.0.2(react@19.2.8)
+        specifier: 1.3.2
+        version: 1.3.2(react@19.2.8)
       '@johnmorrisdotca/narabe':
         specifier: 1.0.0
         version: 1.0.0(react@19.2.8)
@@ -408,13 +408,17 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/korokoro@1.3.0':
-    resolution: {integrity: sha512-7ewtbP1Mye6Bl0Yih5jeJzp+8ZeQItXt8i2zH4QKr3ixOkJzPc4zfApK7EiIvm4rvJlPyAbOeWHudqkysaEu2A==}
+  '@johnmorrisdotca/korokoro@1.12.0':
+    resolution: {integrity: sha512-06cxDbDeviRRgpi3Ec9uB7+yvn1Zhr2pGfmZO5icozXlIE4MwrLrAcu/H/y4wihqI4jlVTvQwKOZAwV7gGoLDQ==}
     engines: {node: '>=20'}
+    hasBin: true
     peerDependencies:
       react: '>=18'
+      vue: '>=3.3'
     peerDependenciesMeta:
       react:
+        optional: true
+      vue:
         optional: true
 
   '@johnmorrisdotca/kumimoji@1.0.1':
@@ -426,9 +430,10 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/kyuubu@1.0.2':
-    resolution: {integrity: sha512-v/Mgh6RNtwHRzkhwfLv8vDx8NmyXzLorKG0nrhtv0Jckzi3bt0N1oH9iP4qowiO/mIvvJmtWjP/hb5kULAR73g==}
+  '@johnmorrisdotca/kyuubu@1.3.2':
+    resolution: {integrity: sha512-hdb5JddTFE6/dLLRaVL+I1hLAwxO7KSjbY84WJfdwXqBK1RtKI4umwfikSkF9aaQWOP6xKZ5/AMi/WWJhevE6A==}
     engines: {node: '>=20'}
+    hasBin: true
     peerDependencies:
       react: '>=18'
     peerDependenciesMeta:
@@ -3062,7 +3067,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/korokoro@1.3.0(react@19.2.8)':
+  '@johnmorrisdotca/korokoro@1.12.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
@@ -3070,7 +3075,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/kyuubu@1.0.2(react@19.2.8)':
+  '@johnmorrisdotca/kyuubu@1.3.2(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
