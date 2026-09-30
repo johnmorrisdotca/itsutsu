@@ -50,6 +50,10 @@ describe("readerWhen — the form the browser switches to once it has the page",
     expect(readerWhen(AT, "date", "ja", "Asia/Tokyo")).toBe("2026/09/14");
   });
 
+  it("writes the whole moment out, and names the zone, when asked for it in full", () => {
+    expect(readerWhen(AT, "full", "en", "Asia/Tokyo")).toMatch(/^Monday, September 14, 2026 at 9:21\sAM GMT\+9$/u);
+  });
+
   it("answers nothing for something that is not a moment", () => {
     expect(readerWhen("not a date", "dateTime", "en", "UTC")).toBeNull();
   });

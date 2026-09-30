@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { readyHere } from "./support";
 
 /**
  * What has shipped, at an address of its own.
@@ -68,4 +69,27 @@ test("a release is its number, its date at the right and its title, and opens on
       break;
     }
   }
+});
+
+/*
+ * John, 2026-09-30: "Allow times to be revealed when the user touches the
+ * date… add a row below and display nice full date." Clicked, as a reader
+ * would, and clicked again to take it away.
+ */
+test("touching a release's date writes out the day and time under it, and touching it again hides it", async ({ page }) => {
+  await page.goto("/releases");
+  const first = page.getByTestId("release").first();
+  const date = first.getByTestId("release-date");
+  await readyHere(date);
+  await expect(first.getByTestId("release-when")).toHaveCount(0);
+  await date.click();
+  const when = first.getByTestId("release-when");
+  await expect(when).toBeVisible();
+  await expect(date).toHaveAttribute("aria-expanded", "true");
+  // The whole date and a time, not the short date again.
+  await expect(when).toContainText(/\d{4}/);
+  await expect(when).toContainText(/\d{1,2}:\d{2}/);
+  await date.click();
+  await expect(when).toHaveCount(0);
+  await expect(date).toHaveAttribute("aria-expanded", "false");
 });
