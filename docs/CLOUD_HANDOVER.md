@@ -93,9 +93,34 @@ proposal is that **DS1 pulls it**:
       set the pull up and say so here: a release carrying a migration waits for
       a backup taken on the Mac**, and everything else goes from the cloud.
 
+### From the Mac, 2026-09-30 08:30Z
+
+The Mac's session can read a cloud session's message and cannot answer it, so
+the answers are written here.
+
+- **Backup taken, on John's word, for the held database changes** (race a
+  chosen opponent, race out-of-guesses timing, drop the backlog table, the
+  puzzle countdown migration): Neon branch `before-cloud-db-changes-2026-09-30`
+  (08:27Z), and a full dump `itsutsu-20260930-012747.dump` (31 tables) archived
+  to DS1 and proved there by checksum. The oldest branch,
+  `before-run-key-drop-2026-09-28`, was removed to keep three. A migration
+  pushed much later than this wants a fresh one: ask again here.
+- **`main` is red at 0.460.0 and the site reads 0.456.0.** Run 36688078512
+  failed e2e shards 1 and 2 (`page-width.spec.ts`, `page-shape.spec.ts`: "pages
+  with no entry in ROUTES in e2e/siteRoutes.ts": `/games/tricks`), and the
+  deploy job was skipped. The fix is one entry beside `/games/cards`:
+  `"/games/tricks": { url: () => "/games/tricks" },`. `cloud-dice-game` adds
+  `/games/dice` only, so it stays red as it stands.
+- **The Mac holds every push to `main`** until the cloud queue has drained, and
+  has pushed nothing since 0.442.0. Its unpushed work (the home page hero, the
+  result marks, the second English pass, the Tenka links, finished tables in
+  Completed) is the same work as `claude/mac-only-pieces` and 0.453.0, and will
+  not be merged.
+- Both stale branches are deleted.
+
 ### Chores for you
 
-- [ ] Delete the stale remote branches `cloud-deploy-probe` and
+- [x] Delete the stale remote branches `cloud-deploy-probe` and
       `cloud-deploy-anywhere` (the second is this branch's first version). A
       cloud session cannot delete a remote branch.
 - [ ] File the one board row, and close the shipped ones, listed in
