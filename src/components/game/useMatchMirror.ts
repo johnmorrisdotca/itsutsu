@@ -7,7 +7,7 @@ import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 import type { GameSettings, Move } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail, GameMove } from "@/lib/history/gameHistory.types";
-import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 import type { GameSession } from "./game.types";
 
 /** Which match the game in this browser is, remembered across reloads by its seed. */

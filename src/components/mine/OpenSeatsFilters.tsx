@@ -2,7 +2,7 @@ import { ViewTabs } from "@/components/ui/ViewTabs";
 
 import { penaltyName } from "@/components/live/penalty";
 import { describeMoveTime } from "@/lib/history/deadline";
-import { MOVE_TIME_OPTIONS } from "@/lib/history/gameSettingsSchema";
+import { MOVE_TIME_OPTIONS } from "@/lib/history/moveTime.constants";
 import {
   SEAT_PENALTY_LIST,
   SEAT_RATING,

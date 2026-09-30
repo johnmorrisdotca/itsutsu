@@ -10,7 +10,7 @@ import { TONE_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { describeRemaining } from "@/lib/history/deadline";
-import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
+import { FORFEITS_TO_LOSE } from "@/lib/history/moveTime.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { useMatchClock } from "./useMatchClock";
 

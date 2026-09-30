@@ -1,11 +1,8 @@
 "use client";
 
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
-import {
-  MOVE_TIME_OPTIONS,
-  SHARED_OPENINGS,
-  TIMEOUT_PENALTIES,
-} from "@/lib/history/gameSettingsSchema";
+import { MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES } from "@/lib/history/moveTime.constants";
+import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";

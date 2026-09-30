@@ -6,6 +6,17 @@ import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { APP_COLOURS } from "@/lib/app/app.constants";
 import { appleStartupImages } from "@/lib/app/appleLaunch";
 import { BARE_HEAD_SCRIPT } from "@/components/layout/bare";
+/*
+ * WHAT THE HEADER READS, NAMED HERE SO THE BUILD KEEPS ONE COPY OF IT. Nothing
+ * is drawn or run by this line. The build shares what the root layout reaches
+ * with every page, and copies what only the pages reach once for each group it
+ * splits them into: eleven copies of the header's reads, and of the validation
+ * library they parse with, 1.4 MB of the function every page is built into.
+ * Every page draws the header, so its reads belong to the layout's share.
+ * `pageFunction.coverage.test.ts` holds the line; `pnpm functions:size` is
+ * what measures it.
+ */
+import "@/lib/history/headerCounts";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { OfflineKeeper } from "@/components/offline/OfflineKeeper";
 import { currentLocale } from "@/lib/i18n/currentLocale";

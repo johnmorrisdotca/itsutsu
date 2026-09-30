@@ -1,5 +1,5 @@
 import { isBotId } from "@/lib/bots/bots";
-import { MOVE_TIME_OPTIONS } from "./gameSettingsSchema";
+import { MOVE_TIME_OPTIONS } from "./moveTime.constants";
 
 /**
  * Per-move deadlines for shared games. The server owns the clock: it stamps

@@ -17,7 +17,7 @@ import {
   SECOND_STONE_EXCLUSIONS,
   STONES,
 } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap, HeadStart, OpeningRule } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 
 /**
  * The shapes of a game's settings as they cross the API and the database.
@@ -74,16 +74,9 @@ export const openingSchema = z
   ])
   .default(OPENING_RULES.free);
 
-/**
- * The openings a shared game may use. A seat token is a colour, and the swap
- * protocols move colours between players, so those cannot be played across
- * two devices.
- */
-export const SHARED_OPENINGS: readonly OpeningRule[] = [
-  OPENING_RULES.free,
-  OPENING_RULES.pro,
-  OPENING_RULES.longPro,
-];
+// The openings a shared game may use, as plain values beside the schemas (`sharedOpenings.constants.ts`), so a component can name them without importing zod.
+import { SHARED_OPENINGS } from "./sharedOpenings.constants";
+export { SHARED_OPENINGS };
 
 export const sharedOpeningSchema = z
   .enum([OPENING_RULES.free, OPENING_RULES.pro, OPENING_RULES.longPro])

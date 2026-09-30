@@ -1,7 +1,7 @@
 import { NO_HANDICAP, NO_HEAD_START, OPENING_RULES, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { freeTurnsOffered, hasHeadStart, traditionalCounts } from "@/lib/gomoku/rules/headStart";
 import type { Handicap, HeadStart, OpeningRule, RuleVariant, VariantSpec } from "@/lib/gomoku/gomoku.types";
-import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 
 /**
  * The openings a shared game of this variant can be set up with: the three a
