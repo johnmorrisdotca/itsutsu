@@ -26,4 +26,13 @@ export const CUBE_COPY = {
   replaySolved: "Step through the solve with the scrubber, from the scramble to solved.",
   replayGivenUp: "Given up here: step back through how it got there.",
   replayNone: "The scramble, as it was dealt.",
+  guideOpen: "Show me how",
+  guideCost: "Shows the next step of the beginner's method. A solve that uses it still counts, but scores no points and stays off the fastest tables.",
+  guideNext: "Next",
+  guideLeft: (count: number) => `${count} ${count === 1 ? "step" : "steps"} to go`,
+  guideTurn: "Turn it for me",
+  guideHide: "Hide",
+  guideShow: "Show the next step",
+  guideSizes: "The step-by-step help is for the 2×2 and 3×3.",
+  guideLearn: "Learn the method",
 } as const;

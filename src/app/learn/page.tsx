@@ -10,6 +10,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
 import { GUIDES } from "@/lib/learn/strategy";
 
 export const metadata = { title: "Learn" };
@@ -67,6 +68,20 @@ export default async function LearnIndexPage() {
             </Link>
           </li>
         ))}
+        {/* The cube's method: a guide of its own (`/learn/cube`), not a strategy for a game of two. */}
+        <li>
+          <Link href="/learn/cube" data-card-link="" className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`} data-testid="learn-cube">
+            <GameThumb variant="cube" size="regular" />
+            <span className="flex min-w-0 flex-1 flex-col gap-2">
+              <span className="flex items-baseline gap-2 font-semibold">
+                {CUBE_GUIDE_COPY.title}
+                <span className="font-mincho text-xs font-normal opacity-70">{CUBE_GUIDE_COPY.kanji}</span>
+              </span>
+              <span className="text-xs text-muted">{CUBE_GUIDE_COPY.lead}</span>
+            </span>
+            <CardArrow />
+          </Link>
+        </li>
       </ul>
   </Page>
   );

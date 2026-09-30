@@ -20,6 +20,7 @@ import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
+import { CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
 import { guidesFor } from "@/lib/learn/strategy";
 import { GameTrail } from "@/components/games/GameTrail";
 
@@ -82,8 +83,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   /*
    * A puzzle's rules in the game's template: Object, Board, Play, House,
    * built by `puzzleRulesPage` from the puzzle's own spec and copy. It has
-   * no record to link and no guide on the learning shelf yet, so those two
-   * are the game's alone.
+   * no record to link, and only the cube has a guide on the learning shelf
+   * (its method, `/learn/cube`).
    */
   const puzzle = puzzleFor(slug);
   // And a party game's, built by `partyRulesPage` from its own spec and copy, with no record to link either.
@@ -92,7 +93,13 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   if (puzzle === null && party === null && variant === null) notFound();
   const key = puzzle ?? party ?? variant!;
   const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : rulesPageFor(variant!);
-  const guides = variant === null ? [] : guidesFor(variant);
+  // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
+  const guides =
+    variant !== null
+      ? guidesFor(variant).map((guide) => ({ href: `/learn/${guide.slug}`, title: guide.title, summary: guide.summary }))
+      : puzzle === "cube"
+        ? [{ href: "/learn/cube", title: CUBE_GUIDE_COPY.title, summary: CUBE_GUIDE_COPY.lead }]
+        : [];
   const say = await currentSpeaker();
   /*
    * The game's own name. It has no dictionary entry and wants none — a name
@@ -271,8 +278,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
               </h2>
               <ul className="flex flex-col gap-2 text-sm">
                 {guides.map((guide) => (
-                  <li key={guide.slug}>
-                    <Link href={`/learn/${guide.slug}`} className="font-semibold underline-offset-2 hover:underline">
+                  <li key={guide.href}>
+                    <Link href={guide.href} className="font-semibold underline-offset-2 hover:underline">
                       {guide.title}
                     </Link>
                     <p className="text-xs text-muted">{guide.summary}</p>
