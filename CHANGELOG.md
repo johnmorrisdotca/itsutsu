@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.452.0 — 2026-09-30 06:29 UTC
+- Games play offline: a practice board, a pass-and-play table, a card or party game or a puzzle opened once loads again with no connection, a new puzzle can be started offline at any size, and one finished offline is handed in once you are back online. The games list marks each game Ready offline and can keep every game at once, and every page says when you are offline.
+
 ## 0.451.1 — 2026-09-30 06:09 UTC
 - The browser checks measure the page a game kept on one screen opens to, so the History tab's release can reach the site.
 
