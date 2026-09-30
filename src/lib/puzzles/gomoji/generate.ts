@@ -4,6 +4,9 @@ import { dailyManyWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools"
 import { encodeWordsGivens } from "./futago";
 import { wordCountOfSeed } from "./wordsSeed";
 import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
+import { pinDown } from "./dodge";
+import { dodgeGuesses, dodgeMarkerOf, dodgePool, dodgeSample } from "./dodgePlay";
+import { encodeDodgeGivens, isDodgeSeed, offersDodge } from "./dodgeSeed";
 
 /**
  * Making a Gomoji puzzle, in the browser, from a seed: one word, drawn
@@ -28,6 +31,7 @@ import { answersFor, encodeHidden, type GomojiLanguage } from "./code";
  * (`yotsugoSeed.ts`) hides four the same way.
  */
 export function generateGomoji(size: number, level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "gomoji"): Puzzle {
+  if (offersDodge(kind) && isDodgeSeed(seed)) return generateDodge(kind, size, level, seed);
   const words = answersFor(size, level === "easy", lang);
   if (words.length === 0) throw new Error(`No ${size}-letter words.`);
   const count = wordCountOfSeed(seed);
@@ -55,4 +59,22 @@ function drawSeveral(words: readonly string[], count: number, seed: number): str
     taken.push(pick);
   }
   return taken.map((place) => words[place]!);
+}
+
+/**
+ * A GOMOJI NIGE 逃げ (`dodge.ts`), in any language, the kana one included:
+ * nothing hidden, so its givens are only the seed that breaks its ties
+ * (`encodeDodgeGivens`), and its solution is a way to pin it down inside the
+ * guesses its level gives (`pinDown`), which proves one exists. A seed the
+ * sample cannot pin down in time is tried again with a wider sample; the
+ * tests hold every language and length to finishing on the first.
+ */
+export function generateDodge(kind: PuzzleKind, size: number, level: PuzzleLevel, seed: number): Puzzle {
+  const pool = dodgePool(kind, size, level);
+  if (pool.length === 0) throw new Error(`No ${size}-letter words.`);
+  const { mark, greens } = dodgeMarkerOf(kind);
+  const most = dodgeGuesses(kind, size);
+  const way = pinDown(pool, seed, mark, greens, most, dodgeSample(kind)) ?? pinDown(pool, seed, mark, greens, most, 4 * dodgeSample(kind));
+  if (way === null) throw new Error(`No way found to pin down dodger ${seed} at ${size} ${level}.`);
+  return { kind, size, level, seed, givens: encodeDodgeGivens(seed), solution: way.join("") };
 }

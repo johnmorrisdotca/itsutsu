@@ -9,6 +9,7 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { gamePath, joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { dodgeDailySeed } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { DAILY_PARAM, dailySeed } from "@/lib/puzzles/daily";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
@@ -40,7 +41,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   if (query[DAILY_PARAM] === "1" && asked.seed === null) {
     const today = new Date();
     // A Futago's day has two words at a seed of its own (`futagoSeed.ts`), and a Yotsugo's four at another (`yotsugoSeed.ts`).
-    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : dailySeedOf(asked.words ?? 1, dayKeyOf(today));
+    // Today's dodger (`dodgeSeed.ts`) where a Gomoji Nige was asked for: the same one for everybody at each length.
+    const seed = dailyLanguageOf(kind) === null ? dailySeed(today) : asked.dodge === true ? dodgeDailySeed(dayKeyOf(today)) : dailySeedOf(asked.words ?? 1, dayKeyOf(today));
     redirect(joinQuery(playPath(kind), puzzleQuery({ ...asked, seed })));
   }
   const reader = await currentReader();
@@ -82,7 +84,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       {/* The solve at the size this reader keeps for this kind of screen (`BoardScaled`): Regular is the column it always had. */}
       <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
+          <PuzzlePlayClient kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
       </BoardScaled>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
