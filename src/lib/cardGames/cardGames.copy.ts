@@ -178,4 +178,22 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     ],
     board: "Always two: one person against the computer, or two people passing one device. Choose 121 for the usual game, twice round the board, or 61 for once round.",
   },
+  ohHell: {
+    label: "Oh Hell",
+    kanji: "オーヘル",
+    tagline: "Bid exactly how many tricks you will take — not one more, not one fewer — as the hands grow from one card to seven.",
+    origin:
+      "An English trick-taking game of the late nineteenth or early twentieth century, said to have been played in London clubs, and known since under a dozen names from Blackout to Up and Down the River. Its sting is the dealer's rule, which stops the bids ever adding up to the tricks there are. Nobody owns it.",
+    alsoKnownAs: ["Oh Heck", "Blackout", "Up and Down the River", "Nomination Whist"],
+    country: "GB",
+    wikipedia: "Oh Hell",
+    rules: [
+      "Three or four players, each for themselves. The first deal is one card each, the next two, and so on up to seven; the long game comes back down to one. After each deal the next card is turned up, and its suit is trumps.",
+      "From the dealer's left, each player bids exactly how many tricks they will take, from none to all of them. The dealer bids last and may not bid the number that would make the bids add up to the tricks there are, so at least one player must miss.",
+      "The dealer's left leads. Follow suit if you can; if you cannot, play anything. The highest trump takes the trick, or else the highest card of the suit led.",
+      "Take exactly what you bid and score ten and your bid, so a bid of none made is ten; take any other number and score nothing for the deal.",
+      "The deal passes to the left each time. The highest score after the last deal wins, and players level at the top share the win.",
+    ],
+    board: "Three or four players, any of them computers: one person against the rest, or everybody round one device. Choose 13 deals for the full game, up to seven cards and back down, or 7 for the climb alone.",
+  },
 };

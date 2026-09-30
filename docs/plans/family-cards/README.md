@@ -163,3 +163,12 @@ The two-player game (`src/lib/cardGames/cribbage/`, `cribbageAdapter.tsx`), shel
 - **The show** is counted for both players: fifteens, pairs, runs (each way a run can be made), four for a flush in the hand or five with the starter (the crib only with five), and nobs. The other player first, then the dealer, then the crib, and the game ends the moment someone reaches the total, even partway through. The next hand opens with the last show laid out on the table until the crib is laid.
 - **Length**: 121 (the usual) or 61. The score is numbers beside each name, no pegboard. No muggins, since nothing is claimed by hand.
 - **The computer** keeps the four cards whose show averages most over every starter it could be cut, counting the two thrown for its own crib or against the other's; pegging, it takes the most points now, keeps the count off five and twenty-one, and leads low. Measured over 200 games against random play it wins 99.5%, its hands averaging 8.1 points; a game runs about nine hands.
+
+## Oh Hell (2026-09-30)
+
+The last of the five (`src/lib/cardGames/ohHell/`, `ohHellAdapter.tsx`), at home in Tricks: three or four players each for themselves, since the table lays a trick out for three or four.
+
+- **Deals** climb from one card each to seven; the long game (13 deals, the default) comes back down to one, the short one (7) stops at the top. Seven is the most at three players as at four. After each deal the next card is turned up for trumps, and stays in the table's corner.
+- **Bids** are exact, nought up to the cards in hand, from the dealer's left. The dealer bids last and is not offered the number that would make the bids add up to the tricks there are.
+- **Scoring**: ten and the bid for exactly the bid, nothing otherwise, nothing taken away. The highest score after the last deal wins, and a tie at the top is shared.
+- **The computer** bids the nearest allowed number to what its hand is worth (high and long trumps, side aces, and kings in a short hand), takes tricks as cheaply as it can while it needs them, and ducks with its highest losing card once its bid is made. Measured over 100 games of four computers, a bid is made 56% of the time; over 100 games against three random players it has the top score 88% of the time.

@@ -123,8 +123,9 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/background",
       // The Party games shelf, a family page at an address of its own.
       "/games/party",
-      // And Dominoes, the other family page at an address of its own.
+      // And Dominoes and Tricks, the other family pages at an address of their own.
       "/games/dominoes",
+      "/games/tricks",
       "/learn",
       "/about",
     ]) {
@@ -182,6 +183,7 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/family",
       "/games/party",
       "/games/dominoes",
+      "/games/tricks",
       // Chinese Checkers' own page, which offers the table and remembers a kept one in the browser, never on the server.
       "/games/chinese-checkers",
       // And Halma's, which offers its table for four the same way.

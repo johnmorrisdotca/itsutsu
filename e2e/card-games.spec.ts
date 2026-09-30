@@ -268,6 +268,21 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
+  test("Oh Hell: the dealer's bid barred from making the tricks add up, then a card played, against three computers", async ({ page }) => {
+    await start(page, "ohHell");
+    await myTurn(page);
+    // Ann deals the first hand of one card, and bids last: exactly one of nought and one is offered.
+    await expect(page.getByTestId("cards-turned")).toBeVisible();
+    await expect(page.getByTestId("cards-bids")).toContainText("1 card each");
+    await expect(page.locator('[data-testid^="cards-bid-"]')).toHaveCount(1);
+    const before = await movesMade(page);
+    await page.locator('[data-testid^="cards-bid-"]').first().click();
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+    await myTurn(page);
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await clearKept(page);
+  });
+
   test("every family card game is on its family's shelf: Cards beside Solitaire, or Tricks", async ({ page }) => {
     const home = (kind: CardGameKind) => GAME_FAMILIES.find((family) => (family.games as readonly string[]).includes(kind))!.key;
     for (const [family, address] of [["cards", "/games/solitaire/family"], ["tricks", "/games/tricks"]] as const) {

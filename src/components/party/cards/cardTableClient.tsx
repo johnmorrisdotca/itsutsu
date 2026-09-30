@@ -123,3 +123,15 @@ export function CribbageOffer({ href }: { href: string }) {
 export function CribbageCard() {
   return <Card kind="cribbage" />;
 }
+
+export function OhHellTable(props: PartyTableGameProps) {
+  return <Table kind="ohHell" {...props} />;
+}
+
+export function OhHellOffer({ href }: { href: string }) {
+  return <Offer kind="ohHell" href={href} />;
+}
+
+export function OhHellCard() {
+  return <Card kind="ohHell" />;
+}

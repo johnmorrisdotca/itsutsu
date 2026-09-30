@@ -7,6 +7,7 @@ import { BIG_TWO_ADAPTER, PRESIDENT_ADAPTER } from "./climbAdapters";
 import { CRAZY_EIGHTS_ADAPTER } from "./crazyEightsAdapter";
 import { CRIBBAGE_ADAPTER } from "./cribbageAdapter";
 import { EUCHRE_ADAPTER } from "./euchreAdapter";
+import { OH_HELL_ADAPTER } from "./ohHellAdapter";
 import { GIN_RUMMY_ADAPTER } from "./ginRummyAdapter";
 import { GO_FISH_ADAPTER } from "./goFishAdapter";
 import { HEARTS_ADAPTER } from "./heartsAdapter";
@@ -28,6 +29,7 @@ export const CARD_ADAPTERS: Record<CardGameKind, CardAdapter<unknown, unknown>> 
   ginRummy: GIN_RUMMY_ADAPTER as unknown as CardAdapter<unknown, unknown>,
   euchre: EUCHRE_ADAPTER as unknown as CardAdapter<unknown, unknown>,
   cribbage: CRIBBAGE_ADAPTER as unknown as CardAdapter<unknown, unknown>,
+  ohHell: OH_HELL_ADAPTER as unknown as CardAdapter<unknown, unknown>,
 };
 
 /** A seat's name as the table says it: the one typed, or "Computer 3" or "Player 2". */

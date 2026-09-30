@@ -8,6 +8,8 @@ import { CRAZY_EIGHTS_RULES } from "./crazyEights/crazyEightsRules";
 import type { CribbageGame, CribbageMove } from "./cribbage/cribbage.types";
 import { CRIBBAGE_RULES } from "./cribbage/cribbageRules";
 import type { EuchreGame, EuchreMove } from "./euchre/euchre.types";
+import type { OhHellGame, OhHellMove } from "./ohHell/ohHell.types";
+import { OH_HELL_RULES } from "./ohHell/ohHellRules";
 import { EUCHRE_RULES } from "./euchre/euchreRules";
 import type { GinGame, GinMove } from "./ginRummy/ginRummy.types";
 import { GIN_RUMMY_RULES } from "./ginRummy/ginRummyRules";
@@ -31,6 +33,7 @@ export type CardGamePlays = {
   ginRummy: { game: GinGame; move: GinMove };
   euchre: { game: EuchreGame; move: EuchreMove };
   cribbage: { game: CribbageGame; move: CribbageMove };
+  ohHell: { game: OhHellGame; move: OhHellMove };
 };
 
 /**
@@ -48,4 +51,5 @@ export const CARD_GAME_RULES: { [K in CardGameKind]: CardGameRules<CardGamePlays
   ginRummy: GIN_RUMMY_RULES,
   euchre: EUCHRE_RULES,
   cribbage: CRIBBAGE_RULES,
+  ohHell: OH_HELL_RULES,
 };

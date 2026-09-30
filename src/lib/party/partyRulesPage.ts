@@ -60,6 +60,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   ginRummy: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   euchre: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   cribbage: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  ohHell: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -177,6 +178,14 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     more: [
       "Seat one deals first, and the deal passes each hand. The score is kept as numbers beside each name rather than pegs on a board.",
       "Nothing is claimed by hand: every fifteen, pair, run, go and show is counted for you, so there is no muggins, taking points a player missed.",
+    ],
+  },
+  ohHell: {
+    turn: "The line over the table says whose turn it is, by name. To bid, press a number of tricks under your hand; the one the dealer may not bid is not offered. Then tap a card to choose it (it rises) and press Play, drag it onto the table, or tap it twice to play it at once. The turned card, and so trumps, sit on the table, and beside each name is what they bid and how many they have taken. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down, and your hand is sorted with trumps last. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "Seat one deals first, and the deal passes to the left each time. Hands go no higher than seven cards, at three players as at four.",
+      "A made bid scores ten and the bid, and a missed one nothing: no points are taken away for missing, and there is no bonus for a bid of none beyond its ten.",
     ],
   },
 };
