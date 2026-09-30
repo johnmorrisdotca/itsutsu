@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { generateKumimoji } from "./generate";
 import { judgeGrid, squareAt } from "./grid";
-import { drawAll, mayDrawAll, nameOf, passViewStart, stepView, partyFits, partyLength, partyPlayersAsked, partyTilesLeft, partyTilesNeeded, seatPlay, startParty, stillIn, tidyName, withSeatPlay } from "./party";
+import { drawAll, mayDrawAll, mayTradeThisTurn, nameOf, passViewStart, stepView, partyFits, partyLength, partyPlayersAsked, partyTilesLeft, partyTilesNeeded, seatPlay, startParty, stillIn, tidyName, withSeatPlay } from "./party";
 import { doneRefused, endTurn, goesOut, handCanSpell, isLastTurn, lastStanding, mayResign, mustTradeFirst, resign, winnersOf } from "./partyTurns";
 import type { PartyGame, PartySettings } from "./party.types";
 import { decodeParty, encodeParty, holdsItsBag, isPartyFor } from "./partyKept";
@@ -216,6 +216,21 @@ describe("a hand that spells nothing must be traded first", () => {
     // A new turn, a new player: they have not traded yet.
     expect(passed.traded).toBe(false);
     expect(mustTradeFirst(passed, spellsNothing)).toBe(true);
+  });
+
+  it("allows one trade a turn: after it the player may lay or press Done, and trades again next turn", () => {
+    const game = start();
+    expect(mayTradeThisTurn(game)).toBe(true);
+    const traded = withSeatPlay(game, trade(seatPlay(game), 0));
+    expect(mayTradeThisTurn(traded)).toBe(false);
+    // A second trade is refused, the game given back as it was: nothing more comes out of the bag.
+    expect(withSeatPlay(traded, trade(seatPlay(traded), 0))).toBe(traded);
+    // Laying still works after a trade.
+    const laid = withSeatPlay(traded, placeFromHand(seatPlay(traded), 0, "0,0"));
+    expect(laid.players[0]!.tiles.size).toBe(1);
+    expect(mayTradeThisTurn(laid)).toBe(false);
+    const passed = endTurn(laid, verdictOf(laid), spells);
+    expect(mayTradeThisTurn(passed)).toBe(true);
   });
 
   it("lets Done through once something is laid, when the hand spells a word, or when the bag cannot give three", () => {

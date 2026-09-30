@@ -70,7 +70,7 @@ function claimed(sound: boolean): GridVerdict {
  * in place — or null when it holds a tile it could not have. The pool only
  * grows at its end (a trade gives a tile back); its counter only moves on;
  * nothing is taken but from the pool, never more than three for each tile
- * given back (`KUMIMOJI_TRADE`); and what the seat holds, in hand and on its
+ * given back (`KUMIMOJI_TRADE`), and one tile given back a turn at most; and what the seat holds, in hand and on its
  * table, is exactly what it held, plus what it took, less what it gave back —
  * counted by tile, a wild with any face being the wild.
  */
@@ -83,7 +83,8 @@ export function withSeat(game: PartyGame, seat: KumimojiSeat): PartyGame | null 
   if (seat.taken < game.taken || seat.taken > line.length) return null;
   const drawn = [...line.slice(game.taken, seat.taken)];
   const given = [...seat.returned.slice(game.returned.length)];
-  if (drawn.length > KUMIMOJI_TRADE.take * given.length) return null;
+  // One trade a turn (`mayTradeThisTurn`): a seat that gives back a second tile is refused.
+  if (given.length > (game.traded ? 0 : 1) || drawn.length > KUMIMOJI_TRADE.take * given.length) return null;
   const family = familyKeyOf(game.settings.language);
   const had = [...before.hand, ...before.tiles.values(), ...drawn].map(family);
   const back = given.map(family);

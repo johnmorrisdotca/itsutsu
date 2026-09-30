@@ -1,6 +1,6 @@
 import type { ComputerSaid, ComputerStep } from "./computer.types";
 import { bestLaying, judgeTiles, tradeChoice } from "./computerPlay";
-import { drawAll, isComputer, mayDrawAll, seatPlay, withSeatPlay } from "./party";
+import { drawAll, isComputer, mayDrawAll, mayTradeThisTurn, seatPlay, withSeatPlay } from "./party";
 import type { PartyGame } from "./party.types";
 import { doneRefused, endTurn, goesOut, handCanSpell, isLastTurn, laidThisTurn, mayResign, resign } from "./partyTurns";
 import { liftAll, mayTrade, trade } from "./play";
@@ -21,7 +21,8 @@ import type { TileWords } from "./tileWords";
  *   what is down, the grid sound after every word.
  * - Draw whenever its hand is used and its grid sound, so everybody takes a
  *   tile, and play on.
- * - Trade its rarest tile when its hand lays nothing, at most twice a turn.
+ * - Trade its rarest tile when its hand lays nothing, once a turn at most,
+ *   as anybody may (`mayTradeThisTurn`).
  * - Press Done — going out, when its hand is used and the bag cannot give
  *   everybody a tile — once it is done or has taken `COMPUTER_STEPS_MOST`
  *   steps, which keeps a turn to a few seconds to watch.
@@ -31,9 +32,7 @@ import type { TileWords } from "./tileWords";
 
 /** The most things a computer does in one turn before pressing Done: at the page's pause, a turn of about three seconds. */
 export const COMPUTER_STEPS_MOST = 8;
-/** The most trades in one turn, so a hand that lays nothing does not trade the bag away in one go. */
-export const COMPUTER_TRADES_MOST = 2;
-/** How many trades may be needed at the end to be allowed Done at all; the bag loses two a trade, so it is bounded anyway. */
+/** How many settling steps may be needed at the end to be allowed Done at all; one trade a turn and a hand of tiles, so it is bounded anyway. */
 const SETTLING_MOST = 200;
 
 export function planComputerTurn(game: PartyGame, words: TileWords): ComputerStep[] {
@@ -52,7 +51,6 @@ export function planComputerTurn(game: PartyGame, words: TileWords): ComputerSte
   // Only its own moves ever reach its table, so this is a guard: a table that is not sound is taken up and built again.
   if (now.players[now.turn]!.tiles.size > 0 && !verdict().sound) take(withSeatPlay(now, liftAll(seatPlay(now))), { kind: "rebuilt" });
 
-  let trades = 0;
   while (steps.length < COMPUTER_STEPS_MOST) {
     const play = seatPlay(now);
     if (play.hand.length === 0) {
@@ -66,9 +64,8 @@ export function planComputerTurn(game: PartyGame, words: TileWords): ComputerSte
       continue;
     }
     const worst = tradeChoice(play.hand, words);
-    if (trades >= COMPUTER_TRADES_MOST || !mayTrade(play) || worst === null) break;
+    if (!mayTradeThisTurn(now) || worst === null) break;
     take(withSeatPlay(now, trade(play, worst)), { kind: "traded", tile: play.hand[worst]! });
-    trades += 1;
   }
 
   // Done may be held back: a hand that must be traded first, or the last one standing with nothing laid. Lay or trade until it is not.
@@ -77,7 +74,7 @@ export function planComputerTurn(game: PartyGame, words: TileWords): ComputerSte
     const laid = bestLaying(play, words, rules);
     const worst = tradeChoice(play.hand, words) ?? 0;
     if (laid !== null) take(withSeatPlay(now, laid.play), { kind: "laid", word: laid.word });
-    else if (mayTrade(play)) take(withSeatPlay(now, trade(play, worst)), { kind: "traded", tile: play.hand[worst]! });
+    else if (mayTradeThisTurn(now)) take(withSeatPlay(now, trade(play, worst)), { kind: "traded", tile: play.hand[worst]! });
     else break;
   }
 

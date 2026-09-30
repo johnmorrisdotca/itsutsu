@@ -173,6 +173,8 @@ describe("a computer's turn", () => {
     const trading = planComputerTurn(stuck("qqx", base.taken), english);
     expect(trading[0]!.said.kind).toBe("traded");
     expect(trading.at(-1)!.said.kind).not.toBe("resigned");
+    // One trade a turn, for a computer as for anybody.
+    expect(trading.filter((step) => step.said.kind === "traded")).toHaveLength(1);
     const cornered = planComputerTurn(stuck("qqx", bag.length - 2), english);
     expect(cornered.map((step) => step.said.kind)).toEqual(["resigned"]);
     expect(cornered[0]!.game.resigned).toEqual([0]);
