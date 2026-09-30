@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.457.0 — 2026-09-30 08:00 UTC
+- Spades arrives with a new Tricks shelf beside Cards: four players in two partnerships bid their tricks and play them out, with a computer in any empty seat, and Hearts moves to Tricks with it
+
 ## 0.456.0 — 2026-09-30 07:27 UTC
 - Completed on My games can be narrowed to one family or one game, from two controls at the top of the list; the choice stays in the address, and a chip says what the list is narrowed to and takes it off.
 
