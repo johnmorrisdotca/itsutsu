@@ -6,11 +6,11 @@ import { chooseTurn } from "./opponent";
 import { BOT_TIERS } from "./opponent.constants";
 import { applyTurn } from "./opponentTurns";
 import { seededRandom } from "./rules/random";
-import { ROCK_PLACEMENTS } from "./rules/rocks.constants";
-import { landRocks, rockLayout } from "./rules/rocks";
+import { ROCK_PLACEMENTS } from "@johnmorrisdotca/narabe/rules/rocks.constants";
+import { landRocks, rockLayout } from "@johnmorrisdotca/narabe/rules/rocks";
 import type { GameState } from "./gomoku.types";
 import type { BotTier, SearchBudget } from "./opponent.types";
-import type { RockRules } from "./rules/rocks.types";
+import type { RockRules } from "@johnmorrisdotca/narabe/rules/rocks.types";
 
 /**
  * THE OBSTACLE PLAYTEST (board row an-obstacle-family-…). John, 2026-09-16:

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createGame } from "../engine";
 import { MOVE_KINDS, RULE_VARIANTS, STONES, VARIANT_SPECS } from "../gomoku.constants";
-import { fromDiagram } from "../gomoku.test-support";
+import { fromDiagram } from "@johnmorrisdotca/narabe/test-support";
 import { seededRandom } from "../rules/random";
 import { BOT_TIERS, TIER_SPECS } from "../opponent.constants";
 import { chooseTurn } from "../opponent";

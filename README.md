@@ -754,8 +754,13 @@ finished game is filed in the record and can be replayed stone by stone.
 
 ## How it is put together
 
-The rules live in `src/lib/gomoku/engine.ts` and the `rules/` modules it
-delegates to, and nowhere else. Every function takes a `GameState` and returns
+The rules live in Narabe 並べ, the engine, and nowhere else: `engine.ts` and
+the `rules/` modules it delegates to, kept in `packages/narabe` as an
+open-source package of its own (MIT, no dependencies, its own README and a
+GitHub Pages demo that plays every game), published as
+`@johnmorrisdotca/narabe`. The site imports it by that name through a
+`tsconfig.json` path, and the modules at the old paths under `src/lib/gomoku/`
+re-export it, so nothing in the site had to change its imports. Every function takes a `GameState` and returns
 a new one, so the same engine runs the board in your browser, replays a stored
 game, and validates moves on the server. There is no second implementation of
 "who has won".
@@ -772,7 +777,7 @@ disagree; a move list replayed through the engine cannot.
 | Directory | What lives there |
 | --- | --- |
 | `src/lib/gomoku/` | Engine, threat analysis, win estimate, notation, replay. Pure, no React. |
-| `src/lib/gomoku/rules/` | The variant rules the engine consults: lines, forbidden shapes, captures, turns, openings. |
+| `packages/narabe/` | Narabe, the engine and the variant rules it consults: lines, forbidden shapes, captures, turns, openings. `src/lib/gomoku/rules/` re-exports it. |
 | `src/lib/clock/` | Byoyomi clocks. Pure, and driven by the wall clock rather than tick counts. |
 | `src/lib/history/` | Reading and writing game history. |
 | `src/lib/backlog/` | The features board: its rules, its copy, its starter set. Pure, apart from `backlogStore.ts`. |

@@ -11,7 +11,7 @@ import {
 import { OUTLOOK_DISPLAY, OUTLOOKS } from "./analysis.constants";
 import { RULE_VARIANT_LIST, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { createGame } from "./engine";
-import { fromDiagram } from "./gomoku.test-support";
+import { fromDiagram } from "@johnmorrisdotca/narabe/test-support";
 import { KOMI } from "./rules/go";
 import type { Advantage } from "./advantage.types";
 

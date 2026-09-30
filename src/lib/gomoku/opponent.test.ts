@@ -16,7 +16,7 @@ import {
 import { chooseTurn } from "./opponent";
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { readsThreats } from "./opponentEval";
-import { fromDiagram } from "./gomoku.test-support";
+import { fromDiagram } from "@johnmorrisdotca/narabe/test-support";
 import { searchTurn, searchable } from "./opponentSearch";
 import type { GameSettings, GameState, RuleVariant } from "./gomoku.types";
 import type { BotTier } from "./opponent.types";
