@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+import { GAME_FAMILIES, familyPagePath } from "../src/lib/gomoku/families";
+import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
+import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
 import { ready } from "./support";
 
 /**
@@ -73,9 +76,6 @@ test.describe("about", () => {
    * any way to notice.
    */
   test("counts the games it really has, and lists every family", async ({ page }) => {
-    const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
-    const { GAME_FAMILIES, familyPagePath } = await import("../src/lib/gomoku/families");
-
     await page.goto("/about/games");
     const section = page
       .getByTestId("about-section")
@@ -248,8 +248,6 @@ test.describe("about", () => {
   });
 
   test("draws the catalogue as charts, one bar per country the games come from", async ({ page }) => {
-    const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
-    const { RULE_VARIANT_DISPLAY } = await import("../src/lib/gomoku/variants.constants");
     const countries = new Set(RULE_VARIANT_LIST.map((variant) => RULE_VARIANT_DISPLAY[variant].country).filter(Boolean));
 
     await page.goto("/about/games");

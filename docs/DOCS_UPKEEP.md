@@ -65,7 +65,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, headline, "What it does", "Forty-five games…" | visitors, engineers | `src/lib/gomoku/gomoku.constants.ts` (`RULE_VARIANT_LIST`), `src/lib/gomoku/families.ts`, `src/lib/gomoku/variants.constants.ts` |
 | `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
 | `README.md`, "Forty-five games…" (Party games) | visitors, engineers | `src/lib/party/**`, `src/components/party/**`, `src/lib/gomoku/party/**`, `src/lib/gomoku/familyShelves.ts` |
-| `README.md`, "Openings", "Handicaps", "The board…" | engineers, players | `src/lib/gomoku/rules/**`, `src/lib/gomoku/engine.ts` |
+| `README.md`, "Openings", "Handicaps", "The board…" | engineers, players | `packages/narabe/src/rules/**`, `packages/narabe/src/engine.ts` |
 | `README.md`, "Players, ratings and records" | engineers, players | `src/lib/rating/**`, `src/lib/record/**`, `src/lib/xp/**`, `src/lib/legacy/**` |
 | `README.md`, "The computer players" | engineers, players | `src/lib/bots/**` |
 | `README.md`, "The backlog" | engineers | `src/lib/backlog/**`, `src/lib/sumilabu/**` |
@@ -74,10 +74,11 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, "Embedding the board", "Embed tokens" | integrators | `src/app/embed/**`, `src/app/api/embed/**`, `src/lib/embed/**` |
 | `README.md`, "The API" | integrators | `src/app/api/**` (new or removed routes) |
 | `README.md`, "Deploying", "Scripts", "Getting started" | engineers | `.github/workflows/**`, `package.json` scripts, `.env.example`, `next.config.ts` |
-| `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
+| `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, `packages/narabe/src/engine.ts`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
 | `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/catalogue/gameSettings.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
+| `packages/narabe/README.md`, `CHANGELOG.md` | anyone using the rules engine as a package | `packages/narabe/src/**`, `packages/narabe/demo/**`, `packages/narabe/package.json` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
 | `docs/plans/dominoes/README.md` | agents, engineers | `src/lib/party/mexicanTrain/**`, `src/lib/party/online/onlineTrain.ts`, `src/components/party/online/TrainOnline.tsx`, `src/components/party/Train*.tsx`, `src/components/party/train*.ts`, `src/components/party/DominoFace.tsx`, `src/app/games/dominoes/page.tsx`, `src/lib/gomoku/families.ts` (Dominoes) |
 | `docs/plans/mahjong/README.md` | agents, engineers | `src/lib/puzzles/mahjong/**`, `src/components/puzzles/Mahjong*.tsx`, `src/components/puzzles/mahjong*.ts`, `src/components/mine/MahjongTableCard.tsx`, `src/lib/puzzles/puzzles.constants.ts` (`mahjong`), `src/lib/gomoku/families.ts` (Mahjong) |

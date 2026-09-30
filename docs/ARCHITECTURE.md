@@ -69,7 +69,7 @@ Three services beyond the database:
 | `src/app/games/[slug]/` | A game's own pages: its front door, rules, family, standings, a board, a match |
 | `src/components/` | UI by area: `board/`, `game/` (one screen), `live/` (shared games), `players/`, `xp/` and more |
 | `src/lib/gomoku/` | The engine, analysis, notation, replay, the computer players' search. Pure |
-| `src/lib/gomoku/rules/` | The rule modules the engine consults: lines, forbidden shapes, captures, flips, jumps, Go, Hex, openings, handicaps |
+| `packages/narabe/` | Narabe, the engine, as an open-source package: the rule modules it consults (lines, forbidden shapes, captures, flips, jumps, Go, Hex, openings, handicaps), the rules tables, and the simulator. `src/lib/gomoku/` re-exports it at the old paths |
 | `src/lib/history/` | Games on the server: creating, moving, ending, listing, the record |
 | `src/lib/rating/` | Elo, the two pools, per-game standings, streaks, the members directory |
 | `src/lib/bots/` | The computer players as members: who they are, the seats they take |
@@ -94,7 +94,7 @@ shared constants rather than string literals.
 
 ## The engine
 
-`src/lib/gomoku/engine.ts` is the only place a rule is decided. It exports
+The engine, Narabe (`packages/narabe/src/engine.ts`, reached as `src/lib/gomoku/engine.ts`), is the only place a rule is decided. It exports
 functions like `placePiece`, `movePiece`, `twistBoard`, `passTurn`,
 `isLegalMove` and `playMove`, each taking a `GameState` and returning a new
 one. The rule modules under `rules/` do the specialised work and are unit
@@ -117,8 +117,8 @@ Three layers sit above the engine and only advise:
   (`botWorker.ts`) and in tests.
 
 The engine is checked from several sides. Each rule module has its own tests.
-`simulation.test.ts` plays every variant automatically, and
-`simulation.checks.ts` and `simulation.scan.ts` restate the rules by hand as an
+Narabe's `src/simulation/simulation.test.ts` plays every variant automatically, and
+its `checks.ts` and `scan.ts` restate the rules by hand as an
 independent check, so the engine and a second reading of the rules must agree.
 `variants.coverage.test.ts` fails the build for a game missing any of its
 parts.

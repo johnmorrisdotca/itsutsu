@@ -21,11 +21,16 @@ import { describe, expect, it } from "vitest";
  * not travel with the engine anyway.
  *
  * The allowed outside imports are Node's own modules, which the ladder's
- * fingerprint reads files with at build time. Anything else needs a reason
- * written here.
+ * fingerprint reads files with at build time, and Narabe, the rules engine,
+ * which that day came: it is its own package in packages/narabe, and the
+ * computer players and the modules that re-export it here import it by name.
+ * The package is held to the stricter rule, relative and Node imports only,
+ * since it stands on nothing at all. Anything else needs a reason written here.
  */
 
 const ROOT = "src/lib/gomoku";
+const PACKAGE = "packages/narabe/src";
+const NARABE = "@johnmorrisdotca/narabe";
 
 function sources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -44,6 +49,19 @@ function allowed(module: string): boolean {
   return module.startsWith(".") || module.startsWith("node:");
 }
 
+function allowedHere(module: string): boolean {
+  return allowed(module) || module === NARABE || module.startsWith(`${NARABE}/`);
+}
+
+/** The imports that cross out of these files, minus test support, which goes wherever the tests go. */
+function crossings(files: string[], ok: (module: string) => boolean): string[] {
+  return files.flatMap((file) => {
+    const modules = importsOf(readFileSync(file, "utf8"));
+    if (modules.includes("vitest")) return [];
+    return modules.filter((module) => !ok(module)).map((module) => `${file}: ${module}`);
+  });
+}
+
 describe("the engine's boundary", () => {
   const files = sources(ROOT);
 
@@ -52,13 +70,13 @@ describe("the engine's boundary", () => {
   });
 
   it("imports nothing of the site's: no alias, no database, no framework", () => {
-    const crossing = files.flatMap((file) => {
-      const modules = importsOf(readFileSync(file, "utf8"));
-      // Test support: it imports the runner, and goes wherever the tests go.
-      if (modules.includes("vitest")) return [];
-      return modules.filter((module) => !allowed(module)).map((module) => `${file}: ${module}`);
-    });
-    expect(crossing).toEqual([]);
+    expect(crossings(files, allowedHere)).toEqual([]);
+  });
+
+  it("keeps the rules engine's package on nothing but itself", () => {
+    const own = sources(PACKAGE).filter((file) => !file.endsWith(".tsx") && !file.endsWith("react.ts"));
+    expect(own.length).toBeGreaterThan(40);
+    expect(crossings(own, allowed)).toEqual([]);
   });
 
   it("reads the imports it is checking, so a new way of writing one is noticed", () => {
