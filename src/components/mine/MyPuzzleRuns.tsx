@@ -2,15 +2,17 @@ import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { PlayerName } from "@/components/players/PlayerName";
 import { sizeWord } from "@/components/puzzles/puzzles.constants";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
-import { familyPath, joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
+import { familyPath, joinQuery, matchPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
+import type { racesWaitingOn } from "@/lib/puzzles/server/puzzleRaces";
 
 import { GroupHeading } from "./GroupHeading";
 import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
@@ -29,13 +31,13 @@ import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
  * read once by `MyGamesList`, which also counts them on the tab. An empty panel
  * keeps its heading and says so, with the way to a puzzle.
  */
-export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>> }) {
+export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<typeof runsOf>>; races?: Awaited<ReturnType<typeof racesWaitingOn>> }) {
   const copy = MY_GAMES_COPY.puzzlesGoing;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzles-going">
-      <GroupHeading label={copy.label} kanji={copy.kanji} total={runs.length} waiting testId="puzzles-going" />
+      <GroupHeading label={copy.label} kanji={copy.kanji} total={runs.length + races.length} waiting testId="puzzles-going" />
       <p className="text-xs text-muted">{copy.hint}</p>
-      {runs.length === 0 ? (
+      {runs.length + races.length === 0 ? (
         <p className="text-sm text-muted" data-testid="puzzles-going-empty">
           {MY_GAMES_COPY.empty.puzzles}{" "}
           <Link href={familyPath("numberPlace")} className="font-medium text-ink underline underline-offset-4">
@@ -44,6 +46,32 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
         </p>
       ) : null}
       <ul className="flex flex-col gap-1.5">
+        {/* A race waiting on the reader: offered by name, or their seat not yet started. It opens the race's page, where the seat is taken or the clock started. */}
+        {races.map((race) => {
+          const kind = race.kind as PuzzleKind;
+          const href = matchPath(kind, race.id);
+          return (
+            <li key={race.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-race-waiting" data-kind={kind} data-race={race.id}>
+              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Race at ${kind}`} />
+              <GameThumb variant={kind} size="small" />
+              <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
+                <span className="truncate font-medium">
+                  <GameName variant={kind} raised />
+                </span>
+                <span className="text-xs text-muted">
+                  {sizeWord(race.size, kind)} · {PUZZLE_LEVEL_DISPLAY[race.level as PuzzleLevel].label} · a race against{" "}
+                  <PlayerName name={race.against.name} memberId={race.against.memberId} fallback="somebody" className={RAISED_LINK} tagged={false} />, waiting on you
+                </span>
+              </span>
+              <span className="ml-auto flex shrink-0 items-center gap-2">
+                <Link href={href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="puzzle-race-open">
+                  {MY_GAMES_COPY.raceOpen} →
+                </Link>
+                <CardArrow />
+              </span>
+            </li>
+          );
+        })}
         {runs.map((run) => {
           const kind = run.kind as PuzzleKind;
           const level = run.level as PuzzleLevel;
@@ -87,3 +115,4 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
     </section>
   );
 }
+

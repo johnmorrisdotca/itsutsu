@@ -10,10 +10,10 @@
 >   released-in backfill scripts (`pnpm board:released-in` and
 >   `pnpm board:released-in:derive`), and `pnpm backlog:cleanup-litter`.
 > - **New:** `pnpm task` works on `itsutsu-dev` and `pnpm task:prod` on the live
->   board; `pnpm release:take:prod --done <key>` closes live rows; the one-time
->   move is `pnpm board:export:prod`.
-> - The `BacklogItem` table stays in the schema, read by nothing, until a later
->   step drops it with a Neon branch taken first.
+>   board; `pnpm release:take:prod --done <key>` closes live rows. The one-time
+>   move was `pnpm board:export:prod`, retired with the table it read.
+> - The `BacklogItem` table was dropped on 2026-09-30, with a Neon branch and a
+>   DS1 dump taken first.
 >
 > The tickets below are kept as they were written.
 

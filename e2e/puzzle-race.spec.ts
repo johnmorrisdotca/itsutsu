@@ -2,7 +2,10 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { isWord } from "../src/lib/puzzles/gomoji/code";
+import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
+import { memberContext, memberIdFor, removeMember } from "./members";
 import { ADMIN_STATE, PLAYER_STATE, ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 
@@ -98,6 +101,104 @@ test.describe("a race at a puzzle", () => {
     await guest.context().close();
   });
 
+  test("a word race seat that runs out of guesses says so at once, and two given up is nobody's win", async ({ browser }) => {
+    const WORD_AT = `/games/${PUZZLE_SLUGS.gomoji}`;
+    const host = await asIdentity(browser, ADMIN_STATE);
+    const guest = await asIdentity(browser, PLAYER_STATE);
+    await host.goto(`${WORD_AT}/new`);
+    await ready(host, "puzzle-set-up");
+    await host.locator('[data-testid="set-up-size"][data-size="4"]').click();
+    await host.getByTestId("puzzle-level-hard").click();
+    await host.getByTestId("puzzle-race").click();
+    await expect(host).toHaveURL(new RegExp(`${WORD_AT}/match/[a-z0-9]{4}-[a-z0-9]{4}$`));
+    await ready(host, "race-controls");
+    const seatLink = new URL(await host.getByTestId("race-seat-link-address").inputValue()).pathname;
+    await guest.goto(seatLink);
+    await ready(guest, "race-controls");
+
+    // Six wrong words, worked out from the seed the page prints, so none of them is the answer.
+    const runOut = async (page: Page, seat: "host" | "guest") => {
+      await page.getByTestId("race-start").click();
+      await expect(page.getByTestId(`race-seat-${seat}`)).toHaveAttribute("data-state", "solving");
+      await ready(page, "puzzle-play");
+      const seed = Number((await page.getByTestId("puzzle-asked").textContent())?.match(/№ (\d+)/)?.[1]);
+      const answer = generatePuzzle("gomoji", 4, "hard", seed).solution;
+      const count = guessesFor("gomoji", 4, "hard", 0);
+      const wrong = ["tree", "cake", "moon", "fish", "bird", "lamp", "rope", "ship"].filter((word) => word !== answer && isWord(word, 4)).slice(0, count);
+      expect(wrong).toHaveLength(count);
+      for (const word of wrong) {
+        await page.keyboard.type(word);
+        await page.keyboard.press("Enter");
+      }
+      await expect(page.getByTestId("word-out")).toBeVisible();
+      // Settled now, not two hours from now: the page reads the stamps again by itself.
+      await expect(page.getByTestId(`race-seat-${seat}`)).toHaveAttribute("data-state", "gaveUp");
+      await expect(page.getByTestId(`race-seat-${seat}`)).toContainText("Out of guesses");
+    };
+
+    await runOut(host, "host");
+    await expect(host.getByTestId("race-outcome")).toContainText("Not over yet");
+    await runOut(guest, "guest");
+    await expect(guest.getByTestId("race-outcome")).toContainText("Nobody won");
+    await host.getByTestId("race-refresh").click();
+    await expect(host.getByTestId("race-outcome")).toContainText("Nobody won");
+
+    await host.context().close();
+    await guest.context().close();
+  });
+
+  test("a race offered to a buddy by name reaches their inbox and My games, and they sit without the link", async ({ browser, baseURL }) => {
+    // Two members of this test's own, so the buddy list, the inbox and My games hold only what it made.
+    const stamp = Date.now().toString(36);
+    const hostMember = { email: `race-host-${stamp}@example.test`, name: `Racer ${stamp}` };
+    const buddyMember = { email: `race-buddy-${stamp}@example.test`, name: `Buddy ${stamp}` };
+    const host = await (await memberContext(browser, baseURL!, hostMember)).newPage();
+    const buddy = await (await memberContext(browser, baseURL!, buddyMember)).newPage();
+    const buddyId = await memberIdFor(buddyMember.email);
+    expect((await host.context().request.post("/api/buddies", { data: { memberId: buddyId } })).status()).toBeLessThan(300);
+
+    await host.goto(`${AT}/new`);
+    await ready(host, "puzzle-set-up");
+    await host.locator('[data-testid="set-up-size"][data-size="4"]').click();
+    await host.getByTestId("puzzle-race").click();
+    await expect(host).toHaveURL(new RegExp(`${AT}/match/[a-z0-9-]+$`));
+    const id = host.url().split("/match/")[1];
+    await ready(host, "race-offer");
+    await host.getByTestId("race-offer-choose").selectOption(buddyId);
+    await host.getByTestId("race-offer-send").click();
+    // Names are shown short ("Buddy M."), so the first word says who.
+    await expect(host.getByTestId("race-offered-to")).toContainText("Offered to Buddy");
+    // The link stays beside it: a person who is not a buddy is still sent that.
+    await expect(host.getByTestId("race-seat-link")).toBeVisible();
+
+    // The buddy is told in their inbox, and the line opens the race.
+    await buddy.goto("/inbox");
+    const told = buddy.locator('[data-testid="inbox-item"][data-kind="race-offer"]');
+    await expect(told).toHaveCount(1);
+    await expect(told).toContainText("Racer");
+    // And it waits on My games, where its row opens the race too.
+    await buddy.goto("/play");
+    await expect(buddy.locator(`[data-testid="puzzle-race-waiting"][data-race="${id}"]`)).toBeVisible();
+    await buddy.locator(`[data-testid="puzzle-race-waiting"][data-race="${id}"]`).getByTestId("puzzle-race-open").click();
+    await expect(buddy).toHaveURL(new RegExp(`/match/${id}$`));
+
+    // They take the seat from the race's own page, with no link handed over.
+    await buddy.getByTestId("race-take-seat").click();
+    await expect(buddy).toHaveURL(new RegExp(`/match/${id}$`));
+    await ready(buddy, "race-controls");
+    await expect(buddy.getByTestId("race-seat-guest")).toContainText("(you)");
+    await expect(buddy.getByTestId("race-start")).toBeVisible();
+
+    // Only the host can offer the seat.
+    const again = await buddy.context().request.post(`/api/puzzles/races/${id}/offer`, { data: { memberId: buddyId } });
+    expect(again.status()).toBe(403);
+
+    await host.context().close();
+    await buddy.context().close();
+    await removeMember(hostMember.email);
+    await removeMember(buddyMember.email);
+  });
+
   test("a stranger is sent to join by the seat link, and nobody outside the race can hand a grid in", async ({ browser, playwright, baseURL }) => {
     const host = await asIdentity(browser, ADMIN_STATE);
     await host.goto(`${AT}/new`);
@@ -125,6 +226,8 @@ test.describe("a race at a puzzle", () => {
     expect([401, 403]).toContain(refused.status());
     const notStarted = await nobody.post(`/api/puzzles/races/${id}/start`);
     expect([401, 403]).toContain(notStarted.status());
+    const notGivenUp = await nobody.post(`/api/puzzles/races/${id}/give-up`);
+    expect([401, 403]).toContain(notGivenUp.status());
     await nobody.dispose();
     await host.context().close();
   });

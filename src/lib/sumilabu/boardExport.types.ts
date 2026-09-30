@@ -1,25 +1,5 @@
 import type { BacklogEffort, BacklogKind, BacklogPriority, BacklogStatus } from "../backlog/backlog.types.ts";
 
-/** A `BacklogItem` row as Prisma returns it: the stored words, legacy statuses included. */
-export type StoredBacklogRow = {
-  id: string;
-  key: string;
-  title: string;
-  detail: string;
-  kind: string;
-  status: string;
-  priority: string | null;
-  effort: string | null;
-  askedBy: string;
-  addedBy: string | null;
-  claimedBy: string | null;
-  claimedAt: Date | null;
-  releasedIn: string | null;
-  releasedAt: Date | null;
-  createdAt: Date;
-  movedAt: Date;
-};
-
 /** One row as Sumilabu's `POST tickets/import` takes it, in the contract's words. */
 export type SumilabuImportRow = {
   id: string;

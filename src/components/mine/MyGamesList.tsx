@@ -11,6 +11,7 @@ import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinishe
 import { MY_GAME_GROUPS, fetchMyGames, pagedGroup, shownGroup, type MyGameGroup } from "@/lib/history/myGames";
 import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, type MyGamesView } from "@/lib/history/myGamesViews";
 import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
+import { racesWaitingOn } from "@/lib/puzzles/server/puzzleRaces";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { xpEarnedIn } from "@/lib/xp/xpOfGames";
 import type { Tab } from "@/lib/ui/tabs";
@@ -255,8 +256,10 @@ export async function MyGamesList({
     MY_FINISHED_PAGE_OPEN,
     queue.finished.next !== null || (tables?.finishedMore ?? false) || (device?.more ?? false) || (solves?.more ?? false),
   );
-  const [runs, tags, earned] = await Promise.all([
+  // And the races waiting on the reader, offered or not yet started (`racesWaitingOn`), in the same panel as the puzzles.
+  const [runs, races, tags, earned] = await Promise.all([
     memberId === null ? [] : runsOf(memberId),
+    memberId === null || view !== "going" ? [] : racesWaitingOn(memberId, now),
     nameTagsOf([...listed.flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId]), ...(device?.entries ?? []).flatMap((entry) => entry.others.map((other) => other.memberId))]),
     view === "completed" ? xpEarnedIn(memberId, [...groups.finished, ...favourites.rows].map((item) => item.game.id)) : new Map<string, number>(),
   ]);
@@ -347,7 +350,7 @@ export async function MyGamesList({
   const going = gamesGoing(groups);
   // Each tab counts what it holds: Going its games and the puzzles left part way, Completed its games and the puzzles finished.
   const counts: Record<MyGamesView, number> = {
-    going: going + runs.length + (tables?.going.length ?? 0),
+    going: going + runs.length + races.length + (tables?.going.length ?? 0),
     completed: completedTotal,
     "pass-and-play": groups.hotSeat.length,
     // Counted on its own tab only (`MyHistorySection`): four counts on every visit to /play is a price for a badge.
@@ -401,7 +404,7 @@ export async function MyGamesList({
         )
       ) : null}
       {/* The puzzles left part way, under Going with the games (John: "not two areas"). */}
-      {view === "going" && runs.length > 0 ? <MyPuzzleRuns runs={runs} /> : null}
+      {view === "going" && runs.length + races.length > 0 ? <MyPuzzleRuns runs={runs} races={races} /> : null}
       {/* The party tables on several devices, a panel of their own: a table's turn goes round several people. */}
       {view === "going" && tables !== null ? <MyTables tables={tables.going} finished={false} tags={tables.tags} /> : null}
       {view === "going" ? openSeats : null}

@@ -868,7 +868,7 @@ model XpEvent {
   memberId String
   /// The key in XP_EVENTS. Deliberately not a Prisma enum: a Postgres enum
   /// member cannot be renamed under rows that hold it, and this catalogue will
-  /// grow — BacklogStatus carries three legacy values for exactly that reason.
+  /// grow — the old board's BacklogStatus carried three legacy values for exactly that reason.
   /// `XpEventType` in src/lib/xp/xp.types.ts is what keeps it honest.
   type     String
   /// What was actually paid, AT THE TIME. Not what the type is worth now:
@@ -1061,137 +1061,6 @@ model SocialRowWithoutMember {
   target     String
   createdAt  DateTime
   setAsideAt DateTime @default(now())
-}
-
-/// Where a wanted thing stands.
-///
-/// The five are the questions actually asked about a request, in order: has
-/// anyone asked for it, has it been agreed, is somebody on it, is it in, was
-/// it decided against. `dropped` is a status rather than a deletion, because
-/// "we talked about that and said no" is the answer a board most often has to
-/// give twice.
-/// How much a thing matters, when somebody has said.
-enum BacklogPriority {
-  high
-  normal
-  low
-}
-
-/// How much work a thing is, and how much can go wrong doing it. Risk lives
-/// here rather than in a third column: three axes on a board nobody fills in
-/// is worse than two that get used.
-enum BacklogEffort {
-  small
-  medium
-  large
-}
-
-enum BacklogStatus {
-  open
-  inProgress
-  done
-  dropped
-
-  /// The three the board used to have. `proposed` and `planned` were the same
-  /// thing — asked for, nobody on it — because there is no gap here between
-  /// agreeing to something and starting it, so `planned` was empty every day
-  /// it existed. `building` is what `inProgress` says plainly.
-  ///
-  /// Kept in the type rather than dropped with the rows so that new code can
-  /// read an old row: the deploy goes out before the migration, reads the old
-  /// values through `statusFrom`, and shows them in the right column before
-  /// anything is rewritten. Removing them is a separate migration, once no row
-  /// has said one of them for long enough to be sure.
-  proposed
-  planned
-  building
-}
-
-/// What sort of thing was asked for. A board that mixes "add Go" with "the
-/// move scrubber skips a move" reads as noise unless every line says which
-/// of the two it is.
-enum BacklogKind {
-  feature
-  fix
-  chore
-}
-
-/// One thing somebody asked for.
-///
-/// Until this table there was no such thing as a request here: features and
-/// faults were raised in conversation and lived only there, so the answer to
-/// "what did I ask for" was whoever had scrolled back furthest. A row is the
-/// request itself — addressable, countable, and still there next week.
-model BacklogItem {
-  id  String @id @default(cuid())
-  /// A stable kebab-case name, unique across the board. It is what makes
-  /// seeding idempotent — the starter set carries its own keys, so seeding a
-  /// database that already holds them changes nothing — and it gives a commit
-  /// message or a chat something short to cite.
-  key String @unique
-
-  title  String
-  /// The longer telling: what was asked for, and anything settled since. May
-  /// be empty; a one-line request is still a request.
-  detail String @default("")
-
-  kind   BacklogKind   @default(feature)
-
-  /// How much this matters and how much work it is, once somebody has judged
-  /// it. Two axes because they are independent — a valuable hard thing and a
-  /// trivial easy thing are the same number on one axis, and telling those
-  /// apart is the point of grading at all.
-  ///
-  /// Null until graded, with no default on purpose: "normal" for everything
-  /// would be a judgement nobody made, written onto every row, and unreadable
-  /// afterwards from one somebody did make.
-  priority BacklogPriority?
-  effort   BacklogEffort?
-  status BacklogStatus @default(open)
-
-  /// Who asked, as free text. Requests arrive in chat, in a game, or from the
-  /// owner himself, and most have no account behind them; a name here is worth
-  /// more than a relation that would usually be null.
-  askedBy String  @default("")
-  /// The member who typed the row in, by email, when a signed-in one did.
-  addedBy String?
-  /// Who holds this and since when. In progress is not a status here, it is
-  /// this pair: a hold nobody has renewed inside the lease (six hours, see
-  /// backlog.ts) is free again, or one crashed session takes a row out of
-  /// circulation for good. Free text, for the same reason askedBy is free
-  /// text — the people working on this are not all accounts here. Both null
-  /// together mean nobody has it, and a mover writes them together always;
-  /// nothing sets one without the other.
-  claimedBy String?   @db.VarChar(80)
-  claimedAt DateTime?
-
-  createdAt DateTime @default(now())
-  /// When the status last changed — deliberately not "when the row was last
-  /// written". The board is read as "what has moved", and fixing a typo in a
-  /// title is not movement, so @updatedAt would answer a different question.
-  movedAt   DateTime @default(now())
-  /// The version that was running when this row was marked done, stamped as
-  /// the move happens and cleared if it ever leaves done again.
-  ///
-  /// Stamped rather than worked out afterwards, because it cannot be worked
-  /// out. The changelog lists 126 releases and dates none of them, so there
-  /// is nothing for a date to fall between; and the releases that can be
-  /// dated at all are thirty-six that landed on one day, which day
-  /// granularity could not tell apart even if the dates were there.
-  ///
-  /// Null for every row finished before this column existed, and left that
-  /// way on purpose — a release invented for them would be a fact nobody
-  /// established, which is worse than an empty space that admits it.
-  releasedIn String?
-  /// The instant of the release that carried this, written by the release
-  /// tool beside releasedIn (see board-convergence ITS-04). Null for every
-  /// row finished before it existed, and for every row that is not done.
-  releasedAt DateTime?
-  updatedAt DateTime @updatedAt
-
-  /// The board's own ordering: one status at a time, most recently moved first.
-  @@index([status, movedAt])
-  @@index([createdAt])
 }
 
 /// One site-level thing the operator has said about how this site behaves,
@@ -1443,15 +1312,21 @@ model PuzzleRace {
   guestToken    String    @unique @default(cuid())
   guestMemberId String?
   guestName     String    @default("")
+  /// A member the host offered the guest seat to by name, from their buddies: told in their inbox, shown on their My games, and let sit without the link.
+  offeredToMemberId String?
   hostStartedAt   DateTime?
   hostFinishedAt  DateTime?
   guestStartedAt  DateTime?
   guestFinishedAt DateTime?
+  /// When a seat ended unsolved, its guesses run out: settled at once rather than at the end of the sitting.
+  hostGaveUpAt    DateTime?
+  guestGaveUpAt   DateTime?
   /// The Check allowance both seats race under, 3 or 1, or null for no limit (every race before it existed).
   checksAllowed   Int?
 
   @@index([hostMemberId, createdAt])
   @@index([guestMemberId, createdAt])
+  @@index([offeredToMemberId, createdAt])
 }
 
 /// A PARTY TABLE PLAYED ON SEVERAL DEVICES: one game of a party table (Dots and

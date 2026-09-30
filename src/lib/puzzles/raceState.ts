@@ -12,24 +12,29 @@
  * The winner is the faster correct solve. One finish against a seat given up
  * is a win; two given up is nothing; a seat still waiting or solving means
  * the race is not over.
+ *
+ * A seat is also GIVEN UP the moment it says so (`gaveUpAt`): a word puzzle
+ * whose guesses ran out cannot be finished, so the seat stamps that rather
+ * than leaving the other player watching a clock for two hours.
  */
 export const RACE_SITTING_MS = 2 * 60 * 60 * 1000;
 
 export type RaceSeat = "host" | "guest";
 export const RACE_SEATS: readonly RaceSeat[] = ["host", "guest"];
 
-export type SeatStamps = { startedAt: Date | null; finishedAt: Date | null };
+export type SeatStamps = { startedAt: Date | null; finishedAt: Date | null; gaveUpAt?: Date | null };
 
 export type SeatState =
   | { state: "waiting" }
   | { state: "solving"; since: Date }
   | { state: "finished"; elapsedMs: number }
-  | { state: "gaveUp" };
+  | { state: "gaveUp"; why: "outOfGuesses" | "sittingOver" };
 
 export function seatState(stamps: SeatStamps, now: Date): SeatState {
   if (stamps.startedAt === null) return { state: "waiting" };
   if (stamps.finishedAt !== null) return { state: "finished", elapsedMs: stamps.finishedAt.getTime() - stamps.startedAt.getTime() };
-  if (now.getTime() - stamps.startedAt.getTime() > RACE_SITTING_MS) return { state: "gaveUp" };
+  if (stamps.gaveUpAt != null) return { state: "gaveUp", why: "outOfGuesses" };
+  if (now.getTime() - stamps.startedAt.getTime() > RACE_SITTING_MS) return { state: "gaveUp", why: "sittingOver" };
   return { state: "solving", since: stamps.startedAt };
 }
 
@@ -51,6 +56,11 @@ export function raceOutcome(host: SeatState, guest: SeatState): RaceOutcome {
 /** Whether a seat may still press Start: not started, and the other seat has not finished so long ago that a start is pointless is NOT a rule — a late start still counts, and loses on time. */
 export function canStart(seat: SeatState): boolean {
   return seat.state === "waiting";
+}
+
+/** Whether a seat may give up: only while it is solving — never before its Start, never after a finish. */
+export function canGiveUp(seat: SeatState): boolean {
+  return seat.state === "solving";
 }
 
 /** Whether a seat may hand an answer in: started, inside its sitting, not yet finished. */

@@ -1,7 +1,11 @@
 import "server-only";
 
 import { makeGameId } from "@/lib/history/gameId";
+import { recordInbox } from "@/lib/inbox/inbox";
+import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { prisma } from "@/lib/prisma";
+import { buddyMemberIds } from "@/lib/social/buddies";
+import { isIgnoring } from "@/lib/social/ignores";
 import { awardXp } from "@/lib/xp/awardXp";
 import { XP_EVENTS } from "@/lib/xp/xp.constants";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
@@ -12,7 +16,7 @@ import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS, levelsFor } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import type { KumimojiLanguage, KumimojiLength } from "../kumimoji/kumimoji.types";
-import { type RaceOutcome, type RaceSeat, type SeatState, canFinish, canStart, raceOutcome, seatState } from "../raceState";
+import { type RaceOutcome, type RaceSeat, type SeatState, canFinish, canGiveUp, canStart, raceOutcome, seatState } from "../raceState";
 import { keepSolve } from "./puzzleSolves";
 
 /**
@@ -103,8 +107,8 @@ export type RaceRead = {
 };
 
 export function readRace(race: NonNullable<Awaited<ReturnType<typeof raceFor>>>, now = new Date()): RaceRead {
-  const host = seatState({ startedAt: race.hostStartedAt, finishedAt: race.hostFinishedAt }, now);
-  const guest = race.guestMemberId === null ? { state: "waiting" as const } : seatState({ startedAt: race.guestStartedAt, finishedAt: race.guestFinishedAt }, now);
+  const host = seatState({ startedAt: race.hostStartedAt, finishedAt: race.hostFinishedAt, gaveUpAt: race.hostGaveUpAt }, now);
+  const guest = race.guestMemberId === null ? { state: "waiting" as const } : seatState({ startedAt: race.guestStartedAt, finishedAt: race.guestFinishedAt, gaveUpAt: race.guestGaveUpAt }, now);
   return { host, guest, outcome: raceOutcome(host, guest) };
 }
 
@@ -166,21 +170,44 @@ export async function finishSeat(
   const paid = await awardXp({ memberId, awards: puzzleAwards(kind, race.size, race.givens), now });
   await awardTourBonuses({ memberId, paid, variant: kind, now });
 
-  const after = await raceFor(id);
-  const outcome = after === null ? before.outcome : readRace(after, now).outcome;
+  const { outcome, wonPoints } = await settleIfOver(race, memberId, before.outcome, now);
   const awards = paid.awards.filter((award) => award.points > 0).map((award) => award.type as string);
-  let points = paid.points;
-  if (outcome.over && outcome.winner !== null) {
-    const winnerId = outcome.winner === "host" ? race.hostMemberId : race.guestMemberId;
-    if (winnerId !== null) {
-      const won = await awardXp({ memberId: winnerId, awards: [{ type: XP_EVENTS.raceWon, subject: id }], now });
-      if (winnerId === memberId && won.points > 0) {
-        points += won.points;
-        awards.push(XP_EVENTS.raceWon);
-      }
-    }
-  }
-  return { ok: true, elapsedMs, points, awards, outcome };
+  if (wonPoints > 0) awards.push(XP_EVENTS.raceWon);
+  return { ok: true, elapsedMs, points: paid.points + wonPoints, awards, outcome };
+}
+
+/** Read the race again after a seat settled; if that ended it, pay the winner `raceWon` once (its subject is the race). */
+async function settleIfOver(race: RaceRow, memberId: string, fallback: RaceOutcome, now: Date): Promise<{ outcome: RaceOutcome; wonPoints: number }> {
+  const after = await raceFor(race.id);
+  const outcome = after === null ? fallback : readRace(after, now).outcome;
+  if (!outcome.over || outcome.winner === null) return { outcome, wonPoints: 0 };
+  const winnerId = outcome.winner === "host" ? race.hostMemberId : race.guestMemberId;
+  if (winnerId === null) return { outcome, wonPoints: 0 };
+  const won = await awardXp({ memberId: winnerId, awards: [{ type: XP_EVENTS.raceWon, subject: race.id }], now });
+  return { outcome, wonPoints: winnerId === memberId ? won.points : 0 };
+}
+
+/**
+ * A seat ends unsolved — a word puzzle whose guesses ran out. Stamped once,
+ * only while the seat is solving, so the race settles now instead of at the
+ * end of the sitting; if the other seat has already finished, it is paid its
+ * win here. Nothing to check: giving up only ever costs the seat that does it.
+ */
+export async function giveUpSeat(id: string, seat: RaceSeat, memberId: string, now = new Date()): Promise<{ ok: true; outcome: RaceOutcome } | { ok: false; reason: string; status: 404 | 409 }> {
+  const race = await raceFor(id);
+  if (race === null) return { ok: false, reason: "no such race", status: 404 };
+  const before = readRace(race, now);
+  const mine = seat === "host" ? before.host : before.guest;
+  if (!canGiveUp(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "already over" : "not started", status: 409 };
+  const stamped = await prisma.puzzleRace.updateMany({
+    where: seat === "host"
+      ? { id, hostStartedAt: { not: null }, hostFinishedAt: null, hostGaveUpAt: null }
+      : { id, guestStartedAt: { not: null }, guestFinishedAt: null, guestGaveUpAt: null },
+    data: seat === "host" ? { hostGaveUpAt: now } : { guestGaveUpAt: now },
+  });
+  if (stamped.count !== 1) return { ok: false, reason: "already over", status: 409 };
+  const { outcome } = await settleIfOver(race, memberId, before.outcome, now);
+  return { ok: true, outcome };
 }
 
 /** The races a member is in, newest first, for their page of a puzzle. */
@@ -190,4 +217,58 @@ export async function racesOf(memberId: string, kind: PuzzleKind, take = 50) {
     orderBy: { createdAt: "desc" },
     take,
   });
+}
+
+export type OfferResult = "offered" | "none" | "notHost" | "taken" | "notBuddy";
+
+/**
+ * The host offers the guest seat to a member by name, from their own buddies:
+ * written on the race, told in that member's inbox, and shown on their My
+ * games; they may sit without the link. Only while the seat is empty, and a
+ * second offer moves it to somebody else. A buddy who has chosen not to hear
+ * from the host is offered it as anybody else is, and told nothing, as
+ * everywhere an ignore applies.
+ */
+export async function offerRace(id: string, host: { id: string; name: string }, toMemberId: string): Promise<OfferResult> {
+  const race = await raceFor(id);
+  if (race === null) return "none";
+  if (race.hostMemberId !== host.id) return "notHost";
+  if (race.guestMemberId !== null) return "taken";
+  if (toMemberId === host.id || !(await buddyMemberIds(host.id)).has(toMemberId)) return "notBuddy";
+  const offered = await prisma.puzzleRace.updateMany({ where: { id, guestMemberId: null }, data: { offeredToMemberId: toMemberId } });
+  if (offered.count !== 1) return "taken";
+  if (!(await isIgnoring(toMemberId, host.id))) {
+    await recordInbox([{ memberId: toMemberId, kind: INBOX_KINDS.raceOffer, gameId: id, variant: race.kind, fromName: host.name, fromMemberId: host.id }]);
+  }
+  return "offered";
+}
+
+/** How long a race offered, or a seat not yet started, waits on My games: the inbox's thirty days. */
+const RACE_WAITS_DAYS = 30;
+
+/**
+ * The races waiting on a member, newest first, for My games: offered to them
+ * and not yet taken, or a seat of theirs not yet started while the other seat
+ * is filled. A host's race nobody has sat down to is not waiting on the host.
+ */
+export async function racesWaitingOn(memberId: string, now = new Date()) {
+  const since = new Date(now.getTime() - RACE_WAITS_DAYS * 24 * 60 * 60 * 1000);
+  const rows = await prisma.puzzleRace.findMany({
+    where: {
+      createdAt: { gte: since },
+      OR: [
+        { offeredToMemberId: memberId, guestMemberId: null },
+        { guestMemberId: memberId, guestStartedAt: null },
+        { hostMemberId: memberId, hostStartedAt: null, guestMemberId: { not: null } },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: { id: true, kind: true, size: true, level: true, hostName: true, hostMemberId: true, guestName: true, guestMemberId: true, createdAt: true },
+  });
+  // Who each is against: the guest for the host, the host for anybody else.
+  return rows.map((row) => ({
+    ...row,
+    against: row.hostMemberId === memberId ? { name: row.guestName, memberId: row.guestMemberId } : { name: row.hostName, memberId: row.hostMemberId },
+  }));
 }

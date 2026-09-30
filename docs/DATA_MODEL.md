@@ -50,7 +50,7 @@ migrate deploy` before the new code goes live.
 - **Write migrations that the old code survives.** The migration runs before
   the new build is live, so for a few minutes the old code reads the new
   schema. Add columns with defaults, keep old enum values readable, and remove
-  things in a later release once nothing reads them. `BacklogStatus` carries
+  things in a later release once nothing reads them. The old `BacklogStatus` carried
   three retired values for exactly this reason.
 - **Back up production first.** Take a Neon branch and a dump to the
   DiskStation before any migration or data write. `AGENTS.md`, "Back It Up
@@ -192,13 +192,19 @@ posted it whole; the guest comes in by the seat link, as for a game, and
 must be a member (a solve is kept and paid by member id). Each seat's start
 and finish are the server's own stamps; a seat started and not finished
 inside a sitting (`RACE_SITTING_MS`, two hours) reads as given up, decided
-whenever the race is read and never by a timer.
+whenever the race is read and never by a timer. A word puzzle whose guesses
+run out stamps its seat given up at once (`hostGaveUpAt`/`guestGaveUpAt`), so
+the race settles then rather than at the end of the sitting. The host may also
+offer the empty seat to a buddy by name (`offeredToMemberId`): they are told in
+their inbox, find it on My games, and may take the seat from the race's page.
 
 | Group | Columns | Notes |
 | --- | --- | --- |
 | The puzzle | `kind`, `size`, `level`, `seed`, `givens`, `solution` | The seed lets the guest's browser make the same grid; `solution` is kept to check a finish in O(cells) and never sent out |
 | Seats | `hostMemberId`, `hostName`, `guestToken`, `guestMemberId`, `guestName` | The token is the guest's seat, shown to the host only while the seat is empty |
+| Offered | `offeredToMemberId` | A buddy the host offered the empty seat to; they are shown the seat's link on the race page. Cleared when that member is removed |
 | Clocks | `hostStartedAt`, `hostFinishedAt`, `guestStartedAt`, `guestFinishedAt` | Written once each, by the server |
+| Given up | `hostGaveUpAt`, `guestGaveUpAt` | Written once, by the server, when a seat's word ran out of guesses; the seat reads as given up at once |
 
 The id is a game's shape (`makeGameId`), so a race sits at
 `/games/<slug>/match/<id>` like a match.
@@ -332,11 +338,11 @@ subject.
 ## Tables nothing reads any more
 
 Kept in the schema until a later migration drops them, with a Neon branch
-taken first.
+taken first. `BacklogItem` and its four enums were dropped on 2026-09-30, the
+features board having moved to Sumilabu.
 
 | Model | Why it is idle |
 | --- | --- |
-| `BacklogItem` | The features board moved to Sumilabu. The rows live there now, reached through `src/lib/sumilabu/boardClient.ts` |
 | `SiteSetting` | Site settings moved to Sumilabu's settings store (`src/lib/site/siteStore.ts`). Absence of a setting still means its default |
 | `AutoMatchRequest` | Unused since 0.54.0, when a request with nobody to pair became a posted seat |
 | `SocialRowWithoutMember` | Buddies, ignores and marks whose address had no member when the social tables moved to member ids. Set aside rather than dropped; nothing reads it |
@@ -347,10 +353,6 @@ taken first.
 | --- | --- | --- |
 | `GameResult` | `black`, `white`, `draw`, `abandoned` | `Game.result` |
 | `GameLifecycle` | `active`, `finished` | `Game.status` |
-| `BacklogStatus` | `open`, `inProgress`, `done`, `dropped`, plus retired `proposed`, `planned`, `building` | `BacklogItem` |
-| `BacklogKind` | `feature`, `fix`, `chore` | `BacklogItem` |
-| `BacklogPriority` | `high`, `normal`, `low` | `BacklogItem` |
-| `BacklogEffort` | `small`, `medium`, `large` | `BacklogItem` |
 
 ## Known oddities in the schema file
 
@@ -363,8 +365,7 @@ Worth knowing so they do not mislead:
   credential for a seat, which is the part that remains true.
 - **Doc comments attached to the wrong model.** Prisma attaches a `///`
   comment to whatever follows it. The comment describing `Reaction` sits above
-  `Applause`, the one describing `Ignore` sits above `DirectMessage`, the note
-  on `BacklogStatus` sits above `BacklogPriority`, and the note on
+  `Applause`, the one describing `Ignore` sits above `DirectMessage`, and the note on
   `Game.openSeat` sits above `blackVerdict`. Read the comment by its content,
   not by its position.
 - **`Game.result` has a placeholder value.** A game in play says `abandoned`
@@ -372,5 +373,3 @@ Worth knowing so they do not mislead:
   result".
 - **`Player.key` is a folded name, not a member.** Some rows are still keyed
   by a name the member no longer uses; `memberId` is what connects them.
-- **`BacklogItem.addedBy` is an email**, from before the move to member ids,
-  and the table is idle anyway.

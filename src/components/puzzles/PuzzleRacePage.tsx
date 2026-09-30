@@ -7,7 +7,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
-import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentReader } from "@/lib/auth/currentReader";
 import { requestOrigin } from "@/lib/requestOrigin";
 import { gamePath, seatPath, setUpPath } from "@/lib/gomoku/slugs";
@@ -16,9 +16,12 @@ import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { RACE_SEATS, type RaceSeat, type SeatState } from "@/lib/puzzles/raceState";
 import { raceFor, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
+import { memberNamed } from "@/lib/auth/members";
+import { fetchBuddies } from "@/lib/social/buddies";
 
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
 import { RaceControls } from "./RaceControls";
+import { RaceOffer } from "./RaceOffer";
 import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -56,6 +59,11 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
         })()
       : null;
 
+  // Offered by name (`offerRace`): who to, for the seat's words; the host's buddies to choose from; and, for the one it was offered to, the seat to take.
+  const offeredTo = race.guestMemberId === null && race.offeredToMemberId !== null ? await memberNamed(race.offeredToMemberId) : null;
+  const buddies = invite === null || reader.memberId === null ? [] : (await fetchBuddies(reader.memberId)).map((buddy) => ({ id: buddy.id, name: buddy.name }));
+  const offeredHere = seat === null && offeredTo !== null && offeredTo.id === reader.memberId;
+
   return (
     // A board page whose play draws "Just the board" beside its size (`BoardScale`).
     <Page board="play">
@@ -79,7 +87,11 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
           {RACE_SEATS.map((each) => (
             <li key={each} className="flex flex-col gap-0.5 rounded-lg border border-rule px-3 py-2 text-sm" data-testid={`race-seat-${each}`} data-state={read[each].state}>
               <span className="font-medium">
-                {names[each].memberId === null ? (
+                {names[each].memberId === null && each === "guest" && offeredTo !== null ? (
+                  <span className="text-muted" data-testid="race-offered-to">
+                    Offered to <PlayerName name={offeredTo.name} memberId={offeredTo.id} fallback="a buddy" tagged={false} />
+                  </span>
+                ) : names[each].memberId === null ? (
                   <span className="text-muted">The other seat, still open</span>
                 ) : (
                   <PlayerName name={names[each].name} memberId={names[each].memberId} fallback={each === "host" ? "The host" : "The guest"} />
@@ -93,6 +105,12 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
         <p className="text-sm font-medium" data-testid="race-outcome">
           {outcomeWords(read.outcome, names)}
         </p>
+        {offeredHere ? (
+          /* A whole-page load, not a client navigation: the seat route claims and redirects back to this very address, which the router would otherwise answer from its cache, seatless. */
+          <a href={seatPath(kind, id, race.guestToken)} className={`${BUTTON_BASE} ${BUTTON_STRONG} self-start px-5 py-2`} data-testid="race-take-seat">
+            Take the seat and race →
+          </a>
+        ) : null}
         <RaceControls
           id={id}
           seat={seat}
@@ -100,6 +118,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
           invite={invite}
           label={copy.label}
         />
+        {invite !== null ? <RaceOffer id={id} buddies={buddies} offeredTo={offeredTo?.id ?? null} /> : null}
       </section>
 
       {seat !== null && mine !== null && mine.state === "solving" ? (
@@ -124,7 +143,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
           A race is between two members, and this sign-in has no member account, so the seat was not taken.
         </p>
       ) : null}
-      {seat === null ? (
+      {seat === null && !offeredHere ? (
         <p className="text-sm text-muted" data-testid="race-not-yours">
           This race is between the two people above. Start one of your own from{" "}
           <Link href={setUpPath(kind)} className="underline underline-offset-2">
@@ -147,7 +166,7 @@ function seatWords(state: SeatState, empty: boolean): string {
     case "finished":
       return `Solved in ${clockText(state.elapsedMs)}.`;
     case "gaveUp":
-      return "Gave up: the sitting ran out with no finish.";
+      return state.why === "outOfGuesses" ? "Out of guesses: no finish." : "Gave up: the sitting ran out with no finish.";
   }
 }
 

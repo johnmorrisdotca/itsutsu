@@ -51,7 +51,7 @@ export function InboxList({ items }: { items: readonly InboxItemShown[] }) {
                 </Link>
               ) : item.gameId !== null && item.variant !== null ? (
                 <Link href={atTable(item.kind) ? tablePath(item.variant, item.gameId) : matchPath(item.variant, item.gameId)} className="underline underline-offset-4" data-testid="inbox-open">
-                  {item.kind === INBOX_KINDS.offer ? INBOX_COPY.answer : INBOX_COPY.open}
+                  {item.kind === INBOX_KINDS.offer || item.kind === INBOX_KINDS.raceOffer ? INBOX_COPY.answer : INBOX_COPY.open}
                 </Link>
               ) : null}
             </p>
@@ -102,6 +102,12 @@ function Said({ item }: { item: InboxItemShown }) {
       return (
         <>
           {who} {INBOX_COPY.tableInvite} {game}.
+        </>
+      );
+    case INBOX_KINDS.raceOffer:
+      return (
+        <>
+          {who} {INBOX_COPY.raceOffer} {game}.
         </>
       );
     case INBOX_KINDS.tableOver:

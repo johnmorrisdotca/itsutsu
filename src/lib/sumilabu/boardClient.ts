@@ -10,8 +10,8 @@ import type { SumilabuTarget } from "./sumilabuProject.types.ts";
  * Itsutsu's features board, which lives on Sumilabu.
  *
  * One thin client, and the only one, for every caller — `pnpm task`,
- * `pnpm release:take --done`, the /backlog page through `backlogStore.ts`, and
- * the one-time `pnpm board:export` — in UmaKuma's pattern. The
+ * `pnpm release:take --done`, and the /backlog page through `backlogStore.ts` —
+ * in UmaKuma's pattern. The
  * board speaks the contract's words (`docs/plans/board-convergence/BOARD_RULES.md`),
  * which are Itsutsu's own words already, so the only translation is from the
  * service's nulls to the empty strings a `BacklogItem` has always carried.
@@ -283,7 +283,8 @@ export async function boardTakesKeys(target: SumilabuTarget): Promise<boolean> {
 }
 
 /**
- * One batch of the one-time move of Itsutsu's board (`pnpm board:export`).
+ * One batch of the one-time move of Itsutsu's board, which was `pnpm board:export`
+ * until that move was done and the `BacklogItem` table it read was dropped.
  * The service upserts by id, so a run stopped half way is run again; a refusal
  * comes back as one problem per row.
  */
