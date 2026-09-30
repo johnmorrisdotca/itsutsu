@@ -15,6 +15,7 @@ import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
 import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 import { cardDealOfSeed } from "@/lib/puzzles/cardDeals";
 import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import { awardXp } from "@/lib/xp/awardXp";
@@ -147,6 +148,11 @@ export async function POST(request: Request) {
        names is checked in a pass: a won game of some other deal is not a game of this one. */
     if (spec.cards === true && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cardDealOfSeed(kind, size, parsed.data.seed) !== givens)) {
       return unprocessable("Not the deal of that seed.");
+    }
+    /* A cube's scramble is its seed's (`cube/generate.ts`), so the one it names is checked the same way:
+       a solve of some other cube is not a solve of this one. */
+    if (kind === "cube" && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cubeOfSeed(size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed) !== givens)) {
+      return unprocessable("Not the cube of that seed.");
     }
 
     const checksAllowed = parsed.data.checksAllowed ?? null;

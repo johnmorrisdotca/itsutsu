@@ -300,7 +300,24 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["mexicanTrain"],
     notOnSetUp:
       "A dominoes game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },  {
+    key: "cubes",
+    /*
+     * CUBES. John, 2026-09-29: "a whole Rubik's cube section where people can
+     * play on all the smallest to regular 3x3 size cubes, and solve. it's 3d
+     * and rotatable". The shelf for puzzles turned in the hand, opened with
+     * the cube itself at four sizes; the cube is Kyuubu (`packages/kyuubu`), a
+     * package of its own. Other turning puzzles, and the guide to solving one,
+     * are at home here later.
+     *
+     * 立方 (rippō): a cube, as in 立方体 — the shape, and nobody's brand.
+     */
+    title: "Cubes",
+    kanji: "立方",
+    blurb: "Puzzles you turn in your hand, drawn in 3D: scramble a cube from 2×2 to 5×5 and turn it back until every face is one colour, against the clock.",
+    games: ["cube"],
   },
+
   {
     key: "party",
     /*

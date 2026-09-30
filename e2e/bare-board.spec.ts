@@ -402,6 +402,7 @@ const SURVEYED_PUZZLES = [
   "freecell",
   "spider",
   "mahjong",
+  "cube",
 ] as const;
 
 const SURVEY: Survey[] = [

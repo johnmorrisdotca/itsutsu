@@ -35,6 +35,7 @@ import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
 import { FreeCellSolve } from "./FreeCellSolve";
 import { SolitaireSolve } from "./SolitaireSolve";
+import { CubeSolve } from "./CubeSolve";
 import { SpiderSolve } from "./SpiderSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
 import { WinSlotProvider } from "./PuzzleWinSlot";
@@ -324,6 +325,8 @@ function PuzzlePlayDrawn({
         // A table round this device is local and never a race, as Kumimoji's pass and play is.
         if (players > 1 && race === null) return <MahjongTableGame key={key} puzzle={puzzle} players={players} appearance={appearance} />;
         return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} appearance={appearance} />;
+      case "cube":
+        return <CubeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "koushi":
         return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       default:

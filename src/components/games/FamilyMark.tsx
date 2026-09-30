@@ -2,6 +2,7 @@ import { CardBack } from "@/components/cards/CardBack";
 import { CardFace } from "@/components/cards/CardFace";
 
 import type { PictureSize } from "./games.types";
+import { MarkCube } from "./MarkCube";
 import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
 
@@ -105,6 +106,7 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           </text>
         </g>
       ))}
+      {mark.cube === undefined ? null : <MarkCube {...mark.cube} />}
       {(mark.dominoes ?? []).map((domino) => (
         <g key={`${domino.x}-${domino.y}`}>
           <rect x={domino.x} y={domino.y} width={2.3} height={1.15} rx={0.14} fill="#fffdf6" stroke="var(--ink)" strokeWidth={0.06} />

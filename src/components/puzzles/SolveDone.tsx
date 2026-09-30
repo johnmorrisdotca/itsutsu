@@ -85,7 +85,8 @@ export function SolveDone({
    * paid for playing it out, as a word whose guesses ran out is.
    */
   const cards = PUZZLE_SPECS[puzzle.kind].cards === true;
-  const gaveUp = cards && done.outOfGuesses === true && done.outOfTime !== true;
+  // The cube is given up the same way, and is solved rather than won.
+  const gaveUp = (cards || PUZZLE_SPECS[puzzle.kind].cube === true) && done.outOfGuesses === true && done.outOfTime !== true;
   const moveWords = moves === undefined ? "" : `, in ${moves} ${moves === 1 ? "move" : "moves"}`;
   const anotherLabel = `${cards ? "Deal again" : `Another ${copy.label}`} →`;
 
@@ -135,8 +136,9 @@ export function SolveDone({
           {clockText(done.elapsedMs)} before it was solved.
         </p>
       ) : (
-        <p className="text-lg font-semibold">
+        <p className="text-lg font-semibold" data-testid="puzzle-solved-news">
           Solved <span className="font-mincho text-base font-normal opacity-70">解決</span> in {clockText(done.elapsedMs)}
+          {moveWords}
           {clock === "none" ? "" : `, on the ${timed.label} ${timed.kanji}`}.
         </p>
       )}

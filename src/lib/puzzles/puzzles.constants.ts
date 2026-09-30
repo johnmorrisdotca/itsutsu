@@ -5,6 +5,8 @@ import { JAPANESE_TILE_MIX, KUMIMOJI_BAG, KUMIMOJI_GRID_MOST, KUMIMOJI_HANDS, KU
 import { KOUSHI_ANSWER_MOST } from "./koushi/lattice";
 import { FREECELL_MOVES_MOST } from "./freecell/check";
 import { SOLITAIRE_MOVES_MOST } from "./solitaire/check";
+import { CUBE_MOVES_MOST } from "./cube/check";
+import { SCRAMBLE_LENGTHS } from "./cube/generate";
 import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "./mahjong/layouts";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
@@ -53,6 +55,7 @@ export const PUZZLE_KINDS = {
   freecell: "freecell",
   spider: "spider",
   mahjong: "mahjong",
+  cube: "cube",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
@@ -84,6 +87,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.freecell,
   PUZZLE_KINDS.spider,
   PUZZLE_KINDS.mahjong,
+  PUZZLE_KINDS.cube,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -337,6 +341,25 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     layouts: true,
     checks: false,
   },
+  /*
+   * THE CUBE, turned in three dimensions (`cube/`): its size is its side, 2×2
+   * to 5×5, and its level how far it is scrambled (`SCRAMBLE_LENGTHS`). The
+   * givens are the scrambled stickers, six faces of size × size; the answer
+   * is the turns (`encodeCubeMoves`), checked by turning them. No Check or
+   * Hint, since every sticker is in plain sight, and no countdown: the clock,
+   * started by the first turn after a look at the scramble, is its measure.
+   */
+  cube: {
+    sizes: [2, 3, 4, 5],
+    offered: [2, 3, 4, 5],
+    defaultSize: 3,
+    levels: PUZZLE_LEVEL_LIST,
+    defaultLevel: "easy",
+    mostCells: CUBE_MOVES_MOST,
+    helps: false,
+    clock: false,
+    cube: true,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -512,6 +535,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     10: { label: "Castle", kanji: "城" },
     15: { label: "Turtle", kanji: "亀" },
   },
+  // A cube by its side, the big number on the tile; the names are ours, never a maker's.
+  cube: {
+    2: { label: "Mini", kanji: "小" },
+    3: { label: "Standard", kanji: "定番" },
+    4: { label: "Big", kanji: "大" },
+    5: { label: "Bigger", kanji: "特大" },
+  },
 };
 
 /**
@@ -553,6 +583,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     hard: "No wild tiles: every tile is the letter or kana printed on it.",
   },
   // A Bridges level is what it takes to finish (`bridges/solve.ts`, `levelOf`): counting, joining, or a trial.
+  // A cube's level is how far it is scrambled (`SCRAMBLE_LENGTHS`), counted here for the 3×3.
+  cube: {
+    easy: `A few turns from solved: ${SCRAMBLE_LENGTHS.easy[3]} on the 3×3, enough to take back by looking.`,
+    medium: `${SCRAMBLE_LENGTHS.medium[3]} turns on the 3×3: too many to take back by looking, so it has to be solved.`,
+    hard: `A full scramble, as long as a competition's: ${SCRAMBLE_LENGTHS.hard[3]} turns on the 3×3.`,
+  },
   // A Solitaire level is how many times through the stock (`SOLITAIRE_PASSES`).
   solitaire: {
     easy: "Through the stock as many times as you like.",
@@ -1068,5 +1104,29 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       `Four layouts. Torii 鳥居 (${mahjongTiles(8)} tiles, eight across) and Fuji 富士 (${mahjongTiles(9)}, nine across) are quick and fit a phone; Castle 城 (${mahjongTiles(10)}, ten across) is longer; the Turtle 亀 is the classic ${mahjongTiles(15)}, fifteen across, and on a phone it zooms, with Fit and the arrows under the board. A smaller layout uses pairs drawn from the full set of 144.`,
+  },  /*
+   * THE CUBE, by the plain word: the puzzle Ernő Rubik made is sold under his
+   * name, which belongs to its owners and is not used here. 立方体, "a cube",
+   * is the everyday Japanese word for the shape, which is all this is called.
+   */
+  cube: {
+    label: "Cube",
+    kanji: "立方体",
+    tagline: "The turning cube: scramble it, then turn its layers until every face is one colour again. From the 2×2 to the 5×5, in 3D.",
+    inspiredBy: "the Rubik's Cube, invented by Ernő Rubik in 1974",
+    alsoKnownAs: ["Rubik's Cube", "Magic Cube", "Speedcube"],
+    origin:
+      "Ernő Rubik, a Hungarian teacher of architecture, made the first one in 1974 to show his students how parts can move without the whole falling apart, and took a month to solve it himself. It went on sale in 1980 and became the best-selling puzzle ever made. People now race to solve it, in competitions timed to the hundredth of a second. The cube here is drawn and turned by our own code.",
+    wikipedia: "Rubik's Cube",
+    rules: [
+      "Each face of a solved cube is one colour. The cube starts scrambled; turn its layers until every face is one colour again.",
+      "Any layer can be turned a quarter or a half turn: a face, or on a bigger cube a layer inside it. Turning the whole cube to look at another side is free, and is not counted as a move.",
+      "Drag a sticker across the cube to turn the layer it sits in that way. Drag the space around the cube to turn the whole cube and look at it from anywhere.",
+      "With a mouse, the wheel over the cube turns the layer under the pointer, and Ctrl with the wheel turns the layer across it; over the space around the cube, the wheel turns the whole cube. Keys work too, in the notation cubers write: R, L, U, D, F and B turn a face clockwise, with Shift anticlockwise; M, E and S turn a middle layer, and x, y and z the whole cube. A number first, 2 to 5, turns a layer that far in from the face.",
+      "You get fifteen seconds to look at the scramble, as a competition gives. The clock starts with your first turn, or when the look runs out, and stops the moment the cube is solved.",
+      "Undo takes back a turn, as often as you like. Your time is your score, and your moves are kept, so a solve can be seen again.",
+    ],
+    board:
+      "The 3×3 is the classic cube. The 2×2 has no centres to show which colour a face should be, so it is a quick one to learn on; the 4×4 and 5×5 have layers inside, and are long evenings. Easy is a few turns from solved; hard is a full scramble.",
   },
 };

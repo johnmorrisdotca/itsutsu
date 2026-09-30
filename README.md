@@ -93,6 +93,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Cards | 6 |
 | Mahjong | 1 |
 | Dominoes | 1 |
+| Cubes | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -210,6 +211,17 @@ pair a turn round one device, with computers for empty seats. Every deal is
 laid pair by pair in reverse, so it can be cleared; the answer and a kept run
 are the moves, which the server plays through to check. The tiles are our own
 Japanese-style SVG. See `docs/plans/mahjong/README.md`.
+
+**Cubes** 立方 (2026-09-30) is the shelf for the turning cube, opened with the
+**Cube** 立方体 (`src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 5×5, drawn in
+CSS 3D by **Kyuubu** キューブ (`packages/kyuubu/`), a framework-free package with a
+thin React wrapper, kept in this repository as a workspace package and written
+to be published on its own (its README says how). Drag a sticker to turn its
+layer, drag around the cube to look, wheel over a sticker to turn its row
+(Ctrl its column, Shift its face), or type the notation. A scramble is the
+seed's random turns, fifteen seconds' look comes before the clock, and the
+answer and a kept run are the turns, which the server makes again from the
+scramble (`cube/check.ts`). Whole-cube turns are looks and are not counted.
 
 **Other** その他 holds what is neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters

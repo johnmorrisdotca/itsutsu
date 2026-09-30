@@ -21,9 +21,10 @@ describe("the countdowns", () => {
     }
   });
 
-  it("are offered on every puzzle but Tsunagi's fixed levels, Kumimoji and the card games", () => {
+  it("are offered on every puzzle but Tsunagi's fixed levels, Kumimoji, the card games and the cube", () => {
     // Solitaire's measure is its clock counting up and its moves: a five-minute Klondike is a different game.
-    expect(PUZZLE_KIND_LIST.filter((kind) => !offersClock(kind))).toEqual(["tsunagi", "kumimoji", "solitaire", "freecell", "spider"]);
+    // The cube's is its clock counting up from its look at the scramble, as competitions time one.
+    expect(PUZZLE_KIND_LIST.filter((kind) => !offersClock(kind))).toEqual(["tsunagi", "kumimoji", "solitaire", "freecell", "spider", "cube"]);
   });
 
   it("name no other clock", () => {

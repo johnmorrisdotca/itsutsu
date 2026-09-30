@@ -111,6 +111,12 @@ const nextConfig: NextConfig = {
    * `submitReport` refuses a picture over 1 MiB before anything is sent on.
    */
   experimental: { serverActions: { bodySizeLimit: "2mb" } },
+  /*
+   * Kyuubu, the cube (`packages/kyuubu`), is a package of its own in this
+   * workspace, made to be published and imported as one. Here it is read from
+   * its TypeScript source, so the site needs no build step for it.
+   */
+  transpilePackages: ["kyuubu"],
   async headers() {
     return [
       /* The offline keeper (public/sw.js): a device checks it against the site's on every visit, never against a cached copy. */
