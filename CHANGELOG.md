@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.445.0 — 2026-09-30
+- Tenka can be played on several devices: choose Several devices at its set-up, seat a buddy or anyone with the link, and each player takes their turns on their own phone or computer, seeing their own cards.
+
 ## 0.444.0 — 2026-09-30
 - Gomoji, Tsunagi, Kumimoji and Koushi can be chosen on the New game screen, under Other, beside every other game and puzzle.
 
