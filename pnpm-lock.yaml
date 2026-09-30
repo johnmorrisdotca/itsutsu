@@ -20,6 +20,9 @@ importers:
       '@johnmorrisdotca/kyuubu':
         specifier: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz
         version: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz(react@19.2.8)
+      '@johnmorrisdotca/narabe':
+        specifier: https://github.com/johnmorrisdotca/narabe/releases/download/v1.0.0/johnmorrisdotca-narabe-1.0.0.tgz
+        version: https://github.com/johnmorrisdotca/narabe/releases/download/v1.0.0/johnmorrisdotca-narabe-1.0.0.tgz(react@19.2.8)
       '@johnmorrisdotca/tane':
         specifier: https://github.com/johnmorrisdotca/tane/releases/download/v1.0.1/johnmorrisdotca-tane-1.0.1.tgz
         version: https://github.com/johnmorrisdotca/tane/releases/download/v1.0.1/johnmorrisdotca-tane-1.0.1.tgz(react@19.2.8)
@@ -416,6 +419,16 @@ packages:
   '@johnmorrisdotca/kyuubu@https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz':
     resolution: {integrity: sha512-vK96IvFYwN3DcZk2qukRuImYOUK/HKAXyIfQTJAtDUvCBQGRt6PHwoOKaK5cEfLsUD5uWb3p/OifIUtKBLtxzQ==, tarball: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz}
     version: 1.0.1
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
+
+  '@johnmorrisdotca/narabe@https://github.com/johnmorrisdotca/narabe/releases/download/v1.0.0/johnmorrisdotca-narabe-1.0.0.tgz':
+    resolution: {integrity: sha512-OhT2jyTM/Ts74El7DfzumvSRErHwuNwYF8KD6C6AHh2ZTzE/CQrw+v+FIJoglrDWJlFKkfwG5XYwsdhX1FAnvQ==, tarball: https://github.com/johnmorrisdotca/narabe/releases/download/v1.0.0/johnmorrisdotca-narabe-1.0.0.tgz}
+    version: 1.0.0
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=18'
@@ -3049,6 +3062,10 @@ snapshots:
       react: 19.2.8
 
   '@johnmorrisdotca/kyuubu@https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz(react@19.2.8)':
+    optionalDependencies:
+      react: 19.2.8
+
+  '@johnmorrisdotca/narabe@https://github.com/johnmorrisdotca/narabe/releases/download/v1.0.0/johnmorrisdotca-narabe-1.0.0.tgz(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

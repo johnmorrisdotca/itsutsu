@@ -32,7 +32,8 @@ A spec row answers questions like these:
 | Does anything happen after placing? | gravity, a quarter-turn of a quadrant, a flip |
 | How are stones drawn? | on the lines (gomoku, Go) or in the cells (Othello, checkers) |
 
-The engine (`src/lib/gomoku/engine.ts`, with the rule modules in
+The engine (Narabe, the open-source package `@johnmorrisdotca/narabe`, reached as
+`src/lib/gomoku/engine.ts` with the rule modules re-exported under
 `src/lib/gomoku/rules/`) reads the spec and never switches on a game's name.
 That is why a new game is a row of data and not a branch of code, and why the
 same engine runs in three places: the board in the browser, the replay of a

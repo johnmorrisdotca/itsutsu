@@ -6,7 +6,7 @@ import {
   newlyLost,
   suggestMove,
 } from "./analysis";
-import { fromDiagram } from "./gomoku.test-support";
+import { fromDiagram } from "@johnmorrisdotca/narabe/test-support";
 import { STONES } from "./gomoku.constants";
 import { playMove } from "./engine";
 

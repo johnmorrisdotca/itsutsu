@@ -7,7 +7,7 @@ import { FAMILY_MOST_GAMES, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } 
 import { ALSO_LISTED_IN } from "./familyShelves";
 import { RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
 import { GAME_SLUGS } from "./slugs";
-import { measureHeadStart } from "./simulation.headStartDecides";
+import { measureHeadStart } from "@johnmorrisdotca/narabe/simulation/headStartDecides";
 import type { RuleVariant } from "./gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
 import { hasGameImage, hasGameThumb } from "@/lib/learn/images";
@@ -29,7 +29,7 @@ import { rulesPageFor } from "@/lib/learn/rulesPage";
 
 const VARIANTS = Object.values(RULE_VARIANTS) as RuleVariant[];
 
-/** Every unit test under the engine, except this one — which names them all. */
+/** Every unit test under the engine and its package, Narabe, except this one — which names them all. */
 function engineTestSources(): string {
   const found: string[] = [];
   const walk = (dir: string) => {
@@ -42,6 +42,8 @@ function engineTestSources(): string {
     }
   };
   walk(join(process.cwd(), "src", "lib", "gomoku"));
+  // The rules themselves, and the tests beside them, are the package's.
+  walk(join(process.cwd(), "node_modules", "@johnmorrisdotca", "narabe", "src"));
   return found.join("\n");
 }
 
@@ -168,7 +170,7 @@ describe("every game is finished, not just playable", () => {
  * favoured colour must not be able to force a win — or in draughts a capture it
  * keeps — within a short horizon, on any board the game is played on, for either
  * colour. A search that runs past its budget fails this too: a figure nobody
- * can show safe is not a figure to declare. See `simulation.headStartDecides.ts`.
+ * can show safe is not a figure to declare. See Narabe's `simulation/headStartDecides.ts`.
  */
 describe("every game's head start leaves the game to be played", () => {
   it.each(VARIANTS)("%s declares how many free turns it offers", (variant) => {

@@ -111,6 +111,24 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
 ]);
 
 /*
+ * A PACKAGE THE SERVER RUNS WHOLE, every module of it, named once rather than
+ * a line a module. Narabe (740 KB built, 1.0.0) is the rules engine: the
+ * server replays every move of every board game through it, to refuse an
+ * illegal one and to settle a result, as it did when the engine was
+ * `src/lib/gomoku`. Nothing about it is a play screen to load in the browser
+ * only. One entry here, and the measured function says what it costs.
+ */
+const GAME_PACKAGES_THE_SERVER_RUNS: ReadonlyMap<string, string> = new Map<string, string>([
+  ["@johnmorrisdotca/narabe", "The rules engine: the server replays and settles every board game through it."],
+]);
+
+/** Whether a package import is written down: by its own name, or as a module of a package the server runs whole. */
+function writtenDown(spec: string): boolean {
+  if (GAME_PACKAGES_A_PAGE_PRINTS.has(spec)) return true;
+  return [...GAME_PACKAGES_THE_SERVER_RUNS.keys()].some((name) => spec === name || spec.startsWith(`${name}/`));
+}
+
+/*
  * THE TABLES DRAWN ON THE SERVER. A party game's table reads a game kept in
  * the browser, so the server has nothing to draw, and loading it in the
  * browser only keeps its rules and its computer player out of the function:
@@ -159,10 +177,11 @@ describe("the pages' server function", () => {
 
   it("carries no game package nobody wrote down", () => {
     const imports = reached.flatMap((path) => (files.get(path)?.packages ?? []).filter((spec) => GAME_PACKAGE.test(spec)).map((spec) => ({ path, spec })));
-    const unexpected = imports.filter(({ spec }) => !GAME_PACKAGES_A_PAGE_PRINTS.has(spec)).map(({ path, spec }) => `${spec}  ${chainTo(reach, path)}`);
+    const unexpected = imports.filter(({ spec }) => !writtenDown(spec)).map(({ path, spec }) => `${spec}  ${chainTo(reach, path)}`);
     expect(unexpected, "load the play screen with dynamic(…, { ssr: false }), or name the import with what a page prints from it").toEqual([]);
     const seen = new Set(imports.map(({ spec }) => spec));
     for (const spec of GAME_PACKAGES_A_PAGE_PRINTS.keys()) expect(seen, `${spec} is no longer reached by a page; take it off the list`).toContain(spec);
+    for (const name of GAME_PACKAGES_THE_SERVER_RUNS.keys()) expect([...seen].some((spec) => spec === name || spec.startsWith(`${name}/`)), `${name} is no longer reached by a page; take it off the list`).toBe(true);
   });
 
   it("keeps zod out of everything a browser is sent", () => {

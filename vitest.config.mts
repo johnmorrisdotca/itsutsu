@@ -1,10 +1,14 @@
 import { defineConfig } from "vitest/config";
 
+import { narabeDirect } from "./scripts/vitest/narabe-direct.mts";
+
 /**
  * Unit tests for the pure game engine. Anything that needs a browser is a
  * Playwright test instead.
  */
 export default defineConfig({
+  // See scripts/vitest/narabe-direct.mts — a module that only re-exports the rules engine is skipped under test.
+  plugins: [narabeDirect()],
   resolve: {
     tsconfigPaths: true,
     // See scripts/vitest/server-only.ts — the real package throws outside a

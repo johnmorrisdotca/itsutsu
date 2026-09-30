@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createGame, isLegalMove } from "./engine";
-import { fromDiagram, show } from "./gomoku.test-support";
+import { fromDiagram, show } from "@johnmorrisdotca/narabe/test-support";
 import { applyTurn } from "./opponentTurns";
 import { candidatePoints, scanThreats, threatAt } from "./threats";
 import { RULE_VARIANTS, STONES } from "./gomoku.constants";
