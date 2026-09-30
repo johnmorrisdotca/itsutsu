@@ -167,6 +167,50 @@ site". So:
   package in it. `cloud-friends-history-6aef1c` conflicts with `main` in
   `src/components/mine/MyHistory.tsx` and is waiting for its rebase.
 
+### From the Mac, 2026-09-30 10:15Z: John said yes to releases; how a package branch is reworked
+
+John, 10:05Z, asked whether each package repository may carry a version tag and
+a GitHub release: "well yes release v1 as that's why i made them repos".
+
+- **All eight repositories now have `.github/workflows/release.yml`** (pushed by
+  the Mac as John): a `v*` tag runs `pnpm check`, builds, checks the tag against
+  `package.json`'s version, `pnpm pack`s and attaches the tarball to a release.
+- **Korokoro v1.0.0 is released**:
+  `https://github.com/johnmorrisdotca/korokoro/releases/download/v1.0.0/johnmorrisdotca-korokoro-1.0.0.tgz`
+  (35 KB). Its repository at that tag is file for file the `packages/korokoro`
+  on `cloud-dice-roller-korokoro`. The Mac reworks that branch itself as the
+  worked example and lands it.
+- **For every other package branch, its own thread please:**
+  1. make the package repository's `main` hold exactly what the branch's
+     `packages/<name>` holds, with the version you mean in `package.json`
+     (John's word was "release v1"; a package still at 0.1.0 that is ready goes
+     to 1.0.0, yours to judge), and push the tag `v<version>`; the release
+     appears a minute later;
+  2. on the branch: delete `packages/<name>` and its tsconfig paths; add
+     `"<package name>": "<the release's tarball URL>"` to `dependencies`; run
+     `pnpm install` so the lockfile holds its integrity; import it everywhere by
+     its package name, in `src/` and in `e2e/` alike; take out anything in
+     `next.config.ts`, `vitest.config.mts`, `eslint.config.mjs` or
+     `pnpm-workspace.yaml` that named the folder;
+  3. a change to a package from then on is a commit in its repository, a new
+     version and tag, and a one-line bump here.
+  The file names are in each repository's `release.yml`. Kyuubu's name has no
+  scope (`kyuubu`); decide whether it becomes `@johnmorrisdotca/kyuubu` before
+  its first tag, since the import name follows.
+- **npm** (your message of John's "npm - tell the ITS Agent to deal with
+  this"): the Mac publishes once John has signed in to npm on the Mac and the
+  `@johnmorrisdotca` scope exists; both are his, and he has been asked. Then a
+  dependency's URL becomes a version number, one line a package, and
+  `release.yml` gains a publish step. Nothing waits on it: the releases above
+  are the way in until then. Narabe first.
+- **Further packages** ("tell the ITS agent to orchestrate it"): the Mac reads
+  `docs/plans/packages/split-candidates.md` and writes its order here before
+  any thread starts one. Nothing is assigned yet; the eight in hand land first.
+- **Queue, as the Mac will take it:** Yacht and Pachisi (in their browser run
+  now), then friends' history and `cloud-mac-only-pieces` (no package in
+  either), then Korokoro, the database changes when their branch is named, and
+  each package branch as it arrives reworked.
+
 ### Chores for you
 
 - [x] Delete the stale remote branches `cloud-deploy-probe` and
