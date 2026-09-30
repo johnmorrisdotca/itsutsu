@@ -10,6 +10,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.471.2 — 2026-09-30 13:34 UTC
+- Setting up a table for up to eight no longer leaves a tall empty gap under the players: only the seats in play are drawn
+- The Cube's code now comes from npm like the other seven open-source packages
+
 ## 0.471.1 — 2026-09-30 13:00 UTC
 - Browser checks that failed at random now set up their own tables and clean up after themselves, so a release is no longer held by chance.
 
