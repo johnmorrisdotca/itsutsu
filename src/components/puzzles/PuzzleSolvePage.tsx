@@ -159,7 +159,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     { label: "Help used", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
     { label: "Finished", value: <LocalTime at={finished} style="date" />, testId: "solve-date" },
   ];
-  const day = finished.slice(0, 10);
+  // The day as the reader reads a date, never 2026-09-30.
+  const day = <LocalTime at={finished} style="date" />;
   const trail = own ? [{ label: "Yours", href: myGamePath(kind) }, { label: day }] : [{ label: "All solves", href: historyPath(kind) }, { label: day }];
   return (
     <Page>

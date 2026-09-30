@@ -1,7 +1,7 @@
 import { MatchPage } from "./MatchPage";
 
 export const metadata = {
-  title: "Match",
+  title: "Game",
   // A match page can be reached from a seat link; neither should be indexed.
   robots: { index: false, follow: false },
 };

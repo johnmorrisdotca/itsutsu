@@ -55,8 +55,10 @@ async function scrubsSteady(page: Page, at: Locator, scrubber: Locator, last: nu
     heights.add(Math.round(box.height));
     widths.add(Math.round((await scrubber.boundingBox())!.width));
   }
-  expect([...heights], "the count took more than one line").toHaveLength(1);
-  expect([...widths], "the slider changed width as the count changed").toHaveLength(1);
+  // Within a pixel: a box of fractional width rounds either way from one frame to the next, and a wrap or a digit is far more.
+  const spread = (values: Set<number>) => Math.max(...values) - Math.min(...values);
+  expect(spread(heights), "the count took more than one line").toBeLessThanOrEqual(1);
+  expect(spread(widths), "the slider changed width as the count changed").toBeLessThanOrEqual(1);
 }
 
 test("a won Solitaire's page says Won with a tick, in plain words, and its count keeps one line as it is scrubbed", async ({ page }) => {

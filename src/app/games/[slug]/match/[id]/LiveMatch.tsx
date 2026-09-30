@@ -267,7 +267,7 @@ export async function LiveMatch({
       <SiteHeader />
       <GameTrailNav
         game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-        steps={[{ label: "Match" }]}
+        steps={[{ label: "Game" }]}
       />
       <SeatFullNotice shown={seatFull} />
       {/* Before the first stone: who these two are to each other. See RivalryPanel. */}

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { MatchPage } from "../MatchPage";
 
 export const metadata = {
-  title: "Match",
+  title: "Game",
   robots: { index: false, follow: false },
 };
 

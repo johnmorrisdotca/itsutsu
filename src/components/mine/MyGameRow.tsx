@@ -193,7 +193,7 @@ export function Row({
           */}
           {named ? (
             <>
-              {offer === "offered" && offerSide === "to-me" ? "you would be " : "you are "}
+              {offer === "offered" && offerSide === "to-me" ? "you would be " : group === "finished" ? "you were " : "you are "}
               {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} ·{" "}
             </>
           ) : null}
