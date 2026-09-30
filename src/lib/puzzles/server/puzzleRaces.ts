@@ -12,7 +12,7 @@ import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS, levelsFor } from "../puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import type { KumimojiLanguage, KumimojiLength } from "../kumimoji/kumimoji.types";
-import { type RaceOutcome, type RaceSeat, type SeatState, canFinish, canStart, raceOutcome, seatState } from "../raceState";
+import { type RaceOutcome, type RaceSeat, type SeatState, canFinish, canGiveUp, canStart, raceOutcome, seatState } from "../raceState";
 import { keepSolve } from "./puzzleSolves";
 
 /**
@@ -103,8 +103,8 @@ export type RaceRead = {
 };
 
 export function readRace(race: NonNullable<Awaited<ReturnType<typeof raceFor>>>, now = new Date()): RaceRead {
-  const host = seatState({ startedAt: race.hostStartedAt, finishedAt: race.hostFinishedAt }, now);
-  const guest = race.guestMemberId === null ? { state: "waiting" as const } : seatState({ startedAt: race.guestStartedAt, finishedAt: race.guestFinishedAt }, now);
+  const host = seatState({ startedAt: race.hostStartedAt, finishedAt: race.hostFinishedAt, gaveUpAt: race.hostGaveUpAt }, now);
+  const guest = race.guestMemberId === null ? { state: "waiting" as const } : seatState({ startedAt: race.guestStartedAt, finishedAt: race.guestFinishedAt, gaveUpAt: race.guestGaveUpAt }, now);
   return { host, guest, outcome: raceOutcome(host, guest) };
 }
 
@@ -166,21 +166,44 @@ export async function finishSeat(
   const paid = await awardXp({ memberId, awards: puzzleAwards(kind, race.size, race.givens), now });
   await awardTourBonuses({ memberId, paid, variant: kind, now });
 
-  const after = await raceFor(id);
-  const outcome = after === null ? before.outcome : readRace(after, now).outcome;
+  const { outcome, wonPoints } = await settleIfOver(race, memberId, before.outcome, now);
   const awards = paid.awards.filter((award) => award.points > 0).map((award) => award.type as string);
-  let points = paid.points;
-  if (outcome.over && outcome.winner !== null) {
-    const winnerId = outcome.winner === "host" ? race.hostMemberId : race.guestMemberId;
-    if (winnerId !== null) {
-      const won = await awardXp({ memberId: winnerId, awards: [{ type: XP_EVENTS.raceWon, subject: id }], now });
-      if (winnerId === memberId && won.points > 0) {
-        points += won.points;
-        awards.push(XP_EVENTS.raceWon);
-      }
-    }
-  }
-  return { ok: true, elapsedMs, points, awards, outcome };
+  if (wonPoints > 0) awards.push(XP_EVENTS.raceWon);
+  return { ok: true, elapsedMs, points: paid.points + wonPoints, awards, outcome };
+}
+
+/** Read the race again after a seat settled; if that ended it, pay the winner `raceWon` once (its subject is the race). */
+async function settleIfOver(race: RaceRow, memberId: string, fallback: RaceOutcome, now: Date): Promise<{ outcome: RaceOutcome; wonPoints: number }> {
+  const after = await raceFor(race.id);
+  const outcome = after === null ? fallback : readRace(after, now).outcome;
+  if (!outcome.over || outcome.winner === null) return { outcome, wonPoints: 0 };
+  const winnerId = outcome.winner === "host" ? race.hostMemberId : race.guestMemberId;
+  if (winnerId === null) return { outcome, wonPoints: 0 };
+  const won = await awardXp({ memberId: winnerId, awards: [{ type: XP_EVENTS.raceWon, subject: race.id }], now });
+  return { outcome, wonPoints: winnerId === memberId ? won.points : 0 };
+}
+
+/**
+ * A seat ends unsolved — a word puzzle whose guesses ran out. Stamped once,
+ * only while the seat is solving, so the race settles now instead of at the
+ * end of the sitting; if the other seat has already finished, it is paid its
+ * win here. Nothing to check: giving up only ever costs the seat that does it.
+ */
+export async function giveUpSeat(id: string, seat: RaceSeat, memberId: string, now = new Date()): Promise<{ ok: true; outcome: RaceOutcome } | { ok: false; reason: string; status: 404 | 409 }> {
+  const race = await raceFor(id);
+  if (race === null) return { ok: false, reason: "no such race", status: 404 };
+  const before = readRace(race, now);
+  const mine = seat === "host" ? before.host : before.guest;
+  if (!canGiveUp(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "already over" : "not started", status: 409 };
+  const stamped = await prisma.puzzleRace.updateMany({
+    where: seat === "host"
+      ? { id, hostStartedAt: { not: null }, hostFinishedAt: null, hostGaveUpAt: null }
+      : { id, guestStartedAt: { not: null }, guestFinishedAt: null, guestGaveUpAt: null },
+    data: seat === "host" ? { hostGaveUpAt: now } : { guestGaveUpAt: now },
+  });
+  if (stamped.count !== 1) return { ok: false, reason: "already over", status: 409 };
+  const { outcome } = await settleIfOver(race, memberId, before.outcome, now);
+  return { ok: true, outcome };
 }
 
 /** The races a member is in, newest first, for their page of a puzzle. */

@@ -1316,6 +1316,9 @@ model PuzzleRace {
   hostFinishedAt  DateTime?
   guestStartedAt  DateTime?
   guestFinishedAt DateTime?
+  /// When a seat ended unsolved, its guesses run out: settled at once rather than at the end of the sitting.
+  hostGaveUpAt    DateTime?
+  guestGaveUpAt   DateTime?
   /// The Check allowance both seats race under, 3 or 1, or null for no limit (every race before it existed).
   checksAllowed   Int?
 

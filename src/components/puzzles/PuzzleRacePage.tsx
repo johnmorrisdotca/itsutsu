@@ -147,7 +147,7 @@ function seatWords(state: SeatState, empty: boolean): string {
     case "finished":
       return `Solved in ${clockText(state.elapsedMs)}.`;
     case "gaveUp":
-      return "Gave up: the sitting ran out with no finish.";
+      return state.why === "outOfGuesses" ? "Out of guesses: no finish." : "Gave up: the sitting ran out with no finish.";
   }
 }
 

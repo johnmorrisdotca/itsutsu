@@ -298,14 +298,19 @@ export function useSolve(
    * A PUZZLE THAT ENDED UNSOLVED: a word whose guesses ran out. The route
    * checks the loss as it checks a solve, keeps it for the letters it found
    * and pays for playing it out, then takes the kept run off the member's
-   * games. A race sends nothing: its seat simply never finishes, as a seat
-   * left does.
+   * games. A race's seat says it gave up, so the race settles now rather
+   * than at the end of the sitting, and the page reads the stamps again.
    */
   const runOut = useCallback(
     async (answer: string, at: number) => {
       const elapsedMs = carriedMs + (startedAt === null ? 0 : Math.max(0, at - startedAt - pausedMs));
       setDone({ elapsedMs, paid: null, problem: null, outOfGuesses: true });
-      if (!hasAccount || race !== null) return;
+      if (!hasAccount) return;
+      if (race !== null) {
+        const given = await fetch(`/api/puzzles/races/${race.id}/give-up`, { method: "POST" }).catch(() => null);
+        if (given?.ok === true) router.refresh();
+        return;
+      }
       const handed = { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true, ...(clock === "none" ? {} : { clock }) };
       try {
         const answered = await fetch("/api/puzzles/solved", {
@@ -323,7 +328,7 @@ export function useSolve(
         // Nothing is owed that cannot wait: a run left kept is opened again as it was and can be ended again.
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, keeping.headStart, clock],
+    [puzzle, startedAt, pausedMs, carriedMs, hasAccount, race, router, keeping.headStart, clock],
   );
 
   /**
