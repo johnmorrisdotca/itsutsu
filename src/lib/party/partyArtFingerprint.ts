@@ -39,6 +39,7 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/cards/goFishAdapter.tsx",
   "src/components/party/cards/crazyEightsAdapter.tsx",
   "src/components/party/cards/spadesAdapter.tsx",
+  "src/components/party/cards/ginRummyAdapter.tsx",
   "src/components/cards/PlayingCard.tsx",
   "src/components/cards/CardFace.tsx",
   "src/components/cards/CardBack.tsx",

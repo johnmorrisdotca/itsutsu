@@ -195,7 +195,7 @@ half way are the moves, two characters a carry, which the server replays from
 the deal (`solitaire/check.ts`). Why it is a puzzle kind and not a new one is in
 `docs/plans/cards/README.md`. Beside it, the family card games — **Crazy
 Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二 and **President**
-大富豪 — are party games (`src/lib/cardGames/`), one table for all of them round
+大富豪, and **Gin Rummy** ジンラミー for two — are party games (`src/lib/cardGames/`), one table for all of them round
 one device (`src/components/party/cards/`), a computer in any empty seat and
 every hand kept hidden between people; see `docs/plans/family-cards/README.md`.
 **Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,

@@ -8,6 +8,7 @@ export const CARD_TABLE_KEYS: Record<CardGameKind, string> = {
   goFish: "itsutsu.cards.goFish",
   crazyEights: "itsutsu.cards.crazyEights",
   spades: "itsutsu.cards.spades",
+  ginRummy: "itsutsu.cards.ginRummy",
 };
 
 /**

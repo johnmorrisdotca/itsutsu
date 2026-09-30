@@ -12,11 +12,12 @@ import type { PartySpec } from "../party/party.types";
  * - Go Fish, two to six: one deal, played until every book is down.
  * - Crazy Eights, two to seven: the score that wins, 50, 100 or 200.
  * - Spades, four in two partnerships: the score that wins, 200, 300 or 500.
+ * - Gin Rummy, two: the score that wins, 50, 100 or 150.
  *
  * Every seat may be a person's or a computer's, so a table of one person and
  * three computers is a game of Hearts as much as four people round a phone.
  */
-export type CardGameKind = "hearts" | "bigTwo" | "president" | "goFish" | "crazyEights" | "spades";
+export type CardGameKind = "hearts" | "bigTwo" | "president" | "goFish" | "crazyEights" | "spades" | "ginRummy";
 
 export const CARD_GAME_KINDS = {
   hearts: "hearts",
@@ -25,6 +26,7 @@ export const CARD_GAME_KINDS = {
   goFish: "goFish",
   crazyEights: "crazyEights",
   spades: "spades",
+  ginRummy: "ginRummy",
 } as const satisfies Record<CardGameKind, CardGameKind>;
 
 /** Every family card game, in the order its shelf shows them. */
@@ -35,6 +37,7 @@ export const CARD_GAME_LIST: readonly CardGameKind[] = [
   CARD_GAME_KINDS.goFish,
   CARD_GAME_KINDS.bigTwo,
   CARD_GAME_KINDS.president,
+  CARD_GAME_KINDS.ginRummy,
 ];
 
 /** How long each game lasts, in its own terms (see above). */
@@ -44,6 +47,7 @@ export const PRESIDENT_ROUNDS = [3, 5, 7] as const;
 export const GO_FISH_SIZES = [1] as const;
 export const CRAZY_EIGHTS_SIZES = [50, 100, 200] as const;
 export const SPADES_SIZES = [200, 300, 500] as const;
+export const GIN_SIZES = [50, 100, 150] as const;
 
 export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
   hearts: { fewestPlayers: 3, mostPlayers: 4, defaultPlayers: 4, sizes: [HEARTS_SIZES.short, HEARTS_SIZES.full], defaultSize: HEARTS_SIZES.full },
@@ -52,4 +56,5 @@ export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
   goFish: { fewestPlayers: 2, mostPlayers: 6, defaultPlayers: 3, sizes: GO_FISH_SIZES, defaultSize: 1 },
   crazyEights: { fewestPlayers: 2, mostPlayers: 7, defaultPlayers: 3, sizes: CRAZY_EIGHTS_SIZES, defaultSize: 100 },
   spades: { fewestPlayers: 4, mostPlayers: 4, defaultPlayers: 4, sizes: SPADES_SIZES, defaultSize: 500 },
+  ginRummy: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: GIN_SIZES, defaultSize: 100 },
 };

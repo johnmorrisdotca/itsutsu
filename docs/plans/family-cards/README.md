@@ -131,3 +131,15 @@ Spades is the first of the next five, built as the plan above recommended: Heart
 - **The computer** bids what its hand is worth (aces, guarded kings, long spades, voids beside three or four spades), nil only on a hand of nothing and never beside a partner's nil. Measured over 300 deals of four computers: the table bids 11.6 tricks on average and makes its contract 92% of the time.
 
 **The Tricks family** トリック. A shelf holds eight games (`FAMILY_MOST_GAMES`). Cards had six; FreeCell and Spider, and Gin Rummy, Euchre, Cribbage and Oh Hell after Spades, would have made thirteen. Hearts and Spades moved to a new family, Tricks, at `/games/tricks`, off the set-up screen as Dominoes is. Cards keeps Solitaire (its award untouched) and the shedding games. Euchre, Oh Hell and Cribbage are to join Tricks; Gin Rummy joins Cards. John was asked on the thread; this is the recommended option, taken while the answer is awaited.
+
+## Gin Rummy (2026-09-30)
+
+The classic game for two (`src/lib/cardGames/ginRummy/`, `ginRummyAdapter.tsx`), at home in Cards.
+
+- **A turn** is two moves: draw (the stock, or take the discard), then throw a card or knock with it. The card just taken may not be thrown straight back.
+- **Melds** are found for the player: `bestLayout` searches every set and run over the hand as a bitmask for the least deadwood, and the table shows "Your deadwood" as it stands.
+- **Knocking** with ten or less; the defender's own melds are laid first, then whatever fits the knocker's melds is laid off, a run grown a card at a time. Gin is 25 plus their deadwood with nothing laid off; an undercut is the difference and 25 to the defender. Two cards left in the stock with nobody out is a drawn hand.
+- **Left out**, as house rules on the rules page: the offer of the first upcard (the first player simply draws), and the box, line and game bonuses. Length is 50, 100 (the usual) or 150 points.
+- **After a hand**, the table lays both hands down, melds first, with who scored, until both players have thrown once in the next.
+- **The computer** takes the discard only when it goes straight into a meld, throws the card leaving least deadwood (not one near a card the other player picked up, when another costs the same) and knocks as soon as it can.
+- **The party gate** plays it with `sensible`: random draws and throws, but a knock whenever one is offered, since a uniformly random player almost never knocks and every hand would be drawn.

@@ -182,6 +182,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("crazyEights", 100, 3, (game: { discard: unknown[]; drawn: unknown }) => game.discard.length >= 7 && game.drawn === null),
   },
+  // Gin Rummy for two, some way into the first hand: the stock, the card on the pile, and Ann's hand to draw to.
+  {
+    kind: "ginRummy",
+    key: "itsutsu.cards.ginRummy",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("ginRummy", 100, 2, (game: { phase: string; stock: unknown[]; results: unknown[] }) => game.phase === "draw" && game.stock.length <= 24 && game.results.length === 0),
+  },
 ];
 
 test.describe("party game screenshots", () => {

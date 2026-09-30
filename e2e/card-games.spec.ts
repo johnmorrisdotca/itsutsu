@@ -210,6 +210,20 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
+  test("Gin Rummy: a card drawn, then one thrown by a double tap, against the computer", async ({ page }) => {
+    await start(page, "ginRummy");
+    await myTurn(page);
+    await expect(page.getByTestId("cards-deadwood")).toContainText("Your deadwood");
+    const before = await movesMade(page);
+    await page.getByTestId("cards-draw-stock").click();
+    await expect.poll(() => movesMade(page)).toBe(before + 1);
+    // Eleven cards in hand: the one drawn is thrown back by tapping it twice.
+    await expect(handCards(page)).toHaveCount(11);
+    await handCards(page).last().dblclick({ position: { x: 8, y: 12 } });
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before + 1);
+    await clearKept(page);
+  });
+
   test("every family card game is on its family's shelf: Cards beside Solitaire, or Tricks", async ({ page }) => {
     const home = (kind: CardGameKind) => GAME_FAMILIES.find((family) => (family.games as readonly string[]).includes(kind))!.key;
     for (const [family, address] of [["cards", "/games/solitaire/family"], ["tricks", "/games/tricks"]] as const) {
