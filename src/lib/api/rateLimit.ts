@@ -183,6 +183,8 @@ export const RATE_LIMITS = {
   puzzleSolved: { windowMs: 60_000, maxRequests: 12 },
   /** Keeping an unfinished puzzle: one write when it is paused or its page is left, never while it is being solved. */
   puzzleRun: { windowMs: 60_000, maxRequests: 20 },
+  /** Filing a game played on one device: when it starts, ends or is put away, and when its page is left — never a write a move. */
+  keptGame: { windowMs: 60_000, maxRequests: 30 },
   /** Starting a shared game. */
   createGame: { windowMs: 60_000, maxRequests: 30 },
   /** Playing a stone in a shared game — generous, it is the hot path. */

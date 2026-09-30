@@ -64,6 +64,7 @@ const MAY_NAME_THE_COLUMNS = new Map([
    * by hand there either. Its names here are the select's.
    */
   [join(HISTORY, "myGamesRows.ts"), "selects them to read, and fills a null pair back only through settledTurn"],
+  [join(HISTORY, "everyGame.ts"), "selects settledToPlay to say whose move a game in the history waits on; reads it, never writes it"],
 ]);
 
 /**
