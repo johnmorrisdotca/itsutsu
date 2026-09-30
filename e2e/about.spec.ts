@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// Static, not `await import`: the families reach the card games, which are the
+// Toranpu package, and Playwright follows a tsconfig path only in a static import.
+import { GAME_FAMILIES, familyPagePath } from "../src/lib/gomoku/families";
+
 import { ready } from "./support";
 
 /**
@@ -74,7 +78,6 @@ test.describe("about", () => {
    */
   test("counts the games it really has, and lists every family", async ({ page }) => {
     const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
-    const { GAME_FAMILIES, familyPagePath } = await import("../src/lib/gomoku/families");
 
     await page.goto("/about/games");
     const section = page
