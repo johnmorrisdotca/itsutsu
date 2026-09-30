@@ -1,6 +1,7 @@
 import type { Ref } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
+import type { OnlineOffer } from "@/lib/party/online/online.types";
 import type { TenkaGame, TenkaMove } from "@/lib/party/tenka/tenka.types";
 
 /** How the map is looked at: screen pixels per map unit, and where the map's corner sits in the box. */
@@ -59,4 +60,6 @@ export type TenkaSetUpProps = {
   onStart: (game: TenkaGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };

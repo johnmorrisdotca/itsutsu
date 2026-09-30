@@ -11,10 +11,10 @@ import { GhostOffer } from "./GhostOffer";
 import { MancalaCard } from "./MancalaCard";
 import { MancalaGame } from "./MancalaGame";
 import { MancalaOffer } from "./MancalaOffer";
-import { DOTS_COPY, GHOST_COPY, MANCALA_COPY, PARTY_COPY, TRAIN_COPY } from "./party.constants";
+import { DOTS_COPY, GHOST_COPY, MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTable } from "./party.types";
 import { TenkaCard } from "./tenka/TenkaCard";
-import { TENKA_COPY } from "./tenka/tenka.constants";
+import { ONLINE_COPY } from "./online/online.constants";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
 import { CARD_TABLE_COPY } from "./cards/cardTable.constants";
@@ -60,7 +60,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   tenka: {
     title: PARTY_COPY.title,
     kanji: PARTY_COPY.kanji,
-    lead: TENKA_COPY.lead,
+    lead: ONLINE_COPY.tenkaLead,
     Game: TenkaTable,
     Offer: TenkaOffer,
     Card: TenkaCard,
@@ -68,7 +68,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   mexicanTrain: {
     title: PARTY_COPY.title,
     kanji: PARTY_COPY.kanji,
-    lead: TRAIN_COPY.lead,
+    lead: ONLINE_COPY.trainLead,
     // Loaded in the browser only (`trainClient.tsx`): the kept game is the browser's, and the rules stay out of the server's bundle.
     Game: TrainGameClient,
     Offer: TrainOffer,

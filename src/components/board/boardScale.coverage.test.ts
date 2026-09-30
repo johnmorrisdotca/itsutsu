@@ -85,6 +85,8 @@ function partyTables() {
 const WIDE_BOARDS: Record<string, string> = {
   [join("src", "components", "party", "tenka", "TenkaPlay.tsx")]:
     "Tenka's map of the world is twice as wide as it is tall on a desk (BOARD_ASPECTS.map), so a column beside it takes width the map needs",
+  [join("src", "components", "party", "online", "OnlineTable.tsx")]:
+    "the same map at a table on several devices: a game whose view says it is wide (OnlineView.wide, Tenka's) is laid out without the seats beside it",
 };
 
 const NO_BOARD_TO_SIZE: Record<string, string> = {

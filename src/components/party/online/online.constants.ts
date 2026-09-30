@@ -22,6 +22,15 @@ export const ONLINE_COPY = {
   start: "Start online game",
   starting: "Starting…",
   couldNotStart: "The game could not be started.",
+  /**
+   * The pass-and-play leads of the games that joined several devices after
+   * their own copy was pictured: their copy files are ones the party pictures
+   * are made from (`partyArtFingerprint.ts`), so the leads that say so are here.
+   */
+  tenkaLead:
+    "Tenka for two to six people round one phone or tablet: take the world a territory at a time, then pass it on — or choose Several devices, and each plays on their own. Nothing here is rated.",
+  trainLead:
+    "Mexican Train for two to eight round one phone or tablet, with a computer in any seat you like. Hands are secret: the table covers yours between turns. Or choose Several devices, and each plays on their own, seeing only their own tiles. Nothing here is rated.",
   /** The page. */
   title: "Online table",
   kanji: "卓",

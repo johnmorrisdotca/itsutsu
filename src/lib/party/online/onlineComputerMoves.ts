@@ -8,6 +8,9 @@ import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { handCanSpell } from "@/lib/puzzles/kumimoji/partyTurns";
 import { loadTileWords, tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 
+import type { TrainGame, TrainMove } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { computerMove } from "@/lib/party/mexicanTrain/trainComputer";
+
 import type { OnlineComputerPlay, OnlineGameKey } from "./online.types";
 import { seatOf, type KumimojiMove, type KumimojiStage } from "./onlineKumimoji";
 import type { PairGoMove } from "./onlinePairGo";
@@ -55,10 +58,16 @@ const KUMIMOJI_COMPUTER: OnlineComputerPlay<PartyGame, KumimojiMove> = {
   },
 };
 
+/** Mexican Train: the table's own computer player (`computerMove`), one move at a time, as on one device. */
+const TRAIN_COMPUTER: OnlineComputerPlay<TrainGame, TrainMove> = {
+  move: (game) => computerMove(game),
+};
+
 /** Every game with a computer player, by game; the move and game are each row's own, read one row at a time. */
 const MOVES: Partial<Record<OnlineGameKey, OnlineComputerPlay<never, unknown>>> = {
   go: PAIR_GO_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   kumimoji: KUMIMOJI_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  mexicanTrain: TRAIN_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
 };
 
 /** A game's computer move, for the worker; undefined for a game with no computer player. */

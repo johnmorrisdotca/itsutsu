@@ -16,7 +16,7 @@ import { useKeptTenkaGame } from "./tenkaStore";
  * way and it is here when you come back, dice and all, and waiting on My
  * games meanwhile. The rules are all in `lib/party/tenka/`.
  */
-export function TenkaTable({ appearance, gameHref }: PartyTableGameProps) {
+export function TenkaTable({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptTenkaGame();
 
@@ -27,7 +27,7 @@ export function TenkaTable({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="tenka-game" data-state="set-up">
-        <TenkaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <TenkaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

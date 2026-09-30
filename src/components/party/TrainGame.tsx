@@ -43,7 +43,7 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * reload opens on the cover, never on somebody's tiles. A computer's turn
  * shows no hand at all, and plays itself (`useTrainComputer`).
  */
-export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
+export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptTrainGame();
   const [shownTurn, setShownTurn] = useState<number | null>(null);
@@ -61,7 +61,7 @@ export function TrainGame({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="train-game" data-state="set-up">
-        <TrainSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <TrainSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

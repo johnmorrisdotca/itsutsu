@@ -27,14 +27,29 @@ function KindMark({ kind }: { kind: TenkaCardKind }) {
 }
 
 /**
- * THE CARDS IN THE HAND OF THE PLAYER TO MOVE, each with its kind and the
+ * THE CARDS IN THE HAND OF THE PLAYER TO MOVE (or, at a table on several
+ * devices, the reader's own), each with its kind and the
  * territory it shows, and every set they make with what it trades for now —
  * shown only once the device has been passed to them (`handed`), and only
  * while trading could matter: at the start of their turn.
  */
-export function TenkaHand({ game, handed, onMove }: { game: TenkaGame; handed: boolean; onMove: (move: TenkaMove) => void }) {
-  const hand = game.hands[game.toPlay];
-  const trading = game.phase === TENKA_PHASES.reinforce;
+export function TenkaHand({
+  game,
+  handed,
+  onMove,
+  seat = game.toPlay,
+  mayTrade = true,
+}: {
+  game: TenkaGame;
+  handed: boolean;
+  onMove: (move: TenkaMove) => void;
+  /** Whose cards: the player to move's round one device, the reader's own at a table on several (`TenkaOnline`). */
+  seat?: number;
+  /** Whether the sets may be traded from here now: not while a press is on its way, nor on somebody else's turn. */
+  mayTrade?: boolean;
+}) {
+  const hand = game.hands[seat] ?? [];
+  const trading = mayTrade && seat === game.toPlay && game.phase === TENKA_PHASES.reinforce;
   const sets = trading ? setsIn(hand) : [];
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="tenka-hand" data-cards={handed ? hand.length : undefined}>

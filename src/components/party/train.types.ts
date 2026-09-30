@@ -1,5 +1,6 @@
 import type { Appearance } from "@/components/board/board.types";
 import type { Domino, TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import type { OnlineOffer } from "@/lib/party/online/online.types";
 
 /** One domino as drawn: where, how big, which way it lies and what its two ends say. */
 export type DominoFaceProps = {
@@ -50,4 +51,6 @@ export type TrainSetUpProps = {
   onStart: (game: TrainGame) => void;
   /** The hydration mark (`readyMark`), on the form a test fills in. */
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };

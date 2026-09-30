@@ -16,6 +16,8 @@ import { GhostOnline, ghostStanding } from "./GhostOnline";
 import { KumimojiOnline, kumimojiStanding } from "./KumimojiOnline";
 import { MancalaOnline, mancalaStanding } from "./MancalaOnline";
 import { PairGoOnline, pairGoStanding } from "./PairGoOnline";
+import { TenkaOnline, tenkaStanding } from "./TenkaOnline";
+import { TrainOnline, trainStanding } from "./TrainOnline";
 
 /**
  * EACH GAME'S BOARD AT A TABLE ON SEVERAL DEVICES, by game: a `Record` over
@@ -45,4 +47,6 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   kumimoji: { Board: KumimojiOnline, standing: kumimojiStanding, testId: "kumimoji-online" },
   superghost: { Board: GhostOnline, standing: ghostStanding, testId: "ghost-game" },
   mancala: { Board: MancalaOnline, standing: mancalaStanding, testId: "mancala-game" },
+  tenka: { Board: TenkaOnline, standing: tenkaStanding, testId: "tenka-game", wide: true },
+  mexicanTrain: { Board: TrainOnline, standing: trainStanding, testId: "train-game" },
 };

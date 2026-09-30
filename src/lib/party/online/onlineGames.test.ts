@@ -7,6 +7,10 @@ import type { PartyBlocksState } from "../../gomoku/party/partyBlocks.types";
 import type { PartyRaceState } from "../../gomoku/party/partyRace.types";
 import { DOTS_RULES } from "../dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "../dotsAndBoxes/dotsAndBoxes.types";
+import type { TenkaMove } from "../tenka/tenka.types";
+import { writeTenkaMove } from "../tenka/tenkaKeep";
+import { tenkaMoves } from "../tenka/tenkaMoves";
+import { sensibleTenkaMove } from "../tenka/tenkaPolicy";
 
 import { ONLINE_GAMES, ONLINE_GAME_LIST, hasComputer, isOnlineGame, onlineRulesOf, readPoint } from "./onlineGames";
 import { standingOf } from "./onlineSeats";
@@ -31,14 +35,14 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
   });
 
-  // Kumimoji starts from the bag its set-up dealt, and has its own cases below.
-  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
+  // Kumimoji starts from the bag its set-up dealt, and Tenka and Mexican Train from the seed their set-ups drew; each has its own cases.
+  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji" && key !== "tenka" && key !== "mexicanTrain"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
     const rules = onlineRulesOf(key);
     for (const size of rules.sizes.length === 0 ? [0] : rules.sizes) {
       for (const count of rules.counts) {
@@ -68,9 +72,9 @@ describe("every game on several devices", () => {
     }
   });
 
-  it("offers a computer seat only at Pair Go and Kumimoji, the games with a computer player, and the worker can move for each", () => {
+  it("offers a computer seat only at Pair Go, Kumimoji and Mexican Train, the games with a computer player, and the worker can move for each", () => {
     for (const key of ONLINE_GAME_LIST) {
-      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji");
+      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji" || key === "mexicanTrain");
       expect(computerPlayOf(key) !== undefined, key).toBe(hasComputer(key));
     }
   });
@@ -275,5 +279,137 @@ describe("Mancala on several devices", () => {
     expect(rules.moveCount(next)).toBe(1);
     expect(rules.readMove(3)).toBe(3);
     expect(rules.readMove("3")).toBeNull();
+  });
+});
+
+describe("Tenka on several devices", () => {
+  const rules = ONLINE_GAMES.tenka;
+  const setup = { seed: 20260930, placing: "auto" };
+  const sent = (moves: readonly TenkaMove[]) => JSON.parse(JSON.stringify(moves.map(writeTenkaMove))) as unknown;
+
+  it("is dealt from the seed its set-up drew, at every length and table it offers, and from nothing else", () => {
+    for (const size of rules.sizes) {
+      for (const count of rules.counts) {
+        const game = rules.start(size, count, { setup })!;
+        expect(game, `${size} for ${count}`).not.toBeNull();
+        expect(rules.encode(rules.decode(rules.encode(game))!)).toBe(rules.encode(game));
+        expect(rules.moveCount(game)).toBe(0);
+        expect(rules.toPlay(game)).toBe(game.toPlay);
+        expect(rules.encode(rules.start(size, count, { setup })!)).toBe(rules.encode(game));
+      }
+    }
+    expect(rules.start(10, 3)).toBeNull();
+    expect(rules.start(10, 3, { setup: { seed: -1, placing: "auto" } })).toBeNull();
+    expect(rules.start(10, 3, { setup: { seed: 1.5, placing: "auto" } })).toBeNull();
+    expect(rules.start(10, 3, { setup: { seed: 7, placing: "somehow" } })).toBeNull();
+    expect(rules.start(11, 3, { setup })).toBeNull();
+    expect(rules.start(10, 7, { setup })).toBeNull();
+    expect(rules.start(10, 3, { setup: { seed: 7, placing: "hand" } })!.phase).toBe("setUp");
+  });
+
+  it("reads a press of one or two moves as the game keeps them, and nothing else", () => {
+    expect(rules.readMove([["t"]])).toEqual([{ kind: "endTurn" }]);
+    expect(rules.readMove([["f", 1, 2], ["s", 3]])).toEqual([
+      { kind: "fortify", from: 1, to: 2 },
+      { kind: "shift", armies: 3 },
+    ]);
+    for (const bad of [[], [["t"], ["t"], ["t"]], [["p", 1.5, 1]], [["q"]], [["p", "1", 1]], ["t"], [{ kind: "endTurn" }]]) {
+      expect(rules.readMove(bad), JSON.stringify(bad)).toBeNull();
+    }
+  });
+
+  it("plays a whole game out by sensible presses sent as a browser sends them, the dice the server's own", () => {
+    const random = seeded(4);
+    let game = rules.start(10, 3, { setup })!;
+    let presses = 0;
+    while (rules.toPlay(game) !== null && presses < 20000) {
+      const move = sensibleTenkaMove(game, random);
+      const read = rules.readMove(sent([move]));
+      expect(read).toEqual([move]);
+      game = rules.play(game, read!)!;
+      expect(game).not.toBeNull();
+      presses += 1;
+    }
+    expect(rules.toPlay(game)).toBeNull();
+    expect(rules.winners(game).length).toBeGreaterThan(0);
+    expect(rules.moveCount(game)).toBe(presses);
+    expect(rules.encode(rules.decode(rules.encode(game))!)).toBe(rules.encode(game));
+  });
+
+  it("refuses a press that would run on into the next player's turn, and a move the rules refuse", () => {
+    const random = seeded(9);
+    let game = rules.start(10, 2, { setup })!;
+    // On to the first fortifying step: the only point a turn can end.
+    while (game.phase !== "fortify") game = rules.play(game, [sensibleTenkaMove(game, random)])!;
+    const seat = game.toPlay;
+    const ended = rules.play(game, [{ kind: "endTurn" }])!;
+    expect(ended.toPlay).not.toBe(seat);
+    const theirs = ended.phase === "reinforce" ? tenkaMoves(ended).find((move) => move.kind === "place") : undefined;
+    expect(theirs).toBeDefined();
+    expect(rules.play(game, [{ kind: "endTurn" }, theirs!])).toBeNull();
+    expect(rules.play(game, [{ kind: "attack", from: 0, to: 1, dice: 3 }])).toBeNull();
+  });
+});
+
+describe("Mexican Train on several devices", () => {
+  const rules = ONLINE_GAMES.mexicanTrain;
+  const setup = { seed: 20260930, options: { length: "short", doubles: "one", mexican: "any" } };
+
+  it("is dealt from the seed and house rules its set-up sent, at every set and table it offers, and from nothing else", () => {
+    for (const size of rules.sizes) {
+      for (const count of rules.counts) {
+        const game = rules.start(size, count, { setup })!;
+        expect(game, `${size} for ${count}`).not.toBeNull();
+        expect(rules.encode(rules.decode(rules.encode(game))!)).toBe(rules.encode(game));
+        expect(rules.moveCount(game)).toBe(0);
+        expect(rules.toPlay(game)).toBe(0);
+      }
+    }
+    expect(rules.start(12, 3)).toBeNull();
+    expect(rules.start(12, 3, { setup: { ...setup, seed: 0 } })).toBeNull();
+    expect(rules.start(12, 3, { setup: { ...setup, seed: 2.5 } })).toBeNull();
+    expect(rules.start(12, 3, { setup: { ...setup, options: { ...setup.options, doubles: "many" } } })).toBeNull();
+    expect(rules.start(11, 3, { setup })).toBeNull();
+    expect(rules.start(12, 9, { setup })).toBeNull();
+    const withComputer = rules.start(12, 3, { setup, computers: [2] })!;
+    expect(withComputer.computers).toEqual([false, false, true]);
+    expect(withComputer.options.length).toBe("short");
+  });
+
+  it("reads a tile laid, a draw, a pass or the next round, and nothing else", () => {
+    expect(rules.readMove({ kind: "play", tile: 17, train: 2 })).toEqual({ kind: "play", tile: 17, train: 2 });
+    expect(rules.readMove({ kind: "draw" })).toEqual({ kind: "draw" });
+    expect(rules.readMove({ kind: "next", tile: 3 })).toEqual({ kind: "next" });
+    for (const bad of [{ kind: "play", tile: -1, train: 0 }, { kind: "play", tile: 1.5, train: 0 }, { kind: "play", tile: 3 }, { kind: "play", tile: 300, train: 0 }, { kind: "deal" }]) {
+      expect(rules.readMove(bad), JSON.stringify(bad)).toBeNull();
+    }
+  });
+
+  it("plays a whole short game out by the computer's moves sent as a browser sends them, and names the winners", () => {
+    let game = rules.start(9, 3, { setup, computers: [0, 1, 2] })!;
+    const play = computerPlayOf("mexicanTrain")!;
+    let moves = 0;
+    while (rules.toPlay(game) !== null && moves < 20000) {
+      const move = play.move(game, game.toPlay, "computer");
+      const read = rules.readMove(JSON.parse(JSON.stringify(move)));
+      expect(read).toEqual(move);
+      game = rules.play(game, read!)!;
+      expect(game).not.toBeNull();
+      moves += 1;
+    }
+    expect(rules.toPlay(game)).toBeNull();
+    expect(rules.winners(game).length).toBeGreaterThan(0);
+    expect(rules.moveCount(game)).toBe(moves);
+    expect(rules.encode(rules.decode(rules.encode(game))!)).toBe(rules.encode(game));
+  });
+
+  it("refuses a tile not in the hand of the seat to play, and a draw while a tile can be laid", () => {
+    const game = rules.start(12, 2, { setup })!;
+    const theirs = game.hands[1][0]!;
+    expect(rules.play(game, { kind: "play", tile: theirs, train: 0 })).toBeNull();
+    expect(rules.play(game, { kind: "next" })).toBeNull();
+    const offered = rules.computers!.seat("computer");
+    expect(offered).toEqual({ memberId: null, name: "Computer" });
+    expect(rules.computers!.levelOf(offered)).toBe("computer");
   });
 });

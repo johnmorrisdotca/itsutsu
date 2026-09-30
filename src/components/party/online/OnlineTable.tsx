@@ -114,12 +114,37 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
     if (response.ok) void mutate();
   };
 
+  // What the board's column holds, whichever way it is laid out.
+  const column = (
+    <>
+      <StatusLine view={view} sending={sending} thinking={thinking} />
+      {/* Quiet around the game while it is played (`PlayingNow`). */}
+      <PlayingNow on={moment.playing} />
+      {game === null ? null : (
+        <WinCoverOver news={news} onClose={moment.close}>
+          <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} mySeat={view.mySeat} />
+        </WinCoverOver>
+      )}
+      {problem !== null ? (
+        <p className="text-sm text-shu" role="alert" data-testid="online-problem">
+          {problem}
+        </p>
+      ) : null}
+      {paused ? (
+        <button type="button" onClick={resume} className="self-start text-xs text-muted underline underline-offset-4" data-testid="online-paused">
+          {ONLINE_COPY.paused}
+        </button>
+      ) : null}
+    </>
+  );
+
   return (
     <PartyColoursProvider colours={colours} choose={(seat, colour) => void chooseColour(seat, colour)}>
     <section
-      className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"
+      className={shown.wide ? "flex flex-col gap-6" : "grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start"}
       // A table for the size chooser (`BoardScale`): at Large and Full the board takes the room and the side keeps a width of its own.
-      data-scale-desk
+      // A wide board has nothing beside it (`data-scale-wide`), so its table is not one.
+      data-scale-desk={shown.wide ? undefined : ""}
       data-testid="online-table"
       data-game={view.game}
       data-state={view.status}
@@ -130,27 +155,19 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       data-poll-hurrying={hurrying ? "true" : undefined}
       {...readyMark(hydrated)}
     >
-      {/* The board's column, for the size chooser and for just the board. */}
-      <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
-        <StatusLine view={view} sending={sending} thinking={thinking} />
-        {/* Quiet around the game while it is played (`PlayingNow`). */}
-        <PlayingNow on={moment.playing} />
-        {game === null ? null : (
-          <WinCoverOver news={news} onClose={moment.close}>
-            <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />
-          </WinCoverOver>
-        )}
-        {problem !== null ? (
-          <p className="text-sm text-shu" role="alert" data-testid="online-problem">
-            {problem}
-          </p>
-        ) : null}
-        {paused ? (
-          <button type="button" onClick={resume} className="self-start text-xs text-muted underline underline-offset-4" data-testid="online-paused">
-            {ONLINE_COPY.paused}
-          </button>
-        ) : null}
-      </div>
+      {/*
+        The board's column, for the size chooser and for just the board — declared wide for a board wider than it is tall
+        (`OnlineView.wide`: Tenka's map), which is laid out as its table on one device lays it.
+      */}
+      {shown.wide ? (
+        <div className="flex min-w-0 flex-col gap-3" data-scale-board data-scale-wide data-bare-board>
+          {column}
+        </div>
+      ) : (
+        <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
+          {column}
+        </div>
+      )}
 
       <aside className="flex min-w-0 flex-col gap-4">
         {/* This reader's own colour, any time while the table plays; nobody chooses anybody else's. */}

@@ -10,6 +10,8 @@ import type { PairGoGame } from "../../gomoku/party/pairGo.types";
 import type { PartyGame } from "../../puzzles/kumimoji/party.types";
 import type { MancalaGame } from "../mancala/mancala.types";
 import type { GhostGame } from "../superghost/superghost.types";
+import type { TenkaGame } from "../tenka/tenka.types";
+import type { TrainGame, TrainMove } from "../mexicanTrain/mexicanTrain.types";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";
 import type { BlocksPieceKey, PartyBlocksState } from "../../gomoku/party/partyBlocks.types";
@@ -21,6 +23,8 @@ import type { OnlineGameKey, OnlineRules } from "./online.types";
 import { fromPartyRules } from "./onlineGames.parts";
 import { KUMIMOJI_ONLINE, type KumimojiMove } from "./onlineKumimoji";
 import { MANCALA_ONLINE, SUPERGHOST_ONLINE, type GhostTableMove } from "./onlineWordGames";
+import { TENKA_ONLINE, type TenkaTableMove } from "./onlineTenka";
+import { TRAIN_ONLINE } from "./onlineTrain";
 
 export { fromPartyRules };
 import { PAIR_GO_ONLINE, type PairGoMove } from "./onlinePairGo";
@@ -36,8 +40,9 @@ export { readPoint };
  *
  * A `Record` over `OnlineGameKey`, so a key without its rules does not
  * compile. Pair Go's seats may be given to the site's Go programs
- * (`onlinePairGo.ts`); no other game here has a computer player for a table,
- * so none other offers a computer seat. Pair Go's row reads the ladder, which
+ * (`onlinePairGo.ts`), and Kumimoji's and Mexican Train's to their own
+ * computer players; no other game here has one for a table, so none other
+ * offers a computer seat. Pair Go's row reads the ladder, which
  * is written with the site's aliases, so a browser spec imports the rules it
  * needs from the games' own modules rather than from here.
  */
@@ -121,6 +126,8 @@ type OnlinePlays = {
   kumimoji: { game: PartyGame; move: KumimojiMove };
   superghost: { game: GhostGame; move: GhostTableMove };
   mancala: { game: MancalaGame; move: number };
+  tenka: { game: TenkaGame; move: TenkaTableMove };
+  mexicanTrain: { game: TrainGame; move: TrainMove };
 };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
@@ -133,6 +140,8 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   kumimoji: KUMIMOJI_ONLINE,
   superghost: SUPERGHOST_ONLINE,
   mancala: MANCALA_ONLINE,
+  tenka: TENKA_ONLINE,
+  mexicanTrain: TRAIN_ONLINE,
 };
 
 /**

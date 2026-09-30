@@ -20,6 +20,8 @@ export type OnlineBoardProps<S, M> = {
   /** Whether the reader's seat is the one to play, and no move of theirs is on its way. */
   canMove: boolean;
   onMove: (move: M) => void;
+  /** The reader's own seat: whose cards a game with a hand shows face up (Tenka's). */
+  mySeat: number;
 };
 
 /**
@@ -33,6 +35,12 @@ export type OnlineView<S, M> = {
   standing: (game: S, seat: number) => string;
   /** The test id a spec reaches the board by, as the table on one device names it. */
   testId: string;
+  /**
+   * A board wider than it is tall (Tenka's map), laid out as the table on one
+   * device lays it: nothing beside it on a desk, the seats and the table's
+   * presses in a row under it (`OnlineTable`, `boardScale.ts`).
+   */
+  wide?: boolean;
 };
 
 /** What the table page hands its client. */

@@ -4,8 +4,8 @@
 and Block Five (branch `party-online`), and Pair Go with the site's Go
 programs in computer seats (branch `party-online-2`) are built and
 browser-tested, and so are Kumimoji's pass and play with its own computer
-player (John decided its two questions, below), Superghost and Mancala. Tenka
-joins when its own agent has finished it.**
+player (John decided its two questions, below), Superghost, Mancala, Tenka
+and Mexican Train (2026-09-30).**
 
 John, 2026-09-28: "all our Pass and Play games should ultimately get an agent
 to make the Multi-device (invite a buddy / bot). so that they can be played on
@@ -183,7 +183,8 @@ two-second budget (`chooseTurn`). `e2e/party-online-go.spec.ts` is the first
 browser spec that drives a computer seat: after a member's stone both
 programs are to play, the table records that the browser which sent their
 moves was that member's, and the other member's device sees all three arrive.
-Dots and Boxes, Chinese Checkers, Halma and Block Five have no computer player
+Mexican Train's seats may be given to its own computer player, one move at a
+time (`computerMove`). Dots and Boxes, Chinese Checkers, Halma and Block Five have no computer player
 for a table of more than two anywhere on the site, so their set-ups offer
 none and the server refuses one. Kumimoji's three (`computerTurn.ts`) join with
 it.
@@ -304,12 +305,38 @@ it.
    turn, a letter of the alphabet, an answer long enough and holding the
    fragment) the rules check. The table's language comes with the set-up.
    Neither has a computer player, so neither offers a computer seat.
-6. **Tenka** joins the same way once its own agent has finished it: a row in
-   `ONLINE_GAMES` (through `fromPartyRules` if its party rules need no word
-   list or other data the server must not load), a board in `ONLINE_VIEWS`,
-   `WhereChoice` and `SeatChoiceSelect` in its set-up, and one browser case;
-   a computer player, if it has one, is `computers` on its row and its move
-   in `onlineComputerMoves.ts`.
+6. **Done: Tenka** (`onlineTenka.ts`, `TenkaOnline.tsx`,
+   `e2e/party-online-tenka.spec.ts`). Not through `fromPartyRules`, for two
+   reasons:
+   - **The seed comes with the set-up.** Every shuffle, deal and die of a game
+     is drawn from its seed, and the set-up's browser draws it
+     (`freshTenkaSeed`, as on one device) and sends it with how the starting
+     armies go down (`{ seed, placing }`); the server checks both. The party
+     rules' `start` would deal every table from the same seed.
+   - **A move is a press**: one move, or the two halves of a fortifying move
+     (from where to where, then how many), which the table on one device also
+     plays as one press. Sent as the short lists the game is kept as
+     (`writeTenkaMove`), at most two, and played by `playTenka` one after the
+     other, every one by the seat that pressed: a press that would run on into
+     the next player's turn is refused whole.
+   - **The dice are the server's**: it plays the move, and the throw is the
+     next draw from the kept seed. What the page draws is always the table's
+     answer; the page plays a press ahead by the same rules only to know what
+     to choose next (the territory just taken, how many to move in).
+   - **Your own cards face up, everybody else's as a count** (`TenkaHand` with
+     the reader's `mySeat`, now on every board's props). The table state is
+     sent whole, as for every game here, so this is how the page draws it, not
+     a secret kept from a determined reader: see the decisions below.
+   - **Laid out wide.** A game's view may say it is wide (`OnlineView.wide`),
+     and the table then lays the map as its table on one device does: nothing
+     beside it on a desk, the seats and Leave and End under it
+     (`boardScale.coverage.test.ts` lists `OnlineTable.tsx` beside `TenkaPlay`).
+   - No computer player: Tenka has none on one device either, so the set-up
+     offers none and the server refuses one.
+7. **Done: Mexican Train** (`onlineTrain.ts`, `TrainOnline.tsx`,
+   `e2e/party-online-train.spec.ts`), with its own computer player in any
+   seat. The details are in `docs/plans/dominoes/README.md`, "Several
+   devices".
 
 ## Decisions to review
 
@@ -345,3 +372,12 @@ it.
   which is not online yet, still says it is kept only in this browser.
 - A table page says "Your turn." above the game's own turn line, which also
   names whose turn it is — two lines where one might do.
+- Tenka's seed is the host browser's, and every seat's browser holds it with
+  the game: a member reading the page's data could work out the next throw
+  before choosing to attack, and the host could have chosen a deal. The same
+  trade as Kumimoji's bag ("browser checks to save $$$"); keeping the seed on
+  the server alone would mean a view with the seed taken out and the world
+  sent whole instead of replayed.
+- Tenka's pass-and-play lead lives in `ONLINE_COPY.tenkaLead`, since its own
+  copy file (`tenka/tenka.constants.ts`) is one the party pictures are made
+  from, and a change to it asks for every party picture again.

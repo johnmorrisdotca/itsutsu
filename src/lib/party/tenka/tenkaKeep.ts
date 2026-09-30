@@ -23,7 +23,8 @@ const KEPT_VERSION = 1;
 
 type Kept = (string | number)[];
 
-function writeMove(move: TenkaMove): Kept {
+/** A move as the short list it is kept as — and sent as, at a table on several devices (`onlineTenka.ts`). */
+export function writeTenkaMove(move: TenkaMove): Kept {
   switch (move.kind) {
     case TENKA_MOVES.place:
       return ["p", move.territory, move.armies];
@@ -47,7 +48,7 @@ function writeMove(move: TenkaMove): Kept {
 }
 
 /** A kept move read back, or null for anything that is not one. */
-function readMove(kept: unknown): TenkaMove | null {
+export function readTenkaMove(kept: unknown): TenkaMove | null {
   if (!Array.isArray(kept) || typeof kept[0] !== "string") return null;
   const [letter, ...rest] = kept as [string, ...unknown[]];
   if (!rest.every((value) => typeof value === "number")) return null;
@@ -98,7 +99,7 @@ export function encodeTenka(game: TenkaGame): string {
     players: game.players,
     rounds: game.rounds,
     placing: game.placing,
-    moves: game.moves.map(writeMove),
+    moves: game.moves.map(writeTenkaMove),
   });
 }
 
@@ -121,7 +122,7 @@ export function decodeTenka(text: string | null): TenkaGame | null {
   if (placing !== TENKA_PLACING.auto && placing !== TENKA_PLACING.hand) return null;
   if (!Array.isArray(players) || !players.every((name) => typeof name === "string")) return null;
   if (!Array.isArray(moves)) return null;
-  const read = moves.map(readMove);
+  const read = moves.map(readTenkaMove);
   if (read.some((move) => move === null)) return null;
   return replayTenka({ seed, players: players as string[], rounds, placing }, read as TenkaMove[]);
 }

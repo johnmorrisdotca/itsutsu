@@ -57,6 +57,8 @@ const PASS_AND_ONLY_A_PASS = new Map([
   ["src/lib/gomoku/opponentTurns.ts", "a computer's candidate turns, which offer a pass and never a forfeit"],
   ["src/lib/gomoku/opponent.ts", "scores a computer's candidate turn, never a stored move"],
   ["src/components/party/TrainGame.tsx", "Mexican Train's own moves, where a pass is a domino player's marker going out; its moves have no forfeit"],
+  ["src/components/party/online/TrainOnline.tsx", "the same Mexican Train moves at a table on several devices, which runs no clock; its moves have no forfeit"],
+  ["src/lib/party/online/onlineTrain.ts", "reads a Mexican Train table's move as a browser sent it (a tile, a draw, a pass or the next round); a table has no clock, so there is no forfeit to send"],
   ["src/lib/bots/botPlay.ts", "turns a computer's chosen turn into a request, and no computer chooses a forfeit"],
   [
     "src/lib/party/online/onlinePairGo.ts",

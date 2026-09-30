@@ -52,7 +52,7 @@ export function TrainScores({ game }: { game: TrainGame }) {
  * total, and the way on — the next round dealt, or who won. Everything is
  * face up now, as at a real table when the hands are counted.
  */
-export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext: () => void }) {
+export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext?: () => void }) {
   const result = game.results.at(-1);
   if (result === undefined) return null;
   const totals = trainTotals(game);
@@ -93,7 +93,8 @@ export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext: () =
         <p className="text-base font-semibold" data-testid="train-winners">
           {winners.length === 1 ? TRAIN_COPY.wins(winners[0]) : TRAIN_COPY.share(inALine(winners))}
         </p>
-      ) : (
+      ) : onNext === undefined ? null : (
+        // At a table on several devices only the seat to play deals the next round; everybody else is told who they wait on.
         <button type="button" onClick={onNext} className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="train-next-round">
           {TRAIN_COPY.nextRound} →
         </button>

@@ -106,13 +106,33 @@ eight already.
 - The picture: a scene in `e2e/party-screenshots.spec.ts`, stamped by
   `partyArt.data.ts`.
 
-## Later: several devices
+## Several devices (built 2026-09-30)
 
-A row in `ONLINE_GAMES` would need `redact(state, seat)` (every hand but the
-reader's, and the boneyard, blanked), as Kumimoji's stage 3 in
-`docs/plans/party-online/README.md` does; the moves are small and checked by
-`playTrain` in microseconds, and `computerMove` is already a pure `computer`
-function. Not built.
+A row in `ONLINE_GAMES` (`src/lib/party/online/onlineTrain.ts`) and a board in
+`ONLINE_VIEWS` (`TrainOnline.tsx`), as the other party tables join
+(`docs/plans/party-online/README.md`):
+
+- **The set-up asks where.** Several devices puts a seat chooser in each
+  seat's row (you, a buddy, anyone with the link, or the computer) and Start
+  sets the table on the server, dealt from a seed the set-up's browser draws
+  (`freshSeed`, as on one device) and the house rules chosen; the server
+  checks both (`{ seed, options }`).
+- **A move is a move**: a tile laid on a train, a draw, a pass, the next
+  round. The server plays it by `playTrain`; the next round is dealt by
+  whichever seat the table waits on when a round ends.
+- **Each device shows its own tiles, face up, and nobody else's**; the scores
+  say how many each holds. No cover: nobody else is looking at the screen.
+- **The computer** is the table's own (`computerMove`), one move at a time,
+  worked out in the browser of the member whose move handed it the turn
+  (`onlineComputerMoves.ts`), as Kumimoji's is.
+- `e2e/party-online-train.spec.ts`: two members and a computer, each hand only
+  on its own device, a turn from each device and the computer's seen on both.
+
+Not built: the `redact(state, seat)` this section once asked for. The table
+state is sent whole, as for every other game on several devices (a game here
+is its seed and its moves, replayed), so every seat's browser could read the
+other hands and the boneyard from the page's data. The page never draws them;
+see the decision below.
 
 ## Decisions to review
 
@@ -142,3 +162,9 @@ function. Not built.
 - The Dominoes family stays off the set-up screen, because the gate requires
   it of a family with no recorded game.
 - No Block or Draw Dominoes sibling yet.
+- On several devices the other hands are hidden by the page, not from it: the
+  table state is sent whole, as Kumimoji's is ("browser checks to save $$$").
+  Keeping them from a determined reader would mean the server sending each
+  seat a view with the others' tiles taken out, and the seed with them.
+- The next round at a table on several devices is dealt by whoever the table
+  waits on (the player who went out, or the last to pass), not by the host.
