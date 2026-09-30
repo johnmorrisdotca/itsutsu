@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { FAMILY_MARKS } from "./FamilyMark";
+import { FAMILY_MARKS } from "./familyMarks.constants";
 import { FAMILY_ABSORBED, GAME_FAMILIES } from "@/lib/gomoku/families";
 
 /**
@@ -26,7 +26,7 @@ describe("every family's mark", () => {
     );
     expect(
       missing,
-      "a family with no mark is drawn as one stone on a board, the same picture as every other family without one — add it to FAMILY_MARKS in FamilyMark.tsx",
+      "a family with no mark is drawn as one stone on a board, the same picture as every other family without one — add it to FAMILY_MARKS in familyMarks.constants.ts",
     ).toEqual([]);
   });
 
@@ -37,7 +37,7 @@ describe("every family's mark", () => {
 
   /*
    * The other direction is deliberately NOT a rule. A mark for a family that no
-   * longer exists is kept on purpose — see the note in FamilyMark.tsx — because
+   * longer exists is kept on purpose — see the note in familyMarks.constants.ts — because
    * it draws a mechanism the family that absorbed it still contains.
    */
   it("keeps the retired families' marks rather than deleting them", () => {
