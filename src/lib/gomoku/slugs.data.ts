@@ -107,6 +107,7 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   mancala: "mancala",
   tenka: "tenka",
   mexicanTrain: "mexican-train",
+  hitotsu: "hitotsu",
   hearts: "hearts",
   bigTwo: "big-two",
   president: "president",

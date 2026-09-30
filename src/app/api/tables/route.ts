@@ -18,7 +18,8 @@ import { createTable } from "@/lib/party/online/server/tableCreate";
  */
 const bodySchema = z.object({
   game: z.enum(ONLINE_GAME_LIST as [OnlineGameKey, ...OnlineGameKey[]]),
-  size: z.number().int().min(0).max(40).default(0),
+  /** Only kept to a sane number here: each game's rules take the sizes they offer and refuse the rest. Hitotsu's is the points it plays to, 500 at most. */
+  size: z.number().int().min(0).max(1000).default(0),
   seats: z.array(z.unknown()).min(1).max(8),
   /** What a game's set-up sends beyond a size and the seats (Kumimoji's settings and the bag its browser dealt); its rules check it. */
   setup: z.unknown().optional(),

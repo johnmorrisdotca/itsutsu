@@ -449,6 +449,7 @@ const SURVEY: Survey[] = [
   table("president", "cards-start"),
   table("go-fish", "cards-start"),
   table("crazy-eights", "cards-start"),
+  table("hitotsu", "hitotsu-start"),
   table("chinese-checkers", "party-start"),
   table("halma", "party-start"),
   table("block-five", "blocks-start"),

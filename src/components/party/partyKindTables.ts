@@ -23,6 +23,8 @@ import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
 import { TrainOffer } from "./TrainOffer";
+import { HITOTSU_COPY } from "./hitotsu/hitotsu.constants";
+import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
 
 /**
  * EACH PARTY GAME'S TABLE, one row a `PartyKind`: what its table page at
@@ -80,6 +82,15 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   president: cardTable("president", PresidentTable, PresidentOffer, PresidentCard),
   goFish: cardTable("goFish", GoFishTable, GoFishOffer, GoFishCard),
   crazyEights: cardTable("crazyEights", CrazyEightsTable, CrazyEightsOffer, CrazyEightsCard),
+  // Its own deck and its own table (`hitotsu/`), loaded in the browser only, as the card games' are.
+  hitotsu: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: HITOTSU_COPY.lead,
+    Game: HitotsuTableClient,
+    Offer: HitotsuOfferClient,
+    Card: HitotsuCardClient,
+  },
 };
 
 /** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */

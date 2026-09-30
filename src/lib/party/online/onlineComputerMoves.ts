@@ -10,6 +10,8 @@ import { loadTileWords, tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 
 import type { TrainGame, TrainMove } from "@/lib/party/mexicanTrain/mexicanTrain.types";
 import { computerMove } from "@/lib/party/mexicanTrain/trainComputer";
+import type { HitotsuGame, HitotsuMove } from "@/lib/party/hitotsu/hitotsu.types";
+import { hitotsuComputer } from "@/lib/party/hitotsu/hitotsuComputer";
 
 import type { OnlineComputerPlay, OnlineGameKey } from "./online.types";
 import { seatOf, type KumimojiMove, type KumimojiStage } from "./onlineKumimoji";
@@ -63,11 +65,17 @@ const TRAIN_COMPUTER: OnlineComputerPlay<TrainGame, TrainMove> = {
   move: (game) => computerMove(game),
 };
 
+/** Hitotsu: the table's own computer player (`hitotsuComputer`), for the seat the table waits on, as on one device. */
+const HITOTSU_COMPUTER: OnlineComputerPlay<HitotsuGame, HitotsuMove> = {
+  move: (game, seat) => (game.phase === "over" || game.toPlay !== seat ? null : hitotsuComputer(game)),
+};
+
 /** Every game with a computer player, by game; the move and game are each row's own, read one row at a time. */
 const MOVES: Partial<Record<OnlineGameKey, OnlineComputerPlay<never, unknown>>> = {
   go: PAIR_GO_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   kumimoji: KUMIMOJI_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   mexicanTrain: TRAIN_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  hitotsu: HITOTSU_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
 };
 
 /** A game's computer move, for the worker; undefined for a game with no computer player. */

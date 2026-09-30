@@ -35,14 +35,14 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
   });
 
-  // Kumimoji starts from the bag its set-up dealt, and Tenka and Mexican Train from the seed their set-ups drew; each has its own cases.
-  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji" && key !== "tenka" && key !== "mexicanTrain"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
+  // Kumimoji starts from the bag its set-up dealt, and Tenka, Mexican Train and Hitotsu from the seed their set-ups drew; each has its own cases.
+  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji" && key !== "tenka" && key !== "mexicanTrain" && key !== "hitotsu"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
     const rules = onlineRulesOf(key);
     for (const size of rules.sizes.length === 0 ? [0] : rules.sizes) {
       for (const count of rules.counts) {
@@ -72,9 +72,9 @@ describe("every game on several devices", () => {
     }
   });
 
-  it("offers a computer seat only at Pair Go, Kumimoji and Mexican Train, the games with a computer player, and the worker can move for each", () => {
+  it("offers a computer seat only at Pair Go, Kumimoji, Mexican Train and Hitotsu, the games with a computer player, and the worker can move for each", () => {
     for (const key of ONLINE_GAME_LIST) {
-      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji" || key === "mexicanTrain");
+      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji" || key === "mexicanTrain" || key === "hitotsu");
       expect(computerPlayOf(key) !== undefined, key).toBe(hasComputer(key));
     }
   });
@@ -411,5 +411,59 @@ describe("Mexican Train on several devices", () => {
     const offered = rules.computers!.seat("computer");
     expect(offered).toEqual({ memberId: null, name: "Computer" });
     expect(rules.computers!.levelOf(offered)).toBe("computer");
+  });
+});
+
+describe("Hitotsu on several devices", () => {
+  const rules = ONLINE_GAMES.hitotsu;
+  const options = { stacking: "any", jumpIn: true, sevenZero: true, drawToMatch: false, wildFour: "challenge", deal: 5 };
+  const setup = { seed: 20260930, options };
+
+  it("is dealt from the seed and house rules its set-up sent, at every length and table it offers, with jumping in taken off", () => {
+    for (const size of rules.sizes) {
+      for (const count of rules.counts) {
+        const game = rules.start(size, count, { setup })!;
+        expect(game, `${size} for ${count}`).not.toBeNull();
+        expect(game.options.jumpIn).toBe(false);
+        expect(rules.encode(rules.decode(rules.encode(game))!)).toBe(rules.encode(game));
+        expect(rules.moveCount(game)).toBe(0);
+        expect(rules.toPlay(game)).not.toBeNull();
+      }
+    }
+    expect(rules.start(500, 3)).toBeNull();
+    expect(rules.start(500, 3, { setup: { ...setup, seed: 0 } })).toBeNull();
+    expect(rules.start(500, 3, { setup: { ...setup, options: { ...options, stacking: "always" } } })).toBeNull();
+    expect(rules.start(300, 3, { setup })).toBeNull();
+    expect(rules.start(500, 9, { setup })).toBeNull();
+    expect(rules.start(500, 3, { setup, computers: [2] })!.computers).toEqual([false, false, true]);
+  });
+
+  it("reads a card played, a draw, a pass, a take and a challenge, and never a jump", () => {
+    expect(rules.readMove({ play: "WW1", colour: "R", call: true })).toEqual({ play: "WW1", colour: "R", call: true });
+    expect(rules.readMove({ draw: true })).toEqual({ draw: true });
+    expect(rules.readMove({ challenge: true })).toEqual({ challenge: true });
+    for (const bad of [{ jump: "R50", seat: 1 }, { play: "X99" }, { play: "R50", colour: "P" }, { draw: 1 }]) {
+      expect(rules.readMove(bad), JSON.stringify(bad)).toBeNull();
+    }
+  });
+
+  it("plays a whole game out by the computer's moves sent as a browser sends them, and names the winners", () => {
+    let game = rules.start(1, 4, { setup, computers: [0, 1, 2, 3] })!;
+    const play = computerPlayOf("hitotsu")!;
+    let moves = 0;
+    while (rules.toPlay(game) !== null && moves < 5000) {
+      const seat = rules.toPlay(game)!;
+      expect(play.move(game, (seat + 1) % 4, "computer")).toBeNull();
+      const move = play.move(game, seat, "computer");
+      const read = rules.readMove(JSON.parse(JSON.stringify(move)));
+      expect(read).toEqual(move);
+      game = rules.play(game, read!)!;
+      expect(game).not.toBeNull();
+      moves += 1;
+    }
+    expect(rules.toPlay(game)).toBeNull();
+    expect(rules.winners(game).length).toBeGreaterThan(0);
+    expect(rules.moveCount(game)).toBe(moves);
+    expect(rules.computers!.levelOf(rules.computers!.seat("computer"))).toBe("computer");
   });
 });

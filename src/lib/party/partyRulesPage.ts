@@ -7,6 +7,7 @@ import { trainSetName } from "./mexicanTrain/mexicanTrain.constants";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
+import { HITOTSU_ONE_HAND } from "./hitotsu/hitotsu.constants";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
 export function partyPlayersWords(kind: PartyKind): string {
@@ -48,6 +49,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       spec.sizes.map((size) => `${(trainSetName(size) ?? `double-${size}`).toLowerCase()}${size === spec.defaultSize ? " (the default)" : ""}`),
       "or",
     )} set`,
+  hitotsu: (spec) => defaulted(spec, (size) => (size === HITOTSU_ONE_HAND ? "for one hand" : `to ${size} points`), "or"),
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
@@ -102,6 +104,21 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     turn: "Hands are secret: between two people's turns the table covers the hand and names who to pass the device to, and it shows only once that player says it is them. Drag a tile onto the end of a train, or tap the tile and then the train; tap a tile twice to lay it on the only train it fits, when there is just one. The trains it may go on are lit. With nothing to lay, press Draw, then lay the tile drawn or press Pass.",
     house:
       "Each train shows its last few tiles and how many are laid on it before them, so the table fits a phone and every open end is where it always is; a marker out is drawn at the train's start. Pips are drawn in a colour of their own for each number, as most double-twelve sets are, so a nine and a twelve are told apart at a glance. The set-up offers the common house rules: a short game of half the rounds, chained doubles, and a Mexican Train that only opens once your own train has started. Computer players can take any seat, and play in the browser. Choose Several devices at the set-up and each player plays on their own phone or computer, a buddy, anyone with the link or a computer in any seat, and sees only their own tiles; the table waits on My games between turns.",
+  },
+  hitotsu: {
+    turn: "The line over the table says whose turn it is, which colour to follow, and which way play is going round. Your hand is along the foot of the table: tap a card to choose it (it rises) and press Play, or tap a card twice to play it at once. A wild asks which colour to call, and a seven, with sevens and zeros on, which player to swap hands with. With two cards left, press Hitotsu! before you play. Facing a draw, press Take it — or stack, or Challenge a Wild Draw Four. A computer plays its own seat by itself, a moment after its turn comes.",
+    house:
+      "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every card carries its colour's element in its corners — 火 red, 土 yellow, 木 green, 水 blue — so colour is never the only sign of it. Choose Several devices at the set-up and each player plays on their own phone or computer: a buddy, anyone with the link or a computer in any seat, each seeing only their own hand.",
+    more: [
+      "The house rules, each a choice at the set-up, the published rule first:",
+      "Stacking: off (the published rule); the same card, a Draw Two on a Draw Two and a Wild Draw Four on a Wild Draw Four; or any draw card (progressive draw), a Wild Draw Four on a Draw Two too, and a Draw Two of the colour called on a Wild Draw Four. The next player who cannot stack takes the whole total.",
+      "Jump-in: a card identical to the one on top, the same colour and the same number or symbol, may be played out of turn by anybody holding one, and play goes on from them. Played at a table of one person with computers, where the other hands are the computers'.",
+      "Sevens and zeros: a seven swaps your hand with a player of your choice, and a zero passes every hand on, in the direction of play.",
+      "Draw until you can play: draw until a card goes, rather than one.",
+      "No bluffing: a Wild Draw Four may go down only when you hold nothing of the colour on top, and it cannot be challenged.",
+      "Party mode: five cards each, one hand, and stacking, jumping in and sevens and zeros on.",
+      "The first card turned up is always a number; an action card or a wild turned up goes back under the stock. A draw card played as your last card is still taken by the next player, and counts against them.",
+    ],
   },
   hearts: {
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",

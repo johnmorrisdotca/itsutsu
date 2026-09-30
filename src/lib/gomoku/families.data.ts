@@ -232,8 +232,11 @@ export const GAME_FAMILIES: GameFamily[] = [
      * than on Party games: a card game is the kind of game it is, and who is
      * round the table is how it is played. Nothing of them is recorded, so
      * this family's first and its award are still Solitaire's alone.
+     *
+     * Hitotsu (2026-09-30), the colour-card game, beside Crazy Eights, which it
+     * grew out of: a deck of its own, drawn by us, and a party game like them.
      */
-    games: ["solitaire", "hearts", "crazyEights", "goFish", "bigTwo", "president"],
+    games: ["solitaire", "hearts", "crazyEights", "hitotsu", "goFish", "bigTwo", "president"],
   },
   {
     key: "mahjong",
