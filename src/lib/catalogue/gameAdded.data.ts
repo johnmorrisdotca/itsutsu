@@ -43,6 +43,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   hex: "2026-09-08",
   hexFive: "2026-09-25",
   hiddenStones: "2026-09-24",
+  hitotsu: "2026-09-30",
   holeDrop: "2026-09-07",
   honeycomb: "2026-09-21",
   hotDrop: "2026-09-07",
