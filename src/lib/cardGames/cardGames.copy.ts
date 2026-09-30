@@ -104,4 +104,22 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     ],
     board: "Three or four is the usual table; it seats two to seven. Choose 100 points for the usual game, 50 for a quick one and 200 for a long one.",
   },
+  spades: {
+    label: "Spades",
+    kanji: "スペード",
+    tagline: "Bid the tricks you and your partner will take, then take exactly that many — spades are always trumps.",
+    origin:
+      "A partnership trick-taking game from the United States of the 1930s, a simpler cousin of Bridge and Whist in which spades are always trumps and each player bids for themselves. It spread through the armed forces in the Second World War and has been one of the most played card games in North America ever since. Nobody owns it.",
+    country: "US",
+    wikipedia: "Spades (card game)",
+    rules: [
+      "Four players in two partnerships, partners sitting across from each other. The whole pack is dealt, thirteen each, and the deal moves one seat round each time.",
+      "From the dealer's left, each player bids how many tricks they expect to take, one to thirteen, or nil for none at all. A partnership's contract is its two bids added.",
+      "The dealer's left leads the first trick. Follow suit if you can; if you cannot, play anything. Spades are trumps: the highest spade takes the trick, or else the highest card of the suit led. Aces are high. Spades may not be led until one has been played on another suit, unless you hold nothing else.",
+      "Make your contract and score ten points for every trick bid and one for every trick over, which is a bag; take fewer and lose ten for every trick bid. Every ten bags a partnership gathers cost it a hundred points.",
+      "Nil scores a hundred if its bidder takes no trick at all, and costs a hundred if they take even one; their partner's bid stands on its own, and any trick the nil bidder takes is a bag.",
+      "The first partnership to the game's total — 200, 300 or the usual 500 — wins; a partnership that sinks to minus that total loses. Level at the end, and another deal is played.",
+    ],
+    board: "Always four, two against two: one person and three computers, two people as partners against two computers, or four people round one device. Choose 500 for the usual game, 300 or 200 for a quicker one.",
+  },
 };

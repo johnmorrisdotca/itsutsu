@@ -278,6 +278,22 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
+   * TRICKS: a trick on the table, four cards laid crosswise as four players
+   * lay them, and the ace of spades on top taking it — trumps, the one card
+   * the family's newest game is named for.
+   */
+  Tricks: {
+    n: 5,
+    cells: true,
+    stones: [],
+    cards: [
+      { card: { suit: "hearts", rank: 12 }, x: 2.5, y: 1.55, angle: 0 },
+      { card: { suit: "diamonds", rank: 10 }, x: 1.45, y: 2.5, angle: -90 },
+      { card: { suit: "clubs", rank: 13 }, x: 3.55, y: 2.5, angle: 90 },
+      { card: { suit: "spades", rank: 1 }, x: 2.5, y: 3.45, angle: 0 },
+    ],
+  },
+  /*
    * OTHER: a row of letters, the word puzzle's, two tiles lit green for a
    * letter in its place and one gold for a letter elsewhere — the family's
    * first game in one line, and the one mark on the row made of letters.

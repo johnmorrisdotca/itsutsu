@@ -119,3 +119,15 @@ How each plays:
 - **Old Maid** and **War**: children's games with almost no decisions, so a poor fit here.
 
 **Recommended next: Spades.** It reuses almost all of Hearts: the trick engine, following suit, the seat order and the computer's trick-taking sense. It adds bidding and teams, and it is the most played of the list. After it, Gin Rummy, the best two-player game still missing.
+
+## Spades (2026-09-30), and the Tricks family
+
+Spades is the first of the next five, built as the plan above recommended: Hearts' trick engine with bidding and partnerships (`src/lib/cardGames/spades/`, `spadesAdapter.tsx`).
+
+- **Always four**, partners across the table: seats 0 and 2 against 1 and 3, any of them a computer.
+- **Bids** are nil or one to thirteen, pressed under the hand. No blind nil, and no ten-for-two-hundred bonus bid.
+- **Scoring**: ten a trick bid and one a bag when the contract is made, minus ten a trick bid when it is not; every ten bags cost a hundred. Nil is a hundred either way, its bidder's tricks count for nothing towards the contract and are bags.
+- **Length**: to 200, 300 or 500 points (500 the usual game). A partnership that sinks to minus the total loses, which also means a game of random bids always ends. Level at the end, another deal.
+- **The computer** bids what its hand is worth (aces, guarded kings, long spades, voids beside three or four spades), nil only on a hand of nothing and never beside a partner's nil. Measured over 300 deals of four computers: the table bids 11.6 tricks on average and makes its contract 92% of the time.
+
+**The Tricks family** トリック. A shelf holds eight games (`FAMILY_MOST_GAMES`). Cards had six; FreeCell and Spider, and Gin Rummy, Euchre, Cribbage and Oh Hell after Spades, would have made thirteen. Hearts and Spades moved to a new family, Tricks, at `/games/tricks`, off the set-up screen as Dominoes is. Cards keeps Solitaire (its award untouched) and the shedding games. Euchre, Oh Hell and Cribbage are to join Tricks; Gin Rummy joins Cards. John was asked on the thread; this is the recommended option, taken while the answer is awaited.
