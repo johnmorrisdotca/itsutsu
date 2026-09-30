@@ -110,6 +110,11 @@ test.describe("Tsunagi's twists", () => {
 
     for (const line of lines) await drag(page, line);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    // Solved, every bridge carries its line across on top of the deck; the line going down is beneath it.
+    for (const bridge of await page.getByTestId("tsunagi-bridge").all()) {
+      await expect(bridge).toHaveAttribute("data-across", /^\d+$/);
+      await expect(bridge.getByTestId("tsunagi-over-bridge")).toHaveCount(1);
+    }
   });
 
   test("its partner, the block's test, says so before it is opened and on its board", async ({ page }) => {

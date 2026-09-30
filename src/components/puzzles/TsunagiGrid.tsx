@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef, type PointerEvent } from "react";
+import { useId, useRef, type PointerEvent } from "react";
 
 import { HEX_LATTICE } from "@/components/board/Board.constants";
 import { hexagonPoints } from "@/components/board/BoardLines";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { CELL_BLOCKED, CELL_BRIDGE, inHex, stepBetween, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
-import { ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
+import { overBridge, ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { hexCellAt, tsunagiHexFit } from "./tsunagiHex";
@@ -89,6 +89,8 @@ export function TsunagiGrid({
   const ring = layout.wrap ? 1 : 0;
   const span = size + 2 * ring;
   const pressing = useRef<{ pointer: number; cell: number } | null>(null);
+  const underBridges = `tsunagi-under-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const bridges = layout.cells.flatMap((cell, at) => (cell === CELL_BRIDGE ? [at] : []));
   const live = !readOnly && !done;
   const fit = layout.hex ? tsunagiHexFit(size) : null;
   // On a hexagon, the corners of the square are off the board: not drawn, not pressed.
@@ -187,17 +189,6 @@ export function TsunagiGrid({
               </g>
             ))}
             {layout.wrap || fit !== null ? null : <rect x={0} y={0} width={size} height={size} fill="none" stroke={theme.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />}
-            {/* A BRIDGE: a deck with a rail each side, the way across it; one line goes over it across and another down (`steps.ts`). */}
-            {layout.cells.map((cell, at) =>
-              cell === CELL_BRIDGE ? (
-                <g key={`bridge-${at}`} data-testid="tsunagi-bridge" data-cell={at}>
-                  <rect x={(at % size) + 0.1} y={Math.floor(at / size) + 0.1} width={0.8} height={0.8} rx={0.14} fill={theme.line} opacity={0.22} />
-                  {[0.16, 0.84].map((edge) => (
-                    <line key={edge} x1={(at % size) + 0.1} y1={Math.floor(at / size) + edge} x2={(at % size) + 0.9} y2={Math.floor(at / size) + edge} stroke={theme.line} strokeWidth={0.07} strokeLinecap="round" />
-                  ))}
-                </g>
-              ) : null,
-            )}
             {/* A WALL: a thick bar on the edge between two cells, which no line crosses. */}
             {[...layout.walls].map((wall) => {
               const [a, b] = wall.split("-").map(Number) as [number, number];
@@ -219,23 +210,63 @@ export function TsunagiGrid({
                 />
               );
             })}
-            {lines.map((line, pair) =>
-              line.length < 2 ? null : (
-                <g key={`line-${pair}`} data-testid="tsunagi-line" data-pair={pair} data-cells={line.length}>
-                  {runsOf(line, size, layout.wrap, layout.hex).map((points, at) => (
+            {/* The lines, with every bridge's deck cut out of them: the line going down passes UNDER the bridge and is lost beneath it (John: "truly show the line rendering below the bridge"). */}
+            {bridges.length === 0 ? null : (
+              <mask id={underBridges} maskUnits="userSpaceOnUse" x={-2} y={-2} width={size + 4} height={size + 4}>
+                <rect x={-2} y={-2} width={size + 4} height={size + 4} fill="white" />
+                {bridges.map((at) => (
+                  <rect key={at} x={(at % size) + 0.1} y={Math.floor(at / size) + 0.1} width={0.8} height={0.8} rx={0.14} fill="black" />
+                ))}
+              </mask>
+            )}
+            <g mask={bridges.length === 0 ? undefined : `url(#${underBridges})`}>
+              {lines.map((line, pair) =>
+                line.length < 2 ? null : (
+                  <g key={`line-${pair}`} data-testid="tsunagi-line" data-pair={pair} data-cells={line.length}>
+                    {runsOf(line, size, layout.wrap, layout.hex).map((points, at) => (
+                      <polyline
+                        key={at}
+                        points={points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(" ")}
+                        fill="none"
+                        stroke={tsunagiLineColour(pair, marks)}
+                        strokeWidth={0.3}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    ))}
+                  </g>
+                ),
+              )}
+            </g>
+            {/* Then the bridge on top of the line beneath it, and the line going across drawn over its deck. */}
+            {bridges.map((at) => {
+              const x = at % size;
+              const y = Math.floor(at / size);
+              const pair = overBridge(lines, at).across;
+              const line = pair < 0 ? null : lines[pair]!;
+              const on = line === null ? -1 : line.indexOf(at);
+              const ends = line === null ? [] : [line[on - 1], line[on + 1]].filter((cell): cell is number => cell !== undefined);
+              return (
+                <g key={`bridge-${at}`} data-testid="tsunagi-bridge" data-cell={at} data-across={pair >= 0 ? pair : undefined}>
+                  <rect x={x + 0.1} y={y + 0.1} width={0.8} height={0.8} rx={0.14} fill={theme.line} opacity={0.22} />
+                  {[0.16, 0.84].map((edge) => (
+                    <line key={edge} x1={x + 0.1} y1={y + edge} x2={x + 0.9} y2={y + edge} stroke={theme.line} strokeWidth={0.07} strokeLinecap="round" />
+                  ))}
+                  {ends.length === 0 ? null : (
                     <polyline
-                      key={at}
-                      points={points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(" ")}
+                      // From the edge it came in by, through the middle, out by the edge beyond: the part of the line the deck cut out.
+                      points={[ends[0]!, at, ...ends.slice(1)].map((cell) => (cell === at ? `${x + 0.5},${y + 0.5}` : `${x + 0.5 + ((cell % size) - x) / 2},${y + 0.5}`)).join(" ")}
                       fill="none"
                       stroke={tsunagiLineColour(pair, marks)}
                       strokeWidth={0.3}
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      data-testid="tsunagi-over-bridge"
                     />
-                  ))}
+                  )}
                 </g>
-              ),
-            )}
+              );
+            })}
             </g>
           </svg>
           <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${span}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${span}, minmax(0, 1fr))` }}>
