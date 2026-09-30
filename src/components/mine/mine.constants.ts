@@ -132,8 +132,10 @@ export const MY_GAMES_COPY = {
   puzzlesGoing: {
     label: "Puzzles in progress",
     kanji: "解きかけ",
-    hint: "Left part way, kept where you left them. Open one to carry on.",
+    hint: "Left part way, kept where you left them, and races waiting on you. Open one to carry on.",
   },
+  /** A race waiting on the reader, on the puzzles' panel: its page is where the seat is taken or the clock started. */
+  raceOpen: "Open the race",
   /** The Completed tab's filters (`CompletedFilters`): John, 2026-09-30, "Allow filters. For the game type / family". */
   completedFilters: {
     family: "Family",

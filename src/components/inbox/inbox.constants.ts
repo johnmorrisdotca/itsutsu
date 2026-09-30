@@ -4,7 +4,7 @@ export const INBOX_COPY = {
   kanji: "受信",
   lead: "What happened in your games while you were away — kept for thirty days.",
   empty:
-    "Nothing yet. When a game of yours ends, somebody asks you for a game or answers yours, somebody sits at a seat you posted, a note comes with a move, or somebody writes to you, it is here.",
+    "Nothing yet. When a game of yours ends, somebody asks you for a game or a race or answers yours, somebody sits at a seat you posted, a note comes with a move, or somebody writes to you, it is here.",
   open: "See the game",
   answer: "Answer it",
   somebody: "Somebody",
@@ -23,6 +23,7 @@ export const INBOX_COPY = {
   note: "wrote to you in your game of",
   message: "sent you a message",
   tableInvite: "gave you a seat at a table on several devices, playing",
+  raceOffer: "asked you to race at",
   tableOver: {
     lead: "Your table of",
     is: "is over —",

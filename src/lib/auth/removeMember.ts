@@ -175,6 +175,7 @@ export async function removeMember(
     prisma.tsunagiAttempt.deleteMany({ where: { memberId } }),
     prisma.puzzleSolve.updateMany({ where: { raceId: { in: raceIds } }, data: { raceId: null } }),
     prisma.puzzleRace.deleteMany({ where: { id: { in: raceIds } } }),
+    prisma.puzzleRace.updateMany({ where: { offeredToMemberId: memberId }, data: { offeredToMemberId: null } }),
     /*
      * Their seats at party tables played on several devices: the seat opens
      * with no link (nobody can take it, and the others may end the table once

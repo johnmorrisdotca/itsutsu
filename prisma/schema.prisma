@@ -1312,6 +1312,8 @@ model PuzzleRace {
   guestToken    String    @unique @default(cuid())
   guestMemberId String?
   guestName     String    @default("")
+  /// A member the host offered the guest seat to by name, from their buddies: told in their inbox, shown on their My games, and let sit without the link.
+  offeredToMemberId String?
   hostStartedAt   DateTime?
   hostFinishedAt  DateTime?
   guestStartedAt  DateTime?
@@ -1324,6 +1326,7 @@ model PuzzleRace {
 
   @@index([hostMemberId, createdAt])
   @@index([guestMemberId, createdAt])
+  @@index([offeredToMemberId, createdAt])
 }
 
 /// A PARTY TABLE PLAYED ON SEVERAL DEVICES: one game of a party table (Dots and

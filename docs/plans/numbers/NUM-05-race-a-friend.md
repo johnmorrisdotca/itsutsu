@@ -12,6 +12,14 @@
 > races; a chosen opponent from the site's lists is a follow-up. The
 > migration is `prisma/migrations/20260924145706_puzzle_solves_and_races`,
 > additive only.
+>
+> **Follow-up (2026-09-30).** The chosen opponent has landed:
+> `offeredToMemberId` (migration `20260930092000_race_offered_to`), offered
+> from the race page to one of the host's buddies, told in their inbox as
+> `race-offer`, and listed on My games beside the puzzles in progress with
+> any race whose seat is waiting on the reader. The seat link stays. And a
+> Gomoji seat whose guesses run out is given up at once
+> (`20260930091000_race_gave_up`) rather than at the end of the sitting.
 
 Part of `numbers-a-new-family-of-puzzles-starting-with-sudoku`, released on
 its own because it **needs a migration**: two tables, `PuzzleRace` and

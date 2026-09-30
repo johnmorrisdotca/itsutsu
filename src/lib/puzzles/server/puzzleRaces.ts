@@ -1,7 +1,11 @@
 import "server-only";
 
 import { makeGameId } from "@/lib/history/gameId";
+import { recordInbox } from "@/lib/inbox/inbox";
+import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { prisma } from "@/lib/prisma";
+import { buddyMemberIds } from "@/lib/social/buddies";
+import { isIgnoring } from "@/lib/social/ignores";
 import { awardXp } from "@/lib/xp/awardXp";
 import { XP_EVENTS } from "@/lib/xp/xp.constants";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
@@ -213,4 +217,58 @@ export async function racesOf(memberId: string, kind: PuzzleKind, take = 50) {
     orderBy: { createdAt: "desc" },
     take,
   });
+}
+
+export type OfferResult = "offered" | "none" | "notHost" | "taken" | "notBuddy";
+
+/**
+ * The host offers the guest seat to a member by name, from their own buddies:
+ * written on the race, told in that member's inbox, and shown on their My
+ * games; they may sit without the link. Only while the seat is empty, and a
+ * second offer moves it to somebody else. A buddy who has chosen not to hear
+ * from the host is offered it as anybody else is, and told nothing, as
+ * everywhere an ignore applies.
+ */
+export async function offerRace(id: string, host: { id: string; name: string }, toMemberId: string): Promise<OfferResult> {
+  const race = await raceFor(id);
+  if (race === null) return "none";
+  if (race.hostMemberId !== host.id) return "notHost";
+  if (race.guestMemberId !== null) return "taken";
+  if (toMemberId === host.id || !(await buddyMemberIds(host.id)).has(toMemberId)) return "notBuddy";
+  const offered = await prisma.puzzleRace.updateMany({ where: { id, guestMemberId: null }, data: { offeredToMemberId: toMemberId } });
+  if (offered.count !== 1) return "taken";
+  if (!(await isIgnoring(toMemberId, host.id))) {
+    await recordInbox([{ memberId: toMemberId, kind: INBOX_KINDS.raceOffer, gameId: id, variant: race.kind, fromName: host.name, fromMemberId: host.id }]);
+  }
+  return "offered";
+}
+
+/** How long a race offered, or a seat not yet started, waits on My games: the inbox's thirty days. */
+const RACE_WAITS_DAYS = 30;
+
+/**
+ * The races waiting on a member, newest first, for My games: offered to them
+ * and not yet taken, or a seat of theirs not yet started while the other seat
+ * is filled. A host's race nobody has sat down to is not waiting on the host.
+ */
+export async function racesWaitingOn(memberId: string, now = new Date()) {
+  const since = new Date(now.getTime() - RACE_WAITS_DAYS * 24 * 60 * 60 * 1000);
+  const rows = await prisma.puzzleRace.findMany({
+    where: {
+      createdAt: { gte: since },
+      OR: [
+        { offeredToMemberId: memberId, guestMemberId: null },
+        { guestMemberId: memberId, guestStartedAt: null },
+        { hostMemberId: memberId, hostStartedAt: null, guestMemberId: { not: null } },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: { id: true, kind: true, size: true, level: true, hostName: true, hostMemberId: true, guestName: true, guestMemberId: true, createdAt: true },
+  });
+  // Who each is against: the guest for the host, the host for anybody else.
+  return rows.map((row) => ({
+    ...row,
+    against: row.hostMemberId === memberId ? { name: row.guestName, memberId: row.guestMemberId } : { name: row.hostName, memberId: row.hostMemberId },
+  }));
 }

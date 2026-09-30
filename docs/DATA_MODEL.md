@@ -192,13 +192,19 @@ posted it whole; the guest comes in by the seat link, as for a game, and
 must be a member (a solve is kept and paid by member id). Each seat's start
 and finish are the server's own stamps; a seat started and not finished
 inside a sitting (`RACE_SITTING_MS`, two hours) reads as given up, decided
-whenever the race is read and never by a timer.
+whenever the race is read and never by a timer. A word puzzle whose guesses
+run out stamps its seat given up at once (`hostGaveUpAt`/`guestGaveUpAt`), so
+the race settles then rather than at the end of the sitting. The host may also
+offer the empty seat to a buddy by name (`offeredToMemberId`): they are told in
+their inbox, find it on My games, and may take the seat from the race's page.
 
 | Group | Columns | Notes |
 | --- | --- | --- |
 | The puzzle | `kind`, `size`, `level`, `seed`, `givens`, `solution` | The seed lets the guest's browser make the same grid; `solution` is kept to check a finish in O(cells) and never sent out |
 | Seats | `hostMemberId`, `hostName`, `guestToken`, `guestMemberId`, `guestName` | The token is the guest's seat, shown to the host only while the seat is empty |
+| Offered | `offeredToMemberId` | A buddy the host offered the empty seat to; they are shown the seat's link on the race page. Cleared when that member is removed |
 | Clocks | `hostStartedAt`, `hostFinishedAt`, `guestStartedAt`, `guestFinishedAt` | Written once each, by the server |
+| Given up | `hostGaveUpAt`, `guestGaveUpAt` | Written once, by the server, when a seat's word ran out of guesses; the seat reads as given up at once |
 
 The id is a game's shape (`makeGameId`), so a race sits at
 `/games/<slug>/match/<id>` like a match.

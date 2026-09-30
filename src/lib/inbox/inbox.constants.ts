@@ -11,6 +11,8 @@ export const INBOX_KINDS = {
   tableInvite: "table-invite",
   /** A party table you sat at has finished or been ended; `detail` is won, shared, lost or ended. */
   tableOver: "table-over",
+  /** A puzzle race's other seat, offered by name (`gameId` is the race's id, `variant` the puzzle). */
+  raceOffer: "race-offer",
 } as const;
 
 export type InboxKind = (typeof INBOX_KINDS)[keyof typeof INBOX_KINDS];
