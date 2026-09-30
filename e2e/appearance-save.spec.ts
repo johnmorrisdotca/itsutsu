@@ -84,7 +84,8 @@ test.describe("a board theme chosen and left at once", () => {
       const { other } = await themes(page);
 
       await page.getByTestId(other).click();
-      await page.getByRole("navigation").locator('a[href="/games"]').first().click();
+      // Left by the trail over the board: while a game is played the bar keeps only My games (`PlayingNow`).
+      await page.getByTestId("game-trail").locator('a[href="/games"]').first().click();
       await expect(page).toHaveURL(/\/games$/);
       await onAnotherDevice(browser, baseURL!, member, other);
     } finally {

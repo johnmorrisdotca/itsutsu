@@ -155,6 +155,8 @@ export function NavLinks() {
               key={item.href}
               href={item.href}
               aria-current={current ? "page" : undefined}
+              // While a game is played only My games stays, the way to the others waiting (`PlayingNow`).
+              data-quiet-in-play={item.href === "/play" ? undefined : ""}
               /*
                * `relative` so the waiting count has something to hang off.
                *
@@ -201,6 +203,7 @@ export function NavLinks() {
         aria-current={pathname === NEW_GAME_HREF ? "page" : undefined}
         className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT} shrink-0 px-2.5 py-1 text-[0.8125rem] whitespace-nowrap sm:px-3 sm:text-sm`}
         data-testid="nav-new-game"
+        data-quiet-in-play
       >
         {say.say("nav.newGame")}
       </Link>

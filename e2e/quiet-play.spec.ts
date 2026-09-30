@@ -33,10 +33,13 @@ test("the site steps back while a game is played, and comes back for the set-up 
   await page.getByTestId("dots-start").click();
   await expect(page.getByTestId("dots-game")).toHaveAttribute("data-state", "playing");
 
-  // Playing: the sections, New game and the footer go; the way home, the account and the way back stay.
+  // Playing: the other sections, New game and the footer's links go; the way home, My games, the account, the way back and Report a problem stay.
   await expect(page.getByTestId("playing-now")).toHaveCount(1);
+  const bar = page.locator("header[data-chrome] nav");
   await expect(page.getByTestId("nav-new-game")).toBeHidden();
-  await expect(page.getByTestId("site-footer")).toBeHidden();
+  await expect(bar.locator('a[href="/games"]')).toBeHidden();
+  await expect(bar.locator('a[href="/play"]')).toBeVisible();
+  await expect(page.getByTestId("version-link")).toBeHidden();
   await expect(page.getByRole("link", { name: "Itsutsu home" })).toBeVisible();
   await expect(page.getByTestId("account-slot")).toBeVisible();
   await expect(page.getByTestId("game-trail")).toBeVisible();
@@ -50,7 +53,7 @@ test("the site steps back while a game is played, and comes back for the set-up 
   await expect(page.getByTestId("dots-game")).toHaveAttribute("data-state", "finished");
   await expect(page.getByTestId("playing-now")).toHaveCount(0);
   await expect(page.getByTestId("nav-new-game")).toBeVisible();
-  await expect(page.getByTestId("site-footer")).toBeVisible();
+  await expect(page.getByTestId("version-link")).toBeVisible();
 
   // And a page with no board keeps its navigation whatever was played before it.
   await page.goto("/games");

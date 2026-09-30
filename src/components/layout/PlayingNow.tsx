@@ -9,15 +9,21 @@
  * game is being played, the page keeps:
  *
  * - the wordmark, its Beta mark and the account menu — the way home and the
- *   way out of the account, on one row;
+ *   way out of the account — with My games and its your-turn count between
+ *   them, on one row. My games stays because every game left half way waits
+ *   there ("Anything a person plays is kept … and waits in My games",
+ *   AGENTS.md), and it is how John leaves one: the specs that keep a game
+ *   left half way leave it that way "as John did";
  * - the trail over the game (`GameTrailNav`), the way back to the game and its
  *   set-up;
+ * - Report a problem, in the footer, since play is where a problem is met;
  * - the play itself and every control it has, Just the board included.
  *
- * and hides what is marked `data-quiet-in-play`: the sections and New game
- * (`SiteHeader`'s `Nav`), the member's figures (`MemberStrip`), a table's
- * page title and lead, and the footer. A set-up screen, a finished game and
- * every page that is not a board show all of it as before.
+ * and hides what is marked `data-quiet-in-play`: the other sections and New
+ * game (`NavLinks`), the member's figures (`MemberStrip`), a table's page
+ * title and lead, and the footer's links, language and edition. A set-up
+ * screen, a finished game and every page that is not a board show all of it
+ * as before.
  *
  * WHY A MARK IN THE PAGE AND NOT A SWITCH ON THE ROOT. Only the play knows
  * whether it is being played — a table kept in the browser, a puzzle solved, a

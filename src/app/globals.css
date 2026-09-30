@@ -253,6 +253,13 @@ body {
 [data-strippable]:has([data-playing-now]) [data-quiet-in-play] {
   display: none;
 }
+/* What is left of the bar on a phone — My games — joins the logo's row, between it and the account, rather than keeping a row of its own. */
+@media (width < 40rem) {
+  [data-strippable]:has([data-playing-now]) [data-site-nav] {
+    order: 2;
+    width: auto;
+  }
+}
 
 /*
  * Just the board: the page stripped back to the board and the moves.
