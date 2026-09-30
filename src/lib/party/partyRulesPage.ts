@@ -49,6 +49,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       "or",
     )} set`,
   yacht: () => "with five dice and a sheet of thirteen boxes, alone or at a table",
+  pachisi: () => "with two dice and four pawns each, round a cross of sixty-eight squares",
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
@@ -113,6 +114,12 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     house:
       "Dice are thrown by the game from a fresh random seed, and every roll is kept with the game, so a reloaded page throws nothing again. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice is off until you turn it on.",
     more: ["A second Yacht scores nothing more: once the Yacht box is filled, five of a kind is written into another box like any other throw."],
+  },
+  pachisi: {
+    turn: "The line at the top says whose turn it is. Press Roll the dice to throw. The values you may use appear under the dice: choose one (the first that can move is chosen for you), then tap a ringed pawn to move it that far. A 20 or a 10 you earn joins them. When both dice add up to five, a button enters a pawn with the two together.",
+    house:
+      "Dice are thrown by the game from a fresh random seed, and every throw is kept with the game, so a reloaded page throws nothing again. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice is off until you turn it on.",
+    more: ["A pawn entering onto its own entry square takes a lone opponent standing there, though the entry square is otherwise safe.", "Two players sit on opposite arms of the cross."],
   },
   hearts: {
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",

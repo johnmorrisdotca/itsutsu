@@ -94,4 +94,5 @@ export const GAME_ADDED: Record<GameKey, string> = {
   wildTicTacToe: "2026-09-07",
   wormDrop: "2026-09-07",
   yacht: "2026-09-30",
+  pachisi: "2026-09-30",
 };

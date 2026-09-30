@@ -4,6 +4,7 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { MANCALA_BOARDS } from "./mancala/mancala.constants";
 import { TRAIN_SETS } from "./mexicanTrain/mexicanTrain.constants";
 import type { PartyKind, PartySpec } from "./party.types";
+import { PACHISI_TRACK } from "./pachisi/pachisi.constants";
 import { YACHT_SHEET } from "./yacht/yacht.constants";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
@@ -26,11 +27,12 @@ export const PARTY_KINDS = {
   tenka: "tenka",
   mexicanTrain: "mexicanTrain",
   yacht: "yacht",
+  pachisi: "pachisi",
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.yacht, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -161,6 +163,31 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
     board:
       "One sheet of thirteen boxes. Play alone to beat your best, pass one phone round a table of up to eight, or put the computer in any seat.",
   },
+  /*
+   * PACHISI, the cross-and-circle race game of India, by its own old name:
+   * the boxed Western version's name is its owner's and appears nowhere here.
+   * Its kanji, 二十五, is "twenty-five", which is what pachisi means: the
+   * highest throw of the cowries it was first played with.
+   */
+  pachisi: {
+    label: "Pachisi",
+    kanji: "二十五",
+    tagline: "Two dice, four pawns each and a cross-shaped track: race them all home, and send anyone you land on back to the start.",
+    origin:
+      /* Checked 2026-09-30: pachisi is played in India from at least the sixteenth century; the two-dice Western form with bonuses of 20 and 10 is the one played here. */
+      "The national game of India, played on a cloth cross for centuries: Akbar is said to have played it in his palace courtyard with people for pawns. It came west in the nineteenth century as a boxed game with two dice, and Spain plays it as Parchís. The form here is that Western one, with its blockades, safe squares and bonuses. Nobody owns it.",
+    alsoKnownAs: ["Parchís", "Chaupar"],
+    wikipedia: "Pachisi",
+    rules: [
+      "Each player has four pawns in their nest. On your turn throw two dice; each die moves one pawn on its own, the same pawn or two, in the order you like. A pawn comes out of the nest onto your entry square on a 5, or on two dice that add up to five.",
+      "Pawns go round the shared track, then up your own home path to the middle; a pawn must reach home by the exact count. A value no pawn can use is lost.",
+      "Land on a lone opponent's pawn on an ordinary square and it goes back to its nest, and you move 20 more with any pawn. The ringed squares are safe: nobody is taken there. Bring a pawn home and move 10 more.",
+      "Two of your pawns on one square are a blockade: no pawn may pass it or land there, yours included.",
+      "Doubles throw again. A third double in one turn sends your leading pawn on the track back to its nest. The first with all four pawns home wins.",
+    ],
+    board:
+      "A cross of sixty-eight squares round a middle, with a home path of seven for each colour. Two sit opposite each other; three or four take an arm each. Pass one phone round, or put the computer in any seat.",
+  },
   // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
   ...CARD_GAME_DISPLAY,
 };
@@ -229,6 +256,7 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
    * the set-up opens: a person and the computer.
    */
   yacht: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 2, sizes: [YACHT_SHEET], defaultSize: YACHT_SHEET },
+  pachisi: { fewestPlayers: 2, mostPlayers: 4, defaultPlayers: 2, sizes: [PACHISI_TRACK], defaultSize: PACHISI_TRACK },
   // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
   ...CARD_GAME_SPECS,
 };

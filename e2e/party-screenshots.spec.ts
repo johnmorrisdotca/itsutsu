@@ -18,6 +18,9 @@ import { encodeTrain } from "../src/lib/party/mexicanTrain/trainCodec";
 import { computerMove } from "../src/lib/party/mexicanTrain/trainComputer";
 import { CARD_GAME_RULES } from "../src/lib/cardGames/cardGameRules";
 import type { CardGameKind } from "../src/lib/cardGames/cardGames.constants";
+import { playPachisi, startPachisi } from "../src/lib/party/pachisi/pachisi";
+import { encodePachisi } from "../src/lib/party/pachisi/pachisiCodec";
+import { pachisiComputerMove } from "../src/lib/party/pachisi/pachisiComputer";
 import { playYacht, startYacht } from "../src/lib/party/yacht/yacht";
 import { encodeYacht } from "../src/lib/party/yacht/yachtCodec";
 import { ready } from "./support";
@@ -73,6 +76,17 @@ function yachtScene(): string {
   const most = counts.indexOf(Math.max(...counts));
   const hold = game.dice.reduce((mask, die, at) => (die === most ? mask | (1 << at) : mask), 0);
   return encodeYacht(playYacht(game, { kind: "roll", hold: hold === 31 ? 0 : hold })!);
+}
+
+/**
+ * Four at a game of Pachisi, sixty moves in, played by the computer's rules
+ * from a fixed seed: pawns out on every arm, some on the track, some still in
+ * their nests. People in every seat, so the table waits on the picture.
+ */
+function pachisiScene(): string {
+  let game = startPachisi(["Ann", "Ben", "Cy", "Dee"], 20260930, [false, false, false, false])!;
+  for (let move = 0; move < 60; move += 1) game = playPachisi(game, pachisiComputerMove(game))!;
+  return encodePachisi(game);
 }
 
 /**
@@ -160,6 +174,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     table: "yacht-game",
     shot: "board-surface",
     stored: yachtScene(),
+  },
+  {
+    // Four round the cross, sixty moves in: pawns out on every arm, some still in their nests.
+    kind: "pachisi",
+    key: "itsutsu.pachisi",
+    table: "pachisi-game",
+    shot: "board-surface",
+    stored: pachisiScene(),
   },
   // Hearts for four, four tricks gone and three cards on the fifth: Ann to play to it, her hand under the table.
   {

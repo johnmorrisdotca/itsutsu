@@ -263,6 +263,39 @@ twelve-box Yacht sheet; no extra points for a second Yacht; two players (a
 person and the computer) as the set-up's default; alone offered as a table of
 one.
 
+## Pachisi 二十五: the race game of the cross and circle
+
+John, relayed 2026-09-30: "I think Parcheesi was another one from the past."
+It is here under its own old name, Pachisi (key and address `pachisi`): the
+boxed Western game's name is its owner's, as Tenka's and Yacht's are.
+
+- **Rules** (`src/lib/party/pachisi/`): the Western form with two dice. Four
+  pawns each; a pawn comes out on a 5 or two dice adding to five, goes round a
+  shared track of 68 squares and up its own home path of seven, home by the
+  exact count. Twelve safe squares; a lone opponent landed on elsewhere goes
+  back to its nest, for 20 to move; a pawn home earns 10. Two pawns of one
+  colour are a blockade nobody passes. Doubles throw again, and a third
+  double sends the leading pawn on the track home to its nest. A pawn is one
+  number, its progress; its square is read from its arm (`squareOf`).
+- **Throws** are drawn from the game's seed and how many throws came before,
+  as Yacht's are, so a reload throws nothing new. The codec keeps `r`, `e<pawn>`
+  and `m<pawn>.<use>`.
+- **The computer** (`pachisiComputer.ts`) tries every offered move and keeps
+  the one leaving the board best for it: progress, pawns out and home, safe
+  squares, out of an opponent's reach, opponents sent back.
+- **The board** (`components/party/pachisi/PachisiBoard.tsx`) is nineteen
+  cells square inside `BoardFrame`, laid out by `pachisiLayout.ts`: each
+  seat's nest, path and corner of the middle in their marble's colour, an arm
+  nobody sits at shaded grey. Two players sit on opposite arms.
+- **A turn** is a throw and then its values spent one at a time: the values
+  are buttons under the dice (the first usable one chosen), and the pawns
+  that value can move are ringed. Both dice together enter a pawn when they
+  add to five and neither is spent yet.
+
+Decisions to review: the name Pachisi rather than the boxed name; the kanji
+二十五 ("twenty-five", what pachisi means); the Western two-dice rules rather
+than the Indian cowrie throws; two to four players, no alone game.
+
 ## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,

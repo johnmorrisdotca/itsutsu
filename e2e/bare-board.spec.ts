@@ -447,6 +447,7 @@ const SURVEY: Survey[] = [
   table("tenka", "tenka-start"),
   table("mexican-train", "train-start"),
   table("yacht", "yacht-start"),
+  table("pachisi", "pachisi-start"),
   table("hearts", "cards-start"),
   table("spades", "cards-start"),
   table("euchre", "cards-start"),

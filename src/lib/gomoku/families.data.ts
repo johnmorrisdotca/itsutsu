@@ -308,7 +308,9 @@ export const GAME_FAMILIES: GameFamily[] = [
      * you just roll a dice and have fun that way?" A family for the games
      * played with dice alone, opened with Yacht: five dice, three rolls, a
      * sheet of thirteen boxes, alone or round one device. Its own shelf rather than Party games, which already
-     * shows its eight. 賽子 (saikoro) is the everyday word for a die.
+     * shows its eight. 賽子 (saikoro) is the everyday word for a die. Pachisi,
+     * the race game of the cross and circle, joined it the same day (John:
+     * "I think Parcheesi was another one from the past").
      *
      * Its games are party games, played round one device and never recorded,
      * so, like Dominoes, it counts towards no award (`RECORDED_FAMILIES`),
@@ -317,8 +319,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Dice",
     kanji: "賽子",
-    blurb: "Games played with dice alone: roll, hold the ones you want, roll the rest, and score what they make.",
-    games: ["yacht"],
+    blurb: "Games the dice decide: roll, hold the ones you want and score what they make, or race your pawns home by what they show.",
+    games: ["yacht", "pachisi"],
     notOnSetUp:
       "A dice game is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
