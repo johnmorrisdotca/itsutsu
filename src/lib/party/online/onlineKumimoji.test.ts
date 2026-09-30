@@ -79,6 +79,17 @@ describe("the seat a turn leaves", () => {
     expect(rules.moveCount(next)).toBe(1 + 3);
   });
 
+  it("refuses a second trade in one turn", () => {
+    const game = started();
+    const once = trade(seatPlay(game), 0);
+    const twice = trade(once, 0);
+    const seatFor = (play: typeof once) => ({ hand: play.hand.join(""), grid: encodeGrid(play.tiles), returned: play.returned, taken: play.taken });
+    expect(withSeat(game, seatFor(twice))).toBeNull();
+    const traded = withSeat(game, seatFor(once))!;
+    expect(traded.traded).toBe(true);
+    expect(withSeat(traded, seatFor(trade(seatPlay(traded), 0)))).toBeNull();
+  });
+
   it("refuses a tile the seat never had, a tile gone missing, and more taken than trades allow", () => {
     const game = started();
     const seat = seatOf(game);

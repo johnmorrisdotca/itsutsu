@@ -1,7 +1,7 @@
 import type { GridVerdict, Tiles } from "./grid";
 import type { KumimojiLength } from "./kumimoji.types";
 import type { PartyGame, PartyPlayer, PartySeat, PartySettings } from "./party.types";
-import { tilesLeft, type TilePlay } from "./play";
+import { mayTrade, tilesLeft, type TilePlay } from "./play";
 import { KUMIMOJI_PARTY, kumimojiTileCount } from "./tiles.constants";
 
 /**
@@ -105,9 +105,22 @@ export function seatPlay(game: PartyGame): TilePlay {
   return { bag: game.bag, returned: game.returned, taken: game.taken, tiles: player.tiles, hand: player.hand };
 }
 
-/** A move made on `seatPlay` put back: the bag as it left it, and the hand and table to the player whose turn it is. */
+/**
+ * ONE TRADE A TURN. John, 2026-09-29, after a player traded over and over and
+ * built up a hand: "if they swap tiles … give them a chance to lay some tiles
+ * but cannot ask for another swap until next turn." A trade gives one tile and
+ * takes three, so trading without end lets one player take the bag from the
+ * others. After a trade the player may still lay, lift and draw, and press
+ * Done; the next trade is on their next turn.
+ */
+export function mayTradeThisTurn(game: PartyGame): boolean {
+  return game.ending === null && !game.traded && mayTrade(seatPlay(game));
+}
+
+/** A move made on `seatPlay` put back: the bag as it left it, and the hand and table to the player whose turn it is. A second trade in one turn is refused, the game given back as it was. */
 export function withSeatPlay(game: PartyGame, play: TilePlay): PartyGame {
   if (game.ending !== null) return game;
+  if (game.traded && play.returned.length > game.returned.length) return game;
   const players = game.players.map((player, at) => (at === game.turn ? { ...player, hand: play.hand, tiles: play.tiles } : player));
   const traded = game.traded || play.returned.length > game.returned.length;
   return { ...game, returned: play.returned, taken: play.taken, players, traded };

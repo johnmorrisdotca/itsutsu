@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { judgeTiles } from "@/lib/puzzles/kumimoji/computerPlay";
-import { drawAll, mayDrawAll, nameOf, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
+import { drawAll, mayDrawAll, mayTradeThisTurn, nameOf, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
 import type { GridVerdict } from "@/lib/puzzles/kumimoji/grid";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { doneRefused, endTurn, goesOut, handCanSpell, isLastTurn, lastStanding, mayResign, resign } from "@/lib/puzzles/kumimoji/partyTurns";
@@ -95,7 +95,8 @@ export function KumimojiPartyTurn({
 
   const presses = {
     ...desk.presses,
-    trade: { ...desk.presses.trade, urge: refused === "trade" },
+    // One trade a turn: once traded, Trade waits for this player's next turn.
+    trade: { ...desk.presses.trade, can: desk.presses.trade.can && mayTradeThisTurn(game), urge: refused === "trade" },
     draw: {
       can: !busy && mayDrawAll(game, verdict),
       run: () => {
@@ -112,7 +113,9 @@ export function KumimojiPartyTurn({
       ? "No word in your hand: choose a tile and trade it for three first."
       : refused === "standing"
         ? "Everybody else has resigned. Lay a tile on a sound crossword and press Done to win, or resign."
-        : null;
+        : game.traded && play.hand.length > 0
+          ? "Traded: lay what you can or press Done. Your next trade is on your next turn."
+          : null;
 
   if (looking) {
     return (
