@@ -4,13 +4,18 @@
  * only when a puzzle of that length opens, so no other page carries a
  * kilobyte of it: all three together are about four hundred kilobytes.
  *
+ * Only a browser fetches one (`typeof window`, as `wordData.ts` says why). A
+ * server reads a length through `kanaWordsModule.ts`: its own checks, and the
+ * two pages that replay a kana dodger's word, so the pages' function carries
+ * each length once and not once more for the browser's sake.
+ *
  * `loadKanaWords` fetches and reads a length once; `kanaWordsOf` hands back one
  * already loaded, and refuses rather than answering for a list it does not
  * have (the generator and the checks call it only after the load).
  */
 export const KANA_SIZES = [3, 4, 5] as const;
 
-type Packed = { release: string; alphabet: string; codes: string; easy: string; answers: string; allowed: string };
+export type Packed = { release: string; alphabet: string; codes: string; easy: string; answers: string; allowed: string };
 
 export type KanaWords = {
   /** The JMdict release the list was made from, for the credit on the page. */
@@ -32,12 +37,23 @@ export function unpack(packed: Packed, size: number): KanaWords {
   return { release: packed.release, easy: words(packed.easy), answers: words(packed.answers), allowed: new Set(words(packed.allowed)) };
 }
 
+let fromModule: ((size: number) => Promise<Packed>) | null = null;
+
+/** Used by `kanaWordsModule.ts` only: how to read a length where there is no browser. */
+export function readKanaWordsWith(source: (size: number) => Promise<Packed>): void {
+  fromModule = source;
+}
+
 async function importPacked(size: number): Promise<Packed> {
-  // Named one by one, so the bundler splits each length into its own chunk.
-  if (size === 3) return (await import("./words.ja.3.data")).JA_WORDS_3;
-  if (size === 4) return (await import("./words.ja.4.data")).JA_WORDS_4;
-  if (size === 5) return (await import("./words.ja.5.data")).JA_WORDS_5;
-  throw new Error(`No ${size}-kana words.`);
+  if (typeof window !== "undefined") {
+    // Named one by one, so the bundler splits each length into its own chunk.
+    if (size === 3) return (await import("./words.ja.3.data")).JA_WORDS_3;
+    if (size === 4) return (await import("./words.ja.4.data")).JA_WORDS_4;
+    if (size === 5) return (await import("./words.ja.5.data")).JA_WORDS_5;
+    throw new Error(`No ${size}-kana words.`);
+  }
+  if (fromModule === null) throw new Error("The kana words are read on the server through kanaWordsModule.ts, which was not imported.");
+  return fromModule(size);
 }
 
 export async function loadKanaWords(size: number): Promise<KanaWords> {

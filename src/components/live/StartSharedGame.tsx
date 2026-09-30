@@ -10,7 +10,7 @@ import { seatPath } from "@/lib/gomoku/slugs";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { GameDefaults } from "@/components/game/gameDefaults";
-import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 import type { CreatedGame } from "@/lib/history/liveGame.types";
 import { RulesForm } from "./RulesForm";
 import type { RulesDraft } from "./rulesDraft";

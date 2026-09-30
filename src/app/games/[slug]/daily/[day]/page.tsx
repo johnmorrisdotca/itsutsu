@@ -5,7 +5,8 @@ import { DailyDayPage } from "@/components/puzzles/DailyDayPage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { DAILY_WORDS_EPOCH, dayKeyOf, isDayKey } from "@/lib/puzzles/dailyWords/dailyDay";
-import { dailyLanguageOf, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
+import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
+import { loadDailyPoolsFromModule } from "@/lib/puzzles/dailyWords/dailyPoolsModule";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 
 // Which day is today is a question for the moment of asking, and the times are read then too.
@@ -30,6 +31,6 @@ export default async function DailyDayRoute({ params, searchParams }: PageProps<
   if (kind === null || dailyLanguageOf(kind) === null) notFound();
   const today = dayKeyOf(new Date());
   if (!isDayKey(day) || day < DAILY_WORDS_EPOCH || day > today) notFound();
-  await loadDailyPools(kind);
+  await loadDailyPoolsFromModule(kind);
   return <DailyDayPage kind={kind} day={day} today={today} />;
 }

@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 import { lastPastDay } from "../src/lib/puzzles/dailyWords/dailyArchive";
 import { dailyWordSeed, dayAfter, dayKeyOf } from "../src/lib/puzzles/dailyWords/dailyDay";
 import { dailyLengths, dailyWordOf, loadDailyPools } from "../src/lib/puzzles/dailyWords/dailyPools";
+// The kana pools, read from their module: this process has no browser to fetch one.
+import "../src/lib/puzzles/dailyWords/dailyPoolsModule";
 import { setUpPath } from "../src/lib/gomoku/slugs";
 import { ready } from "./support";
 import { loadEveryWordList } from "./wordLists";

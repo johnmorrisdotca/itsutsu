@@ -21,11 +21,8 @@ import {
   SET_UP_PARAMS,
   variantFor,
 } from "@/lib/gomoku/slugs";
-import {
-  MOVE_TIME_OPTIONS,
-  SHARED_OPENINGS,
-  TIMEOUT_PENALTIES,
-} from "@/lib/history/gameSettingsSchema";
+import { MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES } from "@/lib/history/moveTime.constants";
+import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 
 /** The most moves an address may name, matching the creation route's own ceiling. */
 const MOVE_CEILING = 4096;

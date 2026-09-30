@@ -8,7 +8,8 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { gamePath } from "@/lib/gomoku/slugs";
 import { archiveMonthAsked, archiveMonths, archiveWeeks } from "@/lib/puzzles/dailyWords/dailyArchive";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
-import { dailyLengths, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
+import { dailyLengths } from "@/lib/puzzles/dailyWords/dailyPools";
+import { loadDailyPoolsFromModule } from "@/lib/puzzles/dailyWords/dailyPoolsModule";
 import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -31,7 +32,7 @@ import { DailyArchiveTable } from "./DailyArchiveTable";
 export async function DailyArchivePage({ kind, monthAsked }: { kind: PuzzleKind; monthAsked: string | undefined }) {
   const copy = PUZZLE_DISPLAY[kind];
   const today = dayKeyOf(new Date());
-  await loadDailyPools(kind);
+  await loadDailyPoolsFromModule(kind);
   const months = archiveMonths(today);
   const month = archiveMonthAsked(monthAsked, months);
   const weeks = archiveWeeks(kind, today, month);

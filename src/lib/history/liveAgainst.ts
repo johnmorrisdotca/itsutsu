@@ -9,7 +9,7 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { mayReachMember } from "@/lib/social/childReach";
 import { isIgnoring } from "@/lib/social/ignores";
-import { SHARED_OPENINGS } from "./gameSettingsSchema";
+import { SHARED_OPENINGS } from "./sharedOpenings.constants";
 import type { CreationAsked, CreationRefusal } from "./liveRequest";
 import { offerLiftedOff } from "./offers";
 import {

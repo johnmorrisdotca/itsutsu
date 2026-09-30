@@ -40,12 +40,24 @@ const READ = new Map<string, DailyPool[]>();
 /** The kana lengths with a pool file, each fetched by `importKanaPool`. */
 const KANA_POOL_SIZES: readonly number[] = [3, 4, 5];
 
+let fromModule: ((size: number) => Promise<readonly PackedDailyPool[] | null>) | null = null;
+
+/** Used by `dailyPoolsModule.ts` only: how to read a kana pool where there is no browser. */
+export function readKanaPoolsWith(source: (size: number) => Promise<readonly PackedDailyPool[] | null>): void {
+  fromModule = source;
+}
+
+/** Only a browser fetches a kana pool (`typeof window`, as `wordData.ts` says why); a server reads one through `dailyPoolsModule.ts`. */
 async function importKanaPool(size: number): Promise<readonly PackedDailyPool[] | null> {
-  // Named one by one, so the bundler splits each length into its own chunk.
-  if (size === 3) return (await import("./pool.ja.3.data")).DAILY_POOL_JA_3;
-  if (size === 4) return (await import("./pool.ja.4.data")).DAILY_POOL_JA_4;
-  if (size === 5) return (await import("./pool.ja.5.data")).DAILY_POOL_JA_5;
-  return null;
+  if (typeof window !== "undefined") {
+    // Named one by one, so the bundler splits each length into its own chunk.
+    if (size === 3) return (await import("./pool.ja.3.data")).DAILY_POOL_JA_3;
+    if (size === 4) return (await import("./pool.ja.4.data")).DAILY_POOL_JA_4;
+    if (size === 5) return (await import("./pool.ja.5.data")).DAILY_POOL_JA_5;
+    return null;
+  }
+  if (fromModule === null) throw new Error("The kana daily pools are read on the server through dailyPoolsModule.ts, which was not imported.");
+  return fromModule(size);
 }
 
 /** Fetches the kana pools a kind's lengths need; nothing to fetch for the alphabet Gomojis. */

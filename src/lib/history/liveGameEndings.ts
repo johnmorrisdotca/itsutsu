@@ -18,7 +18,7 @@ import { XP_EVENTS } from "@/lib/xp/xp.constants";
 import { awardCourtesy } from "@/lib/xp/xpSocial";
 import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { fetchGameDetail } from "./gameHistory";
-import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
+import { FORFEITS_TO_LOSE } from "./moveTime.constants";
 import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGame";
 import { isOffered } from "./offers";
 import { settledTurn } from "./settledTurn";

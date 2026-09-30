@@ -5,7 +5,8 @@ import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { PUZZLE_CODE_LONGEST } from "@/lib/puzzles/puzzles.constants";
-import { finishSeat, raceFor, seatOf } from "@/lib/puzzles/server/puzzleRaces";
+import { finishSeat } from "@/lib/puzzles/server/puzzleRaceChecks";
+import { raceFor, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 
 // The checks this seat spent, which the race's allowance bounds; left out, as by an older browser, none.
 const bodySchema = z.object({ answer: z.string().max(PUZZLE_CODE_LONGEST), checksUsed: z.number().int().nonnegative().optional() });

@@ -1,7 +1,7 @@
 import { ALL_BOARD_SIZES, DEFAULT_SETTINGS, DRAW_LIMIT_SHARE } from "@/lib/gomoku/gomoku.constants";
 import type { DrawLimit } from "@/lib/gomoku/gomoku.types";
 import { TIME_CONTROLS, type TimeControlName } from "@/lib/clock/clock.constants";
-import { MOVE_TIME_OPTIONS } from "@/lib/history/gameSettingsSchema";
+import { MOVE_TIME_OPTIONS } from "@/lib/history/moveTime.constants";
 import { DEFAULT_SESSION_SETTINGS } from "./game.constants";
 
 /**

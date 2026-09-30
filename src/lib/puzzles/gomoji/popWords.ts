@@ -50,10 +50,29 @@ export function popCategoryOf(word: string): string | null {
 const ENGLISH = new Map<number, Set<string>>();
 const OWN = new Map<number, Set<string>>();
 
-/** Fetches the dictionary's guesses at three or seven letters, once; nothing to fetch at the other lengths. */
+type PopGuesses = Readonly<Record<number, string>>;
+
+let fromModule: (() => Promise<PopGuesses>) | null = null;
+
+/** Used by `popWordsModule.ts` only: how to read the guesses where there is no browser. */
+export function readPopGuessesWith(source: () => Promise<PopGuesses>): void {
+  fromModule = source;
+}
+
+/**
+ * Fetches the dictionary's guesses at three or seven letters, once; nothing to
+ * fetch at the other lengths. Only a browser fetches them (`typeof window`, as
+ * `wordData.ts` says why); a server reads them through `popWordsModule.ts`.
+ */
 export async function loadPopGuesses(size: number): Promise<void> {
   if (!POP_OWN_GUESS_LENGTHS.includes(size) || OWN.has(size)) return;
-  const { POP_GUESSES } = await import("./words.pop.guesses.data");
+  let POP_GUESSES: PopGuesses;
+  if (typeof window !== "undefined") {
+    POP_GUESSES = (await import("./words.pop.guesses.data")).POP_GUESSES;
+  } else {
+    if (fromModule === null) throw new Error("Pop Gomoji's guesses are read on the server through popWordsModule.ts, which was not imported.");
+    POP_GUESSES = await fromModule();
+  }
   for (const length of POP_OWN_GUESS_LENGTHS) {
     if (!OWN.has(length)) OWN.set(length, new Set((POP_GUESSES[length] ?? "").split(/\s+/).filter(Boolean)));
   }

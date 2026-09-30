@@ -10,7 +10,7 @@ import { GAME_COPY } from "@/components/game/game.constants";
 import { TIME_CONTROLS, TIME_CONTROL_DISPLAY } from "@/lib/clock/clock.constants";
 import { BOARD_SIZES, DRAW_LIMIT_DISPLAY, DRAW_LIMIT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { DrawLimit } from "@/lib/gomoku/gomoku.types";
-import { MOVE_TIME_OPTIONS } from "@/lib/history/gameSettingsSchema";
+import { MOVE_TIME_OPTIONS } from "@/lib/history/moveTime.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
 
 /**

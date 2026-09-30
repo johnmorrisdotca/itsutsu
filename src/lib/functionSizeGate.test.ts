@@ -41,6 +41,11 @@ describe("the function-size gate", () => {
     expect(grew(6.8).failure).toContain("over the 1.7 MB recorded");
   });
 
+  /* The ceiling only ever comes down: 60, then 40, then 39 on 2026-09-30. Lower this number with it. */
+  it("keeps the ceiling no higher than it has been brought down to", () => {
+    expect(FUNCTION_SIZE_LIMIT_MB).toBeLessThanOrEqual(39);
+  });
+
   it("fails any function over the ceiling, recorded or not", () => {
     const unknown = { name: "api/new", mb: FUNCTION_SIZE_LIMIT_MB + 1, routes: ["api/new"] };
     expect(judgeFunctionSizes([unknown], baseline)[0]!.failure).toContain(`over the ${FUNCTION_SIZE_LIMIT_MB} MB ceiling`);

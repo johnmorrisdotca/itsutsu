@@ -8,7 +8,7 @@ import { matchPath, seatPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
-import { createRace } from "@/lib/puzzles/server/puzzleRaces";
+import { createRace } from "@/lib/puzzles/server/puzzleRaceChecks";
 
 /**
  * A race made: the host's browser generated the puzzle and posts it whole,

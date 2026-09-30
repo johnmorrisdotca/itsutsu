@@ -19,7 +19,7 @@ import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { markOfSeat } from "@/components/game/resultMarks";
 import { WordHistory } from "./WordHistory";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
-import { loadKanaWords } from "@/lib/puzzles/gomojiKana/kanaWords";
+import { loadKanaWordsFromModule } from "@/lib/puzzles/gomojiKana/kanaWordsModule";
 import { GameTrail } from "@/components/games/GameTrail";
 
 /**
@@ -35,7 +35,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
   const [solves, races, played] =
     me === null ? [[], [], { words: [], total: 0 }] : await Promise.all([words ? [] : ownSolvesOf(me, kind), racesOf(me, kind), words ? ownWordsOf(me, kind) : { words: [], total: 0 }]);
   // A kana dodger's word is where it stood at the end, replayed from its list (`wordOfPlay`): those lengths are loaded first.
-  if (kind === "gomojiKana") await Promise.all([...new Set(played.words.filter((word) => isDodgeGivens(word.givens)).map((word) => word.size))].map((size) => loadKanaWords(size)));
+  if (kind === "gomojiKana") await Promise.all([...new Set(played.words.filter((word) => isDodgeGivens(word.givens)).map((word) => word.size))].map((size) => loadKanaWordsFromModule(size)));
   return (
     <Page>
       <SiteHeader />

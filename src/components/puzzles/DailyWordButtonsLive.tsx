@@ -3,7 +3,8 @@ import { connection } from "next/server";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { dailyDayPath, dailyFutagoPlayPath, dailyPlayPath, dailyYotsugoPlayPath, dailyDodgePlayPath, dailyBackwardsPlayPath, todayBackwardsPlayPath, todayDodgePlayPath, todayFutagoPlayPath, todayPlayPath, todayYotsugoPlayPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
-import { dailyFutagoWordsOf, dailyLengths, dailyWordOf, dailyYotsugoWordsOf, loadDailyPools } from "@/lib/puzzles/dailyWords/dailyPools";
+import { dailyFutagoWordsOf, dailyLengths, dailyWordOf, dailyYotsugoWordsOf } from "@/lib/puzzles/dailyWords/dailyPools";
+import { loadDailyPoolsFromModule } from "@/lib/puzzles/dailyWords/dailyPoolsModule";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { dailyBackwardsStatusesOf, dailyDodgeStatusesOf, dailyStatusesOf } from "@/lib/puzzles/server/dailyPlays";
 import { offersDodge } from "@/lib/puzzles/gomoji/dodgeSeed";
@@ -20,7 +21,7 @@ import { DailyWordButtons } from "./DailyWordButtons";
 export async function DailyWordButtonsLive({ kind, framed }: { kind: PuzzleKind; framed: boolean }) {
   await connection();
   const today = dayKeyOf(new Date());
-  await loadDailyPools(kind);
+  await loadDailyPoolsFromModule(kind);
   const sizes = dailyLengths(kind);
   const words = new Map(sizes.flatMap((size) => {
     const word = dailyWordOf(kind, size, today)?.word;
