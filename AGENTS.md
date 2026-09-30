@@ -251,6 +251,14 @@ that is missing any of them fails the build rather than shipping quietly.
   when a new game is introduced to the site"). Run it once the picture is committed.
   `gameAdded.coverage.test.ts` fails the build for a game with no date — and the
   table is a `Record<GameKey, …>`, so a new key without one does not compile either.
+- **Its words are read at every end.** Its copy (set-up, play, every ending:
+  win, loss, give up, out of time, draw, its finished page and its record) has
+  been read on a real screen at a phone's width and a desk's, and uses the
+  words in `docs/plans/plain-english/GLOSSARY.md`. Text built from data counts
+  too: a size and a level joined into "draw 1 easy" is nobody's English (John,
+  2026-09-29: "Did we NOT have an English review to prevent crap words like
+  this???"). `src/lib/i18n/plainEnglish.coverage.test.ts` fails the build on
+  any label the glossary retired, read from the glossary itself.
 
 TypeScript already forces the `VARIANT_SPECS` and `RULE_VARIANT_DISPLAY` rows, because
 both are `Record<RuleVariant, …>`. The gate covers what types cannot see.

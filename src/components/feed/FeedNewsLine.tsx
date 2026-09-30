@@ -77,13 +77,13 @@ function person(who: FeedPerson, say: Speaker, testId: string): ReactNode {
   return <PlayerName name={who.name} memberId={who.memberId} fallback={say.say("feed.somebody")} testId={testId} />;
 }
 
-/** A best time's board, as the fastest table writes it: "9×9 hard". */
+/** A best time's board, in brackets after the game: "Number Place (9×9, hard)", never "Solitaire draw 1 easy". */
 function boardWords(entry: FeedNewsEntry): string {
   const parts = bestTimeParts(entry.subject);
   if (parts === null || entry.variant === null) return "";
   const kind = isPuzzleKind(entry.variant) ? entry.variant : undefined;
   const level = PUZZLE_LEVEL_DISPLAY[parts.level as PuzzleLevel]?.label.toLowerCase() ?? parts.level;
-  return `${sizeWord(parts.size, kind)} ${level}`;
+  return `(${sizeWord(parts.size, kind)}, ${level})`;
 }
 
 /**

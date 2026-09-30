@@ -8,7 +8,7 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } f
 import { familyPath, joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 
@@ -52,7 +52,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
           return (
             <li key={run.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-going" data-kind={kind} data-seed={run.seed}>
               {/* The whole card carries on, as a game's row opens its game; the name above it leads to the puzzle. */}
-              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Carry on with ${kind}`} />
+              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Carry on with ${PUZZLE_DISPLAY[kind].label}`} />
               <GameThumb variant={kind} size="small" />
               <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
                 <span className="truncate font-medium">
@@ -66,7 +66,7 @@ export function MyPuzzleRuns({ runs }: { runs: Awaited<ReturnType<typeof runsOf>
                   {run.strict ? " · strict" : ""}
                   {asked.headStart ? " · head start" : ""}
                   {/* A countdown says what it has left, the number that matters when it is picked up again. */}
-                  {asked.clock === undefined || asked.clock === "none" ? "" : ` · ${PUZZLE_CLOCK_DISPLAY[asked.clock].label.toLowerCase()}, ${clockText(Math.max(0, (PUZZLE_CLOCK_DISPLAY[asked.clock].ms ?? 0) - run.elapsedMs))} left`}
+                  {asked.clock === undefined || asked.clock === "none" ? "" : ` · ${PUZZLE_CLOCK_DISPLAY[asked.clock].label} countdown, ${clockText(Math.max(0, (PUZZLE_CLOCK_DISPLAY[asked.clock].ms ?? 0) - run.elapsedMs))} left`}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
