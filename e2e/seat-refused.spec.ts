@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
+
 /**
  * What a person sees when a seat link cannot seat them.
  *
@@ -23,6 +28,7 @@ test.describe("a seat link that cannot seat you", () => {
     const made = await request.post("/api/games/live", { data: { size: 9, open: true } });
     expect(made.status()).toBe(201);
     const game = (await made.json()) as { id: string };
+    tidyAway(game.id);
 
     await page.goto(`/games/gomoku/match/${game.id}?seat=full`);
 
@@ -84,6 +90,7 @@ test.describe("a seat link that cannot seat you", () => {
     // refused something they never reached for.
     const made = await request.post("/api/games/live", { data: { size: 9, open: true } });
     const game = (await made.json()) as { id: string };
+    tidyAway(game.id);
 
     await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("seat-full-notice")).toHaveCount(0);

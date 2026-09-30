@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { chooseBoard, chooseRated, chosenBoard, openMoreSettings, ready, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 
 /**
@@ -60,7 +64,7 @@ test.describe("setting a game up before it exists", () => {
 
     await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
-    const id = page.url().split("/games/gomoku/match/")[1].split("/")[0];
+    const id = tidyAway(page.url().split("/games/gomoku/match/")[1].split("/")[0]);
     const made = await (await request.get(`/api/games/${id}`)).json();
     expect(made.size).toBe(19);
     expect(made.rated).toBe(false);

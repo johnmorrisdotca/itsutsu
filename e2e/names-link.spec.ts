@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /*
  * Names are matched by what the site PRINTS, through the same function the
@@ -48,6 +50,7 @@ test.describe("a person's name leads to their page", () => {
     });
     expect(made.status()).toBe(201);
     const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
 
     // The game shows in "your games" once this browser holds a seat in it.
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
@@ -117,6 +120,7 @@ test.describe("a person's name leads to their page", () => {
     });
     expect(made.status(), await made.text()).toBe(201);
     const { id } = (await made.json()) as { id: string };
+    tidyAway(id);
     await other.close();
 
     process.loadEnvFile(".env");

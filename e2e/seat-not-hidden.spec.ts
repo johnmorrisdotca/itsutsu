@@ -3,10 +3,12 @@ import { expect, test } from "@playwright/test";
 import { chooseGame, chooseOpponent, openMoreSettings, openSetUpPage } from "./support";
 
 import { memberContext } from "./members";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * My own seat does not hide somebody else's.
@@ -45,6 +47,7 @@ test.describe("a seat somebody else is waiting on", () => {
       },
     });
     expect(theirs.status(), await theirs.text()).toBe(201);
+    tidyAway(((await theirs.json()) as { id: string }).id);
     await them.close();
 
     // Then I post one exactly like it, which is the case that broke.
@@ -58,6 +61,7 @@ test.describe("a seat somebody else is waiting on", () => {
       },
     });
     expect(mine.status()).toBe(201);
+    tidyAway(((await mine.json()) as { id: string }).id);
 
     /*
      * Asked of the screen that settles a game, which is where asking for one

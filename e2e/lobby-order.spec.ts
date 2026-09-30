@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * Starting a game is never buried by having played games.
@@ -30,6 +34,7 @@ test.describe("the lobby", () => {
       });
       expect(made.status()).toBe(201);
       const game = (await made.json()) as { id: string; blackToken: string };
+      tidyAway(game.id);
       await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     }
 

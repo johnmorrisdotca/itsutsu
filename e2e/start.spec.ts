@@ -7,12 +7,15 @@ import {
   openGamesPage,
   openMoreSettings,
   openSetUpPage,
+  matchIdIn,
   startAndBegin,
 } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /*
  * This file was called "starting a game is one sentence" and tested a one-line
@@ -67,6 +70,7 @@ test.describe("asking for a game", () => {
 
     // Whichever it did, it landed on a real game with an address of its own.
     await page.waitForURL(/\/games\/[^/]+\/match\//);
+    tidyAway(matchIdIn(page.url()));
   });
 
   test("sits down at once when somebody is already asking for the same", async ({ page, browser }) => {
@@ -81,6 +85,7 @@ test.describe("asking for a game", () => {
       data: { variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(posted.status()).toBe(201);
+    tidyAway(((await posted.json()) as { id: string }).id);
 
     await askFor(page, "trapThree");
 
@@ -91,6 +96,7 @@ test.describe("asking for a game", () => {
 
     await startAndBegin(page);
     await page.waitForURL(/\/games\/[^/]+\/match\//);
+    tidyAway(matchIdIn(page.url()));
     await theirs.close();
   });
 
@@ -110,12 +116,14 @@ test.describe("asking for a game", () => {
       data: { blackName: under(`Beside ${stamp}`), variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(posted.status()).toBe(201);
+    tidyAway(((await posted.json()) as { id: string }).id);
 
     // And mine, posted after theirs, so it is the newer of the two.
     const own = await request.post("/api/games/live", {
       data: { blackName: under(`Mine ${stamp}`), variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(own.status()).toBe(201);
+    tidyAway(((await own.json()) as { id: string }).id);
 
     await askFor(page, "trapThree");
 

@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { ready } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -33,6 +36,7 @@ async function playedGame(request: import("@playwright/test").APIRequestContext)
   });
   expect(made.status(), await made.text()).toBe(201);
   const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
+  tidyAway(game.id);
 
   const at: [number, number][] = [
     [0, 0],

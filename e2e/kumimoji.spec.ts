@@ -56,6 +56,28 @@ function classicGame(from: number): { seed: number; hand: string; word: string }
   }
 }
 
+/**
+ * Two tiles of this hand that are not a word side by side, neither of them a
+ * wild: a wild laid without a letter reads as whatever makes the line a word
+ * (`wilds.ts`), so a pair with one in it is misspelt only when no letter at
+ * all would do, and the page rightly marks nothing.
+ */
+function notWordPair(hand: string): readonly [string, string] | null {
+  const plain = [...hand].filter((letter) => !tileWords().isWild(letter));
+  for (const [at, a] of plain.entries()) for (const b of plain.slice(at + 1)) if (!isWord(a + b)) return [a, b];
+  return null;
+}
+
+/** A Classic game as `classicGame` finds one, whose hand also holds two plain tiles that are not a word. */
+function misspeltGame(from: number): { seed: number; word: string; pair: readonly [string, string] } {
+  for (let next = from; ; next += 1) {
+    const { seed, hand, word } = classicGame(next);
+    const pair = notWordPair(hand);
+    if (pair !== null) return { seed, word, pair };
+    next = seed;
+  }
+}
+
 async function japaneseGame(from: number): Promise<{ seed: number; wildAt: number; formsAt: number; forms: string }> {
   const words = await loadTileWords("japanese");
   for (let seed = from; seed < from + 1_000; seed += 1) {
@@ -260,15 +282,15 @@ test.describe("Kumimoji", () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
     test("tiles tapped onto the table make words, a line that is not one is marked, and the view refits as the grid grows", async ({ page }) => {
-      const { seed, hand, word } = classicGame(freshPuzzleSeed());
+      const { seed, word, pair } = misspeltGame(freshPuzzleSeed());
       await page.goto(`${AT}/play?size=${CLASSIC}&level=medium&seed=${seed}`);
       await ready(page, "puzzle-play");
       await hideDevBadge(page);
       await expect(page.getByTestId("kumimoji-hand-tile")).toHaveCount(CLASSIC);
       await expect(page.getByTestId("kumimoji-tray")).toBeVisible();
 
-      // Two tiles side by side that are not a word: both marked, and the line says which.
-      const [p, q] = [...hand].flatMap((a, i) => [...hand].slice(i + 1).map((b) => [a, b] as const)).find(([a, b]) => !isWord(a + b))!;
+      // Two tiles side by side that are not a word, neither a wild: both marked, and the line says which.
+      const [p, q] = pair;
       await lay(page, p, "0,0");
       const oneTile = Number(await page.getByTestId("kumimoji-table").getAttribute("data-tile-px"));
       await lay(page, q, "0,1");

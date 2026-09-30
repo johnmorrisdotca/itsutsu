@@ -2,7 +2,10 @@ import { expect, test, type APIRequestContext, type BrowserContext } from "@play
 
 import { BOT_PHRASES } from "../src/lib/history/reactions.constants";
 import { memberContext, removeMember } from "./members";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -50,7 +53,9 @@ test.describe("a computer player's manners", () => {
       data: { variant: "freestyle", size: 9, challengeId: "dan", moveTimeMs: null },
     });
     expect(started.status(), await started.text()).toBe(201);
-    return (await started.json()) as { id: string; blackToken: string };
+    const made_ = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(made_.id);
+    return made_;
   }
 
   async function saidBy(id: string): Promise<string[]> {
@@ -146,6 +151,7 @@ test.describe("a computer player's manners", () => {
       data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, variant: "freestyle" },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
     await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });

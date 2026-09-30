@@ -3,7 +3,11 @@ import { expect, test } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generateNumberPlace } from "../src/lib/puzzles/numberPlace/generate";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
-import { freshPuzzleSeed, openSetUpPage, ready, startAndBegin } from "./support";
+import { freshPuzzleSeed, matchIdIn, openSetUpPage, ready, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * "ARE YOU STILL THERE?" ON A PUZZLE AND ON A LIVE GAME, not only the practice
@@ -46,6 +50,7 @@ test("a live game left alone asks its seat holder, and says the game is kept", a
   await openSetUpPage(page);
   await startAndBegin(page);
   await ready(page, "shared-game");
+  tidyAway(matchIdIn(page.url()));
 
   await page.clock.runFor("03:10");
   const modal = page.getByTestId("idle-modal");

@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { judgeTiles } from "../src/lib/puzzles/kumimoji/computerPlay";
-import { afterComputerTurn } from "../src/lib/puzzles/kumimoji/computerTurn";
+import { COMPUTER_PAUSE_MS } from "../src/components/puzzles/kumimoji.constants";
+import { planComputerTurn } from "../src/lib/puzzles/kumimoji/computerTurn";
 import { generateKumimoji } from "../src/lib/puzzles/kumimoji/generate";
 import { lettersOf, sameLetters } from "../src/lib/puzzles/kumimoji/grid";
 import { partyTilesLeft, startParty } from "../src/lib/puzzles/kumimoji/party";
@@ -125,6 +126,11 @@ const COMPUTER = { name: "", computer: true };
  * turn and its second (after Aiko presses Done on a hand that spells a word),
  * read from the same planner the page plays, so the spec knows what the page
  * must show without trusting it.
+ *
+ * THE FIRST THING THE COMPUTER DOES IS LAY A WORD, and the spec knows which.
+ * A deal taken as it came sometimes had the computer trade a tile first and
+ * lay one word after, a line the page shows for a third of a second; the case
+ * looked for "Laid" between two looks half a second apart and did not see it.
  */
 function computerGame(from: number) {
   const words = tileWords();
@@ -132,11 +138,14 @@ function computerGame(from: number) {
   for (let seed = from; ; seed += 1) {
     const bag = generateKumimoji(QUICK, "medium", seed).givens;
     const settings = { size: QUICK, level: "medium" as const, seed, gameLength: "short" as const, language: "english" as const, doubleSet: false, diagonals: false, hints: false };
-    const first = afterComputerTurn(startParty(settings, bag, [COMPUTER, "Aiko"]), words);
+    const plan = planComputerTurn(startParty(settings, bag, [COMPUTER, "Aiko"]), words);
+    const opening = plan[0]?.said;
+    const first = plan.at(-1)?.game;
+    if (first === undefined || opening?.kind !== "laid") continue;
     if (first.ending !== null || first.turn !== 1 || first.players[0]!.tiles.size === 0 || !spells(first.players[1]!.hand)) continue;
     const handed = endTurn(first, judgeTiles(first.players[1]!.tiles, words), spells);
-    const second = afterComputerTurn(handed, words);
-    if (second.ending === null && second.turn === 1) return { seed, first, second };
+    const second = planComputerTurn(handed, words).at(-1)?.game ?? handed;
+    if (second.ending === null && second.turn === 1) return { seed, first, second, laid: (words.wordOf(opening.word) ?? opening.word).toUpperCase() };
   }
 }
 
@@ -504,22 +513,30 @@ test.describe("Kumimoji pass and play", () => {
   });
 
   test("a computer seat plays its own turn where everybody can see, then play returns to the person; a reload during or after it finds the same turn", async ({ page }) => {
-    const { seed, first, second } = computerGame(freshPuzzleSeed());
+    const { seed, first, second, laid } = computerGame(freshPuzzleSeed());
+    // The turn is shown a step every `COMPUTER_PAUSE_MS`, so this case holds the page's clock and moves it a step at a time: what it reads is a step, never a moment between two.
+    await page.clock.install();
     await page.goto(`${AT}/play?size=${QUICK}&level=medium&seed=${seed}&players=2`);
+    await ready(page, "kumimoji-party");
+    await page.clock.pauseAt(Date.now() + 60_000);
     await beginWithComputer(page, 0, ["", "Aiko"]);
 
     // The computer plays first: no pass screen for it, its table gaining tiles under a line saying what it did.
     const turn = page.getByTestId("kumimoji-party-computer");
+    const said = page.getByTestId("kumimoji-party-computer-said");
     await expect(turn).toBeVisible();
     await expect(turn).toHaveAttribute("data-player", "0");
     await expect(page.getByTestId("kumimoji-party-whose")).toContainText("Computer 1 is playing");
     await expect(turn.getByTestId("kumimoji-party-computer-mark").first()).toBeVisible();
-    await expect(page.getByTestId("kumimoji-party-computer-said")).toContainText("Laid");
-    await expect(turn.getByTestId("kumimoji-tile").first()).toBeVisible();
+    await expect(said).toHaveText("Looking at its tiles…");
+    await page.clock.runFor(COMPUTER_PAUSE_MS);
+    await expect(said).toHaveText(`Laid ${laid}`);
+    await expect(turn.getByTestId("kumimoji-tile")).toHaveCount(laid.length);
 
     // A reload in the middle of its turn — nothing of it kept yet, the kept game still the computer's to play — plays the same turn again, from its start.
     const keptTurn = await page.evaluate(() => (JSON.parse(window.localStorage.getItem("itsutsu:kumimoji-party") ?? "{}") as { turn?: number }).turn);
     expect(keptTurn).toBe(0);
+    await page.clock.resume();
     await page.reload();
     await ready(page, "kumimoji-party");
     await expect(page.getByTestId("kumimoji-party-computer")).toBeVisible();

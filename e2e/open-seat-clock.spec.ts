@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext } from "./members";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
+/** Every game this file makes, taken away when it finishes: a posted seat left behind is one another spec's member is sat down at. */
+const tidyAway = gamesMade();
 
 /**
  * A seat nobody is sitting in cannot be late.
@@ -29,6 +31,7 @@ test.describe("a game still waiting for somebody to sit down", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     // Black plays, so the board is waiting on White — the seat nobody has
     // taken. Without a move it is Black's own turn and the claim is refused
@@ -93,6 +96,7 @@ test.describe("a game still waiting for somebody to sit down", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     const moved = await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
