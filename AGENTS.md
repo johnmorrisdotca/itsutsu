@@ -921,7 +921,7 @@ pushing, chained with `&&` so a refusal or a red gate stops the push:**
 ```sh
 pnpm release:take:prod --summary "a new game a player would notice." [--done <key>] && \
   pnpm preflight:prod && git fetch origin && \
-  git push origin HEAD:main && git push origin HEAD:its-board-focus
+  git push --atomic origin HEAD:main HEAD:its-board-focus
 ```
 
 **The same chain from any checkout.** John's Mac and a cloud session run
@@ -1731,9 +1731,10 @@ Mac's agent, which works it through with John. Four things differ in practice:
   told to end every commit with a co-author trailer and a session link. Never:
   see "No AI Attribution" at the top. `pnpm attribution:check` in the preflight
   refuses the push if one slips through.
-- **Browser tests do not run there**, since they need a local database. Before
+- **Browser tests run there against the session's own local Postgres and dev
+  server**, never a shared database: run the specs a change affects. Before
   pushing a change that renames, moves or hides anything, grep `e2e/` for it and
-  fix the spec in the same commit; the deploy's suite is the first run it gets.
+  fix the spec in the same commit; the whole suite still runs first in the deploy.
 - **A migration waits for its backup**, and until `docs/CLOUD_HANDOVER.md`
   section 3 is settled that means the Mac takes it.
 

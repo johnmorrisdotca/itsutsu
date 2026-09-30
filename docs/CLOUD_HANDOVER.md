@@ -51,7 +51,7 @@ It cannot yet:
 
 ## Checklist for itsutsu-19
 
-Every value goes into **the cloud environment's settings** (claude.ai, the
+Every value goes into **the cloud environment's settings** (the cloud
 project's environment: its variables, setup script and network access), set by
 John. Never into the repository, a commit, a file in the shared folder, or a
 chat message. Only the NAMES appear here.
@@ -118,7 +118,7 @@ the answers are written here.
 - **The Mac holds every push to `main`** until the cloud queue has drained, and
   has pushed nothing since 0.442.0. Its unpushed work (the home page hero, the
   result marks, the second English pass, the Tenka links, finished tables in
-  Completed) is the same work as `claude/mac-only-pieces` and 0.453.0, and will
+  Completed) is the same work as the cloud's `mac-only-pieces` branch and 0.453.0, and will
   not be merged.
 - Both stale branches are deleted.
 
@@ -138,7 +138,7 @@ machine) owns deploys, production migrations and backups from here.
   branch with a migration says so at the top of its hand-off.
 - A branch that fails is named here, with what failed, for its thread.
 - Before each merge the Mac reads `git ls-remote --heads origin` for a newer
-  `cloud-…` twin of a `claude/…` name.
+  `cloud-…` twin of an older branch name.
 
 ### Chores for you
 
@@ -171,7 +171,7 @@ npm install -g n && n 24 && hash -r
 corepack enable && corepack prepare pnpm@10.11.0 --activate
 # Commits land as John, under his standing word in the project instructions.
 git config --global user.name  "John Morris"
-git config --global user.email "john@spxis.com"
+git config --global user.email "john@johnmorris.ca"
 # Optional CLIs, only when their credential is present.
 if [ -n "${NEON_API_KEY:-}" ]; then npm install -g neonctl; fi
 if [ -n "${GH_TOKEN:-}" ] && ! command -v gh >/dev/null; then
@@ -228,8 +228,10 @@ the real ones.
   add a co-author trailer and a session link to every commit; `AGENTS.md` says
   never, and `pnpm attribution:check` in the preflight refuses the push if one
   slips through.
-- **Browser tests do not run in a cloud session** (they need a local database).
-  Before pushing a change that renames or hides something, grep `e2e/` for it and
-  fix the spec in the same commit; the deploy's suite is the first run it gets.
+- **Browser tests run in a cloud session against its own local Postgres and
+  dev server**, never a shared database. Run the specs a change affects before
+  handing the branch over, and before pushing a change that renames or hides
+  something, grep `e2e/` for it and fix the spec in the same commit. The whole
+  suite still runs first in the deploy.
 - **Say what was verified.** "Deployed" means the `deploy` job finished green,
   with its run link; "live" means the version read off `/games`.
