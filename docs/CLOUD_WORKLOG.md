@@ -126,6 +126,23 @@ package thread tags its repo, deletes `packages/<name>` from its branch and
 depends on the release tarball's URL instead. npm publishing waits on John's
 "publish yes" to itsutsu-19; then the URLs become version numbers.
 
+**How a release is cut from the cloud (09:19Z).** The cloud's git proxy
+refuses tag pushes, so a package thread adds `workflow_dispatch` to the repo's
+`release.yml`: a manual run reads the tag from `package.json`'s version and
+runs `gh release create "$TAG" ./*.tgz --target "$GITHUB_SHA"`, which creates
+the tag and the release together. The thread pushes that change as John and
+starts the run from GitHub's Actions dispatch (release.yml, ref main). Tane
+v1.0.0 came out this way:
+https://github.com/johnmorrisdotca/tane/releases/download/v1.0.0/johnmorrisdotca-tane-1.0.0.tgz.
+So the Mac does not tag package repos unless asked; a tag pushed by hand would
+collide with the one the workflow makes. Korokoro's `release.yml` may want the
+same `workflow_dispatch` so all eight release alike.
+
+**pnpm in the cloud gets 401 on release tarballs** (the
+objects.githubusercontent.com redirect), while curl and node fetch get 200.
+The package threads work around it for the lockfile; check that a cloud-…
+package branch's lockfile entries resolve normally on a Mac install.
+
 **Until a branch is reworked that way, a change to a package's code goes in two places:** the
 `packages/<name>` copy here and the package's own repo, as one change each,
 authored as John.
