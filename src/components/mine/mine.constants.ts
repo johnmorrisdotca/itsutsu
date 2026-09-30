@@ -128,6 +128,17 @@ export const MY_GAMES_COPY = {
     guest: (seat: number) => `Player ${seat + 1}`,
     older: "Older games",
     newest: "Newest",
+    /**
+     * SOMEBODY ELSE'S HISTORY, on their player page (`PlayerHistory`). John,
+     * 2026-09-30: "Be able to browse the history of all your friends as well."
+     * The same list read from their side: "Your move" there is theirs, and a
+     * game still going is watched rather than carried on with.
+     */
+    theirs: {
+      hint: "Everything they have played here, of every kind, newest first. Open one to watch it or to look back at how it went.",
+      state: { yourMove: "Their move", theirMove: "Waiting on somebody else" },
+      open: { going: "Watch", over: "Look back" },
+    },
   },
   puzzlesGoing: {
     label: "Puzzles in progress",

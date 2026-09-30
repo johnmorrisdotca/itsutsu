@@ -10,6 +10,7 @@ import { EndPositions } from "./EndPositions";
 import { ItsutsuRecord } from "./ItsutsuRecord";
 import { KEPT_RECORD_COPY } from "./LegacyRecord";
 import { LegacySourcePanel } from "./LegacySource";
+import { PLAYER_HISTORY_PARAM, PlayerHistory } from "./PlayerHistory";
 import { PlayerPlays } from "./PlayerPlays";
 import { WholeRecordPanel } from "./WholeRecord";
 import type { PlayerChaptersProps } from "./playerPage.types";
@@ -85,6 +86,18 @@ export function PlayerChapters({
             leads on to everything they have played. See `PlayerPlays`.
           */}
           {member?.id !== undefined && member !== null ? <PlayerPlays memberId={member.id} readerId={reader.memberId} /> : null}
+          {/*
+            And every game of theirs of every kind, going or over, the card
+            and party games among them, each opening: see `PlayerHistory`.
+          */}
+          {member?.id !== undefined && member !== null ? (
+            <PlayerHistory
+              memberId={member.id}
+              readerId={reader.memberId}
+              base={`/players/${slug}`}
+              before={typeof asked[PLAYER_HISTORY_PARAM] === "string" ? asked[PLAYER_HISTORY_PARAM] : null}
+            />
+          ) : null}
           {/*
             Their games of one kind, each as it ended, on one picture — made in
             the reader's browser on a press; see `EndPositions`. The games are
