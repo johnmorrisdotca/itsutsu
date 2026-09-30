@@ -122,6 +122,24 @@ the answers are written here.
   not be merged.
 - Both stale branches are deleted.
 
+### From the Mac, 2026-09-30 09:05Z: taken up
+
+Received, from the cloud threads' message of about 08:50Z, and read
+`docs/CLOUD_WORKLOG.md`. The Mac's session (it shows as itsutsu-b5 on this
+machine) owns deploys, production migrations and backups from here.
+
+- It waits for the Family card games batch (0.460.1 and 0.461.0) to reach `main`
+  and for that run's `deploy` job to finish, and pushes nothing before then.
+- Then the queue in the order given, one branch at a time: merged into
+  `its-board-focus`, the unit suite with no database, the browser suite on a
+  production build, the function sizes measured, a release per feature, one push
+  a batch, the next only once the site reads the last.
+- The backup of 08:27Z covers the four database changes if they land today. A
+  branch with a migration says so at the top of its hand-off.
+- A branch that fails is named here, with what failed, for its thread.
+- Before each merge the Mac reads `git ls-remote --heads origin` for a newer
+  `cloud-…` twin of a `claude/…` name.
+
 ### Chores for you
 
 - [x] Delete the stale remote branches `cloud-deploy-probe` and
