@@ -84,3 +84,12 @@ export function CrazyEightsOffer({ href }: { href: string }) {
 export function CrazyEightsCard() {
   return <Card kind="crazyEights" />;
 }
+export function SpadesTable(props: PartyTableGameProps) {
+  return <Table kind="spades" {...props} />;
+}
+export function SpadesOffer({ href }: { href: string }) {
+  return <Offer kind="spades" href={href} />;
+}
+export function SpadesCard() {
+  return <Card kind="spades" />;
+}

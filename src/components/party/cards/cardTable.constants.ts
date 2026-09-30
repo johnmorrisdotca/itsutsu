@@ -7,6 +7,7 @@ export const CARD_TABLE_KEYS: Record<CardGameKind, string> = {
   president: "itsutsu.cards.president",
   goFish: "itsutsu.cards.goFish",
   crazyEights: "itsutsu.cards.crazyEights",
+  spades: "itsutsu.cards.spades",
 };
 
 /**

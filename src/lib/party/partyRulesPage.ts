@@ -54,6 +54,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   president: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} rounds`,
   goFish: () => "in one deal, until every book is down",
   crazyEights: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  spades: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -125,6 +126,14 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. An eight asks which suit to call. Press Draw when you cannot play, and Pass when the card you drew cannot be played either.",
     house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
     more: ["You may draw only when you cannot play, one card at a time, and may play the card you drew if it matches.", "The first player moves one seat round the table each hand."],
+  },
+  spades: {
+    turn: "The line over the table says whose turn it is, by name, and who their partner is. To bid, press Nil or a number of tricks under your hand. Then your hand is along the foot of the table: tap a card to choose it (it rises), then press Play; or drag it onto the table; or tap a card twice to play it at once. A computer plays its own seat by itself, a moment after its turn comes. Beside each name is what they bid and how many tricks they have taken.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "Partners are the first and third seats against the second and fourth, and any of them may be a computer.",
+      "There is no blind nil, and no bid of ten tricks for a bonus: a bid is nil or one to thirteen, scored as above.",
+    ],
   },
 };
 

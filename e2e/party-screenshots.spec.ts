@@ -142,6 +142,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("hearts", 100, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 3 && game.played.length >= 16),
   },
+  // Spades for four, the bids made, a few tricks gone and two cards on the next: Ann to play to it, her hand under the table.
+  {
+    kind: "spades",
+    key: "itsutsu.cards.spades",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("spades", 500, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 2 && game.played.length >= 12),
+  },
   // Big Two for four, a pair or better on the table for Ann to beat.
   {
     kind: "bigTwo",

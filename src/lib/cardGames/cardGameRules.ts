@@ -11,6 +11,8 @@ import type { HeartsGame, HeartsMove } from "./hearts/hearts.types";
 import { HEARTS_RULES } from "./hearts/heartsRules";
 import type { PresidentGame, PresidentMove } from "./president/president.types";
 import { PRESIDENT_RULES } from "./president/presidentRules";
+import type { SpadesGame, SpadesMove } from "./spades/spades.types";
+import { SPADES_RULES } from "./spades/spadesRules";
 
 /** Each card game's game and move, so its rules can be named with their own types. */
 export type CardGamePlays = {
@@ -19,6 +21,7 @@ export type CardGamePlays = {
   president: { game: PresidentGame; move: PresidentMove };
   goFish: { game: GoFishGame; move: GoFishMove };
   crazyEights: { game: CrazyEightsGame; move: CrazyEightsMove };
+  spades: { game: SpadesGame; move: SpadesMove };
 };
 
 /**
@@ -32,4 +35,5 @@ export const CARD_GAME_RULES: { [K in CardGameKind]: CardGameRules<CardGamePlays
   president: PRESIDENT_RULES,
   goFish: GO_FISH_RULES,
   crazyEights: CRAZY_EIGHTS_RULES,
+  spades: SPADES_RULES,
 };

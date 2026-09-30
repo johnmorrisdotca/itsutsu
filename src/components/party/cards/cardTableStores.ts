@@ -24,6 +24,7 @@ export const CARD_TABLE_STORES: Record<CardGameKind, ReturnType<typeof storeOf>>
   president: storeOf("president"),
   goFish: storeOf("goFish"),
   crazyEights: storeOf("crazyEights"),
+  spades: storeOf("spades"),
 };
 
 /** A new seed for a new game, from the browser's own random: every deal of the game is shuffled from it. */

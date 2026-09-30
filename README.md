@@ -193,12 +193,14 @@ seed; a winnable deal is the first from its seed that our solver wins in a fixed
 number of tables, and any deal is dealt as it falls. The answer and a run kept
 half way are the moves, two characters a carry, which the server replays from
 the deal (`solitaire/check.ts`). Why it is a puzzle kind and not a new one is in
-`docs/plans/cards/README.md`. Beside it, the family card games — **Hearts**
-ハーツ, **Crazy Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二
-and **President** 大富豪 — are party games (`src/lib/cardGames/`), one table for
-all five round one device (`src/components/party/cards/`), a computer in any
-empty seat and every hand kept hidden between people; see
-`docs/plans/family-cards/README.md`.
+`docs/plans/cards/README.md`. Beside it, the family card games — **Crazy
+Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二 and **President**
+大富豪 — are party games (`src/lib/cardGames/`), one table for all of them round
+one device (`src/components/party/cards/`), a computer in any empty seat and
+every hand kept hidden between people; see `docs/plans/family-cards/README.md`.
+**Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,
+**Hearts** ハーツ and **Spades** スペード, split off Cards so neither shelf passes
+eight games.
 
 **Mahjong** 麻雀 (2026-09-29) is the family of games played with a mahjong
 set, opened with **Mahjong Solitaire** 牌合わせ (`src/lib/puzzles/mahjong/`):

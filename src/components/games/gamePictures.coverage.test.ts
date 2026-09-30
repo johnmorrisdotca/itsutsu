@@ -312,6 +312,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/games/FamilyShelf.tsx": { GameThumb: "regular" },
   "src/app/games/party/page.tsx": { FamilyMark: "regular" },
   "src/app/games/dominoes/page.tsx": { FamilyMark: "regular" },
+  "src/app/games/tricks/page.tsx": { FamilyMark: "regular" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
   "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   // The same tab's Pair Go game, kept in this browser: a row like the two beside it.
