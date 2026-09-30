@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { memberContext, removeMember } from "./members";
 import { matchIdIn, ready, submitIfPending } from "./support";
-import { gamesMade } from "./tidy";
+import { clearAbandonedSeats, gamesMade } from "./tidy";
 
 /**
  * EACH PLAYER CHOOSES THE COLOUR OF THEIR OWN PIECES. John, 2026-09-29: "allow
@@ -19,6 +19,13 @@ import { gamesMade } from "./tidy";
  * player's colour on their own board, and the first sees the second's arrive
  * without reloading. And the way back: taking a colour off draws the ordinary
  * stones again.
+ *
+ * THE LIVE GAME IS THIS SPEC'S OWN. Start sits a member down at a stranger's
+ * posted seat when one asks for exactly the game chosen (`matchSeat`), so with
+ * an unanswered 9×9 seat left on the noticeboard by an earlier spec the first
+ * member was seated as White in somebody else's game, with no first move to be
+ * asked about, and this failed on `data-first`. The unanswered seats are
+ * cleared first, and the button is asked what it will do before it is pressed.
  */
 
 const tidyAway = gamesMade();
@@ -53,12 +60,15 @@ test.describe("each player's piece colour", () => {
     const b = await memberContext(browser, baseURL!, two, { viewport: DESK });
     try {
       const pageA = await a.newPage();
-      // At set-up: Plum, with a seat posted for anybody.
+      // At set-up: Plum, with a seat posted for anybody, and nobody else's seat waiting to be sat at instead.
+      await clearAbandonedSeats();
       await pageA.goto("/games/gomoku/new?board=9");
       await ready(pageA, "set-up-game");
       await pageA.locator('[data-testid="set-up-piece-colours"] [data-colour="plum"]').click();
       await expect(pageA.locator('[data-testid="set-up-piece-colours"] [data-colour="plum"]')).toHaveAttribute("data-chosen", "true");
-      await pageA.getByTestId("set-up-start").click();
+      const start = pageA.getByTestId("set-up-start");
+      await expect(start, "Start would sit this member at a seat somebody else posted, not begin a game of their own").toHaveAttribute("data-press", "begin");
+      await start.click();
       await pageA.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
       const id = tidyAway(matchIdIn(pageA.url()));
       await ready(pageA, "shared-game");

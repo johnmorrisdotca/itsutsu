@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
 import { ready } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -17,6 +20,7 @@ test.describe("applause on a finished game", () => {
       data: { blackName: under(`Clap ${stamp}`), whiteName: under(`Foil ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; whiteToken: string };
+    tidyAway(game.id);
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);
 
     // A reader who never played it: applause is not only for the players.
@@ -54,6 +58,7 @@ test.describe("applause on a finished game", () => {
       data: { blackName: under(`A ${stamp}`), whiteName: under(`B ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string };
+    tidyAway(game.id);
     const early = await request.post(`/api/games/${game.id}/applause`, { data: { emoji: "👏" } });
     expect(early.status()).toBe(422);
     expect((await request.post(`/api/games/${game.id}/applause`, { data: { emoji: "🍕" } })).status()).toBe(400);

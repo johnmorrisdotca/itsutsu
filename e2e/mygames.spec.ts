@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
 import { PLAYER_STATE, ready, readyHere } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -18,7 +21,9 @@ async function startGame(request: import("@playwright/test").APIRequestContext) 
     data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9 },
   });
   expect(response.status()).toBe(201);
-  return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;
+  const game = (await response.json()) as { id: string; blackToken: string; whiteToken: string };
+  tidyAway(game.id);
+  return game;
 }
 
 test.describe("your games", () => {
@@ -127,6 +132,7 @@ test.describe("open seats", () => {
     });
     expect(created.status(), await created.text()).toBe(201);
     const game = (await created.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
     await host.close();
 
     /*
@@ -165,6 +171,7 @@ test.describe("open seats", () => {
       data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, allowResign: false },
     });
     const game = (await created.json()) as { id: string; whiteToken: string };
+    tidyAway(game.id);
     const refused = await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
     expect(refused.status()).toBe(409);
     expect(((await refused.json()) as { reason: string }).reason).toBe("not-allowed");

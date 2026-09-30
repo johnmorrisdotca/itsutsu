@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { TRAIN_PHASES, playTrain, startTrain } from "../src/lib/party/mexicanTrain/mexicanTrain";
+import { isDouble } from "../src/lib/party/mexicanTrain/dominoes";
+import { TRAIN_DEFAULT_OPTIONS } from "../src/lib/party/mexicanTrain/mexicanTrain.constants";
+import { TRAIN_PHASES, legalPlays, playTrain, startTrain } from "../src/lib/party/mexicanTrain/mexicanTrain";
+import type { TrainGame } from "../src/lib/party/mexicanTrain/mexicanTrain.types";
 import { encodeTrain } from "../src/lib/party/mexicanTrain/trainCodec";
 import { computerMove } from "../src/lib/party/mexicanTrain/trainComputer";
 import { ready } from "./support";
@@ -24,16 +27,55 @@ async function clearKept(page: Page) {
   await page.evaluate((key) => window.localStorage.removeItem(key), KEPT);
 }
 
-/** A tile in the hand that goes on exactly `trains` trains now (`data-targets`). */
-function handTile(page: Page, trains: number | "any") {
-  const hand = page.getByTestId("train-hand");
-  return trains === "any" ? hand.locator('[data-testid="train-hand-tile"][data-targets]:not([data-targets="0"])').first() : hand.locator(`[data-testid="train-hand-tile"][data-targets="${trains}"]`).first();
+/** A tile in the hand that goes on a train now (`data-targets`). */
+function handTile(page: Page) {
+  return page.getByTestId("train-hand").locator('[data-testid="train-hand-tile"][data-targets]:not([data-targets="0"])').first();
 }
 
 /** Wait until it is the person in seat 0's turn again, the computers done. */
 async function backToSeatOne(page: Page) {
   const table = page.getByTestId("train-game");
   await expect(table).toHaveAttribute("data-to-play", "0", { timeout: 30_000 });
+}
+
+const WAYS = ["tap", "drag", "double"] as const;
+type Lay = { way: (typeof WAYS)[number]; tile: number; train: number; targets: number };
+
+/** The computers' turns played out, as the page plays them (`useTrainComputer`): null if the round ends first. */
+function afterComputers(game: TrainGame): TrainGame | null {
+  let now = game;
+  while (now.phase === TRAIN_PHASES.playing && now.computers[now.toPlay] === true) now = playTrain(now, computerMove(now))!;
+  return now.phase === TRAIN_PHASES.playing ? now : null;
+}
+
+/**
+ * A TABLE OF ONE PERSON AND A COMPUTER WHOSE FIRST THREE TURNS ARE KNOWN: a
+ * deal on which the person has a tile to lay on each of their first three
+ * turns, and on the third one that goes on one train alone, which is what a
+ * double-tap lays. Worked out here by the rules the page plays and the
+ * computer's own judgement, so the spec names the tile and the train each
+ * turn and never has to hope the deal offers one: a deal taken as it came
+ * gave, often enough, three turns with nothing to lay. No double is laid, so
+ * each lay ends the turn.
+ */
+function knownTable(from: number): { start: TrainGame; lays: Lay[]; end: TrainGame } {
+  for (let seed = from; seed < from + 5_000; seed += 1) {
+    const start = startTrain(12, ["Ann", ""], seed, TRAIN_DEFAULT_OPTIONS, [false, true])!;
+    let game: TrainGame | null = afterComputers(start);
+    const lays: Lay[] = [];
+    for (const way of WAYS) {
+      if (game === null || game.toPlay !== 0) break;
+      const plays = legalPlays(game);
+      const targets = (tile: number) => plays.filter((play) => play.tile === tile).length;
+      const play = plays.find((one) => !isDouble(one.tile) && (way !== "double" || targets(one.tile) === 1));
+      if (play === undefined) break;
+      lays.push({ way, tile: play.tile, train: play.train, targets: targets(play.tile) });
+      const laid = playTrain(game, { kind: "play", tile: play.tile, train: play.train });
+      game = laid === null ? null : afterComputers(laid);
+    }
+    if (lays.length === WAYS.length && game !== null && game.toPlay === 0) return { start, lays, end: game };
+  }
+  throw new Error("No deal in five thousand gives seat one a tile to lay on each of its first three turns.");
 }
 
 test.describe("Mexican Train, read by anybody", () => {
@@ -82,40 +124,52 @@ test.describe("Mexican Train, pass and play", () => {
     await expect(page.getByTestId("train-cover")).toHaveCount(0);
     await expect(page.getByTestId("train-hand")).toHaveAttribute("data-active", "true");
 
-    let laid = 0;
-    const tilesLeft = async () => page.locator('[data-testid="train-hand"] [data-testid="train-hand-tile"]').count();
-    for (const way of ["tap", "drag", "double"] as const) {
+    // The same table on a deal this spec knows (`knownTable`), kept where the page keeps a game, and opened as a kept game is.
+    const known = knownTable(20260930);
+    await page.evaluate(([key, value]) => window.localStorage.setItem(key, value), [KEPT, encodeTrain(known.start)] as const);
+    await page.reload();
+    await ready(page, "train-game");
+    await expect(table).toHaveAttribute("data-state", "playing");
+    await expect(page.getByTestId("train-cover")).toHaveCount(0);
+
+    const hand = page.getByTestId("train-hand");
+    const tilesLeft = async () => hand.getByTestId("train-hand-tile").count();
+    for (const lay of known.lays) {
       await backToSeatOne(page);
+      await expect(hand).toHaveAttribute("data-active", "true");
       const before = await tilesLeft();
-      const tile = handTile(page, way === "double" ? 1 : "any");
-      if ((await tile.count()) === 0) {
-        // Nothing to lay this turn: the rules ask for a draw, or a pass, and the next turn is tried.
-        if (await page.getByTestId("train-draw").isEnabled()) await page.getByTestId("train-draw").click();
-        else await page.getByTestId("train-pass").click();
-        continue;
-      }
-      if (way === "tap") {
+      const tile = hand.locator(`[data-testid="train-hand-tile"][data-tile="${lay.tile}"]`);
+      await expect(tile).toHaveAttribute("data-targets", String(lay.targets));
+      const row = page.locator(`[data-testid="train-row"][data-train="${lay.train}"]`);
+      if (lay.way === "tap") {
         await tile.click();
         await expect(tile).toHaveAttribute("data-chosen", "true");
-        await page.locator('[data-testid="train-row"][data-target="true"]').first().click();
-      } else if (way === "drag") {
+        await expect(row).toHaveAttribute("data-target", "true");
+        await row.click();
+      } else if (lay.way === "drag") {
+        // A drag is made of places on the screen, so the tile and the train it goes to are both on it first.
+        await tile.scrollIntoViewIfNeeded();
+        await expect(tile).toBeInViewport();
+        await expect(row).toBeInViewport();
         const box = (await tile.boundingBox())!;
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
         await page.mouse.down();
         await page.mouse.move(box.x + box.width / 2 + 20, box.y - 40, { steps: 4 });
-        const row = page.locator('[data-testid="train-row"][data-target="true"]').first();
-        const target = (await row.boundingBox())!;
         await expect(page.getByTestId("train-dragging")).toBeVisible();
+        await expect(row).toHaveAttribute("data-target", "true");
+        const target = (await row.boundingBox())!;
         await page.mouse.move(target.x + target.width * 0.6, target.y + target.height / 2, { steps: 8 });
         await page.mouse.up();
       } else {
+        // It goes on one train alone, so tapping it twice lays it there.
         await tile.dblclick();
       }
       await expect.poll(tilesLeft).toBe(before - 1);
-      laid += 1;
+      await expect(tile).toHaveCount(0);
     }
-    expect(laid).toBeGreaterThan(0);
-    // The computer has played in between: its train or the Mexican Train has tiles, or it drew.
+    // The computer has answered each time, and the table is where the rules say three turns each leave it.
+    await backToSeatOne(page);
+    await expect(table).toHaveAttribute("data-turn", String(known.end.turn));
     await expect(page.getByTestId("train-last")).not.toHaveText("");
 
     // Kept in this browser: a reload opens the same table, and My games lists it.
@@ -149,7 +203,7 @@ test.describe("Mexican Train, pass and play", () => {
     await page.getByTestId("train-reveal").click();
     await expect(page.getByTestId("train-hand")).toHaveAttribute("data-seat", "0");
 
-    const tile = handTile(page, "any");
+    const tile = handTile(page);
     if ((await tile.count()) > 0) {
       await tile.click();
       await page.locator('[data-testid="train-row"][data-target="true"]').first().click();

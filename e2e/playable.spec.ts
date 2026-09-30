@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * Games that can actually be won, resigned and finished.
@@ -38,7 +41,9 @@ async function start(
     data: { blackName: under(`Aki ${stamp}`), whiteName: under(`Bo ${stamp}`), opener: "black", rated: false, ...body },
   });
   expect(made.status(), await made.text()).toBe(201);
-  return (await made.json()) as Made;
+  const game = (await made.json()) as Made;
+  tidyAway(game.id);
+  return game;
 }
 
 async function play(
@@ -104,6 +109,7 @@ test.describe("a game can be played to its end", () => {
     });
     expect(again.status(), await again.text()).toBe(201);
     const forked = (await again.json()) as Made;
+    tidyAway(forked.id);
 
     const rules = await read(request, forked.id);
     expect(rules.variant, "a fork keeps the game it came from").toBe("tictactoe");

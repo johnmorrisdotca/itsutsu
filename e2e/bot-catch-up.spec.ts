@@ -5,6 +5,10 @@ import { BROWSER_REPLY_GRACE_MS } from "../src/lib/bots/bots.constants";
 import { isBotId } from "../src/lib/bots/bots";
 import { memberContext } from "./members";
 import { aComputerOpponent, chooseOpponent, openMoreSettings, openSetUpPage, ready, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * THE COMPUTER'S MOVE NOBODY STAYED FOR, MADE BY THE BROWSER THAT COMES BACK.
@@ -56,6 +60,7 @@ async function abandonedGame(context: BrowserContext): Promise<{ page: Page; id:
   await page.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
   const id = /match\/([^/?#]+)/.exec(page.url())?.[1] ?? "";
   expect(id, "the match address carries the game's id").not.toBe("");
+  tidyAway(id);
 
   /*
    * OFF THE BOARD FIRST. While the match page is open it answers for the
@@ -212,6 +217,7 @@ test.describe("the computer's opening stone", () => {
     expect(made.status, "the game was created").toBe(201);
     const id = made.body.id ?? "";
     expect(id).not.toBe("");
+    tidyAway(id);
 
     /*
      * NOTHING WAS PLAYED IN THAT REQUEST, which is the saving itself and the

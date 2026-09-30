@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext } from "./members";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * A seat that is somebody else's does not come with its token.
@@ -36,6 +40,7 @@ test.describe("the token for a seat that is not yours", () => {
       return;
     }
     const body = (await made.json()) as Record<string, unknown>;
+    tidyAway(String(body.id));
     expect(
       "whiteToken" in body && "blackToken" in body,
       "both tokens came back for a game whose other seat belongs to somebody else",
@@ -51,6 +56,7 @@ test.describe("the token for a seat that is not yours", () => {
     const made = await request.post("/api/games/live", { data: { size: 9, hotSeat: true } });
     expect(made.status()).toBe(201);
     const body = (await made.json()) as Record<string, unknown>;
+    tidyAway(String(body.id));
     expect(body.blackToken, "a hot-seat board needs both of its own seats").toBeTruthy();
     expect(body.whiteToken, "a hot-seat board needs both of its own seats").toBeTruthy();
   });
@@ -68,6 +74,7 @@ test.describe("the token for a seat that is not yours", () => {
     });
     if (made.status() !== 201) return;
     const body = (await made.json()) as Record<string, unknown>;
+    tidyAway(String(body.id));
     const tokens = ["blackToken", "whiteToken"].filter((key) => key in body);
     expect(tokens.length, "exactly one seat's token, and it is the caller's").toBe(1);
   });
@@ -110,6 +117,7 @@ test.describe("the board's seat links", () => {
     });
     expect(made.status, "a game against a computer player was made").toBe(201);
     const id = made.body.id ?? "";
+    tidyAway(id);
 
     const prisma = new PrismaClient();
     let whiteToken = "";

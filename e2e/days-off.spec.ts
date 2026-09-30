@@ -3,7 +3,10 @@ import { PrismaClient } from "@prisma/client";
 
 import { memberContext, seedMember } from "./members";
 import { ready } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -86,6 +89,7 @@ test.describe("days I do not play", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
 
     const prisma = new PrismaClient();
     try {

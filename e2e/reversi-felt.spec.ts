@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, removeMember } from "./members";
 import { ready } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * THE COLOUR OF A REVERSI BOARD. John, 2026-09-25: "All Reversi boards:
@@ -66,6 +70,7 @@ test("a Reversi board's felt is chosen at set-up, kept, and changed mid-game", a
     const made = await context.request.post("/api/games/live", { data: { variant: "reversi", size: 8 } });
     expect(made.status(), await made.text()).toBe(201);
     const game = (await made.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
     await page.goto(`/games/reversi/match/${game.id}/seat/${game.blackToken}`);
     await ready(page, "shared-game");
     const live = page.getByTestId("shared-game");

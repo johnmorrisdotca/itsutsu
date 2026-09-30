@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { playerPath } from "../src/lib/rating/playerKey";
 import { seedLadderRow } from "./members";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * The name black plays under, which outlives the game. Only black's: white is
@@ -37,7 +40,9 @@ async function emptyGameAgainstDan(request: import("@playwright/test").APIReques
     },
   });
   expect(made.status(), await made.text()).toBe(201);
-  return (await made.json()) as { id: string; blackToken: string };
+  const made_ = (await made.json()) as { id: string; blackToken: string };
+  tidyAway(made_.id);
+  return made_;
 }
 
 test.describe("a game with nothing played in it", () => {

@@ -4,7 +4,10 @@ import { playerSlug } from "../src/lib/rating/playerKey";
 import { removePlayedUnder } from "./members";
 import { RATED_TO_SETTLE, playAt, playRatedGames, ready } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -23,7 +26,9 @@ async function startGame(
     data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, ...extra },
   });
   expect(response.status()).toBe(201);
-  return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;
+  const game = (await response.json()) as { id: string; blackToken: string; whiteToken: string };
+  tidyAway(game.id);
+  return game;
 }
 
 test.describe("notes, messages, deadlines and players", () => {

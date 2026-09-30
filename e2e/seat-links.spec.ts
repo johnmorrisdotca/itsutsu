@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { PLAYER_STATE } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -33,6 +36,7 @@ test.describe("seat links", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
 
     // Black takes their own seat by following their link, as the creator does.
     const black = await browser.newContext({ storageState: PLAYER_STATE });
@@ -72,6 +76,7 @@ test.describe("seat links", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     const black = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await black.newPage();
@@ -100,6 +105,7 @@ test.describe("seat links", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     const black = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await black.newPage();

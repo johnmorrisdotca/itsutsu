@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes: a posted seat left behind is one the next member to ask for a 9×9 game is sat down at. */
+const tidyAway = gamesMade();
+
 /**
  * Nobody plays both sides of a seat they posted for somebody else.
  *
@@ -22,7 +27,9 @@ test.describe("answering your own posted seat", () => {
       data: { variant: "freestyle", size: 9, open: true, moveTimeMs: null },
     });
     expect(started.status(), await started.text()).toBe(201);
-    return (await started.json()) as Posted;
+    const posted = (await started.json()) as Posted;
+    tidyAway(posted.id);
+    return posted;
   }
 
   test("does not hand the poster the token of the seat they posted", async ({ request }) => {
@@ -40,6 +47,7 @@ test.describe("answering your own posted seat", () => {
       data: { variant: "freestyle", size: 9, moveTimeMs: null },
     });
     const both = (await priv.json()) as Posted;
+    tidyAway(both.id);
     expect(both.whiteToken, "a private game still needs a link to send").toBeTruthy();
   });
 

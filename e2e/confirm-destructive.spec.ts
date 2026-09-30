@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { readyHere, submitIfPending } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -22,6 +25,7 @@ test.describe("asking before something cannot be undone", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
     await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });

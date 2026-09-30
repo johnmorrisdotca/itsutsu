@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { isPrefetch, readyHere } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * A game still being played: its moves beside the board, and every position so
@@ -10,6 +14,7 @@ test("a live board's moves sit beside it, and open as one picture of every posit
   const made = await request.post("/api/games/live", { data: { size: 9 } });
   expect(made.status(), await made.text()).toBe(201);
   const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
+  tidyAway(game.id);
   for (const [index, [row, col]] of ([[4, 4], [4, 5], [3, 3]] as const).entries()) {
     const played = await request.post(`/api/games/${game.id}/moves`, {
       data: { token: index % 2 === 0 ? game.blackToken : game.whiteToken, row, col },

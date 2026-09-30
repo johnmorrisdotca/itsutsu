@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /**
  * A live board's poll that finds nothing new is answered "nothing changed".
@@ -19,6 +23,7 @@ test("the game route answers 304 while nothing changes, and the game again once 
   const made = await request.post("/api/games/live", { data: { size: 9 } });
   expect(made.status(), await made.text()).toBe(201);
   const game = (await made.json()) as { id: string; blackToken: string };
+  tidyAway(game.id);
 
   const first = await request.get(`/api/games/${game.id}`);
   expect(first.status()).toBe(200);

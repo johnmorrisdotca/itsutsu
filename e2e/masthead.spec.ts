@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, removeMember } from "./members";
 import { ready } from "./support";
-import { namesPlayedUnder } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes (`gamesMade`). */
+const tidyAway = gamesMade();
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
@@ -59,6 +62,7 @@ test.describe("the masthead", () => {
         });
         expect(made.status(), "could not start a game to wait on").toBe(201);
         const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
+        tidyAway(game.id);
 
         const page = await context.newPage();
         await page.setViewportSize({ width, height: 900 });
