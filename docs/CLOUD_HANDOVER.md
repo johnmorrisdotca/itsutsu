@@ -55,8 +55,11 @@ chat message. Only the NAMES appear here.
 ### 1. Board tokens
 
 - [ ] `SUMILABU_BOARD_URL`: the same address as the Mac's `.env`.
-- [ ] `SUMILABU_BOARD_TOKEN`: the live board, for `task:prod` and
-      `release:take:prod --done`. Reaches the live board only through a
+- [ ] `SUMILABU_BOARD_TOKEN`: the live board. With it a cloud session works
+      the whole board itself, not only closing rows: `pnpm task:prod` to list
+      what is open and who holds it, `add`, `claim`, `release`, `drop`,
+      `reopen`, `grade` and `edit`, and `release:take:prod --done` to close a
+      row at the version that shipped it. Reaches the live board only through a
       `:prod` script name (`sumilabuTarget`), so forgetting the name stays on dev.
 - [ ] `SUMILABU_BOARD_DEV_TOKEN`, `SUMILABU_SETTINGS_DEV_TOKEN`: itsutsu-dev,
       for `pnpm task` and rehearsals.
@@ -137,7 +140,8 @@ the real ones.
 
 ### 6. Prove it, from a cloud session, before anything real
 
-- [ ] `pnpm task` lists itsutsu-dev; `pnpm task:prod` lists the live board.
+- [ ] `pnpm task` lists itsutsu-dev; `pnpm task:prod` lists the live board, and
+      a `claim` then `release` of one open row goes through as `cloud-itsutsu`.
 - [ ] `curl -s https://itsutsu.com/games | grep -oE '0\.[0-9]+\.[0-9]+' | sort -u | head -1`
       prints the live version.
 - [ ] `neonctl branches list …` lists `main` and the `before-*` branches.
