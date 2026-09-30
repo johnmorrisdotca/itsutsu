@@ -77,6 +77,9 @@ test.describe("Gomoji's letters on a phone", () => {
       const words = hiddenWordsOf(each.kind, each.size, puzzle.givens)!.words;
       await page.goto(joinQuery(playPath(each.kind), `?size=${each.size}&level=medium&seed=${seed}`));
       await ready(page, "puzzle-play");
+      // Measured on the default style, whatever an earlier spec left on the account (dark-tiles chooses Tiles, whose squares are smaller).
+      await page.getByTestId("word-style-reversi").click();
+      await expect(page.getByTestId("word-style-reversi")).toHaveAttribute("aria-pressed", "true");
       // The phone's keys showing, as a player has them.
       const keys = page.getByTestId("word-keys-box");
       if (!(await keys.isVisible())) await page.getByTestId("word-keys-toggle").click();
