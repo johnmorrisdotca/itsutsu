@@ -3,10 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { decodeMoves, replayFreeCell } from "../src/lib/puzzles/freecell/code";
-import type { FreeCellMove, FreeCellTable } from "../src/lib/puzzles/freecell/freecell.types";
-import { freeCellFinishingMoves } from "../src/lib/puzzles/freecell/intent";
-import { columnAt, freeCellWon, isColumnPile } from "../src/lib/puzzles/freecell/rules";
+import { columnAt, decodeMoves, freeCellFinishingMoves, freeCellWon, isColumnPile, replayFreeCell } from "@johnmorrisdotca/toranpu/freecell";
+import type { FreeCellMove, FreeCellTable } from "@johnmorrisdotca/toranpu/freecell";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**

@@ -1,8 +1,7 @@
 import type { PuzzleCheck } from "../puzzles.types";
 
-import { decodeMoves, spiderDeckOf } from "./code";
-import type { SpiderTable } from "./spider.types";
-import { dealSpider, playSpider, spiderWon } from "./rules";
+import { dealSpider, decodeMoves, playSpider, spiderDeckOf, spiderWon } from "@johnmorrisdotca/toranpu/spider";
+import type { SpiderTable } from "@johnmorrisdotca/toranpu/spider";
 
 /** The suits Spider may be played with: one, two or four. */
 export const SPIDER_SUITS: readonly number[] = [1, 2, 4];

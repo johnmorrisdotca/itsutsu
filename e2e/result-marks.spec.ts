@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
-import { decodeMoves, encodeMoves } from "../src/lib/puzzles/solitaire/code";
+import { decodeMoves, encodeMoves } from "@johnmorrisdotca/toranpu/klondike";
 import { suiteOperator } from "./operator";
 import { freshPuzzleSeed, ready } from "./support";
 

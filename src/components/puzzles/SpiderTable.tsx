@@ -8,9 +8,8 @@ import { CardPile } from "@/components/cards/CardPile";
 import type { CardSpot } from "@/components/cards/cards.types";
 import { SUIT_DISPLAY, SUITS } from "@/lib/cards/cards.constants";
 import { cardAt, cardName } from "@/lib/cards/deck";
-import type { SpiderSpot } from "@/lib/puzzles/spider/intent";
-import { COLUMNS, RANKS_A_SUIT, RUNS_TO_WIN, canDeal } from "@/lib/puzzles/spider/rules";
-import type { SpiderTable as Table } from "@/lib/puzzles/spider/spider.types";
+import { COLUMNS, RANKS_A_SUIT, RUNS_TO_WIN, canDeal } from "@johnmorrisdotca/toranpu/spider";
+import type { SpiderSpot, SpiderTable as Table } from "@johnmorrisdotca/toranpu/spider";
 
 import { SPIDER_TABLE } from "./puzzles.constants";
 import { ColumnZone, TablePlace, faceUpCards, tableGeometry } from "./patienceTable";

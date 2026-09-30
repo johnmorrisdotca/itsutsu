@@ -1,10 +1,8 @@
 import { seededRandom, DAILY_SEED_BLOCK } from "../random";
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 
-import { dealOfSeed, deckOf, encodeMoves } from "./code";
-import { dealKlondike } from "./klondike";
-import { solveKlondike } from "./solve";
-import type { KlondikeRules } from "./solitaire.types";
+import { dealKlondike, dealOfSeed, deckOf, encodeMoves, solveKlondike } from "@johnmorrisdotca/toranpu/klondike";
+import type { KlondikeRules } from "@johnmorrisdotca/toranpu/klondike";
 import { ANY_DEAL_BLOCK, isAnyDeal, solitaireRules } from "./rules";
 
 // Kept importable from here, where they were first written.

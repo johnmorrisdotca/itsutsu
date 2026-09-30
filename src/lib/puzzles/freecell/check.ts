@@ -1,8 +1,7 @@
 import type { PuzzleCheck } from "../puzzles.types";
 
-import { decodeMoves, deckOf } from "./code";
-import type { FreeCellTable } from "./freecell.types";
-import { dealFreeCell, freeCellWon, playFreeCell } from "./rules";
+import { dealFreeCell, deckOf, decodeMoves, freeCellWon, playFreeCell } from "@johnmorrisdotca/toranpu/freecell";
+import type { FreeCellTable } from "@johnmorrisdotca/toranpu/freecell";
 
 /** The free cells a table may be played with: four, three or two. */
 export const FREECELL_CELLS: readonly number[] = [4, 3, 2];

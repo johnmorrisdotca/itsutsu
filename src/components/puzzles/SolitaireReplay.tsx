@@ -5,9 +5,8 @@ import { useMemo } from "react";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { MoveCount } from "@/components/history/MoveCount";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
-import { replay } from "@/lib/puzzles/solitaire/code";
+import { klondikeWon, replay } from "@johnmorrisdotca/toranpu/klondike";
 import { solitaireRules } from "@/lib/puzzles/solitaire/generate";
-import { klondikeWon } from "@/lib/puzzles/solitaire/klondike";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 import { SolitaireTable } from "./SolitaireTable";

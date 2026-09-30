@@ -3,10 +3,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { decodeMoves, replay } from "../src/lib/puzzles/solitaire/code";
+import { allFaceUp, carriedFrom, columnAt, decodeMoves, isColumnPile, klondikeWon, replay } from "@johnmorrisdotca/toranpu/klondike";
+import type { KlondikeMove, KlondikeTable } from "@johnmorrisdotca/toranpu/klondike";
 import { solitaireRules } from "../src/lib/puzzles/solitaire/generate";
-import { allFaceUp, carriedFrom, columnAt, isColumnPile, klondikeWon } from "../src/lib/puzzles/solitaire/klondike";
-import type { KlondikeMove, KlondikeTable } from "../src/lib/puzzles/solitaire/solitaire.types";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**

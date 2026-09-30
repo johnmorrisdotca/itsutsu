@@ -9,9 +9,8 @@ import type { CardSpot, PileCard } from "@/components/cards/cards.types";
 import { DEFAULT_STEP } from "@/components/cards/pileLayout";
 import { SUIT_DISPLAY, SUITS } from "@/lib/cards/cards.constants";
 import { cardAt, cardName } from "@/lib/cards/deck";
-import { COLUMN_PILES, FOUNDATION_PILES, recyclesLeft } from "@/lib/puzzles/solitaire/klondike";
-import { pileCards, type TableSpot } from "@/lib/puzzles/solitaire/intent";
-import type { KlondikePile, KlondikeTable } from "@/lib/puzzles/solitaire/solitaire.types";
+import { COLUMN_PILES, FOUNDATION_PILES, pileCards, recyclesLeft } from "@johnmorrisdotca/toranpu/klondike";
+import type { KlondikePile, KlondikeTable, TableSpot } from "@johnmorrisdotca/toranpu/klondike";
 
 import { SOLITAIRE_TABLE } from "./puzzles.constants";
 

@@ -8,10 +8,8 @@ import { CardDragGhost } from "@/components/cards/CardDragGhost";
 import { useCardDrag } from "@/components/cards/useCardDrag";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { cardAt, cardCode } from "@/lib/cards/deck";
-import { decodeMoves, encodeMoves, replayFreeCell } from "@/lib/puzzles/freecell/code";
-import type { FreeCellMove, FreeCellPile, FreeCellTable as Table } from "@/lib/puzzles/freecell/freecell.types";
-import { freeCellFinishingMoves, freeCellHomeMove, freeCellLiftable, freeCellMoveFor, freeCellStuck, type FreeCellSpot } from "@/lib/puzzles/freecell/intent";
-import { freeCellWon, playFreeCell } from "@/lib/puzzles/freecell/rules";
+import { decodeMoves, encodeMoves, freeCellFinishingMoves, freeCellHomeMove, freeCellLiftable, freeCellMoveFor, freeCellStuck, freeCellWon, playFreeCell, replayFreeCell } from "@johnmorrisdotca/toranpu/freecell";
+import type { FreeCellMove, FreeCellPile, FreeCellSpot, FreeCellTable as Table } from "@johnmorrisdotca/toranpu/freecell";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 

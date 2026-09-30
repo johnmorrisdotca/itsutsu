@@ -4,10 +4,8 @@ import { useMemo } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { dealOfSeed, deckOf } from "@/lib/puzzles/freecell/code";
-import { dealFreeCell } from "@/lib/puzzles/freecell/rules";
-import { spiderDealOfSeed, spiderDeckOf } from "@/lib/puzzles/spider/code";
-import { dealSpider } from "@/lib/puzzles/spider/rules";
+import { dealFreeCell, dealOfSeed, deckOf } from "@johnmorrisdotca/toranpu/freecell";
+import { dealSpider, spiderDealOfSeed, spiderDeckOf } from "@johnmorrisdotca/toranpu/spider";
 
 import { FreeCellTable } from "./FreeCellTable";
 import { SpiderTable } from "./SpiderTable";

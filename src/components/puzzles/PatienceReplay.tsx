@@ -6,10 +6,8 @@ import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.const
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { MoveCount } from "@/components/history/MoveCount";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
-import { replayFreeCell } from "@/lib/puzzles/freecell/code";
-import { freeCellWon } from "@/lib/puzzles/freecell/rules";
-import { replaySpider } from "@/lib/puzzles/spider/code";
-import { spiderWon } from "@/lib/puzzles/spider/rules";
+import { freeCellWon, replayFreeCell } from "@johnmorrisdotca/toranpu/freecell";
+import { replaySpider, spiderWon } from "@johnmorrisdotca/toranpu/spider";
 
 import { FreeCellTable } from "./FreeCellTable";
 import { SpiderTable } from "./SpiderTable";

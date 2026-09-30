@@ -1,9 +1,7 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { nextWinnableTry } from "../winnableSeed";
 
-import { encodeMoves, spiderDealOfSeed, spiderDeckOf } from "./code";
-import { dealSpider } from "./rules";
-import { solveSpider } from "./solve";
+import { dealSpider, encodeMoves, solveSpider, spiderDealOfSeed, spiderDeckOf } from "@johnmorrisdotca/toranpu/spider";
 
 /**
  * A SPIDER DEAL FROM A SEED, as every puzzle is made: in the browser, the same

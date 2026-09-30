@@ -1,7 +1,7 @@
 import { SEED_MOST } from "../random";
 import type { PuzzleLevel } from "../puzzles.types";
 
-import type { KlondikeRules } from "./solitaire.types";
+import type { KlondikeRules } from "@johnmorrisdotca/toranpu/klondike";
 
 /**
  * WHAT A SOLITAIRE'S SIZE, LEVEL AND SEED MEAN, with nothing that deals or

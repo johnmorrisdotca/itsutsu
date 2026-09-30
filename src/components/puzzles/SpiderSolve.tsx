@@ -8,10 +8,8 @@ import { CardDragGhost } from "@/components/cards/CardDragGhost";
 import { useCardDrag } from "@/components/cards/useCardDrag";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { cardAt, cardCode } from "@/lib/cards/deck";
-import { decodeMoves, encodeMoves, replaySpider } from "@/lib/puzzles/spider/code";
-import { spiderBestMove, spiderDealMove, spiderFinishingMoves, spiderLiftable, spiderMoveFor, spiderStuck, type SpiderSpot } from "@/lib/puzzles/spider/intent";
-import { COLUMNS, playSpider, spiderWon } from "@/lib/puzzles/spider/rules";
-import type { SpiderMove, SpiderTable as Table } from "@/lib/puzzles/spider/spider.types";
+import { COLUMNS, decodeMoves, encodeMoves, playSpider, replaySpider, spiderBestMove, spiderDealMove, spiderFinishingMoves, spiderLiftable, spiderMoveFor, spiderStuck, spiderWon } from "@johnmorrisdotca/toranpu/spider";
+import type { SpiderMove, SpiderSpot, SpiderTable as Table } from "@johnmorrisdotca/toranpu/spider";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 

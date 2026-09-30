@@ -1,9 +1,9 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { formerWordRowsOf, guessesOf, hiddenWordsOf, wordRowsOf } from "./futago";
 import { swapsTaken } from "../koushi/check";
-import { decodeMoves } from "../solitaire/code";
-import { decodeMoves as decodeFreeCellMoves } from "../freecell/code";
-import { decodeMoves as decodeSpiderMoves } from "../spider/code";
+import { decodeMoves } from "@johnmorrisdotca/toranpu/klondike";
+import { decodeMoves as decodeFreeCellMoves } from "@johnmorrisdotca/toranpu/freecell";
+import { decodeMoves as decodeSpiderMoves } from "@johnmorrisdotca/toranpu/spider";
 import { dodgeGuesses } from "./dodgePlay";
 import { isDodgeGivens } from "./dodgeSeed";
 import { backwardsGuesses } from "./backwardsRows";

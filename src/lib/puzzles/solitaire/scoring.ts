@@ -1,5 +1,5 @@
-import { isColumnPile, isFoundationPile } from "./klondike";
-import type { KlondikeMove, KlondikeTable } from "./solitaire.types";
+import { isColumnPile, isFoundationPile } from "@johnmorrisdotca/toranpu/klondike";
+import type { KlondikeMove, KlondikeTable } from "@johnmorrisdotca/toranpu/klondike";
 
 /**
  * THE SCORE BESIDE THE CLOCK, if the player wants one: none, the standard

@@ -54,7 +54,7 @@ bends it, each written in the code where it bends:
 
 - **`size` is how many cards the stock turns (1 or 3),** shown as the "Draw 1" and "Draw 3" tiles, which the picker calls "Draw" (`PuzzleSpec.cards`).
 - **`level` is how many times through the stock:** easy as many as you like, medium three, hard one (`SOLITAIRE_PASSES`). Draw 3 with one pass is not offered (`levelsAt`), because the solver wins about one deal in sixty there, and a winnable deal would take the browser seconds to find.
-- **The givens are the deal,** 52 letters. The answer and a kept run are the moves (`solitaire/code.ts`):
+- **The givens are the deal,** 52 letters. The answer and a kept run are the moves (Toranpu's `encodeMoves`, from `@johnmorrisdotca/toranpu/klondike`):
   - `d` turns the stock;
   - `r` turns the waste back;
   - any other move is two characters, the pile it leaves and the pile it lands on.
@@ -67,7 +67,7 @@ bends it, each written in the code where it bends:
 
 ## Winnable deals, and the solver
 
-`solitaire/solve.ts` is a depth-first search:
+`solveKlondike` (Toranpu, `@johnmorrisdotca/toranpu/klondike`) is a depth-first search:
 
 - it makes safe moves home without branching;
 - it remembers every table it has seen, with the columns in any order;
@@ -131,9 +131,10 @@ The solver finds wins and never judges losses. It skips some legal moves (a run 
 - Kanji: 札 for the Cards family, ソリティア for Solitaire, and 士 妃 王 on the jack, queen and king.
 - A red card has a fine red inner line as the second sign of its colour.
 - The Ace of spades carries the five stones under its pip.
+- **The rules, the deals, the move codes and the solvers of all three are Toranpu's** since 1.3.0 (2026-09-30), moved from this repository; the site keeps which deals it offers, the server's check, the score and the tables. Toranpu's tests hold every seed to the deal it made here and every solver to the line it found here, so a kept game or a fastest time from before the move replays exactly.
 - Card backs: charcoal by default, with shu and moss for games that want two decks.
 - The family's mark is a fan of three of our own cards on green: a back, the King of hearts and the Ace of spades.
-- FreeCell and Spider (2026-09-30) are two more `PuzzleKind`s beside Solitaire, each with its own rules module (`src/lib/puzzles/freecell/`, `src/lib/puzzles/spider/`), sharing the table drawing (`patienceTable.tsx`), the moves and undo (`usePatienceGame.ts`), the controls and the replay.
+- FreeCell and Spider (2026-09-30) are two more `PuzzleKind`s beside Solitaire, each with its own rules in Toranpu (`@johnmorrisdotca/toranpu/freecell`, `/spider`) and its deal choice and check here (`src/lib/puzzles/freecell/`, `src/lib/puzzles/spider/`), sharing the table drawing (`patienceTable.tsx`), the moves and undo (`usePatienceGame.ts`), the controls and the replay.
 - FreeCell's size is the free cells (4, 3 or 2; default 4), Spider's the suits (1, 2 or 4; default 1). Each has one level. The heading and words for a card game's size are `CARD_SIZE_WORDS`.
-- Every FreeCell and Spider deal is winnable: a seed names the first deal from it that a best-first search (`bestFirst.ts`, a count budget, never a time) wins, found in the browser. There is no "any deal" choice and no scoring yet.
+- Every FreeCell and Spider deal is winnable: a seed names the first deal from it that a best-first search (Toranpu's `bestFirst`, a count budget, never a time) wins, found in the browser. There is no "any deal" choice and no scoring yet.
 - A double tap in Spider carries the run to the best column: its own suit first, then any card that takes it, then an empty column. The finish plays itself: FreeCell once every card left can go home in turn, Spider once every card shows and the search finds the rest.

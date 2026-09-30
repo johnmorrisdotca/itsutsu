@@ -1,6 +1,6 @@
 import type { PuzzleKind } from "./puzzles.types";
-import { dealOfSeed } from "./solitaire/code";
-import { spiderDealOfSeed } from "./spider/code";
+import { dealOfSeed } from "@johnmorrisdotca/toranpu/klondike";
+import { spiderDealOfSeed } from "@johnmorrisdotca/toranpu/spider";
 
 /**
  * THE DEAL A CARD GAME'S SEED NAMES, with nothing that solves: the plain

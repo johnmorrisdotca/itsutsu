@@ -8,13 +8,11 @@ import { CardDragGhost } from "@/components/cards/CardDragGhost";
 import { useCardDrag } from "@/components/cards/useCardDrag";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { cardAt, cardCode } from "@/lib/cards/deck";
-import { encodeMoves } from "@/lib/puzzles/solitaire/code";
+import { encodeMoves, homeMove, liftable, moveFor, recyclesLeft, stockMove, stuck } from "@johnmorrisdotca/toranpu/klondike";
+import type { KlondikeMove, KlondikePile, TableSpot } from "@johnmorrisdotca/toranpu/klondike";
 import { encodeSolitaireProgress } from "@/lib/puzzles/puzzleProgress";
 import { solitaireRules } from "@/lib/puzzles/solitaire/generate";
-import { homeMove, liftable, moveFor, stockMove, stuck, type TableSpot } from "@/lib/puzzles/solitaire/intent";
-import { recyclesLeft } from "@/lib/puzzles/solitaire/klondike";
 import { solitaireScore } from "@/lib/puzzles/solitaire/scoring";
-import type { KlondikeMove, KlondikePile } from "@/lib/puzzles/solitaire/solitaire.types";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 

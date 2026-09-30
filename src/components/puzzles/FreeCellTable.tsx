@@ -8,9 +8,8 @@ import { CardPile } from "@/components/cards/CardPile";
 import type { CardSpot } from "@/components/cards/cards.types";
 import { SUIT_DISPLAY, SUITS } from "@/lib/cards/cards.constants";
 import { cardAt, cardName } from "@/lib/cards/deck";
-import type { FreeCellPile, FreeCellTable as Table } from "@/lib/puzzles/freecell/freecell.types";
-import { freeCellPileCards, type FreeCellSpot } from "@/lib/puzzles/freecell/intent";
-import { CELL_PILES, COLUMN_PILES, FOUNDATION_PILES } from "@/lib/puzzles/freecell/rules";
+import { CELL_PILES, COLUMN_PILES, FOUNDATION_PILES, freeCellPileCards } from "@johnmorrisdotca/toranpu/freecell";
+import type { FreeCellPile, FreeCellSpot, FreeCellTable as Table } from "@johnmorrisdotca/toranpu/freecell";
 
 import { FREECELL_TABLE } from "./puzzles.constants";
 import { ColumnZone, TablePlace, faceUpCards, tableGeometry } from "./patienceTable";

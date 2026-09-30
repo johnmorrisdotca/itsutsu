@@ -1,9 +1,7 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { nextWinnableTry } from "../winnableSeed";
 
-import { dealOfSeed, deckOf, encodeMoves } from "./code";
-import { dealFreeCell } from "./rules";
-import { solveFreeCell } from "./solve";
+import { dealFreeCell, dealOfSeed, deckOf, encodeMoves, solveFreeCell } from "@johnmorrisdotca/toranpu/freecell";
 
 /**
  * A FREECELL DEAL FROM A SEED, as every puzzle is made: in the browser, the

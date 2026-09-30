@@ -108,6 +108,9 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    */
   ["@johnmorrisdotca/toranpu", "A card game's rules for its rules page and for a kept game read on the server."],
   ["@johnmorrisdotca/toranpu/deck", "The cards drawn in the Cards and Tricks family marks."],
+  ["@johnmorrisdotca/toranpu/klondike", "Solitaire's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
+  ["@johnmorrisdotca/toranpu/freecell", "FreeCell's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
+  ["@johnmorrisdotca/toranpu/spider", "Spider's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
 ]);
 
 /*

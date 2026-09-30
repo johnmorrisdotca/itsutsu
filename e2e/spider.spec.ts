@@ -3,10 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
-import { decodeMoves, replaySpider } from "../src/lib/puzzles/spider/code";
-import { spiderFinishingMoves } from "../src/lib/puzzles/spider/intent";
-import { spiderWon } from "../src/lib/puzzles/spider/rules";
-import type { SpiderMove, SpiderTable } from "../src/lib/puzzles/spider/spider.types";
+import { decodeMoves, replaySpider, spiderFinishingMoves, spiderWon } from "@johnmorrisdotca/toranpu/spider";
+import type { SpiderMove, SpiderTable } from "@johnmorrisdotca/toranpu/spider";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**

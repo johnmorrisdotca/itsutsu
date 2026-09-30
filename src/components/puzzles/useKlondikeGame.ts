@@ -2,10 +2,8 @@
 
 import { useEffect, useReducer, useState } from "react";
 
-import { decodeMoves, replay } from "@/lib/puzzles/solitaire/code";
-import { finishingMoves } from "@/lib/puzzles/solitaire/intent";
-import { allFaceUp, klondikeWon, playKlondike } from "@/lib/puzzles/solitaire/klondike";
-import type { KlondikeMove, KlondikeRules, KlondikeTable } from "@/lib/puzzles/solitaire/solitaire.types";
+import { allFaceUp, decodeMoves, finishingMoves, klondikeWon, playKlondike, replay } from "@johnmorrisdotca/toranpu/klondike";
+import type { KlondikeMove, KlondikeRules, KlondikeTable } from "@johnmorrisdotca/toranpu/klondike";
 
 /** A game as it stands: every move made, and every table they made, the deal first. */
 type Game = { moves: KlondikeMove[]; tables: KlondikeTable[] };
