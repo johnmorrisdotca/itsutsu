@@ -102,3 +102,12 @@ export function GinRummyOffer({ href }: { href: string }) {
 export function GinRummyCard() {
   return <Card kind="ginRummy" />;
 }
+export function EuchreTable(props: PartyTableGameProps) {
+  return <Table kind="euchre" {...props} />;
+}
+export function EuchreOffer({ href }: { href: string }) {
+  return <Offer kind="euchre" href={href} />;
+}
+export function EuchreCard() {
+  return <Card kind="euchre" />;
+}
