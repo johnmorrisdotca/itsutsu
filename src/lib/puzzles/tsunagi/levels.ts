@@ -13,7 +13,8 @@ import { TSUNAGI_BLOCK } from "./levelBlocks";
  *
  * Each size is its own module, fetched only when a board of that size opens
  * (as the kana Gomoji's word lists are), so a phone playing 5×5 never carries
- * the other five sizes.
+ * the other five sizes. Only a browser fetches one (`typeof window`, as
+ * `wordData.ts` says why); a server reads a size through `levelsModule.ts`.
  */
 export const TSUNAGI_SIZES = [4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 
@@ -26,22 +27,33 @@ export const TSUNAGI_SIZES = [4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
  */
 export const TSUNAGI_LEVEL_COUNTS: Record<number, number> = { 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64, 12: 128 };
 
-type LevelRow = readonly [string, string];
+export type LevelRow = readonly [string, string];
 
 const loaded = new Map<number, readonly LevelRow[]>();
 
+let fromModule: ((size: number) => Promise<readonly LevelRow[]>) | null = null;
+
+/** Used by `levelsModule.ts` only: how to read a size where there is no browser. */
+export function readTsunagiLevelsWith(source: (size: number) => Promise<readonly LevelRow[]>): void {
+  fromModule = source;
+}
+
 async function importSize(size: number): Promise<readonly LevelRow[]> {
-  // Named one by one, so the bundler splits each size into its own chunk.
-  if (size === 4) return (await import("./levels/size4.data")).TSUNAGI_4;
-  if (size === 5) return (await import("./levels/size5.data")).TSUNAGI_5;
-  if (size === 6) return (await import("./levels/size6.data")).TSUNAGI_6;
-  if (size === 7) return (await import("./levels/size7.data")).TSUNAGI_7;
-  if (size === 8) return (await import("./levels/size8.data")).TSUNAGI_8;
-  if (size === 9) return (await import("./levels/size9.data")).TSUNAGI_9;
-  if (size === 10) return (await import("./levels/size10.data")).TSUNAGI_10;
-  if (size === 11) return (await import("./levels/size11.data")).TSUNAGI_11;
-  if (size === 12) return (await import("./levels/size12.data")).TSUNAGI_12;
-  throw new Error(`No Tsunagi at ${size}×${size}.`);
+  if (typeof window !== "undefined") {
+    // Named one by one, so the bundler splits each size into its own chunk.
+    if (size === 4) return (await import("./levels/size4.data")).TSUNAGI_4;
+    if (size === 5) return (await import("./levels/size5.data")).TSUNAGI_5;
+    if (size === 6) return (await import("./levels/size6.data")).TSUNAGI_6;
+    if (size === 7) return (await import("./levels/size7.data")).TSUNAGI_7;
+    if (size === 8) return (await import("./levels/size8.data")).TSUNAGI_8;
+    if (size === 9) return (await import("./levels/size9.data")).TSUNAGI_9;
+    if (size === 10) return (await import("./levels/size10.data")).TSUNAGI_10;
+    if (size === 11) return (await import("./levels/size11.data")).TSUNAGI_11;
+    if (size === 12) return (await import("./levels/size12.data")).TSUNAGI_12;
+    throw new Error(`No Tsunagi at ${size}×${size}.`);
+  }
+  if (fromModule === null) throw new Error("Tsunagi's levels are read on the server through levelsModule.ts, which was not imported.");
+  return fromModule(size);
 }
 
 export async function loadTsunagiLevels(size: number): Promise<readonly LevelRow[]> {

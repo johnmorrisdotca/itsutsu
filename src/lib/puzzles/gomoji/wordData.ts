@@ -8,6 +8,13 @@
  * chunk of its own, loaded by `preparePuzzle` before a puzzle that uses it is
  * made or checked.
  *
+ * ONLY A BROWSER FETCHES ONE (`typeof window`, as `tileWords.ts` says why):
+ * every page's components are drawn on the server too, and a dynamic import
+ * in them put every list into the pages' server function twice, 1.2 MB the
+ * server never read. Where there is no browser a list is read through
+ * `wordDataModule.ts`, which only the server's own checks and the tests
+ * import (`listTracing.coverage.test.ts`).
+ *
  * A list asked for before it is loaded is an error, never "not a word": a
  * check that could not read its list must not refuse every guess as though it
  * had read it (AGENTS.md, "Nothing Answers What It Cannot Answer").
@@ -18,11 +25,23 @@ type WordData = Record<number, { easy: string; answers: string; allowed: string 
 
 const LOADED = new Map<WordListLanguage, WordData>();
 
+let fromModule: ((lang: WordListLanguage) => Promise<WordData>) | null = null;
+
+/** Used by `wordDataModule.ts` only: how to read a list where there is no browser. */
+export function readWordDataWith(source: (lang: WordListLanguage) => Promise<WordData>): void {
+  fromModule = source;
+}
+
 /** Loads a language's lists, once: English for Gomoji, Pop's dictionary guesses, Koushi and Kumimoji; French for Mot; German for Wort. */
 export async function loadWordData(lang: WordListLanguage): Promise<void> {
   if (LOADED.has(lang)) return;
-  const data =
-    lang === "fr" ? (await import("./words.fr.data")).FR_WORDS : lang === "de" ? (await import("./words.de.data")).DE_WORDS : (await import("./words.en.data")).EN_WORDS;
+  let data: WordData;
+  if (typeof window !== "undefined") {
+    data = lang === "fr" ? (await import("./words.fr.data")).FR_WORDS : lang === "de" ? (await import("./words.de.data")).DE_WORDS : (await import("./words.en.data")).EN_WORDS;
+  } else {
+    if (fromModule === null) throw new Error("Gomoji's word lists are read on the server through wordDataModule.ts, which was not imported.");
+    data = await fromModule(lang);
+  }
   LOADED.set(lang, data);
 }
 

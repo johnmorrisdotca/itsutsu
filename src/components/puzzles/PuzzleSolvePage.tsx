@@ -23,7 +23,7 @@ import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
 import { FUTAGO_DISPLAY, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
-import { loadKanaWords } from "@/lib/puzzles/gomojiKana/kanaWords";
+import { loadKanaWordsFromModule } from "@/lib/puzzles/gomojiKana/kanaWordsModule";
 import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
 import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
@@ -101,7 +101,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const kept = own || (!fixed && !isTodayUtc(found.finishedAt)) || (await finishedSameGrid(me, kind, found.givens));
   const solve = kept ? found : { ...found, answer: null, steps: null };
   // A kana dodger's word is replayed from its list (`wordOfPlay`), loaded first.
-  if (kind === "gomojiKana" && isDodgeGivens(found.givens)) await loadKanaWords(found.size);
+  if (kind === "gomojiKana" && isDodgeGivens(found.givens)) await loadKanaWordsFromModule(found.size);
   const solver = (await memberNamesOf([solverId])).get(solverId) ?? "";
   const copy = PUZZLE_DISPLAY[kind];
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";

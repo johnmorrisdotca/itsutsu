@@ -3,7 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 import { helpOpensOn, solveHelpOf } from "../solveHelp";
-import { loadTsunagiLevels, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf } from "../tsunagi/levels";
+import { TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf } from "../tsunagi/levels";
+import { loadTsunagiLevelsFromModule } from "../tsunagi/levelsModule";
 
 /**
  * TSUNAGI'S RECORDS, read from the solves every puzzle keeps (`PuzzleSolve`):
@@ -30,7 +31,7 @@ export async function tsunagiSolvedBy(memberId: string): Promise<TsunagiSolved> 
   });
   const out: TsunagiSolved = {};
   const sizes = [...new Set(rows.map((row) => row.size))].filter((size) => (TSUNAGI_SIZES as readonly number[]).includes(size));
-  await Promise.all(sizes.map((size) => loadTsunagiLevels(size)));
+  await Promise.all(sizes.map((size) => loadTsunagiLevelsFromModule(size)));
   for (const row of rows) {
     if (!sizes.includes(row.size)) continue;
     const level = tsunagiLevelOf(row.size, row.givens);
@@ -55,7 +56,7 @@ export const LEVEL_FASTEST_SHOWN = 5;
  * being its band, then narrowed to its layout.
  */
 export async function tsunagiLevelFastest(size: number, level: number): Promise<LevelFastest[]> {
-  await loadTsunagiLevels(size);
+  await loadTsunagiLevelsFromModule(size);
   const givens = tsunagiLevelsOf(size)[level - 1]?.[0];
   if (givens === undefined) return [];
   const rows = await prisma.puzzleSolve.findMany({

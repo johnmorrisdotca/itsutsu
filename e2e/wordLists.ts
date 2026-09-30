@@ -1,3 +1,5 @@
+// Every puzzle's lists, read from their modules: a spec's own process has no browser to fetch one.
+import "../src/lib/puzzles/everyListModule";
 import { loadWordData } from "../src/lib/puzzles/gomoji/wordData";
 
 /**
