@@ -23,6 +23,7 @@ export function DiceRoller({ locale }: { locale: string }) {
       storageKey="itsutsu.dice.history"
       theme={DICE_THEME}
       data-testid="dice-roller"
+      data-width-reason="Korokoro lays the tray and its panels side by side on a wide screen, two columns that together run the frame"
       {...readyMark(hydrated)}
       className="min-h-[640px]"
     />
