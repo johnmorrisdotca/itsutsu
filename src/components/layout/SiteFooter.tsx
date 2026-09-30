@@ -79,6 +79,7 @@ export async function SiteFooter() {
   return (
     <footer
       data-chrome
+      data-quiet-in-play
       className="mt-auto flex w-full flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-rule pt-5 text-xs text-muted"
       data-testid="site-footer"
     >

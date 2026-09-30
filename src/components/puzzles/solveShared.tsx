@@ -18,6 +18,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { usePuzzleClock } from "./PuzzleClockContext";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * What every kind of solve shares: the clock, handing the answer in, and the
@@ -340,6 +341,7 @@ export function useSolve(
     here,
     racing: race !== null,
     keptOnLeaving: hasAccount && race === null,
+    playing: done === null,
   };
   return { startedAt, elapsedMs, done, begin, finish, runOut, pausing, checking, hinting, clock };
 }
@@ -356,6 +358,8 @@ export type Pausing = {
   racing: boolean;
   /** Whether leaving keeps this run: a member's own puzzle does; a visitor's lasts the page. */
   keptOnLeaving: boolean;
+  /** Whether the grid is still being solved: until it is done, the page around it is quiet (`PlayingNow`). */
+  playing: boolean;
 };
 
 // The line over the grid lives in its own file; re-exported here for the solves that import it from this one.
@@ -395,6 +399,8 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
       it (`data-scale-stack`, globals.css).
     */
     <div className="relative" data-testid="puzzle-pausable" data-paused={pausing.paused ? "true" : "false"} data-scale-board data-scale-stack data-bare-board>
+      {/* Quiet around the grid while it is being solved (`PlayingNow`). */}
+      <PlayingNow on={pausing.playing} />
       {/* The board, in a cell it shares with the cover the card at the end draws when it is won (`PuzzleWinSlot`). */}
       <WinStack hidden={pausing.paused}>{children}</WinStack>
       {pausing.paused ? (

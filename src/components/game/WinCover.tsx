@@ -157,7 +157,7 @@ export type PlayState = "unknown" | "playing" | "ended";
  * Decided in render, from the state before and the state now, rather than in
  * an effect: the cover arrives in the same paint as the finished board.
  */
-export function useWinMoment(state: PlayState): { open: boolean; close: () => void } {
+export function useWinMoment(state: PlayState): { open: boolean; close: () => void; playing: boolean } {
   const [seen, setSeen] = useState<PlayState>(state);
   const [open, setOpen] = useState(false);
   if (state !== seen) {
@@ -165,5 +165,6 @@ export function useWinMoment(state: PlayState): { open: boolean; close: () => vo
     setOpen(seen === "playing" && state === "ended");
   }
   const close = useCallback(() => setOpen(false), []);
-  return { open, close };
+  // Whether it is being played now, for the mark that quiets the page around it (`PlayingNow`).
+  return { open, close, playing: state === "playing" };
 }

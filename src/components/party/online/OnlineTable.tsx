@@ -22,6 +22,7 @@ import type { OnlineTableProps } from "./online.types";
 import { ONLINE_VIEWS } from "./onlineViews";
 import { useComputerTurn } from "./useComputerTurn";
 import { useOnlineTable } from "./useOnlineTable";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * A PARTY TABLE ON SEVERAL DEVICES, at /games/<slug>/tables/<id>: the game's
@@ -132,6 +133,8 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       {/* The board's column, for the size chooser and for just the board. */}
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <StatusLine view={view} sending={sending} thinking={thinking} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         {game === null ? null : (
           <WinCoverOver news={news} onClose={moment.close}>
             <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} />

@@ -21,6 +21,7 @@ import { MarbleChip } from "./MarbleChip";
 import { useKeptDotsGame } from "./dotsStore";
 import { DOTS_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * DOTS AND BOXES PASSED ROUND THE TABLE, at /games/dots-and-boxes/pass-and-play.
@@ -73,6 +74,8 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <DotsTurnLine game={game} />
+        {/* Quiet around the game while it is played (`PlayingNow`). */}
+        <PlayingNow on={moment.playing} />
         <WinCoverOver
           news={
             moment.open

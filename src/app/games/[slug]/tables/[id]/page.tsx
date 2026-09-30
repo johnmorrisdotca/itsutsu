@@ -74,8 +74,8 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
     <Page board="play">
       <SiteHeader />
       <GameTrailNav game={{ label: copy.label, href: gamePath(view.game) }} steps={[{ label: ONLINE_COPY.title }]} />
-      {/* Furniture, for just the board. */}
-      <div data-chrome>
+      {/* Furniture, for just the board, and quiet while a game is played on it (`PlayingNow`). */}
+      <div data-chrome data-quiet-in-play>
         <PageTitle title={`${copy.label}, ${ONLINE_COPY.title.toLowerCase()}`} kanji={ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
       </div>
       {notice !== null ? (

@@ -29,6 +29,7 @@ import { MAHJONG_COMPUTER_PAUSE_MS, MAHJONG_COPY } from "./mahjong.constants";
 import { useMahjongFree } from "./mahjongFree";
 import { useKeptMahjongTable } from "./mahjongTableKept";
 import { TsunagiViewport } from "./TsunagiViewport";
+import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
  * MAHJONG FOR A TABLE: two to four round one device, at
@@ -159,6 +160,8 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         {state.shuffledAfter !== null && state.shuffledAfter === state.taken.length && !state.over ? <span className="text-muted"> {MAHJONG_COPY.shuffled}</span> : null}
         {said !== null && human ? <span className="text-muted"> {said}</span> : null}
       </p>
+      {/* Quiet around the game while it is played (`PlayingNow`). */}
+      <PlayingNow on={moment.playing} />
 <WinCoverOver
         news={
           moment.open
