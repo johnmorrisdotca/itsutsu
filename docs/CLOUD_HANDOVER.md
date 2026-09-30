@@ -238,16 +238,15 @@ Each landing is written here as its deploy job finishes.
 | --- | --- | --- | --- |
 | 2026-09-30 about 11:35Z | 0.462.0 Yacht, 0.463.0 Pachisi (`cloud-dice-game-bt6fty`) | https://github.com/johnmorrisdotca/itsutsu/actions/runs/36698202230 | Every job green; the site reads 0.463.0. On the Mac: 8,664 unit tests, the whole browser suite on a production build 1,715 passed with two known flakes (`party-train.spec.ts:65`, `piece-colours.spec.ts:48`) that pass alone. `_not-found` is 38.2 MB of the 40 MB ceiling: a branch `function-size` is bringing it down, so keep new play screens behind `next/dynamic` with `ssr: false`. |
 | 2026-09-30 about 12:35Z | 0.463.1 race gave up at once, 0.464.0 race a chosen opponent, 0.464.1 BacklogItem dropped (`cloud-next-fixes-95jh14`, three migrations, a fresh Neon branch `before-race-and-backlog-drop-2026-09-30` and a DS1 dump taken at 10:39Z); 0.465.0 friends' history (`cloud-friends-history-6aef1c`); 0.465.1 Tenka's map, 0.466.0 the home page's hero, 0.467.0 result marks and the one-line move count, 0.467.1 plain English second pass (`cloud-mac-only-pieces`) | https://github.com/johnmorrisdotca/itsutsu/actions/runs/36704068906 | Every job green; the site reads 0.467.1. On the Mac: 8,713 unit tests; the whole browser suite 1,724 passed, one known flake (`piece-colours.spec.ts:48`) that passes alone. |
+| 2026-09-30 about 13:10Z | 0.467.2 pages' function 38 to 34 MB (`function-size`), 0.468.0 Hitotsu (`cloud-uno-style-08jmb8`), 0.469.0 the Cube and 0.470.0 its solver and guide, 0.470.1 Narabe, Toranpu, Tenka, Kumimoji and Tane from npm, 0.471.0 the dice roller on Korokoro, 0.471.1 browser checks set up their own tables | https://github.com/johnmorrisdotca/itsutsu/actions/runs/36718857638 | Every job green; the site reads 0.471.1. On the Mac the whole browser suite on a production build: 1,753 passed. No migration. `package.json` on main names the npm versions: hitotsu 1.0.1, korokoro 1.3.0, kumimoji 1.0.1, narabe 1.0.0, tane 1.0.1, tenka 1.0.1, toranpu 1.1.0. Kyuubu is still the v1.0.1 release tarball and moves to npm 1.0.2 in the next batch. No `packages/` copy is on main. The function-size ceiling is 39 MB and `pageFunction.coverage.test.ts` wants every game package a page's server build reaches written down, or loaded with `dynamic(…, { ssr: false })`. |
 
-**Next on the Mac, in this order:** `function-size` (the pages' function from 38.3 MB
-towards 34; being rebased over the race changes), then Hitotsu
-(`cloud-uno-style-08jmb8`: merged locally, its tarball installs clean from the
-hand-written lockfile, 8,750 unit tests green; eleven registration conflicts
-with Yacht and Pachisi resolved by keeping both), the cube, Tenka and Kumimoji,
-the dice roller on Korokoro 1.4.0, Tane, Toranpu, Narabe. Each package branch
-will conflict in the same registration lists once the one before it lands; the
-Mac resolves those itself (both sides kept), so no rebase is needed from the
-threads unless it says so here.
+**Next on the Mac:** everything the threads handed over is landed; the queue is
+empty. The next batch moves Kyuubu to npm 1.0.2 and Korokoro from 1.3.0 to the
+newest release (its felt became one button and a tap on a rolled die holds it,
+so `e2e/dice.spec.ts` changes with it). The eight package repositories are
+being brought to Korokoro's standard on the Mac (docs, a demo site in one
+shared look, React, Vue, Svelte and Angular examples, English and Japanese);
+a thread that changes a package should pull its repository first.
 
 **Three flaky specs are being made deterministic on branch `flaky-specs`**
 (`kumimoji.spec.ts:262`, `piece-colours.spec.ts:48`, `party-train.spec.ts:65`).
