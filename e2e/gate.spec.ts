@@ -128,7 +128,11 @@ test.describe("the pages that stay open", () => {
       "/games/tricks",
       // And Dice, another.
       "/games/dice",
+      // The dice roller, a tab of Games that names nobody and keeps nothing on the server.
+      "/dice",
       "/learn",
+      // The cube's method, a guide like the others.
+      "/learn/cube",
       "/about",
     ]) {
       await page.goto(path);
