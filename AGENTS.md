@@ -926,7 +926,7 @@ deployment carries a copy.
 
 - **The deploy job measures before it uploads.** `scripts/check-function-sizes.mjs`
   (`pnpm functions:size`) reads `.vercel/output/functions` after `vercel build`
-  and fails any function over **40 MB**, or more than 20% and more than 5 MB
+  and fails any function over **39 MB**, or more than 20% and more than 5 MB
   over its size in `scripts/function-sizes.baseline.json`. The rules are in
   `src/lib/functionSizeGate.mjs`, tested beside it. The ceiling only ever comes
   down.
@@ -948,6 +948,28 @@ deployment carries a copy.
   `join(process.cwd(), variable)` and on a read rooted at the whole of `public`
   or `src`: the tracer cannot follow them, and packs everything that might
   match. Spell the folder out and join the variable part after it.
+- **The pages' function carries only what a server reads.** Every page is one
+  function, and on 2026-09-30 it was 38.2 MB: 18.4 of Prisma's engine, which
+  stays, and 4.2 there for no reader, which went (34.1 at 0.467.1).
+  `src/lib/pageFunction.coverage.test.ts` reads what a page reaches from the
+  imports and fails, by name, for each way those megabytes got in. A client
+  component is drawn on the server too, so a dynamic `import()` in one is
+  compiled into the function: a word list or level file a browser fetches is
+  imported inside `if (typeof window !== "undefined") { … }`, which the build
+  removes from the server's copy, and the server reads it through a module of
+  its own (`wordDataModule.ts` and its four siblings, all of them in
+  `everyListModule.ts`) that a page imports only where it prints from that
+  list. A module that checks an answer (`prepareOnServer.ts`) needs every list,
+  so it sits apart from the reads a page makes (`puzzleRaceChecks.ts` beside
+  `puzzleRaces.ts`). A client component names a plain value from a constants
+  module, never from a request schema, or zod goes to the browser and into the
+  function twice. A file over 64 KB, or a game package (`@johnmorrisdotca/…`),
+  that a page's server build reaches is written down there with what the
+  server prints from it; a new party table is loaded with
+  `dynamic(…, { ssr: false })`, as `yachtClient.tsx` is. And the build keeps
+  one copy of what the root layout reaches but one for each group of pages of
+  what only pages reach (eleven, for the header's reads), so `layout.tsx`
+  names `headerCounts.ts`; measure before moving anything every page uses.
 
 ### Every Landed Commit Bumps The Version
 
