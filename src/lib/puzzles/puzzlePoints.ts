@@ -5,6 +5,11 @@ import { guessesFor } from "./gomoji/layout";
 import { asWordCount } from "./gomoji/wordsSeed";
 import { kumimojiPoints } from "./kumimoji/check";
 import { koushiPoints } from "./koushi/check";
+import { dodgeGuesses, wordOfPlay } from "./gomoji/dodgePlay";
+import { isDodgeGivens } from "./gomoji/dodgeSeed";
+import { hiddenOfPlay } from "./gomoji/backwardsPlay";
+import { isBackwardsGivens } from "./gomoji/backwardsSeed";
+import { sakasaScore } from "./gomoji/backwardsScore";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -67,6 +72,20 @@ export function kanaPoints(size: number, givens: string, answer: string, elapsed
 }
 
 function wordsPoints(kind: PuzzleKind, size: number, givens: string, answer: string, elapsedMs: number, level?: PuzzleLevel): number {
+  // A Sakasa scores the rows it got through without the word (`backwardsScore.ts`).
+  if (isBackwardsGivens(givens)) {
+    const word = hiddenOfPlay(kind, size, givens);
+    const guesses = guessesOf(kind, size, answer);
+    return word === null || guesses === null ? 0 : sakasaScore(word, guesses).total;
+  }
+  // A dodger is scored against the word it was pinned to, or stood for when the rows ran out, over its own count of guesses (`dodgePlay.ts`).
+  if (isDodgeGivens(givens)) {
+    const guesses = guessesOf(kind, size, answer);
+    const word = guesses === null || level === undefined ? null : wordOfPlay(kind, size, level, givens, guesses);
+    if (word === null || guesses === null || level === undefined) return 0;
+    const score = wordGridOf(kind) === "gomojiKana" ? futagoKanaScore : futagoScore;
+    return score([word], guesses, dodgeGuesses(kind, size), elapsedMs).total;
+  }
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);
   if (hidden === null || guesses === null) return 0;

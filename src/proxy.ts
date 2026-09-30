@@ -70,6 +70,13 @@ const OPEN_PATHS = [
   // The logo. The join page is open, so the marks it draws must be too, or a
   // visitor with no cookie sees a broken image where the name should be.
   "/brand",
+  // The offline keeper and the page it shows when a page was never kept
+  // (public/sw.js, public/offline.html). Both are fixed files holding nothing
+  // of anybody's; the keeper's script is asked for again by the browser on its
+  // own schedule, cookie or none, and a gate that turned it away would leave a
+  // device on an old one.
+  "/sw.js",
+  "/offline.html",
 ];
 
 /**
@@ -454,7 +461,7 @@ export const config = {
    * exemption would be a hole in the gate rather than a saving.
    */
   matcher: [
-    "/((?!_next/static|_next/image|art/|brand/|favicon\\.ico|icon\\.svg|apple-icon\\.png|icon-192\\.png|icon-512\\.png|opengraph-image\\.png|manifest\\.webmanifest|robots\\.txt).*)",
+    "/((?!_next/static|_next/image|art/|brand/|favicon\\.ico|icon\\.svg|apple-icon\\.png|icon-192\\.png|icon-512\\.png|opengraph-image\\.png|manifest\\.webmanifest|robots\\.txt|sw\\.js|offline\\.html).*)",
   ],
 };
 
@@ -473,6 +480,8 @@ export const MATCHER_EXEMPT = [
   "/opengraph-image.png",
   "/manifest.webmanifest",
   "/robots.txt",
+  "/sw.js",
+  "/offline.html",
 ] as const;
 
 /** Only for that test: whether the gate would have let a path through. */

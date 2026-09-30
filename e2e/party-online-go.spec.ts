@@ -121,7 +121,7 @@ test("Pair Go: two members and two Go programs, the programs' moves worked out i
     [b.page, "shared"],
   ] as const) {
     await page.goto("/play/completed");
-    await expect(page.locator(`[data-testid="tables-finished"] [data-testid="my-table"][data-table="${id}"]`)).toHaveAttribute("data-result", result);
+    await expect(page.locator(`[data-testid="my-games-finished"] [data-testid="my-table"][data-table="${id}"]`)).toHaveAttribute("data-result", result);
     await fitsThePhone(page);
   }
 

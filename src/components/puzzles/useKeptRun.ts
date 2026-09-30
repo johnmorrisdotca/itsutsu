@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef } from "react";
 
+import { keepRunOnDevice, type RunIdentity } from "./runsOnDevice";
+import type { ResumedRun } from "./solveShared";
+
 /**
  * KEEPING AN UNFINISHED PUZZLE, from the page it is being solved on.
  *
@@ -28,9 +31,12 @@ export function useKeptRun(snapshot: () => object | null): () => void {
   const keep = useCallback(() => {
     const body = latest.current();
     if (body === null) return;
+    // On this device too, so a run left with no connection is still here to open (`runsOnDevice.ts`).
+    keepRunOnDevice(body as RunIdentity & ResumedRun);
     const json = JSON.stringify(body);
     if (json === sent.current) return;
-    sent.current = json;
+    // Offline the send goes nowhere, so the same run is sent again the next time it is kept.
+    if (navigator.onLine) sent.current = json;
     const beaconed = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/puzzles/runs", new Blob([json], { type: "application/json" }));
     if (!beaconed) {
       void fetch("/api/puzzles/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: json, keepalive: true }).catch(() => {});
@@ -54,11 +60,14 @@ export function useKeptRun(snapshot: () => object | null): () => void {
     };
     document.addEventListener("visibilitychange", hidden);
     window.addEventListener("pagehide", keep);
+    // Back online: what was kept while there was no connection is sent now.
+    window.addEventListener("online", keep);
     document.addEventListener("pointerdown", leaving, { capture: true, passive: true });
     document.addEventListener("keydown", leaving, { capture: true, passive: true });
     return () => {
       document.removeEventListener("visibilitychange", hidden);
       window.removeEventListener("pagehide", keep);
+      window.removeEventListener("online", keep);
       document.removeEventListener("pointerdown", leaving, { capture: true });
       document.removeEventListener("keydown", leaving, { capture: true });
       // Unmounted: a link inside the site was followed, and the run goes with it unless kept now.

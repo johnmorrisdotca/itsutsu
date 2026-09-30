@@ -1,5 +1,6 @@
 "use client";
 
+import { forgetKeptPages } from "@/lib/offline/offlineKeeper";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { usePathname, useRouter } from "next/navigation";
@@ -138,6 +139,8 @@ export function AccountMenu({
   async function signOut() {
     setOpenAt(null);
     await fetch("/api/session", { method: "DELETE" });
+    // The pages kept for offline play were drawn for whoever was signed in, so they go with them.
+    await forgetKeptPages();
     await mutate();
     router.push("/");
     router.refresh();

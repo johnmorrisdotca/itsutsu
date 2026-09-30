@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
@@ -8,11 +8,14 @@ import type { Appearance } from "@/components/board/board.types";
 import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/generate";
-import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
+import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { Puzzle, PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { clockFor } from "@/lib/puzzles/puzzleClock";
+import { furtherRun, runOnDevice } from "./runsOnDevice";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshDodgeSeed } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
 import type { MahjongBonusRule } from "@/lib/puzzles/mahjong/mahjong.types";
@@ -40,6 +43,50 @@ import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
+type PuzzlePlayProps = Parameters<typeof PuzzlePlayDrawn>[0] & {
+  /** The query the server drew this page for (`puzzleQuery`), to tell a page kept for another address from this one. */
+  drawnFor?: string;
+};
+
+/**
+ * A PAGE KEPT FOR ANOTHER ADDRESS. Offline, the keeper answers a puzzle asked
+ * for at an address it never kept with the same puzzle's page kept at another
+ * (public/sw.js): another seed, or another size, level or choice from the
+ * set-up. So what the address asks is read here, in the browser, and played in
+ * place of what the page was drawn with — a new puzzle chosen on a set-up with
+ * no connection is the puzzle chosen. The run the page was drawn with is
+ * another puzzle's, and is left out. Online the server draws every page for its
+ * own address, the two agree, and nothing changes.
+ */
+export function PuzzlePlay({ drawnFor, ...drawn }: PuzzlePlayProps) {
+  /* The router's address, never `window.location`: it moves in the same render as the page's props, where the window's moves a moment after. */
+  const params = useSearchParams();
+  const here = drawnFor === undefined ? null : puzzleAsked(drawn.kind, Object.fromEntries(params));
+  if (here === null || puzzleQuery(here) === drawnFor) return <PuzzlePlayDrawn {...drawn} />;
+  return (
+    <PuzzlePlayDrawn
+      {...drawn}
+      size={here.size}
+      level={here.level}
+      seed={here.seed}
+      checks={here.checks ?? null}
+      hints={here.hints === true}
+      strict={here.strict === true}
+      headStart={here.headStart === true}
+      words={here.words ?? 1}
+      gameLength={here.gameLength ?? "short"}
+      language={here.language ?? "english"}
+      doubleSet={here.doubleSet === true}
+      diagonals={here.diagonals === true}
+      players={here.players ?? 1}
+      clock={here.clock ?? "none"}
+      bonus={here.bonus ?? "group"}
+      anyDeal={here.anyDeal === true}
+      resumed={null}
+    />
+  );
+}
+
 /**
  * Solving a puzzle: the whole of it, in the browser.
  *
@@ -59,7 +106,7 @@ import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/ku
  * puzzle on the screen is the puzzle the address names: reload it, share it,
  * or come back tomorrow and the same puzzle is there.
  */
-export function PuzzlePlay({
+function PuzzlePlayDrawn({
   kind,
   size,
   level,
@@ -80,6 +127,8 @@ export function PuzzlePlay({
   bonus = "group",
   clock = "none",
   anyDeal = false,
+  dodge = false,
+  backwards = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
@@ -98,6 +147,10 @@ export function PuzzlePlay({
   headStart?: boolean;
   /** How many words a Gomoji was asked for — a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`): read only to draw a seed, which says it from then on. */
   words?: WordCount;
+  /** Whether a Gomoji's Nige was asked for, the word that dodges (`dodge.ts`): read only to draw a seed, which says it from then on. */
+  dodge?: boolean;
+  /** Whether a Gomoji's Sakasa was asked for, played backwards (`backwards.ts`): read only to draw a seed, which says it from then on. */
+  backwards?: boolean;
   gameLength?: KumimojiLength;
   language?: KumimojiLanguage;
   doubleSet?: boolean;
@@ -147,9 +200,9 @@ export function PuzzlePlay({
       return;
     }
     // A Solitaire's seed is drawn in the block its kind of deal is dealt from (`freshSolitaireSeed`), a Mahjong's by its flowers' rule.
-    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
-    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, bonus })));
-  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, router]);
+    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, bonus })));
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -166,6 +219,9 @@ export function PuzzlePlay({
     () => (seed === null || loaded !== loadedKey ? null : generatePuzzle(kind, size, level, seed, { gameLength, language, doubleSet, diagonals })),
     [kind, size, level, seed, loaded, loadedKey, gameLength, language, doubleSet, diagonals],
   );
+
+  /* The run this device kept of this puzzle, if any (`runsOnDevice.ts`): opened in place of the account's when played further, as it is when it was left offline. */
+  const deviceRun = useMemo(() => (puzzle === null ? null : runOnDevice({ ...puzzle, clock: clockFor(kind, clock) })), [puzzle, kind, clock]);
 
   /*
    * A SEED THAT NAMES ANOTHER: a winnable Solitaire's seed is the first deal
@@ -215,29 +271,30 @@ export function PuzzlePlay({
   );
 
   function solveOf(puzzle: Puzzle) {
+    const opened = furtherRun(resumed, deviceRun);
     // A race carries no Head start, as it carries no Strict: both seats play the one straight contest.
     const seat = race ?? null;
     const headStarted = seat === null && headStart;
     switch (kind) {
       case "hiddenStones":
-        return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+        return <HiddenStonesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} set={STONE_SETS[appearance.stoneSet]} />;
       case "blackAndWhite":
-        return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} set={STONE_SETS[appearance.stoneSet]} />;
+        return <BlackAndWhiteSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} set={STONE_SETS[appearance.stoneSet]} />;
       case "solitaire":
-        return <SolitaireSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+        return <SolitaireSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "freecell":
-        return <FreeCellSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+        return <FreeCellSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "spider":
-        return <SpiderSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+        return <SpiderSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "bridges":
-        return <BridgesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+        return <BridgesSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "pictureLogic":
-        return <PictureLogicSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+        return <PictureLogicSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "gomoji":
       case "gomojiMot":
       case "gomojiWort":
       case "gomojiPop":
-        return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+        return <GomojiSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "tsunagi":
         return (
           <TsunagiSolve
@@ -245,7 +302,7 @@ export function PuzzlePlay({
             puzzle={puzzle}
             hasAccount={hasAccount}
             race={seat}
-            resumed={race === null ? resumed : null}
+            resumed={race === null ? opened : null}
             appearance={appearance}
             known={tsunagi?.known}
             attempts={tsunagi?.attempts}
@@ -260,17 +317,18 @@ export function PuzzlePlay({
       case "kumimoji":
         // Pass and play is local and never a race: a race's address carries no players.
         if (players > 1 && race === null) return <KumimojiParty key={key} puzzle={puzzle} players={players} hints={hints} appearance={appearance} language={language} online={online} />;
-        return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} language={language} hints={hints} />;
+        return <KumimojiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} language={language} hints={hints} />;
       case "gomojiKana":
-        return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+        return <GomojiKanaSolve key={key} puzzle={puzzle} strict={strict} headStart={headStarted} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "mahjong":
         // A table round this device is local and never a race, as Kumimoji's pass and play is.
         if (players > 1 && race === null) return <MahjongTableGame key={key} puzzle={puzzle} players={players} appearance={appearance} />;
-        return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} hints={hints} appearance={appearance} />;
+        return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} appearance={appearance} />;
       case "koushi":
-        return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? resumed : null} appearance={appearance} />;
+        return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       default:
-        return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? resumed : null} />;
+        return <NumberSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
     }
   }
 }
+

@@ -41,59 +41,63 @@ export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[
         </p>
       ) : null}
       <ul className="flex flex-col gap-1.5">
-        {tables.map((table) => {
-          const href = tablePath(table.game, table.id);
-          const toPlay = table.toPlay === null ? undefined : table.seats[table.toPlay];
-          return (
-            <li
-              key={table.id}
-              className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`}
-              data-testid="my-table"
-              data-table={table.id}
-              data-game={table.game}
-              data-your-move={table.yourMove ? "true" : undefined}
-              data-result={table.result ?? undefined}
-            >
-              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label="Open the table" />
-              <GameThumb variant={table.game} size="small" />
-              <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
-                <span className="truncate font-medium">
-                  <GameName variant={table.game} raised />
-                </span>
-                <span className="flex flex-wrap gap-x-1 text-xs text-muted">
-                  {table.seats.map((seat, index) => (
-                    <span key={seat.seat} className={RAISED_LINK}>
-                      {seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null) ? (
-                        <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={seat.memberId === null ? undefined : tags.get(seat.memberId)} testId="my-table-player" />
-                      ) : seat.kind === ONLINE_SEAT_KINDS.computer ? (
-                        ONLINE_COPY.computerSeat
-                      ) : (
-                        ONLINE_COPY.openSeat
-                      )}
-                      {index < table.seats.length - 1 ? "," : ""}
-                    </span>
-                  ))}
-                </span>
-                <span className="text-xs font-semibold" data-testid="my-table-state">
-                  {table.result !== null
-                    ? ONLINE_COPY.result[table.result]
-                    : table.yourMove
-                      ? ONLINE_COPY.myYourMove
-                      : toPlay?.kind === ONLINE_SEAT_KINDS.open
-                        ? ONLINE_COPY.myOpen
-                        : ONLINE_COPY.myTheirMove(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : "The next player"))}
-                </span>
-              </span>
-              <span className="ml-auto flex shrink-0 items-center gap-2">
-                <Link href={href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="my-table-open">
-                  {finished ? ONLINE_COPY.myLook : ONLINE_COPY.myOpenTable} →
-                </Link>
-                <CardArrow />
-              </span>
-            </li>
-          );
-        })}
+        {tables.map((table) => (
+          <TableRow key={table.id} table={table} finished={finished} tags={tags} />
+        ))}
       </ul>
     </section>
+  );
+}
+
+/** One table on My games: under Going, how it stands; on Completed, among every other kind of finished game (`completed.ts`), how it went. */
+export function TableRow({ table, finished, tags }: { table: MyTable; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
+  const href = tablePath(table.game, table.id);
+  const toPlay = table.toPlay === null ? undefined : table.seats[table.toPlay];
+  return (
+    <li
+      className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`}
+      data-testid="my-table"
+      data-table={table.id}
+      data-game={table.game}
+      data-your-move={table.yourMove ? "true" : undefined}
+      data-result={table.result ?? undefined}
+    >
+      <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label="Open the table" />
+      <GameThumb variant={table.game} size="small" />
+      <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
+        <span className="truncate font-medium">
+          <GameName variant={table.game} raised />
+        </span>
+        <span className="flex flex-wrap gap-x-1 text-xs text-muted">
+          {table.seats.map((seat, index) => (
+            <span key={seat.seat} className={RAISED_LINK}>
+              {seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null) ? (
+                <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={seat.memberId === null ? undefined : tags.get(seat.memberId)} testId="my-table-player" />
+              ) : seat.kind === ONLINE_SEAT_KINDS.computer ? (
+                ONLINE_COPY.computerSeat
+              ) : (
+                ONLINE_COPY.openSeat
+              )}
+              {index < table.seats.length - 1 ? "," : ""}
+            </span>
+          ))}
+        </span>
+        <span className="text-xs font-semibold" data-testid="my-table-state">
+          {table.result !== null
+            ? ONLINE_COPY.result[table.result]
+            : table.yourMove
+              ? ONLINE_COPY.myYourMove
+              : toPlay?.kind === ONLINE_SEAT_KINDS.open
+                ? ONLINE_COPY.myOpen
+                : ONLINE_COPY.myTheirMove(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : "The next player"))}
+        </span>
+      </span>
+      <span className="ml-auto flex shrink-0 items-center gap-2">
+        <Link href={href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="my-table-open">
+          {finished ? ONLINE_COPY.myLook : ONLINE_COPY.myOpenTable} →
+        </Link>
+        <CardArrow />
+      </span>
+    </li>
   );
 }

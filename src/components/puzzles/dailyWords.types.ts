@@ -10,6 +10,10 @@ export type DailyButtonRow = {
   futago: { href: string; status: DailyStatus | null };
   /** The same length's Yotsugo today, four words at once (`yotsugo.ts`). */
   yotsugo: { href: string; status: DailyStatus | null };
+  /** The same length's Nige today, the word that dodges (`dodge.ts`): its button and the reader's standing with it; null where the language offers no Nige (`offersDodge`). */
+  dodge: { href: string; status: DailyStatus | null } | null;
+  /** The same length's Sakasa today, the word to steer round (`backwards.ts`): its button and the reader's standing with it; null where the language offers none (`offersDodge`). */
+  backwards: { href: string; status: DailyStatus | null } | null;
 };
 
 export type DailyWordButtonsProps = {

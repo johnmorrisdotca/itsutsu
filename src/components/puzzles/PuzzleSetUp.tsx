@@ -19,6 +19,9 @@ import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshDodgeSeed, offersDodge } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
+import type { GomojiWay } from "@/lib/puzzles/gomoji/words.types";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
@@ -29,6 +32,7 @@ import { SetUpSection } from "@/components/live/SetUpSection";
 import { PuzzleBoardAndSizes, PuzzleSizes } from "./PuzzleBoardAndSizes";
 import { WordSettingChips } from "./WordSettingChips";
 import { FutagoChips } from "./FutagoChips";
+import { PlayWayChips } from "./PlayWayChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { PuzzleClockChips } from "./PuzzleClockChips";
 import { KumimojiPartyResume } from "./KumimojiPartyScreens";
@@ -110,6 +114,16 @@ export function PuzzleSetUp({
   const [words, setWords] = useState<WordCount>(asked?.words ?? 1);
   // Only a word puzzle hides several words; every other kind is asked for as one.
   const count: WordCount = spec.wordGrid === undefined ? 1 : words;
+  /*
+   * How a Gomoji's one word is played: found, its Nige (`dodge.ts`) or its
+   * Sakasa (`backwards.ts`), found unless chosen. One word only, so choosing
+   * either is choosing one word, and two or four is choosing it off; unlike
+   * Strict, it is carried into a race, whose seed says it.
+   */
+  const [way, setWay] = useState<GomojiWay>(asked?.dodge === true ? "dodge" : asked?.backwards === true ? "backwards" : "find");
+  const played: GomojiWay = offersDodge(kind) && count === 1 ? way : "find";
+  const dodging = played === "dodge";
+  const turned = played === "backwards";
   // The countdown (`PuzzleClockChips`), none unless chosen; like Strict, not carried into a race.
   const [clock, setClock] = useState<PuzzleClock>(asked?.clock ?? "none");
   const kumimoji = useKumimojiChoice(asked, size, kind === "kumimoji");
@@ -132,7 +146,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -161,7 +175,7 @@ export function PuzzleSetUp({
     try {
       await preparePuzzle(kind, size, language);
       // A race is on a deal both seats can win: a Solitaire's is always a winnable one, whatever is chosen for playing alone.
-      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
+      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : dodging ? freshDodgeSeed() : turned ? freshBackwardsSeed() : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -252,7 +266,14 @@ export function PuzzleSetUp({
           ONE WORD OR TWO: a Gomoji's Futago (`futago.ts`). John, 2026-09-26:
           "a Gomoji mode with two hidden words at once… Use our own name."
         */}
-        {spec.wordGrid === undefined ? null : <FutagoChips kind={kind} size={size} level={level} chosen={words} onChoose={setWords} />}
+        {spec.wordGrid === undefined ? null : <FutagoChips kind={kind} size={size} level={level} chosen={words} onChoose={(chosen) => { setWords(chosen); if (chosen > 1) setWay("find"); }} />}
+        {/*
+          FIND THE WORD, CHASE ONE THAT DODGES, OR AVOID IT: a Gomoji's Nige
+          (`dodge.ts`) and Sakasa (`backwards.ts`). 2026-09-26: "the word changes
+          after every guess but stays true to every colour already shown", and
+          "avoid the hidden word as long as you can… give it our own name."
+        */}
+        {spec.wordGrid === undefined ? null : <PlayWayChips kind={kind} size={size} level={level} offered={offersDodge(kind)} chosen={played} onChoose={(chosen) => { setWay(chosen); if (chosen !== "find") setWords(1); }} />}
         {/*
           STRICT, a choice at every level. John, 2026-09-25: "have an option
           strict mode for Hard where you have to play the Green items on the same
@@ -289,7 +310,7 @@ export function PuzzleSetUp({
           hard its chips are switched off and the line under them says why.
         */}
         {offersHeadStart(kind, "easy") ? (
-          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} words={count} />
+          <HeadStartChips kind={kind} size={size} level={level} chosen={headStart} onChoose={setHeadStart} words={count} dodge={dodging} backwards={turned} />
         ) : null}
         {/*
           HOW THE GRID IS DRAWN, chosen here as well as under the keyboard.
@@ -390,7 +411,7 @@ export function PuzzleSetUp({
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         {kind === "mahjong" ? <MahjongTableResume /> : null}
         <Link
-          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level), words: count, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal }))}
+          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal }))}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
