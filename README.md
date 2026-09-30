@@ -213,8 +213,10 @@ Japanese-style SVG. See `docs/plans/mahjong/README.md`.
 **Cubes** 立方 (2026-09-30) is the shelf for the turning cube, opened with the
 **Cube** 立方体 (`src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 5×5, drawn in
 CSS 3D by **Kyuubu** キューブ (`packages/kyuubu/`), a framework-free package with a
-thin React wrapper, kept in this repository as a workspace package and written
-to be published on its own (its README says how). Drag a sticker to turn its
+thin React wrapper and its own repository (github.com/johnmorrisdotca/kyuubu).
+A copy of its source sits in `packages/kyuubu/`, reached through two `paths` in
+`tsconfig.json` until it is on npm; change it in its own repository and copy it
+back, never here alone. Drag a sticker to turn its
 layer, drag around the cube to look, wheel over a sticker to turn its row
 (Ctrl its column, Shift its face), or type the notation. A scramble is the
 seed's random turns, fifteen seconds' look comes before the clock, and the
