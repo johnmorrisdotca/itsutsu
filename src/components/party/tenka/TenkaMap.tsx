@@ -22,6 +22,7 @@ import {
 } from "./tenka.constants";
 import type { TenkaMapProps } from "./tenka.types";
 import { TenkaChips, ownerMarble } from "./TenkaChips";
+import { TenkaWraps } from "./TenkaWraps";
 import { READABLE_SCALE, areaAround, nearestTerritory } from "./tenkaView";
 import { useMapView } from "./useMapView";
 
@@ -161,6 +162,7 @@ export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: previ
                     />
                   );
                 })}
+                <TenkaWraps scale={view.scale} reach={reach} dark={theme.dark} onTerritory={tap} />
                 <TenkaChips game={game} marks={marks} scale={view.scale} onTerritory={tap} />
               </g>
             </svg>

@@ -29,6 +29,12 @@ import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 
+import type { ReactNode } from "react";
+
+import { ResultMark } from "@/components/game/ResultMark";
+import { LocalTime } from "@/components/ui/LocalTime";
+import { puzzleOutcome, puzzleSizeLabel, type PuzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
+
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
@@ -46,6 +52,12 @@ function wordOf(kind: PuzzleKind, givens: string, size: number, level: string, a
   const mode = words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
   return words.length > 1 ? `${wordsShown(kind, words)} (${mode.label} ${mode.kanji})` : wordsShown(kind, words);
 }
+
+/** A value in the facts box starts with a capital: "Draw 1", not "draw 1". */
+const capitalised = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
+/** What the fastest times share with this solve, by its size's name: "same draw and level". */
+const FASTEST_SAME: Record<string, string> = { "Free cells": "cells" };
 
 /** Whether a moment falls on today's date in UTC, the day today's puzzle is everybody's (`dailySeed`). */
 function isTodayUtc(at: Date, now = new Date()): boolean {
@@ -99,8 +111,13 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   // A Sakasa is won by getting through and lost by typing its word (`backwards.ts`): caught, when its last guess was the word.
   const sakasa = isBackwardsGivens(solve.givens);
   const caught = sakasa && found.answer !== null && (guessesOf(kind, solve.size, found.answer) ?? []).at(-1) === hiddenWordsOf(kind, solve.size, solve.givens)?.words[0];
-  const outOfTime = !solve.solved && !caught && solve.clock !== "none" && (taken === null || taken.used < taken.allowed);
-  const outcome = solve.solved ? (sakasa ? "Got through" : words ? "Found" : "Solved") : outOfTime ? "Out of time" : caught ? "Caught" : "Not found";
+  // How it ended, worked out once for every kind (`puzzleOutcome`): "Won" for a card game, "Out of guesses" for a word; a Sakasa says its own.
+  const ended: PuzzleOutcome = sakasa && solve.solved
+    ? { words: "Got through", mark: "success" }
+    : caught
+      ? { words: "Caught", mark: "failure" }
+      : puzzleOutcome(kind, solve.solved, solve.clock !== "none", taken);
+  const outcome = ended.words;
   const timed = PUZZLE_CLOCK_DISPLAY[solve.clock as PuzzleClock] ?? PUZZLE_CLOCK_DISPLAY.none;
   const helped = [
     solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,
@@ -109,21 +126,41 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     solve.helped === null ? null : SOLVE_HELP_WORDS[solve.helped],
   ].filter((part) => part !== null);
   const headStart = hadHeadStart(kind, solve.level, solve.hintsUsed);
-  const facts: { label: string; value: string; testId: string }[] = [
-    { label: "How it ended", value: outcome, testId: "solve-outcome" },
+  const levelLabel = PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level;
+  // "Draw 1", "7 tiles", "9×9": the size in the words its set-up chooses it by, capitalised as a value in a list is.
+  const sizeShown = capitalised(sizeWord(solve.size, kind));
+  const sizeLabel = puzzleSizeLabel(kind);
+  const finished = solve.finishedAt.toISOString();
+  /*
+   * THE FACTS IN PLAIN WORDS (John, 2026-09-29: "The box that talks about how
+   * it ended... that english is also weird?"): Result, the size by its own
+   * name, the level, and a date a person reads rather than 2026-09-29.
+   */
+  const facts: { label: string; value: ReactNode; testId: string }[] = [
+    {
+      label: "Result",
+      value: (
+        <span className="inline-flex items-center gap-1.5">
+          <ResultMark kind={ended.mark} />
+          {outcome}
+        </span>
+      ),
+      testId: "solve-outcome",
+    },
     // A word puzzle says its word, found or not: a word not found is the one thing the grid cannot show.
     ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size, solve.level, found.answer) : "Kept back until tomorrow", testId: "solve-word" }] : []),
-    { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
+    { label: sizeLabel, value: sizeShown, testId: "solve-puzzle" },
+    { label: "Level", value: levelLabel, testId: "solve-level" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
-    ...(timed.ms === null ? [] : [{ label: "Clock", value: `${timed.label} ${timed.kanji}, ${timed.time}`, testId: "solve-clock" }]),
+    ...(timed.ms === null ? [] : [{ label: "Countdown", value: `${timed.label} ${timed.kanji}, ${timed.time}`, testId: "solve-clock" }]),
     // A word's guesses, out of the level's allowance: the other half of how it went.
     ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : taken.unit === "moves" ? "Moves" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
     { label: "Points", value: String(solve.points), testId: "solve-points" },
-    { label: "Help", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
-    { label: "Finished", value: solve.finishedAt.toISOString().slice(0, 10), testId: "solve-date" },
+    { label: "Help used", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
+    { label: "Finished", value: <LocalTime at={finished} style="date" />, testId: "solve-date" },
   ];
-  const day = solve.finishedAt.toISOString().slice(0, 10);
-  const levelWord = (PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level).toLowerCase();
+  // The day as the reader reads a date, never 2026-09-30.
+  const day = <LocalTime at={finished} style="date" />;
   const trail = own ? [{ label: "Yours", href: myGamePath(kind) }, { label: day }] : [{ label: "All solves", href: historyPath(kind) }, { label: day }];
   return (
     <Page>
@@ -134,15 +171,23 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
         crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={trail} />}
         lead={
           own ? (
-            `${outcome}, ${day}.`
+            <span className="inline-flex flex-wrap items-center gap-x-1.5" data-testid="solve-lead">
+              <ResultMark kind={ended.mark} />
+              <span>
+                {outcome}, <LocalTime at={finished} style="date" />.
+              </span>
+            </span>
           ) : (
-            <span data-testid="solve-solver">
-              {outcome} by <PlayerName name={solver} memberId={solverId} fallback="A member" />, {day}.
+            <span className="inline-flex flex-wrap items-center gap-x-1.5" data-testid="solve-solver">
+              <ResultMark kind={ended.mark} />
+              <span>
+                {outcome} by <PlayerName name={solver} memberId={solverId} fallback="A member" />, <LocalTime at={finished} style="date" />.
+              </span>
             </span>
           )
         }
       />
-      <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"} data-own={own ? "true" : "false"}>
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-4" data-width-reason="one finished puzzle: its board, the facts beside it and the lead that says how it ended, kept to the width the board is drawn at" data-testid="solve-page" data-solve={solve.id} data-kept={solve.answer === null ? "false" : "true"} data-own={own ? "true" : "false"}>
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={false}>
           <FinishedPuzzle
             kind={kind}
@@ -159,10 +204,11 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
               title: (
                 <>
                   <PlayerName name={solver} memberId={solverId} fallback="A member" />
-                  &apos;s {copy.label} · {sizeWord(solve.size, kind)} {levelWord}
+                  &apos;s {copy.label} · {sizeShown} · {levelLabel}
                 </>
               ),
-              source: `Solved on Itsutsu · ${day}`,
+              // Played, not solved: a Solitaire given up is kept and replayed too.
+              source: `Played on Itsutsu · ${day}`,
             }}
           />
         </WordStyleProvider>
@@ -203,7 +249,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
             </Link>
           )}
           <Link href={puzzleRecordHref(kind, { size: solve.size, level: solve.level as PuzzleLevel, clock: isPuzzleClock(solve.clock) ? solve.clock : null, sort: PUZZLE_RECORD_SORTS.fastest })} className="underline underline-offset-2" data-testid="solve-fastest-here">
-            Fastest at this size{timed.ms === null ? "" : ` on the ${timed.label}`}
+            {`Fastest times, same ${FASTEST_SAME[sizeLabel] ?? sizeLabel.toLowerCase()} and level`}
+            {timed.ms === null ? "" : ` on the ${timed.label}`}
           </Link>
           <Link href={myGamePath(kind)} className="underline underline-offset-2">
             All your {copy.label}

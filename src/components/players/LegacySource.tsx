@@ -1,4 +1,6 @@
 import Link from "@/components/ui/Link";
+import { ResultMark } from "@/components/game/ResultMark";
+import { markOfOutcome } from "@/components/game/resultMarks";
 
 import { Figures } from "@/components/ui/Figures";
 import { GameName } from "@/components/games/GameName";
@@ -55,7 +57,10 @@ function GameLog({ game }: { game: LegacyGameRecord }) {
           <li key={`${entry.date}-${entry.opponent}-${index}`} className="flex items-center justify-between gap-3 py-1">
             <span className="text-muted">{entry.date}</span>
             <span className="flex-1 truncate px-2">{entry.opponent}</span>
-            <span className="font-mono">{entry.result}</span>
+            <span className="inline-flex items-center gap-1 font-mono">
+              <ResultMark kind={markOfOutcome(entry.result === "drawn" ? "draw" : entry.result)} />
+              {entry.result}
+            </span>
           </li>
         ))}
       </ul>
@@ -228,7 +233,12 @@ function HeadToHead({ source }: { source: LegacySource }) {
                           <GameName name={game.game} />
                         </span>
                       </td>
-                      <td className="py-1.5 pr-3 font-mono">{game.result}</td>
+                      <td className="py-1.5 pr-3 font-mono">
+                        <span className="inline-flex items-center gap-1">
+                          <ResultMark kind={markOfOutcome(game.result === "drawn" ? "draw" : game.result)} />
+                          {game.result}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -8,6 +8,10 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } f
 import type { HistoryEntry, HistoryPage, HistoryState } from "@/lib/history/everyGame.types";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
+import type { ResultMarkKind } from "@/components/game/resultMark.types";
+
 import { GroupHeading } from "./GroupHeading";
 import { ago } from "./MyGameRow";
 import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
@@ -46,6 +50,18 @@ function Others({ entry, tags }: { entry: HistoryEntry; tags: ReadonlyMap<string
  * A page at a time, newest first; an empty history keeps its heading and says
  * so, with the way to a first game.
  */
+/** The mark beside an ended entry's word (`ResultMark`); a game still going has none, since it has no result yet. */
+const HISTORY_MARKS: Partial<Record<HistoryState, ResultMarkKind>> = {
+  won: RESULT_MARKS.success,
+  shared: RESULT_MARKS.success,
+  solved: RESULT_MARKS.success,
+  lost: RESULT_MARKS.failure,
+  unsolved: RESULT_MARKS.failure,
+  drawn: RESULT_MARKS.other,
+  ended: RESULT_MARKS.other,
+  left: RESULT_MARKS.other,
+};
+
 export function MyHistory({
   page,
   total,
@@ -125,6 +141,7 @@ export function HistoryRow({ entry, now, tags, theirs = false }: { entry: Histor
         </span>
         <span className="text-xs">
           <span className="font-semibold" data-testid="history-state">
+            {HISTORY_MARKS[entry.state] === undefined ? null : <ResultMark kind={HISTORY_MARKS[entry.state]!} className="mr-1" />}
             {words.state[entry.state]}
           </span>
           <span className="text-muted"> · {ago(entry.at, now)}</span>

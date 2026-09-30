@@ -1,6 +1,8 @@
 "use client";
 
 import { usePartyMarbles } from "./partyMarbles";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BLOCKS_STATUS, blocksLeaders, blocksScores } from "@/lib/gomoku/party/partyBlocks";
 import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
@@ -30,6 +32,7 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
     return (
       <div className={`${PANEL_CLASS} flex flex-col gap-1`} data-testid="blocks-result" data-winners={leaders.join(",")}>
         <p className="flex items-center gap-2 text-base font-semibold">
+          <ResultMark kind={RESULT_MARKS.success} />
           {leaders.map((player) => (
             <MarbleChip key={player} player={player} />
           ))}

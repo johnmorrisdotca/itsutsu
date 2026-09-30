@@ -10,7 +10,7 @@ export const KEPT_COPY = {
   opening: "Opening…",
   unreadable: "This device cannot open that game. It may have been kept by an older version of the site.",
   replaces: "A game of this kind already going on this device stays in your history, and can be opened from there again.",
-  back: "Every game",
+  back: "Your history",
   /** Read from somebody else's history (`PlayerHistory`): looked at, never offered to this device. */
   theirs: {
     title: "From a player's history",

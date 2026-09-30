@@ -221,8 +221,8 @@ test.describe("Gomoji Yotsugo", () => {
     // Kept among the finished puzzles as not found, on the Rabbit, with its four words.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
     const kept = page.locator('[data-testid="puzzle-solved"][data-kind="gomoji"][data-solved="false"]').first();
-    await expect(kept).toContainText("Not found");
-    await expect(kept).toContainText("rabbit");
+    await expect(kept.getByTestId("puzzle-solved-outcome")).toHaveText("Out of time");
+    await expect(kept).toContainText("Rabbit countdown");
     // Opened, it is the four words, on the Rabbit.
     await kept.getByTestId("puzzle-solved-open").click();
     await expect(page.getByTestId("solve-word")).toHaveText(`${wordsShown("gomoji", words)} (Yotsugo 四つ子)`);

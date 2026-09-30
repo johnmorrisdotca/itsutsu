@@ -3,6 +3,8 @@ import Link from "@/components/ui/Link";
 import { PlayerName } from "@/components/players/PlayerName";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { ResultMark } from "@/components/game/ResultMark";
+import { markOfOutcome } from "@/components/game/resultMarks";
 import { PlayerActions } from "./PlayerActions";
 import { RecordTable } from "./RecordTable";
 import type { RecordOpponents } from "./recordOpponents.types";
@@ -164,7 +166,10 @@ export function ItsutsuRecord({
                   </span>
                 </span>
                 <span className="flex flex-wrap items-center justify-end gap-3">
-                  <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
+                  <span className="inline-flex items-center gap-1 font-mono text-xs tabular-nums" data-testid="player-recent-outcome">
+                    <ResultMark kind={markOfOutcome(game.outcome === "drew" ? "draw" : game.outcome)} />
+                    {game.outcome}
+                  </span>
                   <Link href={matchPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
                     replay
                   </Link>

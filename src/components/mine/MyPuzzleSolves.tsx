@@ -11,11 +11,16 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { clockWord } from "@/lib/puzzles/puzzleClock";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { hintsWords } from "@/lib/puzzles/gomoji/headStart";
-import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { MySolve } from "@/lib/puzzles/server/mySolves";
 
 import { ago } from "./MyGameRow";
 import { MY_PUZZLE_ROW } from "./mine.constants";
+import { ResultMark } from "@/components/game/ResultMark";
+import { puzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
+
+/** What a puzzle's count beside its time counts: a word's guesses, Koushi's swaps, a card game's moves ("131 moves", never "131 guesses"). */
+const TAKEN_UNIT = { guesses: "guesses", swaps: "swaps", moves: "moves" } as const;
 
 /** The help a solve took, in words: "no help", "2 checks", "1 check, 1 hint". Nothing where it was never recorded. */
 function helpWords(solve: MySolve): string | null {
@@ -38,6 +43,7 @@ function helpWords(solve: MySolve): string | null {
  */
 export function PuzzleSolveRow({ solve, now }: { solve: MySolve; now: Date }) {
   const help = helpWords(solve);
+  const ended = puzzleOutcome(solve.kind, solve.solved, solve.clock !== "none", solve.guesses);
   return (
     <li className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-solved" data-kind={solve.kind} data-solved={solve.solved ? "true" : "false"}>
       {/* The row opens the puzzle itself, finished as it was (`PuzzleSolvePage`), not the list it is one of. */}
@@ -45,7 +51,7 @@ export function PuzzleSolveRow({ solve, now }: { solve: MySolve; now: Date }) {
         href={mySolvePath(solve.kind, solve.id)}
         data-card-link=""
         className="absolute inset-0 rounded-lg"
-        aria-label={`Your ${solve.kind} of ${solve.finishedAt.toISOString().slice(0, 10)}, as it ended`}
+        aria-label={`Your ${PUZZLE_DISPLAY[solve.kind].label}, finished ${ago(solve.finishedAt.toISOString(), now)}, as it ended`}
         data-testid="puzzle-solved-open"
       />
       <GameThumb variant={solve.kind} size="small" />
@@ -53,11 +59,12 @@ export function PuzzleSolveRow({ solve, now }: { solve: MySolve; now: Date }) {
         <span className="truncate font-medium">
           <GameName variant={solve.kind} raised />
         </span>
-        <span className="text-xs text-muted">
-          {/* A word whose guesses ran out is kept too, scored for the letters it found; it says so first. */}
-          {solve.solved ? "" : solve.guesses === null ? "Not solved · " : "Not found · "}
-          {sizeWord(solve.size, solve.kind)} · {PUZZLE_LEVEL_DISPLAY[solve.level].label} · {clockText(solve.elapsedMs)}
-          {solve.guesses === null || !solve.solved ? "" : ` · ${guessesText(solve.guesses)} guesses`}
+        <span className="text-xs text-muted" data-testid="puzzle-solved-line">
+          {/* How it ended first, marked: a word whose guesses ran out is kept too, scored for the letters it found. */}
+          <ResultMark kind={ended.mark} className="mr-1" />
+          <span data-testid="puzzle-solved-outcome">{ended.words}</span> · {sizeWord(solve.size, solve.kind)} ·{" "}
+          {PUZZLE_LEVEL_DISPLAY[solve.level].label} · {clockText(solve.elapsedMs)}
+          {solve.guesses === null || !solve.solved ? "" : ` · ${guessesText(solve.guesses)} ${TAKEN_UNIT[solve.guesses.unit ?? "guesses"]}`}
           {help === null ? "" : ` · ${help}`}
           {clockWord(solve.clock) === "" ? "" : ` · ${clockWord(solve.clock)}`}
           {solve.raceId === null ? "" : " · race"} · {ago(solve.finishedAt.toISOString(), now)}

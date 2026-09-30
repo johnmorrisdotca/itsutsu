@@ -1,4 +1,6 @@
 import Link from "@/components/ui/Link";
+import { ResultMark } from "@/components/game/ResultMark";
+import { markOfOutcome } from "@/components/game/resultMarks";
 
 import { GameReplay } from "@/components/history/GameReplay";
 import { appearanceFrom } from "@/components/board/appearance";
@@ -70,7 +72,11 @@ function KeptGame({
             {opponentName}
           </Link>{" "}
           · played <span className="font-medium text-ink-soft">{colour}</span> ·{" "}
-          <span className="font-medium text-ink-soft">{result}</span> · {game.source}
+          <span className="inline-flex items-center gap-1 font-medium text-ink-soft" data-testid="kept-game-result">
+            <ResultMark kind={markOfOutcome(result === "drew" ? "draw" : result)} />
+            {result}
+          </span>{" "}
+          · {game.source}
         </span>
       </p>
       <GameReplay

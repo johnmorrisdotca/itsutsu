@@ -140,7 +140,7 @@ export async function MatchPage({
         <SiteHeader />
         <GameTrailNav
           game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-          steps={[{ label: "Match" }]}
+          steps={[{ label: "Game" }]}
         />
         <SeatFullNotice shown={seatFull} />
         {/* The board and its sidebar at the size this reader keeps for this kind of screen (`BoardScaled`). */}

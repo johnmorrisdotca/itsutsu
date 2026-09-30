@@ -39,6 +39,8 @@ export type TenkaShapes = {
   boxes: readonly (readonly number[])[];
   /** Each sea link's dashed line, x1 y1 x2 y2; the crossing of the Bering Strait is two, one off each edge. */
   seaLines: readonly (readonly number[])[];
+  /** Each link that goes off one edge of the map and on at the other: the territory at the west edge, the one at the east, and the row both lines meet the edges at. */
+  wraps: readonly (readonly number[])[];
   /** The borders between continents, one SVG path, drawn heavier. */
   continentBorders: string;
   /** Each territory's outline, one SVG path, in territory order. */

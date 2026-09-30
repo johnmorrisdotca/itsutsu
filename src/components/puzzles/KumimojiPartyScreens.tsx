@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { WinCoverOver } from "@/components/game/WinCover";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
 import { TableWallpaper } from "@/components/party/TableWallpaper";
 import type { WinNews } from "@/components/game/winCover.types";
@@ -191,6 +193,7 @@ export function KumimojiPartyFinish({
   return (
     <div className="flex flex-col gap-4" data-testid="kumimoji-party-finish" data-ending={game.ending ?? ""}>
       <h2 className={SECTION_HEADING} data-testid="kumimoji-party-winner">
+        <ResultMark kind={game.ending === "tied" ? RESULT_MARKS.other : RESULT_MARKS.success} />
         {headline(game)}
       </h2>
       {cover === null ? all : (

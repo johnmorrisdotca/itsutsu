@@ -32,6 +32,7 @@ import { KoushiGrid } from "./KoushiGrid";
 import { KOUSHI_MARK_KEPT, KOUSHI_MARK_SPENT } from "./puzzles.constants";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { ResultMark } from "@/components/game/ResultMark";
 
 /**
  * Solving Koushi: swap letters two at a time until all six words are right,
@@ -136,6 +137,7 @@ export function KoushiSolve({
       ) : done.outOfGuesses ? (
         <div className="flex flex-col gap-2" data-testid="koushi-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+            <ResultMark kind="failure" className="mr-1.5" />
             {done.outOfTime ? "Out of time" : "Out of swaps"}. The words were{" "}
             <strong className="uppercase tracking-wide" data-testid="koushi-words">
               {words.join(" · ")}

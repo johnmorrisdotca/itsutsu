@@ -4,6 +4,7 @@ import { useMemo, type ReactNode } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { BoardThemeTokens } from "@/components/board/board.types";
+import { MoveCount } from "@/components/history/MoveCount";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { replayFreeCell } from "@/lib/puzzles/freecell/code";
 import { freeCellWon } from "@/lib/puzzles/freecell/rules";
@@ -58,9 +59,7 @@ export function PatienceReplay({ kind, size, givens, moves, at, go }: { kind: "f
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label="One move on">
             ›
           </button>
-          <span className="w-24 text-right text-sm tabular-nums text-muted" data-testid="patience-replay-at">
-            {viewing === 0 ? "The deal" : `Move ${viewing} of ${last}`}
-          </span>
+          <MoveCount at={viewing} last={last} start="The deal" className="shrink-0 justify-items-end text-sm text-muted" testId="patience-replay-at" />
         </div>
       ) : null}
       <p className="text-sm text-muted">

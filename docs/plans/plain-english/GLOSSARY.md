@@ -209,6 +209,49 @@ something uses the word already chosen for it.
 | Maintenance mode | Being worked on | 整備 (unchanged) | `AdminSite.tsx` | same. The public maintenance page (`maintenance.ts`) keeps "being worked on": it is a sentence there, and it sits beside the gate |
 | Suspended the account · Reactivated the account | Shut the account · Opened the account | 停止 · 再開 (unchanged) | `operatorLog.constants.ts` | the operator log says what the buttons now say |
 
+## Results (how one game or puzzle ended)
+
+John, 2026-09-29: "let's show a checkmark for success/win/ an appropriate icon
+for loss/fail/quit any other icon for othe rste? incomlete/abanoned/something?"
+Every single result on the site carries one of three marks beside its words
+(`ResultMark`, decided by `resultMarks.ts` and `puzzleOutcome.ts`); a count of
+wins and losses stays a number that links to its games.
+
+| Words | Mark | Where it is said |
+|---|---|---|
+| You won · Won · Solved · Found | tick | a game a reader sat in, a card patience, a grid, a word |
+| Black won · White won · X wins | tick | a game at one screen, the archive, a party table: a result reached, nobody's loss here |
+| You lost · Given up · Out of time · Out of guesses · Out of swaps | cross | a loss, a puzzle left unsolved and why ("Not found" is no longer said of a Solitaire) |
+| Draw · Unfinished · Ended, nobody won · Tied | bar | a draw, a game nobody finished, a shared tie |
+
+Puzzle facts are named for the puzzle: Draw (Solitaire), Free cells, Suits
+(Spider), Layout (Mahjong), Length (a word), Hand (Kumimoji), Lattice (Koushi),
+Size otherwise; "Countdown" for the clock a player chose, "Help used" for a
+head start or hints, and "Played on Itsutsu" under a replay.
+
+## Second pass (2026-09-30: every ending, and words built from data)
+
+Read at the end of every puzzle (solved, given up, out of time, out of
+guesses) and every finished board game (won, lost, drawn, unfinished), at 390
+and 1280 wide, and in the lists that keep them. The retired words below, like
+every "Was" in this file, are held by `src/lib/i18n/plainEnglish.coverage.test.ts`.
+
+| Now | Was | Kanji | Where | Why |
+|---|---|---|---|---|
+| Result · Draw / Free cells / Suits / Layout / Length / Hand / Lattice / Size · Countdown · Help used | How it ended · Puzzle · Clock · Help | — | `PuzzleSolvePage.tsx` facts | each fact named for what it is; "Puzzle: draw 1" named nothing |
+| Out of guesses · Out of time · Given up | Not found (for every unsolved puzzle) | — | `puzzleOutcome.ts`, the finished puzzle's page and My games | a Solitaire given up was "Not found" |
+| Played on Itsutsu | Played here | — | the finished puzzle's replay | plain |
+| Sep 30, 2026 (the reader's own date) | 2026-09-30 | — | the finished puzzle's breadcrumb and facts | a date a person reads |
+| Game | Match | — | one game's page: its tab title and breadcrumb (`match/[id]`) | "Match" is the series of games (`MatchPanel`), so one game is a game |
+| you were White | you are White | — | a finished game's row in My games | it is over |
+| Puzzles finished · No puzzles finished yet. | Puzzles solved · Nothing solved yet. | 解いた (unchanged) | `mine.constants.ts` | the list holds puzzles given up and run out too |
+| Rabbit countdown | rabbit | — | `puzzleClock.ts` `clockWord`, in My games and the fastest table | a bare "rabbit" in a line of facts read as an animal |
+| Fox countdown, 2:10 left | fox, 2:10 left | — | `MyPuzzleRuns.tsx` | same |
+| Sudoku (9×9, hard) | Sudoku 9×9 hard, Solitaire draw 1 easy | — | the feed's best times (`FeedNewsLine.tsx`) | a size and a level run together are not English |
+| draw 1, easy | draw 1 easy | — | the fastest table and your solves (`RecordSolvesTable.tsx`, `PuzzleMePage.tsx`) | same |
+| All your games · Your history | Every game | 履歴 (unchanged) | the History tab's heading (`mine.constants.ts`) and a kept game's way back (`kept.constants.ts`) | "Every game" was retired for the catalogue; this list is one reader's own |
+| Carry on with Sudoku · Your Sudoku, finished 3 days ago | Carry on with numberPlace · Your numberPlace of 2026-09-30 | — | screen-reader labels on My games rows | the code's name for a game was read aloud |
+
 ## Left as they are, on purpose
 
 - **Buddies**, **Four words**, **Pass and play**, **Fork**, **Friendly** (as

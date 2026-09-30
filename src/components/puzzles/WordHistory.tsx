@@ -1,6 +1,8 @@
 import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { mySolvePath, setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -86,7 +88,8 @@ function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
         <Link href={mySolvePath(kind, word.id)} className="font-semibold tracking-wide uppercase underline-offset-2 hover:underline" data-testid="word-history-word">
           {hidden}
         </Link>
-        <span className={`text-xs ${word.solved ? "text-moss" : "text-muted"}`} data-testid="word-history-outcome">
+        <span className={`inline-flex items-center gap-1 self-center text-xs ${word.solved ? "text-moss" : "text-muted"}`} data-testid="word-history-outcome">
+          <ResultMark kind={word.solved ? RESULT_MARKS.success : RESULT_MARKS.failure} />
           {outcome}
         </span>
         <span className="text-xs text-muted">

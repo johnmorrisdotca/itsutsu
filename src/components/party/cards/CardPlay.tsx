@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 
 import type { Appearance } from "@/components/board/board.types";
 import { CardDragGhost } from "@/components/cards/CardDragGhost";
@@ -132,6 +134,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
       {...ready}
     >
       <p className="min-h-12 text-base font-semibold" data-testid="cards-status" aria-live="polite">
+        {over ? <ResultMark kind={winners.length === 0 ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
         {over ? `${CARD_TABLE_COPY.over}: ${CARD_TABLE_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name)}
       </p>
       <CardSeats

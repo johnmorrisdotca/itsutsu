@@ -1,6 +1,8 @@
 "use client";
 
 import { usePartyMarbles } from "./partyMarbles";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PartySeatColour } from "./PartySeatColour";
 import { useState } from "react";
 
@@ -206,6 +208,7 @@ export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp:
   if (game.status === PARTY_STATUS.won && game.winner !== null) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-2 text-base font-semibold`} data-testid="party-winner" data-player={game.winner}>
+        <ResultMark kind={RESULT_MARKS.success} />
         <MarbleChip player={game.winner} />
         <span>
           {partyPlayerName(game.players, game.winner)} wins, the first to fill {farCamp}.

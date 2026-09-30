@@ -123,7 +123,9 @@ const TERRITORIES = [
  */
 const COUNTRIES = {
   // North America
-  US: ({ lon, lat, main }) => (main ? { at: [-100], into: ["usWest", "usEast"] } : lon < -130 && lat > 50 ? "alaska" : lat < 25 ? null : lon < -100 ? "usWest" : "usEast"),
+  // St Lawrence Island lies west of the seam, so it lands at the map's far east edge: left off, like Hawaii, rather
+  // than given to a territory on the other side of the world (it once stretched Eastern United States across the map).
+  US: ({ lon, lat, main }) => (main ? { at: [-100], into: ["usWest", "usEast"] } : lon > 180 ? null : lon < -130 && lat > 50 ? "alaska" : lat < 25 ? null : lon < -100 ? "usWest" : "usEast"),
   CA: ({ lon, lat, main }) => (main ? { at: [-97], into: ["westernCanada", "easternCanada"] } : lat >= 60 ? "arcticIslands" : lon < -97 ? "westernCanada" : "easternCanada"),
   GL: "greenland",
   MX: "mexico", GT: "mexico", BZ: "mexico", HN: "mexico", SV: "mexico", NI: "mexico", CR: "mexico", PA: "mexico",
@@ -179,7 +181,14 @@ const COUNTRIES = {
  * THE SEA LINKS: the straits and short crossings an army may cross, drawn as
  * dashed lines. Every one is named here, so none is an accident of how two
  * coastlines were drawn; `wrap` goes off one edge of the map and on at the
- * other, across the Bering Strait.
+ * other, across the Bering Strait, and the board tags both ends with the
+ * territory waiting on the other side. `from` and `to` pin a line's ends in
+ * longitude and latitude where the nearest two coasts would draw it badly.
+ *
+ * Every link between continents of the classic game is here, by the name of
+ * the territory that holds that place on this map (tenkaLinks.test.ts pins
+ * them): Alaska–Kamchatka is alaska–farEast, Greenland–Iceland is
+ * greenland–nordic, Southern Europe–Egypt is southernEurope–egypt.
  */
 const SEA_LINKS = [
   ["alaska", "farEast", { wrap: true }],
@@ -188,10 +197,12 @@ const SEA_LINKS = [
   ["arcticIslands", "easternCanada"],
   ["greenland", "easternCanada"],
   ["greenland", "nordic"],
-  ["britain", "nordic"],
+  ["britain", "nordic", { from: [-3, 58], to: [6, 60] }],
   ["britain", "westernEurope"],
+  ["britain", "centralEurope"],
   ["westernEurope", "northAfrica"],
   ["southernEurope", "northAfrica"],
+  ["southernEurope", "egypt"],
   ["brazil", "westAfrica"],
   ["eastAfrica", "arabia"],
   ["madagascar", "southernAfrica"],
@@ -518,8 +529,15 @@ function nearest(a, b, shift = 0) {
   return best;
 }
 
-/** The least a sea link's dashed line is drawn, in map units: a strait narrower than this would hide its dashes. */
-const LEAST_CROSSING = 30;
+/** The least a sea link's dashed line is drawn, in map units: long enough to read as a crossing at a whole-world view, not a dash. */
+const LEAST_CROSSING = 64;
+
+/**
+ * Islands wholly north of this latitude are drawn but left out of what a view
+ * frames: they carry no counter and no link, and counting them made Asia's
+ * view as tall as Svalbard to Malaysia, too tall to fill a desk's width.
+ */
+const FRAME_NORTH = 75;
 
 /** A crossing drawn across the strait, lengthened about its middle to at least `LEAST_CROSSING`, toward `towards` where its two ends touch. */
 function crossingLine(p, q, towards) {
@@ -569,6 +587,7 @@ for (const [at, set] of land.entries()) {
 const labelFor = (at) => (TERRITORIES[at].label ? project(TERRITORIES[at].label) : labelOf(outlines[at].rings));
 const sea = TERRITORIES.map(() => new Set());
 const seaLines = [];
+const wraps = [];
 for (const [a, b, options = {}] of SEA_LINKS) {
   const [i, j] = [index.get(a), index.get(b)];
   if (i === undefined || j === undefined) throw new Error(`Sea link ${a}–${b} names no territory.`);
@@ -580,6 +599,10 @@ for (const [a, b, options = {}] of SEA_LINKS) {
     const across = nearest(outlines[i].rings, outlines[j].rings, -WIDTH);
     seaLines.push([across.p[0], across.p[1], 0, Math.round((across.p[1] + across.q[1]) / 2)]);
     seaLines.push([WIDTH, Math.round((across.p[1] + across.q[1]) / 2), across.q[0] + WIDTH, across.q[1]]);
+    wraps.push([i, j, Math.round((across.p[1] + across.q[1]) / 2)]);
+  } else if (options.from) {
+    const [p, q] = [project(options.from), project(options.to)];
+    seaLines.push(crossingLine(p, q, q));
   } else {
     const across = nearest(outlines[i].rings, outlines[j].rings);
     seaLines.push(crossingLine(across.p, across.q, labelFor(j)));
@@ -588,12 +611,18 @@ for (const [a, b, options = {}] of SEA_LINKS) {
 
 const labels = TERRITORIES.map((_, at) => labelFor(at));
 const shapes = outlines.map((outline) => pathOf(outline.rings));
-/* Each territory's extent, for a view to frame it or its continent. */
+/* Each territory's extent, for a view to frame it or its continent: the far northern islands left out (`FRAME_NORTH`). */
+const northEdge = project([0, FRAME_NORTH])[1];
 const boxes = outlines.map(({ rings }) => {
-  const points = rings.flat();
+  const framed = rings.filter((ring) => ring.some(([, y]) => y > northEdge));
+  const points = (framed.length > 0 ? framed : rings).flat();
   const xs = points.map(([x]) => x);
   const ys = points.map(([, y]) => y);
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+});
+/* No territory may run more than half the map across: one that does has a piece on the wrong side of the seam. */
+boxes.forEach(([left, , right], at) => {
+  if (right - left > WIDTH / 2) throw new Error(`${TERRITORIES[at].key} runs from ${left} to ${right}, across half the map; a piece of it is on the wrong side of the seam.`);
 });
 const bordersPath = continentBorders.map(([a, b]) => `M${a[0]} ${a[1]}L${b[0]} ${b[1]}`).join("");
 
@@ -632,7 +661,7 @@ writeFileSync(
     `/**`,
     ` * How Tenka's world is drawn: Miller's projection from ${-WEST}°W round to ${EAST}°E, ${WIDTH} by ${HEIGHT} units.`,
     ` * One outline per territory, in the order of \`TENKA_TERRITORY_DATA\`; where its army counter stands; its extent; the`,
-    ` * sea links' dashed lines; and the borders between continents, drawn heavier. Read only by the board in`,
+    ` * sea links' dashed lines; the links that go off one edge and on at the other; and the borders between continents, drawn heavier. Read only by the board in`,
     ` * the browser, so none of it is carried by a page the server renders for the rules.`,
     ` */`,
     `export const TENKA_SHAPES: TenkaShapes = {`,
@@ -641,6 +670,7 @@ writeFileSync(
     `  labels: ${JSON.stringify(labels)},`,
     `  boxes: ${JSON.stringify(boxes)},`,
     `  seaLines: ${JSON.stringify(seaLines)},`,
+    `  wraps: ${JSON.stringify(wraps)},`,
     `  continentBorders: ${JSON.stringify(bordersPath)},`,
     `  outlines: [`,
     ...shapes.map((d) => `    ${JSON.stringify(d)},`),

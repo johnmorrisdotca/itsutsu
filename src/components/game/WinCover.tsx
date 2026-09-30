@@ -9,6 +9,8 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, TAP_HEIGHT } from "@/componen
 
 import { WIN_CALM_MS, WIN_COVER_COPY, WIN_FLASH_MS } from "./winCover.constants";
 import type { WinNews } from "./winCover.types";
+import { ResultMark } from "./ResultMark";
+import { markOfOutcome } from "./resultMarks";
 
 /**
  * THE COVER OVER A FINISHED BOARD, the moment it is won.
@@ -96,6 +98,7 @@ export function WinCover({ news, onClose }: { news: WinNews; onClose: () => void
           {news.mark}
         </p>
         <h2 id={heading} className={`text-lg font-semibold ${tone.text}`} data-testid="win-cover-headline">
+          <ResultMark kind={markOfOutcome(news.tone)} className="mr-1.5" />
           <Paired en={news.headline.label} kanji={news.headline.kanji} kanjiClassName="text-base font-normal opacity-70" />
           {news.headline.after ?? ""}
         </h2>

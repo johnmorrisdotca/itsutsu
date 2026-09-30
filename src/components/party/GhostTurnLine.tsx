@@ -1,6 +1,8 @@
 "use client";
 
 import { usePartyMarbles } from "./partyMarbles";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { GHOST_LOSS, GHOST_PHASE, ghostStillIn } from "@/lib/party/superghost/superghost";
@@ -24,6 +26,7 @@ export function GhostTurnLine({ game, judge }: { game: GhostGame; judge: GhostJu
     return (
       <div className={`${PANEL_CLASS} flex flex-col gap-1`} data-testid="ghost-winner" data-winners={game.winners.join(",")} aria-live="polite">
         <p className="flex items-center gap-2 text-base font-semibold">
+          <ResultMark kind={RESULT_MARKS.success} />
           <MarbleChip player={winner} />
           <span>{GHOST_COPY.wins(partyPlayerName(game, winner))}</span>
         </p>

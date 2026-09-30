@@ -101,6 +101,35 @@ describe("the map's view", () => {
     expect(framedView([0, 0, 2000, 984], phone, READABLE_SCALE).scale).toBeCloseTo(READABLE_SCALE);
   });
 
+  /*
+   * EVERY "LOOK AT" BUTTON FRAMES ITS CONTINENT, whole and filling the box.
+   * N. America once framed the whole world (a Bering island counted as the
+   * Eastern United States stretched it across the map), and Asia left two
+   * fifths of a desk to Europe and Africa (Svalbard to Malaysia is too tall).
+   */
+  const full: MapBox = { width: 1600, height: 800, mapWidth: 2000, mapHeight: 984 };
+  const continents = ["northAmerica", "southAmerica", "europe", "africa", "asia", "oceania"] as const;
+  it.each(continents.flatMap((key) => [[key, "phone", phone], [key, "desk", desk], [key, "full", full]] as const))("frames %s on a %s: all of it in view, and more than the whole world", (key, _, box) => {
+    const members = TENKA_TERRITORIES.flatMap((territory, at) => (territory.continent === key ? [at] : []));
+    const area = areaAround(members.map((territory) => TENKA_SHAPES.boxes[territory]));
+    const view = framedView(area, box, 0);
+    expect(view.scale).toBeGreaterThan(fitView(box).scale * 1.5);
+    const [left, top, right, bottom] = [view.x + area[0] * view.scale, view.y + area[1] * view.scale, view.x + area[2] * view.scale, view.y + area[3] * view.scale];
+    expect(left).toBeGreaterThan(-1);
+    expect(top).toBeGreaterThan(-1);
+    expect(right).toBeLessThan(box.width + 1);
+    expect(bottom).toBeLessThan(box.height + 1);
+    // It fills the box one way or the other: the continent's width or its height, less the sea kept round it.
+    expect(Math.max((right - left) / box.width, (bottom - top) / box.height)).toBeGreaterThan(0.85);
+  });
+
+  it("gives Asia most of a desk's width, not a share with Europe and Africa", () => {
+    const asia = TENKA_TERRITORIES.flatMap((territory, at) => (territory.continent === "asia" ? [at] : []));
+    const area = areaAround(asia.map((territory) => TENKA_SHAPES.boxes[territory]));
+    const view = framedView(area, desk, 0);
+    expect(((area[2] - area[0]) * view.scale) / desk.width).toBeGreaterThan(0.75);
+  });
+
   it("gives a tap on the sea to the nearest territory within a fingertip, and to nobody further out", () => {
     const japan = TENKA_TERRITORIES.findIndex((territory) => territory.key === "japan");
     const [x, y] = TENKA_SHAPES.labels[japan];

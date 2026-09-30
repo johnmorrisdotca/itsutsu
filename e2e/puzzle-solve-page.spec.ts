@@ -61,7 +61,7 @@ test("a word not found opens from Your words with its guesses on the grid", asyn
 
   await page.goto(`/games/${PUZZLE_SLUGS.gomoji}/me`);
   await page.getByTestId("word-history-row").first().getByTestId("word-history-word").click();
-  await expect(page.getByTestId("solve-outcome")).toHaveText("Not found");
+  await expect(page.getByTestId("solve-outcome")).toHaveText("Out of guesses");
   await expect(page.getByTestId("solve-word")).toHaveText(puzzle.solution.toUpperCase());
   await expect(page.locator('[data-testid="word-tile"][data-row="0"]').first()).toHaveAttribute("aria-label", new RegExp(`^${wrong[0]![0]!.toUpperCase()}, `));
   await expect(page.locator('[data-testid="word-tile"][data-row="4"]').first()).not.toHaveAttribute("data-mark", "empty");

@@ -15,6 +15,7 @@ import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { siteNumbers } from "@/lib/site/siteNumbers";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { GUIDES } from "@/lib/learn/strategy";
+import { EVERY_KIND_KEY } from "@/lib/catalogue/gameKeys";
 
 /** "1 player", "3 players": a count said in words. */
 function plural(count: number, noun: string): string {
@@ -32,7 +33,7 @@ const PITCH = [
     // written down here a second time. This page once spelled out a number
     // in plain words while /games/list computed a different one from
     // the same catalogue, because prose does not know when a game is added.
-    body: `Gomoku, renju, connect6 and the family of games that grew from a line of stones. ${RULE_VARIANT_LIST.length} of them, each with its rules a click away.`,
+    body: `Gomoku, renju, connect6 and the family of games that grew from a line of stones, beside Reversi, checkers and go: ${RULE_VARIANT_LIST.length} board games, each with its rules a click away.`,
   },
   {
     title: "Two phones, one board",
@@ -86,11 +87,20 @@ export default async function Home() {
       <SiteHeader hero />
 
       <section className="flex flex-col items-center gap-5 text-center" data-testid="front-door">
-        <h1 className="max-w-2xl text-2xl font-semibold sm:text-3xl">
-          A board for two, wherever you both are.
+        <h1 className="text-2xl font-semibold sm:text-3xl">
+          Board games, puzzles and cards, played at your own pace.
         </h1>
-        <p className="text-sm text-muted sm:text-base">
-          {RULE_VARIANT_LIST.length} board games for two people, from five in a row to Reversi, checkers and go.
+        {/*
+          The whole catalogue, counted from the list /games draws, and the
+          count leads to that list: it counted only the board games for two long after
+          puzzles, party games and cards arrived, because a sentence does not
+          know when a game is added.
+        */}
+        <p className="text-sm text-muted sm:text-base" data-testid="front-catalogue">
+          <Link href="/games/list" className="underline underline-offset-4" data-testid="front-catalogue-count">
+            {plural(EVERY_KIND_KEY.length, "game")}
+          </Link>{" "}
+          from five in a row to Reversi, go, Solitaire and Mahjong, puzzles for one, and party games round one phone.
           Play across the table or across the world, learn the shapes that win, and keep every game you finish.
         </p>
         {/*
@@ -118,51 +128,23 @@ export default async function Home() {
             </>
           )}
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          {/*
-            Play goes to the games you have, which is what the word means now
-            that the lobby is two pages. It pointed at the catalogue, which was
-            a bug the split left behind: the front door's main button landed
-            somewhere other than where its own word said.
-
-            No kanji on it. John's call, and right: it carried 遊ぶ while Rules
-            and Learn beside it carried nothing, which read as deliberate while
-            Play stood alone and reads as an oddity next to Games.
-          */}
-          <Link href="/play" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2 text-base`} data-testid="enter">
-            Play
-          </Link>
-          {/*
-            NEW GAME, BESIDE PLAY, BECAUSE THE TWO ARE DIFFERENT ERRANDS AND
-            THE FRONT DOOR OFFERED ONLY ONE.
-
-            Play is "show me my games", which is what a returning player wants
-            and is one press from a board. Starting a NEW one from here was
-            Play, then New game in the bar, then Begin — three, and John,
-            2026-09-21, having counted them: "no game or process should take 3
-            screens/clicks." It is two from here now.
-
-            Quiet rather than strong: there is one loud button on a screen, and
-            on the front door it is the one that leads to the games you already
-            have waiting.
-          */}
-          <Link
-            href="/games/new"
-            className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}
-            data-testid="enter-new-game"
-          >
-            New game
-          </Link>
-          {/*
-            The catalogue, which was reachable only from the navigation — and
-            it is the page a first-time visitor actually wants: forty games,
-            each with its rules.
-          */}
-          <Link href="/games" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`} data-testid="enter-games">
-            Games
-          </Link>
-          <Link href="/learn" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}>
-            Learn
+        {/*
+          ONLY WHAT THE HEADER DOES NOT ALREADY OFFER. The hero carried Play,
+          New game and Games, the same three places as the header right above
+          it; John, 2026-09-29: "Home page seems to have redundant buttons?",
+          then "remove dedenant. redesign it slightly yes." What is left is what
+          only this page leads to: the door for somebody outside, the guides,
+          and a member's own feed. The games themselves are the families just
+          below.
+        */}
+        <div className="flex flex-wrap justify-center gap-3" data-testid="front-door-ways">
+          {reader.signedIn ? null : (
+            <Link href={ASK_FOR_INVITE_PATH} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2 text-base`} data-testid="enter-ask">
+              Ask for an invite
+            </Link>
+          )}
+          <Link href="/learn" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`} data-testid="enter-learn">
+            Learn the games
           </Link>
           {/*
             A member's own feed: what they and their buddies have been doing.
@@ -176,6 +158,9 @@ export default async function Home() {
           ) : null}
         </div>
       </section>
+
+      {/* The games, straight after: where the hero's Games button used to send a reader. */}
+      <HomeFamilies />
 
       <BrandStones className="opacity-80" />
 
@@ -192,8 +177,6 @@ export default async function Home() {
       </section>
 
       <HomeBeta signedIn={reader.signedIn} />
-
-      <HomeFamilies />
 
       <HomeStart signedIn={reader.signedIn} />
 

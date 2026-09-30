@@ -140,7 +140,7 @@ test("the Everyone tab tells the site's news, and names nobody under 18", async 
 
     // Best times: the adult's with her name, the child's with the time alone.
     await expect(line(bestAnn).getByTestId("feed-who")).toContainText(first(ann.name));
-    await expect(line(bestAnn).getByTestId("feed-sentence")).toContainText("9×9 hard");
+    await expect(line(bestAnn).getByTestId("feed-sentence")).toContainText("(9×9, hard)");
     await expect(line(bestAnn).getByTestId("feed-time")).toHaveText(/^\d+:\d\d$/);
     await expect(line(bestKim)).toHaveAttribute("data-named", "false");
     await expect(line(bestKim).getByTestId("feed-time")).toBeVisible();

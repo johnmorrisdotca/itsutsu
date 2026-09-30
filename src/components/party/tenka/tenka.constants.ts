@@ -55,8 +55,11 @@ export const TENKA_REGION_NAMES: Record<TenkaContinentKey, string> = {
 export const TENKA_REGION_BUTTON =
   "min-h-9 rounded-full border border-rule-strong bg-ivory px-3 text-xs font-medium hover:bg-rule/60 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-paper";
 
-/** How much sea to keep round what a view frames, in map units. */
-export const TENKA_FRAME_PAD = 40;
+/** How much sea to keep round what a view frames, in map units: a little, so a continent fills the box it is shown in. */
+export const TENKA_FRAME_PAD = 16;
+
+/** The tags at the map's two edges where the world wraps round (the Bering Strait): their text and its gap from the edge, in screen pixels. */
+export const TENKA_WRAP_TAG = { font: 11, inset: 5, below: 15, arrow: 6 } as const;
 
 /** How far the map may be zoomed in, as a multiple of the whole world fitted to its box. */
 export const TENKA_ZOOM_MOST = 8;
@@ -108,4 +111,7 @@ export const TENKA_COPY = {
   fit: "Move and zoom the map",
   regions: "Look at",
   world: "World",
+  /** A tag at the edge of the map naming the territory across the wrap: west off the map's left edge, east off its right. */
+  wrapTo: (name: string, east: boolean) => (east ? `${name} →` : `← ${name}`),
+  wrapNote: (name: string) => `${name}, across the Bering Strait`,
 } as const;

@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { useEffect, useMemo, useState } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -144,7 +146,10 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
       <MahjongScores table={table} state={state} />
       <p className="min-h-10 text-sm" data-testid="mahjong-table-said" aria-live="polite">
         {state.over ? (
-          <strong data-testid="mahjong-table-winner">{winnersLine(table, state.winners)}</strong>
+          <strong data-testid="mahjong-table-winner">
+            <ResultMark kind={state.winners.length === 0 ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1" />
+            {winnersLine(table, state.winners)}
+          </strong>
         ) : (
           <>
             <strong>{seatName(table.seats, state.turn)}</strong> to take a pair{computerTurn ? "…" : "."}{" "}

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { ReplayAdvanced } from "./ReplayAdvanced";
 import { PlayedMoves } from "./PlayedMoves";
+import { MoveCount } from "./MoveCount";
 import { ReplayScrubber } from "./ReplayScrubber";
 import { MovesFold, type MovesShown } from "./MovesFold";
 import { useMoveFormat } from "@/components/game/MoveFormatContext";
@@ -275,8 +276,7 @@ export function GameReplay({
         */}
         <div className="mx-auto mt-3 w-full max-w-[min(100%,38rem)]" data-bare-only data-bare-board>
           <p className="mb-1 text-sm text-muted">
-            Move <span className="font-mono tabular-nums">{moveNumber}</span> of{" "}
-            <span className="font-mono tabular-nums">{game.moveCount}</span>
+            <MoveCount at={moveNumber} last={game.moveCount} />
           </p>
           <ReplayScrubber index={index} last={timeline.length - 1} onGo={setIndex} testId="bare-replay" />
         </div>

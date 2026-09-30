@@ -29,6 +29,16 @@ export type TenkaMapProps = {
   handle?: Ref<TenkaMapHandle>;
 };
 
+export type TenkaWrapsProps = {
+  /** Screen pixels to a map unit, so the tags are drawn one size on the screen. */
+  scale: number;
+  /** The territories the chosen one can reach: a tag naming one is lit. */
+  reach: ReadonlySet<number>;
+  dark: boolean;
+  /** A tag tapped is that territory tapped; absent on a map nobody plays on. */
+  onTerritory?: (territory: number) => void;
+};
+
 /** What the table asks of the map's view. */
 export type TenkaMapHandle = {
   /** On a phone, look at these territories — the first chosen, then what it can reach — close enough to read every counter. */

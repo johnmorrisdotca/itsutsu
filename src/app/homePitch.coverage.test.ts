@@ -34,8 +34,14 @@ describe("the home page computes its own game count rather than writing it down"
 
   it("interpolates the count into the sentence rather than typing a number", () => {
     // Not merely importing the list — actually reading `.length` into the
-    // words "of them", so the sentence tracks the catalogue rather than
+    // words "board games", so the sentence tracks the catalogue rather than
     // agreeing with it by coincidence on the day this was written.
-    expect(SOURCE).toMatch(/\$\{RULE_VARIANT_LIST\.length\}\s*of them/);
+    expect(SOURCE).toMatch(/\$\{RULE_VARIANT_LIST\.length\}\s*board games/);
+  });
+
+  it("counts the whole catalogue in the hero, board games, puzzles and party games alike", () => {
+    // It said "48 board games for two people" long after the puzzles, the party games and the cards arrived.
+    expect(SOURCE).toMatch(/plural\(EVERY_KIND_KEY\.length, "game"\)/);
+    expect(SOURCE).not.toMatch(/board games for two people/);
   });
 });

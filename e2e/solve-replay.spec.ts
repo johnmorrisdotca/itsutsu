@@ -77,7 +77,7 @@ test("a grid solved here replays from empty to solved, and opens on its own", as
   await page.getByTestId("board-focus-toggle").click();
   await expect(page.getByTestId("board-focus")).toHaveAttribute("data-board-focus", "open");
   await expect(page.getByTestId("board-masthead")).toContainText("Solve");
-  await expect(page.getByTestId("board-masthead-source")).toContainText("Solved on Itsutsu");
+  await expect(page.getByTestId("board-masthead-source")).toContainText("Played on Itsutsu");
   // The scrubber goes with it.
   await page.getByTestId("puzzle-steps-start").click();
   await expect(steps).toHaveAttribute("data-viewing", "0");

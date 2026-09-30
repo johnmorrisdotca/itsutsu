@@ -9,18 +9,34 @@ import { expect, test } from "@playwright/test";
  * everything beside it carried nothing, which read as deliberate while Play
  * stood alone and as an oddity next to Games.
  *
- * It also had a bug the split left behind: the main button said Play and went
- * to the catalogue.
+ * Since 2026-09-29 the hero no longer repeats the header at all: the catalogue
+ * is the families just below it, and the header carries My games, Games and
+ * New game on every page.
  */
 test.describe("the front door", () => {
-  test("Play goes to your games, not to the catalogue", async ({ page }) => {
+  /*
+   * THE HERO DOES NOT REPEAT THE HEADER. It carried Play, New game and Games
+   * under a header offering My games, New game and Games; John, 2026-09-29:
+   * "Home page seems to have redundant buttons?", then "remove dedenant.
+   * redesign it slightly yes." The hero keeps what only it leads to.
+   */
+  test("offers only what the header does not: the guides and a member's feed", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByTestId("enter")).toHaveAttribute("href", "/play");
+    const ways = page.getByTestId("front-door-ways");
+    await expect(ways.getByTestId("enter-learn")).toHaveAttribute("href", "/learn");
+    await expect(ways.getByTestId("enter-feed")).toBeVisible();
+    // The page has answered, so the header's three are read as absent from the hero, not as not yet drawn.
+    for (const gone of ["enter", "enter-new-game", "enter-games"]) await expect(page.getByTestId(gone)).toHaveCount(0);
+    await expect(ways.getByRole("link", { name: /^(Play|New game|Games)$/ })).toHaveCount(0);
+    await expect(page.getByTestId("nav-new-game").first()).toBeVisible();
   });
 
-  test("offers the catalogue as well, which is what a first visit wants", async ({ page }) => {
+  test("counts the whole catalogue and leads to it, with the families straight after", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByTestId("enter-games")).toHaveAttribute("href", "/games");
+    const count = page.getByTestId("front-catalogue-count");
+    await expect(count).toHaveText(/^\d+ games$/);
+    await expect(count).toHaveAttribute("href", "/games/list");
+    await expect(page.getByTestId("front-family").first()).toBeVisible();
   });
 
   test("does not ask a member who is already in for an invitation", async ({ page }) => {
@@ -82,9 +98,21 @@ test.describe("the front door", () => {
 
   test("and the hero does too, while the page below it keeps its voice", async ({ page }) => {
     await page.goto("/");
-    const hero = page.getByTestId("enter").locator("xpath=ancestor::section[1]");
+    const hero = page.getByTestId("front-door");
     expect(await hero.innerText()).not.toMatch(/[぀-ヿ一-龯]/);
     // The page itself still speaks both. Removing that was never the ask.
     expect(await page.locator("body").innerText()).toMatch(/[぀-ヿ一-龯]/);
+  });
+});
+
+test.describe("the front door, for somebody outside", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("offers the way in and the guides, and no feed", async ({ page }) => {
+    await page.goto("/");
+    const ways = page.getByTestId("front-door-ways");
+    await expect(ways.getByTestId("enter-ask")).toHaveText("Ask for an invite");
+    await expect(ways.getByTestId("enter-learn")).toBeVisible();
+    await expect(ways.getByTestId("enter-feed")).toHaveCount(0);
   });
 });

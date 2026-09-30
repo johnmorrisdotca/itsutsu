@@ -55,7 +55,7 @@ export async function RefusedOfferPage({ game }: { game: GameDetail }) {
           crumb={
             <GameTrail
               game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-              steps={[{ label: "Match" }]}
+              steps={[{ label: "Game" }]}
             />
           }
         />

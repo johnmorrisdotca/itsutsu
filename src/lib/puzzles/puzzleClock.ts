@@ -72,7 +72,11 @@ export function countdownSaying(clock: PuzzleClock, leftMs: number | null): stri
   return minutes === 1 ? "One minute left." : `${minutes} minutes left.`;
 }
 
-/** A clock as a line of a list says it, "rabbit"; empty for none, which a list does not mention. */
+/**
+ * A clock as a line of a list says it, "Rabbit countdown"; empty for none,
+ * which a list does not mention. A bare "rabbit" in a line of facts read as
+ * an animal, not a clock.
+ */
 export function clockWord(clock: string): string {
-  return isPuzzleClock(clock) && clock !== "none" ? PUZZLE_CLOCK_DISPLAY[clock].label.toLowerCase() : "";
+  return isPuzzleClock(clock) && clock !== "none" ? `${PUZZLE_CLOCK_DISPLAY[clock].label} countdown` : "";
 }

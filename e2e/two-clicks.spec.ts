@@ -80,7 +80,7 @@ test.describe.configure({ mode: "serial" });
 
 test.describe("every way into a game is two presses", () => {
   test("from the front door", async () => {
-    await pressesToABoard(page, "/", ["enter-new-game", "set-up-start"]);
+    await pressesToABoard(page, "/", ["nav-new-game", "set-up-start"]);
   });
 
   test("from a game's card on the catalogue", async () => {

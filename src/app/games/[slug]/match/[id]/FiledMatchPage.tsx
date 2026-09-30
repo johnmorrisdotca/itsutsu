@@ -29,6 +29,8 @@ import { resultCardFor } from "@/lib/history/resultCardRead";
 import type { ResultCardData } from "@/lib/history/gameResult.types";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { ResultCard } from "@/components/history/ResultCard";
+import { ResultMark } from "@/components/game/ResultMark";
+import { seatResult } from "@/components/game/resultMarks";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
 import { currentReader } from "@/lib/auth/currentReader";
@@ -320,7 +322,7 @@ function FiledMatch({
         crumb={
           <GameTrail
             game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-            steps={[{ label: "Game history", href: historyPath(game.variant) }, { label: "Match" }]}
+            steps={[{ label: "Game history", href: historyPath(game.variant) }, { label: "Game" }]}
           />
         }
         title={
@@ -347,7 +349,8 @@ function FiledMatch({
             ·{" "}
             {boardWords(game.variant, game.size)} ·{" "}
             <GameName variant={game.variant} />{" "}
-            · <Paired en={result.label} kanji={result.kanji} kanjiClassName="" />
+            · <ResultMark kind={seatResult(game.result, null, result.label).mark} className="mr-1" />
+            <Paired en={result.label} kanji={result.kanji} kanjiClassName="" />
             {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}
           </>
         }

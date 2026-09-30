@@ -83,9 +83,10 @@ test("the Rabbit counts down from a minute, is urgent at ten seconds, and runs o
 
   // Among the finished puzzles, marked unsolved and on the Rabbit — and not going.
   await page.goto("/play/completed");
-  const kept = page.locator('[data-testid="puzzle-solved"][data-solved="false"]').filter({ hasText: "rabbit" }).first();
+  const kept = page.locator('[data-testid="puzzle-solved"][data-solved="false"]').filter({ hasText: "Rabbit countdown" }).first();
   await expect(kept).toBeVisible();
-  await expect(kept).toContainText("Not solved");
+  await expect(kept.getByTestId("puzzle-solved-outcome")).toHaveText("Out of time");
+  await expect(kept.getByTestId("result-mark")).toHaveAttribute("data-mark", "cross");
   await page.goto("/play");
   await expect(page.getByTestId("my-games")).toBeVisible();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`), "a puzzle whose clock ran out is still listed as going").toHaveCount(0);
@@ -145,6 +146,6 @@ test("a word on the Rabbit runs out with guesses to spare: the word is shown, an
   await expect(page.getByTestId("word-kept")).toContainText("My games");
   await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
   const kept = page.locator('[data-testid="puzzle-solved"][data-kind="gomoji"][data-solved="false"]').first();
-  await expect(kept).toContainText("Not found");
-  await expect(kept).toContainText("rabbit");
+  await expect(kept.getByTestId("puzzle-solved-outcome")).toHaveText("Out of time");
+  await expect(kept).toContainText("Rabbit countdown");
 });

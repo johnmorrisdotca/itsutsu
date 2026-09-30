@@ -1,4 +1,6 @@
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_HEADING, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { TRAIN_PHASES, trainPlayerName, trainTotals } from "@/lib/party/mexicanTrain/mexicanTrain";
 import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
 
@@ -90,7 +92,8 @@ export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext?: () 
       </table>
       </div>
       {finished ? (
-        <p className="text-base font-semibold" data-testid="train-winners">
+        <p className="flex items-center gap-2 text-base font-semibold" data-testid="train-winners">
+          <ResultMark kind={RESULT_MARKS.success} />
           {winners.length === 1 ? TRAIN_COPY.wins(winners[0]) : TRAIN_COPY.share(inALine(winners))}
         </p>
       ) : onNext === undefined ? null : (
