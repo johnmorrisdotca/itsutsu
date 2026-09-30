@@ -4,27 +4,15 @@
  * the seed stored with the game and comes out the same on every replay.
  *
  * Mulberry32: fast, tiny, and good enough for a board game. The seed is a
- * 31-bit integer.
+ * 31-bit integer. The generator is Tane (`packages/tane`), whose tests pin
+ * its numbers, so a stored seed replays the same game after any upgrade.
  */
-export function seededRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { distinctBelow, mulberry32 } from "@johnmorrisdotca/tane";
+
+export const seededRandom: (seed: number) => () => number = mulberry32;
 
 /** `count` distinct integers below `limit`, in draw order. */
-export function drawDistinct(random: () => number, count: number, limit: number): number[] {
-  const drawn: number[] = [];
-  while (drawn.length < Math.min(count, limit)) {
-    const candidate = Math.floor(random() * limit);
-    if (!drawn.includes(candidate)) drawn.push(candidate);
-  }
-  return drawn;
-}
+export const drawDistinct: (random: () => number, count: number, limit: number) => number[] = distinctBelow;
 
 /** A seed drawn from a unit roll, as `createGame` receives one. */
 export function seedFromRoll(roll: number, range: number): number {

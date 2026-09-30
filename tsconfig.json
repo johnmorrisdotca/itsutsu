@@ -23,7 +23,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // Seeded random and daily seeds are their own open-source package, Tane,
+      // kept here until it is on npm; imported by name so that day changes no import.
+      "@johnmorrisdotca/tane": ["./packages/tane/src/index.ts"],
+      "@johnmorrisdotca/tane/react": ["./packages/tane/src/react.ts"]
     }
   },
   "include": [
@@ -34,5 +38,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "packages/*/node_modules", "packages/*/dist", "packages/*/site"]
 }

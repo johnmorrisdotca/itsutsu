@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Tane · seeded random numbers and daily seeds</title>
+    <meta name="description" content="One seed, the same numbers everywhere. Seeded random numbers, shuffles and daily seeds for games, puzzles and tests. Free and open source." />
+    <meta name="theme-color" content="#2f5d4a" />
+    <meta property="og:title" content="Tane 種" />
+    <meta property="og:description" content="One seed, the same numbers everywhere." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='58' rx='26' ry='34' fill='%232f5d4a'/%3E%3Cpath d='M50 26 C 50 10, 66 6, 74 10 C 70 20, 60 26, 50 26 Z' fill='%236b9a6f'/%3E%3C/svg%3E" />
+    <style>
+      :root { color-scheme: light dark; --page: #f4efe4; --card: #fffdf7; --ink: #1f2320; --muted: #6b6f68; --rule: #ddd6c6; --accent: #2f5d4a; --red: #b5452c; }
+      @media (prefers-color-scheme: dark) { :root { --page: #141614; --card: #1d201d; --ink: #ece8dc; --muted: #a09d93; --rule: #3a3d38; --accent: #8cc19a; --red: #e07a5f; } }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.45; }
+      main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 40px; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 20px; }
+      h1 { margin: 0; font-size: 1.9rem; letter-spacing: -.01em; }
+      h1 span { font-size: 1.1rem; color: var(--muted); margin-left: 6px; font-weight: 500; }
+      header p { margin: 2px 0 0; color: var(--muted); }
+      nav { display: flex; gap: 8px; }
+      nav a, button { font: inherit; text-decoration: none; color: inherit; background: none; border: 1px solid var(--rule); border-radius: 999px; padding: 6px 14px; font-size: .9rem; font-weight: 600; cursor: pointer; }
+      nav a:hover, button:hover { border-color: var(--ink); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+      section { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; }
+      section.wide { grid-column: 1 / -1; }
+      h2 { margin: 0 0 4px; font-size: 1rem; }
+      .note { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+      .seed { font: 700 2.6rem/1.1 ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .02em; color: var(--accent); }
+      .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: .95rem; }
+      .row code { font-size: .95rem; }
+      .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+      input { font: 600 1rem ui-monospace, Menlo, monospace; width: 13ch; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--rule); background: var(--page); color: var(--ink); }
+      .cards { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 5px; }
+      .card { aspect-ratio: 5 / 7; border-radius: 6px; border: 1px solid var(--rule); background: var(--page); display: grid; place-items: center; font: 700 clamp(.6rem, 1.6vw, 1rem) ui-monospace, Menlo, monospace; animation: deal .35s ease-out both; }
+      .card.red { color: var(--red); }
+      @keyframes deal { from { opacity: 0; transform: translateY(-6px) rotate(-4deg); } }
+      @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+      @media (max-width: 560px) { .cards { grid-template-columns: repeat(8, minmax(0, 1fr)); } .seed { font-size: 2rem; } }
+      .dice { display: flex; gap: 8px; flex-wrap: wrap; }
+      .die { width: 40px; height: 40px; border-radius: 9px; border: 2px solid var(--accent); display: grid; place-items: center; font: 700 1.1rem ui-monospace, Menlo, monospace; }
+      pre { margin: 0; padding: 12px; border-radius: 10px; background: var(--page); border: 1px solid var(--rule); overflow-x: auto; font-size: .85rem; }
+      footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: .85rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; justify-content: space-between; }
+      a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Tane<span lang="ja">種</span></h1>
+          <p>One seed, the same numbers everywhere. Change the seed and watch everything follow it.</p>
+        </div>
+        <nav>
+          <a href="https://github.com/johnmorrisdotca/tane">GitHub</a>
+          <a href="https://www.npmjs.com/package/@johnmorrisdotca/tane">npm</a>
+        </nav>
+      </header>
+
+      <div class="grid">
+        <section>
+          <h2>Today's seed, worldwide</h2>
+          <p class="note">The UTC date as a number. Everyone on Earth gets this one today.</p>
+          <div class="seed" id="utc-seed"></div>
+          <div class="row"><span>Changes in</span><strong id="utc-left"></strong></div>
+          <div class="row"><code>dailySeed(new Date())</code></div>
+        </section>
+        <section>
+          <h2>Today's seed, where you are</h2>
+          <p class="note" id="zone-note"></p>
+          <div class="seed" id="zone-seed"></div>
+          <div class="row"><span>Changes in</span><strong id="zone-left"></strong></div>
+          <div class="row"><code id="zone-code"></code></div>
+        </section>
+
+        <section class="wide">
+          <h2>A seeded shuffle</h2>
+          <p class="note">Fifty-two cards, shuffled by <code>shuffled(mulberry32(seed), deck)</code>. Share the link and whoever opens it sees this exact deal.</p>
+          <div class="controls">
+            <label for="seed">Seed</label>
+            <input id="seed" inputmode="numeric" autocomplete="off" />
+            <button id="today">Today's</button>
+            <button id="fresh">New seed</button>
+            <button id="share">Copy link</button>
+          </div>
+          <div class="cards" id="cards"></div>
+        </section>
+
+        <section>
+          <h2>Separate parts, one seed</h2>
+          <p class="note"><code>deriveSeed(seed, "dice")</code> is a stream of its own: rolling more dice never changes the deal above.</p>
+          <div class="dice" id="dice"></div>
+        </section>
+        <section>
+          <h2>The first draws</h2>
+          <p class="note">The raw stream for this seed, identical in every browser and on every server.</p>
+          <pre id="draws"></pre>
+        </section>
+      </div>
+
+      <footer>
+        <span>mulberry32, integer maths only: the numbers never depend on the machine. Not for secrets.</span>
+        <span><code>pnpm add @johnmorrisdotca/tane</code> · MIT © John Morris</span>
+      </footer>
+    </main>
+    <script type="module">
+      import { dailySeed, deriveSeed, freshSeed, int, isSeed, mulberry32, nextDayStart, shuffled } from "./dist/index.js";
+
+      const $ = (id) => document.getElementById(id);
+      const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      const suits = [["♠", false], ["♥", true], ["♦", true], ["♣", false]];
+      const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+      const deck = suits.flatMap(([suit, red]) => ranks.map((rank) => ({ label: rank + suit, red })));
+
+      const left = (until) => {
+        const ms = Math.max(0, until.getTime() - Date.now());
+        const h = Math.floor(ms / 3_600_000), m = Math.floor(ms / 60_000) % 60, s = Math.floor(ms / 1000) % 60;
+        return `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+      };
+      const tick = () => {
+        const now = new Date();
+        $("utc-seed").textContent = dailySeed(now);
+        $("utc-left").textContent = left(nextDayStart(now));
+        $("zone-seed").textContent = dailySeed(now, zone);
+        $("zone-left").textContent = left(nextDayStart(now, zone));
+      };
+      $("zone-note").textContent = `Midnight in ${zone.replaceAll("_", " ")}, for a puzzle that turns over with your own day.`;
+      $("zone-code").textContent = `dailySeed(new Date(), "${zone}")`;
+      tick();
+      setInterval(tick, 1000);
+
+      const render = (seed) => {
+        $("seed").value = seed;
+        history.replaceState(null, "", `?seed=${seed}`);
+        $("cards").replaceChildren(...shuffled(mulberry32(seed), deck).map((card, i) => {
+          const el = document.createElement("div");
+          el.className = card.red ? "card red" : "card";
+          el.style.animationDelay = `${i * 8}ms`;
+          el.textContent = card.label;
+          return el;
+        }));
+        const dice = mulberry32(deriveSeed(seed, "dice"));
+        $("dice").replaceChildren(...Array.from({ length: 8 }, () => {
+          const el = document.createElement("div");
+          el.className = "die";
+          el.textContent = int(dice, 1, 6);
+          return el;
+        }));
+        const stream = mulberry32(seed);
+        $("draws").textContent = Array.from({ length: 5 }, (_, i) => `draw ${i + 1}  ${stream().toFixed(16)}`).join("\n");
+      };
+
+      const asked = Number(new URL(location.href).searchParams.get("seed"));
+      render(isSeed(asked) ? asked : dailySeed(new Date()));
+      $("seed").addEventListener("change", () => {
+        const seed = Number($("seed").value.trim());
+        if (isSeed(seed)) render(seed);
+        else $("seed").value = new URL(location.href).searchParams.get("seed");
+      });
+      $("today").addEventListener("click", () => render(dailySeed(new Date())));
+      $("fresh").addEventListener("click", () => render(freshSeed()));
+      $("share").addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(location.href); $("share").textContent = "Copied"; }
+        catch { $("share").textContent = "Copy the address bar"; }
+        setTimeout(() => ($("share").textContent = "Copy link"), 1500);
+      });
+    </script>
+  </body>
+</html>
