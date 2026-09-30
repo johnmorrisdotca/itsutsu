@@ -8,6 +8,7 @@ import type { PartyGame, PartySettings } from "./party.types";
 import { decodeParty, encodeParty, holdsItsBag, isPartyFor } from "./partyKept";
 import { placeFromHand, trade } from "./play";
 import { JAPANESE_TILE_MIX, KUMIMOJI_HANDS, KUMIMOJI_PARTY, kumimojiTileCount, TILE_MIX_TOTAL } from "./tiles.constants";
+import { familyKeyOf } from "./tileFamily";
 import { loadTileWords } from "./tileWords";
 
 const SETTINGS: PartySettings = { size: 3, level: "medium", seed: 7, gameLength: "short", language: "english", doubleSet: false, diagonals: false, hints: false };
@@ -393,5 +394,18 @@ describe("with a real bag", () => {
     expect(game.players.every((player) => player.hand.length === KUMIMOJI_HANDS.quick)).toBe(true);
     expect(holdsItsBag(drawAll(game), words.familyKey)).toBe(true);
     expect(drawAll(game).players.every((player) => player.hand.length === KUMIMOJI_HANDS.quick + 1)).toBe(true);
+  });
+
+  it("keeps a Japanese game, whose tiles are not letters, and reads it back on its own bag", async () => {
+    const words = await loadTileWords("japanese");
+    const length = partyLength(3, KUMIMOJI_HANDS.quick, "short", false);
+    const settings: PartySettings = { ...SETTINGS, size: KUMIMOJI_HANDS.quick, gameLength: length, language: "japanese" };
+    const bag = generateKumimoji(KUMIMOJI_HANDS.quick, "medium", 11, { gameLength: length, language: "japanese" }).givens;
+    const game = drawAll(startParty(settings, bag, ["Aiko", "", "Cho"]));
+    const laid = withSeatPlay(game, placeFromHand(seatPlay(game), 0, squareAt(0, 0)));
+    const back = decodeParty(encodeParty(laid), words.familyKey);
+    expect(back).not.toBeNull();
+    expect(encodeParty(back!)).toBe(encodeParty(laid));
+    expect(decodeParty(encodeParty(laid), familyKeyOf("japanese"))).not.toBeNull();
   });
 });

@@ -59,6 +59,17 @@ describe("a Kumimoji table's start", () => {
     expect(rules.start(KUMIMOJI_HANDS.classic, 3, { setup: { settings, bag } })).toBeNull();
     expect(rules.start(HAND, 3, { setup: { settings: { ...settings, level: "extreme" }, bag } })).toBeNull();
   });
+
+  it("starts a Japanese table from its own set, and a turn at it is read back like an English one", async () => {
+    await loadTileWords("japanese");
+    const settings: PartySettings = { size: HAND, level: "medium", seed: 77, gameLength: "medium", language: "japanese", doubleSet: false, diagonals: false, hints: false };
+    const bag = generateKumimoji(HAND, "medium", 77, { gameLength: "medium", language: "japanese" }).givens;
+    const game = rules.start(HAND, 3, { setup: { settings, bag } });
+    expect(game).not.toBeNull();
+    expect(rules.decode(rules.encode(game!))).not.toBeNull();
+    const next = rules.play(game!, done(game!))!;
+    expect(rules.toPlay(next)).toBe(1);
+  });
 });
 
 describe("the seat a turn leaves", () => {
