@@ -21,4 +21,6 @@ export const GAMES_TABS: readonly Tab[] = [
   ...CATALOGUE_VIEW_LIST.map((view) => ({ key: view, label: CATALOGUE_VIEW_DISPLAY[view].label, kanji: CATALOGUE_VIEW_DISPLAY[view].kanji })),
   { key: "learn", label: "Learning", kanji: "学び", href: "/learn" },
   { key: "famous", label: "Famous", kanji: "名局", href: "/famous" },
+  // The dice roller, Korokoro (John, 2026-09-30): not a game, a tool every game of chance wants beside it.
+  { key: "dice", label: "Dice", kanji: "賽", href: "/dice" },
 ];

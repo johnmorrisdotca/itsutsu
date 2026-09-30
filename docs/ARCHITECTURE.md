@@ -168,7 +168,7 @@ if somebody remembers to guard it.
 It lets a request through when:
 
 - the path is one of the open ones: sign-in (`/join`, `/api/session`,
-  `/api/auth`), icons, `/about`, `/learn` and their images, and the games
+  `/api/auth`), icons, `/about`, `/learn` and their images, `/dice`, and the games
   catalogue and each game's rules, family and background pages;
 - the request carries a valid signed session cookie; or
 - the path is `/embed` or `/api/embed/*` and the request carries a valid embed

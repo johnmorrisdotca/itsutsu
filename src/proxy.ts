@@ -64,6 +64,8 @@ const OPEN_PATHS = [
   "/robots.txt",
   "/learn",
   "/about",
+  // The dice roller: it names nobody and keeps nothing on the server.
+  "/dice",
   // The screenshots those pages load. Files under public/ are not Next's own
   // assets, so the matcher does not exempt them and they need naming here.
   "/art",

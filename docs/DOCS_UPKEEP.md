@@ -78,6 +78,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/catalogue/gameSettings.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |
 | `docs/email.md` | the operator | `src/lib/mail/**` |
+| `packages/korokoro/README.md` | anyone using the dice roller as a package | `packages/korokoro/src/**`, `packages/korokoro/package.json` |
 | `docs/brand/*` | anyone writing copy or art | a brand decision by John; nothing in the code |
 | `docs/plans/dominoes/README.md` | agents, engineers | `src/lib/party/mexicanTrain/**`, `src/lib/party/online/onlineTrain.ts`, `src/components/party/online/TrainOnline.tsx`, `src/components/party/Train*.tsx`, `src/components/party/train*.ts`, `src/components/party/DominoFace.tsx`, `src/app/games/dominoes/page.tsx`, `src/lib/gomoku/families.ts` (Dominoes) |
 | `docs/plans/mahjong/README.md` | agents, engineers | `src/lib/puzzles/mahjong/**`, `src/components/puzzles/Mahjong*.tsx`, `src/components/puzzles/mahjong*.ts`, `src/components/mine/MahjongTableCard.tsx`, `src/lib/puzzles/puzzles.constants.ts` (`mahjong`), `src/lib/gomoku/families.ts` (Mahjong) |
