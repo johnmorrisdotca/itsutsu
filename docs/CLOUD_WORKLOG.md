@@ -9,10 +9,9 @@ from the Mac (the backup, the branch cleanup) it relies on.
 
 - itsutsu-19 owns every push to `main`, every deploy, every production database
   migration and every backup.
-- The cloud's last push to `main` is the family-cards fix batch in flight at
-  handover (0.460.1, the missing `/games/tricks` in the measured page list, and
-  0.461.0, Oh Hell). Once its deploy job has finished, no cloud thread pushes to
-  `main` again.
+- The cloud's last push to `main` was the family-cards fix batch (0.460.1, the
+  missing `/games/tricks` in the measured page list, and 0.461.0, Oh Hell),
+  deployed green at 08:57Z. No cloud thread pushes to `main` again.
 - Every cloud thread puts finished work on a `cloud-…` branch, rebased on
   current `main` with its checks and affected browser specs green, and says in
   its thread what the branch holds. itsutsu-19 tests it, takes the release
@@ -49,14 +48,11 @@ the next green run, which carried it.
 | 0.453.0 | Completed on My games is one list | [36680903134](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36680903134) |
 | 0.454.0, 0.455.0 | Gomoji Nige 逃げ, Gomoji Sakasa 逆さ | [36682652917](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36682652917) |
 | 0.456.0 | Completed filtered by family or game | [36684795007](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36684795007) |
+| 0.457.0–0.460.0 | Spades with a new Tricks shelf, Gin Rummy, Euchre, Cribbage (their own run [36688078512](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36688078512) failed: `/games/tricks` was missing from the measured page list) | [36692025625](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36692025625) |
+| 0.460.1, 0.461.0 | The page-list fix; Oh Hell | [36692025625](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36692025625), `deploy` job green 08:57Z |
 
-**On `main` but NOT live:** 0.457.0–0.460.0 (Spades with a new Tricks shelf,
-Gin Rummy, Euchre, Cribbage). Run
-[36688078512](https://github.com/johnmorrisdotca/itsutsu/actions/runs/36688078512)
-failed because `/games/tricks`, a new page, was missing from the browser suite's
-measured page list. The Family card games thread is pushing the fix as 0.460.1
-together with Oh Hell as 0.461.0, and watching that deploy to the end. That is
-the cloud's last push to `main`; confirm its deploy job before landing anything.
+**That was the cloud's last push to `main`.** `main` is 0.461.0 (4d3edf26), and
+the landing queue below is itsutsu-19's from here.
 
 The Mac's own leftovers that duplicate cloud work (0.453.0, the Mac-only pieces)
 stay unmerged, as the Mac said; compare them against the cloud versions once
@@ -70,7 +66,6 @@ Branch heads as of 08:45Z; each thread was told at 08:39Z to rebase on current
 
 | # | What | Branch | Thread | Notes |
 | --- | --- | --- | --- | --- |
-| 0 | Page-list fix + Oh Hell (0.460.1, 0.461.0) | `cloud-family-cards-eiyamy` | Family card games | The cloud pushes this one itself; last cloud push to `main`. |
 | 1 | Yacht and Pachisi, two dice games (two minors) | `cloud-dice-game-bt6fty` | A dice game | Rebased on 0.460.0; browser tests, history spec, just-the-board survey and 8,636 unit tests green. |
 | 2 | The four database changes the Mac's backup covers: a race seat out of guesses says so at once (new column); race a chosen opponent (new column); drop the unused `BacklogItem` table; the puzzle countdown (`countdownMs`, Tortoise, Fox or Rabbit) | Race work and table drop: new `cloud-…` branch from the Next features thread (was `cloud-next-fixes-95jh14`); countdown: `cloud-puzzle-countdown` (from 2026-09-26, needs a rebase) | Next features and bug fixes | Covered by Neon branch `before-cloud-db-changes-2026-09-30` and DS1 dump `itsutsu-20260930-012747.dump`. Anything beyond these four migrations needs a fresh backup. |
 | 3 | Korokoro and the `/dice` tab under Games (open to strangers, kept offline), one minor | `cloud-dice-roller-korokoro` | Dice roller and number generator | One commit on 0.460.0. Lint, types, unit tests, build, dice and offline specs green. First site use of a package, through a tsconfig path to `packages/korokoro`. |
