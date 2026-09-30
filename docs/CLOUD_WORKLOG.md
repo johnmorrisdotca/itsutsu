@@ -140,9 +140,14 @@ From here the Mac does not tag package repos unless asked; a tag pushed by hand 
 collide with the one the workflow makes. Korokoro's `release.yml` may want the
 same `workflow_dispatch` so all eight release alike.
 
+**A package's exports use `"default"`, not `"import"`,** in
+`publishConfig.exports`. With `"import"`, Playwright's CommonJS-compiled specs
+fail with `No "exports" main defined`. Kyuubu re-releases as 1.0.1 for this,
+cut through the workflow route above, and Korokoro may need the same fix.
+
 **pnpm in the cloud gets 401 on release tarballs** (the
 objects.githubusercontent.com redirect), while curl and node fetch get 200.
-The package threads work around it for the lockfile; check that a cloud-…
+The package threads work around it by adding the lockfile's importer, packages and snapshots entries by hand, with the integrity taken from `openssl dgst -sha512 -binary` of the curl'd .tgz in base64, which `pnpm install --frozen-lockfile --lockfile-only` accepts; check that a cloud-…
 package branch's lockfile entries resolve normally on a Mac install.
 
 **Until a branch is reworked that way, a change to a package's code goes in two places:** the
