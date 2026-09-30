@@ -2,9 +2,7 @@
 
 import { useEffect } from "react";
 
-import { playHitotsu } from "@/lib/party/hitotsu/hitotsu";
-import { hitotsuComputer, hitotsuComputerJump } from "@/lib/party/hitotsu/hitotsuComputer";
-import type { HitotsuGame } from "@/lib/party/hitotsu/hitotsu.types";
+import { hitotsuComputer, hitotsuComputerJump, type HitotsuGame, playHitotsu } from "@johnmorrisdotca/hitotsu";
 
 import { COMPUTER_PAUSE_MS } from "../cards/cardTable.constants";
 

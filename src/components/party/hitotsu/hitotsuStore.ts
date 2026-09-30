@@ -1,7 +1,6 @@
 "use client";
 
-import { decodeHitotsu, encodeHitotsu } from "@/lib/party/hitotsu/hitotsuRules";
-import type { HitotsuGame } from "@/lib/party/hitotsu/hitotsu.types";
+import { decodeHitotsu, encodeHitotsu, type HitotsuGame } from "@johnmorrisdotca/hitotsu";
 
 import { keptInBrowser } from "../keptInBrowser";
 import { HITOTSU_STORAGE_KEY } from "./hitotsu.constants";

@@ -1,9 +1,7 @@
 "use client";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
-import { hitotsuWinners } from "@/lib/party/hitotsu/hitotsu";
-import { HITOTSU_ONE_HAND } from "@/lib/party/hitotsu/hitotsu.constants";
-import type { HitotsuGame, HitotsuMove } from "@/lib/party/hitotsu/hitotsu.types";
+import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners } from "@johnmorrisdotca/hitotsu";
 
 import { CardScores } from "../cards/CardScores";
 import { HITOTSU_COPY } from "../hitotsu/hitotsu.constants";

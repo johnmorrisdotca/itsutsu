@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Hitotsu, the colour-card game</title>
+    <meta name="description" content="Play Hitotsu against the computer: match the colour or the number, and call Hitotsu! with one card left. Classic rules or party mode." />
+    <meta name="theme-color" content="#2f5d4a" />
+    <style>
+      :root { color-scheme: light dark; --page: #f4efe4; --ink: #1f2320; --rule: #ddd6c6; }
+      @media (prefers-color-scheme: dark) { :root { --page: #141614; --ink: #ece8dc; --rule: #3a3d38; } }
+      body { margin: 0; background: var(--page); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+      main { max-width: 900px; margin: 0 auto; padding: 20px 16px 48px; }
+      header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+      h1 { margin: 0; font-size: 1.8rem; }
+      h1 span { font-size: 1rem; opacity: .6; margin-left: 6px; font-weight: 500; }
+      header p { margin: 0; opacity: .7; }
+      form { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 14px; }
+      fieldset { border: 1px solid var(--rule); border-radius: 12px; padding: 6px 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+      legend { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
+      label { display: inline-flex; gap: 4px; align-items: center; }
+      button.deal { font: inherit; padding: 8px 16px; border-radius: 999px; border: 0; background: #b5452c; color: #fff; cursor: pointer; }
+      h2 { font-size: 1.1rem; margin: 32px 0 10px; }
+      .deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 6px; }
+      .deck svg { width: 100%; height: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
+      footer { margin-top: 32px; font-size: .85rem; opacity: .7; }
+      a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Hitotsu<span lang="ja">一つ</span></h1>
+        <p>Match the colour or the number. Call Hitotsu! with one card left.</p>
+      </header>
+      <form id="setup">
+        <fieldset>
+          <legend>Rules</legend>
+          <label><input type="radio" name="mode" value="classic" checked /> Classic</label>
+          <label><input type="radio" name="mode" value="party" /> Party</label>
+        </fieldset>
+        <fieldset>
+          <legend>Computers</legend>
+          <label><input type="radio" name="count" value="1" /> 1</label>
+          <label><input type="radio" name="count" value="3" checked /> 3</label>
+          <label><input type="radio" name="count" value="5" /> 5</label>
+          <label><input type="radio" name="count" value="7" /> 7</label>
+        </fieldset>
+        <button class="deal" type="submit">Deal again</button>
+      </form>
+      <div id="table"></div>
+      <h2>The deck</h2>
+      <div class="deck" id="deck"></div>
+      <footer>
+        Open source under the MIT licence. Party mode is five cards, one hand, draw cards stacking on any draw card, jumping in, and sevens and zeros.
+        <a href="https://github.com/johnmorrisdotca/hitotsu">Source on GitHub</a>.
+      </footer>
+    </main>
+    <script type="module">
+      import { HITOTSU_CLASSIC, HITOTSU_DECK, HITOTSU_PARTY, hitotsuCardSvg, mountHitotsu } from "./dist/index.js";
+
+      const form = document.getElementById("setup");
+      const chosen = () => {
+        const data = new FormData(form);
+        const computers = Number(data.get("count"));
+        return {
+          rules: data.get("mode") === "party" ? HITOTSU_PARTY : HITOTSU_CLASSIC,
+          players: ["You", ...Array.from({ length: computers }, (_, at) => `Computer ${at + 1}`)],
+        };
+      };
+      const table = mountHitotsu(document.getElementById("table"), chosen());
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        table.restart(chosen());
+      });
+
+      const shown = HITOTSU_DECK.filter((card) => card.endsWith("0"));
+      document.getElementById("deck").innerHTML = [...shown, null].map((card) => hitotsuCardSvg(card, { width: 100 })).join("");
+    </script>
+  </body>
+</html>

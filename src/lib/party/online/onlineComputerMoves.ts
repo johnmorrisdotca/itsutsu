@@ -10,8 +10,7 @@ import { loadTileWords, tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 
 import type { TrainGame, TrainMove } from "@/lib/party/mexicanTrain/mexicanTrain.types";
 import { computerMove } from "@/lib/party/mexicanTrain/trainComputer";
-import type { HitotsuGame, HitotsuMove } from "@/lib/party/hitotsu/hitotsu.types";
-import { hitotsuComputer } from "@/lib/party/hitotsu/hitotsuComputer";
+import { type HitotsuGame, type HitotsuMove, tableComputerMove } from "@johnmorrisdotca/hitotsu";
 
 import type { OnlineComputerPlay, OnlineGameKey } from "./online.types";
 import { seatOf, type KumimojiMove, type KumimojiStage } from "./onlineKumimoji";
@@ -65,9 +64,9 @@ const TRAIN_COMPUTER: OnlineComputerPlay<TrainGame, TrainMove> = {
   move: (game) => computerMove(game),
 };
 
-/** Hitotsu: the table's own computer player (`hitotsuComputer`), for the seat the table waits on, as on one device. */
+/** Hitotsu: the package's computer player, for the seat the table waits on, as on one device (`tableComputerMove`). */
 const HITOTSU_COMPUTER: OnlineComputerPlay<HitotsuGame, HitotsuMove> = {
-  move: (game, seat) => (game.phase === "over" || game.toPlay !== seat ? null : hitotsuComputer(game)),
+  move: tableComputerMove,
 };
 
 /** Every game with a computer player, by game; the move and game are each row's own, read one row at a time. */

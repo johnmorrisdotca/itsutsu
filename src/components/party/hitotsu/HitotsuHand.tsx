@@ -1,6 +1,6 @@
 "use client";
 
-import type { HitotsuCard } from "@/lib/party/hitotsu/hitotsu.types";
+import type { HitotsuCard } from "@johnmorrisdotca/hitotsu";
 
 import { HITOTSU_HAND_CARD_PX } from "./hitotsu.constants";
 import { HitotsuCardView, hitotsuCardLabel } from "./HitotsuCardView";

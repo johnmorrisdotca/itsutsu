@@ -1,43 +1,11 @@
-import { hitotsuJumpIns, hitotsuMoves } from "@/lib/party/hitotsu/hitotsu";
-import { colourWords } from "@/lib/party/hitotsu/hitotsuDeck";
-import type { HitotsuCard, HitotsuGame, HitotsuMove } from "@/lib/party/hitotsu/hitotsu.types";
+import { HITOTSU_COLOUR_LOOK, colourWords, movesFor, waysFor, type HitotsuCard, type HitotsuGame, type HitotsuMove } from "@johnmorrisdotca/hitotsu";
 
-import { HITOTSU_COLOUR_LOOK, HITOTSU_COPY } from "./hitotsu.constants";
+import { HITOTSU_COPY } from "./hitotsu.constants";
+
+export { callMatters, movesFor, playableFor, quickMove } from "@johnmorrisdotca/hitotsu";
 
 /** A press the player may make: its words, the move (null while it cannot be made), and why not. */
 export type HitotsuPress = { label: string; move: HitotsuMove | null; testId: string; strong?: boolean; why?: string; colour?: string };
-
-type CardMove = Extract<HitotsuMove, { play: HitotsuCard }> | Extract<HitotsuMove, { jump: HitotsuCard }>;
-const cardOf = (move: CardMove) => ("play" in move ? move.play : move.jump);
-
-/** Everything this seat may do now: its own turn's moves, or, at another's turn, the cards it may jump in with. */
-export function movesFor(game: HitotsuGame, seat: number): HitotsuMove[] {
-  if (game.toPlay === seat) return hitotsuMoves(game);
-  return hitotsuJumpIns(game).filter((move) => "jump" in move && move.seat === seat);
-}
-
-/** The cards this seat may play now, in turn or jumping in. */
-export function playableFor(game: HitotsuGame, seat: number): HitotsuCard[] {
-  return [...new Set(movesFor(game, seat).flatMap((move) => ("play" in move ? [move.play] : "jump" in move ? [move.jump] : [])))];
-}
-
-/** Whether the call is a choice now: this seat is about to play its second-last card. */
-export function callMatters(game: HitotsuGame, seat: number): boolean {
-  return movesFor(game, seat).some((move) => ("play" in move || "jump" in move) && move.call === true);
-}
-
-/** The ways this card may go down, the call made or not as the player said (where that is a choice). */
-function waysFor(game: HitotsuGame, seat: number, card: HitotsuCard, call: boolean): CardMove[] {
-  return movesFor(game, seat)
-    .filter((move): move is CardMove => ("play" in move || "jump" in move) && cardOf(move) === card)
-    .filter((move) => (move.call === true) === call || !callMatters(game, seat));
-}
-
-/** What a card tapped twice plays: its one way, or null where there is a colour or a seat to choose. */
-export function quickMove(game: HitotsuGame, seat: number, card: HitotsuCard, call: boolean): HitotsuMove | null {
-  const ways = waysFor(game, seat, card, call);
-  return ways.length === 1 ? ways[0] : null;
-}
 
 /**
  * THE PRESSES UNDER A HAND, with this card chosen: Play (or Jump in), one per

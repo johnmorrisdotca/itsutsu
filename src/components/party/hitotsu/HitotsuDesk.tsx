@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import type { HitotsuCard, HitotsuGame, HitotsuMove } from "@/lib/party/hitotsu/hitotsu.types";
+import type { HitotsuCard, HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 
 import { HITOTSU_COPY } from "./hitotsu.constants";
 import { HitotsuHand } from "./HitotsuHand";

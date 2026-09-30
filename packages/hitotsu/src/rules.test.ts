@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { seededRandom } from "../../puzzles/random";
-
-import { HITOTSU_CLASSIC, HITOTSU_DECK_SIZE, HITOTSU_PARTY, HITOTSU_SIZES } from "./hitotsu.constants";
-import { hitotsuJumpIns, hitotsuMatches, hitotsuMoves, hitotsuWinners, playHitotsu, startHitotsu } from "./hitotsu";
-import type { HitotsuGame, HitotsuMove, HitotsuOptions } from "./hitotsu.types";
-import { HITOTSU_DECK, hitotsuPoints, hitotsuWords, isNumber } from "./hitotsuDeck";
-import { hitotsuComputer, hitotsuComputerJump } from "./hitotsuComputer";
-import { HITOTSU_RULES, decodeHitotsu, encodeHitotsu, readHitotsuMove } from "./hitotsuRules";
+import { HITOTSU_CLASSIC, HITOTSU_DECK_SIZE, HITOTSU_PARTY, HITOTSU_SIZES } from "./constants.ts";
+import { hitotsuJumpIns, hitotsuMatches, hitotsuMoves, hitotsuWinners, playHitotsu, startHitotsu } from "./rules.ts";
+import type { HitotsuGame, HitotsuMove, HitotsuOptions } from "./types.ts";
+import { HITOTSU_DECK, hitotsuPoints, hitotsuWords, isNumber } from "./deck.ts";
+import { hitotsuComputer, hitotsuComputerJump } from "./computer.ts";
+import { decodeHitotsu, encodeHitotsu, readHitotsuMove } from "./codec.ts";
+import { seededRandom } from "./random.ts";
 
 /** A hitotsu game in a given position: these hands and piles, the first seat to play, published rules unless others are given. */
 function at(hands: string[][], discard: string[], stock: string[], extra: Partial<HitotsuGame> = {}, options: Partial<HitotsuOptions> = {}): HitotsuGame {
@@ -238,7 +237,7 @@ describe("hitotsu: played out", () => {
     expect(decodeHitotsu(encodeHitotsu(start))).toEqual(start);
     expect(decodeHitotsu(encodeHitotsu({ ...start, moves: [{ play: "WF0", colour: "R" }] }))).toBeNull();
     expect(decodeHitotsu("{}")).toBeNull();
-    expect(HITOTSU_RULES.decode(null)).toBeNull();
+    expect(decodeHitotsu(null)).toBeNull();
     expect(readHitotsuMove({ play: "R50", colour: "P" })).toBeNull();
     expect(readHitotsuMove({ jump: "R50", seat: 2 })).toEqual({ jump: "R50", seat: 2 });
   });

@@ -12,7 +12,7 @@ import type { MancalaGame } from "../mancala/mancala.types";
 import type { GhostGame } from "../superghost/superghost.types";
 import type { TenkaGame } from "../tenka/tenka.types";
 import type { TrainGame, TrainMove } from "../mexicanTrain/mexicanTrain.types";
-import type { HitotsuGame, HitotsuMove } from "../hitotsu/hitotsu.types";
+import type { HitotsuGame, HitotsuMove } from "../../../../packages/hitotsu/src/index.ts";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";
 import type { BlocksPieceKey, PartyBlocksState } from "../../gomoku/party/partyBlocks.types";

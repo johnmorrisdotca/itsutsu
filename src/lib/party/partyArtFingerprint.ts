@@ -49,8 +49,11 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/hitotsu/HitotsuPlay.tsx",
   "src/components/party/hitotsu/HitotsuDesk.tsx",
   "src/components/party/hitotsu/hitotsu.constants.ts",
-  "src/lib/party/hitotsu/hitotsu.ts",
-  "src/lib/party/hitotsu/hitotsuComputer.ts",
+  "packages/hitotsu/src/card.ts",
+  "packages/hitotsu/src/react.tsx",
+  "packages/hitotsu/src/deck.ts",
+  "packages/hitotsu/src/rules.ts",
+  "packages/hitotsu/src/computer.ts",
   "e2e/party-screenshots.spec.ts",
 ];
 

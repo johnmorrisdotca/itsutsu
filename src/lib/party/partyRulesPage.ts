@@ -7,7 +7,7 @@ import { trainSetName } from "./mexicanTrain/mexicanTrain.constants";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
-import { HITOTSU_ONE_HAND } from "./hitotsu/hitotsu.constants";
+import { HITOTSU_ONE_HAND } from "../../../packages/hitotsu/src/index.ts";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
 export function partyPlayersWords(kind: PartyKind): string {

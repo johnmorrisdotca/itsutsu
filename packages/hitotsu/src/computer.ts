@@ -1,8 +1,7 @@
-// Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import { HITOTSU_COLOURS } from "./hitotsu.constants";
-import { hitotsuJumpIns, hitotsuMoves } from "./hitotsu";
-import type { HitotsuCard, HitotsuColour, HitotsuGame, HitotsuMove } from "./hitotsu.types";
-import { DRAW_TWO, REVERSE, SKIP, WILD, WILD_FOUR, colourOf, faceOf, hitotsuPoints, isWild } from "./hitotsuDeck";
+import { HITOTSU_COLOURS } from "./constants.ts";
+import { hitotsuJumpIns, hitotsuMoves } from "./rules.ts";
+import type { HitotsuCard, HitotsuColour, HitotsuGame, HitotsuMove } from "./types.ts";
+import { DRAW_TWO, REVERSE, SKIP, WILD, WILD_FOUR, colourOf, faceOf, hitotsuPoints, isWild } from "./deck.ts";
 
 /**
  * A COMPUTER AT THE HITOTSU TABLE. It sees its own hand, the pile, the colour
@@ -39,7 +38,7 @@ export function hitotsuView(game: HitotsuGame, seat: number = game.toPlay ?? 0):
   const count = game.players.length;
   return {
     seat,
-    hand: game.hands[seat],
+    hand: game.hands[seat] ?? [],
     counts: game.hands.map((hand) => hand.length),
     colour: game.colour,
     next: (((seat + game.direction) % count) + count) % count,
@@ -60,10 +59,10 @@ const cardOf = (move: Play) => ("play" in move ? move.play : move.jump);
 
 /** Of the ways to play one card, the one this computer means: its best colour, the smallest hand to swap with, and the call made. */
 function bestWay(view: HitotsuView, ways: readonly Play[]): Play {
-  const card = cardOf(ways[0]);
+  const card = cardOf(ways[0]!);
   const rest = view.hand.filter((held) => held !== card);
   const colour = longestColour(rest);
-  const smallest = view.counts.reduce((best, count, seat) => (seat !== view.seat && (best < 0 || count < view.counts[best]) ? seat : best), -1);
+  const smallest = view.counts.reduce((best, count, seat) => (seat !== view.seat && (best < 0 || count < view.counts[best]!) ? seat : best), -1);
   const score = (way: Play) => (way.colour === colour ? 4 : 0) + (way.swap === smallest ? 2 : 0) + (way.call === true ? 1 : 0);
   return ways.reduce((best, way) => (score(way) > score(best) ? way : best));
 }
@@ -78,23 +77,24 @@ function playsOf(view: HitotsuView): Play[] {
 export function hitotsuComputer(game: HitotsuGame): HitotsuMove {
   const view = hitotsuView(game);
   const plays = playsOf(view);
-  const fallback = view.legal[view.legal.length - 1];
+  // The rules always offer a move to the player to move: a draw, a pass or a take at the least.
+  const fallback = view.legal[view.legal.length - 1]!;
   // Facing a draw: stack a Draw Two before a Wild Draw Four; else challenge a big hand's four, or take it.
   if (view.legal.some((move) => "take" in move)) {
     const stack = plays.find((move) => faceOf(cardOf(move)) === DRAW_TWO) ?? plays[0];
     if (stack !== undefined) return stack;
-    if (view.challengeFrom !== null && view.counts[view.challengeFrom] >= 6) return { challenge: true };
+    if (view.challengeFrom !== null && (view.counts[view.challengeFrom] ?? 0) >= 6) return { challenge: true };
     return { take: true };
   }
   if (plays.length === 0) return fallback;
   if (view.drawn !== null) {
     // A card just drawn: played if it goes and is not a wild, unless the hand is nearly gone.
-    const drawn = plays[0];
+    const drawn = plays[0]!;
     return isWild(cardOf(drawn)) && view.hand.length > 2 ? { pass: true } : drawn;
   }
   const ordinary = plays.filter((move) => !isWild(cardOf(move)));
   if (ordinary.length > 0) {
-    const threat = view.counts[view.next] <= 2;
+    const threat = (view.counts[view.next] ?? 0) <= 2;
     const worth = (move: Play) => {
       const card = cardOf(move);
       const face = faceOf(card);
@@ -106,10 +106,10 @@ export function hitotsuComputer(game: HitotsuGame): HitotsuMove {
     return ordinary.reduce((best, move) => (worth(move) > worth(best) ? move : best));
   }
   // Only wilds go: a plain wild first, the four last — or the four at once at a player about to go out.
-  const threat = view.counts[view.next] <= 2;
+  const threat = (view.counts[view.next] ?? 0) <= 2;
   const wild = plays.find((move) => faceOf(cardOf(move)) === WILD);
   const four = plays.find((move) => faceOf(cardOf(move)) === WILD_FOUR);
-  return (threat ? (four ?? wild) : (wild ?? four)) ?? plays[0];
+  return (threat ? (four ?? wild) : (wild ?? four)) ?? plays[0]!;
 }
 
 /**
@@ -126,7 +126,7 @@ export function hitotsuComputerJump(game: HitotsuGame): HitotsuMove | null {
     if (!game.computers[seat]) continue;
     const view = hitotsuView(game, seat);
     const mine = playsOf(view);
-    if (mine.length > 0) return mine[0];
+    if (mine.length > 0) return mine[0]!;
   }
   return null;
 }

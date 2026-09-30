@@ -1,8 +1,4 @@
-import { CardBack } from "@/components/cards/CardBack";
-import { CardFace } from "@/components/cards/CardFace";
-import { HitotsuCardDrawing } from "@/components/party/hitotsu/HitotsuCardView";
-import type { Card } from "@/lib/cards/cards.types";
-
+import { MarkCardFans, type FrenchCard, type LaidCard } from "./FamilyMarkCards";
 import type { PictureSize } from "./games.types";
 import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -38,9 +34,9 @@ type Mark = {
    * back): each at its centre, in cells, turned by `angle` degrees; a card of
    * null is its back. The Cards family's fan.
    */
-  cards?: { card: Card | null; x: number; y: number; angle: number }[];
+  cards?: LaidCard<FrenchCard>[];
   /** Hitotsu's cards, laid as `cards` are, from its own deck (`HitotsuCardDrawing`): a card id, or null for its back. The Colour cards family's fan. */
-  colourCards?: { card: string | null; x: number; y: number; angle: number }[];
+  colourCards?: LaidCard<string>[];
   /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
   /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Dominoes family's train. */
@@ -57,9 +53,6 @@ const MARK_PIPS: Record<number, [number, number][]> = {
   5: [[0.25, 0.25], [0.75, 0.25], [0.5, 0.5], [0.25, 0.75], [0.75, 0.75]],
   6: [[0.28, 0.22], [0.72, 0.22], [0.28, 0.5], [0.72, 0.5], [0.28, 0.78], [0.72, 0.78]],
 };
-
-/** A card's width in a mark, in cells: two cells and a little, so a fan of three fills the little board. */
-const MARK_CARD_WIDTH = 2.3;
 
 /**
  * One mark per family, drawn the way the About page draws its figures: a
@@ -443,20 +436,7 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           <line y1={0} y2={extent} x1={i} x2={i} />
         </g>
       ))}
-      {(mark.cards ?? []).map(({ card, x, y, angle }, at) => (
-        <g key={at} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
-          <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
-            {card === null ? <CardBack /> : <CardFace card={card} />}
-          </svg>
-        </g>
-      ))}
-      {(mark.colourCards ?? []).map(({ card, x, y, angle }, at) => (
-        <g key={`colour-${at}`} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
-          <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
-            <HitotsuCardDrawing card={card} />
-          </svg>
-        </g>
-      ))}
+      <MarkCardFans cards={mark.cards} colourCards={mark.colourCards} />
       {mark.ink !== undefined ? <path d={mark.ink} fill="none" stroke="var(--ink)" strokeWidth={0.1} strokeLinecap="round" /> : null}
       {mark.stones.map((stone) => (
         <circle

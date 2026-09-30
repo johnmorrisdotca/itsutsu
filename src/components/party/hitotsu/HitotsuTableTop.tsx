@@ -1,12 +1,10 @@
 "use client";
 
 import type { Appearance } from "@/components/board/board.types";
-import { hitotsuTop } from "@/lib/party/hitotsu/hitotsu";
-import { colourWords, isWild } from "@/lib/party/hitotsu/hitotsuDeck";
-import type { HitotsuGame } from "@/lib/party/hitotsu/hitotsu.types";
+import { HITOTSU_COLOUR_LOOK, colourWords, type HitotsuGame, hitotsuTop, isWild } from "@johnmorrisdotca/hitotsu";
 
 import { CardTableSurface, TableWords } from "../cards/CardTableParts";
-import { HITOTSU_COLOUR_LOOK, HITOTSU_COPY } from "./hitotsu.constants";
+import { HITOTSU_COPY } from "./hitotsu.constants";
 import { HitotsuCardView, hitotsuCardLabel } from "./HitotsuCardView";
 
 const cqw = (value: number) => `${value}cqw`;

@@ -8,9 +8,7 @@ import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { resultLine, tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { hitotsuWinners, playHitotsu, startHitotsu } from "@/lib/party/hitotsu/hitotsu";
-import { HITOTSU_ONE_HAND } from "@/lib/party/hitotsu/hitotsu.constants";
-import type { HitotsuGame, HitotsuMove } from "@/lib/party/hitotsu/hitotsu.types";
+import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 
 import { CardScores } from "../cards/CardScores";
 import { seatName } from "../cards/cardAdapters";

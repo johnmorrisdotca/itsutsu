@@ -1,6 +1,5 @@
-// Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import { HITOTSU_CAUGHT, HITOTSU_CHALLENGE_LOST, HITOTSU_CLASSIC, HITOTSU_COLOURS, HITOTSU_ONE_HAND, HITOTSU_SIZES } from "./hitotsu.constants";
-import type { HitotsuCard, HitotsuColour, HitotsuGame, HitotsuMove, HitotsuNews, HitotsuOptions } from "./hitotsu.types";
+import { HITOTSU_CAUGHT, HITOTSU_CHALLENGE_LOST, HITOTSU_CLASSIC, HITOTSU_COLOURS, HITOTSU_ONE_HAND, HITOTSU_SIZES } from "./constants.ts";
+import type { HitotsuCard, HitotsuColour, HitotsuGame, HitotsuMove, HitotsuNews, HitotsuOptions } from "./types.ts";
 import {
   DRAW_TWO,
   REVERSE,
@@ -16,11 +15,11 @@ import {
   reshuffledHitotsu,
   shuffledHitotsu,
   sortHitotsu,
-} from "./hitotsuDeck";
+} from "./deck.ts";
 
 /**
  * HITOTSU 一つ: the rules, and nothing else. Our own game of the colour-card
- * shedding kind, grown from Crazy Eights, with its own deck (`hitotsuDeck.ts`).
+ * shedding kind, grown from Crazy Eights, with its own deck (`deck.ts`).
  *
  * Two to eight players, seven cards each (five in party mode). The first
  * number card turned up starts the pile. On your turn play a card of the
@@ -41,11 +40,16 @@ import {
  * alone.
  */
 
-/** The most at a table: one colour a player, as every party table seats (`PARTY_MARBLES`). */
+/** The most at a table: eight, which one deck of 108 deals seven each and leaves a stock to draw from. */
 export const HITOTSU_MOST_PLAYERS = 8;
 
 export function hitotsuTop(game: HitotsuGame): HitotsuCard {
-  return game.discard[game.discard.length - 1];
+  return game.discard[game.discard.length - 1] ?? "";
+}
+
+/** A seat's hand; an empty one for a seat the table does not have. */
+export function handOf(game: HitotsuGame, seat: number): HitotsuCard[] {
+  return game.hands[seat] ?? [];
 }
 
 /** The seat `steps` along from this one, in the direction of play. */
@@ -78,7 +82,7 @@ function stacks(game: HitotsuGame, card: HitotsuCard): boolean {
 /** The cards the player to move may play now: on a draw, what stacks; after drawing, the card drawn if it goes. */
 export function hitotsuPlayable(game: HitotsuGame): HitotsuCard[] {
   if (game.phase === "over" || game.toPlay === null) return [];
-  const hand = game.hands[game.toPlay];
+  const hand = handOf(game, game.toPlay);
   if (game.pending > 0) return hand.filter((card) => stacks(game, card));
   const from = game.drawn !== null ? [game.drawn] : hand;
   return from.filter((card) => hitotsuMatches(game, card) && (faceOf(card) !== WILD_FOUR || fourAllowed(game, hand)));
@@ -91,7 +95,7 @@ function movesHands(game: HitotsuGame, card: HitotsuCard): boolean {
 
 /** Every way of playing one card from a seat: the colour a wild calls, the seat a seven swaps with, and the call, where each applies. */
 function waysToPlay(game: HitotsuGame, seat: number, card: HitotsuCard): { colour?: HitotsuColour; swap?: number; call?: boolean }[] {
-  const hand = game.hands[seat];
+  const hand = handOf(game, seat);
   const colours: (HitotsuColour | undefined)[] = isWild(card) ? [...HITOTSU_COLOURS] : [undefined];
   const swaps: (number | undefined)[] =
     game.options.sevenZero && faceOf(card) === "7" && hand.length > 1 ? game.players.flatMap((_, at) => (at === seat ? [] : [at])) : [undefined];
@@ -153,6 +157,7 @@ function takeOne(game: HitotsuGame, seat: number): { game: HitotsuGame; card: Hi
     discard = discard.slice(-1);
   }
   const [card, ...rest] = stock;
+  if (card === undefined) return null;
   const hands = game.hands.map((hand, at) => (at === seat ? sortHitotsu([...hand, card]) : hand));
   return { game: { ...game, hands, stock: rest, discard, turnovers }, card };
 }
@@ -175,8 +180,8 @@ function dealHand(base: Omit<HitotsuGame, "hands" | "stock" | "discard" | "colou
   const hands = Array.from({ length: seats }, (_, seat) => sortHitotsu(deck.filter((_, at) => at < dealt && at % seats === seat)));
   let stock = deck.slice(dealt);
   // The first number card turned up starts the pile; anything else goes back under the stock.
-  while (!isNumber(stock[0])) stock = [...stock.slice(1), stock[0]];
-  const [start, ...rest] = stock;
+  while (stock.length > 0 && !isNumber(stock[0]!)) stock = [...stock.slice(1), stock[0]!];
+  const [start = "", ...rest] = stock;
   return {
     ...base,
     phase: "playing",
@@ -240,11 +245,11 @@ function drawCardPlayed(game: HitotsuGame, seat: number, face: string, bluffed: 
 function place(game: HitotsuGame, seat: number, card: HitotsuCard, way: { colour?: HitotsuColour; swap?: number; call?: boolean }, jumped: boolean): HitotsuGame {
   const face = faceOf(card);
   const before = game.pending;
-  const bluffed = game.hands[seat].some((held) => held !== card && colourOf(held) === game.colour);
+  const bluffed = handOf(game, seat).some((held) => held !== card && colourOf(held) === game.colour);
   const hands = game.hands.map((hand, at) => (at === seat ? hand.filter((held) => held !== card) : hand));
   const news: HitotsuNews[] = jumped ? [{ kind: "jump", seat }] : [];
   let state: HitotsuGame = { ...game, hands, discard: [...game.discard, card], colour: way.colour ?? colourOf(card)!, drawn: null, passes: 0, news, toPlay: seat, pending: before, challenge: null };
-  if (hands[seat].length === 0) {
+  if (hands[seat]?.length === 0) {
     // Out. A draw card played last is still taken by the next player, and counts against them.
     if (isDrawCard(card)) {
       const victim = along(state, seat, 1);
@@ -254,7 +259,7 @@ function place(game: HitotsuGame, seat: number, card: HitotsuCard, way: { colour
     }
     return endHand({ ...state, pending: 0, pendingFace: null }, [seat], false);
   }
-  if (hands[seat].length === 1 && way.call !== true && !movesHands(game, card)) {
+  if (hands[seat]?.length === 1 && way.call !== true && !movesHands(game, card)) {
     state = drawInto(state, seat, HITOTSU_CAUGHT);
     state = { ...state, news: [...state.news, { kind: "caught", seat }] };
   }
@@ -266,13 +271,13 @@ function place(game: HitotsuGame, seat: number, card: HitotsuCard, way: { colour
   }
   if (isDrawCard(card)) return drawCardPlayed(state, seat, face, bluffed, before);
   if (movesHands(game, card) && face === "7" && way.swap !== undefined) {
-    const mine = state.hands[seat];
-    const theirs = state.hands[way.swap];
+    const mine = handOf(state, seat);
+    const theirs = handOf(state, way.swap);
     const swapped = state.hands.map((hand, at) => (at === seat ? theirs : at === way.swap ? mine : hand));
     return { ...state, hands: swapped, toPlay: along(state, seat, 1), news: [...state.news, { kind: "swap", seat, with: way.swap }] };
   }
   if (movesHands(game, card) && face === "0") {
-    const passed = state.hands.map((_, at) => state.hands[along(state, at, -1)]);
+    const passed = state.hands.map((_, at) => handOf(state, along(state, at, -1)));
     return { ...state, hands: passed, toPlay: along(state, seat, 1), news: [...state.news, { kind: "rotate", direction: state.direction }] };
   }
   return { ...state, toPlay: along(state, seat, 1) };
@@ -288,7 +293,7 @@ function drawTurn(game: HitotsuGame, seat: number): HitotsuGame | null {
     if (got === null) break;
     state = got.game;
     count += 1;
-    if (hitotsuMatches(state, got.card) && (faceOf(got.card) !== WILD_FOUR || fourAllowed(state, state.hands[seat]))) drawn = got.card;
+    if (hitotsuMatches(state, got.card) && (faceOf(got.card) !== WILD_FOUR || fourAllowed(state, handOf(state, seat)))) drawn = got.card;
   } while (game.options.drawToMatch && drawn === null);
   if (count === 0) return null;
   const said: HitotsuNews[] = [{ kind: "drew", seat, count }];

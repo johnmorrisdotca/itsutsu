@@ -1,5 +1,4 @@
-// Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import type { HitotsuColour, HitotsuOptions } from "./hitotsu.types";
+import type { HitotsuColour, HitotsuOptions } from "./types.ts";
 
 /**
  * HOW LONG A GAME OF HITOTSU LASTS, its "size": to 200 or 500 points, or a

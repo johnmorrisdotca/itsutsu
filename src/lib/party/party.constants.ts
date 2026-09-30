@@ -4,7 +4,7 @@ import type { VariantCopy } from "../gomoku/variants.constants";
 import { MANCALA_BOARDS } from "./mancala/mancala.constants";
 import { TRAIN_SETS } from "./mexicanTrain/mexicanTrain.constants";
 import type { PartyKind, PartySpec } from "./party.types";
-import { HITOTSU_DEFAULT_SIZE, HITOTSU_SIZES } from "./hitotsu/hitotsu.constants";
+import { HITOTSU_DEFAULT_SIZE, HITOTSU_SIZES } from "../../../packages/hitotsu/src/index.ts";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "../cardGames/cardGames.copy";

@@ -18,9 +18,7 @@ import { encodeTrain } from "../src/lib/party/mexicanTrain/trainCodec";
 import { computerMove } from "../src/lib/party/mexicanTrain/trainComputer";
 import { CARD_GAME_RULES } from "../src/lib/cardGames/cardGameRules";
 import type { CardGameKind } from "../src/lib/cardGames/cardGames.constants";
-import { playHitotsu, startHitotsu } from "../src/lib/party/hitotsu/hitotsu";
-import { hitotsuComputer } from "../src/lib/party/hitotsu/hitotsuComputer";
-import { encodeHitotsu } from "../src/lib/party/hitotsu/hitotsuRules";
+import { encodeHitotsu, hitotsuComputer, playHitotsu, startHitotsu } from "../packages/hitotsu/src/index.ts";
 import { ready } from "./support";
 
 /**

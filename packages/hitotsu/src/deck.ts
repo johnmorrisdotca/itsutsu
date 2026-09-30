@@ -1,9 +1,6 @@
-// Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import { mixSeed } from "../../cardGames/cards";
-import { seededRandom, shuffled } from "../../puzzles/random";
-
-import { HITOTSU_COLOURS, HITOTSU_POINTS } from "./hitotsu.constants";
-import type { HitotsuCard, HitotsuColour } from "./hitotsu.types";
+import { mixSeed, seededRandom, shuffled } from "./random.ts";
+import { HITOTSU_COLOURS, HITOTSU_POINTS } from "./constants.ts";
+import type { HitotsuCard, HitotsuColour } from "./types.ts";
 
 /**
  * HITOTSU'S DECK, as the rules see it: 108 short names. Each colour has one
@@ -42,7 +39,7 @@ export function colourOf(card: HitotsuCard): HitotsuColour | null {
 
 /** A card's face: a digit, or S, R, D, W, F. */
 export function faceOf(card: HitotsuCard): string {
-  return card[1];
+  return card[1] ?? "";
 }
 
 /** Whether two cards are the same card to play (the two red fives are). */
@@ -87,7 +84,7 @@ export function colourWords(colour: HitotsuColour): string {
 /** "red five", "blue draw two", "wild draw four", as a sentence and a screen reader say it. */
 export function hitotsuWords(card: HitotsuCard): string {
   const face = faceOf(card);
-  const named = FACE_WORDS[face] ?? ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][Number(face)];
+  const named = FACE_WORDS[face] ?? ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][Number(face)] ?? face;
   const colour = colourOf(card);
   return colour === null ? named : `${COLOUR_WORDS[colour]} ${named}`;
 }

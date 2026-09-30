@@ -1,7 +1,6 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-import { startHitotsu } from "../src/lib/party/hitotsu/hitotsu";
-import { encodeHitotsu } from "../src/lib/party/hitotsu/hitotsuRules";
+import { encodeHitotsu, startHitotsu } from "../packages/hitotsu/src/index.ts";
 import { memberContext, memberIdFor, removeMember } from "./members";
 import { ready } from "./support";
 import { removeTables } from "./tables";

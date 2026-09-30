@@ -1,0 +1,68 @@
+{
+  "name": "@johnmorrisdotca/hitotsu",
+  "version": "0.1.0",
+  "description": "Hitotsu, a colour-card shedding game for two to eight: the familiar play, the popular house rules as options (stacking, jump-in, sevens and zeros, draw to match, no bluffing), a computer player, a table for several devices, and its own deck. No dependencies.",
+  "license": "MIT",
+  "author": "John Morris <john@johnmorris.ca>",
+  "homepage": "https://johnmorrisdotca.github.io/hitotsu/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnmorrisdotca/hitotsu.git"
+  },
+  "bugs": {
+    "url": "https://github.com/johnmorrisdotca/hitotsu/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "keywords": [
+    "card-game",
+    "shedding-game",
+    "crazy-eights",
+    "party-game",
+    "game-engine",
+    "multiplayer",
+    "computer-player",
+    "svg",
+    "react"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit && vitest run",
+    "test": "vitest run",
+    "site": "npm run build && node scripts/site.mjs",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

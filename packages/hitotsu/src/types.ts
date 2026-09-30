@@ -1,10 +1,9 @@
 /**
- * THE VOCABULARY OF HITOTSU 一つ, the site's colour-card shedding game: our
+ * THE VOCABULARY OF HITOTSU 一つ, a colour-card shedding game: our
  * own deck of four colours, numbers and action cards, and the familiar play —
  * match the colour or the number, skip, reverse, draw two, wild, wild draw
  * four, and the call when a player is down to one card. How it is played is
- * `hitotsu.ts`; why it is ours and not a copy of the boxed game is
- * docs/plans/hitotsu/README.md.
+ * `rules.ts`.
  */
 
 /** A card's colour: red, yellow, green or blue. A wild card has none until it is played and one is called. */

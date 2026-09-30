@@ -1,27 +1,10 @@
-import type { HitotsuColour, HitotsuOptions } from "@/lib/party/hitotsu/hitotsu.types";
+import type { HitotsuOptions } from "@johnmorrisdotca/hitotsu";
 
 /** Where this browser keeps its game of Hitotsu: one at a time, apart from every other table's. */
 export const HITOTSU_STORAGE_KEY = "itsutsu.hitotsu";
 
 /** The widest a card in a hand is drawn, in pixels. */
 export const HITOTSU_HAND_CARD_PX = 76;
-
-/**
- * THE DECK'S OWN LOOK: four colours, each with one of the five elements in
- * its corners so a card is never told by colour alone, and the wilds in the
- * ink of a brush with all four. Fixed in both themes, as a card is an object
- * on the table (`surface-light`).
- */
-export const HITOTSU_COLOUR_LOOK: Record<HitotsuColour | "W", { fill: string; ink: string; element: string; name: string }> = {
-  R: { fill: "#c8372d", ink: "#ffffff", element: "火", name: "Red" },
-  Y: { fill: "#dfa11b", ink: "#1f1a12", element: "土", name: "Yellow" },
-  G: { fill: "#2f8a4f", ink: "#ffffff", element: "木", name: "Green" },
-  B: { fill: "#2a5ea8", ink: "#ffffff", element: "水", name: "Blue" },
-  W: { fill: "#24201d", ink: "#ffffff", element: "五", name: "Wild" },
-};
-
-/** What each face shows in the middle of a card and in its corners. */
-export const HITOTSU_FACE_MARK: Record<string, string> = { S: "⊘", R: "⇄", D: "+2", W: "", F: "+4" };
 
 /** The house rules offered at the set-up, each a pair of tiles or three, with its one line. */
 export const HITOTSU_HOUSE_COPY = {

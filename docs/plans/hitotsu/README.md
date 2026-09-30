@@ -20,8 +20,34 @@ the call a player makes with one card left, and a sibling of 五つ, itsutsu.
 The deck is ours: 108 cards, four colours, each carrying one of the five
 elements in its corners (火 red, 土 yellow, 木 green, 水 blue), so a card is
 never told by colour alone; wilds in ink with all four, and a back marked 一つ.
-Drawn in `src/components/party/hitotsu/HitotsuCardView.tsx`, not with the
-French deck the family card games share.
+Drawn once, as shapes, in `packages/hitotsu/src/card.ts`, not with the French
+deck the family card games share.
+
+## The package: packages/hitotsu
+
+John, 2026-09-30: "I'll make hitotsu". The game is its own open-source
+package, `@johnmorrisdotca/hitotsu` (MIT, John Morris), laid out as Korokoro
+is: kept here under `packages/hitotsu/` and pushed to its own repository,
+github.com/johnmorrisdotca/hitotsu, whose Pages workflow publishes its demo.
+The site imports it by name (`tsconfig.json` paths), or by relative path under
+`src/lib/party` and `e2e`, which the browser specs import. The package holds
+everything that is the game, the site everything that is Itsutsu:
+
+- The package: the rules (`rules.ts`: `startHitotsu`, `hitotsuMoves`,
+  `hitotsuJumpIns`, `playHitotsu`, `hitotsuWinners`), the deck (`deck.ts`),
+  the house rules as options and the Classic and Party presets
+  (`constants.ts`), the computer player (`computer.ts`), one seat's view
+  (`seat.ts`), a game as text (`codec.ts`), a table on several devices
+  (`table.ts`: jumping in taken off), the card design (`card.ts`, and
+  `HitotsuCardDrawing` in `react.tsx`), and a plain-DOM table against
+  computers (`ui/`, `HitotsuTable` in React) for its demo. Tests beside them.
+- The site: its party-game row (`src/lib/party/hitotsu/hitotsuRules.ts`,
+  `hitotsu.copy.ts`), the table and set-up in its own look
+  (`src/components/party/hitotsu/`), the online row and board, the family,
+  the picture, My games and the browser tests.
+
+A change to the rules or the card is made in the package, released there with
+a line in its `CHANGELOG.md`, and pushed to its repository as well as here.
 
 ## The kind: a PartyKind of its own
 
@@ -31,20 +57,19 @@ Hitotsu to a re-take of the five card games' pictures. Nothing is recorded or
 rated, and no migration was needed (a table on several devices keeps its game
 as text, `PartyTable.game`).
 
-- Rules, pure (`src/lib/party/hitotsu/`): `hitotsu.ts` (`startHitotsu`,
-  `hitotsuMoves`, `hitotsuJumpIns`, `playHitotsu`, `hitotsuWinners`),
-  `hitotsuDeck.ts`, `hitotsuRules.ts` (codec: the table, seed and moves,
-  replayed on read), `hitotsuComputer.ts`, `hitotsu.copy.ts`. Tests:
-  `hitotsu.test.ts` (the published rules, each house rule, play-outs, the
-  computer beating a random player, the codec).
+- Rules: the package (above); the party row `HITOTSU_RULES` in
+  `src/lib/party/hitotsu/hitotsuRules.ts` and its copy in `hitotsu.copy.ts`.
+  Tests: `packages/hitotsu/src/rules.test.ts` (the published rules, each house
+  rule, play-outs, the computer beating a random player, the codec),
+  `table.test.ts`, `card.test.ts`.
 - The table (`src/components/party/hitotsu/`): `HitotsuTable` (set-up or
   play), `HitotsuSetUp`, `HitotsuPlay`, `HitotsuDesk` (a hand and its presses,
   shared with the online board), `HitotsuTableTop`, `HitotsuSeats`,
   `hitotsuStore.ts` (`keptInBrowser`), `HitotsuOffer`, `HitotsuCard` (My
   games), all loaded in the browser only (`hitotsuClient.tsx`).
-- Several devices: `src/lib/party/online/onlineHitotsu.ts` and
-  `src/components/party/online/HitotsuOnline.tsx`; the table's own computer
-  player in any seat (`onlineComputerMoves.ts`).
+- Several devices: `src/lib/party/online/onlineHitotsu.ts` (the package's
+  `table.ts` on the site's tables) and `src/components/party/online/HitotsuOnline.tsx`;
+  the package's computer player in any seat (`onlineComputerMoves.ts`).
 
 ## The game and its variants
 
@@ -91,7 +116,7 @@ The party gate (`party.coverage.test.ts`): copy, rules page, family, picture
 (`pnpm screenshots:party`), table, browser test (`e2e/party-hitotsu.spec.ts`),
 date (`pnpm games:added`). `onlineGames.test.ts` for several devices;
 `e2e/bare-board.spec.ts` for just the board. The family: its row in
-`families.data.ts`, its mark in `FamilyMark.tsx` (drawn by
+`families.data.ts`, its mark in `FamilyMark.tsx` (drawn by the package's
 `HitotsuCardDrawing`), its page `src/app/games/colour-cards/page.tsx`, and
 Crazy Eights' listing in `familyShelves.ts`. `/api/tables` takes a size up to
 1000 now, since Hitotsu's size is the points it plays to.
