@@ -1,4 +1,6 @@
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { MANCALA_RULE_NAMES } from "@/lib/party/mancala/mancala.constants";
 import { MANCALA_STATUS } from "@/lib/party/mancala/mancala";
 import { partyPlayerName } from "@/lib/party/partyNames";
@@ -40,6 +42,7 @@ export function MancalaTurnLine({ game, sowing }: { game: MancalaGame; sowing: b
     return (
       <div className={`${PANEL_CLASS} flex flex-col gap-1`} data-testid="mancala-winner" data-winners={game.winners.join(",")} data-ending={game.ending ?? undefined} aria-live="polite">
         <p className="flex flex-wrap items-center gap-2 text-base font-semibold">
+          <ResultMark kind={winner === null ? RESULT_MARKS.other : RESULT_MARKS.success} />
           {game.winners.map((seat) => (
             <MarbleChip key={seat} player={seat} />
           ))}

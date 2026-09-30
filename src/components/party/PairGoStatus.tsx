@@ -1,4 +1,6 @@
 import type { Appearance } from "@/components/board/board.types";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { GAME_STATUS, MOVE_KINDS, STONES, STONE_DISPLAY, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
@@ -62,6 +64,7 @@ function PairGoResult({ game, appearance }: { game: PairGoGame; appearance: Appe
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-1`} data-testid="pairgo-result" data-winner={winner} data-by={state.winBy ?? ""}>
       <p className="flex items-center gap-2 text-base font-semibold">
+        <ResultMark kind={RESULT_MARKS.success} />
         <PairStone stone={winner} appearance={appearance} />
         <span className="min-w-0">
           {teamWords(game, winner)} {counted ? `win by ${margin}` : "win"}

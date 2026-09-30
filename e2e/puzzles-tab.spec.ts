@@ -42,6 +42,8 @@ test("a solved puzzle heads Completed's one list, with its points, its time and 
   await expect(newest).toHaveAttribute("data-kind", "numberPlace");
   await expect(newest).toContainText("4×4");
   await expect(newest).toContainText("no help");
+  await expect(newest.getByTestId("puzzle-solved-outcome")).toHaveText("Solved");
+  await expect(newest.getByTestId("result-mark")).toHaveAttribute("data-mark", "tick");
   // Twelve-odd cells filled at five points each: a score, never nought, for a solve with no help.
   await expect(newest.getByTestId("puzzle-solved-points")).not.toContainText(/^0/);
 

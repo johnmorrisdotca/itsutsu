@@ -28,6 +28,7 @@ import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { useWinSlot } from "./PuzzleWinSlot";
 import type { Done, SolveRace } from "./solveShared";
+import { ResultMark } from "@/components/game/ResultMark";
 
 /**
  * The card at the end: the time, what was paid, another puzzle or a different
@@ -121,21 +122,25 @@ export function SolveDone({
     <div className={`${PANEL_CLASS} ${SELECTABLE} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
       {gaveUp ? (
         <p className="text-lg font-semibold" data-testid="puzzle-given-up">
+          <ResultMark kind="failure" className="mr-1.5" />
           Given up <span className="font-mincho text-base font-normal opacity-70">投了</span> after {clockText(done.elapsedMs)}
           {moveWords}.
         </p>
       ) : cards ? (
         <p className="text-lg font-semibold" data-testid="puzzle-won">
+          <ResultMark kind="success" className="mr-1.5" />
           Won <span className="font-mincho text-base font-normal opacity-70">勝ち</span> in {clockText(done.elapsedMs)}
           {moveWords}.
         </p>
       ) : done.outOfTime ? (
         <p className="text-lg font-semibold" data-testid="puzzle-out-of-time">
+          <ResultMark kind="failure" className="mr-1.5" />
           Out of time <span className="font-mincho text-base font-normal opacity-70">時間切れ</span>: the {timed.label} {timed.kanji} ran down from{" "}
           {clockText(done.elapsedMs)} before it was solved.
         </p>
       ) : (
-        <p className="text-lg font-semibold">
+        <p className="text-lg font-semibold" data-testid="puzzle-solved-line">
+          <ResultMark kind="success" className="mr-1.5" />
           Solved <span className="font-mincho text-base font-normal opacity-70">解決</span> in {clockText(done.elapsedMs)}
           {clock === "none" ? "" : `, on the ${timed.label} ${timed.kanji}`}.
         </p>

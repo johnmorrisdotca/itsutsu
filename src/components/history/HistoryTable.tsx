@@ -12,6 +12,8 @@ import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
+import { ResultMark } from "@/components/game/ResultMark";
+import { seatResult } from "@/components/game/resultMarks";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -89,7 +91,9 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 {game.moveCount} moves
               </span>
 
-              <span className="justify-self-end rounded-full border border-rule px-2.5 py-0.5 text-xs font-medium">
+              {/* The archive is nobody's side of a game, so a win is a tick and the colour is named. */}
+              <span className="inline-flex items-center gap-1 justify-self-end rounded-full border border-rule px-2.5 py-0.5 text-xs font-medium" data-testid="history-result">
+                <ResultMark kind={seatResult(game.result, null, result.label).mark} />
                 <Paired en={result.label} kanji={result.kanji} kanjiClassName="ml-1.5 text-muted" />
               </span>
               <CardArrow className="absolute top-1/2 right-3 -translate-y-1/2" />

@@ -28,3 +28,7 @@ export const REPLAY_GLYPHS = {
   forward: "›",
   end: "»",
 } as const;
+
+/** A move count's two unseen sizers, its longest wording and what its start is called, in the same grid cell as the count (`MoveCount`). */
+export const MOVE_COUNT_SIZERS =
+  "before:invisible before:col-start-1 before:row-start-1 before:content-[attr(data-longest)] after:invisible after:col-start-1 after:row-start-1 after:content-[attr(data-start)]";

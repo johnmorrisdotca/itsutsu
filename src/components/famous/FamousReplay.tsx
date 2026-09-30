@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
+import { MoveCount } from "@/components/history/MoveCount";
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { famousTimeline } from "@/lib/famous/famous";
@@ -78,7 +79,7 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
         <Board state={timeline[index]!} appearance={DEFAULT_APPEARANCE} readOnly onPlay={() => {}} />
       </div>
       <p className="text-sm text-muted" data-testid="famous-replay-at">
-        Move <span className="font-mono tabular-nums">{index}</span> of <span className="font-mono tabular-nums">{last}</span>
+        <MoveCount at={index} last={last} />
         {said !== null ? <span className="font-mono"> · {said}</span> : null}
       </p>
       <ReplayScrubber index={index} last={last} onGo={setIndex} testId="famous" />

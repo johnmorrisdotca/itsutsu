@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PartyColoursProvider } from "../partyMarbles";
 import { PartySeatColour } from "../PartySeatColour";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
@@ -219,7 +221,8 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
 function StatusLine({ view, sending, thinking }: { view: OnlineTableView; sending: boolean; thinking: boolean }) {
   if (view.status === ONLINE_STATUS.ended) {
     return (
-      <p className={`${PANEL_CLASS} text-sm`} data-testid="online-status" data-state="ended">
+      <p className={`${PANEL_CLASS} flex items-center gap-1.5 text-sm`} data-testid="online-status" data-state="ended">
+        <ResultMark kind={RESULT_MARKS.other} />
         {ONLINE_COPY.ended(view.endedBy)}
       </p>
     );

@@ -6,6 +6,8 @@ import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { clockWord } from "@/lib/puzzles/puzzleClock";
+import { puzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
+import { ResultMark } from "@/components/game/ResultMark";
 import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import type { RecordSolve } from "@/lib/puzzles/server/puzzleRecord";
@@ -67,17 +69,19 @@ export function RecordSolvesTable({
           ) : (
             solves.map((solve) => {
               const mine = solve.memberId === me;
+              const ended = puzzleOutcome(kind, solve.solved, solve.clock !== "none", solve.guesses);
               return (
                 <tr key={solve.id} className="border-t border-rule" data-testid="record-solve" data-solve={solve.id} data-member={solve.memberId} data-counted={counted?.has(solve.id) ? "true" : undefined}>
                   <td className="py-1 pr-2">
                     <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" tag={tags.get(solve.memberId)} />
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
-                    {sizeWord(solve.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level]?.label.toLowerCase() ?? solve.level}</span>
+                    {sizeWord(solve.size, kind)}, <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level]?.label.toLowerCase() ?? solve.level}</span>
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
+                    <ResultMark kind={ended.mark} className="mr-1" />
                     <SolveTime kind={kind} solveId={solve.id} elapsedMs={solve.elapsedMs} mine={mine} testId="record-solve-time" />
-                    {solve.solved ? null : <span className="ml-1 text-xs text-muted">{solve.guesses === null ? "not solved" : "not found"}</span>}
+                    {solve.solved ? null : <span className="ml-1 text-xs text-muted" data-testid="record-solve-outcome">{ended.words.toLowerCase()}</span>}
                     {clockWord(solve.clock) === "" ? null : (
                       <span className="ml-1 text-xs text-muted" data-testid="record-solve-clock">
                         {clockWord(solve.clock)}

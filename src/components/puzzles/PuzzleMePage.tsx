@@ -14,6 +14,9 @@ import { ownSolvesOf, ownWordsOf } from "@/lib/puzzles/server/puzzleSolves";
 import { KumimojiWallpaper } from "./KumimojiWallpaper";
 import { sizeWord } from "./puzzles.constants";
 import { SolveTime } from "./SolveTime";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
+import { markOfSeat } from "@/components/game/resultMarks";
 import { WordHistory } from "./WordHistory";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { loadKanaWords } from "@/lib/puzzles/gomojiKana/kanaWords";
@@ -86,7 +89,7 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
                 <tr key={solve.id} className="border-t border-rule" data-testid="puzzle-own-solve">
                   <td className="py-1 pr-2">
                     <Link href={mySolvePath(kind, solve.id)} className="underline-offset-2 hover:underline" data-testid="puzzle-own-solve-open">
-                      {sizeWord(solve.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
+                      {sizeWord(solve.size, kind)}, <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
                     </Link>
                     {solve.raceId !== null ? (
                       <Link href={matchPath(kind, solve.raceId)} className="ml-2 text-xs underline-offset-2 hover:underline">
@@ -130,7 +133,9 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
                   <Link href={matchPath(kind, race.id)} className="underline-offset-2 hover:underline">
                     {sizeWord(race.size, kind)} against {other}
                   </Link>{" "}
-                  <span className="text-muted">— {standing}</span>
+                  <span className="text-muted">
+                    — <ResultMark kind={read.outcome.over ? markOfSeat(read.outcome.winner, seat ?? "", true) : RESULT_MARKS.other} className="mr-0.5" /> {standing}
+                  </span>
                 </li>
               );
             })}

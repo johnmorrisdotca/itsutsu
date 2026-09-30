@@ -1,6 +1,8 @@
 "use client";
 
 import { usePartyMarbles } from "./partyMarbles";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { DOTS_STATUS, dotsPlayerName, drawsAgain } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
@@ -22,6 +24,7 @@ export function DotsTurnLine({ game }: { game: DotsGame }) {
     const most = DOTS_COPY.boxes(game.scores[game.winners[0]]);
     return (
       <p className={`${PANEL_CLASS} flex flex-wrap items-center gap-2 text-base font-semibold`} data-testid="dots-winner" data-winners={game.winners.join(",")} aria-live="polite">
+        <ResultMark kind={RESULT_MARKS.success} />
         {game.winners.map((seat) => (
           <MarbleChip key={seat} player={seat} />
         ))}

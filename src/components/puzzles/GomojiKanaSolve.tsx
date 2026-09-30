@@ -44,6 +44,7 @@ import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
+import { ResultMark } from "@/components/game/ResultMark";
 
 
 function arrowOf(mark: KanaMarked): CellArrow {
@@ -348,10 +349,12 @@ export function GomojiKanaSolve({
         <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
           {backwards && !done.outOfTime ? (
             <p className="text-base">
+              <ResultMark kind="failure" className="mr-1.5" />
               Caught on row {guesses.length} of {rows}: <strong className="tracking-wide" data-testid="word-was">{hidden}</strong> was the word.
             </p>
           ) : (
             <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+              <ResultMark kind="failure" className="mr-1.5" />
               {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}.{" "}
               {many ? "The words were" : dodge === null || dodge.standing <= 1 ? "The word was" : `It was still hiding among ${dodge.standing} words, one of them`}{" "}
               <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.

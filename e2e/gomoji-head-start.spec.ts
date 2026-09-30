@@ -70,8 +70,9 @@ test.describe("Gomoji's head start", () => {
     // Kept with it: its own page says so and replays the keyboard with the same keys grey.
     await page.goto(myGamePath("gomoji"));
     await page.getByTestId("word-history-word").filter({ hasText: new RegExp(`^${word}$`, "i") }).first().click();
-    await expect(page.getByTestId("solve-puzzle")).toContainText("Head start");
+    // A Head start is help taken, said once, under Help used, and not beside the level.
     await expect(page.getByTestId("solve-help")).toHaveText("Head start");
+    await expect(page.getByTestId("solve-level")).not.toContainText("Head start");
     for (const key of keys) await expect(page.getByTestId(`word-key-${key}`)).toHaveAttribute("data-mark", "miss");
   });
 
@@ -132,7 +133,7 @@ test.describe("Gomoji's head start", () => {
 
     await page.goto(myGamePath("gomojiKana"));
     await page.getByTestId("word-history-word").filter({ hasText: word }).first().click();
-    await expect(page.getByTestId("solve-puzzle")).toContainText("Head start");
+    await expect(page.getByTestId("solve-help")).toHaveText("Head start");
     for (const key of keys) await expect(page.getByTestId(`kana-key-${key}`)).toHaveAttribute("data-mark", "miss");
   });
 });

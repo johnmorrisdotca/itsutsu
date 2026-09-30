@@ -15,6 +15,9 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
 import { countText } from "@/lib/rating/figures";
+import { ResultMark } from "@/components/game/ResultMark";
+import { seatResult } from "@/components/game/resultMarks";
+import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 
 /**
  * ONE GAME IN THE QUEUE, AS A ROW.
@@ -97,6 +100,7 @@ export function Row({
    * it, so it would also be a button that does nothing.
    */
   const running = group !== "finished" && offer === null;
+  const finished = group === "finished" ? seatResult(game.result, named ? seat : null, GAME_RESULT_DISPLAY[game.result].label) : null;
   return (
     <li
       /*
@@ -160,6 +164,21 @@ export function Row({
           </span>
         )}
         <span className="text-xs text-muted">
+          {/*
+            HOW IT ENDED, first on a finished row: a tick, a cross or a bar
+            and the words, "You won" where the reader sat, the colour that won
+            at a shared screen. The Completed tab listed games with no result
+            on them at all.
+          */}
+          {finished === null ? null : (
+            <>
+              <span className="inline-flex items-center gap-1 font-medium text-ink-soft" data-testid="my-game-result">
+                <ResultMark kind={finished.mark} />
+                {finished.words}
+              </span>{" "}
+              ·{" "}
+            </>
+          )}
           {named ? (
             <>
               <GameName variant={game.variant} raised /> ·{" "}

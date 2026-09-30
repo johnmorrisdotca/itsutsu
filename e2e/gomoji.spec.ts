@@ -452,9 +452,11 @@ test.describe("the word puzzle", () => {
     await expect(wayOn.getByTestId("puzzle-way-game")).toHaveAttribute("href", AT);
     await expect(wayOn.getByTestId("puzzle-way-family")).toHaveAttribute("href", `${AT}/family`);
 
-    // Kept on Completed beside the games, marked as not found.
+    // Kept on Completed beside the games, marked as out of guesses, with a cross.
     await page.getByTestId("word-kept").getByRole("link", { name: "My games" }).click();
-    await expect(page.locator('[data-testid="puzzle-solved"][data-kind="gomoji"][data-solved="false"]').first()).toContainText("Not found");
+    const kept = page.locator('[data-testid="puzzle-solved"][data-kind="gomoji"][data-solved="false"]').first();
+    await expect(kept.getByTestId("puzzle-solved-outcome")).toHaveText("Out of guesses");
+    await expect(kept.getByTestId("result-mark")).toHaveAttribute("data-mark", "cross");
 
     // And in the history of every word played, from Gomoji's own page, with its guesses and its score.
     await page.goto(AT);

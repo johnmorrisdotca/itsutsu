@@ -7,6 +7,9 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
+import { markOfSeat } from "@/components/game/resultMarks";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentReader } from "@/lib/auth/currentReader";
 import { requestOrigin } from "@/lib/requestOrigin";
@@ -90,7 +93,9 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
             </li>
           ))}
         </ul>
-        <p className="text-sm font-medium" data-testid="race-outcome">
+        <p className="flex items-center gap-1.5 text-sm font-medium" data-testid="race-outcome">
+          {/* A race won is a tick to a watcher; to a racer it is their win or their loss. */}
+          <ResultMark kind={seat === null && read.outcome.over && read.outcome.winner !== null ? RESULT_MARKS.success : read.outcome.over ? markOfSeat(read.outcome.winner, seat ?? "", true) : RESULT_MARKS.other} />
           {outcomeWords(read.outcome, names)}
         </p>
         <RaceControls

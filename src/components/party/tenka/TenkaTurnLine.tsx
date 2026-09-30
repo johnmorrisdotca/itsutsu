@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
@@ -35,6 +37,7 @@ export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour
     const held = TENKA_COPY.territories(territoriesHeld(game.owners, game.winners[0]));
     return (
       <p className={`${PANEL_CLASS} flex flex-wrap items-center gap-2 text-base font-semibold`} data-testid="tenka-winner" data-winners={game.winners.join(",")} aria-live="polite">
+        <ResultMark kind={RESULT_MARKS.success} />
         {game.winners.map((seat) => (
           <MarbleChip key={seat} player={seat} />
         ))}

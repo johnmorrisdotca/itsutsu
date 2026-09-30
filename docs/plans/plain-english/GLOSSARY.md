@@ -209,6 +209,26 @@ something uses the word already chosen for it.
 | Maintenance mode | Being worked on | 整備 (unchanged) | `AdminSite.tsx` | same. The public maintenance page (`maintenance.ts`) keeps "being worked on": it is a sentence there, and it sits beside the gate |
 | Suspended the account · Reactivated the account | Shut the account · Opened the account | 停止 · 再開 (unchanged) | `operatorLog.constants.ts` | the operator log says what the buttons now say |
 
+## Results (how one game or puzzle ended)
+
+John, 2026-09-29: "let's show a checkmark for success/win/ an appropriate icon
+for loss/fail/quit any other icon for othe rste? incomlete/abanoned/something?"
+Every single result on the site carries one of three marks beside its words
+(`ResultMark`, decided by `resultMarks.ts` and `puzzleOutcome.ts`); a count of
+wins and losses stays a number that links to its games.
+
+| Words | Mark | Where it is said |
+|---|---|---|
+| You won · Won · Solved · Found | tick | a game a reader sat in, a card patience, a grid, a word |
+| Black won · White won · X wins | tick | a game at one screen, the archive, a party table: a result reached, nobody's loss here |
+| You lost · Given up · Out of time · Out of guesses · Out of swaps | cross | a loss, a puzzle left unsolved and why ("Not found" is no longer said of a Solitaire) |
+| Draw · Unfinished · Ended, nobody won · Tied | bar | a draw, a game nobody finished, a shared tie |
+
+Puzzle facts are named for the puzzle: Draw (Solitaire), Free cells, Suits
+(Spider), Layout (Mahjong), Length (a word), Hand (Kumimoji), Lattice (Koushi),
+Size otherwise; "Countdown" for the clock a player chose, "Help used" for a
+head start or hints, and "Played on Itsutsu" under a replay.
+
 ## Left as they are, on purpose
 
 - **Buddies**, **Four words**, **Pass and play**, **Fork**, **Friendly** (as

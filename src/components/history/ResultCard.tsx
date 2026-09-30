@@ -9,6 +9,9 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.con
 import type { ResultCardData } from "@/lib/history/gameResult.types";
 
 import { RESULT_CARD_COPY, RESULT_CARD_TONE } from "./resultCard.constants";
+import { ResultMark } from "@/components/game/ResultMark";
+import { markOfOutcome } from "@/components/game/resultMarks";
+
 import { headlineOf, reasonOf, scoreWords } from "./resultWords";
 import { lineWords } from "./rivalryWords";
 import { useResultCard } from "./useResultCard";
@@ -64,7 +67,10 @@ export function ResultCard({ gameId, facts, names, headStart, xp, rating, rivalr
         data-reason={facts.reason}
       >
         <h2 id={heading} className={`text-xl font-semibold ${tone.text}`} data-testid="result-card-headline">
-          <Paired en={headline.label} kanji={headline.kanji} kanjiClassName="font-mincho text-base font-normal opacity-80" />
+          <span className="inline-flex items-center gap-2">
+            <ResultMark kind={markOfOutcome(facts.outcome)} />
+            <Paired en={headline.label} kanji={headline.kanji} kanjiClassName="font-mincho text-base font-normal opacity-80" />
+          </span>
         </h2>
         <div id={described} className="flex flex-col gap-1 text-sm">
           <p data-testid="result-card-reason">{reasonOf(facts, names)}</p>

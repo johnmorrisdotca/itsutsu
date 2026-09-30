@@ -5,6 +5,8 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { GroupHeading } from "@/components/mine/GroupHeading";
 import { MY_PUZZLE_ROW } from "@/components/mine/mine.constants";
 import { PlayerName } from "@/components/players/PlayerName";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { ONLINE_SEAT_KINDS } from "@/lib/party/online/online.constants";
@@ -83,6 +85,13 @@ export function TableRow({ table, finished, tags }: { table: MyTable; finished: 
           ))}
         </span>
         <span className="text-xs font-semibold" data-testid="my-table-state">
+          {/* A shared win is still a win; a table nobody won is a bar. */}
+          {table.result === null ? null : (
+            <ResultMark
+              kind={table.result === "won" || table.result === "shared" ? RESULT_MARKS.success : table.result === "lost" ? RESULT_MARKS.failure : RESULT_MARKS.other}
+              className="mr-1"
+            />
+          )}
           {table.result !== null
             ? ONLINE_COPY.result[table.result]
             : table.yourMove

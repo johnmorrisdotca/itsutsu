@@ -1,4 +1,7 @@
 import Link from "@/components/ui/Link";
+import { ResultMark } from "@/components/game/ResultMark";
+import { RESULT_MARKS } from "@/components/game/resultMark.constants";
+import { markOfSeat } from "@/components/game/resultMarks";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
@@ -48,7 +51,14 @@ export async function MatchPanel({
               </Link>
             )}
             <span className="text-muted">
-              {game.mine !== null ? ` · ${copy.you(STONE_DISPLAY[game.mine].label)}` : ""} · {copy.state[game.state]}
+              {game.mine !== null ? ` · ${copy.you(STONE_DISPLAY[game.mine].label)}` : ""} ·{" "}
+              {/* Only a game that ended has a mark: one waiting, in play or refused has no result yet. */}
+              {game.state === "black" || game.state === "white" ? (
+                <ResultMark kind={game.mine === null ? RESULT_MARKS.success : markOfSeat(game.state, game.mine, true)} className="mr-0.5" />
+              ) : game.state === "drawn" ? (
+                <ResultMark kind={RESULT_MARKS.other} className="mr-0.5" />
+              ) : null}
+              {copy.state[game.state]}
               {game.id === id ? ` · ${copy.here}` : ""}
             </span>
           </li>

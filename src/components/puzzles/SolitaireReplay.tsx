@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { MoveCount } from "@/components/history/MoveCount";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { replay } from "@/lib/puzzles/solitaire/code";
 import { solitaireRules } from "@/lib/puzzles/solitaire/generate";
@@ -48,9 +49,7 @@ export function SolitaireReplay({ size, level, givens, moves, at, go }: { size: 
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label="One move on">
             ›
           </button>
-          <span className="w-24 text-right text-sm tabular-nums text-muted" data-testid="solitaire-replay-at">
-            {viewing === 0 ? "The deal" : `Move ${viewing} of ${last}`}
-          </span>
+          <MoveCount at={viewing} last={last} start="The deal" className="shrink-0 justify-items-end text-sm text-muted" testId="solitaire-replay-at" />
         </div>
       ) : null}
       <p className="text-sm text-muted">
