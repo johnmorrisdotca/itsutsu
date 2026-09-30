@@ -51,9 +51,9 @@ describe("Tenka's world", () => {
     });
   });
 
-  it("has twenty sea links, the Bering Strait among them", () => {
+  it("has twenty-two sea links, the Bering Strait among them", () => {
     const links = TENKA_TERRITORIES.reduce((sum, territory) => sum + territory.sea.length, 0) / 2;
-    expect(links).toBe(20);
+    expect(links).toBe(22);
     const alaska = TENKA_TERRITORIES.findIndex((territory) => territory.key === "alaska");
     const farEast = TENKA_TERRITORIES.findIndex((territory) => territory.key === "farEast");
     expect(TENKA_TERRITORIES[alaska].sea).toContain(farEast);

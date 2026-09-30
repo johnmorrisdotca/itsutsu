@@ -126,6 +126,17 @@ describe("the attack", () => {
     expect(playTenka(thin, { kind: "attack", from: at("brazil"), to: at("andes"), dice: 2 })).toBeNull(); // one army must stay
   });
 
+  it("crosses the Bering Strait both ways, where the world wraps round, and the Mediterranean to Egypt", () => {
+    const east = world({ owners: { farEast: 0 }, armies: { farEast: 5 } });
+    expect(playTenka(east, { kind: "attack", from: at("farEast"), to: at("alaska"), dice: 3 })).not.toBeNull();
+    const west = world({ owners: { alaska: 0 }, armies: { alaska: 5 } });
+    expect(playTenka(west, { kind: "attack", from: at("alaska"), to: at("farEast"), dice: 3 })).not.toBeNull();
+    const south = world({ owners: { southernEurope: 0 }, armies: { southernEurope: 5 } });
+    expect(playTenka(south, { kind: "attack", from: at("southernEurope"), to: at("egypt"), dice: 3 })).not.toBeNull();
+    const britain = world({ owners: { britain: 0 }, armies: { britain: 5 } });
+    expect(playTenka(britain, { kind: "attack", from: at("britain"), to: at("centralEurope"), dice: 3 })).not.toBeNull();
+  });
+
   it("throws the game's own dice and takes off what each side lost", () => {
     const game = set();
     const thrown = throwDice(game.rng, 3);
@@ -190,6 +201,11 @@ describe("the end of a turn", () => {
     expect(shifted.reserve).toBe(reinforcementFor(shifted.owners, 1));
     // No card: nothing was taken.
     expect(shifted.hands[0]).toEqual([]);
+  });
+
+  it("fortifies across the Bering Strait when both sides are the player's own", () => {
+    const game = world({ owners: { alaska: 0, farEast: 0 }, armies: { alaska: 4 }, phase: TENKA_PHASES.fortify });
+    expect(playTenka(game, { kind: "fortify", from: at("alaska"), to: at("farEast") })).not.toBeNull();
   });
 
   it("gives a card at the end of a turn that took a territory, and only one however many were taken", () => {
