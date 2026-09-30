@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (173)
+## 1. Written by a machine — please check these (179)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -177,6 +177,12 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | {who} earned {xp} | **{who}が{xp}を獲得しました** | {who} earned {xp}. |  |
 | — — — | You earned {xp} | **{xp}を獲得しました** | You earned {xp}. |  |
 | — — — | Yesterday | **昨日** | Yesterday. |  |
+| — — — | Open the browser's ⋮ menu, then Install app or Add to Home screen. | **ブラウザの ⋮ メニューを開き、「アプリをインストール」または「ホーム画面に追加」を選んでください。** | Open the browser's ⋮ menu, then choose "Install app" or "Add to home screen". |  |
+| — — — | Install app | **アプリをインストール** | Install the app. |  |
+| — — — | Not now | **今はしない** | Not now. |  |
+| — — — | Tap Share (in the ••• menu on newer iPhones), then Add to Home Screen. | **共有（新しいiPhoneでは ••• メニューの中）をタップし、「ホーム画面に追加」を選んでください。** | Tap Share (inside the ••• menu on newer iPhones), then choose "Add to Home Screen". |  |
+| — — — | It opens like an app: the whole screen, no browser bar, and you stay signed in. | **アプリのように開きます。全画面で、ブラウザのバーはなく、サインインしたままです。** | It opens like an app. Full screen, no browser bar, and you stay signed in. |  |
+| — — — | Add it to your home screen | **ホーム画面に追加** | Add to home screen. |  |
 | — — — | also under {family} | **{family}にもあり** | Also found under {family}. |  |
 | — — — | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. |  |
 | — — — | Asked for | **指名** | Nominated — the person named for this game. |  |

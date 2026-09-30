@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { TAB_FROM_PATH } from "@/lib/ui/tabs";
 
+import { InstallHint } from "@/components/app/InstallHint";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { fetchCatalogueStats } from "@/lib/catalogue/catalogueStats";
@@ -75,6 +76,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
         kanji="種目"
         lead="Almost every game here is five in a row with one idea changed. Every name leads to that game — its rules, its record, its standings and a board."
       />
+      <InstallHint />
       <section className="flex flex-col gap-4">
         <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} folds={folds} keepsFolds={reader.hasAccount} />
       </section>

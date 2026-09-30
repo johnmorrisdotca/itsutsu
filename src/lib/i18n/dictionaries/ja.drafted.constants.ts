@@ -76,6 +76,36 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   },
 
   /*
+   * The hint that offers the site as a home-screen app. The steps name the
+   * buttons as a Japanese iPhone and Android phone label them: 共有 and
+   * ホーム画面に追加 on iOS, アプリをインストール in Chrome.
+   */
+  "install.title": {
+    text: "ホーム画面に追加",
+    back: "Add to home screen.",
+  },
+  "install.lead": {
+    text: "アプリのように開きます。全画面で、ブラウザのバーはなく、サインインしたままです。",
+    back: "It opens like an app. Full screen, no browser bar, and you stay signed in.",
+  },
+  "install.ios": {
+    text: "共有（新しいiPhoneでは ••• メニューの中）をタップし、「ホーム画面に追加」を選んでください。",
+    back: "Tap Share (inside the ••• menu on newer iPhones), then choose \"Add to Home Screen\".",
+  },
+  "install.android": {
+    text: "ブラウザの ⋮ メニューを開き、「アプリをインストール」または「ホーム画面に追加」を選んでください。",
+    back: "Open the browser's ⋮ menu, then choose \"Install app\" or \"Add to home screen\".",
+  },
+  "install.button": {
+    text: "アプリをインストール",
+    back: "Install the app.",
+  },
+  "install.dismiss": {
+    text: "今はしない",
+    back: "Not now.",
+  },
+
+  /*
    * The filter bars, which is where a reader spends most of their time on the
    * record and the players page. 対局者 for "Player" rather than 選手: the
    * site already calls the people who play here 対局者, and a filter should
