@@ -332,7 +332,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, tiles to build into your own crossword, and six words to swap into a lattice.",
     /* Tsunagi and Kumimoji joined 2026-09-26, and Koushi the same day: puzzles for one with no digits in them, and Numbers already holds its eight. */
     /* One Gomoji: its languages and word lists are settings of it, chosen on its set-up (`gameSettings.ts`, John, 2026-09-28). */
+    /* On the set-up screen since 2026-09-30: its four puzzles each draw their own preview there (`PuzzleBoardPreview`), which was what kept it off. */
     games: ["gomoji", "tsunagi", "kumimoji", "koushi"],
-    notOnSetUp: "John, 2026-09-25: shown on the games list, cards and families, and kept off the set-up screen so it ships sooner.",
   },
 ];
