@@ -57,6 +57,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   spades: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   ginRummy: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   euchre: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  cribbage: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -151,6 +152,14 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     more: [
       "The dealer must name trumps if everybody passes in the second round (stick the dealer), so every hand is played.",
       "There is no going alone: every hand is played by all four, and taking all five tricks scores two.",
+    ],
+  },
+  cribbage: {
+    turn: "The line over the table says whose turn it is, by name. First choose two cards (they rise) and press Lay to the crib. Then, in the pegging, tap a card and press Play, drag it onto the table, or tap it twice to play it at once; the count and what each card scored are written on the table, and a go is called for you when you cannot play. After the pegging, both hands and the crib are shown and counted on the table. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; one person against the computer never asks. The other hand is drawn face down, and the table counts every show for you. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "Seat one deals first, and the deal passes each hand. The score is kept as numbers beside each name rather than pegs on a board.",
+      "Nothing is claimed by hand: every fifteen, pair, run, go and show is counted for you, so there is no muggins, taking points a player missed.",
     ],
   },
 };

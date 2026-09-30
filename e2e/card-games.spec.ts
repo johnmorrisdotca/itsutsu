@@ -248,6 +248,26 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
+  test("Cribbage: two cards laid to the crib, then a card pegged on the count, against the computer", async ({ page }) => {
+    await start(page, "cribbage");
+    await myTurn(page);
+    // Ann deals the first hand, so the computer has laid away already: two cards chosen for her own crib.
+    await expect(page.getByTestId("cards-crib-words")).toContainText("crib");
+    await expect(page.getByTestId("cards-crib-lay")).toBeDisabled();
+    await handCards(page).nth(0).click();
+    await handCards(page).nth(1).click();
+    const before = await movesMade(page);
+    await page.getByTestId("cards-crib-lay").click();
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+    // The starter is cut, the computer leads, and Ann plays a card on the count.
+    await myTurn(page);
+    await expect(page.getByTestId("cards-starter")).toBeVisible();
+    await expect(page.getByTestId("cards-peg-count")).toContainText("Count:");
+    await expect(handCards(page)).toHaveCount(4);
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await clearKept(page);
+  });
+
   test("every family card game is on its family's shelf: Cards beside Solitaire, or Tricks", async ({ page }) => {
     const home = (kind: CardGameKind) => GAME_FAMILIES.find((family) => (family.games as readonly string[]).includes(kind))!.key;
     for (const [family, address] of [["cards", "/games/solitaire/family"], ["tricks", "/games/tricks"]] as const) {

@@ -160,4 +160,22 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     ],
     board: "Always four, two against two: one person and three computers, two people as partners against two computers, or four people round one device. Choose 10 points for the usual game, 5 for a quick one.",
   },
+  cribbage: {
+    label: "Cribbage",
+    kanji: "クリベッジ",
+    tagline: "Lay two to the crib, peg fifteens, pairs and runs as the cards go down, then count your hand — first to 121 wins.",
+    origin:
+      "An English game of the early seventeenth century, credited to the poet Sir John Suckling, who is said to have made it out of an older game called Noddy. It is scored with pegs on a board of holes, so the score moves round in front of both players as the cards go down. Played in every English-speaking country, and the one card game allowed aboard American submarines. Nobody owns it.",
+    alsoKnownAs: ["Crib"],
+    country: "GB",
+    wikipedia: "Cribbage",
+    rules: [
+      "Two players, six cards each. Each lays two away face down to the crib, which belongs to the dealer; then the top of the pack is cut and turned up as the starter. A jack cut scores the dealer two, his heels.",
+      "The pegging: from the dealer's other hand, lay a card at a time in turn, calling the running count, which may not pass thirty-one. Fifteen scores two and thirty-one two; a pair two, three alike six and four alike twelve; a run of three or more, in any order, a point a card.",
+      "If you cannot play without passing thirty-one, you say go and the other player plays on while they can. Whoever laid the last card scores one for the go, and the count starts again from nought. The last card of all scores one.",
+      "The show: each hand of four, with the starter, scores two for every set of cards adding up to fifteen, two for every pair, a point a card for every run, four for four of a suit in the hand (five with the starter), and one for the jack of the starter's suit, his nobs. The crib is the dealer's, and scores a flush only when all five are one suit.",
+      "The other player shows first, then the dealer, then the dealer's crib, and the deal passes. The first to the game's total, 121 or 61, wins the moment they reach it, even partway through the show.",
+    ],
+    board: "Always two: one person against the computer, or two people passing one device. Choose 121 for the usual game, twice round the board, or 61 for once round.",
+  },
 };

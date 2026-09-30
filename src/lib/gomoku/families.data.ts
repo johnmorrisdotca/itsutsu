@@ -248,6 +248,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      * (Euchre, Oh Hell, Cribbage) would have run Cards past the eight a shelf
      * holds (`FAMILY_MOST_GAMES`). Trick-taking games first — Hearts and
      * Spades — played round one device with a computer in any seat.
+     * Cribbage (2026-09-30) is here too: not a trick-taking game, but one
+     * played a card at a time round the table, and Cards was full.
      *
      * トリック: the word Japanese players use for a trick, as in
      * トリックテイキング, the name for the whole kind of game.
@@ -258,10 +260,10 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Tricks",
     kanji: "トリック",
-    blurb: "Card games for a table, won a trick at a time: take none of the hearts, or bid what you and your partner will take. Round one device, with a computer in any empty seat.",
-    games: ["hearts", "spades", "euchre"],
+    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, or peg your way to 121 at cribbage. Round one device, with a computer in any empty seat.",
+    games: ["hearts", "spades", "euchre", "cribbage"],
     notOnSetUp:
-      "A trick-taking game is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+      "A game here is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "mahjong",

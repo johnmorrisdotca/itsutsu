@@ -198,6 +198,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("ginRummy", 100, 2, (game: { phase: string; stock: unknown[]; results: unknown[] }) => game.phase === "draw" && game.stock.length <= 24 && game.results.length === 0),
   },
+  // Cribbage for two in the pegging: the starter, the crib face down, three cards on the count and what the last one scored.
+  {
+    kind: "cribbage",
+    key: "itsutsu.cards.cribbage",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("cribbage", 121, 2, (game: { phase: string; run: unknown[]; peg: unknown }) => game.phase === "pegging" && game.run.length === 3 && game.peg !== null),
+  },
 ];
 
 test.describe("party game screenshots", () => {
