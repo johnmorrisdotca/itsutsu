@@ -62,7 +62,9 @@ those are live, then clear them.
 
 One at a time, oldest first, each on a fresh `main` with the number re-taken.
 Branch heads as of 08:45Z; each thread was told at 08:39Z to rebase on current
-`main`, re-run its checks and push, so fetch before merging.
+`main`, re-run its checks and push, so fetch before merging. Branches reported
+on 0.460.0 need the two newer commits on `main` (0.460.1, 0.461.0) merged in
+when they land.
 
 | # | What | Branch | Thread | Notes |
 | --- | --- | --- | --- | --- |
@@ -71,7 +73,7 @@ Branch heads as of 08:45Z; each thread was told at 08:39Z to rebase on current
 | 3 | Korokoro and the `/dice` tab under Games (open to strangers, kept offline), one minor | `cloud-dice-roller-korokoro` | Dice roller and number generator | One commit on 0.460.0. Lint, types, unit tests, build, dice and offline specs green. First site use of a package, through a tsconfig path to `packages/korokoro`. |
 | 4 | Friends' history: a player's page lists every game they played, of every kind | `cloud-friends-history-6aef1c` | Browse friends' game history | Built on 0.451.1; 199 browser specs green. |
 | 5 | The four Mac pieces rebuilt: Tenka map links (Bering Strait, Britain–Scandinavia, Southern Europe–Egypt), home page hero without duplicate buttons, result marks on every result, plain-English second pass with a glossary gate | `…/mac-only-pieces-2ehusy` (older prefix) | Rebuilding the Mac-only pieces | Wallpaper button on finished puzzles left out (broke page-width checks on the Mac). One Mexican Train spec failed twice over a random deal in the long run, then passed 4 of 4 alone. |
-| 6 | Hitotsu, the Uno-style colour-card game (three ways to play, house rules), from `packages/hitotsu` | `cloud-uno-style-08jmb8` | Uno-style game and variants | Party files and e2e import the package by relative path; components by package name. |
+| 6 | Hitotsu, the Uno-style colour-card game for two to eight: Classic and Party modes with house rules, one device or several, on a new Colour cards shelf. No database change | `cloud-uno-style-08jmb8` | Uno-style game and variants | Main 0.460.0 merged in (not rebased), every commit by John. Full unit suite plus the Hitotsu, About and just-the-board specs green. The site reaches `packages/hitotsu` by tsconfig path (party files and e2e by relative path); a rules change goes to both repos. |
 | 7 | Kyuubu: a Cubes family (2×2 to 7×7), "Show me how" step solver for 2×2 and 3×3 (a helped solve scores nothing and stays off the fastest tables), Learn guide "Solve the cube" | `…/rubiks-cube-9raqkb` (older prefix) | Rubik's cube section | 8,476 unit and 176 browser tests green. |
 | 8 | Tenka and Kumimoji engines moved into `packages/tenka` and `packages/kumimoji`; old site paths are forwarding files. One release per package when landing | `cloud-tenka-kumimoji-packages` | Tenka and Kumimoji as packages | Must land AFTER #5: the thread is rebasing it onto the Mac-pieces branch so the new Tenka map sits inside `packages/tenka` (and goes to the tenka repo). Types, lint, 8,576 unit tests green; Tenka, Kumimoji, party and online-table specs 179 of 183, the 4 failures the known `no-select` cases from the cloud's older Chromium. Re-stamp the party and puzzle art fingerprints if moved watched files trip them (`scripts/party-art-stamp.ts`, `puzzle-art-stamp.ts`). |
 | 9 | Tane: puzzles, daily words, board rules and the simulation draw their random numbers from `packages/tane`, every number unchanged. A patch release | `cloud-tane-package` | Tane seeded random package | Rebased on 0.460.0. Lint, types, unit suite, production build and 83 browser specs green. Fresh seeds skip the new Nige and Sakasa blocks. Tenka's dice file is left for the Tenka package. Golden values in `packages/tane/src/*.test.ts` are the site's historical numbers; never change them. |
