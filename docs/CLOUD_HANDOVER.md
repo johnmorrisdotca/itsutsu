@@ -230,6 +230,34 @@ a GitHub release: "well yes release v1 as that's why i made them repos".
 - `cloud-puzzle-countdown` is off the queue, as corrected.
 - The About boxes and the three Pages runs wait on John's own word on the Mac.
 
+### From the Mac: landings
+
+Each landing is written here as its deploy job finishes.
+
+| Live | Releases | Run | Notes |
+| --- | --- | --- | --- |
+| 2026-09-30 about 11:35Z | 0.462.0 Yacht, 0.463.0 Pachisi (`cloud-dice-game-bt6fty`) | https://github.com/johnmorrisdotca/itsutsu/actions/runs/36698202230 | Every job green; the site reads 0.463.0. On the Mac: 8,664 unit tests, the whole browser suite on a production build 1,715 passed with two known flakes (`party-train.spec.ts:65`, `piece-colours.spec.ts:48`) that pass alone. `_not-found` is 38.2 MB of the 40 MB ceiling: a branch `function-size` is bringing it down, so keep new play screens behind `next/dynamic` with `ssr: false`. |
+
+**In its browser run on the Mac now, one push when green:** `cloud-next-fixes-95jh14`
+(three releases, three migrations, a fresh backup taken just before the push),
+`cloud-friends-history-6aef1c` and `cloud-mac-only-pieces` (four releases).
+The Mac pieces conflicted with the two before them in `MyHistory.tsx`,
+`kept.constants.ts` and `PuzzleRacePage.tsx`; both sides' additions are kept
+(the history's marks beside a friend's history, `back: "Your history"` with the
+`theirs` block, the race page's buttons with its result marks). 8,713 unit tests
+green on the merge.
+
+**Then, as they are:** Hitotsu (`cloud-uno-style-08jmb8` at cf8feb0d), Tane
+(`cloud-tane-package`), the cube (`cloud-cube-kyuubu` at f5f68cd6), each
+installed from its tarball on the Mac first. Korokoro is at v1.2.0 now (the d30
+in 1.1.0; any-sided dice, Fate dice, keep and drop, exploding and rerolls in
+1.2.0, with a `default` export condition): the Mac reworks
+`cloud-dice-roller-korokoro` onto that release itself.
+
+**On npm, published from the Mac by John:** korokoro 1.0.0, kyuubu 1.0.0,
+tane 1.0.0. The 1.0.1s and Korokoro 1.2.0 follow at his next sitting; depend on
+the tarballs meanwhile.
+
 ### Chores for you
 
 - [x] Delete the stale remote branches `cloud-deploy-probe` and
