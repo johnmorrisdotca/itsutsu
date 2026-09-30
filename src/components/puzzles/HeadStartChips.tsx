@@ -22,6 +22,7 @@ export function HeadStartChips({
   onChoose,
   words = 1,
   dodge = false,
+  backwards = false,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -32,8 +33,10 @@ export function HeadStartChips({
   words?: WordCount;
   /** A Nige chosen (`dodge.ts`): nothing is hidden, so there is nothing a head start could grey. */
   dodge?: boolean;
+  /** A Sakasa chosen (`backwards.ts`): every letter is to be avoided already, so a head start would only take letters away. */
+  backwards?: boolean;
 }) {
-  const offered = offersHeadStart(kind, level) && !dodge;
+  const offered = offersHeadStart(kind, level) && !dodge && !backwards;
   // As many as the word has (`headStartKeys`): the size chosen above.
   const unit = kind === "gomojiKana" ? "kana" : "letters";
   return (
@@ -58,6 +61,8 @@ export function HeadStartChips({
       <p className="min-h-8 text-xs text-muted" data-testid="puzzle-head-start-blurb">
         {dodge
           ? "A word that dodges hides nothing yet, so there is nothing to grey before the first guess."
+          : backwards
+          ? "Played backwards, a head start would only take letters away, so there is none."
           : !offered
           ? "A head start is for easy: choose Easy to have one."
           : chosen

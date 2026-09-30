@@ -18,6 +18,9 @@ import { checkKumimoji } from "./kumimoji/check";
 import type { KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { dodgeGuesses, readDodge } from "./gomoji/dodgePlay";
 import { decodeDodgeGivens } from "./gomoji/dodgeSeed";
+import { backwardsGuesses, breaksBackwardsRule, isGuessable } from "./gomoji/backwards";
+import { isBackwardsGivens } from "./gomoji/backwardsSeed";
+import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { checkKoushi } from "./koushi/check";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
@@ -288,6 +291,7 @@ export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string
  */
 function checkWords(kind: PuzzleKind, size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
   if (decodeDodgeGivens(givens) !== null) return checkDodge(kind, size, givens, guessesOf(kind, size, answer), ending, level);
+  if (isBackwardsGivens(givens)) return checkBackwards(kind, size, givens, answer, ending, level);
   const kana = kind === "gomojiKana";
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);
@@ -333,6 +337,47 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
  * did, or every guess is spent and none did. The server replays it from the
  * guesses alone, as the browser did.
  */
+/**
+ * A GOMOJI SAKASA 逆さ, played backwards (`gomoji/backwards.ts`): its ending
+ * the other way round. Solved ("found", the puzzle's own win) is every row
+ * filled and none of them the word; ended unsolved ("spent") is the word typed
+ * on the last row and on none before. Every guess a word of the list, each
+ * keeping to what the rows before it uncovered, as the page made it.
+ */
+function checkBackwards(kind: PuzzleKind, size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
+  let word: string | null;
+  try {
+    word = hiddenOfPlay(kind, size, givens);
+  } catch {
+    return { ok: false, reason: "the word list is not loaded" };
+  }
+  const guesses = guessesOf(kind, size, answer);
+  if (word === null) return { ok: false, reason: "the givens are not a hidden word" };
+  if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
+  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  const rows = backwardsGuesses(kind, size, level);
+  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
+  for (const [at, guess] of guesses.entries()) {
+    let known: boolean;
+    try {
+      known = isGuessable(kind, size, guess);
+    } catch {
+      return { ok: false, reason: "the word list is not loaded" };
+    }
+    if (!known) return { ok: false, reason: `${guess} is not in the word list` };
+    const breaks = breaksBackwardsRule(kind, guesses.slice(0, at), word, guess);
+    if (breaks !== null) return { ok: false, reason: breaks };
+  }
+  const caught = guesses.indexOf(word);
+  if (ending === "found") {
+    if (caught !== -1) return { ok: false, reason: "the word was typed" };
+    if (guesses.length !== rows) return { ok: false, reason: "there are rows left" };
+    return { ok: true };
+  }
+  if (caught !== guesses.length - 1) return { ok: false, reason: caught === -1 ? "the word was never typed" : "guesses go on after the word was typed" };
+  return { ok: true };
+}
+
 function checkDodge(kind: PuzzleKind, size: number, givens: string, guesses: string[] | null, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
   const seed = decodeDodgeGivens(givens)!;
   if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };

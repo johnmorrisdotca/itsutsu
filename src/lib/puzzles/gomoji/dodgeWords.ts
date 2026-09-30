@@ -17,11 +17,9 @@ export const DODGE_DISPLAY = {
   inspiredBy: "Absurdle",
 } as const;
 
-/** The line under the chips on the set-up screen, for a word that sits still and for one that dodges. */
-export function dodgeBlurb(chosen: boolean, rows: number): string {
-  return chosen
-    ? `No word is hidden yet: each guess gets the colours that leave the most words, and it is found only when nothing else is left. ${rows} guesses.`
-    : "One hidden word, chosen before the first guess.";
+/** The line under the chips on the set-up screen when a Nige is chosen (`PlayWayChips`). */
+export function dodgeBlurb(rows: number): string {
+  return `No word is hidden yet: each guess gets the colours that leave the most words, and it is found only when nothing else is left. ${rows} guesses.`;
 }
 
 /** The bullet on a Gomoji's rules page, in the Play section (`puzzleRulesPage.ts`). */

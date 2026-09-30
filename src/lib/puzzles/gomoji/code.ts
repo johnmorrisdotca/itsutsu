@@ -118,6 +118,14 @@ export function isWord(word: string, size: number, lang: GomojiLanguage = "en"):
   return word.length === size && (listsFor(size, lang)?.allowed.has(word) ?? false);
 }
 
+/** Every word of the length that may be guessed, in the list's order. */
+export function allowedFor(size: number, lang: GomojiLanguage = "en"): readonly string[] {
+  // Pop culture words are only ever found from their category, so no other way of playing asks for its list.
+  if (lang === "pop") return [];
+  const lists = listsFor(size, lang);
+  return lists === null ? [] : [...lists.allowed];
+}
+
 /** The words a hidden word is drawn from: the commonest for easy, the wider list for medium and hard. */
 export function answersFor(size: number, easy: boolean, lang: GomojiLanguage = "en"): readonly string[] {
   if (lang === "pop") return popAnswers(size);

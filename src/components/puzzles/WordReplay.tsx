@@ -12,6 +12,8 @@ import { languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
 import { boardGuesses, hiddenWordsOf } from "@/lib/puzzles/gomoji/futago";
 import { dodgeGuesses, wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
+import { backwardsGuesses } from "@/lib/puzzles/gomoji/backwardsRows";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
@@ -100,7 +102,7 @@ export function WordReplay({
   const started = headStart ? headStartKeys(kind, size, givens) : [];
   const lettersOf = (board: (typeof boards)[number]) => withHeadStart(letterKeyMarks(board.guessed, board.word), started, "miss");
   const kanaOf = (board: (typeof boards)[number]) => withHeadStart(kanaKeyMarks(board.rows, board.word), started, "miss");
-  const allowed = free + Math.max(guesses.length, dodging ? dodgeGuesses(kind, size) : guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free, asWordCount(boards.length)));
+  const allowed = free + Math.max(guesses.length, dodging ? dodgeGuesses(kind, size) : isBackwardsGivens(givens) ? backwardsGuesses(kind, size, level) : guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free, asWordCount(boards.length)));
 
   return (
     <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
