@@ -98,6 +98,10 @@ proposal is that **DS1 pulls it**:
 - [ ] Delete the stale remote branches `cloud-deploy-probe` and
       `cloud-deploy-anywhere` (the second is this branch's first version). A
       cloud session cannot delete a remote branch.
+- [ ] File the one board row, and close the shipped ones, listed in
+      `docs/plans/tickets-to-file-2026-09-29.md` on branch
+      `cloud-tickets-2026-09-29`: John's asks of 28 and 29 September checked
+      against the board, and the five agents stopped on the Mac that day.
 
 ### 4. The live site and GitHub
 
