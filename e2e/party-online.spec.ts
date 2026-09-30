@@ -185,7 +185,7 @@ test.describe("Dots and Boxes on several devices", () => {
     // Each finds it on Completed, with how it went for them; and each is told in their inbox.
     for (const one of [a.page, b.page]) {
       await one.goto("/play/completed");
-      const row = one.locator(`[data-testid="tables-finished"] [data-testid="my-table"][data-table="${id}"]`);
+      const row = one.locator(`[data-testid="my-games-finished"] [data-testid="my-table"][data-table="${id}"]`);
       await expect(row).toBeVisible();
       await expect(row).toHaveAttribute("data-result", /^(won|lost|shared)$/);
       await fitsThePhone(one);

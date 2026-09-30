@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { expect, type PlaywrightWorkerArgs } from "@playwright/test";
 
 import { generatePuzzle } from "../src/lib/puzzles/generate";
+import { makeKeptId } from "../src/lib/party/kept/kept.constants";
 import { ensureMember, memberIdFor, newestSolveOf, removeMember } from "./members";
 import { suiteOperator } from "./operator";
 import { removeTables } from "./tables";
@@ -25,7 +26,7 @@ import { removeTables } from "./tables";
  */
 
 /** Ids the specs make before a run. */
-export type MadeRows = { filed: string; live: string; member: string; solve: string; table: string };
+export type MadeRows = { filed: string; kept: string; live: string; member: string; solve: string; table: string };
 
 /**
  * Where a route is measured: the address, plus any other views of the same
@@ -68,6 +69,7 @@ export const ROUTES: Record<string, Route> = {
   "/games/[slug]/new": { url: () => "/games/gomoku/new", also: ["/games/number-place/new"] },
   "/games/[slug]/pass-and-play": { url: () => "/games/chinese-checkers/pass-and-play" },
   "/games/[slug]/tables/[id]": { url: (made) => `/games/dots-and-boxes/tables/${made.table}` },
+  "/games/[slug]/kept/[id]": { url: (made) => `/games/dots-and-boxes/kept/${made.kept}` },
   "/games/[slug]/play": { url: () => "/games/gomoku/play", also: ["/games/number-place/play"] },
   "/games/[slug]/rules": { url: () => "/games/gomoku/rules", also: ["/games/number-place/rules"] },
   "/games/[slug]/standings": { url: () => "/games/gomoku/standings", also: ["/games/number-place/standings"] },
@@ -192,10 +194,27 @@ export async function seedRouteRows(
   const table = await request.post("/api/tables", { data: { game: "dotsAndBoxes", size: 3, seats: [{ kind: "me" }, { kind: "link" }] } });
   expect(table.status(), await table.text()).toBe(201);
   const tableId = ((await table.json()) as { id: string }).id;
+  // A game passed round one screen, filed as the browser files it: the id is the browser's, so it is new each run.
+  const keptId = makeKeptId((count) => Array.from({ length: count }, () => Math.floor(Math.random() * 1000)));
+  const kept = await request.post(`/api/kept-games/${keptId}`, {
+    data: {
+      game: "dotsAndBoxes",
+      state: "route-rows",
+      seats: [
+        { name: under(`${member.name} Ren`), computer: false },
+        { name: "", computer: true },
+      ],
+      over: false,
+      left: false,
+      winners: [],
+    },
+  });
+  expect(kept.status(), await kept.text()).toBe(200);
   await request.dispose();
   await ensureMember(member);
   return {
     filed: filedId,
+    kept: keptId,
     live: liveId,
     member: await memberIdFor(member.email),
     solve: await newestSolveOf(suiteOperator().email, "numberPlace"),
@@ -206,5 +225,5 @@ export async function seedRouteRows(
 /** Takes the member and the table away; the games go with the spec's tidy. */
 export async function removeRouteRows(member: { email: string }, made?: MadeRows): Promise<void> {
   await removeMember(member.email);
-  if (made?.table) await removeTables([made.table]);
+  if (made) await removeTables([made.table, made.kept].filter(Boolean));
 }

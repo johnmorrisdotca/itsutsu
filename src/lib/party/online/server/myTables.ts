@@ -28,6 +28,8 @@ export type MyTable = {
   /** On a table that is over: how it went for the reader. */
   result: "won" | "shared" | "lost" | "ended" | null;
   movedAt: string;
+  /** When it ended, for a table that is over: its place in the Completed tab's one list. */
+  endedAt: string | null;
 };
 
 /**
@@ -35,20 +37,29 @@ export type MyTable = {
  * one — the cap is twenty) with those waiting on the reader first, and the
  * newest finished ones. Two indexed reads through `PartySeat_member_idx`, one
  * for each tab, and one for the tags beside the names, whichever tab is open — the tabs' counts need both. Completed
- * lists the newest twenty and counts what it lists, so its number is a set it shows.
+ * takes a page of the finished ones into its one list (`completed.ts`) and counts them all.
  */
-export async function myTables(memberId: string): Promise<{ going: MyTable[]; finished: MyTable[]; tags: Map<string, NameTag> }> {
+export async function myTables(
+  memberId: string,
+  /** Where the Completed tab's page starts: the finished tables that ended strictly before it, or the newest. */
+  finishedBefore: Date | null = null,
+  /** The games the Completed tab is narrowed to (`completedFilter.ts`), or null for every game. */
+  finishedOnly: readonly string[] | null = null,
+): Promise<{ going: MyTable[]; finished: MyTable[]; finishedMore: boolean; finishedTotal: number; tags: Map<string, NameTag> }> {
   const mine = { seats: { some: { memberId, kind: ONLINE_SEAT_KINDS.member } } };
+  const over = { ...mine, status: { in: [ONLINE_STATUS.finished, ONLINE_STATUS.ended] }, ...(finishedOnly === null ? {} : { game: { in: [...finishedOnly] } }) };
   const include = { seats: { orderBy: { seat: "asc" as const } } };
-  const [going, finished] = await Promise.all([
+  const [going, finishedRead, finishedTotal] = await Promise.all([
     prisma.partyTable.findMany({ where: { ...mine, status: ONLINE_STATUS.playing }, include, orderBy: { movedAt: "desc" } }),
     prisma.partyTable.findMany({
-      where: { ...mine, status: { in: [ONLINE_STATUS.finished, ONLINE_STATUS.ended] } },
+      where: { ...over, ...(finishedBefore === null ? {} : { finishedAt: { lt: finishedBefore } }) },
       include,
-      orderBy: { finishedAt: "desc" },
-      take: MY_TABLES_FINISHED_SHOWN,
+      orderBy: [{ finishedAt: "desc" }, { id: "asc" }],
+      take: MY_TABLES_FINISHED_SHOWN + 1,
     }),
+    prisma.partyTable.count({ where: over }),
   ]);
+  const finished = finishedRead.slice(0, MY_TABLES_FINISHED_SHOWN);
   const shown = (rows: typeof going) =>
     rows.flatMap((row) => {
       const mySeat = row.seats.find((one) => one.memberId === memberId)?.seat;
@@ -64,6 +75,7 @@ export async function myTables(memberId: string): Promise<{ going: MyTable[]; fi
         yourMove: status === ONLINE_STATUS.playing && row.toPlay === mySeat,
         result: status === ONLINE_STATUS.playing ? null : resultFor(mySeat, row.winners, status === ONLINE_STATUS.ended),
         movedAt: row.movedAt.toISOString(),
+        endedAt: row.finishedAt?.toISOString() ?? null,
       };
       return [table];
     });
@@ -75,6 +87,8 @@ export async function myTables(memberId: string): Promise<{ going: MyTable[]; fi
     // Waiting on the reader first, then the rest, each newest first — the order the queue of games keeps.
     going: [...goingShown.filter((one) => one.yourMove), ...goingShown.filter((one) => !one.yourMove)],
     finished: finishedShown,
+    finishedMore: finishedRead.length > MY_TABLES_FINISHED_SHOWN,
+    finishedTotal,
     tags,
   };
 }

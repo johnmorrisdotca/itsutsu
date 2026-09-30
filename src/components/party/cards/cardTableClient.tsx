@@ -84,3 +84,42 @@ export function CrazyEightsOffer({ href }: { href: string }) {
 export function CrazyEightsCard() {
   return <Card kind="crazyEights" />;
 }
+export function SpadesTable(props: PartyTableGameProps) {
+  return <Table kind="spades" {...props} />;
+}
+export function SpadesOffer({ href }: { href: string }) {
+  return <Offer kind="spades" href={href} />;
+}
+export function SpadesCard() {
+  return <Card kind="spades" />;
+}
+export function GinRummyTable(props: PartyTableGameProps) {
+  return <Table kind="ginRummy" {...props} />;
+}
+export function GinRummyOffer({ href }: { href: string }) {
+  return <Offer kind="ginRummy" href={href} />;
+}
+export function GinRummyCard() {
+  return <Card kind="ginRummy" />;
+}
+export function EuchreTable(props: PartyTableGameProps) {
+  return <Table kind="euchre" {...props} />;
+}
+export function EuchreOffer({ href }: { href: string }) {
+  return <Offer kind="euchre" href={href} />;
+}
+export function EuchreCard() {
+  return <Card kind="euchre" />;
+}
+
+export function CribbageTable(props: PartyTableGameProps) {
+  return <Table kind="cribbage" {...props} />;
+}
+
+export function CribbageOffer({ href }: { href: string }) {
+  return <Offer kind="cribbage" href={href} />;
+}
+
+export function CribbageCard() {
+  return <Card kind="cribbage" />;
+}

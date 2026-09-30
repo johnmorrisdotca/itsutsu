@@ -15,6 +15,10 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
+import { dodgeGuesses, readDodge } from "@/lib/puzzles/gomoji/dodgePlay";
+import { decodeDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { backwardsGuesses, breaksBackwardsRule } from "@/lib/puzzles/gomoji/backwards";
+import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { futagoKanaScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { breaksKanaHardRule, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
 import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMark, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
@@ -30,6 +34,7 @@ import { WordBoards } from "./WordBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
+import { SakasaScoreLine } from "./SakasaScoreLine";
 import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
@@ -99,18 +104,26 @@ export function GomojiKanaSolve({
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
-  // One word, or a Futago's two (`futago.ts`), and the free grey word.
-  const given = useMemo(() => hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null }, [kind, size, puzzle.givens]);
+  const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeKanaProgress(resumed.progress, size)) ?? []);
+  // A Gomoji Nige 逃げ in kana hides nothing and has no free grey word: the dodger answers every guess (`dodgePlay.ts`).
+  const dodging = useMemo(() => decodeDodgeGivens(puzzle.givens), [puzzle.givens]);
+  const dodge = useMemo(() => (dodging === null ? null : readDodge(kind, size, level, dodging, guesses)), [dodging, kind, size, level, guesses]);
+  // One word, or a Futago's two (`futago.ts`), and the free grey word; a dodger's the one it stands for after these guesses.
+  const given = useMemo(
+    () => (dodge !== null ? { words: [dodge.word], grey: null } : (hiddenWordsOf(kind, size, puzzle.givens) ?? { words: [""], grey: null })),
+    [dodge, kind, size, puzzle.givens],
+  );
   const hidden = given.words[0]!;
   // One word, a Futago's two or a Yotsugo's four: the address and Another ask for the same count again.
   const count = asWordCount(given.words.length);
   const many = count > 1;
   const free = given.grey === null ? 0 : 1;
   const words = useMemo(() => kanaWordsOf(size), [size]);
-  const [guesses, setGuesses] = useState<string[]>(() => (resumed === null ? null : decodeKanaProgress(resumed.progress, size)) ?? []);
   // A run kept under the counts before 2026-09-28 may have used today's count already: it opens with a guess left (`rowsResumed`).
   const [kept] = useState(() => guesses.length);
-  const rows = wordRowsResumed(kind, size, level, given, kept);
+  // A Sakasa, played backwards (`backwards.ts`): its word behind a mark, no free grey word, and its levels the other way round.
+  const backwards = isBackwardsGivens(puzzle.givens);
+  const rows = dodging !== null ? dodgeGuesses(kind, size) : backwards ? backwardsGuesses(kind, size, level) : wordRowsResumed(kind, size, level, given, kept);
   const [typing, setTyping] = useState<TypingRow>(() => emptyRow(size));
   const [romaji, setRomaji] = useState("");
   const [said, setSaid] = useState<string | null>(null);
@@ -212,9 +225,10 @@ export function GomojiKanaSolve({
       return;
     }
     // Strict holds a guess to what every board still being played has found; a found board asks nothing more.
-    const breaks = strict ? (boards.filter((board) => !board.found).map((board) => breaksKanaHardRule(board.guessed, board.word, word)).find((each) => each !== null) ?? null) : null;
+    // A Sakasa holds every guess to what the rows uncovered, whatever Strict says (`breaksBackwardsRule`).
+    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word) : strict ? (boards.filter((board) => !board.found).map((board) => breaksKanaHardRule(board.guessed, board.word, word)).find((each) => each !== null) ?? null) : null;
     if (breaks !== null) {
-      setSaid(`Strict: ${breaks}.`);
+      setSaid(`${backwards ? "Sakasa" : "Strict"}: ${breaks}.`);
       return;
     }
     const at = begin();
@@ -222,9 +236,15 @@ export function GomojiKanaSolve({
     setGuesses(next);
     setTyping(emptyRow(size));
     setSaid(null);
-    if (everyWordFound(next, given.words)) void finish(next.join(""), at);
+    // A dodger is found only when the guess left it nowhere else to go (`dodgeFound`).
+    const found = dodging === null ? everyWordFound(next, given.words) : readDodge(kind, size, level, dodging, next).found;
+    // Backwards, the word typed is the loss and every row filled without it the win.
+    if (backwards) {
+      if (word === hidden) void runOut(next.join(""), at);
+      else if (next.length === rows) void finish(next.join(""), at);
+    } else if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, romaji, typing, size, words, strict, guesses, given, boards, begin, finish, runOut, rows]);
+  }, [closed, romaji, typing, size, words, strict, guesses, given, boards, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level]);
 
   /* The desk's keyboard: romaji, kana from a Japanese keyboard, Enter, Backspace and Delete, Space and the arrows. */
   useEffect(() => {
@@ -291,7 +311,11 @@ export function GomojiKanaSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? `${free === 1 ? `The first word is free, grey everywhere${count === 4 ? " in all four quarters" : many ? " for both words" : ""}. ` : ""}${count === 4 ? "Every guess goes to all four words. " : many ? "Every guess goes to both words. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left.`}
+            {said ?? (backwards
+              ? `Type any word but the hidden one, keeping every kana uncovered. ${left} ${left === 1 ? "row" : "rows"} to get through.`
+              : `${free === 1 ? `The first word is free, grey everywhere${count === 4 ? " in all four quarters" : many ? " for both words" : ""}. ` : ""}${count === 4 ? "Every guess goes to all four words. " : many ? "Every guess goes to both words. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left${
+              dodge === null ? "" : `, and ${dodge.standing} ${dodge.standing === 1 ? "word" : "words"} for it to hide among`
+            }.`)}
             {romaji === "" ? null : (
               <span className="ml-2 font-mono text-ink" data-testid="kana-romaji">
                 {romaji}…
@@ -322,11 +346,18 @@ export function GomojiKanaSolve({
         </>
       ) : done.outOfGuesses ? (
         <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
-          <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
-            {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}. {many ? "The words were" : "The word was"}{" "}
-            <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.
-          </p>
-          <WordScoreLine score={score!} headStart={headStart} />
+          {backwards && !done.outOfTime ? (
+            <p className="text-base">
+              Caught on row {guesses.length} of {rows}: <strong className="tracking-wide" data-testid="word-was">{hidden}</strong> was the word.
+            </p>
+          ) : (
+            <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
+              {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}.{" "}
+              {many ? "The words were" : dodge === null || dodge.standing <= 1 ? "The word was" : `It was still hiding among ${dodge.standing} words, one of them`}{" "}
+              <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.
+            </p>
+          )}
+          {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
               {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
@@ -339,7 +370,7 @@ export function GomojiKanaSolve({
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link
-              href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, clock }))}
+              href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks: null, hints: false, strict, headStart, words: count, dodge: dodging !== null, backwards, clock }))}
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
@@ -347,11 +378,11 @@ export function GomojiKanaSolve({
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>
-          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : `Out of ${rows} guesses`} />
+          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : backwards ? `Caught on row ${guesses.length}` : `Out of ${rows} guesses`} />
         </div>
       ) : (
         <>
-          <WordScoreLine score={score!} headStart={headStart} />
+          {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>
       )}

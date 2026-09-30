@@ -42,7 +42,7 @@ Three tables, additive, every index and unique named (`map:`) and short
 
 | Table | One row per | Holds |
 |---|---|---|
-| `PartyTable` | table | the game (`game`, a `GameKey`), its board `size`, the **current state as the game's own encoded text** (`state`), a `version` that moves on every write, `status` (`playing` / `finished` / `ended`), the seat to play (`toPlay`, null once over), `winners`, `moveCount`, `movedAt` (the last move: the seat-never-answers clock), `hostMemberId`, `endedByMemberId`, `finishedAt` |
+| `PartyTable` | table | the game (`game`, a `GameKey`), its board `size`, the **current state as the game's own encoded text** (`state`), a `version` that moves on every write, `status` (`playing` / `finished` / `ended`; a game played on ONE device and filed in its player's history shares these rows as `keptPlaying` / `keptFinished` / `keptLeft` — `src/lib/party/kept/` — and `readTableRow` answers null for one, so nothing here takes it for a table), the seat to play (`toPlay`, null once over), `winners`, `moveCount`, `movedAt` (the last move: the seat-never-answers clock), `hostMemberId`, `endedByMemberId`, `finishedAt` |
 | `PartySeat` | seat of a table | `kind` (`member` / `open` / `computer`), the `memberId` for a member's seat, the `name` shown, the open seat's link `token` (unique), `joinedAt` |
 | `PartyAction` | move | the table, its `index`, the `seat` it was for, the move as JSON, `byMemberId` (the member whose browser sent it: the mover, or for a computer's move the browser that worked it out), `createdAt` |
 

@@ -194,12 +194,14 @@ seed; a winnable deal is the first from its seed that our solver wins in a fixed
 number of tables, and any deal is dealt as it falls. The answer and a run kept
 half way are the moves, two characters a carry, which the server replays from
 the deal (`solitaire/check.ts`). Why it is a puzzle kind and not a new one is in
-`docs/plans/cards/README.md`. Beside it, the family card games — **Hearts**
-ハーツ, **Crazy Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二
-and **President** 大富豪 — are party games (`src/lib/cardGames/`), one table for
-all five round one device (`src/components/party/cards/`), a computer in any
-empty seat and every hand kept hidden between people; see
-`docs/plans/family-cards/README.md`.
+`docs/plans/cards/README.md`. Beside it, the family card games — **Crazy
+Eights** クレイジーエイト, **Go Fish** 魚釣り, **Big Two** 大老二 and **President**
+大富豪, and **Gin Rummy** ジンラミー for two — are party games (`src/lib/cardGames/`), one table for all of them round
+one device (`src/components/party/cards/`), a computer in any empty seat and
+every hand kept hidden between people; see `docs/plans/family-cards/README.md`.
+**Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,
+**Hearts** ハーツ, **Spades** スペード and **Euchre** ユーカー, with **Cribbage** クリベッジ beside them, split off Cards so neither shelf passes
+eight games.
 
 **Mahjong** 麻雀 (2026-09-29) is the family of games played with a mahjong
 set, opened with **Mahjong Solitaire** 牌合わせ (`src/lib/puzzles/mahjong/`):
@@ -219,7 +221,12 @@ rows; a Futago's two words a row more and a Yotsugo's four three more; and
 Strict at any level holds each guess to the letters already found
 (`src/lib/puzzles/gomoji/layout.ts`). Head start, at easy only, greys as many
 keys as the word is long before the first guess, none of them in the word,
-for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). English words
+for one help's points (`src/lib/puzzles/gomoji/headStart.ts`). Two other
+ways to play one word, chosen on the set-up in every language but Pop culture:
+**Nige** 逃げ, where no word is hidden until the guesses leave only one
+(`src/lib/puzzles/gomoji/dodge.ts`), and **Sakasa** 逆さ, where every row must
+be filled without typing the hidden word (`src/lib/puzzles/gomoji/backwards.ts`),
+each in a seed block of its own with a daily game at every length. English words
 from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
 French and German words from real dictionaries, Lexique and LanguageTool's
 German dictionary, with every hidden word also in Wiktionary and never an

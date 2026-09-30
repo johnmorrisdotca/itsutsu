@@ -4,6 +4,7 @@ import { decodeGuesses, decodeHidden, encodeHidden, languageOf } from "./code";
 import { formerGuessesFor, guessesFor, rowsResumed } from "./layout";
 import type { WordCount } from "./words.types";
 import { asWordCount } from "./wordsSeed";
+import { innerBackwardsGivens } from "./backwardsSeed";
 
 /**
  * FUTAGO 双子, "twins": a Gomoji with two hidden words at once. John's ticket,
@@ -80,7 +81,9 @@ export type HiddenWords = { words: readonly string[]; grey: string | null };
  * that are not a word puzzle of this kind and size. The words must all
  * differ: two boards with one word would be one board drawn twice.
  */
-export function hiddenWordsOf(kind: PuzzleKind, size: number, givens: string): HiddenWords | null {
+export function hiddenWordsOf(kind: PuzzleKind, size: number, played: string): HiddenWords | null {
+  // A Sakasa's word sits behind a mark (`backwardsSeed.ts`), hidden as ever: the one it is played to avoid.
+  const givens = innerBackwardsGivens(played) ?? played;
   if (kind === "gomojiKana") {
     const bar = givens.indexOf("|");
     const [head, tail] = bar === -1 ? [givens, ""] : [givens.slice(0, bar), givens.slice(bar)];

@@ -83,7 +83,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/plans/hitotsu/README.md` | agents, engineers | `packages/hitotsu/**`, `src/lib/party/hitotsu/**`, `src/components/party/hitotsu/**`, `src/lib/party/online/onlineHitotsu.ts`, `src/components/party/online/HitotsuOnline.tsx`, `src/app/api/tables/route.ts` (the size bound), `src/lib/gomoku/families.data.ts` (Colour cards), `src/app/games/colour-cards/page.tsx` |
 | `packages/hitotsu/README.md`, `packages/hitotsu/CHANGELOG.md` | people using the package | `packages/hitotsu/src/**` (its API, rules and options), `packages/hitotsu/demo/**` |
 | `docs/plans/mahjong/README.md` | agents, engineers | `src/lib/puzzles/mahjong/**`, `src/components/puzzles/Mahjong*.tsx`, `src/components/puzzles/mahjong*.ts`, `src/components/mine/MahjongTableCard.tsx`, `src/lib/puzzles/puzzles.constants.ts` (`mahjong`), `src/lib/gomoku/families.ts` (Mahjong) |
-| `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
+| `docs/plans/party-games/README.md` | agents, engineers | `src/lib/party/**`, `src/components/party/partyKindTables.ts`, `src/components/party/keptInBrowser.ts`, `src/components/party/keptRecord.ts`, `src/app/api/kept-games/**`, `src/app/games/[slug]/kept/**`, `src/lib/history/everyGame.ts`, `src/lib/catalogue/gameKeys.ts`, `src/lib/gomoku/families.ts` (`HOME_FAMILIES`, `RECORDED_FAMILIES`, `familyPagePath`) |
 | `docs/plans/cards/README.md` | agents, engineers | `src/lib/cards/**`, `src/components/cards/**`, `src/lib/puzzles/solitaire/**`, `src/lib/puzzles/freecell/**`, `src/lib/puzzles/spider/**`, `src/components/puzzles/Solitaire*.tsx`, `FreeCell*.tsx`, `Spider*.tsx`, `Patience*.tsx`, `src/lib/gomoku/families.ts` (the Cards family) |
 | `docs/plans/family-cards/README.md` | agents, engineers | `src/lib/cardGames/**`, `src/components/party/cards/**`, `src/lib/party/party.constants.ts` and `party.types.ts` (the card games as party kinds), `src/lib/party/party.coverage.test.ts` (the family line) |
 | `docs/plans/party-online/README.md` | agents, engineers | `src/lib/party/online/**`, `src/components/party/online/**`, `src/app/api/tables/**`, `src/app/games/[slug]/tables/**`, `prisma/schema.prisma` (`PartyTable`, `PartySeat`, `PartyAction`), `src/components/live/pollCadence.ts`, `src/components/live/live.constants.ts` |
@@ -91,6 +91,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
 | `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
+| `AGENTS.md`, "Playing Offline" | agents | `public/sw.js`, `src/lib/offline/`, `src/components/offline/`, `playwright.config.ts` (`serviceWorkers`) |
 
 ### On the site (kinds A and B)
 

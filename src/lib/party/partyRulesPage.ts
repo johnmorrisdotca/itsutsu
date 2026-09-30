@@ -56,6 +56,10 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   president: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} rounds`,
   goFish: () => "in one deal, until every book is down",
   crazyEights: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  spades: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  ginRummy: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  euchre: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  cribbage: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -142,6 +146,38 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. An eight asks which suit to call. Press Draw when you cannot play, and Pass when the card you drew cannot be played either.",
     house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
     more: ["You may draw only when you cannot play, one card at a time, and may play the card you drew if it matches.", "The first player moves one seat round the table each hand."],
+  },
+  spades: {
+    turn: "The line over the table says whose turn it is, by name, and who their partner is. To bid, press Nil or a number of tricks under your hand. Then your hand is along the foot of the table: tap a card to choose it (it rises), then press Play; or drag it onto the table; or tap a card twice to play it at once. A computer plays its own seat by itself, a moment after its turn comes. Beside each name is what they bid and how many tricks they have taken.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "Partners are the first and third seats against the second and fourth, and any of them may be a computer.",
+      "There is no blind nil, and no bid of ten tricks for a bonus: a bid is nil or one to thirteen, scored as above.",
+    ],
+  },
+  ginRummy: {
+    turn: "The line over the table says whose turn it is, by name. Press Draw from the stock, or Take to pick up the card on the discard pile. Then tap a card in your hand to choose it (it rises) and press Throw, or tap it twice to throw it at once; with ten or less of deadwood, press Knock instead (it reads Gin! with none). Your deadwood at its best is written on the table. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; one person against the computer never asks. The other hand is drawn face down, and the table works out every hand's melds for you, laying down the best. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "The first player of each hand simply draws, from the stock or the upcard: there is no offering of the first upcard. The first player alternates hand by hand.",
+      "When a knock is laid down, the other player's melds are laid first and then whatever fits the knocker's melds is laid off onto them. There are no box, line or game bonuses: the score is the hands' points, and the first to the total wins.",
+    ],
+  },
+  euchre: {
+    turn: "The line over the table says whose turn it is, by name, and who their partner is. While trumps are made, press Order up (Pick up, for the dealer) or Pass, and in the second round a Call button for a suit, or Pass. A dealer who picked the card up chooses one card and presses Throw away. Then tap a card to choose it (it rises) and press Play, drag it onto the table, or tap it twice to play it at once. Trumps, and who made them, are written on the table. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down, and your hand is sorted with trumps last, the left bower among them. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "The dealer must name trumps if everybody passes in the second round (stick the dealer), so every hand is played.",
+      "There is no going alone: every hand is played by all four, and taking all five tricks scores two.",
+    ],
+  },
+  cribbage: {
+    turn: "The line over the table says whose turn it is, by name. First choose two cards (they rise) and press Lay to the crib. Then, in the pegging, tap a card and press Play, drag it onto the table, or tap it twice to play it at once; the count and what each card scored are written on the table, and a go is called for you when you cannot play. After the pegging, both hands and the crib are shown and counted on the table. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; one person against the computer never asks. The other hand is drawn face down, and the table counts every show for you. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "Seat one deals first, and the deal passes each hand. The score is kept as numbers beside each name rather than pegs on a board.",
+      "Nothing is claimed by hand: every fifteen, pair, run, go and show is counted for you, so there is no muggins, taking points a player missed.",
+    ],
   },
 };
 

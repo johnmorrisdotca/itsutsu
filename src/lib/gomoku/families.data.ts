@@ -234,8 +234,36 @@ export const GAME_FAMILIES: GameFamily[] = [
      * this family's first and its award are still the patience games' alone.
      * FreeCell and Spider (2026-09-30) sit beside Solitaire, the three
      * patience games first, kept and timed as it is.
+     *
+     * Hearts moved to Tricks (below) with Spades on 2026-09-30, so this shelf
+     * keeps room for Gin Rummy under the eight a shelf holds.
      */
-    games: ["solitaire", "freecell", "spider", "hearts", "crazyEights", "goFish", "bigTwo", "president"],
+    games: ["solitaire", "freecell", "spider", "crazyEights", "goFish", "bigTwo", "president", "ginRummy"],
+  },
+  {
+    key: "tricks",
+    /*
+     * TRICKS. The card games scored round a table, split off Cards on
+     * 2026-09-30 when Spades arrived and the family card games still to come
+     * (Euchre, Oh Hell, Cribbage) would have run Cards past the eight a shelf
+     * holds (`FAMILY_MOST_GAMES`). Trick-taking games first — Hearts and
+     * Spades — played round one device with a computer in any seat.
+     * Cribbage (2026-09-30) is here too: not a trick-taking game, but one
+     * played a card at a time round the table, and Cards was full.
+     *
+     * トリック: the word Japanese players use for a trick, as in
+     * トリックテイキング, the name for the whole kind of game.
+     *
+     * Its games are party games, never recorded, so, like Dominoes, it counts
+     * towards no award, has a page of its own at /games/tricks, and stays off
+     * the set-up screen.
+     */
+    title: "Tricks",
+    kanji: "トリック",
+    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, or peg your way to 121 at cribbage. Round one device, with a computer in any empty seat.",
+    games: ["hearts", "spades", "euchre", "cribbage"],
+    notOnSetUp:
+      "A game here is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "colour-cards",

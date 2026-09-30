@@ -119,3 +119,47 @@ How each plays:
 - **Old Maid** and **War**: children's games with almost no decisions, so a poor fit here.
 
 **Recommended next: Spades.** It reuses almost all of Hearts: the trick engine, following suit, the seat order and the computer's trick-taking sense. It adds bidding and teams, and it is the most played of the list. After it, Gin Rummy, the best two-player game still missing.
+
+## Spades (2026-09-30), and the Tricks family
+
+Spades is the first of the next five, built as the plan above recommended: Hearts' trick engine with bidding and partnerships (`src/lib/cardGames/spades/`, `spadesAdapter.tsx`).
+
+- **Always four**, partners across the table: seats 0 and 2 against 1 and 3, any of them a computer.
+- **Bids** are nil or one to thirteen, pressed under the hand. No blind nil, and no ten-for-two-hundred bonus bid.
+- **Scoring**: ten a trick bid and one a bag when the contract is made, minus ten a trick bid when it is not; every ten bags cost a hundred. Nil is a hundred either way, its bidder's tricks count for nothing towards the contract and are bags.
+- **Length**: to 200, 300 or 500 points (500 the usual game). A partnership that sinks to minus the total loses, which also means a game of random bids always ends. Level at the end, another deal.
+- **The computer** bids what its hand is worth (aces, guarded kings, long spades, voids beside three or four spades), nil only on a hand of nothing and never beside a partner's nil. Measured over 300 deals of four computers: the table bids 11.6 tricks on average and makes its contract 92% of the time.
+
+**The Tricks family** トリック. A shelf holds eight games (`FAMILY_MOST_GAMES`). Cards had six; FreeCell and Spider, and Gin Rummy, Euchre, Cribbage and Oh Hell after Spades, would have made thirteen. Hearts and Spades moved to a new family, Tricks, at `/games/tricks`, off the set-up screen as Dominoes is. Cards keeps Solitaire (its award untouched) and the shedding games. Euchre, Oh Hell and Cribbage are to join Tricks; Gin Rummy joins Cards. John was asked on the thread; this is the recommended option, taken while the answer is awaited.
+
+## Gin Rummy (2026-09-30)
+
+The classic game for two (`src/lib/cardGames/ginRummy/`, `ginRummyAdapter.tsx`), at home in Cards.
+
+- **A turn** is two moves: draw (the stock, or take the discard), then throw a card or knock with it. The card just taken may not be thrown straight back.
+- **Melds** are found for the player: `bestLayout` searches every set and run over the hand as a bitmask for the least deadwood, and the table shows "Your deadwood" as it stands.
+- **Knocking** with ten or less; the defender's own melds are laid first, then whatever fits the knocker's melds is laid off, a run grown a card at a time. Gin is 25 plus their deadwood with nothing laid off; an undercut is the difference and 25 to the defender. Two cards left in the stock with nobody out is a drawn hand.
+- **Left out**, as house rules on the rules page: the offer of the first upcard (the first player simply draws), and the box, line and game bonuses. Length is 50, 100 (the usual) or 150 points.
+- **After a hand**, the table lays both hands down, melds first, with who scored, until both players have thrown once in the next.
+- **The computer** takes the discard only when it goes straight into a meld, throws the card leaving least deadwood (not one near a card the other player picked up, when another costs the same) and knocks as soon as it can.
+- **The party gate** plays it with `sensible`: random draws and throws, but a knock whenever one is offered, since a uniformly random player almost never knocks and every hand would be drawn.
+
+## Euchre (2026-09-30)
+
+Four players in two partnerships with the twenty-four cards from nine to ace (`src/lib/cardGames/euchre/`, `euchreAdapter.tsx`), at home in Tricks.
+
+- **Making trumps**: five each and one card turned up. From the dealer's left, each orders it up or passes; ordered, the dealer picks it up and throws one card away. If all four pass it is turned down, and each may name another suit or pass. **Stick the dealer**: the dealer, last in that round, must name one, so no hand is thrown in.
+- **The bowers**: in trumps the jack is highest, then the jack of the same colour, which is a trump and no longer of its own suit for following. The hand is sorted that way once trumps are made.
+- **Scoring**: the makers score one for three or four tricks and two for all five; held to two or fewer they are euchred and the other side scores two. To 5 or 10 points (10 the usual).
+- **Left out**, said on the rules page: going alone.
+- **The computer** weighs each suit as trumps (bowers, trump ace and king, side aces, a void it can trump into) and makes trumps with a hand worth about two tricks with its partner's help, counting the turned card for or against it by who deals. Measured over 2,000 hands of four computers: the makers win 81% of them, and take all five in 17%.
+
+## Cribbage (2026-09-30)
+
+The two-player game (`src/lib/cardGames/cribbage/`, `cribbageAdapter.tsx`), shelved in Tricks: it is not a trick-taking game, but it is played a card at a time round the table, and Cards was full at eight. Worth John's look when he reviews the shelves.
+
+- **A hand**: six each, two laid to the dealer's crib (the other player first), the starter cut (a jack is two to the dealer), then the pegging and the show. Seat one deals the first hand, and the deal alternates.
+- **The pegging** scores fifteen, thirty-one, pairs (2, 6, 12) and runs in any order. A go is not a press: when neither player can lay a card, whoever played last scores one and the count starts again, and the last card of all scores one. The table writes the count and what the last card scored.
+- **The show** is counted for both players: fifteens, pairs, runs (each way a run can be made), four for a flush in the hand or five with the starter (the crib only with five), and nobs. The other player first, then the dealer, then the crib, and the game ends the moment someone reaches the total, even partway through. The next hand opens with the last show laid out on the table until the crib is laid.
+- **Length**: 121 (the usual) or 61. The score is numbers beside each name, no pegboard. No muggins, since nothing is claimed by hand.
+- **The computer** keeps the four cards whose show averages most over every starter it could be cut, counting the two thrown for its own crib or against the other's; pegging, it takes the most points now, keeps the count off five and twenty-one, and leads low. Measured over 200 games against random play it wins 99.5%, its hands averaging 8.1 points; a game runs about nine hands.

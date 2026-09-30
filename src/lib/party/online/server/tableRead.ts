@@ -8,6 +8,7 @@ import { isPieceColour } from "@/lib/pieces/pieceColours";
 import { shownName } from "@/lib/rating/shownName";
 import { AGE_BANDS } from "@/lib/social/ageBand.constants";
 
+import { isKeptStatus } from "../../kept/kept.constants";
 import { PARTY_TURN_WAIT_MS } from "../online.constants";
 import type { OnlineGameKey, OnlineSeatKind, OnlineStatus, OnlineTableView } from "../online.types";
 import { tableSeatPath } from "../onlinePaths";
@@ -69,7 +70,9 @@ export async function readTableRow(id: string): Promise<(TableRow & { lastMoverI
     prisma.partyTable.findUnique({ where: { id }, include: { seats: { orderBy: { seat: "asc" } } } }),
     prisma.partyAction.findFirst({ where: { tableId: id }, orderBy: { index: "desc" }, select: { byMemberId: true } }),
   ]);
-  return row === null ? null : { ...row, lastMoverId: last?.byMemberId ?? null };
+  // A game kept on one device shares these rows under statuses of its own (`KEPT_STATUS`): no table on several devices, so none here.
+  if (row === null || isKeptStatus(row.status)) return null;
+  return { ...row, lastMoverId: last?.byMemberId ?? null };
 }
 
 /** A table row as the questions in `onlineSeats.ts` read it. */

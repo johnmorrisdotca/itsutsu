@@ -6,6 +6,9 @@ import { GAME_SETTINGS, WORD_LANGUAGE_DISPLAY, WORD_LIST_DISPLAY, listedGameOf, 
 
 import { futagoRule } from "./gomoji/futago";
 import { yotsugoRule } from "./gomoji/yotsugo";
+import { dodgeRule } from "./gomoji/dodgeWords";
+import { offersDodge } from "./gomoji/dodgeSeed";
+import { backwardsRule } from "./gomoji/backwardsWords";
 import { layoutFor } from "./mahjong/layouts";
 import { CARD_SIZE_WORDS, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
@@ -66,7 +69,7 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   ];
   const play = [
     ...copy.rules.slice(1),
-    ...(spec.wordGrid === undefined ? [] : [futagoRule(spec.wordGrid), yotsugoRule(spec.wordGrid)]),
+    ...(spec.wordGrid === undefined ? [] : [futagoRule(spec.wordGrid), yotsugoRule(spec.wordGrid), ...(offersDodge(kind) ? [dodgeRule(spec.wordGrid), backwardsRule(spec.wordGrid)] : [])]),
     `Levels: ${levels.join("; ")}.`,
     spec.cards === true
       ? "A game is for one person, in your own browser: the deal is shuffled and every move is checked there, and nothing is sent anywhere until the last card is home."

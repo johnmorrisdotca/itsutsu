@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { CARD_GAME_DISPLAY } from "../src/lib/cardGames/cardGames.copy";
 import { CARD_GAME_LIST, type CardGameKind } from "../src/lib/cardGames/cardGames.constants";
+import { GAME_FAMILIES } from "../src/lib/gomoku/families.data";
 import { PARTY_SLUGS } from "../src/lib/gomoku/slugs";
 import { ready } from "./support";
 
@@ -78,7 +79,7 @@ async function playOneCard(page: Page, press: string): Promise<boolean> {
 test.describe("the card games, for a reader with no account", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("every one has an open front door and rules, in the Cards family", async ({ page }) => {
+  test("every one has an open front door and rules, in its family", async ({ page }) => {
     for (const kind of CARD_GAME_LIST) {
       await page.goto(at(kind));
       await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(CARD_GAME_DISPLAY[kind].label);
@@ -100,6 +101,21 @@ test.describe("the card games at the table", () => {
     await myTurn(page);
     expect(await playOneCard(page, "cards-play")).toBe(true);
     await expect(page.getByTestId("cards-trick-card").first()).toBeVisible();
+  });
+
+  test("Spades: a bid pressed, then a card played to a trick against three computers", async ({ page }) => {
+    await start(page, "spades");
+    await myTurn(page);
+    // The bids go round from the dealer's left, the first seat dealing: Ann bids last, once the table has said its three.
+    await expect(page.getByTestId("cards-bids")).toContainText("Bids:");
+    const before = await movesMade(page);
+    await page.getByTestId("cards-bid-3").click();
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+    await myTurn(page);
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await expect(page.getByTestId("cards-trick-card").first()).toBeVisible();
+    await expect(page.getByTestId("cards-score-row").first()).toContainText("bid 3");
+    await clearKept(page);
   });
 
   test("two people at a table: every hand is covered, and the device is asked for by name", async ({ page }) => {
@@ -194,8 +210,71 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
-  test("the Cards family shelf holds the five beside Solitaire", async ({ page }) => {
-    await page.goto("/games/solitaire/family");
-    for (const kind of CARD_GAME_LIST) await expect(page.getByTestId("family-games")).toContainText(CARD_GAME_DISPLAY[kind].label);
+  test("Euchre: trumps made round the table, then a card played to a trick against three computers", async ({ page }) => {
+    await start(page, "euchre");
+    await myTurn(page);
+    // The first seat deals, so Ann speaks last in the making: order the card up, or call a suit (a dealer must).
+    // A computer may have ordered it up already, and then Ann's first turn is the dealer's discard.
+    const game = page.getByTestId("cards-game");
+    if ((await page.getByTestId("cards-discard-card").count()) === 0) {
+      const before = await movesMade(page);
+      if ((await page.getByTestId("cards-order").count()) > 0) await page.getByTestId("cards-order").click();
+      else await page.locator('[data-testid^="cards-call-"]').first().click();
+      await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+      await myTurn(page);
+    }
+    // Picked up as dealer: one card thrown away, by a double tap.
+    if ((await page.getByTestId("cards-discard-card").count()) > 0) {
+      await handCards(page).first().dblclick({ position: { x: 8, y: 12 } });
+      await myTurn(page);
+    }
+    await expect(page.getByTestId("cards-trumps")).toBeVisible();
+    await expect(game).toHaveAttribute("data-state", "playing");
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await clearKept(page);
+  });
+
+  test("Gin Rummy: a card drawn, then one thrown by a double tap, against the computer", async ({ page }) => {
+    await start(page, "ginRummy");
+    await myTurn(page);
+    await expect(page.getByTestId("cards-deadwood")).toContainText("Your deadwood");
+    const before = await movesMade(page);
+    await page.getByTestId("cards-draw-stock").click();
+    await expect.poll(() => movesMade(page)).toBe(before + 1);
+    // Eleven cards in hand: the one drawn is thrown back by tapping it twice.
+    await expect(handCards(page)).toHaveCount(11);
+    await handCards(page).last().dblclick({ position: { x: 8, y: 12 } });
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before + 1);
+    await clearKept(page);
+  });
+
+  test("Cribbage: two cards laid to the crib, then a card pegged on the count, against the computer", async ({ page }) => {
+    await start(page, "cribbage");
+    await myTurn(page);
+    // Ann deals the first hand, so the computer has laid away already: two cards chosen for her own crib.
+    await expect(page.getByTestId("cards-crib-words")).toContainText("crib");
+    await expect(page.getByTestId("cards-crib-lay")).toBeDisabled();
+    await handCards(page).nth(0).click();
+    await handCards(page).nth(1).click();
+    const before = await movesMade(page);
+    await page.getByTestId("cards-crib-lay").click();
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+    // The starter is cut, the computer leads, and Ann plays a card on the count.
+    await myTurn(page);
+    await expect(page.getByTestId("cards-starter")).toBeVisible();
+    await expect(page.getByTestId("cards-peg-count")).toContainText("Count:");
+    await expect(handCards(page)).toHaveCount(4);
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await clearKept(page);
+  });
+
+  test("every family card game is on its family's shelf: Cards beside Solitaire, or Tricks", async ({ page }) => {
+    const home = (kind: CardGameKind) => GAME_FAMILIES.find((family) => (family.games as readonly string[]).includes(kind))!.key;
+    for (const [family, address] of [["cards", "/games/solitaire/family"], ["tricks", "/games/tricks"]] as const) {
+      await page.goto(address);
+      const shelved = CARD_GAME_LIST.filter((kind) => home(kind) === family);
+      expect(shelved.length, `no card game at home in ${family}`).toBeGreaterThan(0);
+      for (const kind of shelved) await expect(page.getByTestId("family-games")).toContainText(CARD_GAME_DISPLAY[kind].label);
+    }
   });
 });

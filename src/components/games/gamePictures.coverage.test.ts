@@ -287,6 +287,10 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/mine/MahjongTableCard.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleRuns.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleSolves.tsx": { GameThumb: "small" },
+  // Every game of every kind, a row each on the History tab.
+  "src/components/mine/MyHistory.tsx": { GameThumb: "small" },
+  // One game from the history, named as a card is: the page is about that game.
+  "src/app/games/[slug]/kept/[id]/page.tsx": { GameThumb: "regular" },
   "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },
   // A row per game of how this grade measured: a list, so a small picture.
   "src/components/players/LadderStrength.tsx": { GameThumb: "small" },
@@ -313,6 +317,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/games/party/page.tsx": { FamilyMark: "regular" },
   "src/app/games/dominoes/page.tsx": { FamilyMark: "regular" },
   "src/app/games/colour-cards/page.tsx": { FamilyMark: "regular" },
+  "src/app/games/tricks/page.tsx": { FamilyMark: "regular" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
   "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   // The same tab's Pair Go game, kept in this browser: a row like the two beside it.

@@ -21,6 +21,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { memberNamed } from "@/lib/auth/members";
 import { myTables } from "@/lib/party/online/server/myTables";
+import { completedBefore } from "@/lib/history/completed";
+import { completedFilter } from "@/lib/history/completedFilter";
 
 export const metadata = { title: "My games 対局" };
 
@@ -68,7 +70,11 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
   // The one page that says how much is new in the inbox: one count, here, not on every page's header.
   const memberId = await currentMemberId();
   // And the party tables they sit at on several devices, going and finished: two indexed reads (`myTables`).
-  const [unread, tables] = await Promise.all([unreadInbox(memberId), memberId === null ? null : myTables(memberId)]);
+  // Completed's page and narrowing, which its finished tables are read to (`completed.ts`, `completedFilter.ts`).
+  const family = typeof asked.family === "string" ? asked.family : null;
+  const game = typeof asked.game === "string" ? asked.game : null;
+  const finishedFrom = completedBefore(typeof asked.cursor === "string" ? asked.cursor : null);
+  const [unread, tables] = await Promise.all([unreadInbox(memberId), memberId === null ? null : myTables(memberId, finishedFrom, completedFilter(family, game).only)]);
   return (
     <Page>
       <SiteHeader />
@@ -124,15 +130,13 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         withMember={withMember?.id ?? null}
         showAll={typeof asked.all === "string" ? asked.all : null}
         /*
-          And where the last page of the finished group ended. In the query beside
-          `all` for the same reason: a page of a list is a place, so it can be
-          linked, reloaded and arrived back at. Only the finished group pages —
-          see `MyGamesList` — so a cursor without `?all=finished` names a position
-          in a list nobody asked to see, and opens nothing.
+          And where the last page of Completed ended: a time, since that tab is
+          one list of every kind paged by when each ended (`completed.ts`). In
+          the query for the same reason as `all`: a page of a list is a place,
+          so it can be linked, reloaded and arrived back at. On any other tab it
+          names a position in a list nobody asked to see, and opens nothing.
         */
         cursor={typeof asked.cursor === "string" ? asked.cursor : null}
-        // The solved puzzles' own page on Completed, beside the games' (`MyPuzzleSolves`).
-        puzzleCursor={typeof asked["puzzle-cursor"] === "string" ? asked["puzzle-cursor"] : null}
         /*
           THE TABS: Going, Completed, Pass and play, Puzzles (`myGamesViews.ts`).
           The board kept in this browser goes on Pass and play; the seats other
@@ -163,6 +167,10 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}
         tables={withMember === null ? tables : null}
+        // Where the History tab was paged to: every game of every kind (`MyHistorySection`).
+        historyBefore={typeof asked.before === "string" ? asked.before : null}
+        family={family}
+        game={game}
       />
     </Page>
   );

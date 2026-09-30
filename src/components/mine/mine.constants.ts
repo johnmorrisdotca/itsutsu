@@ -9,6 +9,7 @@ export const MY_GAMES_COPY = {
     going: { label: "In progress", kanji: "対局中" },
     completed: { label: "Completed", kanji: "終局" },
     "pass-and-play": { label: "Pass and play", kanji: "対面" },
+    history: { label: "History", kanji: "履歴" },
   },
   /** What an empty column or tab says, with the way in beside it where there is one. */
   empty: {
@@ -43,7 +44,7 @@ export const MY_GAMES_COPY = {
      * play, and it has a tab of its own now, away from the account's games.
      */
     hotSeat: { label: "Pass and play", kanji: "対面", hint: "Two people taking turns on this screen. Never rated." },
-    finished: { label: "Completed", kanji: "終局", hint: "Saved in game history." },
+    finished: { label: "Completed", kanji: "終局", hint: "Everything you have finished, newest first: games, tables, games passed round one screen and puzzles." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   /** The starred games, first on the Completed tab (`FavouritesPanel`); not a group of the queue, so apart from the seven. */
   favourites: {
@@ -101,17 +102,46 @@ export const MY_GAMES_COPY = {
   /** The pass-and-play Kumimoji kept in this browser (`LocalPartyCard`). */
   localParty: { label: "Pass and play", kanji: "回し" },
   /** The puzzles a member started and left unfinished, kept on the account (`MyPuzzleRuns`). */
+  /** The History tab: every game of every kind (`everyGame.ts`). */
+  history: {
+    label: "Every game",
+    kanji: "履歴",
+    hint: "Everything you have played here, of every kind, newest first: games against people and computers, card and party games passed round one screen, tables on several devices, puzzles. Open one to carry on with it, or to look back at how it went.",
+    empty: "Nothing played yet.",
+    firstGame: "Start one",
+    state: {
+      yourMove: "Your move",
+      theirMove: "Their move",
+      going: "In progress",
+      won: "Won",
+      lost: "Lost",
+      drawn: "Drawn",
+      shared: "Won, shared",
+      ended: "Ended",
+      left: "Left unfinished",
+      solved: "Solved",
+      unsolved: "Not solved",
+    },
+    open: { going: "Carry on", over: "Look back" },
+    alone: "On one screen",
+    computer: "Computer",
+    guest: (seat: number) => `Player ${seat + 1}`,
+    older: "Older games",
+    newest: "Newest",
+  },
   puzzlesGoing: {
     label: "Puzzles in progress",
     kanji: "解きかけ",
     hint: "Left part way, kept where you left them. Open one to carry on.",
   },
-  /** The puzzles solved, with what each was worth: John, 2026-09-25, "where will the completed puzzles go… where are the scores?!" */
-  puzzlesSolved: {
-    label: "Puzzles solved",
-    kanji: "解いた",
-    hint: "Newest first, each with its points on the leaderboard, its time and the help it took.",
-    empty: "Nothing solved yet.",
+  /** The Completed tab's filters (`CompletedFilters`): John, 2026-09-30, "Allow filters. For the game type / family". */
+  completedFilters: {
+    family: "Family",
+    game: "Game",
+    every: "Every one",
+    showing: "Showing only",
+    everything: "everything",
+    takeOff: (what: string) => `Show more than ${what}`,
   },
   openBoard: {
     label: "Open games",

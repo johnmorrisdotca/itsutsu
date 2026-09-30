@@ -22,6 +22,10 @@ const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number) => string> = {
   president: (size) => `${size} rounds`,
   goFish: () => "One deal",
   crazyEights: (size) => `To ${size}`,
+  spades: (size) => `To ${size}`,
+  ginRummy: (size) => `To ${size}`,
+  euchre: (size) => `To ${size}`,
+  cribbage: (size) => (size === 61 ? "To 61, once round" : "To 121"),
 };
 
 function Section({ legend, children }: { legend: string; children: ReactNode }) {

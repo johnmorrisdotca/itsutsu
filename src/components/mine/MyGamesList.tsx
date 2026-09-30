@@ -9,7 +9,7 @@ import { catchUpSeats } from "@/lib/bots/catchUpSeats";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
 import { MY_GAME_GROUPS, fetchMyGames, pagedGroup, shownGroup, type MyGameGroup } from "@/lib/history/myGames";
-import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, viewHref, type MyGamesView } from "@/lib/history/myGamesViews";
+import { MY_GAMES_VIEWS, VIEW_GROUPS, myGamesView, type MyGamesView } from "@/lib/history/myGamesViews";
 import { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { xpEarnedIn } from "@/lib/xp/xpOfGames";
@@ -21,12 +21,19 @@ import { MY_GAMES_COPY } from "./mine.constants";
 import { FavouritesPanel } from "./FavouritesPanel";
 import { Group } from "./MyGamesGroup";
 import { MyPuzzleRuns } from "./MyPuzzleRuns";
-import { MyPuzzleSolves } from "./MyPuzzleSolves";
-import { mySolvesCount, mySolvesPage } from "@/lib/puzzles/server/mySolves";
-import { SEATED_ONLY } from "@/lib/history/myFinished";
+import { CompletedRowView } from "./CompletedRowView";
+import { mySolvesBefore, mySolvesCount } from "@/lib/puzzles/server/mySolves";
+import { SEATED_ONLY, finishedCursorBefore } from "@/lib/history/myFinished";
+import { completedBefore, completedRows, mergeCompleted } from "@/lib/history/completed";
+import { completedChoices, completedFilter, completedHref } from "@/lib/history/completedFilter";
+import { CompletedFilters } from "./CompletedFilters";
+import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { slugFor } from "@/lib/gomoku/slugs";
+import { keptOverCount, keptOverOf } from "@/lib/history/everyGame";
 import { favouriteGamesOf, favouritesAmong } from "@/lib/history/favourites";
 import { SeatedNarrowing } from "./SeatedNarrowing";
 import { MyTables } from "@/components/party/online/MyTables";
+import { MyHistorySection } from "./MyHistorySection";
 import type { MyTable } from "@/lib/party/online/server/myTables";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 
@@ -122,13 +129,18 @@ const SHOWN: Record<MyGameGroup, number> = {
 export async function MyGamesList({
   showAll = null,
   cursor = null,
-  puzzleCursor = null,
   withMember = null,
   viewAsked,
   local = null,
   openSeats = null,
   tables = null,
+  historyBefore = null,
+  family = null,
+  game = null,
 }: {
+  /** The family and the game Completed is narrowed to, off the address (`completedFilter.ts`); unchecked here. */
+  family?: string | null;
+  game?: string | null;
   /**
    * One other member, by id: the list becomes the games running between the
    * reader and them — the set a buddy row's "2 going" counts, no more and no
@@ -155,8 +167,6 @@ export async function MyGamesList({
    * carrying on rather than by a refusal.
    */
   cursor?: string | null;
-  /** Where the solved puzzles' list on Completed was paged to (`?puzzle-cursor=`), its own place beside the games'. */
-  puzzleCursor?: string | null;
   /** The tab the path names (/play/<view>), already checked by the page: `myGamesView` decides. */
   viewAsked?: string | string[];
   /** The board kept in this browser (`LocalGameCardClient`), drawn on Pass and play. */
@@ -164,7 +174,9 @@ export async function MyGamesList({
   /** The seats other members have posted (`OpenSeatsSection`), drawn under Going. */
   openSeats?: ReactNode;
   /** The party tables the member sits at on several devices (`myTables`): going under Going, finished under Completed. */
-  tables?: { going: readonly MyTable[]; finished: readonly MyTable[]; tags: ReadonlyMap<string, NameTag> } | null;
+  tables?: { going: readonly MyTable[]; finished: readonly MyTable[]; finishedMore: boolean; finishedTotal: number; tags: ReadonlyMap<string, NameTag> } | null;
+  /** Where the History tab was paged to (`?before=`, an ISO time), or null for the newest. */
+  historyBefore?: string | null;
 } = {}) {
   const claims = seatClaims((await cookies()).getAll());
   // The member, by id — however they came in. Null for a browser holding only seat cookies.
@@ -187,7 +199,16 @@ export async function MyGamesList({
    */
   const view = myGamesView(MY_GAMES_VIEWS.map((key) => ({ key, label: key })), viewAsked, showAll);
   const opened = view === "completed" ? "finished" : openedGroup(showAll);
-  const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
+  /*
+   * THE COMPLETED TAB IS ONE LIST OF EVERY KIND, paged by the time each game
+   * ended (`completed.ts`), so its place in the address is a time: the games
+   * are read from it like the tables, the games round one screen and the
+   * puzzles beside them.
+   */
+  const before = view === "completed" ? completedBefore(cursor) : null;
+  const narrowing = view === "completed" ? completedFilter(family, game) : completedFilter(null, null);
+  const { only } = narrowing;
+  const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor: before === null ? null : finishedCursorBefore(before), only } : {};
   const readQueue = async (at: Date) =>
     withMember !== null
       ? // No cookie seats and no finished window: the set is the two of you, running, and that is all.
@@ -218,17 +239,25 @@ export async function MyGamesList({
   // And, on the Completed tab, what each finished game on the page earned the reader (`xpEarnedIn`).
   // And on the Completed tab, the starred games for the panel above the list (first page only) and which of the page's rows are starred.
   const completed = view === "completed" && memberId !== null;
-  const [favourites, starred, solves, solvedCount] = await Promise.all([
-    completed && cursor === null ? favouriteGamesOf(memberId) : { rows: [], total: 0 },
+  const [favourites, starred, solves, device, solvedCount, deviceCount] = await Promise.all([
+    completed && before === null && only === null ? favouriteGamesOf(memberId) : { rows: [], total: 0 },
     completed ? favouritesAmong(memberId, groups.finished.map((item) => item.game.id)) : null,
-    // The finished puzzles, listed only on Completed, a page at a time; counted on the other tabs for Completed's number.
-    completed ? mySolvesPage(memberId, puzzleCursor) : null,
-    !completed && memberId !== null ? mySolvesCount(memberId) : 0,
+    // The finished puzzles and the games round one screen that are over, listed only on Completed among the games; counted for its number.
+    completed ? mySolvesBefore(memberId, before, MY_FINISHED_PAGE_OPEN, only) : null,
+    completed ? keptOverOf(memberId, before, MY_FINISHED_PAGE_OPEN, only) : null,
+    memberId === null ? 0 : mySolvesCount(memberId, only),
+    memberId === null ? 0 : keptOverCount(memberId, only),
   ]);
   const listed = [...MY_GAME_GROUPS.flatMap((group) => groups[group]), ...favourites.rows];
+  const completedTotal = queue.finished.total + solvedCount + (tables?.finishedTotal ?? 0) + deviceCount;
+  const page = mergeCompleted(
+    completedRows({ games: groups.finished, tables: tables?.finished ?? [], device: device?.entries ?? [], solves: solves?.solves ?? [] }),
+    MY_FINISHED_PAGE_OPEN,
+    queue.finished.next !== null || (tables?.finishedMore ?? false) || (device?.more ?? false) || (solves?.more ?? false),
+  );
   const [runs, tags, earned] = await Promise.all([
     memberId === null ? [] : runsOf(memberId),
-    nameTagsOf(listed.flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId])),
+    nameTagsOf([...listed.flatMap((item) => [item.game.blackMemberId, item.game.whiteMemberId]), ...(device?.entries ?? []).flatMap((entry) => entry.others.map((other) => other.memberId))]),
     view === "completed" ? xpEarnedIn(memberId, [...groups.finished, ...favourites.rows].map((item) => item.game.id)) : new Map<string, number>(),
   ]);
 
@@ -244,7 +273,10 @@ export async function MyGamesList({
          * would show fewer than the number that led the reader in.
          */
         shownGroup(groups[group], groups[group].length)
-      : group === "finished"
+      : group === "finished" && view === "completed"
+        ? // Every kind of finished game counted, and the page is the one list's rows (`completed.ts`).
+          { items: groups.finished, total: completedTotal, hidden: Math.max(0, completedTotal - page.rows.length) }
+        : group === "finished"
         ? /*
            * A PAGE, so the total comes from the database and not from the
            * list's own length. See `pagedGroup`: the finished list is five
@@ -276,6 +308,11 @@ export async function MyGamesList({
         earned={earned}
         // A star on each finished row, for a member (the rows of a browser with no account offer none).
         starred={group === "finished" ? starred : null}
+        rows={group === "finished" && view === "completed"
+          ? page.rows.map((row) => (
+              <CompletedRowView key={row.key} row={row} now={now} tags={tags} tableTags={tables?.tags ?? tags} earned={earned} starred={starred} />
+            ))
+          : null}
         /*
          * The next page, for the one group that has one. Built here rather
          * than in the panel because the panel is given a bucket and knows
@@ -283,12 +320,11 @@ export async function MyGamesList({
          * open: on a closed panel "Show all" is the way in, and two links to
          * two different pages of the same list would be one too many.
          */
-        more={open && group === "finished" && queue.finished.next !== null
-          ? `/play?all=finished&cursor=${encodeURIComponent(queue.finished.next)}`
-          : null}
+        // `?all=finished` opens Completed (`viewOfGroup`), so the one list is the only one that pages.
+        more={view === "completed" && group === "finished" && page.next !== null ? completedHref({ family, game }, page.next) : null}
         // The tab is this list, so there is no "Show fewer" to go back to; past the first page, the way to the newest.
         whole={view === "completed" && group === "finished"}
-        newest={view === "completed" && group === "finished" && cursor !== null ? viewHref("completed") : null}
+        newest={view === "completed" && group === "finished" && before !== null ? completedHref({ family, game }) : null}
       />
     );
   };
@@ -312,10 +348,12 @@ export async function MyGamesList({
   // Each tab counts what it holds: Going its games and the puzzles left part way, Completed its games and the puzzles finished.
   const counts: Record<MyGamesView, number> = {
     going: going + runs.length + (tables?.going.length ?? 0),
-    completed: queue.finished.total + (solves?.total ?? solvedCount) + (tables?.finished.length ?? 0),
+    completed: completedTotal,
     "pass-and-play": groups.hotSeat.length,
+    // Counted on its own tab only (`MyHistorySection`): four counts on every visit to /play is a price for a badge.
+    history: Number.NaN,
   };
-  const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, count: counts[key] }));
+  const tabs: Tab[] = MY_GAMES_VIEWS.map((key) => ({ ...MY_GAMES_COPY.views[key], key, ...(Number.isNaN(counts[key]) ? {} : { count: counts[key] }) }));
   const goingShown = VIEW_GROUPS.going.reduce((n, group) => n + groups[group].length, 0);
 
   return (
@@ -369,24 +407,24 @@ export async function MyGamesList({
       {view === "going" ? openSeats : null}
       {/* The starred games first, on the first page: John, "favourite your game, it moves to the top". */}
       {/*
-        GAMES ON THE LEFT, PUZZLES ON THE RIGHT, as Going puts your move beside
-        theirs. John, 2026-09-26: "maybe 2 columns Left and Right for games and
-        puzzles... but not two areas." One column on a phone, the games first.
+        ONE LIST OF EVERYTHING FINISHED. John, 2026-09-30: "Complete games page
+        should list everything together. Right now it's grouped so need to go
+        down low to see some stuff. We don't want things buried." Games, tables,
+        games round one screen and puzzles are rows of one list, newest first
+        (`completed.ts`), under the games you starred.
       */}
       {view === "completed" ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start" data-testid="completed-columns">
-          <div className="flex min-w-0 flex-col gap-4" data-testid="completed-games">
-            {completed && cursor === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
-            {panel("finished", MY_GAMES_COPY.empty.completed)}
-            {tables !== null ? <MyTables tables={tables.finished} finished tags={tables.tags} /> : null}
-          </div>
-          {solves === null ? null : (
-            <div className="flex min-w-0 flex-col gap-4" data-testid="completed-puzzles">
-              <MyPuzzleSolves page={solves} now={now} paged={puzzleCursor !== null} />
-            </div>
-          )}
+        <div className="flex min-w-0 flex-col gap-4" data-testid="completed-games">
+          <CompletedFilters
+            choices={completedChoices()}
+            family={narrowing.family === null ? null : { key: narrowing.family.key, title: narrowing.family.title }}
+            game={narrowing.game === null ? null : { slug: slugFor(narrowing.game), label: gameCopyFor(narrowing.game).label }}
+          />
+          {completed && before === null && only === null ? <FavouritesPanel rows={favourites.rows} total={favourites.total} now={now} tags={tags} earned={earned} /> : null}
+          {panel("finished", MY_GAMES_COPY.empty.completed)}
         </div>
       ) : null}
+      {view === "history" && memberId !== null ? <MyHistorySection memberId={memberId} before={historyBefore} /> : null}
       {view === "pass-and-play" ? (
         <>
           {local}

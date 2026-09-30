@@ -7,6 +7,7 @@ import { APP_COLOURS } from "@/lib/app/app.constants";
 import { appleStartupImages } from "@/lib/app/appleLaunch";
 import { BARE_HEAD_SCRIPT } from "@/components/layout/bare";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
+import { OfflineKeeper } from "@/components/offline/OfflineKeeper";
 import { currentLocale } from "@/lib/i18n/currentLocale";
 import { LOCALES } from "@/lib/i18n/i18n.constants";
 
@@ -102,6 +103,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           twice, so the two cannot disagree at hydration.
         */}
         <TestModeBanner />
+        {/* The offline keeper, started on every page, and the line that says so when there is no connection. */}
+        <OfflineKeeper />
         <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>
     </html>

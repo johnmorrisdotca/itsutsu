@@ -4,6 +4,10 @@ import { swapsTaken } from "../koushi/check";
 import { decodeMoves } from "../solitaire/code";
 import { decodeMoves as decodeFreeCellMoves } from "../freecell/code";
 import { decodeMoves as decodeSpiderMoves } from "../spider/code";
+import { dodgeGuesses } from "./dodgePlay";
+import { isDodgeGivens } from "./dodgeSeed";
+import { backwardsGuesses } from "./backwardsRows";
+import { isBackwardsGivens } from "./backwardsSeed";
 
 /** How many guesses a word took, out of how many the level gave: 3 of 6. */
 export type GuessesTaken = {
@@ -46,6 +50,16 @@ export function guessesTaken(
     return taken === null ? null : { ...taken, unit: "swaps" };
   }
   if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop") return null;
+  // A Sakasa's rows are its own (`backwards.ts`): the count to get through, the levels the other way round.
+  if (isBackwardsGivens(givens)) {
+    const guesses = guessesOf(kind, size, answer);
+    return guesses === null ? null : { used: guesses.length, allowed: backwardsGuesses(kind, size, level as PuzzleLevel) };
+  }
+  // A dodger gives its own count (`dodgeGuesses`), in kana as in letters.
+  if (isDodgeGivens(givens)) {
+    const guesses = guessesOf(kind, size, answer);
+    return guesses === null ? null : { used: guesses.length, allowed: dodgeGuesses(kind, size) };
+  }
   // A Futago's allowance is its own, a guess more than one word's (`futago.ts`); a kana puzzle's free grey word takes a row and is no guess.
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);

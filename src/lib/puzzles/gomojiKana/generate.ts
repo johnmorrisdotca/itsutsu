@@ -4,6 +4,10 @@ import { encodeKanaWordsGivens } from "../gomoji/futago";
 import { wordCountOfSeed } from "../gomoji/wordsSeed";
 import { kanaWordsOf } from "./kanaWords";
 import { dailyManyWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools";
+import { generateDodge } from "../gomoji/generate";
+import { isDodgeSeed } from "../gomoji/dodgeSeed";
+import { generateBackwards } from "../gomoji/generate";
+import { isBackwardsSeed } from "../gomoji/backwardsSeed";
 
 /**
  * Making a kana Gomoji puzzle from a seed: the word, and on easy and medium
@@ -14,6 +18,10 @@ import { dailyManyWordsOfSeed, dailyWordOfSeed } from "../dailyWords/dailyPools"
  * which `preparePuzzle` fetches with the list; its grey word is drawn as ever.
  */
 export function generateGomojiKana(size: number, level: PuzzleLevel, seed: number): Puzzle {
+  // A dodger, in kana as in letters (`dodgePlay.ts`): nothing hidden, and no free grey word.
+  if (isDodgeSeed(seed)) return generateDodge("gomojiKana", size, level, seed);
+  // A Sakasa, played backwards, is made the same way in every language (`gomoji/generate.ts`).
+  if (isBackwardsSeed(seed)) return generateBackwards("gomojiKana", size, level, seed);
   const words = kanaWordsOf(size);
   /* A Futago's two words (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`), and a free grey word grey against every one of them. */
   const count = wordCountOfSeed(seed);

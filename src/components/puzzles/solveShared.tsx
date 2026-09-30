@@ -10,6 +10,8 @@ import { useIdleWatch } from "@/components/game/useIdleWatch";
 
 import { useHints } from "./useHints";
 import { useKeptRun } from "./useKeptRun";
+import { forgetRunOnDevice, runKey } from "./runsOnDevice";
+import { SOLVE_QUEUED, queueSolve, sendWaitingSolves } from "./solveOutbox";
 import { WinStack } from "./PuzzleWinSlot";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
@@ -142,6 +144,16 @@ export function useSolve(
     return () => window.clearInterval(timer);
   }, [startedAt, done, pausedAt, limit, carriedMs, pausedMs]);
 
+  /* What an earlier visit finished with no connection is handed in as a puzzle opens (`solveOutbox.ts`). */
+  useEffect(() => {
+    if (hasAccount) sendWaitingSolves();
+  }, [hasAccount]);
+
+  /* Ended, solved or not: the device's copy of the run goes, as the account's does when the ending is handed in (`runsOnDevice.ts`). */
+  useEffect(() => {
+    if (done !== null && race === null) forgetRunOnDevice({ ...puzzle, clock });
+  }, [done, race, puzzle, clock]);
+
   /* What is kept of this run, when it is paused or its page is left: nothing for a visitor, a race, or a puzzle finished or never started. */
   const keep = useKeptRun(() => {
     if (!hasAccount || race !== null || done !== null || startedAt === null) return null;
@@ -240,10 +252,7 @@ export function useSolve(
       try {
         /* One's own solve goes to the solved route with the browser's time; a
            race's goes to the race, which stamps its own and says it back. */
-        const answered = await fetch(race === null ? "/api/puzzles/solved" : `/api/puzzles/races/${race.id}/finish`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(
+        const handed =
             race === null
               ? {
                   kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs,
@@ -255,9 +264,21 @@ export function useSolve(
                   ...(helped === null ? {} : { helped }),
                   ...(clock === "none" ? {} : { clock }),
                 }
-              : { answer, checksUsed: used },
-          ),
+              : { answer, checksUsed: used };
+        const answered = await fetch(race === null ? "/api/puzzles/solved" : `/api/puzzles/races/${race.id}/finish`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(handed),
+        }).catch((error: unknown) => {
+          // No connection: one's own solve waits on this device and is handed in once there is one (`solveOutbox.ts`); a race's cannot wait.
+          if (race !== null) throw error;
+          queueSolve(runKey({ ...puzzle, clock }), handed);
+          return null;
         });
+        if (answered === null) {
+          setDone({ elapsedMs, paid: null, problem: SOLVE_QUEUED, helped });
+          return;
+        }
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string; solveId?: string | null } | null;
         if (!answered.ok) {
           setDone({ elapsedMs, paid: null, problem: body?.error ?? "The site could not record that solve.", helped });
@@ -285,12 +306,17 @@ export function useSolve(
       const elapsedMs = carriedMs + (startedAt === null ? 0 : Math.max(0, at - startedAt - pausedMs));
       setDone({ elapsedMs, paid: null, problem: null, outOfGuesses: true });
       if (!hasAccount || race !== null) return;
+      const handed = { kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true, ...(clock === "none" ? {} : { clock }) };
       try {
         const answered = await fetch("/api/puzzles/solved", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer, elapsedMs, pausedMs, outOfGuesses: true, headStart: keeping.headStart === true, ...(clock === "none" ? {} : { clock }) }),
+          body: JSON.stringify(handed),
+        }).catch(() => {
+          queueSolve(runKey({ ...puzzle, clock }), handed);
+          return null;
         });
+        if (answered === null) return;
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[] } | null;
         if (answered.ok) setDone({ elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, outOfGuesses: true });
       } catch {
@@ -312,20 +338,23 @@ export function useSolve(
     const ended: Done = { elapsedMs: limit, paid: null, problem: null, outOfGuesses: true, outOfTime: true };
     setDone(ended);
     if (!hasAccount) return;
-    void fetch("/api/puzzles/solved", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer: keeping.progress, elapsedMs: limit, pausedMs,
-        checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, headStart: keeping.headStart === true, clock, outOfTime: true,
-        ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
-      }),
-    })
+    const handed = {
+      kind: puzzle.kind, size: puzzle.size, level: puzzle.level, seed: puzzle.seed, givens: puzzle.givens, answer: keeping.progress, elapsedMs: limit, pausedMs,
+      checksAllowed: allowed, checksUsed: used, hintsUsed: hinting.used, headStart: keeping.headStart === true, clock, outOfTime: true,
+      ...(keeping.steps === undefined ? {} : { steps: keeping.steps() }),
+    };
+    void fetch("/api/puzzles/solved", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(handed) })
+      .catch(() => null)
       .then(async (answered) => {
+        // No connection: kept on this device and handed in once there is one (`solveOutbox.ts`).
+        if (answered === null) {
+          queueSolve(runKey({ ...puzzle, clock }), handed);
+          setDone({ ...ended, problem: SOLVE_QUEUED });
+          return;
+        }
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; error?: string; solveId?: string | null } | null;
         setDone(answered.ok ? { ...ended, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, solveId: body?.solveId ?? null } : { ...ended, problem: body?.error ?? "The site could not keep it." });
-      })
-      .catch(() => setDone({ ...ended, problem: "The site could not be reached to keep it." }));
+      });
   };
   // The tick reads the latest, with what is written now, without restarting the clock on every entry.
   useEffect(() => {

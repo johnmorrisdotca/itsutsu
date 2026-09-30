@@ -5,6 +5,8 @@ import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
 
 import { keptInBrowser } from "../keptInBrowser";
 import { CARD_TABLE_KEYS } from "./cardTable.constants";
+import type { KeptRecordRules } from "@/lib/party/kept/kept.types";
+import { partyRecord } from "../keptRules";
 
 /**
  * EACH CARD GAME KEPT IN THIS BROWSER, one of each at a time, as its table,
@@ -15,7 +17,14 @@ import { CARD_TABLE_KEYS } from "./cardTable.constants";
  */
 function storeOf<K extends CardGameKind>(kind: K) {
   const rules = CARD_GAME_RULES[kind];
-  return keptInBrowser(CARD_TABLE_KEYS[kind], rules.encode as (game: unknown) => string, rules.decode as (text: string | null) => unknown);
+  const kept = partyRecord(kind, rules as unknown as { over: (game: { players: readonly string[] }) => boolean; winners: (game: { players: readonly string[] }) => readonly number[] });
+  return keptInBrowser(
+    CARD_TABLE_KEYS[kind],
+    rules.encode as (game: unknown) => string,
+    rules.decode as (text: string | null) => unknown,
+    // Every card game's state carries its seats (`CardSeats`): the names and which a computer plays.
+    kept as unknown as KeptRecordRules<unknown>,
+  );
 }
 
 export const CARD_TABLE_STORES: Record<CardGameKind, ReturnType<typeof storeOf>> = {
@@ -24,6 +33,10 @@ export const CARD_TABLE_STORES: Record<CardGameKind, ReturnType<typeof storeOf>>
   president: storeOf("president"),
   goFish: storeOf("goFish"),
   crazyEights: storeOf("crazyEights"),
+  spades: storeOf("spades"),
+  ginRummy: storeOf("ginRummy"),
+  euchre: storeOf("euchre"),
+  cribbage: storeOf("cribbage"),
 };
 
 /** A new seed for a new game, from the browser's own random: every deal of the game is shuffled from it. */

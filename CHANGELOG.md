@@ -10,6 +10,39 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.460.0 — 2026-09-30 08:00 UTC
+- Cribbage arrives on the Tricks shelf: lay two to the crib, peg fifteens, pairs and runs as the cards go down, and every hand and crib is counted for you, to 121 or 61
+
+## 0.459.0 — 2026-09-30 08:00 UTC
+- Euchre arrives on the Tricks shelf: four players in two partnerships make trumps from the turned card, the jacks are the highest trumps, and the dealer must name trumps if everyone passes
+
+## 0.458.0 — 2026-09-30 08:00 UTC
+- Gin Rummy arrives in the Cards family: draw, throw and knock against the computer or a friend on one device, with your melds found and your deadwood counted for you
+
+## 0.457.0 — 2026-09-30 08:00 UTC
+- Spades arrives with a new Tricks shelf beside Cards: four players in two partnerships bid their tricks and play them out, with a computer in any empty seat, and Hearts moves to Tricks with it
+
+## 0.456.0 — 2026-09-30 07:27 UTC
+- Completed on My games can be narrowed to one family or one game, from two controls at the top of the list; the choice stays in the address, and a chip says what the list is narrowed to and takes it off.
+
+## 0.455.0 — 2026-09-30 07:06 UTC
+- Gomoji Sakasa 逆さ: Gomoji played backwards, where every row must be filled without ever typing the hidden word, chosen on Gomoji's set-up in every language, with a Sakasa of the day at every length.
+
+## 0.454.0 — 2026-09-30 07:06 UTC
+- Gomoji Nige 逃げ: a word that dodges every guess until your guesses leave it nowhere to hide, chosen on Gomoji's set-up in every language, with a Nige of the day at every length.
+
+## 0.453.0 — 2026-09-30 06:47 UTC
+- Completed on My games is one list of everything you have finished, newest first: games, tables, card and party games passed round one screen and puzzles side by side, so nothing is buried under another section.
+
+## 0.452.0 — 2026-09-30 06:29 UTC
+- Games play offline: a practice board, a pass-and-play table, a card or party game or a puzzle opened once loads again with no connection, a new puzzle can be started offline at any size, and one finished offline is handed in once you are back online. The games list marks each game Ready offline and can keep every game at once, and every page says when you are offline.
+
+## 0.451.1 — 2026-09-30 06:09 UTC
+- The browser checks measure the page a game kept on one screen opens to, so the History tab's release can reach the site.
+
+## 0.451.0 — 2026-09-30 05:29 UTC
+- My games has a History tab with every game you have played, of every kind: games against people and computers, card and party games passed round one screen (filed as you play them, and sent up later when you played offline), tables on several devices and puzzles. Each opens to carry on with it, or to look back at how it ended, on any of your devices.
+
 ## 0.450.1 — 2026-09-30 05:11 UTC
 - The game record leaves out games played by test members, unless the operator has Test Mode on.
 

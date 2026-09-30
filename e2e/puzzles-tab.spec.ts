@@ -6,14 +6,14 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * MY GAMES' SOLVED PUZZLES, on Completed beside the finished games. John,
+ * MY GAMES' SOLVED PUZZLES, on Completed among the finished games. John,
  * 2026-09-25: "where will the completed puzzles go… where are the scores?!",
- * and 2026-09-26: "All completed should be in ONE tab… maybe 2 columns Left
- * and Right for games and puzzles… but not two areas." This solves one, then
- * finds it on Completed with its points, its time and the help it took, and
- * checks there is no Puzzles tab left to find it in twice.
+ * 2026-09-26: "All completed should be in ONE tab", and 2026-09-30: "Complete
+ * games page should list everything together." This solves one, then finds it
+ * at the top of Completed's one list with its points, its time and the help it
+ * took, and checks there is no Puzzles tab left to find it in twice.
  */
-test("a solved puzzle is on Completed beside the games, with its points, its time and its help", async ({ page }) => {
+test("a solved puzzle heads Completed's one list, with its points, its time and its help", async ({ page }) => {
   const seed = freshPuzzleSeed();
   const puzzle = generateNumberPlace(4, "easy", seed);
   const givens = decodeCells(puzzle.givens, 4)!;
@@ -33,10 +33,12 @@ test("a solved puzzle is on Completed beside the games, with its points, its tim
   // The Completed tab, by its tab, and no Puzzles tab beside it.
   await expect(page.getByRole("link", { name: /^Puzzles/ })).toHaveCount(0);
   await page.getByRole("link", { name: /^Completed/ }).click();
-  await expect(page.getByTestId("completed-games")).toBeVisible();
-  const solved = page.getByTestId("completed-puzzles").getByTestId("puzzles-solved");
-  await expect(solved.getByTestId("puzzles-solved-count")).not.toHaveText(/^0/);
-  const newest = solved.getByTestId("puzzle-solved").first();
+  const list = page.getByTestId("my-games-finished");
+  await expect(list).toBeVisible();
+  await expect(page.getByTestId("my-games-finished-count")).not.toHaveText(/^0/);
+  // The newest thing finished, so the first row of the one list, whatever kind the rows under it are.
+  const newest = list.locator("ul > li").first();
+  await expect(newest).toHaveAttribute("data-testid", "puzzle-solved");
   await expect(newest).toHaveAttribute("data-kind", "numberPlace");
   await expect(newest).toContainText("4×4");
   await expect(newest).toContainText("no help");

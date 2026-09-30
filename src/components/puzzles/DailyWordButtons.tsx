@@ -8,6 +8,8 @@ import type { DailyStatus } from "@/lib/puzzles/dailyWords/dailyWords.types";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { FUTAGO_DISPLAY } from "@/lib/puzzles/gomoji/futago";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
+import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
+import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 
 import type { DailyWordButtonsProps } from "./dailyWords.types";
 import { SolveTime } from "./SolveTime";
@@ -62,6 +64,35 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         )}
         prefix="yotsugo-daily"
       />
+      {/* The day's Nige 逃げ at every length where the language offers one: a word that dodges, the same dodger for everybody (`dodgeSeed.ts`). */}
+      {rows.every((row) => row.dodge !== null) ? (
+        <ButtonTable
+          kind={kind}
+          rows={rows.map((row) => ({ size: row.size, ...row.dodge! }))}
+          testId="nige-daily-table"
+          label={(size) => (
+            <>
+              {DODGE_DISPLAY.label} {size} <span className="font-mincho opacity-70">{DODGE_DISPLAY.kanji}の{size}</span>
+            </>
+          )}
+          prefix="nige-daily"
+        />
+      ) : null}
+      {/* The day's Sakasa 逆さ at every length where the language offers one: a word to avoid, the same word for everybody (`backwardsSeed.ts`). */}
+      {rows.every((row) => row.backwards !== null) ? (
+        <ButtonTable
+          kind={kind}
+          rows={rows.map((row) => ({ size: row.size, ...row.backwards! }))}
+          testId="sakasa-daily-table"
+          label={(size) => (
+            <>
+              {BACKWARDS_DISPLAY.label} {size} <span className="font-mincho opacity-70">{BACKWARDS_DISPLAY.kanji}の{size}</span>
+            </>
+          )}
+          prefix="sakasa-daily"
+          backwards
+        />
+      ) : null}
     </div>
   );
   const links = (
@@ -82,7 +113,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         <h2 className={SECTION_TITLE}>
           Today&apos;s words <span className="font-mincho normal-case tracking-normal">今日の言葉</span>
         </h2>
-        <p className="text-xs text-muted">The same word for everybody today at each length, the same two for a {FUTAGO_DISPLAY.label} and four for a {YOTSUGO_DISPLAY.label}, new at midnight UTC.</p>
+        <p className="text-xs text-muted">The same word for everybody today at each length, the same two for a {FUTAGO_DISPLAY.label} and four for a {YOTSUGO_DISPLAY.label}, the same word that dodges for a {DODGE_DISPLAY.label} and a word to avoid for a {BACKWARDS_DISPLAY.label}, new at midnight UTC.</p>
         {table}
         {links}
       </section>
@@ -99,7 +130,8 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
   );
 }
 
-function StatusText({ kind, status }: { kind: PuzzleKind; status: DailyStatus }) {
+/** Where the reader stands; a Sakasa's loss is being caught by the word, not missing it. */
+function StatusText({ kind, status, backwards }: { kind: PuzzleKind; status: DailyStatus; backwards: boolean }) {
   if (status.state === "found") {
     return (
       <span className="text-moss">
@@ -108,7 +140,7 @@ function StatusText({ kind, status }: { kind: PuzzleKind; status: DailyStatus })
       </span>
     );
   }
-  if (status.state === "missed") return <span className="text-muted">✗ not found{status.guesses === null ? "" : ` · ${guessesText(status.guesses)}`}</span>;
+  if (status.state === "missed") return <span className="text-muted">✗ {backwards ? "caught" : "not found"}{status.guesses === null ? "" : ` · ${guessesText(status.guesses)}`}</span>;
   if (status.state === "going") return <span>Half done</span>;
   return <span className="text-muted">Not yet</span>;
 }
@@ -120,6 +152,7 @@ function ButtonTable({
   testId,
   label,
   prefix,
+  backwards = false,
 }: {
   kind: PuzzleKind;
   rows: readonly { size: number; href: string; status: DailyStatus | null }[];
@@ -127,6 +160,8 @@ function ButtonTable({
   label: (size: number) => ReactNode;
   /** The test ids' start: "daily" for the words, "futago-daily" for the Futagos, "yotsugo-daily" for the Yotsugos. */
   prefix: string;
+  /** A Sakasa's table (`backwards.ts`), whose loss is being caught by the word rather than missing it. */
+  backwards?: boolean;
 }) {
   const showStatus = rows.some((row) => row.status !== null);
   return (
@@ -142,7 +177,7 @@ function ButtonTable({
               </td>
               {showStatus ? (
                 <td className="py-0.5 text-xs whitespace-nowrap tabular-nums" data-testid={`${prefix}-status`} data-state={row.status?.state ?? "unknown"}>
-                  {row.status === null ? null : <StatusText kind={kind} status={row.status} />}
+                  {row.status === null ? null : <StatusText kind={kind} status={row.status} backwards={backwards} />}
                 </td>
               ) : null}
             </tr>

@@ -156,6 +156,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("hearts", 100, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 3 && game.played.length >= 16),
   },
+  // Spades for four, the bids made, a few tricks gone and two cards on the next: Ann to play to it, her hand under the table.
+  {
+    kind: "spades",
+    key: "itsutsu.cards.spades",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("spades", 500, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 2 && game.played.length >= 12),
+  },
   // Big Two for four, a pair or better on the table for Ann to beat.
   {
     kind: "bigTwo",
@@ -195,6 +203,30 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     table: "hitotsu-game",
     shot: "hitotsu-board",
     stored: hitotsuScene(),
+  },
+  // Euchre for four, trumps made and two cards on the second trick: Ann to play to it, trumps named on the table.
+  {
+    kind: "euchre",
+    key: "itsutsu.cards.euchre",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("euchre", 10, 4, (game: { phase: string; trick: unknown[]; played: unknown[] }) => game.phase === "playing" && game.trick.length === 2 && game.played.length >= 4),
+  },
+  // Gin Rummy for two, some way into the first hand: the stock, the card on the pile, and Ann's hand to draw to.
+  {
+    kind: "ginRummy",
+    key: "itsutsu.cards.ginRummy",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("ginRummy", 100, 2, (game: { phase: string; stock: unknown[]; results: unknown[] }) => game.phase === "draw" && game.stock.length <= 24 && game.results.length === 0),
+  },
+  // Cribbage for two in the pegging: the starter, the crib face down, three cards on the count and what the last one scored.
+  {
+    kind: "cribbage",
+    key: "itsutsu.cards.cribbage",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("cribbage", 121, 2, (game: { phase: string; run: unknown[]; peg: unknown }) => game.phase === "pegging" && game.run.length === 3 && game.peg !== null),
   },
 ];
 
