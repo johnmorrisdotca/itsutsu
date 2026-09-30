@@ -5,6 +5,7 @@ import { isSeed } from "./random";
 import { hadHeadStart, offersHeadStart } from "./gomoji/headStart";
 import type { WordCount } from "./gomoji/words.types";
 import { wordCountOfSeed } from "./gomoji/wordsSeed";
+import { isDodgeSeed, offersDodge } from "./gomoji/dodgeSeed";
 import { isTsunagiLevel, tsunagiBand } from "./tsunagi/levels";
 import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types";
 import { partyPlayersAsked } from "./kumimoji/party";
@@ -86,9 +87,16 @@ export type PuzzleAsked = {
    * the seed itself (`bonusRuleOfSeed`), as a Futago's word count is.
    */
   bonus?: MahjongBonusRule;
+  /**
+   * A Gomoji's Nige 逃げ: the word that dodges (`gomoji/dodge.ts`). Asked for
+   * by the address until a seed is drawn, and from then said by the seed
+   * itself (`isDodgeSeed`), whatever the address says; false, and left out of
+   * the address, for a word that sits still and for any puzzle not a word.
+   */
+  dodge?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -114,9 +122,12 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;
   const hints = one(PUZZLE_PARAMS.hints) === "1";
   const strict = one(PUZZLE_PARAMS.strict) === "1";
-  const headStart = one(PUZZLE_PARAMS.headStart) === "1" && offersHeadStart(kind, level);
   const asked: WordCount = one(PUZZLE_PARAMS.quadruplets) === "1" ? 4 : one(PUZZLE_PARAMS.twins) === "1" ? 2 : 1;
-  const words: WordCount = spec.wordGrid === undefined ? 1 : seed === null ? asked : wordCountOfSeed(seed);
+  // A Nige hides one word that is not there yet: never two or four, and from a seed, the seed says it.
+  const dodge = offersDodge(kind) && (seed === null ? one(PUZZLE_PARAMS.dodge) === "1" && asked === 1 : isDodgeSeed(seed));
+  const words: WordCount = spec.wordGrid === undefined || dodge ? 1 : seed === null ? asked : wordCountOfSeed(seed);
+  // A dodger hides nothing, so there is nothing a head start could grey.
+  const headStart = one(PUZZLE_PARAMS.headStart) === "1" && offersHeadStart(kind, level) && !dodge;
   const requestedLength = one(PUZZLE_PARAMS.gameLength);
   const gameLength: KumimojiLength = requestedLength === "medium" || requestedLength === "full" ? requestedLength : "short";
   const requestedLanguage = one(PUZZLE_PARAMS.language);
@@ -131,7 +142,7 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, bonus, ...(tablePlayers > 1 ? { players: tablePlayers } : {}) };
   }
   const anyDeal = kind === "solitaire" && (seed === null ? one(PUZZLE_PARAMS.deal) === "any" : isAnyDeal(seed));
-  return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(anyDeal ? { anyDeal } : {}), ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
+  return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(dodge ? { dodge } : {}), ...(anyDeal ? { anyDeal } : {}), ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
 }
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
@@ -141,7 +152,8 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
   if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");
   if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");
-  if (asked.headStart === true && asked.level === "easy") params.set(PUZZLE_PARAMS.headStart, "1");
+  if (asked.headStart === true && asked.level === "easy" && asked.dodge !== true) params.set(PUZZLE_PARAMS.headStart, "1");
+  if (asked.dodge === true) params.set(PUZZLE_PARAMS.dodge, "1");
   if (asked.words === 2) params.set(PUZZLE_PARAMS.twins, "1");
   if (asked.words === 4) params.set(PUZZLE_PARAMS.quadruplets, "1");
   if (asked.doubleSet === true) params.set(PUZZLE_PARAMS.doubleSet, "1");
@@ -174,5 +186,6 @@ export function keptRunAsked(
     words: wordCountOfSeed(run.seed),
     clock: clockFor(kind, run.clock),
     ...(kind === "kumimoji" ? { gameLength: run.gameLength === "medium" || run.gameLength === "full" ? run.gameLength : "short", language: run.language === "japanese" ? "japanese" : "english", doubleSet: run.language !== "japanese" && (run.doubleSet ?? false), diagonals: run.diagonals === true } : {}),
+    ...(offersDodge(kind) && isDodgeSeed(run.seed) ? { dodge: true } : {}),
   };
 }

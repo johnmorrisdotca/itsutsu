@@ -21,6 +21,7 @@ export function HeadStartChips({
   chosen,
   onChoose,
   words = 1,
+  dodge = false,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -29,8 +30,10 @@ export function HeadStartChips({
   onChoose: (chosen: boolean) => void;
   /** How many words were chosen — a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`): the keys greyed are in none of them. */
   words?: WordCount;
+  /** A Nige chosen (`dodge.ts`): nothing is hidden, so there is nothing a head start could grey. */
+  dodge?: boolean;
 }) {
-  const offered = offersHeadStart(kind, level);
+  const offered = offersHeadStart(kind, level) && !dodge;
   // As many as the word has (`headStartKeys`): the size chosen above.
   const unit = kind === "gomojiKana" ? "kana" : "letters";
   return (
@@ -53,7 +56,9 @@ export function HeadStartChips({
         ))}
       </div>
       <p className="min-h-8 text-xs text-muted" data-testid="puzzle-head-start-blurb">
-        {!offered
+        {dodge
+          ? "A word that dodges hides nothing yet, so there is nothing to grey before the first guess."
+          : !offered
           ? "A head start is for easy: choose Easy to have one."
           : chosen
             ? `${size} ${unit} not in ${words === 4 ? "any of the four words" : words === 2 ? "either word" : "the word"} start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`

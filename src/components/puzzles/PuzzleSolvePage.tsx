@@ -20,7 +20,11 @@ import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles
 import { isPuzzleClock } from "@/lib/puzzles/puzzleClock";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
-import { FUTAGO_DISPLAY, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { FUTAGO_DISPLAY, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
+import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { loadKanaWords } from "@/lib/puzzles/gomojiKana/kanaWords";
+import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 
 import { FinishedPuzzle } from "./FinishedPuzzle";
@@ -28,8 +32,12 @@ import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
-/** A word puzzle's hidden word, a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`), in the case it is played in. */
-function wordOf(kind: PuzzleKind, givens: string, size: number): string {
+/** A word puzzle's hidden word, a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`), in the case it is played in — a dodger's where it stood at the end (`wordOfPlay`). */
+function wordOf(kind: PuzzleKind, givens: string, size: number, level: string, answer: string | null): string {
+  if (isDodgeGivens(givens)) {
+    const word = wordOfPlay(kind, size, level as PuzzleLevel, givens, answer === null ? [] : (guessesOf(kind, size, answer) ?? []));
+    return word === null ? "" : `${wordsShown(kind, [word])} (${DODGE_DISPLAY.label} ${DODGE_DISPLAY.kanji})`;
+  }
   const words = hiddenWordsOf(kind, size, givens)?.words ?? [];
   const mode = words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
   return words.length > 1 ? `${wordsShown(kind, words)} (${mode.label} ${mode.kanji})` : wordsShown(kind, words);
@@ -76,6 +84,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const fixed = PUZZLE_SPECS[kind].fixedLevels === true;
   const kept = own || (!fixed && !isTodayUtc(found.finishedAt)) || (await finishedSameGrid(me, kind, found.givens));
   const solve = kept ? found : { ...found, answer: null, steps: null };
+  // A kana dodger's word is replayed from its list (`wordOfPlay`), loaded first.
+  if (kind === "gomojiKana" && isDodgeGivens(found.givens)) await loadKanaWords(found.size);
   const solver = (await memberNamesOf([solverId])).get(solverId) ?? "";
   const copy = PUZZLE_DISPLAY[kind];
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
@@ -95,7 +105,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const facts: { label: string; value: string; testId: string }[] = [
     { label: "How it ended", value: outcome, testId: "solve-outcome" },
     // A word puzzle says its word, found or not: a word not found is the one thing the grid cannot show.
-    ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size) : "Kept back until tomorrow", testId: "solve-word" }] : []),
+    ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size, solve.level, found.answer) : "Kept back until tomorrow", testId: "solve-word" }] : []),
     { label: "Puzzle", value: `${sizeWord(solve.size, kind)} · ${PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level}${headStart ? " · Head start" : ""}`, testId: "solve-puzzle" },
     { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
     ...(timed.ms === null ? [] : [{ label: "Clock", value: `${timed.label} ${timed.kanji}, ${timed.time}`, testId: "solve-clock" }]),

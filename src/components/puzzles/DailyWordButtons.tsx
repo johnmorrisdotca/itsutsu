@@ -8,6 +8,7 @@ import type { DailyStatus } from "@/lib/puzzles/dailyWords/dailyWords.types";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { FUTAGO_DISPLAY } from "@/lib/puzzles/gomoji/futago";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
+import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
 
 import type { DailyWordButtonsProps } from "./dailyWords.types";
 import { SolveTime } from "./SolveTime";
@@ -62,6 +63,20 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         )}
         prefix="yotsugo-daily"
       />
+      {/* The day's Nige 逃げ at every length where the language offers one: a word that dodges, the same dodger for everybody (`dodgeSeed.ts`). */}
+      {rows.every((row) => row.dodge !== null) ? (
+        <ButtonTable
+          kind={kind}
+          rows={rows.map((row) => ({ size: row.size, ...row.dodge! }))}
+          testId="nige-daily-table"
+          label={(size) => (
+            <>
+              {DODGE_DISPLAY.label} {size} <span className="font-mincho opacity-70">{DODGE_DISPLAY.kanji}の{size}</span>
+            </>
+          )}
+          prefix="nige-daily"
+        />
+      ) : null}
     </div>
   );
   const links = (
@@ -82,7 +97,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         <h2 className={SECTION_TITLE}>
           Today&apos;s words <span className="font-mincho normal-case tracking-normal">今日の言葉</span>
         </h2>
-        <p className="text-xs text-muted">The same word for everybody today at each length, the same two for a {FUTAGO_DISPLAY.label} and four for a {YOTSUGO_DISPLAY.label}, new at midnight UTC.</p>
+        <p className="text-xs text-muted">The same word for everybody today at each length, the same two for a {FUTAGO_DISPLAY.label} and four for a {YOTSUGO_DISPLAY.label}, and the same word that dodges for a {DODGE_DISPLAY.label}, new at midnight UTC.</p>
         {table}
         {links}
       </section>

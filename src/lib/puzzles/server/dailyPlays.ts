@@ -9,6 +9,7 @@ import { dailyWordSeed, dayAfter, dayStart } from "../dailyWords/dailyDay";
 import { hiddenWordsOf } from "../gomoji/futago";
 import { futagoDailySeed } from "../gomoji/futagoSeed";
 import { yotsugoDailySeed } from "../gomoji/yotsugoSeed";
+import { dodgeDailySeed, encodeDodgeGivens } from "../gomoji/dodgeSeed";
 import type { DailyFastest, DailyStatus } from "../dailyWords/dailyWords.types";
 
 /**
@@ -70,6 +71,36 @@ export async function dailyStatusesOf(
 /** Whether a solve hid exactly these words, in this order. */
 function sameWords(hid: readonly string[] | null, sought: readonly string[]): boolean {
   return hid !== null && hid.length === sought.length && hid.every((word, at) => word === sought[at]);
+}
+
+/**
+ * The reader's standing with today's Nige at each length (`dodge.ts`): the
+ * solves they finished today whose givens are the day's dodger's, and the runs
+ * they left at its seed. A dodger hides no word, so it is matched by its seed,
+ * which its givens carry (`encodeDodgeGivens`). The same two indexed reads.
+ */
+export async function dailyDodgeStatusesOf(memberId: string, kind: PuzzleKind, day: string, sizes: readonly number[]): Promise<Map<number, DailyStatus>> {
+  const seed = dodgeDailySeed(day);
+  const givens = encodeDodgeGivens(seed);
+  const [solves, runs] = await Promise.all([
+    prisma.puzzleSolve.findMany({
+      where: { memberId, kind, givens, finishedAt: { gte: dayStart(day), lt: dayStart(dayAfter(day)) } },
+      orderBy: { finishedAt: "asc" },
+      select: { id: true, size: true, level: true, givens: true, answer: true, solved: true, elapsedMs: true },
+    }),
+    prisma.puzzleRun.findMany({ where: { memberId, kind, seed }, select: { size: true } }),
+  ]);
+  const statuses = new Map<number, DailyStatus>();
+  for (const size of sizes) {
+    const played = solves.filter((solve) => solve.size === size);
+    const any = played.find((solve) => solve.solved) ?? played[0];
+    if (any !== undefined) {
+      const guesses = guessesTaken(kind, size, any.level, any.givens, any.answer);
+      statuses.set(size, any.solved ? { state: "found", elapsedMs: any.elapsedMs, guesses, solveId: any.id } : { state: "missed", guesses });
+    } else if (runs.some((run) => run.size === size)) statuses.set(size, { state: "going" });
+    else statuses.set(size, { state: "notYet" });
+  }
+  return statuses;
 }
 
 /** How many of the fastest a day's page shows at each length. */

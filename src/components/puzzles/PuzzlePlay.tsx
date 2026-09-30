@@ -14,6 +14,7 @@ import { clockFor } from "@/lib/puzzles/puzzleClock";
 import { furtherRun, runOnDevice } from "./runsOnDevice";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
+import { freshDodgeSeed } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
 import type { MahjongBonusRule } from "@/lib/puzzles/mahjong/mahjong.types";
@@ -125,6 +126,7 @@ function PuzzlePlayDrawn({
   bonus = "group",
   clock = "none",
   anyDeal = false,
+  dodge = false,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
@@ -143,6 +145,8 @@ function PuzzlePlayDrawn({
   headStart?: boolean;
   /** How many words a Gomoji was asked for — a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`): read only to draw a seed, which says it from then on. */
   words?: WordCount;
+  /** Whether a Gomoji's Nige was asked for, the word that dodges (`dodge.ts`): read only to draw a seed, which says it from then on. */
+  dodge?: boolean;
   gameLength?: KumimojiLength;
   language?: KumimojiLanguage;
   doubleSet?: boolean;
@@ -192,9 +196,9 @@ function PuzzlePlayDrawn({
       return;
     }
     // A Solitaire's seed is drawn in the block its kind of deal is dealt from (`freshSolitaireSeed`), a Mahjong's by its flowers' rule.
-    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
-    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, bonus })));
-  }, [seed, kind, size, level, checks, hints, strict, headStart, words, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, router]);
+    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : dodge ? freshDodgeSeed() : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, dodge, gameLength, language, doubleSet, diagonals, players, clock, bonus })));
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);

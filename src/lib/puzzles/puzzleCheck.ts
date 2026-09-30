@@ -16,6 +16,8 @@ import { baseGuesses } from "./gomoji/layout";
 import { kanaWordsOf } from "./gomojiKana/kanaWords";
 import { checkKumimoji } from "./kumimoji/check";
 import type { KumimojiOptions } from "./kumimoji/kumimoji.types";
+import { dodgeGuesses, readDodge } from "./gomoji/dodgePlay";
+import { decodeDodgeGivens } from "./gomoji/dodgeSeed";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { checkKoushi } from "./koushi/check";
 import { boxedLayout, regionLayout, regionsAreSound, type Layout } from "./numberPlace/layout";
@@ -285,6 +287,7 @@ export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string
  * been loaded (`loadKanaWords`).
  */
 function checkWords(kind: PuzzleKind, size: number, givens: string, answer: string, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
+  if (decodeDodgeGivens(givens) !== null) return checkDodge(kind, size, givens, guessesOf(kind, size, answer), ending, level);
   const kana = kind === "gomojiKana";
   const hidden = hiddenWordsOf(kind, size, givens);
   const guesses = guessesOf(kind, size, answer);
@@ -320,6 +323,42 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   if (!firstFound.includes(-1)) return { ok: false, reason: many ? `${every} were found` : "the word was found" };
   // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
   if (guesses.length !== rows && guesses.length !== former && (many || guesses.length !== baseGuesses(wordGridOf(kind), size))) return { ok: false, reason: "there are guesses left" };
+  return { ok: true };
+}
+
+/**
+ * A GOMOJI NIGE (`dodge.ts`): every guess a word of the list, no more than
+ * the level gives (`dodgeGuesses`), replayed against the dodger its givens'
+ * seed makes — and either the last guess pinned it down and none before it
+ * did, or every guess is spent and none did. The server replays it from the
+ * guesses alone, as the browser did.
+ */
+function checkDodge(kind: PuzzleKind, size: number, givens: string, guesses: string[] | null, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
+  const seed = decodeDodgeGivens(givens)!;
+  if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
+  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  const rows = dodgeGuesses(kind, size);
+  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
+  let allowed: (word: string) => boolean;
+  if (kind === "gomojiKana") {
+    try {
+      const words = kanaWordsOf(size).allowed;
+      allowed = (word) => words.has(word);
+    } catch {
+      return { ok: false, reason: "the kana word list is not loaded" };
+    }
+  } else {
+    allowed = (word) => isWord(word, size, languageOf(kind));
+  }
+  const unknown = guesses.find((guess) => !allowed(guess));
+  if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
+  for (let at = 1; at < guesses.length; at += 1) {
+    if (readDodge(kind, size, level, seed, guesses.slice(0, at)).found) return { ok: false, reason: "guesses go on after the word was found" };
+  }
+  const found = readDodge(kind, size, level, seed, guesses).found;
+  if (ending === "found") return found ? { ok: true } : { ok: false, reason: "the word was not pinned down" };
+  if (found) return { ok: false, reason: "the word was found" };
+  if (guesses.length !== rows) return { ok: false, reason: "there are guesses left" };
   return { ok: true };
 }
 

@@ -9,6 +9,9 @@ import { markGuess } from "@/lib/puzzles/gomoji/code";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
 import { FUTAGO_DISPLAY, boardGuesses, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
+import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
+import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";
 
 import { WORD_STONE_LOOK } from "./puzzles.constants";
 import { SolveTime } from "./SolveTime";
@@ -32,12 +35,14 @@ type WordKind = "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" | "gomojiPo
  * (`yotsugo.ts`), each with the guesses it was shown.
  */
 function readWord(kind: WordKind, word: OwnWord): { hidden: string; boards: { guesses: readonly string[]; marks: (guess: string) => ("hit" | "near" | "kin" | "miss")[] }[] | null } {
-  const words = hiddenWordsOf(kind, word.size, word.givens)?.words ?? [""];
   const guesses = word.answer === null ? null : guessesOf(kind, word.size, word.answer);
+  // A dodger's word is where it stood at the end (`wordOfPlay`).
+  const dodging = isDodgeGivens(word.givens);
+  const words = dodging ? [wordOfPlay(kind, word.size, word.level as PuzzleLevel, word.givens, guesses ?? []) ?? ""] : (hiddenWordsOf(kind, word.size, word.givens)?.words ?? [""]);
   const marksAgainst = (hidden: string) => (guess: string) =>
     kind === "gomojiKana" ? markKanaGuess([...guess], [...hidden]).map((each) => each.mark) : markGuess(guess, hidden);
   return {
-    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${(words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY).kanji}` : words[0]!,
+    hidden: words.length > 1 ? `${wordsShown(kind, words)} ${(words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY).kanji}` : dodging ? `${words[0]!} ${DODGE_DISPLAY.kanji}` : words[0]!,
     boards: guesses === null ? null : words.map((hidden) => ({ guesses: boardGuesses(guesses, hidden), marks: marksAgainst(hidden) })),
   };
 }
