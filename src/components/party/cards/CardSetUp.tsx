@@ -23,6 +23,7 @@ const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number) => string> = {
   goFish: () => "One deal",
   crazyEights: (size) => `To ${size}`,
   spades: (size) => `To ${size}`,
+  ginRummy: (size) => `To ${size}`,
 };
 
 function Section({ legend, children }: { legend: string; children: ReactNode }) {

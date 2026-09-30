@@ -5,6 +5,8 @@ import type { CardGameRules } from "./cardGames.types";
 import type { ClimbMove } from "./climbing/climbing.types";
 import type { CrazyEightsGame, CrazyEightsMove } from "./crazyEights/crazyEights.types";
 import { CRAZY_EIGHTS_RULES } from "./crazyEights/crazyEightsRules";
+import type { GinGame, GinMove } from "./ginRummy/ginRummy.types";
+import { GIN_RUMMY_RULES } from "./ginRummy/ginRummyRules";
 import type { GoFishGame, GoFishMove } from "./goFish/goFish.types";
 import { GO_FISH_RULES } from "./goFish/goFishRules";
 import type { HeartsGame, HeartsMove } from "./hearts/hearts.types";
@@ -22,6 +24,7 @@ export type CardGamePlays = {
   goFish: { game: GoFishGame; move: GoFishMove };
   crazyEights: { game: CrazyEightsGame; move: CrazyEightsMove };
   spades: { game: SpadesGame; move: SpadesMove };
+  ginRummy: { game: GinGame; move: GinMove };
 };
 
 /**
@@ -36,4 +39,5 @@ export const CARD_GAME_RULES: { [K in CardGameKind]: CardGameRules<CardGamePlays
   goFish: GO_FISH_RULES,
   crazyEights: CRAZY_EIGHTS_RULES,
   spades: SPADES_RULES,
+  ginRummy: GIN_RUMMY_RULES,
 };

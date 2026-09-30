@@ -238,7 +238,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * Hearts moved to Tricks (below) with Spades on 2026-09-30, so this shelf
      * keeps room for Gin Rummy under the eight a shelf holds.
      */
-    games: ["solitaire", "freecell", "spider", "crazyEights", "goFish", "bigTwo", "president"],
+    games: ["solitaire", "freecell", "spider", "crazyEights", "goFish", "bigTwo", "president", "ginRummy"],
   },
   {
     key: "tricks",

@@ -115,4 +115,5 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   goFish: "go-fish",
   crazyEights: "crazy-eights",
   spades: "spades",
+  ginRummy: "gin-rummy",
 };

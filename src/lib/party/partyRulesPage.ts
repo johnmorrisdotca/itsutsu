@@ -55,6 +55,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   goFish: () => "in one deal, until every book is down",
   crazyEights: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   spades: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
+  ginRummy: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -133,6 +134,14 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     more: [
       "Partners are the first and third seats against the second and fourth, and any of them may be a computer.",
       "There is no blind nil, and no bid of ten tricks for a bonus: a bid is nil or one to thirteen, scored as above.",
+    ],
+  },
+  ginRummy: {
+    turn: "The line over the table says whose turn it is, by name. Press Draw from the stock, or Take to pick up the card on the discard pile. Then tap a card in your hand to choose it (it rises) and press Throw, or tap it twice to throw it at once; with ten or less of deadwood, press Knock instead (it reads Gin! with none). Your deadwood at its best is written on the table. A computer plays its own seat by itself, a moment after its turn comes.",
+    house: "When two people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; one person against the computer never asks. The other hand is drawn face down, and the table works out every hand's melds for you, laying down the best. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "The first player of each hand simply draws, from the stock or the upcard: there is no offering of the first upcard. The first player alternates hand by hand.",
+      "When a knock is laid down, the other player's melds are laid first and then whatever fits the knocker's melds is laid off onto them. There are no box, line or game bonuses: the score is the hands' points, and the first to the total wins.",
     ],
   },
 };

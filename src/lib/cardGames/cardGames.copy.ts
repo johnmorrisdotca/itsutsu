@@ -122,4 +122,23 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     ],
     board: "Always four, two against two: one person and three computers, two people as partners against two computers, or four people round one device. Choose 500 for the usual game, 300 or 200 for a quicker one.",
   },
+  ginRummy: {
+    label: "Gin Rummy",
+    kanji: "ジンラミー",
+    tagline: "Draw, throw, and turn your ten cards into sets and runs — then knock, or go gin with nothing left over.",
+    origin:
+      "A two-player rummy game from the United States, said to have been worked out in 1909 by the whist teacher Elwood Baker and his son as a faster cousin of the older game of Knock Rummy. It swept Hollywood in the 1930s and 1940s, and has been the classic two-player card game of North America ever since. Nobody owns it.",
+    alsoKnownAs: ["Gin"],
+    country: "US",
+    wikipedia: "Gin rummy",
+    rules: [
+      "Two players, ten cards each. The rest is the stock, and its top card is turned up to start the discard pile.",
+      "On your turn, draw one card, from the top of the stock or the top of the discard pile, then throw one card onto the pile. A card just taken from the pile may not go straight back.",
+      "Melds are three or four cards of one rank, or three or more in a row in one suit, with the ace low. Every card in no meld is deadwood: an ace counts one, a jack, queen or king ten, and the rest their number.",
+      "With ten or fewer points of deadwood you may knock: throw your card face down and lay your hand out. The other player lays out theirs and lays off any card that fits your melds. You score the difference in deadwood; if they have as little as you or less, they undercut you and score the difference and 25.",
+      "Knock with no deadwood at all and it is gin: you score 25 and all their deadwood, and they may lay nothing off. If the stock runs down to two cards with nobody out, the hand is drawn and nobody scores.",
+      "The first to the game's total — 50, 100 or 150 points — wins.",
+    ],
+    board: "Always two: one person against the computer, or two people passing one device. Choose 100 points for the usual game, 50 for a quick one and 150 for a long one.",
+  },
 };
