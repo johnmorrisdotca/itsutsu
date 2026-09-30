@@ -79,7 +79,6 @@ export async function SiteFooter() {
   return (
     <footer
       data-chrome
-      data-quiet-in-play
       className="mt-auto flex w-full flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-rule pt-5 text-xs text-muted"
       data-testid="site-footer"
     >
@@ -88,11 +87,11 @@ export async function SiteFooter() {
           Itsutsu <span className="font-mincho">五つ</span>
         </span>
         {LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className="underline-offset-4 hover:underline">
+          <Link key={link.href} href={link.href} className="underline-offset-4 hover:underline" data-quiet-in-play>
             {say.say(link.phrase)}
           </Link>
         ))}
-        {/* On every page, for anybody reading it: the page they are on is the one reported. */}
+        {/* On every page, for anybody reading it: the page they are on is the one reported. It stays while a game is played, where a problem is most likely met (`PlayingNow`). */}
         <ReportProblem version={stamps.semver} />
         {/*
           The colophon is where a book says what edition and what language it
@@ -100,14 +99,17 @@ export async function SiteFooter() {
           reads the query to carry it across, the way the rules index suspends
           its filter for the same reason.
         */}
-        <Suspense fallback={null}>
-          <LanguagePicker
-            options={languageOptions()}
-            current={say.locale}
-            param={LANG_PARAM}
-            label={say.say("site.language")}
-          />
-        </Suspense>
+        {/* The picker and the edition go while a game is played (`PlayingNow`). */}
+        <span className="contents" data-quiet-in-play>
+          <Suspense fallback={null}>
+            <LanguagePicker
+              options={languageOptions()}
+              current={say.locale}
+              param={LANG_PARAM}
+              label={say.say("site.language")}
+            />
+          </Suspense>
+        </span>
       </span>
       {/*
         The edition leads to what is in it. A colophon names the edition and
@@ -119,6 +121,7 @@ export async function SiteFooter() {
         className="flex flex-wrap items-baseline gap-x-3 font-mono tabular-nums underline-offset-4 hover:underline"
         title={`Version ${stamps.semver} — what has shipped`}
         data-testid="version-link"
+        data-quiet-in-play
       >
         <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>
         <span data-testid="site-version">{stamps.semver}</span>

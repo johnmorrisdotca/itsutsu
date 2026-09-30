@@ -45,10 +45,19 @@ describe("quiet while playing", () => {
     expect(solve).toContain("<PlayingNow on={pausing.playing} />");
   });
 
-  it("the sections and New game, the member's figures and the footer are what goes", () => {
-    expect(read("src/components/layout/SiteHeader.tsx")).toMatch(/<nav data-quiet-in-play /);
+  it("the other sections and New game, the member's figures and the footer's links are what goes", () => {
+    const nav = read("src/components/layout/NavLinks.tsx");
+    expect(nav).toContain('data-quiet-in-play={item.href === "/play" ? undefined : ""}');
+    expect(nav).toMatch(/data-testid="nav-new-game"\s+data-quiet-in-play/);
     expect(read("src/components/layout/MemberStrip.tsx")).toContain("data-quiet-in-play");
-    expect(read("src/components/layout/SiteFooter.tsx")).toContain("data-quiet-in-play");
+    const footer = read("src/components/layout/SiteFooter.tsx");
+    expect(footer).toMatch(/data-testid="version-link"\s+data-quiet-in-play/);
+    expect(footer).not.toMatch(/<footer[^>]*data-quiet-in-play/);
+  });
+
+  it("My games stays, where a game left half way waits, and so does Report a problem", () => {
+    expect(read("src/components/layout/SiteHeader.tsx")).not.toMatch(/<nav[^>]*data-quiet-in-play/);
+    expect(read("src/components/layout/SiteFooter.tsx")).toMatch(/\n {8}<ReportProblem /);
   });
 
   it("the wordmark, the account and the trail back stay", () => {
