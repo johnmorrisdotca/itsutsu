@@ -1,4 +1,4 @@
-import type { SolveAlgorithm, SolveStage } from "kyuubu";
+import type { SolveAlgorithm, SolveStage } from "@johnmorrisdotca/kyuubu";
 
 /**
  * THE METHOD IN WORDS: the layer-by-layer solve Kyuubu works out

@@ -1,6 +1,6 @@
 import type { PuzzleCheck } from "../puzzles.types";
 
-import { cubeSolved, decodeCubeMoves, isCubeState, moveFits, turnAll } from "kyuubu";
+import { cubeSolved, decodeCubeMoves, isCubeState, moveFits, turnAll } from "@johnmorrisdotca/kyuubu";
 
 import { CUBE_SIZES } from "./generate";
 

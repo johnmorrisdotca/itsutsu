@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { useMemo } from "react";
-import { SOLVABLE_SIZES, movesNotation, solveSteps, type CubeMove, type SolveStep } from "kyuubu";
+import { SOLVABLE_SIZES, movesNotation, solveSteps, type CubeMove, type SolveStep } from "@johnmorrisdotca/kyuubu";
 
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { CUBE_ALGORITHM_NAMES, CUBE_GUIDE_COPY, CUBE_STAGE_WORDS } from "@/lib/learn/cubeMethod";

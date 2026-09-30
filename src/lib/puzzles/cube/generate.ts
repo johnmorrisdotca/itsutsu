@@ -1,4 +1,4 @@
-import { encodeCubeMoves, randomScramble, solvedCube, turnAll, undoAll, type CubeMove } from "kyuubu";
+import { encodeCubeMoves, randomScramble, solvedCube, turnAll, undoAll, type CubeMove } from "@johnmorrisdotca/kyuubu";
 
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom } from "../random";
@@ -6,7 +6,7 @@ import { seededRandom } from "../random";
 /**
  * A CUBE FROM A SEED, as every puzzle is made: in the browser, the same in
  * every browser. The cube itself — its turns, its notation, its scrambles and
- * its 3D view — is Kyuubu (`packages/kyuubu`), a package of its own; what is
+ * its 3D view — is Kyuubu (`@johnmorrisdotca/kyuubu`), a package of its own; what is
  * here is what makes it a puzzle on this site.
  *
  * `size` is the cube's side, 2 to 5; `level` is how far from solved it is

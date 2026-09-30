@@ -1,4 +1,4 @@
-import { solveSteps, turnAll, type SolveStage } from "kyuubu";
+import { solveSteps, turnAll, type SolveStage } from "@johnmorrisdotca/kyuubu";
 
 import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 

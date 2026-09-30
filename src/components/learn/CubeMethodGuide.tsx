@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { movesNotation, solveSteps, turnAll, type CubeMove, type SolveStage } from "kyuubu";
-import type { KyuubuHandle } from "kyuubu/react";
+import { movesNotation, solveSteps, turnAll, type CubeMove, type SolveStage } from "@johnmorrisdotca/kyuubu";
+import type { KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { SectionHeading } from "@/components/layout/Headings";

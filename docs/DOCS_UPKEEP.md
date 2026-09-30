@@ -64,7 +64,6 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 |---|---|---|
 | `README.md`, headline, "What it does", "Forty-five games…" | visitors, engineers | `src/lib/gomoku/gomoku.constants.ts` (`RULE_VARIANT_LIST`), `src/lib/gomoku/families.ts`, `src/lib/gomoku/variants.constants.ts` |
 | `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
-| `packages/kyuubu/README.md`, `packages/kyuubu/CHANGELOG.md` | anyone using the cube package | `packages/kyuubu/src/**`, `packages/kyuubu/package.json` |
 | `README.md`, "Forty-five games…" (Party games) | visitors, engineers | `src/lib/party/**`, `src/components/party/**`, `src/lib/gomoku/party/**`, `src/lib/gomoku/familyShelves.ts` |
 | `README.md`, "Openings", "Handicaps", "The board…" | engineers, players | `src/lib/gomoku/rules/**`, `src/lib/gomoku/engine.ts` |
 | `README.md`, "Players, ratings and records" | engineers, players | `src/lib/rating/**`, `src/lib/record/**`, `src/lib/xp/**`, `src/lib/legacy/**` |

@@ -1,4 +1,4 @@
-import { cubeSolved, decodeCubeMoves, encodeCubeMoves, parseMoves, turnAll } from "kyuubu";
+import { cubeSolved, decodeCubeMoves, encodeCubeMoves, parseMoves, turnAll } from "@johnmorrisdotca/kyuubu";
 import { describe, expect, it } from "vitest";
 
 import { checkSolution, checkOutOfGuesses } from "../puzzleCheck";

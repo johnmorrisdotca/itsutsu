@@ -306,7 +306,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * CUBES. John, 2026-09-29: "a whole Rubik's cube section where people can
      * play on all the smallest to regular 3x3 size cubes, and solve. it's 3d
      * and rotatable". The shelf for puzzles turned in the hand, opened with
-     * the cube itself at four sizes; the cube is Kyuubu (`packages/kyuubu`), a
+     * the cube itself at four sizes; the cube is Kyuubu (`@johnmorrisdotca/kyuubu`), a
      * package of its own. Other turning puzzles, and the guide to solving one,
      * are at home here later.
      *

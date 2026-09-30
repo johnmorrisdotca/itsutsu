@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, turnAll, undoAll, undoOf, type CubeMove } from "kyuubu";
-import type { KyuubuHandle } from "kyuubu/react";
+import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, turnAll, undoAll, undoOf, type CubeMove } from "@johnmorrisdotca/kyuubu";
+import type { KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";

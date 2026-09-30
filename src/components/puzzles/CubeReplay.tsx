@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { countsAsMove, cubeSolved, decodeCubeMoves, turnAll } from "kyuubu";
+import { countsAsMove, cubeSolved, decodeCubeMoves, turnAll } from "@johnmorrisdotca/kyuubu";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";

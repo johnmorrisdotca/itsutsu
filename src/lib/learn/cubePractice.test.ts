@@ -1,4 +1,4 @@
-import { solveSteps, turnAll } from "kyuubu";
+import { solveSteps, turnAll } from "@johnmorrisdotca/kyuubu";
 import { describe, expect, it } from "vitest";
 
 import { CUBE_STAGE_WORDS, CUBE_STAGES_BY_SIZE } from "./cubeMethod";

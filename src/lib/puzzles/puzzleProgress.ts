@@ -1,4 +1,4 @@
-import { decodeCubeMoves, encodeCubeMoves, type CubeMove } from "kyuubu";
+import { decodeCubeMoves, encodeCubeMoves, type CubeMove } from "@johnmorrisdotca/kyuubu";
 
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { solitaireMovesFit } from "./solitaire/check";

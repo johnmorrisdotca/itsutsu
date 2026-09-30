@@ -23,12 +23,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      // Kyuubu, the cube, is its own package (github.com/johnmorrisdotca/kyuubu),
-      // read here from its source in packages/kyuubu until it is on npm; then
-      // these two lines go and "kyuubu" becomes a dependency.
-      "kyuubu": ["./packages/kyuubu/src/index.ts"],
-      "kyuubu/react": ["./packages/kyuubu/src/react.tsx"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [

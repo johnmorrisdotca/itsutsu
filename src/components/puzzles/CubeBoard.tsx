@@ -1,8 +1,8 @@
 "use client";
 
 import type { Ref } from "react";
-import type { CubeMove } from "kyuubu";
-import { Kyuubu, type KyuubuHandle } from "kyuubu/react";
+import type { CubeMove } from "@johnmorrisdotca/kyuubu";
+import { Kyuubu, type KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
 
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
@@ -14,7 +14,7 @@ const RIM = 0.03;
 
 /**
  * THE CUBE ON THE READER'S OWN WOOD: a board like every board on the site
- * (`BoardFrame`), with the cube (Kyuubu, `packages/kyuubu`) turning in 3D in
+ * (`BoardFrame`), with the cube (Kyuubu, `@johnmorrisdotca/kyuubu`) turning in 3D in
  * the middle of it. Used by the solve, the set-up's preview, a finished
  * solve's replay and the picture of the game.
  */

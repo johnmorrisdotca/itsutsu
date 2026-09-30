@@ -21,7 +21,7 @@ import { decodeMoves as decodeSolitaireMoves, replay } from "../src/lib/puzzles/
 import { solitaireRules } from "../src/lib/puzzles/solitaire/generate";
 import { carriedFrom, columnAt, isColumnPile } from "../src/lib/puzzles/solitaire/klondike";
 import { decodeMoves } from "../src/lib/puzzles/mahjong/moves";
-import { decodeCubeMoves, moveNotation } from "../packages/kyuubu/src/index";
+import { decodeCubeMoves, moveNotation } from "@johnmorrisdotca/kyuubu";
 import { decodeMoves as decodeFreeCellMoves, replayFreeCell } from "../src/lib/puzzles/freecell/code";
 import { decodeMoves as decodeSpiderMoves, replaySpider } from "../src/lib/puzzles/spider/code";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";

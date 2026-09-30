@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@johnmorrisdotca/kyuubu':
+        specifier: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz
+        version: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz(react@19.2.8)
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -374,6 +377,16 @@ packages:
     engines: {node: '>=20.9.0'}
     cpu: [x64]
     os: [win32]
+
+  '@johnmorrisdotca/kyuubu@https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz':
+    resolution: {integrity: sha512-vK96IvFYwN3DcZk2qukRuImYOUK/HKAXyIfQTJAtDUvCBQGRt6PHwoOKaK5cEfLsUD5uWb3p/OifIUtKBLtxzQ==, tarball: https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz}
+    version: 1.0.1
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -2961,6 +2974,10 @@ snapshots:
 
   '@img/sharp-win32-x64@0.35.4':
     optional: true
+
+  '@johnmorrisdotca/kyuubu@https://github.com/johnmorrisdotca/kyuubu/releases/download/v1.0.1/johnmorrisdotca-kyuubu-1.0.1.tgz(react@19.2.8)':
+    optionalDependencies:
+      react: 19.2.8
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
