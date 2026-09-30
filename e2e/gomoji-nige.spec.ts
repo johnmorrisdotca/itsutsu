@@ -30,7 +30,7 @@ test("choosing Nige at set-up switches Head start off and starts a word that dod
   await expect(start).not.toHaveAttribute("href", /nige=/);
 
   await page.getByTestId("puzzle-dodge-on").click();
-  await expect(page.getByTestId("puzzle-way-blurb")).toContainText(/dodge/i);
+  await expect(page.getByTestId("puzzle-way-blurb")).toContainText(/leave the most words/);
   await expect(start).toHaveAttribute("href", /nige=1/);
   // Nothing is hidden, so there is nothing for a head start to grey.
   await expect(page.getByTestId("puzzle-head-start-on")).toBeDisabled();
@@ -57,8 +57,14 @@ for (const kind of ["gomoji", "gomojiMot", "gomojiWort"] as const) {
     // A dodger's board is its own count of rows.
     await expect(page.getByTestId("word-tile")).toHaveCount(size * dodgeGuesses(kind, size));
 
+    // Ä, Ö and Ü are on no keyboard Playwright knows, so they are tapped on the board's own keys.
+    const umlauts = way.some((guess) => /[^a-z]/.test(guess));
+    if (umlauts) await page.getByRole("button", { name: "Show keys" }).click();
     for (const guess of way) {
-      await page.keyboard.type(guess);
+      for (const letter of guess) {
+        if (/[a-z]/.test(letter)) await page.keyboard.press(letter);
+        else await page.getByTestId(`word-key-${letter}`).click();
+      }
       await page.keyboard.press("Enter");
     }
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");

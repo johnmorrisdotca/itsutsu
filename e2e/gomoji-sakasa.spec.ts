@@ -56,8 +56,13 @@ for (const kind of ["gomoji", "gomojiMot", "gomojiWort"] as const) {
     await page.goto(joinQuery(playPath(kind), `?size=${size}&level=${level}&seed=${seed}`));
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("word-tile")).toHaveCount(size * way.length);
+    // Ä, Ö and Ü are on no keyboard Playwright knows, so they are tapped on the board's own keys.
+    if (way.some((guess) => /[^a-z]/.test(guess))) await page.getByRole("button", { name: "Show keys" }).click();
     for (const guess of way) {
-      await page.keyboard.type(guess);
+      for (const letter of guess) {
+        if (/[a-z]/.test(letter)) await page.keyboard.press(letter);
+        else await page.getByTestId(`word-key-${letter}`).click();
+      }
       await page.keyboard.press("Enter");
     }
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
