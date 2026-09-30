@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.465.1 — 2026-09-30 10:40 UTC
+- Tenka's map: N. America opens again, every continent fills the view, the way from Alaska to Russia's Far East is drawn at both edges, and the sea routes round Greenland and into Europe are clear.
+
 ## 0.465.0 — 2026-09-30 10:40 UTC
 - A buddy's page lists every game they have played, of every kind, and you can open each one to watch it or look back at it.
 
