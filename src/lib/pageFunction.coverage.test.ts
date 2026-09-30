@@ -69,7 +69,16 @@ const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
  * prints.
  */
 const GAME_PACKAGE = /^@johnmorrisdotca\//;
-const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string, string>([]);
+const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string, string>([
+  /*
+   * Hitotsu, 168 KB whole (1.0.1). The rules page prints its sizes and its
+   * house rules; a table played on several devices is read and drawn on the
+   * server like the older tables; and the Colour cards family mark is one of
+   * its cards. Its play screen at one device is loaded in the browser only.
+   */
+  ["@johnmorrisdotca/hitotsu", "Sizes and rules for the rules page, and the several-devices table read on the server."],
+  ["@johnmorrisdotca/hitotsu/react", "The Colour cards family mark, and the several-devices table drawn on the server."],
+]);
 
 /*
  * THE TABLES DRAWN ON THE SERVER. A party game's table reads a game kept in
