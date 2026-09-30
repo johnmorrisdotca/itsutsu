@@ -43,7 +43,8 @@ export function PartyBoard({ game, at, theme, overTable = null }: { game: PartyG
       data-won={winnersOf(game).includes(at) ? "true" : undefined}
       data-resigned={game.resigned.includes(at) ? "true" : undefined}
     >
-      <figcaption className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-2 text-sm">
+      {/* Two lines of room whether or not the counts wrap under the name, so tables side by side start level (John, 2026-09-30). */}
+      <figcaption className="flex min-h-10 min-w-0 flex-wrap content-start items-baseline justify-between gap-x-2 text-sm">
         <span className="flex min-w-0 max-w-full items-center gap-1.5">
           <span className="min-w-0 truncate font-semibold">{nameOf(game, at)}</span>
           {isComputer(game, at) ? <ComputerMark /> : null}
@@ -57,7 +58,12 @@ export function PartyBoard({ game, at, theme, overTable = null }: { game: PartyG
         <KumimojiTable tiles={player.tiles} theme={theme} readOnly boxClass={TILE_PICTURE_BOX} />
         {overTable}
       </div>
-      <div className="flex min-h-7 flex-wrap gap-1" data-testid="kumimoji-party-hand" aria-label={`${nameOf(game, at)}'s hand`}>
+      <div className="flex min-h-7 flex-wrap items-center gap-1" data-testid="kumimoji-party-hand" aria-label={`${nameOf(game, at)}'s hand`}>
+        {player.hand.length === 0 ? (
+          <span className="text-xs text-muted" data-testid="kumimoji-party-hand-empty">
+            No tiles in hand
+          </span>
+        ) : null}
         {player.hand.map((letter, place) => {
           const face = tileFace(letter);
           return (
