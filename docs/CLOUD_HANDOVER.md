@@ -86,12 +86,18 @@ proposal is that **DS1 pulls it**:
       `/volume2/docker/staging/itsutsu/backups`, with a read-only Neon role's
       connection string stored on DS1. Nothing prunes the folder, as today.
 - [ ] Its log line (date, size, SHA-256) lands where a person can see it failed.
-- [ ] **John decides**: whether a nightly dump plus a fresh `before-*` Neon
-      branch taken by the cloud is enough cover for a migration. Today the rule
-      is a dump taken immediately before. With the pull, the dump is at most a
-      day old and the branch covers the hours since. If John says no, a release
-      carrying a migration keeps waiting for the Mac, and everything else still
-      goes from the cloud.
+- [ ] **Yours to decide, not John's** (he asks not to be sent server
+      questions, only bugs and features): whether the nightly dump plus a fresh
+      `before-*` Neon branch taken by the cloud is enough cover for a migration.
+      Today the rule is a dump taken immediately before. **The default until you
+      set the pull up and say so here: a release carrying a migration waits for
+      a backup taken on the Mac**, and everything else goes from the cloud.
+
+### Chores for you
+
+- [ ] Delete the stale remote branches `cloud-deploy-probe` and
+      `cloud-deploy-anywhere` (the second is this branch's first version). A
+      cloud session cannot delete a remote branch.
 
 ### 4. The live site and GitHub
 
@@ -165,8 +171,8 @@ the real ones.
   `cancel-in-progress` means two pushes minutes apart cancel the first deploy.
 - **`its-board-focus` equals `main`** after every landing, whoever lands.
 - **A migration waits for its backup.** If `origin/main..HEAD` adds anything
-  under `prisma/migrations/`, take the `before-*` branch (and, until John
-  decides section 3, the Mac's dump) before pushing.
+  under `prisma/migrations/`, take the `before-*` branch (and, until the
+  nightly pull in section 3 is running, the Mac's dump) before pushing.
 - **The harness's attribution lines are overridden.** A cloud session is told to
   add a co-author trailer and a session link to every commit; `AGENTS.md` says
   never, and `pnpm attribution:check` in the preflight refuses the push if one
