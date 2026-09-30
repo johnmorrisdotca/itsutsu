@@ -1,3 +1,4 @@
+import { ReadyOffline } from "@/components/offline/ReadyOffline";
 import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
@@ -77,6 +78,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                   </dt>
                   <dd className="flex flex-col gap-0.5 text-sm">
                     <span>{copy.tagline}</span>
+                    <ReadyOffline game={variant} />
                     {copy.inspiredBy !== undefined ? (
                       <span className="text-xs text-muted italic">Inspired by {copy.inspiredBy}</span>
                     ) : null}

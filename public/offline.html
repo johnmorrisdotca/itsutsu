@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offline · Itsutsu</title>
+<meta name="theme-color" content="#22231f">
+<!--
+  What the offline keeper (public/sw.js) answers with when there is no
+  connection and this device has not kept the page asked for. Static, and
+  holding nothing of anybody's: the list of games below is read from this
+  device's own keeping, in the browser, when the page opens.
+-->
+<style>
+  :root { --paper: #f7f5f1; --ivory: #fffef9; --ink: #22231f; --muted: #6f6a62; --rule: #e3ded4; --moss: #52664b; }
+  @media (prefers-color-scheme: dark) { :root { --paper: #1b1c19; --ivory: #22231f; --ink: #f1eee6; --muted: #aaa497; --rule: #3a3a34; --moss: #9db592; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 36rem; margin: 0 auto; padding: 2.5rem 1rem 3rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  h1 { font-size: 1.6rem; margin: 0; }
+  .kanji { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; color: var(--muted); font-weight: 400; margin-left: .4rem; }
+  p { margin: 0; color: var(--muted); }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+  a.game { display: block; padding: .75rem 1rem; border: 1px solid var(--rule); border-radius: .5rem; background: var(--ivory); color: var(--ink); text-decoration: none; font-weight: 600; }
+  a.game:hover { border-color: var(--moss); }
+  .row { display: flex; gap: .75rem; flex-wrap: wrap; }
+  button, a.button { font: inherit; padding: .6rem 1rem; border-radius: .5rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; text-decoration: none; }
+  a.button { background: transparent; color: var(--ink); }
+</style>
+</head>
+<body>
+<main data-testid="offline-page">
+  <h1>You're offline<span class="kanji">圏外</span></h1>
+  <p>This page needs a connection, or hasn't been opened on this device yet. Games you've opened here before still play without one: the practice board, pass and play, card and party games at one device, and puzzles on your own.</p>
+  <section id="kept" hidden>
+    <h2 style="font-size:1.1rem;margin:0 0 .5rem">Ready on this device</h2>
+    <ul id="kept-list" data-testid="offline-kept"></ul>
+  </section>
+  <p id="none" hidden>No games have been saved on this device yet. Open a game once while you're online and it will be here next time.</p>
+  <div class="row">
+    <button type="button" onclick="location.reload()">Try again</button>
+    <a class="button" href="/games">Games</a>
+  </div>
+</main>
+<script>
+  (async () => {
+    const PLAY = /^\/games\/[^/]+\/(play|pass-and-play)$/;
+    const list = document.getElementById("kept-list");
+    const seen = new Set();
+    try {
+      const cache = await caches.open("itsutsu-pages-v1");
+      const keys = (await cache.keys()).reverse();
+      for (const key of keys) {
+        const url = new URL(key.url);
+        if (!PLAY.test(url.pathname) || seen.has(url.pathname)) continue;
+        seen.add(url.pathname);
+        const response = await cache.match(key);
+        const html = response ? await response.text() : "";
+        const found = /<title>([^<]*)<\/title>/.exec(html);
+        const title = found ? found[1].replace(/\s*·\s*Itsutsu\s*$/, "").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'") : url.pathname;
+        url.searchParams.delete("seed");
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        link.className = "game";
+        link.href = url.pathname + url.search;
+        link.textContent = title;
+        item.append(link);
+        list.append(item);
+      }
+    } catch {}
+    document.getElementById(seen.size > 0 ? "kept" : "none").hidden = false;
+  })();
+</script>
+</body>
+</html>

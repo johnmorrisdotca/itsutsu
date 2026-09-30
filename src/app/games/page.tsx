@@ -14,6 +14,7 @@ import { storedPreferencesFor } from "@/lib/preferences/memberPreferences";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentReader } from "@/lib/auth/currentReader";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { KeepAllOffline } from "@/components/offline/KeepAllOffline";
 
 import { PublicCatalogue, catalogueFamilies } from "./PublicCatalogue";
 
@@ -77,6 +78,8 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
         lead="Almost every game here is five in a row with one idea changed. Every name leads to that game — its rules, its record, its standings and a board."
       />
       <InstallHint />
+      {/* Every game kept for offline at once, like a region saved in a maps app (`KeepAllOffline`); drawn only where the keeper runs. */}
+      <KeepAllOffline />
       <section className="flex flex-col gap-4">
         <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} folds={folds} keepsFolds={reader.hasAccount} />
       </section>

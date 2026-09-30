@@ -113,6 +113,8 @@ const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: "2mb" } },
   async headers() {
     return [
+      /* The offline keeper (public/sw.js): a device checks it against the site's on every visit, never against a cached copy. */
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
       {
         source: "/embed",
         headers: [
