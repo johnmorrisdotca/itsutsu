@@ -214,12 +214,15 @@ test.describe("the card games at the table", () => {
     await start(page, "euchre");
     await myTurn(page);
     // The first seat deals, so Ann speaks last in the making: order the card up, or call a suit (a dealer must).
+    // A computer may have ordered it up already, and then Ann's first turn is the dealer's discard.
     const game = page.getByTestId("cards-game");
-    const before = await movesMade(page);
-    if ((await page.getByTestId("cards-order").count()) > 0) await page.getByTestId("cards-order").click();
-    else if ((await page.getByTestId("cards-making").count()) > 0) await page.locator('[data-testid^="cards-call-"]').first().click();
-    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
-    await myTurn(page);
+    if ((await page.getByTestId("cards-discard-card").count()) === 0) {
+      const before = await movesMade(page);
+      if ((await page.getByTestId("cards-order").count()) > 0) await page.getByTestId("cards-order").click();
+      else await page.locator('[data-testid^="cards-call-"]').first().click();
+      await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+      await myTurn(page);
+    }
     // Picked up as dealer: one card thrown away, by a double tap.
     if ((await page.getByTestId("cards-discard-card").count()) > 0) {
       await handCards(page).first().dblclick({ position: { x: 8, y: 12 } });
