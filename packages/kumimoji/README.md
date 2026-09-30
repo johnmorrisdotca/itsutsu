@@ -1,5 +1,13 @@
 # Kumimoji 組み文字
 
+[![CI](https://github.com/johnmorrisdotca/kumimoji/actions/workflows/ci.yml/badge.svg)](https://github.com/johnmorrisdotca/kumimoji/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@johnmorrisdotca/kumimoji.svg)](https://www.npmjs.com/package/@johnmorrisdotca/kumimoji)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+![Types included](https://img.shields.io/badge/types-TypeScript-3178c6.svg)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+
+**The crossword tile race, in English and Japanese, as pure and seeded TypeScript.**
+
 Build one crossword from every tile in the bag. Lay your hand as words that
 cross, and when your hand is empty and every run across and down is a word, draw
 the next tile. A tile you cannot use can be traded for three. Use the last tile
@@ -11,8 +19,8 @@ to eight sharing one bag, in English or in Japanese.
 **[Play it](https://johnmorrisdotca.github.io/kumimoji/)**
 
 <p>
-  <img src="docs/desktop.jpg" alt="An English game: GIRL laid on the table, three tiles in hand, one of them a wild" width="560">
-  <img src="docs/phone.jpg" alt="A Japanese game on a phone in dark mode" width="200">
+  <img src="docs/desktop.jpg" alt="An English game: BACK across and RAW down, with a wild tile left in hand" width="560">
+  <img src="docs/phone.jpg" alt="The same game on a phone in dark mode" width="200">
 </p>
 
 - **Dealt from a seed.** `generateKumimoji` lays a crossword first and deals its
@@ -38,6 +46,21 @@ to eight sharing one bag, in English or in Japanese.
 
 It is the Kumimoji on [Itsutsu](https://itsutsu.com/games/kumimoji), which plays
 alone, in races, round one device and across several with this package.
+
+## How to play
+
+1. Everyone starts with a hand of tiles from the bag: 3, 7 or 11.
+2. Lay your tiles on the table as a crossword of your own. Every run of two or
+   more tiles, across and down, must be a word, and every tile must join the
+   one crossword. Move and take back tiles as often as you like.
+3. When your hand is empty and the crossword is sound, draw the next tile. At a
+   table, everyone draws together.
+4. Stuck with a tile you cannot use? Trade it for three from the bag.
+5. A wild tile is any letter or kana you give it, and reads as that in every
+   word it is part of.
+6. Near the end of the bag, a player who lays their last tile in a sound
+   crossword goes out. Everyone else has one last turn to do the same, and all
+   who go out win. Alone, you use every tile in the bag and race the clock.
 
 ## Install
 
@@ -147,6 +170,25 @@ import { KumimojiBoard, KumimojiTable } from "@johnmorrisdotca/kumimoji/react";
 <KumimojiTable language="japanese" hand={7} />
 ```
 
+## API at a glance
+
+| Entry | What it holds |
+| --- | --- |
+| `@johnmorrisdotca/kumimoji` | Dealing: `generateKumimoji`, `KUMIMOJI_HANDS`; playing alone: `deal`, `placeFromHand`, `moveOnTable`, `swapWithHand`, `liftToHand`, `liftAll`, `sortHand`, `assignHandTile`, `draw`, `trade`, `mayDraw`, `mayTrade`, `isFinished`; judging: `judgeWithWords`, `runsOf`, `checkKumimoji`, `kumimojiPoints`; words: `loadTileWords`, `tileWords`, `wordsInHand`; a table: `startParty`, `endTurn`, `drawAll`, `resign`, `joinParty`, `leaveParty`, `encodeParty`, `decodeParty`; the computer: `planComputerTurn`, `afterComputerTurn`; views: `fitView`, `zoomView`, `panView`, `turnView`; and every type (`TilePlay`, `PartyGame`, `GridVerdict`, …). |
+| `@johnmorrisdotca/kumimoji/words` | Loads both word lists from this package's files, for a server, a test or a script. |
+| `@johnmorrisdotca/kumimoji/ui` | `mountKumimoji`, a whole game in plain DOM; `boardModel` for drawing a board yourself. |
+| `@johnmorrisdotca/kumimoji/react` | `KumimojiBoard` and `KumimojiTable`. |
+
+Every function is typed and documented in the source, and your editor shows the
+documentation as you type.
+
+## Browser support
+
+Any browser that runs ES2022 modules: current Chrome, Edge, Firefox and Safari,
+on a desk or a phone. The rules have no DOM in them and run the same in Node 20
+or later, Deno, Bun and web workers. The table follows the system's light or
+dark mode and needs nothing but a container element.
+
 ## Develop
 
 ```sh
@@ -156,9 +198,30 @@ npm run build    # dist/
 npm run site     # the demo in site/, as GitHub Pages serves it
 ```
 
-## Licence
+## Roadmap
 
-The code is MIT, © John Morris. The word lists carry their own licences, set out
-in [WORDS-LICENCE.md](WORDS-LICENCE.md): the English words are from SCOWL
-(permissive, with a notice that travels with them), and the Japanese readings are
-derived from JMdict under CC BY-SA 4.0.
+- More languages, each from a real dictionary of that language.
+- Playing the plain-DOM table from a keyboard, as the React one can.
+- A computer player at three strengths.
+- Word definitions for a finished crossword.
+
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) says
+how to set up, what the checks are and how a change is written up, and everyone
+taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
+
+## Licence and notices
+
+The code is MIT, © John Morris; see [LICENSE](LICENSE).
+
+The word lists are other people's work, used under their own terms, and set out
+in full in [NOTICE.md](NOTICE.md):
+
+- **English**: from [SCOWL](http://wordlist.aspell.net/), © Kevin Atkinson and
+  others, under a permissive licence whose notice travels with the lists.
+- **Japanese**: readings derived from
+  [JMdict](https://www.edrdg.org/jmdict/j_jmdict.html), © the Electronic
+  Dictionary Research and Development Group, under
+  [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The
+  Japanese list file (`src/words.ja.data.ts`) is shared under the same licence.

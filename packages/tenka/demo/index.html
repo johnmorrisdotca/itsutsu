@@ -6,6 +6,7 @@
     <title>Tenka world conquest</title>
     <meta name="description" content="Tenka 天下: the classic world-conquest game on a map of the modern world, against the computer." />
     <meta name="theme-color" content="#2f5d4a" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232f5d4a%22/%3E%3Ctext x=%2250%22 y=%2270%22 font-size=%2260%22 text-anchor=%22middle%22 fill=%22white%22%3E天%3C/text%3E%3C/svg%3E" />
     <style>
       :root { color-scheme: light dark; --page: #f4efe4; --ink: #1f2320; }
       @media (prefers-color-scheme: dark) { :root { --page: #141614; --ink: #ece8dc; } }
@@ -17,6 +18,7 @@
       header p { margin: 0; opacity: .7; }
       form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
       select, button { font: inherit; padding: 6px 10px; border-radius: 8px; }
+      nav { margin-left: auto; display: flex; gap: 14px; font-size: .9rem; }
       footer { margin-top: 32px; font-size: .85rem; opacity: .7; }
       a { color: inherit; }
     </style>
@@ -26,6 +28,11 @@
       <header>
         <h1>Tenka<span lang="ja">天下</span></h1>
         <p>Take the world, one territory at a time.</p>
+        <nav>
+          <a href="https://github.com/johnmorrisdotca/tenka">GitHub</a>
+          <a href="https://github.com/johnmorrisdotca/tenka#readme">Docs</a>
+          <a href="https://www.npmjs.com/package/@johnmorrisdotca/tenka">npm</a>
+        </nav>
       </header>
       <form id="setup">
         <label>Players <select name="players"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
@@ -35,7 +42,7 @@
       <div id="table"></div>
       <footer>
         You play the first seat; the computer plays the rest. Tap your territories to place armies; to attack or move,
-        tap where from and then where to. Open source under the MIT licence. The map is drawn from Natural Earth, which is in the public domain.
+        tap where from and then where to. <a href="https://github.com/johnmorrisdotca/tenka">Open source</a> under the MIT licence, by John Morris. The map is drawn from Natural Earth, which is in the public domain.
       </footer>
     </main>
     <script type="module">

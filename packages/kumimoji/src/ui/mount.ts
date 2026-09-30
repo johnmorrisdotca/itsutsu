@@ -29,6 +29,9 @@ export type KumimojiTableHandle = {
 };
 
 /** What is picked up: a tile in the hand, or one on the table. */
+/** What a wild nobody has given a letter yet shows in the hand. */
+const WILD_MARK = "★";
+
 type Held = { from: "hand"; at: number } | { from: "table"; square: string } | null;
 
 function node<K extends keyof HTMLElementTagNameMap>(name: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
@@ -180,7 +183,7 @@ export function mountKumimoji(target: HTMLElement, options: KumimojiTableOptions
       const made = node("button", "km-tile km-in-hand");
       made.type = "button";
       made.dataset.hand = String(at);
-      made.textContent = words!.glyphOf(tile);
+      made.textContent = face.blank ? WILD_MARK : words!.glyphOf(tile);
       if (face.wild) made.classList.add("km-wild");
       if (held?.from === "hand" && held.at === at) made.classList.add("km-held");
       made.setAttribute("aria-label", face.blank ? "Wild, no letter yet" : `${words!.glyphOf(tile)}${face.wild ? ", wild" : ""}`);

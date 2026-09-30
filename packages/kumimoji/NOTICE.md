@@ -1,4 +1,4 @@
-# The word lists' licences
+# Notice: the word lists' licences
 
 The code of this package is under the MIT licence (see [LICENSE](LICENSE)). The
 two word lists it ships are other people's work, used under their own terms.

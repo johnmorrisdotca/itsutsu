@@ -1,8 +1,16 @@
 # Changelog
 
-## 0.1.0 (2026-09-30)
+All notable changes to this project are written down here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-09-30
 
 The first release.
+
+### Added
 
 - Games dealt from a seed by laying a crossword first, so every bag can be
   finished: hands of 3, 7 or 11, three levels of wild tiles, short, medium and
@@ -25,3 +33,6 @@ The first release.
 - `KumimojiBoard` and `KumimojiTable`, React components, from
   `@johnmorrisdotca/kumimoji/react`.
 - A static demo for GitHub Pages.
+
+[Unreleased]: https://github.com/johnmorrisdotca/kumimoji/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/johnmorrisdotca/kumimoji/releases/tag/v0.1.0

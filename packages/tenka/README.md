@@ -1,5 +1,13 @@
 # Tenka 天下
 
+[![CI](https://github.com/johnmorrisdotca/tenka/actions/workflows/ci.yml/badge.svg)](https://github.com/johnmorrisdotca/tenka/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@johnmorrisdotca/tenka.svg)](https://www.npmjs.com/package/@johnmorrisdotca/tenka)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+![Types included](https://img.shields.io/badge/types-TypeScript-3178c6.svg)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+
+**World conquest for two to six, on a map of the real world, as pure and seeded TypeScript.**
+
 The classic world-conquest game for two to six players, on a map of the modern
 world: place your armies, attack your neighbours with the dice, trade in sets of
 cards for more armies, and take the world, or hold the most of it when the last
@@ -158,6 +166,25 @@ countries at 1:110m, which is in the public domain, by `npm run map`. Never edit
 their own entry, `@johnmorrisdotca/tenka/shapes`, so code that only plays the
 rules never carries them.
 
+## API at a glance
+
+| Entry | What it holds |
+| --- | --- |
+| `@johnmorrisdotca/tenka` | The rules: `startTenka`, `playTenka`, `tenkaMoves`, `sensibleTenkaMove`, `tenkaOver`, `mustTrade`, `reinforcementFor`, `continentsHeld`, `connectedOwn`, `attacksOpen`; the map's facts: `TENKA_TERRITORIES`, `TENKA_CONTINENTS`, `tenkaNeighbours`, `areNeighbours`; cards and dice: `setsIn`, `tradeValue`, `throwDice`, `battleLosses`; keeping: `encodeTenka`, `decodeTenka`, `replayTenka`, `writeTenkaMove`, `readTenkaMove`; touch: `tapTerritory`, `marksFor`; and every type (`TenkaGame`, `TenkaMove`, `TenkaPhase`, …). |
+| `@johnmorrisdotca/tenka/shapes` | `TENKA_SHAPES`, the outline of every territory, kept apart so the rules never carry them. |
+| `@johnmorrisdotca/tenka/ui` | `mountTenka`, the whole table in plain DOM; `tenkaMapModel`, `continentView` and `tenkaMapSvg` for drawing the map yourself; `TENKA_SEAT_COLOURS`. |
+| `@johnmorrisdotca/tenka/react` | `TenkaMap` and `TenkaTable`. |
+
+Every function is typed and documented in the source, and your editor shows the
+documentation as you type.
+
+## Browser support
+
+Any browser that runs ES2022 modules: current Chrome, Edge, Firefox and Safari,
+on a desk or a phone. The rules have no DOM in them and run the same in Node 20
+or later, Deno, Bun and web workers. The table follows the system's light or
+dark mode and needs nothing but a container element.
+
 ## Develop
 
 ```sh
@@ -167,6 +194,21 @@ npm run build    # dist/
 npm run site     # the demo in site/, as GitHub Pages serves it
 ```
 
+## Roadmap
+
+- Other rule sets as options: secret missions, capitals, and a fixed card bonus.
+- Maps of your own: the map as data, with a tool to draw one.
+- A stronger computer player that plans a whole turn.
+- The throw of the dice and armies moving in, animated on the table.
+
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) says
+how to set up, what the checks are and how a change is written up, and everyone
+taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
+
 ## Licence
 
-MIT, © John Morris. The map is drawn from Natural Earth (public domain).
+MIT, © John Morris; see [LICENSE](LICENSE). The map is drawn from
+[Natural Earth](https://www.naturalearthdata.com/), which is in the public
+domain.
