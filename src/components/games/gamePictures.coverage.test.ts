@@ -325,6 +325,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // And Mancala's, the same.
   "src/components/party/MancalaCard.tsx": { GameThumb: "small" },
   "src/components/party/TrainCard.tsx": { GameThumb: "small" },
+  "src/components/party/hitotsu/HitotsuCard.tsx": { GameThumb: "small" },
   // The party tables on several devices, rows of a list on My games.
   "src/components/party/online/MyTables.tsx": { GameThumb: "small" },
   // And Tenka's.

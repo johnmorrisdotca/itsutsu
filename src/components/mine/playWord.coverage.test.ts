@@ -30,6 +30,9 @@ import { PLAY } from "./mine.constants";
 /** Superghost's challenge is a move with that name, inside a game already going: nothing is offered by it. */
 const GHOST_MOVE = "Superghost's challenge, the move the game's rules are named for, made at a table already playing — not an offer of a game";
 
+/** Hitotsu's challenge of a Wild Draw Four: a move in its game, the published rules' own word for it, not an offer of a game. */
+const FOUR_MOVE = "Hitotsu's challenge of a Wild Draw Four, a move in the game";
+
 const EXCEPTIONS: readonly { file: string; text: string; why: string }[] = [
   { file: "src/components/party/party.constants.ts", text: "or Add after — or challenge.", why: GHOST_MOVE },
   { file: "src/components/party/party.constants.ts", text: "Challenge", why: `${GHOST_MOVE}: the button, "Challenge" and "Challenge Ann"` },
@@ -39,6 +42,15 @@ const EXCEPTIONS: readonly { file: string; text: string; why: string }[] = [
   { file: "src/lib/party/party.constants.ts", text: "you may challenge the player who added the last one", why: `${GHOST_MOVE}, in its rules` },
   { file: "src/lib/party/party.constants.ts", text: "the challenger loses the round", why: `${GHOST_MOVE}, in its rules` },
   { file: "src/lib/party/partyRulesPage.ts", text: "or press Challenge. When challenged,", why: `${GHOST_MOVE}, on its rules page` },
+  { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "May be challenged", why: `${FOUR_MOVE}: the house rule's tile` },
+  { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "the next player may challenge.", why: FOUR_MOVE },
+  { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "Only with nothing of the colour; no challenge.", why: FOUR_MOVE },
+  { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "take the four, or challenge", why: FOUR_MOVE },
+  { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "Challenge", why: `${FOUR_MOVE}: the button` },
+  { file: "src/components/party/hitotsu/hitotsuPresses.ts", text: "challenged ${name(news.by)}, who", why: `${FOUR_MOVE}: what happened, over the table` },
+  { file: "src/lib/party/hitotsu/hitotsu.copy.ts", text: "but they may challenge it.", why: `${FOUR_MOVE}, in its rules` },
+  { file: "src/lib/party/partyRulesPage.ts", text: "or Challenge a Wild Draw Four.", why: `${FOUR_MOVE}, on its rules page` },
+  { file: "src/lib/party/partyRulesPage.ts", text: "and it cannot be challenged.", why: `${FOUR_MOVE}, on its rules page` },
   {
     file: "src/lib/famous/famousGames.data.ts",
     text: "Google DeepMind Challenge Match",

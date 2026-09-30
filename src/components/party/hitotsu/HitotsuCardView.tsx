@@ -1,5 +1,6 @@
 import { colourOf, faceOf, hitotsuWords, isWild } from "@/lib/party/hitotsu/hitotsuDeck";
 import type { HitotsuCard, HitotsuColour } from "@/lib/party/hitotsu/hitotsu.types";
+import { centredBaseline } from "@/lib/ui/svgText";
 
 import { HITOTSU_COLOUR_LOOK, HITOTSU_FACE_MARK } from "./hitotsu.constants";
 
@@ -53,7 +54,7 @@ export function HitotsuCardView({ card, faceUp = true, chosen = false, called, c
             </g>
             {wild ? <Quarters cx={50} cy={70} r={face === "F" ? 20 : 26} /> : null}
             {mark === "" ? null : (
-              <text x="50" y="70" textAnchor="middle" dominantBaseline="central" fontSize={mark.length > 1 ? 26 : 38} fontWeight="800" fill={wild ? "#fffdf6" : look.fill} stroke={wild ? HITOTSU_COLOUR_LOOK.W.fill : "none"} strokeWidth={wild ? 1.5 : 0} fontFamily="system-ui, sans-serif">
+              <text x="50" y={centredBaseline(70, mark.length > 1 ? 26 : 38)} textAnchor="middle" fontSize={mark.length > 1 ? 26 : 38} fontWeight="800" fill={wild ? "#fffdf6" : look.fill} stroke={wild ? HITOTSU_COLOUR_LOOK.W.fill : "none"} strokeWidth={wild ? 1.5 : 0} fontFamily="system-ui, sans-serif">
                 {mark}
               </text>
             )}
@@ -76,7 +77,7 @@ export function HitotsuCardView({ card, faceUp = true, chosen = false, called, c
             <circle cx="50" cy="70" r="31" fill="#fffdf6" />
             <Quarters cx={50} cy={70} r={28} />
             <circle cx="50" cy="70" r="19" fill={HITOTSU_COLOUR_LOOK.W.fill} />
-            <text x="50" y="71" textAnchor="middle" dominantBaseline="central" fontSize="15" fontWeight="700" fill="#fffdf6" fontFamily="serif">
+            <text x="50" y={centredBaseline(71, 15)} textAnchor="middle" fontSize="15" fontWeight="700" fill="#fffdf6" fontFamily="serif">
               一つ
             </text>
           </>

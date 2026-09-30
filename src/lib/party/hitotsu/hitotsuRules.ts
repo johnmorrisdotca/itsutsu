@@ -1,6 +1,7 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import type { PartyRules } from "../party.types";
 
+import { hitotsuComputer } from "./hitotsuComputer";
 import { HITOTSU_CLASSIC, HITOTSU_COLOURS } from "./hitotsu.constants";
 import { hitotsuMoves, hitotsuWinners, playHitotsu, startHitotsu } from "./hitotsu";
 import type { HitotsuColour, HitotsuGame, HitotsuMove, HitotsuOptions } from "./hitotsu.types";
@@ -105,4 +106,6 @@ export const HITOTSU_RULES: PartyRules<HitotsuGame, HitotsuMove> & { startWith: 
   winners: hitotsuWinners,
   encode: encodeHitotsu,
   decode: decodeHitotsu,
+  // A player who draws whenever it may never finishes a hand: the gate plays the table's own computer player, never jumping in.
+  sensible: (game) => hitotsuComputer(game),
 };
