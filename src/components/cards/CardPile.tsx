@@ -66,7 +66,8 @@ export function CardPile({ id, cards, spread, step, room, showLast, emptyMark, a
             : { top: `${(at / (1 + layout.extent)) * 100}%`, left: 0, width: "100%" };
         return (
           <button
-            key={cardCode(card)}
+            // With its place, since two decks (Spider) can put the same card twice in one pile.
+            key={`${cardCode(card)}-${index}`}
             type="button"
             className="absolute block rounded-[7%/5%] outline-none focus-visible:ring-2 focus-visible:ring-moss"
             style={{ ...position, touchAction: liftable ? "none" : "manipulation", zIndex: index + 1 }}

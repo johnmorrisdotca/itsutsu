@@ -22,9 +22,9 @@ describe("pointsFor", () => {
       const made = generatePuzzle(kind, size, "easy", 9);
       const filled = cellsFilled(kind, size, made.givens);
       expect(filled, kind).toBeGreaterThan(0);
-      // A card game's size is its draw, and what it fills is the deck brought home: all fifty-two cards.
+      // A card game's size is its draw, cells or suits, and what it fills is its deal brought home: fifty-two cards, or Spider's hundred and four.
       // A Mahjong size is a layout's width, not a side: its most is the tiles the layout holds.
-      const most = PUZZLE_SPECS[kind].cards === true ? 52 : PUZZLE_SPECS[kind].layouts === true ? made.givens.length : size * size;
+      const most = PUZZLE_SPECS[kind].cards === true || PUZZLE_SPECS[kind].layouts === true ? made.givens.length : size * size;
       expect(filled, kind).toBeLessThanOrEqual(most);
     }
   });

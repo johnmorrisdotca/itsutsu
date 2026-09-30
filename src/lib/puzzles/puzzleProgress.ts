@@ -1,5 +1,7 @@
 import { decodeBlackAndWhite, encodeBlackAndWhite } from "./blackAndWhite/code";
 import { solitaireMovesFit } from "./solitaire/check";
+import { freeCellMovesFit } from "./freecell/check";
+import { spiderMovesFit } from "./spider/check";
 import { encodeMoves as encodeSolitaireMoves } from "./solitaire/code";
 import type { KlondikeMove } from "./solitaire/solitaire.types";
 import type { BridgeCounts, BridgesBoard } from "./bridges/bridges.types";
@@ -122,6 +124,9 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "kumimoji") return readTileProgress(code) !== null;
   // Solitaire keeps its moves, as its answer is written; replayed from the deal when it is opened.
   if (kind === "solitaire") return solitaireMovesFit(code);
+  // FreeCell and Spider keep their moves the same way (`freecell/code.ts`, `spider/code.ts`).
+  if (kind === "freecell") return freeCellMovesFit(code);
+  if (kind === "spider") return spiderMovesFit(code);
   // Bridges keeps its drawing, one character a cell, as its answer is written; read against its islands when opened.
   if (kind === "bridges") return bridgesCodeFits(code, size);
   // Picture logic keeps the player's grid, one character a cell: "." untouched, "#" shaded, "x" marked empty (`pictureLogic/code.ts`).

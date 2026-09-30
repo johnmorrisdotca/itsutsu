@@ -133,4 +133,7 @@ The solver finds wins and never judges losses. It skips some legal moves (a run 
 - The Ace of spades carries the five stones under its pip.
 - Card backs: charcoal by default, with shu and moss for games that want two decks.
 - The family's mark is a fan of three of our own cards on green: a back, the King of hearts and the Ace of spades.
-- Spider and FreeCell are not built. The rules module is Klondike's own, and neither was cheap enough to go in without delaying Klondike. FreeCell would be the easier next: every deal is open, and nearly all are winnable.
+- FreeCell and Spider (2026-09-30) are two more `PuzzleKind`s beside Solitaire, each with its own rules module (`src/lib/puzzles/freecell/`, `src/lib/puzzles/spider/`), sharing the table drawing (`patienceTable.tsx`), the moves and undo (`usePatienceGame.ts`), the controls and the replay.
+- FreeCell's size is the free cells (4, 3 or 2; default 4), Spider's the suits (1, 2 or 4; default 1). Each has one level. The heading and words for a card game's size are `CARD_SIZE_WORDS`.
+- Every FreeCell and Spider deal is winnable: a seed names the first deal from it that a best-first search (`bestFirst.ts`, a count budget, never a time) wins, found in the browser. There is no "any deal" choice and no scoring yet.
+- A double tap in Spider carries the run to the best column: its own suit first, then any card that takes it, then an empty column. The finish plays itself: FreeCell once every card left can go home in turn, Spider once every card shows and the search finds the rest.

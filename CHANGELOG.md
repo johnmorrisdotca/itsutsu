@@ -10,6 +10,15 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.449.0 — 2026-09-30
+- Spider arrives in the Cards family: two decks in ten columns, played with one, two or four suits, making eight runs from King down to Ace, and every deal one that can be won.
+
+## 0.448.0 — 2026-09-30
+- FreeCell arrives in the Cards family: every card face up in eight columns, with four, three or two free cells to work with, and every deal one that can be won.
+
+## 0.447.0 — 2026-09-30
+- Itsutsu can live on a phone's home screen like an app: it opens full screen on the games list with its own icon and launch screen, and the games list shows how to add it, with the phone's own steps.
+
 ## 0.446.0 — 2026-09-30
 - Mexican Train can be played on several devices: seat buddies, anyone with the link or the computer, and each player lays from their own phone or computer, seeing only their own tiles.
 

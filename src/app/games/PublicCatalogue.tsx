@@ -3,6 +3,7 @@ import Link from "@/components/ui/Link";
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { InstallHint } from "@/components/app/InstallHint";
 import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -87,6 +88,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
     <Page>
       <SiteHeader />
       <PageTitle title={say.say("nav.games")} kanji="種目" />
+      <InstallHint />
 
       {/*
         What a stranger gets where a member gets the lobby: the one sentence

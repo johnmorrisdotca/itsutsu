@@ -21,6 +21,8 @@ import { decodeMoves as decodeSolitaireMoves, replay } from "../src/lib/puzzles/
 import { solitaireRules } from "../src/lib/puzzles/solitaire/generate";
 import { carriedFrom, columnAt, isColumnPile } from "../src/lib/puzzles/solitaire/klondike";
 import { decodeMoves } from "../src/lib/puzzles/mahjong/moves";
+import { decodeMoves as decodeFreeCellMoves, replayFreeCell } from "../src/lib/puzzles/freecell/code";
+import { decodeMoves as decodeSpiderMoves, replaySpider } from "../src/lib/puzzles/spider/code";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
 import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
@@ -86,6 +88,10 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "solitaire", size: 1, level: "easy", seed: 20260929, fill: 30 },
   // The classic Turtle with its first eight pairs taken, as a person takes them: a tile, then its match. Free tiles lit.
   { kind: "mahjong", size: 15, level: "medium", seed: 20260929, fill: 8 },
+  // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
+  { kind: "freecell", size: 4, level: "medium", seed: 20260930, fill: 20 },
+  // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
+  { kind: "spider", size: 2, level: "medium", seed: 20260930, fill: 30 },
 ];
 
 /**
@@ -142,6 +148,36 @@ test.describe("puzzle screenshots", () => {
       let filled = 0;
       // The board colour a Kumimoji scene found, to put back after its picture.
       let feltBefore: string | null = null;
+      if (scene.kind === "freecell" || scene.kind === "spider") {
+        // The first moves of the winning line, each tapped as a person plays it: the stock, or a card and where it goes.
+        const pile = (id: string) => page.locator(`[data-card-pile="${id}"][role="group"] > button`);
+        const played = async () => (await page.getByTestId("puzzle-play").getAttribute("data-moves")) ?? "";
+        if (scene.kind === "freecell") {
+          for (const move of decodeFreeCellMoves(puzzle.solution)!.slice(0, scene.fill)) {
+            const before = await played();
+            const table = replayFreeCell(puzzle.givens, scene.size, before)!.at(-1)!;
+            const at = move.from >= "1" && move.from <= "8" ? table.tableau[Number(move.from) - 1].length - move.count : null;
+            await (at === null ? pile(move.from).last() : pile(move.from).and(page.locator(`[data-card-index="${at}"]`))).click({ position: { x: 12, y: 8 } });
+            await pile(move.to).last().click();
+            await expect.poll(async () => (await played()).length).toBeGreaterThan(before.length);
+          }
+        } else {
+          for (const move of decodeSpiderMoves(puzzle.solution)!.slice(0, scene.fill)) {
+            const before = await played();
+            const table = replaySpider(puzzle.givens, scene.size, before)!.at(-1)!;
+            if (move.kind === "deal") await pile("s").last().click();
+            else {
+              const at = table.tableau[move.from].cards.length - move.count;
+              await pile(String(move.from)).and(page.locator(`[data-card-index="${at}"]`)).click({ position: { x: 10, y: 6 } });
+              await pile(String(move.to)).last().click();
+            }
+            await expect.poll(async () => (await played()).length).toBeGreaterThan(before.length);
+          }
+        }
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+        await page.getByTestId("puzzle-play").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
       if (scene.kind === "solitaire") {
         // The first moves of the winning line, each tapped as a person plays it: the stock, or a card and where it goes.
         const rules = solitaireRules(scene.size, scene.level);

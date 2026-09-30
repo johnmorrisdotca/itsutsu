@@ -1,6 +1,8 @@
 import { generateBridges } from "./bridges/generate";
 import { generatePictureLogic } from "./pictureLogic/generate";
 import { generateSolitaire } from "./solitaire/generate";
+import { generateFreeCell } from "./freecell/generate";
+import { generateSpider } from "./spider/generate";
 import { generateHiddenStones } from "./hiddenStones/generate";
 import { generateMahjong } from "./mahjong/generate";
 import { loadWordData } from "./gomoji/wordData";
@@ -73,6 +75,12 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "solitaire":
       // A deal, not a grid: the first winnable deal from this seed, or the seed's own shuffle in the any-deal block (`solitaire/generate.ts`).
       return generateSolitaire(size, level, seed);
+    case "freecell":
+      // A deal the solver has won with this many free cells: the first from this seed (`freecell/generate.ts`).
+      return generateFreeCell(size, level, seed);
+    case "spider":
+      // Two decks of this many suits, a deal the solver has won: the first from this seed (`spider/generate.ts`).
+      return generateSpider(size, level, seed);
     case "mahjong":
       // A layout dealt in reverse, five times, the level choosing among them by how forgiving each is.
       return generateMahjong(size, level, seed);

@@ -28,6 +28,8 @@ export type PuzzleKind =
   | "bridges"
   | "pictureLogic"
   | "solitaire"
+  | "freecell"
+  | "spider"
   | "mahjong";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
@@ -120,9 +122,11 @@ export type PuzzleSpec = {
    */
   tiles?: true;
   /**
-   * Whether the puzzle is a game of cards (Solitaire): a deal from the shared
-   * deck (`lib/cards/`) played on a table, not a grid, whose size is how many
-   * cards the stock turns and whose answer is its moves. Absent is a grid.
+   * Whether the puzzle is a game of cards (Solitaire, FreeCell, Spider): a
+   * deal from the shared deck (`lib/cards/`) played on a table, not a grid,
+   * whose answer is its moves. Its size is what the set-up's tiles choose, and
+   * `CARD_SIZE_WORDS` says what that is: the cards the stock turns (Solitaire), the
+   * free cells (FreeCell), or the suits (Spider). Absent is a grid.
    */
   cards?: true;
   /**

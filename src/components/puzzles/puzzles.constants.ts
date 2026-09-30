@@ -1,6 +1,6 @@
 import { STONE_SETS } from "@/components/board/Board.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
+import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 
 /*
  * The look of a puzzle: the grid, its cells and the keys under it.
@@ -105,8 +105,9 @@ export function sizeWord(size: number, kind?: PuzzleKind): string {
   if (kind === "kumimoji") return `${size} tiles`;
   // Koushi comes at one size, the lattice; what a reader wants told is what is in it.
   if (kind === "koushi") return "6 words";
-  // A Solitaire's is how many cards the stock turns at a time.
-  if (kind === "solitaire") return `draw ${size}`;
+  // A card game's is what its size tiles choose: the cards Solitaire's stock turns, FreeCell's cells, Spider's suits.
+  const cards = kind === undefined ? undefined : CARD_SIZE_WORDS[kind];
+  if (cards !== undefined) return cards.word(size);
   // A Mahjong size is a layout, called by its name; its width in tiles is only the number on its picture.
   if (kind === "mahjong") return PUZZLE_SIZE_NAMES.mahjong[size]?.label ?? `${size} across`;
   return `${size}×${size}`;
@@ -539,6 +540,41 @@ export const SOLITAIRE_TABLE = {
   inset: 0.022,
   /** The gap between cards and at the edges, in hundredths of the width. */
   gap: 1.6,
+} as const;
+
+/**
+ * FREECELL'S TABLE (`FreeCellTable`): eight places across, the free cells and
+ * the foundations along the top and the eight columns under them, square like
+ * every board. A deal's columns are seven cards at most, and a long run built
+ * down one squeezes to fit (`pileLayout`'s `room`).
+ */
+export const FREECELL_TABLE = { across: 8, down: 8, inset: 0.022, gap: 1.4 } as const;
+
+/**
+ * SPIDER'S TABLE (`SpiderTable`): ten places across, the stock and the eight
+ * made runs along the top and the ten columns under them, square like every
+ * board.
+ */
+export const SPIDER_TABLE = { across: 10, down: 10, inset: 0.022, gap: 1.1 } as const;
+
+/** What the line under the FreeCell table says. */
+export const FREECELL_COPY = {
+  howTo: "Drag a card, or tap it and then where it goes. Tap a card twice to send it home.",
+  picked: "Now tap where it goes, or tap it again to put it back.",
+  cannot: "That cannot go there: a run moves only as far as the free cells and empty columns allow.",
+  stuck: "No move is left: no card can go anywhere. Undo, or deal again.",
+  finishing: "Every card left can go home: they are going.",
+} as const;
+
+/** What the line under the Spider table says. */
+export const SPIDER_COPY = {
+  howTo: "Drag a card, or tap it and then the column it goes on. Tap a card twice to move it where it fits best.",
+  picked: "Now tap the column it goes on, or tap it again to put it back.",
+  cannot: "That cannot go there: a card goes on one a rank higher, and a run moves only if it is all one suit.",
+  cannotDeal: "The stock cannot deal while a column is empty.",
+  stuck: "No move is left. Undo, or deal again.",
+  finishing: "Every card is showing: the rest are being put in order.",
+  dealsLeft: (left: number) => (left === 0 ? "The stock is dealt." : `${left} ${left === 1 ? "deal" : "deals"} left in the stock.`),
 } as const;
 
 /** What the line under the Solitaire table says. */

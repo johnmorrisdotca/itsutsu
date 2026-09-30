@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Zen_Old_Mincho } from "next/font/google";
 import "./globals.css";
 
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { APP_COLOURS } from "@/lib/app/app.constants";
+import { appleStartupImages } from "@/lib/app/appleLaunch";
 import { BARE_HEAD_SCRIPT } from "@/components/layout/bare";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { currentLocale } from "@/lib/i18n/currentLocale";
@@ -33,6 +35,36 @@ export const metadata: Metadata = {
   title: { default: "Itsutsu 五つ", template: "%s · Itsutsu" },
   description:
     "Itsutsu: gomoku, renju, connect6 and the family of line-and-grid games. Two players, one browser — or two devices, a code apart.",
+  applicationName: "Itsutsu",
+  /*
+   * Opened from an iPhone's home screen. iOS reads these rather than the
+   * manifest for the name under the icon, the status bar and the launch
+   * screen. The status bar is "default" — dark text on the page's paper, and
+   * the page starts below it — rather than translucent, which would put the
+   * header under the clock and needs every page's top padded for the notch.
+   * The launch images are the paper in both themes, one per screen size.
+   */
+  appleWebApp: {
+    capable: true,
+    title: "Itsutsu",
+    statusBarStyle: "default",
+    startupImage: appleStartupImages(),
+  },
+  // A board full of coordinates is not a list of telephone numbers.
+  formatDetection: { telephone: false },
+  // Older iOS reads only the Apple spelling of "open without the browser".
+  other: { "apple-mobile-web-app-capable": "yes" },
+};
+
+/**
+ * The browser's own chrome — Android's status bar, Safari's toolbar tint —
+ * painted the page's paper, light or dark as the page itself is.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: APP_COLOURS.light },
+    { media: "(prefers-color-scheme: dark)", color: APP_COLOURS.dark },
+  ],
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

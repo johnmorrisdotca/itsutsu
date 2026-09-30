@@ -399,6 +399,8 @@ const SURVEYED_PUZZLES = [
   "bridges",
   "picture-logic",
   "solitaire",
+  "freecell",
+  "spider",
   "mahjong",
 ] as const;
 

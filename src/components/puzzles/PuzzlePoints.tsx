@@ -76,8 +76,10 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
       <p className="text-xs text-muted">
         {kind === "gomoji"
           ? `Every letter you find scores, more the sooner and more in its place; the word itself more the bigger the board, and more for guesses left and speed. A word not found still scores its letters, and a head start costs ${POINTS_A_HELP}. Your best of each word counts.`
-          : kind === "solitaire"
+          : kind === "solitaire" || kind === "freecell"
             ? `${POINTS_A_CELL} for every card brought home, so every deal won scores ${POINTS_A_CELL * 52}. Your best of each deal counts.`
+          : kind === "spider"
+            ? `${POINTS_A_CELL} for every card of both decks put into a run, so every deal won scores ${POINTS_A_CELL * 104}. Your best of each deal counts.`
           : kind === "mahjong"
             ? `${POINTS_A_CELL} a tile you take, −${POINTS_A_HELP} a Hint. Your best of each deal counts.`
             : kind === "bridges"

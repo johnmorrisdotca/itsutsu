@@ -5,6 +5,8 @@
  *   src/app/opengraph-image.png   1200×630 the card a shared link unfurls to
  *   public/icon-192.png            192×192  web app manifest
  *   public/icon-512.png            512×512  web app manifest, maskable
+ *   public/brand/app/icon-*.png             the rest of the manifest's icons
+ *   public/brand/app/splash/*.png           iOS launch screens, light and dark
  *
  * Rendered with Chromium, like the favicon, so nothing draws the marks but
  * the browser that will show them. Run with `pnpm brand:rasters` after the
@@ -44,6 +46,38 @@ function square(size, inset) {
 await shoot(180, 180, square(180, 0), "src/app/apple-icon.png");
 await shoot(192, 192, square(192, 0), "public/icon-192.png");
 await shoot(512, 512, square(512, 64), "public/icon-512.png");
+// The manifest's other two: a plain 512 for a launcher that draws the icon as
+// it is, and a 192 to mask, held inside the safe zone as the 512 is.
+await shoot(512, 512, square(512, 0), "public/brand/app/icon-512.png");
+await shoot(192, 192, square(192, 24), "public/brand/app/icon-maskable-192.png");
+
+/*
+ * Launch screens. iOS draws no splash of its own for a home-screen app: with
+ * no image for the device it shows a blank white screen until the first page
+ * paints, which in dark mode is a white flash. One image per screen size and
+ * theme, the page's own paper with the icon in the middle, so opening the app
+ * looks like the page arriving rather than a browser starting.
+ *
+ * The sizes are `APPLE_LAUNCH_SCREENS` in src/lib/app/appleLaunch.ts, read
+ * from its JSON twin here because a plain node script cannot import TypeScript;
+ * `appleLaunch.test.ts` holds the two, and the files, in step.
+ */
+const screens = JSON.parse(readFileSync("src/lib/app/appleLaunch.data.json", "utf8"));
+const ivoryAvatar = readFileSync("public/brand/itsutsu-avatar-ivory.svg", "utf8");
+for (const { width, height, ratio } of screens) {
+  const w = width * ratio;
+  const h = height * ratio;
+  const side = Math.round(Math.min(w, h) * 0.3);
+  for (const [theme, background, mark] of [["light", PAPER, avatar], ["dark", INK, ivoryAvatar]]) {
+    const sized = mark.replace(/<svg /, `<svg width="${side}" height="${side}" `);
+    await shoot(
+      w,
+      h,
+      `<div style="width:${w}px;height:${h}px;background:${background};display:flex;align-items:center;justify-content:center">${sized}</div>`,
+      `public/brand/app/splash/${theme}-${w}x${h}.png`,
+    );
+  }
+}
 
 /*
  * The social card. The hero on paper, the line the site says about itself,

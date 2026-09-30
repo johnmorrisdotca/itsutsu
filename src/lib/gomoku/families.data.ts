@@ -226,17 +226,40 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Cards",
     kanji: "札",
-    blurb: "Games with a deck of cards, drawn by us: Solitaire for one, and the family card games round one device, with a computer in any empty seat.",
+    blurb: "Games with a deck of cards, drawn by us: Solitaire, FreeCell and Spider for one, and the family card games round one device, with a computer in any empty seat.",
     /*
      * And the family card games (2026-09-29), party games at home here rather
      * than on Party games: a card game is the kind of game it is, and who is
      * round the table is how it is played. Nothing of them is recorded, so
-     * this family's first and its award are still Solitaire's alone.
-     *
-     * Hitotsu (2026-09-30), the colour-card game, beside Crazy Eights, which it
-     * grew out of: a deck of its own, drawn by us, and a party game like them.
+     * this family's first and its award are still the patience games' alone.
+     * FreeCell and Spider (2026-09-30) sit beside Solitaire, the three
+     * patience games first, kept and timed as it is.
      */
-    games: ["solitaire", "hearts", "crazyEights", "hitotsu", "goFish", "bigTwo", "president"],
+    games: ["solitaire", "freecell", "spider", "hearts", "crazyEights", "goFish", "bigTwo", "president"],
+  },
+  {
+    key: "colour-cards",
+    /*
+     * COLOUR CARDS 色札. Hitotsu (2026-09-30), John: "since we have built card
+     * games now, we should build Uno and party Uno versions." Its deck is not
+     * the French one Cards is played with but a deck of its own — four
+     * colours, numbers and action cards, drawn by us — and Cards already held
+     * the eight a shelf holds when it arrived (Solitaire, FreeCell, Spider and
+     * the five family games). So a shelf for the games played with that deck,
+     * as Mahjong and Dominoes are the shelves for theirs: 色 colour, and 札 the
+     * card, Cards' own word.
+     *
+     * Its games are party games, never recorded, so, like Dominoes, it counts
+     * towards no award, has a page of its own at /games/colour-cards, and stays
+     * off the set-up screen. Crazy Eights, the game Hitotsu grew out of, is
+     * also shown here (`ALSO_LISTED_IN`).
+     */
+    title: "Colour cards",
+    kanji: "色札",
+    blurb: "Games with a deck of four colours, numbers and action cards, drawn by us: match the colour or the number, and be first to empty your hand. Round one device, or on several, with a computer in any empty seat.",
+    games: ["hitotsu"],
+    notOnSetUp:
+      "A colour-card game is played by a table of people and computers on one device or several, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "mahjong",

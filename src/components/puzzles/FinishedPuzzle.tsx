@@ -33,6 +33,7 @@ import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { BRIDGES_CELL_WORDS, PICTURE_CELL_WORDS } from "./puzzles.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { PuzzleSteps } from "./PuzzleSteps";
+import { PatienceReplay } from "./PatienceReplay";
 import { SolitaireReplay } from "./SolitaireReplay";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
@@ -106,6 +107,15 @@ export function FinishedPuzzle({
     return (
       <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "replay"}>
         <SolitaireReplay size={size} level={level} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} />
+      </Focused>
+    );
+  }
+
+  // A FreeCell or a Spider is its moves too, played back the same way (`PatienceReplay`).
+  if (kind === "freecell" || kind === "spider") {
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "replay"}>
+        <PatienceReplay kind={kind} size={size} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} />
       </Focused>
     );
   }

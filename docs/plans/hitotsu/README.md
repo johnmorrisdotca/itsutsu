@@ -7,8 +7,9 @@ base one."
 
 Hitotsu 一つ for two to eight round one phone or tablet, with a computer in any
 seat, or on several devices, at `/games/hitotsu/pass-and-play`; its front door
-and rules at `/games/hitotsu`; at home in Cards 札, beside Crazy Eights, which
-it grew out of.
+and rules at `/games/hitotsu`; at home in a family of its own, Colour cards 色札
+(`/games/colour-cards`), with Crazy Eights, which it grew out of, shown there
+too from its home in Cards.
 
 ## The name and the deck
 
@@ -63,6 +64,11 @@ zeros on. Every house rule can be changed either way:
 
 Decisions worth knowing:
 
+- **Its own shelf.** Cards already held the eight a shelf holds when Hitotsu
+  arrived (Solitaire, FreeCell, Spider and the five family games), and Party
+  games was full with its guests. Hitotsu's deck is not the French one, so it
+  opened a family for its deck, as Mahjong and Dominoes did for theirs:
+  Colour cards 色札, off the set-up screen, counting towards no award.
 - **Eight seats, not ten.** Every party table stops at eight: the seat marbles
   (`PARTY_MARBLES`) and the party gate both do. Ten would need two more seat
   colours site-wide.
@@ -84,5 +90,8 @@ Decisions worth knowing:
 The party gate (`party.coverage.test.ts`): copy, rules page, family, picture
 (`pnpm screenshots:party`), table, browser test (`e2e/party-hitotsu.spec.ts`),
 date (`pnpm games:added`). `onlineGames.test.ts` for several devices;
-`e2e/bare-board.spec.ts` for just the board. `/api/tables` takes a size up to
+`e2e/bare-board.spec.ts` for just the board. The family: its row in
+`families.data.ts`, its mark in `FamilyMark.tsx` (drawn by
+`HitotsuCardDrawing`), its page `src/app/games/colour-cards/page.tsx`, and
+Crazy Eights' listing in `familyShelves.ts`. `/api/tables` takes a size up to
 1000 now, since Hitotsu's size is the points it plays to.

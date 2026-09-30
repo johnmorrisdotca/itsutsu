@@ -41,6 +41,7 @@ import { generateBridges } from "@/lib/puzzles/bridges/generate";
 import { PictureLogicGrid } from "@/components/puzzles/PictureLogicGrid";
 import { decodeClues } from "@/lib/puzzles/pictureLogic/code";
 import { generatePictureLogic } from "@/lib/puzzles/pictureLogic/generate";
+import { PatiencePreview } from "@/components/puzzles/PatiencePreview";
 import { SolitaireTable } from "@/components/puzzles/SolitaireTable";
 import { dealOfSeed, deckOf } from "@/lib/puzzles/solitaire/code";
 import { dealKlondike, playKlondike } from "@/lib/puzzles/solitaire/klondike";
@@ -122,6 +123,8 @@ export function PuzzleBoardPreview({
           <BridgesPreview size={size} />
         ) : kind === "pictureLogic" ? (
           <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
+        ) : kind === "freecell" || kind === "spider" ? (
+          <PatiencePreview kind={kind} size={size} appearance={appearance} />
         ) : spec.cards === true ? (
           <SolitairePreview draw={size} appearance={appearance} />
         ) : kind === "mahjong" ? (

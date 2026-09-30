@@ -1,5 +1,6 @@
 import { CardBack } from "@/components/cards/CardBack";
 import { CardFace } from "@/components/cards/CardFace";
+import { HitotsuCardDrawing } from "@/components/party/hitotsu/HitotsuCardView";
 import type { Card } from "@/lib/cards/cards.types";
 
 import type { PictureSize } from "./games.types";
@@ -38,6 +39,8 @@ type Mark = {
    * null is its back. The Cards family's fan.
    */
   cards?: { card: Card | null; x: number; y: number; angle: number }[];
+  /** Hitotsu's cards, laid as `cards` are, from its own deck (`HitotsuCardDrawing`): a card id, or null for its back. The Colour cards family's fan. */
+  colourCards?: { card: string | null; x: number; y: number; angle: number }[];
   /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
   /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Dominoes family's train. */
@@ -278,6 +281,21 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
+   * COLOUR CARDS: a hand of three from Hitotsu's own deck, fanned as the Cards
+   * family's is — its back with 一つ, a red Draw Two, and in front the wild,
+   * the four colours quartered — drawn by the code that draws them at the table.
+   */
+  "Colour cards": {
+    n: 5,
+    cells: true,
+    stones: [],
+    colourCards: [
+      { card: null, x: 1.45, y: 2.65, angle: -16 },
+      { card: "RD0", x: 2.5, y: 2.35, angle: 0 },
+      { card: "WW0", x: 3.55, y: 2.65, angle: 16 },
+    ],
+  },
+  /*
    * OTHER: a row of letters, the word puzzle's, two tiles lit green for a
    * letter in its place and one gold for a letter elsewhere — the family's
    * first game in one line, and the one mark on the row made of letters.
@@ -429,6 +447,13 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
         <g key={at} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
           <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
             {card === null ? <CardBack /> : <CardFace card={card} />}
+          </svg>
+        </g>
+      ))}
+      {(mark.colourCards ?? []).map(({ card, x, y, angle }, at) => (
+        <g key={`colour-${at}`} transform={`rotate(${angle} ${x} ${y + MARK_CARD_WIDTH})`}>
+          <svg x={x - MARK_CARD_WIDTH / 2} y={y - MARK_CARD_WIDTH * 0.7} width={MARK_CARD_WIDTH} height={MARK_CARD_WIDTH * 1.4} viewBox="0 0 100 140">
+            <HitotsuCardDrawing card={card} />
           </svg>
         </g>
       ))}

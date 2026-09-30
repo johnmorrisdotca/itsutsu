@@ -9,7 +9,7 @@ import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } fro
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { listedGameOf, settingsOf } from "@/lib/catalogue/gameSettings";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
-import { PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 import { sizeWord } from "./puzzles.constants";
@@ -94,7 +94,7 @@ export function PuzzleSizes({
     const sizes = next ? every.slice(every.length - spec.offered.length) : every.slice(0, spec.offered.length);
     if (!sizes.includes(size)) onSize(next ? sizes[sizes.length - 1]! : sizes[0]!);
   };
-  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={spec.cards === true ? "Draw" : undefined} />;
+  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={CARD_SIZE_WORDS[kind]?.legend} />;
   /*
    * A setting of a game whose other settings turn shelves keeps the room the
    * press takes, drawn and hidden, so choosing Pop culture on a Gomoji or
