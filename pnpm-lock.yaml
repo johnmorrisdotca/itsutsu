@@ -14,9 +14,6 @@ importers:
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
-      kyuubu:
-        specifier: workspace:*
-        version: link:packages/kyuubu
       next:
         specifier: 16.3.4
         version: 16.3.4(@babel/core@7.29.7)(@playwright/test@1.63.0)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -72,21 +69,6 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.3
-      typescript:
-        specifier: ^5
-        version: 5.9.3
-      vitest:
-        specifier: ^5.0.0
-        version: 5.0.0(@types/node@20.19.43)(vite@8.2.2(@types/node@20.19.43)(jiti@2.7.0))
-
-  packages/kyuubu:
-    devDependencies:
-      '@types/react':
-        specifier: ^19
-        version: 19.2.18
-      react:
-        specifier: ^19
-        version: 19.2.8
       typescript:
         specifier: ^5
         version: 5.9.3

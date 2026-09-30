@@ -70,7 +70,6 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "kyuubu": "workspace:*",
     "next": "16.3.4",
     "next-auth": "^4.24.15",
     "qrcode": "^1.5.4",
