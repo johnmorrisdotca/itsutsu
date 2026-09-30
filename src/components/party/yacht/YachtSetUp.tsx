@@ -83,10 +83,10 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{YACHT_COPY.seats}</legend>
           {names.map((name, seat) => {
-            const away = seat >= count;
+            if (seat >= count) return null;
             const computer = count > 1 && computers[seat];
             return (
-              <div key={seat} className={`flex items-center gap-2 text-sm ${away ? "invisible" : ""}`} aria-hidden={away ? true : undefined} data-testid="yacht-seat" data-seat={seat}>
+              <div key={seat} className="flex items-center gap-2 text-sm" data-testid="yacht-seat" data-seat={seat}>
                 <SeatColourButton player={seat} playing={count} />
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
@@ -96,7 +96,6 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
                     type="text"
                     value={name}
                     maxLength={PARTY_NAME_MOST}
-                    disabled={away}
                     placeholder={computer ? `${YACHT_COPY.computer} ${seat + 1}` : `Player ${seat + 1}`}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
@@ -106,7 +105,7 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
                 <button
                   type="button"
                   aria-pressed={computer}
-                  disabled={away || count === 1}
+                  disabled={count === 1}
                   onClick={() => setComputers((was) => was.map((one, at) => (at === seat ? !one : one)))}
                   className={`min-h-11 shrink-0 rounded-lg border px-2.5 text-xs font-semibold disabled:opacity-50 ${computer ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
                   title={YACHT_COPY.computerHelp}

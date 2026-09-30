@@ -87,6 +87,8 @@ test.describe("Hitotsu, round one device", () => {
     await ready(page, "hitotsu-set-up");
     await expect(page.getByTestId("hitotsu-set-up")).toHaveAttribute("data-mode", "classic");
     await page.locator('[data-testid="hitotsu-count"][data-count="3"]').click();
+    // Only the seats in play are drawn: a table of three keeps no room for the other five.
+    await expect(page.getByTestId("hitotsu-seat-set-up")).toHaveCount(3);
     await page.getByTestId("hitotsu-name").first().fill("Ann");
     await expect(page.getByTestId("hitotsu-computer").nth(1)).toHaveAttribute("aria-pressed", "true");
     await page.getByTestId("hitotsu-start").click();

@@ -198,13 +198,13 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
 
         <Section legend={HITOTSU_COPY.seats}>
           {names.map((name, seat) => {
-            const away = seat >= count;
+            if (seat >= count) return null;
             return (
-              <div key={seat} className={`flex items-center gap-2 text-sm ${away ? "invisible" : ""}`} aria-hidden={away ? true : undefined} data-testid="hitotsu-seat-set-up" data-seat={seat}>
+              <div key={seat} className="flex items-center gap-2 text-sm" data-testid="hitotsu-seat-set-up" data-seat={seat}>
                 <SeatColourButton player={seat} playing={count} />
                 {severalOffer !== undefined ? (
                   <div className="min-w-0 flex-1">
-                    <SeatChoiceSelect offer={severalOffer} seat={seat} choices={choices} onChoose={onChoose} disabled={away} />
+                    <SeatChoiceSelect offer={severalOffer} seat={seat} choices={choices} onChoose={onChoose} />
                   </div>
                 ) : (
                   <>
@@ -214,7 +214,6 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
                         type="text"
                         value={name}
                         maxLength={PARTY_NAME_MOST}
-                        disabled={away}
                         placeholder={computers[seat] ? HITOTSU_COPY.computerName(seat) : `Player ${seat + 1}`}
                         onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                         className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
@@ -224,7 +223,6 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
                     <button
                       type="button"
                       aria-pressed={computers[seat]}
-                      disabled={away}
                       onClick={() => setComputers((was) => was.map((one, at) => (at === seat ? !one : one)))}
                       className={`min-h-11 shrink-0 rounded-lg border px-2.5 text-xs font-semibold ${computers[seat] ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
                       data-testid="hitotsu-computer"
