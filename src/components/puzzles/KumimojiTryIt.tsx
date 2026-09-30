@@ -8,6 +8,7 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } 
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { runsOf } from "@/lib/puzzles/kumimoji/grid";
 import { judgeWithWords } from "@/lib/puzzles/kumimoji/judge";
+import { readWilds } from "@/lib/puzzles/kumimoji/wilds";
 import type { Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { assignHandTile, assignTableTile, deal, draw, isFinished, liftAll, liftToHand, mayDraw, moveOnTable, placeFromHand, sortHand, swapWithHand, tilesLeft, type TilePlay } from "@/lib/puzzles/kumimoji/play";
 import { TRY_IT } from "@/lib/puzzles/kumimoji/showcase";
@@ -58,7 +59,8 @@ export function KumimojiTryIt() {
   );
   const found = useMemo(() => {
     if (words === null) return [];
-    return runsOf(play.tiles).flatMap((run) => {
+    // A blank wild reads as the letter the judge read it as, so the word it makes is listed too.
+    return runsOf(readWilds(play.tiles, words) ?? play.tiles).flatMap((run) => {
       const word = words.wordOf(run.word);
       return word !== null && words.allowed.has(word) ? [word] : [];
     });

@@ -95,14 +95,12 @@ test.describe("Kumimoji's front door, with no session", () => {
       await lay("i", "-1,4");
       await draw.click();
       await expect(draw).toBeDisabled();
-      // The last is the wild: laid, then given its letter.
+      // The last is the wild, laid with no letter given: it reads as whichever letter makes O-something a word, and the game is done.
       await lay("*", "1,5");
-      await tile("1,5").click();
-      await tryIt.getByTestId("kumimoji-try-reading").selectOption({ label: "X" });
       await expect(tryIt).toHaveAttribute("data-finished", "true");
       await expect(page.getByTestId("kumimoji-try-said")).toContainText("Every tile is down in one crossword");
       // Across first, then down, as the game reads its runs.
-      await expect(tryIt.getByTestId("kumimoji-try-word")).toHaveText(["senator", "ad", "ox", "it"]);
+      await expect(tryIt.getByTestId("kumimoji-try-word")).toHaveText(["senator", "ad", /^o[a-z]$/, "it"]);
     });
     expect(calls, "the try-it asked the server something").toEqual([]);
 
