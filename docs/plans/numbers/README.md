@@ -1,5 +1,12 @@
 # Numbers: a family of puzzles beside the games
 
+**2026-10-01: two puzzles moved out.** Hidden Stones and Black and White
+went to Logic puzzles on John's word ("Hidden Stones isn't really a numbers
+game", "black and white is a logic puzzle i guess"): neither has a number in
+it. Numbers holds six now, and the six are going into their own open-source
+package, Kazu 数 (`@johnmorrisdotca/kazu`). Their plan files below stay as
+they were written.
+
 John, 2026-09-24: "adding a new category to the site. Numbers... for
 introducing Sudoku. Then we have to merge one group; I think merge Races +
 Territory… If there is another number type of game we can add like Sudoku,
