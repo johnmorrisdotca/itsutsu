@@ -103,6 +103,30 @@ test.describe("the card games at the table", () => {
     await expect(page.getByTestId("cards-trick-card").first()).toBeVisible();
   });
 
+  test("the cards' sound: off until turned on, played through a trick without an error, remembered, and turned off again", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await start(page, "hearts");
+    await page.evaluate(() => window.localStorage.removeItem("itsutsu.cardSound"));
+    await myTurn(page);
+    const sound = page.getByTestId("card-sound");
+    await expect(sound).toHaveAttribute("data-on", "false");
+    await sound.click();
+    await expect(sound).toHaveAttribute("data-on", "true");
+    await expect(sound).toHaveAttribute("aria-pressed", "true");
+    const cards = handCards(page);
+    for (const at of [0, 1, 2]) await cards.nth(at).click({ position: { x: 8, y: 12 } });
+    await page.getByTestId("cards-pass").click();
+    await myTurn(page);
+    expect(await playOneCard(page, "cards-play")).toBe(true);
+    await expect(page.getByTestId("cards-trick-card").first()).toBeVisible();
+    expect(await page.evaluate(() => window.localStorage.getItem("itsutsu.cardSound"))).toBe("on");
+    await sound.click();
+    await expect(sound).toHaveAttribute("data-on", "false");
+    expect(await page.evaluate(() => window.localStorage.getItem("itsutsu.cardSound"))).toBe("off");
+    expect(errors).toEqual([]);
+  });
+
   test("Spades: a bid pressed, then a card played to a trick against three computers", async ({ page }) => {
     await start(page, "spades");
     await myTurn(page);

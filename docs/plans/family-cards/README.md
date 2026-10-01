@@ -18,7 +18,7 @@ What a card game adds to a party game:
 - **A computer in any seat.** `PartyRules.start` takes the seats a computer plays (`computers`, one a seat) after the seed. Every table needs at least one person.
 - **Hands nobody else may see.** This is the table's job, not the rules'. With two or more people, the table covers every hand between turns and asks for the device by name, as Tenka and Mexican Train do. A table of one person and computers never asks.
 
-The rules are Toranpu's (the open-source card package, github.com/johnmorrisdotca/toranpu, `src/games/` there, one folder a game, installed from its release tarball); `src/lib/cardGames/` forwards to them, so every import of the old paths still works, and keeps the site's copy (`cardGames.copy.ts`), shelf order and party typing. They are pure: every move returns a new game. Each game is kept as its table, its seed and its moves (`cardGameCodec.ts`), and a game read back is replayed from them. So a reload re-deals exactly, and can never re-deal.
+The rules are Toranpu's (the open-source card package, github.com/johnmorrisdotca/toranpu, `src/games/` there, one folder a game, installed from npm at an exact version); `src/lib/cardGames/` forwards to them, so every import of the old paths still works, and keeps the site's copy (`cardGames.copy.ts`), shelf order and party typing. They are pure: every move returns a new game. Each game is kept as its table, its seed and its moves (`cardGameCodec.ts`), and a game read back is replayed from them. So a reload re-deals exactly, and can never re-deal.
 
 `CardGameRules<S, M>` is `PartyRules` plus three things:
 
@@ -39,7 +39,9 @@ The table, its Play button and its My games card are all loaded in the browser o
 
 `PARTY_RULES` names the card rules, and only the gate imports it.
 
-Rules code a browser spec may import (`src/lib/cardGames/`, `src/lib/cards/`) uses relative imports or the Toranpu package name (`@johnmorrisdotca/toranpu`, from `node_modules`), never `@/`. A rule change is made in the Toranpu repository with its test there and a CHANGELOG line, released as a new version (a tag runs its Release workflow, which attaches the tarball), and the site takes it by changing the version in the URL in `package.json` and reinstalling.
+Rules code a browser spec may import (`src/lib/cardGames/`, `src/lib/cards/`) uses relative imports or the Toranpu package name (`@johnmorrisdotca/toranpu`, from `node_modules`), never `@/`. A rule change is made in the Toranpu repository with its test there and a CHANGELOG line, released as a new version (a tag runs its Release workflow, which publishes it to npm), and the site takes it with `pnpm add @johnmorrisdotca/toranpu@<version> --save-exact`.
+
+The cards make a sound when the table asks, through Toranpu's `card-sounds` (Kenney's Casino Audio, CC0): `useCardSounds` in `src/components/cards/` plays a shuffle and a deal when a hand is dealt, one card when one is drawn and a card played when one leaves a hand, read from how many cards the hands hold, so every table sounds alike whatever its moves are called. It is off until the table's "Card sound" button turns it on, remembered in the browser, and nothing is fetched until then.
 
 ## The table
 

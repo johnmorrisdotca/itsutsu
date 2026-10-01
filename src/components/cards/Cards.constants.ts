@@ -113,3 +113,6 @@ export const DRAG_FROM_PX = 6;
 
 /** The most time between two taps on one card for them to be a double tap. */
 export const DOUBLE_TAP_MS = 350;
+
+/** Where this browser remembers whether the cards make a sound (`useCardSounds`): "on", or off by default. */
+export const CARD_SOUND_KEY = "itsutsu.cardSound";

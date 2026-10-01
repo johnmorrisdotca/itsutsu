@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
+import { useCardSounds } from "@/components/cards/useCardSounds";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { resultLine, tableNews } from "@/components/game/winNews";
@@ -10,6 +11,7 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 
+import { CARD_TABLE_COPY } from "../cards/cardTable.constants";
 import { CardScores } from "../cards/CardScores";
 import { seatName } from "../cards/cardAdapters";
 import { freshCardSeed } from "../cards/cardTableStores";
@@ -41,6 +43,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
   const people = game.players.map((_, seat) => seat).filter((seat) => !game.computers[seat]);
   const [handedTo, setHandedTo] = useState<number | null>(people.length === 1 ? people[0] : null);
   const [confirming, setConfirming] = useState(false);
+  const sound = useCardSounds(game.hands.reduce((sum, hand) => sum + hand.length, 0));
   const personToPlay = toPlay !== null && !game.computers[toPlay];
   const covered = !over && people.length > 1 && personToPlay && handedTo !== toPlay;
   const viewer = people.length === 1 ? people[0] : covered ? null : personToPlay ? toPlay : handedTo;
@@ -113,6 +116,9 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
             {HITOTSU_COPY.again}
           </button>
         ) : null}
+        <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
+          {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
+        </button>
         {confirming ? (
           <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="hitotsu-confirm-new">
             <span>{HITOTSU_COPY.confirmNew}</span>

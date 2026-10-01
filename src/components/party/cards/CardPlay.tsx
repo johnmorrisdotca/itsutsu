@@ -9,6 +9,7 @@ import { CardDragGhost } from "@/components/cards/CardDragGhost";
 import { CardHand } from "@/components/cards/CardHand";
 import type { CardSpot } from "@/components/cards/cards.types";
 import { useCardDrag } from "@/components/cards/useCardDrag";
+import { useCardSounds } from "@/components/cards/useCardSounds";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { resultLine, tableNews } from "@/components/game/winNews";
@@ -113,6 +114,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   const stuck = actions.find((action) => action.strong === true && action.move === null);
   const others = players.map((_, seat) => seat).filter((seat) => seat !== viewer);
   const counts = players.map((_, seat) => adapter.hand(game, seat).length);
+  const sound = useCardSounds(counts.reduce((sum, count) => sum + count, 0));
   const arrived = viewer === null || adapter.arrived === undefined ? [] : adapter.arrived(game, viewer);
   const winners = over ? rules.winners(game) : [];
   const again = () => {
@@ -223,6 +225,9 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
             {CARD_TABLE_COPY.again}
           </button>
         ) : null}
+        <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
+          {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
+        </button>
         {confirming ? (
           <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="cards-confirm-new">
             <span>{CARD_TABLE_COPY.confirmNew}</span>

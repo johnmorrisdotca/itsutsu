@@ -55,6 +55,8 @@ export const CARD_TABLE_COPY = {
   won: (names: string) => `${names} won.`,
   again: "Play again, same table",
   newGame: "New game",
+  soundOn: "Card sound on",
+  soundOff: "Card sound off",
   confirmNew: "Start a new game? This one will be gone.",
   confirmYes: "Yes, start again",
   confirmNo: "Keep playing",
