@@ -89,7 +89,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Territory and races | 4 |
 | Small boards | 6 |
 | Numbers | 3 |
-| Logic puzzles | 2 |
+| Logic puzzles | 3 |
 | Cards | 6 |
 | Mahjong | 1 |
 | Dominoes | 1 |
@@ -185,6 +185,20 @@ yields to sliding each line's runs to its ends, medium needs a whole line read
 at once, hard needs one square tried and followed. 5×5, 10×10, 15×15 and
 20×20; the givens are the two panels of clues and the answer is the picture,
 checked in O(cells) against the clues (`pictureLogic/check.ts`).
+
+The third is **Suido** 水道 (2026-10-01, `src/lib/puzzles/suido/`), our version
+of the pipe-turning puzzle known as Net or NetWalk: a square of pipe pieces that
+can only be turned, a pump, and water drawn flowing along the pipes as they
+join. The boards, their one answer, the check and the drawing are
+**Suido**, an open-source package at github.com/johnmorrisdotca/suido
+(`@johnmorrisdotca/suido`, pinned in `package.json`); what is the site's own is
+here: a level is a target for the package's rank among boards of the same size
+(easy 20, medium 50, hard 80), the board and its answer are the package's own
+code (a drains board's spare pieces written as dealt, so one board has one
+answer), and drains or network is kept in the seed (`NETWORK_SEED_BLOCK`),
+as a Futago's is. 5×5, 7×7, 9×9 and 12×12; the answer and a run kept half way are
+the board as it stands, which the server checks in O(cells) with the package's
+`checkSuidoAnswer` (`suido/check.ts`).
 
 **Cards** 札 (2026-09-29) is the shelf for games played with the site's own
 deck (Toranpu's, below, and `src/components/cards/`: faces and backs drawn by us,
