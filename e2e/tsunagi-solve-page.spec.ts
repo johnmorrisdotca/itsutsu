@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 
 import { makeMemberId } from "../src/lib/auth/memberId";
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
-import { TSUNAGI_5 } from "../src/lib/puzzles/tsunagi/levels/size5.data";
+import { TSUNAGI_5 } from "@johnmorrisdotca/tsunagi/levels-5";
 import { suiteOperator } from "./operator";
 import { ready } from "./support";
 

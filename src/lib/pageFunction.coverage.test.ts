@@ -115,6 +115,17 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/kotoba/kana-5", "Read by kanaWordsModule.ts."],
   ["@johnmorrisdotca/kotoba/pop-answers", "Pop Gomoji's answers and their categories (18 KB), whose category is the clue printed with a day's pop word."],
   ["@johnmorrisdotca/toranpu/spider", "Spider's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
+  ["@johnmorrisdotca/tsunagi", "Tsunagi's rules: a kept or finished level replayed and checked on the server, and a level's board drawn in its set-up preview and on its finished page."],
+  ["@johnmorrisdotca/tsunagi/renumbered", "Where each old level went (2 KB), for a browser's own record of its solves moved to the new numbers (`tsunagiKept.ts`), reached through the set-up screen."],
+  ["@johnmorrisdotca/tsunagi/levels-4", "Read by levelsModule.ts: the server checks a solve against the level it names, and lists who solved which level."],
+  ["@johnmorrisdotca/tsunagi/levels-5", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-6", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-7", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-8", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-9", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-10", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-11", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-12", "Read by levelsModule.ts."],
   ["@johnmorrisdotca/toranpu/card-backs", "The backs a reader may choose, reached by every face-down card a finished patience game's replay draws; about 11 KB, and the server draws only the Itsutsu back."],
 ]);
 
@@ -159,8 +170,8 @@ const TABLES_DRAWN_ON_THE_SERVER: ReadonlySet<string> = new Set([
 ]);
 const TABLE_FILES = ["src/components/party/partyKindTables.ts", "src/components/party/partyTables.ts"];
 
-// A word list is a `.data` file of ours, or one of Kotoba's lists, each an entry point of its own (`@johnmorrisdotca/kotoba/kana-5`).
-const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec);
+// A word list is a `.data` file of ours, or one of Kotoba's lists, each an entry point of its own (`@johnmorrisdotca/kotoba/kana-5`), and so is each size of Tsunagi's levels (`@johnmorrisdotca/tsunagi/levels-7`).
+const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec) || /^@johnmorrisdotca\/tsunagi\/levels-/.test(spec);
 
 describe("the pages' server function", () => {
   it("fetches a list in the browser only, or reads it in a module of its own", () => {

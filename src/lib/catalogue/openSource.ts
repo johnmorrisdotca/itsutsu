@@ -10,7 +10,7 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
@@ -23,6 +23,7 @@ export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: st
   hitotsu: { name: "Hitotsu", repo: "https://github.com/johnmorrisdotca/hitotsu" },
   tenka: { name: "Tenka", repo: "https://github.com/johnmorrisdotca/tenka" },
   korokoro: { name: "Korokoro", repo: "https://github.com/johnmorrisdotca/korokoro" },
+  tsunagi: { name: "Tsunagi", repo: "https://github.com/johnmorrisdotca/tsunagi" },
 };
 
 const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
@@ -33,6 +34,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   gomojiWort: "kotoba",
   gomojiPop: "kotoba",
   kumimoji: "kumimoji",
+  tsunagi: "tsunagi",
   solitaire: "toranpu",
   freecell: "toranpu",
   spider: "toranpu",

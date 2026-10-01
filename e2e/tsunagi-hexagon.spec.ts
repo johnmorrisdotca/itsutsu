@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { decodeLayout, inHex } from "../src/lib/puzzles/tsunagi/code";
-import { tsunagiRole } from "../src/lib/puzzles/tsunagi/ladder";
-import { linesOfAnswer } from "../src/lib/puzzles/tsunagi/lines";
-import { TSUNAGI_7 } from "../src/lib/puzzles/tsunagi/levels/size7.data";
+import { decodeLayout, inHex } from "@johnmorrisdotca/tsunagi";
+import { tsunagiRole } from "@johnmorrisdotca/tsunagi";
+import { linesOfAnswer } from "@johnmorrisdotca/tsunagi";
+import { TSUNAGI_7 } from "@johnmorrisdotca/tsunagi/levels-7";
 import { ready } from "./support";
 
 /**

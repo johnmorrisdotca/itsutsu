@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { inHex } from "@/lib/puzzles/tsunagi/code";
+import { inHex } from "@johnmorrisdotca/tsunagi";
 
 import { hexCellAt, hexCellCentre, tsunagiHexFit } from "./tsunagiHex";
 

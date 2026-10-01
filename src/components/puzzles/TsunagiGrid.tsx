@@ -5,8 +5,8 @@ import { useId, useRef, type PointerEvent } from "react";
 import { HEX_LATTICE } from "@/components/board/Board.constants";
 import { hexagonPoints } from "@/components/board/BoardLines";
 import type { BoardThemeTokens } from "@/components/board/board.types";
-import { CELL_BLOCKED, CELL_BRIDGE, inHex, stepBetween, type LinkLayout } from "@/lib/puzzles/tsunagi/code";
-import { overBridge, ownersOf, type Lines } from "@/lib/puzzles/tsunagi/lines";
+import { CELL_BLOCKED, CELL_BRIDGE, inHex, stepBetween, type LinkLayout } from "@johnmorrisdotca/tsunagi";
+import { overBridge, ownersOf, type Lines } from "@johnmorrisdotca/tsunagi";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { hexCellAt, tsunagiHexFit } from "./tsunagiHex";

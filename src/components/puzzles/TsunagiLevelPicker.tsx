@@ -3,8 +3,8 @@
 import { playPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { blockRange, TSUNAGI_BLOCK } from "@/lib/puzzles/tsunagi/levelBlocks";
-import { tsunagiRole } from "@/lib/puzzles/tsunagi/ladder";
+import { blockRange, TSUNAGI_BLOCK } from "@johnmorrisdotca/tsunagi";
+import { tsunagiRole } from "@johnmorrisdotca/tsunagi";
 import { TSUNAGI_LEVEL_COUNTS, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
 
 import { TSUNAGI_MARBLE, tsunagiMarbleLook, tsunagiNumberType, type TsunagiMarks } from "./puzzles.constants";

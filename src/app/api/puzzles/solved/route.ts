@@ -14,7 +14,7 @@ import { decodeStepLog, encodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/st
 import { dropRun } from "@/lib/puzzles/server/puzzleRuns";
 import { keepSolve } from "@/lib/puzzles/server/puzzleSolves";
 import { helpOffered, SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib/puzzles/solveHelp";
-import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
+import { decodeLayout } from "@johnmorrisdotca/tsunagi";
 import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 import { cardDealOfSeed } from "@/lib/puzzles/cardDeals";
 import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";

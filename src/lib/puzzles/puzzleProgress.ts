@@ -22,7 +22,7 @@ import { MOST_GUESSES, guessesEverAllowed } from "./gomoji/layout";
 import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
-import { linesCodeFits } from "./tsunagi/lines";
+import { linesCodeFits } from "@johnmorrisdotca/tsunagi";
 
 /**
  * What has been written on an unfinished puzzle, as one character a cell — what

@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
-import { TSUNAGI_RENUMBERED } from "../src/lib/puzzles/tsunagi/levels/renumbered.data";
-import { TSUNAGI_5 } from "../src/lib/puzzles/tsunagi/levels/size5.data";
+import { TSUNAGI_RENUMBERED } from "@johnmorrisdotca/tsunagi/renumbered";
+import { TSUNAGI_5 } from "@johnmorrisdotca/tsunagi/levels-5";
 import { suiteOperator } from "./operator";
 import { ready } from "./support";
 

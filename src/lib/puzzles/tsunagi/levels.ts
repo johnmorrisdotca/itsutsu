@@ -1,9 +1,14 @@
+import { isTsunagiLevel, TSUNAGI_SIZES, tsunagiBand as bandOf, type LevelRow } from "@johnmorrisdotca/tsunagi";
+
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
-import { TSUNAGI_BLOCK } from "./levelBlocks";
+
+export { firstUnsolvedTsunagiLevel, isTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@johnmorrisdotca/tsunagi";
+export type { LevelRow } from "@johnmorrisdotca/tsunagi";
 
 /**
- * TSUNAGI'S LEVELS: fixed, the same for everybody, made once on a desk
- * (`scripts/tsunagi-levels.ts`) and read here, a size at a time.
+ * TSUNAGI'S LEVELS ON THE SITE: Tsunagi's own (`@johnmorrisdotca/tsunagi`, an
+ * open-source package, github.com/johnmorrisdotca/tsunagi), each size its own
+ * import, read here a size at a time and handed to the site as puzzles.
  *
  * A level is not made from a seed as every other puzzle is: level 12 at 7×7 is
  * one board for every player on every day, so a time on it can be compared
@@ -15,20 +20,9 @@ import { TSUNAGI_BLOCK } from "./levelBlocks";
  * (as the kana Gomoji's word lists are), so a phone playing 5×5 never carries
  * the other five sizes. Only a browser fetches one (`typeof window`, as
  * `wordData.ts` says why); a server reads a size through `levelsModule.ts`.
+ * How many levels a size has, which are open and which comes next are the
+ * package's, read without loading a size.
  */
-export const TSUNAGI_SIZES = [4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
-
-/**
- * How many levels each size has: read without loading the size, for the board
- * of levels. `levels.test.ts` holds it to the files. Sixteen blocks of sixteen
- * (`levelBlocks.ts`); twelve at 4×4, where the generator runs out of distinct
- * boards with one answer before two hundred; eight at 10×10 and four at
- * 11×11, whose boards are slow to find and to prove on every build.
- */
-export const TSUNAGI_LEVEL_COUNTS: Record<number, number> = { 4: 192, 5: 256, 6: 256, 7: 256, 8: 256, 9: 256, 10: 128, 11: 64, 12: 128 };
-
-export type LevelRow = readonly [string, string];
-
 const loaded = new Map<number, readonly LevelRow[]>();
 
 let fromModule: ((size: number) => Promise<readonly LevelRow[]>) | null = null;
@@ -41,15 +35,15 @@ export function readTsunagiLevelsWith(source: (size: number) => Promise<readonly
 async function importSize(size: number): Promise<readonly LevelRow[]> {
   if (typeof window !== "undefined") {
     // Named one by one, so the bundler splits each size into its own chunk.
-    if (size === 4) return (await import("./levels/size4.data")).TSUNAGI_4;
-    if (size === 5) return (await import("./levels/size5.data")).TSUNAGI_5;
-    if (size === 6) return (await import("./levels/size6.data")).TSUNAGI_6;
-    if (size === 7) return (await import("./levels/size7.data")).TSUNAGI_7;
-    if (size === 8) return (await import("./levels/size8.data")).TSUNAGI_8;
-    if (size === 9) return (await import("./levels/size9.data")).TSUNAGI_9;
-    if (size === 10) return (await import("./levels/size10.data")).TSUNAGI_10;
-    if (size === 11) return (await import("./levels/size11.data")).TSUNAGI_11;
-    if (size === 12) return (await import("./levels/size12.data")).TSUNAGI_12;
+    if (size === 4) return (await import("@johnmorrisdotca/tsunagi/levels-4")).TSUNAGI_4;
+    if (size === 5) return (await import("@johnmorrisdotca/tsunagi/levels-5")).TSUNAGI_5;
+    if (size === 6) return (await import("@johnmorrisdotca/tsunagi/levels-6")).TSUNAGI_6;
+    if (size === 7) return (await import("@johnmorrisdotca/tsunagi/levels-7")).TSUNAGI_7;
+    if (size === 8) return (await import("@johnmorrisdotca/tsunagi/levels-8")).TSUNAGI_8;
+    if (size === 9) return (await import("@johnmorrisdotca/tsunagi/levels-9")).TSUNAGI_9;
+    if (size === 10) return (await import("@johnmorrisdotca/tsunagi/levels-10")).TSUNAGI_10;
+    if (size === 11) return (await import("@johnmorrisdotca/tsunagi/levels-11")).TSUNAGI_11;
+    if (size === 12) return (await import("@johnmorrisdotca/tsunagi/levels-12")).TSUNAGI_12;
     throw new Error(`No Tsunagi at ${size}×${size}.`);
   }
   if (fromModule === null) throw new Error("Tsunagi's levels are read on the server through levelsModule.ts, which was not imported.");
@@ -75,21 +69,9 @@ export function tsunagiLevelsOf(size: number): readonly LevelRow[] {
   return levels;
 }
 
-/** Whether a number is a level this size has. */
-export function isTsunagiLevel(size: number, level: number): boolean {
-  const count = TSUNAGI_LEVEL_COUNTS[size];
-  return count !== undefined && Number.isInteger(level) && level >= 1 && level <= count;
-}
-
-/**
- * Which third of a size a level sits in, as the easy, medium and hard every
- * puzzle is filed under: the lists of solves, the fastest times and the feed
- * all speak in those words, and a level's band is what they say about it.
- */
+/** Which third of a size a level sits in, as the easy, medium and hard every puzzle is filed under: the lists of solves, the fastest times and the feed all speak in those words. */
 export function tsunagiBand(size: number, level: number): PuzzleLevel {
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 256;
-  const third = (level - 1) / count;
-  return third < 1 / 3 ? "easy" : third < 2 / 3 ? "medium" : "hard";
+  return bandOf(size, level);
 }
 
 /** Level `level` of a loaded size, as a puzzle; the level number travels as its seed. */
@@ -105,45 +87,6 @@ export function tsunagiPuzzle(size: number, level: number): Puzzle {
 export function tsunagiLevelOf(size: number, givens: string): number | null {
   const at = tsunagiLevelsOf(size).findIndex(([layout]) => layout === givens);
   return at === -1 ? null : at + 1;
-}
-
-/**
- * The levels that are open, given the ones solved: the first block of sixteen
- * always, and each block after it once every level of the block before is
- * solved. John, 2026-09-26: "you have to finish 10 before you open up the next
- * 10", then sixteen to a block.
- */
-export function openTsunagiLevels(size: number, solved: ReadonlySet<number>): number {
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
-  let open = Math.min(TSUNAGI_BLOCK, count);
-  while (open < count) {
-    let blockDone = true;
-    for (let level = open - TSUNAGI_BLOCK + 1; level <= open; level += 1) if (!solved.has(level)) blockDone = false;
-    if (!blockDone) break;
-    open = Math.min(open + TSUNAGI_BLOCK, count);
-  }
-  return open;
-}
-
-/** The level to open on: the first open one not yet solved, or the last open one when every open level is solved. */
-export function nextTsunagiLevel(size: number, solved: ReadonlySet<number>): number {
-  const open = openTsunagiLevels(size, solved);
-  for (let level = 1; level <= open; level += 1) if (!solved.has(level)) return level;
-  return open;
-}
-
-/**
- * The lowest level not yet solved, or null when every level of the size is.
- * It is always open: a row opens only once the row before is all solved, so
- * the first gap is in the open rows. What every "next" on Tsunagi points at —
- * the done card, the set-up's Start and a shut level's way back — so nobody is
- * sent past a level they have not finished (John, 2026-09-26: having solved
- * only level 10, he was offered level 11).
- */
-export function firstUnsolvedTsunagiLevel(size: number, solved: ReadonlySet<number>): number | null {
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
-  for (let level = 1; level <= count; level += 1) if (!solved.has(level)) return level;
-  return null;
 }
 
 /** The words on the button to the next level: plain when it is the one after, and saying why when it is further back. */

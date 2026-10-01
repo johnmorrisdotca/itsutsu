@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { tsunagiMarks, tsunagiRole, type Challenge } from "@/lib/puzzles/tsunagi/ladder";
+import { tsunagiMarks, tsunagiRole, type Challenge } from "@johnmorrisdotca/tsunagi";
 
 import { TSUNAGI_CHIPS } from "./puzzles.constants";
 

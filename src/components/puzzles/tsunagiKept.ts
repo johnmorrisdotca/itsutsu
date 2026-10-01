@@ -1,7 +1,7 @@
 "use client";
 
-import { TSUNAGI_RENUMBERED_AT } from "@/lib/puzzles/tsunagi/levels/renumbered.data";
-import { renumberedRecord } from "@/lib/puzzles/tsunagi/renumber";
+import { TSUNAGI_RENUMBERED_AT } from "@johnmorrisdotca/tsunagi/renumbered";
+import { renumberedRecord } from "@johnmorrisdotca/tsunagi";
 
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 

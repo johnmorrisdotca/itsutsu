@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
-import { decodeLayout } from "@/lib/puzzles/tsunagi/code";
-import { blockOf } from "@/lib/puzzles/tsunagi/levelBlocks";
+import { decodeLayout } from "@johnmorrisdotca/tsunagi";
+import { blockOf } from "@johnmorrisdotca/tsunagi";
 import { loadTsunagiLevels, TSUNAGI_LEVEL_COUNTS, tsunagiLevelsOf } from "@/lib/puzzles/tsunagi/levels";
-import { linesOfAnswer, noLines } from "@/lib/puzzles/tsunagi/lines";
+import { linesOfAnswer, noLines } from "@johnmorrisdotca/tsunagi";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { SolveTime } from "./SolveTime";

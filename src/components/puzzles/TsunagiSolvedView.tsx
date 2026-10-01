@@ -6,8 +6,8 @@ import Link from "@/components/ui/Link";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
-import type { LinkLayout } from "@/lib/puzzles/tsunagi/code";
-import type { Lines } from "@/lib/puzzles/tsunagi/lines";
+import type { LinkLayout } from "@johnmorrisdotca/tsunagi";
+import type { Lines } from "@johnmorrisdotca/tsunagi";
 
 import { SolveTime } from "./SolveTime";
 import { TsunagiGrid } from "./TsunagiGrid";

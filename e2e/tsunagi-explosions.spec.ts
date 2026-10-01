@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { decodeLayout } from "../src/lib/puzzles/tsunagi/code";
-import { explosionAfter } from "../src/lib/puzzles/tsunagi/explosions";
-import { challengesOf, tsunagiRole } from "../src/lib/puzzles/tsunagi/ladder";
-import { linesOfAnswer, type Lines } from "../src/lib/puzzles/tsunagi/lines";
-import { TSUNAGI_6 } from "../src/lib/puzzles/tsunagi/levels/size6.data";
-import { TSUNAGI_7 } from "../src/lib/puzzles/tsunagi/levels/size7.data";
+import { decodeLayout } from "@johnmorrisdotca/tsunagi";
+import { explosionAfter } from "@johnmorrisdotca/tsunagi";
+import { challengesOf, tsunagiRole } from "@johnmorrisdotca/tsunagi";
+import { linesOfAnswer, type Lines } from "@johnmorrisdotca/tsunagi";
+import { TSUNAGI_6 } from "@johnmorrisdotca/tsunagi/levels-6";
+import { TSUNAGI_7 } from "@johnmorrisdotca/tsunagi/levels-7";
 import { ready } from "./support";
 
 /**

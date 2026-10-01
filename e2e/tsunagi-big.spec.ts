@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { expect, test, type Page } from "@playwright/test";
 
-import { decodeLayout } from "../src/lib/puzzles/tsunagi/code";
-import { linesOfAnswer } from "../src/lib/puzzles/tsunagi/lines";
-import { TSUNAGI_10 } from "../src/lib/puzzles/tsunagi/levels/size10.data";
-import { TSUNAGI_12 } from "../src/lib/puzzles/tsunagi/levels/size12.data";
+import { decodeLayout } from "@johnmorrisdotca/tsunagi";
+import { linesOfAnswer } from "@johnmorrisdotca/tsunagi";
+import { TSUNAGI_10 } from "@johnmorrisdotca/tsunagi/levels-10";
+import { TSUNAGI_12 } from "@johnmorrisdotca/tsunagi/levels-12";
 import { suiteOperator } from "./operator";
 import { ready } from "./support";
 
