@@ -14,11 +14,11 @@ importers:
   .:
     dependencies:
       '@johnmorrisdotca/domino':
-        specifier: 1.0.0
-        version: 1.0.0
-      '@johnmorrisdotca/hitotsu':
         specifier: 1.1.0
-        version: 1.1.0(react@19.2.8)
+        version: 1.1.0
+      '@johnmorrisdotca/hitotsu':
+        specifier: 1.2.0
+        version: 1.2.0(react@19.2.8)
       '@johnmorrisdotca/jarajara':
         specifier: 1.4.0
         version: 1.4.0
@@ -26,8 +26,8 @@ importers:
         specifier: 1.14.1
         version: 1.14.1(react@19.2.8)
       '@johnmorrisdotca/kotoba':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       '@johnmorrisdotca/kumimoji':
         specifier: 1.1.1
         version: 1.1.1(react@19.2.8)
@@ -35,8 +35,8 @@ importers:
         specifier: 1.6.0
         version: 1.6.0(react@19.2.8)
       '@johnmorrisdotca/narabe':
-        specifier: 1.0.0
-        version: 1.0.0(react@19.2.8)
+        specifier: 1.1.0
+        version: 1.1.0(react@19.2.8)
       '@johnmorrisdotca/suido':
         specifier: 1.1.0
         version: 1.1.0
@@ -50,8 +50,8 @@ importers:
         specifier: 2.13.2
         version: 2.13.2(react@19.2.8)
       '@johnmorrisdotca/tsunagi':
-        specifier: 1.1.0
-        version: 1.1.0
+        specifier: 1.2.0
+        version: 1.2.0
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -416,13 +416,15 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@johnmorrisdotca/domino@1.0.0':
-    resolution: {integrity: sha512-d2AQmS7QmRdBWxN5LZimZdCq6gPv3SQscbJ/QVcR6sKPK1Nzj2LV1T2qzn3HbuEd4tFjOApntXTgCqoE0JvDBw==}
-    engines: {node: '>=20'}
+  '@johnmorrisdotca/domino@1.1.0':
+    resolution: {integrity: sha512-LFYCr6RWwcITrdL1bGg78/9q6mhM+Tuy/SluoFdCa4mz2uYC89miI+LcZHv0HXLjkEMHzLTpiOycgRipdqFMWw==}
+    engines: {node: '>=22'}
+    hasBin: true
 
-  '@johnmorrisdotca/hitotsu@1.1.0':
-    resolution: {integrity: sha512-jjVV1md8s6wEzp6VN4Tw9DxIsw+1rkASawKS5IU+/gjX+D/iqJVpnwVwngYURD1o3nm/R3p7oL1Rk8ebnUbRAw==}
+  '@johnmorrisdotca/hitotsu@1.2.0':
+    resolution: {integrity: sha512-7En4Tck41lnQzk5QeU4jCzPqpZq2XJlSVPTSJlq3wm7Jg81LtQhQTWu8EokgU+F4f5ICT7NMn4WvoPRfGqNtaA==}
     engines: {node: '>=20'}
+    hasBin: true
     peerDependencies:
       react: '>=18'
     peerDependenciesMeta:
@@ -446,9 +448,10 @@ packages:
       vue:
         optional: true
 
-  '@johnmorrisdotca/kotoba@1.0.0':
-    resolution: {integrity: sha512-Xvgt9Iyh7NvVww2qo/C09Ejns8OZ7ItgnyfCt/Ucx0OICF8kRunD2AH/O5rQOLfCbSpamvCZ7NVxWI/GtAFcSA==}
-    engines: {node: '>=20'}
+  '@johnmorrisdotca/kotoba@1.1.0':
+    resolution: {integrity: sha512-5cEfwxae6V+mQ0c7H6jpvFto0+Yigd5qD9YY6VdPUaoEV8kifuEbboV9wx4pLbFnV8UKVCzn1t3tOjtBMtq+AA==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   '@johnmorrisdotca/kumimoji@1.1.1':
     resolution: {integrity: sha512-K5T6xl/nO8c/9Xuc+wjPz4vM1sPKTLDNEaQ69UqRt0kMrxy7utS6jwHT2MbxyqRJ5a1xgCReKMjuHo1bNnRbiw==}
@@ -469,9 +472,10 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/narabe@1.0.0':
-    resolution: {integrity: sha512-JqcE0jbZAqpSwBtGU9CjgPoKElmbHVlSoFw+KHt7jz69AFiarBFR9xFDr6AC6gk7bzm8jCOfpgcQI5RP02rnJQ==}
+  '@johnmorrisdotca/narabe@1.1.0':
+    resolution: {integrity: sha512-cjN8dBt/ZSC6aAGq/bgRnK2BstZb/B59RlCA5+CWiJeUIMe4wmDg3iF2O5Jyb2ST3zK5z8waq+/UJOvr1VMphw==}
     engines: {node: '>=20'}
+    hasBin: true
     peerDependencies:
       react: '>=18'
     peerDependenciesMeta:
@@ -511,8 +515,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tsunagi@1.1.0':
-    resolution: {integrity: sha512-ciwZw8AwBmbwli2gZebL47chwh9/DYgW8xMrTefAzAJ403cxixjqaljh8s2v3+DhW+hCDBefWbjs3UZ8sZRT5Q==}
+  '@johnmorrisdotca/tsunagi@1.2.0':
+    resolution: {integrity: sha512-Yv9yh/ivFFzODKy1a5nTaqA8cB10Qq52RJxk20w6+0jNJhWOwLLhyExvitUpyoPxMknu6mwekXMRmneJQmEoIw==}
     engines: {node: '>=20'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3102,9 +3106,9 @@ snapshots:
   '@img/sharp-win32-x64@0.35.4':
     optional: true
 
-  '@johnmorrisdotca/domino@1.0.0': {}
+  '@johnmorrisdotca/domino@1.1.0': {}
 
-  '@johnmorrisdotca/hitotsu@1.1.0(react@19.2.8)':
+  '@johnmorrisdotca/hitotsu@1.2.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
@@ -3114,7 +3118,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/kotoba@1.0.0': {}
+  '@johnmorrisdotca/kotoba@1.1.0': {}
 
   '@johnmorrisdotca/kumimoji@1.1.1(react@19.2.8)':
     optionalDependencies:
@@ -3124,7 +3128,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/narabe@1.0.0(react@19.2.8)':
+  '@johnmorrisdotca/narabe@1.1.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
@@ -3142,7 +3146,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tsunagi@1.1.0': {}
+  '@johnmorrisdotca/tsunagi@1.2.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

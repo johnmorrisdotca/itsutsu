@@ -101,6 +101,14 @@ const MAY_NAME_A_FORFEIT_KIND = new Map([
   ["src/lib/history/liveAgainst.ts", "a fork COUNTING forfeits in a position, to refuse carrying one into a game with no clock; it writes none"],
 ]);
 
+/**
+ * A replay that says nothing of a clock because the record never had one.
+ * Narabe's command line (1.1.0) plays games of its own between programs and
+ * reads back only what it wrote, so no turn was ever lost on time and no
+ * forfeit can be in the file: replaying with the default, no clock, is exact.
+ */
+const REPLAYS_A_RECORD_WITH_NO_CLOCK = new Map([["node_modules/@johnmorrisdotca/narabe/src/cli.ts", "its own engine-only games read back: nothing in them ran a clock"]]);
+
 describe("the moves that have no point", () => {
   it("are both accounted for wherever a move's kind is asked about", () => {
     const forgotten = files
@@ -122,7 +130,8 @@ describe("the moves that have no point", () => {
     const unsaid = files
       .filter(({ path, text }) => /\breplayMoves\(/.test(text) && !path.endsWith(join("rules", "record.ts")))
       .filter(({ text }) => !/\bclocked\b/.test(text))
-      .map(({ path }) => path);
+      .map(({ path }) => path)
+      .filter((path) => !REPLAYS_A_RECORD_WITH_NO_CLOCK.has(path));
     expect(unsaid, "these replay a record without saying whether it ran a clock").toEqual([]);
   });
 
