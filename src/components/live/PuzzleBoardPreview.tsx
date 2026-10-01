@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
@@ -51,6 +52,9 @@ import { CubePreview } from "@/components/puzzles/CubePreview";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
+
+/* Suido's preview is made in the browser only: a board is not worth making on the server that draws the set-up page. */
+const SuidoPreview = dynamic(() => import("@/components/puzzles/SuidoPreview").then((module) => module.SuidoPreview), { ssr: false });
 
 /** The paper a puzzle is written on, inside the wood. */
 const PAPER = "#ffffff";
@@ -121,6 +125,8 @@ export function PuzzleBoardPreview({
           <LatticePreview appearance={appearance} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
+        ) : kind === "suido" ? (
+          <SuidoPreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "pictureLogic" ? (
           <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "freecell" || kind === "spider" ? (

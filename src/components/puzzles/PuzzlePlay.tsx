@@ -18,6 +18,8 @@ import { freshDodgeSeed } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
+import { freshSuidoSeed } from "@/lib/puzzles/suido/seed";
+import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
@@ -36,6 +38,7 @@ import { NumberSolve } from "./NumberSolve";
 import { FreeCellSolve } from "./FreeCellSolve";
 import { SolitaireSolve } from "./SolitaireSolve";
 import { CubeSolve } from "./CubeSolve";
+import { SuidoSolve } from "./SuidoSolve";
 import { SpiderSolve } from "./SpiderSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
 import { WinSlotProvider } from "./PuzzleWinSlot";
@@ -82,6 +85,7 @@ export function PuzzlePlay({ drawnFor, ...drawn }: PuzzlePlayProps) {
       players={here.players ?? 1}
       clock={here.clock ?? "none"}
       bonus={here.bonus ?? "group"}
+      pipes={here.pipes ?? "drains"}
       anyDeal={here.anyDeal === true}
       resumed={null}
     />
@@ -126,6 +130,7 @@ function PuzzlePlayDrawn({
   players = 1,
   online,
   bonus = "group",
+  pipes = "drains",
   clock = "none",
   anyDeal = false,
   dodge = false,
@@ -140,6 +145,8 @@ function PuzzlePlayDrawn({
   online?: OnlineOffer;
   /** Mahjong's flowers and seasons, from the address: read only to draw a seed, which says it from then on (`bonusRuleOfSeed`). */
   bonus?: MahjongBonusRule;
+  /** Suido's kind of board, from the address: read only to draw a seed, which says it from then on (`suidoKindOfSeed`). */
+  pipes?: SuidoKind;
   /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
   clock?: PuzzleClock;
   /** Solitaire's any deal, read only to draw a seed, which says it from then on (`solitaire/generate.ts`). */
@@ -201,9 +208,9 @@ function PuzzlePlayDrawn({
       return;
     }
     // A Solitaire's seed is drawn in the block its kind of deal is dealt from (`freshSolitaireSeed`), a Mahjong's by its flowers' rule.
-    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
-    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, bonus })));
-  }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, router]);
+    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : kind === "suido" ? freshSuidoSeed(pipes) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes })));
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, pipes, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind);
@@ -325,6 +332,8 @@ function PuzzlePlayDrawn({
         // A table round this device is local and never a race, as Kumimoji's pass and play is.
         if (players > 1 && race === null) return <MahjongTableGame key={key} puzzle={puzzle} players={players} appearance={appearance} />;
         return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} appearance={appearance} />;
+      case "suido":
+        return <SuidoSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} />;
       case "cube":
         return <CubeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "koushi":
