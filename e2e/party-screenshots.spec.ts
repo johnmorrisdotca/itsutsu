@@ -22,6 +22,7 @@ import { pachisiComputerMove } from "../src/lib/party/pachisi/pachisiComputer";
 import { playYacht, startYacht } from "../src/lib/party/yacht/yacht";
 import { encodeYacht } from "../src/lib/party/yacht/yachtCodec";
 import { encodeHitotsu, hitotsuComputer, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
+import { encodeDiceWar, playDiceWar, startDiceWar } from "@johnmorrisdotca/korokoro";
 import { ready } from "./support";
 
 /**
@@ -75,6 +76,19 @@ function yachtScene(): string {
   const most = counts.indexOf(Math.max(...counts));
   const hold = game.dice.reduce((mask, die, at) => (die === most ? mask | (1 << at) : mask), 0);
   return encodeYacht(playYacht(game, { kind: "roll", hold: hold === 31 ? 0 : hold })!);
+}
+
+/**
+ * Four people at Dice War with two dice each, two throws in: Ben took the
+ * first, and Ann and Cy tied for the highest on the second, so it is war. People
+ * rather than computers, so the table waits on the picture: the two who tied
+ * are ringed and marked War, with Ben and Dee, who lost the throw, beside them.
+ */
+function diceWarScene(): string {
+  let game = startDiceWar({ players: ["Ann", "Ben", "Cy", "Dee"], computers: [false, false, false, false], dice: 2, sides: 6, to: 10, seed: "20261001" })!;
+  game = playDiceWar(game, { faces: { "0": [3, 4], "1": [6, 2], "2": [1, 5], "3": [2, 2] } })!;
+  game = playDiceWar(game, { faces: { "0": [5, 5], "1": [4, 3], "2": [5, 5], "3": [1, 4] } })!;
+  return encodeDiceWar(game);
 }
 
 /**
@@ -195,6 +209,16 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "board-surface",
     stored: pachisiScene(),
   },
+  {
+    // Four at the table, two dice each: Ann and Cy have tied for the highest, so it is war, and the table waits on Roll. At a phone's width, so the four rows come out nearly square, as a thumbnail wants.
+    kind: "diceWar",
+    key: "itsutsu.diceWar",
+    table: "dicewar-game",
+    shot: "dicewar-seats",
+    width: 340,
+    scale: 2,
+    stored: diceWarScene(),
+  },
   // Hearts for four, four tricks gone and three cards on the fifth: Ann to play to it, her hand under the table.
   {
     kind: "hearts",
@@ -282,6 +306,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     table: "cards-game",
     shot: "cards-board",
     stored: cardScene("ohHell", 13, 4, (game: { phase: string; cards: number; trick: unknown[] }) => game.phase === "playing" && game.cards === 5 && game.trick.length === 2),
+  },
+  // War for two, a war just played: a tied card, three face down and the card that decided it, on each side, and the piles at each end.
+  {
+    kind: "war",
+    key: "itsutsu.cards.war",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("war", 100, 2, (game: { last: { wars: number } | null; moves: unknown[] }) => game.last !== null && game.last.wars === 1 && game.moves.length >= 8),
   },
 ];
 

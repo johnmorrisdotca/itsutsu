@@ -6,6 +6,7 @@ import { TRAIN_SETS } from "@johnmorrisdotca/domino";
 import type { PartyKind, PartySpec } from "./party.types";
 import { PACHISI_TRACK } from "./pachisi/pachisi.constants";
 import { YACHT_SHEET } from "./yacht/yacht.constants";
+import { DICE_WAR_DEFAULT_POINTS, DICE_WAR_POINT_GOALS } from "./diceWar/diceWar.constants";
 import { HITOTSU_DEFAULT_SIZE, HITOTSU_SIZES } from "@johnmorrisdotca/hitotsu";
 import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
@@ -31,11 +32,12 @@ export const PARTY_KINDS = {
   yacht: "yacht",
   pachisi: "pachisi",
   hitotsu: "hitotsu",
+  diceWar: "diceWar",
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, PARTY_KINDS.diceWar, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -192,6 +194,30 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
       "A cross of sixty-eight squares round a middle, with a home path of seven for each colour. Two sit opposite each other; three or four take an arm each. Pass one phone round, or put the computer in any seat.",
   },
   hitotsu: HITOTSU_DISPLAY,
+  /*
+   * DICE WAR, 2026-10-01. John: "Dice game: war? Or higher number? Something
+   * super simple with just rolling dice and keeping score." The dice game with
+   * the least in it: everybody rolls, the highest scores, a tie is war. The
+   * rules are Korokoro's (`@johnmorrisdotca/korokoro`, diceWar.ts). The kanji
+   * 賽合戦 (sai-gassen) is "a battle of dice".
+   */
+  diceWar: {
+    label: "Dice War",
+    kanji: "賽合戦",
+    tagline: "Everybody rolls and the highest total scores. A tie is war: roll again for more.",
+    origin:
+      /* Written 2026-10-01: no history of the game is claimed, since none could be checked; the war rule is the card game's. */
+      "Games where everybody rolls and the highest wins are as old as dice. The rule that a tie is fought again, for more, is borrowed from the card game War, which is where this one gets its name. It is played with any dice anywhere, and nobody owns it.",
+    rules: [
+      "Two to eight players, any of them a computer. Each round everybody rolls the same dice, one die unless the table chooses more, up to ten, and adds them up. A die may have from four sides to a hundred.",
+      "The highest total wins the round and scores a point.",
+      "If two or more players tie for the highest total, it is war. Only the players who tied roll again, and the points at stake grow by one for every war. Whoever finally has the highest takes everything at stake.",
+      "Then everybody rolls for the next round.",
+      "A game is played to a score, 5, 10 (the usual game), 25 or 50 points: the first player to reach it wins. Or it is played for a number of rounds, 10, 20 or 50: the most points when they are up wins, and players level on the most share the win.",
+    ],
+    board:
+      "The more dice each player rolls, the more their totals gather round the middle, so a tie for the highest is rarer; one die with few sides makes war common. The set-up shows the exact odds of every throw for the table you choose. Nothing is hidden, so there is no hand to pass: anybody at the table presses Roll.",
+  },
   // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
   ...CARD_GAME_DISPLAY,
 };
@@ -267,6 +293,13 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
    * default), or a single hand, which party mode opens on.
    */
   hitotsu: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 4, sizes: HITOTSU_SIZES, defaultSize: HITOTSU_DEFAULT_SIZE },
+  /*
+   * Dice War for two to eight, to a score of 5, 10, 25 or 50 points (the
+   * party contract's one "size"; the set-up also offers a number of rounds,
+   * and how many dice and of how many sides, through `startWith`). Two is the
+   * table it opens on, a person and the computer, and first to 10 the game.
+   */
+  diceWar: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 2, sizes: DICE_WAR_POINT_GOALS, defaultSize: DICE_WAR_DEFAULT_POINTS },
   // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
   ...CARD_GAME_SPECS,
 };

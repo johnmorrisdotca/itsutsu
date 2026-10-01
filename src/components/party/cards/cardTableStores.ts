@@ -38,6 +38,7 @@ export const CARD_TABLE_STORES: Record<CardGameKind, ReturnType<typeof storeOf>>
   euchre: storeOf("euchre"),
   cribbage: storeOf("cribbage"),
   ohHell: storeOf("ohHell"),
+  war: storeOf("war"),
 };
 
 /** A new seed for a new game, from the browser's own random: every deal of the game is shuffled from it. */

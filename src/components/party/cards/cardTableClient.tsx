@@ -135,3 +135,15 @@ export function OhHellOffer({ href }: { href: string }) {
 export function OhHellCard() {
   return <Card kind="ohHell" />;
 }
+
+export function WarTable(props: PartyTableGameProps) {
+  return <Table kind="war" {...props} />;
+}
+
+export function WarOffer({ href }: { href: string }) {
+  return <Offer kind="war" href={href} />;
+}
+
+export function WarCard() {
+  return <Card kind="war" />;
+}

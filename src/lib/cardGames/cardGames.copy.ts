@@ -196,4 +196,32 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     ],
     board: "Three or four players, any of them computers: one person against the rest, or everybody round one device. Choose 13 deals for the full game, up to seven cards and back down, or 7 for the climb alone.",
   },
+  /*
+   * WAR, 2026-10-01. John: "Card game: war". The simplest card game there is,
+   * and the only one here with no choice in it at all: nobody picks a card, so
+   * the table is two piles, one press that turns the cards over, and a computer
+   * that does exactly what a person does. Its rules are Toranpu's (3 cards laid
+   * face down in a war, the winnings shuffled under the pile, and a limit on
+   * the turns so a game can end).
+   */
+  war: {
+    label: "War",
+    kanji: "戦争",
+    tagline: "Turn your top card over against your opponent's: the higher takes both. Tie, and it is war.",
+    origin:
+      /* Checked 2026-10-01 against Wikipedia's article: a game of pure chance with names including Battle; no inventor or date is recorded. */
+      "A game of pure chance played by children, and by anybody waiting for something, in many countries: the cards decide everything and nobody picks one. It is known as Battle in Britain and La Bataille in France, and as 戦争 (sensō, \"war\") in Japan. Nobody owns it.",
+    alsoKnownAs: ["Battle", "La Bataille"],
+    wikipedia: "War (card game)",
+    rules: [
+      "Two players. The whole pack is dealt out, twenty-six cards each, face down. Nobody looks at their cards and nobody chooses one: each player's top card is always the next.",
+      "Each turn, both players turn their top card over. The higher card takes both and puts them under their pile. Aces are high, and suits do not matter.",
+      "If the two cards are the same rank, it is war. Each player lays three cards face down and turns the next one over. The higher of those two cards takes everything on the table.",
+      "If those two tie as well, the war goes on: three more face down and one more turned over, as many times as it takes.",
+      "A war needs four cards from each player. A player with fewer cannot finish it and loses, and the other takes every card. If neither can, the player with fewer cards loses; with the same number each, it is a draw.",
+      "The cards a player wins go under their pile in a shuffled order, so a game cannot go round in circles for ever. The game ends when one player holds every card. If the turns run out first, the player holding more cards wins, and equal piles share the win.",
+    ],
+    board:
+      "Always two players: one person against the computer, or two people turning cards on one device. Choose how many turns the game may last: 50 for a quick one, 100 for the usual game, 200 for a long one, or 1000 to play it out. When the turns run out, the player holding more cards wins.",
+  },
 };

@@ -7,6 +7,7 @@ import { trainSetName } from "@johnmorrisdotca/domino";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
+import { DICE_WAR_DICE, DICE_WAR_ROUND_GOALS, DICE_WAR_SIDES } from "./diceWar/diceWar.constants";
 import { HITOTSU_ONE_HAND } from "@johnmorrisdotca/hitotsu";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
@@ -49,6 +50,8 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       spec.sizes.map((size) => `${(trainSetName(size) ?? `double-${size}`).toLowerCase()}${size === spec.defaultSize ? " (the default)" : ""}`),
       "or",
     )} set`,
+  diceWar: (spec) =>
+    `with ${listed(DICE_WAR_DICE.map(String), "or")} dice each (d${DICE_WAR_SIDES[0]} to d${DICE_WAR_SIDES[DICE_WAR_SIDES.length - 1]}), to ${defaulted(spec, (size) => String(size), "or")} points, or for ${listed(DICE_WAR_ROUND_GOALS.map(String), "or")} rounds`,
   yacht: () => "with five dice and a sheet of thirteen boxes, alone or at a table",
   pachisi: () => "with two dice and four pawns each, round a cross of sixty-eight squares",
   hitotsu: (spec) => defaulted(spec, (size) => (size === HITOTSU_ONE_HAND ? "for one hand" : `to ${size} points`), "or"),
@@ -63,6 +66,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   euchre: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   cribbage: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   ohHell: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
+  war: (spec) => `for ${defaulted(spec, (size) => String(size), "or")} turns at most`,
 };
 
 /** A game's sizes in words, the default one saying so: "50 or 100 (the usual game)". */
@@ -111,6 +115,15 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     turn: "Hands are secret: between two people's turns the table covers the hand and names who to pass the device to, and it shows only once that player says it is them. Drag a tile onto the end of a train, or tap the tile and then the train; tap a tile twice to lay it on the only train it fits, when there is just one. The trains it may go on are lit. With nothing to lay, press Draw, then lay the tile drawn or press Pass.",
     house:
       "Each train shows its last few tiles and how many are laid on it before them, so the table fits a phone and every open end is where it always is; a marker out is drawn at the train's start. Pips are drawn in a colour of their own for each number, as most double-twelve sets are, so a nine and a twelve are told apart at a glance. The set-up offers the common house rules: a short game of half the rounds, chained doubles, and a Mexican Train that only opens once your own train has started. Computer players can take any seat, and play in the browser. Choose Several devices at the set-up and each player plays on their own phone or computer, a buddy, anyone with the link or a computer in any seat, and sees only their own tiles; the table waits on My games between turns.",
+  },
+  diceWar: {
+    turn: "The line at the top says which round it is and what the last throw did. Press Roll the dice: every person at the table throws at once, the computers' dice come with theirs, and each player's dice and their total are written in their row. The highest total scores; players tied for it are ringed and marked War, and only they roll again.",
+    house:
+      "The dice are thrown by Korokoro, the open-source dice package behind the Dice tab, from your device's own cryptographic generator, and every throw is kept with the game, so a reloaded page throws nothing again. A computer's dice come from the game's seed. Nothing is hidden, so there is no device to pass: anybody at the table presses Roll. The sound of the dice is off until you turn it on.",
+    more: [
+      "A war left to computers alone is thrown for them, a moment after the last throw.",
+      "A round that ties again and again goes on; after a hundred wars it is called off and nobody scores, which with two or more sides to a die never happens in practice.",
+    ],
   },
   yacht: {
     turn: "The line at the top says whose turn it is and which roll this is. Press Roll, or tap the dice tray, to throw; tap a die to hold it (it is ringed and marked HELD) and tap again to let it go. Every box you could write the dice into shows what it would score; tap one to write it down, and the dice pass on.",
@@ -200,6 +213,15 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
     more: [
       "Seat one deals first, and the deal passes to the left each time. Hands go no higher than seven cards, at three players as at four.",
       "A made bid scores ten and the bid, and a missed one nothing: no points are taken away for missing, and there is no bonus for a bid of none beyond its ten.",
+    ],
+  },
+  war: {
+    turn: "The line over the table says which turn it is and how many the game may last. Press Turn the cards over: both top cards are turned up at once, and a line under the table says what each was and who took them. Press Keep turning to let the turns come by themselves, one after another, until the game ends or you press Stop turning. A computer turns its own cards, so a table of two computers plays itself.",
+    house: "Nobody holds a hand and nothing is hidden, so the device is never passed between turns: the two piles lie face down at each end of the table with their counts, and each turn's cards lie between them. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",
+    more: [
+      "A war lays three cards face down. Some tables lay one; three is how children play it in many places.",
+      "The cards a player wins go back under their pile in a shuffled order, drawn from the game's seed, so a game cannot go round in a circle for ever, and a game read back from this browser plays out exactly as it did.",
+      "The turn limit is the table's own, so that a game always ends: when it runs out, the player with more cards wins.",
     ],
   },
 };

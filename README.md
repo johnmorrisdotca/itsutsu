@@ -263,7 +263,8 @@ the version) and imports it by name (`@johnmorrisdotca/toranpu`), and `src/lib/c
 `src/lib/cardGames/` forward to it, keeping the site's own copy, shelf order and
 party-table typing.
 **Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,
-**Hearts** ハーツ, **Spades** スペード, **Euchre** ユーカー and **Oh Hell** オーヘル, with **Cribbage** クリベッジ beside them, split off Cards so neither shelf passes
+**Hearts** ハーツ, **Spades** スペード, **Euchre** ユーカー and **Oh Hell** オーヘル, with **Cribbage** クリベッジ and **War** 戦争 (2026-10-01, the one card game with
+no choice in it) beside them, split off Cards so neither shelf passes
 eight games.
 
 **Mahjong** 麻雀 (2026-09-29) is the family of games played with a mahjong
@@ -550,6 +551,10 @@ stats. It is Korokoro (github.com/johnmorrisdotca/korokoro: MIT, no
 dependencies, its own README and a GitHub Pages demo), an ordinary dependency
 from npm, `@johnmorrisdotca/korokoro`, at the version in `package.json`. A
 change to the roller is a release of that package and a version bump here.
+**Dice War** 賽合戦 (2026-10-01) is its game, a party game at home in the Dice
+family (`src/components/party/diceWar/`, rules in Korokoro's `diceWar.ts`):
+two to eight round one device, a computer in any seat, everybody rolls and the
+highest total scores, a tie is war; see `docs/plans/party-games/README.md`.
 
 ### Players, ratings and records
 

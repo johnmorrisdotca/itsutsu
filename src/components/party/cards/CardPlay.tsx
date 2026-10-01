@@ -30,6 +30,7 @@ import { CardScores } from "./CardScores";
 import { CardTableSurface } from "./CardTableParts";
 import { freshCardSeed } from "./cardTableStores";
 import { useCardComputer } from "./useCardComputer";
+import { useKeepTurning } from "./useKeepTurning";
 
 /** A choice made on one turn, forgotten when the game moves on: the moves made when it was made, and what it was. */
 type Held<T> = { at: number; value: T };
@@ -61,16 +62,19 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   const people = players.map((_, seat) => seat).filter((seat) => !computers[seat]);
   const moves = (game as { moves: readonly unknown[] }).moves.length;
 
+  // A game with nothing hidden (War): nobody's hand to cover, no device to pass, one press under the table.
+  const open = adapter.open === true;
   const [handedTo, setHandedTo] = useState<number | null>(people.length === 1 ? people[0] : null);
   const personToPlay = toPlay !== null && !computers[toPlay];
-  const covered = !over && people.length > 1 && personToPlay && handedTo !== toPlay;
+  const covered = !open && !over && people.length > 1 && personToPlay && handedTo !== toPlay;
   // Whose hand is drawn face up: the one person at the table; else whoever the device was last handed to.
-  const viewer = people.length === 1 ? people[0] : covered ? null : personToPlay ? toPlay : handedTo;
-  const myTurn = !over && viewer !== null && viewer === toPlay;
+  const viewer = open ? null : people.length === 1 ? people[0] : covered ? null : personToPlay ? toPlay : handedTo;
+  const myTurn = open ? !over && toPlay !== null && !computers[toPlay] : !over && viewer !== null && viewer === toPlay;
 
   const [held, setHeld] = useState<Held<CardId[]>>({ at: -1, value: [] });
   const [aimed, setAimed] = useState<Held<number | null>>({ at: -1, value: null });
   const [confirming, setConfirming] = useState(false);
+  const [turning, setTurning] = useState(false);
   const chosen = held.at === moves ? held.value : [];
   const target = aimed.at === moves ? aimed.value : null;
   const thinking = useCardComputer(rules, game, keep);
@@ -114,8 +118,10 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   };
 
   const actions = myTurn ? adapter.actions(game, chosen, target, name) : [];
+  useKeepTurning(turning && myTurn, moves, () => play(actions[0]?.move ?? null));
   const stuck = actions.find((action) => action.strong === true && action.move === null);
-  const others = players.map((_, seat) => seat).filter((seat) => seat !== viewer);
+  const others = open ? [] : players.map((_, seat) => seat).filter((seat) => seat !== viewer);
+  const ending = over && adapter.ending !== undefined ? adapter.ending(game, name) : null;
   const counts = players.map((_, seat) => adapter.hand(game, seat).length);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useCardSounds(counts.reduce((sum, count) => sum + count, 0));
@@ -124,6 +130,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   const again = () => {
     const size = (game as { size: number }).size;
     const fresh = rules.start(size, players, undefined, freshCardSeed(), computers);
+    setTurning(false);
     if (fresh !== null) keep(fresh);
   };
 
@@ -140,9 +147,10 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
       {...ready}
     >
       <p className="min-h-12 text-base font-semibold" data-testid="cards-status" aria-live="polite">
-        {over ? <ResultMark kind={winners.length === 0 ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
-        {over ? `${CARD_TABLE_COPY.over}: ${CARD_TABLE_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name)}
+        {over ? <ResultMark kind={winners.length === 0 || ending?.draw === true ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
+        {over ? `${CARD_TABLE_COPY.over}: ${ending !== null ? ending.line : CARD_TABLE_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name)}
       </p>
+      {open ? null : (
       <CardSeats
         seats={others}
         names={names}
@@ -154,6 +162,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         target={target}
         onTarget={(seat) => setAimed({ at: moves, value: seat })}
       />
+      )}
       <div className="mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-3" data-width-reason="a card table wider than a hand of cards spreads the trick past where the eye can take it in with the hand" data-scale-board data-bare-board data-testid="cards-board">
         <WinCoverOver
           news={
@@ -161,6 +170,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
               ? tableNews({
                   names,
                   winners,
+                  draw: ending?.draw,
                   // One person among computers is "you"; several people round the device are each named.
                   you: people.length === 1 ? people[0]! : null,
                   next: { label: CARD_TABLE_COPY.again, onPress: again },
@@ -181,6 +191,20 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
               {CARD_TABLE_COPY.ready(name(toPlay))}
             </button>
           </div>
+        ) : open ? (
+          // Nothing to hold: the press, and the choice to keep turning until the game is over.
+          !over && (
+            <div className="flex flex-wrap items-center gap-2" data-testid="cards-actions">
+              {actions.map((action) => (
+                <button key={action.testId} type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} min-h-11`} disabled={turning} onClick={() => play(action.move)} data-testid={action.testId}>
+                  {action.label}
+                </button>
+              ))}
+              <button type="button" aria-pressed={turning} className={`${BUTTON_BASE} ${BUTTON_QUIET} min-h-11`} onClick={() => setTurning(!turning)} data-testid="cards-keep-turning" data-on={turning ? "true" : "false"}>
+                {turning ? CARD_TABLE_COPY.stopTurning : CARD_TABLE_COPY.keepTurning}
+              </button>
+            </div>
+          )
         ) : viewer === null ? null : (
           <div className="flex flex-col gap-2" data-testid="cards-hand-panel" data-seat={viewer}>
             <p className="text-sm text-muted">
@@ -245,12 +269,16 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
             </button>
           </span>
         ) : (
-          <button type="button" onClick={() => (over ? keep(null) : setConfirming(true))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="cards-new">
+          <button type="button" onClick={() => {
+            setTurning(false);
+            if (over) keep(null);
+            else setConfirming(true);
+          }} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="cards-new">
             {CARD_TABLE_COPY.newGame}
           </button>
         )}
       </div>
-      {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners)} /> : null}
+      {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners, ending?.draw === true)} /> : null}
       <p className="text-xs text-muted">{CARD_TABLE_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">

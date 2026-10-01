@@ -46,6 +46,14 @@ export type CardAdapter<S, M> = {
   /** What the scores count, for the heading over them: "Points (fewest wins)". */
   scoreWords: string;
   Centre: ComponentType<CardCentreProps<S>>;
+  /**
+   * A game with nothing hidden and nothing to choose (War): no hand is drawn,
+   * no device is passed between people, and the one press sits under the
+   * table. `hand` then only counts a seat's pile.
+   */
+  open?: boolean;
+  /** How a finished game ended, in a line, and whether it was a draw, for a game whose ending is more than "somebody won". */
+  ending?: (game: S, name: (seat: number) => string) => { line: string; draw: boolean };
 };
 
 /** The set-up: how many, how long, and who sits where — a person, named if they like, or a computer. */

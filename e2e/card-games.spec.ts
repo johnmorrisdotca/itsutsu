@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { CARD_GAME_DISPLAY } from "../src/lib/cardGames/cardGames.copy";
 import { CARD_GAME_LIST, type CardGameKind } from "../src/lib/cardGames/cardGames.constants";
+import { CARD_GAME_RULES } from "../src/lib/cardGames/cardGameRules";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families.data";
 import { PARTY_SLUGS } from "../src/lib/gomoku/slugs";
 import { ready } from "./support";
@@ -326,6 +327,63 @@ test.describe("the card games at the table", () => {
     await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
     await myTurn(page);
     expect(await playOneCard(page, "cards-play")).toBe(true);
+    await clearKept(page);
+  });
+
+  test("War: one press turns the cards over, a line says what happened, Keep turning plays on by itself, and the last turn ends the game", async ({ page }) => {
+    await start(page, "war", undefined, 2);
+    // Nothing is hidden at War, so two people at the device are never asked to pass it, and no hand is drawn.
+    await expect(page.getByTestId("cards-pass-device")).toHaveCount(0);
+    await expect(page.getByTestId("cards-hand-panel")).toHaveCount(0);
+    await expect(page.getByTestId("war-pile")).toHaveCount(2);
+    await expect(page.getByTestId("war-said")).toContainText("Turn the cards over to begin.");
+    await page.getByTestId("cards-turn").click();
+    await expect.poll(() => movesMade(page)).toBe(1);
+    await expect(page.getByTestId("war-said")).toContainText(/turned .* and .* turned .*/);
+    // Both piles still total the fifty-two cards.
+    const counts = await page.getByTestId("war-seat").evaluateAll((seats) => seats.map((seat) => Number(seat.getAttribute("data-cards"))));
+    expect(counts[0] + counts[1]).toBe(52);
+    // The game is kept: a reload opens on turn two, not a new deal.
+    await page.reload();
+    await ready(page, "cards-game");
+    await expect.poll(() => movesMade(page)).toBe(1);
+    // Keep turning goes on by itself, and stops when asked.
+    await page.getByTestId("cards-keep-turning").click();
+    await expect(page.getByTestId("cards-keep-turning")).toHaveAttribute("data-on", "true");
+    await expect.poll(() => movesMade(page), { timeout: 20_000 }).toBeGreaterThanOrEqual(4);
+    await page.getByTestId("cards-keep-turning").click();
+    await expect(page.getByTestId("cards-keep-turning")).toHaveAttribute("data-on", "false");
+    const stopped = await movesMade(page);
+    await page.waitForTimeout(1200);
+    expect(await movesMade(page)).toBe(stopped);
+
+    // A game one turn from its limit, made by the same rules the page plays: the last turn ends it.
+    const rules = CARD_GAME_RULES.war;
+    let game = rules.start(50, ["Ann", "Ben"], undefined, 77, [false, false])!;
+    while (game.moves.length < 49) game = rules.play(game, { turn: true })!;
+    await page.evaluate(([key, text]) => window.localStorage.setItem(key, text), ["itsutsu.cards.war", rules.encode(game)] as const);
+    await page.reload();
+    await ready(page, "cards-game");
+    await expect(page.getByTestId("cards-status")).toContainText("Turn 50 of 50");
+    await page.getByTestId("cards-turn").click();
+    await expect(page.getByTestId("cards-game")).toHaveAttribute("data-state", "finished");
+    await expect(page.getByTestId("cards-status")).toContainText(/Game over: .*(holds every card|turns have run out|could not finish|draw)/);
+    await expect(page.getByTestId("cards-turn")).toHaveCount(0);
+    await expect(page.getByTestId("cards-again")).toBeVisible();
+    await page.getByTestId("cards-again").click();
+    await expect(page.getByTestId("cards-game")).toHaveAttribute("data-state", "playing");
+    await expect.poll(() => movesMade(page)).toBe(0);
+    await clearKept(page);
+  });
+
+  test("War against the computer: the computer has no turn of its own to wait for, and the same press plays the game", async ({ page }) => {
+    await start(page, "war");
+    await expect(page.getByTestId("cards-turn")).toBeEnabled();
+    await page.getByTestId("cards-turn").click();
+    await expect.poll(() => movesMade(page)).toBe(1);
+    await page.getByTestId("cards-turn").click();
+    await expect.poll(() => movesMade(page)).toBe(2);
+    await expect(page.getByTestId("cards-scores")).toContainText("Cards held");
     await clearKept(page);
   });
 
