@@ -1191,6 +1191,22 @@ worktree does not get one, and the failure gives no hint of its own cause.
 Three sessions lost time to it, twice after it had already been fixed. See
 `.env.example`, which carries it with the reasoning.
 
+**The suite's server keeps the site's settings in its own memory, never on
+Sumilabu** (2026-10-01). The twelve shards, and every developer running the
+suite, used to share one `itsutsu-dev` settings store, so `site-settings.spec.ts`
+closing the door on one shard showed up as "not taking new members" in
+`control-names.spec.ts` on another (0.484.2's deploy, run 36929045514). A server
+started with `ITSUTSU_SUITE_SERVER=1` — `playwright.config.ts` and `e2e.yml` set
+it, `suiteServerOwnsSettings` in `src/lib/suiteServer.ts` refuses it in
+production without the marker and on Vercel always — swaps the three calls at
+the bottom of the store for a Map on `globalThis`, and keys the settings cache
+by a random per-server id (`src/lib/site/siteSettingsBackend.ts`). A fresh
+server starts with nothing chosen. So a spec may change any site setting freely
+and must still put it back for the specs after it on the same server; a server
+you start yourself with plain `pnpm dev` still reads Sumilabu, and a spec run
+against it is back to the shared store. The real round trip is
+`e2e/sumilabu-settings.spec.ts`, on a key of its own that no setting reads.
+
 Three other things produce failures that look exactly like code bugs, and are
 worth ruling out in this order before believing any of them:
 

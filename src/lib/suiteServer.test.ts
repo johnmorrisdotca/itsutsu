@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { SUITE_SERVER_ENV, reliefAllowed } from "./suiteServer";
+import { SUITE_SERVER_ENV, reliefAllowed, suiteServerOwnsSettings } from "./suiteServer";
 
 describe("relief for the browser suite", () => {
   it("is allowed outside production, as it always was", () => {
@@ -28,3 +28,25 @@ describe("relief for the browser suite", () => {
     expect(readFileSync(join(workflows, "vercel-deploy.yml"), "utf8")).not.toContain(SUITE_SERVER_ENV);
   });
 });
+
+describe("the suite server's own settings", () => {
+  it("are kept only where the suite's marker is set", () => {
+    expect(suiteServerOwnsSettings({ NODE_ENV: "development" })).toBe(false);
+    expect(suiteServerOwnsSettings({ NODE_ENV: "production" })).toBe(false);
+    expect(suiteServerOwnsSettings({ NODE_ENV: "development", [SUITE_SERVER_ENV]: "1" })).toBe(true);
+    expect(suiteServerOwnsSettings({ NODE_ENV: "production", [SUITE_SERVER_ENV]: "1" })).toBe(true);
+  });
+
+  it("are refused in production without the exact marker", () => {
+    expect(suiteServerOwnsSettings({ NODE_ENV: "production", [SUITE_SERVER_ENV]: "yes" })).toBe(false);
+    expect(suiteServerOwnsSettings({ NODE_ENV: "production", [SUITE_SERVER_ENV]: "" })).toBe(false);
+  });
+
+  it("are refused on Vercel whatever is set, in production or out of it", () => {
+    for (const NODE_ENV of ["production", "development"]) {
+      expect(suiteServerOwnsSettings({ NODE_ENV, [SUITE_SERVER_ENV]: "1", VERCEL: "1" })).toBe(false);
+      expect(suiteServerOwnsSettings({ NODE_ENV, [SUITE_SERVER_ENV]: "1", VERCEL_ENV: "production" })).toBe(false);
+    }
+  });
+});
+

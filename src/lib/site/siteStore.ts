@@ -1,11 +1,9 @@
 import "server-only";
 
-import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
-
 import { DEFAULT_SITE_SETTINGS, SITE_SETTING_REMOTE_KEYS } from "./site.constants";
 import { cachedSiteSettings } from "./liveBoardIntervals";
 import { siteSettingStates, storedFromRemote } from "./site";
-import { deleteRemoteSetting, putRemoteSetting, readRemoteSettings } from "./siteSettingsWire";
+import { deleteSetting, putSetting, readSettings } from "./siteSettingsBackend";
 import type {
   RegistrationMode,
   SiteSettingKey,
@@ -18,7 +16,8 @@ import type {
  * in `site.ts`, which is pure; this reads settings, writes them, and hands them
  * over.
  *
- * THE STORE IS SUMILABU'S, one row per key under Itsutsu's project, which is
+ * THE STORE IS SUMILABU'S (the browser suite's own server keeps it in memory
+ * instead: `siteSettingsBackend.ts` says why), one row per key under Itsutsu's project, which is
  * the shape this file was written in anticipation of: nothing that imports it
  * had to change when it moved. `sumilabuTarget("settings")` decides which
  * project — the live one only on the deployed site, itsutsu-dev everywhere
@@ -99,7 +98,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 
 /** Every setting with when it was written and by whom, for the panel. Throws when the store cannot be read. */
 export async function fetchSiteSettingStates(): Promise<SiteSettingState[]> {
-  return siteSettingStates(storedFromRemote(await readRemoteSettings(sumilabuTarget("settings"))));
+  return siteSettingStates(storedFromRemote(await readSettings()));
 }
 
 /**
@@ -115,8 +114,7 @@ export async function writeSiteSetting(
   value: string | null,
   by: string,
 ): Promise<void> {
-  const target = sumilabuTarget("settings");
   const remoteKey = SITE_SETTING_REMOTE_KEYS[key];
-  if (value === null) await deleteRemoteSetting(target, remoteKey, by);
-  else await putRemoteSetting(target, remoteKey, value, by);
+  if (value === null) await deleteSetting(remoteKey, by);
+  else await putSetting(remoteKey, value, by);
 }

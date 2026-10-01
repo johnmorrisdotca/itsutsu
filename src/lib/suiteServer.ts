@@ -28,3 +28,30 @@ export function reliefAllowed(env: Env = process.env): boolean {
   if (env.VERCEL !== undefined || env.VERCEL_ENV !== undefined) return false;
   return env[SUITE_SERVER_ENV] === "1";
 }
+
+/**
+ * Whether this server keeps the site's settings in its own memory instead of on
+ * Sumilabu: only the suite's server, and never anything else.
+ *
+ * THE SUITE'S SETTINGS ARE ITS OWN. Twelve CI shards, and any developer running
+ * the suite, all reached ONE `itsutsu-dev` project on Sumilabu, so one shard's
+ * `site-settings.spec.ts` closing the door (or a developer's, on a laptop) was
+ * seen by every other server that read the store before it was put back:
+ * `control-names.spec.ts` found "not taking new members" where it wanted the
+ * invite-code box (0.484.2's deploy, run 36929045514, shard 2). A setting is
+ * the one thing the suite changes that every other spec reads, so the store
+ * cannot be shared between servers (`siteSettingsBackend.ts` has the design).
+ *
+ * It takes TWO things, both of them asked for out loud: the suite marker, which
+ * `e2e.yml` and `playwright.config.ts` set for the server they start and
+ * nothing else does, AND `reliefAllowed`, so a production server that is not
+ * the suite's, and anything on Vercel, is refused by the same guard as every
+ * other relief. Vercel is named again here because `reliefAllowed` lets any
+ * non-production process through, and `vercel dev` is one of those.
+ * `pnpm dev` and `pnpm start` without the marker keep reading Sumilabu, as
+ * they always did.
+ */
+export function suiteServerOwnsSettings(env: Env = process.env): boolean {
+  if (env.VERCEL !== undefined || env.VERCEL_ENV !== undefined) return false;
+  return env[SUITE_SERVER_ENV] === "1" && reliefAllowed(env);
+}

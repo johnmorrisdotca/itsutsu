@@ -2,12 +2,10 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
-import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
-
 import { DEFAULT_SITE_SETTINGS } from "./site.constants";
 import { liveBoardIntervalsFrom, siteSettingsFrom, storedFromRemote } from "./site";
 import type { LiveBoardIntervals } from "./site.types";
-import { readRemoteSettings } from "./siteSettingsWire";
+import { readSettings, settingsScope } from "./siteSettingsBackend";
 
 /**
  * The tag every cached read of the site's settings carries, so a write from the
@@ -22,8 +20,9 @@ export const SITE_SETTINGS_TAG = "site-settings";
  * the next page rather than remembered for ten minutes.
  */
 export const cachedSiteSettings = unstable_cache(
-  async () => siteSettingsFrom(storedFromRemote(await readRemoteSettings(sumilabuTarget("settings")))),
-  ["site-settings-for-boards"],
+  async () => siteSettingsFrom(storedFromRemote(await readSettings())),
+  // The scope keeps one server's cache from answering for another's settings (`siteSettingsBackend.ts`); it is a constant on the live site.
+  ["site-settings-for-boards", settingsScope()],
   { revalidate: 600, tags: [SITE_SETTINGS_TAG] },
 );
 

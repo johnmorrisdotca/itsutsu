@@ -64,9 +64,16 @@ export default defineConfig({
      * Next.js recommends and CI does: no page compiles on its first request.
      * It is the suite's own server, so it says so (`suiteServer.ts`), which is
      * what lets its relief apply under NODE_ENV=production. Unset, the dev
-     * server, for a person working locally.
+     * server, for a person working locally — which says it too, so that the
+     * site's settings live in the server's memory and a run on this machine
+     * never closes the door on a shard in CI or a colleague's laptop
+     * (`siteSettingsBackend.ts`). A server already on the port is reused as it
+     * is and keeps whatever it was started with.
      */
-    command: process.env.E2E_SERVER === "start" ? `WEB_PORT=${PORT} ITSUTSU_SUITE_SERVER=1 pnpm start` : `WEB_PORT=${PORT} pnpm dev`,
+    command:
+      process.env.E2E_SERVER === "start"
+        ? `WEB_PORT=${PORT} ITSUTSU_SUITE_SERVER=1 pnpm start`
+        : `WEB_PORT=${PORT} ITSUTSU_SUITE_SERVER=1 pnpm dev`,
     url: baseURL,
     reuseExistingServer: true,
     timeout: 120_000,

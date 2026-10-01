@@ -203,6 +203,17 @@ jobs:
       # backlog, backlog-detail, site-settings and control-names fail on a
       # missing variable that reads like a broken page.
       #
+      # THE SITE'S SETTINGS ARE NOT READ FROM SUMILABU DURING A RUN. The twelve
+      # shards share one itsutsu-dev project, and a setting is the one thing a
+      # spec changes that every other spec reads: site-settings.spec.ts on one
+      # shard closing the door was seen by control-names.spec.ts on another
+      # (0.484.2's deploy, run 36929045514). The suite's server, which says it
+      # is the suite's with ITSUTSU_SUITE_SERVER=1, keeps them in its own
+      # memory instead (src/lib/site/siteSettingsBackend.ts, which has the
+      # reasoning). The settings token below is still needed by
+      # e2e/sumilabu-settings.spec.ts, the one spec that tests the real
+      # service, on a key of its own that nothing else reads.
+      #
       # THE DEV PROJECT ONLY, NEVER THE LIVE TOKENS. `sumilabuTarget` answers
       # itsutsu-dev when SUMILABU_PROJECT_KEY is unset, refuses the live
       # project unless SUMILABU_PROJECT_KEY names it, which nothing here does,
