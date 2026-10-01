@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.480.2 — 2026-10-01 06:33 UTC
+- Tsunagi now runs on its own open-source package, Tsunagi 1.0.0, with every level and rule exactly as before; the credit under the game says so.
+
 ## 0.480.1 — 2026-10-01 05:06 UTC
 - A card's letters and pips can no longer be highlighted by a drag or a long press, on a card table or anywhere a card is drawn.
 - The card package the tables run on, Toranpu, is now 2.8.1: a hand closes back where it lay, and a pile keeps one size however messy it is.
