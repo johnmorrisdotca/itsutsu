@@ -12,6 +12,8 @@ import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types
 import { partyPlayersAsked } from "./kumimoji/party";
 import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
+import { suidoKindOfSeed } from "./suido/seed";
+import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 import { tablePlayersAsked } from "@johnmorrisdotca/jarajara/table";
 
@@ -89,6 +91,13 @@ export type PuzzleAsked = {
    */
   bonus?: MahjongBonusRule;
   /**
+   * Suido's kind of board: drains (every drain reached, spares allowed) or a
+   * network (every piece wet). Asked for by the address (`pipes=network`)
+   * until a seed is drawn, and from then said by the seed itself
+   * (`suidoKindOfSeed`), as Mahjong's flowers are.
+   */
+  pipes?: SuidoKind;
+  /**
    * A Gomoji's Nige 逃げ: the word that dodges (`gomoji/dodge.ts`). Asked for
    * by the address until a seed is drawn, and from then said by the seed
    * itself (`isDodgeSeed`), whatever the address says; false, and left out of
@@ -105,7 +114,7 @@ export type PuzzleAsked = {
   backwards?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -152,6 +161,10 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     const bonus: MahjongBonusRule = seed === null ? (one(PUZZLE_PARAMS.bonus) === "same" ? "same" : "group") : bonusRuleOfSeed(seed);
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, bonus, ...(tablePlayers > 1 ? { players: tablePlayers } : {}) };
   }
+  if (kind === "suido") {
+    const pipes: SuidoKind = seed === null ? (one(PUZZLE_PARAMS.pipes) === "network" ? "network" : "drains") : suidoKindOfSeed(seed);
+    return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, pipes };
+  }
   const anyDeal = kind === "solitaire" && (seed === null ? one(PUZZLE_PARAMS.deal) === "any" : isAnyDeal(seed));
   return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(dodge ? { dodge } : {}), ...(backwards ? { backwards } : {}), ...(anyDeal ? { anyDeal } : {}), ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
 }
@@ -178,6 +191,7 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.anyDeal === true && asked.seed === null) params.set(PUZZLE_PARAMS.deal, "any");
   // Only until a seed is drawn: from then the seed says it.
   if (asked.bonus === "same" && asked.seed === null) params.set(PUZZLE_PARAMS.bonus, asked.bonus);
+  if (asked.pipes === "network" && asked.seed === null) params.set(PUZZLE_PARAMS.pipes, asked.pipes);
   return `?${params.toString()}`;
 }
 
@@ -198,6 +212,7 @@ export function keptRunAsked(
     words: wordCountOfSeed(run.seed),
     clock: clockFor(kind, run.clock),
     ...(kind === "kumimoji" ? { gameLength: run.gameLength === "medium" || run.gameLength === "full" ? run.gameLength : "short", language: run.language === "japanese" ? "japanese" : "english", doubleSet: run.language !== "japanese" && (run.doubleSet ?? false), diagonals: run.diagonals === true } : {}),
+    ...(kind === "suido" ? { pipes: suidoKindOfSeed(run.seed) } : {}),
     ...(offersDodge(kind) && isDodgeSeed(run.seed) ? { dodge: true } : {}),
     ...(offersDodge(kind) && isBackwardsSeed(run.seed) ? { backwards: true } : {}),
   };

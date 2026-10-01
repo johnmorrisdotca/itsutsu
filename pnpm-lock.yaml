@@ -37,6 +37,9 @@ importers:
       '@johnmorrisdotca/narabe':
         specifier: 1.0.0
         version: 1.0.0(react@19.2.8)
+      '@johnmorrisdotca/suido':
+        specifier: 1.0.0
+        version: 1.0.0
       '@johnmorrisdotca/tane':
         specifier: 1.1.1
         version: 1.1.1(react@19.2.8)
@@ -474,6 +477,10 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@johnmorrisdotca/suido@1.0.0':
+    resolution: {integrity: sha512-rMHUBiiAdrBlhrYYdDDk8i/WLCrUBaGFw70ldz0sR7Lui4nEBqCfh+qBqftvSD8ERWrsEa+kB0oElwXr6Up/kg==}
+    engines: {node: '>=20'}
 
   '@johnmorrisdotca/tane@1.1.1':
     resolution: {integrity: sha512-xfaLCvzMVPBoMZOL/+sWJXHUPvswm4zUPqMXHehX2ez99xt5oXUBhMb6ZlqFJJo7G8RW3tFJmhigdXK0kvHNsw==}
@@ -3120,6 +3127,8 @@ snapshots:
   '@johnmorrisdotca/narabe@1.0.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
+
+  '@johnmorrisdotca/suido@1.0.0': {}
 
   '@johnmorrisdotca/tane@1.1.1(react@19.2.8)':
     optionalDependencies:

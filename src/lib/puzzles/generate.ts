@@ -6,6 +6,7 @@ import { generateSpider } from "./spider/generate";
 import { generateHiddenStones } from "./hiddenStones/generate";
 import { generateMahjong } from "./mahjong/generate";
 import { generateCube } from "./cube/generate";
+import { generateSuido } from "./suido/generate";
 import { loadWordData } from "./gomoji/wordData";
 import { generateMoreOrLess } from "./moreOrLess/generate";
 import { generateJigsaw } from "./jigsaw/generate";
@@ -88,6 +89,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "cube":
       // A scramble, not a grid: the seed's turns from solved, taken back as its solution (`cube/generate.ts`).
       return generateCube(size, level, seed);
+    case "suido":
+      // A board of pipes made by the package from this seed, aimed at the level's rank among boards of its size (`suido/generate.ts`).
+      return generateSuido(size, level, seed);
   }
 }
 

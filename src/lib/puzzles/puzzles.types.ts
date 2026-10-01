@@ -31,7 +31,8 @@ export type PuzzleKind =
   | "freecell"
   | "spider"
   | "mahjong"
-  | "cube";
+  | "cube"
+  | "suido";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";

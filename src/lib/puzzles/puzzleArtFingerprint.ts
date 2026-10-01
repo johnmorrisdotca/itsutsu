@@ -74,6 +74,10 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/CubeBoard.tsx",
   // Kyuubu draws the cube; its version says when its drawing may have changed.
   "node_modules/@johnmorrisdotca/kyuubu/package.json",
+  "src/lib/puzzles/suido/generate.ts",
+  "src/components/puzzles/SuidoBoard.tsx",
+  // Suido's boards, pieces and water are the package's: a new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/suido/package.json",
   "src/lib/puzzles/numberPlace/layout.ts",
   "src/lib/puzzles/numberPlace/solve.ts",
   "e2e/puzzle-screenshots.spec.ts",
