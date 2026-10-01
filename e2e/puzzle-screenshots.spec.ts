@@ -16,6 +16,7 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
+import { decodeLayout as decodeSuido, hintFor, newGame as newSuidoGame, quartersBetween, turnAt } from "@johnmorrisdotca/suido";
 import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
 import { carriedFrom, columnAt, decodeMoves as decodeSolitaireMoves, isColumnPile, replay } from "@johnmorrisdotca/toranpu/klondike";
 import { decodeMoves as decodeFreeCellMoves, replayFreeCell } from "@johnmorrisdotca/toranpu/freecell";
@@ -90,6 +91,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "mahjong", size: 15, level: "medium", seed: 20260929, fill: 8 },
   // A 3×3 cube part way to solved: a medium scramble with its last few turns taken back, so a face or two nearly done.
   { kind: "cube", size: 3, level: "medium", seed: 20260930, fill: 3 },
+  // A 9×9 Suido with the pieces nearest the pump turned to face as its answer has them, the first twelve: water running out from the pump along them, and the rest still as dealt.
+  { kind: "suido", size: 9, level: "medium", seed: 20261001, fill: 12 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
   { kind: "freecell", size: 4, level: "medium", seed: 20260930, fill: 20 },
   // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
@@ -349,6 +352,20 @@ test.describe("puzzle screenshots", () => {
           await tiles.locator(`[data-slot="${move.pair[0]}"]`).click();
           await tiles.locator(`[data-slot="${move.pair[1]}"]`).click();
           await expect(tiles.locator(`[data-slot="${move.pair[1]}"]`)).toHaveCount(0);
+          filled += 1;
+        }
+      } else if (scene.kind === "suido") {
+        // The pieces nearest the pump, each turned as a person turns one, until the water has run out along them: the picture's water is the game's own.
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        const answer = decodeSuido(puzzle.solution)!.cells;
+        let game = newSuidoGame(puzzle.givens)!;
+        for (let step = 0; step < scene.fill; step += 1) {
+          const cell = hintFor(game, answer);
+          if (cell === null) break;
+          for (let turns = quartersBetween(game.masks[cell]!, answer[cell]!)!; turns > 0; turns -= 1) {
+            await page.getByTestId("suido-cell").nth(cell).click();
+            game = turnAt(game, cell);
+          }
           filled += 1;
         }
       } else if (scene.kind === "bridges") {
