@@ -127,6 +127,28 @@ test.describe("the card games at the table", () => {
     expect(errors).toEqual([]);
   });
 
+  test("the table's felt and the cards' back, chosen by looking, and chosen back again", async ({ page }) => {
+    await start(page, "hearts");
+    await page.evaluate(() => window.localStorage.removeItem("itsutsu.cardBack"));
+    await myTurn(page);
+    await page.getByTestId("felt-green").click();
+    await expect(page.getByTestId("felt-green")).toHaveAttribute("aria-checked", "true");
+    await page.getByTestId("felt-wood").click();
+    await expect(page.getByTestId("felt-wood")).toHaveAttribute("aria-checked", "true");
+
+    // The computers' hands are face down along the top: they wear whichever back is chosen.
+    const hidden = page.locator('[data-card="back"]').first();
+    await expect(page.getByTestId("card-back-itsutsu")).toHaveAttribute("aria-checked", "true");
+    await expect(hidden.locator("image[data-card-back]")).toHaveCount(0);
+    await page.getByTestId("card-back-classic-blue").click();
+    await expect(page.getByTestId("card-back-classic-blue")).toHaveAttribute("aria-checked", "true");
+    await expect(hidden.locator('image[data-card-back="classic-blue"]')).toHaveCount(1);
+    await page.getByTestId("card-back-itsutsu").click();
+    await expect(page.getByTestId("card-back-itsutsu")).toHaveAttribute("aria-checked", "true");
+    await expect(hidden.locator("pattern")).toHaveCount(1);
+    await expect(hidden.locator("image[data-card-back]")).toHaveCount(0);
+  });
+
   test("Spades: a bid pressed, then a card played to a trick against three computers", async ({ page }) => {
     await start(page, "spades");
     await myTurn(page);

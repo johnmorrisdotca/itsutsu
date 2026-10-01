@@ -7,6 +7,7 @@ import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
+import { CardBackPicker } from "@/components/cards/CardBackPicker";
 import { CardDragGhost } from "@/components/cards/CardDragGhost";
 import { CardHand } from "@/components/cards/CardHand";
 import type { CardSpot } from "@/components/cards/cards.types";
@@ -229,6 +230,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
           </button>
         ) : null}
         <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
+        <CardBackPicker />
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
         </button>

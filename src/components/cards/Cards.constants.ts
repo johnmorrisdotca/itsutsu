@@ -116,3 +116,18 @@ export const DOUBLE_TAP_MS = 350;
 
 /** Where this browser remembers whether the cards make a sound (`useCardSounds`): "on", or off by default. */
 export const CARD_SOUND_KEY = "itsutsu.cardSound";
+
+/**
+ * THE BACKS A READER MAY CHOOSE, the Itsutsu back first and the default:
+ * then Toranpu's three (`@johnmorrisdotca/toranpu/card-backs`, one home for
+ * every card back in the family). Remembered in this browser under
+ * `CARD_BACK_KEY` (`useCardBackChoice`).
+ */
+export const CARD_BACK_CHOICES = ["itsutsu", "classic-red", "classic-blue", "ink-dots"] as const;
+export const CARD_BACK_KEY = "itsutsu.cardBack";
+export const CARD_BACK_WORDS: Record<(typeof CARD_BACK_CHOICES)[number], string> = {
+  itsutsu: "Itsutsu",
+  "classic-red": "Classic red",
+  "classic-blue": "Classic blue",
+  "ink-dots": "Ink dots",
+};

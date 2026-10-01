@@ -43,6 +43,8 @@ Rules code a browser spec may import (`src/lib/cardGames/`, `src/lib/cards/`) us
 
 The cards make a sound when the table asks, through Toranpu's `card-sounds` (Kenney's Casino Audio, CC0): `useCardSounds` in `src/components/cards/` plays a shuffle and a deal when a hand is dealt, one card when one is drawn and a card played when one leaves a hand, read from how many cards the hands hold, so every table sounds alike whatever its moves are called. It is off until the table's "Card sound" button turns it on, remembered in the browser, and nothing is fetched until then.
 
+Beside it, the table's felt is chosen on the square patches every board offers (`FeltPatches`, saved to the account as Kumimoji's is), and the cards' back on a row of small cards (`CardBackPicker`): the Itsutsu back by default, or Toranpu's classic red, classic blue or ink dots (`@johnmorrisdotca/toranpu/card-backs`). The back is kept in the browser and read by every face-down card the site draws (`ChosenCardBack`), Solitaire's stock included; the server and the pictures always draw the Itsutsu back.
+
 ## The table
 
 One table plays all five (`src/components/party/cards/`). What each game plays is its adapter (`cardAdapters.ts`: `heartsAdapter`, `climbAdapters` for Big Two and President, `goFishAdapter`, `crazyEightsAdapter`). An adapter turns a person's choice into a move; the rules decide it.

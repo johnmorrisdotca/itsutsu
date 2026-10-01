@@ -2,6 +2,7 @@ import { cardName } from "@/lib/cards/deck";
 
 import { CardBack } from "./CardBack";
 import { CardFace } from "./CardFace";
+import { ChosenCardBack } from "./ChosenCardBack";
 import { CARD_BOX } from "./Cards.constants";
 import type { PlayingCardProps } from "./cards.types";
 
@@ -27,7 +28,7 @@ export function PlayingCard({ card, faceUp, back, picked = false, hinted = false
       data-face-up={showing ? "true" : "false"}
     >
       <svg viewBox={`0 0 ${CARD_BOX.width} ${CARD_BOX.height}`} className="block h-full w-full" aria-hidden="true">
-        {showing ? <CardFace card={card} /> : <CardBack field={back} />}
+        {showing ? <CardFace card={card} /> : back !== undefined ? <CardBack field={back} /> : <ChosenCardBack />}
       </svg>
     </span>
   );

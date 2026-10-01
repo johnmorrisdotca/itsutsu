@@ -2,8 +2,13 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 
 import type { Card } from "@/lib/cards/cards.types";
 
+import type { CARD_BACK_CHOICES } from "./Cards.constants";
+
 /** The colour a card's back is laid on (`CARD_BACK_FIELDS`). */
 export type CardBackField = "ink" | "shu" | "moss";
+
+/** A back a reader may choose for the cards (`CARD_BACK_CHOICES`): the Itsutsu back, or one of Toranpu's. */
+export type CardBackChoice = (typeof CARD_BACK_CHOICES)[number];
 
 export type PlayingCardProps = {
   /** The card. Left out for a face-down card nobody at this table may know, such as another player's hand. */
