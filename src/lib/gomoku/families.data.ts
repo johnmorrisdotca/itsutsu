@@ -175,7 +175,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Numbers",
     kanji: "数",
     blurb: "Puzzles for one: a grid, a few givens, and exactly one answer. Solve it on your own, against the clock.",
-    games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "hiddenStones", "blackAndWhite"],
+    games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers"],
   },
   {
     key: "logic",
@@ -193,13 +193,20 @@ export const GAME_FAMILIES: GameFamily[] = [
      * university course; 理詰め is the word for how a person actually solves
      * one of these, and it sits beside 落とし and 変盤 as an everyday word.
      *
-     * NOTHING MOVED IN. Hidden Stones and Black and White would sit here as
-     * well as they sit in Numbers — neither has a digit in it — and Tsunagi,
-     * our Numberlink, is a logic puzzle living in Other. Each stays where it
-     * is: a first solve of each has already paid `firstOfFamily` under its
-     * family's key, and moving one would make that family's award a thing a
-     * newcomer earns from a different set of games than everybody before.
-     * Say so, and leave the decision to John.
+     * NOTHING MOVED IN, until John moved one. Hidden Stones and Black and
+     * White would sit here as well as they sit in Numbers — neither has a
+     * digit in it — and Tsunagi, our Numberlink, is a logic puzzle living in
+     * Other. Each stayed where it was: a first solve of each had already paid
+     * `firstOfFamily` under its family's key, and moving one makes that
+     * family's award a thing a newcomer earns from a different set of games
+     * than everybody before. That was said, and left to John.
+     *
+     * Both moved here on 2026-10-01. John: "Hidden Stones isn't really a
+     * numbers game. doesn't make sense there", then "black and white is a
+     * logic puzzle i guess". One is a stone in every row, column and region,
+     * the other half of each colour in every line; neither has a number in
+     * it. The `firstOfFamily` rows already paid under Numbers stay paid;
+     * nothing is clawed back.
      *
      * Picture logic 絵解き (2026-09-29) is the second: the picture to uncover
      * from its row and column counts the first note promised.
@@ -211,8 +218,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Logic puzzles",
     kanji: "理詰め",
-    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, pipes to turn until the water runs through, and more to come. A few clues, one answer, and nothing to do but reason it out.",
-    games: ["bridges", "pictureLogic", "suido"],
+    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, pipes to turn until the water runs through, stones to place one to a row, column and region, lines to fill half black and half white, and more to come. A few clues, one answer, and nothing to do but reason it out.",
+    games: ["bridges", "pictureLogic", "suido", "hiddenStones", "blackAndWhite"],
   },
   {
     key: "cards",

@@ -44,10 +44,11 @@ test.describe("the stone puzzle", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Star Battle");
-    await expect(page.getByTestId("game-family")).toContainText("Numbers");
-    // Every other puzzle in its family (Numbers, not every puzzle: Gomoji's is Other) is a sibling here, with its picture.
-    const numbers = PUZZLE_KIND_LIST.filter((kind) => familyOf(kind)?.key === "numbers");
-    await expect(page.getByTestId("game-family").getByTestId("game-thumb")).toHaveCount(numbers.length - 1);
+    // Logic puzzles since 2026-10-01: there is no number in it.
+    await expect(page.getByTestId("game-family")).toContainText("Logic puzzles");
+    // Every other puzzle in its family (not every puzzle) is a sibling here, with its picture.
+    const logic = PUZZLE_KIND_LIST.filter((kind) => familyOf(kind)?.key === "logic");
+    await expect(page.getByTestId("game-family").getByTestId("game-thumb")).toHaveCount(logic.length - 1);
   });
 
   test("a tap is a stone, another a cross, another nothing, and the right stones finish it", async ({ page }) => {

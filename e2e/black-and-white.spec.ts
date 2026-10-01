@@ -28,7 +28,8 @@ test.describe("the black and white puzzle", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Takuzu");
-    await expect(page.getByTestId("game-family")).toContainText("Numbers");
+    // Logic puzzles since 2026-10-01: there is no number in it.
+    await expect(page.getByTestId("game-family")).toContainText("Logic puzzles");
   });
 
   test("printed stones stay put, and tapping the answer in finishes it", async ({ page }) => {

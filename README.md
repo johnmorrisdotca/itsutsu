@@ -162,8 +162,6 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 | **Killer Sudoku** サムナンプレ | dashed cages with sums, next to nothing printed | 6×6, 9×9 | easy, medium, hard |
 | **Futoshiki** 不等式 | a Latin square with more-than marks between cells; every given and mark is needed | 4×4 to 7×7 | easy, medium, hard, as Sudoku |
 | **Skyscrapers** 摩天楼 | clues around the edge count the towers seen | 4×4 to 7×7 | graded by what a person sees at a glance |
-| **Hidden Stones** 隠し石 | the one-star form of Star Battle, played daily as Queens (LinkedIn's name): one black stone in every row, column and region, no two touching | 5×5, 7×7, 9×9 and 10×10 (made at 6×6 and 8×8 too, not offered) | easy (reasoning alone finishes it), hard (a stone has to be tried) |
-| **Black and White** 白黒 | Takuzu / Binairo: half of each colour in every line, never three alike, no line repeated | 6×6, 8×8, 10×10, 12×12 | graded by what a person sees at a glance |
 
 **Logic puzzles** 理詰め (2026-09-28) is the shelf for grid puzzles that are not
 a Number Place, opened with **Bridges** 橋 (`src/lib/puzzles/bridges/`): our
@@ -199,6 +197,19 @@ answer), and drains or network is kept in the seed (`NETWORK_SEED_BLOCK`),
 as a Futago's is. 5×5, 7×7, 9×9 and 12×12; the answer and a run kept half way are
 the board as it stands, which the server checks in O(cells) with the package's
 `checkSuidoAnswer` (`suido/check.ts`).
+
+The fourth is **Hidden Stones** 隠し石 (`src/lib/puzzles/hiddenStones/`), which
+moved here from Numbers on 2026-10-01 because there is no number in it: the
+one-star form of Star Battle, played daily as Queens (LinkedIn's name), one
+black stone in every row, column and region, no two touching. 5×5, 7×7, 9×9
+and 10×10 (made at 6×6 and 8×8 too, not offered); easy yields to reasoning
+alone, hard needs a stone tried.
+
+The fifth is **Black and White** 白黒 (`src/lib/puzzles/blackAndWhite/`),
+moved from Numbers the same day for the same reason: our version of Takuzu /
+Binairo, half of each colour in every line, never three alike, no line
+repeated. 6×6, 8×8, 10×10 and 12×12, graded by what a person sees at a
+glance.
 
 **Cards** 札 (2026-09-29) is the shelf for games played with the site's own
 deck (Toranpu's, below, and `src/components/cards/`: faces and backs drawn by us,
