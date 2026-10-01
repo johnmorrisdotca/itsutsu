@@ -17,38 +17,38 @@ importers:
         specifier: 1.0.0
         version: 1.0.0
       '@johnmorrisdotca/hitotsu':
-        specifier: 1.0.1
-        version: 1.0.1(react@19.2.8)
+        specifier: 1.1.0
+        version: 1.1.0(react@19.2.8)
       '@johnmorrisdotca/jarajara':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.3.0
+        version: 1.3.0
       '@johnmorrisdotca/korokoro':
-        specifier: 1.12.0
-        version: 1.12.0(react@19.2.8)
+        specifier: 1.14.0
+        version: 1.14.0(react@19.2.8)
       '@johnmorrisdotca/kotoba':
         specifier: 1.0.0
         version: 1.0.0
       '@johnmorrisdotca/kumimoji':
-        specifier: 1.0.1
-        version: 1.0.1(react@19.2.8)
+        specifier: 1.1.1
+        version: 1.1.1(react@19.2.8)
       '@johnmorrisdotca/kyuubu':
-        specifier: 1.5.0
-        version: 1.5.0(react@19.2.8)
+        specifier: 1.6.0
+        version: 1.6.0(react@19.2.8)
       '@johnmorrisdotca/narabe':
         specifier: 1.0.0
         version: 1.0.0(react@19.2.8)
       '@johnmorrisdotca/tane':
-        specifier: 1.0.1
-        version: 1.0.1(react@19.2.8)
+        specifier: 1.1.1
+        version: 1.1.1(react@19.2.8)
       '@johnmorrisdotca/tenka':
-        specifier: 1.2.0
-        version: 1.2.0(react@19.2.8)
+        specifier: 1.2.1
+        version: 1.2.1(react@19.2.8)
       '@johnmorrisdotca/toranpu':
-        specifier: 2.13.0
-        version: 2.13.0(react@19.2.8)
+        specifier: 2.13.1
+        version: 2.13.1(react@19.2.8)
       '@johnmorrisdotca/tsunagi':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -417,8 +417,8 @@ packages:
     resolution: {integrity: sha512-d2AQmS7QmRdBWxN5LZimZdCq6gPv3SQscbJ/QVcR6sKPK1Nzj2LV1T2qzn3HbuEd4tFjOApntXTgCqoE0JvDBw==}
     engines: {node: '>=20'}
 
-  '@johnmorrisdotca/hitotsu@1.0.1':
-    resolution: {integrity: sha512-rosC1cFpZb0dwS3CMF10Mo0XnE4Ip07i2JwfyJodvOfCUVHvkZqDtogqsnJL0LsOQZpVJPZDXabVHlluOEgOVA==}
+  '@johnmorrisdotca/hitotsu@1.1.0':
+    resolution: {integrity: sha512-jjVV1md8s6wEzp6VN4Tw9DxIsw+1rkASawKS5IU+/gjX+D/iqJVpnwVwngYURD1o3nm/R3p7oL1Rk8ebnUbRAw==}
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=18'
@@ -426,12 +426,12 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/jarajara@1.0.0':
-    resolution: {integrity: sha512-QegUiWUgimNqAp9MqV0RTmpIax43+8yWNKmNU4cSZxgYtB3XonpPG0gt6N41heG6zthui4MfnxGGZV1bNVf0TA==}
+  '@johnmorrisdotca/jarajara@1.3.0':
+    resolution: {integrity: sha512-LfKi3y4uypLfSfb+ZVX3u+hAeLMEyBTWO0qcX3p/GQHCeZHtUvEt9JNbl/PyXeKUUl/cThtOGi7gOTI+1PGMAA==}
     engines: {node: '>=20'}
 
-  '@johnmorrisdotca/korokoro@1.12.0':
-    resolution: {integrity: sha512-06cxDbDeviRRgpi3Ec9uB7+yvn1Zhr2pGfmZO5icozXlIE4MwrLrAcu/H/y4wihqI4jlVTvQwKOZAwV7gGoLDQ==}
+  '@johnmorrisdotca/korokoro@1.14.0':
+    resolution: {integrity: sha512-GchUz6Gx1GtKExYdu81YVV11vUOMTx55TtC3HcGLRif0MaygK9ZGD7+U5h8xMsaUba/YJNbgN7AUgkCpZxhyuQ==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -447,8 +447,8 @@ packages:
     resolution: {integrity: sha512-Xvgt9Iyh7NvVww2qo/C09Ejns8OZ7ItgnyfCt/Ucx0OICF8kRunD2AH/O5rQOLfCbSpamvCZ7NVxWI/GtAFcSA==}
     engines: {node: '>=20'}
 
-  '@johnmorrisdotca/kumimoji@1.0.1':
-    resolution: {integrity: sha512-1V9BQvM2dwbT/W7mFb2bZMdhbmdy8I4yd9L5bYX2Wsv7r3Y2CPcu0Kxh2xV5uaUoYwkhwHWBMXJFnzB3+6Jc4Q==}
+  '@johnmorrisdotca/kumimoji@1.1.1':
+    resolution: {integrity: sha512-K5T6xl/nO8c/9Xuc+wjPz4vM1sPKTLDNEaQ69UqRt0kMrxy7utS6jwHT2MbxyqRJ5a1xgCReKMjuHo1bNnRbiw==}
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=18'
@@ -456,8 +456,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/kyuubu@1.5.0':
-    resolution: {integrity: sha512-Re6xMhgfWAVsBXevFty/3dFu1NsoaJONOLkzdXJlyGIXSoYDRjF5DqJcnY4pIq7ih2O1gYnZOvf79I7krr9wsw==}
+  '@johnmorrisdotca/kyuubu@1.6.0':
+    resolution: {integrity: sha512-2rwVUfj3yVqZzMXKH7VMVv5N2AKQXBqS8+3FCsWHu2vtKOEoqpMhWhF8tfe7x9NarcOzniJG3/Xni2bh0DwA2w==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -475,26 +475,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tane@1.0.1':
-    resolution: {integrity: sha512-SL/0WByShhpan0tbx6Uw26sm3l/286JH1HM2SLytQLJAzzp5R2+jjzRdR2IfYynb0FYFH70CXiNV87UxwpCG5w==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      react: '>=18'
-    peerDependenciesMeta:
-      react:
-        optional: true
-
-  '@johnmorrisdotca/tenka@1.2.0':
-    resolution: {integrity: sha512-91UiPSNMjjj19vFqFH4mJgmxfjclHqErnto1PSh9pxpsvVItcC5GP7qyvcpjcr3fGFdYAppGiLxT8atoxd8K9Q==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      react: '>=18'
-    peerDependenciesMeta:
-      react:
-        optional: true
-
-  '@johnmorrisdotca/toranpu@2.13.0':
-    resolution: {integrity: sha512-Hf7JlF68br3Wy6ToaHUm+mVXwSx8cwGKs1BCwIZOflMd3IjStGfv+hle0g0dccRyOU8B+kVjZB45PIxfJkqZ3Q==}
+  '@johnmorrisdotca/tane@1.1.1':
+    resolution: {integrity: sha512-xfaLCvzMVPBoMZOL/+sWJXHUPvswm4zUPqMXHehX2ez99xt5oXUBhMb6ZlqFJJo7G8RW3tFJmhigdXK0kvHNsw==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -503,8 +485,27 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tsunagi@1.0.0':
-    resolution: {integrity: sha512-luK5MVUunuNP7CI8N66w3aR96tlYtl81ozV7LpWV2ZiLnk9TOzqdfpjKnELIWZjv01J/aD7y+sDU1Gf+XGjeqA==}
+  '@johnmorrisdotca/tenka@1.2.1':
+    resolution: {integrity: sha512-1uk0CNCGoXGYiD7M4YSJaPYn5RNMXm3bXLL1PjrlfWx5wpmaB/mHKWeEr70UFO7n46ATCKx871ULGK2IwP+9pQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
+
+  '@johnmorrisdotca/toranpu@2.13.1':
+    resolution: {integrity: sha512-B6riPkzF3b7cPR+KTYD+OrchY6adbTWWPtqVApcSSQR6BBFrqrgvDerHH+Ojw+mr1HmGNC+UOgy9XB3rpQGRmQ==}
+    engines: {node: '>=20'}
+    hasBin: true
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
+
+  '@johnmorrisdotca/tsunagi@1.0.1':
+    resolution: {integrity: sha512-tSY9WoSu2AAx5pSdMfVWJSyxv66W3X+x07GbT87cgfKMRNHXDgZxmcfiahYHDX6DSHN/rgbnQH2GMH+f51OvWQ==}
     engines: {node: '>=20'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3096,23 +3097,23 @@ snapshots:
 
   '@johnmorrisdotca/domino@1.0.0': {}
 
-  '@johnmorrisdotca/hitotsu@1.0.1(react@19.2.8)':
+  '@johnmorrisdotca/hitotsu@1.1.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/jarajara@1.0.0': {}
+  '@johnmorrisdotca/jarajara@1.3.0': {}
 
-  '@johnmorrisdotca/korokoro@1.12.0(react@19.2.8)':
+  '@johnmorrisdotca/korokoro@1.14.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
   '@johnmorrisdotca/kotoba@1.0.0': {}
 
-  '@johnmorrisdotca/kumimoji@1.0.1(react@19.2.8)':
+  '@johnmorrisdotca/kumimoji@1.1.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/kyuubu@1.5.0(react@19.2.8)':
+  '@johnmorrisdotca/kyuubu@1.6.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
@@ -3120,19 +3121,19 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tane@1.0.1(react@19.2.8)':
+  '@johnmorrisdotca/tane@1.1.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tenka@1.2.0(react@19.2.8)':
+  '@johnmorrisdotca/tenka@1.2.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/toranpu@2.13.0(react@19.2.8)':
+  '@johnmorrisdotca/toranpu@2.13.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tsunagi@1.0.0': {}
+  '@johnmorrisdotca/tsunagi@1.0.1': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
