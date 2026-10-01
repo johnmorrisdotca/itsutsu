@@ -218,7 +218,9 @@ test.describe("the Suido puzzle", () => {
     await expect(pieces(page).nth(first!.cell)).toHaveAttribute("data-hint", "true");
     await expect(wet(page)).toHaveCount(wetCount(first!.after));
     // Lit until the next turn.
-    const other = pieces(page).nth((first!.cell + 1) % 49);
+    // A cell that holds a piece: a fresh seed can put an empty square next to the hinted one, and a press there turns nothing.
+    const otherCell = played.answer.findIndex((mask, cell) => mask !== 0 && cell !== first!.cell);
+    const other = pieces(page).nth(otherCell);
     await other.click({ force: true });
     await expect(pieces(page).nth(first!.cell)).not.toHaveAttribute("data-hint", "true");
   });
@@ -528,6 +530,8 @@ test.describe("Suido's levels", () => {
       await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "2");
       await page.locator('[data-testid="suido-level"][data-level="1"]').click();
       await expect(page.getByTestId("suido-preview-caption")).toContainText("solved, best");
+      // Drawn as it was solved: every piece turned into place, not the dealt pieces painted wet.
+      await expect(page.getByTestId("suido-preview")).toHaveAttribute("data-board", levelAnswer(LEVELS5[0]!)!);
       await page.getByTestId("suido-preview-best").click();
       await expect(page).toHaveURL(/\/games\/suido\/me\/[a-z0-9]+$/);
       // Its page names the level, and draws the board as it was solved.

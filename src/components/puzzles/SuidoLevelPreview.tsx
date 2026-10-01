@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { decodeLayout, type Layout } from "@johnmorrisdotca/suido";
+import { decodeLayout, encodeLayout, type Layout } from "@johnmorrisdotca/suido";
 import { levelAnswer } from "@johnmorrisdotca/suido/levels";
 
 import { playingAreaInset } from "@/components/board/margin";
@@ -72,13 +72,20 @@ export function SuidoLevelPreview({
     const row = suidoLevelsAt(size)[level - 1];
     const layout = row === undefined ? null : decodeLayout(row[0]);
     if (row === undefined || layout === null) return null;
-    const answer = solved ? levelAnswer(row) : null;
-    return { layout, masks: (answer === null ? null : decodeLayout(answer)?.cells) ?? layout.cells };
+    /*
+     * A SOLVED LEVEL IS DRAWN AS IT WAS SOLVED: the answer's own layout, every
+     * piece turned into place. The drawing turns pieces from `layout` and reads
+     * `masks` for the water, so handing it the dealt layout with the answer's
+     * masks drew the scrambled pieces all wet (John, 2026-10-01: "this one is
+     * completely scrambled up again").
+     */
+    const answer = solved ? decodeLayout(levelAnswer(row) ?? "") : null;
+    return answer === null ? { layout, masks: layout.cells } : { layout: answer, masks: answer.cells };
   }, [ready, size, level, solved]);
   const shape = suidoShapeOf(size) ?? { width: size, height: size };
   const count = suidoLevelCount(size);
   return (
-    <figure className="flex w-full flex-col items-center gap-2" data-testid="suido-preview" data-size={size} data-level={level} data-state={solved ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"}>
+    <figure className="flex w-full flex-col items-center gap-2" data-testid="suido-preview" data-size={size} data-level={level} data-state={solved ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"} data-board={drawn === null ? undefined : encodeLayout(drawn.layout)}>
       <div className={`${SET_UP_PREVIEW_BOX} relative aspect-square [container-type:size]`} aria-hidden="true">
         <div className="absolute inset-0 flex items-center justify-center">
           <div style={{ width: suidoFrameWidth(shape.width, shape.height) }}>
