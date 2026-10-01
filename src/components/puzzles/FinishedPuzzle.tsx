@@ -36,6 +36,11 @@ import { PuzzleSteps } from "./PuzzleSteps";
 import { PatienceReplay } from "./PatienceReplay";
 import { SolitaireReplay } from "./SolitaireReplay";
 import { CubeReplay } from "./CubeReplay";
+import { SuidoBoard } from "./SuidoBoard";
+import { checkSolution } from "@/lib/puzzles/puzzleCheck";
+import { decodeStepLog } from "@/lib/puzzles/stepLog";
+import { resumedGame } from "@/lib/puzzles/suido/play";
+import { newGame } from "@johnmorrisdotca/suido";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
 
@@ -121,6 +126,11 @@ export function FinishedPuzzle({
     );
   }
 
+  // A Suido board as it ended, its water running: the board solved, or as it stood when its clock ran out.
+  if (kind === "suido") {
+    return <SuidoFinished size={size} level={level} givens={givens} answer={answer} steps={steps} derive={derive} story={story} hydrated={hydrated} />;
+  }
+
   // A FreeCell or a Spider is its moves too, played back the same way (`PatienceReplay`).
   if (kind === "freecell" || kind === "spider") {
     return (
@@ -184,6 +194,43 @@ export function FinishedPuzzle({
   }
 
   return <GridReplay kind={kind} size={size} level={level} givens={givens} answer={answer} steps={steps} derive={derive} story={story} hydrated={hydrated} />;
+}
+
+const SUIDO_NOTES: Record<string, string> = {
+  finished: "How it ended: the water runs from the pump to everything it should reach, and nothing leaks.",
+  unsolved: "It ended unsolved, when its clock ran out: this is where it stood.",
+  "worked-out": "Solved before its board was kept. Every board here has one answer, so this is that answer, worked out from the puzzle.",
+  working: "",
+  dealt: "Its finished board was not kept, so this is the board as it was dealt.",
+};
+
+/**
+ * A SUIDO BOARD AS IT ENDED, drawn read-only with the water in it. A solve
+ * keeps its answer, the board solved. A board whose clock ran out keeps no
+ * answer but the board as it stood, as the one step it was kept with
+ * (`stepsOfEnded`): drawn as it was left, and said to have ended unsolved.
+ * With neither kept, and where the page may show it (`derive`), the one answer
+ * every board has is worked out here, in the browser, once the page has taken over.
+ */
+function SuidoFinished({ size, level, givens, answer, steps, derive, story, hydrated }: { size: number; level: PuzzleLevel; givens: string; answer: string | null; steps: string | null; derive: boolean; story: BoardStory; hydrated: boolean }) {
+  // The board as it stood, the last grid of the steps kept: a Suido code is longer than its cells, so the log is read at its first grid's length.
+  const stood = useMemo(() => (steps === null ? null : (decodeStepLog(steps, steps.split("~")[0]!.length)?.at(-1) ?? null)), [steps]);
+  const worked = useMemo(() => (answer === null && stood === null && derive && hydrated ? solvedAnswerOf("suido", size, level, givens) : null), [answer, stood, derive, hydrated, size, level, givens]);
+  const shown = answer ?? stood ?? worked;
+  const dealt = useMemo(() => newGame(givens), [givens]);
+  if (dealt === null) return null;
+  const game = (shown === null ? null : resumedGame(dealt, shown)) ?? dealt;
+  const state = shown === null ? (derive && !hydrated ? "working" : "dealt") : answer === null && stood === null ? "worked-out" : checkSolution("suido", size, givens, shown, level).ok ? "finished" : "unsolved";
+  return (
+    <Focused story={story} hydrated={hydrated} testId="solve-board" state={state}>
+      <div className="mx-auto w-full" data-focus-board>
+        <SuidoBoard layout={game.start} masks={game.masks} quarters={game.quarters} readOnly done />
+      </div>
+      <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
+        {SUIDO_NOTES[state]}
+      </p>
+    </Focused>
+  );
 }
 
 function GridReplay({

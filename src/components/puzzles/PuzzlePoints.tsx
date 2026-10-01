@@ -82,6 +82,8 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
             ? `${POINTS_A_CELL} for every card of both decks put into a run, so every deal won scores ${POINTS_A_CELL * 104}. Your best of each deal counts.`
           : kind === "mahjong"
             ? `${POINTS_A_CELL} a tile you take, −${POINTS_A_HELP} a Hint. Your best of each deal counts.`
+          : kind === "suido"
+            ? `${POINTS_A_CELL} for every piece of pipe on the board, −${POINTS_A_HELP} a Hint. Your best of each board counts.`
             : kind === "bridges"
             ? `${POINTS_A_CELL} for each end of every bridge the answer has — every island's number, added up — and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
             : kind === "pictureLogic"

@@ -22,6 +22,7 @@ import { freshSeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 import { freshDodgeSeed, isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { freshBackwardsSeed, isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { freshSolitaireSeed, isAnyDeal } from "@/lib/puzzles/solitaire/generate";
+import { freshSuidoSeed, suidoKindOfSeed } from "@/lib/puzzles/suido/seed";
 
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PuzzleWallpaper } from "./PuzzleWallpaper";
@@ -76,7 +77,8 @@ export function SolveDone({
     // A dodger's Another is another dodger (`dodge.ts`), a Sakasa's another Sakasa (`backwards.ts`): its seed says so.
     const dodge = isDodgeGivens(puzzle.givens);
     const backwards = isBackwardsGivens(puzzle.givens);
-    const seed = puzzle.kind === "solitaire" ? freshSolitaireSeed(isAnyDeal(puzzle.seed)) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(words);
+    // A Suido's Another is another board of the same kind, drains or network: its seed says which (`suidoKindOfSeed`).
+    const seed = puzzle.kind === "solitaire" ? freshSolitaireSeed(isAnyDeal(puzzle.seed)) : puzzle.kind === "suido" ? freshSuidoSeed(suidoKindOfSeed(puzzle.seed)) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(words);
     router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed, checks, strict, headStart, words, dodge, backwards, clock })));
   };
   const timed = PUZZLE_CLOCK_DISPLAY[clock];

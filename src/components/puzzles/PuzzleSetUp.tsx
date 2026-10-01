@@ -24,6 +24,7 @@ import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import type { GomojiWay } from "@/lib/puzzles/gomoji/words.types";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
+import { freshSuidoSeed } from "@/lib/puzzles/suido/seed";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -41,6 +42,7 @@ import { SolitaireSetUpOptions } from "./SolitaireSetUpOptions";
 import { useSolitaireScoring } from "./useSolitaireScoring";
 import { sizeWord } from "./puzzles.constants";
 import { MahjongSetUpOptions, useMahjongChoice } from "./MahjongSetUpOptions";
+import { SuidoSetUpOptions, useSuidoChoice } from "./SuidoSetUpOptions";
 import { MahjongTableResume } from "./MahjongTableSeats";
 import { useKumimojiChoice } from "./useKumimojiChoice";
 import { SetUpResume } from "./SetUpResume";
@@ -131,10 +133,13 @@ export function PuzzleSetUp({
   const [anyDeal, setAnyDeal] = useState(asked?.anyDeal === true);
   const [scoring, setScoring] = useSolitaireScoring();
   const mahjong = useMahjongChoice(asked);
+  const suido = useSuidoChoice(asked);
   const { language, gameLength, doubleSet, diagonals } = kumimoji;
   // How many play is Kumimoji's choice or Mahjong's; the flowers' rule is Mahjong's alone.
   const players = kind === "mahjong" ? mahjong.players : kumimoji.players;
   const bonus = kind === "mahjong" ? mahjong.bonus : undefined;
+  // Suido's kind of board is in the address until a seed says it; every other puzzle has none to say.
+  const pipes = kind === "suido" ? suido.pipes : undefined;
   /*
    * WHAT IS CHOSEN IS IN THE ADDRESS, so a reload opens on it. John,
    * 2026-09-26: "selected Board Size is not preserved on reload" — the choice
@@ -146,7 +151,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, anyDeal: kind === "solitaire" && anyDeal });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -175,7 +180,7 @@ export function PuzzleSetUp({
     try {
       await preparePuzzle(kind, size, language);
       // A race is on a deal both seats can win: a Solitaire's is always a winnable one, whatever is chosen for playing alone.
-      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : dodging ? freshDodgeSeed() : turned ? freshBackwardsSeed() : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
+      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : kind === "suido" ? freshSuidoSeed(suido.pipes) : dodging ? freshDodgeSeed() : turned ? freshBackwardsSeed() : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -239,6 +244,7 @@ export function PuzzleSetUp({
         ) : null}
         {kind === "solitaire" ? <SolitaireSetUpOptions anyDeal={anyDeal} setAnyDeal={setAnyDeal} scoring={scoring} setScoring={setScoring} /> : null}
         {kind === "mahjong" ? <MahjongSetUpOptions {...mahjong} /> : null}
+        {kind === "suido" ? <SuidoSetUpOptions {...suido} /> : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
         <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Level">
@@ -411,7 +417,7 @@ export function PuzzleSetUp({
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         {kind === "mahjong" ? <MahjongTableResume /> : null}
         <Link
-          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, anyDeal: kind === "solitaire" && anyDeal }))}
+          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, anyDeal: kind === "solitaire" && anyDeal }))}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
