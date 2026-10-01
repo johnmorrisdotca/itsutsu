@@ -205,7 +205,7 @@ export async function POST(request: Request) {
 
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     const language = kind === "kumimoji" ? parsed.data.language ?? "english" : "english";
-    await preparePuzzleOnServer(kind, size, language);
+    await preparePuzzleOnServer(kind, size, language, parsed.data.seed);
 
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer, level);

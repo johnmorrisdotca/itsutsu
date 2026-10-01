@@ -16,6 +16,7 @@ import { prepareEveryPuzzle } from "./prepareEvery";
 beforeAll(prepareEveryPuzzle);
 import { checkSolution } from "./puzzleCheck";
 import { puzzleRulesPage } from "./puzzleRulesPage";
+import { suidoShapeOf } from "./suido/sizes";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS, levelsFor } from "./puzzles.constants";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
@@ -57,6 +58,12 @@ function sourcesUnder(dir: string, suffix: string): string {
   return found.join("\n");
 }
 
+/** How many cells a grid of this size has: its side squared, and for a Suido's long boards (507 is 5×7, `suido/sizes.ts`) its width times its height. */
+function cellsOf(kind: string, size: number): number {
+  const shape = kind === "suido" ? suidoShapeOf(size) : null;
+  return shape === null ? size * size : shape.width * shape.height;
+}
+
 describe("every puzzle is finished, not just declared", () => {
   const unitTests = sourcesUnder(join(process.cwd(), "src", "lib", "puzzles"), ".test.ts");
   const browserSpecs = readdirSync("e2e")
@@ -88,7 +95,7 @@ describe("every puzzle is finished, not just declared", () => {
         // hand its size names, and any sound grid of them is an answer: the solution only proves there is one. A
         // layout's (Mahjong) are a face a tile, however many tiles its width in tiles holds.
         expect(puzzle.givens.length).toBeGreaterThanOrEqual(
-          spec.wordGrid !== undefined || spec.tiles === true || spec.layouts === true ? size : size * size,
+          spec.wordGrid !== undefined || spec.tiles === true || spec.layouts === true ? size : cellsOf(kind, size),
         );
         expect(puzzle.givens.length).toBeLessThanOrEqual(spec.mostCells);
         expect(checkSolution(kind, size, puzzle.givens, puzzle.solution, level), `${kind} ${size} ${level}`).toEqual({ ok: true });
@@ -161,7 +168,7 @@ describe("every puzzle is finished, not just declared", () => {
       expect(new Set(spec.sizes).size).toBe(spec.sizes.length);
       expect(spec.sizes).toContain(spec.defaultSize);
       expect(spec.levels).toContain(spec.defaultLevel);
-      expect(Math.max(...spec.sizes) ** 2).toBeLessThanOrEqual(spec.mostCells);
+      expect(Math.max(...spec.sizes.map((size) => cellsOf(kind, size)))).toBeLessThanOrEqual(spec.mostCells);
       // A size's own levels only narrow the kind's, name a size it has, and leave it at least one.
       for (const [size, levels] of Object.entries(spec.levelsAt ?? {})) {
         expect(spec.sizes, `${kind} names levels for a size it does not have`).toContain(Number(size));

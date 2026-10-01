@@ -2,6 +2,7 @@ import { encodeLayout, flowOf, makeSuido, withMasks } from "@johnmorrisdotca/sui
 
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { suidoKindOfSeed } from "./seed";
+import { suidoShapeOf } from "./sizes";
 
 /**
  * SUIDO'S BOARDS ARE SUIDO'S. The pieces, the pumps and drains, the solver that
@@ -20,7 +21,11 @@ export const SUIDO_DIFFICULTY: Record<PuzzleLevel, number> = { easy: 20, medium:
 
 /** A board of Suido, as one of the site's puzzles: Suido's board of this size and level from this seed. */
 export function generateSuido(size: number, level: PuzzleLevel, seed: number): Puzzle {
-  const made = makeSuido({ size, kind: suidoKindOfSeed(seed), difficulty: SUIDO_DIFFICULTY[level], seed });
+  const shape = suidoShapeOf(size);
+  if (shape === null) throw new Error(`No Suido board is made at size ${size}.`);
+  // A square is asked for by its side, a long board (507 is 5×7, `sizes.ts`) by its width and height.
+  const where = shape.width === shape.height ? { size: shape.width } : { width: shape.width, height: shape.height };
+  const made = makeSuido({ ...where, kind: suidoKindOfSeed(seed), difficulty: SUIDO_DIFFICULTY[level], seed });
   /*
    * THE ANSWER, WITH ITS SPARES AS DEALT. A drains board's spare pieces, which
    * the water never reaches, may face any way, and the package's answer has

@@ -24,6 +24,7 @@ import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import type { GomojiWay } from "@/lib/puzzles/gomoji/words.types";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
+import { SUIDO_MAKE_QUERY } from "@/lib/puzzles/suido/mode";
 import { freshSuidoSeed } from "@/lib/puzzles/suido/seed";
 import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -156,7 +157,8 @@ export function PuzzleSetUp({
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
     // A Gomoji's language and list stay in the address beside the rest (`settingQuery`).
-    const here = joinQuery(query, settingQuery(kind));
+    // Suido's "Make a board" says so in its address (`suido/mode.ts`), so a reload stays on it and not on the levels.
+    const here = joinQuery(joinQuery(query, settingQuery(kind)), kind === "suido" ? SUIDO_MAKE_QUERY : "");
     if (window.location.search !== here) window.history.replaceState(window.history.state, "", `${window.location.pathname}${here}`);
   }, [query, kind]);
   const { style, setStyle } = useWordStyle();

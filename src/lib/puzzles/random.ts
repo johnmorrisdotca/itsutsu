@@ -49,8 +49,17 @@ export const BACKWARDS_SEED_BLOCK = { from: 1_600_000_000, size: 100_000_000 } a
  */
 export const NETWORK_SEED_BLOCK = { from: 1_700_000_000, size: 100_000_000 } as const satisfies SeedBlock;
 
+/**
+ * Suido's FIXED LEVELS (`suido/levelSeed.ts`), from eighteen hundred million, just past the network boards': a level
+ * is not made from a seed, so its seed is where its number is kept — the block's first seed is level 0, which no
+ * level is, and level N is N past it. A kept run, an address and a race carry nothing but the seed, so the seed is
+ * where "this is level 12 and not a board" has to live; `freshSeed` never lands in the block, so a board made at
+ * random is never mistaken for a level. A thousand seeds is room for the 256 each size has.
+ */
+export const SUIDO_LEVEL_SEED_BLOCK = { from: 1_800_000_000, size: 1_000 } as const satisfies SeedBlock;
+
 /** Every block `freshSeed` keeps out of, lowest first. */
-const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK];
+const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK];
 
 /** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {

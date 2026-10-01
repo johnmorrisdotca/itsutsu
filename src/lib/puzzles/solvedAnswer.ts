@@ -4,6 +4,7 @@ import { boardOf, encodeBridges } from "./bridges/code";
 import { solutionOf as bridgesSolution } from "./bridges/solve";
 import { decodeClues, encodePicture } from "./pictureLogic/code";
 import { solutionOf as pictureSolution } from "./pictureLogic/solve";
+import { checkSuidoAnswer } from "@johnmorrisdotca/suido";
 import { suidoAnswerOf } from "./suido/solve";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
@@ -42,6 +43,8 @@ import { solutionOf as towersSolution } from "./towers/solve";
 export function solvedAnswerOf(kind: PuzzleKind, size: number, level: PuzzleLevel, givens: string): string | null {
   const answer = searchAnswer(kind, size, givens);
   if (answer === null) return null;
+  // A Suido level's board is held to the site's levels by the server's own check, which needs the size's levels loaded; here the answer is only drawn, and the package's check of it against its own board is the whole of what is asked.
+  if (kind === "suido") return checkSuidoAnswer(givens, answer).ok ? answer : null;
   return checkSolution(kind, size, givens, answer, level).ok ? answer : null;
 }
 

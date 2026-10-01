@@ -1,6 +1,6 @@
-import { encodeLayout, solve, withMasks } from "@johnmorrisdotca/suido";
+import { decodeLayout, encodeLayout, solve, withMasks } from "@johnmorrisdotca/suido";
 
-import { boardOf } from "./check";
+import { suidoCodeFits } from "./check";
 
 /**
  * The answer a Suido board has, found again by the package's solver: every
@@ -10,7 +10,8 @@ import { boardOf } from "./check";
  * solved only when it is certainly the one that was.
  */
 export function suidoAnswerOf(givens: string, size: number): string | null {
-  const board = boardOf(givens, size);
+  // Any board of the size's shape, a level's twists included: the solver reads them all, and this only draws what it finds.
+  const board = suidoCodeFits(givens, size) ? decodeLayout(givens) : null;
   if (board === null) return null;
   const found = solve(board, 2);
   return found.complete && found.count === 1 ? encodeLayout(withMasks(board, found.solutions[0]!)) : null;

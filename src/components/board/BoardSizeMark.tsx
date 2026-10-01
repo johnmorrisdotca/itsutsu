@@ -1,6 +1,7 @@
 import { pictureBox } from "@/components/games/picture";
 
 import { BOARD_SIZE_LATTICE, BOARD_SIZE_MARK_CLASS, BOARD_SIZE_NUMERAL_CLASS } from "./Board.constants";
+import { longBoardOf } from "./boardShape";
 import type { BoardSizeMarkProps } from "./board.types";
 /*
  * Not `./boardSizeMark`: on a case-insensitive disk that name and this file's
@@ -47,6 +48,30 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  */
 export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMarkProps) {
   const box = pictureBox(size);
+  /*
+   * A LONG BOARD (Suido's 5×7, 6×10 and 8×14, `longBoardOf`) is drawn at its own shape, not squared: the same lattice
+   * at the density of its width and height, its longer side as long as the picture is, in the picture's own box so
+   * the tile it stands in is no different in size from the others. Its number is its two sides, "5×7", since one
+   * number cannot say it.
+   */
+  const long = longBoardOf(side);
+  if (long !== null) {
+    const longest = Math.max(long.width, long.height);
+    const across = (box.width * long.width) / longest;
+    const down = (box.height * long.height) / longest;
+    return (
+      <span {...boardSizeMarkVoice(side, words)} className="inline-flex shrink-0 items-center justify-center" style={box} data-testid="board-size-mark" data-size={side} data-picture={size}>
+        <span
+          className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`}
+          style={{ width: across, height: down, backgroundImage: BOARD_SIZE_LATTICE, backgroundSize: `${100 / long.width}% ${100 / long.height}%` }}
+        >
+          <span className={BOARD_SIZE_NUMERAL_CLASS} style={{ fontSize: Math.round(across * 0.3 * 10) / 10 }}>
+            {long.width}×{long.height}
+          </span>
+        </span>
+      </span>
+    );
+  }
   return (
     <span
       {...boardSizeMarkVoice(side, words)}

@@ -13,6 +13,10 @@ export function resumedGame(start: Game, progress: string): Game | null {
   const dealt = start.start;
   if (kept === null || kept.width !== dealt.width || kept.height !== dealt.height || kept.kind !== dealt.kind || kept.wrap !== dealt.wrap) return null;
   if (kept.sources.join() !== dealt.sources.join() || kept.drains.join() !== dealt.drains.join()) return null;
+  // A level's locked pieces and walls are the board's own: a kept board that has moved either is another board.
+  if ((kept.locked ?? []).join() !== (dealt.locked ?? []).join() || (kept.walls ?? []).join() !== (dealt.walls ?? []).join()) return null;
+  // A locked piece stays as dealt, whatever the code says.
+  if ((dealt.locked ?? []).some((cell) => kept.cells[cell] !== dealt.cells[cell])) return null;
   const quarters: number[] = [];
   for (let cell = 0; cell < dealt.cells.length; cell += 1) {
     const turned = quartersBetween(dealt.cells[cell]!, kept.cells[cell]!);
@@ -36,5 +40,6 @@ export type SuidoReading = { solved: boolean; reached: number; wanted: number; l
 /** The water on a board read as what the solver wants to be told: how much of what the kind asks is reached, and how many open ends leak. */
 export function suidoReading(game: Game, flow: Flow = flowOf(game.start, game.masks)): SuidoReading {
   const drains = game.start.kind === "drains";
+  /* An inlet-to-outlet board is read by how far the water has run (its wet pieces): there is one outlet, and "0 of 1 drain" would say less than the water does. */
   return { solved: flow.solved, reached: drains ? flow.wetDrains : flow.wetPieces, wanted: drains ? flow.drains : flow.pieces, leaks: flow.spills.length, kind: game.start.kind };
 }

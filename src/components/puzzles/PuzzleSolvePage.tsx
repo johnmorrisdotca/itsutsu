@@ -35,6 +35,8 @@ import { ResultMark } from "@/components/game/ResultMark";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { puzzleOutcome, puzzleSizeLabel, type PuzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
 
+import { suidoLevelOfBoard, loadSuidoLevelsAt } from "@/lib/puzzles/suido/levels";
+import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
@@ -97,7 +99,9 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
    * for good, so it stays kept back until the reader has solved that level
    * themselves (John, 2026-09-26: "How is this a solved puzzle?").
    */
-  const fixed = PUZZLE_SPECS[kind].fixedLevels === true;
+  // A Suido solve is of a LEVEL when its board is one of its size's levels (read here, once, from that size): the same board for good, like a Tsunagi level.
+  const suidoLevel = kind === "suido" && isSuidoLevelSize(found.size) ? await suidoLevelOfSolve(found.size, found.givens) : null;
+  const fixed = PUZZLE_SPECS[kind].fixedLevels === true || suidoLevel !== null;
   const kept = own || (!fixed && !isTodayUtc(found.finishedAt)) || (await finishedSameGrid(me, kind, found.givens));
   const solve = kept ? found : { ...found, answer: null, steps: null };
   // A kana dodger's word is replayed from its list (`wordOfPlay`), loaded first.
@@ -126,7 +130,10 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
     solve.helped === null ? null : SOLVE_HELP_WORDS[solve.helped],
   ].filter((part) => part !== null);
   const headStart = hadHeadStart(kind, solve.level, solve.hintsUsed);
-  const levelLabel = PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level;
+  const bandLabel = PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level;
+  // A level is named by its number, the third of its size it sits in said beside it; a board by its level.
+  const levelLabel = suidoLevel === null ? bandLabel : `${suidoLevel}, ${bandLabel.toLowerCase()}`;
+  const levelTitle = suidoLevel === null ? bandLabel : `Level ${suidoLevel}`;
   // "Draw 1", "7 tiles", "9×9": the size in the words its set-up chooses it by, capitalised as a value in a list is.
   const sizeShown = capitalised(sizeWord(solve.size, kind));
   const sizeLabel = puzzleSizeLabel(kind);
@@ -204,7 +211,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
               title: (
                 <>
                   <PlayerName name={solver} memberId={solverId} fallback="A member" />
-                  &apos;s {copy.label} · {sizeShown} · {levelLabel}
+                  &apos;s {copy.label} · {sizeShown} · {levelTitle}
                 </>
               ),
               // Played, not solved: a Solitaire given up is kept and replayed too.
@@ -262,4 +269,10 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
       </div>
     </Page>
   );
+}
+
+/** The level a Suido solve's board is, at its size, or null for a board made from a seed: the size's levels are read once, here, and nowhere a page does not ask. */
+async function suidoLevelOfSolve(size: number, givens: string): Promise<number | null> {
+  await loadSuidoLevelsAt(size);
+  return suidoLevelOfBoard(size, givens);
 }

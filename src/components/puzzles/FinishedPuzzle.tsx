@@ -37,10 +37,9 @@ import { PatienceReplay } from "./PatienceReplay";
 import { SolitaireReplay } from "./SolitaireReplay";
 import { CubeReplay } from "./CubeReplay";
 import { SuidoBoard } from "./SuidoBoard";
-import { checkSolution } from "@/lib/puzzles/puzzleCheck";
 import { decodeStepLog } from "@/lib/puzzles/stepLog";
 import { resumedGame } from "@/lib/puzzles/suido/play";
-import { newGame } from "@johnmorrisdotca/suido";
+import { checkSuidoAnswer, newGame } from "@johnmorrisdotca/suido";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
 
@@ -220,7 +219,7 @@ function SuidoFinished({ size, level, givens, answer, steps, derive, story, hydr
   const dealt = useMemo(() => newGame(givens), [givens]);
   if (dealt === null) return null;
   const game = (shown === null ? null : resumedGame(dealt, shown)) ?? dealt;
-  const state = shown === null ? (derive && !hydrated ? "working" : "dealt") : answer === null && stood === null ? "worked-out" : checkSolution("suido", size, givens, shown, level).ok ? "finished" : "unsolved";
+  const state = shown === null ? (derive && !hydrated ? "working" : "dealt") : answer === null && stood === null ? "worked-out" : checkSuidoAnswer(givens, shown).ok ? "finished" : "unsolved";
   return (
     <Focused story={story} hydrated={hydrated} testId="solve-board" state={state}>
       <div className="mx-auto w-full" data-focus-board>

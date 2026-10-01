@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 
-import { shapeOf, SIDES, type Layout } from "@johnmorrisdotca/suido";
+import { isLocked, shapeOf, SIDES, type Layout } from "@johnmorrisdotca/suido";
 import { drawSuido, paintSuido, SUIDO_STYLE } from "@johnmorrisdotca/suido/draw";
 
 import { PuzzleBoard } from "./PuzzleBoard";
@@ -17,7 +17,9 @@ function cellLabel(layout: Layout, masks: readonly number[], cell: number): stri
   if (shape === "blank") return `${where}: bare ground`;
   const opens = SIDES.map((bit, side) => ((mask & bit) !== 0 ? SIDE_WORDS[side] : null)).filter((word) => word !== null);
   const role = layout.sources.includes(cell) ? ", pump" : layout.drains.includes(cell) ? ", drain" : "";
-  return `${where}: ${shape === "tee" ? "T" : shape} piece${role}, open ${opens.join(" and ")}`;
+  // A level's locked piece cannot be turned: said, so a reader's tools do not offer a press that does nothing.
+  const lock = isLocked(layout, cell) ? ", locked" : "";
+  return `${where}: ${shape === "tee" ? "T" : shape} piece${role}${lock}, open ${opens.join(" and ")}`;
 }
 
 /** The cell an arrow key moves to from `cell`, staying on the board. */
@@ -135,8 +137,9 @@ export function SuidoBoard({
   };
 
   return (
-    <div className="w-full select-none" data-testid="puzzle-grid" data-size={layout.width} data-done={done ? "true" : "false"}>
-      <PuzzleBoard size={layout.width}>
+    <div className="w-full select-none" data-testid="puzzle-grid" data-size={layout.width} data-rows={layout.height} data-done={done ? "true" : "false"}>
+      {/* A long board (a level's 5×7, 6×10 or 8×14) is the wood it is: squares still square, taller than it is wide (`PuzzleBoard`'s rows). */}
+      <PuzzleBoard size={layout.width} rows={layout.height === layout.width ? undefined : layout.height}>
         {/* The package's style, once for the board it draws: its colours follow the device's light or dark. */}
         <style>{SUIDO_STYLE}</style>
         <div

@@ -29,6 +29,7 @@ import { GameTrail } from "@/components/games/GameTrail";
 import { KumimojiShots } from "./KumimojiShots";
 import { KumimojiTryIt } from "./KumimojiTryIt";
 import { offeredLine } from "./offeredLine";
+import { SUIDO_COPY } from "./suido.constants";
 
 /**
  * A puzzle's front door, at /games/<slug>: what every puzzle's name leads to.
@@ -119,6 +120,12 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               <span className="text-xs text-muted">
                 {offeredLine(kind)}
               </span>
+              {/* A Suido's line above is the boards it makes; its fixed levels, which Play leads to first, are said beside it. */}
+              {kind === PUZZLE_KINDS.suido ? (
+                <span className="text-xs text-muted" data-testid="suido-levels-line">
+                  {SUIDO_COPY.levelsLine}
+                </span>
+              ) : null}
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-4">

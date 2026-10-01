@@ -198,6 +198,25 @@ as a Futago's is. 5×5, 7×7, 9×9 and 12×12; the answer and a run kept half wa
 the board as it stands, which the server checks in O(cells) with the package's
 `checkSuidoAnswer` (`suido/check.ts`).
 
+Suido has FIXED LEVELS (2026-10-01) beside the boards it makes, as Tsunagi does:
+256 at each of thirteen sizes, 5×5 to 14×14 and three long boards, 5×7, 6×10 and
+8×14, easy to hard, the same board for everybody, in blocks of sixteen that open
+as the one before is solved. They are the package's own (`@johnmorrisdotca/suido`
+1.1.0, each size a file fetched only when asked for) and come with twists, each
+named in a chip under the board: several pumps, locked pieces (a padlock; they
+will not turn), walls, edges that join (a dashed rim), a single path from an
+inlet to an outlet, and drains. The set-up (`/games/suido/new`) opens on the
+levels and "Make a board" (`?mode=make`) is the set-up it was. A level is a
+seed in a block of its own (`SUIDO_LEVEL_SEED_BLOCK`, `suido/seed.ts`), so every
+run, solve, race and address that carries a seed carries the level, and a solve
+is found by its board, never its number (`server/suidoRecords.ts`). A size is one
+whole number: a square's side, or for a long board its width and height in two
+digits each, 507 being 5×7 (`suido/sizes.ts`). A level has no hint and no clock,
+so its fastest times are one race run apart. Tsunagi's level screens and Suido's
+are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
+`useSizeShelves`); what is each game's own is how a solved level is marked, and
+its words.
+
 The fourth is **Hidden Stones** 隠し石 (`src/lib/puzzles/hiddenStones/`), which
 moved here from Numbers on 2026-10-01 because there is no number in it: the
 one-star form of Star Battle, played daily as Queens (LinkedIn's name), one

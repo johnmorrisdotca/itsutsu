@@ -12,7 +12,9 @@ import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types
 import { partyPlayersAsked } from "./kumimoji/party";
 import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
-import { suidoKindOfSeed } from "./suido/seed";
+import { isSuidoLevelAt, suidoLevelBand } from "./suido/levelCounts";
+import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed } from "./suido/seed";
+import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 import { tablePlayersAsked } from "@johnmorrisdotca/jarajara/table";
@@ -114,7 +116,7 @@ export type PuzzleAsked = {
   backwards?: boolean;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", number: "number" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -123,7 +125,9 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     const value = query[key];
     return Array.isArray(value) ? value[0] : value;
   };
-  const sizeAsked = Number(one(PUZZLE_PARAMS.size));
+  // A Suido's long boards are asked for by their shape, `size=5x7` (`suido/sizes.ts`); every other size is a number.
+  const sizeText = one(PUZZLE_PARAMS.size);
+  const sizeAsked = kind === "suido" && sizeText !== undefined ? (suidoSizeFromAddress(sizeText) ?? NaN) : Number(sizeText);
   const size = spec.sizes.includes(sizeAsked) ? sizeAsked : spec.defaultSize;
   const levelAsked = one(PUZZLE_PARAMS.level) as PuzzleLevel | undefined;
   // A level this size cannot be made at (a 4×4 Hidden Stones is easy only) is the first one it can.
@@ -135,7 +139,19 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     const number = isTsunagiLevel(size, seedAsked) ? seedAsked : null;
     return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false, clock: "none" };
   }
-  const seed = isSeed(seedAsked) ? seedAsked : null;
+  /*
+   * A SUIDO LEVEL, asked for by `number=12` or by the seed that names it (`suido/seed.ts`): the same board for
+   * everybody, its band following from its number, with none of the help or the clocks a board made at random
+   * offers. A number past the size's levels asks for nothing, and what is left is a board.
+   */
+  if (kind === "suido") {
+    const numberText = one(PUZZLE_PARAMS.number);
+    const number = numberText !== undefined ? Number(numberText) : suidoLevelOfSeed(seedAsked);
+    if (number !== null && isSuidoLevelSize(size) && isSuidoLevelAt(size, number)) {
+      return { size, level: suidoLevelBand(size, number), seed: suidoLevelSeed(number), checks: null, hints: false, strict: false, headStart: false, words: 1, clock: "none", pipes: "drains" };
+    }
+  }
+  const seed = isSeed(seedAsked) && !(kind === "suido" && suidoLevelOfSeed(seedAsked) !== null) ? seedAsked : null;
   const checksAsked = Number(one(PUZZLE_PARAMS.checks));
   const checks = one(PUZZLE_PARAMS.checks) !== undefined && isCheckAllowance(checksAsked) ? checksAsked : null;
   const hints = one(PUZZLE_PARAMS.hints) === "1";
@@ -171,8 +187,11 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
 export function puzzleQuery(asked: PuzzleAsked): string {
-  const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: String(asked.size), [PUZZLE_PARAMS.level]: asked.level });
-  if (asked.seed !== null) params.set(PUZZLE_PARAMS.seed, String(asked.seed));
+  const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: suidoSizeInAddress(asked.size), [PUZZLE_PARAMS.level]: asked.level });
+  // A Suido level is asked for by its number, which is the whole of what its seed says (`suidoLevelOfSeed`).
+  const levelNumber = asked.seed !== null && isSuidoLevelSize(asked.size) ? suidoLevelOfSeed(asked.seed) : null;
+  if (levelNumber !== null) params.set(PUZZLE_PARAMS.number, String(levelNumber));
+  else if (asked.seed !== null) params.set(PUZZLE_PARAMS.seed, String(asked.seed));
   if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
   if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");
   if (asked.strict === true) params.set(PUZZLE_PARAMS.strict, "1");

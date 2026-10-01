@@ -1,6 +1,7 @@
 import { STONE_SETS } from "@/components/board/Board.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
+import { suidoSizeWord } from "@/lib/puzzles/suido/sizes";
 
 /*
  * The look of a puzzle: the grid, its cells and the keys under it.
@@ -110,6 +111,8 @@ export function sizeWord(size: number, kind?: PuzzleKind): string {
   if (cards !== undefined) return cards.word(size);
   // A Mahjong size is a layout, called by its name; its width in tiles is only the number on its picture.
   if (kind === "mahjong") return PUZZLE_SIZE_NAMES.mahjong[size]?.label ?? `${size} across`;
+  // A Suido's long boards are a width and a height in one number (`suido/sizes.ts`): 507 is 5×7.
+  if (kind === "suido") return suidoSizeWord(size);
   return `${size}×${size}`;
 }
 

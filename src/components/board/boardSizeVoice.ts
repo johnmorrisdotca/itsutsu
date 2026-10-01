@@ -1,5 +1,6 @@
 import { BOARD_SIZE_NUMERAL_SCALE, boardSizeWords } from "./Board.constants";
 import type { BoardSizeMarkWords } from "./board.types";
+import { longBoardOf } from "./boardShape";
 
 /**
  * What a board-size mark says to somebody who cannot see it.
@@ -18,7 +19,10 @@ export function boardSizeMarkVoice(
   size: number,
   words: BoardSizeMarkWords,
 ): { "aria-hidden": "true" } | { role: "img"; "aria-label": string } {
-  return words === "beside" ? { "aria-hidden": "true" } : { role: "img", "aria-label": boardSizeWords(size) };
+  if (words === "beside") return { "aria-hidden": "true" };
+  // A long board is said by its two sides, "5 by 7 board" (`boardShape.ts`).
+  const long = longBoardOf(size);
+  return { role: "img", "aria-label": long === null ? boardSizeWords(size) : `${long.width} by ${long.height} board` };
 }
 
 /**

@@ -38,8 +38,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(react@19.2.8)
       '@johnmorrisdotca/suido':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       '@johnmorrisdotca/tane':
         specifier: 1.1.1
         version: 1.1.1(react@19.2.8)
@@ -478,8 +478,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/suido@1.0.0':
-    resolution: {integrity: sha512-rMHUBiiAdrBlhrYYdDDk8i/WLCrUBaGFw70ldz0sR7Lui4nEBqCfh+qBqftvSD8ERWrsEa+kB0oElwXr6Up/kg==}
+  '@johnmorrisdotca/suido@1.1.0':
+    resolution: {integrity: sha512-1aZahKgq8/cyXXsHrFwEJ3KyhI47pk7yZU8N+0chVkdDDqN9S0ghCZDhukrz2lv5UtndJvmLuYlkSmURAkVJQw==}
     engines: {node: '>=20'}
 
   '@johnmorrisdotca/tane@1.1.1':
@@ -3128,7 +3128,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/suido@1.0.0': {}
+  '@johnmorrisdotca/suido@1.1.0': {}
 
   '@johnmorrisdotca/tane@1.1.1(react@19.2.8)':
     optionalDependencies:

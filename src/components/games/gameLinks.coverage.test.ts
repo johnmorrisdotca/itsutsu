@@ -534,7 +534,7 @@ const TIME_EXCEPTIONS: Record<string, string> = {
   // The finishing line, split out of solveShared.tsx: the solve just made, whose Replay is the button beside it.
   "src/components/puzzles/SolveDone.tsx": "the finishing line of the puzzle in front of the reader, with Replay beside it",
   // A level's tile is the button that chooses it; the chosen level's best time, opening that solve, is under the preview above it.
-  "src/components/puzzles/TsunagiLevelPicker.tsx": "the tile is the button that chooses its level; the chosen level's time opens its solve in the preview's caption",
+  "src/components/puzzles/LevelPicker.tsx": "the tile is the button that chooses its level; the chosen level's time opens its solve in the preview's caption",
   // One finished puzzle's own page: its time is a fact about the page the reader is on.
   "src/components/puzzles/PuzzleSolvePage.tsx": "the solve's own page: a link would lead where the reader already is",
   // A race's page saying how each seat finished it: the race is the page, and each seat's solve is on its solver's list.
