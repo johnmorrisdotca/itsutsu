@@ -2,10 +2,11 @@
 
 import type { ReactNode } from "react";
 
-import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { Appearance } from "@/components/board/board.types";
 import { PlayingCard } from "@/components/cards/PlayingCard";
+import { tableTheme } from "@/components/puzzles/KumimojiTable";
 import { cardOfId, cardWords } from "@/lib/cardGames/cards";
 import type { CardId } from "@/lib/cardGames/cardGames.types";
 
@@ -14,15 +15,16 @@ import { CARD_TABLE_BOARD } from "./cardTable.constants";
 const cqw = (value: number) => `${value}cqw`;
 
 /**
- * THE TABLE IN THE MIDDLE OF A CARD GAME: a board of the reader's own wood in
- * its frame (`BoardFrame`), eight across to five down, as every table on the
+ * THE TABLE IN THE MIDDLE OF A CARD GAME: a board of the reader's own wood, or
+ * the felt they chose for it (`FeltPatches`, as Kumimoji's table is), in its
+ * frame (`BoardFrame`), eight across to five down, as every table on the
  * site is drawn — the trick, the pile, the stock and the discards lie on it.
  * Its inside is its own size container, so what lies on it is placed in
  * hundredths of its width, the same on a phone and a desk. It is where a card
  * dragged from a hand is let go to play it (`data-card-drop`).
  */
 export function CardTableSurface({ appearance, children }: { appearance?: Appearance; children: ReactNode }) {
-  const theme = BOARD_THEMES[appearance?.boardTheme ?? DEFAULT_APPEARANCE.boardTheme] ?? BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
+  const theme = tableTheme(appearance ?? DEFAULT_APPEARANCE);
   return (
     <BoardFrame size={CARD_TABLE_BOARD.across} rows={CARD_TABLE_BOARD.down} theme={theme} flipped={false} inset={CARD_TABLE_BOARD.inset} lattice={false} shape="rhombus" coordinates={false}>
       <div className="absolute inset-0 [container-type:inline-size]" data-testid="cards-table" data-card-pile="table" data-card-drop="">

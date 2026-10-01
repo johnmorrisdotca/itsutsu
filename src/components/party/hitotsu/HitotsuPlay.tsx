@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
+import { FeltPatches } from "@/components/board/FeltPatches";
+import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { useCardSounds } from "@/components/cards/useCardSounds";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
@@ -43,6 +45,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
   const people = game.players.map((_, seat) => seat).filter((seat) => !game.computers[seat]);
   const [handedTo, setHandedTo] = useState<number | null>(people.length === 1 ? people[0] : null);
   const [confirming, setConfirming] = useState(false);
+  const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useCardSounds(game.hands.reduce((sum, hand) => sum + hand.length, 0));
   const personToPlay = toPlay !== null && !game.computers[toPlay];
   const covered = !over && people.length > 1 && personToPlay && handedTo !== toPlay;
@@ -92,7 +95,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
           news={moment.open ? tableNews({ names, winners, you: people.length === 1 ? people[0]! : null, next: { label: HITOTSU_COPY.again, onPress: again } }) : null}
           onClose={moment.close}
         >
-          <HitotsuTableTop game={game} appearance={appearance} />
+          <HitotsuTableTop game={game} appearance={{ ...appearance, felt }} />
         </WinCoverOver>
         {/* Beside the table in just the board on a desk, where under it would run past the window's foot (globals.css). */}
         {covered && toPlay !== null ? (
@@ -116,6 +119,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
             {HITOTSU_COPY.again}
           </button>
         ) : null}
+        <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
         </button>
