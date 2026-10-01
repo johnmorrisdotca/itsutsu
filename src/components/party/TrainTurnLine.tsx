@@ -1,6 +1,5 @@
-import { tileOf, tileWords } from "@/lib/party/mexicanTrain/dominoes";
-import { TRAIN_PHASES, mexicanOf, openEnd, trainPlayerName } from "@/lib/party/mexicanTrain/mexicanTrain";
-import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { TRAIN_PHASES, mexicanOf, openEnd, tileOf, tileWords, trainPlayerName } from "@johnmorrisdotca/domino";
+import type { TrainGame } from "@johnmorrisdotca/domino";
 
 import { MarbleChip } from "./MarbleChip";
 import { TRAIN_COPY } from "./party.constants";

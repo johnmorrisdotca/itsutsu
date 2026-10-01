@@ -3,10 +3,9 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { generatePuzzle } from "../generate";
 import { prepareEveryPuzzle } from "../prepareEvery";
 import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
-import { foundBonus } from "../gomoji/wordScore";
+import { foundBonus, markKanaGuess } from "@johnmorrisdotca/kotoba";
 import { pointsFor } from "../puzzlePoints";
 import { decodeKanaGivens, KANA_ROWS } from "./kanaCode";
-import { markKanaGuess } from "./kanaMarks";
 import { kanaWordsOf } from "./kanaWords";
 
 beforeAll(prepareEveryPuzzle);

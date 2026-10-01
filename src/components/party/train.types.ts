@@ -1,5 +1,5 @@
 import type { Appearance } from "@/components/board/board.types";
-import type { Domino, TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import type { Domino, TrainGame } from "@johnmorrisdotca/domino";
 import type { OnlineOffer } from "@/lib/party/online/online.types";
 
 /** One domino as drawn: where, how big, which way it lies and what its two ends say. */

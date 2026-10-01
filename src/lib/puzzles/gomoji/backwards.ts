@@ -1,6 +1,6 @@
 import type { PuzzleKind } from "../puzzles.types";
 import { kanaWordsOf } from "../gomojiKana/kanaWords";
-import { kanaBase, markKanaGuess } from "../gomojiKana/kanaMarks";
+import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 import { allowedFor, isWord, languageOf, markGuess } from "./code";
 
 /**

@@ -6,7 +6,7 @@ import { KanaKeyboard } from "@/components/puzzles/KanaKeyboard";
 import { WordKeyboard } from "@/components/puzzles/WordKeyboard";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP } from "@/components/ui/ui.constants";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { cycleMark, toggleSize } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { cycleMark, toggleSize } from "@johnmorrisdotca/kotoba";
 import type { PartyLanguage } from "@/lib/party/party.types";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { GHOST_END, GHOST_PHASE, answerProblem, foldGhostLetter, foldGhostWord } from "@/lib/party/superghost/superghost";

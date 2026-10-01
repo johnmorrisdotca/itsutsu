@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { breaksKanaHardRule, decodeKanaGivens, decodeKanaGuesses, encodeKanaGivens, greyWordFor, kanaWordFor } from "./kanaCode";
-import { markKanaGuess } from "./kanaMarks";
+import { markKanaGuess } from "@johnmorrisdotca/kotoba";
 import { KANA_SIZES, loadKanaWords } from "./kanaWords";
 
 describe("a kana puzzle written down", () => {

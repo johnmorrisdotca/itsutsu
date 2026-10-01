@@ -3,8 +3,7 @@
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
-import { laidEnds } from "@/lib/party/mexicanTrain/dominoes";
-import { TRAIN_PHASES, mayLay, mexicanOf, openEnd, trainPlayerName } from "@/lib/party/mexicanTrain/mexicanTrain";
+import { TRAIN_PHASES, laidEnds, mayLay, mexicanOf, openEnd, trainPlayerName } from "@johnmorrisdotca/domino";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { DominoFace } from "./DominoFace";

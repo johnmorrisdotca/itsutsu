@@ -1,2 +1,2 @@
 // Moved to Toranpu, the open-source card package (@johnmorrisdotca/toranpu, github.com/johnmorrisdotca/toranpu); kept here so every import of this path still works.
-export { seatsIn, nextRound, afterTurn, laid, passedOn, freshTrick, isClimbMove } from "@johnmorrisdotca/toranpu/bigTwo";
+export { seatsIn, nextRound, afterTurn, laid, passedOn, freshTrick, isClimbMove } from "@johnmorrisdotca/toranpu/big-two";

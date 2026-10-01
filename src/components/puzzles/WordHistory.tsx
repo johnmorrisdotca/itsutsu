@@ -10,7 +10,7 @@ import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
 import { markGuess } from "@/lib/puzzles/gomoji/code";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
 import { FUTAGO_DISPLAY, boardGuesses, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
-import { markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { markKanaGuess } from "@johnmorrisdotca/kotoba";
 import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { DODGE_DISPLAY } from "@/lib/puzzles/gomoji/dodgeWords";

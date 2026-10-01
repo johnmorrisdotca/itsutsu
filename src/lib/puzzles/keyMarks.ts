@@ -1,6 +1,7 @@
 import { markGuess, type LetterMark } from "./gomoji/code";
 import { boardGuesses } from "./gomoji/futago";
-import { kanaBase, markKanaGuess, type KanaMark } from "./gomojiKana/kanaMarks";
+import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
+import type { KanaMark } from "@johnmorrisdotca/kotoba";
 
 /**
  * WHAT EACH KEY OF A WORD PUZZLE SHOWS: the best mark its letter has had on

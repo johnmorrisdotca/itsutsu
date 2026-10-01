@@ -2,7 +2,7 @@
 import type { VariantCopy } from "../gomoku/variants.constants";
 
 import { MANCALA_BOARDS } from "./mancala/mancala.constants";
-import { TRAIN_SETS } from "./mexicanTrain/mexicanTrain.constants";
+import { TRAIN_SETS } from "@johnmorrisdotca/domino";
 import type { PartyKind, PartySpec } from "./party.types";
 import { PACHISI_TRACK } from "./pachisi/pachisi.constants";
 import { YACHT_SHEET } from "./yacht/yacht.constants";

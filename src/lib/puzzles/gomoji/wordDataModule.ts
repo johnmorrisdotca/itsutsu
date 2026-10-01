@@ -8,7 +8,7 @@ import { loadWordData, readWordDataWith, type WordListLanguage } from "./wordDat
  * browser's sake (see `wordData.ts`).
  */
 readWordDataWith(async (lang) =>
-  lang === "fr" ? (await import("./words.fr.data")).FR_WORDS : lang === "de" ? (await import("./words.de.data")).DE_WORDS : (await import("./words.en.data")).EN_WORDS,
+  lang === "fr" ? (await import("@johnmorrisdotca/kotoba/words-fr")).FR_WORDS : lang === "de" ? (await import("@johnmorrisdotca/kotoba/words-de")).DE_WORDS : (await import("@johnmorrisdotca/kotoba/words-en")).EN_WORDS,
 );
 
 /** A language's lists, read from their module: `loadWordData` for a caller with no browser. */

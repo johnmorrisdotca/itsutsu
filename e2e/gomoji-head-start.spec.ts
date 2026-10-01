@@ -6,7 +6,7 @@ import { prepareEveryPuzzle } from "../src/lib/puzzles/prepareEvery";
 import { isWord } from "../src/lib/puzzles/gomoji/code";
 import { headStartKeys } from "../src/lib/puzzles/gomoji/headStart";
 import { decodeKanaGivens } from "../src/lib/puzzles/gomojiKana/kanaCode";
-import { kanaBase } from "../src/lib/puzzles/gomojiKana/kanaMarks";
+import { kanaBase } from "@johnmorrisdotca/kotoba";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
 import { loadEveryWordList } from "./wordLists";

@@ -1,7 +1,7 @@
 "use client";
 
 import type { GomojiLanguage, LetterMark } from "@/lib/puzzles/gomoji/code";
-import { KEYBOARD_ROWS } from "@/lib/puzzles/gomoji/keyboardRows";
+import { KEYBOARD_ROWS } from "@johnmorrisdotca/kotoba";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { keyLabel } from "@/lib/puzzles/keyMarks";
 

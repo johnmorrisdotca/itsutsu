@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { answersFor, markGuess, type GomojiLanguage } from "./code";
 import { guessesFor } from "./layout";
-import { DE_WORDS } from "./words.de.data";
-import { EN_WORDS } from "./words.en.data";
-import { FR_WORDS } from "./words.fr.data";
+import { DE_WORDS } from "@johnmorrisdotca/kotoba/words-de";
+import { EN_WORDS } from "@johnmorrisdotca/kotoba/words-en";
+import { FR_WORDS } from "@johnmorrisdotca/kotoba/words-fr";
 
 /**
  * STILL WINNABLE, STILL A CHALLENGE. John, 2026-09-26, asking for six-letter

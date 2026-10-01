@@ -252,11 +252,15 @@ ways to play one word, chosen on the set-up in every language but Pop culture:
 **Nige** 逃げ, where no word is hidden until the guesses leave only one
 (`src/lib/puzzles/gomoji/dodge.ts`), and **Sakasa** 逆さ, where every row must
 be filled without typing the hidden word (`src/lib/puzzles/gomoji/backwards.ts`),
-each in a seed block of its own with a daily game at every length. English words
-from SCOWL (`scripts/word-lists.mjs`); see `docs/plans/other/WORD-01-worddrop.md`.
-French and German words from real dictionaries, Lexique and LanguageTool's
-German dictionary, with every hidden word also in Wiktionary and never an
-English borrowing (`scripts/word-lists-fr-de.mjs`); kana from JMdict.
+each in a seed block of its own with a daily game at every length. Its word
+lists, and the rules every word game shares (marking a guess, scoring, kana
+marks, romaji), are Kotoba's (`@johnmorrisdotca/kotoba`,
+github.com/johnmorrisdotca/kotoba), each list an entry point of its own so a
+page fetches only what it plays: English words from SCOWL; French and German
+from real dictionaries, Lexique and LanguageTool's German dictionary, with
+every hidden word also in Wiktionary and never an English borrowing; kana from
+JMdict. The daily words' pools (`src/lib/puzzles/dailyWords/`) stay here: they
+are the record of what each day served.
 It is ONE game in the catalogue, with one card, one front door at
 `/games/gomoji` and one rules page: its language (English, Français, Deutsch,
 日本語 かな) and its word list (Everyday, or Pop culture in English) are chosen
@@ -268,8 +272,8 @@ was stored as — `gomoji`, `gomojiMot`, `gomojiWort`, `gomojiKana`,
 the four front doors they had until 2026-09-28 lead on for good to the same
 page under `/games/gomoji` (`src/lib/catalogue/formerAddresses.ts`).
 Its **Pop culture** list 五文字・流行 hides a pop-culture word of three to seven letters and
-shows its category as the clue. Its answers are one list kept by hand,
-`scripts/pop-corpus.txt`, checked and written by `scripts/word-lists-pop.mjs`;
+shows its category as the clue. Its answers are one list kept by hand
+in Kotoba (`scripts/pop-corpus.txt` there);
 any English word of the length may be guessed too, from SCOWL, with the
 three- and seven-letter guesses in a file of their own fetched only when such
 a puzzle is played (`src/lib/puzzles/gomoji/popWords.ts`). Its five lengths
@@ -287,7 +291,7 @@ be finished; any SCOWL word of two to fifteen letters counts
 (`scripts/tile-words.mjs`), and the list is fetched only when a game opens. In
 Japanese the tiles are the 45 base hiragana (`JAPANESE_TILE_MIX`, `kana.ts`),
 each playing as its voiced and small forms, and the words are JMdict's
-(`scripts/word-lists-ja.mjs`). Help, chosen on the set-up screen, arranges the
+(Kotoba's `scripts/word-lists-ja.mjs`). Help, chosen on the set-up screen, arranges the
 hand into a word at a hint's price (`help.ts`). Diagonals, chosen there too,
 reads every diagonal run of three or more tiles as a word as well, and lets a
 diagonal word join the crossword (`runsOf`, `groupsOf` in `grid.ts`); it is
@@ -1160,13 +1164,10 @@ One-time setup:
 `pnpm preflight:prod` runs the same checks the workflow does, locally and side
 by side, and is the gate before every push.
 
-One other workflow runs on its own. `.github/workflows/jmdict-refresh.yml`
-writes the kana Gomoji's word lists again from JMdict's newest release on the
-1st of each month, because JMdict's licence asks for a monthly refresh. When
-the lists changed it pushes them to a `data/jmdict-YYYY-MM` branch and FAILS ON
-PURPOSE: the red run is the reminder to land that branch through the ordinary
-release. It never opens a pull request or pushes to `main`. See
-`docs/plans/other/WORD-04-kana.md`.
+The monthly JMdict refresh (JMdict's licence asks for one) runs in Kotoba's
+repository since 2026-09-30, where the kana lists now live: a changed list is a
+new Kotoba version, and this site takes it as a one-line bump of the package.
+See `docs/plans/other/WORD-04-kana.md` for why it exists.
 
 Every landed commit takes a version, and ONE FEATURE IS ONE VERSION:
 `pnpm release:take:prod --summary "…"` takes the number, dates the changelog,

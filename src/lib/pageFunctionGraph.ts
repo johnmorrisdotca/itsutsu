@@ -94,7 +94,7 @@ const within = (at: number, spans: [number, number][]) => spans.some(([from, to]
 
 function read(path: string): SourceFile {
   const raw = readFileSync(path, "utf8");
-  // Comments name imports too ("`import("./words.en.data")`"); only code counts.
+  // Comments name imports too ("`import("@johnmorrisdotca/kotoba/words-en")`"); only code counts.
   const text = raw.replace(/\/\*[\s\S]*?\*\//g, (comment) => " ".repeat(comment.length)).replace(/(^|[^:"'`])\/\/[^\n]*/g, (comment) => " ".repeat(comment.length));
   const { ssrFalse, windowOnly } = browserOnlySpans(text);
   const reaches = new Set<string>();

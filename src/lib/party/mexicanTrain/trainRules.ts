@@ -1,9 +1,8 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import type { PartyRules } from "../party.types";
 
-import { TRAIN_PHASES, playTrain, startTrain, trainMoves } from "./mexicanTrain";
-import type { TrainGame, TrainMove } from "./mexicanTrain.types";
-import { decodeTrain, encodeTrain } from "./trainCodec";
+import { TRAIN_PHASES, decodeTrain, encodeTrain, playTrain, startTrain, trainMoves } from "@johnmorrisdotca/domino";
+import type { TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 
 /**
  * Mexican Train as every party game's rules answer (`PartyRules`): what the

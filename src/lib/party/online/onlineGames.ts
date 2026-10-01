@@ -11,7 +11,7 @@ import type { PartyGame } from "../../puzzles/kumimoji/party.types";
 import type { MancalaGame } from "../mancala/mancala.types";
 import type { GhostGame } from "../superghost/superghost.types";
 import type { TenkaGame } from "../tenka/tenka.types";
-import type { TrainGame, TrainMove } from "../mexicanTrain/mexicanTrain.types";
+import type { TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 import type { HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 import { BLOCKS_PARTY_PLAYERS, BLOCKS_PARTY_SIZE, BLOCKS_PIECES } from "../../gomoku/party/partyBlocks.constants";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty, layBlocks, startBlocksParty } from "../../gomoku/party/partyBlocks";

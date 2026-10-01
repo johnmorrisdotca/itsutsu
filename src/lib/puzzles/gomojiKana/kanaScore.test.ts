@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { KANA_ROWS } from "./kanaCode";
-import { foundBonus } from "../gomoji/wordScore";
-import { kanaScore } from "./kanaScore";
+import { foundBonus, kanaScore } from "@johnmorrisdotca/kotoba";
 
 describe("what a kana word scores", () => {
   it("is 0 only when no kana and no column was ever found", () => {

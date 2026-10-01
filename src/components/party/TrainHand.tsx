@@ -1,7 +1,6 @@
 "use client";
 
-import { endsOf, tileWords } from "@/lib/party/mexicanTrain/dominoes";
-import { legalPlays, trainPlayerName } from "@/lib/party/mexicanTrain/mexicanTrain";
+import { endsOf, legalPlays, tileWords, trainPlayerName } from "@johnmorrisdotca/domino";
 
 import { DominoFace } from "./DominoFace";
 import { TRAIN_COPY } from "./party.constants";

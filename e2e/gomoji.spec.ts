@@ -6,7 +6,7 @@ import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { answersFor, breaksHardRule, isWord, markGuess } from "../src/lib/puzzles/gomoji/code";
 import { guessesFor } from "../src/lib/puzzles/gomoji/layout";
 import { knownCounts } from "../src/lib/puzzles/keyMarks";
-import { wordScore } from "../src/lib/puzzles/gomoji/wordScore";
+import { wordScore } from "@johnmorrisdotca/kotoba";
 import { freshPuzzleSeed, ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 

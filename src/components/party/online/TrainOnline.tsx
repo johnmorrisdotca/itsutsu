@@ -4,9 +4,8 @@ import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { PANEL_CLASS, BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { tileWords } from "@/lib/party/mexicanTrain/dominoes";
-import { TRAIN_PHASES, trainMoves, trainTotals } from "@/lib/party/mexicanTrain/mexicanTrain";
-import type { Domino, TrainGame, TrainMove } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { TRAIN_PHASES, tileWords, trainMoves, trainTotals } from "@johnmorrisdotca/domino";
+import type { Domino, TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 
 import { TRAIN_COPY } from "../party.constants";
 import { TrainHand } from "../TrainHand";

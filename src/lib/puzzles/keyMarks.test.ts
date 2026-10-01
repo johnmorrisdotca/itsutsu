@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { kanaKeyMarks, keyLabel, knownCounts, letterKeyMarks, typedCounts } from "./keyMarks";
 import { markGuess } from "./gomoji/code";
-import { kanaBase, markKanaGuess } from "./gomojiKana/kanaMarks";
+import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 
 describe("what the keys of a word puzzle show", () => {
   it("counts each letter of the row being typed, empty places left out", () => {

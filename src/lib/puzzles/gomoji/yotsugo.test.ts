@@ -4,7 +4,7 @@ import { dailyYotsugoWordsOf } from "../dailyWords/dailyPools";
 import { dailyWordSeed, dayAfter, dayOfDailyWordSeed } from "../dailyWords/dailyDay";
 import { generatePuzzle } from "../generate";
 import { prepareEveryPuzzle } from "../prepareEvery";
-import { markKanaGuess } from "../gomojiKana/kanaMarks";
+import { markKanaGuess, wordScore } from "@johnmorrisdotca/kotoba";
 import { splitLetterKeyMarks } from "../keyMarks";
 import { keptRunAsked, puzzleAsked, puzzleQuery } from "../puzzleAddress";
 import { checkOutOfGuesses, checkSolution } from "../puzzleCheck";
@@ -19,7 +19,6 @@ import { futagoScore } from "./futagoScore";
 import { FUTAGO_SEED_BLOCK, freshFutagoSeed, futagoDailySeed, isFutagoSeed } from "./futagoSeed";
 import { guessesTaken } from "./guessesTaken";
 import { MOST_GUESSES, gomojiLayout, guessesFor } from "./layout";
-import { wordScore } from "./wordScore";
 import { freshSeedOf, wordCountOfSeed } from "./wordsSeed";
 import { YOTSUGO_SEED_BLOCK, dayOfYotsugoSeed, freshYotsugoSeed, isYotsugoSeed, yotsugoDailySeed } from "./yotsugoSeed";
 

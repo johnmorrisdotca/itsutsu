@@ -3,14 +3,13 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { generatePuzzle } from "../generate";
 import { prepareEveryPuzzle } from "../prepareEvery";
 import { decodeKanaGivens } from "../gomojiKana/kanaCode";
-import { kanaBase } from "../gomojiKana/kanaMarks";
+import { KEYBOARD_ROWS, kanaBase } from "@johnmorrisdotca/kotoba";
 import { withHeadStart } from "../keyMarks";
 import { checkSolution } from "../puzzleCheck";
 import { POINTS_A_HELP, pointsFor } from "../puzzlePoints";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import { decodeHidden, languageOf } from "./code";
 import { HEAD_START_HINTS, HEAD_START_RANKS, drawHeadStart, hadHeadStart, headStartKeys, hintsWords, offersHeadStart } from "./headStart";
-import { KEYBOARD_ROWS } from "./keyboardRows";
 
 beforeAll(prepareEveryPuzzle);
 

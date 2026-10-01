@@ -1,5 +1,5 @@
 import { baseGuesses } from "../gomoji/layout";
-import { kanaBase, markKanaGuess } from "./kanaMarks";
+import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 import type { KanaWords } from "./kanaWords";
 
 /**

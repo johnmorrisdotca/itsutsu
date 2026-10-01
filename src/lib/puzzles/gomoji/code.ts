@@ -1,38 +1,13 @@
 import type { PuzzleKind } from "../puzzles.types";
+import { ALPHABETS, markGuess, type GomojiLanguage } from "@johnmorrisdotca/kotoba";
+
+// Marking a guess and writing a puzzle down are Kotoba's (`@johnmorrisdotca/kotoba`); read from here as they always were.
+export { decodeGuesses, decodeHidden, encodeHidden, markGuess, type GomojiLanguage, type LetterMark } from "@johnmorrisdotca/kotoba";
 import { baseGuesses } from "./layout";
 import { wordDataOf } from "./wordData";
 import { isPopWord, popAnswers } from "./popWords";
 
-/**
- * GOMOJI: a word of `size` letters, found in `size + 1` guesses, each
- * guess coloured letter by letter — in its place, in the word elsewhere, or
- * not in it at all.
- *
- * As strings, for an address, a POST body and a kept run:
- * - the GIVENS are the hidden word in CAPITALS ("CRANE"). Capitals so that
- *   the givens can never be handed in as an answer, which is written in
- *   lower case: a puzzle's givens are never its own solution.
- * - an ANSWER, and a run's progress, is every guess in order, run together in
- *   lower case ("slateprick crane" without the spaces). A guess is `size`
- *   letters, so where one ends is never in doubt.
- *
- * ONE ENGINE, THREE LANGUAGES (Gomoji Mot, French; Gomoji Wort, German):
- * every function here takes the language its puzzle is in, defaulting to
- * English so every existing caller keeps working unchanged. English and
- * French share the plain A–Z alphabet (French folds its accents away when
- * its word list is written, `word-lists-fr-de.mjs`); German alone adds Ä, Ö
- * and Ü as letters of their own, so `decodeHidden` and `decodeGuesses` read
- * the alphabet a language's givens and guesses may be spelled with.
- *
- * POP GOMOJI is a fourth "language" in the same sense: English letters, its
- * own answers (a person's pop-culture list, each word with its category) and
- * its own guesses (that list and the English dictionary), kept in
- * `popWords.ts`.
- */
-export type GomojiLanguage = "en" | "fr" | "de" | "pop";
 
-/** The letters a language's givens and guesses may be spelled with, upper case, for a decoding regex. */
-const ALPHABET: Record<GomojiLanguage, string> = { en: "A-Z", fr: "A-Z", de: "A-ZÄÖÜ", pop: "A-Z" };
 
 /** Which language a Gomoji kind plays in: English for Gomoji itself, French for Mot, German for Wort, and Pop's own list. */
 export function languageOf(kind: PuzzleKind): GomojiLanguage {
@@ -47,51 +22,10 @@ export function rowsFor(size: number): number {
   return baseGuesses("gomoji", size);
 }
 
-/** What a guessed letter says about the hidden word. */
-export type LetterMark = "hit" | "near" | "miss";
 
-/**
- * Each letter of a guess, marked against the hidden word, as a person marks
- * it on paper: first the letters in their place, then — from what is left of
- * the hidden word — the letters present elsewhere, each copy of the word's
- * letter marking one copy of the guess's and no more. So a guess with two E's
- * against a word with one marks one E and misses the other, and the E in its
- * place is the one that counts.
- */
-export function markGuess(guess: string, hidden: string): LetterMark[] {
-  const marks: LetterMark[] = Array.from({ length: guess.length }, () => "miss");
-  const left = new Map<string, number>();
-  for (let at = 0; at < hidden.length; at += 1) {
-    if (guess[at] === hidden[at]) marks[at] = "hit";
-    else left.set(hidden[at]!, (left.get(hidden[at]!) ?? 0) + 1);
-  }
-  for (let at = 0; at < guess.length; at += 1) {
-    if (marks[at] === "hit") continue;
-    const count = left.get(guess[at]!) ?? 0;
-    if (count > 0) {
-      marks[at] = "near";
-      left.set(guess[at]!, count - 1);
-    }
-  }
-  return marks;
-}
 
-/** The hidden word a puzzle's givens name, lower case, or null for givens that are not one word in capitals of this language's alphabet. */
-export function decodeHidden(givens: string, size: number, lang: GomojiLanguage = "en"): string | null {
-  const re = new RegExp(`^[${ALPHABET[lang]}]+$`);
-  return typeof givens === "string" && givens.length === size && re.test(givens) ? givens.toLowerCase() : null;
-}
 
-export function encodeHidden(word: string): string {
-  return word.toUpperCase();
-}
 
-/** The guesses a string holds, in order, or null for one that is not whole guesses of this language's lower-case letters. */
-export function decodeGuesses(code: string, size: number, lang: GomojiLanguage = "en"): string[] | null {
-  const re = new RegExp(`^[${ALPHABET[lang].toLowerCase()}]*$`);
-  if (typeof code !== "string" || code.length % size !== 0 || !re.test(code)) return null;
-  return Array.from({ length: code.length / size }, (_, row) => code.slice(row * size, row * size + size));
-}
 
 /* THE WORDS. One list per length, kept as the data file writes it, read into sets once. */
 

@@ -5,8 +5,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
-import { trainSetName } from "@/lib/party/mexicanTrain/mexicanTrain.constants";
-import { TRAIN_PHASES, trainPlayerName } from "@/lib/party/mexicanTrain/mexicanTrain";
+import { TRAIN_PHASES, trainPlayerName, trainSetName } from "@johnmorrisdotca/domino";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 
 import { MarbleChip } from "./MarbleChip";

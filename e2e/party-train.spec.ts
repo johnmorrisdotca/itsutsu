@@ -1,11 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { isDouble } from "../src/lib/party/mexicanTrain/dominoes";
-import { TRAIN_DEFAULT_OPTIONS } from "../src/lib/party/mexicanTrain/mexicanTrain.constants";
-import { TRAIN_PHASES, legalPlays, playTrain, startTrain } from "../src/lib/party/mexicanTrain/mexicanTrain";
-import type { TrainGame } from "../src/lib/party/mexicanTrain/mexicanTrain.types";
-import { encodeTrain } from "../src/lib/party/mexicanTrain/trainCodec";
-import { computerMove } from "../src/lib/party/mexicanTrain/trainComputer";
+import { TRAIN_DEFAULT_OPTIONS, TRAIN_PHASES, computerMove, encodeTrain, isDouble, legalPlays, playTrain, startTrain } from "@johnmorrisdotca/domino";
+import type { TrainGame } from "@johnmorrisdotca/domino";
 import { ready } from "./support";
 
 /**

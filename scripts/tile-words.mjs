@@ -9,7 +9,7 @@
  *   node scripts/tile-words.mjs scowl-2020.12.07/final
  *
  * The same source and the same sizes Gomoji lets a player guess from
- * (`scripts/word-lists.mjs`): SCOWL sizes 10 to 70, English and American
+ * (Kotoba's `scripts/word-lists.mjs`, github.com/johnmorrisdotca/kotoba): SCOWL sizes 10 to 70, English and American
  * spellings, lower case a–z only, so no proper names, abbreviations with
  * capitals, or possessives. Every length from 2 to 15, because a crossword on
  * a board fifteen squares wide can hold any of them.

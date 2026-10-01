@@ -1,7 +1,7 @@
 "use client";
 
 import { PlayButton } from "@/components/games/PlayButton";
-import { TRAIN_PHASES } from "@/lib/party/mexicanTrain/mexicanTrain";
+import { TRAIN_PHASES } from "@johnmorrisdotca/domino";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { TRAIN_COPY } from "./party.constants";

@@ -2,9 +2,8 @@
 
 import { useEffect } from "react";
 
-import { TRAIN_PHASES, peopleAt, playTrain } from "@/lib/party/mexicanTrain/mexicanTrain";
-import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
-import { computerMove } from "@/lib/party/mexicanTrain/trainComputer";
+import { TRAIN_PHASES, computerMove, peopleAt, playTrain } from "@johnmorrisdotca/domino";
+import type { TrainGame } from "@johnmorrisdotca/domino";
 
 import { TRAIN_COMPUTER_PAUSE_MS, TRAIN_COMPUTER_PAUSE_REDUCED_MS } from "./party.constants";
 

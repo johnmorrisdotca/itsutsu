@@ -3,7 +3,7 @@ import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
 import { mancalaBoardName } from "./mancala/mancala.constants";
-import { trainSetName } from "./mexicanTrain/mexicanTrain.constants";
+import { trainSetName } from "@johnmorrisdotca/domino";
 import { PARTY_DISPLAY, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";

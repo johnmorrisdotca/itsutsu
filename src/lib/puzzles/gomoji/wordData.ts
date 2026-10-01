@@ -37,7 +37,7 @@ export async function loadWordData(lang: WordListLanguage): Promise<void> {
   if (LOADED.has(lang)) return;
   let data: WordData;
   if (typeof window !== "undefined") {
-    data = lang === "fr" ? (await import("./words.fr.data")).FR_WORDS : lang === "de" ? (await import("./words.de.data")).DE_WORDS : (await import("./words.en.data")).EN_WORDS;
+    data = lang === "fr" ? (await import("@johnmorrisdotca/kotoba/words-fr")).FR_WORDS : lang === "de" ? (await import("@johnmorrisdotca/kotoba/words-de")).DE_WORDS : (await import("@johnmorrisdotca/kotoba/words-en")).EN_WORDS;
   } else {
     if (fromModule === null) throw new Error("Gomoji's word lists are read on the server through wordDataModule.ts, which was not imported.");
     data = await fromModule(lang);

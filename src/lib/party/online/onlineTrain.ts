@@ -1,8 +1,6 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import { TRAIN_DOUBLES, TRAIN_LENGTHS, TRAIN_MEXICAN } from "../mexicanTrain/mexicanTrain.constants";
-import { TRAIN_PHASES, moveCount, playTrain, startTrain } from "../mexicanTrain/mexicanTrain";
-import type { TrainGame, TrainMove, TrainOptions } from "../mexicanTrain/mexicanTrain.types";
-import { decodeTrain, encodeTrain } from "../mexicanTrain/trainCodec";
+import { TRAIN_DOUBLES, TRAIN_LENGTHS, TRAIN_MEXICAN, TRAIN_PHASES, decodeTrain, encodeTrain, moveCount, playTrain, startTrain } from "@johnmorrisdotca/domino";
+import type { TrainGame, TrainMove, TrainOptions } from "@johnmorrisdotca/domino";
 import { PARTY_SPECS } from "../party.constants";
 
 import { COMPUTER_SEAT_NAME } from "./online.constants";

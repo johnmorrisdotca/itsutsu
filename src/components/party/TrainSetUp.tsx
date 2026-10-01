@@ -6,9 +6,8 @@ import { SeatColourButton } from "./SeatColourButton";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { TRAIN_DEFAULT_OPTIONS, trainSetName } from "@/lib/party/mexicanTrain/mexicanTrain.constants";
-import { startTrain } from "@/lib/party/mexicanTrain/mexicanTrain";
-import type { TrainOptions } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { TRAIN_DEFAULT_OPTIONS, startTrain, trainSetName } from "@johnmorrisdotca/domino";
+import type { TrainOptions } from "@johnmorrisdotca/domino";
 import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";

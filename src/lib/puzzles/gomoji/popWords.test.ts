@@ -6,7 +6,7 @@ import { PUZZLE_SPECS, sizesOffered } from "../puzzles.constants";
 import { answersFor, isWord, languageOf } from "./code";
 import { generateGomoji } from "./generate";
 import { POP_OWN_GUESS_LENGTHS, isPopWord, loadPopGuesses, popAnswers, popCategoryOf } from "./popWords";
-import { POP_CATEGORIES } from "./words.pop.data";
+import { POP_CATEGORIES } from "@johnmorrisdotca/kotoba/pop-answers";
 
 /**
  * POP GOMOJI (gomojiPop): a pop-culture Gomoji whose every answer shows its

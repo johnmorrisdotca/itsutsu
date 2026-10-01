@@ -6,7 +6,7 @@ import { decodeGomojiProgress, progressFits } from "../puzzleProgress";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import { answersFor, breaksHardRule, decodeGuesses, decodeHidden, encodeHidden, foundInPlace, isWord, markGuess, rowsFor } from "./code";
 import { generateGomoji } from "./generate";
-import { foundBonus } from "./wordScore";
+import { foundBonus } from "@johnmorrisdotca/kotoba";
 
 /**
  * Gomoji: a word drawn from the level's list by the seed, coloured the

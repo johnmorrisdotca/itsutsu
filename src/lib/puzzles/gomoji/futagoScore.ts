@@ -1,6 +1,6 @@
-import { kanaScore, type KanaScore } from "../gomojiKana/kanaScore";
+import { kanaScore, wordScore } from "@johnmorrisdotca/kotoba";
+import type { KanaScore, WordScore } from "@johnmorrisdotca/kotoba";
 import { boardGuesses } from "./futago";
-import { wordScore, type WordScore } from "./wordScore";
 
 /**
  * WHAT A FUTAGO SCORES: each board scored as a Gomoji word is (`wordScore`,

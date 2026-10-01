@@ -1,6 +1,6 @@
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { kanaWordsOf } from "../gomojiKana/kanaWords";
-import { markKanaGuess } from "../gomojiKana/kanaMarks";
+import { markKanaGuess } from "@johnmorrisdotca/kotoba";
 import { decodeKanaGivens } from "../gomojiKana/kanaCode";
 import { answersFor, decodeHidden, languageOf, markGuess } from "./code";
 import { replayDodge, dodgeWord, dodgeFound, type DodgeMarker, type GreenCounter } from "./dodge";

@@ -1,5 +1,5 @@
 import { wordDataOf } from "./wordData";
-import { POP_ANSWERS, POP_CATEGORIES } from "./words.pop.data";
+import { POP_ANSWERS, POP_CATEGORIES } from "@johnmorrisdotca/kotoba/pop-answers";
 
 /**
  * POP GOMOJI'S WORDS: the answers, each with the category the puzzle shows as
@@ -68,7 +68,7 @@ export async function loadPopGuesses(size: number): Promise<void> {
   if (!POP_OWN_GUESS_LENGTHS.includes(size) || OWN.has(size)) return;
   let POP_GUESSES: PopGuesses;
   if (typeof window !== "undefined") {
-    POP_GUESSES = (await import("./words.pop.guesses.data")).POP_GUESSES;
+    POP_GUESSES = (await import("@johnmorrisdotca/kotoba/pop-guesses")).POP_GUESSES;
   } else {
     if (fromModule === null) throw new Error("Pop Gomoji's guesses are read on the server through popWordsModule.ts, which was not imported.");
     POP_GUESSES = await fromModule();

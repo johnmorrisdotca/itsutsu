@@ -1,7 +1,7 @@
 import { puzzleHash } from "../puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled } from "../random";
-import { kanaBase } from "../gomojiKana/kanaMarks";
+import { kanaBase } from "@johnmorrisdotca/kotoba";
 import { languageOf } from "./code";
 import { hiddenWordsOf } from "./futago";
 

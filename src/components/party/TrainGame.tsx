@@ -9,9 +9,8 @@ import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { tileWords } from "@/lib/party/mexicanTrain/dominoes";
-import { TRAIN_PHASES, peopleAt, playTrain, trainAgain, trainMoves, trainPlayerName } from "@/lib/party/mexicanTrain/mexicanTrain";
-import type { Domino, TrainGame as TrainGameState, TrainMove } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { TRAIN_PHASES, peopleAt, playTrain, tileWords, trainAgain, trainMoves, trainPlayerName } from "@johnmorrisdotca/domino";
+import type { Domino, TrainGame as TrainGameState, TrainMove } from "@johnmorrisdotca/domino";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 

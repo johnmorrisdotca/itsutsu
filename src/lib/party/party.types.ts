@@ -19,7 +19,7 @@
 
 import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
 import type { MancalaGame } from "./mancala/mancala.types";
-import type { TrainGame, TrainMove } from "./mexicanTrain/mexicanTrain.types";
+import type { TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 import type { GhostGame, GhostMove } from "./superghost/superghost.types";
 import type { TenkaGame, TenkaMove } from "./tenka/tenka.types";
 import type { PachisiGame, PachisiMove } from "./pachisi/pachisi.types";

@@ -18,7 +18,7 @@ import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
-import { kanaBase, markKanaGuess } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 
 import { KanaKeyboard } from "./KanaKeyboard";
 import { WordBoards } from "./WordBoards";

@@ -1,7 +1,7 @@
 "use client";
 
-import { decodeTrain, encodeTrain } from "@/lib/party/mexicanTrain/trainCodec";
-import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { decodeTrain, encodeTrain } from "@johnmorrisdotca/domino";
+import type { TrainGame } from "@johnmorrisdotca/domino";
 
 import { keptInBrowser } from "./keptInBrowser";
 import { TRAIN_STORAGE_KEY } from "./party.constants";

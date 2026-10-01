@@ -8,8 +8,8 @@ import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { handCanSpell } from "@/lib/puzzles/kumimoji/partyTurns";
 import { loadTileWords, tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 
-import type { TrainGame, TrainMove } from "@/lib/party/mexicanTrain/mexicanTrain.types";
-import { computerMove } from "@/lib/party/mexicanTrain/trainComputer";
+import { computerMove } from "@johnmorrisdotca/domino";
+import type { TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 import { type HitotsuGame, type HitotsuMove, tableComputerMove } from "@johnmorrisdotca/hitotsu";
 
 import type { OnlineComputerPlay, OnlineGameKey } from "./online.types";

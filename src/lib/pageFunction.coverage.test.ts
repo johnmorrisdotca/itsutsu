@@ -56,8 +56,6 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
 const BIG_FILE_BYTES = 64 * 1024;
 const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
   ["src/lib/puzzles/puzzles.constants.ts", "Every puzzle's name, rules and sizes, printed by its page, its rules page and every list of games."],
-  ["src/lib/puzzles/gomojiKana/words.ja.4.data.ts", "Read by kanaWordsModule.ts, which the list above gives the reason for."],
-  ["src/lib/puzzles/gomojiKana/words.ja.5.data.ts", "Read by kanaWordsModule.ts."],
 ]);
 
 /*
@@ -110,6 +108,12 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/toranpu/deck", "The cards drawn in the Cards and Tricks family marks."],
   ["@johnmorrisdotca/toranpu/klondike", "Solitaire's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
   ["@johnmorrisdotca/toranpu/freecell", "FreeCell's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
+  ["@johnmorrisdotca/domino", "Mexican Train's rules: its rules page prints the sets, and a table played on several devices is read and drawn on the server."],
+  ["@johnmorrisdotca/kotoba", "Marking a guess, scoring and the kana marks, for a finished word puzzle replayed and checked on the server; no word list (each is an entry of its own)."],
+  ["@johnmorrisdotca/kotoba/kana-3", "Read by kanaWordsModule.ts, which the readers above give the reason for."],
+  ["@johnmorrisdotca/kotoba/kana-4", "Read by kanaWordsModule.ts."],
+  ["@johnmorrisdotca/kotoba/kana-5", "Read by kanaWordsModule.ts."],
+  ["@johnmorrisdotca/kotoba/pop-answers", "Pop Gomoji's answers and their categories (18 KB), whose category is the clue printed with a day's pop word."],
   ["@johnmorrisdotca/toranpu/spider", "Spider's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
 ]);
 
@@ -154,7 +158,8 @@ const TABLES_DRAWN_ON_THE_SERVER: ReadonlySet<string> = new Set([
 ]);
 const TABLE_FILES = ["src/components/party/partyKindTables.ts", "src/components/party/partyTables.ts"];
 
-const isData = (spec: string) => /\.data$/.test(spec);
+// A word list is a `.data` file of ours, or one of Kotoba's lists, each an entry point of its own (`@johnmorrisdotca/kotoba/kana-5`).
+const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec);
 
 describe("the pages' server function", () => {
   it("fetches a list in the browser only, or reads it in a module of its own", () => {

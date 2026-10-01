@@ -29,8 +29,8 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/TrainTable.tsx",
   "src/components/party/DominoFace.tsx",
   "src/components/party/trainLayout.ts",
-  "src/lib/party/mexicanTrain/mexicanTrain.ts",
-  "src/lib/party/mexicanTrain/trainComputer.ts",
+  // Mexican Train's rules and computer are Domino's since 1.0.0: a new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/domino/package.json",
   "src/components/party/cards/CardPlay.tsx",
   "src/components/party/cards/CardTableParts.tsx",
   "src/components/party/cards/CardSeats.tsx",

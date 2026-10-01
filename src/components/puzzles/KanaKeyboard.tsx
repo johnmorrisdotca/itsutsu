@@ -1,6 +1,7 @@
 "use client";
 
-import { cycleMark, toggleSize, type KanaMark } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { cycleMark, toggleSize } from "@johnmorrisdotca/kotoba";
+import type { KanaMark } from "@johnmorrisdotca/kotoba";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 import { keyLabel } from "@/lib/puzzles/keyMarks";
 

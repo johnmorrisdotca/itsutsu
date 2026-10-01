@@ -17,10 +17,10 @@
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 
-import { DE_WORDS } from "../src/lib/puzzles/gomoji/words.de.data.ts";
-import { EN_WORDS } from "../src/lib/puzzles/gomoji/words.en.data.ts";
-import { FR_WORDS } from "../src/lib/puzzles/gomoji/words.fr.data.ts";
-import { POP_ANSWERS } from "../src/lib/puzzles/gomoji/words.pop.data.ts";
+import { DE_WORDS } from "@johnmorrisdotca/kotoba/words-de";
+import { EN_WORDS } from "@johnmorrisdotca/kotoba/words-en";
+import { FR_WORDS } from "@johnmorrisdotca/kotoba/words-fr";
+import { POP_ANSWERS } from "@johnmorrisdotca/kotoba/pop-answers";
 import { unpack } from "../src/lib/puzzles/gomojiKana/kanaWords.ts";
 import type { PackedDailyPool } from "../src/lib/puzzles/dailyWords/dailyWords.types.ts";
 
@@ -38,7 +38,7 @@ function alphabetSources(): Source[] {
       lang,
       size,
       words: () => split(tables[lang][size]!.answers),
-      file: `src/lib/puzzles/gomoji/words.${lang}.data.ts`,
+      file: `node_modules/@johnmorrisdotca/kotoba/dist/lists/words-${lang}.data.js`,
       describe: `the ${size}-letter answers (medium and hard) of words.${lang}.data.ts, read ${TODAY}`,
     })),
   );
@@ -50,7 +50,7 @@ function popSources(): Source[] {
     lang: "pop" as const,
     size,
     words: () => split(POP_ANSWERS[size]!).map((entry) => entry.slice(0, entry.indexOf("."))),
-    file: "src/lib/puzzles/gomoji/words.pop.data.ts",
+    file: "node_modules/@johnmorrisdotca/kotoba/dist/lists/pop-answers.data.js",
     describe: `the ${size}-letter answers of words.pop.data.ts, read ${TODAY}`,
   }));
 }
@@ -69,7 +69,7 @@ async function kanaSources(): Promise<Source[]> {
         lang: "ja" as const,
         size,
         words: () => [...unpack(packed, size).answers],
-        file: `src/lib/puzzles/gomojiKana/words.ja.${size}.data.ts`,
+        file: `node_modules/@johnmorrisdotca/kotoba/dist/lists/kana-${size}.data.js`,
         describe: `the ${size}-kana answers (the commonest 2,000) of JMdict release ${packed.release}, read ${TODAY}`,
       };
     }),

@@ -1,4 +1,4 @@
-import type { WordScore } from "@/lib/puzzles/gomoji/wordScore";
+import type { WordScore } from "@johnmorrisdotca/kotoba";
 import { POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
 import { SELECTABLE } from "@/components/ui/ui.constants";
 

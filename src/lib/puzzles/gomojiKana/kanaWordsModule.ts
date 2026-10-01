@@ -8,9 +8,9 @@ import { type KanaWords, loadKanaWords, readKanaWordsWith } from "./kanaWords";
  */
 readKanaWordsWith(async (size) => {
   // Named one by one, so the bundler splits each length into its own chunk.
-  if (size === 3) return (await import("./words.ja.3.data")).JA_WORDS_3;
-  if (size === 4) return (await import("./words.ja.4.data")).JA_WORDS_4;
-  if (size === 5) return (await import("./words.ja.5.data")).JA_WORDS_5;
+  if (size === 3) return (await import("@johnmorrisdotca/kotoba/kana-3")).JA_WORDS_3;
+  if (size === 4) return (await import("@johnmorrisdotca/kotoba/kana-4")).JA_WORDS_4;
+  if (size === 5) return (await import("@johnmorrisdotca/kotoba/kana-5")).JA_WORDS_5;
   throw new Error(`No ${size}-kana words.`);
 });
 

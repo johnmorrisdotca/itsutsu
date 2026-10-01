@@ -1,8 +1,8 @@
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_HEADING, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
-import { TRAIN_PHASES, trainPlayerName, trainTotals } from "@/lib/party/mexicanTrain/mexicanTrain";
-import type { TrainGame } from "@/lib/party/mexicanTrain/mexicanTrain.types";
+import { TRAIN_PHASES, trainPlayerName, trainTotals } from "@johnmorrisdotca/domino";
+import type { TrainGame } from "@johnmorrisdotca/domino";
 
 import { MarbleChip } from "./MarbleChip";
 import { TRAIN_COPY } from "./party.constants";

@@ -21,10 +21,10 @@ import { backwardsGuesses, breaksBackwardsRule } from "@/lib/puzzles/gomoji/back
 import { isBackwardsGivens } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { futagoKanaScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { breaksKanaHardRule, toHiragana } from "@/lib/puzzles/gomojiKana/kanaCode";
-import { cycleMark, kanaBase, markKanaGuess, toggleSize, type KanaMark, type KanaMarked } from "@/lib/puzzles/gomojiKana/kanaMarks";
+import { cycleMark, finishRomaji, kanaBase, markKanaGuess, readRomaji, toggleSize } from "@johnmorrisdotca/kotoba";
+import type { KanaMark, KanaMarked } from "@johnmorrisdotca/kotoba";
 import { kanaWordsOf } from "@/lib/puzzles/gomojiKana/kanaWords";
 import { isDailyPoolWord } from "@/lib/puzzles/dailyWords/dailyPools";
-import { finishRomaji, readRomaji } from "@/lib/puzzles/gomojiKana/romaji";
 import { headStartKeys } from "@/lib/puzzles/gomoji/headStart";
 import { kanaKeyMarks, knownCounts, typedCounts, withHeadStart } from "@/lib/puzzles/keyMarks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
