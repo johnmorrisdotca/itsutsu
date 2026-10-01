@@ -8,8 +8,10 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { familyPath, joinQuery, matchPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
+import { fixedLevelOf } from "@/lib/puzzles/fixedLevel";
+import { suidoSizeInAddress } from "@/lib/puzzles/suido/sizes";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 import type { racesWaitingOn } from "@/lib/puzzles/server/puzzleRaces";
@@ -59,7 +61,7 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
                   <GameName variant={kind} raised />
                 </span>
                 <span className="text-xs text-muted">
-                  {sizeWord(race.size, kind)} · {PUZZLE_LEVEL_DISPLAY[race.level as PuzzleLevel].label} · a race against{" "}
+                  {sizeWord(race.size, kind)} · {fixedLevelOf(kind, race.seed) === null ? PUZZLE_LEVEL_DISPLAY[race.level as PuzzleLevel].label : `Level ${fixedLevelOf(kind, race.seed)}`} · a race against{" "}
                   <PlayerName name={race.against.name} memberId={race.against.memberId} fallback="somebody" className={RAISED_LINK} tagged={false} />, waiting on you
                 </span>
               </span>
@@ -77,6 +79,8 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
           const level = run.level as PuzzleLevel;
           const asked = keptRunAsked(kind, run);
           const href = joinQuery(playPath(kind), puzzleQuery(asked));
+          // A run of a fixed level is named by its number (Tsunagi's, and a Suido level's: `fixedLevelOf`), and has its board of levels to go back to.
+          const fixed = fixedLevelOf(kind, run.seed);
           return (
             <li key={run.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-going" data-kind={kind} data-seed={run.seed}>
               {/* The whole card carries on, as a game's row opens its game; the name above it leads to the puzzle. */}
@@ -87,8 +91,8 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
                   <GameName variant={kind} raised />
                 </span>
                 <span className="text-xs text-muted">
-                  {/* A fixed level is named by its number (Tsunagi), every other puzzle by its level. */}
-                  {sizeWord(run.size, kind)} · {PUZZLE_SPECS[kind].fixedLevels === true ? `Level ${run.seed}` : PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
+                  {/* A fixed level is named by its number, every other puzzle by its level. */}
+                  {sizeWord(run.size, kind)} · {fixed !== null ? `Level ${fixed}` : PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
                   {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
                   {asked.hints ? " · hints" : ""}
                   {run.strict ? " · strict" : ""}
@@ -98,8 +102,8 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
-                {PUZZLE_SPECS[kind].fixedLevels === true ? (
-                  <Link href={joinQuery(setUpPath(kind), `?size=${run.size}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
+                {fixed !== null ? (
+                  <Link href={joinQuery(setUpPath(kind), `?size=${suidoSizeInAddress(run.size)}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
                     All levels
                   </Link>
                 ) : null}

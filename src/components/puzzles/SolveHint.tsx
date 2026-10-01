@@ -11,8 +11,9 @@ import type { Hinting } from "./useHints";
  * are chosen. When they were, it says how many are used from the start, as
  * Check says how many are left, so the first press does not widen it.
  */
-export function SolveHint({ hinting, onHint, disabled, racing }: { hinting: Hinting; onHint: () => void; disabled: boolean; racing: boolean }) {
-  const why = racing ? "No hints in a race" : !hinting.allowed ? "Hints are chosen when the puzzle is set up" : undefined;
+export function SolveHint({ hinting, onHint, disabled, racing, without }: { hinting: Hinting; onHint: () => void; disabled: boolean; racing: boolean; without?: string }) {
+  // `without` is a puzzle with no hints to choose at all, saying why in its own words (a Suido level: `suido.constants.ts`).
+  const why = without ?? (racing ? "No hints in a race" : !hinting.allowed ? "Hints are chosen when the puzzle is set up" : undefined);
   return (
     <button
       type="button"

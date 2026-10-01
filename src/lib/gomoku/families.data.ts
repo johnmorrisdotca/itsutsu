@@ -214,7 +214,9 @@ export const GAME_FAMILIES: GameFamily[] = [
      * Suido 水道 (2026-10-01) is the third: pipes that can only be turned, one
      * answer, and the water drawn flowing as they join. It is a logic puzzle of
      * the same promise, and a grid of pieces rather than of numbers, so it is
-     * here and not in Numbers (which was full at eight).
+     * here and not in Numbers (which was full at eight). Its 3,328 fixed
+     * levels (2026-10-01) are numbered boards the same for everybody, as
+     * Tsunagi's are, beside the boards it makes.
      */
     title: "Logic puzzles",
     kanji: "理詰め",

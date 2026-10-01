@@ -20,7 +20,10 @@ import { redirect } from "next/navigation";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
+import { suidoLevelOfSeed } from "@/lib/puzzles/suido/seed";
+import { SuidoLevelFastest } from "./SuidoLevelFastest";
 import { TsunagiLevelFastest } from "./TsunagiLevelFastest";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -70,6 +73,16 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const bestSolves = Object.fromEntries(Object.entries(solved?.[asked.size] ?? {}).map(([level, best]) => [level, best.solveId]));
   // Levels solved only in a way that opens nothing (explosions off): solved, never counted to open a block.
   const closed = Object.entries(solved?.[asked.size] ?? {}).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]));
+  /* A Suido LEVEL (its seed names one, `suido/seed.ts`): the member's solved levels at this size, so a level past the open blocks is shut and a solved one opens solved (`SuidoSolve`), and its fastest times below. A Suido board made from a seed reads nothing. */
+  const suidoLevel = kind === "suido" && asked.seed !== null ? suidoLevelOfSeed(asked.seed) : null;
+  const suidoSolved = suidoLevel !== null && reader.memberId !== null ? (await suidoSolvedBy(reader.memberId))[asked.size] ?? {} : null;
+  const suido =
+    suidoLevel === null
+      ? null
+      : {
+          known: Object.fromEntries(Object.entries(suidoSolved ?? {}).map(([level, best]) => [level, best.elapsedMs])),
+          bestSolves: Object.fromEntries(Object.entries(suidoSolved ?? {}).map(([level, best]) => [level, best.solveId])),
+        };
   return (
     // A board page whose play draws "Just the board" beside its size (`BoardScale`).
     <Page board="play">
@@ -86,13 +99,18 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       {/* The solve at the size this reader keeps for this kind of screen (`BoardScaled`): Regular is the column it always had. */}
       <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient drawnFor={puzzleQuery(asked)} kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} backwards={asked.backwards === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} pipes={asked.pipes} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
+          <PuzzlePlayClient drawnFor={puzzleQuery(asked)} kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} backwards={asked.backwards === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} pipes={asked.pipes} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} suido={suido} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
       </BoardScaled>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
       {tsunagi && asked.seed !== null ? (
         <div data-chrome>
           <TsunagiLevelFastest size={asked.size} level={asked.seed} />
+        </div>
+      ) : null}
+      {suidoLevel !== null ? (
+        <div data-chrome>
+          <SuidoLevelFastest size={asked.size} level={suidoLevel} />
         </div>
       ) : null}
       {/* Furniture, for just the board. */}

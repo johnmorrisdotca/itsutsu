@@ -167,7 +167,7 @@ answer is never kept.
 
 | Column | Meaning |
 | --- | --- |
-| `kind`, `size`, `level` | Which puzzle, as it was asked for |
+| `kind`, `size`, `level` | Which puzzle, as it was asked for. A Suido's `size` is a square's side, or for its three long boards the width and then the height in two digits each (507 is 5×7, `suido/sizes.ts`). A Suido LEVEL (one of the 256 fixed boards at a size) is found by its `givens`, never by a number, so a level renumbered later keeps its solves; its `level` column is the third of its size it sits in |
 | `givens` | The puzzle's code (`puzzleCode.ts`), so two solves of one grid are told apart from two grids |
 | `elapsedMs` | The browser's clock for a solve on one's own; the server's two stamps in a race |
 | `finishedAt` | When the site checked it |
@@ -200,7 +200,7 @@ their inbox, find it on My games, and may take the seat from the race's page.
 
 | Group | Columns | Notes |
 | --- | --- | --- |
-| The puzzle | `kind`, `size`, `level`, `seed`, `givens`, `solution` | The seed lets the guest's browser make the same grid; `solution` is kept to check a finish in O(cells) and never sent out |
+| The puzzle | `kind`, `size`, `level`, `seed`, `givens`, `solution` | The seed lets the guest's browser make the same grid (a Suido level's seed names the level, in a block of its own: `SUIDO_LEVEL_SEED_BLOCK`); `solution` is kept to check a finish in O(cells) and never sent out |
 | Seats | `hostMemberId`, `hostName`, `guestToken`, `guestMemberId`, `guestName` | The token is the guest's seat, shown to the host only while the seat is empty |
 | Offered | `offeredToMemberId` | A buddy the host offered the empty seat to; they are shown the seat's link on the race page. Cleared when that member is removed |
 | Clocks | `hostStartedAt`, `hostFinishedAt`, `guestStartedAt`, `guestFinishedAt` | Written once each, by the server |

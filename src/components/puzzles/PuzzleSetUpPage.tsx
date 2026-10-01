@@ -9,7 +9,10 @@ import { gamePath, joinQuery, playPath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
+import { suidoModeOf } from "@/lib/puzzles/suido/mode";
+import { suidoSizeFromAddress } from "@/lib/puzzles/suido/sizes";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { keptRunAsked, puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
@@ -19,6 +22,8 @@ import { Suspense } from "react";
 
 import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsLive";
 import { PuzzleSetUp } from "./PuzzleSetUp";
+import { SuidoModeSwitch } from "./SuidoModeSwitch";
+import { SuidoSetUp } from "./SuidoSetUp";
 import { TsunagiSetUp } from "./TsunagiSetUp";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -79,7 +84,16 @@ export async function PuzzleSetUpPage({
           </>
         }
       />
-      {kind === "tsunagi" ? (
+      {/* Suido is played two ways, each its own screen under this switch: its levels first, and Make a board, a new one from a seed (`SuidoModeSwitch`). */}
+      {kind === "suido" ? <SuidoModeSwitch mode={suidoModeOf(query)} size={suidoSizeAsked(query)} /> : null}
+      {kind === "suido" && suidoModeOf(query) === "levels" ? (
+        <SuidoSetUp
+          hasAccount={hasAccount}
+          {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await suidoSolvedBy(memberId)))}
+          initialSize={suidoSizeAsked(query)}
+          resumeHref={resumeHref}
+        />
+      ) : kind === "tsunagi" ? (
         <TsunagiSetUp
           hasAccount={hasAccount}
           appearance={appearance ?? undefined}
@@ -94,7 +108,7 @@ export async function PuzzleSetUpPage({
         />
       ) : (
         <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
-          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={puzzleAsked(kind, query)} resumeHref={resumeHref} />
+          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={setUpAsked(kind, query)} resumeHref={resumeHref} />
         </WordStyleProvider>
       )}
       {dailyLanguageOf(kind) !== null ? (
@@ -129,5 +143,30 @@ function setUpSolves(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): {
     bestSolves: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.solveId]))])),
     solved: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.elapsedMs]))])),
     closed: Object.fromEntries(entries.map(([size, levels]) => [size, Object.entries(levels).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]))])),
+  };
+}
+
+/** The size a Suido levels' set-up opens on: any of the thirteen the levels come in, as `7` or `5x7`; the puzzle's usual otherwise. */
+function suidoSizeAsked(query: Record<string, string | string[] | undefined>): number {
+  const text = Array.isArray(query.size) ? query.size[0] : query.size;
+  const asked = text === undefined ? null : suidoSizeFromAddress(text);
+  return asked !== null && PUZZLE_SPECS.suido.sizes.includes(asked) ? asked : PUZZLE_SPECS.suido.defaultSize;
+}
+
+/**
+ * What the puzzle's own set-up opens on: the address's choice, except that a Suido's "Make a board" offers four
+ * boards and an address naming another size of its levels (a 14×14, a 5×7) opens on the usual one.
+ */
+function setUpAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): ReturnType<typeof puzzleAsked> {
+  const asked = puzzleAsked(kind, query);
+  return kind === "suido" && !PUZZLE_SPECS.suido.offered.includes(asked.size) ? { ...asked, size: PUZZLE_SPECS.suido.defaultSize } : asked;
+}
+
+/** A member's solved Suido levels as the board of levels reads them: each level's best time, and the solve it was, which its time opens. */
+function setUpSuidoSolves(solved: Awaited<ReturnType<typeof suidoSolvedBy>>): { solved: Record<number, Record<number, number>>; bestSolves: Record<number, Record<number, string>> } {
+  const entries = Object.entries(solved);
+  return {
+    bestSolves: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.solveId]))])),
+    solved: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.elapsedMs]))])),
   };
 }

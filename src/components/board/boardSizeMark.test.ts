@@ -12,6 +12,7 @@ import { ALL_BOARD_SIZES } from "@/lib/gomoku/gomoku.constants";
 import { boardSizeWords } from "./Board.constants";
 import type { BoardSizeMarkWords } from "./board.types";
 import { BoardSizeMark } from "./BoardSizeMark";
+import { longBoardOf } from "./boardShape";
 import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
 
 /**
@@ -193,5 +194,43 @@ describe("the lattice is drawn in one place", () => {
   it("is used by the picker, which is the surface that shows board sizes as pictures", () => {
     const users = FILES.filter((file) => file.source.includes("<BoardSizeMark")).map((file) => file.path);
     expect(users).toContain("src/components/live/BoardPicker.tsx");
+  });
+});
+
+/**
+ * A LONG BOARD'S MARK (Suido's 5×7, 6×10 and 8×14, kept as 507, 610 and 814: `boardShape.ts`). It is the same mark at the
+ * same picture size, so the tile it stands in is no different from the others, but drawn at the board's own shape: its
+ * longer side as long as the picture, the lattice at the density of its width and height, and its two sides for its number.
+ */
+describe("BoardSizeMark, for a long board", () => {
+  it("is a long board's shape in the one picture box, with its two sides for its number", () => {
+    for (const [size, across, down] of [[507, 5, 7], [610, 6, 10], [814, 8, 14]] as const) {
+      for (const picture of PICTURE_SIZES) {
+        const html = draw(size, "none", picture);
+        const box = PICTURE_PX[picture];
+        // The box every mark is drawn in, so a row of tiles keeps its height.
+        expect(html, `${size} at ${picture}`).toContain(`width:${box}px;height:${box}px`);
+        // The shape: the shorter side in proportion to the longer, the lattice at the density of each side.
+        expect(html).toContain(`width:${(box * across) / down}px;height:${box}px`);
+        expect(html).toContain(`background-size:${100 / across}% ${100 / down}%`);
+        expect(html).toContain(`>${across}×${down}</span>`);
+        expect(html).toContain(`aria-label="${across} by ${down} board"`);
+        expect(html).toContain('data-testid="board-size-mark"');
+      }
+    }
+  });
+
+  it("is silent where the size is in text beside it, as every mark is", () => {
+    const html = draw(814, "beside");
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).not.toContain("aria-label");
+  });
+
+  it("leaves every square as it was, whatever its number", () => {
+    expect(draw(14, "none")).toContain(">14</span>");
+    expect(draw(14, "none")).toContain("width:70px;height:70px");
+    expect(longBoardOf(14)).toBeNull();
+    expect(longBoardOf(100)).toBeNull();
+    expect(longBoardOf(814)).toEqual({ width: 8, height: 14 });
   });
 });

@@ -56,7 +56,7 @@ export async function createRace(input: {
   const diagonals = input.kind === "kumimoji" && (input.diagonals ?? false);
   if (!spec.sizes.includes(input.size) || !levelsFor(input.kind, input.size).includes(input.level)) return { refused: "no such puzzle" };
   if (input.givens.length > spec.mostCells || input.solution.length > spec.mostCells) return { refused: "not a grid of that size" };
-  await preparePuzzleOnServer(input.kind, input.size, language);
+  await preparePuzzleOnServer(input.kind, input.size, language, input.seed);
   const verdict = checkSolution(input.kind, input.size, input.givens, input.solution, input.level, { gameLength, language, doubleSet, diagonals });
   if (!verdict.ok) return { refused: `the answer does not solve the puzzle: ${verdict.reason}` };
   const id = await freeRaceId();
@@ -94,7 +94,7 @@ export async function finishSeat(
   if (!canFinish(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "the sitting is over" : "not started", status: 409 };
   if (answer.length > PUZZLE_SPECS[kind].mostCells) return { ok: false, reason: "not a grid of that size", status: 422 };
   const language = kind === "kumimoji" ? race.language as KumimojiLanguage : "english";
-  await preparePuzzleOnServer(kind, race.size, language);
+  await preparePuzzleOnServer(kind, race.size, language, race.seed);
   const verdict = checkSolution(kind, race.size, race.givens, answer, level, { gameLength: race.gameLength as KumimojiLength, language, doubleSet: race.doubleSet, diagonals: race.diagonals });
   if (!verdict.ok) return { ok: false, reason: verdict.reason, status: 422 };
 

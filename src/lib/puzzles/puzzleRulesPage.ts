@@ -49,13 +49,16 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const copy = PUZZLE_DISPLAY[kind];
   const spec = PUZZLE_SPECS[kind];
   // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
+  // A Suido's rules page names the boards made from a seed here, and its levels in its own rules (`PUZZLE_DISPLAY.suido`).
   const sizes = sizesOffered(kind).map((size) => sizeText(kind, size)).join(", ");
   const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
 
   const object = [copy.tagline, copy.rules[0]];
   const board = [
-    `${CARD_SIZE_WORDS[kind]?.heading ?? "Sizes"}: ${sizes}. ${copy.board}`,
-    spec.fixedLevels === true
+    `${CARD_SIZE_WORDS[kind]?.heading ?? (kind === "suido" ? "Boards you make" : "Sizes")}: ${sizes}. ${copy.board}`,
+    kind === "suido"
+      ? "Every level and every board has exactly one answer. The levels were made once, and the package they come from proves every one of them again each time it is built; a board you make is checked in the same way before you see it. So there is never a board with two answers or none."
+      : spec.fixedLevels === true
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
       : spec.cards === true && kind !== "solitaire"
       ? "Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not."
@@ -72,7 +75,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
   const play = [
     ...copy.rules.slice(1),
     ...(spec.wordGrid === undefined ? [] : [futagoRule(spec.wordGrid), yotsugoRule(spec.wordGrid), ...(offersDodge(kind) ? [dodgeRule(spec.wordGrid), backwardsRule(spec.wordGrid)] : [])]),
-    `Levels: ${levels.join("; ")}.`,
+    // A Suido's levels are numbered fixed boards (its rules say so): easy, medium and hard are what a made board is asked for.
+    `${kind === "suido" ? "A board you make, at a level" : "Levels"}: ${levels.join("; ")}.`,
     spec.cards === true
       ? "A game is for one person, in your own browser: the deal is shuffled and every move is checked there, and nothing is sent anywhere until the last card is home."
       : "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
@@ -83,7 +87,9 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
       : spec.cards === true
       ? "A won game is checked by the site, move by move from the deal, and a member is paid XP for it, once per deal."
       : "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
-    spec.fixedLevels === true
+    kind === "suido"
+      ? "A level or a board left half turned is kept for a member and waits in My games, pieces and clock as they were. The levels you have solved are kept on your account, or in this browser without one."
+      : spec.fixedLevels === true
       ? "A level left half drawn is kept for a member and waits in My games, lines and clock as they were. The levels you have solved are kept on your account, or in this browser without one."
       : "A puzzle left half done is kept for a member and waits in My games, as it was left, clock and all. Without an account nothing is kept: the same address brings back the same puzzle, and its clock starts again.",
     "Nothing is rated, nobody is beaten and no ladder counts a solve. A puzzle is a game in the catalogue and not a game between two players.",

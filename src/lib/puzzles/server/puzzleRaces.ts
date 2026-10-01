@@ -169,7 +169,7 @@ export async function racesWaitingOn(memberId: string, now = new Date()) {
     },
     orderBy: { createdAt: "desc" },
     take: 20,
-    select: { id: true, kind: true, size: true, level: true, hostName: true, hostMemberId: true, guestName: true, guestMemberId: true, createdAt: true },
+    select: { id: true, kind: true, size: true, level: true, seed: true, hostName: true, hostMemberId: true, guestName: true, guestMemberId: true, createdAt: true },
   });
   // Who each is against: the guest for the host, the host for anybody else.
   return rows.map((row) => ({

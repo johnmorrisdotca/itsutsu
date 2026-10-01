@@ -9,6 +9,7 @@ import { CUBE_MOVES_MOST } from "./cube/check";
 import { SCRAMBLE_LENGTHS } from "./cube/generate";
 import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
+import { SUIDO_LEVEL_SIZES } from "./suido/sizes";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -364,20 +365,28 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   },
   /*
    * SUIDO, the pipe puzzle (`suido/`, the package `@johnmorrisdotca/suido`):
-   * a square of pieces that can only be turned, whose size is its side. The
-   * givens are the board as it is dealt and the answer the same board solved,
-   * both in the package's own code, "5x5d:" and a character a cell (151 at
-   * 12×12 with its header, so 160 is room). No Check: the water is drawn as
-   * the pieces face, so every leak is in plain sight, and there is nothing a
-   * Check could tell that the board does not. Hint is offered.
+   * a grid of pieces that can only be turned. It is played two ways: its
+   * FIXED LEVELS, 256 at each of thirteen sizes, the same board for everybody
+   * (`suido/levels.ts`, and a level's seed names it: `suido/seed.ts`), and a
+   * board made from a seed, "Make a board", at the four sizes `offered`. A
+   * size is a square's side, or for the three long boards its width and then
+   * its height in two digits each (507 is 5×7, `suido/sizes.ts`), so `sizes`
+   * is every size a level comes in and `offered` the boards that are made.
+   * The givens are the board as it is dealt and the answer the same board
+   * solved, both in the package's own code, "5x5d:" and a character a cell
+   * (356 at 14×14 with its locked pieces and walls, which `levels.test.ts`
+   * holds every level to; 400 is room). No Check: the water is drawn as the
+   * pieces face, so every leak is in plain sight, and there is nothing a
+   * Check could tell that the board does not. Hint is offered on a board made,
+   * and on no level, where a time is one anybody can be raced on.
    */
   suido: {
-    sizes: [5, 7, 9, 12],
+    sizes: SUIDO_LEVEL_SIZES,
     offered: [5, 7, 9, 12],
     defaultSize: 7,
     levels: PUZZLE_LEVEL_LIST,
     defaultLevel: "medium",
-    mostCells: 160,
+    mostCells: 400,
     checks: false,
   },
 };
@@ -555,12 +564,21 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     10: { label: "Castle", kanji: "城" },
     15: { label: "Turtle", kanji: "亀" },
   },
-  // A Suido board by its side, the big number on the tile: how long the pipes take to follow.
+  // A Suido board by its side, the big number on the tile: how long the pipes take to follow. The three long boards are 507, 610 and 814 (`suido/sizes.ts`), drawn at their own shape.
   suido: {
     5: { label: "Quick", kanji: "速" },
+    6: { label: "Short", kanji: "短" },
     7: { label: "Standard", kanji: "定番" },
-    9: { label: "Long", kanji: "長" },
-    12: { label: "Longest", kanji: "最長" },
+    8: { label: "Long", kanji: "長" },
+    9: { label: "Longer", kanji: "長大" },
+    10: { label: "Big", kanji: "大" },
+    11: { label: "Bigger", kanji: "特大" },
+    12: { label: "Huge", kanji: "巨大" },
+    13: { label: "Giant", kanji: "巨" },
+    14: { label: "Biggest", kanji: "超大" },
+    507: { label: "Short pipe", kanji: "短管" },
+    610: { label: "Pipe", kanji: "管" },
+    814: { label: "Long pipe", kanji: "長管" },
   },
   // A cube by its side, the big number on the tile; the names are ours, never a maker's.
   cube: {
@@ -1173,21 +1191,22 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   suido: {
     label: "Suido",
     kanji: "水道",
-    tagline: "Turn the pipes until the water from the pump reaches every drain and nothing leaks.",
+    tagline: "Turn the pipes until the water from the pump reaches every drain and nothing leaks. Play 256 levels at every size, or a new board each time.",
     inspiredBy: "the pipe-turning puzzle known as Net or NetWalk",
     alsoKnownAs: ["Net", "NetWalk"],
     origin:
-      "A puzzle of turning fixed pieces until they join into one network, found in puzzle collections for many years under names such as Net and NetWalk. 水道 (suidō) is Japanese for waterworks: 水 is water and 道 a way, so literally a water way. The boards here are made by our own code, each with exactly one answer, and the water is drawn flowing.",
+      "A puzzle of turning fixed pieces until they join into one network, found in puzzle collections for many years under names such as Net and NetWalk. 水道 (suidō) is Japanese for waterworks: 水 is water and 道 a way, so literally a water way. The boards here are made by our own code, each with exactly one answer, and the water is drawn flowing. 3,328 of them are fixed levels, made once and proved to have exactly one answer.",
     rules: [
       "Every square holds a piece of pipe. A piece is never moved or changed, only turned, and the pump is where the water comes from.",
       "Tap a piece to turn it a quarter clockwise. Choose Anticlockwise under the board to turn the other way, or Shift-click or right-click with a mouse. With the keyboard, the arrow keys move, Enter turns a piece and Shift with Enter turns it back.",
       "The water goes from one piece into the next wherever their openings meet. It runs out of any opening that meets nothing: the edge of the board, bare ground, or a piece that does not open back. A drip shows where.",
       "Drains, the usual kind: the water must reach every drain, and nothing wet may run out. Pieces the water does not need are spares, left facing any way, and bare ground has nothing on it.",
       "Network, the other kind: every piece must be wet, so there are no spares and nothing may run out.",
-      "It is solved the moment the water reaches what its kind asks and nothing runs out. Every board has exactly one answer, and the clock starts on your first turn.",
-      "Hint, if chosen on the set-up, turns one piece to face the way the answer has it, starting nearest the pump, and costs a hint.",
+      "Levels: every size has 256 fixed levels, easy to hard and the same for everybody, so a time on one can be compared with anybody's. They come in blocks of 16, and a block opens when every level of the block before it is solved. A level can have a twist, named in a chip under the board: Pumps, more than one, each feeding its own pipes. Locked pieces, which wear a padlock, cannot be turned and already face the right way, so build from them. Walls, which water cannot cross. Edges join, drawn with a dashed rim: water leaving one side comes in at the opposite one. Inlet to outlet, one path with no branch from the top left to the bottom right, the other pieces being decoys that stay dry. The 15th level of a block shows its twist and the 16th tests it.",
+      "It is solved the moment the water reaches what its kind asks and nothing runs out. Every level and every board has exactly one answer, and the clock starts on your first turn.",
+      "Make a board, beside the levels, makes a new one at a size and a level you choose, and Hint, if chosen there, turns one piece to face the way the answer has it, starting nearest the pump, and costs a hint. A level has no hint and no clock.",
     ],
     board:
-      "7×7 is the usual size. 5×5 is quick, 9×9 is longer, and 12×12 is an evening; on a phone the 12×12 zooms, with Fit and the arrows under the board. Drains leaves spare pieces to see past; network uses every piece, so it has no spares to ignore.",
+      "7×7 is the usual size. 5×5 is quick, 9×9 is longer, and 12×12 is an evening; on a phone a board of 10×10 or more zooms, with Fit and the arrows under the board. The levels come in 13 sizes, 5×5 to 14×14, and in three long boards taller than they are wide, 5×7, 6×10 and 8×14. Drains leaves spare pieces to see past; network uses every piece, so it has no spares to ignore.",
   },
 };

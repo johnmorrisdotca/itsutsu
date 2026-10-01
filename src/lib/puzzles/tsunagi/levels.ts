@@ -4,6 +4,7 @@ import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 
 export { firstUnsolvedTsunagiLevel, isTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@johnmorrisdotca/tsunagi";
 export type { LevelRow } from "@johnmorrisdotca/tsunagi";
+export { nextLevelLabel } from "../fixedLevel";
 
 /**
  * TSUNAGI'S LEVELS ON THE SITE: Tsunagi's own (`@johnmorrisdotca/tsunagi`, an
@@ -87,9 +88,4 @@ export function tsunagiPuzzle(size: number, level: number): Puzzle {
 export function tsunagiLevelOf(size: number, givens: string): number | null {
   const at = tsunagiLevelsOf(size).findIndex(([layout]) => layout === givens);
   return at === -1 ? null : at + 1;
-}
-
-/** The words on the button to the next level: plain when it is the one after, and saying why when it is further back. */
-export function nextLevelLabel(after: number, next: number): string {
-  return next === after + 1 ? `Level ${next} →` : `Level ${next}, the first one you have not finished →`;
 }

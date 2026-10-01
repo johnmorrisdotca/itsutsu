@@ -19,6 +19,7 @@ const NETWORK = 1_700_000_005;
 
 describe("suido: the boards", () => {
   it("makes the same board for one size, level and seed, and another for another seed", () => {
+    // Every size the levels come in: the boards made from a seed are made at the long ones too (a size is 507 for 5×7).
     for (const size of PUZZLE_SPECS.suido.sizes) {
       for (const level of PUZZLE_SPECS.suido.levels) {
         const first = generateSuido(size, level, 41);

@@ -138,6 +138,7 @@ function PuzzlePlayDrawn({
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
+  suido = null,
 }: {
   /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
   players?: number;
@@ -176,6 +177,8 @@ function PuzzlePlayDrawn({
     explosions?: TsunagiExplosionsChoice | null;
     cheats?: TsunagiCheatsChoice | null;
   } | null;
+  /** Suido's levels already solved at this size on the account, each with its best time and the solve it was; for a level only. */
+  suido?: { known: Record<number, number>; bestSolves?: Record<number, string> } | null;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -213,16 +216,17 @@ function PuzzlePlayDrawn({
   }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, pipes, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
-  const waits = puzzleLoads(kind);
-  const loadedKey = `${kind}:${size}:${kind === "kumimoji" ? language : ""}`;
+  const waits = puzzleLoads(kind, seed);
+  // A Suido level is read from its size's levels; a board made from a seed has none to wait for, so the two are different keys.
+  const loadedKey = `${kind}:${size}:${kind === "kumimoji" ? language : ""}${waits && kind === "suido" ? ":levels" : ""}`;
   const [loaded, setLoaded] = useState<string | null>(waits ? null : loadedKey);
   useEffect(() => {
     let live = true;
-    void preparePuzzle(kind, size, language).then(() => live && setLoaded(loadedKey));
+    void preparePuzzle(kind, size, language, seed).then(() => live && setLoaded(loadedKey));
     return () => {
       live = false;
     };
-  }, [kind, size, language, loadedKey]);
+  }, [kind, size, language, seed, loadedKey]);
   const puzzle = useMemo(
     () => (seed === null || loaded !== loadedKey ? null : generatePuzzle(kind, size, level, seed, { gameLength, language, doubleSet, diagonals })),
     [kind, size, level, seed, loaded, loadedKey, gameLength, language, doubleSet, diagonals],
@@ -333,7 +337,7 @@ function PuzzlePlayDrawn({
         if (players > 1 && race === null) return <MahjongTableGame key={key} puzzle={puzzle} players={players} appearance={appearance} />;
         return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} appearance={appearance} />;
       case "suido":
-        return <SuidoSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} />;
+        return <SuidoSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} known={suido?.known} bestSolves={suido?.bestSolves} />;
       case "cube":
         return <CubeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "koushi":

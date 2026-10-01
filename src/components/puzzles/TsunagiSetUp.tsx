@@ -26,12 +26,10 @@ import { TsunagiHelpPickers } from "./TsunagiHelpPickers";
 import { TsunagiLevelPicker, tsunagiLevelPath } from "./TsunagiLevelPicker";
 import { TsunagiLevelPreview } from "./TsunagiLevelPreview";
 import { SetUpResume } from "./SetUpResume";
+import { useSizeShelves } from "./sizeShelves";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import { keptAttempts, keptSolves, keptSolvesOff } from "./tsunagiKept";
 import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
-
-/** The sizes the tiles show at once: four, as every set-up screen keeps room for (`picker.test.ts`). */
-const TILES = 4;
 
 /**
  * SETTING UP TSUNAGI, at /games/tsunagi/new: a size, then its board of levels.
@@ -86,11 +84,8 @@ export function TsunagiSetUp({
   // Every board the shelves turn to: the same list the front door names (`sizesOffered`).
   const boards = sizesOffered("tsunagi");
   const copy = PUZZLE_DISPLAY.tsunagi;
-  const [size, setSize] = useState(initialSize);
-  // Where each shelf starts: every four, the last one full (`shelvesOf`).
-  const shelves = shelvesOf(boards.length);
-  const [shelf, setShelf] = useState(shelves.findLast((start) => boards[start]! <= initialSize) ?? 0);
-  const shown = boards.slice(shelf, shelf + TILES);
+  // Four tiles at a time, the last shelf full (`useSizeShelves`).
+  const { size, setSize, shown, onLast, turnShelf, furthest } = useSizeShelves(boards, initialSize);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
   const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
@@ -142,15 +137,6 @@ export function TsunagiSetUp({
   const block = turnedTo !== null && turnedTo.size === size ? turnedTo.block : blockOf(chosen);
   const { first, last } = blockRange(block, count);
   const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
-
-  const onLast = shelf === shelves[shelves.length - 1];
-  const nextShelf = onLast ? 0 : shelves[shelves.indexOf(shelf) + 1]!;
-  const turnShelf = () => {
-    setShelf(nextShelf);
-    const sizes = boards.slice(nextShelf, nextShelf + TILES);
-    if (!sizes.includes(size)) setSize(nextShelf === 0 ? sizes[sizes.length - 1]! : sizes.find((each) => each > size) ?? sizes[0]!);
-  };
-  const furthest = boards[Math.min(boards.length, nextShelf + TILES) - 1]!;
 
   return (
     <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" {...readyMark(hydrated)}>
@@ -234,11 +220,4 @@ export function TsunagiSetUp({
       </div>
     </section>
   );
-}
-
-/** Where each shelf of four sizes starts: every four, and a last one moved back so it too is full — 0, 4 and 5 for nine sizes. */
-export function shelvesOf(count: number): number[] {
-  const starts: number[] = [];
-  for (let start = 0; start < count; start += TILES) starts.push(Math.min(start, Math.max(0, count - TILES)));
-  return [...new Set(starts)];
 }
