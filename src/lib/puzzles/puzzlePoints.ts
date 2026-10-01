@@ -38,8 +38,9 @@ export const POINTS_A_HELP = 50;
  * bridge drawn — which is the work its answer is. A Picture logic puzzle has
  * no printed cells, and every cell is decided, shaded or empty, as in Hidden
  * Stones: its whole grid. A Solitaire or a FreeCell counts the fifty-two cards
- * it brought home, a Spider the hundred and four of its eight runs, and a cube
- * every sticker it put back on its face.
+ * it brought home, a Spider the hundred and four of its eight runs, a cube
+ * every sticker it put back on its face, and a Suido board every piece of pipe
+ * it has (`suidoPieces`).
  */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
