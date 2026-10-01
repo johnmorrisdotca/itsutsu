@@ -6,8 +6,11 @@ export {
   continentsHeld,
   isTerritory,
   TENKA_CONTINENTS,
+  TENKA_MAP_LIST,
+  TENKA_MAPS,
   TENKA_TERRITORIES,
   TENKA_TERRITORY_COUNT,
   tenkaContinent,
+  tenkaMapOf,
   tenkaNeighbours,
 } from "@johnmorrisdotca/tenka";

@@ -104,6 +104,32 @@ test.describe("Tenka, read by anybody", () => {
 });
 
 test.describe("Tenka, pass and play", () => {
+  test("Europe is chosen on the set-up: the preview and the game are Europe's, with its eleven regions to look at", async ({ page }) => {
+    await page.goto("/games/tenka");
+    await page.evaluate((key) => window.localStorage.removeItem(key), KEPT);
+    await page.goto("/games/tenka/pass-and-play");
+    await ready(page, "tenka-set-up");
+    const preview = page.getByTestId("tenka-preview");
+    await expect(preview.getByTestId("tenka-territory")).toHaveCount(42);
+
+    await page.locator('[data-testid="tenka-map"][data-value="europe"]').click();
+    await expect(page.locator('[data-testid="tenka-map"][data-value="europe"]')).toHaveAttribute("aria-checked", "true");
+    await expect(preview.getByTestId("tenka-territory")).toHaveCount(37);
+    await expect(preview.getByRole("group", { name: "Map of Europe" })).toBeVisible();
+    await expect(page.locator('[data-testid="tenka-length"][data-value="60"]')).toHaveText("All of Europe");
+
+    await page.getByTestId("tenka-start").click();
+    await ready(page, "tenka-game");
+    await expect(page.getByTestId("tenka-territory")).toHaveCount(37);
+    await expect(page.locator('[data-testid="tenka-territory"][data-territory="greatBritain"]')).toHaveCount(1);
+    const regions = page.getByTestId("tenka-region");
+    await expect(regions).toHaveCount(12);
+    await expect(regions.first()).toHaveText("Europe");
+    await expect(page.locator('[data-testid="tenka-region"][data-region="scandinavia"]')).toHaveText("Nordic");
+    // Europe has no edge to go off: none of the world's Bering Strait tags.
+    await expect(page.locator('[data-testid="tenka-territory"][data-territory="alaska"]')).toHaveCount(0);
+  });
+
   test("three players: armies placed by tapping, an attack thrown and a territory taken, a fortifying move, the turn passed by name, kept and found again", async ({ page }) => {
     await page.goto("/games/tenka");
     await page.evaluate((key) => window.localStorage.removeItem(key), KEPT);

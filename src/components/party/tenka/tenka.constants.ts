@@ -1,4 +1,4 @@
-import type { TenkaContinentKey } from "@/lib/party/tenka/tenka.types";
+import type { TenkaContinentKey, TenkaMapKey } from "@/lib/party/tenka/tenka.types";
 
 import type { PartyMarble } from "../party.types";
 
@@ -51,6 +51,18 @@ export const TENKA_REGION_NAMES: Record<TenkaContinentKey, string> = {
   africa: "Africa",
   asia: "Asia",
   oceania: "Oceania",
+  // Europe's regions, as short as the world's so the row under the map stays one or two lines on a phone.
+  britishIsles: "Britain",
+  scandinavia: "Nordic",
+  iberia: "Iberia",
+  maghreb: "Maghreb",
+  france: "France",
+  centralEurope: "Central",
+  italyBalkans: "Italy",
+  danube: "Danube",
+  easternEurope: "East",
+  russia: "Russia",
+  anatolia: "Anatolia",
 };
 export const TENKA_REGION_BUTTON =
   "min-h-9 rounded-full border border-rule-strong bg-ivory px-3 text-xs font-medium hover:bg-rule/60 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-paper";
@@ -71,9 +83,11 @@ export const TENKA_TAP_SLOP = 6;
 export const TENKA_COPY = {
   lead: "Tenka for two to six people round one phone or tablet: take the world a territory at a time, then pass it on. Nothing here is rated or kept anywhere but this browser.",
   length: "How long?",
-  lengthWords: (rounds: number, world: number) => (rounds === world ? "The whole world" : `${rounds} rounds`),
-  lengthNote: (rounds: number, world: number) =>
-    rounds === world ? "Play until one player holds the world." : `Most territories after ${rounds} rounds wins.`,
+  lengthWords: (rounds: number, world: number, map: TenkaMapKey = "world") => (rounds === world ? (map === "europe" ? "All of Europe" : "The whole world") : `${rounds} rounds`),
+  lengthNote: (rounds: number, world: number, map: TenkaMapKey = "world") =>
+    rounds === world ? `Play until one player holds ${map === "europe" ? "all of Europe" : "the world"}.` : `Most territories after ${rounds} rounds wins.`,
+  mapChoice: "Map",
+  mapWords: (map: TenkaMapKey) => (map === "europe" ? "Europe" : "The world"),
   placing: "Starting armies",
   placingAuto: "Placed for you",
   placingHand: "Place them in turn",
@@ -107,7 +121,7 @@ export const TENKA_COPY = {
   trade: (armies: number) => `Trade for ${armies}`,
   roundOf: (round: number, rounds: number, world: number) => (rounds === world ? `Round ${round}` : `Round ${round} of ${rounds}`),
   out: "out",
-  map: "Map of the world",
+  mapOf: (map: TenkaMapKey | undefined) => (map === "europe" ? "Map of Europe" : "Map of the world"),
   fit: "Move and zoom the map",
   regions: "Look at",
   world: "World",

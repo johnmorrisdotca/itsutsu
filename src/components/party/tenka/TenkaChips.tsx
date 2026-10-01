@@ -5,8 +5,8 @@ import { usePartyMarbles } from "../partyMarbles";
 
 import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
-import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
-import { TENKA_SHAPES } from "@/lib/party/tenka/tenkaShapes.data";
+import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
+import { tenkaShapesFor } from "@/lib/party/tenka/tenkaShapes.data";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 import { centredBaseline } from "@/lib/ui/svgText";
 
@@ -25,7 +25,7 @@ export function ownerMarble(owner: number, marbles: readonly PartyMarble[]): Par
 function counterOrder(game: TenkaGame, marks: MapMarks): number[] {
   const weight = (territory: number) =>
     (territory === marks.chosen || territory === marks.target ? 4000 : marks.reach.includes(territory) ? 3000 : game.owners[territory] === game.toPlay ? 2000 : 0) + Math.min(999, game.armies[territory]);
-  return TENKA_TERRITORIES.map((_, territory) => territory).sort((a, b) => weight(b) - weight(a) || a - b);
+  return tenkaMapOf(game).territories.map((_, territory) => territory).sort((a, b) => weight(b) - weight(a) || a - b);
 }
 
 /**
@@ -41,7 +41,9 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const radius = chipRadius(scale);
-  const dots = laidOutChips(TENKA_SHAPES.labels, game.armies, scale, counterOrder(game, marks));
+  const shapes = tenkaShapesFor(game);
+  const { territories } = tenkaMapOf(game);
+  const dots = laidOutChips(shapes.labels, game.armies, scale, counterOrder(game, marks));
   const reach = new Set(marks.reach);
   const last = game.lastRoll;
   const press = (territory: number) => (event: KeyboardEvent) => {
@@ -50,15 +52,15 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
     onTerritory?.(territory);
   };
   // The dots first, so a whole counter is never under one.
-  const order = TENKA_TERRITORIES.map((_, territory) => territory).sort((a, b) => Number(dots.has(b)) - Number(dots.has(a)));
+  const order = territories.map((_, territory) => territory).sort((a, b) => Number(dots.has(b)) - Number(dots.has(a)));
   return (
     <>
       {order.map((territory) => {
-        const [x, y] = TENKA_SHAPES.labels[territory];
+        const [x, y] = shapes.labels[territory];
         const owner = game.owners[territory];
         const marble = ownerMarble(owner, marbles);
         const armies = game.armies[territory];
-        const name = TENKA_TERRITORIES[territory].name;
+        const name = territories[territory].name;
         const whose = owner === TENKA_NEUTRAL ? "the neutral army's" : `${tenkaPlayerName(game, owner)}'s`;
         const fought = last !== null && (last.from === territory || last.to === territory);
         const dot = dots.has(territory);
@@ -75,7 +77,7 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
             onClick={onTerritory === undefined ? undefined : () => onTerritory(territory)}
             onKeyDown={onTerritory === undefined ? undefined : press(territory)}
             data-testid="tenka-territory"
-            data-territory={TENKA_TERRITORIES[territory].key}
+            data-territory={territories[territory].key}
             data-name={name}
             data-owner={owner}
             data-armies={armies}

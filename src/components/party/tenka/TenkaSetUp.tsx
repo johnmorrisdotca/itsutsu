@@ -7,7 +7,8 @@ import { SeatColourButton } from "../SeatColourButton";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { TENKA_NAME_MOST, TENKA_PLACING, TENKA_WORLD_ROUNDS } from "@/lib/party/tenka/tenka.constants";
-import type { TenkaPlacing } from "@/lib/party/tenka/tenka.types";
+import type { TenkaMapKey, TenkaPlacing } from "@/lib/party/tenka/tenka.types";
+import { TENKA_MAP_LIST } from "@/lib/party/tenka/tenkaMap";
 import { startTenka } from "@/lib/party/tenka/tenkaStart";
 
 import { PARTY_COPY } from "../party.constants";
@@ -68,10 +69,11 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
   const [count, setCount] = useState(SPEC.defaultPlayers);
   const [rounds, setRounds] = useState(SPEC.defaultSize);
   const [placing, setPlacing] = useState<TenkaPlacing>(TENKA_PLACING.auto);
+  const [map, setMap] = useState<TenkaMapKey>("world");
   const [names, setNames] = useState<string[]>(() => new Array<string>(SPEC.mostPlayers).fill(""));
   const seated = names.slice(0, count);
   // A table the set-up offers is always one the rules start.
-  const preview = startTenka(rounds, seated, PREVIEW_SEED)!;
+  const preview = startTenka(rounds, seated, PREVIEW_SEED, TENKA_PLACING.auto, map)!;
   // Several devices: a seat chooser in each name's row, and Start sets the table on the server, dealt from a seed drawn here (`OnlineSetUpParts`).
   const [several, setSeveral] = useState(false);
   const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, SPEC.mostPlayers));
@@ -83,7 +85,7 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
       <div className="flex min-w-0 flex-col gap-2" data-testid="tenka-preview">
         <TenkaMap game={preview} appearance={appearance} marks={marksFor(preview, NO_CHOICE)} readOnly />
-        <p className="text-xs text-muted">{TENKA_COPY.lengthNote(rounds, TENKA_WORLD_ROUNDS)}</p>
+        <p className="text-xs text-muted">{TENKA_COPY.lengthNote(rounds, TENKA_WORLD_ROUNDS, map)}</p>
       </div>
       <form
         className={`${PANEL_CLASS} flex min-w-0 flex-col gap-4`}
@@ -91,13 +93,14 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          if (severalOffer !== undefined) void table.start(rounds, choices.slice(0, count), { seed: freshTenkaSeed(), placing });
-          else onStart(startTenka(rounds, seated, freshTenkaSeed(), placing)!);
+          if (severalOffer !== undefined) void table.start(rounds, choices.slice(0, count), { seed: freshTenkaSeed(), placing, ...(map === "world" ? {} : { map }) });
+          else onStart(startTenka(rounds, seated, freshTenkaSeed(), placing, map)!);
         }}
       >
         <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <Choices label={PARTY_COPY.howMany} options={COUNTS} value={count} onChange={setCount} words={String} testId="tenka-count" columns="grid-cols-5" />
-        <Choices label={TENKA_COPY.length} options={SPEC.sizes} value={rounds} onChange={setRounds} words={(option) => TENKA_COPY.lengthWords(option, TENKA_WORLD_ROUNDS)} testId="tenka-length" columns="grid-cols-3" />
+        <Choices label={TENKA_COPY.mapChoice} options={TENKA_MAP_LIST} value={map} onChange={setMap} words={(option) => TENKA_COPY.mapWords(option)} testId="tenka-map" columns="grid-cols-2" />
+        <Choices label={TENKA_COPY.length} options={SPEC.sizes} value={rounds} onChange={setRounds} words={(option) => TENKA_COPY.lengthWords(option, TENKA_WORLD_ROUNDS, map)} testId="tenka-length" columns="grid-cols-3" />
         <Choices
           label={TENKA_COPY.placing}
           options={[TENKA_PLACING.auto, TENKA_PLACING.hand]}

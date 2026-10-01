@@ -117,7 +117,7 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
       "Knock a player out and their cards are yours. Take the whole world — every other player out — and you win. A game of so many rounds ends at its last: whoever holds the most territories wins.",
     ],
     board:
-      "One map of the modern world, forty-two territories in six continents. For a quick game choose ten rounds; twenty for an evening; the whole world to play until one player holds it (counted at round sixty if it ever gets that far).",
+      "Two maps of today's world. The world: forty-two territories in six continents. Europe: thirty-seven territories in eleven regions, from Iceland to the Urals and from the North Cape to the Maghreb, its seas crossed by dashed links. For a quick game choose ten rounds; twenty for an evening; or play until one player holds the whole map (counted at round sixty if it ever gets that far).",
   },
   mexicanTrain: {
     label: "Mexican Train",

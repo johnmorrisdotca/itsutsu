@@ -7,6 +7,7 @@ export {
   type TenkaContinent,
   type TenkaContinentKey,
   type TenkaGame,
+  type TenkaMapKey,
   type TenkaMapMarks,
   type TenkaMove,
   type TenkaMoveKind,

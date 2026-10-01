@@ -30,6 +30,8 @@ export type TenkaMapProps = {
 };
 
 export type TenkaWrapsProps = {
+  /** The game whose map's edges it draws. */
+  game: TenkaGame;
   /** Screen pixels to a map unit, so the tags are drawn one size on the screen. */
   scale: number;
   /** The territories the chosen one can reach: a tag naming one is lit. */

@@ -3,7 +3,7 @@ import { TENKA_MOVES, TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
 import type { TenkaCardKind, TenkaGame, TenkaMove } from "@/lib/party/tenka/tenka.types";
 import { mustTrade } from "@/lib/party/tenka/tenka";
 import { cardKind, cardTerritory, setsIn, tradeValue } from "@/lib/party/tenka/tenkaCards";
-import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
+import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 
 import { TENKA_COPY } from "./tenka.constants";
 
@@ -50,7 +50,7 @@ export function TenkaHand({
 }) {
   const hand = game.hands[seat] ?? [];
   const trading = mayTrade && seat === game.toPlay && game.phase === TENKA_PHASES.reinforce;
-  const sets = trading ? setsIn(hand) : [];
+  const sets = trading ? setsIn(hand, tenkaMapOf(game)) : [];
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="tenka-hand" data-cards={handed ? hand.length : undefined}>
       <h2 className={SECTION_TITLE}>
@@ -64,13 +64,13 @@ export function TenkaHand({
         <>
           <ul className="flex flex-wrap gap-1.5">
             {hand.map((card) => {
-              const territory = cardTerritory(card);
-              const kind = cardKind(card);
+              const territory = cardTerritory(card, tenkaMapOf(game));
+              const kind = cardKind(card, tenkaMapOf(game));
               return (
                 <li key={card} className="flex min-w-0 items-center gap-1.5 rounded-lg border border-rule-strong bg-paper px-2 py-1 text-xs" data-testid="tenka-card" data-kind={kind}>
                   <KindMark kind={kind} />
                   <span className="font-semibold">{KIND_WORDS[kind]}</span>
-                  {territory !== null ? <span className="truncate text-muted">{TENKA_TERRITORIES[territory].name}</span> : null}
+                  {territory !== null ? <span className="truncate text-muted">{tenkaMapOf(game).territories[territory].name}</span> : null}
                 </li>
               );
             })}
@@ -83,7 +83,7 @@ export function TenkaHand({
               onClick={() => onMove({ kind: TENKA_MOVES.trade, cards })}
               data-testid="tenka-trade"
             >
-              {TENKA_COPY.trade(tradeValue(game.trades))}: {cards.map((card) => KIND_WORDS[cardKind(card)]).join(", ")}
+              {TENKA_COPY.trade(tradeValue(game.trades))}: {cards.map((card) => KIND_WORDS[cardKind(card, tenkaMapOf(game))]).join(", ")}
             </button>
           ))}
         </>

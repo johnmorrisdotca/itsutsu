@@ -75,7 +75,7 @@
     "@johnmorrisdotca/kyuubu": "1.5.0",
     "@johnmorrisdotca/narabe": "1.0.0",
     "@johnmorrisdotca/tane": "1.0.1",
-    "@johnmorrisdotca/tenka": "1.0.1",
+    "@johnmorrisdotca/tenka": "1.2.0",
     "@johnmorrisdotca/toranpu": "2.0.0",
     "@prisma/client": "^6.19.3",
     "next": "16.3.8",

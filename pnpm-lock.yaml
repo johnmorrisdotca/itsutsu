@@ -38,8 +38,8 @@ importers:
         specifier: 1.0.1
         version: 1.0.1(react@19.2.8)
       '@johnmorrisdotca/tenka':
-        specifier: 1.0.1
-        version: 1.0.1(react@19.2.8)
+        specifier: 1.2.0
+        version: 1.2.0(react@19.2.8)
       '@johnmorrisdotca/toranpu':
         specifier: 2.0.0
         version: 2.0.0(react@19.2.8)
@@ -474,8 +474,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tenka@1.0.1':
-    resolution: {integrity: sha512-BhmCcuMXALFlmdGnmjcxgA+TFSUdqh5hU+6osrs5MjgvOLzwvl6NahslWC3a37sjI7h22ZjjL8i1UX29G0diFw==}
+  '@johnmorrisdotca/tenka@1.2.0':
+    resolution: {integrity: sha512-91UiPSNMjjj19vFqFH4mJgmxfjclHqErnto1PSh9pxpsvVItcC5GP7qyvcpjcr3fGFdYAppGiLxT8atoxd8K9Q==}
     engines: {node: '>=20'}
     peerDependencies:
       react: '>=18'
@@ -3108,7 +3108,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tenka@1.0.1(react@19.2.8)':
+  '@johnmorrisdotca/tenka@1.2.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

@@ -2,7 +2,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { TenkaGame, TenkaOwner } from "@/lib/party/tenka/tenka.types";
 import { usePartyMarbles } from "../partyMarbles";
 import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
-import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
+import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 
 import { TENKA_COPY } from "./tenka.constants";
@@ -55,8 +55,8 @@ export function TenkaDice({ game, compact = false }: { game: TenkaGame; compact?
   }
   const attacker = whoIs(game, roll.attacker);
   const defender = whoIs(game, roll.defender);
-  const from = TENKA_TERRITORIES[roll.from].name;
-  const to = TENKA_TERRITORIES[roll.to].name;
+  const from = tenkaMapOf(game).territories[roll.from].name;
+  const to = tenkaMapOf(game).territories[roll.to].name;
   const lost = (who: string, armies: number) => `${who} lost ${TENKA_COPY.armies(armies)}`;
   const losses = [roll.attackerLost > 0 ? lost(attacker, roll.attackerLost) : null, roll.defenderLost > 0 ? lost(defender, roll.defenderLost) : null].filter((one) => one !== null);
   const dice = (

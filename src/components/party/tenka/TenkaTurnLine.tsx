@@ -9,7 +9,7 @@ import { TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
 import { usePartyMarbles } from "../partyMarbles";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
 import { cardKind, cardTerritory } from "@/lib/party/tenka/tenkaCards";
-import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
+import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 import { tenkaPlayerName, territoriesHeld } from "@/lib/party/tenka/tenkaTurn";
 
 import { MarbleChip } from "../MarbleChip";
@@ -56,7 +56,7 @@ export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour
     game.lastOut !== null ? `${tenkaPlayerName(game, game.lastOut.by)} knocked ${tenkaPlayerName(game, game.lastOut.seat)} out and took their cards.` : null,
     game.lastTrade !== null ? `${tenkaPlayerName(game, game.lastTrade.seat)} traded a set for ${TENKA_COPY.armies(game.lastTrade.armies)}.` : null,
     game.lastDraw !== null && game.lastDraw.seat !== game.toPlay && game.phase === TENKA_PHASES.reinforce
-      ? `${tenkaPlayerName(game, game.lastDraw.seat)} took a card${cardTerritory(game.lastDraw.card) === null ? " (wild)" : ` (${cardKind(game.lastDraw.card)}, ${TENKA_TERRITORIES[cardTerritory(game.lastDraw.card)!].name})`}.`
+      ? `${tenkaPlayerName(game, game.lastDraw.seat)} took a card${cardTerritory(game.lastDraw.card, tenkaMapOf(game)) === null ? " (wild)" : ` (${cardKind(game.lastDraw.card, tenkaMapOf(game))}, ${tenkaMapOf(game).territories[cardTerritory(game.lastDraw.card, tenkaMapOf(game))!].name})`}.`
       : null,
   ].filter((line) => line !== null);
   return (

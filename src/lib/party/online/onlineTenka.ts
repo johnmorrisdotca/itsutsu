@@ -1,7 +1,8 @@
+import { TENKA_MAP_LIST } from "@/lib/party/tenka/tenkaMap";
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import { PARTY_SPECS } from "../party.constants";
 import { TENKA_PLACING } from "../tenka/tenka.constants";
-import type { TenkaGame, TenkaMove, TenkaPlacing } from "../tenka/tenka.types";
+import type { TenkaGame, TenkaMapKey, TenkaMove, TenkaPlacing } from "../tenka/tenka.types";
 import { playTenka, tenkaOver } from "../tenka/tenka";
 import { decodeTenka, encodeTenka, readTenkaMove } from "../tenka/tenkaKeep";
 import { isTenkaSeed, isTenkaTable, startTenka } from "../tenka/tenkaStart";
@@ -30,17 +31,19 @@ export type TenkaTableMove = readonly TenkaMove[];
 export const TENKA_PRESS_MOST = 2;
 
 /** What Tenka's set-up sends beyond a size and the seats: the seed it was dealt from, and how the starting armies go down. */
-export type TenkaTableSetUp = { seed: number; placing: TenkaPlacing };
+export type TenkaTableSetUp = { seed: number; placing: TenkaPlacing; map?: TenkaMapKey };
 
 const SPEC = PARTY_SPECS.tenka;
 
 /** The set-up as the browser sent it, checked for its shape, or null. */
 function readSetUp(sent: unknown): TenkaTableSetUp | null {
   if (typeof sent !== "object" || sent === null) return null;
-  const { seed, placing } = sent as Record<string, unknown>;
+  const { seed, placing, map } = sent as Record<string, unknown>;
   if (typeof seed !== "number" || !isTenkaSeed(seed)) return null;
   if (placing !== TENKA_PLACING.auto && placing !== TENKA_PLACING.hand) return null;
-  return { seed, placing };
+  // The map: left out for the world, as a table set before there was a choice; any other value is refused.
+  if (map !== undefined && !(typeof map === "string" && (TENKA_MAP_LIST as readonly string[]).includes(map))) return null;
+  return { seed, placing, ...(map === undefined ? {} : { map: map as TenkaMapKey }) };
 }
 
 /** Whether every number in a kept move is a whole number: the rules check ranges, and this keeps anything stranger out. */
@@ -54,7 +57,7 @@ export const TENKA_ONLINE: OnlineRules<TenkaGame, TenkaTableMove> = {
   start: (size, count, extra) => {
     const setUp = readSetUp(extra?.setup);
     // A table of blank names: the names are the seats', written in for a page by `named`.
-    return setUp === null || !isTenkaTable(size, count) ? null : startTenka(size, new Array<string>(count).fill(""), setUp.seed, setUp.placing);
+    return setUp === null || !isTenkaTable(size, count) ? null : startTenka(size, new Array<string>(count).fill(""), setUp.seed, setUp.placing, setUp.map ?? "world");
   },
   encode: encodeTenka,
   decode: (text) => decodeTenka(text),
