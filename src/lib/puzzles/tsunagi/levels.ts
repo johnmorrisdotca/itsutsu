@@ -45,6 +45,9 @@ async function importSize(size: number): Promise<readonly LevelRow[]> {
     if (size === 10) return (await import("@johnmorrisdotca/tsunagi/levels-10")).TSUNAGI_10;
     if (size === 11) return (await import("@johnmorrisdotca/tsunagi/levels-11")).TSUNAGI_11;
     if (size === 12) return (await import("@johnmorrisdotca/tsunagi/levels-12")).TSUNAGI_12;
+    if (size === 13) return (await import("@johnmorrisdotca/tsunagi/levels-13")).TSUNAGI_13;
+    if (size === 14) return (await import("@johnmorrisdotca/tsunagi/levels-14")).TSUNAGI_14;
+    if (size === 15) return (await import("@johnmorrisdotca/tsunagi/levels-15")).TSUNAGI_15;
     throw new Error(`No Tsunagi at ${size}×${size}.`);
   }
   if (fromModule === null) throw new Error("Tsunagi's levels are read on the server through levelsModule.ts, which was not imported.");

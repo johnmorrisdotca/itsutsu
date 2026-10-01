@@ -443,6 +443,11 @@ const SURVEY: Survey[] = [
     await page.goto("/games/tsunagi/play?size=4&level=easy&seed=6");
     await ready(page, "puzzle-play");
   } },
+  // And its biggest, 15×15 (Tsunagi 1.2.0): sixteen lines on a board a desk's window has to hold with nothing to scroll.
+  { name: "/games/tsunagi/play at 15×15", open: async (page) => {
+    await page.goto("/games/tsunagi/play?size=15&seed=1");
+    await ready(page, "puzzle-play");
+  } },
   table("dots-and-boxes", "dots-start"),
   table("superghost", "ghost-start"),
   table("mancala", "mancala-start"),

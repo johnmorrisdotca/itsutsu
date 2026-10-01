@@ -8,7 +8,7 @@ import { ready } from "./support";
  * since the squares have gotten smaller." The number was a fixed font size, so
  * on a big board a 16 was wider than the marble it was written on.
  *
- * At 4×4, 9×9 and 12×12 (both with two-digit numbers), on a phone and on a
+ * At 4×4, 9×9, 12×12 and 15×15 (all but the first with two-digit numbers), on a phone and on a
  * desktop, the reader chooses Numbers on the set-up screen, looks at the
  * preview, presses Start and looks at the board in play: every marble's number,
  * measured as the text itself (a range over it, not the box holding it), lies
@@ -24,6 +24,7 @@ const SIZES = [
   { size: 4, twoDigits: false },
   { size: 9, twoDigits: true },
   { size: 12, twoDigits: true },
+  { size: 15, twoDigits: true },
 ] as const;
 
 /** Every marble under `root`, its number's text box against the marble's own box. */
