@@ -5,6 +5,7 @@ import { checkFreeCell, checkFreeCellGivenUp } from "./freecell/check";
 import { checkSpider, checkSpiderGivenUp } from "./spider/check";
 import { checkAwase } from "@johnmorrisdotca/jarajara/awase";
 import { checkCube, checkCubeGivenUp } from "./cube/check";
+import { checkSuido } from "./suido/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -92,6 +93,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "cube":
       // The turns, turned from the scramble: every face one colour at the end.
       return checkCube(size, givens, answer);
+    case "suido":
+      // The water, run through the answer's pieces: what the kind asks reached, and nothing running out.
+      return checkSuido(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

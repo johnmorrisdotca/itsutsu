@@ -56,6 +56,7 @@ export const PUZZLE_KINDS = {
   spider: "spider",
   mahjong: "mahjong",
   cube: "cube",
+  suido: "suido",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
@@ -88,6 +89,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.spider,
   PUZZLE_KINDS.mahjong,
   PUZZLE_KINDS.cube,
+  PUZZLE_KINDS.suido,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -360,6 +362,24 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     clock: false,
     cube: true,
   },
+  /*
+   * SUIDO, the pipe puzzle (`suido/`, the package `@johnmorrisdotca/suido`):
+   * a square of pieces that can only be turned, whose size is its side. The
+   * givens are the board as it is dealt and the answer the same board solved,
+   * both in the package's own code, "5x5d:" and a character a cell (151 at
+   * 12×12 with its header, so 160 is room). No Check: the water is drawn as
+   * the pieces face, so every leak is in plain sight, and there is nothing a
+   * Check could tell that the board does not. Hint is offered.
+   */
+  suido: {
+    sizes: [5, 7, 9, 12],
+    offered: [5, 7, 9, 12],
+    defaultSize: 7,
+    levels: PUZZLE_LEVEL_LIST,
+    defaultLevel: "medium",
+    mostCells: 160,
+    checks: false,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -535,6 +555,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     10: { label: "Castle", kanji: "城" },
     15: { label: "Turtle", kanji: "亀" },
   },
+  // A Suido board by its side, the big number on the tile: how long the pipes take to follow.
+  suido: {
+    5: { label: "Quick", kanji: "速" },
+    7: { label: "Standard", kanji: "定番" },
+    9: { label: "Long", kanji: "長" },
+    12: { label: "Longest", kanji: "最長" },
+  },
   // A cube by its side, the big number on the tile; the names are ours, never a maker's.
   cube: {
     2: { label: "Mini", kanji: "小" },
@@ -588,6 +615,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     easy: `A few turns from solved: ${SCRAMBLE_LENGTHS.easy[3]} on the 3×3, enough to take back by looking.`,
     medium: `${SCRAMBLE_LENGTHS.medium[3]} turns on the 3×3: too many to take back by looking, so it has to be solved.`,
     hard: `A full scramble, as long as a competition's: ${SCRAMBLE_LENGTHS.hard[3]} turns on the 3×3.`,
+  },
+  // A Suido level is a target for the package's own rank among boards of the same size (`SUIDO_DIFFICULTY`).
+  suido: {
+    easy: "Among the plainer boards of its size: most pieces can be settled by looking at what is beside them.",
+    medium: "A middling board of its size: some places can only be settled by working out what the pieces around them need.",
+    hard: "Among the harder boards of its size: much stays open until you work it through, and somewhere you may have to try a turn and see.",
   },
   // A Solitaire level is how many times through the stock (`SOLITAIRE_PASSES`).
   solitaire: {
@@ -1128,5 +1161,33 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "The 3×3 is the classic cube. The 2×2 has no centres to show which colour a face should be, so it is a quick one to learn on; the 4×4 and 5×5 have layers inside, and are long evenings. Easy is a few turns from solved; hard is a full scramble.",
+  },  /*
+   * OUR OWN NAME FOR IT. The pipe-turning puzzle goes by Net and by NetWalk
+   * where it is a puzzle of turning pieces until they join; the names of the
+   * falling-pipes video games are other games and are not used here, in
+   * copy, pictures or code. 水道 (suidō), "waterworks", is the everyday
+   * Japanese word for the pipes and channels that carry water to a town,
+   * which is all this is about. Read 2026-10-01 against the package's own
+   * README (`@johnmorrisdotca/suido`).
+   */
+  suido: {
+    label: "Suido",
+    kanji: "水道",
+    tagline: "Turn the pipes until the water from the pump reaches every drain and nothing leaks.",
+    inspiredBy: "the pipe-turning puzzle known as Net or NetWalk",
+    alsoKnownAs: ["Net", "NetWalk"],
+    origin:
+      "A puzzle of turning fixed pieces until they join into one network, found in puzzle collections for many years under names such as Net and NetWalk. 水道 (suidō) is Japanese for waterworks: 水 is water and 道 a way, so literally a water way. The boards here are made by our own code, each with exactly one answer, and the water is drawn flowing.",
+    rules: [
+      "Every square holds a piece of pipe. A piece is never moved or changed, only turned, and the pump is where the water comes from.",
+      "Tap a piece to turn it a quarter clockwise. Choose Anticlockwise under the board to turn the other way, or Shift-click or right-click with a mouse. With the keyboard, the arrow keys move, Enter turns a piece and Shift with Enter turns it back.",
+      "The water goes from one piece into the next wherever their openings meet. It runs out of any opening that meets nothing: the edge of the board, bare ground, or a piece that does not open back. A drip shows where.",
+      "Drains, the usual kind: the water must reach every drain, and nothing wet may run out. Pieces the water does not need are spares, left facing any way, and bare ground has nothing on it.",
+      "Network, the other kind: every piece must be wet, so there are no spares and nothing may run out.",
+      "It is solved the moment the water reaches what its kind asks and nothing runs out. Every board has exactly one answer, and the clock starts on your first turn.",
+      "Hint, if chosen on the set-up, turns one piece to face the way the answer has it, starting nearest the pump, and costs a hint.",
+    ],
+    board:
+      "7×7 is the usual size. 5×5 is quick, 9×9 is longer, and 12×12 is an evening; on a phone the 12×12 zooms, with Fit and the arrows under the board. Drains leaves spare pieces to see past; network uses every piece, so it has no spares to ignore.",
   },
 };

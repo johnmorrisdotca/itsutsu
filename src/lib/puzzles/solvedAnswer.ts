@@ -4,6 +4,7 @@ import { boardOf, encodeBridges } from "./bridges/code";
 import { solutionOf as bridgesSolution } from "./bridges/solve";
 import { decodeClues, encodePicture } from "./pictureLogic/code";
 import { solutionOf as pictureSolution } from "./pictureLogic/solve";
+import { suidoAnswerOf } from "./suido/solve";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
 import { decodeJigsaw } from "./jigsaw/code";
@@ -89,6 +90,8 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
       const picture = clues === null ? null : pictureSolution(clues);
       return picture === null ? null : encodePicture(picture);
     }
+    case "suido":
+      return suidoAnswerOf(givens, size);
     default:
       return null;
   }

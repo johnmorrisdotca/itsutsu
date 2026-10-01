@@ -14,6 +14,7 @@ import { decodeCells as decodePictureCells, encodeCells as encodePictureCells } 
 import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
 import { cubeMovesFit } from "./cube/check";
+import { suidoCodeFits } from "./suido/check";
 import type { MahjongMove } from "@johnmorrisdotca/jarajara";
 import { decodeMoves, encodeMoves } from "@johnmorrisdotca/jarajara";
 import { decodeKanaGuesses } from "./gomojiKana/kanaCode";
@@ -142,6 +143,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "kumimoji") return readTileProgress(code) !== null;
   // A cube keeps its turns, as its answer is written; turned from the scramble when it is opened.
   if (kind === "cube") return cubeMovesFit(code.startsWith(CUBE_GUIDED) ? code.slice(CUBE_GUIDED.length) : code);
+  // Suido keeps its board as it stands, in the package's own code: every piece facing as it does now (`gameCode`); read against its board when opened.
+  if (kind === "suido") return suidoCodeFits(code, size);
   // Solitaire keeps its moves, as its answer is written; replayed from the deal when it is opened.
   if (kind === "solitaire") return solitaireMovesFit(code);
   // FreeCell and Spider keep their moves the same way (`freecell/code.ts`, `spider/code.ts`).

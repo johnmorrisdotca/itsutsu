@@ -5,6 +5,7 @@ import { guessesFor } from "./gomoji/layout";
 import { asWordCount } from "./gomoji/wordsSeed";
 import { kumimojiPoints } from "./kumimoji/check";
 import { koushiPoints } from "./koushi/check";
+import { suidoPieces } from "./suido/check";
 import { dodgeGuesses, wordOfPlay } from "./gomoji/dodgePlay";
 import { isDodgeGivens } from "./gomoji/dodgeSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
@@ -49,6 +50,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (kind === "spider") return 104;
   // A cube's work is every sticker back on its own face: six faces of size × size.
   if (kind === "cube") return 6 * area;
+  // A Suido board's work is every piece it has: each is turned, or found to face the right way already.
+  if (kind === "suido") return suidoPieces(givens);
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

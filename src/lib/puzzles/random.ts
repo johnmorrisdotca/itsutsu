@@ -42,8 +42,15 @@ export const DODGE_SEED_BLOCK = { from: 1_500_000_000, size: 100_000_000 } as co
 /** Gomoji Sakasa 逆さ, played backwards (`gomoji/backwardsSeed.ts`), from sixteen hundred million, just past Nige's. */
 export const BACKWARDS_SEED_BLOCK = { from: 1_600_000_000, size: 100_000_000 } as const satisfies SeedBlock;
 
+/**
+ * Suido's NETWORK boards (`suido/generate.ts`), from seventeen hundred million, just past Sakasa's: every piece
+ * must carry water, where an ordinary seed's board is the drains kind. A kept run, an address and a race carry
+ * nothing but the seed, so the seed is where the kind lives; `freshSeed` never lands in the block.
+ */
+export const NETWORK_SEED_BLOCK = { from: 1_700_000_000, size: 100_000_000 } as const satisfies SeedBlock;
+
 /** Every block `freshSeed` keeps out of, lowest first. */
-const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK];
+const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK];
 
 /** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {

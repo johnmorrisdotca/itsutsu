@@ -203,11 +203,16 @@ export const GAME_FAMILIES: GameFamily[] = [
      *
      * Picture logic 絵解き (2026-09-29) is the second: the picture to uncover
      * from its row and column counts the first note promised.
+     *
+     * Suido 水道 (2026-10-01) is the third: pipes that can only be turned, one
+     * answer, and the water drawn flowing as they join. It is a logic puzzle of
+     * the same promise, and a grid of pieces rather than of numbers, so it is
+     * here and not in Numbers (which was full at eight).
      */
     title: "Logic puzzles",
     kanji: "理詰め",
-    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, and more to come. A few clues, one answer, and nothing to do but reason it out.",
-    games: ["bridges", "pictureLogic"],
+    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, pipes to turn until the water runs through, and more to come. A few clues, one answer, and nothing to do but reason it out.",
+    games: ["bridges", "pictureLogic", "suido"],
   },
   {
     key: "cards",
