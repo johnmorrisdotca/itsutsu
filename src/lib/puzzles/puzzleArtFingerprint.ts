@@ -68,9 +68,8 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "node_modules/@johnmorrisdotca/toranpu/package.json",
   "src/lib/puzzles/winnableSeed.ts",
   "src/lib/puzzles/mahjong/generate.ts",
-  "src/lib/puzzles/mahjong/deal.ts",
-  "src/lib/puzzles/mahjong/layouts.ts",
-  "src/lib/puzzles/mahjong/tiles.ts",
+  // Mahjong's tiles, layouts and deals are Jarajara's since 2026-10-01: a new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/jarajara/package.json",
   "src/lib/puzzles/cube/generate.ts",
   "src/components/puzzles/CubeBoard.tsx",
   // Kyuubu draws the cube; its version says when its drawing may have changed.

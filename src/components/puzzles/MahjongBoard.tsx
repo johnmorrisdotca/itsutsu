@@ -5,9 +5,9 @@ import { useId, useRef, useState, type PointerEvent as ReactPointerEvent } from 
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { geometryOf, isFree } from "@/lib/puzzles/mahjong/board";
-import { layoutExtent, layoutFor } from "@/lib/puzzles/mahjong/layouts";
-import { EMPTY_SLOT, faceOf } from "@/lib/puzzles/mahjong/tiles";
+import { geometryOf, isFree } from "@johnmorrisdotca/jarajara";
+import { layoutExtent, layoutFor } from "@johnmorrisdotca/jarajara";
+import { EMPTY_SLOT, faceOf } from "@johnmorrisdotca/jarajara";
 
 import { MahjongFaceSymbols, MahjongTileFace, faceSymbolId, faceWords } from "./MahjongTileFace";
 import { MAHJONG_DOUBLE_TAP_MS, MAHJONG_DRAG_FROM_PX, MAHJONG_TILE } from "./mahjong.constants";

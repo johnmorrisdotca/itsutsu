@@ -8,7 +8,7 @@ import { SOLITAIRE_MOVES_MOST } from "./solitaire/check";
 import { CUBE_MOVES_MOST } from "./cube/check";
 import { SCRAMBLE_LENGTHS } from "./cube/generate";
 import { SPIDER_MOVES_MOST } from "./spider/check";
-import { layoutFor } from "./mahjong/layouts";
+import { layoutFor } from "@johnmorrisdotca/jarajara";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**

@@ -12,8 +12,8 @@ import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types
 import { partyPlayersAsked } from "./kumimoji/party";
 import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
-import type { MahjongBonusRule } from "./mahjong/mahjong.types";
-import { tablePlayersAsked } from "./mahjong/table";
+import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
+import { tablePlayersAsked } from "@johnmorrisdotca/jarajara/table";
 
 /**
  * What a solve's address says: `/games/<slug>/play?size=9&level=medium&seed=…`.

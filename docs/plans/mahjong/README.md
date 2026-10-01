@@ -1,7 +1,13 @@
 # Mahjong: a family, opened with Mahjong Solitaire
 
 **Status: built 2026-09-29 on branch `mahjong` (board row
-`mahjong-tile-matching-family-style-for-several-players`).**
+`mahjong-tile-matching-family-style-for-several-players`).** Since
+2026-10-01 the tiles, layouts, deals, rules, table and computer seats are
+Jarajara (`@johnmorrisdotca/jarajara`, github.com/johnmorrisdotca/jarajara),
+where the solitaire is called Awase; the files named below live there, and the
+site keeps only `src/lib/puzzles/mahjong/generate.ts`, which writes a deal as
+one of its puzzles. Every deal and table game made before the move is held
+exactly by the package's tests.
 
 John, 2026-09-29, HIGH: "MahJong game where you match up piles of those
 CHIPS things... forget what they are called. this can be family style as
@@ -55,7 +61,7 @@ clock, runs and fastest tables.
   the server replays a solve to exactly the same tiles. **Hint** (chosen on the
   set-up) lights a free pair, at a hint's cost in points.
 - The answer and a kept run are **the moves**: a pair as two slots in base 36,
-  a shuffle as `*` (`moves.ts`). `checkMahjong` plays them on the deal and asks
+  a shuffle as `*` (`moves.ts`). `checkAwase` plays them on the deal and asks
   for an empty layout: a few thousand steps, no search.
 
 ### At a table (two to four)

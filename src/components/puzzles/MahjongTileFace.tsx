@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { MAHJONG_FACES } from "@/lib/puzzles/mahjong/tiles";
-import type { MahjongFace } from "@/lib/puzzles/mahjong/mahjong.types";
+import { MAHJONG_FACES } from "@johnmorrisdotca/jarajara";
+import type { MahjongFace } from "@johnmorrisdotca/jarajara";
 
 import { MAHJONG_INK, MAHJONG_TILE } from "./mahjong.constants";
 

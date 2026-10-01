@@ -7,7 +7,7 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { tableAddress, useKeptMahjongTable } from "@/components/puzzles/mahjongTableKept";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
-import { readTable, seatName } from "@/lib/puzzles/mahjong/table";
+import { readTable, seatName } from "@johnmorrisdotca/jarajara/table";
 import { MY_GAMES_COPY } from "./mine.constants";
 
 /**

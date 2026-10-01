@@ -9,7 +9,7 @@ import { yotsugoRule } from "./gomoji/yotsugo";
 import { dodgeRule } from "./gomoji/dodgeWords";
 import { offersDodge } from "./gomoji/dodgeSeed";
 import { backwardsRule } from "./gomoji/backwardsWords";
-import { layoutFor } from "./mahjong/layouts";
+import { layoutFor } from "@johnmorrisdotca/jarajara";
 import { CARD_SIZE_WORDS, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
 import type { PuzzleKind } from "./puzzles.types";
 

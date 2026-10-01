@@ -5,8 +5,8 @@ import { useState } from "react";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { MAHJONG_TABLE, SEAT_WINDS, readTable, seatName } from "@/lib/puzzles/mahjong/table";
-import type { MahjongSeat, MahjongTable, MahjongTableState } from "@/lib/puzzles/mahjong/table.types";
+import { AWASE_TABLE, SEAT_WINDS, readTable, seatName } from "@johnmorrisdotca/jarajara/table";
+import type { AwaseSeat, AwaseTable, AwaseTableState } from "@johnmorrisdotca/jarajara/table";
 
 import { ComputerMark } from "./KumimojiDeskParts";
 import { tableAddress, useKeptMahjongTable } from "./mahjongTableKept";
@@ -16,7 +16,7 @@ import { tableAddress, useKeptMahjongTable } from "./mahjongTableKept";
  * set-up asked for, east first, each a name typed here or a computer. The
  * names stay in this browser. At least one seat is a person's.
  */
-export function MahjongTableNames({ players, replacing, onBegin }: { players: number; replacing: MahjongTable | null; onBegin: (seats: MahjongSeat[]) => void }) {
+export function MahjongTableNames({ players, replacing, onBegin }: { players: number; replacing: AwaseTable | null; onBegin: (seats: AwaseSeat[]) => void }) {
   // One person and the rest computers, the usual way to sit down alone; any seat can be changed.
   const [computers, setComputers] = useState<boolean[]>(() => Array.from({ length: players }, (_, at) => at > 0));
   const nobody = computers.every(Boolean);
@@ -42,7 +42,7 @@ export function MahjongTableNames({ players, replacing, onBegin }: { players: nu
               <input
                 name={`seat-${at}`}
                 placeholder={SEAT_WINDS[at]!.label}
-                maxLength={MAHJONG_TABLE.nameMost}
+                maxLength={AWASE_TABLE.nameMost}
                 autoComplete="off"
                 aria-label={`The ${SEAT_WINDS[at]!.label.toLowerCase()} seat's name`}
                 className="min-w-0 flex-1 rounded border border-rule bg-paper px-2 py-1.5 text-ink"
@@ -80,7 +80,7 @@ export function MahjongTableNames({ players, replacing, onBegin }: { players: nu
 }
 
 /** Every seat's points and pairs, the seat to move marked, and the winners once it is over. */
-export function MahjongScores({ table, state }: { table: MahjongTable; state: MahjongTableState }) {
+export function MahjongScores({ table, state }: { table: AwaseTable; state: AwaseTableState }) {
   return (
     <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="mahjong-scores" aria-label="Points">
       {table.seats.map((seat, at) => {

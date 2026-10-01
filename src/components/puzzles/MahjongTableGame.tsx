@@ -16,10 +16,10 @@ import { PARTY_COPY } from "@/components/party/party.constants";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, PLAY_SURFACE, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
-import { computerPair } from "@/lib/puzzles/mahjong/computer";
-import { isComputerSeat, playAtTable, readTable, seatName, startTable, tablePairs, undoAtTable } from "@/lib/puzzles/mahjong/table";
-import type { MahjongSeat, MahjongTable } from "@/lib/puzzles/mahjong/table.types";
-import { tilesLeft } from "@/lib/puzzles/mahjong/board";
+import { computerPair } from "@johnmorrisdotca/jarajara/table";
+import { isComputerSeat, playAtTable, readTable, seatName, startTable, tablePairs, undoAtTable } from "@johnmorrisdotca/jarajara/table";
+import type { AwaseSeat, AwaseTable } from "@johnmorrisdotca/jarajara/table";
+import { tilesLeft } from "@johnmorrisdotca/jarajara";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -86,7 +86,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         <MahjongTableNames
           players={players}
           replacing={kept !== null && readTable(kept)?.over === false ? kept : null}
-          onBegin={(seats: MahjongSeat[]) => keep(startTable(puzzle, seats))}
+          onBegin={(seats: AwaseSeat[]) => keep(startTable(puzzle, seats))}
         />
       </section>
     );
@@ -121,7 +121,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
   /* Undo gives back the pairs since the last person's, theirs included: a computer's would only be taken again. */
   const lastPerson = state.taken.map((each) => each.seat).findLastIndex((seat) => !isComputerSeat(table, seat));
   const undo = () => {
-    let back: MahjongTable | null = table;
+    let back: AwaseTable | null = table;
     for (let count = table.takes.length; count > lastPerson && back !== null; count -= 1) back = undoAtTable(back);
     if (back !== null) keep(back);
     setChosen(null);
@@ -216,7 +216,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
   );
 }
 
-function winnersLine(table: MahjongTable, winners: readonly number[]): string {
+function winnersLine(table: AwaseTable, winners: readonly number[]): string {
   const names = winners.map((at) => seatName(table.seats, at));
   if (names.length === 1) return `${names[0]} wins.`;
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} share the win.`;

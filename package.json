@@ -69,6 +69,7 @@
   "dependencies": {
     "@johnmorrisdotca/domino": "1.0.0",
     "@johnmorrisdotca/hitotsu": "1.0.1",
+    "@johnmorrisdotca/jarajara": "1.0.0",
     "@johnmorrisdotca/korokoro": "1.12.0",
     "@johnmorrisdotca/kotoba": "1.0.0",
     "@johnmorrisdotca/kumimoji": "1.0.1",

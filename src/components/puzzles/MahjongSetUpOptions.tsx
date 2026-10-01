@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
-import type { MahjongBonusRule } from "@/lib/puzzles/mahjong/mahjong.types";
-import { MAHJONG_TABLE } from "@/lib/puzzles/mahjong/table";
+import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
+import { AWASE_TABLE } from "@johnmorrisdotca/jarajara/table";
 import type { PuzzleAsked } from "@/lib/puzzles/puzzleAddress";
 
 import { MahjongFreeToggle } from "./MahjongFreeToggle";
@@ -36,7 +36,7 @@ export function MahjongSetUpOptions({
   return (
     <>
       <div className="grid grid-cols-4 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Players" data-testid="mahjong-players">
-        {Array.from({ length: MAHJONG_TABLE.most }, (_, at) => at + 1).map((each) => (
+        {Array.from({ length: AWASE_TABLE.most }, (_, at) => at + 1).map((each) => (
           <button
             key={each}
             type="button"

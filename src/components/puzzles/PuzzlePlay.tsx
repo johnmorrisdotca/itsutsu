@@ -18,7 +18,7 @@ import { freshDodgeSeed } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
-import type { MahjongBonusRule } from "@/lib/puzzles/mahjong/mahjong.types";
+import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 
 import { BlackAndWhiteSolve } from "./BlackAndWhiteSolve";
 import { BridgesSolve } from "./BridgesSolve";

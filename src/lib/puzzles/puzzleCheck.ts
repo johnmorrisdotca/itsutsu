@@ -3,7 +3,7 @@ import { checkPictureLogic } from "./pictureLogic/check";
 import { checkSolitaire, checkSolitaireGivenUp } from "./solitaire/check";
 import { checkFreeCell, checkFreeCellGivenUp } from "./freecell/check";
 import { checkSpider, checkSpiderGivenUp } from "./spider/check";
-import { checkMahjong } from "./mahjong/check";
+import { checkAwase } from "@johnmorrisdotca/jarajara/awase";
 import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeMoreOrLess } from "./moreOrLess/code";
@@ -88,7 +88,7 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "spider":
       return checkSpider(size, givens, answer);
     case "mahjong":
-      return checkMahjong(size, givens, answer);
+      return checkAwase(size, givens, answer);
     case "cube":
       // The turns, turned from the scramble: every face one colour at the end.
       return checkCube(size, givens, answer);
