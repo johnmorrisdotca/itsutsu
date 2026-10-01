@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.480.6 — 2026-10-01 12:44 UTC
+- Every member can be kept as a buddy now, the computer players and the kept records on the Honors roll too: the star is on their pages, in the lists and beside each name on Honors
+
 ## 0.480.5 — 2026-10-01 11:48 UTC
 - The game packages under the site move to their latest releases, every game playing exactly as before: Jarajara 1.3.0, Kyuubu 1.6.0, Korokoro 1.14.0, Hitotsu 1.1.0, and the documentation releases of the rest
 
