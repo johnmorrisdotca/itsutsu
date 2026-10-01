@@ -23,8 +23,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       '@johnmorrisdotca/korokoro':
-        specifier: 1.14.0
-        version: 1.14.0(react@19.2.8)
+        specifier: 1.14.1
+        version: 1.14.1(react@19.2.8)
       '@johnmorrisdotca/kotoba':
         specifier: 1.0.0
         version: 1.0.0
@@ -433,8 +433,8 @@ packages:
     resolution: {integrity: sha512-zBBVGBvgEVL4QLpbwyDf6CP4UAfWka3x3UuHOlGIzuZ60tZ30PvlcwmjIwAEfDFVvRHtbrC8GLCbWCGIKQ/kDQ==}
     engines: {node: '>=20'}
 
-  '@johnmorrisdotca/korokoro@1.14.0':
-    resolution: {integrity: sha512-GchUz6Gx1GtKExYdu81YVV11vUOMTx55TtC3HcGLRif0MaygK9ZGD7+U5h8xMsaUba/YJNbgN7AUgkCpZxhyuQ==}
+  '@johnmorrisdotca/korokoro@1.14.1':
+    resolution: {integrity: sha512-D/zAq+5e6776rGP+87nVaXebDPUFc+S+TPLe8qtTP/ZfvGV3DFV4gAIJ11X2GID4Q6809hT2WdVScwLPbaEgLg==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -3110,7 +3110,7 @@ snapshots:
 
   '@johnmorrisdotca/jarajara@1.4.0': {}
 
-  '@johnmorrisdotca/korokoro@1.14.0(react@19.2.8)':
+  '@johnmorrisdotca/korokoro@1.14.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
