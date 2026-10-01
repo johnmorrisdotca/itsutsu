@@ -63,7 +63,7 @@ export async function BuddyList({ memberId }: { memberId: string }) {
     <div className="flex flex-col gap-3" data-testid="buddy-list">
       <p className="text-sm text-muted">
         The people you play, most recently seen first. {buddies.length}{" "}
-        {buddies.length === 1 ? "person" : "people"}.
+        {buddies.length === 1 ? "buddy" : "buddies"}.
       </p>
       {/*
         The table's size and the table's name: John, 2026-09-26, "Buddies has
@@ -118,8 +118,8 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               </Link>
               <span className="ml-auto">
                 <RowActions>
-                  {/* One press to the set-up screen against them; one more begins it. */}
-                  <ChallengeButton memberId={buddy.id} strong />
+                  {/* One press to the set-up screen against them; one more begins it. A kept record plays no games. */}
+                  {buddy.person || buddy.computer ? <ChallengeButton memberId={buddy.id} strong /> : null}
                   <BuddyButton memberId={buddy.id} isBuddy />
                 </RowActions>
               </span>

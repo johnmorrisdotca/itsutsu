@@ -20,7 +20,8 @@ export async function onlineOfferFor(game: string, memberId: string | null): Pro
   const [me, buddies] = await Promise.all([
     prisma.member.findUnique({ where: { id: memberId }, select: { ageBand: true } }),
     prisma.buddy.findMany({
-      where: { ownerId: memberId },
+      // Only the people on it: a program or a kept record on the list cannot take a seat (`listable`).
+      where: { ownerId: memberId, buddy: { botTier: null, unclaimableBecause: null } },
       select: { buddy: { select: { id: true, name: true } } },
       orderBy: { buddy: { lastSeenAt: "desc" } },
     }),

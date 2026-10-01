@@ -3,7 +3,7 @@ import "server-only";
 import { recordInbox } from "@/lib/inbox/inbox";
 import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { prisma } from "@/lib/prisma";
-import { buddyMemberIds } from "@/lib/social/buddies";
+import { peopleBuddyIds } from "@/lib/social/buddies";
 import { isIgnoring } from "@/lib/social/ignores";
 import { awardXp } from "@/lib/xp/awardXp";
 import { XP_EVENTS } from "@/lib/xp/xp.constants";
@@ -139,7 +139,7 @@ export async function offerRace(id: string, host: { id: string; name: string }, 
   if (race === null) return "none";
   if (race.hostMemberId !== host.id) return "notHost";
   if (race.guestMemberId !== null) return "taken";
-  if (toMemberId === host.id || !(await buddyMemberIds(host.id)).has(toMemberId)) return "notBuddy";
+  if (toMemberId === host.id || !(await peopleBuddyIds(host.id)).has(toMemberId)) return "notBuddy";
   const offered = await prisma.puzzleRace.updateMany({ where: { id, guestMemberId: null }, data: { offeredToMemberId: toMemberId } });
   if (offered.count !== 1) return "taken";
   if (!(await isIgnoring(toMemberId, host.id))) {

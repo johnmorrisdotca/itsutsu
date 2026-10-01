@@ -64,7 +64,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
 
   // Offered by name (`offerRace`): who to, for the seat's words; the host's buddies to choose from; and, for the one it was offered to, the seat to take.
   const offeredTo = race.guestMemberId === null && race.offeredToMemberId !== null ? await memberNamed(race.offeredToMemberId) : null;
-  const buddies = invite === null || reader.memberId === null ? [] : (await fetchBuddies(reader.memberId)).map((buddy) => ({ id: buddy.id, name: buddy.name }));
+  const buddies = invite === null || reader.memberId === null ? [] : (await fetchBuddies(reader.memberId)).filter((buddy) => buddy.person).map((buddy) => ({ id: buddy.id, name: buddy.name }));
   const offeredHere = seat === null && offeredTo !== null && offeredTo.id === reader.memberId;
 
   return (

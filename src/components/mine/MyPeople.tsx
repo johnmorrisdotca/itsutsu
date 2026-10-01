@@ -30,9 +30,9 @@ import { mayEmailInvites } from "@/lib/social/childRules";
  * used to read the buddy list and the ignore list on every visit whichever
  * part of it somebody had come for.
  *
- * BY MEMBER ID, both lists. Everybody on them is a person with an account — the
- * lists refuse programs and kept records when a row is added — so every row
- * offers its actions, whether or not that person came in by Google.
+ * BY MEMBER ID, both lists. The ignore list holds only people with an account;
+ * the buddy list keeps anybody since 2026-10-01, a program or a kept record too,
+ * so a buddy's row offers a game only where one can be played.
  */
 export async function MyPeople({ memberId }: { memberId: string }) {
   const [buddies, ignored, age] = await Promise.all([fetchBuddies(memberId), fetchIgnored(memberId), ageBandOf(memberId)]);
@@ -70,7 +70,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
                 </Link>
                 <span className="ml-auto">
                   <RowActions>
-                    <ChallengeButton memberId={buddy.id} />
+                    {buddy.person || buddy.computer ? <ChallengeButton memberId={buddy.id} /> : null}
                     <BuddyButton memberId={buddy.id} isBuddy />
                   </RowActions>
                 </span>

@@ -14,6 +14,7 @@ import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { currentReader } from "@/lib/auth/currentReader";
 import { directoryFilterFor } from "@/lib/rating/memberFilter";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
+import { keptRecordStars, type KeptRecordStar } from "@/lib/social/keptRecordStars";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
 import { openTabOf, TAB_FROM_PATH } from "@/lib/ui/tabs";
 import { PLAYERS_TABS as TABS, PLAYERS_OWN_TABS } from "./players.tabs";
@@ -62,6 +63,8 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
   const shown = open === "members" ? await directoryFilterFor(asked) : null;
   /* Who is reading, asked for only by the tab that needs it. */
   const reader = open === "buddies" ? await currentReader() : { memberId: null };
+  // The star beside each kept record: every member can be kept as a buddy.
+  const stars = open === "honors" ? await keptRecordStars(await currentReader()) : new Map<string, KeptRecordStar>();
   /*
    * The computer players' rows are written the first time anybody needs them,
    * and until this page did nothing anybody visits needed them — so they
@@ -145,8 +148,8 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
               A kept record has nobody on the other end of it: there is nothing to challenge,
               and nothing that can be played for.
             </p>
-            <LegacyRoll kind="remembered" label="Remembered" kanji="偲ぶ" />
-            <LegacyRoll kind="honorary" label="Honorary members" kanji="名誉会員" />
+            <LegacyRoll kind="remembered" label="Remembered" kanji="偲ぶ" stars={stars} />
+            <LegacyRoll kind="honorary" label="Honorary members" kanji="名誉会員" stars={stars} />
           </div>
         ) : null}
       </section>

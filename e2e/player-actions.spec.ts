@@ -40,23 +40,68 @@ test.describe("the actions on a player's page", () => {
     await expect(actions.getByRole("button", { name: /Ignore/ })).toBeVisible();
   });
 
-  test("offers a computer player a game and nothing else", async ({ page }) => {
-    // Buddying or ignoring a program is not a thing anybody means; playing one
-    // is the entire reason it is listed.
+  test("offers a computer player a game and the star, never an ignore", async ({ page }) => {
+    // Playing one is the reason it is listed, and every member can be kept as a
+    // buddy (John, 2026-10-01: "ALL members should be addable"). Ignoring a
+    // program is not a thing anybody means.
     await page.goto("/players/kyu");
     const actions = page.getByTestId("player-actions");
     await expect(actions).toBeVisible();
     await expect(actions.getByRole("link", { name: /Play/ })).toBeVisible();
-    await expect(actions.getByRole("button", { name: /Buddy/ })).toHaveCount(0);
+    await expect(actions.getByRole("button", { name: /Buddy/ })).toBeVisible();
     await expect(actions.getByRole("button", { name: /Ignore/ })).toHaveCount(0);
   });
 
-  test("offers nothing about a kept record, who has nobody on the other end", async ({ page }) => {
-    // Chibi never signed in. An invitation would be an offer of a game that
-    // cannot happen.
+  test("offers a kept record the star alone, and takes it back", async ({ browser, baseURL }) => {
+    /*
+     * Chibi never signed in, so no game is offered and nothing can be ignored;
+     * she can be kept as a buddy like anybody. Chibi's row is made by a
+     * migration on every database, and the star is pressed by a member this
+     * spec makes, so nobody else's list changes.
+     */
+    const stamp = Date.now().toString(36);
+    const mine = await memberContext(browser, baseURL!, { email: `keeper-${stamp}@example.com`, name: `Keeper ${stamp}` });
+    const page = await mine.newPage();
     await page.goto("/players/chibi");
-    await expect(page.getByTestId("player-actions")).toHaveCount(0);
+    const actions = page.getByTestId("player-actions");
+    await expect(actions).toBeVisible();
+    await expect(actions.getByRole("link", { name: /Play/ })).toHaveCount(0);
+    await expect(actions.getByRole("button", { name: /Ignore/ })).toHaveCount(0);
     await expect(page.getByTestId("ask-after-record")).toHaveCount(0);
+
+    const star = actions.getByTestId("buddy-toggle");
+    await expect(star).toHaveAttribute("data-ready", "true");
+    await star.click();
+    await expect(star).toHaveText("★ Buddy");
+
+    // On the buddy list, with no game offered beside a record that cannot play.
+    await page.goto("/players/buddies");
+    const row = page.getByTestId("buddy-row").filter({ hasText: "Chibi" });
+    await expect(row).toBeVisible();
+    await expect(row.getByRole("link", { name: /Play/ })).toHaveCount(0);
+
+    // And the way back: the star in the row takes her off again.
+    const off = row.getByTestId("buddy-toggle");
+    await expect(off).toHaveAttribute("data-ready", "true");
+    await off.click();
+    await expect(off).toHaveText("☆ Buddy");
+    await mine.close();
+  });
+
+  test("offers the star beside each name on the honors roll", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const mine = await memberContext(browser, baseURL!, { email: `honors-${stamp}@example.com`, name: `Honors ${stamp}` });
+    const page = await mine.newPage();
+    await page.goto("/players/honors");
+    const roll = page.getByTestId("legacy-roll-remembered");
+    const star = roll.getByTestId("buddy-toggle");
+    await expect(star).toHaveCount(1);
+    await expect(star).toHaveAttribute("data-ready", "true");
+    await star.click();
+    await expect(star).toHaveText("★ Buddy");
+    await star.click();
+    await expect(star).toHaveText("☆ Buddy");
+    await mine.close();
   });
 
   test("offers nothing about yourself", async ({ browser, baseURL }) => {

@@ -285,8 +285,10 @@ async function ratingsAsTheyStood(
  *
  * BY MEMBER ID on both sides, which is how `Buddy` is kept now. It was two folded
  * addresses, so a win over a buddy who came in with an invite code — no address —
- * could never pay. A program cannot be on a list at all (the list refuses one),
- * and the caller never asks about a program's side.
+ * could never pay. A program may be on a list since 2026-10-01, but the caller
+ * never asks about a program's side (`opponentFacts` returns before this), so
+ * beating a program pays its grade and never `wonVsBuddy`; a kept record plays
+ * no games.
  */
 async function onMyBuddyList(mine: string | null, theirs: string | null): Promise<boolean | null> {
   if (mine === null || theirs === null) return null;

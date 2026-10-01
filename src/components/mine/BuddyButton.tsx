@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * Adds or removes one member from the viewer's buddy list, in place.
@@ -16,6 +17,7 @@ export function BuddyButton({ memberId, isBuddy }: { memberId: string; isBuddy: 
   const router = useRouter();
   const [buddy, setBuddy] = useState(isBuddy);
   const [busy, setBusy] = useState(false);
+  const hydrated = useHydrated();
 
   async function toggle() {
     setBusy(true);
@@ -39,6 +41,7 @@ export function BuddyButton({ memberId, isBuddy }: { memberId: string; isBuddy: 
       className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`}
       title={buddy ? "Remove from your buddies" : "Add to your buddies"}
       data-testid="buddy-toggle"
+      {...readyMark(hydrated)}
     >
       {buddy ? "★ Buddy" : "☆ Buddy"}
     </button>

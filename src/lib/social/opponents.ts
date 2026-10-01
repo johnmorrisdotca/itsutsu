@@ -26,8 +26,10 @@ export type Opponent = {
  * people they play, with the ones they have ignored left out.
  *
  * Somebody you could ask means somebody who can answer — a person with an
- * account. Both lists already are: who is here is members seen lately, which a
- * program and a kept record never are, and a buddy list refuses anybody else.
+ * account. Who is here is members seen lately, which a program and a kept record
+ * never are; a buddy list keeps both since 2026-10-01, so it is narrowed to its
+ * people here (`BuddyEntry.person`) — a program is offered from the set-up's own
+ * computer players, and a kept record cannot play.
  * It used to be keyed on the address being there at all, which also left out
  * every member who came in with an invite code.
  *
@@ -48,7 +50,7 @@ export async function fetchOpponents(reader: Pick<Reader, "memberId">): Promise<
       .filter((entry) => entry.id !== mine && !ignored.has(entry.id))
       .map((entry) => ({ id: entry.id, email: entry.email, name: entry.name || entry.id, here: true })),
     ...buddies
-      .filter((buddy) => !hereIds.has(buddy.id) && !ignored.has(buddy.id))
+      .filter((buddy) => buddy.person && !hereIds.has(buddy.id) && !ignored.has(buddy.id))
       .map((buddy) => ({ id: buddy.id, email: buddy.email, name: buddy.name || buddy.id, here: false })),
   ];
 }

@@ -22,10 +22,11 @@ import { RowMore } from "./RowMore";
  * in both places.
  *
  * Not everybody gets all three. A kept record is nobody with an account — Chibi
- * never signed in — so there is nobody to challenge or to hear from, and it gets
- * none. A computer player is offered a game and nothing else; buddying or
- * ignoring a program is not a thing anybody means. And nobody is offered any of
- * it about themselves.
+ * never signed in — so there is nobody to challenge or to hear from, and it is
+ * offered the star alone. A computer player is offered a game and the star;
+ * ignoring a program is not a thing anybody means. Every member can be kept as a
+ * buddy — John, 2026-10-01: "ALL members should be addable" — where the star had
+ * been for people only. And nobody is offered any of it about themselves.
  */
 export function PlayerActions({
   memberId,
@@ -93,14 +94,22 @@ export function PlayerActions({
   testId?: string;
 }) {
   if (isYou || !canAsk || memberId === undefined) return null;
-  if (isComputer) {
-    return (
+  const rowName = shownName(name ?? "");
+  if (isComputer || !person) {
+    // A program is offered a game; a kept record plays none. Either may be starred.
+    const challenge = isComputer ? <ChallengeButton memberId={memberId} strong={!compact} /> : null;
+    return compact ? (
+      <div className="flex items-center justify-end gap-1" data-testid={testId}>
+        {challenge}
+        <RowMore memberId={memberId} name={rowName} isBuddy={isBuddy} ignoring={false} ignorable={false} />
+      </div>
+    ) : (
       <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
-        <ChallengeButton memberId={memberId} strong={!compact} />
+        {challenge}
+        <BuddyButton memberId={memberId} isBuddy={isBuddy} />
       </div>
     );
   }
-  if (!person) return null;
 
   /*
    * IN A ROW, THE OFFER OF A GAME AND "⋯" FOR THE REST. Play, Buddy and Ignore at
@@ -111,7 +120,7 @@ export function PlayerActions({
     return (
       <div className="flex items-center justify-end gap-1" data-testid={testId}>
         {reachable ? <ChallengeButton memberId={memberId} /> : null}
-        <RowMore memberId={memberId} name={shownName(name ?? "")} isBuddy={isBuddy} ignoring={ignoring} />
+        <RowMore memberId={memberId} name={rowName} isBuddy={isBuddy} ignoring={ignoring} />
       </div>
     );
   }

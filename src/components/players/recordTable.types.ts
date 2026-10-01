@@ -83,6 +83,12 @@ export type RowMoreProps = {
   name: string;
   isBuddy: boolean;
   ignoring: boolean;
+  /**
+   * False for a computer player or a kept record: either may be kept as a buddy,
+   * and neither can write to anybody or ask for a game, so there is nothing to
+   * ignore.
+   */
+  ignorable?: boolean;
 };
 
 /** A rating as a row shows it: the number, and which ladder earned it. */

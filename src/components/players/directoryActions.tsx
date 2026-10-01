@@ -39,13 +39,32 @@ export function directoryActions(
     recency: (entry: DirectoryEntry) => (entry.presence ? recencyOf(new Date(entry.lastSeenAt), now) : null),
     forEntry: (entry: DirectoryEntry) => {
       /*
-       * AN ACCOUNT TO ASK WITH, a PERSON on the row — not a program, not a kept
-       * record — and not the reader's own row, decided by id. The middle test was
-       * "has an address", which turned away every member who came in with an
-       * invite code; see `listable`.
+       * AN ACCOUNT TO ASK WITH, and not the reader's own row, decided by id.
+       * Whether the row is a PERSON (`listable`) decides what is offered below;
+       * that test was "has an address", which turned away every member who came
+       * in with an invite code.
        */
       if (!reader.hasAccount || entry.id === reader.memberId) return null;
-      if (!listable({ botTier: entry.botTier ?? null, unclaimableBecause: entry.unclaimableBecause })) return null;
+      const name = shownName(entry.name);
+      /*
+       * A program is offered a game and the star, a kept record the star alone:
+       * every member can be kept as a buddy (John, 2026-10-01: "ALL members
+       * should be addable"), and only a person can be ignored.
+       */
+      if (!listable({ botTier: entry.botTier ?? null, unclaimableBecause: entry.unclaimableBecause })) {
+        return (
+          <RowActions>
+            {entry.botTier ? <ChallengeButton memberId={entry.id} /> : null}
+            <RowMore
+              memberId={entry.id}
+              name={name}
+              isBuddy={buddies.has(entry.id)}
+              ignoring={false}
+              ignorable={false}
+            />
+          </RowActions>
+        );
+      }
       return (
         <RowActions>
           {/*
@@ -57,7 +76,7 @@ export function directoryActions(
           {closed.has(entry.id) ? null : <ChallengeButton memberId={entry.id} />}
           <RowMore
             memberId={entry.id}
-            name={shownName(entry.name)}
+            name={name}
             isBuddy={buddies.has(entry.id)}
             ignoring={ignored.has(entry.id)}
           />
