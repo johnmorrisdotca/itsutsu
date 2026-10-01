@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.480.5 — 2026-10-01 11:48 UTC
+- The game packages under the site move to their latest releases, every game playing exactly as before: Jarajara 1.3.0, Kyuubu 1.6.0, Korokoro 1.14.0, Hitotsu 1.1.0, and the documentation releases of the rest
+
 ## 0.480.4 — 2026-10-01 10:41 UTC
 - Toranpu 2.13.0 under the cards: its rules unchanged, and its new hand controls (turn a card over, part a hand, mark and spin a card), extras, realistic design and ready-to-play table now ship with the site
 
