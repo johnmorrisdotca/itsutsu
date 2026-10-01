@@ -45,6 +45,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   mexicanTrain: "domino",
   hitotsu: "hitotsu",
   tenka: "tenka",
+  diceWar: "korokoro",
   ...Object.fromEntries(CARD_GAME_LIST.map((kind) => [kind, "toranpu"])),
 };
 

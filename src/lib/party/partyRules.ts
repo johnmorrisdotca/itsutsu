@@ -8,6 +8,7 @@ import { TENKA_RULES } from "./tenka/tenkaRules";
 import { PACHISI_RULES } from "./pachisi/pachisiRules";
 import { YACHT_RULES } from "./yacht/yachtRules";
 import { HITOTSU_RULES } from "./hitotsu/hitotsuRules";
+import { DICE_WAR_RULES } from "./diceWar/diceWarRules";
 import { CARD_GAME_RULES } from "../cardGames/cardGameRules";
 
 /**
@@ -24,5 +25,6 @@ export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], 
   yacht: YACHT_RULES,
   pachisi: PACHISI_RULES,
   hitotsu: HITOTSU_RULES,
+  diceWar: DICE_WAR_RULES,
   ...CARD_GAME_RULES,
 };

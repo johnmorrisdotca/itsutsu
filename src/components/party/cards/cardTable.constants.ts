@@ -12,6 +12,7 @@ export const CARD_TABLE_KEYS: Record<CardGameKind, string> = {
   euchre: "itsutsu.cards.euchre",
   cribbage: "itsutsu.cards.cribbage",
   ohHell: "itsutsu.cards.ohHell",
+  war: "itsutsu.cards.war",
 };
 
 /**
@@ -20,6 +21,9 @@ export const CARD_TABLE_KEYS: Record<CardGameKind, string> = {
  * on this page and nothing else; no server is asked anything.
  */
 export const COMPUTER_PAUSE_MS = 650;
+
+/** How long a table that keeps turning the cards over (War's "Keep turning") waits between turns: quick, but long enough to see each one. */
+export const KEEP_TURNING_MS = 450;
 
 /** The seed a set-up's preview is dealt from: always the same deal, so a choice does not reshuffle the picture for nothing. */
 export const PREVIEW_SEED = 2026;
@@ -55,6 +59,8 @@ export const CARD_TABLE_COPY = {
   won: (names: string) => `${names} won.`,
   again: "Play again, same table",
   newGame: "New game",
+  keepTurning: "Keep turning",
+  stopTurning: "Stop turning",
   soundOn: "Card sound on",
   soundOff: "Card sound off",
   confirmNew: "Start a new game? This one will be gone.",

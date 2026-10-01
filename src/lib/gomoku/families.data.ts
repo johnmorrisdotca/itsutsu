@@ -263,7 +263,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      * holds (`FAMILY_MOST_GAMES`). Trick-taking games first — Hearts and
      * Spades — played round one device with a computer in any seat.
      * Cribbage (2026-09-30) is here too: not a trick-taking game, but one
-     * played a card at a time round the table, and Cards was full.
+     * played a card at a time round the table, and Cards was full. So is War
+     * (2026-10-01), the card game with no choice in it: Cards is still full.
      *
      * トリック: the word Japanese players use for a trick, as in
      * トリックテイキング, the name for the whole kind of game.
@@ -274,8 +275,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Tricks",
     kanji: "トリック",
-    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, bid exactly what you alone will take, or peg your way to 121 at cribbage. Round one device, with a computer in any empty seat.",
-    games: ["hearts", "spades", "euchre", "ohHell", "cribbage"],
+    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, bid exactly what you alone will take, peg your way to 121 at cribbage, or turn your cards over at War. Round one device, with a computer in any empty seat.",
+    games: ["hearts", "spades", "euchre", "ohHell", "cribbage", "war"],
     notOnSetUp:
       "A game here is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
@@ -365,7 +366,10 @@ export const GAME_FAMILIES: GameFamily[] = [
      * sheet of thirteen boxes, alone or round one device. Its own shelf rather than Party games, which already
      * shows its eight. 賽子 (saikoro) is the everyday word for a die. Pachisi,
      * the race game of the cross and circle, joined it the same day (John:
-     * "I think Parcheesi was another one from the past").
+     * "I think Parcheesi was another one from the past"). Dice War (2026-10-01,
+     * John: "Dice game: war? Or higher number? Something super simple with just
+     * rolling dice and keeping score") joined it the same way: everybody rolls,
+     * the highest scores, a tie is war.
      *
      * Its games are party games, played round one device and never recorded,
      * so, like Dominoes, it counts towards no award (`RECORDED_FAMILIES`),
@@ -374,8 +378,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Dice",
     kanji: "賽子",
-    blurb: "Games the dice decide: roll, hold the ones you want and score what they make, or race your pawns home by what they show.",
-    games: ["yacht", "pachisi"],
+    blurb: "Games the dice decide: roll, hold the ones you want and score what they make, race your pawns home by what they show, or roll against the table for the highest total.",
+    games: ["yacht", "pachisi", "diceWar"],
     notOnSetUp:
       "A dice game is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

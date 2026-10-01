@@ -27,6 +27,7 @@ const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number) => string> = {
   euchre: (size) => `To ${size}`,
   cribbage: (size) => (size === 61 ? "To 61, once round" : "To 121"),
   ohHell: (size) => (size === 7 ? "7 deals, up to seven cards" : "13 deals, up and back down"),
+  war: (size) => `${size} turns`,
 };
 
 function Section({ legend, children }: { legend: string; children: ReactNode }) {
@@ -88,7 +89,7 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
           </div>
         </Section>
         <Section legend={CARD_TABLE_COPY.length}>
-          <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label={CARD_TABLE_COPY.length}>
+          <div className={`grid gap-1.5 ${spec.sizes.length === 4 ? "grid-cols-2" : "grid-cols-3"}`} role="radiogroup" aria-label={CARD_TABLE_COPY.length}>
             {spec.sizes.map((option) => (
               <button key={option} type="button" role="radio" aria-checked={option === size} onClick={() => setSize(option)} data-testid="cards-length" data-size={option} className={`min-h-11 rounded-lg border text-sm font-semibold ${option === size ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}>
                 {LENGTH_WORDS[kind](option)}

@@ -299,6 +299,53 @@ Decisions to review: the name Pachisi rather than the boxed name; the kanji
 二十五 ("twenty-five", what pachisi means); the Western two-dice rules rather
 than the Indian cowrie throws; two to four players, no alone game.
 
+## Dice War 賽合戦: the simplest dice game
+
+John, 2026-10-01: "Dice game: war? Or higher number? Something super simple
+with just rolling dice and keeping score." Everybody rolls, the highest total
+scores a point, and a tie for the highest is war.
+
+- **Rules** are Korokoro's (`@johnmorrisdotca/korokoro`, `diceWar.ts`, 1.15.0):
+  two to eight players, any of them a computer; 1 to 10 dice of 2 to 1000 sides
+  each, added up; a tie sends only the tied players to roll again, with the
+  stake one higher for every war, the winner taking all; played to a score (1 to
+  100) or for a number of rounds (1 to 200), level players sharing a win by
+  rounds. A game is its table, seed and moves, kept as text. The site's side is
+  `src/lib/party/diceWar/` (`diceWarRules.ts` the party contract, with
+  `startWith` for what the set-up chooses; `diceWarThrow.ts`; `diceWarWords.ts`;
+  `diceWar.constants.ts`, free of the package so a page never carries it).
+- **Where it lives**: a party game (`PartyKind` `diceWar`) at home in the **Dice**
+  family beside Yacht and Pachisi, not on the Dice tab. The tab (`/dice`) is a
+  tool, a tray with history and odds that is never a game and keeps nothing
+  between throws; Dice War is a table of people with a score, kept until it is
+  finished and found on My games like every party game, so it follows the
+  party-game gate, and the Dice family is the shelf for games the dice decide.
+  The tab itself is unchanged: Korokoro's tray option for Dice War
+  (`mountRoller(el, { diceWar: true })`) is not used.
+- **Dice are Korokoro's own**: each die is `mountDie` (`DiceWarDie.tsx`), the
+  die the tab draws, polygon faces and tumble included. The throw is made
+  before anything is drawn (`throwDiceWar`: the people's dice from Korokoro's
+  `roll` and the browser's cryptographic generator, handed to the game as the
+  move; the computers' from the game's seed), and kept with the game. A die is
+  then told its face through the random source `mountDie` accepts, so the tumble
+  lands on it, and only a new throw seen after the die has been on the page makes
+  it tumble: a reload shows the dice still.
+- **The table**: one Roll press throws every person's dice at once (nothing is
+  hidden, so there is no device to pass), a row a player with their dice, total
+  and points, the throw's winner ringed and the tied marked "War" in words as
+  well as colour, players out of a war marked so. A war among computers only is
+  thrown for them after a pause (`useDiceWarComputer`). The press sits above the
+  rows, since eight players' rows run past a phone's window.
+- **Set-up**: how many (2 to 8), dice each (1, 2, 3, 5, 10), sides (d4 to d100),
+  what to play to (5, 10, 25 or 50 points, or 10, 20 or 50 rounds), who sits where.
+  Opens on a person and a computer, one d6 each, first to 10. A line says the
+  exact odds of one throw for the table chosen (`diceWarOdds`). The gate's one
+  "size" is the score.
+- **The gate** plays it at every score it offers and every number of players,
+  each throw the one the game's seed would make for the people at the table
+  (`DICE_WAR_RULES.moves`); the rules around a real throw, and the odds and
+  words, are tested in `diceWar.test.ts`.
+
 ## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,
@@ -393,3 +440,11 @@ not a second mechanism:
   region; Halma for four taken off the Party games shelf to keep it at eight
   (it is still offered from Halma's own page); the device passed between turns by name, with nobody's
   cards shown until the player named says they have it.
+- Dice War: in the Dice family as a party game, not on the Dice tab; the kanji
+  賽合戦 ("a battle of dice"); first to 10 points with one six-sided die each as the
+  game it opens on; a person and a computer as the table it opens on; the set-up
+  offering a few dice counts and sides rather than every number the package
+  allows; one Roll for every person at the table rather than a press each.
+- War (card game): in Tricks, since Cards is full; four lengths (50, 100, 200,
+  1000 turns), not Toranpu's five; the kanji 戦争; a "Keep turning" toggle that the
+  package does not have.

@@ -18,7 +18,7 @@ import { ONLINE_COPY } from "./online/online.constants";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
 import { CARD_TABLE_COPY } from "./cards/cardTable.constants";
-import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, CribbageCard, CribbageOffer, CribbageTable, EuchreCard, EuchreOffer, EuchreTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, OhHellCard, OhHellOffer, OhHellTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable } from "./cards/cardTableClient";
+import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, CribbageCard, CribbageOffer, CribbageTable, EuchreCard, EuchreOffer, EuchreTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, OhHellCard, OhHellOffer, OhHellTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable, WarCard, WarOffer, WarTable } from "./cards/cardTableClient";
 import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
@@ -30,6 +30,8 @@ import { YACHT_COPY } from "./yacht/yacht.constants";
 import { YachtCardClient, YachtTableClient } from "./yacht/yachtClient";
 import { YachtOffer } from "./yacht/YachtOffer";
 import { HITOTSU_COPY } from "./hitotsu/hitotsu.constants";
+import { DICE_WAR_COPY } from "./diceWar/diceWar.constants";
+import { DiceWarCardClient, DiceWarOfferClient, DiceWarTableClient } from "./diceWar/diceWarClient";
 import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
 
 /**
@@ -100,6 +102,15 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Offer: PachisiOffer,
     Card: PachisiCardClient,
   },
+  diceWar: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: DICE_WAR_COPY.lead,
+    // Loaded in the browser only (`diceWarClient.tsx`), as the card games' tables are: Korokoro stays out of the server's function.
+    Game: DiceWarTableClient,
+    Offer: DiceWarOfferClient,
+    Card: DiceWarCardClient,
+  },
   // The family card games, one table for all five (`cards/CardGameTable.tsx`), loaded in the browser only.
   hearts: cardTable("hearts", HeartsTable, HeartsOffer, HeartsCard),
   bigTwo: cardTable("bigTwo", BigTwoTable, BigTwoOffer, BigTwoCard),
@@ -120,6 +131,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   euchre: cardTable("euchre", EuchreTable, EuchreOffer, EuchreCard),
   cribbage: cardTable("cribbage", CribbageTable, CribbageOffer, CribbageCard),
   ohHell: cardTable("ohHell", OhHellTable, OhHellOffer, OhHellCard),
+  war: cardTable("war", WarTable, WarOffer, WarCard),
 };
 
 /** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */

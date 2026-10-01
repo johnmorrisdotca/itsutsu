@@ -12,6 +12,7 @@ import { GIN_RUMMY_ADAPTER } from "./ginRummyAdapter";
 import { GO_FISH_ADAPTER } from "./goFishAdapter";
 import { HEARTS_ADAPTER } from "./heartsAdapter";
 import { SPADES_ADAPTER } from "./spadesAdapter";
+import { WAR_ADAPTER } from "./warAdapter";
 
 /**
  * EACH CARD GAME'S WAY OF BEING PLAYED AT THE TABLE, by kind. The table
@@ -30,6 +31,7 @@ export const CARD_ADAPTERS: Record<CardGameKind, CardAdapter<unknown, unknown>> 
   euchre: EUCHRE_ADAPTER as unknown as CardAdapter<unknown, unknown>,
   cribbage: CRIBBAGE_ADAPTER as unknown as CardAdapter<unknown, unknown>,
   ohHell: OH_HELL_ADAPTER as unknown as CardAdapter<unknown, unknown>,
+  war: WAR_ADAPTER as unknown as CardAdapter<unknown, unknown>,
 };
 
 /** A seat's name as the table says it: the one typed, or "Computer 3" or "Player 2". */

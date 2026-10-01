@@ -23,6 +23,7 @@ export {
   OH_HELL_DEALS,
   PRESIDENT_ROUNDS,
   SPADES_SIZES,
+  WAR_ROUNDS,
 } from "@johnmorrisdotca/toranpu";
 
 /** Every family card game, in the order its shelf shows them. */
@@ -37,6 +38,16 @@ export const CARD_GAME_LIST: readonly CardGameKind[] = [
   CARD_GAME_KINDS.bigTwo,
   CARD_GAME_KINDS.president,
   CARD_GAME_KINDS.ginRummy,
+  CARD_GAME_KINDS.war,
 ];
 
-export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = CARD_GAME_TABLES;
+export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {
+  ...CARD_GAME_TABLES,
+  /*
+   * WAR offers four lengths, not Toranpu's five: a set-up offers at most four
+   * boards, so 25 turns, which ends nearly every game on the count of cards
+   * before anything has happened, is not offered. 50 is the quick game, 100
+   * the usual one, 200 a long one, and 1000 plays it out to the last card.
+   */
+  war: { ...CARD_GAME_TABLES.war, sizes: [50, 100, 200, 1000], defaultSize: 100 },
+};

@@ -114,6 +114,7 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   yacht: "yacht",
   pachisi: "pachisi",
   hitotsu: "hitotsu",
+  diceWar: "dice-war",
   hearts: "hearts",
   bigTwo: "big-two",
   president: "president",
@@ -124,4 +125,5 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   euchre: "euchre",
   cribbage: "cribbage",
   ohHell: "oh-hell",
+  war: "war",
 };
