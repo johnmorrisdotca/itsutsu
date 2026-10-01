@@ -47,11 +47,11 @@ importers:
         specifier: 1.2.1
         version: 1.2.1(react@19.2.8)
       '@johnmorrisdotca/toranpu':
-        specifier: 2.13.1
-        version: 2.13.1(react@19.2.8)
+        specifier: 2.13.2
+        version: 2.13.2(react@19.2.8)
       '@johnmorrisdotca/tsunagi':
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.1.0
+        version: 1.1.0
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -501,8 +501,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/toranpu@2.13.1':
-    resolution: {integrity: sha512-B6riPkzF3b7cPR+KTYD+OrchY6adbTWWPtqVApcSSQR6BBFrqrgvDerHH+Ojw+mr1HmGNC+UOgy9XB3rpQGRmQ==}
+  '@johnmorrisdotca/toranpu@2.13.2':
+    resolution: {integrity: sha512-9+THqlizTHDNgG00fZ8Kb9utyOyzimuao43lymfCBslXGgib2qCBZIY8Tt+JAmQ0e08X6vHdYiRS1WeE5Zwiyw==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -511,8 +511,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tsunagi@1.0.1':
-    resolution: {integrity: sha512-tSY9WoSu2AAx5pSdMfVWJSyxv66W3X+x07GbT87cgfKMRNHXDgZxmcfiahYHDX6DSHN/rgbnQH2GMH+f51OvWQ==}
+  '@johnmorrisdotca/tsunagi@1.1.0':
+    resolution: {integrity: sha512-ciwZw8AwBmbwli2gZebL47chwh9/DYgW8xMrTefAzAJ403cxixjqaljh8s2v3+DhW+hCDBefWbjs3UZ8sZRT5Q==}
     engines: {node: '>=20'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3138,11 +3138,11 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/toranpu@2.13.1(react@19.2.8)':
+  '@johnmorrisdotca/toranpu@2.13.2(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tsunagi@1.0.1': {}
+  '@johnmorrisdotca/tsunagi@1.1.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
