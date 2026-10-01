@@ -43,6 +43,9 @@ importers:
       '@johnmorrisdotca/toranpu':
         specifier: 2.8.1
         version: 2.8.1(react@19.2.8)
+      '@johnmorrisdotca/tsunagi':
+        specifier: 1.0.0
+        version: 1.0.0
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -492,6 +495,10 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@johnmorrisdotca/tsunagi@1.0.0':
+    resolution: {integrity: sha512-luK5MVUunuNP7CI8N66w3aR96tlYtl81ozV7LpWV2ZiLnk9TOzqdfpjKnELIWZjv01J/aD7y+sDU1Gf+XGjeqA==}
+    engines: {node: '>=20'}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -3115,6 +3122,8 @@ snapshots:
   '@johnmorrisdotca/toranpu@2.8.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
+
+  '@johnmorrisdotca/tsunagi@1.0.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
