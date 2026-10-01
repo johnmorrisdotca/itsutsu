@@ -76,7 +76,7 @@
     "@johnmorrisdotca/narabe": "1.0.0",
     "@johnmorrisdotca/tane": "1.0.1",
     "@johnmorrisdotca/tenka": "1.2.0",
-    "@johnmorrisdotca/toranpu": "2.8.0",
+    "@johnmorrisdotca/toranpu": "2.8.1",
     "@prisma/client": "^6.19.3",
     "next": "16.3.8",
     "next-auth": "^4.24.15",

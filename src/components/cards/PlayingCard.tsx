@@ -10,6 +10,10 @@ import type { PlayingCardProps } from "./cards.types";
  * ONE PLAYING CARD, face or back, as wide as its parent makes it and 7/5 as
  * tall. Every card game on the site draws its cards with this.
  *
+ * NEVER TEXT TO SELECT: a card drawn anywhere, on a table or beside a
+ * sentence, keeps its letters from a drag or a long press (`select-none`),
+ * whether or not a play surface holds it.
+ *
  * A LIGHT OBJECT IN BOTH THEMES (`.surface-light`): an ivory card on the table
  * at night as by day, with its ink fixed, as a Kumimoji tile is. It is a
  * picture and not a control: a game wraps it in the button or the drag
@@ -22,7 +26,7 @@ export function PlayingCard({ card, faceUp, back, picked = false, hinted = false
   const ring = picked ? "ring-[3px] ring-moss -translate-y-[6%]" : hinted ? "ring-[3px] ring-ochre" : "";
   return (
     <span
-      className={`surface-light relative block aspect-[5/7] rounded-[7%/5%] shadow-[0_1px_2px_rgba(0,0,0,0.35)] transition-transform ${ring} ${lifted ? "opacity-25" : ""} ${className ?? ""}`}
+      className={`surface-light relative block aspect-[5/7] select-none rounded-[7%/5%] shadow-[0_1px_2px_rgba(0,0,0,0.35)] transition-transform ${ring} ${lifted ? "opacity-25" : ""} ${className ?? ""}`}
       style={style}
       data-card={showing ? cardName(card) : "back"}
       data-face-up={showing ? "true" : "false"}

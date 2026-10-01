@@ -41,8 +41,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0(react@19.2.8)
       '@johnmorrisdotca/toranpu':
-        specifier: 2.8.0
-        version: 2.8.0(react@19.2.8)
+        specifier: 2.8.1
+        version: 2.8.1(react@19.2.8)
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -483,8 +483,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/toranpu@2.8.0':
-    resolution: {integrity: sha512-sAhAVbKg7KaPgSYAr0JjuCfcFW6coke8CP83hiq1wwCZ8oa7BM7Dewm31juXPnbY/TyUHSDr+m+bbUBpHdG4vQ==}
+  '@johnmorrisdotca/toranpu@2.8.1':
+    resolution: {integrity: sha512-5Az0FRINTrGYQW4T1ESTe++FKXC6StjLIzZ70Tku53wgz0oFlbdT1kKwSVVz+6H5kcokIC6BmX2x7EThGGqpxA==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -3112,7 +3112,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/toranpu@2.8.0(react@19.2.8)':
+  '@johnmorrisdotca/toranpu@2.8.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
