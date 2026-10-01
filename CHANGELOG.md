@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.481.0 — 2026-10-01 12:57 UTC
+- Suido 水道, a pipe puzzle, joins the Logic puzzles: turn the pieces until the water from the pump reaches every drain and nothing leaks, on boards from 5×5 to 12×12, with a network version that uses every piece
+
 ## 0.480.6 — 2026-10-01 12:44 UTC
 - Every member can be kept as a buddy now, the computer players and the kept records on the Honors roll too: the star is on their pages, in the lists and beside each name on Honors
 
