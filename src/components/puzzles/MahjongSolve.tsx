@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { canTake, freePairs, geometryOf, isCleared, tilesLeft } from "@johnmorrisdotca/jarajara";
+import { canTake, freePairs, geometryOf, hintFor, isCleared, matchesOf, tilesLeft } from "@johnmorrisdotca/jarajara";
 import { shuffleTiles } from "@johnmorrisdotca/jarajara";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
 import type { MahjongMove } from "@johnmorrisdotca/jarajara";
@@ -16,9 +16,9 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MahjongBoard, mahjongAspect } from "./MahjongBoard";
-import { MahjongFreeToggle } from "./MahjongFreeToggle";
+import { MahjongFindToggle, MahjongFreeToggle } from "./MahjongFreeToggle";
 import { MAHJONG_COPY } from "./mahjong.constants";
-import { useMahjongFree } from "./mahjongFree";
+import { useMahjongFind, useMahjongFree } from "./mahjongFree";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
 import { TsunagiViewport } from "./TsunagiViewport";
@@ -65,11 +65,16 @@ export function MahjongSolve({
   const [chosen, setChosen] = useState<number | null>(null);
   const [said, setSaid] = useState<string | null>(null);
   const showFree = useMahjongFree();
+  const finding = useMahjongFind();
+  const [pointed, setPointed] = useState<number | null>(null);
 
   const played = useMemo(() => playSolve(size, givens, moves) ?? { cells: givens, shuffles: 0 }, [size, givens, moves]);
   const cells = played.cells;
   const pairs = useMemo(() => freePairs(geometry, cells, rule), [geometry, cells, rule]);
   const stuck = pairs.length === 0 && !isCleared(cells);
+  // Find answers for the chosen tile, else the one a mouse is over.
+  const lookingAt = chosen ?? pointed;
+  const found = useMemo(() => (finding && lookingAt !== null ? matchesOf(geometry, cells, rule, lookingAt) : null), [finding, lookingAt, geometry, cells, rule]);
 
   const { elapsedMs, done, begin, finish, pausing, hinting } = useSolve(puzzle, hasAccount, race, null, { progress: encodeMahjongProgress(moves), resumed }, hints);
   const live = done === null && !pausing.paused;
@@ -137,11 +142,18 @@ export function MahjongSolve({
     setChosen(null);
     setSaid(null);
   };
+  /*
+   * THE CHOSEN TILE'S MATCH FIRST. John, 2026-10-01: "if you have something
+   * pre-selected it helps find that pair first." With nothing chosen, any
+   * free pair, as before; with a chosen tile that has no free match, another
+   * pair, and the line says so.
+   */
   const hint = () => {
-    const first = pairs[0];
-    if (first === undefined || !hinting.spend()) return;
+    const found = hintFor(geometry, cells, rule, chosen);
+    if (found.pair === null || !hinting.spend()) return;
     begin();
-    hinting.mark([...first]);
+    hinting.mark([...found.pair]);
+    if (found.found === "other") setSaid(MAHJONG_COPY.noFreeMatch);
   };
 
   const theme = BOARD_THEMES[appearance.boardTheme];
@@ -166,12 +178,14 @@ export function MahjongSolve({
             theme={theme}
             chosen={live ? chosen : null}
             hinted={[...hinting.marked]}
+            found={live ? found : null}
             showFree={showFree}
             readOnly={!live}
             onTap={tap}
             onPair={pair}
             onDouble={double}
             onBlocked={() => live && setSaid(MAHJONG_COPY.blocked)}
+            onPoint={setPointed}
           />
         </TsunagiViewport>
       </SolvePaused>
@@ -190,6 +204,7 @@ export function MahjongSolve({
             {line} <span className="whitespace-nowrap">· {tilesLeft(cells)} tiles left, {pairs.length} {pairs.length === 1 ? "pair" : "pairs"} free</span>
           </p>
           <MahjongFreeToggle />
+          <MahjongFindToggle />
         </div>
       ) : (
         <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} />

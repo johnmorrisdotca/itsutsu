@@ -3,7 +3,53 @@
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 
 import { MAHJONG_COPY } from "./mahjong.constants";
-import { useMahjongFree, writeMahjongFree } from "./mahjongFree";
+import { useMahjongFind, useMahjongFree, writeMahjongFind, writeMahjongFree } from "./mahjongFree";
+
+/** Two chips for one remembered way of looking at the board, and the line saying what the chosen one does. */
+function TwoChips({
+  on,
+  write,
+  label,
+  testId,
+  words,
+  kanji,
+  blurb,
+  withBlurb,
+}: {
+  on: boolean;
+  write: (on: boolean) => void;
+  label: string;
+  testId: string;
+  words: { on: string; off: string };
+  kanji: { on: string; off: string };
+  blurb: { on: string; off: string };
+  withBlurb: boolean;
+}) {
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={label} data-testid={testId}>
+        {[true, false].map((each) => (
+          <button
+            key={String(each)}
+            type="button"
+            role="radio"
+            aria-checked={on === each}
+            className={`${PICK_WORD_CHIP} ${on === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+            onClick={() => write(each)}
+            data-testid={`${testId}-${each ? "on" : "off"}`}
+          >
+            {each ? words.on : words.off} <span className="font-mincho opacity-70">{each ? kanji.on : kanji.off}</span>
+          </button>
+        ))}
+      </div>
+      {withBlurb ? (
+        <p className="min-h-8 text-xs text-muted" data-testid={`${testId}-blurb`}>
+          {on ? blurb.on : blurb.off}
+        </p>
+      ) : null}
+    </>
+  );
+}
 
 /**
  * FREE TILES LIT, OR THE CLASSIC LOOK: the same two chips on the set-up screen
@@ -11,29 +57,32 @@ import { useMahjongFree, writeMahjongFree } from "./mahjongFree";
  * so turning it off in play is what the next set-up opens on.
  */
 export function MahjongFreeToggle({ withBlurb = false }: { withBlurb?: boolean }) {
-  const lit = useMahjongFree();
   return (
-    <>
-      <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Free tiles" data-testid="mahjong-free">
-        {[true, false].map((each) => (
-          <button
-            key={String(each)}
-            type="button"
-            role="radio"
-            aria-checked={lit === each}
-            className={`${PICK_WORD_CHIP} ${lit === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-            onClick={() => writeMahjongFree(each)}
-            data-testid={`mahjong-free-${each ? "on" : "off"}`}
-          >
-            {each ? MAHJONG_COPY.freeOn : MAHJONG_COPY.freeOff} <span className="font-mincho opacity-70">{each ? "空牌" : "素"}</span>
-          </button>
-        ))}
-      </div>
-      {withBlurb ? (
-        <p className="min-h-8 text-xs text-muted" data-testid="mahjong-free-blurb">
-          {lit ? MAHJONG_COPY.freeBlurb.on : MAHJONG_COPY.freeBlurb.off}
-        </p>
-      ) : null}
-    </>
+    <TwoChips
+      on={useMahjongFree()}
+      write={writeMahjongFree}
+      label="Free tiles"
+      testId="mahjong-free"
+      words={{ on: MAHJONG_COPY.freeOn, off: MAHJONG_COPY.freeOff }}
+      kanji={{ on: "空牌", off: "素" }}
+      blurb={MAHJONG_COPY.freeBlurb}
+      withBlurb={withBlurb}
+    />
+  );
+}
+
+/** FIND, OR NOT: lights the matches of whatever tile is pointed at or chosen (`mahjongFree.ts`). */
+export function MahjongFindToggle({ withBlurb = false }: { withBlurb?: boolean }) {
+  return (
+    <TwoChips
+      on={useMahjongFind()}
+      write={writeMahjongFind}
+      label="Find"
+      testId="mahjong-find"
+      words={{ on: MAHJONG_COPY.findOn, off: MAHJONG_COPY.findOff }}
+      kanji={{ on: "探す", off: "無" }}
+      blurb={MAHJONG_COPY.findBlurb}
+      withBlurb={withBlurb}
+    />
   );
 }

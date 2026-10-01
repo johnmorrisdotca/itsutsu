@@ -53,6 +53,11 @@ export function mahjongAspect(size: number): string {
  * blocked tile shakes and stays. With `showFree`, every blocked tile is washed
  * darker so the free ones stand out. `readOnly` draws the same board to look
  * at: the set-up's preview and a finished solve's page.
+ *
+ * `found` is Find (`useMahjongFind`): the tiles matching the one pointed at or
+ * chosen, a solid ring on a match that could be taken with it now and a dashed
+ * ring on a held one, in a colour of its own. `onPoint` says which free tile a
+ * mouse is over, so Find can answer before anything is pressed.
  */
 export function MahjongBoard({
   size,
@@ -60,18 +65,21 @@ export function MahjongBoard({
   theme,
   chosen = null,
   hinted = [],
+  found = null,
   showFree = false,
   readOnly = false,
   onTap,
   onPair,
   onDouble,
   onBlocked,
+  onPoint,
 }: {
   size: number;
   cells: string;
   theme: BoardThemeTokens;
   chosen?: number | null;
   hinted?: readonly number[];
+  found?: { free: readonly number[]; blocked: readonly number[] } | null;
   showFree?: boolean;
   readOnly?: boolean;
   onTap?: (slot: number) => void;
@@ -79,6 +87,8 @@ export function MahjongBoard({
   onPair?: (from: number, to: number) => void;
   onDouble?: (slot: number) => void;
   onBlocked?: (slot: number) => void;
+  /** The tile a mouse is over, or null when it leaves one. */
+  onPoint?: (slot: number | null) => void;
 }) {
   const prefix = `mj${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const layout = layoutFor(size);
@@ -184,6 +194,8 @@ export function MahjongBoard({
             const at = faceAt(slot, layers);
             const isChosen = chosen === index;
             const isHinted = hinted.includes(index);
+            const foundFree = found?.free.includes(index) ?? false;
+            const foundHeld = !foundFree && (found?.blocked.includes(index) ?? false);
             const face = faceOf(code);
             const lifted = dragging?.slot === index;
             return (
@@ -196,12 +208,19 @@ export function MahjongBoard({
                 data-free={free[index] ? "true" : "false"}
                 data-chosen={isChosen ? "true" : undefined}
                 data-hinted={isHinted ? "true" : undefined}
+                data-found={foundFree ? "free" : foundHeld ? "held" : undefined}
                 data-testid="mahjong-tile"
                 role={readOnly ? undefined : "button"}
                 tabIndex={readOnly || !free[index] ? undefined : 0}
                 aria-label={face === null ? undefined : `${faceWords(face)}${free[index] ? "" : ", blocked"}`}
                 aria-pressed={readOnly ? undefined : isChosen}
                 onPointerDown={(event) => pressed(index, event)}
+                onPointerEnter={(event) => {
+                  if (!readOnly && event.pointerType === "mouse") onPoint?.(index);
+                }}
+                onPointerLeave={(event) => {
+                  if (!readOnly && event.pointerType === "mouse") onPoint?.(null);
+                }}
                 onClick={(event) => {
                   if (swallow.current) return;
                   tapped(index, event.timeStamp);
@@ -218,6 +237,8 @@ export function MahjongBoard({
                 <rect x={0} y={0} width={w} height={h} rx={3} fill={isChosen ? MAHJONG_TILE.chosen : MAHJONG_TILE.face} stroke={MAHJONG_TILE.rim} strokeWidth={0.8} />
                 <use href={`#${faceSymbolId(prefix, code)}`} width={w} height={h} />
                 {showFree && !free[index] ? <rect x={0} y={0} width={w} height={h} rx={3} fill={MAHJONG_TILE.blockedWash} /> : null}
+                {foundFree ? <rect x={1} y={1} width={w - 2} height={h - 2} rx={2.5} fill={MAHJONG_TILE.foundWash} stroke={MAHJONG_TILE.found} strokeWidth={2.6} /> : null}
+                {foundHeld ? <rect x={1.5} y={1.5} width={w - 3} height={h - 3} rx={2.5} fill="none" stroke={MAHJONG_TILE.found} strokeWidth={1.8} strokeDasharray="3 2.4" /> : null}
                 {isHinted ? <rect x={1} y={1} width={w - 2} height={h - 2} rx={2.5} fill="none" stroke={MAHJONG_TILE.hinted} strokeWidth={2.6} /> : null}
                 {isChosen ? <rect x={1} y={1} width={w - 2} height={h - 2} rx={2.5} fill="none" stroke={MAHJONG_TILE.chosenRing} strokeWidth={2.6} /> : null}
               </g>

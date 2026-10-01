@@ -135,6 +135,28 @@ test.describe("Mahjong Solitaire", () => {
     await expect(page.getByTestId("puzzle-show")).toHaveCount(0);
   });
 
+  test("Hint finds the chosen tile's match first, and Find lights a chosen tile's matches until it is turned off", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    await page.goto(`${AT}/play?size=8&level=easy&seed=${seed}&hints=1`);
+    await ready(page, "puzzle-play");
+    // A free pair, its first tile chosen: the hint lights that tile and a match of it.
+    const [a, b] = (await freePairs(page))[0]!;
+    await tile(page, a).click();
+    await expect(tile(page, a)).toHaveAttribute("data-chosen", "true");
+    await page.getByTestId("puzzle-hint").click();
+    const lit = board(page).locator('[data-hinted="true"]');
+    await expect(lit).toHaveCount(2);
+    await expect(tile(page, a)).toHaveAttribute("data-hinted", "true");
+
+    // Find, chosen beside the board and remembered on this device: the chosen tile's match is lit as one to take.
+    await expect(board(page).locator("[data-found]")).toHaveCount(0);
+    await page.getByTestId("mahjong-find-on").click();
+    await expect(tile(page, b)).toHaveAttribute("data-found", "free");
+    // And the way back: off, and nothing is lit.
+    await page.getByTestId("mahjong-find-off").click();
+    await expect(board(page).locator("[data-found]")).toHaveCount(0);
+  });
+
   test("left half way, it waits in My games and opens where it was left", async ({ page }) => {
     const seed = freshPuzzleSeed();
     await page.goto(`${AT}/play?size=8&level=medium&seed=${seed}`);

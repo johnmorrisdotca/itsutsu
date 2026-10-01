@@ -37,6 +37,9 @@ export const MAHJONG_TILE = {
   chosen: "#dbe8d3",
   chosenRing: "#52664b",
   hinted: "#9d6c1f",
+  /** Find's colour, its own beside the chosen green and the hint's ochre: a solid ring on a match that could be taken now, a dashed one on a held match. */
+  found: "#1c6e8c",
+  foundWash: "rgba(28, 110, 140, 0.16)",
   blockedWash: "rgba(34, 35, 31, 0.26)",
   shadow: "#2a1d0e",
 } as const;
@@ -52,6 +55,9 @@ export const MAHJONG_TABLE_STORAGE_KEY = "itsutsu:mahjong-table";
 
 /** Where the reader's choice of lighting the free tiles is kept, in this browser. */
 export const MAHJONG_FREE_STORAGE_KEY = "itsutsu:mahjong-free";
+
+/** Where the reader's choice of Find is kept, in this browser. */
+export const MAHJONG_FIND_STORAGE_KEY = "itsutsu:mahjong-find";
 
 /** How long a computer takes over its turn at the table, so a watcher sees each pair go, in milliseconds. */
 export const MAHJONG_COMPUTER_PAUSE_MS = 700;
@@ -70,6 +76,13 @@ export const MAHJONG_COPY = {
     on: "Blocked tiles are dimmed, so the free ones stand out.",
     off: "Every tile looks alike, as on a real table: find the free ones yourself.",
   },
+  findOn: "Find",
+  findOff: "No find",
+  findBlurb: {
+    on: "Point at or choose a tile and its matches light up: a solid ring can be taken with it now, a dashed one is held.",
+    off: "Matches are not shown: look for them yourself.",
+  },
+  noFreeMatch: "No free tile matches that one: here is another pair.",
   bonusGroup: "Any flower, any season",
   bonusSame: "Identical",
   bonusBlurb: {
