@@ -134,6 +134,9 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/tsunagi/levels-10", "Read by levelsModule.ts."],
   ["@johnmorrisdotca/tsunagi/levels-11", "Read by levelsModule.ts."],
   ["@johnmorrisdotca/tsunagi/levels-12", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-13", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-14", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/levels-15", "Read by levelsModule.ts."],
   ["@johnmorrisdotca/toranpu/card-backs", "The backs a reader may choose, reached by every face-down card a finished patience game's replay draws; about 11 KB, and the server draws only the Itsutsu back."],
 ]);
 

@@ -42,9 +42,8 @@ import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks
  * apart (colours or numbers) and the board's colour.
  *
  * MORE SIZES THAN TILES. The set-up screen keeps room for four boards and no
- * more, so the tiles show four at a time — 4 to 7, 8 to 11, and the last four,
- * 9 to 12, so every shelf is full — and one press beside them turns to the
- * next shelf, and from the last back to the first. The press is always there,
+ * more, so the tiles show four at a time — 4 to 7, 8 to 11 and 12 to 15 — and
+ * one press beside them turns to the next shelf, and from the last back to the first. The press is always there,
  * so choosing never moves the page.
  */
 export function TsunagiSetUp({

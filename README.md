@@ -217,6 +217,17 @@ are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
 `useSizeShelves`); what is each game's own is how a solved level is marked, and
 its words.
 
+Tsunagi 繋ぎ, our Numberlink (`src/lib/puzzles/tsunagi/`, the levels and rules
+**Tsunagi**, an open-source package, `@johnmorrisdotca/tsunagi` 1.2.0), has
+twelve sizes, 4×4 to 15×15, shown four tiles at a time. 256 levels at each of
+5×5 to 9×9, 192 at 4×4, 128 at 10×10 and at 12×12 to 15×15, 64 at 11×11, in
+blocks of sixteen. 13×13 to 15×15 arrived with 1.2.0 (2026-10-01): a board of
+at most sixteen lines, proved to have one answer by a solver that learns from
+its dead ends, and played on a phone with the zoom pad that starts at 10×10.
+Each size's levels are a file a browser fetches only when a board of that size
+opens; a server reads one only to name which level a kept solve was
+(`tsunagi/levelsModule.ts`).
+
 The fourth is **Hidden Stones** 隠し石 (`src/lib/puzzles/hiddenStones/`), which
 moved here from Numbers on 2026-10-01 because there is no number in it: the
 one-star form of Star Battle, played daily as Queens (LinkedIn's name), one
