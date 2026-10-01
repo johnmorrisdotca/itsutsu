@@ -279,7 +279,8 @@ test.describe("Kumimoji pass and play", () => {
     await expect(viewer.getByTestId("kumimoji-party-hand-tile")).toHaveCount(QUICK - word!.length);
     await readOnlyHands(page);
 
-    // A swipe shows the next player's table and hand; the arrow goes back.
+    // A swipe shows the next player's table and hand; the arrow goes back. Swiped where it is on the screen, so brought into view first.
+    await viewer.scrollIntoViewIfNeeded();
     const box = (await viewer.boundingBox())!;
     await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.2);
     await page.mouse.down();

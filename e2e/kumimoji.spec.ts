@@ -590,6 +590,8 @@ test.describe("Kumimoji", () => {
     expect(Math.abs(laid.x - firstNow.x)).toBeLessThan(1);
 
     // Typing runs across the grid, which is leftward on this screen, and its arrow says so; the arrow keys go the way they point.
+    // The square above the top row is tapped where it is on the screen, so the table is brought into view first, as a reader would scroll to it.
+    await page.getByTestId("kumimoji-table").scrollIntoViewIfNeeded();
     const lastNow = (await tileAt(`0,${word.length - 1}`).boundingBox())!;
     await page.mouse.click(lastNow.x + lastNow.width / 2, lastNow.y - lastNow.height / 2);
     const typing = page.locator("[data-typing]");
