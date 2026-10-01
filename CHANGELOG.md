@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.483.1 — 2026-10-01 20:25 UTC
+- The site moves to the newest Hitotsu, Narabe, Domino, Kotoba and Tsunagi packages, every game playing exactly as before
+
 ## 0.483.0 — 2026-10-01 19:27 UTC
 - Suido has levels: 256 at every size from 5×5 to 14×14 and three long pipe boards, easy to hard, opening a block of sixteen at a time, with locked pieces, walls, edges that join and a single path from inlet to outlet among their twists
 
