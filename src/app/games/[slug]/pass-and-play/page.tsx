@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OpenSourceCredit } from "@/components/games/OpenSourceCredit";
 import { notFound } from "next/navigation";
 
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -92,6 +93,9 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
           <Game appearance={appearance} gameHref={gamePath(key)} online={online} />
         </PartyColoursTable>
       </BoardScaled>
+      <footer data-chrome className="border-t border-rule pt-5">
+        <OpenSourceCredit game={key} />
+      </footer>
     </Page>
   );
 }

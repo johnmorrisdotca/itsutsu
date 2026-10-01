@@ -1,4 +1,5 @@
 import { RulesModal } from "@/components/games/RulesModal";
+import { OpenSourceCredit } from "@/components/games/OpenSourceCredit";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -101,6 +102,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
           {/* Over the puzzle, not a page away from it: see `RulesModal`. */}
           <RulesModal rules={{ title: rules.title, kanji: rules.kanji, object: rules.object, board: rules.board, play: rules.play, house: rules.house }} />.
         </p>
+        <OpenSourceCredit game={kind} />
       </footer>
     </Page>
   );

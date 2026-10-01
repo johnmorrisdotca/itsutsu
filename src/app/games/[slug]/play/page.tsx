@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OpenSourceCredit } from "@/components/games/OpenSourceCredit";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { currentReader } from "@/lib/auth/currentReader";
@@ -100,6 +101,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
           {/* Over the board, not a page away from it: see `RulesModal`. */}
           <RulesModal rules={{ title: rules.title, kanji: rules.kanji, object: rules.object, board: rules.board, play: rules.play, house: rules.house }} />.
         </p>
+        <OpenSourceCredit game={variant} />
         {siblings !== null && siblings.games.length > 0 ? (
           <p data-testid="family-links">
             Also in {siblings.family.title}{" "}

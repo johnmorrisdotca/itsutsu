@@ -1,4 +1,5 @@
 import { DiceRollerClient } from "@/components/dice/diceClient";
+import { OpenSourceCredit } from "@/components/games/OpenSourceCredit";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -34,7 +35,7 @@ export default async function DicePage() {
       <PageTitle title={say.say("nav.games")} kanji="種目" />
       <Tabs tabs={GAMES_TABS} active="dice" base="/games" label="How to show the games" />
       <p className="text-sm text-muted">
-        Korokoro コロコロ, the sound of dice tumbling: tap the felt to roll one to five dice, from a d4 to a d100, and read
+        Korokoro コロコロ, the sound of dice tumbling: tap the felt to roll one to ten dice, from a d4 to a d100, and read
         the odds of what you threw. Your rolls stay on this device.
       </p>
       <DiceRollerClient locale={say.tag} />
@@ -47,6 +48,7 @@ export default async function DicePage() {
         </a>{" "}
         and npm as <code>@johnmorrisdotca/korokoro</code>, for any site or game that wants dice.
       </p>
+      <OpenSourceCredit pkg="korokoro" />
     </Page>
   );
 }

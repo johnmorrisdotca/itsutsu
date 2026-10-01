@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OpenSourceCredit } from "@/components/games/OpenSourceCredit";
 import { GAME_SIDE_COLUMN } from "@/components/games/games.constants";
 import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
@@ -288,6 +289,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
               </ul>
             </section>
           ) : null}
+          <OpenSourceCredit game={key} />
         </aside>
       </div>
   </Page>
