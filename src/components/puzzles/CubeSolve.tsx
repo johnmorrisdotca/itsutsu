@@ -14,7 +14,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { CUBE_COPY, CUBE_INSPECTION_MS } from "./cube.constants";
 import { CubeBoard } from "./CubeBoard";
-import { CubeGuide } from "./CubeGuide";
+import { CubeGuide, stepsFrom } from "./CubeGuide";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 
 /**
@@ -50,8 +50,11 @@ export function CubeSolve({
   // Shown its steps (`CubeGuide`): kept with the run, and the solve is handed in as guided.
   const [guided, setGuided] = useState(kept?.guided ?? false);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [onCube, setOnCube] = useState(false);
   const state = useMemo(() => turnAll(puzzle.givens, n, moves), [puzzle.givens, n, moves]);
   const solved = cubeSolved(state, n);
+  // The method's next move, drawn on the cube while the guide is open and asked to show it there.
+  const hint = useMemo(() => (guideOpen && onCube && !solved ? (stepsFrom(state, n)?.[0]?.moves.slice(0, 1) ?? null) : null), [guideOpen, onCube, solved, state, n]);
   const cube = useRef<KyuubuHandle>(null);
   const theme = BOARD_THEMES[appearance.boardTheme] ?? BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
 
@@ -120,7 +123,7 @@ export function CubeSolve({
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <div className="mx-auto w-full" data-bare-board>
-          <CubeBoard size={n} state={state} theme={theme} interactive={live && !solved} keyboard="page" onTurn={turned} cube={cube} />
+          <CubeBoard size={n} state={state} theme={theme} interactive={live && !solved} keyboard="page" onTurn={turned} cube={cube} hint={live ? hint : null} />
         </div>
       </SolvePaused>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -157,6 +160,8 @@ export function CubeSolve({
               }}
               onHide={() => setGuideOpen(false)}
               onTurnFor={turnFor}
+              onCube={onCube}
+              onToggleCube={() => setOnCube((so) => !so)}
             />
           ) : null}
           <p className="text-xs text-muted" data-testid="cube-scramble">

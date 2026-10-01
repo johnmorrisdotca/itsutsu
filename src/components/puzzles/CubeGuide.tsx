@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { useMemo } from "react";
-import { SOLVABLE_SIZES, movesNotation, solveSteps, type CubeMove, type SolveStep } from "@johnmorrisdotca/kyuubu";
+import { SOLVABLE_SIZES, movementSays, movesNotation, solveSteps, type CubeMove, type SolveStep } from "@johnmorrisdotca/kyuubu";
 
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { CUBE_ALGORITHM_NAMES, CUBE_GUIDE_COPY, CUBE_STAGE_WORDS } from "@/lib/learn/cubeMethod";
@@ -10,7 +10,7 @@ import { CUBE_ALGORITHM_NAMES, CUBE_GUIDE_COPY, CUBE_STAGE_WORDS } from "@/lib/l
 import { CUBE_COPY } from "./cube.constants";
 
 /** The method's steps from here, or null where it is not written for this size or could not be worked out. */
-function stepsFrom(state: string, n: number): SolveStep[] | null {
+export function stepsFrom(state: string, n: number): SolveStep[] | null {
   try {
     return solveSteps(state, n);
   } catch {
@@ -27,6 +27,10 @@ function stepsFrom(state: string, n: number): SolveStep[] | null {
  *
  * Opening it is the help: the solve is kept as guided (`solveHelp.ts`),
  * which the button says before it is pressed.
+ *
+ * SHOW ME ON THE CUBE: the step's next move drawn on the cube itself (Kyuubu's
+ * visual guide: the layer lit, an arrow the way to drag it), with the same
+ * move in words beside the step; turning it moves the guide on to the next.
  */
 export function CubeGuide({
   state,
@@ -37,6 +41,8 @@ export function CubeGuide({
   onOpen,
   onHide,
   onTurnFor,
+  onCube,
+  onToggleCube,
 }: {
   state: string;
   n: number;
@@ -47,6 +53,9 @@ export function CubeGuide({
   onOpen: () => void;
   onHide: () => void;
   onTurnFor: (moves: readonly CubeMove[]) => void;
+  /** Whether the next move is drawn on the cube. */
+  onCube: boolean;
+  onToggleCube: () => void;
 }) {
   const steps = useMemo(() => (open ? stepsFrom(state, n) : null), [open, state, n]);
   if (!SOLVABLE_SIZES.includes(n)) {
@@ -94,7 +103,17 @@ export function CubeGuide({
           </li>
         ))}
       </ol>
+      {onCube && next.moves[0] !== undefined ? (
+        <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="cube-guide-now" aria-live="polite">
+          <span className="text-muted">{CUBE_COPY.guideMoveNow}</span>
+          <span className="font-mono font-semibold">{movesNotation([next.moves[0]], n)}</span>
+          <span>{movementSays([next.moves[0]], n) ?? ""}</span>
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={onToggleCube} disabled={!enabled} aria-pressed={onCube} data-testid="cube-guide-on-cube">
+          {onCube ? CUBE_COPY.guideOffCube : CUBE_COPY.guideOnCube}
+        </button>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={() => onTurnFor(next.moves)} disabled={!enabled} data-testid="cube-guide-turn">
           {CUBE_COPY.guideTurn}
         </button>

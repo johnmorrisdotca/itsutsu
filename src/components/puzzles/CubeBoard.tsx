@@ -26,6 +26,7 @@ export function CubeBoard({
   keyboard = "none",
   onTurn,
   cube,
+  hint = null,
 }: {
   size: number;
   state: string;
@@ -35,6 +36,8 @@ export function CubeBoard({
   keyboard?: "page" | "none";
   onTurn?: (move: CubeMove, state: string) => void;
   cube?: Ref<KyuubuHandle>;
+  /** A move to draw on the cube, the way to make it (Kyuubu's visual guide), or null. */
+  hint?: readonly CubeMove[] | null;
 }) {
   return (
     <BoardFrame size={size} theme={theme} flipped={false} inset={RIM} lattice={false} shape="rhombus" coordinates={false}>
@@ -47,6 +50,7 @@ export function CubeBoard({
         fill={CUBE_FILL}
         label={CUBE_COPY.label(size)}
         onTurn={onTurn}
+        hint={hint}
         className="absolute inset-0"
         data-testid="cube"
         data-size={String(size)}

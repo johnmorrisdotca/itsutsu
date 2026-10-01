@@ -70,6 +70,35 @@ test.describe("Show me how", () => {
     await expect(page.getByTestId("puzzle-helped")).toContainText("steps were shown");
   });
 
+  test("shows the next move on the cube itself, follows the solve, and takes it off again", async ({ page }) => {
+    await page.goto(`${AT}/play?size=3&level=easy&seed=${freshPuzzleSeed()}`);
+    await ready(page, "puzzle-play");
+    const cube = page.locator("[data-kyuubu]");
+    await page.getByTestId("cube-guide-open").click();
+    await expect(page.getByTestId("cube-guide-title")).toBeVisible();
+    await expect(cube).not.toHaveAttribute("data-hint", /.+/);
+
+    await page.getByTestId("cube-guide-on-cube").click();
+    await expect(page.getByTestId("cube-guide-on-cube")).toHaveAttribute("aria-pressed", "true");
+    // The move is lit on the cube (a drag to make, a look round to find it, or a turn of the whole cube) and said in words beside it.
+    await expect(cube).toHaveAttribute("data-hint", /^(drag|look|whole)$/);
+    const now = page.getByTestId("cube-guide-now");
+    await expect(now).toContainText(/Turn|Look|whole cube/);
+    const first = await page.getByTestId("cube-guide").getAttribute("data-step-moves");
+    await expect(now.locator(".font-mono")).toHaveText(first!.split(" ")[0]!);
+
+    // Turned for the reader, the guide moves on and the cube shows the new step's first move.
+    await page.getByTestId("cube-guide-turn").click();
+    await settledCube(page);
+    const next = await page.getByTestId("cube-guide").getAttribute("data-step-moves");
+    await expect(now.locator(".font-mono")).toHaveText(next!.split(" ")[0]!);
+    await expect(cube).toHaveAttribute("data-hint", /^(drag|look|whole)$/);
+
+    await page.getByTestId("cube-guide-on-cube").click();
+    await expect(page.getByTestId("cube-guide-now")).toHaveCount(0);
+    await expect(cube).not.toHaveAttribute("data-hint", /.+/);
+  });
+
   test("is for the 2×2 and 3×3, and says so on a bigger cube", async ({ page }) => {
     await page.goto(`${AT}/play?size=4&level=easy&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");
