@@ -6,7 +6,7 @@ import { ready } from "./support";
 
 /**
  * MEXICAN TRAIN, ROUND ONE DEVICE: a party game (`PartyKind` "mexicanTrain")
- * at home in the Dominoes family, for two to eight with a computer in any seat.
+ * at home in the Tiles family, for two to eight with a computer in any seat.
  *
  * Driven as a table drives it: set up from the game's own page, then tiles
  * laid by a tap and a tap, by a drag onto a train, and by a double-tap where a
@@ -81,15 +81,17 @@ test.describe("Mexican Train, read by anybody", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Mexican Train/ }).first()).toBeVisible();
-    await expect(page.getByTestId("game-family")).toContainText("Dominoes");
-    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/dominoes");
+    await expect(page.getByTestId("game-family")).toContainText("Tiles");
+    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/mahjong/family");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(/\/games\/mexican-train\/rules$/);
     await expect(page.getByTestId("rules-page")).toContainText("marker");
 
-    await page.goto("/games/dominoes");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Dominoes");
-    await expect(page.locator('[data-testid="family-mark"][data-family="Dominoes"]').first()).toBeVisible();
+    await page.goto(AT);
+    await page.getByTestId("facet-family").click();
+    await expect(page).toHaveURL(/\/games\/mahjong\/family$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Tiles");
+    await expect(page.locator('[data-testid="family-mark"][data-family="Tiles"]').first()).toBeVisible();
     await expect(page.locator("main")).toContainText("Mexican Train");
 
     await page.goto(AT);

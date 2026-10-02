@@ -2,7 +2,7 @@ import type { MarkDie, MarkDomino } from "./games.types";
 
 /*
  * THE PIECES A FAMILY'S MARK LAYS ON ITS LITTLE BOARD that are neither stones
- * nor cards: the Dominoes family's tiles and the Dice family's dice, drawn in
+ * nor cards: the Tiles family's dominoes and the Dice family's dice, drawn in
  * the mark's own cell coordinates. Their own file since 2026-09-30, when the
  * dice joined and `FamilyMark.tsx` reached its 500-line limit.
  */

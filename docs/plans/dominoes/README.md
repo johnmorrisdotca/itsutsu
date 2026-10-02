@@ -6,7 +6,7 @@ Train DOminos family game. Options you can decide."
 
 Mexican Train for two to eight round one phone or tablet, with a computer in
 any seat, at `/games/mexican-train/pass-and-play`; its front door and rules at
-`/games/mexican-train`; its family, Dominoes ドミノ, at `/games/dominoes`.
+`/games/mexican-train`; its family, since 2026-10-01, Tiles 牌, whose page is Mahjong Solitaire's (`/games/mahjong/family`); it was Dominoes ドミノ at `/games/dominoes` until then, an address that no longer answers.
 
 ## The kind: a PartyKind
 
@@ -85,13 +85,18 @@ and four players), `PARTY_RULES`, `PARTY_SLUGS` (`mexican-train`), and in
 
 ## The family
 
-Dominoes ドミノ (`GAME_FAMILIES`, key `dominoes`): its games are party games,
-so, like Party games, it counts towards no award (`RECORDED_FAMILIES`), has a
-page of its own at `src/app/games/dominoes/page.tsx`, and stays off the set-up
-screen (`notOnSetUp`), which makes games between two. Its mark
-(`FAMILY_MARKS.Dominoes`) is a little train of dominoes out of a double.
-Mexican Train is not listed on the Party games shelf: that shelf shows its
-eight already.
+Dominoes ドミノ was a family of its own (key `dominoes`, 2026-09-29) with a page
+at `/games/dominoes`. On 2026-10-01 it became part of **Tiles** 牌
+(`GAME_FAMILIES`, key `tiles`) with Mahjong Solitaire and the cube, on John's
+word ("Adjust: mahjong and Dominoes stuff... as Tiles games"). The key
+`dominoes` is `FAMILY_ABSORBED` into `tiles`; no ledger row can hold it, since
+a party game is never recorded. Tiles has a recorded game (Mahjong Solitaire),
+so it counts as a family met, its page is Mahjong Solitaire's
+(`/games/mahjong/family`), and it is on the set-up screen as a shelf of
+puzzles; Mexican Train is set up at its own table from its own page. Its mark
+(`FAMILY_MARKS.Tiles`) draws two mahjong tiles, a domino and a cube. Mexican
+Train is not listed on the Party games shelf: that shelf shows its eight
+already.
 
 ## Tests
 
@@ -158,9 +163,7 @@ see the decision below.
 - Pips are colour-coded per number, as most double-12 sets are.
 - The set-up opens with seat 1 a person and the other seats computers.
 - One person at a table of computers sees their own hand at all times, with no cover; two or more people pass a cover every turn.
-- The family's kanji ドミノ (as Checkers is チェッカー); the game's 列車.
-- The Dominoes family stays off the set-up screen, because the gate requires
-  it of a family with no recorded game.
+- The game's kanji 列車; the family's, since 2026-10-01, is 牌 (Tiles).
 - No Block or Draw Dominoes sibling yet.
 - On several devices the other hands are hidden by the page, not from it: the
   table state is sent whole, as Kumimoji's is ("browser checks to save $$$").

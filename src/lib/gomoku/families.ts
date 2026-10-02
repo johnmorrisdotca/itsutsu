@@ -96,7 +96,10 @@ export const FAMILY_MOST_GAMES = 8;
  *
  * It is not a redirect table for addresses: a family has no address of its own
  * (a family page is `/games/<slug>/family`, keyed by the GAME), so nothing a
- * reader could have bookmarked breaks. Only the ledger remembers these.
+ * reader could have bookmarked breaks. Only the ledger remembers these. (The
+ * one exception, `/games/dominoes`, a family page of its own for two days, was
+ * left to 404 on John's no-redirects rule; see the Tiles row in
+ * `families.data.ts`.)
  *
  * Nothing is removed from here once it is in it. A key retired today has rows
  * against it for as long as the ledger exists.
@@ -108,6 +111,13 @@ export const FAMILY_ABSORBED: Record<string, string> = {
   /* 2026-09-24: Halma and Chinese Checkers joined Go and Hex, making room
      under the cap of eight for a family of number puzzles. */
   races: "territory",
+  /* 2026-10-01: the three shelves of games played with tiles, one game each
+     (Mahjong 2026-09-29, Dominoes the same day, Cubes 2026-09-30), became Tiles
+     on John's reading of /games. Dominoes holds a party game that is never
+     recorded, so only Mahjong's and Cubes' keys can be in the ledger. */
+  mahjong: "tiles",
+  dominoes: "tiles",
+  cubes: "tiles",
 };
 
 /**

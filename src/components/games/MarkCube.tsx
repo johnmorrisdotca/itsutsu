@@ -1,5 +1,5 @@
 /**
- * THE CUBES FAMILY'S MARK: a 3×3 cube seen from above one corner, drawn flat
+ * THE CUBE IN THE TILES FAMILY'S MARK (it was the Cubes family's until 2026-10-01): a 3×3 cube seen from above one corner, drawn flat
  * in the family mark's own cells, so it sits in the little board as every
  * family's picture does.
  */

@@ -9,7 +9,9 @@ import { CUBES_MARK } from "./MarkCube";
  * PLAIN is the same picture for everybody and a row of identical icons is a
  * promise the row makes and does not keep.
  *
- * FIVE TITLES HERE BELONG TO NO FAMILY ANY MORE. Captures, Pieces and twists
+ * FIVE TITLES HERE BELONG TO NO FAMILY ANY MORE. (Mahjong, Dominoes and Cubes
+ * were three more until 2026-10-01, when they became Tiles; their drawings
+ * were folded into the one mark rather than kept, being a little of each.) Captures, Pieces and twists
  * and Connections were folded into Turn and take, Strange boards and Territory
  * on 2026-09-22 (see `FAMILY_ABSORBED`), and on 2026-09-24 Races and Territory
  * became Territory and races. Their marks are kept rather than
@@ -276,22 +278,22 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
-   * MAHJONG: a little stack of tiles, three on the table, two on them and
-   * one on top, and the two red dragons 中 that are free — the top tile and
-   * the end of the bottom row — the pair the game is about finding.
+   * TILES (2026-10-01), the one picture for what Mahjong, Dominoes and Cubes
+   * were drawn as apiece: two mahjong tiles standing, one of them the red
+   * dragon 中 that is the pair the game is about finding, a domino lying
+   * under them, and a cube part way to solved at the right. Small, each, so
+   * the three read side by side at the size a table's row draws.
    */
-  Mahjong: {
+  Tiles: {
     n: 5,
     cells: true,
     stones: [],
     tiles: [
-      { x: 0.25, y: 2.7, glyph: "中", red: true },
-      { x: 1.85, y: 2.7, glyph: "東" },
-      { x: 3.45, y: 2.7, glyph: "萬" },
-      { x: 1.15, y: 1.4, glyph: "發" },
-      { x: 2.75, y: 1.4, glyph: "南" },
-      { x: 1.95, y: 0.1, glyph: "中", red: true },
+      { x: 0.2, y: 0.25, glyph: "中", red: true },
+      { x: 1.5, y: 0.5, glyph: "東" },
     ],
+    dominoes: [{ x: 0.1, y: 3.5, ends: [6, 4] }],
+    cube: { ...CUBES_MARK, x: 3.75, y: 3.2, edge: 1.45 },
   },
   /*
    * PARTY GAMES: six players sat round one board, black and white by turns,
@@ -299,25 +301,6 @@ export const FAMILY_MARKS: Record<string, Mark> = {
    * idea, a game passed from hand to hand, and the one mark on the row with
    * nobody facing anybody.
    */
-  /*
-   * DOMINOES: a train of three dominoes out of a double in the hub, each tile's
-   * near end matching the one before it — the six against the double six,
-   * then a four, then a two — the game's one rule in a picture.
-   */
-  // CUBES: a cube part way to solved (`MarkCube`).
-  Cubes: { n: 5, cells: true, stones: [], cube: CUBES_MARK },
-  Dominoes: {
-    n: 5,
-    cells: true,
-    stones: [],
-    dominoes: [
-      { x: 0.15, y: 0.4, ends: [6, 6] },
-      { x: 2.4, y: 0.4, ends: [6, 4] },
-      { x: 0.15, y: 2.0, ends: [4, 2] },
-      { x: 2.4, y: 2.0, ends: [2, 5] },
-      { x: 1.3, y: 3.6, ends: [5, 1] },
-    ],
-  },
   /*
    * DICE: five dice from a throw of Yacht, three fives held (ringed as the
    * table rings a held die) and two left free to roll again.

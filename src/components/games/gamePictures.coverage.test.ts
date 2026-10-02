@@ -317,7 +317,6 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // The shelf a family's page draws, one card a game — Party games' page draws it too, under its own mark.
   "src/components/games/FamilyShelf.tsx": { GameThumb: "regular" },
   "src/app/games/party/page.tsx": { FamilyMark: "regular" },
-  "src/app/games/dominoes/page.tsx": { FamilyMark: "regular" },
   "src/app/games/colour-cards/page.tsx": { FamilyMark: "regular" },
   "src/app/games/tricks/page.tsx": { FamilyMark: "regular" },
   "src/app/games/dice/page.tsx": { FamilyMark: "regular" },

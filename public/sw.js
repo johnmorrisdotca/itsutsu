@@ -55,7 +55,7 @@ const PATIENCE_MS = 6000;
  * or solve, and its pass-and-play table. And the dice roller, which rolls in
  * the browser and so needs nothing from the site once kept.
  */
-const KEPT_PAGE = /^\/(play|dice|games(\/(cards|list|party|dominoes|new))?|games\/[^/]+(\/(new|play|pass-and-play))?)?$/;
+const KEPT_PAGE = /^\/(play|dice|games(\/(cards|list|party|new))?|games\/[^/]+(\/(new|play|pass-and-play))?)?$/;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

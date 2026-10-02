@@ -1,7 +1,7 @@
 import { TAB_FROM_PATH } from "@/lib/ui/tabs";
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { type GameKey, isPuzzleKind, isRuleVariant } from "@/lib/catalogue/gameKeys";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyKeyNow } from "@/lib/gomoku/families";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -173,6 +173,8 @@ function familyNamed(subject: string): (typeof GAME_FAMILIES)[number] | null {
   return (
     GAME_FAMILIES.find((family) => family.key === subject) ??
     GAME_FAMILIES.find((family) => family.title === subject) ??
+    /* A key paid before families were folded together (`FAMILY_ABSORBED`: mahjong, cubes, races…) is the family that absorbed it. */
+    GAME_FAMILIES.find((family) => family.key === familyKeyNow(subject)) ??
     null
   );
 }

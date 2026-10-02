@@ -7,8 +7,8 @@ import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * THE CUBE 立方体: Kyuubu on the site's wood, the first game of the Cubes
- * family. It is solved here as a reader at a keyboard solves it, typing the
+ * THE CUBE 立方体: Kyuubu on the site's wood, a game of the Tiles
+ * family (the first of Cubes, until 2026-10-01). It is solved here as a reader at a keyboard solves it, typing the
  * notation the spec reads off the same seed the page scrambled, and turned by
  * hand with a drag and the wheel over a sticker.
  */
@@ -39,11 +39,11 @@ function movesOnPage(page: Page) {
 test.describe("the Cube, for a reader with no account", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("its front door and rules are open, after Rubik's, in the Cubes family", async ({ page }) => {
+  test("its front door and rules are open, after Rubik's, in the Tiles family", async ({ page }) => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Rubik");
-    await expect(page.getByTestId("game-family")).toContainText("Cubes");
+    await expect(page.getByTestId("game-family")).toContainText("Tiles");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(new RegExp(`${AT}/rules$`));
     await expect(page.getByRole("heading", { level: 1 })).toContainText(NAME);
@@ -174,20 +174,23 @@ test.describe("the Cube", () => {
 
   test("its family has a page, a tile on the set-up screen, and a place on the list of every game", async ({ page }) => {
     await page.goto(`${AT}/family`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Cubes");
-    await expect(page.locator('[data-testid="family-mark"][data-family="Cubes"]').first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Tiles");
+    await expect(page.locator('[data-testid="family-mark"][data-family="Tiles"]').first()).toBeVisible();
     await expect(page.getByTestId("family-games")).toContainText(NAME);
 
     await page.goto("/games/new");
     await ready(page, "set-up-game");
-    const cubes = page.getByTestId("set-up-family").filter({ hasText: "Cubes" });
-    await cubes.click();
-    await expect(cubes).toHaveAttribute("data-open", "true");
-    await expect(page.getByTestId("set-up-puzzle").first()).toHaveAttribute("data-kind", KIND);
+    const tiles = page.getByTestId("set-up-family").filter({ hasText: "Tiles" });
+    await tiles.click();
+    await expect(tiles).toHaveAttribute("data-open", "true");
+    // Tiles opens on Mahjong Solitaire, its first game; the cube is the card to choose among the shelf's puzzles.
+    const cube = page.locator(`[data-testid="set-up-puzzle"][data-kind="${KIND}"]`);
+    await cube.click();
+    await expect(cube).toHaveAttribute("data-chosen", "true");
     await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", KIND);
 
     await page.goto("/games");
-    await expect(page.locator("main")).toContainText("Cubes");
+    await expect(page.locator("main")).toContainText("Tiles");
   });
 
   test("on a phone the cube fits the screen", async ({ page }) => {

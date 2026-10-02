@@ -91,10 +91,8 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Numbers | 3 |
 | Logic puzzles | 3 |
 | Cards | 6 |
-| Mahjong | 1 |
-| Dominoes | 1 |
+| Tiles | 3 |
 | Colour cards | 1 |
-| Cubes | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -267,8 +265,13 @@ party-table typing.
 no choice in it) beside them, split off Cards so neither shelf passes
 eight games.
 
-**Mahjong** 麻雀 (2026-09-29) is the family of games played with a mahjong
-set, opened with **Mahjong Solitaire** 牌合わせ (`src/lib/puzzles/mahjong/`):
+**Tiles** 牌 (2026-10-01) is the one shelf for the games played with tiles:
+Mahjong Solitaire, **Mexican Train** 列車 (dominoes, two to eight round one
+device, `docs/plans/dominoes/README.md`) and the cube. It took in Mahjong,
+Dominoes and Cubes, which had a game apiece; a member paid a first game under
+any of those keys keeps it (`FAMILY_ABSORBED`).
+
+**Mahjong Solitaire** 牌合わせ (2026-09-29, `src/lib/puzzles/mahjong/`):
 take matching pairs of free tiles off a stacked layout — Torii, Fuji, Castle or
 the classic 144-tile Turtle — alone against the clock, or two to four taking a
 pair a turn round one device, with computers for empty seats. Every deal is
@@ -276,8 +279,7 @@ laid pair by pair in reverse, so it can be cleared; the answer and a kept run
 are the moves, which the server plays through to check. The tiles are our own
 Japanese-style SVG. See `docs/plans/mahjong/README.md`.
 
-**Cubes** 立方 (2026-09-30) is the shelf for the turning cube, opened with the
-**Cube** 立方体 (`src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 5×5, drawn in
+The **Cube** 立方体 (2026-09-30, `src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 5×5, drawn in
 CSS 3D by **Kyuubu** キューブ (`@johnmorrisdotca/kyuubu`), a framework-free package
 with a thin React wrapper and its own repository (github.com/johnmorrisdotca/kyuubu).
 The site installs it from a GitHub release's tarball, pinned in `package.json`;

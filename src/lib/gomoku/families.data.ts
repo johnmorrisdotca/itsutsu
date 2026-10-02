@@ -305,58 +305,35 @@ export const GAME_FAMILIES: GameFamily[] = [
       "A colour-card game is played by a table of people and computers on one device or several, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
-    key: "mahjong",
+    key: "tiles",
     /*
-     * MAHJONG 麻雀. John, 2026-09-29: "MahJong game where you match up piles of
-     * those CHIPS things… this can be family style as well." A family for the
-     * games played with a mahjong set, opened with the tile-matching patience
-     * game, Mahjong Solitaire, which a table of two to four can also play by
-     * turns. The four-player game of hands, Riichi, would be at home here
-     * later (docs/plans/mahjong/README.md says what it would take).
-     */
-    title: "Mahjong",
-    kanji: "麻雀",
-    blurb: "Games with a mahjong set of 144 tiles: take matching pairs of free tiles off a stacked layout, alone against the clock or in turns round one device.",
-    games: ["mahjong"],
-  },
-  {
-    key: "dominoes",
-    /*
-     * DOMINOES. John, 2026-09-29: "Let's create 3 new types of game (card,
-     * mahjong, dominos)", and "Mexican Train DOminos family game. Options you
-     * can decide." A family for the games played with a set of dominoes,
-     * opened with Mexican Train for two to eight. ドミノ, as the word is written
-     * in Japanese, the way Checkers is チェッカー.
+     * TILES 牌. John, 2026-10-01, of two shelves of one game each on /games,
+     * Mahjong and Dominoes: "Adjust: mahjong and Dominoes stuff... as Tiles
+     * games", and then of the cube: "Cubes work should go there too really,
+     * like Rubik." So the games played with pieces you match, line up or turn
+     * are one shelf: Mahjong Solitaire (matching pairs of free tiles off a
+     * stacked layout, alone or by turns round one device), Mexican Train
+     * (dominoes, two to eight round one device) and the cube.
      *
-     * Its games are party games, played round one device and never recorded,
-     * so, like Party games, it counts towards no award (`RECORDED_FAMILIES`),
-     * has a page of its own at /games/dominoes, and stays off the set-up
-     * screen, which makes games between two.
-     */
-    title: "Dominoes",
-    kanji: "ドミノ",
-    blurb: "Games with a set of dominoes: match the ends, build your own train out of the hub, and go out first with the fewest pips.",
-    games: ["mexicanTrain"],
-    notOnSetUp:
-      "A dominoes game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
-  },  {
-    key: "cubes",
-    /*
-     * CUBES. John, 2026-09-29: "a whole Rubik's cube section where people can
-     * play on all the smallest to regular 3x3 size cubes, and solve. it's 3d
-     * and rotatable". The shelf for puzzles turned in the hand, opened with
-     * the cube itself at four sizes; the cube is Kyuubu (`@johnmorrisdotca/kyuubu`), a
-     * package of its own. Other turning puzzles, and the guide to solving one,
-     * are at home here later.
+     * It replaces Mahjong (2026-09-29), Dominoes (2026-09-29) and Cubes
+     * (2026-09-30), which are `FAMILY_ABSORBED` into it: a member paid a
+     * `firstOfFamily` under any of those keys keeps the payment, and it counts
+     * as this family met. The four-player game of hands, Riichi
+     * (docs/plans/mahjong/README.md), would be at home here later.
      *
-     * 立方 (rippō): a cube, as in 立方体 — the shape, and nobody's brand.
+     * 牌 (hai): a tile — the word for a mahjong tile, and the one in 骨牌 and
+     * ドミノ牌, a domino. The cube's stickers are tiles too, which is why this
+     * reads true of the three and 立方, which was the cube's alone, did not.
+     *
+     * Its page is Mahjong Solitaire's (`familyPagePath`), the first game
+     * of the three that is kept and recorded; Mexican Train, a party game,
+     * is set up at its own table from its own page.
      */
-    title: "Cubes",
-    kanji: "立方",
-    blurb: "Puzzles you turn in your hand, drawn in 3D: scramble a cube from 2×2 to 5×5 and turn it back until every face is one colour, against the clock.",
-    games: ["cube"],
+    title: "Tiles",
+    kanji: "牌",
+    blurb: "Games played with tiles: take matching pairs of free tiles off a stacked mahjong layout, match the ends of dominoes and build your train out of the hub, or turn a cube of coloured tiles until every face is one colour.",
+    games: ["mahjong", "mexicanTrain", "cube"],
   },
-
   {
     key: "dice",
     /*
@@ -372,7 +349,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * the highest scores, a tie is war.
      *
      * Its games are party games, played round one device and never recorded,
-     * so, like Dominoes, it counts towards no award (`RECORDED_FAMILIES`),
+     * so, like Party games, it counts towards no award (`RECORDED_FAMILIES`),
      * has a page of its own at /games/dice, and stays off the set-up screen,
      * which makes games between two.
      */

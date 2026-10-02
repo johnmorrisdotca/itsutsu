@@ -108,6 +108,14 @@ describe("counting families over rows written before the merge", () => {
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(today.size);
   });
 
+  it("counts Mahjong and Cubes as one family since they became Tiles, and a member paid for both is paid for one", () => {
+    const state = held(["mahjong", "cubes", "tiles", "dominoes"]);
+    expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);
+    expect(familyKeyNow("mahjong")).toBe("tiles");
+    expect(familyKeyNow("dominoes")).toBe("tiles");
+    expect(familyKeyNow("cubes")).toBe("tiles");
+  });
+
   it("counts the races and the territory games as one family since they merged", () => {
     const state = held(["races", "territory"]);
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);

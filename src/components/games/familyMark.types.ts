@@ -36,10 +36,10 @@ export type Mark = {
   colourCards?: { card: string | null; x: number; y: number; angle: number }[];
   /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
-  /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Dominoes family's train. */
+  /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Tiles family's domino. */
   dominoes?: MarkDomino[];
   /** Dice, each its top-left corner (a cell and a half square), its face, and whether it is held: the Dice family's throw. */
   dice?: MarkDie[];
-  /** A cube seen from above one corner (`MarkCube`): the Cubes family's. */
+  /** A cube seen from above one corner (`MarkCube`): the Tiles family's. */
   cube?: MarkCubeProps;
 };

@@ -188,8 +188,9 @@ describe("the economy holds its shape", () => {
     // Ten since Logic puzzles opened with Bridges the same day: a family met (+150) and a first solve (+50, among the puzzles below).
     // Eleven since Mahjong opened with Mahjong Solitaire on 2026-09-29, and twelve since Cards opened with Solitaire the same day: each a family met and a first game.
     // Thirteen since Cubes opened with the Cube on 2026-09-30: a family met, and a first solve among the puzzles.
+    // Twelve since Mahjong and Cubes became Tiles on 2026-10-01: two families met are one, and nothing already paid is taken back.
     const perFamily = RECORDED_FAMILIES.length;
-    expect(perFamily).toBe(13);
+    expect(perFamily).toBe(12);
     // A family won is only for a family of more than one BOARD game: puzzles are not won.
     const familiesToWin = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 1).length;
     expect(familiesToWin).toBe(7);
@@ -212,7 +213,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points * 5 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
+    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points * 4 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {
