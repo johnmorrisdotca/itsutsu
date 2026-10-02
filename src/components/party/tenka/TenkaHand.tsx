@@ -6,25 +6,12 @@ import { cardKind, cardTerritory, setsIn, tradeValue } from "@/lib/party/tenka/t
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 
 import { TENKA_COPY } from "./tenka.constants";
-
-/** A card's kind as a picture: a hill for land, waves for sea, wings for air, a star for a wild card. */
-const KIND_PATHS: Record<TenkaCardKind, string> = {
-  land: "M2 17 L9 6 L13 12 L16 9 L22 17 Z",
-  sea: "M2 9 q2.5 -3 5 0 t5 0 t5 0 t5 0 M2 15 q2.5 -3 5 0 t5 0 t5 0 t5 0",
-  air: "M12 3 L14 10 L22 13 L14 14 L13 20 L16 22 L8 22 L11 20 L10 14 L2 13 L10 10 Z",
-  wild: "M12 2 L14.6 8.6 L21.6 9 L16.2 13.4 L18 20.2 L12 16.4 L6 20.2 L7.8 13.4 L2.4 9 L9.4 8.6 Z",
-};
+import { DressedBackClient, DressedCardClient } from "./TenkaDressedClient";
 
 const KIND_WORDS: Record<TenkaCardKind, string> = { land: "Land", sea: "Sea", air: "Air", wild: "Wild" };
 
-function KindMark({ kind }: { kind: TenkaCardKind }) {
-  const filled = kind !== "sea";
-  return (
-    <svg viewBox="0 0 24 24" className="size-5 shrink-0" aria-hidden="true">
-      <path d={KIND_PATHS[kind]} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? 0 : 1.8} strokeLinecap="round" />
-    </svg>
-  );
-}
+/** The cards left in the deck, said as the package says it ("Deck: 41"). Here rather than in `tenka.constants.ts`, whose every change asks for the party pictures again. */
+const deckWords = (left: number) => `Deck: ${left}`;
 
 /**
  * THE CARDS IN THE HAND OF THE PLAYER TO MOVE (or, at a table on several
@@ -66,14 +53,22 @@ export function TenkaHand({
             {hand.map((card) => {
               const territory = cardTerritory(card, tenkaMapOf(game));
               const kind = cardKind(card, tenkaMapOf(game));
+              const name = territory !== null ? tenkaMapOf(game).territories[territory].name : KIND_WORDS.wild;
+              const label = `${KIND_WORDS[kind]}: ${name}`;
               return (
-                <li key={card} className="flex min-w-0 items-center gap-1.5 rounded-lg border border-rule-strong bg-paper px-2 py-1 text-xs" data-testid="tenka-card" data-kind={kind}>
-                  <KindMark kind={kind} />
-                  <span className="font-semibold">{KIND_WORDS[kind]}</span>
-                  {territory !== null ? <span className="truncate text-muted">{tenkaMapOf(game).territories[territory].name}</span> : null}
+                <li key={card} className="flex shrink-0" data-testid="tenka-card" data-kind={kind} data-card={card} data-territory={territory ?? undefined}>
+                  <span className="flex" role="img" aria-label={label}>
+                    <DressedCardClient card={card} territory={territory} kind={kind} map={game.map ?? "world"} name={name} label={label} />
+                  </span>
                 </li>
               );
             })}
+            <li className="flex shrink-0 flex-col items-center gap-0.5 text-xs text-muted" data-testid="tenka-deck" data-left={game.deck.length}>
+              <span className="flex" role="img" aria-label={deckWords(game.deck.length)}>
+                <DressedBackClient label={deckWords(game.deck.length)} />
+              </span>
+              <span aria-hidden="true">{deckWords(game.deck.length)}</span>
+            </li>
           </ul>
           {sets.map((cards) => (
             <button

@@ -1,28 +1,21 @@
+import { useState } from "react";
+
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { TenkaGame, TenkaOwner } from "@/lib/party/tenka/tenka.types";
-import { usePartyMarbles } from "../partyMarbles";
 import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 
 import { TENKA_COPY } from "./tenka.constants";
-import { ownerMarble } from "./TenkaChips";
+import { DressedDieClient } from "./TenkaDressedClient";
 
-/** Where each pip of a face sits on a three-by-three grid, 0 to 8 from the top left. */
-const PIPS: Record<number, readonly number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-
-/** One die, in its thrower's colour: the pips drawn, the number said to a screen reader. */
-function Die({ value, owner, small }: { value: number; owner: TenkaOwner; small: boolean }) {
-  // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
-  const marbles = usePartyMarbles();
-  const marble = ownerMarble(owner, marbles);
+/** One die, in its thrower's colour, drawn by Korokoro (`TenkaDressed.tsx`): the number said to a screen reader, and kept on the element for a spec. */
+function Die({ value, owner, side, small, tumble, index, count }: { value: number; owner: TenkaOwner; side: "attack" | "defend"; small: boolean; tumble: boolean; index: number; count: number }) {
+  const label = `${side === "attack" ? "Attacker's" : "Defender's"} die: ${value}`;
   return (
-    <svg viewBox="0 0 30 30" className={`${small ? "size-7" : "size-9"} shrink-0`} role="img" aria-label={String(value)} data-testid="tenka-die" data-value={value}>
-      <rect x={1} y={1} width={28} height={28} rx={6} fill={marble.fill} stroke="rgba(0,0,0,0.55)" strokeWidth={1.2} />
-      {PIPS[value].map((pip) => (
-        <circle key={pip} cx={7.5 + (pip % 3) * 7.5} cy={7.5 + Math.floor(pip / 3) * 7.5} r={2.6} fill={marble.ink} />
-      ))}
-    </svg>
+    <span className="flex shrink-0" role="img" aria-label={label} data-testid="tenka-die" data-value={value} data-face={value}>
+      <DressedDieClient face={value} owner={owner} side={side} small={small} tumble={tumble} index={index} count={count} label={label} />
+    </span>
   );
 }
 
@@ -44,6 +37,11 @@ const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
  */
 export function TenkaDice({ game, compact = false }: { game: TenkaGame; compact?: boolean }) {
   const roll = game.lastRoll;
+  // Which throw this is since the table was opened: 0 for one already made (shown at rest), then 1, 2… for each made while it is open, which tumble onto the faces the game threw.
+  const [seen, setSeen] = useState({ roll, throws: 0 });
+  if (seen.roll !== roll) setSeen({ roll, throws: roll === null ? seen.throws : seen.throws + 1 });
+  const tumble = seen.throws > 0;
+  const dieCount = roll === null ? 0 : roll.attackDice.length + roll.defendDice.length;
   const testId = compact ? "tenka-bar-dice" : "tenka-dice";
   if (roll === null) {
     if (compact) return null;
@@ -63,13 +61,13 @@ export function TenkaDice({ game, compact = false }: { game: TenkaGame; compact?
     <div className="flex flex-wrap items-center gap-2">
       <span className="flex items-center gap-1" data-testid={compact ? undefined : "tenka-attack-dice"}>
         {roll.attackDice.map((value, at) => (
-          <Die key={at} value={value} owner={roll.attacker} small={compact} />
+          <Die key={`${seen.throws}-${at}`} value={value} owner={roll.attacker} side="attack" small={compact} tumble={tumble} index={at} count={dieCount} />
         ))}
       </span>
       <span className="text-xs text-muted">against</span>
       <span className="flex items-center gap-1" data-testid={compact ? undefined : "tenka-defend-dice"}>
         {roll.defendDice.map((value, at) => (
-          <Die key={at} value={value} owner={roll.defender} small={compact} />
+          <Die key={`${seen.throws}-${at}`} value={value} owner={roll.defender} side="defend" small={compact} tumble={tumble} index={roll.attackDice.length + at} count={dieCount} />
         ))}
       </span>
     </div>
