@@ -80,7 +80,7 @@
     "@johnmorrisdotca/sugoroku": "1.0.0",
     "@johnmorrisdotca/suido": "1.3.0",
     "@johnmorrisdotca/tane": "1.2.0",
-    "@johnmorrisdotca/tenka": "file:/private/tmp/claude-501/-Users-john-Projects-itsutsu/d14a3550-5cfa-4d6f-a0e9-f98dbbeb8051/scratchpad/i95-tenka-2.1.0-dressing.tgz",
+    "@johnmorrisdotca/tenka": "2.1.0",
     "@johnmorrisdotca/toranpu": "2.14.0",
     "@johnmorrisdotca/tsunagi": "1.4.0",
     "@prisma/client": "^6.19.3",
