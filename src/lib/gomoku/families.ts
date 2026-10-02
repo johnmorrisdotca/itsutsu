@@ -124,6 +124,10 @@ export const FAMILY_ABSORBED: Record<string, string> = {
      preference naming one still means something (`?family=tricks`). */
   tricks: "table-cards",
   "colour-cards": "table-cards",
+  /* 2026-10-01: Dice became part of Party games. Its three games are party
+     games, never recorded, so no ledger row can hold the key; it is here so a
+     link or a preference naming it (`?family=dice`) still means something. */
+  dice: "party",
 };
 
 /**

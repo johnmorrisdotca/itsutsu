@@ -299,7 +299,8 @@ as `guided` (`solveHelp.ts`): solved, no points, off the fastest tables. The
 method is taught at `/learn/cube`, a stage at a time with a cube to practise
 each on (`src/lib/learn/cubeMethod.ts`, `cubePractice.ts`).
 
-**Other** その他 holds what is neither stones nor digits, kept off the set-up
+**Solo games** 一人遊び (key `other`, called Other until 2026-10-01) holds the
+puzzles for one person that are neither stones nor digits, kept off the set-up
 screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
 found on a board eight rows tall (eight or nine squares across), each guess
 coloured letter by letter: easy gives eight guesses, medium seven and hard six
@@ -556,8 +557,8 @@ stats. It is Korokoro (github.com/johnmorrisdotca/korokoro: MIT, no
 dependencies, its own README and a GitHub Pages demo), an ordinary dependency
 from npm, `@johnmorrisdotca/korokoro`, at the version in `package.json`. A
 change to the roller is a release of that package and a version bump here.
-**Dice War** 賽合戦 (2026-10-01) is its game, a party game at home in the Dice
-family (`src/components/party/diceWar/`, rules in Korokoro's `diceWar.ts`):
+**Dice War** 賽合戦 (2026-10-01) is its game, a party game at home in Party games
+(`src/components/party/diceWar/`, rules in Korokoro's `diceWar.ts`):
 two to eight round one device, a computer in any seat, everybody rolls and the
 highest total scores, a tie is war; see `docs/plans/party-games/README.md`.
 

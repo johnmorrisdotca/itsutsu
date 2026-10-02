@@ -326,32 +326,6 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["mahjong", "mexicanTrain", "cube"],
   },
   {
-    key: "dice",
-    /*
-     * DICE 賽子. John, 2026-09-30: "Did we create a dice rolling game [where]
-     * you just roll a dice and have fun that way?" A family for the games
-     * played with dice alone, opened with Yacht: five dice, three rolls, a
-     * sheet of thirteen boxes, alone or round one device. Its own shelf rather than Party games, which already
-     * shows its eight. 賽子 (saikoro) is the everyday word for a die. Pachisi,
-     * the race game of the cross and circle, joined it the same day (John:
-     * "I think Parcheesi was another one from the past"). Dice War (2026-10-01,
-     * John: "Dice game: war? Or higher number? Something super simple with just
-     * rolling dice and keeping score") joined it the same way: everybody rolls,
-     * the highest scores, a tie is war.
-     *
-     * Its games are party games, played round one device and never recorded,
-     * so, like Party games, it counts towards no award (`RECORDED_FAMILIES`),
-     * has a page of its own at /games/dice, and stays off the set-up screen,
-     * which makes games between two.
-     */
-    title: "Dice",
-    kanji: "賽子",
-    blurb: "Games the dice decide: roll, hold the ones you want and score what they make, race your pawns home by what they show, or roll against the table for the highest total.",
-    games: ["yacht", "pachisi", "diceWar"],
-    notOnSetUp:
-      "A dice game is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
-  },
-  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to
@@ -386,30 +360,41 @@ export const GAME_FAMILIES: GameFamily[] = [
      * nothing the engine's stones-on-points can play.
      *
      * And Tenka 天下, world conquest for two to six, the same day.
+     *
+     * THE DICE GAMES JOINED IT, 2026-10-01. Dice (賽子, 2026-09-30) had been a
+     * shelf of its own for Yacht, Pachisi and Dice War, all party games played
+     * round one device and never recorded. John: fold Dice into Party games.
+     * They are at home here now, seven games under the cap of eight; the
+     * `dice` key is `FAMILY_ABSORBED` into this one and /games/dice is gone.
      */
     title: "Party games",
     kanji: "団欒",
-    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on.",
+    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on: fill in boxes, sow seeds, conquer the world, roll dice for the highest score, or race your pawns home by what they show.",
     /*
      * And Superghost (2026-09-28), the word game for two to eight, in English
      * or Japanese: the second at home here. And Mancala the same day, Kalah or
      * Oware for two; and Tenka, world conquest for two to six.
      */
-    games: ["dotsAndBoxes", "superghost", "mancala", "tenka"],
+    games: ["dotsAndBoxes", "superghost", "mancala", "tenka", "yacht", "pachisi", "diceWar"],
     notOnSetUp:
-      "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+      "A party game, dice game included, is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "other",
     /*
-     * OTHER. John, 2026-09-25, asking for a word puzzle of our own: "a special
-     * OTHER category" on the games list, the cards and the families, and kept
-     * off the set-up screen for now so it ships sooner. The home of whatever is
-     * neither stones nor numbers, starting with Gomoji.
+     * OTHER, then SOLO GAMES 一人遊び. John, 2026-09-25, asking for a word
+     * puzzle of our own: "a special OTHER category" on the games list, the
+     * cards and the families, and kept off the set-up screen for now so it
+     * shipped sooner. The home of whatever is neither stones nor numbers,
+     * starting with Gomoji. John, 2026-10-01: rename it Solo games, which says
+     * what its four have in common: each is a puzzle played by one person.
+     * The key stays `other`, because a ledger row may already hold it and the
+     * key is not a word anyone reads. 一人遊び (hitori asobi) is the everyday
+     * word for playing by yourself.
      */
-    title: "Other",
-    kanji: "その他",
-    blurb: "Neither stones nor digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, tiles to build into your own crossword, and six words to swap into a lattice.",
+    title: "Solo games",
+    kanji: "一人遊び",
+    blurb: "Puzzles for one person, with no stones and no digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, tiles to build into your own crossword, and six words to swap into a lattice.",
     /* Tsunagi and Kumimoji joined 2026-09-26, and Koushi the same day: puzzles for one with no digits in them, and Numbers already holds its eight. */
     /* One Gomoji: its languages and word lists are settings of it, chosen on its set-up (`gameSettings.ts`, John, 2026-09-28). */
     /* On the set-up screen since 2026-09-30: its four puzzles each draw their own preview there (`PuzzleBoardPreview`), which was what kept it off. */

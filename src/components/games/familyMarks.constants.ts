@@ -250,7 +250,7 @@ export const FAMILY_MARKS: Record<string, Mark> = {
    * Gomoji… so we should be using the larger boards" — six letters want a
    * six-square board, so this mark is drawn on one.
    */
-  Other: {
+  "Solo games": {
     n: 6,
     cells: true,
     stones: [],
@@ -287,22 +287,6 @@ export const FAMILY_MARKS: Record<string, Mark> = {
    * idea, a game passed from hand to hand, and the one mark on the row with
    * nobody facing anybody.
    */
-  /*
-   * DICE: five dice from a throw of Yacht, three fives held (ringed as the
-   * table rings a held die) and two left free to roll again.
-   */
-  Dice: {
-    n: 5,
-    cells: true,
-    stones: [],
-    dice: [
-      { x: 0.2, y: 0.3, face: 5, held: true },
-      { x: 1.75, y: 0.3, face: 5, held: true },
-      { x: 3.3, y: 0.3, face: 5, held: true },
-      { x: 0.95, y: 2.3, face: 2 },
-      { x: 2.55, y: 2.3, face: 6 },
-    ],
-  },
   "Party games": {
     n: 5,
     stones: [

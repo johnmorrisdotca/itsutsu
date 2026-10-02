@@ -1,7 +1,7 @@
 import type { Card } from "@/lib/cards/cards.types";
 import type { MarkCubeProps } from "./MarkCube";
 
-import type { MarkDie, MarkDomino } from "./games.types";
+import type { MarkDomino } from "./games.types";
 
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 export type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
@@ -38,8 +38,6 @@ export type Mark = {
   tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
   /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Tiles family's domino. */
   dominoes?: MarkDomino[];
-  /** Dice, each its top-left corner (a cell and a half square), its face, and whether it is held: the Dice family's throw. */
-  dice?: MarkDie[];
   /** A cube seen from above one corner (`MarkCube`): the Tiles family's. */
   cube?: MarkCubeProps;
 };

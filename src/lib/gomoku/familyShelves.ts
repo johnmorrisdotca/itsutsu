@@ -100,36 +100,13 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
     },
   ],
   /*
-   * PAIR GO, the tournament format for four: two teams of two, Black and
-   * White, the turns going round the table and partners not talking. The same
-   * Go, played by the same engine, on one device (`/games/go/pass-and-play`).
+   * OFF PARTY GAMES, 2026-10-01. Folding Dice into it put seven games at home
+   * there, and a shelf shows eight at most, its guests included, so one guest
+   * stays: Chinese Checkers, the six-player table. Three left, each still
+   * offered from its own page:
+   *   - Pair Go, two teams of two (`/games/go/pass-and-play`);
+   *   - Block Five for four, a corner each (`/games/block-five/pass-and-play`);
+   *   - Kumimoji for up to eight (`/games/kumimoji/pass-and-play`).
+   * Halma for four and Mahjong left the same shelf earlier, for the same cap.
    */
-  go: [{ family: "party", why: "Pair Go: two teams of two, taking turns, no talking." }],
-  /*
-   * HALMA FOR FOUR is offered from Halma's own page (`/games/halma/pass-and-play`)
-   * and is no longer on the Party games shelf. Tenka (2026-09-28) made it nine
-   * where John allows eight, and Chinese Checkers for up to six already shows a
-   * table what a race across the board round one device is.
-   */
-  /*
-   * BLOCK FIVE FOR FOUR. The rated game is a line game for two; its own page
-   * also offers the four-player shape game — a corner each, twenty-one pieces
-   * each that may meet their own only at the corners — passed round one device
-   * (`/games/block-five/pass-and-play`).
-   */
-  blockFive: [
-    {
-      family: "party",
-      why: "Pass and play for four: a corner each, every player laying twenty-one shapes that may touch their own only corner to corner, round one device.",
-    },
-  ],
-  /* KUMIMOJI, whose pass and play for up to eight landed in 0.410.0: a shelf lists what the game offers today. */
-  /*
-   * NOT ON PARTY GAMES YET, though Mahjong plays two to four round one device:
-   * that shelf already shows its eight. Found at home, where the Tiles
-   * family's shelf shows it, and its page says it is played in turns. When the shelf has room, the
-   * listing is: mahjong: [{ family: "party", why: "Two to four take turns on
-   * one layout, a pair each, and the dragons and winds score most." }].
-   */
-  kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
 };

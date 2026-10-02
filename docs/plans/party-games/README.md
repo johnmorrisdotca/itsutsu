@@ -253,12 +253,16 @@ was printed with before a company boxed it (that boxed name appears nowhere).
   motion), a held die ringed in vermilion. Tap a die to hold it; tap the tray
   or Roll to throw. The dice's sound is made in the browser and is off until
   turned on (`diceSound.ts`).
-- **The Dice family** (`families.data.ts` key `dice`, page `/games/dice`,
-  mark `Dice` in `FamilyMark.tsx`, drawn by `FamilyMarkPieces.tsx`): games
-  played with dice alone. Its own shelf because Party games already shows
-  eight. Like Dominoes it counts toward no award and stays off the set-up
-  screen. The dice roller another thread is building is meant to sit on it
-  too.
+- **The Dice family was folded into Party games on 2026-10-01** (John). It had
+  been a shelf of its own (`key: "dice"`, `/games/dice`, mark `Dice`) because
+  Party games then showed eight; Yacht, Pachisi and Dice War are now at home
+  in Party games, seven with Dots and Boxes, Superghost, Mancala and Tenka.
+  `dice` is in `FAMILY_ABSORBED` (mapped to `party`), `/games/dice` is gone
+  with no redirect, and the dice mark and the page were deleted. A shelf shows
+  eight at most, guests included, so Pair Go, Block Five for four and Kumimoji
+  left the shelf as guests (`familyShelves.ts`), each still offered from its
+  own page; Chinese Checkers stays. The dice roller (`/dice`) is a tab, not a
+  family.
 
 Decisions to review: the kanji 五つ賽 ("five dice") for Yacht and 賽子 for the
 family; the thirteen-box sheet with the upper bonus rather than the older
@@ -314,12 +318,12 @@ scores a point, and a tie for the highest is war.
   `src/lib/party/diceWar/` (`diceWarRules.ts` the party contract, with
   `startWith` for what the set-up chooses; `diceWarThrow.ts`; `diceWarWords.ts`;
   `diceWar.constants.ts`, free of the package so a page never carries it).
-- **Where it lives**: a party game (`PartyKind` `diceWar`) at home in the **Dice**
-  family beside Yacht and Pachisi, not on the Dice tab. The tab (`/dice`) is a
+- **Where it lives**: a party game (`PartyKind` `diceWar`) at home in
+  **Party games** beside Yacht and Pachisi (the Dice family until 2026-10-01), not on the Dice tab. The tab (`/dice`) is a
   tool, a tray with history and odds that is never a game and keeps nothing
   between throws; Dice War is a table of people with a score, kept until it is
   finished and found on My games like every party game, so it follows the
-  party-game gate, and the Dice family is the shelf for games the dice decide.
+  party-game gate, and Party games is the shelf for games the dice decide.
   The tab itself is unchanged: Korokoro's tray option for Dice War
   (`mountRoller(el, { diceWar: true })`) is not used.
 - **Dice are Korokoro's own**: each die is `mountDie` (`DiceWarDie.tsx`), the
@@ -440,7 +444,7 @@ not a second mechanism:
   region; Halma for four taken off the Party games shelf to keep it at eight
   (it is still offered from Halma's own page); the device passed between turns by name, with nobody's
   cards shown until the player named says they have it.
-- Dice War: in the Dice family as a party game, not on the Dice tab; the kanji
+- Dice War: in Party games (then the Dice family) as a party game, not on the Dice tab; the kanji
   賽合戦 ("a battle of dice"); first to 10 points with one six-sided die each as the
   game it opens on; a person and a computer as the table it opens on; the set-up
   offering a few dice counts and sides rather than every number the package

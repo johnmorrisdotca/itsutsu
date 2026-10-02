@@ -122,6 +122,11 @@ describe("counting families over rows written before the merge", () => {
     expect(GAME_FAMILIES.find((family) => family.key === "table-cards")?.games).toContain("hitotsu");
   });
 
+  it("reads Dice as Party games, whose shelf now holds the three dice games at home", () => {
+    expect(familyKeyNow("dice")).toBe("party");
+    expect(GAME_FAMILIES.find((family) => family.key === "party")?.games).toEqual(expect.arrayContaining(["yacht", "pachisi", "diceWar"]));
+  });
+
   it("counts the races and the territory games as one family since they merged", () => {
     const state = held(["races", "territory"]);
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);

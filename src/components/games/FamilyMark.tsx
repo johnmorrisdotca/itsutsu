@@ -8,7 +8,7 @@ import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import type { Mark } from "./familyMark.types";
-import { MarkDice, MarkDominoes } from "./FamilyMarkPieces";
+import { MarkDominoes } from "./FamilyMarkPieces";
 import { FAMILY_MARKS } from "./familyMarks.constants";
 
 export { FAMILY_MARKS };
@@ -106,7 +106,6 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
       ))}
       {mark.cube === undefined ? null : <MarkCube {...mark.cube} />}
       <MarkDominoes dominoes={mark.dominoes ?? []} />
-      <MarkDice dice={mark.dice ?? []} />
       {mark.path !== undefined ? (
         <path d={mark.path} fill="none" stroke="var(--shu)" strokeWidth={0.14} strokeLinecap="round" />
       ) : null}

@@ -30,7 +30,7 @@ test.describe("Gomoji Wort", () => {
     await expect(page).toHaveURL(/\/games\/gomoji\?language=german$/);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toHaveText(/^Gomoji/);
     await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
-    await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.getByTestId("game-family")).toContainText("Solo games");
     await expect(page.locator('[data-testid="word-setting-row"][data-kind="gomojiWort"]')).toContainText("Deutsch");
   });
 

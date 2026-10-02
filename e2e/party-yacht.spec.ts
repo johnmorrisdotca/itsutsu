@@ -36,15 +36,15 @@ test.describe("Yacht, read by anybody", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Yacht/ }).first()).toBeVisible();
-    await expect(page.getByTestId("game-family")).toContainText("Dice");
-    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/dice");
+    await expect(page.getByTestId("game-family")).toContainText("Party games");
+    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/party");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(/\/games\/yacht\/rules$/);
     await expect(page.getByTestId("rules-page")).toContainText("full house");
 
-    await page.goto("/games/dice");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Dice");
-    await expect(page.locator('[data-testid="family-mark"][data-family="Dice"]').first()).toBeVisible();
+    await page.goto("/games/party");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Party games");
+    await expect(page.locator('[data-testid="family-mark"][data-family="Party games"]').first()).toBeVisible();
     await expect(page.locator("main")).toContainText("Yacht");
 
     await page.goto(AT);

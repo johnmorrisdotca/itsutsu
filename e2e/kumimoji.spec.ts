@@ -158,7 +158,7 @@ test.describe("Kumimoji", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(PUZZLE_DISPLAY[KIND].label);
     await expect(page.getByTestId("inspired-by")).toContainText("anagram-grid race games");
-    await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.getByTestId("game-family")).toContainText("Solo games");
     await page.goto(`${AT}/rules`);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Kumimoji");
     const words = await page.locator("main").innerText();

@@ -125,8 +125,6 @@ test.describe("the pages that stay open", () => {
       "/games/party",
       // And Table cards, another family page at an address of its own.
       "/games/table-cards",
-      // And Dice, another.
-      "/games/dice",
       // The dice roller, a tab of Games that names nobody and keeps nothing on the server.
       "/dice",
       "/learn",
@@ -188,7 +186,6 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/family",
       "/games/party",
       "/games/table-cards",
-      "/games/dice",
       // Chinese Checkers' own page, which offers the table and remembers a kept one in the browser, never on the server.
       "/games/chinese-checkers",
       // And Halma's, which offers its table for four the same way.

@@ -44,13 +44,13 @@ test.describe("Dice War, read by anybody", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Dice War/ }).first()).toBeVisible();
-    await expect(page.getByTestId("game-family")).toContainText("Dice");
-    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/dice");
+    await expect(page.getByTestId("game-family")).toContainText("Party games");
+    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/party");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(/\/games\/dice-war\/rules$/);
     await expect(page.getByTestId("rules-page")).toContainText("tie for the highest");
 
-    await page.goto("/games/dice");
+    await page.goto("/games/party");
     await expect(page.locator("main")).toContainText("Dice War");
 
     await page.goto(AT);

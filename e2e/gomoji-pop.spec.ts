@@ -34,7 +34,7 @@ test.describe("Pop Gomoji", () => {
     await expect(page).toHaveURL(/\/games\/gomoji\?list=pop$/);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toHaveText(/^Gomoji/);
     await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
-    await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.getByTestId("game-family")).toContainText("Solo games");
     await expect(page.locator('[data-testid="word-setting-row"][data-kind="gomojiPop"]')).toContainText("English · Pop culture");
     // Its own name, kept on its solves and records, is never a trademark.
     expect(NAME).not.toMatch(/wordle/i);

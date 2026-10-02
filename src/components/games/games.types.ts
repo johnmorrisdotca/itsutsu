@@ -86,4 +86,3 @@ export type FamilyShelfProps = { shelf: ShelvedGame[]; current?: GameKey | null 
 export type MarkDomino = { x: number; y: number; ends: readonly [number, number] };
 
 /** A die in a family's mark: its top-left corner, in cells (a cell and a half square), its face, and whether it is held. */
-export type MarkDie = { x: number; y: number; face: number; held?: boolean };

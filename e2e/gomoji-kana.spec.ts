@@ -35,7 +35,7 @@ test.describe("the kana word puzzle", () => {
     await expect(page).toHaveURL(/\/games\/gomoji\?language=japanese$/);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toHaveText(/^Gomoji/);
     await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
-    await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.getByTestId("game-family")).toContainText("Solo games");
     await expect(page.locator('[data-testid="word-setting-row"][data-kind="gomojiKana"]')).toContainText("日本語 かな");
   });
 

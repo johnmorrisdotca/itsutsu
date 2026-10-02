@@ -46,12 +46,12 @@ test.describe("Pachisi, read by anybody", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Pachisi/ }).first()).toBeVisible();
-    await expect(page.getByTestId("game-family")).toContainText("Dice");
+    await expect(page.getByTestId("game-family")).toContainText("Party games");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(/\/games\/pachisi\/rules$/);
     await expect(page.getByTestId("rules-page")).toContainText("blockade");
 
-    await page.goto("/games/dice");
+    await page.goto("/games/party");
     await expect(page.locator("main")).toContainText("Pachisi");
 
     await page.goto(AT);

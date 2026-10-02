@@ -147,25 +147,17 @@ test.describe("Block Five for four, pass and play", () => {
   });
 });
 
-test.describe("Block Five for four on the Party games shelf", () => {
+test.describe("Block Five for four, offered from its own page", () => {
   // Open to anybody: it names games and nobody who plays them.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("is listed with why it is there, says where it lives, and leads to its page where the table is offered", async ({ page }) => {
+  // Block Five left the Party games shelf on 2026-10-01, when Dice joined it and the shelf reached its eight.
+  test("is not on the Party games shelf, and its own page offers the table for four", async ({ page }) => {
     await page.goto("/games/party");
-    const card = page.getByTestId("family-game-blockFive");
-    await expect(card).toHaveAttribute("data-listed", "shelf");
-    await expect(card.getByTestId("family-game-why")).toContainText("Pass and play for four");
-    await expect(card.getByTestId("family-game-home")).toContainText("Strange boards");
+    await expect(page.getByRole("heading", { name: /Party games/ })).toBeVisible();
+    await expect(page.getByTestId("family-game-blockFive")).toHaveCount(0);
 
-    await card.getByRole("link", { name: /Block Five/ }).first().click();
-    await expect(page).toHaveURL(/\/games\/block-five$/);
+    await page.goto("/games/block-five");
     await expect(page.getByTestId("blocks-play")).toContainText("4 players");
-    await expect(page.getByTestId("game-family-shelves")).toContainText("Party games");
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/games/party");
-    await expect(page.getByTestId("family-game-blockFive")).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });

@@ -39,7 +39,7 @@ test.describe("Koushi", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(PUZZLE_DISPLAY[KIND].label);
     await expect(page.getByTestId("inspired-by")).toContainText("swap-the-letters word grid");
-    await expect(page.getByTestId("game-family")).toContainText("Other");
+    await expect(page.getByTestId("game-family")).toContainText("Solo games");
   });
 
   test.describe("on a phone", () => {

@@ -142,27 +142,19 @@ test.describe("Pair Go, two teams of two on one device", () => {
   });
 });
 
-test.describe("Pair Go on the Party games shelf", () => {
+test.describe("Pair Go, offered from Go's own page", () => {
   // Open to anybody: it names games and nobody who plays them.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("lists Go with why it is there, and says where it lives", async ({ page }) => {
+  // Pair Go left the Party games shelf on 2026-10-01, when Dice joined it and the shelf reached its eight.
+  test("is not on the Party games shelf, and Go's page offers it; a stranger pressing it is asked for an invite", async ({ page }) => {
     await page.goto("/games/party");
-    const card = page.getByTestId("family-game-go");
-    await expect(card).toHaveAttribute("data-listed", "shelf");
-    await expect(card.getByTestId("family-game-why")).toContainText("Pair Go: two teams of two, taking turns, no talking");
-    await expect(card.getByTestId("family-game-home")).toContainText("Territory and races");
+    await expect(page.getByRole("heading", { name: /Party games/ })).toBeVisible();
+    await expect(page.getByTestId("family-game-go")).toHaveCount(0);
 
-    // The name leads to Go's own page, where Pair Go is offered — and a stranger pressing it is asked for an invite.
-    await card.getByRole("link", { name: /^Go/ }).first().click();
-    await expect(page).toHaveURL(/\/games\/go$/);
+    await page.goto("/games/go");
     await ready(page, "pairgo-offer");
     await page.getByTestId("pairgo-play").click();
     await expect(page).toHaveURL(/\/join/);
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/games/party");
-    await expect(page.getByTestId("family-game-go")).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });
