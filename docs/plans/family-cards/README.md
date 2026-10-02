@@ -45,6 +45,24 @@ The cards make a sound when the table asks, through Toranpu's `card-sounds` (Ken
 
 Beside it, the table's felt is chosen on the square patches every board offers (`FeltPatches`, saved to the account as Kumimoji's is), and the cards' back on a row of small cards (`CardBackPicker`): the Itsutsu back by default, or Toranpu's classic red, classic blue or ink dots (`@johnmorrisdotca/toranpu/card-backs`). The back is kept in the browser and read by every face-down card the site draws (`ChosenCardBack`), Solitaire's stock included; the server and the pictures always draw the Itsutsu back.
 
+## Which tables draw cards, and with what (audit 2026-10-02)
+
+| Table | Draws its cards with | Toranpu's art? |
+|---|---|---|
+| Hearts, Spades, Euchre, Oh Hell, Cribbage, Gin Rummy, Big Two, President, Go Fish, Crazy Eights, War | the site's own deck: `PlayingCard`, through `CardHand`, `CardPile` and `LaidCard` | the rules are Toranpu's; the faces are ours; the back is ours unless the reader chose one of Toranpu's (`ChosenCardBack`) |
+| Solitaire, FreeCell, Spider | the same `PlayingCard` | the same |
+| Hitotsu | `HitotsuCardDrawing`, from its own package | the package's own deck |
+| Tenka | Toranpu's back and the Tenka package's territory card, through `TenkaDressed.tsx` (0.499.0) | yes |
+
+The faces were left alone on purpose. One component draws every card on the
+site (`PlayingCard`), its faces are the Itsutsu deck John chose (kanji courts,
+the brand's five stones on the ace of spades, "drawn by us"), and the back
+already offers Toranpu's three. Swapping the faces to Toranpu's English or
+plain design would change fourteen tables and the pictures taken of them in one
+move, which is a decision about the brand's deck and not a refactor. If John
+wants Toranpu's faces they belong beside the back choice, as a deck choice
+(`CardBackPicker`'s row), loaded in the browser only like the rest.
+
 ## The table
 
 One table plays all five (`src/components/party/cards/`). What each game plays is its adapter (`cardAdapters.ts`: `heartsAdapter`, `climbAdapters` for Big Two and President, `goFishAdapter`, `crazyEightsAdapter`). An adapter turns a person's choice into a move; the rules decide it.

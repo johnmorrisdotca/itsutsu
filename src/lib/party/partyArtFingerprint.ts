@@ -52,6 +52,9 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/cards/CardHand.tsx",
   "src/components/cards/Cards.constants.ts",
   "src/components/party/yacht/DiceTray.tsx",
+  // Yacht's and Pachisi's dice are Korokoro's die, drawn by this component.
+  "src/components/party/PartyDie.tsx",
+  "src/components/party/pachisi/PachisiDice.tsx",
   "src/lib/party/yacht/yacht.ts",
   "src/components/party/pachisi/PachisiBoard.tsx",
   "src/components/party/pachisi/pachisiLayout.ts",

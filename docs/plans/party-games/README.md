@@ -282,11 +282,12 @@ was printed with before a company boxed it (that boxed name appears nowhere).
   one more roll could make, counted exactly over every fall of the free dice,
   against what each box usually scores.
 - **The tray** (`components/party/yacht/DiceTray.tsx`) is the reader's wood in
-  `BoardFrame`, wider than tall (the `map` aspect), the dice tumbling and
-  flickering for about two thirds of a second after a roll (none under reduced
-  motion), a held die ringed in vermilion. Tap a die to hold it; tap the tray
-  or Roll to throw. The dice's sound is made in the browser and is off until
-  turned on (`diceSound.ts`).
+  `BoardFrame`, wider than tall (the `map` aspect), the dice tumbling for
+  about two thirds of a second after a roll (none under reduced motion), a
+  held die ringed in vermilion. Each die is Korokoro's (`PartyDie`, below),
+  not one the site draws. Tap a die to hold it; tap the tray or Roll to
+  throw. The dice's sound is made in the browser and is off until turned on
+  (`diceSound.ts`); Korokoro's own die sound is never asked for.
 - **The Dice family was folded into Party games on 2026-10-01** (John). It had
   been a shelf of its own (`key: "dice"`, `/games/dice`, mark `Dice`) because
   Party games then showed eight; Yacht, Pachisi and Dice War are now at home
@@ -332,10 +333,41 @@ boxed Western game's name is its owner's, as Tenka's and Yacht's are.
   are buttons under the dice (the first usable one chosen), and the pawns
   that value can move are ringed. Both dice together enter a pawn when they
   add to five and neither is spent yet.
+- **The dice** are Korokoro's (`PartyDie`, below), tumbling onto the face the
+  throw made, faint once their value is spent.
 
 Decisions to review: the name Pachisi rather than the boxed name; the kanji
 二十五 ("twenty-five", what pachisi means); the Western two-dice rules rather
 than the Indian cowrie throws; two to four players, no alone game.
+
+## Korokoro's die on the dice tables (2026-10-02)
+
+Tenka (0.499.0), Dice War and the Dice tab already drew their dice with
+Korokoro; Yacht and Pachisi drew their own pips and their own tumble. They
+now use `PartyDie` (`src/components/party/PartyDie.tsx`), a six-sided
+`mountDie` that fills its parent.
+
+- **The engine's result stays the engine's.** A throw is made by the game's
+  rules from its seed and how many throws came before it (`yacht.ts`,
+  `pachisi.ts`) before anything is drawn, and kept as moves. `PartyDie` is only
+  told the face: its random source hands that face back, so the tumble lands on
+  it. A game read back from its moves therefore shows the same dice, which
+  `e2e/party-dice-korokoro.spec.ts` checks against a replay.
+- **Tumble only a throw seen being made.** A table opened on a throw already
+  made, and a die a roll left held, lie still; a new roll key on a die the roll
+  threw makes it roll. A die must be one element for its whole life: Yacht's
+  die used to be a span until the first roll and a button after it, and a die
+  drawn afresh has no earlier roll to tumble from.
+- **Silent.** Korokoro's die sound is never turned on; Yacht's, Pachisi's and
+  Sugoroku's own rattle (`diceSound.ts`) is the table's, off until asked for.
+- **Browser only.** `PartyDie` is reached only through the dynamic,
+  `ssr: false` tables (`yachtClient.tsx`, `pachisiClient.tsx`), so no server
+  function carries Korokoro's die (`pnpm functions:size` unchanged).
+- **Left as they are:** Sugoroku's dice, which are part of the board the
+  Sugoroku package draws as one SVG (`drawSugoroku`), and Mexican Train's
+  dominoes, which are not dice.
+- **Cards:** see `docs/plans/family-cards/README.md`, "Which tables draw cards,
+  and with what".
 
 ## Dice War 賽合戦: the simplest dice game
 

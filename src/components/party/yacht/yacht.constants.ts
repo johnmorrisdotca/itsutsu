@@ -6,9 +6,8 @@ export const YACHT_STORAGE_KEY = "itsutsu.yacht";
 /** Where this browser remembers whether the dice make a sound: off until somebody turns it on. */
 export const DICE_SOUND_KEY = "itsutsu.diceSound";
 
-/** How long the dice tumble after a roll, and how often a tumbling die shows another face. */
+/** How long the dice tumble after a roll (Korokoro's die, `PartyDie`). */
 export const DICE_TUMBLE_MS = 650;
-export const DICE_FLICKER_MS = 70;
 
 /** How long a computer waits before its move: long enough to watch the dice land. */
 export const YACHT_COMPUTER_PAUSE_MS = 1000;

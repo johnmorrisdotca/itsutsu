@@ -5,6 +5,9 @@ export const PACHISI_STORAGE_KEY = "itsutsu.pachisi";
 export const PACHISI_COMPUTER_PAUSE_MS = 900;
 export const PACHISI_COMPUTER_PAUSE_REDUCED_MS = 200;
 
+/** How long the two dice tumble after a throw (Korokoro's die, `PartyDie`). */
+export const PACHISI_TUMBLE_MS = 650;
+
 export const PACHISI_COPY = {
   lead: "Pachisi for two to four round one phone or tablet, with a computer in any seat you like: race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated or kept anywhere but this browser.",
   play: "Play Pachisi",
