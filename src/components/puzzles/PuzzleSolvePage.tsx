@@ -215,7 +215,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
                 </>
               ),
               // Played, not solved: a Solitaire given up is kept and replayed too.
-              source: `Played on Itsutsu · ${day}`,
+              source: <>Played on Itsutsu · {day}</>,
             }}
           />
         </WordStyleProvider>
