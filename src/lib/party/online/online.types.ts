@@ -1,4 +1,5 @@
 import type { PieceColour } from "@/lib/pieces/pieceColours";
+import type { SugorokuKind } from "../sugoroku/sugoroku.constants";
 /**
  * The vocabulary of a party table played on several devices — see
  * docs/plans/party-online/README.md for the design, and `onlineGames.ts` for
@@ -9,11 +10,11 @@ import type { PieceColour } from "@/lib/pieces/pieceColours";
  * THE GAMES THAT CAN BE PLAYED ON SEVERAL DEVICES, by their catalogue key
  * (`GameKey`): Dots and Boxes, the three tables of the rule variants that the
  * race and the tray share, Go as Pair Go, Kumimoji's pass and play,
- * Superghost, Mancala, Tenka, Mexican Train and Hitotsu. A game joins by a row in `ONLINE_GAMES` and a
+ * Superghost, Mancala, Tenka, Mexican Train, Hitotsu and the seven backgammon games. A game joins by a row in `ONLINE_GAMES` and a
  * board in the client's `ONLINE_VIEWS`, both `Record`s over this, so a key
  * added here without either does not compile.
  */
-export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "hitotsu";
+export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "hitotsu" | SugorokuKind;
 
 /** Who sits in a seat: a member, nobody yet (its link is out), or a computer. */
 export type OnlineSeatKind = "member" | "open" | "computer";

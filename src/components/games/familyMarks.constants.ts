@@ -334,6 +334,25 @@ export const FAMILY_MARKS: Record<string, Mark> = {
       { x: 2.55, y: 2.3, face: 6 },
     ],
   },
+  /*
+   * TABLES: the backgammon board in little — three points along the foot with
+   * white checkers stacked on the first, three along the top with black on the
+   * last, and a die between them: the family's whole idea, a race that two
+   * sides run in opposite directions and the dice decide.
+   */
+  Tables: {
+    n: 5,
+    cells: true,
+    stones: [
+      { r: 4, c: 0, white: true },
+      { r: 3, c: 0, white: true },
+      { r: 2, c: 0, white: true },
+      { r: 0, c: 4 },
+      { r: 1, c: 4 },
+      { r: 4, c: 2, white: true },
+    ],
+    ink: "M 1 4.95 L 1.5 3.4 L 2 4.95 M 2.3 4.95 L 2.8 3.4 L 3.3 4.95 M 3 0.05 L 3.5 1.6 L 4 0.05 M 1.7 0.05 L 2.2 1.6 L 2.7 0.05",
+  },
   "Party games": {
     n: 5,
     stones: [

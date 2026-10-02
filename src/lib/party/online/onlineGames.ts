@@ -20,6 +20,7 @@ import { DOTS_RULES, DOTS_STATUS } from "../dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "../dotsAndBoxes/dotsAndBoxes.types";
 import { PARTY_SPECS } from "../party.constants";
 
+import type { SugorokuKind } from "../sugoroku/sugoroku.constants";
 import type { OnlineGameKey, OnlineRules } from "./online.types";
 import { fromPartyRules } from "./onlineGames.parts";
 import { KUMIMOJI_ONLINE, type KumimojiMove } from "./onlineKumimoji";
@@ -27,6 +28,8 @@ import { MANCALA_ONLINE, SUPERGHOST_ONLINE, type GhostTableMove } from "./online
 import { TENKA_ONLINE, type TenkaTableMove } from "./onlineTenka";
 import { TRAIN_ONLINE } from "./onlineTrain";
 import { HITOTSU_ONLINE } from "./onlineHitotsu";
+import { SUGOROKU_ONLINE } from "./onlineSugoroku";
+import type { SugorokuMove, SugorokuTable } from "../sugoroku/sugoroku.types";
 
 export { fromPartyRules };
 import { PAIR_GO_ONLINE, type PairGoMove } from "./onlinePairGo";
@@ -131,7 +134,7 @@ type OnlinePlays = {
   tenka: { game: TenkaGame; move: TenkaTableMove };
   mexicanTrain: { game: TrainGame; move: TrainMove };
   hitotsu: { game: HitotsuGame; move: HitotsuMove };
-};
+} & { [K in SugorokuKind]: { game: SugorokuTable; move: SugorokuMove } };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
 export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["game"], OnlinePlays[K]["move"]> } = {
@@ -146,6 +149,7 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   tenka: TENKA_ONLINE,
   mexicanTrain: TRAIN_ONLINE,
   hitotsu: HITOTSU_ONLINE,
+  ...SUGOROKU_ONLINE,
 };
 
 /**

@@ -138,4 +138,10 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
    */
   crazyEights: [{ family: "colour-cards", why: "Where Hitotsu comes from: match the suit or the number with an ordinary deck, and an eight calls the suit." }],
   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
+  /*
+   * BACKGAMMON, whose home is Tables, on the Dice shelf too (2026-10-01): a race
+   * that two dice decide as much as the player, which is why somebody looking
+   * for a dice game may want it, and the Dice shelf has room.
+   */
+  backgammon: [{ family: "dice", why: "A race home that two dice drive: roll, choose how to play the numbers, and hit or be hit, with a doubling cube to raise the stakes." }],
 };

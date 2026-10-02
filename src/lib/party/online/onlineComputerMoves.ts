@@ -12,6 +12,9 @@ import { computerMove } from "@johnmorrisdotca/domino";
 import type { TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 import { type HitotsuGame, type HitotsuMove, tableComputerMove } from "@johnmorrisdotca/hitotsu";
 
+import { SUGOROKU_KIND_LIST, SUGOROKU_STRENGTHS } from "../sugoroku/sugoroku.constants";
+import type { SugorokuMove, SugorokuTable } from "../sugoroku/sugoroku.types";
+import { sugorokuComputerMove } from "../sugoroku/sugorokuTable";
 import type { OnlineComputerPlay, OnlineGameKey } from "./online.types";
 import { seatOf, type KumimojiMove, type KumimojiStage } from "./onlineKumimoji";
 import type { PairGoMove } from "./onlinePairGo";
@@ -69,12 +72,21 @@ const HITOTSU_COMPUTER: OnlineComputerPlay<HitotsuGame, HitotsuMove> = {
   move: tableComputerMove,
 };
 
+/** The backgammon games: the package's computer player at the strength the seat was given, for the seat the table waits on — a double, an answer to one, or a play of the roll. */
+const SUGOROKU_COMPUTER: OnlineComputerPlay<SugorokuTable, SugorokuMove> = {
+  move: (game, _seat, level) => {
+    const strength = SUGOROKU_STRENGTHS.find((one) => one === level);
+    return strength === undefined ? null : sugorokuComputerMove(game, strength);
+  },
+};
+
 /** Every game with a computer player, by game; the move and game are each row's own, read one row at a time. */
 const MOVES: Partial<Record<OnlineGameKey, OnlineComputerPlay<never, unknown>>> = {
   go: PAIR_GO_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   kumimoji: KUMIMOJI_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   mexicanTrain: TRAIN_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   hitotsu: HITOTSU_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  ...Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, SUGOROKU_COMPUTER as unknown as OnlineComputerPlay<never, unknown>])),
 };
 
 /** A game's computer move, for the worker; undefined for a game with no computer player. */

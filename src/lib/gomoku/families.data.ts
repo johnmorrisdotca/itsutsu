@@ -384,6 +384,39 @@ export const GAME_FAMILIES: GameFamily[] = [
       "A dice game is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
+    key: "tables",
+    /*
+     * TABLES 双六. Backgammon and its relatives (2026-10-01). John's late father
+     * played thousands of games of them on two play-by-mail sites, and his kept
+     * record on the Honors roll named every one of them as a game not played
+     * here. They are played by Sugoroku (`@johnmorrisdotca/sugoroku`), the open-source
+     * package made for them, and each is a game of its own, as Renju is Gomoku's
+     * and Oware is Mancala's: they differ in where the checkers start, how many
+     * there are, what wins, and how many dice are thrown. A match length, the
+     * cube and the Crawford rule are not another game but the way one is played,
+     * chosen at its set-up.
+     *
+     * "Tables" is the old name of the whole family of games played on this board —
+     * the Romans' tabula gave it — and 双六 (sugoroku) is the Japanese word for
+     * backgammon and for the cousin that reached Japan by the seventh century.
+     * Its key is `tables`, not `backgammon`, so that /games/tables is the
+     * family's page and /games/backgammon is the game's own.
+     *
+     * Its games are party games, kept in the browser or on two devices and
+     * never recorded, so, like Dice, it counts towards no award
+     * (`RECORDED_FAMILIES`), has a page of its own at /games/tables, and stays
+     * off the set-up screen, which makes games between two seats. They are
+     * played for two, with the computer at four strengths in the second seat:
+     * rating them is a decision of its own, in docs/plans/sugoroku/README.md.
+     */
+    title: "Tables",
+    kanji: "双六",
+    blurb: "Backgammon and the games played on its board: race fifteen checkers home and hit the other side's blots, with the doubling cube for a match. Four checkers back, all on one point, three each, off the bar, played to lose, or the Roman game with three dice.",
+    games: ["backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"],
+    notOnSetUp:
+      "A tables game is played by two, round one device, on two devices or against the computer, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to

@@ -162,7 +162,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
         (`OnlineView.wide`: Tenka's map), which is laid out as its table on one device lays it.
       */}
       {shown.wide ? (
-        <div className="flex min-w-0 flex-col gap-3" data-scale-board data-scale-wide data-bare-board>
+        <div className="flex min-w-0 flex-col gap-3" data-scale-board data-scale-wide data-bare-board data-scale-tables={shown.tables === true ? "" : undefined}>
           {column}
         </div>
       ) : (
