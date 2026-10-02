@@ -51,7 +51,7 @@ export function countSolutions(size: number, regions: Regions, limit = 2): numbe
   return solutions(size, regions, limit).length;
 }
 
-/** The one answer the regions allow, a column per row, or null when they allow none or more than one: see `numberPlace/solve.ts`'s `solutionOf`. */
+/** The one answer the regions allow, a column per row, or null when they allow none or more than one: see Kazu's `solveKazu` (`@johnmorrisdotca/kazu`), whose search this one follows. */
 export function solutionOf(size: number, regions: Regions): number[] | null {
   const found = solutions(size, regions, 2);
   return found.length === 1 ? found[0]! : null;

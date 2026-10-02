@@ -117,6 +117,8 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/kotoba/kana-5", "Read by kanaWordsModule.ts."],
   ["@johnmorrisdotca/kotoba/pop-answers", "Pop Gomoji's answers and their categories (18 KB), whose category is the clue printed with a day's pop word."],
   ["@johnmorrisdotca/toranpu/spider", "Spider's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
+  /* Kazu, 113 KB of source for the entry the site imports (1.0.0; its drawing, strings, play screen and tag are other entries the site does not import): the Numbers family's generators, solver, O(cells) check, codes and cage outline. The server checks a finished grid before it pays (puzzleCheck.ts), finds a kept solve's answer again, spells every puzzle's cells (puzzleCode.ts) and draws a finished grid's boxes and cages, where before it ran the same logic from the site's own files. */
+  ["@johnmorrisdotca/kazu", "The Numbers family's check, solver, cell codes, generators and cage outline: a finished or kept grid checked on the server and drawn on its page, and the spelling of every puzzle's cells."],
   ["@johnmorrisdotca/jarajara", "Mahjong's tiles and layouts: a layout's size and tile count in the puzzle's specs and its rules page, and a finished game's board drawn on its page (MahjongBoard.tsx)."],
   ["@johnmorrisdotca/jarajara/awase", "Mahjong's deal and check: a kept or finished game dealt again from its seed (generate.ts), and a solve checked on the server before it pays (puzzleCheck.ts)."],
   ["@johnmorrisdotca/jarajara/table", "Mahjong at a table: how many players a kept table's address asks for (puzzleAddress.ts)."],

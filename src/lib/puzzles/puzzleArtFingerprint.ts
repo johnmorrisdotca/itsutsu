@@ -40,14 +40,12 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/mahjong.constants.ts",
   "src/components/puzzles/puzzles.constants.ts",
   "src/components/board/StoneMark.tsx",
-  "src/lib/puzzles/numberPlace/generate.ts",
+  // The Numbers family (Number Place, Jigsaw, Diagonal, Sum Cages, More or Less, Towers) is Kazu's: its puzzles, solver, check and cage outline. A new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/kazu/package.json",
+  "src/lib/puzzles/kazu.ts",
+  "src/lib/puzzles/jigsaw/shake.ts",
   "src/lib/puzzles/hiddenStones/generate.ts",
   "src/lib/puzzles/hiddenStones/regions.ts",
-  "src/lib/puzzles/moreOrLess/generate.ts",
-  "src/lib/puzzles/jigsaw/generate.ts",
-  "src/lib/puzzles/killer/generate.ts",
-  "src/lib/puzzles/killer/outline.ts",
-  "src/lib/puzzles/towers/generate.ts",
   "src/lib/puzzles/blackAndWhite/generate.ts",
   "src/lib/puzzles/blackAndWhite/solve.ts",
   "node_modules/@johnmorrisdotca/kumimoji/dist/generate.js",
@@ -78,8 +76,6 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/SuidoBoard.tsx",
   // Suido's boards, pieces and water are the package's: a new version of it is a picture to re-take.
   "node_modules/@johnmorrisdotca/suido/package.json",
-  "src/lib/puzzles/numberPlace/layout.ts",
-  "src/lib/puzzles/numberPlace/solve.ts",
   "e2e/puzzle-screenshots.spec.ts",
 ];
 

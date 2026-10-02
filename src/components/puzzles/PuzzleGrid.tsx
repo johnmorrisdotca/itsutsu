@@ -6,7 +6,7 @@ import { PuzzleBoard } from "./PuzzleBoard";
 import { TowerRing } from "./TowerRing";
 import type { Mark } from "@/lib/puzzles/moreOrLess/code";
 import { cageOutline } from "@/lib/puzzles/killer/outline";
-import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
+import { boxedLayout } from "@johnmorrisdotca/kazu";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import type { TowerClues } from "@/lib/puzzles/towers/code";
 

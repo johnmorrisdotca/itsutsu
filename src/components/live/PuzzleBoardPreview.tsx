@@ -10,12 +10,10 @@ import { StoneMark } from "@/components/board/StoneMark";
 import { PUZZLE_STONE_BOX, REGION_FILLS } from "@/components/puzzles/puzzles.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { growRegions, placeStones } from "@/lib/puzzles/hiddenStones/generate";
-import { shakeRegions } from "@/lib/puzzles/jigsaw/generate";
+import { shakeRegions } from "@/lib/puzzles/jigsaw/shake";
 import { decodeKiller, type Cage } from "@/lib/puzzles/killer/code";
-import { generateSumCages } from "@/lib/puzzles/killer/generate";
 import { cageOutline } from "@/lib/puzzles/killer/outline";
-import { NUMBER_PLACE_BOXES } from "@/lib/puzzles/numberPlace/boxes";
-import { boxedLayout } from "@/lib/puzzles/numberPlace/layout";
+import { boxedLayout, KAZU_BOXES } from "@johnmorrisdotca/kazu";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -35,7 +33,7 @@ import { seededRandom } from "@/lib/puzzles/random";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "@/lib/puzzles/blackAndWhite/code";
 import { generateBlackAndWhite } from "@/lib/puzzles/blackAndWhite/generate";
 import { decodeTowers, TOWER_SIDES, type TowerClues } from "@/lib/puzzles/towers/code";
-import { generateTowers } from "@/lib/puzzles/towers/generate";
+import { generateSumCages, generateTowers } from "@/lib/puzzles/kazu";
 import { BridgesGrid } from "@/components/puzzles/BridgesGrid";
 import { boardOf } from "@/lib/puzzles/bridges/code";
 import { generateBridges } from "@/lib/puzzles/bridges/generate";
@@ -323,7 +321,7 @@ function PaperGrid({ kind, size, stones }: { kind: PuzzleKind; size: number; sto
 
   /* The region every cell is drawn in, or null for a plain square (More or Less). */
   const region = useMemo<number[] | null>(() => {
-    if ((kind === "numberPlace" || kind === "diagonal" || kind === "sumCages") && NUMBER_PLACE_BOXES[size] !== undefined) return boxedLayout(size).region;
+    if ((kind === "numberPlace" || kind === "diagonal" || kind === "sumCages") && KAZU_BOXES[size] !== undefined) return boxedLayout(size).region;
     if (kind === "jigsaw") return shakeRegions(size, seededRandom(size * 7919));
     if (kind === "hiddenStones") return hidden?.regions ?? null;
     return null;

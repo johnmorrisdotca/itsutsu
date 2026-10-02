@@ -63,7 +63,8 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | Doc | Written for | Re-read it when these change |
 |---|---|---|
 | `README.md`, headline, "What it does", "Forty-five games…" | visitors, engineers | `src/lib/gomoku/gomoku.constants.ts` (`RULE_VARIANT_LIST`), `src/lib/gomoku/families.ts`, `src/lib/gomoku/variants.constants.ts` |
-| `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
+| `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, the `@johnmorrisdotca/kazu` version in `package.json`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
+| `docs/plans/numbers/README.md` | agents, engineers | `src/lib/puzzles/kazu.ts`, `src/lib/puzzles/{jigsaw,killer,moreOrLess,towers,numberPlace}/*.ts` (the re-exports of Kazu), the `@johnmorrisdotca/kazu` version in `package.json`, `src/lib/puzzles/puzzleCheck.ts`, `src/lib/puzzles/solvedAnswer.ts` |
 | `README.md`, "Forty-five games…" (Party games) | visitors, engineers | `src/lib/party/**`, `src/components/party/**`, `src/lib/gomoku/party/**`, `src/lib/gomoku/familyShelves.ts` |
 | `README.md`, "Openings", "Handicaps", "The board…" | engineers, players | `src/lib/gomoku/rules/**`, `src/lib/gomoku/engine.ts`, the `@johnmorrisdotca/narabe` version in `package.json` |
 | `README.md`, "Players, ratings and records" | engineers, players | `src/lib/rating/**`, `src/lib/record/**`, `src/lib/xp/**`, `src/lib/legacy/**` |

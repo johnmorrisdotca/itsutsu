@@ -22,6 +22,9 @@ importers:
       '@johnmorrisdotca/jarajara':
         specifier: 1.5.0
         version: 1.5.0
+      '@johnmorrisdotca/kazu':
+        specifier: 1.0.0
+        version: 1.0.0
       '@johnmorrisdotca/korokoro':
         specifier: 1.15.0
         version: 1.15.0(react@19.2.8)
@@ -438,6 +441,10 @@ packages:
     resolution: {integrity: sha512-nW+6MKqQBDXS5AiJVB5VnxM5pw0PiK2exjS33WDfGlvNMPutw84FDiNdAA/pXrpXKfcRMuXKWzyAW0/yJjWFcw==}
     engines: {node: '>=22'}
     hasBin: true
+
+  '@johnmorrisdotca/kazu@1.0.0':
+    resolution: {integrity: sha512-ziNdQqMMuHVweqmQZ3aMngJyyRQw+LLgRR2gG+GN4m5mMjyF0KckX2l+tbeFmpFMXF3cR04yePZnxzGfe5W+Dw==}
+    engines: {node: '>=22'}
 
   '@johnmorrisdotca/korokoro@1.15.0':
     resolution: {integrity: sha512-KYXuEkIOVcBQ6FsQ0fU6FErAbc2CwFHQk3FE8rpNYD/ASG7f6A/BYLtqCJGv14r3ADL/rBipPUNQNTbLUpNWFg==}
@@ -3121,6 +3128,8 @@ snapshots:
       react: 19.2.8
 
   '@johnmorrisdotca/jarajara@1.5.0': {}
+
+  '@johnmorrisdotca/kazu@1.0.0': {}
 
   '@johnmorrisdotca/korokoro@1.15.0(react@19.2.8)':
     optionalDependencies:

@@ -18,6 +18,7 @@ for (const [where, path, pkg, name] of [
   ["a party table", `/games/${PARTY_SLUGS.mexicanTrain}/pass-and-play`, "domino", "Domino"],
   ["a board game's play page", `/games/${GAME_SLUGS.freestyle}/play`, "narabe", "Narabe"],
   ["a rules page", `/games/${PARTY_SLUGS.hearts}/rules`, "toranpu", "Toranpu"],
+  ["a Numbers puzzle's rules page", `/games/${PUZZLE_SLUGS.numberPlace}/rules`, "kazu", "Kazu"],
 ] as const) {
   test(`${where} names its package and the version it runs`, async ({ page }) => {
     await page.goto(path);
@@ -29,7 +30,7 @@ for (const [where, path, pkg, name] of [
 }
 
 test("a game whose rules are this site's own names no package", async ({ page }) => {
-  await page.goto(`/games/${PUZZLE_SLUGS.numberPlace}/rules`);
+  await page.goto(`/games/${PUZZLE_SLUGS.hiddenStones}/rules`);
   await expect(page.getByTestId("rules-learn").or(page.locator("main"))).toBeVisible();
   await expect(page.locator("aside")).toBeVisible();
   await expect(credit(page)).toHaveCount(0);

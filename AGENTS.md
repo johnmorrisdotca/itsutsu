@@ -273,7 +273,13 @@ family, has a front door at `/games/<slug>` with `/rules`, `/family`, `/new` and
 `puzzleArt.coverage.test.ts`) and a browser test, and `puzzles.coverage.test.ts`
 asks it every question above in its own terms — plus that its generator makes a
 puzzle with exactly one answer at every size and level it offers, in a browser's
-time, and that `checkSolution` refuses a wrong grid. Everything that thinks about
+time, and that `checkSolution` refuses a wrong grid. The six Numbers puzzles (Number Place,
+Jigsaw, Diagonal, Sum Cages, More or Less, Towers) are made, solved and checked
+by Kazu (`@johnmorrisdotca/kazu`, github.com/johnmorrisdotca/kazu), reached
+through `src/lib/puzzles/kazu.ts` and the one-line re-exports at their old paths;
+a change to how one is made is a commit there, a new version, and a bump here
+only after `kazu.test.ts` shows every puzzle made as before, because a kept
+solve, a race and a day's puzzle are made again from kind, size, level and seed. Everything that thinks about
 a puzzle runs in the browser; the server checks a finished grid in O(cells) and
 pays. The reasoning is in `docs/plans/numbers/README.md`.
 **Nor is a party game, and it has a gate of its own too.** Dots and Boxes

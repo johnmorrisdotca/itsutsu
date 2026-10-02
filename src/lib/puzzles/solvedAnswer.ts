@@ -8,17 +8,9 @@ import { checkSuidoAnswer } from "@johnmorrisdotca/suido";
 import { suidoAnswerOf } from "./suido/solve";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
-import { decodeJigsaw } from "./jigsaw/code";
-import { decodeKiller } from "./killer/code";
-import { decodeMoreOrLess } from "./moreOrLess/code";
-import { solutionOf as moreOrLessSolution } from "./moreOrLess/solve";
-import { boxedLayout, cagedLayout, regionLayout, regionsAreSound } from "./numberPlace/layout";
-import { solutionOf as numberPlaceSolution } from "./numberPlace/solve";
+import { isNumberKind, numbersAnswerOf } from "./kazu";
 import { checkSolution } from "./puzzleCheck";
-import { decodeCells, encodeCells } from "./puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
-import { decodeTowers } from "./towers/code";
-import { solutionOf as towersSolution } from "./towers/solve";
 
 /**
  * THE ANSWER A FINISHED GRID MUST HAVE HAD, WORKED OUT FROM ITS GIVENS, in the
@@ -49,30 +41,9 @@ export function solvedAnswerOf(kind: PuzzleKind, size: number, level: PuzzleLeve
 }
 
 function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | null {
-  const cells = (grid: number[] | null) => (grid === null ? null : encodeCells(grid));
+  // The Numbers family: Kazu's solver, which reads the regions, cages, marks or clues out of the givens and refuses givens that are not a puzzle.
+  if (isNumberKind(kind)) return numbersAnswerOf(kind, size, givens);
   switch (kind) {
-    case "numberPlace":
-    case "diagonal": {
-      const asked = decodeCells(givens, size);
-      return asked === null ? null : cells(numberPlaceSolution(asked, boxedLayout(size, kind === "diagonal")));
-    }
-    case "jigsaw": {
-      const asked = decodeJigsaw(givens, size);
-      if (asked === null || !regionsAreSound(size, asked.regions)) return null;
-      return cells(numberPlaceSolution(asked.cells, regionLayout(size, asked.regions)));
-    }
-    case "sumCages": {
-      const asked = decodeKiller(givens, size);
-      return asked === null ? null : cells(numberPlaceSolution(asked.cells, cagedLayout(size, asked.cages)));
-    }
-    case "moreOrLess": {
-      const asked = decodeMoreOrLess(givens, size);
-      return asked === null ? null : cells(moreOrLessSolution(asked.cells, size, asked.marks));
-    }
-    case "towers": {
-      const asked = decodeTowers(givens, size);
-      return asked === null ? null : cells(towersSolution(asked.cells, size, asked.clues));
-    }
     case "hiddenStones": {
       const regions = decodeRegions(givens, size);
       const stones = regions === null ? null : hiddenStonesSolution(size, regions);

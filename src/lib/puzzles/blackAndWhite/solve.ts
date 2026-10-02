@@ -201,7 +201,7 @@ export function countSolutions(grid: Grid, size: number, limit = 2, first?: (ans
   return found;
 }
 
-/** The one answer the printed stones allow, or null when they allow none or more than one: see `numberPlace/solve.ts`'s `solutionOf`. */
+/** The one answer the printed stones allow, or null when they allow none or more than one: see Kazu's `solveKazu` (`@johnmorrisdotca/kazu`), whose search this one follows. */
 export function solutionOf(grid: Grid, size: number): Grid | null {
   let answer: Grid | null = null;
   return countSolutions(grid, size, 2, (first) => (answer = [...first])) === 1 ? answer : null;

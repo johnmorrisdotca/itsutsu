@@ -26,6 +26,8 @@ describe("the open-source credit under a game", () => {
     for (const name of games) expect(credited.has(name as OpenSourcePackage), `${name} is credited under no game`).toBe(true);
     expect(openSourceOf("cube")).toBe("kyuubu");
     expect(openSourceOf("suido")).toBe("suido");
+    expect(openSourceOf("numberPlace")).toBe("kazu");
+    expect(openSourceOf("towers")).toBe("kazu");
     expect(openSourceOf("mexicanTrain")).toBe("domino");
     expect(openSourceOf("gomojiKana")).toBe("kotoba");
     expect(openSourceOf("hearts" as never)).toBe("toranpu");

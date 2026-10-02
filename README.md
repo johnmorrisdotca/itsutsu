@@ -134,11 +134,14 @@ same gates: `puzzles.coverage.test.ts` asks a puzzle what
 `variants.coverage.test.ts` asks a game.
 
 Everything that thinks runs in the browser. The generators, the uniqueness
-checks and the difficulty ratings are ours (`numberPlace/`, `hiddenStones/`,
-`moreOrLess/`, `jigsaw/`, `killer/`, `towers/`, `blackAndWhite/`, `bridges/`, `pictureLogic/`; Hidden
-Stones grows its regions out from a placed answer and then tightens the grid
-until the solver counts one; Futoshiki adds givens until it is a puzzle and then takes away every one it does not need), seeded
-so the same number makes the same grid in every browser,
+checks and the difficulty ratings are ours: the six Numbers puzzles (Sudoku,
+Jigsaw, Diagonal, Killer, Futoshiki and Skyscrapers) are Kazu 数, our own
+open-source package (`@johnmorrisdotca/kazu`, reached through
+`src/lib/puzzles/kazu.ts`; Futoshiki adds givens until it is a puzzle and then
+takes away every one it does not need), and the rest are here (`hiddenStones/`,
+`blackAndWhite/`, `bridges/`, `pictureLogic/`; Hidden Stones grows its regions
+out from a placed answer and then tightens the grid until the solver counts
+one), seeded so the same number makes the same grid in every browser,
 and the solve page makes its puzzle after it has loaded (`ssr: false`). The
 one thing the server does is `POST /api/puzzles/solved`: an O(cells) check
 that a member's finished grid is a solution (`puzzleCheck.ts`), and the XP

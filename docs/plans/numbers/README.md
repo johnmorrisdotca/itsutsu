@@ -3,9 +3,25 @@
 **2026-10-01: two puzzles moved out.** Hidden Stones and Black and White
 went to Logic puzzles on John's word ("Hidden Stones isn't really a numbers
 game", "black and white is a logic puzzle i guess"): neither has a number in
-it. Numbers holds six now, and the six are going into their own open-source
-package, Kazu 数 (`@johnmorrisdotca/kazu`). Their plan files below stay as
-they were written.
+it. Numbers holds six now, and the six are their own open-source package,
+Kazu 数 (`@johnmorrisdotca/kazu`).
+
+**Kazu is what the site plays (the board row `kazu-the-numbers-family-s-six-puzzles-as-an-open-source-package-the-site-plays`).**
+The generators, the solver, the O(cells) check, the cell and puzzle codes and
+the cage outline are imported from the package, pinned to an exact version
+like the other seven. The site's own code for them is gone; `src/lib/puzzles/kazu.ts`
+translates the site's kind spelling (`numberPlace`) to the package's
+(`number-place`) and turns what the package makes into the site's `Puzzle`,
+and `jigsaw/code.ts`, `killer/code.ts`, `killer/outline.ts`, `moreOrLess/code.ts`,
+`towers/code.ts` and `numberPlace/generate.ts` stay as one-line re-exports so
+every old import still holds. What stays the site's: the words, the grid and
+its frame (`PuzzleGrid`, `PuzzleBoardPreview`), the kept solve and race, the
+hint cell, and `jigsaw/shake.ts`, the set-up picture's irregular regions, because
+the package does not export its `shakeRegions`. A puzzle is its kind, size,
+level and seed, so a new Kazu version must make every puzzle as before
+(`kazu.test.ts` pins a day's puzzles and the old Number Place seeds; Kazu's own
+`site.fixture.json` pins 3,600 more) or it is a new major version there.
+The plan files below stay as they were written, and name the code as it was.
 
 John, 2026-09-24: "adding a new category to the site. Numbers... for
 introducing Sudoku. Then we have to merge one group; I think merge Races +
