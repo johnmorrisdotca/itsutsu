@@ -841,6 +841,51 @@ under the claim condition — and `pnpm task`'s list prints it as STALE, because
 somebody started it, and a reader should know that before starting again.
 
 
+### Work Starts With A Ticket
+
+John, 2026-10-02, to the agent that had started work without one: **"Did you not
+follow the standard rules of our site which is you make tickets before doing any
+work?"** The board is where a request lives, so every piece of work has a row
+before the first file is touched: a feature, a fix, a chore, a follow-up that a
+review or a failed run turns up, and each task handed to a sub-agent. A request
+made in conversation becomes a row first; an agent is never started on a task
+that has no row. Work that already shipped without one gets a row after the
+fact, closed against the release that carried it, so the board matches the
+changelog.
+
+**How to write one** (`pnpm task:prod add` for the live board, `pnpm task add`
+for the development board; see the Board Gate for the rest of the commands):
+
+```sh
+pnpm task:prod add "<title>" --kind feature|fix|chore --detail "<detail>" --by "<who>"
+pnpm task:prod grade <key> --priority high|normal|low --effort small|medium|large
+```
+
+- **The title** is at most 120 characters (longer is refused) and says what a
+  person gets, not how it is built: "Meikyuu can be coloured", not "add a
+  palette module".
+- **The detail** holds the rest: what is wrong or wanted, the constraints the
+  owner gave in his own words, where to look, and what done looks like. A
+  stranger reading only the row should be able to do the work.
+- **One row per deliverable.** Two things that ship as two versions are two rows.
+- **Grade it** when the owner says how urgent it is; leave it ungraded rather
+  than guess (a default is a judgement nobody made).
+- **The key** is the title's slug, cut short. Copy it exactly from
+  `pnpm task:prod`; a typed guess closes nothing and the failure is quiet. Put
+  the key in the prompt of any agent that works the row and in the commit body.
+- **Never close a row by hand.** `pnpm release:take:prod --done <key>` closes it
+  at the release that ships it; with `--done` and nothing else it closes at the
+  release commit HEAD is, so a row can be closed after the fact from a checkout
+  of that release.
+
+**How a change ships** is in the README, "Deploying", and the release chain in
+"Every Landed Commit Bumps The Version" below. Two habits that cost a deploy
+each when they were skipped: the local gate (`pnpm preflight:prod`) does not run
+the browser suite, which gates the deploy, so grep `e2e/` for any count or name
+the change moves before pushing; and after a push, watch the run's jobs for the
+first failure rather than only the `deploy` job, because a red shard skips the
+deploy and reads as a wait.
+
 ### Deploys Are Fast By Design
 
 **A standing goal, not a one-off tuning.** John, 2026-09-22: "we should have

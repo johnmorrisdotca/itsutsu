@@ -300,9 +300,10 @@ it is worth reading before believing a red spec.
 1. **Work on a branch or worktree.** Several sessions work on this repository
    at once. Never `git stash` in a worktree (the stash is shared), and name the
    paths you stage rather than `git add -A`.
-2. **Take a ticket from the board.** `pnpm task` lists what is open on the
-   development board; `pnpm task:prod` is the live one. Claim a row before
-   building it.
+2. **Have a ticket before any work.** `pnpm task` lists what is open on the
+   development board; `pnpm task:prod` is the live one. If the work has no row,
+   write one first (AGENTS.md, "Work Starts With A Ticket"), then claim it
+   before building it.
 3. **Check locally.** `pnpm quality:check` runs lint, the file size gate, the
    typecheck and the unit tests. A schema change is a new migration from
    `pnpm db:migrate`.
