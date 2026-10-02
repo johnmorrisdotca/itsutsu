@@ -28,6 +28,7 @@ games and their rules without one.
 
 ## Contents
 
+- [Start here: how work is done](#start-here-how-work-is-done-on-this-repository)
 - [Getting started](#getting-started)
 - [What it does](#what-it-does)
 - [How it is put together](#how-it-is-put-together)
@@ -39,6 +40,62 @@ games and their rules without one.
 - [Deploying](#deploying)
 - [Scripts](#scripts)
 - [Documentation](#documentation)
+
+<!-- procedures:start -->
+## Start here: how work is done on this repository
+
+AGENTS.md and the README carry this same list, so a reader of either one has the
+procedures. The full text of each step is in AGENTS.md, under the section named
+in brackets; a test fails if the two copies differ.
+
+1. **A ticket before any work.** Every task, follow-up and sub-agent job has a
+   board row first; a request in conversation becomes a row first. `pnpm
+   task:prod add "<title, 120 characters at most>" --kind feature|fix|chore
+   --detail "…" --by "<who>"`, then `grade`. Close a row only through `pnpm
+   release:take:prod --done <exact key>`. [Work Starts With A Ticket, Board Gate]
+2. **Work in your own worktree and branch**, never in the shared checkout. Copy
+   `.env` in before `pnpm install`; stage files by name, never `git add -A`;
+   never `git stash` (one stack for every worktree); scratch files go outside
+   the repository. [Three Things A Worktree Gets Wrong, The Stash Stack]
+3. **Ports 6700 to 6799 only** (dev 6700, worktrees 6701 up); stop your own
+   server by process id, never `pkill`. A bulk bot run is local and in process,
+   never through the live site. [Local Ports, Bulk Play Runs Here]
+4. **Read the gate for the area you touch** before changing it: engine, new
+   game, dead ends, XP columns, set-up heights, the proxy, function size.
+   [Workspace Gates]
+5. **Check locally.** `pnpm quality:check` (lint, sizes, types, unit tests), then
+   `DATABASE_URL=postgresql://x:x@127.0.0.1:1/none pnpm preflight:prod`. The
+   local gate does not run the browser suite and CI's browser suite gates the
+   deploy, so grep `e2e/` for any count, name or text your change moves.
+   [Running the end-to-end suite, Deploys Are Fast By Design]
+6. **A schema change** is a migration from `pnpm db:migrate`; before it touches
+   production, take a Neon branch and a dump on the DiskStation, and never accept
+   a reset. [Back It Up Before You Migrate It]
+7. **Release.** One feature is one version: `pnpm release:take:prod --summary
+   "…" [--patch] [--done <key>]` immediately before pushing, never written on a
+   branch. It commits `package.json` and `CHANGELOG.md` only. [Every Landed
+   Commit Bumps The Version]
+8. **Push** with `git fetch -q origin && git merge-base --is-ancestor
+   origin/main HEAD && git push -q --atomic origin HEAD:main`, only after the
+   previous version is live, about once an hour, with ready work batched. A
+   rerun (`gh run rerun <id> --failed`) beats a new commit. [Fewer Pushes]
+9. **Watch the run for the first failed job**, not only the `deploy` job: a red
+   browser shard skips the deploy. Find the run with `gh run list --workflow
+   vercel-deploy.yml --branch main --limit 1`. Read the live version once with
+   `curl`, never in a loop. [A Killed Job Reports As Cancelled]
+10. **Cost rules.** Nothing on an interval under about 15 seconds, no work
+    repeated per request, no loading the live site in a loop; the team shares one
+    Vercel account with 100 deployments a day. [Function Size, Fewer Pushes]
+11. **Packages.** The @johnmorrisdotca packages are published from their own
+    repositories by pushing a `vX.Y.Z` tag (trusted publishing, no token). The
+    site pins each one exactly; a package release is not finished until the site
+    is on the new version, under its own ticket. [Engine Is Pure; each package's own CONTRIBUTING.md]
+12. **No AI attribution anywhere**: no trailer, no "Generated with" line, no
+    session link, in commits, pull requests, tickets or docs. [No AI Attribution]
+13. **Leave the docs true.** Re-read what `docs/DOCS_UPKEEP.md` maps your changed
+    files to; fix a sentence your change made false in the same commit. List the
+    small decisions you took so the owner can review them. [Documentation Upkeep]
+<!-- procedures:end -->
 
 ## Getting started
 
