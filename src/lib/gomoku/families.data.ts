@@ -159,7 +159,8 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Small boards",
     kanji: "小盤",
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",
-    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker"],
+    /* Dots and Boxes (2026-10-01): a party game for two to six that is a small board at heart, from Party games. */
+    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker", "dotsAndBoxes"],
   },
   {
     key: "numbers",
@@ -217,11 +218,19 @@ export const GAME_FAMILIES: GameFamily[] = [
      * here and not in Numbers (which was full at eight). Its 3,328 fixed
      * levels (2026-10-01) are numbered boards the same for everybody, as
      * Tsunagi's are, beside the boards it makes.
+     *
+     * Tsunagi, Mahjong Solitaire and the cube joined it on 2026-10-01 (John,
+     * the regroup that dissolved Tiles and Other): Tsunagi, our Numberlink,
+     * is the logic puzzle that lived in Other, as the note above said it was;
+     * Mahjong Solitaire is a reasoning game of free pairs and the cube a
+     * puzzle of turns worked out a stage at a time. A `firstOfFamily` paid
+     * under `mahjong`, `cubes` or `tiles` counts as this family met
+     * (`FAMILY_ABSORBED`). Eight, the most a shelf shows.
      */
     title: "Logic puzzles",
     kanji: "理詰め",
-    blurb: "Puzzles for one that are not a grid of numbers to fill: islands to join with bridges, a picture to uncover from its counts, pipes to turn until the water runs through, stones to place one to a row, column and region, lines to fill half black and half white, and more to come. A few clues, one answer, and nothing to do but reason it out.",
-    games: ["bridges", "pictureLogic", "suido", "hiddenStones", "blackAndWhite"],
+    blurb: "Puzzles for one to reason out: bridges, pipes, pictures, stones, marbles, mahjong tiles and a cube to turn.",
+    games: ["bridges", "pictureLogic", "suido", "hiddenStones", "blackAndWhite", "tsunagi", "mahjong", "cube"],
   },
   {
     key: "cards",
@@ -294,36 +303,6 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["hearts", "spades", "euchre", "ohHell", "cribbage", "war", "hitotsu"],
     notOnSetUp:
       "A table card game is played by a table of people and computers on one device, or on several for Hitotsu, set up from the game's own page; the set-up screen makes a game between two seats.",
-  },
-  {
-    key: "tiles",
-    /*
-     * TILES 牌. John, 2026-10-01, of two shelves of one game each on /games,
-     * Mahjong and Dominoes: "Adjust: mahjong and Dominoes stuff... as Tiles
-     * games", and then of the cube: "Cubes work should go there too really,
-     * like Rubik." So the games played with pieces you match, line up or turn
-     * are one shelf: Mahjong Solitaire (matching pairs of free tiles off a
-     * stacked layout, alone or by turns round one device), Mexican Train
-     * (dominoes, two to eight round one device) and the cube.
-     *
-     * It replaces Mahjong (2026-09-29), Dominoes (2026-09-29) and Cubes
-     * (2026-09-30), which are `FAMILY_ABSORBED` into it: a member paid a
-     * `firstOfFamily` under any of those keys keeps the payment, and it counts
-     * as this family met. The four-player game of hands, Riichi
-     * (docs/plans/mahjong/README.md), would be at home here later.
-     *
-     * 牌 (hai): a tile — the word for a mahjong tile, and the one in 骨牌 and
-     * ドミノ牌, a domino. The cube's stickers are tiles too, which is why this
-     * reads true of the three and 立方, which was the cube's alone, did not.
-     *
-     * Its page is Mahjong Solitaire's (`familyPagePath`), the first game
-     * of the three that is kept and recorded; Mexican Train, a party game,
-     * is set up at its own table from its own page.
-     */
-    title: "Tiles",
-    kanji: "牌",
-    blurb: "Games played with tiles: take matching pairs of free tiles off a stacked mahjong layout, match the ends of dominoes and build your train out of the hub, or turn a cube of coloured tiles until every face is one colour.",
-    games: ["mahjong", "mexicanTrain", "cube"],
   },
   {
     key: "tables",
@@ -408,29 +387,37 @@ export const GAME_FAMILIES: GameFamily[] = [
      * or Japanese: the second at home here. And Mancala the same day, Kalah or
      * Oware for two; and Tenka, world conquest for two to six.
      */
-    games: ["dotsAndBoxes", "superghost", "mancala", "tenka", "yacht", "pachisi", "diceWar"],
+    /*
+     * 2026-10-01 (John): Dots and Boxes went to Small boards, Superghost to
+     * Word games, and Mexican Train came in from the dissolved Tiles family.
+     */
+    games: ["mancala", "tenka", "yacht", "pachisi", "diceWar", "mexicanTrain"],
     notOnSetUp:
       "A party game, dice game included, is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
-    key: "other",
+    key: "word-games",
     /*
-     * OTHER, then SOLO GAMES 一人遊び. John, 2026-09-25, asking for a word
-     * puzzle of our own: "a special OTHER category" on the games list, the
-     * cards and the families, and kept off the set-up screen for now so it
-     * shipped sooner. The home of whatever is neither stones nor numbers,
-     * starting with Gomoji. John, 2026-10-01: rename it Solo games, which says
-     * what its four have in common: each is a puzzle played by one person.
-     * The key stays `other`, because a ledger row may already hold it and the
-     * key is not a word anyone reads. 一人遊び (hitori asobi) is the everyday
-     * word for playing by yourself.
+     * WORD GAMES 言葉遊び. Other (2026-09-25, John: "a special OTHER category"
+     * for a word puzzle of our own) became Solo games the same day as Dice
+     * joined Party games, and on 2026-10-01 Word games, when John regrouped:
+     * Tsunagi went to Logic puzzles, and what is left is the games made of
+     * letters. Gomoji, Kumimoji (a crossword of your own tiles, alone or up
+     * to eight round one device), Koushi (words swapped into a lattice) and
+     * Superghost, the word game for two to eight from Party games.
+     *
+     * The key was `other`; it is `word-games` now, and `other` is
+     * `FAMILY_ABSORBED` into it, so a `firstOfFamily` row paid under it
+     * counts as this family met.
+     *
+     * 言葉遊び (kotoba asobi): word play, the everyday word for games made of
+     * words, from riddles to shiritori.
      */
-    title: "Solo games",
-    kanji: "一人遊び",
-    blurb: "Puzzles for one person, with no stones and no digits: a hidden word to find in six guesses, in English, French, German or kana, pairs of marbles to join with lines, tiles to build into your own crossword, and six words to swap into a lattice.",
-    /* Tsunagi and Kumimoji joined 2026-09-26, and Koushi the same day: puzzles for one with no digits in them, and Numbers already holds its eight. */
+    title: "Word games",
+    kanji: "言葉遊び",
+    blurb: "Games made of letters: a hidden word to find in six guesses, in English, French, German or kana, a crossword to build from your own tiles, six words to swap into a lattice, and a word to add letters to without finishing it.",
     /* One Gomoji: its languages and word lists are settings of it, chosen on its set-up (`gameSettings.ts`, John, 2026-09-28). */
-    /* On the set-up screen since 2026-09-30: its four puzzles each draw their own preview there (`PuzzleBoardPreview`), which was what kept it off. */
-    games: ["gomoji", "tsunagi", "kumimoji", "koushi"],
+    /* On the set-up screen since 2026-09-30: its puzzles each draw their own preview there (`PuzzleBoardPreview`). */
+    games: ["gomoji", "kumimoji", "koushi", "superghost"],
   },
 ];

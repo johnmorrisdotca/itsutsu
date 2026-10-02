@@ -38,9 +38,9 @@ test.describe("Dots and Boxes, read by anybody", () => {
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Dots and Boxes/ })).toBeVisible();
     await expect(page.getByTestId("party-offered")).toContainText("2–6 players");
-    // Its family is Party games, whose page is its own address, and the guests on its shelf are listed beside it.
-    await expect(page.getByTestId("game-family")).toContainText("Party games");
-    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/party");
+    // Its family is Small boards since 2026-10-01 (it was a Party games game before).
+    await expect(page.getByTestId("game-family")).toContainText("Small boards");
+    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/tic-tac-toe/family");
 
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(/\/games\/dots-and-boxes\/rules$/);
@@ -167,11 +167,11 @@ test.describe("Dots and Boxes, pass and play", () => {
   });
 });
 
-test.describe("Dots and Boxes on the Party games shelf", () => {
+test.describe("Dots and Boxes on the Small boards shelf", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("is at home there, before the games shown from other families, and leads to its own page", async ({ page }) => {
-    await page.goto("/games/party");
+  test("is at home there, after the other small boards, and leads to its own page", async ({ page }) => {
+    await page.goto("/games/tic-tac-toe/family");
     const card = page.getByTestId("family-game-dotsAndBoxes");
     await expect(card).toHaveAttribute("data-listed", "home");
     await expect(card.getByTestId("family-game-home")).toHaveCount(0);

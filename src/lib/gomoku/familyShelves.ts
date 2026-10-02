@@ -41,12 +41,13 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
       why: "Reversi on a 4×4 or 6×6 board is over in minutes: the quick small game somebody opening this shelf is after.",
     },
   ],
-  twistFour: [
-    {
-      family: "small-boards",
-      why: "Four in a row on a 4×4 board whose quarters turn: as small and as quick as Tic-tac-toe, with a trick in it.",
-    },
-  ],
+  /*
+   * TWIST FOUR left Small boards as a guest on 2026-10-01, to keep the shelf at
+   * eight when Dots and Boxes came home to it from Party games. It is found at
+   * home in Strange boards. Putting it back needs a game to leave:
+   * twistFour: family "small-boards", "Four in a row on a 4×4 board whose
+   * quarters turn: as small and as quick as Tic-tac-toe, with a trick in it."
+   */
   /*
    * THE BOARDS DRAWN ON HEXAGONS were listed here on Strange boards from
    * 2026-09-22 (John: "shouldn't Strange boards also include all Hex boards,

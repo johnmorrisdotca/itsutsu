@@ -45,10 +45,10 @@ async function drag(page: Page, from: number, to: number) {
 test.describe("Mahjong, for a reader with no account", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("its front door and rules are open, in the Tiles family, with the rules of matching", async ({ page }) => {
+  test("its front door and rules are open, in the Logic puzzles family, with the rules of matching", async ({ page }) => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
-    await expect(page.getByTestId("game-family")).toContainText("Tiles");
+    await expect(page.getByTestId("game-family")).toContainText("Logic puzzles");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(new RegExp(`${AT}/rules$`));
     await expect(page.locator("main")).toContainText("Any flower matches any flower");
@@ -254,13 +254,16 @@ test.describe("Mahjong Solitaire", () => {
 
   test("its family has a page, a tile on the set-up screen, and a place on the list of every game", async ({ page }) => {
     await page.goto(`${AT}/family`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Tiles");
-    await expect(page.locator('[data-testid="family-mark"][data-family="Tiles"]').first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Logic puzzles");
+    await expect(page.locator('[data-testid="family-mark"][data-family="Logic puzzles"]').first()).toBeVisible();
     await page.goto("/games/new");
     await ready(page, "set-up-game");
-    const family = page.getByTestId("set-up-family").filter({ has: page.locator('[data-family="Tiles"]') });
+    const family = page.getByTestId("set-up-family").filter({ has: page.locator('[data-family="Logic puzzles"]') });
     await family.click();
-    await expect(page.getByTestId("set-up-puzzle").first()).toHaveAttribute("data-kind", KIND);
+    // Logic puzzles opens on its first game; Mahjong Solitaire is a card to choose among the shelf's puzzles.
+    const card = page.locator(`[data-testid="set-up-puzzle"][data-kind="${KIND}"]`);
+    await card.click();
+    await expect(card).toHaveAttribute("data-chosen", "true");
     await page.goto("/games");
     await expect(page.locator("main")).toContainText(NAME);
   });

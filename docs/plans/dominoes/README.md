@@ -6,7 +6,7 @@ Train DOminos family game. Options you can decide."
 
 Mexican Train for two to eight round one phone or tablet, with a computer in
 any seat, at `/games/mexican-train/pass-and-play`; its front door and rules at
-`/games/mexican-train`; its family, since 2026-10-01, Tiles 牌, whose page is Mahjong Solitaire's (`/games/mahjong/family`); it was Dominoes ドミノ at `/games/dominoes` until then, an address that no longer answers.
+`/games/mexican-train`; its family, since 2026-10-01, Party games (it was in Tiles 牌 for a day, `/games/party`); it was Dominoes ドミノ at `/games/dominoes` until then, an address that no longer answers.
 
 ## The kind: a PartyKind
 
@@ -88,15 +88,10 @@ and four players), `PARTY_RULES`, `PARTY_SLUGS` (`mexican-train`), and in
 Dominoes ドミノ was a family of its own (key `dominoes`, 2026-09-29) with a page
 at `/games/dominoes`. On 2026-10-01 it became part of **Tiles** 牌
 (`GAME_FAMILIES`, key `tiles`) with Mahjong Solitaire and the cube, on John's
-word ("Adjust: mahjong and Dominoes stuff... as Tiles games"). The key
-`dominoes` is `FAMILY_ABSORBED` into `tiles`; no ledger row can hold it, since
-a party game is never recorded. Tiles has a recorded game (Mahjong Solitaire),
-so it counts as a family met, its page is Mahjong Solitaire's
-(`/games/mahjong/family`), and it is on the set-up screen as a shelf of
-puzzles; Mexican Train is set up at its own table from its own page. Its mark
-(`FAMILY_MARKS.Tiles`) draws two mahjong tiles, a domino and a cube. Mexican
-Train is not listed on the Party games shelf: that shelf shows its eight
-already.
+word ("Adjust: mahjong and Dominoes stuff... as Tiles games"), and the same
+day Tiles was dissolved and Mexican Train went to Party games. The key
+`dominoes` is `FAMILY_ABSORBED` into `party`; no ledger row can hold it, since
+a party game is never recorded. Mexican Train is a party game at home in Party games, set up at its own table from its own page, and its family page is `/games/party`.
 
 ## Tests
 

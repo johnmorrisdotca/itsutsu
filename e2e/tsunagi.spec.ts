@@ -95,7 +95,7 @@ test.describe("Tsunagi", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText("Tsunagi");
     await expect(page.getByTestId("inspired-by")).toContainText("Numberlink");
-    await expect(page.getByTestId("game-family")).toContainText("Solo games");
+    await expect(page.getByTestId("game-family")).toContainText("Logic puzzles");
   });
 
   test("dragging every line along the answer solves level 1, keeps it on the account, and offers level 2", async ({ page }) => {

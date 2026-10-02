@@ -43,8 +43,8 @@ the set-up screen for now to ship sooner. Name: John's, "WordDrop".
   score, on WordDrop's own page (`WordHistory`).
 - **Name**: WordDrop ワードドロップ, John's. "Wordle" is a trademark of The New
   York Times Company, named only in the attribution.
-- **Other family** (`key: "other"`, その他; renamed **Solo games** 一人遊び on
-  2026-10-01, the key kept), with `notOnSetUp` saying why it is
+- **Other family** (`key: "other"`, その他; renamed **Solo games** and then **Word games** 言葉遊び on
+  2026-10-01, with the key `word-games`; `other` is `FAMILY_ABSORBED`), with `notOnSetUp` saying why it is
   off the set-up screen, and a letter-tile icon.
 
 ## Follow-ups (rows filed)

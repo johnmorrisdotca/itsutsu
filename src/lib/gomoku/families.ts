@@ -112,12 +112,18 @@ export const FAMILY_ABSORBED: Record<string, string> = {
      under the cap of eight for a family of number puzzles. */
   races: "territory",
   /* 2026-10-01: the three shelves of games played with tiles, one game each
-     (Mahjong 2026-09-29, Dominoes the same day, Cubes 2026-09-30), became Tiles
-     on John's reading of /games. Dominoes holds a party game that is never
-     recorded, so only Mahjong's and Cubes' keys can be in the ledger. */
-  mahjong: "tiles",
-  dominoes: "tiles",
-  cubes: "tiles",
+     (Mahjong 2026-09-29, Dominoes the same day, Cubes 2026-09-30), became Tiles,
+     and Tiles was dissolved the same day (John's regroup): Mahjong Solitaire and
+     the cube went to Logic puzzles, Mexican Train to Party games. Kept as one step
+     each, never tiles-then-logic. Dominoes holds a party game that is never
+     recorded, so only Mahjong's, Cubes' and Tiles' keys can be in the ledger. */
+  mahjong: "logic",
+  cubes: "logic",
+  tiles: "logic",
+  dominoes: "party",
+  /* 2026-10-01: Other became Word games (Tsunagi, its fourth, went to Logic
+     puzzles; a row paid under Other counts as Word games met). */
+  other: "word-games",
   /* 2026-10-01: Tricks and Colour cards became Table cards ("Uno type and Tricks
      games should be combined"). Both held party games only, which are never
      recorded, so neither key is in the ledger; they are here so a link or a

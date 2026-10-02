@@ -29,10 +29,9 @@ export const FAMILY_FOLD_KEYS = [
   "logic",
   "cards",
   "table-cards",
-  "tiles",
   "tables",
   "party",
-  "other",
+  "word-games",
 ] as const;
 
 export type FamilyFoldKey = (typeof FAMILY_FOLD_KEYS)[number];

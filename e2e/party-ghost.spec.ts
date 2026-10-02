@@ -80,8 +80,8 @@ test.describe("Superghost, read by anybody", () => {
     await expect(page.getByRole("heading", { name: /Superghost/ })).toBeVisible();
     await expect(page.getByTestId("party-offered")).toContainText("2–8 players");
     await expect(page.getByTestId("party-offered")).toContainText("in English or Japanese");
-    await expect(page.getByTestId("game-family")).toContainText("Party games");
-    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/party");
+    await expect(page.getByTestId("game-family")).toContainText("Word games");
+    await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/gomoji/family");
     const picture = page.locator('img[src="/art/games/superghost.jpg"]').first();
     await expect(picture).toBeVisible();
     expect(await picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
@@ -263,11 +263,11 @@ test.describe("Superghost, pass and play", () => {
   });
 });
 
-test.describe("Superghost on the Party games shelf", () => {
+test.describe("Superghost on the Word games shelf", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test("is at home there and leads to its own page", async ({ page }) => {
-    await page.goto("/games/party");
+    await page.goto("/games/gomoji/family");
     const card = page.getByTestId("family-game-superghost");
     await expect(card).toHaveAttribute("data-listed", "home");
     await card.getByRole("link", { name: /Superghost/ }).first().click();

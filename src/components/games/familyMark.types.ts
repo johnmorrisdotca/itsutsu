@@ -1,7 +1,4 @@
 import type { Card } from "@/lib/cards/cards.types";
-import type { MarkCubeProps } from "./MarkCube";
-
-import type { MarkDomino } from "./games.types";
 
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 export type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
@@ -34,10 +31,4 @@ export type Mark = {
   cards?: { card: Card | null; x: number; y: number; angle: number }[];
   /** Hitotsu's cards, laid as `cards` are, from its own deck (`HitotsuCardDrawing`): a card id, or null for its back. The Table cards family's wild, beside its French cards. */
   colourCards?: { card: string | null; x: number; y: number; angle: number }[];
-  /** Mahjong tiles standing on the board, far ones first: top-left corner, and the character on the face, red where `red`. */
-  tiles?: { x: number; y: number; glyph: string; red?: boolean }[];
-  /** Dominoes lying across, each its top-left corner (one cell high, two long) and its two ends' pips: the Tiles family's domino. */
-  dominoes?: MarkDomino[];
-  /** A cube seen from above one corner (`MarkCube`): the Tiles family's. */
-  cube?: MarkCubeProps;
 };

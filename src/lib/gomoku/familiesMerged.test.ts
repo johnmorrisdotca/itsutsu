@@ -108,12 +108,18 @@ describe("counting families over rows written before the merge", () => {
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(today.size);
   });
 
-  it("counts Mahjong and Cubes as one family since they became Tiles, and a member paid for both is paid for one", () => {
-    const state = held(["mahjong", "cubes", "tiles", "dominoes"]);
+  it("counts Mahjong, Cubes and Tiles as Logic puzzles, and a member paid under all three is paid for one", () => {
+    const state = held(["mahjong", "cubes", "tiles", "logic"]);
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);
-    expect(familyKeyNow("mahjong")).toBe("tiles");
-    expect(familyKeyNow("dominoes")).toBe("tiles");
-    expect(familyKeyNow("cubes")).toBe("tiles");
+    expect(familyKeyNow("mahjong")).toBe("logic");
+    expect(familyKeyNow("cubes")).toBe("logic");
+    expect(familyKeyNow("tiles")).toBe("logic");
+    expect(familyKeyNow("dominoes")).toBe("party");
+  });
+
+  it("reads Other as Word games", () => {
+    expect(familyKeyNow("other")).toBe("word-games");
+    expect(heldDistinct(held(["other", "word-games"]), XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);
   });
 
   it("reads Tricks and Colour cards as Table cards, for a link or a preference that still names either", () => {

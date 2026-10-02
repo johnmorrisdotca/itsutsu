@@ -82,7 +82,3 @@ export type TrailStep = { label: ReactNode; href?: string; testId?: string };
 /** A family's shelf on its own page, and the game the reader came from when there is one. */
 export type FamilyShelfProps = { shelf: ShelvedGame[]; current?: GameKey | null };
 
-/** A domino in a family's mark: its top-left corner, in cells (one cell high, two long), and its two ends' pips. */
-export type MarkDomino = { x: number; y: number; ends: readonly [number, number] };
-
-/** A die in a family's mark: its top-left corner, in cells (a cell and a half square), its face, and whether it is held. */

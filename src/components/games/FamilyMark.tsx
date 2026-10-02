@@ -3,12 +3,10 @@ import { CardFace } from "@/components/cards/CardFace";
 import { HitotsuCardDrawing } from "@johnmorrisdotca/hitotsu/react";
 
 import type { PictureSize } from "./games.types";
-import { MarkCube } from "./MarkCube";
 import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import type { Mark } from "./familyMark.types";
-import { MarkDominoes } from "./FamilyMarkPieces";
 import { FAMILY_MARKS } from "./familyMarks.constants";
 
 export { FAMILY_MARKS };
@@ -95,17 +93,6 @@ export function FamilyMark({ family, size, className = "" }: { family: string; s
           opacity={stone.faded ? 0.5 : 1}
         />
       ))}
-      {(mark.tiles ?? []).map((tile) => (
-        <g key={`${tile.x}-${tile.y}`}>
-          <rect x={tile.x - 0.1} y={tile.y + 0.1} width={1.3} height={1.7} rx={0.14} fill="#d9c59b" stroke="#a8926a" strokeWidth={0.05} />
-          <rect x={tile.x} y={tile.y} width={1.3} height={1.7} rx={0.14} fill="#fffdf6" stroke="#b9ad96" strokeWidth={0.05} />
-          <text x={tile.x + 0.65} y={centredBaseline(tile.y + 0.85, 0.95)} textAnchor="middle" fontSize={0.95} fontWeight={700} fill={tile.red === true ? "#b2302f" : "#22231f"}>
-            {tile.glyph}
-          </text>
-        </g>
-      ))}
-      {mark.cube === undefined ? null : <MarkCube {...mark.cube} />}
-      <MarkDominoes dominoes={mark.dominoes ?? []} />
       {mark.path !== undefined ? (
         <path d={mark.path} fill="none" stroke="var(--shu)" strokeWidth={0.14} strokeLinecap="round" />
       ) : null}

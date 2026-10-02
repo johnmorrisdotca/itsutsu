@@ -131,6 +131,16 @@ components are held by them like any other (`gamePictures.coverage.test.ts`
 classifies the card and the set-up's board marks); the idle-watch gate now
 names `DotsBoard` among the surfaces a person plays on.
 
+## The regroup of 2026-10-01
+
+John regrouped the shelves into fourteen families of four to eight games. Party
+games lost Dots and Boxes (to Small boards, a small board at heart) and
+Superghost (to Word games), and gained Mexican Train from the dissolved Tiles
+family: it holds Mancala, Tenka, Yacht, Pachisi, Dice War and Mexican Train at
+home, with Chinese Checkers shown as a guest and room for one more guest. Their
+`/family` addresses are their new families', and Party games' own page is still
+`/games/party`.
+
 ## Superghost, the second
 
 Superghost (`src/lib/party/superghost/`) went in as the rows above ask, and

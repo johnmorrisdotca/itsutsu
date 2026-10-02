@@ -39,11 +39,11 @@ function movesOnPage(page: Page) {
 test.describe("the Cube, for a reader with no account", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("its front door and rules are open, after Rubik's, in the Tiles family", async ({ page }) => {
+  test("its front door and rules are open, after Rubik's, in Logic puzzles", async ({ page }) => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Rubik");
-    await expect(page.getByTestId("game-family")).toContainText("Tiles");
+    await expect(page.getByTestId("game-family")).toContainText("Logic puzzles");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(new RegExp(`${AT}/rules$`));
     await expect(page.getByRole("heading", { level: 1 })).toContainText(NAME);
@@ -174,23 +174,23 @@ test.describe("the Cube", () => {
 
   test("its family has a page, a tile on the set-up screen, and a place on the list of every game", async ({ page }) => {
     await page.goto(`${AT}/family`);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Tiles");
-    await expect(page.locator('[data-testid="family-mark"][data-family="Tiles"]').first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Logic puzzles");
+    await expect(page.locator('[data-testid="family-mark"][data-family="Logic puzzles"]').first()).toBeVisible();
     await expect(page.getByTestId("family-games")).toContainText(NAME);
 
     await page.goto("/games/new");
     await ready(page, "set-up-game");
-    const tiles = page.getByTestId("set-up-family").filter({ hasText: "Tiles" });
+    const tiles = page.getByTestId("set-up-family").filter({ hasText: "Logic puzzles" });
     await tiles.click();
     await expect(tiles).toHaveAttribute("data-open", "true");
-    // Tiles opens on Mahjong Solitaire, its first game; the cube is the card to choose among the shelf's puzzles.
+    // Logic puzzles opens on its first game; the cube is the card to choose among the shelf's puzzles.
     const cube = page.locator(`[data-testid="set-up-puzzle"][data-kind="${KIND}"]`);
     await cube.click();
     await expect(cube).toHaveAttribute("data-chosen", "true");
     await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", KIND);
 
     await page.goto("/games");
-    await expect(page.locator("main")).toContainText("Tiles");
+    await expect(page.locator("main")).toContainText("Logic puzzles");
   });
 
   test("on a phone the cube fits the screen", async ({ page }) => {

@@ -35,7 +35,7 @@ test.describe("the word puzzle", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("inspired-by")).toContainText("Wordle");
-    await expect(page.getByTestId("game-family")).toContainText("Solo games");
+    await expect(page.getByTestId("game-family")).toContainText("Word games");
   });
 
   test("the grid is drawn as Reversi, Gomoku or Tiles, the choice is kept for the next word, and taken back", async ({ page }) => {

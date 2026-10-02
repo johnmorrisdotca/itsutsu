@@ -1,5 +1,4 @@
 import type { Mark } from "./familyMark.types";
-import { CUBES_MARK } from "./MarkCube";
 
 /**
  * One mark per family, drawn the way the About page draws its figures: a
@@ -245,41 +244,21 @@ export const FAMILY_MARKS: Record<string, Mark> = {
    * first game in one line, and the one mark on the row made of letters.
    */
   /*
-   * The game's own name in its tiles: GOMOJI, 五文字, "five characters".
-   * John, 2026-09-25: "replace word drop logo/image with one that says
-   * Gomoji… so we should be using the larger boards" — six letters want a
-   * six-square board, so this mark is drawn on one.
+   * WORD GAMES (2026-10-01): WORDS in Gomoji's coloured tiles, a guess part
+   * way to found. It was the game's own name, GOMOJI on a six-square board
+   * (John, 2026-09-25), until the shelf took in Kumimoji, Koushi and Superghost.
    */
-  "Solo games": {
-    n: 6,
-    cells: true,
-    stones: [],
-    digits: [
-      { r: 2, c: 0, letter: "G", tile: "hit" },
-      { r: 2, c: 1, letter: "O" },
-      { r: 2, c: 2, letter: "M", tile: "near" },
-      { r: 2, c: 3, letter: "O", tile: "hit" },
-      { r: 2, c: 4, letter: "J" },
-      { r: 2, c: 5, letter: "I", tile: "hit" },
-    ],
-  },
-  /*
-   * TILES (2026-10-01), the one picture for what Mahjong, Dominoes and Cubes
-   * were drawn as apiece: two mahjong tiles standing, one of them the red
-   * dragon 中 that is the pair the game is about finding, a domino lying
-   * under them, and a cube part way to solved at the right. Small, each, so
-   * the three read side by side at the size a table's row draws.
-   */
-  Tiles: {
+  "Word games": {
     n: 5,
     cells: true,
     stones: [],
-    tiles: [
-      { x: 0.2, y: 0.25, glyph: "中", red: true },
-      { x: 1.5, y: 0.5, glyph: "東" },
+    digits: [
+      { r: 2, c: 0, letter: "W", tile: "hit" },
+      { r: 2, c: 1, letter: "O", tile: "near" },
+      { r: 2, c: 2, letter: "R" },
+      { r: 2, c: 3, letter: "D", tile: "hit" },
+      { r: 2, c: 4, letter: "S", tile: "hit" },
     ],
-    dominoes: [{ x: 0.1, y: 3.5, ends: [6, 4] }],
-    cube: { ...CUBES_MARK, x: 3.75, y: 3.2, edge: 1.45 },
   },
   /*
    * PARTY GAMES: six players sat round one board, black and white by turns,

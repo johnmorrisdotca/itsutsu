@@ -165,7 +165,8 @@ Sensible, and the family was named for it. What it would take:
   game; the table is kept in the browser only and pays no XP.
 - The name "Mahjong Solitaire", kanji 牌合わせ ("matching tiles"); the family
   was "Mahjong" 麻雀 until 2026-10-01, when it became Tiles 牌 with Mexican
-  Train and the cube (`FAMILY_ABSORBED` keeps the key `mahjong` leading there).
+  Train and the cube, and then, the same day, Logic puzzles with the cube
+  (`FAMILY_ABSORBED` keeps the key `mahjong` leading there).
 - Four layouts (Torii, Fuji, Castle, Turtle) of our own design besides the
   classic Turtle; Fuji is the default because it fits a phone.
 - Size = the layout's width in tiles, so the board tiles read 8, 9, 10, 15.

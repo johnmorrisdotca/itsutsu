@@ -132,12 +132,12 @@ describe("a family", () => {
   });
 
   it("a family folded into another reads as the one that took it in, so its old award still links", () => {
-    // Mahjong and Cubes became Tiles on 2026-10-01; rows paid under either key are still in the ledger.
+    // Mahjong and Cubes became Tiles, then Logic puzzles, on 2026-10-01; rows paid under either key are still in the ledger.
     for (const gone of ["mahjong", "cubes", "races", "captures"]) {
       const about = xpAboutFor(XP_EVENTS.firstOfFamily, gone);
       expect(about, gone).toMatchObject({ of: "family", through: expect.any(String) });
     }
-    expect(xpAboutFor(XP_EVENTS.firstOfFamily, "mahjong")).toMatchObject({ title: "Tiles", through: "mahjong" });
+    expect(xpAboutFor(XP_EVENTS.firstOfFamily, "mahjong")).toMatchObject({ title: "Logic puzzles", through: "bridges" });
   });
 
   it("a retitled family keeps its words and loses its link", () => {

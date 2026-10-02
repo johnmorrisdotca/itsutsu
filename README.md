@@ -268,11 +268,12 @@ and **Hitotsu** 一つ, the match-the-colour game with a deck of its own, beside
 them. It replaced Tricks (2026-09-30) and Colour cards (2026-09-30), which are
 `FAMILY_ABSORBED` into it; it is at `/games/table-cards`.
 
-**Tiles** 牌 (2026-10-01) is the one shelf for the games played with tiles:
-Mahjong Solitaire, **Mexican Train** 列車 (dominoes, two to eight round one
-device, `docs/plans/dominoes/README.md`) and the cube. It took in Mahjong,
-Dominoes and Cubes, which had a game apiece; a member paid a first game under
-any of those keys keeps it (`FAMILY_ABSORBED`).
+**Tiles** 牌 existed for one day (2026-10-01) as the shelf for the games played
+with tiles, and was dissolved the same day: Mahjong Solitaire and the cube are
+in Logic puzzles, **Mexican Train** 列車 (dominoes, two to eight round one
+device, `docs/plans/dominoes/README.md`) in Party games. `tiles`, `mahjong`
+and `cubes` are `FAMILY_ABSORBED` into `logic` and `dominoes` into `party`, so a
+member paid a first game under any of those keys keeps it.
 
 **Mahjong Solitaire** 牌合わせ (2026-09-29, `src/lib/puzzles/mahjong/`):
 take matching pairs of free tiles off a stacked layout — Torii, Fuji, Castle or
@@ -299,9 +300,10 @@ as `guided` (`solveHelp.ts`): solved, no points, off the fastest tables. The
 method is taught at `/learn/cube`, a stage at a time with a cube to practise
 each on (`src/lib/learn/cubeMethod.ts`, `cubePractice.ts`).
 
-**Solo games** 一人遊び (key `other`, called Other until 2026-10-01) holds the
-puzzles for one person that are neither stones nor digits, kept off the set-up
-screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
+**Word games** 言葉遊び (key `word-games`; Other until 2026-10-01, Solo games for
+a day; `other` is `FAMILY_ABSORBED` into it) holds the games made of letters:
+Gomoji, Kumimoji, Koushi and Superghost. Tsunagi went to Logic puzzles. It is kept
+off the set-up screen for now: **Gomoji** 五文字, a hidden word of four, five or six letters
 found on a board eight rows tall (eight or nine squares across), each guess
 coloured letter by letter: easy gives eight guesses, medium seven and hard six
 at every length, a kana word's free grey word being one of easy's and medium's

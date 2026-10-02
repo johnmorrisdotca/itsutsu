@@ -27,10 +27,10 @@ describe("a language or a word list is a setting of a game", () => {
     expect(EVERY_KIND_KEY.length - EVERY_GAME_KEY.length).toBe(4);
   });
 
-  it("puts every setting in its game's family, so a Kana solve still counts for Solo games", () => {
+  it("puts every setting in its game's family, so a Kana solve still counts for Word games", () => {
     for (const kind of settingsOf("gomoji")) {
-      expect(familyOf(kind)?.key).toBe("other");
-      expect(familyKeyOf(kind)).toBe("other");
+      expect(familyOf(kind)?.key).toBe("word-games");
+      expect(familyKeyOf(kind)).toBe("word-games");
     }
   });
 

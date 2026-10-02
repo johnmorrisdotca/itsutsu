@@ -636,9 +636,12 @@ export const SET_UP_PREVIEW_BOX = "pointer-events-none w-full sm:max-w-[22rem]";
  * every game: "A preview of the Obstacle Five board. Nothing here is a move.
  * This game scatters its board…" is three lines on a phone and beside the sizes,
  * and "A preview of the Gomoku board" one. It moved everything under it by a
- * line from game to game until it kept the room.
+ * line from game to game until it kept the room. Half a line more since
+ * 2026-10-01: Mini Reversi's two lines of words and the felt's patches beneath
+ * them came to eight pixels more than three lines, found once it was the last
+ * game pressed on Small boards.
  */
-export const SET_UP_PREVIEW_CAPTION = "min-h-[3lh] text-center text-xs text-muted";
+export const SET_UP_PREVIEW_CAPTION = "min-h-[calc(3lh+0.5rem)] text-center text-xs text-muted";
 
 /**
  * THE TWO WORDS THAT START ANYTHING, AND WHICH PRESS SAYS WHICH. John,
