@@ -1,3 +1,5 @@
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { pachisiPlayerName } from "@/lib/party/pachisi/pachisi";
 import type { PachisiEvent, PachisiGame } from "@/lib/party/pachisi/pachisi.types";
 
@@ -23,6 +25,7 @@ function said(game: PachisiGame, last: PachisiEvent | null): string {
  * they are to throw or to move, and the last move said in words.
  */
 export function PachisiTurnLine({ game }: { game: PachisiGame }) {
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => pachisiPlayerName(game, seat)} />;
   if (game.phase === "finished") return null;
   const seat = game.toPlay;
   const name = pachisiPlayerName(game, seat);

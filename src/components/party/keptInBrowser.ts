@@ -4,6 +4,8 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import type { KeptRecordRules } from "@/lib/party/kept/kept.types";
 
+import { resignedBy, resignWinners, splitResignation, withResignation } from "@/lib/party/resign";
+
 import { adoptRecord, keptRecorder } from "./keptRecord";
 
 /**
@@ -43,12 +45,39 @@ export function keptInBrowser<Game>(
    * one; a game played on one device is in the history like any other.
    */
   record?: KeptRecordRules<Game>,
+  /**
+   * How a table ends when its player to move resigns (`lib/party/resign.ts`):
+   * the engine's own terms for over, given the seat. A game kept after
+   * resigning carries the seat after its text, and is opened through this.
+   */
+  resign?: (game: Game, seat: number) => Game,
 ): {
   keep: (game: Game | null) => void;
   useKept: () => [Game | null | undefined, (game: Game | null) => void];
   adopt: (text: string, id: string) => boolean;
 } {
   const listeners = new Set<() => void>();
+  const plainEncode = encode;
+  const plainDecode = decode;
+  const resigned = resign;
+  // A resignation rides after the game's own text, and opens the game as it ended.
+  encode = (game) => withResignation(plainEncode(game), game as object);
+  decode = (text) => {
+    const split = splitResignation(text);
+    const game = plainDecode(split.text);
+    return game !== null && split.seat !== null && resigned !== undefined ? resigned(game, split.seat) : game;
+  };
+  if (record !== undefined) {
+    const own = record;
+    record = {
+      ...own,
+      over: (game) => resignedBy(game as object) !== null || own.over(game),
+      winners: (game) => {
+        const seat = resignedBy(game as object);
+        return seat === null ? own.winners(game) : resignWinners(own.seats(game).length, seat);
+      },
+    };
+  }
 
   function subscribe(listener: () => void): () => void {
     listeners.add(listener);

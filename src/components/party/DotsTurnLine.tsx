@@ -1,5 +1,7 @@
 "use client";
 
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { usePartyMarbles } from "./partyMarbles";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -19,6 +21,7 @@ import { DOTS_COPY } from "./party.constants";
 export function DotsTurnLine({ game }: { game: DotsGame }) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => dotsPlayerName(game, seat)} />;
   if (game.status === DOTS_STATUS.finished) {
     const names = game.winners.map((seat) => dotsPlayerName(game, seat));
     const most = DOTS_COPY.boxes(game.scores[game.winners[0]]);

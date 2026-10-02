@@ -1,5 +1,7 @@
 "use client";
 
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import type { ReactNode } from "react";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -31,6 +33,7 @@ import { TENKA_COPY } from "./tenka.constants";
 export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour?: ReactNode }) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => tenkaPlayerName(game, seat)} />;
   if (game.phase === TENKA_PHASES.over) {
     const names = game.winners.map((seat) => tenkaPlayerName(game, seat));
     const world = game.out.filter((out) => !out).length === 1;

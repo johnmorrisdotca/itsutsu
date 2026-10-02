@@ -1,6 +1,9 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignRace } from "@/lib/party/resignTables";
 import { usePartyMarbles } from "./partyMarbles";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -152,12 +155,19 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
               {PARTY_COPY.again}
             </button>
           )}
-          <GameEnding>
-            <NewGameButton going={game.status === PARTY_STATUS.playing} onNewGame={() => {
+          <TableEnding
+            prefix="party"
+            game={game}
+            playing={game.status === PARTY_STATUS.playing}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => partyPlayerName(game.players, seat)}
+            onResign={(seat) => keep(resignRace(game, seat))}
+            onNewGame={() => {
               keep(null);
               setSelected(null);
-            }} testId="party-new" />
-          </GameEnding>
+            }}
+          />
         </div>
         {game.status === PARTY_STATUS.won && game.winner !== null ? (
           <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index)), [game.winner])} />
@@ -182,6 +192,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
 export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game.players, seat)} />;
   if (game.status === PARTY_STATUS.won && game.winner !== null) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-2 text-base font-semibold`} data-testid="party-winner" data-player={game.winner}>

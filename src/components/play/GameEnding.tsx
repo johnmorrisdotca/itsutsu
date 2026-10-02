@@ -6,6 +6,7 @@ import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import type { Asking } from "@/components/ui/ui.types";
+import { resignedBy } from "@/lib/party/resign";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { ENDINGS, GAME_ENDING_COPY, type Ending } from "./gameEnding.constants";
@@ -128,5 +129,49 @@ export function NewGameLink({ href, testId }: { href: string; testId: string }) 
     <Link href={href} className={LOOK} title={GAME_ENDING_COPY.newGameKeeps} data-testid={testId}>
       {GAME_ENDING_COPY.newGame}
     </Link>
+  );
+}
+
+/**
+ * THE ROW UNDER A TABLE ROUND ONE DEVICE: Resign for the player to move while
+ * the game is going, New game beside it, and, once somebody has resigned, who
+ * did. The rule for what resigning does is `lib/party/resign.ts`; the words are
+ * `GAME_ENDING_COPY`. `prefix` names the table's test ids (`<prefix>-resign`,
+ * `<prefix>-new`).
+ */
+export function TableEnding({
+  prefix,
+  game,
+  playing,
+  toPlay,
+  seats,
+  nameOf,
+  onResign,
+  onNewGame,
+}: {
+  prefix: string;
+  /** The kept game, for the seat that resigned. */
+  game: object;
+  playing: boolean;
+  /** The seat to move, or null when nobody is. */
+  toPlay: number | null;
+  seats: number;
+  nameOf: (seat: number) => string;
+  onResign: (seat: number) => void;
+  onNewGame: () => void;
+}) {
+  const resigned = resignedBy(game);
+  return (
+    <GameEnding>
+      {resigned === null ? null : (
+        <p className="w-full text-sm font-semibold" data-testid="game-resigned" data-seat={resigned}>
+          {GAME_ENDING_COPY.resigned(nameOf(resigned))}
+        </p>
+      )}
+      {playing && toPlay !== null ? (
+        <EndGameButton onEnd={() => onResign(toPlay)} question={GAME_ENDING_COPY.resignFor(nameOf(toPlay), seats)} testId={`${prefix}-resign`} />
+      ) : null}
+      <NewGameButton going={playing} onNewGame={onNewGame} testId={`${prefix}-new`} />
+    </GameEnding>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignGhost } from "@/lib/party/resignTables";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { PartySeatColour } from "./PartySeatColour";
@@ -141,9 +142,16 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
               {PARTY_COPY.again}
             </button>
           )}
-          <GameEnding>
-            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="ghost-new" />
-          </GameEnding>
+          <TableEnding
+            prefix="ghost"
+            game={game}
+            playing={playing}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => partyPlayerName(game, seat)}
+            onResign={(seat) => keep(resignGhost(game, seat))}
+            onNewGame={() => keep(null)}
+          />
         </div>
         {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners)} />}
         <p className="text-sm">

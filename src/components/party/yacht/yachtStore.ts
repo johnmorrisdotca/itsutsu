@@ -1,5 +1,6 @@
 "use client";
 
+import { resignYacht } from "@/lib/party/resignTables";
 import { decodeYacht, encodeYacht } from "@/lib/party/yacht/yachtCodec";
 import type { YachtGame } from "@/lib/party/yacht/yacht.types";
 
@@ -17,7 +18,7 @@ import { YACHT_STORAGE_KEY } from "./yacht.constants";
  * moves, so it cannot throw anything new. How it is kept, and why only here,
  * is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<YachtGame>(YACHT_STORAGE_KEY, encodeYacht, decodeYacht, partyRecord(PARTY_KINDS.yacht, YACHT_RULES));
+const kept = keptInBrowser<YachtGame>(YACHT_STORAGE_KEY, encodeYacht, decodeYacht, partyRecord(PARTY_KINDS.yacht, YACHT_RULES), resignYacht);
 
 /** The kept game (`undefined` until the browser has been asked, null when none) and the way to keep another. */
 export const useKeptYachtGame = kept.useKept;

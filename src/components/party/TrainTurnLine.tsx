@@ -1,3 +1,5 @@
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { TRAIN_PHASES, mexicanOf, openEnd, tileOf, tileWords, trainPlayerName } from "@johnmorrisdotca/domino";
 import type { TrainGame } from "@johnmorrisdotca/domino";
 
@@ -34,6 +36,7 @@ export function lastMoveWords(game: TrainGame): string | null {
  * train it is on, since nothing else may be laid until it is.
  */
 export function TrainTurnLine({ game }: { game: TrainGame }) {
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => trainPlayerName(game, seat)} />;
   if (game.phase !== TRAIN_PHASES.playing) return null;
   const seat = game.toPlay;
   const name = trainPlayerName(game, seat);

@@ -40,7 +40,7 @@ function sources(dir: string): string[] {
 }
 
 const FILES = sources(ROOT);
-const SHARED = /\b(GameEnding|NewGameButton|EndGameButton|NewGameLink)\b/;
+const SHARED = /\b(GameEnding|NewGameButton|EndGameButton|NewGameLink|TableEnding)\b/;
 /** The shared controls' own files: the words and the three that draw them. */
 const SHARED_FILES = new Set(["src/components/play/GameEnding.tsx", "src/components/play/gameEnding.constants.ts", "src/components/play/GameInProgressOffer.tsx"]);
 
@@ -159,5 +159,45 @@ describe("no table asks its own question about starting again", () => {
     // A table never words its own Give up or Resign as a literal button.
     const own = FILES.filter((path) => !SHARED_FILES.has(path) && /(label|aria-label)="(Resign|Give up|New game)"|>\s*(Resign|Give up)\s*</.test(code(read(path))));
     expect(own).toEqual([]);
+  });
+});
+
+/**
+ * A table round one device can be resigned from (John, 2026-10-02: "add Resign
+ * to the hot-seat tables"). The rule is `lib/party/resign.ts`; the row is
+ * `TableEnding`; the kept store reads the resignation back. A table that has
+ * no Resign must say why.
+ */
+describe("every table round one device can be resigned", () => {
+  const TABLES = FILES.filter((path) => /^src\/components\/party\/(?!online\/)(\w+\/)?\w+\.tsx$/.test(path) && /<AskIfAway/.test(code(read(path))));
+
+  /** A table whose Resign is drawn somewhere else, or is its own, with the reason. */
+  const OWN_RESIGN: Record<string, string> = {
+    "src/components/party/PairGoGame.tsx": "Pair Go has resigned since it arrived: its engine ends the game for the team to move (`pairResign`), drawn with EndGameButton",
+    "src/components/party/sugoroku/SugorokuPlay.tsx": "Sugoroku concedes through its engine's own move, drawn in the stage's fixed row of three presses (`SugorokuStage`, in GAME_ENDING_COPY's words)",
+  };
+
+  it("finds the tables", () => {
+    expect(TABLES.length).toBeGreaterThanOrEqual(14);
+    expect(TABLES).toContain("src/components/party/tenka/TenkaPlay.tsx");
+  });
+
+  it("draws Resign through TableEnding, or says why not", () => {
+    const without = TABLES.filter((path) => !/\bTableEnding\b/.test(code(read(path))) && !(path in OWN_RESIGN));
+    expect(without, "a table round one device has Resign (TableEnding), or is named in OWN_RESIGN with the reason").toEqual([]);
+    for (const [path, reason] of Object.entries(OWN_RESIGN)) expect(reason.length, path).toBeGreaterThan(20);
+    expect(code(read("src/components/party/sugoroku/SugorokuStage.tsx"))).toContain("SUGOROKU_COPY.giveUp");
+    expect(code(read("src/components/party/PairGoGame.tsx"))).toContain("EndGameButton");
+  });
+
+  it("reads a resignation back from every table's kept store", () => {
+    const stores = FILES.filter((path) => /^src\/components\/party\/(\w+\/)?\w*[sS]tore\.ts$/.test(path) && /keptInBrowser</.test(code(read(path))));
+    const OWN: Record<string, string> = {
+      "src/components/party/pairGoStore.ts": "Pair Go's engine ends a resigned game itself, and keeps the move",
+      "src/components/party/sugoroku/sugorokuStore.ts": "a conceded Sugoroku match is a move of the engine's, kept with the rest",
+    };
+    const bare = stores.filter((path) => !/\bresign\w*/.test(code(read(path)).replace(/keptInBrowser/g, "")) && !(path in OWN));
+    expect(bare, "a kept table store passes the way its game ends when resigned (resignTables.ts)").toEqual([]);
+    expect(stores.length).toBeGreaterThanOrEqual(13);
   });
 });

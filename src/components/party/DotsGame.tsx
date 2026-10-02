@@ -1,6 +1,7 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignDots } from "@/lib/party/resignTables";
 import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
@@ -107,9 +108,16 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
               {PARTY_COPY.again}
             </button>
           )}
-          <GameEnding>
-            <NewGameButton going={game.status === DOTS_STATUS.playing} onNewGame={() => keep(null)} testId="dots-new" />
-          </GameEnding>
+          <TableEnding
+            prefix="dots"
+            game={game}
+            playing={game.status === DOTS_STATUS.playing}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => dotsPlayerName(game, seat)}
+            onResign={(seat) => keep(resignDots(game, seat))}
+            onNewGame={() => keep(null)}
+          />
         </div>
         {/* The finished board as a desktop or phone wallpaper, as every board game offers its positions. */}
         {game.status === DOTS_STATUS.playing ? null : (

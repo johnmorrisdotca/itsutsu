@@ -1,5 +1,6 @@
 "use client";
 
+import { resignRace } from "@/lib/party/resignTables";
 import { decodeHalmaParty, encodeHalmaParty } from "@/lib/gomoku/party/partyHalma";
 import type { PartyHalmaState } from "@/lib/gomoku/party/partyHalma.types";
 
@@ -24,6 +25,7 @@ const kept = keptInBrowser<PartyHalmaState>(
     winners: (game) => (game.status === PARTY_STATUS.won && game.winner !== null ? [game.winner] : []),
     names: (game) => game.players.map((player) => player.name),
   }),
+  resignRace,
 );
 
 /** Write a game down, or forget the kept one; everybody reading it hears. */

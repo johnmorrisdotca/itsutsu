@@ -1,6 +1,6 @@
 # Game controls: one set of ending and starting controls for every kind of play
 
-**Status: first commit landed (2026-10-02).** Board row:
+**Status: first commit landed as 0.495.0 (2026-10-02); Resign at the hot-seat tables is the second.** Board row:
 `every-game-in-progress-offers-the-same-controls-continue-new-game-and-resign-in`.
 
 John, 2026-10-02, looking at Tenka's front door (a lone "Continue →") and its
@@ -60,6 +60,55 @@ Continue or its own New game question, and Resume stays the word for a clock.
   question. They ask now.
 - The puzzle set-up's "Resume" is Continue.
 
+## Resign at a table round one device (second commit)
+
+John, 2026-10-02: "add Resign to the hot-seat (pass-and-play, kept-in-browser)
+party and card tables." The rule, the same for every one of them
+(`src/lib/party/resign.ts`; the row is `TableEnding`):
+
+- **The player to move resigns**, after a question that names them: "Resign
+  this game for Ann? The other player wins." (two seats) or "...The table ends
+  here, with nobody the winner." (three or more). Dice War rolls everybody at
+  once, so there the first person still to roll resigns.
+- **At two seats the other seat wins.** The table ends in its engine's own
+  terms (`resignTables.ts`: status or phase finished, `winners` the other
+  seat), and says "Ann resigned. Ben wins." where its turn line was
+  (`ResignedResult`).
+- **At three or more the table ends where it stands**: "Ann resigned. The
+  game ended where it stood, with nobody the winner." Standings and scores stay
+  as they are and no winner is invented.
+- **Why not take the seat out and play on**, which was the preferred answer
+  where an engine can do it: a kept game is its moves played out again from a
+  seed (Dots, Tenka, Train, Ghost, Block Five and the packages' cards all
+  are), and a seat that stops playing is a move none of those engines can
+  replay. Tenka and Superghost do knock players out, but by the rules of the
+  game, in the moves. Taking a seat out would need a move for it in each
+  package (Tenka, Domino, Hitotsu, Korokoro, Toranpu); see the list at the
+  end.
+- **Kept, not played**: a resignation rides after the game's own text in the
+  browser's storage (`RESIGNED_MARK`), and `keptInBrowser` reads it back
+  through the table's `resign` function, so a reload, My games' history and a
+  game opened from it show the table as it ended. Never rated; no database,
+  no scoring, XP or rating is touched, and no package is edited: the card
+  games, whose engines are Toranpu's, carry the resignation on the table
+  alone (`CardPlay`).
+- **Gate**: `gameEnding.coverage.test.ts` holds that every table round one
+  device draws `TableEnding` (Pair Go and Sugoroku, which already resigned
+  through their engines, are named) and that every kept store passes its
+  `resign`; `e2e/game-resign.spec.ts` asks the question, answers it and reloads
+  at seventeen tables.
+- **No table is without Resign.** A game with no opponent at a table (a solo
+  sheet) would keep Give up and say why; none of these tables is one. Yacht
+  is played for the higher sheet, so it resigns like the rest.
+
+If a package should one day take a seat out, what each needs is a move
+(`resign`, kept in the moves) that removes the seat and passes its turn on:
+Tenka (`@johnmorrisdotca/tenka`, `TENKA_MOVES`), Mexican Train
+(`@johnmorrisdotca/domino`), Hitotsu (`@johnmorrisdotca/hitotsu`), Dice War
+(`@johnmorrisdotca/korokoro`) and the card games (`@johnmorrisdotca/toranpu`).
+The site's own Dots, Mancala, Yacht, Pachisi, Superghost, Block Five and the
+race games would take the same change in `src/lib/party`.
+
 ## What remains
 
 1. **A live game's front door** (`/games/<variant>`) shows Play only. The
@@ -68,24 +117,20 @@ Continue or its own New game question, and Resume stays the word for a clock.
    per signed-in view (as a puzzle's door has) and the e2e suite signs in as an
    operator who always has games going, so every spec that clicks `game-set-up`
    on a variant's page needs a member of its own first. Left for its own change.
-2. **Resign in hot-seat party tables** (Dots and Boxes, Mancala, Yacht and the
-   rest): a table round one device ends with New game, which asks. A Resign
-   needs each game's engine to say who wins when one player drops out; Pair
-   Go, Sugoroku and Kumimoji have it already.
-3. **Resign against the computer on the practice board**: the engine can
+2. **Resign against the computer on the practice board**: the engine can
    record a resignation (`WIN_REASONS.resign`) but the session has no action
    for it.
-4. **Give up for the word and number puzzles**: they have New game, which keeps
+3. **Give up for the word and number puzzles**: they have New game, which keeps
    the run in My games; a Give up that shows the answer needs a record for an
    unsolved grid, which is scoring and is John's to decide.
-5. **Tables on several devices** (`OnlineTable`): Leave the table and End the
+4. **Tables on several devices** (`OnlineTable`): Leave the table and End the
    table have their own words and question and different effects (a seat
    opens; the table ends for everybody). They want the same row, with Resign
    for the seat that is playing.
-6. **Just the board**: the row is hidden there, like every other press that is
+5. **Just the board**: the row is hidden there, like every other press that is
    not the move. If Resign should be in the modal, mark the row
    `data-bare-keep`; `bare-board.spec.ts` will then say whether it fits
    without a scroll.
-7. **My games' rows** keep their own small Resign (`ResignButton`, shared with
+6. **My games' rows** keep their own small Resign (`ResignButton`, shared with
    the live footer), Cancel and "Continue the … →" cards. They are the same
    words; the cards could become `GameInProgressOffer` rows.

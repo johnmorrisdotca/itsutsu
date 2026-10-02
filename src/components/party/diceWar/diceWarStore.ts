@@ -1,5 +1,6 @@
 "use client";
 
+import { resignDiceWar } from "@/lib/party/resignTables";
 import { decodeDiceWar, encodeDiceWar, type DiceWarGame } from "@johnmorrisdotca/korokoro";
 
 import { PARTY_KINDS } from "@/lib/party/party.constants";
@@ -15,7 +16,7 @@ import { DICE_WAR_STORAGE_KEY } from "./diceWar.constants";
  * in the moves, so reading it back replays the game exactly and throws nothing
  * new. How it is kept, and why only here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<DiceWarGame>(DICE_WAR_STORAGE_KEY, encodeDiceWar, decodeDiceWar, partyRecord(PARTY_KINDS.diceWar, DICE_WAR_RULES));
+const kept = keptInBrowser<DiceWarGame>(DICE_WAR_STORAGE_KEY, encodeDiceWar, decodeDiceWar, partyRecord(PARTY_KINDS.diceWar, DICE_WAR_RULES), resignDiceWar);
 
 /** The kept game (`undefined` until the browser has been asked, null when none) and the way to keep another. */
 export const useKeptDiceWarGame = kept.useKept;

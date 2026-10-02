@@ -1,5 +1,6 @@
 "use client";
 
+import { resignPachisi } from "@/lib/party/resignTables";
 import { decodePachisi, encodePachisi } from "@/lib/party/pachisi/pachisiCodec";
 import type { PachisiGame } from "@/lib/party/pachisi/pachisi.types";
 
@@ -15,7 +16,7 @@ import { PACHISI_STORAGE_KEY } from "./pachisi.constants";
  * (`encodePachisi`), written after every move; the pawns and dice are made
  * again from them, so a reload cannot throw anything new (`keptInBrowser.ts`).
  */
-const kept = keptInBrowser<PachisiGame>(PACHISI_STORAGE_KEY, encodePachisi, decodePachisi, partyRecord(PARTY_KINDS.pachisi, PACHISI_RULES));
+const kept = keptInBrowser<PachisiGame>(PACHISI_STORAGE_KEY, encodePachisi, decodePachisi, partyRecord(PARTY_KINDS.pachisi, PACHISI_RULES), resignPachisi);
 
 export const useKeptPachisiGame = kept.useKept;
 export const adoptKeptPachisiGame = kept.adopt;

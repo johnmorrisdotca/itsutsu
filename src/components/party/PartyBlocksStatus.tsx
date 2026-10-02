@@ -1,5 +1,7 @@
 "use client";
 
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { usePartyMarbles } from "./partyMarbles";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -26,6 +28,7 @@ function namesOf(game: PartyBlocksState, players: readonly number[]): string {
 export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game.players, seat)} />;
   if (game.status === BLOCKS_STATUS.over) {
     const leaders = blocksLeaders(game);
     const squares = blocksScores(game)[leaders[0]].squares;

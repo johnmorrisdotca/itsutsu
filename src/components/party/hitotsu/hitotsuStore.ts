@@ -1,5 +1,6 @@
 "use client";
 
+import { resignHitotsu } from "@/lib/party/resignTables";
 import { decodeHitotsu, encodeHitotsu, type HitotsuGame } from "@johnmorrisdotca/hitotsu";
 
 import { keptInBrowser } from "../keptInBrowser";
@@ -12,7 +13,7 @@ import { HITOTSU_STORAGE_KEY } from "./hitotsu.constants";
  * moves, so it cannot deal a different hand. How it is kept, and why only
  * here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<HitotsuGame>(HITOTSU_STORAGE_KEY, encodeHitotsu, decodeHitotsu);
+const kept = keptInBrowser<HitotsuGame>(HITOTSU_STORAGE_KEY, encodeHitotsu, decodeHitotsu, undefined, resignHitotsu);
 
 /** The kept game (`undefined` until the browser has been asked, null when none) and the way to keep another. */
 export const useKeptHitotsu = kept.useKept;

@@ -1,5 +1,7 @@
 "use client";
 
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { usePartyMarbles } from "./partyMarbles";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -21,6 +23,7 @@ export function GhostTurnLine({ game, judge }: { game: GhostGame; judge: GhostJu
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const last = game.rounds.at(-1) ?? null;
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game, seat)} />;
   if (game.phase === GHOST_PHASE.finished) {
     const winner = game.winners[0];
     return (

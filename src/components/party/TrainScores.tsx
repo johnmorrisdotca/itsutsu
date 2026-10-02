@@ -1,3 +1,4 @@
+import { resignedBy } from "@/lib/party/resign";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_HEADING, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -58,7 +59,8 @@ export function TrainRoundOver({ game, onNext }: { game: TrainGame; onNext?: () 
   const result = game.results.at(-1);
   if (result === undefined) return null;
   const totals = trainTotals(game);
-  const finished = game.phase === TRAIN_PHASES.finished;
+  // A table that ended by a resignation says so in its turn line, not here.
+  const finished = game.phase === TRAIN_PHASES.finished && resignedBy(game) === null;
   const winners = game.winners.map((seat) => trainPlayerName(game, seat));
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="train-round-over" data-round={game.results.length} data-finished={finished ? "true" : undefined}>

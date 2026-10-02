@@ -1,6 +1,7 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignPachisi } from "@/lib/party/resignTables";
 import { useCallback, useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
@@ -168,9 +169,16 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
           <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
             {sound.on ? YACHT_COPY.soundOn : YACHT_COPY.soundOff}
           </button>
-          <GameEnding>
-            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="pachisi-new" />
-          </GameEnding>
+          <TableEnding
+            prefix="pachisi"
+            game={game}
+            playing={playing}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => pachisiPlayerName(game, seat)}
+            onResign={(seat) => keep(resignPachisi(game, seat))}
+            onNewGame={() => keep(null)}
+          />
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
         {playing ? null : <TableWallpaper game="pachisi" result={resultLine(names, game.winners)} />}

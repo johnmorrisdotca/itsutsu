@@ -1,6 +1,9 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { resignedBy, resignWinners } from "@/lib/party/resign";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignDiceWar } from "@/lib/party/resignTables";
 import { useCallback } from "react";
 
 import { diceWarWinners, type DiceWarGame } from "@johnmorrisdotca/korokoro";
@@ -15,6 +18,8 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { diceWarSeatName } from "@/lib/party/diceWar/diceWar.constants";
 import { DICE_WAR_RULES } from "@/lib/party/diceWar/diceWarRules";
+// Everybody rolls at once, so there is no one player to move: the first person still to roll resigns.
+import { diceWarPeopleToRoll } from "@johnmorrisdotca/korokoro";
 import { throwDiceWar, waitsOnPerson } from "@/lib/party/diceWar/diceWarThrow";
 import { diceWarEnding, diceWarNext, diceWarRoundLine, diceWarSaid } from "@/lib/party/diceWar/diceWarWords";
 import { freshSeed } from "@/lib/puzzles/random";
@@ -44,7 +49,8 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
   const moment = useWinMoment(over ? "ended" : "playing");
   const names = game.players.map((_, seat) => diceWarSeatName(game.players, game.computers, seat));
   const name = (seat: number) => names[seat] ?? `Player ${seat + 1}`;
-  const winners = over ? diceWarWinners(game) : [];
+  const resigned = resignedBy(game);
+  const winners = resigned !== null ? resignWinners(game.players.length, resigned) : over ? diceWarWinners(game) : [];
   const people = game.computers.map((computer, seat) => (computer ? -1 : seat)).filter((seat) => seat >= 0);
   const canRoll = !over && waitsOnPerson(game);
 
@@ -76,7 +82,7 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
         <div className="flex min-h-[4.5rem] flex-col gap-0.5" aria-live="polite">
           <p className="text-base font-semibold" data-testid="dicewar-status">
             {over ? <ResultMark kind={winners.length === 0 ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
-            {over ? `${DICE_WAR_COPY.over}: ${diceWarEnding(game, winners, name)}` : diceWarRoundLine(game)}
+            {over ? `${DICE_WAR_COPY.over}: ${resigned !== null ? GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name)) : diceWarEnding(game, winners, name)}` : diceWarRoundLine(game)}
             {!over && game.wars > 0 ? <span className="ml-2 text-shu" data-testid="dicewar-stake">{DICE_WAR_COPY.war}: {DICE_WAR_COPY.stake(game.stake)}</span> : null}
           </p>
           <p className="text-sm text-muted" data-testid="dicewar-said">
@@ -123,9 +129,16 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? DICE_WAR_COPY.soundOn : DICE_WAR_COPY.soundOff}
         </button>
-        <GameEnding>
-          <NewGameButton going={!over} onNewGame={() => keep(null)} testId="dicewar-new" />
-        </GameEnding>
+        <TableEnding
+          prefix="dicewar"
+          game={game}
+          playing={!over}
+          toPlay={over ? null : (diceWarPeopleToRoll(game)[0] ?? null)}
+          seats={game.players.length}
+          nameOf={name}
+          onResign={(seat) => keep(resignDiceWar(game, seat))}
+          onNewGame={() => keep(null)}
+        />
       </div>
       <p className="text-xs text-muted">{DICE_WAR_COPY.kept}</p>
       {over ? <TableWallpaper game="diceWar" result={resultLine(names, winners)} /> : null}

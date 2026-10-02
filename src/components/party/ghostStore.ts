@@ -1,5 +1,6 @@
 "use client";
 
+import { resignGhost } from "@/lib/party/resignTables";
 import { decodeGhost, encodeGhost } from "@/lib/party/superghost/superghost";
 import type { GhostGame } from "@/lib/party/superghost/superghost.types";
 
@@ -15,7 +16,7 @@ import { partyRecord } from "./keptRules";
  * back with the verdicts it was played with, so My games can show it without
  * fetching a word list. How it is kept, and why only here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<GhostGame>(GHOST_STORAGE_KEY, encodeGhost, decodeGhost, partyRecord(PARTY_KINDS.superghost, SUPERGHOST_RULES));
+const kept = keptInBrowser<GhostGame>(GHOST_STORAGE_KEY, encodeGhost, decodeGhost, partyRecord(PARTY_KINDS.superghost, SUPERGHOST_RULES), resignGhost);
 
 /** Write a game down, or forget the kept one; everybody reading it hears. */
 export const keepGhostGame = kept.keep;

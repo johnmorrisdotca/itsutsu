@@ -1,6 +1,7 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignMancala } from "@/lib/party/resignTables";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { PartySeatColour } from "./PartySeatColour";
 
@@ -124,9 +125,16 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
               {PARTY_COPY.again}
             </button>
           )}
-          <GameEnding>
-            <NewGameButton going={game.status === MANCALA_STATUS.playing} onNewGame={() => keep(null)} testId="mancala-new" />
-          </GameEnding>
+          <TableEnding
+            prefix="mancala"
+            game={game}
+            playing={game.status === MANCALA_STATUS.playing}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => partyPlayerName(game, seat)}
+            onResign={(seat) => keep(resignMancala(game, seat))}
+            onNewGame={() => keep(null)}
+          />
         </div>
         {game.status === MANCALA_STATUS.playing ? null : (
           <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners, game.winners.length > 1)} />

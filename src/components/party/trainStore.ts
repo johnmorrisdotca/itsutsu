@@ -1,5 +1,6 @@
 "use client";
 
+import { resignTrain } from "@/lib/party/resignTables";
 import { decodeTrain, encodeTrain } from "@johnmorrisdotca/domino";
 import type { TrainGame } from "@johnmorrisdotca/domino";
 
@@ -16,7 +17,7 @@ import { partyRecord } from "./keptRules";
  * replays the moves, so it cannot deal a different hand. How it is kept, and
  * why only here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<TrainGame>(TRAIN_STORAGE_KEY, encodeTrain, decodeTrain, partyRecord(PARTY_KINDS.mexicanTrain, MEXICAN_TRAIN_RULES));
+const kept = keptInBrowser<TrainGame>(TRAIN_STORAGE_KEY, encodeTrain, decodeTrain, partyRecord(PARTY_KINDS.mexicanTrain, MEXICAN_TRAIN_RULES), resignTrain);
 
 /** The kept game (`undefined` until the browser has been asked, null when none) and the way to keep another. */
 export const useKeptTrainGame = kept.useKept;

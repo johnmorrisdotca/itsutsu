@@ -1,5 +1,6 @@
 "use client";
 
+import { resignBlocks } from "@/lib/party/resignTables";
 import { BLOCKS_STATUS, blocksLeaders, decodeBlocksParty, encodeBlocksParty } from "@/lib/gomoku/party/partyBlocks";
 import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 
@@ -23,6 +24,7 @@ const kept = keptInBrowser<PartyBlocksState>(
     winners: (game) => (game.status === BLOCKS_STATUS.over ? blocksLeaders(game) : []),
     names: (game) => game.players.map((player) => player.name),
   }),
+  resignBlocks,
 );
 
 /** Write a game down, or forget the kept one; everybody reading it hears. */

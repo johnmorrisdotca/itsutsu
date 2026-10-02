@@ -1,5 +1,6 @@
 "use client";
 
+import { resignTenka } from "@/lib/party/resignTables";
 import { decodeTenka, encodeTenka } from "@/lib/party/tenka/tenkaKeep";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
 
@@ -15,7 +16,7 @@ import { partyRecord } from "../keptRules";
  * moves are played again from the seed, dice and all, so a reload throws
  * nothing new. How it is kept, and why only here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<TenkaGame>(TENKA_STORAGE_KEY, encodeTenka, decodeTenka, partyRecord(PARTY_KINDS.tenka, TENKA_RULES));
+const kept = keptInBrowser<TenkaGame>(TENKA_STORAGE_KEY, encodeTenka, decodeTenka, partyRecord(PARTY_KINDS.tenka, TENKA_RULES), resignTenka);
 
 /** Write a game down, or forget the kept one; everybody reading it hears. */
 export const keepTenkaGame = kept.keep;

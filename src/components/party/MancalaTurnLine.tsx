@@ -1,3 +1,5 @@
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -35,6 +37,7 @@ export function MancalaTurnLine({ game, sowing }: { game: MancalaGame; sowing: b
   const rules = MANCALA_RULE_NAMES[game.ruleSet];
   const said = sowing ? null : lastSaid(game);
 
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game, seat)} />;
   if (game.status === MANCALA_STATUS.finished) {
     const [near, far] = [game.holes[storeOf(0)], game.holes[storeOf(1)]];
     const winner = game.winners.length === 1 ? game.winners[0] : null;

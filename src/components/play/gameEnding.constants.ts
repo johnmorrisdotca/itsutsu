@@ -13,9 +13,16 @@
  * - **Continue** takes the game in progress up again; **Resume** is only for
  *   un-pausing a clock.
  */
+const GAME_ENDING_COPY_END = "The game ended where it stood, with nobody the winner.";
+
 export const GAME_ENDING_COPY = {
   resign: "Resign",
   resignAsk: "Resign this game? The other side wins.",
+  /** At a table round one device the player to move resigns: the other seat wins at two, and the table ends with nobody the winner at more. */
+  resignFor: (name: string, seats: number) => (seats === 2 ? `Resign this game for ${name}? The other player wins.` : `Resign this game for ${name}? The table ends here, with nobody the winner.`),
+  resigned: (name: string) => `${name} resigned.`,
+  /** How a table ended by a resignation reads where its result goes. */
+  resignedResult: (name: string, winners: readonly string[]) => (winners.length === 0 ? `${name} resigned. ${GAME_ENDING_COPY_END}` : `${name} resigned. ${winners.join(" and ")} wins.`),
   giveUp: "Give up",
   giveUpAsk: "Give up this game? It ends here, unsolved.",
   newGame: "New game",

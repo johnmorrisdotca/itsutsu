@@ -1,5 +1,6 @@
 "use client";
 
+import { resigning } from "@/lib/party/resign";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
 
@@ -24,6 +25,8 @@ function storeOf<K extends CardGameKind>(kind: K) {
     rules.decode as (text: string | null) => unknown,
     // Every card game's state carries its seats (`CardSeats`): the names and which a computer plays.
     kept as unknown as KeptRecordRules<unknown>,
+    // The engines are a package's: a resignation is the table's alone, read by `CardPlay`.
+    (game, seat) => resigning(game as object, seat, {}),
   );
 }
 

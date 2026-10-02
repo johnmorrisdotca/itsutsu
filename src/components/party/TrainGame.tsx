@@ -1,6 +1,7 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignTrain } from "@/lib/party/resignTables";
 import { useState } from "react";
 import { PartySeatColour } from "./PartySeatColour";
 
@@ -161,9 +162,16 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
         ) : null}
         <TrainScores game={game} />
         <div className="flex flex-wrap gap-2">
-          <GameEnding>
-            <NewGameButton going={game.phase !== TRAIN_PHASES.finished} onNewGame={() => keep(null)} testId="train-new" />
-          </GameEnding>
+          <TableEnding
+            prefix="train"
+            game={game}
+            playing={game.phase !== TRAIN_PHASES.finished}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => trainPlayerName(game, seat)}
+            onResign={(seat) => keep(resignTrain(game, seat))}
+            onNewGame={() => keep(null)}
+          />
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
         {game.phase === TRAIN_PHASES.finished ? (

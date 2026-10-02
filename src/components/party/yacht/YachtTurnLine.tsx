@@ -1,3 +1,5 @@
+import { ResignedResult } from "@/components/play/ResignedResult";
+import { resignedBy } from "@/lib/party/resign";
 import { YACHT_BOXES } from "@/lib/party/yacht/yacht.constants";
 import { YACHT_PHASES, yachtPlayerName } from "@/lib/party/yacht/yacht";
 import type { YachtGame } from "@/lib/party/yacht/yacht.types";
@@ -12,6 +14,7 @@ import { YACHT_BOX_WORDS, YACHT_COPY } from "./yacht.constants";
  * them), which of their three rolls this is, and the last box written.
  */
 export function YachtTurnLine({ game }: { game: YachtGame }) {
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => yachtPlayerName(game, seat)} />;
   if (game.phase !== YACHT_PHASES.playing) return null;
   const seat = game.toPlay;
   const name = yachtPlayerName(game, seat);

@@ -1,6 +1,9 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { resignedBy, resignWinners } from "@/lib/party/resign";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignHitotsu } from "@/lib/party/resignTables";
 import { useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
@@ -52,7 +55,8 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
   const viewer = people.length === 1 ? people[0] : covered ? null : personToPlay ? toPlay : handedTo;
   const thinking = useHitotsuComputer(game, keep);
   const moment = useWinMoment(over ? "ended" : "playing");
-  const winners = over ? hitotsuWinners(game) : [];
+  const resigned = resignedBy(game);
+  const winners = resigned !== null ? resignWinners(game.players.length, resigned) : over ? hitotsuWinners(game) : [];
   const play = (move: HitotsuMove) => {
     const next = playHitotsu(game, move);
     if (next !== null) keep(next);
@@ -76,7 +80,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
     >
       <div className="flex min-h-16 flex-col gap-0.5">
         <p className="text-base font-semibold" data-testid="hitotsu-status" aria-live="polite">
-          {over ? `${HITOTSU_COPY.over}: ${HITOTSU_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? HITOTSU_COPY.thinking(name(toPlay)) : hitotsuStatus(game, name)}
+          {over ? (resigned !== null ? `${HITOTSU_COPY.over}: ${GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name))}` : `${HITOTSU_COPY.over}: ${HITOTSU_COPY.won(winners.map(name).join(" and "))}`) : thinking && toPlay !== null ? HITOTSU_COPY.thinking(name(toPlay)) : hitotsuStatus(game, name)}
         </p>
         <p className="text-sm text-muted" data-testid="hitotsu-news">
           {news}
@@ -123,9 +127,16 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
         </button>
-        <GameEnding>
-          <NewGameButton going={!over} onNewGame={() => keep(null)} testId="hitotsu-new" />
-        </GameEnding>
+        <TableEnding
+          prefix="hitotsu"
+          game={game}
+          playing={!over}
+          toPlay={game.toPlay}
+          seats={game.players.length}
+          nameOf={name}
+          onResign={(seat) => keep(resignHitotsu(game, seat))}
+          onNewGame={() => keep(null)}
+        />
       </div>
       {over ? <TableWallpaper game="hitotsu" result={resultLine(names, winners)} /> : null}
       <p className="text-xs text-muted">{HITOTSU_COPY.kept}</p>

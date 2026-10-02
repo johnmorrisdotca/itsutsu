@@ -1,5 +1,6 @@
 "use client";
 
+import { resignDots } from "@/lib/party/resignTables";
 import { decodeDots, encodeDots } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 
@@ -14,7 +15,7 @@ import { partyRecord } from "./keptRules";
  * and its lines (`encodeDots`), written after every line. How it is kept, and
  * why only here, is `keptInBrowser.ts`.
  */
-const kept = keptInBrowser<DotsGame>(DOTS_STORAGE_KEY, encodeDots, decodeDots, partyRecord(PARTY_KINDS.dotsAndBoxes, DOTS_RULES));
+const kept = keptInBrowser<DotsGame>(DOTS_STORAGE_KEY, encodeDots, decodeDots, partyRecord(PARTY_KINDS.dotsAndBoxes, DOTS_RULES), resignDots);
 
 /** Write a game down, or forget the kept one; everybody reading it hears. */
 export const keepDotsGame = kept.keep;

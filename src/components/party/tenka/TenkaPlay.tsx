@@ -1,6 +1,7 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignTenka } from "@/lib/party/resignTables";
 import { useRef, useState } from "react";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 import { PartySeatColour } from "../PartySeatColour";
@@ -174,9 +175,16 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
                 {PARTY_COPY.again}
               </button>
             )}
-            <GameEnding>
-              <NewGameButton going={playing} onNewGame={() => keep(null)} testId="tenka-new" />
-            </GameEnding>
+            <TableEnding
+              prefix="tenka"
+              game={game}
+              playing={playing}
+              toPlay={game.toPlay}
+              seats={game.players.length}
+              nameOf={(seat) => tenkaPlayerName(game, seat)}
+              onResign={(seat) => keep(resignTenka(game, seat))}
+              onNewGame={() => keep(null)}
+            />
           </div>
           {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => tenkaPlayerName(game, seat)), game.winners)} />}
           <p className="text-xs text-muted">{PARTY_COPY.kept}</p>

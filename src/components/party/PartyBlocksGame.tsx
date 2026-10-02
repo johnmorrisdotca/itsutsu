@@ -1,6 +1,8 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { resignedBy } from "@/lib/party/resign";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignBlocks } from "@/lib/party/resignTables";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { PartySeatColour } from "./PartySeatColour";
 
@@ -82,7 +84,7 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
             moment.open
               ? tableNews({
                   names: game.players.map((_, player) => partyPlayerName(game.players, player)),
-                  winners: blocksLeaders(game),
+                  winners: resignedBy(game) !== null ? [] : blocksLeaders(game),
                   you: null,
                   next: { label: PARTY_BLOCKS_COPY.again, onPress: () => keep(againBlocksParty(game)) },
                 })
@@ -128,12 +130,19 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
               {PARTY_BLOCKS_COPY.again}
             </button>
           )}
-          <GameEnding>
-            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="blocks-new" />
-          </GameEnding>
+          <TableEnding
+            prefix="blocks"
+            game={game}
+            playing={playing}
+            toPlay={game.toPlay}
+            seats={game.players.length}
+            nameOf={(seat) => partyPlayerName(game.players, seat)}
+            onResign={(seat) => keep(resignBlocks(game, seat))}
+            onNewGame={() => keep(null)}
+          />
         </div>
         {playing ? null : (
-          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player)), blocksLeaders(game))} />
+          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player)), resignedBy(game) !== null ? [] : blocksLeaders(game))} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

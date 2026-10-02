@@ -1,6 +1,8 @@
 "use client";
 
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { TableEnding } from "@/components/play/GameEnding";
+import { resignedBy, resignWinners, resigning } from "@/lib/party/resign";
 import { useState } from "react";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -58,7 +60,9 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   const { players, computers } = rules.seats(game);
   const names = players.map((_, seat) => seatName(players, computers, seat));
   const name = (seat: number) => names[seat] ?? `Player ${seat + 1}`;
-  const over = rules.over(game);
+  // A resignation ends the table where it stands (`lib/party/resign.ts`); the engine, a package's, is not asked.
+  const resigned = resignedBy(game as object);
+  const over = resigned !== null || rules.over(game);
   const toPlay = over ? null : rules.toPlay(game);
   const people = players.map((_, seat) => seat).filter((seat) => !computers[seat]);
   const moves = (game as { moves: readonly unknown[] }).moves.length;
@@ -121,12 +125,12 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
   useKeepTurning(turning && myTurn, moves, () => play(actions[0]?.move ?? null));
   const stuck = actions.find((action) => action.strong === true && action.move === null);
   const others = open ? [] : players.map((_, seat) => seat).filter((seat) => seat !== viewer);
-  const ending = over && adapter.ending !== undefined ? adapter.ending(game, name) : null;
+  const ending = over && resigned === null && adapter.ending !== undefined ? adapter.ending(game, name) : null;
   const counts = players.map((_, seat) => adapter.hand(game, seat).length);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useCardSounds(counts.reduce((sum, count) => sum + count, 0));
   const arrived = viewer === null || adapter.arrived === undefined ? [] : adapter.arrived(game, viewer);
-  const winners = over ? rules.winners(game) : [];
+  const winners = resigned !== null ? resignWinners(players.length, resigned) : over ? rules.winners(game) : [];
   const again = () => {
     const size = (game as { size: number }).size;
     const fresh = rules.start(size, players, undefined, freshCardSeed(), computers);
@@ -148,7 +152,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
     >
       <p className="min-h-12 text-base font-semibold" data-testid="cards-status" aria-live="polite">
         {over ? <ResultMark kind={winners.length === 0 || ending?.draw === true ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
-        {over ? `${CARD_TABLE_COPY.over}: ${ending !== null ? ending.line : CARD_TABLE_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name)}
+        {over ? `${CARD_TABLE_COPY.over}: ${ending !== null ? ending.line : resigned !== null ? GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name)) : CARD_TABLE_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name)}
       </p>
       {open ? null : (
       <CardSeats
@@ -258,12 +262,19 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
         </button>
-        <GameEnding>
-          <NewGameButton going={!over} onNewGame={() => {
+        <TableEnding
+          prefix="cards"
+          game={game as object}
+          playing={!over}
+          toPlay={toPlay}
+          seats={players.length}
+          nameOf={name}
+          onResign={(seat) => keep(resigning(game as object, seat, {}))}
+          onNewGame={() => {
             setTurning(false);
             keep(null);
-          }} testId="cards-new" />
-        </GameEnding>
+          }}
+        />
       </div>
       {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners, ending?.draw === true)} /> : null}
       <p className="text-xs text-muted">{CARD_TABLE_COPY.kept}</p>
