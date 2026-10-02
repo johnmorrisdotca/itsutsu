@@ -142,7 +142,7 @@ export const FAMILY_ROW = "flex flex-col gap-3 lg:grid lg:grid-cols-[1fr_auto_1f
  * columns the games under them are drawn in (`PICK_TILE_GRID`), so a family and
  * a game are the same box on every screen.
  */
-export const FAMILY_TILES = "grid grid-cols-3 gap-1.5 sm:grid-cols-[repeat(4,6.75rem)] lg:grid-cols-[repeat(2,6.75rem)]";
+export const FAMILY_TILES = "grid grid-cols-3 gap-1.5 min-[390px]:grid-cols-4 sm:grid-cols-[repeat(4,6.75rem)] lg:grid-cols-[repeat(2,6.75rem)]";
 
 /** The families' column from `lg`, with the heading that lines up with the board's. */
 export const FAMILY_COLUMN = "flex min-w-0 flex-col lg:justify-self-start";
@@ -167,12 +167,15 @@ export const PICK_CHIP_SHUT =
  * fixed height (`PICK_GAMES_PANEL`), and any spare room is under the words, at
  * the bottom of the panel, where it reads as the space before the next section.
  *
- * Three across on a phone (three rows of the eight), four across from 640px
- * (two rows), eight across from a laptop (one). `MOST_GAMES_ON_A_SHELF` is the
+ * Three across below 390px (three rows of the eight), four across from 390px
+ * (two rows, the width the board sizes already use: a Mahjong or Cube shelf of
+ * two games had stood in a 496px panel, John 2026-10-01: "Large space not
+ * necessary for games"), four across from 640px (two rows), eight across from
+ * a laptop (one). `MOST_GAMES_ON_A_SHELF` is the
  * eight, and `picker.test.ts` fails when a family grows past it.
  */
 export const PICK_TILE_GRID =
-  "grid grid-cols-3 gap-1.5 sm:grid-cols-[repeat(4,6.75rem)] lg:grid-cols-[repeat(8,6.75rem)]";
+  "grid grid-cols-3 gap-1.5 min-[390px]:grid-cols-4 sm:grid-cols-[repeat(4,6.75rem)] lg:grid-cols-[repeat(8,6.75rem)]";
 
 /** The most games any one family shows; the rows above are counted for this many. */
 export const MOST_GAMES_ON_A_SHELF = 8;
@@ -183,7 +186,7 @@ export const MOST_GAMES_ON_A_SHELF = 8;
  * board clicked in turn at the narrowest width of each range (360, 640, 768 and
  * 1024px), and held there by `e2e/set-up-steady.spec.ts`.
  */
-export const PICK_GAMES_PANEL = "min-h-[31rem] sm:min-h-[20rem] lg:min-h-[11.25rem]";
+export const PICK_GAMES_PANEL = "min-h-[31rem] min-[390px]:min-h-[24rem] sm:min-h-[20rem] lg:min-h-[11.25rem]";
 
 /**
  * The boards a game is played on, side by side rather than stacked.
