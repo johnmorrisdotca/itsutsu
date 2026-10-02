@@ -89,6 +89,12 @@ describe("which browser works out a computer's move", () => {
     expect(computerDriver(computer("m1"), "m0", AT)).toBe(false);
   });
 
+  it("a table whose first turn is a computer's is started at once by the host's page, the first seat, and by no other", () => {
+    const first = table({ toPlay: 1, kinds: ["member", "computer"], lastMoverId: null, moveCount: 0 });
+    expect(computerDriver(first, "m0", AT)).toBe(true);
+    expect(computerDriver(table({ toPlay: 2, kinds: ["member", "member", "computer"], lastMoverId: null, moveCount: 0 }), "m1", AT)).toBe(false);
+  });
+
   it("any member at the table once the turn has waited", () => {
     const later = new Date(AT.getTime() + COMPUTER_TAKEOVER_MS);
     expect(computerDriver(computer("m1"), "m0", later)).toBe(true);

@@ -3,7 +3,6 @@
 import { AskIfAway } from "@/components/game/AskIfAway";
 import type { SugorokuMove, SugorokuTable } from "@/lib/party/sugoroku/sugoroku.types";
 import { sugorokuOver, sugorokuToPlay } from "@/lib/party/sugoroku/sugorokuTable";
-import { sugorokuStanding } from "@/lib/party/sugoroku/sugorokuWords";
 
 import { SugorokuStage } from "../sugoroku/SugorokuStage";
 import { ONLINE_COPY } from "./online.constants";
@@ -27,9 +26,4 @@ export function SugorokuOnline({ game, appearance, canMove, onMove, mySeat }: On
       <AskIfAway watching={canMove && !over} detail={ONLINE_COPY.idleDetail} kept={ONLINE_COPY.idleKept} />
     </div>
   );
-}
-
-/** A seat's standing at one of the seven: its points in a match, or its checkers borne off in a single game. */
-export function sugorokuOnlineStanding(game: SugorokuTable, seat: number): string {
-  return sugorokuStanding(game, seat);
 }

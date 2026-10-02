@@ -403,14 +403,14 @@ html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-wid
  * 976 by 552 lying across from a small screen's width, and standing up, 552 by
  * 976, on a phone. The modal is as wide as the board the window's height
  * allows, with the status above it and the three presses and their line under
- * it on the screen with it (21rem lying across, 18rem standing).
+ * it on the screen with it (23.5rem lying across, 18rem standing).
  */
 html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-tables]) {
   width: min(100%, calc((100dvh - 18rem) * 552 / 976 + 2rem));
 }
 @media (min-width: 40rem) {
   html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-tables]) {
-    width: min(100%, calc((100dvh - 21rem) * 976 / 552 + 2rem));
+    width: min(100%, calc((100dvh - 23.5rem) * 976 / 552 + 2rem));
   }
 }
 

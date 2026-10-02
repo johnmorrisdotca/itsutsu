@@ -99,9 +99,19 @@ export const SUGOROKU_STRENGTH_LINES: Record<SugorokuStrength, string> = {
 /** The strength a computer seat opens on. */
 export const SUGOROKU_DEFAULT_STRENGTH: SugorokuStrength = "careful";
 
-/** What a computer's seat is called at a table on several devices: "Computer (Careful)". */
+/**
+ * What a computer's seat is called at a table on several devices, and how its strength is read back: "Computer-Careful", one word, because the site
+ * shows a name with a space in it as a first name and an initial (`shownName`), which would cut the strength off. It is said to the players as
+ * "Computer (Careful)" (`sugorokuComputerShown`).
+ */
 export function sugorokuComputerName(strength: SugorokuStrength): string {
-  return `Computer (${SUGOROKU_STRENGTH_NAMES[strength]})`;
+  return `Computer-${SUGOROKU_STRENGTH_NAMES[strength]}`;
+}
+
+/** A seat's name as a table says it: a computer's as "Computer (Careful)", any other name as it is. */
+export function sugorokuComputerShown(name: string): string {
+  const strength = SUGOROKU_STRENGTHS.find((one) => name === sugorokuComputerName(one));
+  return strength === undefined ? name : `Computer (${SUGOROKU_STRENGTH_NAMES[strength]})`;
 }
 
 /** The strength a seat's name says, or null for a name that is no computer's of this game. */

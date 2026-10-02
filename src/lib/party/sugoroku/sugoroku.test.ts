@@ -285,6 +285,9 @@ describe("the computer's four strengths play the table's own moves", () => {
   it("names a seat for each strength, and reads the strength back from the name", () => {
     for (const strength of SUGOROKU_STRENGTHS) expect(sugorokuStrengthOfName(sugorokuComputerName(strength))).toBe(strength);
     expect(sugorokuStrengthOfName("Computer")).toBeNull();
+    // One word, so the site's shortening of a name with a space in it (`shownName`) cannot cut the strength off; said to the players with the space.
+    expect(sugorokuComputerName("careful")).not.toMatch(/\s/);
+    expect(namedSugoroku(start("backgammon"), ["Ann", sugorokuComputerName("careful")]).players).toEqual(["Ann", "Computer (Careful)"]);
     expect(sugorokuStrengthOfName("Ann")).toBeNull();
   });
 
