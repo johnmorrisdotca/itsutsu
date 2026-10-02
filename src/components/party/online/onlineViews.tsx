@@ -19,6 +19,8 @@ import { PairGoOnline, pairGoStanding } from "./PairGoOnline";
 import { TenkaOnline, tenkaStanding } from "./TenkaOnline";
 import { TrainOnline, trainStanding } from "./TrainOnline";
 import { HitotsuOnline, hitotsuStanding } from "./HitotsuOnline";
+import { SugorokuOnline, sugorokuOnlineStanding } from "./SugorokuOnline";
+import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
 
 /**
  * EACH GAME'S BOARD AT A TABLE ON SEVERAL DEVICES, by game: a `Record` over
@@ -51,4 +53,6 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   tenka: { Board: TenkaOnline, standing: tenkaStanding, testId: "tenka-game", wide: true },
   mexicanTrain: { Board: TrainOnline, standing: trainStanding, testId: "train-game" },
   hitotsu: { Board: HitotsuOnline, standing: hitotsuStanding, testId: "hitotsu-game" },
+  // The seven backgammon games share one board; it lies across, so, like Tenka's map, it is laid out wide, in its own shape (`tables`).
+  ...(Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, { Board: SugorokuOnline, standing: sugorokuOnlineStanding, testId: "sugoroku-game", wide: true, tables: true }])) as Record<SugorokuKind, OnlineView<any, any>>), // eslint-disable-line @typescript-eslint/no-explicit-any -- as the table above.
 };

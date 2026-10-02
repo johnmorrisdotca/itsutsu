@@ -1,6 +1,7 @@
 "use client";
 
 import { CARD_GAME_LIST, type CardGameKind } from "@/lib/cardGames/cardGames.constants";
+import { SUGOROKU_KIND_LIST } from "@/lib/party/sugoroku/sugoroku.constants";
 
 /**
  * EVERY STORE ON ONE DEVICE, by the game it keeps, as the page that opens a
@@ -25,6 +26,21 @@ const STORES: Record<string, () => Promise<Adopt>> = {
     }
     throw new Error("A kept game is opened in the browser");
   },
+  // Sugoroku's rules are fetched by a browser only (`typeof window`), as Korokoro's are: a kept game is opened in the browser, and the pages' server function does not carry the backgammon package for it.
+  ...Object.fromEntries(
+    SUGOROKU_KIND_LIST.map(
+      (kind) =>
+        [
+          kind,
+          async () => {
+            if (typeof window !== "undefined") {
+              return (await import("./sugoroku/sugorokuStore")).adoptKeptSugoroku[kind];
+            }
+            throw new Error("A kept game is opened in the browser");
+          },
+        ] as const,
+    ),
+  ),
   chineseCheckers: async () => (await import("./partyCheckersStore")).adoptKeptPartyGame,
   halma: async () => (await import("./partyHalmaStore")).adoptKeptHalmaParty,
   blockFive: async () => (await import("./partyBlocksStore")).adoptKeptBlocksParty,

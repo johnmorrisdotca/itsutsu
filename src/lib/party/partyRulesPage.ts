@@ -9,6 +9,7 @@ import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { DICE_WAR_DICE, DICE_WAR_ROUND_GOALS, DICE_WAR_SIDES } from "./diceWar/diceWar.constants";
 import { HITOTSU_ONE_HAND } from "@johnmorrisdotca/hitotsu";
+import { SUGOROKU_OFFERED, SUGOROKU_TABLE_WORDS } from "./sugoroku/sugorokuRulesPage";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
 export function partyPlayersWords(kind: PartyKind): string {
@@ -55,6 +56,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   yacht: () => "with five dice and a sheet of thirteen boxes, alone or at a table",
   pachisi: () => "with two dice and four pawns each, round a cross of sixty-eight squares",
   hitotsu: (spec) => defaulted(spec, (size) => (size === HITOTSU_ONE_HAND ? "for one hand" : `to ${size} points`), "or"),
+  ...SUGOROKU_OFFERED,
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
   bigTwo: (spec) => `over ${defaulted(spec, (size) => String(size), "or")} deals`,
@@ -152,6 +154,7 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
       "The first card turned up is always a number; an action card or a wild turned up goes back under the stock. A draw card played as your last card is still taken by the next player, and counts against them.",
     ],
   },
+  ...SUGOROKU_TABLE_WORDS,
   hearts: {
     turn: "The line over the table says whose turn it is, by name. Your hand is along the foot of the table: tap a card to choose it (it rises), then press the button for the play; or drag it onto the table; or tap a card twice to play it at once, where that is the only thing it can do. A computer plays its own seat by itself, a moment after its turn comes. Passing, choose three cards and press Pass.",
     house: "When two or more people share the device, the table asks for it to be passed on by name between turns, and shows nobody's cards until that player says they have it; a table of one person and computers never asks. Every other hand is drawn face down. A red card carries a fine red line inside its edge, so colour is never the only sign of it. Nothing is rated or kept anywhere but this browser.",

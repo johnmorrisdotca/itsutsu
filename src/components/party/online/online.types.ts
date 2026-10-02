@@ -41,6 +41,8 @@ export type OnlineView<S, M> = {
    * presses in a row under it (`OnlineTable`, `boardScale.ts`).
    */
   wide?: boolean;
+  /** A wide board of the backgammon board's shape, lying across on a desk and standing up on a phone, rather than a map's two by one (`data-scale-tables`). */
+  tables?: boolean;
 };
 
 /** What the table page hands its client. */

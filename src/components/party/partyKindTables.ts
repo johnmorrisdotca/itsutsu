@@ -33,6 +33,10 @@ import { HITOTSU_COPY } from "./hitotsu/hitotsu.constants";
 import { DICE_WAR_COPY } from "./diceWar/diceWar.constants";
 import { DiceWarCardClient, DiceWarOfferClient, DiceWarTableClient } from "./diceWar/diceWarClient";
 import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
+import { SUGOROKU_COMPONENTS } from "./sugoroku/sugorokuClient";
+import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
+import { SUGOROKU_COPY } from "./sugoroku/sugoroku.constants";
+import { SUGOROKU_DISPLAY } from "@/lib/party/sugoroku/sugoroku.copy";
 
 /**
  * EACH PARTY GAME'S TABLE, one row a `PartyKind`: what its table page at
@@ -126,6 +130,13 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Offer: HitotsuOfferClient,
     Card: HitotsuCardClient,
   },
+  // The seven backgammon games, one table for all (`sugoroku/`), loaded in the browser only, as the card games' are.
+  ...(Object.fromEntries(
+    SUGOROKU_KIND_LIST.map((kind) => [
+      kind,
+      { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: SUGOROKU_COPY.lead(SUGOROKU_DISPLAY[kind].label), ...SUGOROKU_COMPONENTS[kind] },
+    ]),
+  ) as Record<SugorokuKind, PartyTable & { Card: ComponentType }>),
   spades: cardTable("spades", SpadesTable, SpadesOffer, SpadesCard),
   ginRummy: cardTable("ginRummy", GinRummyTable, GinRummyOffer, GinRummyCard),
   euchre: cardTable("euchre", EuchreTable, EuchreOffer, EuchreCard),
