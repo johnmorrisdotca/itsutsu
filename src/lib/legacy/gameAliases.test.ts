@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
-import { aliasedVariant } from "./gameAliases";
+import { SUGOROKU_LENGTHS, isSugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
+import { ALIAS_POINTS, aliasQuery, aliasedVariant } from "./gameAliases";
 
 describe("game aliases", () => {
   it("maps a source site's name to the Itsutsu game it actually is", () => {
@@ -28,8 +29,29 @@ describe("game aliases", () => {
     expect(aliasedVariant("Anti-Checkers")).toBeNull();
   });
 
+  it("leads every backgammon name of the two sites to the game it is, with the match length its name carries", () => {
+    expect(aliasedVariant("Backgammon")).toBe("backgammon");
+    expect(aliasedVariant("Pro Backgammon-9")).toBe("backgammon");
+    expect(aliasedVariant("Pro Backgammon Race")).toBe("backgammonRace");
+    expect(aliasedVariant("Anti-Backgammon")).toBe("antiBackgammon");
+    expect(aliasedVariant("Pro Nackgammon")).toBe("nackgammon");
+    expect(aliasedVariant("Long Gammon (7 Point)")).toBe("longGammon");
+    expect(aliasedVariant("Hypergammon (3 Point)")).toBe("hypergammon");
+    expect(aliasedVariant("Tabula")).toBe("tabula");
+    expect(aliasQuery("Pro Backgammon-9")).toBe("points=9");
+    expect(aliasQuery("Pro Backgammon")).toBe("points=5");
+    expect(aliasQuery("Casual Backgammon")).toBe("");
+    expect(aliasQuery("Flipversi")).toBe("");
+  });
+
+  it("only carries a match length the game it leads to is played to", () => {
+    for (const [name, points] of Object.entries(ALIAS_POINTS)) {
+      const game = aliasedVariant(name);
+      expect(game !== null && isSugorokuKind(game) && SUGOROKU_LENGTHS[game].includes(points), name).toBe(true);
+    }
+  });
+
   it("leaves a game with no Itsutsu equivalent unmapped, rather than guessing", () => {
-    expect(aliasedVariant("Backgammon")).toBeNull();
     expect(aliasedVariant("Chess")).toBeNull();
     expect(aliasedVariant("nonexistent game")).toBeNull();
   });

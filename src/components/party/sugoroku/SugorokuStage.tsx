@@ -55,7 +55,7 @@ export function SugorokuStage({
   const phase = turn.phase;
   const view = seat === 1 ? "black" : "white";
   const position = turn.game?.position ?? game?.position ?? viewOf(table).last?.position;
-  const status = over ? sugorokuEnding(table) : thinking !== null ? SUGOROKU_COPY.thinking(thinking) : sugorokuStatus(table);
+  const status = over ? sugorokuEnding(table) : thinking !== null ? SUGOROKU_COPY.thinking(thinking) : phase === "move" && to !== null ? `${names[to]} to play.` : sugorokuStatus(table);
   const hint = confirming
     ? SUGOROKU_COPY.giveUpAsk
     : phase === "move"
@@ -127,7 +127,7 @@ export function SugorokuStage({
           />
         ),
       )}
-      <div className="grid grid-cols-3 gap-2" data-testid="sugoroku-presses" data-bare-beside>
+      <div className="grid grid-cols-3 gap-2" data-testid="sugoroku-presses">
         <button type="button" onClick={primary.press} disabled={!primary.on} className={`${BUTTON_BASE} min-h-11 ${primary.on ? BUTTON_STRONG : BUTTON_QUIET}`} data-testid={primary.test}>
           {primary.label}
         </button>

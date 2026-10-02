@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { EVERY_GAME_KEY, gameCopyFor, type GameKey } from "@/lib/catalogue/gameKeys";
 import { GAME_ALIASES, NO_GAME_HERE } from "./gameAliases";
 import { LEGACY_PLAYERS } from "./legacyPlayers.data";
 
@@ -49,10 +47,10 @@ function everyKnownName(): string[] {
 }
 
 /** The games here that go by a name, compared without case: their label and every other name they are known by. */
-function gamesCalled(name: string): RuleVariant[] {
+function gamesCalled(name: string): GameKey[] {
   const wanted = name.trim().toLowerCase();
-  return (Object.values(RULE_VARIANTS) as RuleVariant[]).filter((variant) => {
-    const copy = RULE_VARIANT_DISPLAY[variant];
+  return EVERY_GAME_KEY.filter((game) => {
+    const copy = gameCopyFor(game);
     return [copy.label, ...(copy.alsoKnownAs ?? [])].some((own) => own.trim().toLowerCase() === wanted);
   });
 }

@@ -33,7 +33,7 @@ import { HITOTSU_COPY } from "./hitotsu/hitotsu.constants";
 import { DICE_WAR_COPY } from "./diceWar/diceWar.constants";
 import { DiceWarCardClient, DiceWarOfferClient, DiceWarTableClient } from "./diceWar/diceWarClient";
 import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
-import { SUGOROKU_COMPONENTS } from "./sugoroku/sugorokuClient";
+import { SUGOROKU_COMPONENTS } from "./sugoroku/sugorokuRows";
 import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
 import { SUGOROKU_COPY } from "./sugoroku/sugoroku.constants";
 import { SUGOROKU_DISPLAY } from "@/lib/party/sugoroku/sugoroku.copy";

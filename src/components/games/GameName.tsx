@@ -5,7 +5,7 @@ import Link from "@/components/ui/Link";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RAISED_LINK, STRETCHED_LINK } from "@/components/ui/ui.constants";
 import { type GameKey, gameCopyOf } from "@/lib/catalogue/gameKeys";
-import { aliasedVariant } from "@/lib/legacy/gameAliases";
+import { aliasQuery, aliasedVariant } from "@/lib/legacy/gameAliases";
 import { gameKeyFor, gamePath } from "@/lib/gomoku/slugs";
 
 /**
@@ -93,7 +93,7 @@ export function GameName({
   const shown = say.pairName(copy.label, copy.kanji);
   return (
     <Link
-      href={gamePath(known)}
+      href={`${gamePath(known)}${variant === undefined && name !== undefined && aliasQuery(name) !== "" ? `?${aliasQuery(name)}` : ""}`}
       data-testid="game-name"
       data-variant={known}
       // The mark the card and its arrow answer to; see `card-hover` in globals.css.

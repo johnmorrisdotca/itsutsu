@@ -1,3 +1,4 @@
+import type { GameKey } from "@/lib/catalogue/gameKeys";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -19,7 +20,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
  * neither table, when a record uses a name one of our games goes by without
  * leading to it, or when a name is in both.
  */
-export const GAME_ALIASES: Readonly<Record<string, RuleVariant>> = {
+export const GAME_ALIASES: Readonly<Record<string, GameKey>> = {
   // ItsYourTurn / GoldToken: five in a row, no restriction.
   "Go-Moku": RULE_VARIANTS.freestyle,
   "Go Moku": RULE_VARIANTS.freestyle,
@@ -69,9 +70,83 @@ export const GAME_ALIASES: Readonly<Record<string, RuleVariant>> = {
   "Hotspot Four in a Row": RULE_VARIANTS.hotDrop,
   "Wormhole Four in a Row": RULE_VARIANTS.wormDrop,
   "Zero G Four in a Row": RULE_VARIANTS.edgeDrop,
+  /*
+   * THE BACKGAMMON FAMILY, from both sites (2026-10-01): each name leads to the
+   * game it is — Nackgammon to Nackgammon, Hypergammon (3 Point) to Hypergammon —
+   * and, where the name carries a match length, to a table set to it
+   * (`ALIAS_POINTS`). "Level 2" and "Level 3" are tournament tiers on
+   * ItsYourTurn, not rules, and "Casual" is the plain game
+   * (docs/VARIANTS.md in Sugoroku). The sites' names are theirs; here they only
+   * appear where a kept record prints them.
+   */
+  Backgammon: "backgammon",
+  "Backgammon (3 Point)": "backgammon",
+  "Backgammon (5 Point)": "backgammon",
+  "Backgammon (7 Point)": "backgammon",
+  "Backgammon (9 Point)": "backgammon",
+  "Backgammon Level 2": "backgammon",
+  "Backgammon Level 3": "backgammon",
+  "Casual Backgammon": "backgammon",
+  "Pro Backgammon": "backgammon",
+  "Pro Backgammon Level 2": "backgammon",
+  "Pro Backgammon-9": "backgammon",
+  "Backgammon Race": "backgammonRace",
+  "Backgammon Race Level 2": "backgammonRace",
+  "Pro Backgammon Race": "backgammonRace",
+  "Anti-Backgammon": "antiBackgammon",
+  Nackgammon: "nackgammon",
+  "Nackgammon (3 Point)": "nackgammon",
+  "Nackgammon (5 Point)": "nackgammon",
+  "Nackgammon (7 Point)": "nackgammon",
+  "Nackgammon (9 Point)": "nackgammon",
+  "Pro Nackgammon": "nackgammon",
+  "Long Gammon": "longGammon",
+  "Long Gammon (3 Point)": "longGammon",
+  "Long Gammon (5 Point)": "longGammon",
+  "Long Gammon (7 Point)": "longGammon",
+  "Long Gammon (9 Point)": "longGammon",
+  Hypergammon: "hypergammon",
+  "Hypergammon (3 Point)": "hypergammon",
+  "Hypergammon (5 Point)": "hypergammon",
+  Tabula: "tabula",
 };
 
-const BACKGAMMON = "A backgammon game: dice and a race home, and nothing here is played with dice.";
+/**
+ * THE MATCH LENGTH A NAME CARRIES, in points: "Backgammon (7 Point)" is a match
+ * to 7, "Pro Backgammon" and "Pro Nackgammon" to 5, "Pro Backgammon-9" to 9,
+ * "Pro Backgammon Race" to 5 (the sites' own readings, in Sugoroku's
+ * docs/VARIANTS.md). A name that carries none is the plain single game, and is
+ * not here. A link from a kept record puts it in the address (`aliasQuery`) and
+ * the game's set-up opens on it.
+ */
+export const ALIAS_POINTS: Readonly<Record<string, number>> = {
+  "Backgammon (3 Point)": 3,
+  "Backgammon (5 Point)": 5,
+  "Backgammon (7 Point)": 7,
+  "Backgammon (9 Point)": 9,
+  "Pro Backgammon": 5,
+  "Pro Backgammon Level 2": 5,
+  "Pro Backgammon-9": 9,
+  "Pro Backgammon Race": 5,
+  "Nackgammon (3 Point)": 3,
+  "Nackgammon (5 Point)": 5,
+  "Nackgammon (7 Point)": 7,
+  "Nackgammon (9 Point)": 9,
+  "Pro Nackgammon": 5,
+  "Long Gammon (3 Point)": 3,
+  "Long Gammon (5 Point)": 5,
+  "Long Gammon (7 Point)": 7,
+  "Long Gammon (9 Point)": 9,
+  "Hypergammon (3 Point)": 3,
+  "Hypergammon (5 Point)": 5,
+};
+
+/** The address's query for a name that carries a match length: "points=5", or "" for any other name. */
+export function aliasQuery(gameName: string): string {
+  const points = ALIAS_POINTS[gameName];
+  return points === undefined ? "" : `points=${points}`;
+}
+
 const HIDDEN_FLEET = "A hidden-fleet guessing game; nothing here is played blind.";
 const CARDS = "A card game; nothing here is played with cards.";
 
@@ -90,38 +165,6 @@ export const NO_GAME_HERE: Readonly<Record<string, string>> = {
 
   // A flipping game on a board ours do not have.
   "Flipversi Blackhole 10x10": "Reversi on 10×10 with a blocked hole in the board; Grand Reversi here has no hole.",
-
-  // The backgammon family, from both sites.
-  Backgammon: BACKGAMMON,
-  "Backgammon (3 Point)": BACKGAMMON,
-  "Backgammon (5 Point)": BACKGAMMON,
-  "Backgammon (7 Point)": BACKGAMMON,
-  "Backgammon (9 Point)": BACKGAMMON,
-  "Backgammon Level 2": BACKGAMMON,
-  "Backgammon Level 3": BACKGAMMON,
-  "Backgammon Race": BACKGAMMON,
-  "Backgammon Race Level 2": BACKGAMMON,
-  "Casual Backgammon": BACKGAMMON,
-  "Pro Backgammon": BACKGAMMON,
-  "Pro Backgammon Level 2": BACKGAMMON,
-  "Pro Backgammon Race": BACKGAMMON,
-  "Pro Backgammon-9": BACKGAMMON,
-  "Anti-Backgammon": BACKGAMMON,
-  Nackgammon: BACKGAMMON,
-  "Nackgammon (3 Point)": BACKGAMMON,
-  "Nackgammon (5 Point)": BACKGAMMON,
-  "Nackgammon (7 Point)": BACKGAMMON,
-  "Nackgammon (9 Point)": BACKGAMMON,
-  "Pro Nackgammon": BACKGAMMON,
-  "Long Gammon": BACKGAMMON,
-  "Long Gammon (3 Point)": BACKGAMMON,
-  "Long Gammon (5 Point)": BACKGAMMON,
-  "Long Gammon (7 Point)": BACKGAMMON,
-  "Long Gammon (9 Point)": BACKGAMMON,
-  Hypergammon: BACKGAMMON,
-  "Hypergammon (3 Point)": BACKGAMMON,
-  "Hypergammon (5 Point)": BACKGAMMON,
-  Tabula: BACKGAMMON,
 
   // Hidden fleets, cards, and GoldToken's own games.
   Battleboats: HIDDEN_FLEET,
@@ -143,7 +186,7 @@ export const NO_GAME_HERE: Readonly<Record<string, string>> = {
 };
 
 /** The Itsutsu variant a source site's own game name corresponds to, or null when there isn't one. */
-export function aliasedVariant(gameName: string): RuleVariant | null {
+export function aliasedVariant(gameName: string): GameKey | null {
   return GAME_ALIASES[gameName] ?? null;
 }
 

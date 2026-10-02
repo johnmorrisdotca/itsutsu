@@ -30,6 +30,7 @@ export const FAMILY_FOLD_KEYS = [
   "cards",
   "table-cards",
   "tiles",
+  "tables",
   "party",
   "other",
 ] as const;

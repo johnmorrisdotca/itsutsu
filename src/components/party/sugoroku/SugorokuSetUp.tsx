@@ -50,7 +50,11 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
  */
 export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { kind: SugorokuKind; appearance: Appearance; onStart: (table: SugorokuTable) => void; ready: { "data-ready": string }; online?: OnlineOffer }) {
   const lengths = SUGOROKU_LENGTHS[kind];
-  const [length, setLength] = useState<number>(SUGOROKU_DEFAULT_LENGTH);
+  // The match length a link from a kept record asked for (`?points=7`), if this game is played to it.
+  const [length, setLength] = useState<number>(() => {
+    const asked = Number(new URLSearchParams(window.location.search).get("points"));
+    return lengths.includes(asked) ? asked : SUGOROKU_DEFAULT_LENGTH;
+  });
   const [names, setNames] = useState<[string, string]>(["", ""]);
   const [computer, setComputer] = useState(true);
   const [strength, setStrength] = useState<SugorokuStrength>(SUGOROKU_DEFAULT_STRENGTH);

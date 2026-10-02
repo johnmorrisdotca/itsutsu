@@ -49,13 +49,14 @@ test.describe("a legacy record's games link to what they are", () => {
     await expect(goMoku).toHaveAttribute("href", gamePath(RULE_VARIANTS.freestyle));
 
     /*
-     * Backgammon has no Itsutsu equivalent. It must render, not as a link,
-     * and visibly as a game that is not ours — on a page where every other
-     * game name leads somewhere, bare words read as a link nobody made.
+     * Backgammon is a game here (Sugoroku, 2026-10-01), so its name leads to it. A game we still do not have,
+     * Anti-Checkers, must render, not as a link, and visibly as a game that is not ours — on a page where every
+     * other game name leads somewhere, bare words read as a link nobody made.
      */
-    await expect(detail.getByText("Backgammon", { exact: true })).toBeVisible();
-    await expect(detail.getByRole("link", { name: "Backgammon", exact: true })).toHaveCount(0);
-    const notHere = detail.getByTestId("game-not-here").filter({ hasText: "Backgammon" }).first();
+    await expect(detail.getByRole("link", { name: "Backgammon", exact: true })).toHaveAttribute("href", gamePath("backgammon"));
+    await expect(detail.getByText("Anti-Checkers", { exact: true })).toBeVisible();
+    await expect(detail.getByRole("link", { name: "Anti-Checkers", exact: true })).toHaveCount(0);
+    const notHere = detail.getByTestId("game-not-here").filter({ hasText: "Anti-Checkers" }).first();
     await expect(notHere, "a game we do not have looked like a link nobody made").toBeVisible();
     await expect(notHere).toHaveClass(/italic/);
     await expect(notHere).toHaveAttribute("title", /not a game played here/i);
@@ -65,8 +66,8 @@ test.describe("a legacy record's games link to what they are", () => {
     // His head-to-head with his father is GoldToken's, so it is that tab.
     await page.goto("/players/john-morris/goldtoken");
     const log = page.getByTestId("legacy-head-to-head-log");
-    await expect(log.getByRole("link", { name: "Long Gammon" })).toHaveCount(0);
-    await expect(log.getByText("Long Gammon").first()).toBeVisible();
+    // Long Gammon is a game here now (2026-10-01), so the name leads to it.
+    await expect(log.getByRole("link", { name: "Long Gammon" }).first()).toHaveAttribute("href", gamePath("longGammon"));
   });
 
   test("one person is one page, with every site they played on", async ({ page }) => {

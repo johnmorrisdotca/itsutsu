@@ -87,6 +87,8 @@ const WIDE_BOARDS: Record<string, string> = {
     "Tenka's map of the world is twice as wide as it is tall on a desk (BOARD_ASPECTS.map), so a column beside it takes width the map needs",
   [join("src", "components", "party", "online", "OnlineTable.tsx")]:
     "the same map at a table on several devices: a game whose view says it is wide (OnlineView.wide, Tenka's) is laid out without the seats beside it",
+  [join("src", "components", "party", "sugoroku", "SugorokuPlay.tsx")]:
+    "the backgammon board lies across, 976 by 552 (data-scale-tables), so a column beside it takes width it needs; it stands up on a phone",
 };
 
 const NO_BOARD_TO_SIZE: Record<string, string> = {
