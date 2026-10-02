@@ -26,8 +26,6 @@ import { decodeMoves } from "@johnmorrisdotca/jarajara";
 import { decodeCubeMoves, moveNotation } from "@johnmorrisdotca/kyuubu";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
-import { lettersOf } from "../src/lib/puzzles/kumimoji/grid";
-import { tileWords } from "../src/lib/puzzles/kumimoji/tileWords";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
@@ -65,9 +63,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "towers", size: 5, level: "medium", seed: 20260924, fill: 3 },
   // An 8×8 Black and White a third filled: printed stones on their shaded cells, and the solver's beside them.
   { kind: "blackAndWhite", size: 8, level: "medium", seed: 20260924, fill: 3 },
-  // Gomoji's own picture says its name on every row, G O M O J I, going green a row at a time until the last is all
-  // green. John, 2026-09-26: "Update the GOMOJI image to say GOMOJI a bunch of times." Played first, then relettered.
-  { kind: "gomoji", size: 6, level: "medium", seed: 20260924, fill: 0 },
+  // Gomoji's own picture is its name in three rows of large stones, GO / MO / JI, white, yellow and green (retaken by the branch below).
+  { kind: "gomoji", size: 4, level: "easy", seed: 20260924, fill: 0 },
   { kind: "gomojiKana", size: 4, level: "easy", seed: 20260925, fill: 2 },
   // Gomoji Mot and Gomoji Wort: the same shape of picture, French's and German's own words.
   { kind: "gomojiMot", size: 5, level: "easy", seed: 20260925, fill: 2 },
@@ -76,7 +73,7 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "gomojiPop", size: 5, level: "easy", seed: 20260926, fill: 2 },
   // A 6×6 Tsunagi, level 8 (in the first row, open to anybody), all but two of its lines drawn and one of those begun: marbles, lines and washed cells.
   { kind: "tsunagi", size: 6, level: "easy", seed: 8, fill: 2 },
-  // A Classic Kumimoji's first hand, most of it laid: a word across and words down from it, on the table's own colour.
+  // Kumimoji's title picture: KUMI, MOJI and KUMI joined in large tiles on the table's own colour (the scene lays them itself).
   { kind: "kumimoji", size: 11, level: "medium", seed: 20260926, fill: 2 },
   // A Koushi four swaps into its fewest: greens, golds and plain letters still to place, and the four holes of the lattice.
   { kind: "koushi", size: 5, level: "medium", seed: 20260926, fill: 4 },
@@ -98,37 +95,6 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
   { kind: "spider", size: 2, level: "medium", seed: 20260930, fill: 30 },
 ];
-
-/**
- * A small crossword out of a Kumimoji hand, as a player would lay it: the
- * longest everyday word the hand makes, across, and then up to `downs` words
- * hanging down from its letters, two columns apart so they never touch. The
- * everyday words are Gomoji's easy answers, so the picture does not spell a
- * word nobody knows.
- */
-function crosswordFrom(hand: string, downs: number): { letter: string; square: string }[] {
-  const fits = (word: string, letters: string) => [...lettersOf(word)].every(([letter, count]) => (lettersOf(letters).get(letter) ?? 0) >= count);
-  const everyday = (length: number) => (length === 4 || length === 5 ? answersFor(length, true) : tileWords().byLength.get(length)!);
-  const across = [5, 4].map((length) => everyday(length).find((word) => fits(word, hand))).find((word) => word !== undefined)!;
-  const laid = [...across].map((letter, col) => ({ letter, square: `0,${col}` }));
-  let left = hand;
-  for (const letter of across) left = left.replace(letter, "");
-  let from = -2;
-  for (let col = 0; col < across.length && laid.length < hand.length; col += 1) {
-    if (col - from < 2 || downs === 0) continue;
-    const down = [5, 4]
-      .map((length) => everyday(length).find((word) => word[0] === across[col] && fits(word.slice(1), left)))
-      .find((word) => word !== undefined);
-    if (down === undefined) continue;
-    for (const [row, letter] of [...down.slice(1)].entries()) {
-      laid.push({ letter, square: `${row + 1},${col}` });
-      left = left.replace(letter, "");
-    }
-    from = col;
-    downs -= 1;
-  }
-  return laid;
-}
 
 test.describe("puzzle screenshots", () => {
   test.skip(process.env.GAME_SCREENSHOTS !== "1", "Set GAME_SCREENSHOTS=1 to write them.");
@@ -232,36 +198,52 @@ test.describe("puzzle screenshots", () => {
         }
       } else if (scene.kind === "gomoji") {
         /*
-         * Every row played as a person plays it, so every place holds a real stone
-         * drawn by the grid itself — then each stone is relettered GOMOJI and
-         * given the look of the mark its row's story needs. Only the letters and
-         * the colours change: the board, the stones and their sizes are the game's.
+         * A TITLE PICTURE, NOT A POSITION. John, 2026-10-01: "a clearer GO MO JI
+         * in 3 lines, large tiles, for better visibility, on a nice board ... in 3
+         * colours: WHITE, YELLOW and GREEN." Three rows are played as a person
+         * plays them so the grid draws real stones, then the board's own stones
+         * are laid out two across and three down, each as large as the board
+         * allows and lettered GO / MO / JI, one colour to a row. The board, its
+         * felt, its stones and their shading are the game's; only this picture's
+         * stones are larger than any a player sees.
          */
-        const rows = await page.locator('[data-testid="word-tile"][data-row]').evaluateAll((tiles) => new Set(tiles.map((tile) => tile.getAttribute("data-row"))).size);
         const fillers = answersFor(scene.size, false).filter((word) => word !== puzzle.solution);
-        for (const guess of fillers.slice(0, rows - 1)) {
+        for (const guess of fillers.slice(0, 2)) {
           await page.keyboard.type(guess);
           await page.keyboard.press("Enter");
           filled += 1;
         }
-        await page.keyboard.type(fillers[rows - 1]!);
-        await expect(page.locator('[data-testid="word-tile"] span')).toHaveCount(rows * scene.size);
+        await page.keyboard.type(fillers[2]!);
+        await expect(page.locator('[data-testid="word-tile"] span')).toHaveCount(3 * scene.size);
         await page.evaluate(
-          ({ looks, rows }) => {
-            const name = "GOMOJI";
-            // The order places turn green in, so the greens gather from both ends rather than in a line.
-            const greenOrder = [0, 5, 2, 3, 1, 4];
-            for (const tile of document.querySelectorAll<HTMLElement>('[data-testid="word-tile"]')) {
-              const row = Number(tile.dataset.row);
-              const at = [...tile.parentElement!.children].filter((each) => (each as HTMLElement).dataset.row === tile.dataset.row).indexOf(tile);
-              const greens = Math.round((name.length * row) / (rows - 1));
-              const mark = greenOrder.indexOf(at) < greens ? "hit" : (row + at) % 2 === 0 ? "near" : "miss";
+          ({ looks, SIZE }) => {
+            const rows = ["GO", "MO", "JI"];
+            // The green of a found letter, brightened so it reads as green on green felt at a thumbnail's size.
+            const green = { background: "radial-gradient(circle at 35% 30%, #b8f27a 0%, #4fc04a 45%, #1f7a2c 100%)", color: "#0d2a12" };
+            const colours = [looks.typed, looks.kin, green];
+            const tiles = [...document.querySelectorAll<HTMLElement>('[data-testid="word-tile"]')];
+            const box = tiles[0]!.parentElement!;
+            const face = box.closest<HTMLElement>('[data-testid="board-surface"]')!.firstElementChild!.firstElementChild!;
+            // The smaller grid's lines and heavy border are for the real play area; this picture draws its own cells below.
+            for (const each of [...face.children]) if (each !== box) (each as HTMLElement).style.display = "none";
+            // Two across, three down, in squares: as tall as the board lets them be.
+            Object.assign(box.style, { left: "21.3%", top: "7%", width: "57.4%", height: "86%", gap: "0", padding: "0", border: "3px solid #0b2a18" });
+            box.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+            box.style.gridTemplateRows = "repeat(3, minmax(0, 1fr))";
+            tiles.forEach((tile, index) => {
+              const row = Math.floor(index / SIZE);
+              const at = index % SIZE;
+              if (row > 2 || at > 1) {
+                tile.style.display = "none";
+                return;
+              }
+              Object.assign(tile.style, { border: "1.5px solid #0b2a18", background: "rgba(255,255,255,0.05)" });
               const stone = tile.querySelector("span")!;
-              stone.textContent = name[at]!.toLowerCase();
-              Object.assign(stone.style, looks[mark]);
-            }
+              stone.textContent = rows[row]![at]!;
+              Object.assign(stone.style, colours[row]!, { width: "94%", height: "94%", fontSize: "calc(100cqw / 2 * 0.62)", fontWeight: "800" });
+            });
           },
-          { looks: WORD_STONE_LOOK, rows },
+          { looks: WORD_STONE_LOOK, SIZE: scene.size },
         );
       } else if (scene.kind === "gomojiMot") {
         // Two words that are not the answer, then the answer's first letters, typed as a person types them.
@@ -332,11 +314,60 @@ test.describe("puzzle screenshots", () => {
         await page.getByTestId("felt-wood").click();
         await page.getByTestId("word-style-reversi").click();
         await expect(page.getByTestId("kumimoji-table")).toHaveAttribute("data-board", "reversi");
-        for (const tile of crosswordFrom(puzzle.givens.slice(0, scene.size), scene.fill)) {
-          await page.locator(`[data-testid="kumimoji-hand-tile"][data-letter="${tile.letter}"]`).first().click();
-          await page.locator(`[data-testid="kumimoji-square"][data-square="${tile.square}"]`).click();
+        /*
+         * A TITLE PICTURE: KUMI across the top, MOJI hanging down from its M,
+         * and KUMI again across the foot, ending in MOJI's I. John, 2026-10-01:
+         * "KUMI and MOJI joined in a cross, and then KUMI joined again with MOJI
+         * from the top going down." Ten hand tiles are tapped onto the table's
+         * squares as a player lays them, then lettered for the title; the table
+         * fits itself to the ten, so its tiles are as large as a table of this
+         * shape can make them.
+         */
+        const title = [
+          ["0,1", "K"], ["0,2", "U"], ["0,3", "M"], ["0,4", "I"],
+          ["1,3", "O"], ["2,3", "J"],
+          ["3,0", "K"], ["3,1", "U"], ["3,2", "M"], ["3,3", "I"],
+        ] as const;
+        for (const [square] of title) {
+          await page.locator('[data-testid="kumimoji-hand-tile"]').first().click();
+          await page.locator(`[data-testid="kumimoji-square"][data-square="${square}"]`).click();
+          await expect(page.locator(`[data-testid="kumimoji-tile"][data-square="${square}"]`)).toHaveCount(1);
           filled += 1;
         }
+        // The game's own cream tiles in their usual ink: KUMI and MOJI are not a crossword's words, so the red "not a word" look is taken off.
+        // React draws a tile again whenever the page changes anything round it, which puts back the hand's own letter and that look: so an observer keeps them, not a single edit.
+        await page.evaluate((letters) => {
+          const apply = () => {
+            for (const [square, letter] of letters) {
+              const stone = document.querySelector<HTMLElement>(`[data-testid="kumimoji-tile"][data-square="${square}"] span`);
+              if (stone === null) continue;
+              if (stone.textContent !== letter) stone.textContent = letter;
+              stone.classList.remove("border-shu", "bg-shu-soft", "text-shu");
+            }
+          };
+          apply();
+          new MutationObserver(apply).observe(document.querySelector('[data-testid="kumimoji-table"]')!, { childList: true, subtree: true, characterData: true });
+        }, title);
+        await expect(page.locator('[data-testid="kumimoji-tile"] span')).toHaveText(title.map(([, letter]) => letter));
+        // Cropped to the ten tiles and a margin of a fifth of a tile, so they fill the picture rather than the table's wide margin.
+        const tilesBox = await page.evaluate(() => {
+          const boxes = [...document.querySelectorAll('[data-testid="kumimoji-tile"]')].map((tile) => tile.getBoundingClientRect());
+          const left = Math.min(...boxes.map((each) => each.left));
+          const top = Math.min(...boxes.map((each) => each.top));
+          // In the page's own coordinates, so a crop may reach past the top of what is on screen.
+          return { left: left + scrollX, top: top + scrollY, right: Math.max(...boxes.map((each) => each.right)) + scrollX, bottom: Math.max(...boxes.map((each) => each.bottom)) + scrollY };
+        });
+        // A square, as every game's picture is, so the thumbnails keep all of it: the tiles centred in it with a margin of a fifth of a tile.
+        const side = Math.max(tilesBox.right - tilesBox.left, tilesBox.bottom - tilesBox.top) + 2 * 0.2 * ((tilesBox.right - tilesBox.left) / 5);
+        await page.screenshot({
+          path: `${OUT}/${scene.kind}.jpg`,
+          type: "jpeg",
+          quality: 86,
+          fullPage: true,
+          clip: { x: (tilesBox.left + tilesBox.right - side) / 2, y: (tilesBox.top + tilesBox.bottom - side) / 2, width: side, height: side },
+        });
+        if (feltBefore !== null && feltBefore !== "felt-wood") await page.getByTestId(feltBefore).click();
+        return;
       } else if (scene.kind === "koushi") {
         // The first few of the fewest swaps, each tapped as a person taps them: one tile, then its partner.
         for (const [a, b] of decodePlay(puzzle.solution)!.swaps.slice(0, scene.fill)) {
@@ -431,12 +462,6 @@ test.describe("puzzle screenshots", () => {
       await expect(page.locator('[data-testid="puzzle-cell"][aria-pressed="true"]')).toHaveCount(0);
       // And no focus ring on the last cell pressed, which Hidden Stones' pictures carried round a cross.
       await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-      // A Kumimoji has no board: its picture is the table under its tiles, fitted to them.
-      if (scene.kind === "kumimoji") {
-        await page.getByTestId("kumimoji-area").screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
-        if (feltBefore !== null && feltBefore !== "felt-wood") await page.getByTestId(feltBefore).click();
-        return;
-      }
       const grid = page.getByTestId(scene.kind === "mahjong" ? "mahjong-board-frame" : "puzzle-grid");
       await expect(grid).toBeVisible();
       // The board in its wood and nothing round it, as a game's picture is taken (game-screenshots.spec.ts):
