@@ -10,6 +10,9 @@ import { SCRAMBLE_LENGTHS } from "./cube/generate";
 import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
 import { SUIDO_LEVEL_SIZES } from "./suido/sizes";
+import { thousands } from "../ui/thousands";
+import { MEIKYUU_LEVEL_COUNTS } from "./meikyuu/levelCounts";
+import { MEIKYUU_SIZES, meikyuuSizeLabel } from "./meikyuu/sizes";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -58,12 +61,16 @@ export const PUZZLE_KINDS = {
   mahjong: "mahjong",
   cube: "cube",
   suido: "suido",
+  meikyuu: "meikyuu",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
 function mahjongTiles(size: number): number {
   return layoutFor(size)?.slots.length ?? 0;
 }
+
+/** How many levels Meikyuu has in all, read from its sizes rather than typed into its copy. */
+const MEIKYUU_LEVELS_TOTAL = Object.values(MEIKYUU_LEVEL_COUNTS).reduce((total, count) => total + count, 0);
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
 export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
@@ -91,6 +98,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.mahjong,
   PUZZLE_KINDS.cube,
   PUZZLE_KINDS.suido,
+  PUZZLE_KINDS.meikyuu,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -389,6 +397,30 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     mostCells: 400,
     checks: false,
   },
+  /*
+   * MEIKYUU, the maze (`meikyuu/`, the package `@johnmorrisdotca/meikyuu`):
+   * 1,000 fixed levels, the same for everybody, in four sizes that are the
+   * package's own words for how many cells a maze has (small, medium, large,
+   * huge: `meikyuu/sizes.ts`), numbered 1 to 4 here. A maze has no side, so the
+   * number is only the size's place; the level's number in its size is the
+   * seed, as Tsunagi's is (`fixedLevels`). The givens are the level's recipe,
+   * a short word such as `square:12x9:wilson:to-goal:48213` (45 characters at
+   * the longest); the answer is the line drawn from the start to the goal, one
+   * character a step (`meikyuu/way.ts`), 2,434 at the longest, so 2,600 is
+   * room. No Check or Hint (the line is in plain sight, and a level's time is
+   * one anybody can be raced on) and no countdown, as a Suido level has none.
+   */
+  meikyuu: {
+    sizes: MEIKYUU_SIZES,
+    offered: MEIKYUU_SIZES,
+    defaultSize: 1,
+    levels: PUZZLE_LEVEL_LIST,
+    defaultLevel: "easy",
+    mostCells: 2600,
+    helps: false,
+    fixedLevels: true,
+    clock: false,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -583,6 +615,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     610: { label: "Pipe", kanji: "管" },
     814: { label: "Long pipe", kanji: "長管" },
   },
+  // A maze by how many cells it has, the size's place (1 to 4) being the big number on the tile (`meikyuu/sizes.ts`): the names are the package's own words for it.
+  meikyuu: {
+    1: { label: "Small", kanji: "小" },
+    2: { label: "Medium", kanji: "中" },
+    3: { label: "Large", kanji: "大" },
+    4: { label: "Huge", kanji: "巨大" },
+  },
   // A cube by its side, the big number on the tile; the names are ours, never a maker's.
   cube: {
     2: { label: "Mini", kanji: "小" },
@@ -637,6 +676,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: `${SCRAMBLE_LENGTHS.medium[3]} turns on the 3×3: too many to take back by looking, so it has to be solved.`,
     hard: `A full scramble, as long as a competition's: ${SCRAMBLE_LENGTHS.hard[3]} turns on the 3×3.`,
   },
+  // A Meikyuu level's band is the third of its size's list it sits in: the package orders every list so that no level is easier than the one before.
+  meikyuu: {
+    easy: "The first third of a size's levels: short ways through, and wrong turns that end quickly.",
+    medium: "The middle third: longer ways, and branches that lead a long way before they stop.",
+    hard: "The last third: the longest ways and the most forks, and in the biggest mazes much more to look at.",
+  },
   // A Suido level is a target for the package's own rank among boards of the same size (`SUIDO_DIFFICULTY`).
   suido: {
     easy: "Among the plainer boards of its size: most pieces can be settled by looking at what is beside them.",
@@ -687,6 +732,8 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
  * heading for the list of them.
  */
 export const CARD_SIZE_WORDS: Partial<Record<PuzzleKind, { legend: string; heading: string; word: (size: number) => string }>> = {
+  // A maze's size is how many cells it has, in the package's four words (`meikyuu/sizes.ts`).
+  meikyuu: { legend: "Size", heading: "Sizes", word: (size) => meikyuuSizeLabel(size) },
   solitaire: { legend: "Draw", heading: "Draws", word: (size) => `draw ${size}` },
   freecell: { legend: "Free cells", heading: "Free cells", word: (size) => `${size} ${size === 1 ? "cell" : "cells"}` },
   spider: { legend: "Suits", heading: "Suits", word: (size) => `${size} ${size === 1 ? "suit" : "suits"}` },
@@ -1211,5 +1258,32 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       "7×7 is the usual size. 5×5 is quick, 9×9 is longer, and 12×12 is an evening; on a phone a board of 10×10 or more zooms, with Fit and the arrows under the board. The levels come in 13 sizes, 5×5 to 14×14, and in three long boards taller than they are wide, 5×7, 6×10 and 8×14. Drains leaves spare pieces to see past; network uses every piece, so it has no spares to ignore.",
+  },
+  /*
+   * OUR OWN NAME FOR IT, and a plain one. A maze to draw a line through is as old as paper and belongs to nobody,
+   * so there is no maker to credit or to avoid. 迷宮 (meikyuu), "labyrinth", is written with 迷, to get lost, and
+   * 宮, a palace; the everyday word for a maze on a page is 迷路 (meiro), and 迷宮 is the one for a labyrinth you
+   * can be lost in. Read 2026-10-01 against the package's own README (`@johnmorrisdotca/meikyuu`), which cites
+   * its sources.
+   */
+  meikyuu: {
+    label: "Meikyuu",
+    kanji: "迷宮",
+    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them.`,
+    inspiredBy: "the maze drawn through with a pencil, from its start to its goal",
+    alsoKnownAs: ["Maze", "Labyrinth", "迷路"],
+    origin:
+      "A maze to draw a way through is among the oldest puzzles on paper. 迷宮 (meikyū) is Japanese for labyrinth: 迷 is to get lost and 宮 a palace, so a bewildering palace, and it is the word Japanese games use for the place a player goes down into. The mazes here are made by seven well-known methods, the ones described in Jamis Buck's writing on maze algorithms and Walter Pullen's Think Labyrinth, from a few cells to thousands, and each level is a short recipe that makes the same maze for everybody.",
+    rules: [
+      "Draw a line from the start to the goal. Every maze has exactly one way through, so there is exactly one answer.",
+      "Press the start, or the end of your line, and drag. The line follows the corridors, cannot pass a wall, and drawing back shortens it. Tap a spot further along a corridor and the line runs to it, stopping at the next fork, never choosing a fork for you.",
+      "A level is played one of four ways: in at one door in the outer wall and out at another; from a cell inside to a dot hidden deep in the maze; from the middle of the shape out through a door; or from inside, picking up every key on the way to a door. A key is at the end of a branch, off the way, so each one costs a detour, and stays picked up when you draw back.",
+      "A big maze is looked at through the board. Zoom with the wheel, a pinch, or the + and − buttons, and move the view with two fingers or by dragging anywhere but the line. Fit brings the whole maze back, and near the edge a line you are drawing moves the view with it.",
+      "Undo takes back your last stroke and Restart clears the line. The keyboard works too: the arrow keys step the line, and Backspace undoes.",
+      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody, in four sizes and each size ordered so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
+      "The clock starts with your first stroke, and the level is solved the moment the line reaches the goal, with every key picked up.",
+    ],
+    board:
+      "Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon.",
   },
 };

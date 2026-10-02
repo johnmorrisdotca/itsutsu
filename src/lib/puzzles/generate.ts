@@ -9,6 +9,7 @@ import { generateCube } from "./cube/generate";
 import { generateDiagonal, generateJigsaw, generateMoreOrLess, generateNumberPlace, generateSumCages, generateTowers } from "./kazu";
 import { generateSuido } from "./suido/generate";
 import { loadSuidoLevelsAt, suidoLevelPuzzle } from "./suido/levels";
+import { loadMeikyuuLevels, meikyuuLevelPuzzle } from "./meikyuu/levels";
 import { suidoLevelOfSeed } from "./suido/seed";
 import { loadWordData } from "./gomoji/wordData";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
@@ -87,6 +88,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "cube":
       // A scramble, not a grid: the seed's turns from solved, taken back as its solution (`cube/generate.ts`).
       return generateCube(size, level, seed);
+    case "meikyuu":
+      // Not made at all: a fixed level, its number in its size the seed, read from the package's list (`preparePuzzle` loads it).
+      return meikyuuLevelPuzzle(size, seed);
     case "suido":
       // A fixed level, its number the seed, read from its size's list (`preparePuzzle` loads it); any other seed a board of pipes made by the package, aimed at the level's rank among boards of its size (`suido/generate.ts`).
       return suidoLevelOfSeed(seed) === null ? generateSuido(size, level, seed) : suidoLevelPuzzle(size, suidoLevelOfSeed(seed)!);
@@ -109,8 +113,8 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
 export function puzzleLoads(kind: PuzzleKind, seed?: number | null): boolean {
   // Suido's levels, where the seed names one: a board made from any other seed has nothing to load.
   if (kind === "suido") return seed !== undefined && seed !== null && suidoLevelOfSeed(seed) !== null;
-  // Every word puzzle's list (`wordData.ts`, the kana lists, Pop's guesses, Kumimoji's tiles), and Tsunagi's levels.
-  return kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "gomojiKana" || kind === "koushi" || kind === "kumimoji" || kind === "tsunagi";
+  // Every word puzzle's list (`wordData.ts`, the kana lists, Pop's guesses, Kumimoji's tiles), and Tsunagi's and Meikyuu's levels.
+  return kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "gomojiKana" || kind === "koushi" || kind === "kumimoji" || kind === "tsunagi" || kind === "meikyuu";
 }
 
 export async function preparePuzzle(kind: PuzzleKind, size: number, language: KumimojiLanguage = "english", seed?: number | null): Promise<void> {
@@ -120,6 +124,7 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   if (kind === "gomoji" || kind === "gomojiPop" || kind === "koushi" || kind === "kumimoji") await loadWordData("en");
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
+  if (kind === "meikyuu") await loadMeikyuuLevels();
   if (kind === "suido" && puzzleLoads(kind, seed)) await loadSuidoLevelsAt(size);
   if (kind === "kumimoji") await loadTileWords(language);
   // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).

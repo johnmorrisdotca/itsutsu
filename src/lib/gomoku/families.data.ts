@@ -173,10 +173,16 @@ export const GAME_FAMILIES: GameFamily[] = [
      * shelf — the room the races made by joining Territory the same day.
      * See docs/plans/numbers/README.md for why a puzzle is its own kind.
      */
+    /*
+     * MEIKYUU 迷宮 (2026-10-02) is the seventh: a maze, one line from the start to the goal, and exactly one way
+     * through. It is a reasoning puzzle for one with a single answer, which is what this shelf's blurb promises,
+     * and it is a path rather than a number: it sits here because Logic puzzles is full at eight and this shelf
+     * has room. If the shelves are regrouped it belongs with Tsunagi, whose lines it draws.
+     */
     title: "Numbers",
     kanji: "数",
     blurb: "Puzzles for one: a grid, a few givens, and exactly one answer. Solve it on your own, against the clock.",
-    games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers"],
+    games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "meikyuu"],
   },
   {
     key: "logic",

@@ -25,7 +25,8 @@ describe("pointsFor", () => {
       // A card game's size is its draw, cells or suits, and what it fills is its deal brought home: fifty-two cards, or Spider's hundred and four.
       // A Mahjong size is a layout's width, not a side: its most is the tiles the layout holds.
       // A cube's is every sticker back on its face: six faces of its side squared.
-      const most = PUZZLE_SPECS[kind].cards === true || PUZZLE_SPECS[kind].layouts === true ? made.givens.length : PUZZLE_SPECS[kind].cube === true ? 6 * size * size : size * size;
+      // A maze's is the cells of the way through it, which its answer lists a step each (a maze has no side to square).
+      const most = kind === "meikyuu" ? made.solution.length + 1 : PUZZLE_SPECS[kind].cards === true || PUZZLE_SPECS[kind].layouts === true ? made.givens.length : PUZZLE_SPECS[kind].cube === true ? 6 * size * size : size * size;
       expect(filled, kind).toBeLessThanOrEqual(most);
     }
   });

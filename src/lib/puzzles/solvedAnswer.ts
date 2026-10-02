@@ -6,6 +6,7 @@ import { decodeClues, encodePicture } from "./pictureLogic/code";
 import { solutionOf as pictureSolution } from "./pictureLogic/solve";
 import { checkSuidoAnswer } from "@johnmorrisdotca/suido";
 import { suidoAnswerOf } from "./suido/solve";
+import { encodeWay } from "./meikyuu/way";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
 import { isNumberKind, numbersAnswerOf } from "./kazu";
@@ -66,6 +67,9 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
     }
     case "suido":
       return suidoAnswerOf(givens, size);
+    case "meikyuu":
+      // A maze has exactly one way through, found again from its recipe.
+      return encodeWay(givens);
     default:
       return null;
   }

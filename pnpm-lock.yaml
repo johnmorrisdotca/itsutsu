@@ -37,6 +37,9 @@ importers:
       '@johnmorrisdotca/kyuubu':
         specifier: 1.7.0
         version: 1.7.0(react@19.2.8)
+      '@johnmorrisdotca/meikyuu':
+        specifier: 1.0.0
+        version: 1.0.0
       '@johnmorrisdotca/narabe':
         specifier: 1.2.0
         version: 1.2.0(react@19.2.8)
@@ -482,6 +485,10 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@johnmorrisdotca/meikyuu@1.0.0':
+    resolution: {integrity: sha512-S2TdWi8Rydjp58aLq6woPjk+PKMVEo15MAlwh2GdtVtZpyyg5oA/oBx1zgilO8ZrtrjJzzmSM0YrVxHIfg1TBQ==}
+    engines: {node: '>=22'}
 
   '@johnmorrisdotca/narabe@1.2.0':
     resolution: {integrity: sha512-2X99x/LX3svl5J4zzE/djSYqU3NZIM2GrqYRSIyBAt+HvYIEsMvGDiwtyJt81wAE9/MxuUddHIDbnaYPNG3k2g==}
@@ -3144,6 +3151,8 @@ snapshots:
   '@johnmorrisdotca/kyuubu@1.7.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
+
+  '@johnmorrisdotca/meikyuu@1.0.0': {}
 
   '@johnmorrisdotca/narabe@1.2.0(react@19.2.8)':
     optionalDependencies:

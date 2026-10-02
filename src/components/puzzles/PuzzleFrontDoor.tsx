@@ -29,6 +29,7 @@ import { GameTrail } from "@/components/games/GameTrail";
 import { KumimojiShots } from "./KumimojiShots";
 import { KumimojiTryIt } from "./KumimojiTryIt";
 import { offeredLine } from "./offeredLine";
+import { MEIKYUU_COPY } from "./meikyuu.constants";
 import { SUIDO_COPY } from "./suido.constants";
 
 /**
@@ -124,6 +125,11 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               {kind === PUZZLE_KINDS.suido ? (
                 <span className="text-xs text-muted" data-testid="suido-levels-line">
                   {SUIDO_COPY.levelsLine}
+                </span>
+              ) : null}
+              {kind === PUZZLE_KINDS.meikyuu ? (
+                <span className="text-xs text-muted" data-testid="meikyuu-levels-line">
+                  {MEIKYUU_COPY.levelsLine}
                 </span>
               ) : null}
             </div>

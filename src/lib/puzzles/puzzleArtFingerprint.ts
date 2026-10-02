@@ -76,6 +76,10 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/SuidoBoard.tsx",
   // Suido's boards, pieces and water are the package's: a new version of it is a picture to re-take.
   "node_modules/@johnmorrisdotca/suido/package.json",
+  "src/lib/puzzles/meikyuu/way.ts",
+  "src/components/puzzles/MeikyuuBoard.tsx",
+  // Meikyuu's mazes, walls and line are the package's: a new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/meikyuu/package.json",
   "e2e/puzzle-screenshots.spec.ts",
 ];
 

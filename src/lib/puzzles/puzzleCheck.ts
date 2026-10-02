@@ -6,6 +6,7 @@ import { checkSpider, checkSpiderGivenUp } from "./spider/check";
 import { checkAwase } from "@johnmorrisdotca/jarajara/awase";
 import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { checkSuido } from "./suido/check";
+import { checkMeikyuu } from "./meikyuu/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { isWord, languageOf, type GomojiLanguage } from "./gomoji/code";
@@ -89,6 +90,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "suido":
       // The water, run through the answer's pieces: what the kind asks reached, and nothing running out.
       return checkSuido(size, givens, answer);
+    case "meikyuu":
+      // The line, walked from the maze's start: every step through an open passage, ending on its goal.
+      return checkMeikyuu(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

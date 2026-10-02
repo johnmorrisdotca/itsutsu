@@ -37,6 +37,7 @@ import { puzzleOutcome, puzzleSizeLabel, type PuzzleOutcome } from "@/lib/puzzle
 
 import { suidoLevelOfBoard, loadSuidoLevelsAt } from "@/lib/puzzles/suido/levels";
 import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
+import { meikyuuLevelOfSolve } from "@/lib/puzzles/server/meikyuuRecords";
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
 import { WordStyleProvider } from "./WordStyleContext";
@@ -101,6 +102,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
    */
   // A Suido solve is of a LEVEL when its board is one of its size's levels (read here, once, from that size): the same board for good, like a Tsunagi level.
   const suidoLevel = kind === "suido" && isSuidoLevelSize(found.size) ? await suidoLevelOfSolve(found.size, found.givens) : null;
+  // And a Meikyuu solve is of a LEVEL whenever its maze is one of the list's: the same maze for good.
+  const meikyuuLevel = kind === "meikyuu" ? await meikyuuLevelOfSolve(found.size, found.givens) : null;
   const fixed = PUZZLE_SPECS[kind].fixedLevels === true || suidoLevel !== null;
   const kept = own || (!fixed && !isTodayUtc(found.finishedAt)) || (await finishedSameGrid(me, kind, found.givens));
   const solve = kept ? found : { ...found, answer: null, steps: null };
@@ -132,8 +135,9 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const headStart = hadHeadStart(kind, solve.level, solve.hintsUsed);
   const bandLabel = PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level;
   // A level is named by its number, the third of its size it sits in said beside it; a board by its level.
-  const levelLabel = suidoLevel === null ? bandLabel : `${suidoLevel}, ${bandLabel.toLowerCase()}`;
-  const levelTitle = suidoLevel === null ? bandLabel : `Level ${suidoLevel}`;
+  const levelNumber = suidoLevel ?? meikyuuLevel;
+  const levelLabel = levelNumber === null ? bandLabel : `${levelNumber}, ${bandLabel.toLowerCase()}`;
+  const levelTitle = levelNumber === null ? bandLabel : `Level ${levelNumber}`;
   // "Draw 1", "7 tiles", "9×9": the size in the words its set-up chooses it by, capitalised as a value in a list is.
   const sizeShown = capitalised(sizeWord(solve.size, kind));
   const sizeLabel = puzzleSizeLabel(kind);

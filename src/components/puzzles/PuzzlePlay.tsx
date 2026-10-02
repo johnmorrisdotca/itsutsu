@@ -39,6 +39,7 @@ import { FreeCellSolve } from "./FreeCellSolve";
 import { SolitaireSolve } from "./SolitaireSolve";
 import { CubeSolve } from "./CubeSolve";
 import { SuidoSolve } from "./SuidoSolve";
+import { MeikyuuSolve } from "./MeikyuuSolve";
 import { SpiderSolve } from "./SpiderSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
 import { PuzzleNewGame } from "./PuzzleNewGame";
@@ -141,6 +142,7 @@ function PuzzlePlayDrawn({
   appearance = DEFAULT_APPEARANCE,
   tsunagi = null,
   suido = null,
+  meikyuu = null,
 }: {
   /** Kumimoji's pass and play: two to eight round this device (`KumimojiParty`); 1, the solo game. */
   players?: number;
@@ -181,6 +183,8 @@ function PuzzlePlayDrawn({
   } | null;
   /** Suido's levels already solved at this size on the account, each with its best time and the solve it was; for a level only. */
   suido?: { known: Record<number, number>; bestSolves?: Record<number, string> } | null;
+  /** Meikyuu's levels already solved at this size on the account, each with its best time and the solve it was. */
+  meikyuu?: { known: Record<number, number>; bestSolves?: Record<number, string> } | null;
   kind: PuzzleKind;
   size: number;
   level: PuzzleLevel;
@@ -344,6 +348,8 @@ function PuzzlePlayDrawn({
         return <MahjongSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} appearance={appearance} />;
       case "suido":
         return <SuidoSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} hints={hints} known={suido?.known} bestSolves={suido?.bestSolves} />;
+      case "meikyuu":
+        return <MeikyuuSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} known={meikyuu?.known} bestSolves={meikyuu?.bestSolves} />;
       case "cube":
         return <CubeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "koushi":

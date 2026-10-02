@@ -58,6 +58,8 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     `${CARD_SIZE_WORDS[kind]?.heading ?? (kind === "suido" ? "Boards you make" : "Sizes")}: ${sizes}. ${copy.board}`,
     kind === "suido"
       ? "Every level and every board has exactly one answer. The levels were made once, and the package they come from proves every one of them again each time it is built; a board you make is checked in the same way before you see it. So there is never a board with two answers or none."
+      : kind === "meikyuu"
+      ? "Every maze has exactly one way through: the passages are carved so that there is one path between any two places, and the package they come from proves it again for every level each time it is built. So there is never a maze with two ways through, or none."
       : spec.fixedLevels === true
       ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
       : spec.cards === true && kind !== "solitaire"

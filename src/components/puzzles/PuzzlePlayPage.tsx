@@ -24,6 +24,8 @@ import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { suidoLevelOfSeed } from "@/lib/puzzles/suido/seed";
 import { SuidoLevelFastest } from "./SuidoLevelFastest";
+import { MeikyuuLevelFastest } from "./MeikyuuLevelFastest";
+import { meikyuuSolvedBy } from "@/lib/puzzles/server/meikyuuRecords";
 import { TsunagiLevelFastest } from "./TsunagiLevelFastest";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -83,6 +85,15 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
           known: Object.fromEntries(Object.entries(suidoSolved ?? {}).map(([level, best]) => [level, best.elapsedMs])),
           bestSolves: Object.fromEntries(Object.entries(suidoSolved ?? {}).map(([level, best]) => [level, best.solveId])),
         };
+  /* A Meikyuu LEVEL (every Meikyuu is one: its seed is its number in its size): the member's solved levels at this size, so a solved one opens solved (`MeikyuuSolve`), and its fastest times below. */
+  const meikyuuSolved = kind === "meikyuu" && reader.memberId !== null ? ((await meikyuuSolvedBy(reader.memberId))[asked.size] ?? {}) : null;
+  const meikyuu =
+    kind !== "meikyuu"
+      ? null
+      : {
+          known: Object.fromEntries(Object.entries(meikyuuSolved ?? {}).map(([level, best]) => [level, best.elapsedMs])),
+          bestSolves: Object.fromEntries(Object.entries(meikyuuSolved ?? {}).map(([level, best]) => [level, best.solveId])),
+        };
   return (
     // A board page whose play draws "Just the board" beside its size (`BoardScale`).
     <Page board="play">
@@ -99,13 +110,18 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       {/* The solve at the size this reader keeps for this kind of screen (`BoardScaled`): Regular is the column it always had. */}
       <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
-          <PuzzlePlayClient drawnFor={puzzleQuery(asked)} kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} backwards={asked.backwards === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} pipes={asked.pipes} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} suido={suido} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
+          <PuzzlePlayClient drawnFor={puzzleQuery(asked)} kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} backwards={asked.backwards === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} pipes={asked.pipes} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} suido={suido} meikyuu={meikyuu} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
       </BoardScaled>
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
       {tsunagi && asked.seed !== null ? (
         <div data-chrome>
           <TsunagiLevelFastest size={asked.size} level={asked.seed} />
+        </div>
+      ) : null}
+      {kind === "meikyuu" && asked.seed !== null ? (
+        <div data-chrome>
+          <MeikyuuLevelFastest size={asked.size} level={asked.seed} />
         </div>
       ) : null}
       {suidoLevel !== null ? (

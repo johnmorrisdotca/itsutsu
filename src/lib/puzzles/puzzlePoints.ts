@@ -6,6 +6,7 @@ import { asWordCount } from "./gomoji/wordsSeed";
 import { kumimojiPoints } from "./kumimoji/check";
 import { koushiPoints } from "./koushi/check";
 import { suidoPieces } from "./suido/check";
+import { meikyuuWay } from "./meikyuu/check";
 import { dodgeGuesses, wordOfPlay } from "./gomoji/dodgePlay";
 import { isDodgeGivens } from "./gomoji/dodgeSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
@@ -40,7 +41,7 @@ export const POINTS_A_HELP = 50;
  * Stones: its whole grid. A Solitaire or a FreeCell counts the fifty-two cards
  * it brought home, a Spider the hundred and four of its eight runs, a cube
  * every sticker it put back on its face, and a Suido board every piece of pipe
- * it has (`suidoPieces`).
+ * it has (`suidoPieces`), a maze the cells of its way (`meikyuuWay`).
  */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
@@ -53,6 +54,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (kind === "cube") return 6 * area;
   // A Suido board's work is every piece it has: each is turned, or found to face the right way already.
   if (kind === "suido") return suidoPieces(givens);
+  // A Meikyuu maze's work is the way through it: every cell of it drawn.
+  if (kind === "meikyuu") return meikyuuWay(givens);
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

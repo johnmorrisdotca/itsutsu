@@ -12,4 +12,5 @@ import "./gomoji/popWordsModule";
 import "./gomoji/wordDataModule";
 import "./gomojiKana/kanaWordsModule";
 import "./kumimoji/tileWordsModule";
+import "./meikyuu/levelsModule";
 import "./tsunagi/levelsModule";

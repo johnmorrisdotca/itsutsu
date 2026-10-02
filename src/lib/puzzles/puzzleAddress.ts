@@ -13,6 +13,7 @@ import { partyPlayersAsked } from "./kumimoji/party";
 import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
 import { isSuidoLevelAt, suidoLevelBand } from "./suido/levelCounts";
+import { isMeikyuuLevelAt, meikyuuLevelBand } from "./meikyuu/levelCounts";
 import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed } from "./suido/seed";
 import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
@@ -136,8 +137,10 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   const seedAsked = Number(one(PUZZLE_PARAMS.seed));
   /* A fixed level's seed is its number, and its band follows from it, whatever the address said (`tsunagi/levels.ts`). */
   if (spec.fixedLevels === true) {
-    const number = isTsunagiLevel(size, seedAsked) ? seedAsked : null;
-    return { size, level: number === null ? spec.defaultLevel : tsunagiBand(size, number), seed: number, checks: null, hints: false, strict: false, clock: "none" };
+    // A Meikyuu's is its number in its size (`meikyuu/levelCounts.ts`); a Tsunagi's, in its own (`tsunagi/levels.ts`).
+    const [isLevel, bandOf] = kind === "meikyuu" ? [isMeikyuuLevelAt, meikyuuLevelBand] : [isTsunagiLevel, tsunagiBand];
+    const number = isLevel(size, seedAsked) ? seedAsked : null;
+    return { size, level: number === null ? spec.defaultLevel : bandOf(size, number), seed: number, checks: null, hints: false, strict: false, clock: "none" };
   }
   /*
    * A SUIDO LEVEL, asked for by `number=12` or by the seed that names it (`suido/seed.ts`): the same board for

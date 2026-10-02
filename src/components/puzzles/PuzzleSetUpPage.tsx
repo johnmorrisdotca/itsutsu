@@ -9,6 +9,8 @@ import { gamePath, joinQuery, playPath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { meikyuuSolvedBy } from "@/lib/puzzles/server/meikyuuRecords";
+import { isMeikyuuSize } from "@/lib/puzzles/meikyuu/sizes";
 import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { suidoModeOf } from "@/lib/puzzles/suido/mode";
@@ -22,6 +24,7 @@ import { Suspense } from "react";
 
 import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsLive";
 import { PuzzleSetUp } from "./PuzzleSetUp";
+import { MeikyuuSetUp } from "./MeikyuuSetUp";
 import { SuidoModeSwitch } from "./SuidoModeSwitch";
 import { SuidoSetUp } from "./SuidoSetUp";
 import { TsunagiSetUp } from "./TsunagiSetUp";
@@ -93,6 +96,13 @@ export async function PuzzleSetUpPage({
           initialSize={suidoSizeAsked(query)}
           resumeHref={resumeHref}
         />
+      ) : kind === "meikyuu" ? (
+        <MeikyuuSetUp
+          hasAccount={hasAccount}
+          {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await meikyuuSolvedBy(memberId)))}
+          initialSize={meikyuuSizeAsked(query)}
+          resumeHref={resumeHref}
+        />
       ) : kind === "tsunagi" ? (
         <TsunagiSetUp
           hasAccount={hasAccount}
@@ -146,6 +156,12 @@ function setUpSolves(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): {
   };
 }
 
+/** The size a Meikyuu set-up opens on: any of its four, as `2`; the puzzle's usual otherwise. */
+function meikyuuSizeAsked(query: Record<string, string | string[] | undefined>): number {
+  const asked = Number(Array.isArray(query.size) ? query.size[0] : query.size);
+  return isMeikyuuSize(asked) ? asked : PUZZLE_SPECS.meikyuu.defaultSize;
+}
+
 /** The size a Suido levels' set-up opens on: any of the thirteen the levels come in, as `7` or `5x7`; the puzzle's usual otherwise. */
 function suidoSizeAsked(query: Record<string, string | string[] | undefined>): number {
   const text = Array.isArray(query.size) ? query.size[0] : query.size;
@@ -162,8 +178,8 @@ function setUpAsked(kind: PuzzleKind, query: Record<string, string | string[] | 
   return kind === "suido" && !PUZZLE_SPECS.suido.offered.includes(asked.size) ? { ...asked, size: PUZZLE_SPECS.suido.defaultSize } : asked;
 }
 
-/** A member's solved Suido levels as the board of levels reads them: each level's best time, and the solve it was, which its time opens. */
-function setUpSuidoSolves(solved: Awaited<ReturnType<typeof suidoSolvedBy>>): { solved: Record<number, Record<number, number>>; bestSolves: Record<number, Record<number, string>> } {
+/** A member's solved Suido or Meikyuu levels as the board of levels reads them: each level's best time, and the solve it was, which its time opens. */
+function setUpSuidoSolves(solved: Awaited<ReturnType<typeof suidoSolvedBy>> | Awaited<ReturnType<typeof meikyuuSolvedBy>>): { solved: Record<number, Record<number, number>>; bestSolves: Record<number, Record<number, string>> } {
   const entries = Object.entries(solved);
   return {
     bestSolves: Object.fromEntries(entries.map(([size, levels]) => [size, Object.fromEntries(Object.entries(levels).map(([level, best]) => [level, best.solveId]))])),

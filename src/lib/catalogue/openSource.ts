@@ -11,7 +11,7 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
@@ -27,6 +27,7 @@ export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: st
   tsunagi: { name: "Tsunagi", repo: "https://github.com/johnmorrisdotca/tsunagi" },
   jarajara: { name: "Jarajara", repo: "https://github.com/johnmorrisdotca/jarajara" },
   suido: { name: "Suido", repo: "https://github.com/johnmorrisdotca/suido" },
+  meikyuu: { name: "Meikyuu", repo: "https://github.com/johnmorrisdotca/meikyuu" },
   sugoroku: { name: "Sugoroku", repo: "https://github.com/johnmorrisdotca/sugoroku" },
   kazu: { name: "Kazu", repo: "https://github.com/johnmorrisdotca/kazu" },
 };
@@ -48,6 +49,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   sumCages: "kazu",
   moreOrLess: "kazu",
   towers: "kazu",
+  meikyuu: "meikyuu",
   solitaire: "toranpu",
   freecell: "toranpu",
   spider: "toranpu",

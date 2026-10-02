@@ -46,6 +46,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   cube: 0.37,
   // Five a piece (`cellsFilled`): a medium 7×7 has about 44 (measured over a hundred seeds, drains and network), so about 220 points.
   suido: 0.45,
+  // Five a cell of the way through (`cellsFilled`): the middle level's way is 17 cells at small, 64 at medium, 180 at large and 518 at huge (measured over all 1,000 levels), so about 85, 320, 900 and 2,600 points; a medium level is about 100 IP, as a medium solve is.
+  meikyuu: 0.3,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

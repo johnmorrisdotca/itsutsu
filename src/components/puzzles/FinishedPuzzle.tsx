@@ -37,6 +37,7 @@ import { PatienceReplay } from "./PatienceReplay";
 import { SolitaireReplay } from "./SolitaireReplay";
 import { CubeReplay } from "./CubeReplay";
 import { SuidoBoard } from "./SuidoBoard";
+import { MeikyuuStill } from "./MeikyuuStill";
 import { decodeStepLog } from "@/lib/puzzles/stepLog";
 import { resumedGame } from "@/lib/puzzles/suido/play";
 import { checkSuidoAnswer, newGame } from "@johnmorrisdotca/suido";
@@ -130,6 +131,22 @@ export function FinishedPuzzle({
     return <SuidoFinished size={size} level={level} givens={givens} answer={answer} steps={steps} derive={derive} story={story} hydrated={hydrated} />;
   }
 
+  // A Meikyuu maze with the line that solved it drawn through it: the way through, in the colour of a win.
+  if (kind === "meikyuu") {
+    // A solve kept before its line was, or one whose line is kept back, shows the way through when the page may show it, and the maze as dealt when it may not.
+    const state = answer !== null ? "finished" : derive ? "worked-out" : "dealt";
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={state}>
+        <div className="mx-auto w-full" data-focus-board>
+          <MeikyuuStill code={givens} way={answer} solved={answer !== null || derive} />
+        </div>
+        <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
+          {MEIKYUU_NOTES[state]}
+        </p>
+      </Focused>
+    );
+  }
+
   // A FreeCell or a Spider is its moves too, played back the same way (`PatienceReplay`).
   if (kind === "freecell" || kind === "spider") {
     return (
@@ -194,6 +211,12 @@ export function FinishedPuzzle({
 
   return <GridReplay kind={kind} size={size} level={level} givens={givens} answer={answer} steps={steps} derive={derive} story={story} hydrated={hydrated} />;
 }
+
+const MEIKYUU_NOTES: Record<string, string> = {
+  finished: "How it ended: the line drawn from the start to the goal.",
+  "worked-out": "Solved before its line was kept. Every maze here has one way through, so this is that way.",
+  dealt: "Its line is kept back, so this is the maze as it was dealt.",
+};
 
 const SUIDO_NOTES: Record<string, string> = {
   finished: "How it ended: the water runs from the pump to everything it should reach, and nothing leaks.",

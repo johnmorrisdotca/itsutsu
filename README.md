@@ -218,6 +218,19 @@ are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
 `useSizeShelves`); what is each game's own is how a solved level is marked, and
 its words.
 
+**Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
+`docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
+mouse, from its start to its goal, in 1,000 fixed levels of four sizes (small,
+medium, large, huge) and every shape from squares to a heart. The mazes, their
+rules and the playable board are **Meikyuu**, an open-source package
+(`@johnmorrisdotca/meikyuu`, pinned in `package.json`), fetched in the browser
+only; what is the site's own is here: a level is its place in its size, the seed
+is that number, the answer is the line as one character a step (`meikyuu/steps.ts`)
+which the server walks on the maze (`meikyuu/check.ts`), and a half-drawn run is
+drawn again on the board as a finger draws it. It sits in Numbers, the shelf with
+room (Logic puzzles is full). Its level screens are Suido's and Tsunagi's
+(`LevelPicker`, `LevelChips`, `LevelFastestTable`), with no locks and no hint.
+
 Tsunagi 繋ぎ, our Numberlink (`src/lib/puzzles/tsunagi/`, the levels and rules
 **Tsunagi**, an open-source package, `@johnmorrisdotca/tsunagi` 1.2.0), has
 twelve sizes, 4×4 to 15×15, shown four tiles at a time. 256 levels at each of

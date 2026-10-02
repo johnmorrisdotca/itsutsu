@@ -285,6 +285,23 @@ every "Was" in this file, are held by `src/lib/i18n/plainEnglish.coverage.test.t
   feed's sentences. Prose is out of scope; the unnatural sentences found are
   listed below instead of rewritten.
 
+## Meikyuu 迷宮 (2026-10-02)
+
+A new game, so no label of it is retired: these are the words it chose, from the
+ones above, for the next maze or line game to use. Its size words are the
+package's own (`sizeOf`), not ours.
+
+| Label | Where | Word used, and why |
+|---|---|---|
+| Small · Medium · Large · Huge | the size tiles, the line over the board, My games | the package's four words for how many cells a maze has; the big number on the tile is only the size's place |
+| Start level 12 | the set-up | Start begins, as everywhere (John, 2026-09-25) |
+| All levels | the end card, My games | the board of levels at that size; not "Back to the levels" |
+| Undo · Restart · Fit | under the board | the usual words; Restart clears the line, Fit shows the whole maze |
+| − · + | under the board | zoom out and in, named for a screen reader as "Zoom out" and "Zoom in" |
+| New game | beside Pause | the shared control (`PuzzleNewGameBeside`), as on every puzzle |
+| In and out · Find the goal · Out from the middle · Keys | a level's chips | the four ways to play a maze, named by where the line starts and where it has to get to |
+| Difficulty | a level's chips | one word for how hard it measured, as on Tsunagi's and Suido's levels |
+
 ## Prose worth a second look (not changed)
 
 - Home, "Always somebody to play", "Your pace", "Learn the shapes": feature

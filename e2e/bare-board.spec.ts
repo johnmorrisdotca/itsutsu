@@ -448,6 +448,15 @@ const SURVEY: Survey[] = [
     await page.goto("/games/tsunagi/play?size=15&seed=1");
     await ready(page, "puzzle-play");
   } },
+  // Meikyuu's levels are fixed mazes: a small one, as a new player meets it, and a huge one, the biggest it comes in, which the modal has to hold with nothing to scroll.
+  { name: "/games/meikyuu/play", open: async (page) => {
+    await page.goto("/games/meikyuu/play?size=1&level=easy&seed=6");
+    await ready(page, "puzzle-play");
+  } },
+  { name: "/games/meikyuu/play at huge", open: async (page) => {
+    await page.goto("/games/meikyuu/play?size=4&level=hard&seed=267");
+    await ready(page, "puzzle-play");
+  } },
   table("dots-and-boxes", "dots-start"),
   table("superghost", "ghost-start"),
   table("mancala", "mancala-start"),

@@ -54,6 +54,9 @@ import { centredBaseline } from "@/lib/ui/svgText";
 /* Suido's preview is made in the browser only: a board is not worth making on the server that draws the set-up page. */
 const SuidoPreview = dynamic(() => import("@/components/puzzles/SuidoPreview").then((module) => module.SuidoPreview), { ssr: false });
 
+/* Meikyuu's preview is made in the browser only too: the package that draws a maze is fetched there. */
+const MeikyuuPreview = dynamic(() => import("@/components/puzzles/MeikyuuPreview").then((module) => module.MeikyuuPreview), { ssr: false });
+
 /** The paper a puzzle is written on, inside the wood. */
 const PAPER = "#ffffff";
 
@@ -125,6 +128,8 @@ export function PuzzleBoardPreview({
           <BridgesPreview size={size} />
         ) : kind === "suido" ? (
           <SuidoPreview size={size} level={level ?? spec.defaultLevel} />
+        ) : kind === "meikyuu" ? (
+          <MeikyuuPreview size={size} />
         ) : kind === "pictureLogic" ? (
           <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "freecell" || kind === "spider" ? (
