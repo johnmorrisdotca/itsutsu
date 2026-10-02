@@ -158,6 +158,8 @@ test.describe("the FreeCell game", () => {
     await pileButtons(page, "2").last().click();
     await pileButtons(page, "b").last().click();
     await page.getByTestId("patience-give-up").click();
+    // Giving up asks first, in place (`GameEnding`).
+    await page.getByTestId("patience-give-up-yes").click();
     await expect(page.getByTestId("puzzle-given-up")).toContainText("Given up");
   });
 

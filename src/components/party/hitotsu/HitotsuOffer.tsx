@@ -1,23 +1,18 @@
 "use client";
 
-import { PlayButton } from "@/components/games/PlayButton";
-import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { GameInProgressOffer } from "@/components/play/GameInProgressOffer";
 
 import { HITOTSU_COPY } from "./hitotsu.constants";
 import { useKeptHitotsu } from "./hitotsuStore";
 
 /**
- * THE ONE PLAY BUTTON on Hitotsu's own page and its rules page, leading to
- * the table. It reads Continue while this browser holds a game not yet
- * finished, because the table opens on that game rather than a new one.
+ * THE PLAY BUTTON on Hitotsu's own page and its rules page, under the picture as
+ * every game's is: Play, or where this browser holds a game still going,
+ * Continue with a New game beside it that says what it ends
+ * (`GameInProgressOffer`).
  */
 export function HitotsuOffer({ href }: { href: string }) {
-  const hydrated = useHydrated();
-  const [game] = useKeptHitotsu();
+  const [game, keep] = useKeptHitotsu();
   const going = game !== undefined && game !== null && game.phase !== "over";
-  return (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-going={going ? "true" : undefined} {...readyMark(hydrated)}>
-      <PlayButton href={href} label={going ? HITOTSU_COPY.continue : HITOTSU_COPY.playButton} />
-    </div>
-  );
+  return <GameInProgressOffer href={href} going={going} newGame={{ ends: () => keep(null) }} playLabel={HITOTSU_COPY.playButton} />;
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { PartySeatColour } from "./PartySeatColour";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { DOTS_STATUS, dotsAgain, dotsLineCount, dotsPlayerName, drawLine } from "@/lib/party/dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame as DotsGameState } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -40,7 +40,6 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
 export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptDotsGame();
-  const [confirming, setConfirming] = useState(false);
   // The cover over the board, when the last box is closed here (`WinCover`); never on a finished table opened again.
   const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.status === DOTS_STATUS.playing ? "playing" : "ended");
 
@@ -108,34 +107,9 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
               {PARTY_COPY.again}
             </button>
           )}
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="dots-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="dots-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (game.status === DOTS_STATUS.playing ? setConfirming(true) : keep(null))}
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-              data-testid="dots-new"
-            >
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={game.status === DOTS_STATUS.playing} onNewGame={() => keep(null)} testId="dots-new" />
+          </GameEnding>
         </div>
         {/* The finished board as a desktop or phone wallpaper, as every board game offers its positions. */}
         {game.status === DOTS_STATUS.playing ? null : (

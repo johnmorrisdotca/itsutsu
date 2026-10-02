@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { usePartyMarbles } from "./partyMarbles";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -10,7 +11,7 @@ import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import type { Point } from "@/lib/gomoku/gomoku.types";
 import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
@@ -44,7 +45,6 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
   const hydrated = useHydrated();
   const [game, keep] = kind.useKept();
   const [selected, setSelected] = useState<Point | null>(null);
-  const [confirming, setConfirming] = useState(false);
   const { rules, Board } = kind;
   // The cover over the board, when the race is won here (`WinCover`); a race nobody can finish ends without one.
   const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.status === PARTY_STATUS.playing ? "playing" : "ended");
@@ -152,35 +152,12 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
               {PARTY_COPY.again}
             </button>
           )}
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="party-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                  setSelected(null);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="party-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (game.status === PARTY_STATUS.playing ? setConfirming(true) : keep(null))}
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-              data-testid="party-new"
-            >
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={game.status === PARTY_STATUS.playing} onNewGame={() => {
+              keep(null);
+              setSelected(null);
+            }} testId="party-new" />
+          </GameEnding>
         </div>
         {game.status === PARTY_STATUS.won && game.winner !== null ? (
           <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index)), [game.winner])} />

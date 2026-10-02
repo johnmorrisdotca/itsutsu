@@ -1,9 +1,9 @@
 "use client";
 
+import { EndGameButton, GameEnding } from "@/components/play/GameEnding";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { judgeTiles } from "@/lib/puzzles/kumimoji/computerPlay";
 import { drawAll, mayDrawAll, mayTradeThisTurn, nameOf, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
 import type { GridVerdict } from "@/lib/puzzles/kumimoji/grid";
@@ -91,7 +91,6 @@ export function KumimojiPartyTurn({
   const out = goesOut(game, verdict);
   const left = partyTilesLeft(game);
   const name = nameOf(game, game.turn);
-  const [resigning, setResigning] = useState(false);
 
   const presses = {
     ...desk.presses,
@@ -164,23 +163,9 @@ export function KumimojiPartyTurn({
       {desk.selectedWild ? <KumimojiWildPicker language={game.settings.language} words={words} tile={desk.selectedTile!} disabled={false} onChoose={desk.adjustSelected} /> : null}
       {/* Resign, once nothing more can be got from the bag (`mayResign`), and only after a second press says so. */}
       {mayResign(game) ? (
-        <div className="flex flex-wrap items-center gap-2 text-sm" data-testid="kumimoji-party-resign-row">
-          {resigning ? (
-            <>
-              <span>Resign, and play no more turns this game?</span>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={() => hands.resign(game)} disabled={busy} data-testid="kumimoji-party-resign-yes">
-                Yes, resign
-              </button>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setResigning(false)} data-testid="kumimoji-party-resign-no">
-                Keep playing
-              </button>
-            </>
-          ) : (
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setResigning(true)} data-testid="kumimoji-party-resign">
-              Resign
-            </button>
-          )}
-        </div>
+        <GameEnding testId="kumimoji-party-resign-row">
+          <EndGameButton onEnd={() => hands.resign(game)} question="Resign, and play no more turns this game?" disabled={busy} testId="kumimoji-party-resign" />
+        </GameEnding>
       ) : null}
       <KumimojiTray
         hand={play.hand}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { EndGameButton, GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { useLocalSeatColours } from "@/components/game/useLocalSeatColours";
 import { SeatColoursPanel } from "@/components/game/SeatColoursPanel";
 import { StoneColoursProvider } from "@/components/board/seatColourContext";
@@ -28,9 +28,6 @@ import { useKeptPairGo } from "./pairGoStore";
 import type { PartyTableGameProps } from "./party.types";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 
-/** What a press on the table is waiting to be sure of, if anything. */
-type Confirming = "resign" | "new" | null;
-
 /**
  * PAIR GO, PASSED ROUND THE TABLE: two teams of two on one device.
  *
@@ -46,7 +43,6 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
   const hydrated = useHydrated();
   const [game, keep] = useKeptPairGo();
   const teams = useLocalSeatColours("pairgo");
-  const [confirming, setConfirming] = useState<Confirming>(null);
   const playing = game !== undefined && game !== null && game.state.status === GAME_STATUS.playing;
   // The cover over the board, when the game ends here (`WinCover`), naming the winning team; never on a finished table opened again.
   const moment = useWinMoment(game === undefined || game === null ? "unknown" : playing ? "playing" : "ended");
@@ -66,7 +62,6 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
   const toMove = pairPlayerToMove(game);
   const act = (next: PairGoGameState | null) => {
     if (next !== null) keep(next);
-    setConfirming(null);
   };
 
   return (
@@ -119,21 +114,6 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
             >
               {PAIR_GO_COPY.pass}
             </button>
-            {confirming === "resign" && toMove !== null ? (
-              <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="pairgo-confirm-resign">
-                <span>{PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone))}</span>
-                <button type="button" onClick={() => act(pairResign(game))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="pairgo-resign-yes">
-                  {PAIR_GO_COPY.resignYes}
-                </button>
-                <button type="button" onClick={() => setConfirming(null)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                  {PAIR_GO_COPY.confirmNo}
-                </button>
-              </span>
-            ) : (
-              <button type="button" onClick={() => setConfirming("resign")} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="pairgo-resign">
-                {PAIR_GO_COPY.resign}
-              </button>
-            )}
           </div>
         ) : null}
       </div>
@@ -177,26 +157,12 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
               {PAIR_GO_COPY.again}
             </button>
           )}
-          {confirming === "new" ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="pairgo-confirm-new">
-              <span>{PAIR_GO_COPY.confirmNew}</span>
-              <button type="button" onClick={() => { keep(null); setConfirming(null); }} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="pairgo-new-yes">
-                {PAIR_GO_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(null)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PAIR_GO_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (playing ? setConfirming("new") : keep(null))}
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-              data-testid="pairgo-new"
-            >
-              {PAIR_GO_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            {playing && toMove !== null ? (
+              <EndGameButton onEnd={() => act(pairResign(game))} question={PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone))} testId="pairgo-resign" />
+            ) : null}
+            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="pairgo-new" />
+          </GameEnding>
         </div>
         {playing || game.state.winner === null ? null : (
           <TableWallpaper game={RULE_VARIANTS.go} result={resultLine([teamWords(game, STONES.black), teamWords(game, STONES.white)], [game.state.winner === STONES.black ? 0 : 1])} />

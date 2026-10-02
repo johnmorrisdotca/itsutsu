@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { useCallback, useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
@@ -56,7 +57,6 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
   const hydrated = useHydrated();
   const sound = useDiceSound();
   const [choice, setChoice] = useState<{ at: number; pick: Pick } | null>(null);
-  const [confirming, setConfirming] = useState(false);
   const keepGame = useCallback((next: PachisiGame) => keep(next), [keep]);
   const rolled = useCallback(() => sound.play(2), [sound]);
   usePachisiComputer(game, keepGame, rolled);
@@ -168,29 +168,9 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
           <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
             {sound.on ? YACHT_COPY.soundOn : YACHT_COPY.soundOff}
           </button>
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="pachisi-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="pachisi-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button type="button" onClick={() => (playing ? setConfirming(true) : keep(null))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="pachisi-new">
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="pachisi-new" />
+          </GameEnding>
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
         {playing ? null : <TableWallpaper game="pachisi" result={resultLine(names, game.winners)} />}

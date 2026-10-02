@@ -27,7 +27,7 @@ import { freshSuidoSeed, suidoKindOfSeed } from "@/lib/puzzles/suido/seed";
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
-import { useWinSlot } from "./PuzzleWinSlot";
+import { useMarkPuzzleEnded, useWinSlot } from "./PuzzleWinSlot";
 import type { Done, SolveRace } from "./solveShared";
 import { ResultMark } from "@/components/game/ResultMark";
 
@@ -102,6 +102,7 @@ export function SolveDone({
    * the race's to say above. It offers the first way on this card offers.
    */
   const slot = useWinSlot();
+  useMarkPuzzleEnded();
   const [covered, setCovered] = useState(true);
   const won = race === null && done.outOfGuesses !== true;
   const firstStep: WinStep | null =

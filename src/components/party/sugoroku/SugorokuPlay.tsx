@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { useCallback } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
 import { FeltPatches } from "@/components/board/FeltPatches";
@@ -34,7 +35,6 @@ import { useSugorokuComputer } from "./useSugorokuComputer";
  * board keeps white at the bottom whoever is to play.
  */
 export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { table: SugorokuTable; keep: (table: SugorokuTable | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
-  const [confirming, setConfirming] = useState(false);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useDiceSound();
   const throwDice = useCallback(() => sound.play(2), [sound]);
@@ -111,29 +111,9 @@ export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { tab
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? SUGOROKU_COPY.soundOn : SUGOROKU_COPY.soundOff}
         </button>
-        {confirming ? (
-          <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="sugoroku-confirm-new">
-            <span>{SUGOROKU_COPY.confirmNew}</span>
-            <button
-              type="button"
-              onClick={() => {
-                keep(null);
-                setConfirming(false);
-              }}
-              className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-              data-testid="sugoroku-new-yes"
-            >
-              {SUGOROKU_COPY.confirmYes}
-            </button>
-            <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-              {SUGOROKU_COPY.confirmNo}
-            </button>
-          </span>
-        ) : (
-          <button type="button" onClick={() => (over ? keep(null) : setConfirming(true))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="sugoroku-new">
-            {SUGOROKU_COPY.newGame}
-          </button>
-        )}
+        <GameEnding>
+          <NewGameButton going={!over} onNewGame={() => keep(null)} testId="sugoroku-new" />
+        </GameEnding>
       </div>
       {over ? <TableWallpaper game={table.kind} result={resultLine(names, winners, winners.length === 2)} /> : null}
       <p className="text-xs text-muted">{SUGOROKU_COPY.kept}</p>

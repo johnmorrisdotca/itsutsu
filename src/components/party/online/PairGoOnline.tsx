@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { EndGameButton, GameEnding } from "@/components/play/GameEnding";
 
 import { Board } from "@/components/board/Board";
 import { AskIfAway } from "@/components/game/AskIfAway";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { canPass } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { pairPlayerToMove } from "@/lib/gomoku/party/pairGo";
@@ -23,11 +23,9 @@ import type { OnlineBoardProps } from "./online.types";
  * pass or a resignation is sent, and the table's answer is the board.
  */
 export function PairGoOnline({ game, appearance, canMove, onMove }: OnlineBoardProps<PairGoGame, PairGoMove>) {
-  const [confirming, setConfirming] = useState(false);
   const playing = game.state.status === GAME_STATUS.playing;
   const toMove = pairPlayerToMove(game);
   const send = (move: PairGoMove) => {
-    setConfirming(false);
     onMove(move);
   };
 
@@ -40,21 +38,11 @@ export function PairGoOnline({ game, appearance, canMove, onMove }: OnlineBoardP
           <button type="button" onClick={() => send({ kind: "pass" })} disabled={!canPass(game.state)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="pairgo-pass">
             {PAIR_GO_COPY.pass}
           </button>
-          {confirming && toMove !== null ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="pairgo-confirm-resign">
-              <span>{PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone))}</span>
-              <button type="button" onClick={() => send({ kind: "resign" })} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="pairgo-resign-yes">
-                {PAIR_GO_COPY.resignYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PAIR_GO_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button type="button" onClick={() => setConfirming(true)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="pairgo-resign">
-              {PAIR_GO_COPY.resign}
-            </button>
-          )}
+          {toMove !== null ? (
+            <GameEnding>
+              <EndGameButton onEnd={() => send({ kind: "resign" })} question={PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone))} testId="pairgo-resign" />
+            </GameEnding>
+          ) : null}
         </div>
       ) : null}
       {/* "ARE YOU STILL THERE?" on the reader's own turn, as every board a person plays on asks (`idleWatch.coverage.test.ts`). */}

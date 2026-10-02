@@ -1,5 +1,8 @@
 "use client";
 
+import { setUpPath } from "@/lib/gomoku/slugs";
+import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
+import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, turnAll, undoAll, undoOf, type CubeMove } from "@johnmorrisdotca/kyuubu";
 import type { KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
@@ -137,9 +140,12 @@ export function CubeSolve({
           {CUBE_COPY.moves(counted)}
         </p>
         {done === null ? (
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ml-auto`} onClick={giveUp} disabled={!live || startedAt === null || counted === 0} data-testid="cube-give-up">
-            {CUBE_COPY.giveUp}
-          </button>
+          <div className="ml-auto">
+            <GameEnding>
+              <EndGameButton ending={ENDINGS.giveUp} onEnd={giveUp} disabled={!live || startedAt === null || counted === 0} testId="cube-give-up" />
+              {race === null ? <NewGameLink href={setUpPath(puzzle.kind)} testId="cube-new" /> : null}
+            </GameEnding>
+          </div>
         ) : null}
       </div>
       {done === null ? (

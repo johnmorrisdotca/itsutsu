@@ -188,6 +188,8 @@ test.describe("the Cube", () => {
     await page.keyboard.press("Shift+U");
     await settledCube(page);
     await page.getByTestId("cube-give-up").click();
+    // Giving up asks first, in place (`GameEnding`).
+    await page.getByTestId("cube-give-up-yes").click();
     await expect(page.getByTestId("puzzle-given-up")).toContainText("Given up");
     await expect(page.getByTestId("puzzle-given-up")).toContainText("2 moves");
     await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|ends unsolved/);

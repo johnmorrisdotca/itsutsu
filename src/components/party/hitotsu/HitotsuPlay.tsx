@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
@@ -44,7 +45,6 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
   const toPlay = over ? null : game.toPlay;
   const people = game.players.map((_, seat) => seat).filter((seat) => !game.computers[seat]);
   const [handedTo, setHandedTo] = useState<number | null>(people.length === 1 ? people[0] : null);
-  const [confirming, setConfirming] = useState(false);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useCardSounds(game.hands.reduce((sum, hand) => sum + hand.length, 0));
   const personToPlay = toPlay !== null && !game.computers[toPlay];
@@ -123,21 +123,9 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
         </button>
-        {confirming ? (
-          <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="hitotsu-confirm-new">
-            <span>{HITOTSU_COPY.confirmNew}</span>
-            <button type="button" onClick={() => keep(null)} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="hitotsu-new-yes">
-              {HITOTSU_COPY.confirmYes}
-            </button>
-            <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-              {HITOTSU_COPY.confirmNo}
-            </button>
-          </span>
-        ) : (
-          <button type="button" onClick={() => (over ? keep(null) : setConfirming(true))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="hitotsu-new">
-            {HITOTSU_COPY.newGame}
-          </button>
-        )}
+        <GameEnding>
+          <NewGameButton going={!over} onNewGame={() => keep(null)} testId="hitotsu-new" />
+        </GameEnding>
       </div>
       {over ? <TableWallpaper game="hitotsu" result={resultLine(names, winners)} /> : null}
       <p className="text-xs text-muted">{HITOTSU_COPY.kept}</p>

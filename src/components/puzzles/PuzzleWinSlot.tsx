@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 /**
  * WHERE A PUZZLE'S WIN COVER GOES: the board's own cell, marked by the solve
@@ -18,17 +18,33 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
  * With no provider above — a page that draws a solve some other way — there
  * is no slot, and the card at the end is all there is, as before.
  */
-const WinSlotContext = createContext<{ slot: HTMLElement | null; mark: (node: HTMLElement | null) => void } | null>(null);
+const WinSlotContext = createContext<{ slot: HTMLElement | null; mark: (node: HTMLElement | null) => void; ended: boolean; setEnded: (ended: boolean) => void } | null>(null);
 
 export function WinSlotProvider({ children }: { children: ReactNode }) {
   const [slot, mark] = useState<HTMLElement | null>(null);
-  const value = useMemo(() => ({ slot, mark }), [slot]);
+  const [ended, setEnded] = useState(false);
+  const value = useMemo(() => ({ slot, mark, ended, setEnded }), [slot, ended]);
   return <WinSlotContext.Provider value={value}>{children}</WinSlotContext.Provider>;
 }
 
 /** The element the cover is drawn into, once a board has marked one. */
 export function useWinSlot(): HTMLElement | null {
   return useContext(WinSlotContext)?.slot ?? null;
+}
+
+/** Whether the solve above has ended (the card at the end is drawn), so the controls under it can stop offering to end it. */
+export function usePuzzleEnded(): boolean {
+  return useContext(WinSlotContext)?.ended ?? false;
+}
+
+/** Said by the card at the end for as long as it is drawn. */
+export function useMarkPuzzleEnded(): void {
+  const context = useContext(WinSlotContext);
+  const setEnded = context?.setEnded;
+  useEffect(() => {
+    setEnded?.(true);
+    return () => setEnded?.(false);
+  }, [setEnded]);
 }
 
 /**

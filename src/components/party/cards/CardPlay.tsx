@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { useState } from "react";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -73,7 +74,6 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
 
   const [held, setHeld] = useState<Held<CardId[]>>({ at: -1, value: [] });
   const [aimed, setAimed] = useState<Held<number | null>>({ at: -1, value: null });
-  const [confirming, setConfirming] = useState(false);
   const [turning, setTurning] = useState(false);
   const chosen = held.at === moves ? held.value : [];
   const target = aimed.at === moves ? aimed.value : null;
@@ -258,25 +258,12 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="card-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? CARD_TABLE_COPY.soundOn : CARD_TABLE_COPY.soundOff}
         </button>
-        {confirming ? (
-          <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="cards-confirm-new">
-            <span>{CARD_TABLE_COPY.confirmNew}</span>
-            <button type="button" onClick={() => keep(null)} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="cards-new-yes">
-              {CARD_TABLE_COPY.confirmYes}
-            </button>
-            <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-              {CARD_TABLE_COPY.confirmNo}
-            </button>
-          </span>
-        ) : (
-          <button type="button" onClick={() => {
+        <GameEnding>
+          <NewGameButton going={!over} onNewGame={() => {
             setTurning(false);
-            if (over) keep(null);
-            else setConfirming(true);
-          }} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="cards-new">
-            {CARD_TABLE_COPY.newGame}
-          </button>
-        )}
+            keep(null);
+          }} testId="cards-new" />
+        </GameEnding>
       </div>
       {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners, ending?.draw === true)} /> : null}
       <p className="text-xs text-muted">{CARD_TABLE_COPY.kept}</p>

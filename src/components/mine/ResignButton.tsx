@@ -30,6 +30,7 @@ export function ResignButton({
   onDone,
   refreshAfter = true,
   onAsking,
+  className = `${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`,
 }: {
   id: string;
   /**
@@ -62,6 +63,8 @@ export function ResignButton({
    * carrying players off this very question.
    */
   onAsking?: (asking: Asking) => void;
+  /** The trigger's look: small in a list of games, the ordinary quiet button in the row under a board (`GameEnding`). */
+  className?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -124,7 +127,7 @@ export function ResignButton({
         onConfirm={() => void resign()}
         onAsking={onAsking}
         disabled={busy}
-        className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`}
+        className={className}
         testId={nothingPlayed ? "cancel" : "resign"}
       />
     </span>

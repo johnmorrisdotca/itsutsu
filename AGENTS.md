@@ -334,6 +334,21 @@ again? A puzzle is kept through `useSolve` → `useKeptRun` (one write when it i
 paused or left, none while it is played) and listed by `MyPuzzleRuns`; held by
 `idleWatch.coverage.test.ts` and `e2e/puzzle-kept.spec.ts`.
 
+### Every Game In Progress Offers The Same Controls
+
+John, 2026-10-02, at Tenka's front door (a lone "Continue →") and table (a
+small New game in a corner): "Where is the option to start a new game, rather
+than Continue/Resume? Where is the quit game or lose button, aka Resign? … We
+have to be consistent for all games where there is an ongoing game." A front
+door with a game in progress is `GameInProgressOffer`: **Continue →** and a
+labelled **New game** that says what happens to the one in progress. Under the
+board is one row, `GameEnding` (`src/components/play/`): **Resign** against
+somebody or something that can win, **Give up** for a game played alone,
+**New game** beside it, each asking in place before it ends anything. Resume is
+only for a clock. A new kind of play draws these, never its own; the words are
+`GAME_ENDING_COPY` and the gate is `gameEnding.coverage.test.ts`. What is not
+yet on them, and why, is `docs/plans/game-controls/README.md`.
+
 ### Nothing Is A Dead End
 
 Two rules, in John's words, and one principle underneath them.

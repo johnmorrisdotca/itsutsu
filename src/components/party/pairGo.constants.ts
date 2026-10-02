@@ -16,12 +16,8 @@ export const PAIR_GO_COPY = {
   start: "Start",
   pass: "Pass",
   resign: "Resign",
-  confirmResign: (team: string) => `Resign for ${team}?`,
+  confirmResign: (team: string) => `Resign for ${team}? The other team wins.`,
   resignYes: "Yes, resign",
-  newGame: "New game",
-  confirmNew: "Start a new game? This one will be gone.",
-  confirmYes: "Yes, start again",
-  confirmNo: "Keep playing",
   again: "Play again, same teams",
   noTalking: "Partners play in turn and may not talk.",
   /** After one pass, whose it was and what another would do. */

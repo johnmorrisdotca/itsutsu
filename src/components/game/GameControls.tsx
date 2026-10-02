@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { SUGGESTION_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import { canChooseColour, canExtendOpening, seatToPlay } from "@/lib/gomoku/engine";
 import { GAME_STATUS, SEAT_DISPLAY, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { GameBrowserButton } from "./GameBrowser";
@@ -91,7 +91,6 @@ export function GameControls({ session, actions }: GamePanelProps) {
    * first — in the panel, the way asking for advice does, not in a dialog.
    */
   const underway = state.moves.length > 0 && state.status === GAME_STATUS.playing;
-  const [askingNew, setAskingNew] = useState(false);
   const seat = seatToPlay(state);
   const limited = settings.hintPolicy === HINT_POLICIES.limited;
   /*
@@ -118,33 +117,13 @@ export function GameControls({ session, actions }: GamePanelProps) {
         <Button onClick={actions.redo} disabled={!session.canRedo}>
           {GAME_COPY.redo.label}
         </Button>
-        <Button onClick={() => (underway ? setAskingNew(true) : actions.reset())} strong>
-          {GAME_COPY.newGame.label}
-        </Button>
         <GameBrowserButton session={session} actions={actions} />
       </div>
 
-      {askingNew ? (
-        <div
-          className="flex flex-col gap-2 rounded-xl border border-moss/40 bg-moss-soft px-3 py-2.5 text-ink"
-          data-testid="new-game-confirm"
-        >
-          <p className="text-sm font-semibold">{GAME_COPY.newGameConfirm}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => {
-                setAskingNew(false);
-                actions.reset();
-              }}
-              strong
-              data-testid="new-game-yes"
-            >
-              {GAME_COPY.newGameYes.label}
-            </Button>
-            <Button onClick={() => setAskingNew(false)}>{GAME_COPY.newGameNo.label}</Button>
-          </div>
-        </div>
-      ) : null}
+      {/* New game, the same row and words as every kind of play (`GameEnding`); it asks first only while a game is under way. */}
+      <GameEnding>
+        <NewGameButton going={underway} onNewGame={() => actions.reset()} testId="new-game" />
+      </GameEnding>
 
       <OpeningChoice session={session} actions={actions} />
       <ColourChooser session={session} actions={actions} />

@@ -236,6 +236,12 @@ test.describe("Tenka, pass and play", () => {
     await page.goto("/games/tenka");
     await ready(page, "party-kind-offer");
     await expect(page.getByTestId("game-set-up")).toHaveText("Continue →");
+    // And a New game beside it, saying what it does to the game going, and asking before it does it (`GameInProgressOffer`).
+    await expect(page.getByTestId("game-new-note")).toHaveText("New game ends the one in progress here.");
+    await page.getByTestId("game-new").click();
+    await expect(page.getByTestId("game-new-confirm")).toContainText("The one in progress ends here and is not kept");
+    await page.getByTestId("game-new-no").click();
+    await expect(page.getByTestId("game-new-confirm")).toHaveCount(0);
     await page.getByTestId("game-set-up").click();
     await ready(page, "tenka-game");
 
@@ -246,6 +252,12 @@ test.describe("Tenka, pass and play", () => {
       await expect(page.getByTestId("tenka-bar")).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     }
+
+    // At the table the same two words sit in one row: New game asks first, and a new game sets itself up.
+    await expect(page.getByTestId("game-ending")).toContainText("New game");
+    await page.getByTestId("tenka-new").click();
+    await page.getByTestId("tenka-new-yes").click();
+    await ready(page, "tenka-set-up");
   });
 });
 

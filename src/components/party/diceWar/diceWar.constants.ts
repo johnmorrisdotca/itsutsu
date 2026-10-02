@@ -16,7 +16,6 @@ export function dieWidth(dice: number): number {
 export const DICE_WAR_COPY = {
   lead: "Dice War for two to eight round one phone or tablet, with a computer in any seat you like: everybody rolls, the highest total scores, and a tie is war. Nothing here is rated or kept anywhere but this browser.",
   play: "Play Dice War",
-  continue: "Continue your game of Dice War",
   howMany: "How many are playing?",
   seats: "Who sits where",
   person: "Person",
@@ -44,10 +43,6 @@ export const DICE_WAR_COPY = {
   over: "Game over",
   won: (names: string) => `${names} won.`,
   again: "Play again, same table",
-  newGame: "New game",
-  confirmNew: "Start a new game? This one will be gone.",
-  confirmYes: "Yes, start again",
-  confirmNo: "Keep playing",
   soundOn: "Dice sound on",
   soundOff: "Dice sound off",
   kept: "Kept in this browser: leave and come back, and it is here.",

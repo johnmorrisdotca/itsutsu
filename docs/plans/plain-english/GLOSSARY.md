@@ -190,6 +190,24 @@ something uses the word already chosen for it.
 | Online table | At a table | 卓 (unchanged) | `online.constants.ts`, `tables/[id]/page.tsx` | says what the page is |
 | Online tables · Finished tables | At a table · Tables finished | — | `online.constants.ts` (My games) | plain |
 
+## Ending a game and starting another
+
+John, 2026-10-02, at Tenka's front door and table: "Where is the option to start
+a new game, rather than Continue/Resume? Where is the quit game or lose
+button, aka Resign?… We have to be consistent for all games where there is an
+ongoing game." One set of words, from `GAME_ENDING_COPY`
+(`src/components/play/gameEnding.constants.ts`), for every kind of play.
+
+| Now | Was | Where | Why |
+|---|---|---|---|
+| Continue → | Resume →, Continue your game of Yacht | every game's front door (`GameInProgressOffer`), a puzzle's set-up | going back to a game is Continue, as My games says; Resume is only for un-pausing a clock |
+| New game | Or start a new one, Yes start again, a small button in a corner | a front door beside Continue, and the row under every board (`GameEnding`) | the same name as the screen it leads to (New game 新規対局) |
+| Resign | Give up (Sugoroku) | any game against somebody or something that can win it | the other side wins |
+| Give up | Give up (no question asked) | a puzzle or patience played alone | there is no other side; it ends unsolved ("Given up" on the card at the end) |
+| Cancel | Resign (a live game with no move played) | a live game with nothing played (`ResignButton`) | nothing was played, so there is nothing to resign |
+| Keep playing | Cancel, No, leave it | the answer that does not end the game | says what stays |
+| Start a new game | Yes, start again, Yes, start a new one | the answer that does | says the act, never "OK" |
+
 ## Home and About
 
 | Now | Was | Kanji | Where | Why |

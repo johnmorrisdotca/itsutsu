@@ -1,5 +1,8 @@
 "use client";
 
+import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
+import { ENDINGS } from "@/components/play/gameEnding.constants";
+import { setUpPath } from "@/lib/gomoku/slugs";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
@@ -51,9 +54,12 @@ export function PatienceControls({
           </p>
         )}
         {done === null ? (
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ml-auto`} onClick={onGiveUp} disabled={!canGiveUp} data-testid="patience-give-up">
-            Give up
-          </button>
+          <div className="ml-auto">
+            <GameEnding>
+              <EndGameButton ending={ENDINGS.giveUp} onEnd={onGiveUp} disabled={!canGiveUp} testId="patience-give-up" />
+              {race === null ? <NewGameLink href={setUpPath(puzzle.kind)} testId="patience-new" /> : null}
+            </GameEnding>
+          </div>
         ) : null}
       </div>
       {done === null ? (

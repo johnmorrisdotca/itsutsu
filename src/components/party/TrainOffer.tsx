@@ -1,25 +1,19 @@
 "use client";
 
-import { PlayButton } from "@/components/games/PlayButton";
+import { GameInProgressOffer } from "@/components/play/GameInProgressOffer";
 import { TRAIN_PHASES } from "@johnmorrisdotca/domino";
-import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { TRAIN_COPY } from "./party.constants";
 import { useKeptTrainGame } from "./trainStore";
 
 /**
- * THE ONE PLAY BUTTON on Mexican Train's own page and its rules page, under
- * the picture as every game's is (`PlayButton`), leading to the table. It
- * reads Continue while this browser holds a game not yet finished, because
- * the table opens on that game rather than a new one.
+ * THE PLAY BUTTON on Mexican Train's own page and its rules page, under the picture as
+ * every game's is: Play, or where this browser holds a game still going,
+ * Continue with a New game beside it that says what it ends
+ * (`GameInProgressOffer`).
  */
 export function TrainOffer({ href }: { href: string }) {
-  const hydrated = useHydrated();
-  const [game] = useKeptTrainGame();
+  const [game, keep] = useKeptTrainGame();
   const going = game !== undefined && game !== null && game.phase !== TRAIN_PHASES.finished;
-  return (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-going={going ? "true" : undefined} {...readyMark(hydrated)}>
-      <PlayButton href={href} label={going ? TRAIN_COPY.continue : TRAIN_COPY.play} />
-    </div>
-  );
+  return <GameInProgressOffer href={href} going={going} newGame={{ ends: () => keep(null) }} playLabel={TRAIN_COPY.play} />;
 }

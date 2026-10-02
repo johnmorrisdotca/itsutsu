@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { PartySeatColour } from "./PartySeatColour";
 
@@ -8,7 +8,7 @@ import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { BLOCKS_STATUS, againBlocksParty, blocksLeaders, layBlocks } from "@/lib/gomoku/party/partyBlocks";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -43,7 +43,6 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
 export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptBlocksParty();
-  const [confirming, setConfirming] = useState(false);
   const hand = useBlocksHand(game ?? null, true, (piece, cells) => {
     const next = game === undefined || game === null ? null : layBlocks(game, piece, cells);
     if (next !== null) keep(next);
@@ -129,34 +128,9 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
               {PARTY_BLOCKS_COPY.again}
             </button>
           )}
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="blocks-confirm-new">
-              <span>{PARTY_BLOCKS_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="blocks-new-yes"
-              >
-                {PARTY_BLOCKS_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_BLOCKS_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (playing ? setConfirming(true) : keep(null))}
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-              data-testid="blocks-new"
-            >
-              {PARTY_BLOCKS_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="blocks-new" />
+          </GameEnding>
         </div>
         {playing ? null : (
           <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player)), blocksLeaders(game))} />

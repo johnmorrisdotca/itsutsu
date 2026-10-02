@@ -190,6 +190,8 @@ test.describe("the Solitaire game", () => {
     expect(seed).toBeGreaterThanOrEqual(1_600_000_000);
     await pileButtons(page, "s").last().click();
     await page.getByTestId("solitaire-give-up").click();
+    // Giving up asks first, in place (`GameEnding`).
+    await page.getByTestId("solitaire-give-up-yes").click();
     await expect(page.getByTestId("puzzle-given-up")).toContainText("Given up");
     await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|ends unsolved/);
   });

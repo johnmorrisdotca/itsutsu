@@ -84,14 +84,14 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await page.locator('[data-testid="tab"][data-tab="going"]').click();
   await expect(page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`)).toBeVisible();
 
-  // And the puzzle's own page says Resume, which opens that very grid (John, 2026-09-25).
+  // And the puzzle's own page says Continue, which opens that very grid (John, 2026-09-25).
   await page.goto(AT);
   const resume = page.getByTestId("game-resume");
   await expect(resume).toHaveAttribute("href", new RegExp(`seed=${seed}`));
   const resumeHref = await resume.getAttribute("href");
 
-  // So does its set-up screen, first above Start, to the same grid (John, 2026-09-26, BUG CRITICAL: it showed only Start).
-  await page.getByTestId("game-set-up").click();
+  // So does its set-up screen (reached by New game, which leaves the run in My games), first above Start, to the same grid (John, 2026-09-26, BUG CRITICAL: it showed only Start).
+  await page.getByTestId("game-new").click();
   await ready(page, "puzzle-set-up");
   const setUpResume = page.getByTestId("puzzle-play-buttons").getByTestId("set-up-resume");
   await expect(setUpResume).toHaveAttribute("href", resumeHref!);

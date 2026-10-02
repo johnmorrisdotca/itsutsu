@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { useRef, useState } from "react";
 import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 import { PartySeatColour } from "../PartySeatColour";
@@ -10,7 +11,7 @@ import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { resultLine, tableNews } from "@/components/game/winNews";
 import { TableWallpaper } from "../TableWallpaper";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { TENKA_MOVES, TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
 import type { TenkaGame, TenkaMove } from "@/lib/party/tenka/tenka.types";
 import { playTenka } from "@/lib/party/tenka/tenka";
@@ -69,7 +70,6 @@ const turnKey = (game: TenkaGame) => `${game.round}:${game.toPlay}`;
 export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: TenkaGame; keep: (game: TenkaGame | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
   const [choice, setChoice] = useState(NO_CHOICE);
   const [handedFor, setHandedFor] = useState<string | null>(null);
-  const [confirming, setConfirming] = useState(false);
   const map = useRef<TenkaMapHandle>(null);
   // The cover over the map when the world is taken here (`WinCover`); never on a finished game opened again.
   const moment = useWinMoment(game.phase === TENKA_PHASES.over ? "ended" : "playing");
@@ -174,29 +174,9 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
                 {PARTY_COPY.again}
               </button>
             )}
-            {confirming ? (
-              <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="tenka-confirm-new">
-                <span>{PARTY_COPY.confirmNew}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    keep(null);
-                    setConfirming(false);
-                  }}
-                  className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                  data-testid="tenka-new-yes"
-                >
-                  {PARTY_COPY.confirmYes}
-                </button>
-                <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                  {PARTY_COPY.confirmNo}
-                </button>
-              </span>
-            ) : (
-              <button type="button" onClick={() => (playing ? setConfirming(true) : keep(null))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tenka-new">
-                {PARTY_COPY.newGame}
-              </button>
-            )}
+            <GameEnding>
+              <NewGameButton going={playing} onNewGame={() => keep(null)} testId="tenka-new" />
+            </GameEnding>
           </div>
           {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => tenkaPlayerName(game, seat)), game.winners)} />}
           <p className="text-xs text-muted">{PARTY_COPY.kept}</p>

@@ -1,14 +1,14 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { PartySeatColour } from "./PartySeatColour";
-import { useState } from "react";
 
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { MANCALA_STATUS, mancalaAgain, mustFeed, sowMancala } from "@/lib/party/mancala/mancala";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import type { MancalaGame as MancalaGameState } from "@/lib/party/mancala/mancala.types";
@@ -44,7 +44,6 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
 export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptMancalaGame();
-  const [confirming, setConfirming] = useState(false);
   const shown = useSowing(game);
   // The cover over the board once the last sowing has been drawn here (`WinCover`); never on a finished table opened again.
   const moment = useWinMoment(
@@ -125,34 +124,9 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
               {PARTY_COPY.again}
             </button>
           )}
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="mancala-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="mancala-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (game.status === MANCALA_STATUS.playing ? setConfirming(true) : keep(null))}
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-              data-testid="mancala-new"
-            >
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={game.status === MANCALA_STATUS.playing} onNewGame={() => keep(null)} testId="mancala-new" />
+          </GameEnding>
         </div>
         {game.status === MANCALA_STATUS.playing ? null : (
           <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners, game.winners.length > 1)} />

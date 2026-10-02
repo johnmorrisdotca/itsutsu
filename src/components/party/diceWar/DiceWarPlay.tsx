@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { useCallback } from "react";
 
 import { diceWarWinners, type DiceWarGame } from "@johnmorrisdotca/korokoro";
 
@@ -36,7 +37,6 @@ import { useDiceWarComputer } from "./useDiceWarComputer";
 export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep: (game: DiceWarGame | null) => void; gameHref: string }) {
   const hydrated = useHydrated();
   const sound = useDiceSound();
-  const [confirming, setConfirming] = useState(false);
   const keepGame = useCallback((next: DiceWarGame) => keep(next), [keep]);
   useDiceWarComputer(game, keepGame, sound.play);
 
@@ -123,29 +123,9 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
         <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? DICE_WAR_COPY.soundOn : DICE_WAR_COPY.soundOff}
         </button>
-        {confirming ? (
-          <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="dicewar-confirm-new">
-            <span>{DICE_WAR_COPY.confirmNew}</span>
-            <button
-              type="button"
-              onClick={() => {
-                keep(null);
-                setConfirming(false);
-              }}
-              className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-              data-testid="dicewar-new-yes"
-            >
-              {DICE_WAR_COPY.confirmYes}
-            </button>
-            <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-              {DICE_WAR_COPY.confirmNo}
-            </button>
-          </span>
-        ) : (
-          <button type="button" onClick={() => (over ? keep(null) : setConfirming(true))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dicewar-new">
-            {DICE_WAR_COPY.newGame}
-          </button>
-        )}
+        <GameEnding>
+          <NewGameButton going={!over} onNewGame={() => keep(null)} testId="dicewar-new" />
+        </GameEnding>
       </div>
       <p className="text-xs text-muted">{DICE_WAR_COPY.kept}</p>
       {over ? <TableWallpaper game="diceWar" result={resultLine(names, winners)} /> : null}

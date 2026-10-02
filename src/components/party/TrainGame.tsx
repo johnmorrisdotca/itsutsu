@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { useState } from "react";
 import { PartySeatColour } from "./PartySeatColour";
 
@@ -48,7 +49,6 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
   const [shownTurn, setShownTurn] = useState<number | null>(null);
   const [chosen, setChosen] = useState<Domino | null>(null);
   const [dragging, setDragging] = useState<Domino | null>(null);
-  const [confirming, setConfirming] = useState(false);
   useTrainComputer(game, keep);
   // The cover over the table when the last round is scored here (`WinCover`); never on a finished game opened again.
   const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.phase === TRAIN_PHASES.finished ? "ended" : "playing");
@@ -161,29 +161,9 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
         ) : null}
         <TrainScores game={game} />
         <div className="flex flex-wrap gap-2">
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="train-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="train-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button type="button" onClick={() => (game.phase === TRAIN_PHASES.finished ? keep(null) : setConfirming(true))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="train-new">
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={game.phase !== TRAIN_PHASES.finished} onNewGame={() => keep(null)} testId="train-new" />
+          </GameEnding>
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
         {game.phase === TRAIN_PHASES.finished ? (

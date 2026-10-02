@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_KINDS, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { generatePuzzle, preparePuzzle, puzzleLoads } from "@/lib/puzzles/generate";
 import { puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { Puzzle, PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -41,11 +41,15 @@ import { CubeSolve } from "./CubeSolve";
 import { SuidoSolve } from "./SuidoSolve";
 import { SpiderSolve } from "./SpiderSolve";
 import { PuzzleClockProvider } from "./PuzzleClockContext";
+import { PuzzleNewGame } from "./PuzzleNewGame";
 import { WinSlotProvider } from "./PuzzleWinSlot";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
+
+/** The solves that draw Give up and New game themselves, in their controls row (`PatienceControls`, `CubeSolve`). */
+const HAS_OWN_ENDING_ROW: ReadonlySet<PuzzleKind> = new Set([PUZZLE_KINDS.solitaire, PUZZLE_KINDS.freecell, PUZZLE_KINDS.spider, PUZZLE_KINDS.cube]);
 
 type PuzzlePlayProps = Parameters<typeof PuzzlePlayDrawn>[0] & {
   /** The query the server drew this page for (`puzzleQuery`), to tell a page kept for another address from this one. */
@@ -278,7 +282,11 @@ function PuzzlePlayDrawn({
   // The place over the board a win's cover is drawn, joining each kind's board to the card at its end (`PuzzleWinSlot`).
   return (
     <PuzzleClockProvider value={timed}>
-      <WinSlotProvider>{solveOf(puzzle)}</WinSlotProvider>
+      <WinSlotProvider>
+        {solveOf(puzzle)}
+        {/* New game under every solve that has no row of its own (the four that do draw it beside Give up). */}
+        {race === null && !HAS_OWN_ENDING_ROW.has(kind) ? <PuzzleNewGame kind={kind} /> : null}
+      </WinSlotProvider>
     </PuzzleClockProvider>
   );
 

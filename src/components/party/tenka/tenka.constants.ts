@@ -93,7 +93,6 @@ export const TENKA_COPY = {
   placingHand: "Place them in turn",
   placingNote: "Placed for you starts at once; in turn, everybody places one army at a time round the table.",
   play: "Play →",
-  continue: "Continue →",
   about: "About Tenka and its rules",
   steps: ["Place", "Attack", "Fortify", "End turn"] as const,
   passTo: (name: string) => `Pass to ${name}`,

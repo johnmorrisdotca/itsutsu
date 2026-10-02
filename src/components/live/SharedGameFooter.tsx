@@ -1,7 +1,10 @@
 import { ResignButton } from "@/components/mine/ResignButton";
+import { GameEnding, NewGameLink } from "@/components/play/GameEnding";
+import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { otherStone } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { setUpPath } from "@/lib/gomoku/slugs";
 import { shownName } from "@/lib/rating/shownName";
 
 import { ReactionBar } from "./Reactions";
@@ -40,34 +43,38 @@ export function SharedGameFooter({
         no game here to give up, only a question to take back. The control for
         that is in the offer panel beside the board.
       */}
-      {offer === null &&
-      seat !== null &&
-      (detail.allowResign || state.moves.length === 0) &&
-      state.status === GAME_STATUS.playing ? (
+      {offer === null && seat !== null && state.status === GAME_STATUS.playing ? (
         <div className="flex justify-end">
-          <ResignButton
-            id={detail.id}
-            token={token}
-            moves={state.moves.length}
-            onDone={() => void mutate()}
-            /*
-              No refresh of its own here: the board hands itself back the
-              moment it reads the game as over (`useMatchAddress`), and a
-              second hand-back from the button went to the address the router
-              had stopped agreeing with, and reloaded the page.
-            */
-            refreshAfter={false}
-            /*
-              NOTHING MOVES WHILE THIS IS ASKING. A move carries a player to
-              their next waiting game a moment after it lands, and somebody who
-              plays a stone and reaches straight for Resign opened this question
-              inside that moment — then watched the board and the question go
-              together. Waved away, the held advance goes ahead; answered, it is
-              dropped, because a game that has just ended is the board to be
-              looking at.
-            */
-            onAsking={onAsking}
-          />
+          <GameEnding>
+            {detail.allowResign || state.moves.length === 0 ? (
+              <ResignButton
+                id={detail.id}
+                token={token}
+                moves={state.moves.length}
+                onDone={() => void mutate()}
+                /*
+                  No refresh of its own here: the board hands itself back the
+                  moment it reads the game as over (`useMatchAddress`), and a
+                  second hand-back from the button went to the address the
+                  router had stopped agreeing with, and reloaded the page.
+                */
+                refreshAfter={false}
+                /*
+                  NOTHING MOVES WHILE THIS IS ASKING. A move carries a player to
+                  their next waiting game a moment after it lands, and somebody
+                  who plays a stone and reaches straight for Resign opened this
+                  question inside that moment — then watched the board and the
+                  question go together. Waved away, the held advance goes ahead;
+                  answered, it is dropped, because a game that has just ended is
+                  the board to be looking at.
+                */
+                onAsking={onAsking}
+                className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
+              />
+            ) : null}
+            {/* A game between members is kept where it is (My games), so New game asks nothing: it leaves this one going. */}
+            <NewGameLink href={setUpPath(state.settings.variant)} testId="live-new-game" />
+          </GameEnding>
         </div>
       ) : null}
 

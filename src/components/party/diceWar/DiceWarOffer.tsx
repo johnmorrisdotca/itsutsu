@@ -1,24 +1,18 @@
 "use client";
 
-import { PlayButton } from "@/components/games/PlayButton";
-import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { GameInProgressOffer } from "@/components/play/GameInProgressOffer";
 
 import { DICE_WAR_COPY } from "./diceWar.constants";
 import { useKeptDiceWarGame } from "./diceWarStore";
 
 /**
- * THE PLAY BUTTON on Dice War's own page and its rules page, under the picture
- * as every game's is (`PlayButton`), leading to the table. It reads Continue
- * while this browser holds a game not yet finished, because the table opens on
- * that game rather than a new one.
+ * THE PLAY BUTTON on Dice War's own page and its rules page, under the picture as
+ * every game's is: Play, or where this browser holds a game still going,
+ * Continue with a New game beside it that says what it ends
+ * (`GameInProgressOffer`).
  */
 export function DiceWarOffer({ href }: { href: string }) {
-  const hydrated = useHydrated();
-  const [game] = useKeptDiceWarGame();
+  const [game, keep] = useKeptDiceWarGame();
   const going = game !== undefined && game !== null && game.phase !== "over";
-  return (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-going={going ? "true" : undefined} {...readyMark(hydrated)}>
-      <PlayButton href={href} label={going ? DICE_WAR_COPY.continue : DICE_WAR_COPY.play} />
-    </div>
-  );
+  return <GameInProgressOffer href={href} going={going} newGame={{ ends: () => keep(null) }} playLabel={DICE_WAR_COPY.play} />;
 }

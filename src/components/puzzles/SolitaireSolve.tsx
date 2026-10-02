@@ -1,5 +1,8 @@
 "use client";
 
+import { setUpPath } from "@/lib/gomoku/slugs";
+import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
+import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -155,9 +158,12 @@ export function SolitaireSolve({
           </p>
         )}
         {done === null ? (
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ml-auto`} onClick={giveUp} disabled={!live || startedAt === null || game.finishing} data-testid="solitaire-give-up">
-            Give up
-          </button>
+          <div className="ml-auto">
+            <GameEnding>
+              <EndGameButton ending={ENDINGS.giveUp} onEnd={giveUp} disabled={!live || startedAt === null || game.finishing} testId="solitaire-give-up" />
+              {race === null ? <NewGameLink href={setUpPath(puzzle.kind)} testId="solitaire-new" /> : null}
+            </GameEnding>
+          </div>
         ) : null}
       </div>
       {done === null ? (

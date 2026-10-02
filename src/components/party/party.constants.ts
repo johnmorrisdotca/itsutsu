@@ -48,10 +48,6 @@ export const PARTY_COPY = {
   howMany: "How many are playing?",
   names: "Names, if you like",
   start: "Start",
-  newGame: "New game",
-  confirmNew: "Start a new game? This one will be gone.",
-  confirmYes: "Yes, start again",
-  confirmNo: "Keep playing",
   again: "Play again, same table",
   pick: "Tap one of your pieces, then where it should go. A jump can chain: tap where the last jump lands.",
   stuck: "Nobody can move. The game is over with no winner.",
@@ -95,7 +91,6 @@ export const DOTS_COPY = {
   boxes: (count: number) => `${count} ${count === 1 ? "box" : "boxes"}`,
   drawn: (drawn: number, of: number) => `${drawn} of ${of} lines drawn.`,
   play: "Play →",
-  continue: "Continue →",
   about: "About Dots and Boxes and its rules",
 } as const;
 
@@ -150,7 +145,6 @@ export const GHOST_COPY = {
   outAt: "Take every letter and you are out.",
   lettersLeft: (name: string, letters: string) => (letters === "" ? `${name}: no letters` : `${name}: ${letters}`),
   play: "Play →",
-  continue: "Continue →",
   about: "About Superghost and its rules",
 } as const;
 
@@ -194,7 +188,6 @@ export const MANCALA_COPY = {
   store: "store",
   taken: "taken",
   play: "Play →",
-  continue: "Continue →",
   about: "About Mancala and its rules",
 } as const;
 
@@ -292,6 +285,5 @@ export const TRAIN_COPY = {
   share: (names: string) => `${names} share the win with the lowest total.`,
   their: (name: string) => `${name}’s train`,
   play: "Play →",
-  continue: "Continue →",
   about: "About Mexican Train and its rules",
 } as const;

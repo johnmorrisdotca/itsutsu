@@ -1,5 +1,6 @@
 "use client";
 
+import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { PartySeatColour } from "./PartySeatColour";
@@ -9,7 +10,7 @@ import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { ghostJudge } from "@/lib/party/superghost/ghostWords";
 import { GHOST_PHASE, ghostAgain, playGhost } from "@/lib/party/superghost/superghost";
 import type { GhostEnd, GhostMove } from "@/lib/party/superghost/superghost.types";
@@ -47,7 +48,6 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptGhostGame();
   const [pending, setPending] = useState<string | null>(null);
-  const [confirming, setConfirming] = useState(false);
   const words = useGhostWords(game === undefined || game === null ? null : game.language);
   // The cover over the letters, when the last player standing wins here (`WinCover`); never on a finished table opened again.
   const moment = useWinMoment(game === undefined || game === null ? "unknown" : game.phase === GHOST_PHASE.finished ? "ended" : "playing");
@@ -141,34 +141,9 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
               {PARTY_COPY.again}
             </button>
           )}
-          {confirming ? (
-            <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="ghost-confirm-new">
-              <span>{PARTY_COPY.confirmNew}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  keep(null);
-                  setConfirming(false);
-                }}
-                className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
-                data-testid="ghost-new-yes"
-              >
-                {PARTY_COPY.confirmYes}
-              </button>
-              <button type="button" onClick={() => setConfirming(false)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-                {PARTY_COPY.confirmNo}
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => (playing ? setConfirming(true) : keep(null))}
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-              data-testid="ghost-new"
-            >
-              {PARTY_COPY.newGame}
-            </button>
-          )}
+          <GameEnding>
+            <NewGameButton going={playing} onNewGame={() => keep(null)} testId="ghost-new" />
+          </GameEnding>
         </div>
         {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners)} />}
         <p className="text-sm">

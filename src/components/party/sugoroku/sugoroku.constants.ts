@@ -1,3 +1,5 @@
+import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+
 /** The board lying across the page, with the rail for the cube: the package's own drawing (`boardSize`), in its own units. */
 export const SUGOROKU_LANDSCAPE = { width: 976, height: 552 } as const;
 
@@ -14,7 +16,6 @@ export const SUGOROKU_COPY = {
   lead: (label: string) =>
     `${label} for two round one phone or tablet, against the computer at four strengths, or on two devices, each on their own. The dice are thrown for you. Nothing here is rated.`,
   play: "Play",
-  continue: "Continue",
   card: "Tables on this device",
   matchLength: "How long",
   seats: "Who plays",
@@ -35,10 +36,11 @@ export const SUGOROKU_COPY = {
   double: "Double",
   take: "Take",
   drop: "Drop",
-  giveUp: "Give up",
-  giveUpAsk: "Give up this game? It counts for the other side.",
-  giveUpYes: "Yes, give up",
-  giveUpNo: "Keep playing",
+  /** Resigning, in the one set of words every game uses (`GAME_ENDING_COPY`); asked in place in the stage's fixed row of three presses, which cannot grow a question beside it. */
+  giveUp: GAME_ENDING_COPY.resign,
+  giveUpAsk: GAME_ENDING_COPY.resignAsk,
+  giveUpYes: GAME_ENDING_COPY.resign,
+  giveUpNo: GAME_ENDING_COPY.keepPlaying,
   noMove: "No legal move: press Done.",
   chooseChecker: "Tap a checker to move it, then the point it goes to.",
   moreToPlay: (left: number) => (left === 1 ? "One die left to play." : `${left} dice left to play.`),
@@ -46,10 +48,6 @@ export const SUGOROKU_COPY = {
   over: "Match over",
   gameOver: "Game over",
   again: "Play again, same table",
-  newGame: "New game",
-  confirmNew: "Start a new game? This one will be gone.",
-  confirmYes: "Yes, start again",
-  confirmNo: "Keep playing",
   kept: "Kept in this browser: leave and come back, and it is here.",
   about: "About this game, its rules and its family",
   soundOn: "Dice sound on",
