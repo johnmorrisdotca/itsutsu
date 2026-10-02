@@ -124,9 +124,9 @@ export function NewGameButton({
  * (a puzzle's run, a game between members): nothing is lost, so nothing is
  * asked, and the title says where the one in progress will be.
  */
-export function NewGameLink({ href, testId }: { href: string; testId: string }) {
+export function NewGameLink({ href, testId, className = LOOK }: { href: string; testId: string; className?: string }) {
   return (
-    <Link href={href} className={LOOK} title={GAME_ENDING_COPY.newGameKeeps} data-testid={testId}>
+    <Link href={href} className={className} title={GAME_ENDING_COPY.newGameKeeps} data-testid={testId}>
       {GAME_ENDING_COPY.newGame}
     </Link>
   );

@@ -30,6 +30,8 @@ const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
 
 test.describe("the first puzzle", () => {
   test("the front door says what it is, and leads to the set-up and the rules", async ({ page }) => {
+    // A stranger's view, which is open: a member with a grid going is offered Continue in Play's place (`GameInProgressOffer`), and a run another spec left would turn this one red.
+    await page.context().clearCookies();
     await page.goto(AT);
     const door = page.getByTestId("game-front-door");
     await expect(door).toHaveAttribute("data-kind", "puzzle");

@@ -15,6 +15,7 @@ import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.consta
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
 import { PUZZLE_CLOCK, sizeWord } from "./puzzles.constants";
+import { PuzzleNewGameBeside } from "./PuzzleNewGame";
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { SolveCountdown } from "./SolveCountdown";
 import type { Pausing } from "./solveShared";
@@ -103,6 +104,7 @@ export function SolveHeader({
             {pausing.paused ? "Resume" : "Pause"}
           </button>
         ) : null}
+        {pausing !== undefined && !pausing.racing ? <PuzzleNewGameBeside kind={puzzle.kind} /> : null}
       </div>
     </div>
   );

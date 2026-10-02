@@ -53,7 +53,7 @@ Continue or its own New game question, and Resume stays the word for a clock.
   Mancala, Mexican Train, the race games on `PartyRaceGame`, Block Five for
   four, the card games, Yacht, Hitotsu, Sugoroku, Dice War, Pachisi, Tenka,
   Pair Go), the practice board, a live game's footer, Free Cell,
-  Spider, Solitaire, the cube, and every other puzzle's solve (`PuzzleNewGame`).
+  Spider, Solitaire, the cube, and every other puzzle's solve (New game beside Pause in the line over the grid, `PuzzleNewGameBeside`: a row under the grid moved a tall board off the screen the tray was scrolled to, Kumimoji's, so it adds no height to the page's foot).
 - Pair Go (on one device and at a table) and the Kumimoji party table keep
   Resign; Sugoroku's "Give up" is Resign, in its fixed row of three presses.
 - The patience games and the cube used to give up on one press with no

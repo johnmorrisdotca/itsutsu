@@ -48,8 +48,6 @@ import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
-/** The solves that draw Give up and New game themselves, in their controls row (`PatienceControls`, `CubeSolve`). */
-const HAS_OWN_ENDING_ROW: ReadonlySet<PuzzleKind> = new Set([PUZZLE_KINDS.solitaire, PUZZLE_KINDS.freecell, PUZZLE_KINDS.spider, PUZZLE_KINDS.cube]);
 
 type PuzzlePlayProps = Parameters<typeof PuzzlePlayDrawn>[0] & {
   /** The query the server drew this page for (`puzzleQuery`), to tell a page kept for another address from this one. */
@@ -284,8 +282,8 @@ function PuzzlePlayDrawn({
     <PuzzleClockProvider value={timed}>
       <WinSlotProvider>
         {solveOf(puzzle)}
-        {/* New game under every solve that has no row of its own (the four that do draw it beside Give up). */}
-        {race === null && !HAS_OWN_ENDING_ROW.has(kind) ? <PuzzleNewGame kind={kind} /> : null}
+        {/* New game for a table of several, which has no header line; every other solve has it beside Pause (`SolveHeader`). */}
+        {race === null && players > 1 && (kind === PUZZLE_KINDS.kumimoji || kind === PUZZLE_KINDS.mahjong) ? <PuzzleNewGame kind={kind} /> : null}
       </WinSlotProvider>
     </PuzzleClockProvider>
   );

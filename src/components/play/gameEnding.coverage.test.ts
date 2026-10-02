@@ -106,6 +106,8 @@ describe("every game in progress offers the same controls", () => {
   it("mounts New game under every puzzle solve, and the four that give up draw it beside Give up", () => {
     expect(code(read("src/components/puzzles/PuzzlePlay.tsx"))).toContain("<PuzzleNewGame");
     expect(code(read("src/components/puzzles/PuzzleNewGame.tsx"))).toMatch(/NewGameLink/);
+    // Beside Pause, in the line over every solve's grid, so a tall board's page is no longer for it.
+    expect(code(read("src/components/puzzles/SolveHeader.tsx"))).toContain("<PuzzleNewGameBeside");
     for (const path of HAS_OWN_ROW) {
       const source = code(read(path));
       const patience = path.endsWith("FreeCellSolve.tsx") || path.endsWith("SpiderSolve.tsx");
