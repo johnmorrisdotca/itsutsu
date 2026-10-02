@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Controls";
 import { MOSAIC_COPY, MOSAIC_SHAPES, type MosaicShape } from "@/lib/record/mosaic.constants";
 import { nextPaint, pngOf, saveAs, shapeForScreen } from "@/lib/record/mosaicImage";
 
+import { MosaicFullScreen } from "./MosaicFullScreen";
+
 /** The longer side of the picture drawn for the page itself; the full size is made only for a download. */
 const SHOWN_MOST_PX = 1600;
 
@@ -60,6 +62,9 @@ export function MosaicPanel({
   const [shown, setShown] = useState<{ url: string; shape: MosaicShape } | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  // The full-screen view, and the picture made for it at the shape's own size (the page's is capped at `SHOWN_MOST_PX`).
+  const [full, setFull] = useState(false);
+  const [big, setBig] = useState<{ url: string; shape: MosaicShape } | null>(null);
   // The latest maker, read when a picture is drawn rather than written into the redraw's reasons.
   const latest = useRef(svgOf);
   useEffect(() => {
@@ -96,6 +101,31 @@ export function MosaicPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auto, redraw, shape]);
 
+  // Full screen: the picture at the size it is saved in, drawn again when the shape changes under it.
+  useEffect(() => {
+    if (!full) return;
+    let stale = false;
+    void (async () => {
+      await nextPaint();
+      if (stale) return;
+      try {
+        const blob = await pngAt(1);
+        if (!stale) setBig({ url: URL.createObjectURL(blob), shape });
+      } catch (error) {
+        console.error("[mosaic] could not draw", error);
+      }
+    })();
+    return () => {
+      stale = true;
+    };
+    // `pngAt` reads the maker through a ref; these are the reasons to draw again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [full, redraw, shape]);
+
+  useEffect(() => () => {
+    if (big !== null) URL.revokeObjectURL(big.url);
+  }, [big]);
+
   // A picture replaced, or a page left, gives its memory back.
   useEffect(() => () => {
     if (shown !== null) URL.revokeObjectURL(shown.url);
@@ -118,6 +148,23 @@ export function MosaicPanel({
     }
   }
 
+  /** The two shapes as a choice, once in the window and once on the full screen: each its own radio group and test ids. */
+  function shapeChoice(prefix: string, name: string, tone: string) {
+    return (
+      <fieldset className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-1 ${tone}`} data-testid={`${prefix}-shape`}>
+        <legend className="sr-only">{MOSAIC_COPY.shapeLabel}</legend>
+        {(Object.keys(MOSAIC_SHAPES) as MosaicShape[]).map((choice) => (
+          <label key={choice} className="flex min-h-11 cursor-pointer items-center gap-2">
+            <input type="radio" name={name} checked={shape === choice} onChange={() => setShape(choice)} data-testid={`${prefix}-shape-${choice}`} />
+            <span>
+              {MOSAIC_SHAPES[choice].label} <span className="opacity-70">{MOSAIC_SHAPES[choice].note}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {/*
@@ -126,34 +173,14 @@ export function MosaicPanel({
         Modal. Move the landscape, portrait and download buttons below the image."
       */}
       {shown !== null ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise
-        <img
-          src={shown.url}
-          alt={alt}
-          className="mx-auto h-auto max-h-[70dvh] w-auto max-w-full rounded-lg border border-rule"
-          data-testid="mosaic-picture"
-          data-shape={shown.shape}
-        />
+        <button type="button" onClick={() => setFull(true)} className="mx-auto cursor-zoom-in rounded-lg focus-visible:ring-2 focus-visible:ring-moss focus-visible:outline-none" aria-label={MOSAIC_COPY.fullScreen} data-testid="mosaic-picture-press">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise */}
+          <img src={shown.url} alt={alt} className="mx-auto h-auto max-h-[70dvh] w-auto max-w-full rounded-lg border border-rule" data-testid="mosaic-picture" data-shape={shown.shape} />
+        </button>
       ) : null}
       {failed ? <p className="text-center text-sm text-red-700">{MOSAIC_COPY.failed}</p> : null}
       <div className="flex flex-col items-center gap-2" data-testid="mosaic-controls">
-        <fieldset className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm" data-testid="mosaic-shape">
-          <legend className="sr-only">{MOSAIC_COPY.shapeLabel}</legend>
-          {(Object.keys(MOSAIC_SHAPES) as MosaicShape[]).map((choice) => (
-            <label key={choice} className="flex min-h-11 cursor-pointer items-center gap-2">
-              <input
-                type="radio"
-                name={`mosaic-shape-${id}`}
-                checked={shape === choice}
-                onChange={() => setShape(choice)}
-                data-testid={`mosaic-shape-${choice}`}
-              />
-              <span>
-                {MOSAIC_SHAPES[choice].label} <span className="text-muted">{MOSAIC_SHAPES[choice].note}</span>
-              </span>
-            </label>
-          ))}
-        </fieldset>
+        {shapeChoice("mosaic", `mosaic-shape-${id}`, "text-sm")}
         {extra?.(shape)}
         <span className="flex flex-wrap items-center justify-center gap-2">
           {auto ? null : (
@@ -161,6 +188,11 @@ export function MosaicPanel({
               {busy ? MOSAIC_COPY.making : shown === null ? MOSAIC_COPY.make : MOSAIC_COPY.again}
             </Button>
           )}
+          {shown !== null ? (
+            <Button onClick={() => setFull(true)} data-testid="mosaic-fullscreen">
+              {MOSAIC_COPY.fullScreen} <span aria-hidden="true">⤢</span>
+            </Button>
+          ) : null}
           {auto || shown !== null ? (
             <Button onClick={() => void make(true)} disabled={busy} data-testid="download-mosaic">
               {busy && auto ? MOSAIC_COPY.making : MOSAIC_COPY.download}
@@ -168,6 +200,26 @@ export function MosaicPanel({
           ) : null}
         </span>
       </div>
+      {full && shown !== null ? (
+        <MosaicFullScreen url={big?.shape === shape ? big.url : shown.url} alt={alt} shape={shape} onClose={() => {
+            setFull(false);
+            setBig(null);
+          }}>
+          {shapeChoice("mosaic-full", `mosaic-full-shape-${id}`, "text-ivory")}
+          <button
+            type="button"
+            onClick={() => {
+              // Not `disabled` while it works: a button that goes dead takes the focus with it, and Esc stops reaching the view.
+              if (!busy) void make(true);
+            }}
+            aria-busy={busy}
+            className={`min-h-11 rounded-full border border-white/25 px-4 text-ivory hover:bg-white/10 ${busy ? "opacity-50" : ""}`}
+            data-testid="mosaic-full-download"
+          >
+            {busy ? MOSAIC_COPY.making : MOSAIC_COPY.download}
+          </button>
+        </MosaicFullScreen>
+      ) : null}
     </div>
   );
 }

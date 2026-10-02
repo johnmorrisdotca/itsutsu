@@ -136,7 +136,8 @@ export function useResultCard(
      */
     dialog.current?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      // A window open over the card takes the Escape: it is that window's to close.
+      if (event.key !== "Escape" || document.querySelector("dialog[open]") !== null) return;
       event.preventDefault();
       close();
     };

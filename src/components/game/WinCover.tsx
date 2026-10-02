@@ -58,7 +58,8 @@ export function WinCover({ news, onClose }: { news: WinNews; onClose: () => void
   // Escape closes it, and only it: just the board and a board opened on its own wait for an Escape nobody else took.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
+      // A window open over the board (the wallpaper) takes the Escape: it is that window's to close, and taking it here would shut the cover under it and keep the window open.
+      if (event.key !== "Escape" || event.defaultPrevented || document.querySelector("dialog[open]") !== null) return;
       event.preventDefault();
       onClose();
     };

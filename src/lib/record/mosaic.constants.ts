@@ -66,6 +66,8 @@ export const MOSAIC_COPY = {
   make: "Make the picture",
   making: "Drawing…",
   download: "Download",
+  /** The press that opens the picture at the size of the screen. */
+  fullScreen: "View full screen",
   again: "Make it again",
   pickLabel: "More positions than the picture holds. Show",
   picks: {

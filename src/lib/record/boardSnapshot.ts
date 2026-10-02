@@ -273,9 +273,9 @@ export async function snapshotBoard(element: HTMLElement, scale = MOST_SCALE): P
   const body = new XMLSerializer().serializeToString(copied);
   const styles = `<style>${fonts}\n${pseudo.join("\n")}</style>`;
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width} ${height}">` +
-    `<foreignObject x="0" y="0" width="${width}" height="${height}">` +
-    `<div xmlns="${XHTML}" style="width:${width}px;height:${height}px;background:${ground}">${styles}${body}</div>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}" viewBox="0 0 ${width * scale} ${height * scale}">` +
+    `<foreignObject x="0" y="0" width="${width * scale}" height="${height * scale}">` +
+    `<div xmlns="${XHTML}" style="width:${width}px;height:${height}px;zoom:${scale};background:${ground}">${styles}${body}</div>` +
     `</foreignObject></svg>`;
 
   const image = new Image();
