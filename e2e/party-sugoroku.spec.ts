@@ -31,6 +31,19 @@ test.use({ reducedMotion: "reduce" });
 
 const stage = (page: Page) => page.getByTestId("sugoroku-stage");
 
+/**
+ * The drawing lies wholly inside the board it is drawn on. A game with no cube is a narrower drawing than one with it, and was once
+ * drawn at the box's width, so tall that its bottom row of points was cut off — the board looked fine from the top.
+ */
+async function expectBoardWhole(page: Page) {
+  const drawn = await page.getByTestId("sugoroku-board").locator("svg").boundingBox();
+  const frame = await page.getByTestId("sugoroku-board").boundingBox();
+  expect(drawn, "the board's drawing is on the page").not.toBeNull();
+  expect(frame, "the board's box is on the page").not.toBeNull();
+  expect(drawn!.y + drawn!.height, "the drawing runs past the foot of its board").toBeLessThanOrEqual(frame!.y + frame!.height + 1);
+  expect(drawn!.x + drawn!.width, "the drawing runs past the side of its board").toBeLessThanOrEqual(frame!.x + frame!.width + 1);
+}
+
 async function clearKept(page: Page, kind: string) {
   await page.goto("/games");
   await page.evaluate((key) => window.localStorage.removeItem(key), keptKey(kind));
@@ -126,6 +139,7 @@ test.describe("the backgammon games, round one device", () => {
       await startAgainstComputer(page, kind, 1);
       await expect(stage(page)).toHaveAttribute("data-state", "playing");
       await expect(page.getByTestId("sugoroku-board")).toHaveAttribute("data-orientation", "landscape");
+      await expectBoardWhole(page);
       // Whoever the opening throw favours starts: a computer's first turn lands, then the person's.
       await expect(stage(page)).toHaveAttribute("data-phase", /roll|move/, { timeout: 30_000 });
       const before = await page.getByTestId("sugoroku-news").textContent();
@@ -215,6 +229,7 @@ test.describe("the backgammon games, round one device", () => {
     await page.setViewportSize(PHONE);
     await startAgainstComputer(page, "nackgammon", 1);
     await expect(page.getByTestId("sugoroku-board")).toHaveAttribute("data-orientation", "portrait");
+    await expectBoardWhole(page);
     const wide = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(wide, "the page scrolls sideways at 390px").toBeLessThanOrEqual(0);
   });

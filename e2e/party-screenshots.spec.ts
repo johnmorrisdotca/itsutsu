@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 
 import { expect, test } from "@playwright/test";
 
+import { DEFAULT_APPEARANCE, FELTS } from "../src/components/board/Board.constants";
 import { PARTY_SLUGS } from "../src/lib/gomoku/slugs";
 import { encodeDots, replayDots } from "../src/lib/party/dotsAndBoxes/dotsAndBoxes";
 import { encodeGhost, replayGhost } from "../src/lib/party/superghost/superghost";
@@ -167,7 +168,7 @@ function sugorokuScene(kind: SugorokuKind, points: number, seed: number, turns: 
 }
 
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
-const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; width?: number; scale?: number }[] = [
+const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; surface?: string; width?: number; scale?: number }[] = [
   {
     // Three players on 4×4, twenty-seven of forty lines in: seven boxes closed, in all three colours, and the last line in its drawer's.
     kind: "dotsAndBoxes",
@@ -335,7 +336,8 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("war", 100, 2, (game: { last: { wars: number } | null; moves: unknown[] }) => game.last !== null && game.last.wars === 1 && game.moves.length >= 8),
   },
-  // The seven backgammon games, each a few turns in with Ann to roll; the cube shows where the game has one.
+  // The seven backgammon games, each a few turns in with Ann to roll; the cube shows where the game has one. Their board is drawn on the cloth every felt table starts on
+  // (Reversi, Gomoji, Kumimoji and the card tables read the same default, and offer the same colour patches), so it is green felt rather than the wood of the older party boards.
   ...SUGOROKU_KIND_LIST.map(
     (kind, at) =>
       ({
@@ -343,6 +345,7 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
         key: sugorokuStorageKey(kind),
         table: "sugoroku-game",
         shot: "board-surface",
+        surface: FELTS[DEFAULT_APPEARANCE.felt as keyof typeof FELTS].label,
         stored: sugorokuScene(kind, kind === "backgammon" || kind === "nackgammon" ? 5 : 1, 20261001 + at, 12 + at),
       }) as const,
   ),
@@ -362,8 +365,8 @@ test.describe("party game screenshots", () => {
         await ready(page, scene.table);
         await expect(page.getByTestId(scene.table)).not.toHaveAttribute("data-state", "finished");
         const surface = page.getByTestId(scene.shot).first();
-        // The board a member who never chose one sees: the picture is of the site's own wood, never an evening's choice.
-        if (scene.shot === "board-surface") await expect(surface).toHaveAttribute("data-surface", "Kaya");
+        // The board a member who never chose one sees: the picture is of the site's own wood (or, for a felt table, its default cloth), never an evening's choice.
+        if (scene.shot === "board-surface") await expect(surface).toHaveAttribute("data-surface", scene.surface ?? "Kaya");
         // The ways of looking round a big board (Fit, the arrows) are for the player, not the picture.
         await page.addStyleTag({ content: '[data-testid$="-fit"], [data-testid$="-arrows"] { visibility: hidden !important; }' });
         // And a card game's presses and the line under its hand are for playing, not for its picture.

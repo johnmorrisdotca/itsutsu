@@ -112,7 +112,9 @@ export function SugorokuBoard({
     <BoardFrame size={standing ? height : width} rows={standing ? width : height} theme={theme} flipped={false} inset={0} lattice={false} shape="rhombus" coordinates={false}>
       <style>{SUGOROKU_STYLE}</style>
       <div
-        className="absolute inset-0 select-none [&>svg]:h-full [&>svg]:w-full"
+        // Important, because the package's own stylesheet is unlayered and says `height: auto`, which beats a layered utility: without it a board with no cube
+        // (900 wide in a 976 box) was drawn at the box's width, taller than the box, and its bottom row was cut off.
+        className="absolute inset-0 select-none [&>svg]:h-full! [&>svg]:w-full!"
         onClick={press}
         data-testid="sugoroku-board"
         data-orientation={standing ? "portrait" : "landscape"}
