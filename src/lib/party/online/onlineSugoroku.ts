@@ -42,7 +42,7 @@ function onlineOf(kind: SugorokuKind): OnlineRules<SugorokuTable, SugorokuMove> 
   return {
     sizes: SUGOROKU_LENGTHS[kind],
     counts: [2],
-    start: (size, count, extra) => startSugoroku(kind, size, ["", ""], freshTableSeed(), [extra?.computers?.includes(0) === true, extra?.computers?.includes(1) === true]),
+    start: (size, count, extra) => (count !== 2 ? null : startSugoroku(kind, size, ["", ""], freshTableSeed(), [extra?.computers?.includes(0) === true, extra?.computers?.includes(1) === true])),
     encode: encodeSugoroku,
     decode: decodeSugoroku,
     toPlay: sugorokuToPlay,

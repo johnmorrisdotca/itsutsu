@@ -23,6 +23,8 @@ import { playYacht, startYacht } from "../src/lib/party/yacht/yacht";
 import { encodeYacht } from "../src/lib/party/yacht/yachtCodec";
 import { encodeHitotsu, hitotsuComputer, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { encodeDiceWar, playDiceWar, startDiceWar } from "@johnmorrisdotca/korokoro";
+import { SUGOROKU_KIND_LIST, sugorokuStorageKey, type SugorokuKind } from "../src/lib/party/sugoroku/sugoroku.constants";
+import { encodeSugoroku, playSugoroku, startSugoroku, sugorokuComputerMove, sugorokuOver, sugorokuToPlay } from "../src/lib/party/sugoroku/sugorokuTable";
 import { ready } from "./support";
 
 /**
@@ -144,6 +146,24 @@ function hitotsuScene(): string {
   const waiting = () => game.toPlay === 0 && game.challenge === null && game.drawn === null && game.pending === 0 && game.discard.length >= 8 && game.discard.some((card) => !/\d/.test(card[1]!));
   for (let move = 0; move < 2000 && !waiting(); move += 1) game = playHitotsu(game, hitotsuComputer(game))!;
   return encodeHitotsu(game);
+}
+
+/**
+ * One of the backgammon games between two people, Ann and Ben, played by the
+ * package's own computer for a fixed number of turns from a fixed seed, and
+ * left with Ann to play: the picture is the board part way through, the
+ * cube in play where the game has one. People rather than computers, so the
+ * table waits on the picture.
+ */
+function sugorokuScene(kind: SugorokuKind, points: number, seed: number, turns: number): string {
+  let table = startSugoroku(kind, points, ["Ann", "Ben"], seed)!;
+  let random = seed;
+  const next = () => {
+    random = (random * 1103515245 + 12345) % 2147483648;
+    return random / 2147483648;
+  };
+  for (let turn = 0; turn < turns || (sugorokuToPlay(table) !== 0 && !sugorokuOver(table)); turn += 1) table = playSugoroku(table, sugorokuComputerMove(table, "greedy", next)!)!;
+  return encodeSugoroku(table);
 }
 
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
@@ -315,6 +335,17 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("war", 100, 2, (game: { last: { wars: number } | null; moves: unknown[] }) => game.last !== null && game.last.wars === 1 && game.moves.length >= 8),
   },
+  // The seven backgammon games, each a few turns in with Ann to roll; the cube shows where the game has one.
+  ...SUGOROKU_KIND_LIST.map(
+    (kind, at) =>
+      ({
+        kind,
+        key: sugorokuStorageKey(kind),
+        table: "sugoroku-game",
+        shot: "board-surface",
+        stored: sugorokuScene(kind, kind === "backgammon" || kind === "nackgammon" ? 5 : 1, 20261001 + at, 12 + at),
+      }) as const,
+  ),
 ];
 
 test.describe("party game screenshots", () => {

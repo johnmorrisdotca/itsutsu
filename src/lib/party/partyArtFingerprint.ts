@@ -71,6 +71,14 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/hitotsu/hitotsu.constants.ts",
   // Hitotsu's cards are drawn by its package; a new release is a new version here.
   "node_modules/@johnmorrisdotca/hitotsu/package.json",
+  "src/components/party/sugoroku/SugorokuBoard.tsx",
+  "src/components/party/sugoroku/SugorokuPlay.tsx",
+  "src/components/party/sugoroku/SugorokuStage.tsx",
+  "src/components/party/sugoroku/useSugorokuTurn.ts",
+  "src/components/party/sugoroku/sugoroku.constants.ts",
+  "src/lib/party/sugoroku/sugorokuTable.ts",
+  // The backgammon board is drawn by its package; a new release is a new version here.
+  "node_modules/@johnmorrisdotca/sugoroku/package.json",
   "e2e/party-screenshots.spec.ts",
 ];
 

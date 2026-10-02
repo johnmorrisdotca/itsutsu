@@ -17,10 +17,12 @@ import { useKeptSugoroku } from "./sugorokuStore";
 export function SugorokuOffer({ kind, href }: { kind: SugorokuKind; href: string }) {
   const hydrated = useHydrated();
   const [table] = useKeptSugoroku(kind);
+  // A name from a kept record that carries a match length ("Backgammon (7 Point)") arrives with it, and the set-up opens on it.
+  const query = hydrated && typeof window !== "undefined" ? window.location.search : "";
   const going = table !== undefined && table !== null && !sugorokuOver(table);
   return (
     <div className="flex flex-col" data-testid="party-kind-offer" data-going={going ? "true" : undefined} {...readyMark(hydrated)}>
-      <PlayButton href={href} label={going ? `${SUGOROKU_COPY.continue} →` : `${SUGOROKU_COPY.play} →`} />
+      <PlayButton href={`${href}${query}`} label={going ? `${SUGOROKU_COPY.continue} →` : `${SUGOROKU_COPY.play} →`} />
     </div>
   );
 }

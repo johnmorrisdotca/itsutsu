@@ -33,7 +33,7 @@ test.describe("an imported record's game names", () => {
     await removeMember(member.email);
   });
 
-  test("Checkers leads to our Checkers; Backgammon stays plain words", async ({ page }) => {
+  test("Checkers leads to our Checkers; Backgammon leads to our Backgammon", async ({ page }) => {
     await page.goto("/players/john-morris");
     const siteTab = page.getByTestId("tab").filter({ hasText: "ItsYourTurn.com" });
     await siteTab.click();
@@ -57,10 +57,9 @@ test.describe("an imported record's game names", () => {
       gamePath(RULE_VARIANTS.halma),
     );
 
-    // Backgammon is on the rendered table as words, and is not a link.
-    const backgammon = detail.getByTestId("game-not-here").filter({ hasText: /^Backgammon$/ });
-    await expect(backgammon).toBeVisible();
-    await expect(detail.getByRole("link", { name: "Backgammon", exact: true })).toHaveCount(0);
+    // Backgammon is a game here since 2026-10-01 (Sugoroku): its name leads to it, and is no longer plain words.
+    await expect(detail.getByRole("link", { name: "Backgammon", exact: true })).toHaveAttribute("href", gamePath("backgammon"));
+    await expect(detail.getByTestId("game-not-here").filter({ hasText: /^Backgammon$/ })).toHaveCount(0);
 
     // And the checkers games we do not have stay plain beside the one we do.
     for (const name of ["Anti-Checkers", "Crowded Checkers"]) {

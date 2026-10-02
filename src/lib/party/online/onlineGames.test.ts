@@ -12,6 +12,7 @@ import { writeTenkaMove } from "../tenka/tenkaKeep";
 import { tenkaMoves } from "../tenka/tenkaMoves";
 import { sensibleTenkaMove } from "../tenka/tenkaPolicy";
 
+import { SUGOROKU_LENGTHS, isSugorokuKind } from "../sugoroku/sugoroku.constants";
 import { ONLINE_GAMES, ONLINE_GAME_LIST, hasComputer, isOnlineGame, onlineRulesOf, readPoint } from "./onlineGames";
 import { standingOf } from "./onlineSeats";
 import { computerPlayOf } from "./onlineComputerMoves";
@@ -35,14 +36,14 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu", "backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
   });
 
   // Kumimoji starts from the bag its set-up dealt, and Tenka, Mexican Train and Hitotsu from the seed their set-ups drew; each has its own cases.
-  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji" && key !== "tenka" && key !== "mexicanTrain" && key !== "hitotsu"))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
+  it.each(ONLINE_GAME_LIST.filter((key) => key !== "kumimoji" && key !== "tenka" && key !== "mexicanTrain" && key !== "hitotsu" && !isSugorokuKind(key)))("%s starts at every table it offers, and keeps a game it can read back", (key) => {
     const rules = onlineRulesOf(key);
     for (const size of rules.sizes.length === 0 ? [0] : rules.sizes) {
       for (const count of rules.counts) {
@@ -74,7 +75,7 @@ describe("every game on several devices", () => {
 
   it("offers a computer seat only at Pair Go, Kumimoji, Mexican Train and Hitotsu, the games with a computer player, and the worker can move for each", () => {
     for (const key of ONLINE_GAME_LIST) {
-      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji" || key === "mexicanTrain" || key === "hitotsu");
+      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji" || key === "mexicanTrain" || key === "hitotsu" || isSugorokuKind(key));
       expect(computerPlayOf(key) !== undefined, key).toBe(hasComputer(key));
     }
   });
@@ -465,5 +466,38 @@ describe("Hitotsu on several devices", () => {
     expect(rules.winners(game).length).toBeGreaterThan(0);
     expect(rules.moveCount(game)).toBe(moves);
     expect(rules.computers!.levelOf(rules.computers!.seat("computer"))).toBe("computer");
+  });
+});
+
+describe("the backgammon games on several devices", () => {
+  const kinds = ONLINE_GAME_LIST.filter(isSugorokuKind);
+
+  it.each(kinds)("%s starts at every length it offers, from a seed the server draws, and keeps a game it can read back", (key) => {
+    const rules = onlineRulesOf(key);
+    expect(rules.sizes).toEqual(SUGOROKU_LENGTHS[key]);
+    for (const size of rules.sizes) {
+      const game = rules.start(size, 2);
+      expect(game, `${key} at ${size}`).not.toBeNull();
+      const kept = rules.encode(game);
+      expect(rules.encode(rules.decode(kept))).toBe(kept);
+      expect([0, 1]).toContain(rules.toPlay(game));
+      expect(rules.moveCount(game)).toBe(0);
+    }
+    // Two tables started apart are dealt different dice: the seed is the server's, never the host's.
+    expect(rules.encode(rules.start(1, 2))).not.toBe(rules.encode(rules.start(1, 2)));
+  });
+
+  it.each(kinds)("%s takes a move from the seat to play, refuses another, and a computer seat answers with a move the rules take", (key) => {
+    const rules = onlineRulesOf(key);
+    const game = rules.start(rules.sizes[0] ?? 1, 2, { computers: [1] });
+    const level = rules.computers!.levels[1]!;
+    const seat = rules.computers!.seat(level);
+    expect(rules.computers!.levelOf(seat)).toBe(level);
+    expect(rules.computers!.levelOf({ memberId: "m1", name: seat.name })).toBeNull();
+    const asked = computerPlayOf(key)!;
+    const move = asked.move(game, rules.toPlay(game) ?? 0, "greedy");
+    expect(move).not.toBeNull();
+    expect(rules.play(game, rules.readMove(JSON.parse(JSON.stringify(move))))).not.toBeNull();
+    expect(rules.readMove({ t: "play", steps: [[0, 0]] })).toBeNull();
   });
 });

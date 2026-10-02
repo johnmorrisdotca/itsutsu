@@ -82,6 +82,8 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    * the Learn guide draws each stage's cube; and a finished solve's page
    * replays it.
    */
+  /* Sugoroku (backgammon), the main entry only, about 100 KB: a table on two devices is read and checked on the server like the older tables. Its drawing (/draw) and its play screens are loaded in the browser only. */
+  ["@johnmorrisdotca/sugoroku", "The several-devices table read and its moves checked on the server."],
   ["@johnmorrisdotca/kyuubu", "The server's check of a finished cube, the Learn guide's stages, and a finished solve's replay."],
   ["@johnmorrisdotca/kyuubu/react", "The cube drawn in the Learn guide."],
   /*

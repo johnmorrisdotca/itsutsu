@@ -11,6 +11,8 @@ import { RECORDED_FAMILIES, familyKeepsRecords, familyOf, familyPagePath } from 
 import { PARTY_SLUGS, gameKeyFor, slugFor } from "@/lib/gomoku/slugs";
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 
+import { SUGOROKU_MOST_LENGTHS, isSugorokuKind } from "./sugoroku/sugoroku.constants";
+import { GAME_ALIASES } from "@/lib/legacy/gameAliases";
 import { PARTY_ART_FINGERPRINT } from "./partyArt.data";
 import { PARTY_ART_FILES, readPartyArtFingerprint } from "./partyArtFingerprint";
 import { PARTY_DISPLAY, PARTY_KIND_LIST, PARTY_SPECS } from "./party.constants";
@@ -221,7 +223,8 @@ describe("every party game is finished, not just declared", () => {
     expect(spec.defaultPlayers).toBeGreaterThanOrEqual(spec.fewestPlayers);
     expect(spec.defaultPlayers).toBeLessThanOrEqual(spec.mostPlayers);
     expect(spec.sizes.length).toBeGreaterThan(0);
-    expect(spec.sizes.length).toBeLessThanOrEqual(4);
+    // Four boards, or five match lengths: a length is not a board (SUGOROKU_MOST_LENGTHS), and its set-up draws chips of one height.
+    expect(spec.sizes.length).toBeLessThanOrEqual(isSugorokuKind(kind) ? SUGOROKU_MOST_LENGTHS : 4);
     expect(new Set(spec.sizes).size).toBe(spec.sizes.length);
     expect(spec.sizes).toContain(spec.defaultSize);
   });
@@ -315,6 +318,8 @@ describe("every party game is finished, not just declared", () => {
     const copy = PARTY_DISPLAY[kind];
     const names = [copy.label, ...(copy.alsoKnownAs ?? [])].map((name) => name.trim().toLowerCase());
     const recorded = recordedGameNames();
-    expect(names.filter((name) => recorded.has(name))).toEqual([]);
+    // A name a record uses must lead to this game: that is the decision the alias gate asks for.
+    const undecided = names.filter((name) => recorded.has(name) && !Object.entries(GAME_ALIASES).some(([alias, target]) => alias.trim().toLowerCase() === name && target === kind));
+    expect(undecided).toEqual([]);
   });
 });
