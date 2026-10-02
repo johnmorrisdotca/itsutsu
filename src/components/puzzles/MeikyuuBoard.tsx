@@ -8,7 +8,7 @@ import { loadMeikyuuPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser"
 import { decodeWay, encodeCells } from "@/lib/puzzles/meikyuu/steps";
 
 import { drawAgain } from "./meikyuuReplay";
-import { PuzzleBoard } from "./PuzzleBoard";
+import { MeikyuuFrame } from "./MeikyuuFrame";
 
 /** What the board says of the line after anything that changes it: a stroke, an undo, a restart, a key press. */
 export type MeikyuuReading = {
@@ -131,13 +131,13 @@ export function MeikyuuBoard({
   return (
     <div className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-locked={locked ? "true" : "false"} data-wallpaper-focus>
       {/* A maze has no rows and columns to letter, so the wood is bare: the paper inside it is the package's own. */}
-      <PuzzleBoard size={INSET_SIZE} coordinates={false}>
+      <MeikyuuFrame size={INSET_SIZE}>
         <div
           ref={host}
           className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`}
           data-testid="meikyuu-board"
         />
-      </PuzzleBoard>
+      </MeikyuuFrame>
     </div>
   );
 }

@@ -1101,3 +1101,31 @@ tr:has(> [data-row-actions]):focus {
     animation: none;
   }
 }
+
+/*
+ * MEIKYUU'S COLOURS. The package draws its maze from custom properties on
+ * `.meikyuu` (`--mk-paper`, `--mk-wall`, ...), set inline by the look the site hands
+ * it (`MEIKYUU_LOOK`). The colours a player chose are written onto the page as
+ * `--mkl-*` (`meikyuuLookStore.ts`, already made readable by `meikyuu/look.ts`) and
+ * these rules put them over the package's: `!important` because an inline
+ * custom property would otherwise win. The defaults are the colours the maze has
+ * always had, so a page that has chosen nothing is exactly as it was, and the
+ * wallpaper's copy of the board reads the same computed colours.
+ */
+:root {
+  --mkl-paper: #fbf8f1;
+  --mkl-wall: #1f2320;
+  --mkl-ring: #a98954;
+  --mkl-trail: #2e8b57;
+  --mkl-start: #2f7a4f;
+  --mkl-goal: #e0b43b;
+}
+.meikyuu {
+  --mk-paper: var(--mkl-paper) !important;
+  --mk-wall: var(--mkl-wall) !important;
+  --mk-frame: var(--mkl-ring) !important;
+  --mk-trail: var(--mkl-trail) !important;
+  --mk-start: var(--mkl-start) !important;
+  --mk-goal: var(--mkl-goal) !important;
+  --mk-key: var(--mkl-goal) !important;
+}

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { loadMeikyuuLevels, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
 
 import { MeikyuuStill } from "./MeikyuuStill";
-import { PuzzleBoard } from "./PuzzleBoard";
+import { MeikyuuBlank } from "./MeikyuuFrame";
 
 /**
  * Meikyuu before it is chosen: the first level of the size, as the level screen draws it
@@ -23,11 +23,7 @@ export function MeikyuuPreview({ size }: { size: number }) {
   }, []);
   const row = ready ? meikyuuLevelsAt(size)[0] : undefined;
   if (row === undefined) {
-    return (
-      <PuzzleBoard size={9} coordinates={false}>
-        <div className="h-full w-full bg-[#fbf8f1]" />
-      </PuzzleBoard>
-    );
+    return <MeikyuuBlank />;
   }
   return <MeikyuuStill key={`${size}`} code={row.code} testId="meikyuu-preview-maze" />;
 }

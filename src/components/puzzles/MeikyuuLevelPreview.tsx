@@ -6,7 +6,7 @@ import { meikyuuLevelsAt, type MeikyuuLevelRow } from "@/lib/puzzles/meikyuu/lev
 import { meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
 
 import { MeikyuuStill } from "./MeikyuuStill";
-import { PuzzleBoard } from "./PuzzleBoard";
+import { MeikyuuBlank } from "./MeikyuuFrame";
 import { SolveTime } from "./SolveTime";
 
 /**
@@ -44,9 +44,7 @@ export function MeikyuuLevelPreview({
     <figure className="flex w-full flex-col items-center gap-2" data-testid="meikyuu-preview" data-size={size} data-level={level} data-state={solved ? "solved" : "open"} data-drawn={row !== undefined ? "true" : "false"} data-maze={row?.code}>
       <div className={`${SET_UP_PREVIEW_BOX} relative`} aria-hidden="true">
         {row === undefined ? (
-          <PuzzleBoard size={9} coordinates={false}>
-            <div className="h-full w-full bg-[#fbf8f1]" />
-          </PuzzleBoard>
+          <MeikyuuBlank />
         ) : (
           <MeikyuuStill key={`${size}-${level}-${solved ? "solved" : "dealt"}`} code={row.code} solved={solved} testId="meikyuu-preview-maze" />
         )}

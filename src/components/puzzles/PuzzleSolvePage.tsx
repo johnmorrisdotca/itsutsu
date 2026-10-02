@@ -40,6 +40,7 @@ import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
 import { meikyuuLevelOfSolve } from "@/lib/puzzles/server/meikyuuRecords";
 import { FinishedPuzzle } from "./FinishedPuzzle";
 import { sizeWord } from "./puzzles.constants";
+import { MeikyuuAccountLook } from "./MeikyuuAccountLook";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
@@ -223,6 +224,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
             }}
           />
         </WordStyleProvider>
+        {/* Meikyuu is drawn in the colours the reader chose for it (`MeikyuuColours`), whoever's solve it is. */}
+        {kind === "meikyuu" ? <MeikyuuAccountLook /> : null}
         {!kept ? (
           <p className="text-sm text-muted" data-testid="solve-kept-back">
             {fixed

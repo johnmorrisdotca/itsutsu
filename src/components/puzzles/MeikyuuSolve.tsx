@@ -14,6 +14,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MEIKYUU_COPY } from "./meikyuu.constants";
 import { MeikyuuBoard, type MeikyuuHandle, type MeikyuuReading } from "./MeikyuuBoard";
+import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath } from "./MeikyuuLevelPicker";
 import { keepSolveHere, keptSolves } from "./meikyuuKept";
@@ -136,6 +137,7 @@ export function MeikyuuSolve({
         </p>
         <MeikyuuStill code={puzzle.givens} solved />
         {chips}
+        <MeikyuuColours className="self-start" />
         <div className="flex flex-col gap-2" data-testid="meikyuu-solved-view">
           <p className="text-sm">
             Solved
@@ -195,13 +197,18 @@ export function MeikyuuSolve({
                 Fit
               </button>
             </div>
+            {/* In the row of presses under the board, so it takes no row of its own and Just the board still fits a desk. */}
+            <MeikyuuColours />
           </div>
           <span className="text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
             {cells === 0 ? MEIKYUU_COPY.howTo : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
           </span>
         </div>
       ) : (
-        <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} onward={race === null ? onward : undefined} />
+        <>
+          <MeikyuuColours className="self-start" />
+          <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} onward={race === null ? onward : undefined} />
+        </>
       )}
     </section>
   );

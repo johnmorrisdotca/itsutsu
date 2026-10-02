@@ -16,6 +16,7 @@ import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MEIKYUU_COPY } from "./meikyuu.constants";
+import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath, MeikyuuLevelPicker } from "./MeikyuuLevelPicker";
 import { MeikyuuLevelPreview } from "./MeikyuuLevelPreview";
@@ -127,6 +128,8 @@ export function MeikyuuSetUp({
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
             {MEIKYUU_COPY.levelsNote}
           </p>
+          {/* The colours of the preview above and of every maze drawn after it (`MeikyuuColours`). */}
+          <MeikyuuColours className="self-start" />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />

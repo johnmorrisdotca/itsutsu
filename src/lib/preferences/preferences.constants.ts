@@ -8,6 +8,7 @@ import { PIECE_COLOUR_PREFERENCES } from "@/lib/pieces/pieceColours";
 import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 import { MOVE_FORMAT_CHOICES } from "@/lib/record/moveFormats";
 import { WORD_STYLES, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
+import { DEFAULT_LOOK, FRAME_LIST, INK_LIST, PAPER_LIST } from "@/lib/puzzles/meikyuu/look.constants";
 import { FAMILY_FOLD_SPECS } from "@/lib/catalogue/familyFolds";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
@@ -197,6 +198,20 @@ export const PREFERENCE_SPECS = {
    * settled on before asking for the choice.
    */
   wordStyle: { options: WORD_STYLE_LIST, fallback: WORD_STYLES.reversi },
+
+  /*
+   * The colours a Meikyuu board wears: the wood round it, the paper under the
+   * maze, and the maze's own ink. John, 2026-10-02: "allow the user to change
+   * the colour for the border… the background colour and even the colour of the
+   * maze… smart with colours that work together." Three rows, so a ready-made
+   * set is three choices and a player's own mix is the same three. Every
+   * combination is drawn readable (`meikyuu/look.ts`); the board of paper and
+   * ink it has always had until chosen otherwise. Kept on this device too
+   * (`meikyuuLookStore.ts`), for a reader with no account.
+   */
+  meikyuuFrame: { options: FRAME_LIST, fallback: DEFAULT_LOOK.frame },
+  meikyuuPaper: { options: PAPER_LIST, fallback: DEFAULT_LOOK.paper },
+  meikyuuInk: { options: INK_LIST, fallback: DEFAULT_LOOK.ink },
 
   /*
    * How Tsunagi's marbles tell their pairs apart: by colour, or by a number on

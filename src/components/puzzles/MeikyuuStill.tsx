@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { loadMeikyuuPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
 import { decodeWay } from "@/lib/puzzles/meikyuu/steps";
 
-import { PuzzleBoard } from "./PuzzleBoard";
+import { MeikyuuFrame } from "./MeikyuuFrame";
 
 /** The side the frame is laid out for: a maze has no rows to letter, so only its rim depends on it (`MeikyuuBoard`). */
 const FRAME_SIDE = 9;
@@ -53,10 +53,10 @@ export function MeikyuuStill({
   }, [code, way, solved, label]);
   return (
     <div className="w-full select-none" data-testid={testId} data-kind="meikyuu" data-drawn={drawn?.code === code ? "true" : "false"} data-wallpaper-focus>
-      <PuzzleBoard size={FRAME_SIDE} coordinates={false}>
+      <MeikyuuFrame size={FRAME_SIDE}>
         {/* The paper fills the frame's square whatever the maze's own shape is; the drawing sits in it, fitted. */}
-        <div className="h-full w-full bg-[#fbf8f1] [&_svg]:!h-full [&_svg]:!w-full" dangerouslySetInnerHTML={{ __html: drawn?.code === code ? drawn.svg : "" }} />
-      </PuzzleBoard>
+        <div className="h-full w-full bg-[var(--mkl-paper,#fbf8f1)] [&_svg]:!h-full [&_svg]:!w-full" dangerouslySetInnerHTML={{ __html: drawn?.code === code ? drawn.svg : "" }} />
+      </MeikyuuFrame>
     </div>
   );
 }

@@ -28,6 +28,7 @@ import { MeikyuuSetUp } from "./MeikyuuSetUp";
 import { SuidoModeSwitch } from "./SuidoModeSwitch";
 import { SuidoSetUp } from "./SuidoSetUp";
 import { TsunagiSetUp } from "./TsunagiSetUp";
+import { MeikyuuAccountLook } from "./MeikyuuAccountLook";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
@@ -97,12 +98,15 @@ export async function PuzzleSetUpPage({
           resumeHref={resumeHref}
         />
       ) : kind === "meikyuu" ? (
-        <MeikyuuSetUp
-          hasAccount={hasAccount}
-          {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await meikyuuSolvedBy(memberId)))}
-          initialSize={meikyuuSizeAsked(query)}
-          resumeHref={resumeHref}
-        />
+        <>
+          <MeikyuuAccountLook />
+          <MeikyuuSetUp
+            hasAccount={hasAccount}
+            {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await meikyuuSolvedBy(memberId)))}
+            initialSize={meikyuuSizeAsked(query)}
+            resumeHref={resumeHref}
+          />
+        </>
       ) : kind === "tsunagi" ? (
         <TsunagiSetUp
           hasAccount={hasAccount}

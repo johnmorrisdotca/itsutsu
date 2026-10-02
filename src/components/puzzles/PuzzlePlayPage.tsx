@@ -30,6 +30,7 @@ import { TsunagiLevelFastest } from "./TsunagiLevelFastest";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
+import { MeikyuuAccountLook } from "./MeikyuuAccountLook";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { BoardScaled } from "@/components/board/BoardScaled";
@@ -113,6 +114,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
           <PuzzlePlayClient drawnFor={puzzleQuery(asked)} kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} backwards={asked.backwards === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} pipes={asked.pipes} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} suido={suido} meikyuu={meikyuu} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>
       </BoardScaled>
+      {kind === "meikyuu" ? <MeikyuuAccountLook /> : null}
       {/* A fixed level is the same board for everybody, so it has a leaderboard of its own. */}
       {tsunagi && asked.seed !== null ? (
         <div data-chrome>
