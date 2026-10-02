@@ -123,7 +123,7 @@ export function CubeSolve({
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <div className="mx-auto w-full" data-bare-board>
-          <CubeBoard size={n} state={state} theme={theme} interactive={live && !solved} keyboard="page" onTurn={turned} cube={cube} hint={live ? hint : null} />
+          <CubeBoard size={n} state={state} theme={theme} interactive={live && !solved} zoomable keyboard="page" onTurn={turned} cube={cube} hint={live ? hint : null} />
         </div>
       </SolvePaused>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

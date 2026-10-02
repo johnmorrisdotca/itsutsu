@@ -54,7 +54,7 @@ export function CubeReplay({ size, givens, moves, at, go }: { size: number; give
   return (
     <>
       <div className="mx-auto w-full" data-focus-board>
-        <CubeBoard size={size} state={state} cube={cube} theme={BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} />
+        <CubeBoard size={size} state={state} cube={cube} zoomable theme={BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme]} />
       </div>
       {last > 0 ? (
         <div className="flex items-center gap-2" data-testid="cube-replay" {...readyMark(hydrated)}>

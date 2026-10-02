@@ -8,6 +8,7 @@ import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 
 import { CUBE_COPY, CUBE_FILL } from "./cube.constants";
+import { CubeZoom } from "./CubeZoom";
 
 /** How far in from the wood's edge the cube's space starts: the rim of every board. */
 const RIM = 0.03;
@@ -27,6 +28,7 @@ export function CubeBoard({
   onTurn,
   cube,
   hint = null,
+  zoomable = false,
 }: {
   size: number;
   state: string;
@@ -38,9 +40,10 @@ export function CubeBoard({
   cube?: Ref<KyuubuHandle>;
   /** A move to draw on the cube, the way to make it (Kyuubu's visual guide), or null. */
   hint?: readonly CubeMove[] | null;
+  /** Offer to zoom the cube in and out inside its board (the solve and the replay do; a preview does not). */
+  zoomable?: boolean;
 }) {
-  return (
-    <BoardFrame size={size} theme={theme} flipped={false} inset={RIM} lattice={false} shape="rhombus" coordinates={false}>
+  const kyuubu = (
       <Kyuubu
         ref={cube}
         size={size}
@@ -55,6 +58,10 @@ export function CubeBoard({
         data-testid="cube"
         data-size={String(size)}
       />
+  );
+  return (
+    <BoardFrame size={size} theme={theme} flipped={false} inset={RIM} lattice={false} shape="rhombus" coordinates={false}>
+      {zoomable ? <CubeZoom>{kyuubu}</CubeZoom> : kyuubu}
     </BoardFrame>
   );
 }

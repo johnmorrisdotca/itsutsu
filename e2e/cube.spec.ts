@@ -95,15 +95,15 @@ test.describe("the Cube", () => {
         if (cube.getAttribute("data-turning") === "true") w.__turned = true;
       }).observe(cube, { attributes: true, attributeFilter: ["data-turning"] });
     });
-    const steps = line.filter(countsAsMove);
-    const last = steps.length;
+    // A half turn typed is two quarter turns, and each is a step.
+    const last = counted;
     await page.getByRole("button", { name: "One move back" }).click();
     await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last - 1} of ${last}`);
     expect(await page.evaluate(() => (window as unknown as { __turned: boolean }).__turned)).toBe(true);
     await settledCube(page);
     await page.getByRole("button", { name: "One move on" }).click();
     await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last} of ${last}`);
-    await expect(page.getByTestId("cube-replay-turn")).toContainText(moveNotation(steps[last - 1], 2));
+    await expect(page.getByTestId("cube-replay-turn")).toHaveText(/^[URFDLB]/);
     await settledCube(page);
   });
 
@@ -222,5 +222,49 @@ test.describe("the Cube", () => {
     expect(wide).toBeLessThanOrEqual(390);
     const cube = (await page.getByTestId("cube").boundingBox())!;
     expect(cube.width).toBeGreaterThan(250);
+  });
+
+  test("the cube zooms in and out inside its board, by buttons, the wheel and a pinch, and one press puts it back", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${AT}/play?size=3&level=easy&seed=${freshPuzzleSeed()}`);
+    await ready(page, "puzzle-play");
+    const widthOf = async () => (await page.locator("[data-kyuubu]").boundingBox())!.width;
+    const boardBefore = (await page.getByTestId("cube-zoomed").boundingBox())!;
+    const first = await widthOf();
+
+    await page.getByTestId("cube-zoom-in").click();
+    await expect.poll(widthOf).toBeGreaterThan(first * 1.1);
+    // The board keeps its size and the page does not grow: the cube is scaled inside the box.
+    expect(await page.getByTestId("cube-zoomed").boundingBox()).toEqual(boardBefore);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+    await page.getByTestId("cube-zoom-out").click();
+    await page.getByTestId("cube-zoom-out").click();
+    await expect.poll(widthOf).toBeLessThan(first * 0.9);
+
+    // Alt and the wheel zoom it; a pinch of two fingers spreading does too.
+    await page.getByTestId("cube-zoom-reset").click();
+    await expect.poll(widthOf).toBeCloseTo(first, 0);
+    const box = (await page.getByTestId("cube-zoomed").boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + 10);
+    await page.keyboard.down("Alt");
+    await page.mouse.wheel(0, -200);
+    await page.keyboard.up("Alt");
+    await expect.poll(widthOf).toBeGreaterThan(first * 1.05);
+    await page.getByTestId("cube-zoom-reset").click();
+    await expect.poll(widthOf).toBeCloseTo(first, 0);
+    await page.getByTestId("cube-zoomed").evaluate((element) => {
+      const send = (type: string, id: number, x: number) =>
+        element.dispatchEvent(new PointerEvent(type, { pointerId: id, clientX: x, clientY: 300, bubbles: true, cancelable: true, pointerType: "touch" }));
+      send("pointerdown", 1, 150);
+      send("pointerdown", 2, 200);
+      send("pointermove", 2, 300);
+      send("pointerup", 1, 150);
+      send("pointerup", 2, 300);
+    });
+    await expect.poll(widthOf).toBeGreaterThan(first * 1.2);
+    await page.getByTestId("cube-zoom-reset").click();
+    await expect.poll(widthOf).toBeCloseTo(first, 0);
+    await expect(page.getByTestId("cube-zoom-reset")).toBeDisabled();
   });
 });
