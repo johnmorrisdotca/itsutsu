@@ -7,7 +7,7 @@ import { removeTables } from "./tables";
 
 /**
  * HITOTSU, the colour-card game (`PartyKind` "hitotsu", docs/plans/hitotsu/),
- * at home in the Colour cards family: round one device with a computer in any seat,
+ * at home in the Table cards family: round one device with a computer in any seat,
  * or on several devices.
  *
  * Driven as a table drives it: set up from the game's own page, a card tapped
@@ -66,17 +66,17 @@ test.describe("Hitotsu, read by anybody", () => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Hitotsu/ }).first()).toBeVisible();
-    await expect(page.getByTestId("game-family")).toContainText("Colour cards");
+    await expect(page.getByTestId("game-family")).toContainText("Table cards");
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(/\/games\/hitotsu\/rules$/);
     await expect(page.getByTestId("rules-page")).toContainText("Hitotsu!");
     await expect(page.getByTestId("rules-page")).toContainText("Jump-in");
-    await page.goto("/games/colour-cards");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Colour cards");
-    await expect(page.locator('[data-testid="family-mark"][data-family="Colour cards"]').first()).toBeVisible();
+    await page.goto("/games/table-cards");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Table cards");
+    await expect(page.locator('[data-testid="family-mark"][data-family="Table cards"]').first()).toBeVisible();
     await expect(page.locator("main")).toContainText("Hitotsu");
-    // Crazy Eights, at home in Cards, is shown here beside the game that grew out of it.
-    await expect(page.locator("main")).toContainText("Crazy Eights");
+    // Beside the trick-taking games it shares a shelf with.
+    await expect(page.locator("main")).toContainText("Hearts");
   });
 });
 

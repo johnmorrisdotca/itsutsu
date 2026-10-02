@@ -317,8 +317,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // The shelf a family's page draws, one card a game — Party games' page draws it too, under its own mark.
   "src/components/games/FamilyShelf.tsx": { GameThumb: "regular" },
   "src/app/games/party/page.tsx": { FamilyMark: "regular" },
-  "src/app/games/colour-cards/page.tsx": { FamilyMark: "regular" },
-  "src/app/games/tricks/page.tsx": { FamilyMark: "regular" },
+  "src/app/games/table-cards/page.tsx": { FamilyMark: "regular" },
   "src/app/games/dice/page.tsx": { FamilyMark: "regular" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
   "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },

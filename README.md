@@ -90,9 +90,9 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Small boards | 6 |
 | Numbers | 3 |
 | Logic puzzles | 3 |
-| Cards | 6 |
+| Cards | 8 |
+| Table cards | 7 |
 | Tiles | 3 |
-| Colour cards | 1 |
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -260,10 +260,13 @@ site installs it from that repository's release tarball (`package.json` names
 the version) and imports it by name (`@johnmorrisdotca/toranpu`), and `src/lib/cards/` and
 `src/lib/cardGames/` forward to it, keeping the site's own copy, shelf order and
 party-table typing.
-**Tricks** トリック (2026-09-30) holds the trick-taking ones at the same table,
-**Hearts** ハーツ, **Spades** スペード, **Euchre** ユーカー and **Oh Hell** オーヘル, with **Cribbage** クリベッジ and **War** 戦争 (2026-10-01, the one card game with
-no choice in it) beside them, split off Cards so neither shelf passes
-eight games.
+**Table cards** 場札 (2026-10-01) holds the rest of the table's card games,
+split off Cards so neither shelf passes eight games: the trick-taking ones,
+**Hearts** ハーツ, **Spades** スペード, **Euchre** ユーカー and **Oh Hell** オーヘル,
+with **Cribbage** クリベッジ, **War** 戦争 (the one card game with no choice in it)
+and **Hitotsu** 一つ, the match-the-colour game with a deck of its own, beside
+them. It replaced Tricks (2026-09-30) and Colour cards (2026-09-30), which are
+`FAMILY_ABSORBED` into it; it is at `/games/table-cards`.
 
 **Tiles** 牌 (2026-10-01) is the one shelf for the games played with tiles:
 Mahjong Solitaire, **Mexican Train** 列車 (dominoes, two to eight round one

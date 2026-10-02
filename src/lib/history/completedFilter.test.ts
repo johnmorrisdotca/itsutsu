@@ -28,6 +28,6 @@ describe("narrowing the Completed tab", () => {
 
   it("keeps the narrowing in the address, with a page's start", () => {
     expect(completedHref({})).toBe("/play/completed");
-    expect(completedHref({ family: "tricks", game: null }, "2026-09-30T00:00:00.000Z")).toBe("/play/completed?family=tricks&cursor=2026-09-30T00%3A00%3A00.000Z");
+    expect(completedHref({ family: "table-cards", game: null }, "2026-09-30T00:00:00.000Z")).toBe("/play/completed?family=table-cards&cursor=2026-09-30T00%3A00%3A00.000Z");
   });
 });

@@ -118,6 +118,12 @@ export const FAMILY_ABSORBED: Record<string, string> = {
   mahjong: "tiles",
   dominoes: "tiles",
   cubes: "tiles",
+  /* 2026-10-01: Tricks and Colour cards became Table cards ("Uno type and Tricks
+     games should be combined"). Both held party games only, which are never
+     recorded, so neither key is in the ledger; they are here so a link or a
+     preference naming one still means something (`?family=tricks`). */
+  tricks: "table-cards",
+  "colour-cards": "table-cards",
 };
 
 /**

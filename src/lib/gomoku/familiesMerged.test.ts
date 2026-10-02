@@ -116,6 +116,12 @@ describe("counting families over rows written before the merge", () => {
     expect(familyKeyNow("cubes")).toBe("tiles");
   });
 
+  it("reads Tricks and Colour cards as Table cards, for a link or a preference that still names either", () => {
+    expect(familyKeyNow("tricks")).toBe("table-cards");
+    expect(familyKeyNow("colour-cards")).toBe("table-cards");
+    expect(GAME_FAMILIES.find((family) => family.key === "table-cards")?.games).toContain("hitotsu");
+  });
+
   it("counts the races and the territory games as one family since they merged", () => {
     const state = held(["races", "territory"]);
     expect(heldDistinct(state, XP_EVENTS.firstOfFamily, familyKeyNow)).toBe(1);

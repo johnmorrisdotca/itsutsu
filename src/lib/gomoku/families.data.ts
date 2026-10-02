@@ -249,60 +249,51 @@ export const GAME_FAMILIES: GameFamily[] = [
      * FreeCell and Spider (2026-09-30) sit beside Solitaire, the three
      * patience games first, kept and timed as it is.
      *
-     * Hearts moved to Tricks (below) with Spades on 2026-09-30, so this shelf
+     * Hearts moved to Table cards (below, Tricks until 2026-10-01) with Spades on 2026-09-30, so this shelf
      * keeps room for Gin Rummy under the eight a shelf holds.
      */
     games: ["solitaire", "freecell", "spider", "crazyEights", "goFish", "bigTwo", "president", "ginRummy"],
   },
   {
-    key: "tricks",
+    key: "table-cards",
     /*
-     * TRICKS. The card games scored round a table, split off Cards on
-     * 2026-09-30 when Spades arrived and the family card games still to come
-     * (Euchre, Oh Hell, Cribbage) would have run Cards past the eight a shelf
-     * holds (`FAMILY_MOST_GAMES`). Trick-taking games first — Hearts and
-     * Spades — played round one device with a computer in any seat.
-     * Cribbage (2026-09-30) is here too: not a trick-taking game, but one
-     * played a card at a time round the table, and Cards was full. So is War
-     * (2026-10-01), the card game with no choice in it: Cards is still full.
+     * TABLE CARDS 場札. John, 2026-10-01, of two shelves on /games, Tricks and
+     * Colour cards: "Uno type and Tricks games should be combined. I don't
+     * like the Colour Cards category." One shelf for the card games a table
+     * plays a card at a time, round one device with a computer in any empty
+     * seat, that Cards (full at eight) does not hold: the trick-taking games,
+     * Hearts, Spades, Euchre and Oh Hell, Cribbage, War, and Hitotsu, the
+     * match-the-colour game with a deck of its own.
      *
-     * トリック: the word Japanese players use for a trick, as in
-     * トリックテイキング, the name for the whole kind of game.
+     * It replaces Tricks (split off Cards on 2026-09-30, when Spades arrived
+     * and Cards was full) and Colour cards (2026-09-30, Hitotsu's own shelf).
+     * Both are `FAMILY_ABSORBED` into it. Neither held a recorded game, so no
+     * ledger row can name either key.
      *
-     * Its games are party games, never recorded, so, like Dominoes, it counts
-     * towards no award, has a page of its own at /games/tricks, and stays off
-     * the set-up screen.
+     * THE NAME is not "Tricks" because Hitotsu, Cribbage and War take no tricks
+     * and a shelf named for one way of playing would be wrong about a third of
+     * itself. "Table cards" says what they share, cards played round a table,
+     * and sits beside Cards without borrowing its name. 場札 (bafuda) is the
+     * cards laid out on the table in karuta and hanafuda, 札 being Cards' own
+     * word. It is not the whole difference from Cards: Cards is the patience
+     * games for one and the family games that fit its eight, and this shelf is
+     * where the rest of the table's card games go.
+     *
+     * Crazy Eights, the game Hitotsu grew out of, stays at home in Cards and is
+     * no longer listed here (`ALSO_LISTED_IN`): a guest on this shelf would
+     * leave it no room for its next game, and Hitotsu's own page tells the
+     * lineage.
+     *
+     * Its games are party games, never recorded, so, like Party games, it counts
+     * towards no award, has a page of its own at /games/table-cards, and stays
+     * off the set-up screen.
      */
-    title: "Tricks",
-    kanji: "トリック",
-    blurb: "Card games for a table, played a card at a time: take none of the hearts, bid what you and your partner will take, bid exactly what you alone will take, peg your way to 121 at cribbage, or turn your cards over at War. Round one device, with a computer in any empty seat.",
-    games: ["hearts", "spades", "euchre", "ohHell", "cribbage", "war"],
+    title: "Table cards",
+    kanji: "場札",
+    blurb: "Card games for a table, played a card at a time with a computer in any empty seat: take none of the hearts, bid the tricks you will take, peg your way to 121 at cribbage, turn your cards over at War, or match the colour or the number to be first out of cards at Hitotsu.",
+    games: ["hearts", "spades", "euchre", "ohHell", "cribbage", "war", "hitotsu"],
     notOnSetUp:
-      "A game here is played by a table of people and computers on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
-  },
-  {
-    key: "colour-cards",
-    /*
-     * COLOUR CARDS 色札. Hitotsu (2026-09-30), John: "since we have built card
-     * games now, we should build Uno and party Uno versions." Its deck is not
-     * the French one Cards is played with but a deck of its own — four
-     * colours, numbers and action cards, drawn by us — and Cards already held
-     * the eight a shelf holds when it arrived (Solitaire, FreeCell, Spider and
-     * the five family games). So a shelf for the games played with that deck,
-     * as Mahjong and Dominoes are the shelves for theirs: 色 colour, and 札 the
-     * card, Cards' own word.
-     *
-     * Its games are party games, never recorded, so, like Dominoes, it counts
-     * towards no award, has a page of its own at /games/colour-cards, and stays
-     * off the set-up screen. Crazy Eights, the game Hitotsu grew out of, is
-     * also shown here (`ALSO_LISTED_IN`).
-     */
-    title: "Colour cards",
-    kanji: "色札",
-    blurb: "Games with a deck of four colours, numbers and action cards, drawn by us: match the colour or the number, and be first to empty your hand. Round one device, or on several, with a computer in any empty seat.",
-    games: ["hitotsu"],
-    notOnSetUp:
-      "A colour-card game is played by a table of people and computers on one device or several, set up from the game's own page; the set-up screen makes a game between two seats.",
+      "A table card game is played by a table of people and computers on one device, or on several for Hitotsu, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "tiles",

@@ -131,11 +131,5 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
    * listing is: mahjong: [{ family: "party", why: "Two to four take turns on
    * one layout, a pair each, and the dragons and winds score most." }].
    */
-  /*
-   * CRAZY EIGHTS, whose home is Cards, on the Colour cards shelf beside the
-   * game that grew out of it (Hitotsu, 2026-09-30): the same match of colour
-   * or number, with the French deck and an eight for the wild.
-   */
-  crazyEights: [{ family: "colour-cards", why: "Where Hitotsu comes from: match the suit or the number with an ordinary deck, and an eight calls the suit." }],
   kumimoji: [{ family: "party", why: "Pass and play for up to eight: each player builds their own crossword from the same tiles, round one device." }],
 };

@@ -9,16 +9,16 @@ import { CUBES_MARK } from "./MarkCube";
  * PLAIN is the same picture for everybody and a row of identical icons is a
  * promise the row makes and does not keep.
  *
- * FIVE TITLES HERE BELONG TO NO FAMILY ANY MORE. (Mahjong, Dominoes and Cubes
- * were three more until 2026-10-01, when they became Tiles; their drawings
- * were folded into the one mark rather than kept, being a little of each.) Captures, Pieces and twists
+ * FIVE TITLES HERE BELONG TO NO FAMILY ANY MORE. Captures, Pieces and twists
  * and Connections were folded into Turn and take, Strange boards and Territory
  * on 2026-09-22 (see `FAMILY_ABSORBED`), and on 2026-09-24 Races and Territory
  * became Territory and races. Their marks are kept rather than
  * deleted: each is a drawing of a mechanism the merged family still contains,
  * and the next time one of these shelves is split or a mark is redrawn they
  * are the work already done. Nothing reads them, and the coverage test allows
- * a mark with no family but never a family with no mark.
+ * a mark with no family but never a family with no mark. (The merges of
+ * 2026-10-01, Tiles and Table cards, went the other way: each family's
+ * drawing was folded into one mark, being a little of each, and not kept.)
  */
 export const FAMILY_MARKS: Record<string, Mark> = {
   "Five in a row": {
@@ -223,11 +223,12 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
   },
   /*
-   * TRICKS: a trick on the table, four cards laid crosswise as four players
-   * lay them, and the ace of spades on top taking it — trumps, the one card
-   * the family's newest game is named for.
+   * TABLE CARDS (2026-10-01), what Tricks and Colour cards were drawn as
+   * apiece: a trick on the table, three French cards laid crosswise as three
+   * players lay them, and Hitotsu's wild, the four colours quartered, played
+   * to it from the foot — both decks the family is played with, at one table.
    */
-  Tricks: {
+  "Table cards": {
     n: 5,
     cells: true,
     stones: [],
@@ -235,23 +236,8 @@ export const FAMILY_MARKS: Record<string, Mark> = {
       { card: { suit: "hearts", rank: 12 }, x: 2.5, y: 1.55, angle: 0 },
       { card: { suit: "diamonds", rank: 10 }, x: 1.45, y: 2.5, angle: -90 },
       { card: { suit: "clubs", rank: 13 }, x: 3.55, y: 2.5, angle: 90 },
-      { card: { suit: "spades", rank: 1 }, x: 2.5, y: 3.45, angle: 0 },
     ],
-  },
-  /*
-   * COLOUR CARDS: a hand of three from Hitotsu's own deck, fanned as the Cards
-   * family's is — its back with 一つ, a red Draw Two, and in front the wild,
-   * the four colours quartered — drawn by the code that draws them at the table.
-   */
-  "Colour cards": {
-    n: 5,
-    cells: true,
-    stones: [],
-    colourCards: [
-      { card: null, x: 1.45, y: 2.65, angle: -16 },
-      { card: "RD0", x: 2.5, y: 2.35, angle: 0 },
-      { card: "WW0", x: 3.55, y: 2.65, angle: 16 },
-    ],
+    colourCards: [{ card: "WW0", x: 2.5, y: 3.45, angle: 0 }],
   },
   /*
    * OTHER: a row of letters, the word puzzle's, two tiles lit green for a

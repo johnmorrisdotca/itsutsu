@@ -445,6 +445,6 @@ not a second mechanism:
   game it opens on; a person and a computer as the table it opens on; the set-up
   offering a few dice counts and sides rather than every number the package
   allows; one Roll for every person at the table rather than a press each.
-- War (card game): in Tricks, since Cards is full; four lengths (50, 100, 200,
+- War (card game): in Tricks (now Table cards), since Cards is full; four lengths (50, 100, 200,
   1000 turns), not Toranpu's five; the kanji 戦争; a "Keep turning" toggle that the
   package does not have.

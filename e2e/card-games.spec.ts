@@ -387,9 +387,9 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
-  test("every family card game is on its family's shelf: Cards beside Solitaire, or Tricks", async ({ page }) => {
+  test("every family card game is on its family's shelf: Cards beside Solitaire, or Table cards", async ({ page }) => {
     const home = (kind: CardGameKind) => GAME_FAMILIES.find((family) => (family.games as readonly string[]).includes(kind))!.key;
-    for (const [family, address] of [["cards", "/games/solitaire/family"], ["tricks", "/games/tricks"]] as const) {
+    for (const [family, address] of [["cards", "/games/solitaire/family"], ["table-cards", "/games/table-cards"]] as const) {
       await page.goto(address);
       const shelved = CARD_GAME_LIST.filter((kind) => home(kind) === family);
       expect(shelved.length, `no card game at home in ${family}`).toBeGreaterThan(0);

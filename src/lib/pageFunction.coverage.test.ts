@@ -71,11 +71,11 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   /*
    * Hitotsu, 168 KB whole (1.0.1). The rules page prints its sizes and its
    * house rules; a table played on several devices is read and drawn on the
-   * server like the older tables; and the Colour cards family mark is one of
+   * server like the older tables; and the Table cards family mark draws one of
    * its cards. Its play screen at one device is loaded in the browser only.
    */
   ["@johnmorrisdotca/hitotsu", "Sizes and rules for the rules page, and the several-devices table read on the server."],
-  ["@johnmorrisdotca/hitotsu/react", "The Colour cards family mark, and the several-devices table drawn on the server."],
+  ["@johnmorrisdotca/hitotsu/react", "The Table cards family mark, and the several-devices table drawn on the server."],
   /*
    * Kyuubu, 124 KB whole (1.0.1). The server checks a finished cube by
    * replaying its turns, as it checks every puzzle (`puzzles.constants.ts`);
@@ -105,7 +105,7 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    * the browser only. The measured function says what this costs.
    */
   ["@johnmorrisdotca/toranpu", "A card game's rules for its rules page and for a kept game read on the server."],
-  ["@johnmorrisdotca/toranpu/deck", "The cards drawn in the Cards and Tricks family marks."],
+  ["@johnmorrisdotca/toranpu/deck", "The cards drawn in the Cards and Table cards family marks."],
   ["@johnmorrisdotca/toranpu/klondike", "Solitaire's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
   ["@johnmorrisdotca/toranpu/freecell", "FreeCell's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
   ["@johnmorrisdotca/domino", "Mexican Train's rules: its rules page prints the sets, and a table played on several devices is read and drawn on the server."],

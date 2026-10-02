@@ -123,8 +123,8 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku/background",
       // The Party games shelf, a family page at an address of its own.
       "/games/party",
-      // And Tricks, another family page at an address of its own.
-      "/games/tricks",
+      // And Table cards, another family page at an address of its own.
+      "/games/table-cards",
       // And Dice, another.
       "/games/dice",
       // The dice roller, a tab of Games that names nobody and keeps nothing on the server.
@@ -187,7 +187,7 @@ test.describe("the pages that stay open", () => {
       "/games/gomoku",
       "/games/gomoku/family",
       "/games/party",
-      "/games/tricks",
+      "/games/table-cards",
       "/games/dice",
       // Chinese Checkers' own page, which offers the table and remembers a kept one in the browser, never on the server.
       "/games/chinese-checkers",

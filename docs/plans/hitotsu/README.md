@@ -7,9 +7,11 @@ base one."
 
 Hitotsu 一つ for two to eight round one phone or tablet, with a computer in any
 seat, or on several devices, at `/games/hitotsu/pass-and-play`; its front door
-and rules at `/games/hitotsu`; at home in a family of its own, Colour cards 色札
-(`/games/colour-cards`), with Crazy Eights, which it grew out of, shown there
-too from its home in Cards.
+and rules at `/games/hitotsu`; at home in Table cards 場札 (`/games/table-cards`), with the trick-taking
+games. It had a family of its own, Colour cards 色札, until 2026-10-01, when John
+folded it into Tricks ("Uno type and Tricks games should be combined"); Crazy
+Eights, which it grew out of, stays at home in Cards and is no longer listed
+on Hitotsu's shelf.
 
 ## The name and the deck
 
@@ -101,7 +103,8 @@ Decisions worth knowing:
   arrived (Solitaire, FreeCell, Spider and the five family games), and Party
   games was full with its guests. Hitotsu's deck is not the French one, so it
   opened a family for its deck, as Mahjong and Dominoes did for theirs:
-  Colour cards 色札, off the set-up screen, counting towards no award.
+  Colour cards 色札, off the set-up screen, counting towards no award. (It is
+  Table cards since 2026-10-01; Mahjong and Dominoes became Tiles the same day.)
 - **Eight seats, not ten.** Every party table stops at eight: the seat marbles
   (`PARTY_MARBLES`) and the party gate both do. Ten would need two more seat
   colours site-wide.
@@ -125,6 +128,6 @@ The party gate (`party.coverage.test.ts`): copy, rules page, family, picture
 date (`pnpm games:added`). `onlineGames.test.ts` for several devices;
 `e2e/bare-board.spec.ts` for just the board. The family: its row in
 `families.data.ts`, its mark in `FamilyMark.tsx` (drawn by the package's
-`HitotsuCardDrawing`), its page `src/app/games/colour-cards/page.tsx`, and
-Crazy Eights' listing in `familyShelves.ts`. `/api/tables` takes a size up to
+`HitotsuCardDrawing`), its page `src/app/games/table-cards/page.tsx` (`colour-cards/` until
+2026-10-01), and Crazy Eights' listing in `familyShelves.ts` (removed then). `/api/tables` takes a size up to
 1000 now, since Hitotsu's size is the points it plays to.
