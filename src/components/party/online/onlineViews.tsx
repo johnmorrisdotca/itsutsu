@@ -19,8 +19,18 @@ import { PairGoOnline, pairGoStanding } from "./PairGoOnline";
 import { TenkaOnline, tenkaStanding } from "./TenkaOnline";
 import { TrainOnline, trainStanding } from "./TrainOnline";
 import { HitotsuOnline, hitotsuStanding } from "./HitotsuOnline";
-import { SugorokuOnline, sugorokuOnlineStanding } from "./SugorokuOnline";
+import dynamic from "next/dynamic";
+import { sugorokuStanding } from "@/lib/party/sugoroku/sugorokuWords";
 import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
+
+/**
+ * The backgammon board at a table, loaded in the browser only: its drawing is the package's, and a page's server function does not carry it.
+ * The table's first paint keeps the room the board will take.
+ */
+const SugorokuOnline = dynamic(() => import("./SugorokuOnline").then((module) => module.SugorokuOnline), {
+  ssr: false,
+  loading: () => <div className="min-h-[30rem]" data-testid="sugoroku-game" data-ready="false" aria-busy="true" />,
+});
 
 /**
  * EACH GAME'S BOARD AT A TABLE ON SEVERAL DEVICES, by game: a `Record` over
@@ -54,5 +64,5 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   mexicanTrain: { Board: TrainOnline, standing: trainStanding, testId: "train-game" },
   hitotsu: { Board: HitotsuOnline, standing: hitotsuStanding, testId: "hitotsu-game" },
   // The seven backgammon games share one board; it lies across, so, like Tenka's map, it is laid out wide, in its own shape (`tables`).
-  ...(Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, { Board: SugorokuOnline, standing: sugorokuOnlineStanding, testId: "sugoroku-game", wide: true, tables: true }])) as Record<SugorokuKind, OnlineView<any, any>>), // eslint-disable-line @typescript-eslint/no-explicit-any -- as the table above.
+  ...(Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, { Board: SugorokuOnline, standing: sugorokuStanding, testId: "sugoroku-game", wide: true, tables: true }])) as Record<SugorokuKind, OnlineView<any, any>>), // eslint-disable-line @typescript-eslint/no-explicit-any -- as the table above.
 };

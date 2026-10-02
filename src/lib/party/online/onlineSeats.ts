@@ -76,6 +76,8 @@ export function computerDriver(
   const toPlay = table.seats.find((one) => one.seat === table.toPlay);
   if (toPlay?.kind !== ONLINE_SEAT_KINDS.computer) return false;
   if (table.lastMoverId === readerId) return true;
+  // A table whose first turn is a computer's (the opening throw of the backgammon games favours it half the time): nobody's move has handed it over, so the host's page, the first seat's, starts it at once rather than leaving it thirty seconds.
+  if (table.moveCount === 0 && table.lastMoverId === null && seatOfMember(table.seats, readerId) === 0) return true;
   return now.getTime() - table.movedAt.getTime() >= COMPUTER_TAKEOVER_MS;
 }
 

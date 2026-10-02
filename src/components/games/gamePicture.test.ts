@@ -21,7 +21,7 @@ describe("which game's picture belongs beside a name", () => {
   });
 
   it("is nothing — not the nearest board — for a name with no game here", () => {
-    expect(pictureOf({ name: "Backgammon" })).toBeNull();
+    expect(pictureOf({ name: "Anti-Checkers" })).toBeNull();
     expect(pictureOf({ name: "" })).toBeNull();
   });
 

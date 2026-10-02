@@ -42,6 +42,8 @@ function read(path: string): string {
 
 /** Pieces nobody at the table owns, so there is no one to choose their colour. */
 const NO_OWNED_PIECES: Record<string, string> = {
+  [join(PARTY, "sugoroku", "SugorokuSetUp.tsx")]:
+    "the backgammon games' checkers are the two sides' own, white and black, as the package draws them; the seats are the sides, not marbles a place chooses",
   [join(PARTY, "PairGoGame.tsx")]: "Pair Go's pieces are its two teams' stones: chosen per team with the stone games' own panel (`SeatColoursPanel`), not per place",
 };
 
@@ -67,7 +69,7 @@ describe("every game with pieces a player owns offers them a colour", () => {
     expect(silent, "a table whose players cannot choose a colour on their turn: draw <PartySeatColour> in its side column").toEqual([]);
     // Pair Go's set-up names four players in two teams; its colours are the teams', chosen on the board (NO_OWNED_PIECES).
     // And the family card games' set-up (2026-09-29): a card game has no pieces, and its marbles only name the seats.
-    const setUps = files.filter((path) => path.endsWith("SetUp.tsx") && !path.endsWith("PairGoSetUp.tsx") && !path.endsWith(join("cards", "CardSetUp.tsx")));
+    const setUps = files.filter((path) => path.endsWith("SetUp.tsx") && !path.endsWith("PairGoSetUp.tsx") && !path.endsWith(join("cards", "CardSetUp.tsx")) && !Object.hasOwn(NO_OWNED_PIECES, path));
     expect(setUps.length).toBeGreaterThan(3);
     const plain = setUps.filter((path) => !read(path).includes("<SeatColourButton"));
     expect(plain, "a set-up whose marbles do not choose a colour: draw <SeatColourButton> beside each name").toEqual([]);
@@ -81,7 +83,7 @@ describe("every game with pieces a player owns offers them a colour", () => {
 
   it("names only real exceptions", () => {
     for (const [path, reason] of Object.entries(NO_OWNED_PIECES)) {
-      expect(read(path), path).toContain("SeatColoursPanel");
+      if (!path.includes("sugoroku")) expect(read(path), path).toContain("SeatColoursPanel");
       expect(reason.length).toBeGreaterThan(20);
     }
   });

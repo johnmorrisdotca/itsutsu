@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { SUGOROKU_KIND_LIST, SUGOROKU_LENGTHS } from "../src/lib/party/sugoroku/sugoroku.constants";
+import { SUGOROKU_LENGTHS } from "../src/lib/party/sugoroku/sugoroku.constants";
 import { PARTY_SLUGS } from "../src/lib/gomoku/slugs";
 import { memberContext, removeMember } from "./members";
 import { ready } from "./support";
@@ -23,6 +23,8 @@ import { removeTables } from "./tables";
  * board lights, never a particular play.
  */
 const PHONE = { width: 390, height: 844 };
+/** The seven, by name: backgammon, nackgammon, longGammon, hypergammon, backgammonRace, antiBackgammon and tabula. */
+const KINDS = ["backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"] as const;
 const keptKey = (kind: string) => `itsutsu.${kind}`;
 
 test.use({ reducedMotion: "reduce" });
@@ -100,7 +102,7 @@ async function playToTheEnd(page: Page) {
 test.describe("the backgammon games, read by anybody", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  for (const kind of SUGOROKU_KIND_LIST) {
+  for (const kind of KINDS) {
     test(`${kind}: its front door, rules and the family open with no session`, async ({ page }) => {
       const slug = PARTY_SLUGS[kind];
       await page.goto(`/games/${slug}`);
@@ -118,7 +120,7 @@ test.describe("the backgammon games, read by anybody", () => {
 });
 
 test.describe("the backgammon games, round one device", () => {
-  for (const kind of SUGOROKU_KIND_LIST) {
+  for (const kind of KINDS) {
     test(`${kind}: set up against the computer, the dice rolled and a turn played, kept and waiting on My games`, async ({ page }) => {
       test.setTimeout(90_000);
       await startAgainstComputer(page, kind, 1);

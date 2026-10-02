@@ -63,8 +63,10 @@ describe("the rules are reachable without a Rules link", () => {
      * The front door is the game itself now.
      */
     expect(read(GAME_NAME), "a game's name leads to the game, not to a document about it").toContain(
-      "href={gamePath(known)}",
+      "gamePath(known)",
     );
+    // The address is built from `gamePath` alone, with at most a match length after it (`aliasQuery`): never from `rulesPath`.
+    expect(read(GAME_NAME)).toMatch(/href=\{`\$\{gamePath\(known\)\}/);
     // The href, not the word: the comment beside it explains what it used to be.
     expect(read(GAME_NAME), "and not to the rules page it used to").not.toContain("href={rulesPath");
   });
