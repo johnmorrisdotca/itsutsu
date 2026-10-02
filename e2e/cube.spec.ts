@@ -84,6 +84,27 @@ test.describe("the Cube", () => {
     await page.getByTestId("puzzle-see-solve").click();
     await expect(page.getByTestId("cube-replay")).toBeVisible();
     await expect(page.getByTestId("cube-replay-at")).toContainText(`${counted}`);
+    await ready(page, "cube-replay");
+
+    // One step is the turn itself, drawn on the cube and named, not a jump to the next position.
+    await page.evaluate(() => {
+      const w = window as unknown as { __turned: boolean };
+      w.__turned = false;
+      const cube = document.querySelector("[data-kyuubu]")!;
+      new MutationObserver(() => {
+        if (cube.getAttribute("data-turning") === "true") w.__turned = true;
+      }).observe(cube, { attributes: true, attributeFilter: ["data-turning"] });
+    });
+    const steps = line.filter(countsAsMove);
+    const last = steps.length;
+    await page.getByRole("button", { name: "One move back" }).click();
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last - 1} of ${last}`);
+    expect(await page.evaluate(() => (window as unknown as { __turned: boolean }).__turned)).toBe(true);
+    await settledCube(page);
+    await page.getByRole("button", { name: "One move on" }).click();
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last} of ${last}`);
+    await expect(page.getByTestId("cube-replay-turn")).toContainText(moveNotation(steps[last - 1], 2));
+    await settledCube(page);
   });
 
   test("a drag and the wheel turn a layer, the whole cube turned is no move, and Undo takes one back", async ({ page }) => {
