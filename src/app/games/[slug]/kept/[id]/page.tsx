@@ -19,6 +19,7 @@ import { tableState } from "@/lib/history/everyGame";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { KEPT_SEAT_KINDS, KEPT_STATUS } from "@/lib/party/kept/kept.constants";
 import { keptTablePath } from "@/lib/party/kept/keptPaths";
+import { retiredSave } from "@/lib/party/retiredSaves";
 import { keptGameOf, keptGameToRead } from "@/lib/party/kept/server/keptTables";
 import { playerPath } from "@/lib/rating/playerKey";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
@@ -57,9 +58,11 @@ export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/
   const tags = await nameTagsOf(row.seats.map((seat) => seat.memberId));
   // How it stands for whoever filed it: the reader when it is theirs, the player whose history it is from when not.
   const mine = owner?.seat ?? 0;
-  const state = tableState(row.status, mine, null, row.winners);
   const over = row.status === KEPT_STATUS.finished;
-  const lead = over ? KEPT_COPY.over : row.status === KEPT_STATUS.left ? KEPT_COPY.left : KEPT_COPY.going;
+  // Kept by rules that have since changed (`retiredSave`): shown as it stood, and not offered back to a device.
+  const retired = retiredSave(row.game, row.state);
+  const state = retired && !over ? "left" : tableState(row.status, mine, null, row.winners);
+  const lead = retired ? KEPT_COPY.retired : over ? KEPT_COPY.over : row.status === KEPT_STATUS.left ? KEPT_COPY.left : KEPT_COPY.going;
 
   return (
     <Page>
@@ -101,7 +104,7 @@ export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/
             </li>
           ))}
         </ol>
-        {own ? <KeptOpen game={key} id={row.id} state={row.state} over={over} table={keptTablePath(key)} /> : null}
+        {own && !retired ? <KeptOpen game={key} id={row.id} state={row.state} over={over} table={keptTablePath(key)} /> : null}
         <Link
           href={own || row.hostMemberId === null ? viewHref("history") : `${playerPath(owner?.name ?? "", row.hostMemberId)}#history`}
           className="text-sm text-muted underline underline-offset-4"

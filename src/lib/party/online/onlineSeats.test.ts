@@ -13,6 +13,7 @@ function table({
   movedAt = AT,
   kinds = ["member", "member", "open"] as OnlineSeatKind[],
   lastMoverId = null as string | null,
+  retired = false,
 } = {}) {
   return {
     status,
@@ -20,6 +21,7 @@ function table({
     moveCount,
     movedAt,
     lastMoverId,
+    retired,
     seats: kinds.map((kind, seat) => ({ seat, kind, memberId: kind === "member" ? `m${seat}` : null })),
   };
 }
@@ -73,6 +75,14 @@ describe("ending a table for everybody", () => {
     const later = new Date(AT.getTime() + PARTY_TURN_WAIT_MS);
     expect(mayEnd(table(), 1, later)).toBe(true);
     expect(mayEnd(table(), 0, later)).toBe(false);
+  });
+
+  it("is any seated member's, at once, when the game it holds can never be played on again", () => {
+    expect(mayEnd(table({ retired: true }), 0, AT)).toBe(true);
+    expect(mayEnd(table({ retired: true }), 1, AT)).toBe(true);
+    // Still nobody's who is not seated, or at a table that is over.
+    expect(mayEnd(table({ retired: true }), null, AT)).toBe(false);
+    expect(mayEnd(table({ retired: true, status: "ended", toPlay: null }), 0, AT)).toBe(false);
   });
 
   it("is nobody's at a table that is over, or who is not seated", () => {

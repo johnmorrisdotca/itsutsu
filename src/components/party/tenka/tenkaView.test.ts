@@ -69,7 +69,7 @@ describe("the map's view", () => {
     expect(dots.size).toBeGreaterThan(0);
     expect(dots.size).toBeLessThan(TENKA_TERRITORIES.length);
     // The first in the order is never a dot; put Central Europe first and it is drawn whole.
-    const central = TENKA_TERRITORIES.findIndex((territory) => territory.key === "centralEurope");
+    const central = TENKA_TERRITORIES.findIndex((territory) => territory.key === "northernEurope");
     expect(laidOutChips(TENKA_SHAPES.labels, armies, phoneWorld, [central, ...everyone.filter((one) => one !== central)]).has(central)).toBe(false);
     expect(laidOutChips(TENKA_SHAPES.labels, armies, READABLE_SCALE, everyone).size).toBe(0);
     // And the counters drawn whole at the whole-world view cover none of each other.
@@ -103,12 +103,12 @@ describe("the map's view", () => {
 
   /*
    * EVERY "LOOK AT" BUTTON FRAMES ITS CONTINENT, whole and filling the box.
-   * N. America once framed the whole world (a Bering island counted as the
+   * N. America once framed the whole world (a far island counted as the
    * Eastern United States stretched it across the map), and Asia left two
    * fifths of a desk to Europe and Africa (Svalbard to Malaysia is too tall).
    */
   const full: MapBox = { width: 1600, height: 800, mapWidth: 2000, mapHeight: 984 };
-  const continents = ["northAmerica", "southAmerica", "europe", "africa", "asia", "oceania"] as const;
+  const continents = ["northAmerica", "southAmerica", "europe", "africa", "asia", "australia"] as const;
   it.each(continents.flatMap((key) => [[key, "phone", phone], [key, "desk", desk], [key, "full", full]] as const))("frames %s on a %s: all of it in view, and more than the whole world", (key, _, box) => {
     const members = TENKA_TERRITORIES.flatMap((territory, at) => (territory.continent === key ? [at] : []));
     const area = areaAround(members.map((territory) => TENKA_SHAPES.boxes[territory]));

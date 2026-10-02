@@ -37,6 +37,11 @@ export type TenkaWrapsProps = {
   /** The territories the chosen one can reach: a tag naming one is lit. */
   reach: ReadonlySet<number>;
   dark: boolean;
+  /**
+   * Which tags this layer draws: the ones not lit go under the counters, as they always were, and the lit ones over them,
+   * so that a counter beside the seam (Kamchatka's, at a phone's whole-world view) never hides the tag a player is looking for.
+   */
+  layer: "under" | "over";
   /** A tag tapped is that territory tapped; absent on a map nobody plays on. */
   onTerritory?: (territory: number) => void;
 };

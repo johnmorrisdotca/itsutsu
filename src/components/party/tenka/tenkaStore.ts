@@ -3,6 +3,7 @@
 import { resignTenka } from "@/lib/party/resignTables";
 import { decodeTenka, encodeTenka } from "@/lib/party/tenka/tenkaKeep";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
+import { isOldTenkaSave } from "@/lib/party/tenka/tenkaOldSave";
 
 import { keptInBrowser } from "../keptInBrowser";
 import { TENKA_STORAGE_KEY } from "./tenka.constants";
@@ -24,6 +25,14 @@ export const keepTenkaGame = kept.keep;
 /** The kept game (`undefined` until the browser has been asked, null when none) and the way to keep another. */
 export const useKeptTenkaGame = kept.useKept;
 export const adoptKeptTenkaGame = kept.adopt;
+
+/**
+ * Whether the game this browser holds was kept by an earlier version of the rules (Tenka 2.0.0 changed both maps):
+ * it cannot be played out again, so `useKeptTenkaGame` reads it as no game, and the set-up says why.
+ */
+export function useOldTenkaSave(): boolean {
+  return isOldTenkaSave(kept.useSaved());
+}
 
 /** A new seed for a new game, from the browser's own random: every deal and die of the game is drawn from it. */
 export function freshTenkaSeed(): number {

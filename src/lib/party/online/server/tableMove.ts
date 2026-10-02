@@ -2,9 +2,10 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { ONLINE_MOVE_LONGEST, ONLINE_STATUS } from "../online.constants";
+import { ONLINE_MOVE_LONGEST, ONLINE_RETIRED_GOING, ONLINE_STATUS } from "../online.constants";
 import type { OnlineGameKey, OnlineTableView } from "../online.types";
 import { onlineRulesOf } from "../onlineGames";
+import { retiredSave } from "../../retiredSaves";
 import { moveRefusal, standingOf } from "../onlineSeats";
 import { noticeTableOver } from "./tableNotices";
 import { readTableRow, readTableView, tableOf } from "./tableRead";
@@ -50,7 +51,11 @@ export async function moveAtTable(
 
   const rules = onlineRulesOf(row.game as OnlineGameKey);
   const game = rules.decode(row.state);
-  if (game === null) throw new Error(`Table ${id} holds a game its rules cannot read.`);
+  // A table started under rules that have since changed (`retiredSave`) cannot be played on, and says so rather than failing: its seats and result are still true.
+  if (game === null) {
+    if (retiredSave(row.game, row.state)) return { refused: ONLINE_RETIRED_GOING, status: 409, table: await readTableView(id, readerId, now) };
+    throw new Error(`Table ${id} holds a game its rules cannot read.`);
+  }
   const read = rules.readMove(move);
   const kept = read === null ? "" : JSON.stringify(read);
   if (read === null || kept.length > (rules.moveLongest ?? ONLINE_MOVE_LONGEST)) return { refused: "That is not a move in this game.", status: 400 };

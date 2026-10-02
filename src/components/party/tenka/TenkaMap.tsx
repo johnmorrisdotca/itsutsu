@@ -164,8 +164,9 @@ export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: previ
                     />
                   );
                 })}
-                <TenkaWraps game={game} scale={view.scale} reach={reach} dark={theme.dark} onTerritory={tap} />
+                <TenkaWraps game={game} scale={view.scale} reach={reach} dark={theme.dark} layer="under" onTerritory={tap} />
                 <TenkaChips game={game} marks={marks} scale={view.scale} onTerritory={tap} />
+                <TenkaWraps game={game} scale={view.scale} reach={reach} dark={theme.dark} layer="over" onTerritory={tap} />
               </g>
             </svg>
           )}

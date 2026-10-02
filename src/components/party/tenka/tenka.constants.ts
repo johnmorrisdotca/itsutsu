@@ -50,19 +50,19 @@ export const TENKA_REGION_NAMES: Record<TenkaContinentKey, string> = {
   europe: "Europe",
   africa: "Africa",
   asia: "Asia",
-  oceania: "Oceania",
+  australia: "Australia",
   // Europe's regions, as short as the world's so the row under the map stays one or two lines on a phone.
   britishIsles: "Britain",
   scandinavia: "Nordic",
   iberia: "Iberia",
   maghreb: "Maghreb",
   france: "France",
+  germany: "Germany",
   centralEurope: "Central",
-  italyBalkans: "Italy",
-  danube: "Danube",
+  italy: "Italy",
+  balkans: "Balkans",
+  baltic: "Baltic",
   easternEurope: "East",
-  russia: "Russia",
-  anatolia: "Anatolia",
 };
 export const TENKA_REGION_BUTTON =
   "min-h-9 rounded-full border border-rule-strong bg-ivory px-3 text-xs font-medium hover:bg-rule/60 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-paper";
@@ -71,7 +71,7 @@ export const TENKA_REGION_BUTTON =
 export const TENKA_FRAME_PAD = 16;
 
 /** The tags at the map's two edges where the world wraps round (the Bering Strait): their text and its gap from the edge, in screen pixels. */
-export const TENKA_WRAP_TAG = { font: 11, inset: 5, below: 15, arrow: 6 } as const;
+export const TENKA_WRAP_TAG = { font: 11, inset: 5, below: 15, arrow: 6, gap: 2 } as const;
 
 /** How far the map may be zoomed in, as a multiple of the whole world fitted to its box. */
 export const TENKA_ZOOM_MOST = 8;
@@ -94,6 +94,8 @@ export const TENKA_COPY = {
   placingNote: "Placed for you starts at once; in turn, everybody places one army at a time round the table.",
   play: "Play →",
   about: "About Tenka and its rules",
+  /** Where a game kept here by an earlier version of the rules (before 2026-10-02) would have been: it cannot be played on, and the set-up is offered instead. */
+  oldSave: "The Tenka game kept on this device was played on a map that has since changed, so it cannot be continued. Start a new game below.",
   steps: ["Place", "Attack", "Fortify", "End turn"] as const,
   passTo: (name: string) => `Pass to ${name}`,
   ready: (name: string) => `I'm ${name}: start my turn`,

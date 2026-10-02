@@ -8,6 +8,7 @@ export const KEPT_COPY = {
   carryOn: "Carry on here",
   look: "Open the finished game",
   opening: "Opening…",
+  retired: "Played on a version of this game that has since changed, so the table cannot be opened again. Who played and how it ended is kept here.",
   unreadable: "This device cannot open that game. It may have been kept by an older version of the site.",
   replaces: "A game of this kind already going on this device stays in your history, and can be opened from there again.",
   back: "Your history",

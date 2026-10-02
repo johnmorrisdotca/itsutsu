@@ -18,6 +18,8 @@ type Table = {
   moveCount: number;
   movedAt: Date;
   seats: readonly Seat[];
+  /** The game it holds was kept by rules that have since changed (`retiredSave`): it can never be played on. */
+  retired?: boolean;
 };
 
 /** The reader's own seat at a table, or null when they sit at none of it. */
@@ -47,10 +49,13 @@ export function moveRefusal(table: Table, readerId: string, seat: number): "over
  * Whether the reader may end the table, for everybody, now: at a table being
  * played, before its first move — nothing is lost — or once the turn has
  * waited `PARTY_TURN_WAIT_MS` on somebody who is not the reader. Nobody may end
- * a table by leaving their own turn to go stale.
+ * a table by leaving their own turn to go stale. A table whose game can never
+ * be played on again (`retired`) may be ended by anybody seated at it, at once:
+ * nothing is lost, and waiting a week to be rid of it would be waiting for nothing.
  */
 export function mayEnd(table: Table, readerSeat: number | null, now: Date): boolean {
   if (table.status !== ONLINE_STATUS.playing || readerSeat === null) return false;
+  if (table.retired === true) return true;
   if (table.moveCount === 0) return true;
   return table.toPlay !== readerSeat && now.getTime() - table.movedAt.getTime() >= PARTY_TURN_WAIT_MS;
 }

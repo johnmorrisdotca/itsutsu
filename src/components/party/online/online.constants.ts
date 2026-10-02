@@ -1,3 +1,5 @@
+import { ONLINE_RETIRED_GOING, ONLINE_RETIRED_TABLE } from "@/lib/party/online/online.constants";
+
 /** What a party table on several devices says; see docs/plans/party-online/README.md. */
 export const ONLINE_COPY = {
   /** The set-up's question, and its two answers. */
@@ -78,6 +80,9 @@ export const ONLINE_COPY = {
   myNoneFinished: "No tables finished yet.",
   myFind: "Find a party game",
   myOpenTable: "Open",
+  /** On My games, under a table started under rules that have since changed (`retiredSave`). */
+  retiredTable: (going: boolean) => (going ? ONLINE_RETIRED_GOING : `${ONLINE_RETIRED_TABLE} Who sat at it and how it ended are shown here.`),
+  myRetired: "Started on an older version of the game: it cannot be played on",
   myLook: "Look",
   result: { won: "You won.", shared: "You shared the win.", lost: "Somebody else won.", ended: "Ended, nobody won." },
 } as const;

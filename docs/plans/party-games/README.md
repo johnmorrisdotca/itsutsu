@@ -211,14 +211,38 @@ anywhere here. Tenka is from 天下取り, tenka-tori, "taking the realm".
   conquest, and between a quarter and a half of those with four to six are
   decided by the count at round 60 — escalating card sets make armies of thousands that the dice
   wear down slowly.
-- **The map** is Natural Earth's admin-0 countries at 1:110m (public domain),
-  built by `pnpm map` in the Tenka package's own repository (github.com/johnmorrisdotca/tenka), into two static files: the world the
-  rules read (names, continents, neighbours by land and the twenty-two named sea
-  links, 5 KB) and the outlines only the browser's board draws (30 KB). The
-  script gives every country's polygons to a territory, cuts Canada (97°W),
-  the United States (100°W), Russia (59°E and 100°E) and Australia (129°E)
-  along meridians, merges each territory's countries into one outline, and
-  finds land neighbours from shared edges.
+- **The maps** (Tenka 2.0.0, 2026-10-02: "I only want equal to the original").
+  The world is the classic board as a graph: forty-two territories in six
+  continents (North America 5, South America 2, Europe 5, Africa 3, Asia 7,
+  Australia 2), eighty-three pairs that touch by land or are joined across the
+  water, twenty-five of them sea links. Europe is the classic Europe board's
+  the same way: forty-nine historical areas (Scotland, the Republic of Novgorod,
+  the Kingdom of Sicily…) in eleven regions of Tenka's own, eighty-two borders
+  and nineteen sea routes, and a deck of fifty-one cards. Only geography is
+  used, never the artwork, wording or name of a published game. They are drawn
+  from Natural Earth (public domain; admin-0 countries and admin-1 provinces,
+  states and regions) by `pnpm map` in the Tenka package's own repository
+  (github.com/johnmorrisdotca/tenka), into static files the rules read (names,
+  continents, neighbours) and outlines only the browser's board draws, which
+  the pages load client-side. The site offers both, as a choice on the set-up
+  (`TENKA_MAP_LIST`), on one device and on several. The territory and continent
+  keys changed with the maps (`oceania` is `australia`; Europe's regions gained
+  `germany`, `italy`, `balkans` and `baltic`), and the site names no territory
+  by key outside its tests and `TENKA_REGION_NAMES`.
+- **A saved game a release can no longer read.** Tenka 2.0.0 deals other
+  territories and numbers them differently, so a game kept by 1.x cannot be
+  replayed on either map, and `decodeTenka` refuses it (saved-game version 2).
+  The site holds such a game in three places, and none of them crashes or shows
+  a blank board: this browser's own game is read as no game and the set-up says
+  why (`tenka-old-save`, `isOldTenkaSave`); a game filed from a device is shown
+  in History as left unfinished, or with its result if it was over, and its page
+  keeps who sat where but does not offer to carry it on; a table on several
+  devices says its game cannot be shown or played on, is not a move waiting on
+  anyone, answers a move with words (409), and may be ended by anybody seated
+  at it at once. `retiredSave(game, state)` (`src/lib/party/retiredSaves.ts`) is
+  the one question all of that asks; a later major release of any game adds its
+  own test there. There is no migration: the rows are text, and are read for
+  what they are. `e2e/tenka-old-saves.spec.ts` drives all three.
 - **The frame.** The map is drawn inside `BoardFrame` like every board, with
   no coordinates, and `BoardFrame` has one typed prop for the shape of its
   wood (`aspect: "square" | "map"`, `BOARD_ASPECTS`): the map's is 4:3 on a
@@ -446,8 +470,8 @@ not a second mechanism:
   whole world as the default length and 60 rounds as its count; armies placed
   at random unless "in turn" is chosen; the defender always throws the most
   dice allowed; the card kinds land, sea and air; the forty-two territories,
-  six continents, bonuses (5, 2, 5, 4, 7, 2) and twenty sea links in
-  `tenkaMap.ts` and the map script; the wood's shape following the map
+  six continents, bonuses (5, 2, 5, 3, 7, 2: the classic ones) and twenty-five sea links,
+  from the package's map (`tenkaMap.ts` re-exports it); the wood's shape following the map
   (`BoardFrame`'s `aspect`); on a phone, the whole world first, counters that
   do not fit drawn as dots, and the map coming close when a territory is
   chosen to attack or move from, rather than opening on the player's own

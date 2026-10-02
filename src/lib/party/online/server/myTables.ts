@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ONLINE_SEAT_KINDS, ONLINE_STATUS } from "../online.constants";
 import type { OnlineGameKey, OnlineStatus } from "../online.types";
 import { isOnlineGame } from "../onlineGames";
+import { retiredSave } from "../../retiredSaves";
 import { shownName } from "@/lib/rating/shownName";
 import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 
@@ -25,6 +26,8 @@ export type MyTable = {
   toPlay: number | null;
   /** Whether it waits on the reader. */
   yourMove: boolean;
+  /** Whether it was started under rules that have since changed (`retiredSave`): it cannot be played on, so it waits on nobody. */
+  retired: boolean;
   /** On a table that is over: how it went for the reader. */
   result: "won" | "shared" | "lost" | "ended" | null;
   movedAt: string;
@@ -65,6 +68,7 @@ export async function myTables(
       const mySeat = row.seats.find((one) => one.memberId === memberId)?.seat;
       if (mySeat === undefined || !isOnlineGame(row.game)) return [];
       const status = row.status as OnlineStatus;
+      const retired = status === ONLINE_STATUS.playing && retiredSave(row.game, row.state);
       const table: MyTable = {
         id: row.id,
         game: row.game,
@@ -72,7 +76,8 @@ export async function myTables(
         mySeat,
         seats: row.seats.map((one) => ({ seat: one.seat, name: shownName(one.name), memberId: one.memberId, kind: one.kind })),
         toPlay: row.toPlay,
-        yourMove: status === ONLINE_STATUS.playing && row.toPlay === mySeat,
+        yourMove: status === ONLINE_STATUS.playing && !retired && row.toPlay === mySeat,
+        retired,
         result: status === ONLINE_STATUS.playing ? null : resultFor(mySeat, row.winners, status === ONLINE_STATUS.ended),
         movedAt: row.movedAt.toISOString(),
         endedAt: row.finishedAt?.toISOString() ?? null,

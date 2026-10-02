@@ -105,24 +105,24 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
    * art and its wording are its owner's and appear nowhere here; the rules
    * of a game are nobody's. So it has a name of its own, from 天下取り
    * (tenka-tori, "taking the realm") — what Japan's warlords of the sixteenth
-   * century set out to do — and a map of the modern world.
+   * century set out to do — and maps of the world and of Europe.
    */
   tenka: {
     label: "Tenka",
     kanji: "天下",
     tagline: "Take the whole world, one territory at a time: roll for it, hold it, and trade your cards for more armies.",
     origin:
-      "A game of world conquest in the family that has been played on maps of the world since the 1950s: dice for battles, armies for holding a continent whole, cards traded in for more. The rules of a game belong to nobody; the name is our own, from the Japanese 天下取り, tenka-tori, \"taking the realm\", what the warlords of sixteenth-century Japan set out to do, on a map of the world as it is today.",
+      "A game of world conquest in the family that has been played on maps of the world since the 1950s: dice for battles, armies for holding a continent whole, cards traded in for more. The rules of a game belong to nobody; the name is our own, from the Japanese 天下取り, tenka-tori, \"taking the realm\", what the warlords of sixteenth-century Japan set out to do, on a map of the world.",
     rules: [
-      "The world's forty-two territories are dealt out round the table, one army on each, and everybody's starting armies go onto their own territories. At a table of two a neutral army holds a third of the world; it never moves, only defends.",
+      "The forty-two territories of the world are dealt out round the table, one army on each, and everybody's starting armies go onto their own territories. At a table of two a neutral army holds a third of the world; it never moves, only defends.",
       "Your turn starts with new armies: one for every three territories you hold (never fewer than three), more for each continent you hold whole, and more again for a set of three cards traded in. Place them on your own territories, one at a time or all the rest at once, spread as you like.",
-      "Then attack as often as you like: from a territory with at least two armies, into a neighbour somebody else holds — across a land border or a dashed sea link. The world wraps round: Alaska and the Russian Far East are neighbours across the Bering Strait, one at each edge of the map. You throw up to three dice, one fewer than your armies there; the defender throws up to two.",
+      "Then attack as often as you like: from a territory with at least two armies, into a neighbour somebody else holds — across a land border or a dashed sea link. The world wraps round: Alaska and Kamchatka are neighbours across the Bering Strait, one at each edge of the map. You throw up to three dice, one fewer than your armies there; the defender throws up to two.",
       "The highest dice are compared in pairs; the higher wins and a tie goes to the defender. Each pair lost is one army lost. Empty the territory and it is yours: move in at least as many armies as dice you threw.",
       "End your turn with one move of armies between two of your own territories joined through your own land, if you like. Took a territory this turn? Take a card. Three alike, or one of each kind, or two with a wild card, trade for 4, 6, 8, 10, 12, 15 armies, and five more for each set after that; with five cards you must trade.",
       "Knock a player out and their cards are yours. Take the whole world — every other player out — and you win. A game of so many rounds ends at its last: whoever holds the most territories wins.",
     ],
     board:
-      "Two maps of today's world. The world: forty-two territories in six continents. Europe: thirty-seven territories in eleven regions, from Iceland to the Urals and from the North Cape to the Maghreb, its seas crossed by dashed links. For a quick game choose ten rounds; twenty for an evening; or play until one player holds the whole map (counted at round sixty if it ever gets that far).",
+      "Two maps. The world: forty-two territories in six continents, the classic arrangement of who touches whom and what each continent is worth. Europe: forty-nine areas in eleven regions, from Ireland to the Caucasus and from the Maghreb's coast to the Arctic Circle, its seas crossed by dashed routes. For a quick game choose ten rounds; twenty for an evening; or play until one player holds the whole map (counted at round sixty if it ever gets that far).",
   },
   mexicanTrain: {
     label: "Mexican Train",
@@ -261,7 +261,7 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
    */
   mancala: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: [MANCALA_BOARDS.kalah, MANCALA_BOARDS.oware], defaultSize: MANCALA_BOARDS.kalah },
   /*
-   * Tenka for two to six on the one map of the world; a size is how many
+   * Tenka for two to six on the map of the world or of Europe; a size is how many
    * rounds before the count (`tenka.constants.ts`): ten, twenty, or the whole
    * world. Three is the table the set-up opens on, the classic game's
    * smallest without a neutral army.

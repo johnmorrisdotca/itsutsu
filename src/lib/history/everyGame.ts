@@ -9,6 +9,7 @@ import { joinQuery, matchPath, mySolvePath, playPath } from "@/lib/gomoku/slugs"
 import { KEPT_SEAT_KINDS, KEPT_STATUS, isKeptStatus } from "@/lib/party/kept/kept.constants";
 import { keptGamePath } from "@/lib/party/kept/keptPaths";
 import { ONLINE_SEAT_KINDS, ONLINE_STATUS } from "@/lib/party/online/online.constants";
+import { retiredSave } from "@/lib/party/retiredSaves";
 import { tablePath } from "@/lib/party/online/onlinePaths";
 import { prisma } from "@/lib/prisma";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -123,6 +124,17 @@ export function tableState(status: string, seat: number, toPlay: number | null, 
   return winners.length > 1 ? "shared" : "won";
 }
 
+/**
+ * How a table stood for the member at `seat`, as the History tab says it. A game still going that its rules can no
+ * longer play out (`retiredSave`) is not one to carry on with, so it reads as it ended when they changed: left
+ * unfinished on a device, ended at a table. Anything over keeps its result.
+ */
+function tableHistoryState(row: { game: string; state: string; status: string; toPlay: number | null; winners: number[] }, seat: number, device: boolean): HistoryState {
+  const going = row.status === ONLINE_STATUS.playing || row.status === KEPT_STATUS.playing;
+  if (going && retiredSave(row.game, row.state)) return device ? "left" : "ended";
+  return tableState(row.status, seat, row.toPlay, row.winners);
+}
+
 /** Tables, on several devices or filed from one: the member's seat at each. */
 async function tablesOf({ memberId, before, limit, where = {} }: Reading): Promise<HistoryEntry[]> {
   const rows = await prisma.partyTable.findMany({
@@ -147,7 +159,7 @@ async function tablesOf({ memberId, before, limit, where = {} }: Reading): Promi
         key: `table:${row.id}`,
         source: device ? ("device" as const) : ("table" as const),
         game: row.game as GameKey,
-        state: tableState(row.status, mine.seat, row.toPlay, row.winners),
+        state: tableHistoryState(row, mine.seat, device),
         at: row.updatedAt.toISOString(),
         href: device ? keptGamePath(row.game, row.id) : tablePath(row.game, row.id),
         others,

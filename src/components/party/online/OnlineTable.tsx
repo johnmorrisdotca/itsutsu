@@ -122,7 +122,12 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       <StatusLine view={view} sending={sending} thinking={thinking} />
       {/* Quiet around the game while it is played (`PlayingNow`). */}
       <PlayingNow on={moment.playing} />
-      {game === null ? null : (
+      {game === null ? (
+        // The game the table holds cannot be read by the rules now (they changed after it was started): said, never a blank board.
+        <p className={`${PANEL_CLASS} text-sm`} role="status" data-testid="online-retired">
+          {ONLINE_COPY.retiredTable(view.status === ONLINE_STATUS.playing)}
+        </p>
+      ) : (
         <WinCoverOver news={news} onClose={moment.close}>
           <shown.Board game={game} appearance={appearance} canMove={canMove} onMove={(move: unknown) => void send(move, view.mySeat)} mySeat={view.mySeat} />
         </WinCoverOver>

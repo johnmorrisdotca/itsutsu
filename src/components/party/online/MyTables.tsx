@@ -94,7 +94,9 @@ export function TableRow({ table, finished, tags }: { table: MyTable; finished: 
           )}
           {table.result !== null
             ? ONLINE_COPY.result[table.result]
-            : table.yourMove
+            : table.retired
+              ? ONLINE_COPY.myRetired
+              : table.yourMove
               ? ONLINE_COPY.myYourMove
               : toPlay?.kind === ONLINE_SEAT_KINDS.open
                 ? ONLINE_COPY.myOpen

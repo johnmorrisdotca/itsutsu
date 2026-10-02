@@ -5,7 +5,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { PartyTableGameProps } from "../party.types";
 import { TenkaPlay } from "./TenkaPlay";
 import { TenkaSetUp } from "./TenkaSetUp";
-import { useKeptTenkaGame } from "./tenkaStore";
+import { TENKA_COPY } from "./tenka.constants";
+import { useKeptTenkaGame, useOldTenkaSave } from "./tenkaStore";
 
 /**
  * TENKA PASSED ROUND THE TABLE, at /games/tenka/pass-and-play.
@@ -19,6 +20,7 @@ import { useKeptTenkaGame } from "./tenkaStore";
 export function TenkaTable({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptTenkaGame();
+  const oldSave = useOldTenkaSave();
 
   // Not read yet: the server has no browser to ask, so it draws the room the game will take and says nothing.
   if (game === undefined) {
@@ -27,6 +29,11 @@ export function TenkaTable({ appearance, gameHref, online }: PartyTableGameProps
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="tenka-game" data-state="set-up">
+        {oldSave ? (
+          <p className="rounded-lg border border-rule-strong bg-ivory px-3 py-2 text-sm" role="status" data-testid="tenka-old-save">
+            {TENKA_COPY.oldSave}
+          </p>
+        ) : null}
         <TenkaSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );

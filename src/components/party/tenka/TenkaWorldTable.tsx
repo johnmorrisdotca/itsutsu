@@ -48,7 +48,7 @@ export function TenkaWorldTable() {
         </table>
       </div>
       <p className="text-xs text-muted">
-        The map is drawn from Natural Earth (public domain), countries grouped into territories by region; Canada, the United States, Russia and Australia are divided along meridians.
+        The territories, continents and bonuses are the classic world-conquest board&apos;s, as a graph of who touches whom; only that geography is used, none of the artwork or wording of any published game. The map is drawn from Natural Earth (public domain), countries and their provinces, states and regions, so Canada, the United States, Russia, China and Australia are divided along real borders.
       </p>
     </section>
   );

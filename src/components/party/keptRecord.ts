@@ -128,7 +128,9 @@ export function keptRecorder<Game>(storageKey: string, encode: (game: Game) => s
     }
     const over = rules.over(after);
     // A new game where there was none, or where one had ended: a record of its own, the old one left as it ended.
-    const fresh = slot === null || (!over && (slot.over || (before !== null && rules.over(before))));
+    // Nothing readable where a record is still going is the same: what was kept could not be played out again (a game
+    // kept by an earlier version of the rules), and the game now starting is not that one.
+    const fresh = slot === null || (!over && (slot.over || before === null || rules.over(before)));
     if (fresh) {
       const id = newId();
       writeSlot(slotKey, { id, over });

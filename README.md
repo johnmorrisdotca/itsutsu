@@ -101,7 +101,7 @@ shelf of such guests — games a group plays round one device, at
 `/games/party` — with the party games of its own at home in it: Dots and
 Boxes for two to six (`/games/dots-and-boxes`), Mancala for two, by Kalah's
 or Oware's rules (`/games/mancala`), and Tenka, world conquest for two to six
-on a map of the modern world (`/games/tenka`), a third kind of game
+on the classic world map or Europe (`/games/tenka`), a third kind of game
 (`PartyKind`, `src/lib/party/`, see `docs/plans/party-games/README.md`). The
 guests include Chinese Checkers for two, three, four or six
 players passed round one phone (`/games/chinese-checkers/pass-and-play`),

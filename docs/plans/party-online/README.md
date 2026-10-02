@@ -384,3 +384,10 @@ it.
 - Tenka's pass-and-play lead lives in `ONLINE_COPY.tenkaLead`, since its own
   copy file (`tenka/tenka.constants.ts`) is one the party pictures are made
   from, and a change to it asks for every party picture again.
+- A table whose game its rules can no longer read (Tenka 2.0.0 changed both
+  maps, 2026-10-02, and refuses every game kept before it) is `retired`
+  (`retiredSave`, `src/lib/party/retiredSaves.ts`): its page says the game
+  cannot be shown or played on instead of leaving the board blank, a move to it
+  is a 409 with those words rather than a server error, anybody seated may end
+  it at once (`mayEnd`) rather than wait a week, and My games lists it without
+  calling it anyone's move.

@@ -42,7 +42,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
       "or",
     )} rules`,
   tenka: (spec) =>
-    `on a map of the modern world, ${listed(
+    `on a map of the world or of Europe, ${listed(
       spec.sizes.map((rounds) => (rounds === TENKA_WORLD_ROUNDS ? "to the last player standing" : `${rounds} rounds`)),
       "or",
     )}`,

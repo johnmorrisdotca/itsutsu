@@ -115,7 +115,7 @@ function tenkaScene(): string {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     return seed / 2147483648;
   };
-  let game: TenkaGame = startTenka(60, ["", "", "", ""], 20260928)!;
+  let game: TenkaGame = startTenka(60, ["", "", "", ""], 20260929)!;
   while (game.round < 6 || game.phase !== TENKA_PHASES.reinforce) game = playTenka(game, sensibleTenkaMove(game, random))!;
   return encodeTenka(game);
 }

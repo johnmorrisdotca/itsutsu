@@ -9,6 +9,7 @@ import { shownName } from "@/lib/rating/shownName";
 import { AGE_BANDS } from "@/lib/social/ageBand.constants";
 
 import { isKeptStatus } from "../../kept/kept.constants";
+import { retiredSave } from "../../retiredSaves";
 import { PARTY_TURN_WAIT_MS } from "../online.constants";
 import type { OnlineGameKey, OnlineSeatKind, OnlineStatus, OnlineTableView } from "../online.types";
 import { tableSeatPath } from "../onlinePaths";
@@ -82,6 +83,7 @@ export function tableOf(row: TableRow) {
     toPlay: row.toPlay,
     moveCount: row.moveCount,
     movedAt: row.movedAt,
+    retired: retiredSave(row.game, row.state),
     seats: row.seats.map((one) => ({ seat: one.seat, kind: one.kind as OnlineSeatKind, memberId: one.memberId })),
   };
 }

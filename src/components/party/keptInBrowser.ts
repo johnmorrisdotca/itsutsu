@@ -55,6 +55,7 @@ export function keptInBrowser<Game>(
   keep: (game: Game | null) => void;
   useKept: () => [Game | null | undefined, (game: Game | null) => void];
   adopt: (text: string, id: string) => boolean;
+  useSaved: () => string | null | undefined;
 } {
   const listeners = new Set<() => void>();
   const plainEncode = encode;
@@ -164,5 +165,13 @@ export function keptInBrowser<Game>(
     return true;
   }
 
-  return { keep, useKept, adopt };
+  /**
+   * The text as the browser holds it (`undefined` until asked, null when none), whether or not the game's rules can read it:
+   * for a table that must tell a game kept by an earlier version of the rules from nothing kept at all.
+   */
+  function useSaved(): string | null | undefined {
+    return useSyncExternalStore<string | null | undefined>(subscribe, read, onTheServer);
+  }
+
+  return { keep, useKept, adopt, useSaved };
 }

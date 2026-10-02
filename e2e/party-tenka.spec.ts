@@ -77,7 +77,7 @@ test.describe("Tenka, read by anybody", () => {
     await expect(page.getByTestId("game-front-door")).toHaveAttribute("data-kind", "party");
     await expect(page.getByRole("heading", { name: /Tenka/ })).toBeVisible();
     await expect(page.getByTestId("party-offered")).toContainText("2–6 players");
-    await expect(page.getByTestId("party-offered")).toContainText("a map of the modern world");
+    await expect(page.getByTestId("party-offered")).toContainText("a map of the world or of Europe");
     await expect(page.getByTestId("game-family")).toContainText("Party games");
     await expect(page.getByTestId("facet-family")).toHaveAttribute("href", "/games/party");
 
@@ -89,7 +89,7 @@ test.describe("Tenka, read by anybody", () => {
     // The continents and their bonuses, published.
     await expect(page.getByTestId("tenka-continent")).toHaveCount(6);
     await expect(page.locator('[data-testid="tenka-continent"][data-continent="asia"]')).toContainText("+7");
-    await expect(page.getByTestId("tenka-world")).toContainText("Alaska (by sea: The Russian Far East)");
+    await expect(page.getByTestId("tenka-world")).toContainText("Alaska (by sea: Kamchatka)");
 
     const picture = page.locator('img[src="/art/games/tenka.jpg"]').first();
     await expect(picture).toBeVisible();
@@ -114,14 +114,14 @@ test.describe("Tenka, pass and play", () => {
 
     await page.locator('[data-testid="tenka-map"][data-value="europe"]').click();
     await expect(page.locator('[data-testid="tenka-map"][data-value="europe"]')).toHaveAttribute("aria-checked", "true");
-    await expect(preview.getByTestId("tenka-territory")).toHaveCount(37);
+    await expect(preview.getByTestId("tenka-territory")).toHaveCount(49);
     await expect(preview.getByRole("group", { name: "Map of Europe" })).toBeVisible();
     await expect(page.locator('[data-testid="tenka-length"][data-value="60"]')).toHaveText("All of Europe");
 
     await page.getByTestId("tenka-start").click();
     await ready(page, "tenka-game");
-    await expect(page.getByTestId("tenka-territory")).toHaveCount(37);
-    await expect(page.locator('[data-testid="tenka-territory"][data-territory="greatBritain"]')).toHaveCount(1);
+    await expect(page.getByTestId("tenka-territory")).toHaveCount(49);
+    await expect(page.locator('[data-testid="tenka-territory"][data-territory="england"]')).toHaveCount(1);
     const regions = page.getByTestId("tenka-region");
     await expect(regions).toHaveCount(12);
     await expect(regions.first()).toHaveText("Europe");
@@ -261,20 +261,20 @@ test.describe("Tenka, pass and play", () => {
   });
 });
 
-/** A game of two where the player to move holds the Russian Far East and somebody else Alaska, every army placed there and the attack begun: dealt in Node from the first seed that deals it. */
+/** A game of two where the player to move holds Kamchatka and somebody else Alaska, every army placed there and the attack begun: dealt in Node from the first seed that deals it. */
 function acrossTheStrait(): TenkaGame {
   const alaska = TENKA_TERRITORIES.findIndex((territory) => territory.key === "alaska");
-  const farEast = TENKA_TERRITORIES.findIndex((territory) => territory.key === "farEast");
+  const kamchatka = TENKA_TERRITORIES.findIndex((territory) => territory.key === "kamchatka");
   for (let seed = 1; seed < 10_000; seed += 1) {
     const start = startTenka(60, ["Ann", "Ben"], seed);
-    if (start === null || start.owners[farEast] !== start.toPlay || start.owners[alaska] === start.toPlay) continue;
-    const placed = playTenka(start, { kind: TENKA_MOVES.place, territory: farEast, armies: start.reserve });
+    if (start === null || start.owners[kamchatka] !== start.toPlay || start.owners[alaska] === start.toPlay) continue;
+    const placed = playTenka(start, { kind: TENKA_MOVES.place, territory: kamchatka, armies: start.reserve });
     if (placed !== null && placed.phase === TENKA_PHASES.attack) return placed;
   }
-  throw new Error("no seed deals the Far East to the player to move");
+  throw new Error("no seed deals Kamchatka to the player to move");
 }
 
-const CONTINENT_KEYS = ["northAmerica", "southAmerica", "europe", "africa", "asia", "oceania"] as const;
+const CONTINENT_KEYS = ["northAmerica", "southAmerica", "europe", "africa", "asia", "australia"] as const;
 
 for (const width of [1280, 390]) {
   test.describe(`Tenka's map at ${width} pixels`, () => {
@@ -326,11 +326,11 @@ for (const width of [1280, 390]) {
       const toAlaska = page.locator('[data-testid="tenka-wrap"][data-edge="east"]');
       const toFarEast = page.locator('[data-testid="tenka-wrap"][data-edge="west"]');
       await expect(toAlaska).toHaveText("Alaska →");
-      await expect(toFarEast).toHaveText("← Russian Far East");
+      await expect(toFarEast).toHaveText("← Kamchatka");
       await expect(toAlaska).toHaveAttribute("data-lit", "false");
 
-      // Attack from the Far East: Alaska is in reach, its tag lights, and a tap on the tag is a tap on Alaska.
-      await chip(page, TENKA_TERRITORIES.findIndex((territory) => territory.key === "farEast")).click();
+      // Attack from Kamchatka: Alaska is in reach, its tag lights, and a tap on the tag is a tap on Alaska.
+      await chip(page, TENKA_TERRITORIES.findIndex((territory) => territory.key === "kamchatka")).click();
       const alaska = TENKA_TERRITORIES.findIndex((territory) => territory.key === "alaska");
       await expect(chip(page, alaska)).toHaveAttribute("data-reach", "true");
       if (width < 640) await page.locator('[data-testid="tenka-region"][data-region="world"]').click();
@@ -341,7 +341,7 @@ for (const width of [1280, 390]) {
   });
 }
 
-const EUROPE = ["britain", "nordic", "westernEurope", "centralEurope", "southernEurope", "easternEurope", "westernRussia"];
+const EUROPE = ["iceland", "scandinavia", "greatBritain", "northernEurope", "westernEurope", "southernEurope", "ukraine"];
 
 test.describe("Tenka on a phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
@@ -394,7 +394,7 @@ test.describe("Tenka on a phone", () => {
         chips.map((chip) => chip.getBoundingClientRect()).map((rect) => rect.left >= left && rect.right <= right && rect.top >= top && rect.bottom <= bottom),
       [box.x, box.y, box.x + box.width, box.y + box.height],
     );
-    // Or, from Alaska or the Far East, the lit tag at the map's edge naming the other side of the Bering Strait.
+    // Or, from Alaska or Kamchatka, the lit tag at the map's edge naming the other side of the Bering Strait.
     const litWrap = page.locator('[data-testid="tenka-wrap"][data-lit="true"]');
     if (onScreen.includes(true)) await reach.nth(onScreen.indexOf(true)).tap();
     else {

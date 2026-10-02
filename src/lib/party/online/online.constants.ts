@@ -35,3 +35,9 @@ export const COMPUTER_SEAT_NAME = "Computer";
 
 /** The longest a party table's move may be as JSON: Block Five's piece and five squares is well under it. */
 export const ONLINE_MOVE_LONGEST = 400;
+
+/** What a table is told when it was started under rules that have since changed (`retiredSave`): its game cannot be shown or played on, and its seats and result are still true. */
+export const ONLINE_RETIRED_TABLE = "This game was started on a version of the game that has since changed, so it cannot be shown or played on.";
+
+/** ... and what can still be done about one that was going. */
+export const ONLINE_RETIRED_GOING = `${ONLINE_RETIRED_TABLE} Anybody at the table can end it, or leave it.`;
