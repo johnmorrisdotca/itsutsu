@@ -145,7 +145,7 @@ export function FinishedPuzzle({
     return (
       <Focused story={story} hydrated={hydrated} testId="solve-board" state="word">
         <div className="mx-auto w-full" data-focus-board>
-          <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} level={level} headStart={headStart} style={style} position={{ at: wordAt, go: setWordAt }} />
+          <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} level={level} headStart={headStart} style={style} position={{ at: wordAt, go: setWordAt }} animate />
         </div>
       </Focused>
     );

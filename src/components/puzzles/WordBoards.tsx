@@ -65,7 +65,7 @@ export function WordBoards({
               size={size}
               rows={rows}
               words={words}
-              parts={two.map((board, at) => ({ at: first + at, guesses: board.rows, marks: board.marks, arrows: board.arrows, done: done || board.found, found: board.found }))}
+              parts={two.map((board, at) => ({ at: first + at, guesses: board.rows, marks: board.marks, arrows: board.arrows, done: done || board.found, found: board.found, reveal: board.reveal }))}
               free={free}
               typing={typing}
               done={done}

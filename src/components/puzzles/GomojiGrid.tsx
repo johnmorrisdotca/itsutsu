@@ -8,7 +8,8 @@ import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
-import type { GridPart } from "./gomojiGrid.types";
+import type { GridPart, WordReveal } from "./gomojiGrid.types";
+import { revealAttrs } from "./wordReveal";
 import { PuzzleBoard } from "./PuzzleBoard";
 import {
   WORD_FOCUS,
@@ -82,6 +83,7 @@ export function GomojiGrid({
   appearance = DEFAULT_APPEARANCE,
   parts,
   words,
+  reveal = null,
 }: {
   size: number;
   rows: number;
@@ -106,9 +108,11 @@ export function GomojiGrid({
   parts?: readonly GridPart[];
   /** How many words the puzzle hides, which decides the board's height (`gomojiBoard`): one, or with `parts` a Futago's two or a Yotsugo's four. */
   words?: WordCount;
+  /** A replay step's row coming or going on the one word (`WordReveal`); several words carry theirs in `parts`. */
+  reveal?: WordReveal | null;
 }) {
   const tiles = style === WORD_STYLES.tiles;
-  const sides: readonly GridPart[] = parts ?? [{ at: 0, guesses, marks, arrows, done, found: false }];
+  const sides: readonly GridPart[] = parts ?? [{ at: 0, guesses, marks, arrows, done, found: false, reveal }];
   const lone = parts === undefined;
   const across = size * sides.length;
   // One board for every style: as tall as the level with the most rows, the play in the middle a spare row over to the top, the words centred across on whole squares (`gomojiBoard`).
@@ -166,12 +170,17 @@ function PartRows({
   onChoose: (place: number) => void;
 }) {
   const tiles = style === WORD_STYLES.tiles;
-  const { guesses, marks, arrows = [], done } = side;
+  const { guesses, done, reveal } = side;
   const letterSize = wordLetterSize(size);
-  const found = foundInPlace(guesses, marks, size);
+  const found = foundInPlace(guesses, side.marks, size);
   return Array.from({ length: rows }, (_, row) => {
-    const guessed = guesses[row];
+    // A row a replay step has just taken off is still drawn, leaving, until its last letter has gone.
+    const leaving = reveal?.dir === "out" && reveal.row === row && guesses[row] === undefined ? (reveal.gone ?? null) : null;
+    const guessed = guesses[row] ?? leaving?.guess;
     const live = guessed === undefined && row === guesses.length && !done;
+    // Rows between the guesses left and the one leaving (after a long step back) are empty and never read.
+    const marks = leaving ? Object.assign([...side.marks], { [row]: leaving.marks }) : side.marks;
+    const arrows = leaving ? Object.assign([...(side.arrows ?? [])], { [row]: leaving.arrows }) : (side.arrows ?? []);
     const letters: ArrayLike<string> = guessed ?? (live ? typing.slots : []);
     return Array.from({ length: size }, (_, at) => {
       const letter = letters[at] ?? "";
@@ -185,6 +194,7 @@ function PartRows({
           ? "empty"
           : `${letter.toUpperCase()}${mark === null ? "" : `, ${MARK_WORDS[mark]}`}${arrow === "" ? "" : `, ${ARROW_WORDS[arrow]}`}${row < free ? ", given free" : ""}`;
       const focused = live && typing.at === at;
+      const moving = reveal?.row === row && letter !== "" ? revealAttrs(reveal.dir, at, size) : null;
       const said = {
         "data-testid": "word-tile",
         "data-row": row,
@@ -193,6 +203,7 @@ function PartRows({
         "data-free": row < free ? "true" : undefined,
         "data-known": known ? "hit" : undefined,
         "data-focus": focused ? "true" : undefined,
+        ...moving?.data,
         "aria-label": live ? `${label}, letter ${at + 1}${focused ? ", chosen" : ""}` : label,
       };
       // Inside the stone or tile, at its lower right, in its letter's colour: read with the kana, not beside it.
@@ -219,11 +230,11 @@ function PartRows({
         : "relative flex items-center justify-center";
       // A place on the row being typed is a press; every other cell is only drawn.
       return live ? (
-        <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} style={tiles ? { fontSize: letterSize } : undefined} {...said}>
+        <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} style={tiles ? { fontSize: letterSize, ...moving?.style } : moving?.style} {...said}>
           {face}
         </button>
       ) : (
-        <div key={`${row}-${at}`} className={look} style={tiles ? { fontSize: letterSize } : undefined} {...said}>
+        <div key={`${row}-${at}`} className={look} style={tiles ? { fontSize: letterSize, ...moving?.style } : moving?.style} {...said}>
           {face}
         </div>
       );

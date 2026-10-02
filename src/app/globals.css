@@ -1062,3 +1062,42 @@ tr:has(> [data-row-actions]) {
 tr:has(> [data-row-actions]):focus {
   outline: none;
 }
+
+/*
+ * A WORD'S LETTERS ARRIVING IN A REPLAY (`components/puzzles/wordReveal.ts`):
+ * each letter of the word a step reveals fades and grows in, in a few tenths of
+ * a second, one after another; on a step back they leave in the other order.
+ * The timing rides on the letter (`--reveal-ms`, `--reveal-delay`) so the
+ * numbers live in one place. A reader who asks for less motion gets none.
+ */
+@keyframes word-letter-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes word-letter-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+[data-reveal="in"] {
+  animation: word-letter-in var(--reveal-ms, 110ms) ease-out var(--reveal-delay, 0ms) both;
+}
+[data-reveal="out"] {
+  animation: word-letter-out var(--reveal-ms, 110ms) ease-in var(--reveal-delay, 0ms) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    animation: none;
+  }
+}

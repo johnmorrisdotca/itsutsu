@@ -22,6 +22,8 @@ import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 
 import { KanaKeyboard } from "./KanaKeyboard";
 import { WordBoards } from "./WordBoards";
+import type { WordReveal } from "./gomojiGrid.types";
+import { useStepMotion } from "./wordReveal";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordKeyboard } from "./WordKeyboard";
 
@@ -52,6 +54,7 @@ export function WordReplay({
   style,
   appearance = DEFAULT_APPEARANCE,
   position,
+  animate = true,
 }: {
   kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" | "gomojiPop";
   size: number;
@@ -70,12 +73,19 @@ export function WordReplay({
    * replay of its own again at the end); null there means the end.
    */
   position?: { at: number | null; go: (index: number) => void };
+  /**
+   * Whether a step lets its word's letters arrive, or leave on a step back, quickly (`wordReveal.ts`).
+   * On unless a consumer turns it off; a device that asks for less motion never sees it either way.
+   */
+  animate?: boolean;
 }) {
   const last = guesses.length;
   const [own, setOwn] = useState(last);
   const at = position === undefined ? own : (position.at ?? last);
   const setAt = position === undefined ? setOwn : position.go;
-  const played = guesses.slice(0, Math.min(at, last));
+  const shownAt = Math.min(at, last);
+  const played = guesses.slice(0, shownAt);
+  const { motion, done: motionDone } = useStepMotion(shownAt, animate);
   const kana = kind === "gomojiKana";
   const lang = languageOf(kind);
 
@@ -85,18 +95,32 @@ export function WordReplay({
   const hidden = dodging ? { words: [wordOfPlay(kind, size, level, givens, guesses) ?? ""], grey: null } : (hiddenWordsOf(kind, size, givens) ?? { words: [""], grey: null });
   const grey = kana ? hidden.grey : null;
   const free = grey !== null ? 1 : 0;
-  const boards = hidden.words.map((word) => {
-    const guessed = boardGuesses(played, word);
-    const rows = grey !== null ? [grey, ...guessed] : [...guessed];
-    const kanaMarks = kana ? rows.map((row) => markKanaGuess([...row], [...word])) : [];
-    const marks = kana ? kanaMarks.map((row) => row.map((each) => each.mark)) : rows.map((row) => markGuess(row, word));
-    const arrows: CellArrow[][] = kanaMarks.map((row) =>
-      row.map((each) => (each.wrongSize && each.wrongMark ? "↓↑" : each.wrongSize ? "↓" : each.wrongMark ? "↑" : "")),
-    );
-    return { word, guessed, rows, marks, arrows, found: guessed.includes(word) };
-  });
+  const boardsAfter = (taken: readonly string[]) =>
+    hidden.words.map((word) => {
+      const guessed = boardGuesses(taken, word);
+      const rows = grey !== null ? [grey, ...guessed] : [...guessed];
+      const kanaMarks = kana ? rows.map((row) => markKanaGuess([...row], [...word])) : [];
+      const marks = kana ? kanaMarks.map((row) => row.map((each) => each.mark)) : rows.map((row) => markGuess(row, word));
+      const arrows: CellArrow[][] = kanaMarks.map((row) =>
+        row.map((each) => (each.wrongSize && each.wrongMark ? "↓↑" : each.wrongSize ? "↓" : each.wrongMark ? "↑" : "")),
+      );
+      return { word, guessed, rows, marks, arrows, found: guessed.includes(word), reveal: null as WordReveal | null };
+    });
+  const boards = boardsAfter(played);
+  // The word a step has just put on a board, or taken off it: the one the move lands on going on, the one it leaves going back, however far the move went.
+  if (motion !== null) {
+    const before = boardsAfter(guesses.slice(0, Math.min(motion.from, last)));
+    boards.forEach((board, each) => {
+      const was = before[each]!;
+      if (motion.dir === "in" && board.rows.length > was.rows.length) board.reveal = { row: board.rows.length - 1, dir: "in" };
+      if (motion.dir === "out" && was.rows.length > board.rows.length) {
+        const row = was.rows.length - 1;
+        board.reveal = { row, dir: "out", gone: { guess: was.rows[row]!, marks: was.marks[row]!, arrows: was.arrows[row] ?? [] } };
+      }
+    });
+  }
   const many = boards.length > 1;
-  const { word, rows, marks, arrows } = boards[0]!;
+  const { word, rows, marks, arrows, reveal } = boards[0]!;
   // How many of a letter the marks drawn at this step prove, by base for kana: a count on its key from two. Not for a Futago's two words.
   const counted = many ? NONE : knownCounts(rows, marks, kana ? kanaBase : undefined);
   const started = headStart ? headStartKeys(kind, size, givens) : [];
@@ -105,7 +129,17 @@ export function WordReplay({
   const allowed = free + Math.max(guesses.length, dodging ? dodgeGuesses(kind, size) : isBackwardsGivens(givens) ? backwardsGuesses(kind, size, level) : guessesFor(kind === "gomojiKana" ? "gomojiKana" : "gomoji", size, level, free, asWordCount(boards.length)));
 
   return (
-    <div className="flex flex-col gap-3" data-testid="word-replay" data-at={Math.min(at, last)} data-last={last}>
+    <div
+      className="flex flex-col gap-3"
+      data-testid="word-replay"
+      data-at={Math.min(at, last)}
+      data-last={last}
+      data-motion={motion?.dir}
+      // The last letter to finish ends the step's motion, so the leaving row is taken off (`wordReveal.ts`).
+      onAnimationEnd={(event) => {
+        if ((event.target as HTMLElement).dataset.revealEnd === "true") motionDone();
+      }}
+    >
       {/* The board alone, without the scrubber and keys under it, is what a finished word's wallpaper is taken of (`BoardWallpaper`). */}
       <div data-wallpaper-focus>
       {many ? (
@@ -123,6 +157,7 @@ export function WordReplay({
           style={style}
           onChoose={NOTHING}
           appearance={appearance}
+          reveal={reveal}
         />
       )}
       </div>
