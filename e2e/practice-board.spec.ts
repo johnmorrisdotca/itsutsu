@@ -142,3 +142,56 @@ test.describe("the practice board", () => {
     expect(now, "a pasted game was filed as if it had been played here").toBe(held);
   });
 });
+
+/**
+ * RESIGN ON THE PRACTICE BOARD (`docs/plans/game-controls/README.md`): the same
+ * button and question as every other kind of play. It ends the game on the page
+ * with the other side winning by resignation; the board's mirror on the server
+ * is not told (it is unrated and allows no resigning), so nothing is scored.
+ */
+test.describe("resigning on the practice board", () => {
+  test("two people: the player to move resigns, after a question, and the other wins", async ({ page }) => {
+    await page.goto("/games/gomoku/play");
+    await ready(page, "game-view");
+    // Nothing to give up before the first stone.
+    await expect(page.getByTestId("practice-resign")).toBeDisabled();
+    const empties = page.getByRole("button", { name: /, empty$/ });
+    await empties.first().waitFor({ state: "visible" });
+    await empties.nth(112).click();
+    await expect(page.getByTestId("to-play")).toContainText("to play");
+
+    const resign = page.getByTestId("practice-resign");
+    await expect(resign).toBeEnabled();
+    await resign.click();
+    // The player to move is named, and the answer is two ways: keep playing takes it back.
+    await expect(page.getByTestId("practice-resign-confirm")).toContainText(/Resign this game for .+\? The other player wins\./);
+    await page.getByTestId("practice-resign-no").click();
+    await expect(page.getByTestId("to-play")).toContainText("to play");
+
+    await resign.click();
+    await page.getByTestId("practice-resign-yes").click();
+    await expect(page.getByTestId("to-play")).toContainText("wins by resignation");
+    // Over: Resign is gone, New game stays, and it starts straight away.
+    await expect(page.getByTestId("practice-resign")).toHaveCount(0);
+    await expect(page.getByTestId("new-game")).toBeVisible();
+  });
+
+  test("against the computer: the person resigns, whoever is to move, and the computer wins", async ({ page }) => {
+    await page.goto("/games/gomoku/play");
+    await ready(page, "computer-opponent");
+    await expect(page.getByTestId("computer-seat")).toBeEnabled();
+    await page.getByTestId("computer-seat").selectOption("two");
+    const empties = page.getByRole("button", { name: /, empty$/ });
+    await empties.first().waitFor({ state: "visible" });
+    await empties.nth(112).click();
+    await expect(page.getByTestId("move-history")).toContainText("H8");
+
+    await page.getByTestId("practice-resign").click();
+    // One side only to answer for: the person's. The question is the ordinary one.
+    await expect(page.getByTestId("practice-resign-confirm")).toContainText("Resign this game? The other side wins.");
+    await page.getByTestId("practice-resign-yes").click();
+    // The computer holds seat two, so it is the one who wins.
+    await expect(page.getByTestId("to-play")).toContainText("Player 2 wins by resignation");
+    await expect(page.getByTestId("practice-resign")).toHaveCount(0);
+  });
+});

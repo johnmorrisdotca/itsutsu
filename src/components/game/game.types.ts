@@ -189,6 +189,8 @@ export type GameActions = {
   confirmBranch: () => void;
   cancelBranch: () => void;
   reset: (settings?: Partial<GameSettings>) => void;
+  /** This seat gives the game up: the other colour wins by resignation, on this board only. */
+  resign: (seat: Seat) => void;
   skip: () => void;
   swap: () => void;
   /** Settles a swap opening: the deciding seat takes this colour. */

@@ -3,13 +3,15 @@
 import { SUGGESTION_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import { canChooseColour, canExtendOpening, seatToPlay } from "@/lib/gomoku/engine";
-import { GAME_STATUS, SEAT_DISPLAY, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
-import { GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { GAME_STATUS, SEATS, SEAT_DISPLAY, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { EndGameButton, GameEnding, NewGameButton } from "@/components/play/GameEnding";
+import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { GameBrowserButton } from "./GameBrowser";
 import { GAME_COPY, HINT_POLICIES } from "./game.constants";
 import { openingPrompt } from "./openingCopy";
+import type { Seat } from "@/lib/gomoku/gomoku.types";
 import type { GamePanelProps } from "./game.types";
 
 /** Which colour the next stone will be, in the games where the mover chooses. */
@@ -83,7 +85,7 @@ function HintLine({ session }: Pick<GamePanelProps, "session">) {
   );
 }
 
-export function GameControls({ session, actions }: GamePanelProps) {
+export function GameControls({ session, actions, computerSeat = null }: GamePanelProps & { /** The seat a computer holds at this board, or null when two people are playing. */ computerSeat?: Seat | null }) {
   const { state, settings, hintsLeft, helpRequest } = session;
   /*
    * A board with stones on it and no result is somebody's game. Starting a new
@@ -92,6 +94,13 @@ export function GameControls({ session, actions }: GamePanelProps) {
    */
   const underway = state.moves.length > 0 && state.status === GAME_STATUS.playing;
   const seat = seatToPlay(state);
+  /*
+   * WHO RESIGNS. Against the computer it is the person, whoever is to move (the
+   * computer may be thinking); with two people at the board it is the player to
+   * move, who is named in the question, as at a pass-and-play table.
+   */
+  const resigning: Seat = computerSeat === null ? seat : computerSeat === SEATS.one ? SEATS.two : SEATS.one;
+  const resigningName = session.names[resigning].trim() || SEAT_DISPLAY[resigning].label;
   const limited = settings.hintPolicy === HINT_POLICIES.limited;
   /*
    * Ten of the games read no lines: a race, a flip, a drop. There is no best
@@ -120,8 +129,20 @@ export function GameControls({ session, actions }: GamePanelProps) {
         <GameBrowserButton session={session} actions={actions} />
       </div>
 
-      {/* New game, the same row and words as every kind of play (`GameEnding`); it asks first only while a game is under way. */}
+      {/*
+        Resign and New game, the same row and words as every kind of play (`GameEnding`). Resign is
+        there while the game is on, and waits for a stone: there is nothing to give up before one.
+        New game asks first only while a game is under way.
+      */}
       <GameEnding>
+        {state.status === GAME_STATUS.playing ? (
+          <EndGameButton
+            onEnd={() => actions.resign(resigning)}
+            question={computerSeat === null ? GAME_ENDING_COPY.resignFor(resigningName, 2) : undefined}
+            disabled={!underway || session.reviewing}
+            testId="practice-resign"
+          />
+        ) : null}
         <NewGameButton going={underway} onNewGame={() => actions.reset()} testId="new-game" />
       </GameEnding>
 

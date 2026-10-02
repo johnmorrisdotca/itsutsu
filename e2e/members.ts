@@ -330,6 +330,20 @@ export async function memberContext(
   return context;
 }
 
+/**
+ * A signed-in member with NO GAMES, in a browser context of their own.
+ *
+ * A game's front door offers Continue and New game wherever the signed-in
+ * member has a game going at it (`GamePlayOrContinue`), and the suite's
+ * operator always has some, left by other specs. A spec that presses the
+ * door's Play brings a member of its own, so it meets the door a new player
+ * meets and not one this machine's history decides.
+ */
+export async function newMemberContext(browser: Browser, baseURL: string, tag: string): Promise<BrowserContext> {
+  const stamp = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  return memberContext(browser, baseURL, { email: `${tag}-${stamp}@example.test`, name: `${tag} ${stamp}` });
+}
+
 /** One player's standing at one game, in the pool for games against a program. */
 export type ComputerStanding = {
   key: string;

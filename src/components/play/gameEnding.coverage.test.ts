@@ -127,9 +127,25 @@ describe("every door offers Continue and New game", () => {
   });
 
   it("draws every offer with GameInProgressOffer, never its own Continue", () => {
-    for (const path of [...OFFERS, ...BARE_DOOR, "src/components/puzzles/PuzzlePlayOrResume.tsx"]) {
+    for (const path of [...OFFERS, ...BARE_DOOR, "src/components/puzzles/PuzzlePlayOrResume.tsx", "src/components/games/GamePlayOrContinue.tsx"]) {
       expect(code(read(path)), `${path} must draw GameInProgressOffer`).toContain("<GameInProgressOffer");
     }
+  });
+
+  it("shows a live game's front door Continue where the member has a game going, for one small read", () => {
+    // The door is mounted from the game's page in its own Suspense section, so the shell stays prerendered.
+    const page = code(read("src/app/games/[slug]/page.tsx"));
+    expect(page, "the game's page mounts the door that knows the member's game").toMatch(/<Suspense[\s\S]{0,160}?<GamePlayOrContinue\b/);
+    // Continue leads to the game going, New game to the set-up screen, which leaves that game in My games.
+    const door = code(read("src/components/games/GamePlayOrContinue.tsx"));
+    expect(door).toContain("matchPath(variant, going.id)");
+    expect(door).toContain("newGame={{ keeps: setUpPath(variant) }}");
+    // One read per signed-in view: a single bounded query over the member's seats, nothing per row, and none for a stranger.
+    const read1 = code(read("src/lib/history/goingAt.ts"));
+    expect(read1.match(/prisma\.\w+\.\w+\(/g)).toEqual(["prisma.game.findMany("]);
+    expect(read1).toMatch(/take:\s*ACTIVE_GAME_LIMIT \+ 1/);
+    expect(read1, "the same definition of going as the games-at-once limit").toContain("seatedLive(memberId)");
+    expect(door).toMatch(/memberId === null \? null : await goingAt/);
   });
 
   it("keeps Continue and Resume to one meaning each", () => {
@@ -161,6 +177,18 @@ describe("no table asks its own question about starting again", () => {
     // A table never words its own Give up or Resign as a literal button.
     const own = FILES.filter((path) => !SHARED_FILES.has(path) && /(label|aria-label)="(Resign|Give up|New game)"|>\s*(Resign|Give up)\s*</.test(code(read(path))));
     expect(own).toEqual([]);
+  });
+});
+
+describe("the practice board resigns through the shared button", () => {
+  it("draws Resign with EndGameButton and ends the game through the engine", () => {
+    const controls = code(read("src/components/game/GameControls.tsx"));
+    expect(controls).toContain("<EndGameButton");
+    expect(controls).toContain("actions.resign(");
+    // The engine's own resignation, as a flag falling uses winOnTime: the status line and the win cover read it as any ending.
+    expect(code(read("src/components/game/useGameSession.ts"))).toMatch(/engineResign\(latest,/);
+    // Nothing is sent to the server: an unrated practice game mirrors its stones only.
+    expect(code(read("src/components/game/useGameSession.ts"))).not.toMatch(/api\/games\/\$\{[^}]*\}\/resign/);
   });
 });
 

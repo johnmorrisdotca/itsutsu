@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { isSwapBlocked } from "@/lib/gomoku/analysis";
 import { readAdvantage } from "@/lib/gomoku/advantage";
-import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, seatToPlay, winOnTime } from "@/lib/gomoku/engine";
+import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, resign as engineResign, seatToPlay, winOnTime } from "@/lib/gomoku/engine";
 import { canSkip as engineCanSkip } from "@/lib/gomoku/rules/record";
 import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
 import { playPastedMoves } from "./playPastedMoves";
@@ -135,6 +135,21 @@ export function useGameSession(
           latest.seats[STONES.black] === seat ? STONES.black : STONES.white;
         return winOnTime(latest, loser);
       });
+    },
+    [line],
+  );
+
+  /**
+   * A seat gives the game up on this board: the other colour wins through the
+   * engine's own `resign`, as a flag falling does through `winOnTime`, so the
+   * status line, the win cover and the kept snapshot all read it as an ordinary
+   * ending. Only this browser knows: the match the board mirrors to the server
+   * is never told (it is unrated and allows no resigning), as it is not told
+   * of a flag.
+   */
+  const resign = useCallback(
+    (seat: Seat) => {
+      line.replaceLatest((latest) => engineResign(latest, latest.seats[STONES.black] === seat ? STONES.black : STONES.white));
     },
     [line],
   );
@@ -389,6 +404,7 @@ export function useGameSession(
     confirmBranch: input.confirmBranch,
     cancelBranch: input.cancelBranch,
     reset,
+    resign,
     skip: decisions.skip,
     swap: decisions.swap,
     chooseColour: decisions.chooseColour,

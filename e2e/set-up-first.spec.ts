@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { newMemberContext } from "./members";
 import { openSetUpPage } from "./support";
 
 /**
@@ -18,7 +19,10 @@ import { openSetUpPage } from "./support";
  * word had to move.
  */
 test.describe("play leads to settling a game, not to a board", () => {
-  test("from a game's own page", async ({ page }) => {
+  test("from a game's own page", async ({ browser, baseURL }) => {
+    // A member of their own: one with a game going at Gomoku is offered Continue in Play's place, and the operator always has some.
+    const context = await newMemberContext(browser, baseURL!, "setupfirst");
+    const page = await context.newPage();
     await page.goto("/games/gomoku");
 
     // The loud control says Play and leads where the word means.
@@ -30,6 +34,7 @@ test.describe("play leads to settling a game, not to a board", () => {
     // And what it leads to is the whole decision, not a board.
     await expect(page.getByTestId("set-up-game")).toBeVisible();
     await expect(page.getByTestId("set-up-start")).toBeVisible();
+    await context.close();
   });
 
   test("the board is still there, and says what it is", async ({ page }) => {

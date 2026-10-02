@@ -38,6 +38,8 @@ export const GAME_ENDING_COPY = {
   doorEnds: "New game ends the one in progress here.",
   /** Under New game on a front door, where the game in progress is kept. */
   doorKeeps: "New game leaves the one in progress where it is.",
+  /** Under a live game's Continue, naming the member's other games of it, which wait in My games. */
+  othersGoing: (others: number, more: boolean, game: string) => `${others}${more ? "+" : ""} other ${game} ${others === 1 && !more ? "game is" : "games are"} going in My games`,
   doorAsk: "Start a new game? The one in progress ends here and is not kept.",
   doorKeep: "Keep it",
 } as const;

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { memberContext } from "./members";
+import { memberContext, newMemberContext } from "./members";
 import { playRatedGames, ready } from "./support";
 import { gamesMade } from "./tidy";
 
@@ -123,8 +123,18 @@ test.describe("every way into a game is two presses", () => {
     await pressesToABoard(page, "/games", ["nav-new-game", "set-up-start"]);
   });
 
-  test("from a game's own page", async () => {
-    await pressesToABoard(page, "/games/reversi", ["game-set-up", "set-up-start"]);
+  test("from a game's own page", async ({ browser, baseURL }) => {
+    /*
+     * A member with no Reversi game going: an earlier case here may have begun one, and a door
+     * whose member has a game going offers Continue in Play's place (`GamePlayOrContinue`),
+     * which is a different errand. The two-press ceiling is for starting a game.
+     */
+    const fresh = await newMemberContext(browser, baseURL!, "twoclicks");
+    // The same rules nobody else posts at as the member above, so Begin starts a game rather than sitting at a stranger's seat.
+    const set = await fresh.request.patch("/api/me", { data: { gameDefaults: { size: 19, moveTimeMs: 7 * 24 * 60 * 60_000, rated: false } } });
+    expect(set.ok(), "could not give this member its own game defaults").toBe(true);
+    await pressesToABoard(await fresh.newPage(), "/games/reversi", ["game-set-up", "set-up-start"]);
+    await fresh.close();
   });
 
   test("from a row of the members list", async () => {

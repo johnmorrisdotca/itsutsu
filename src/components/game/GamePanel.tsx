@@ -119,7 +119,7 @@ export function GameSidebar({
         </div>
       ) : null}
       <div className={PANEL_CLASS}>
-        <GameControls {...props} />
+        <GameControls {...props} computerSeat={computer?.seat ?? null} />
       </div>
       <div className={PANEL_CLASS} data-chrome>
         <StartSharedGame settings={props.session.state.settings} postSeat={postSeat} defaults={defaults} />

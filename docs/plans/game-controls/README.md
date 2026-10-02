@@ -1,6 +1,6 @@
 # Game controls: one set of ending and starting controls for every kind of play
 
-**Status: first commit landed as 0.495.0 (2026-10-02); Resign at the hot-seat tables is the second.** Board row:
+**Status: first commit landed as 0.495.0 (2026-10-02); Resign at the hot-seat tables is the second; a live game's front door and the practice board's Resign are the third.** Board row:
 `every-game-in-progress-offers-the-same-controls-continue-new-game-and-resign-in`.
 
 John, 2026-10-02, looking at Tenka's front door (a lone "Continue →") and its
@@ -109,17 +109,72 @@ Tenka (`@johnmorrisdotca/tenka`, `TENKA_MOVES`), Mexican Train
 The site's own Dots, Mancala, Yacht, Pachisi, Superghost, Block Five and the
 race games would take the same change in `src/lib/party`.
 
+## A live game's front door, and Resign on the practice board (third commit)
+
+**The front door** (`/games/<slug>` of a board game) draws Play, or where the
+signed-in member has a game going at it, `GameInProgressOffer`:
+
+- **Continue →** (`game-resume`) leads to the member's game of this game moved in
+  most recently (`matchPath`); **New game** beneath it is a plain link to the
+  set-up screen, and the line under it says it leaves the one in progress where
+  it is (`keeps`, as a puzzle's door has it). It asks nothing: a game between
+  members is kept on the server and waits in My games.
+- **Several going**: a quiet line under the pair names the others ("2 other
+  Gomoku games are going in My games") and leads to My games (`/play`). It is a
+  link to the whole list, not to a count: My games cannot be narrowed to one
+  game's going games yet, so the number is in the sentence and the link is the
+  way to the list.
+- **The read** is `goingAt` (`src/lib/history/goingAt.ts`): ONE bounded query per
+  signed-in view, over the member's seats, using `seatedLive` (what the
+  games-at-once limit counts, so "going" means one thing on this site) narrowed
+  to the game, newest move first, at most twenty-one rows (the limit and one
+  more, so the others are counted from the rows that came back and nothing is
+  replayed or read per row). A game whose engine verdict is already written as
+  over is left out; one nobody has judged (null) stays. A stranger and a member
+  with none cost nothing more than the session read and see Play, as before.
+  It is mounted in its own Suspense section with Play as the fallback
+  (`GamePlayOrContinue`), because the page's shell is prerendered.
+- **Hot-seat games count.** A practice board's mirrored game is a game the
+  member is seated in, listed in My games under Going and counted by the limit,
+  so it is a game going here too. The Practice board link keeps resuming the
+  browser's copy.
+- **The suite.** The e2e operator always has games going, so a spec that presses
+  the door's Play brings a member of its own (`newMemberContext` in
+  `e2e/members.ts`) or looks as a stranger (`clearCookies`); `e2e/game-continue.spec.ts`
+  seeds a member's games straight to the table and holds the door both ways.
+
+**Resign on the practice board.** `GameControls` draws `EndGameButton` beside New
+game (`practice-resign`), through the session's new `resign(seat)` action, which
+ends the game with the engine's own `resign` the way a flag falling ends it with
+`winOnTime`: the other colour wins, "Player 2 wins by resignation" is said where
+the turn line was and the win cover reads it as any ending.
+
+- **Who resigns.** Against the computer it is the person, whoever is to move; the
+  question is the ordinary "Resign this game? The other side wins." With two
+  people at the board it is the player to move, named, as at a pass-and-play
+  table: "Resign this game for Player 2? The other player wins."
+- **Before a stone**, Resign is there and disabled, so the row does not change
+  height when play begins; it is gone once the game is over, and disabled while
+  an earlier position is being looked at.
+- **Nothing is recorded.** The practice board is local and its mirror on the
+  server is an unrated hot-seat match that allows no resigning, and a result
+  recorded for a practice game would need a server action, which is not built.
+  The resignation ends the game on the page and in the browser's kept copy; the
+  server's copy is told no more than it is of a flag falling, and stays in My
+  games as it stood. Ratings, XP, the record and the games-at-once count are
+  untouched.
+
 ## What remains
 
-1. **A live game's front door** (`/games/<variant>`) shows Play only. The
-   standard is a Continue to the member's game in progress of that variant and
-   a New game under it that leaves it in My games. It needs one indexed read
-   per signed-in view (as a puzzle's door has) and the e2e suite signs in as an
-   operator who always has games going, so every spec that clicks `game-set-up`
-   on a variant's page needs a member of its own first. Left for its own change.
-2. **Resign against the computer on the practice board**: the engine can
-   record a resignation (`WIN_REASONS.resign`) but the session has no action
-   for it.
+1. **A resigned practice game stays going on the server.** Its mirror is told
+   of stones only, so a game ended by Resign (or by a flag) is still active
+   there, listed in My games, and a Continue from the front door opens the
+   server's copy. Closing it needs a route that files a hot-seat match as
+   finished by a resignation without scoring it; that is a server action and
+   John's to decide.
+2. **My games cannot be narrowed to one game's going games**, so the front door's
+   "N other games" line leads to the whole list. A `?game=` narrowing on Going
+   (as Completed has) would let the number lead to exactly the set it counted.
 3. **Give up for the word and number puzzles**: they have New game, which keeps
    the run in My games; a Give up that shows the answer needs a record for an
    unsolved grid, which is scoring and is John's to decide.

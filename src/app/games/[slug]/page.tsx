@@ -9,6 +9,7 @@ import { GameFamily } from "@/components/games/GameFamily";
 import { GameLadder } from "@/components/games/GameLadder";
 import { IpBoard } from "@/components/points/IpBoard";
 import { scopeOfGame } from "@/lib/points/ipBoards";
+import { GamePlayOrContinue } from "@/components/games/GamePlayOrContinue";
 import { PlayButton } from "@/components/games/PlayButton";
 import { PlayedHere } from "@/components/games/PlayedHere";
 import { PageTitle } from "@/components/layout/Headings";
@@ -157,7 +158,10 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                 here true rather than refuted: two ways onto a board IS fine,
                 once the two say which they are.
               */}
-              <PlayButton href={setUpPath(variant)} />
+              {/* Play, or Continue and New game where the member has a game of this going (`GamePlayOrContinue`). */}
+              <Suspense fallback={<PlayButton href={setUpPath(variant)} />}>
+                <GamePlayOrContinue variant={variant} />
+              </Suspense>
               <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="game-play">
                 Practice board 試し打ち
               </Link>

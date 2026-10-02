@@ -27,6 +27,8 @@ const GAME = "/games/gomoku";
 
 test.describe("a game's page answers the whole errand", () => {
   test("what it is, its family, and the ways on", async ({ page }) => {
+    // A stranger's view, which is open: a member with a game going is offered Continue in Play's place (`GamePlayOrContinue`, held by game-continue.spec), and a game another spec left would turn this red.
+    await page.context().clearCookies();
     await page.goto(GAME);
 
     // The page is about the game, and says so with a picture of one.
