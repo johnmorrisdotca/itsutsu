@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.520.0 — 2026-10-05 23:25 UTC
+- Suido has huge boards, 20x20, 28x28 and a long 20x50, with 64 levels each, moved about by finger.
+
 ## 0.519.0 — 2026-10-05 22:42 UTC
 - Meikyuu lets you lay a stone beside your line to shut a dead end, a few or as many as you like.
 
