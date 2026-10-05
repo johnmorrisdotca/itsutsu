@@ -24,6 +24,7 @@ import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesEverAllowed } from "./gomoji/layout";
 import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
+import { jiraiFits } from "./jirai/board";
 import { pencilEngine } from "./pencil/engines";
 import { isPencilKind } from "./pencil/pencil.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -177,6 +178,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "koushi") return decodePlay(code) !== null;
   // A pencil puzzle keeps what is written on its board, a character a mark place (`pencil/`); read against its givens when opened.
   if (isPencilKind(kind)) return pencilEngine(kind).fits(size, code);
+  // Jirai keeps the board as it stands, a character a square: covered, flagged, or the number an uncovered one shows (`jirai/board.ts`).
+  if (kind === "jirai") return jiraiFits(size, code);
   return decodeNumberProgress(code, size) !== null;
 }
 

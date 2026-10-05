@@ -1,4 +1,5 @@
 import { generateBridges } from "./bridges/generate";
+import { generateJirai } from "./jirai/generate";
 import { generatePencil } from "./pencil/generate";
 import { generatePictureLogic } from "./pictureLogic/generate";
 import { generateSolitaire } from "./solitaire/generate";
@@ -107,6 +108,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "kakuro":
       // The pencil puzzles, made by Kazu: a board with exactly one answer, from the seed alone (`pencil/`).
       return generatePencil(kind, size, level, seed);
+    case "jirai":
+      // A board Jirai deals and proves needs no guess, opened at its middle; the way to play is the seed's (`jirai/variants.ts`).
+      return generateJirai(size, level, seed);
   }
 }
 

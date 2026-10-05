@@ -8,6 +8,7 @@ import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { checkSuido } from "./suido/check";
 import { checkMeikyuu } from "./meikyuu/check";
 import { checkTobiishi } from "./tobiishi/check";
+import { jiraiCheck } from "./jirai/board";
 import { pencilEngine } from "./pencil/engines";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
@@ -106,6 +107,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "kakuro":
       // The pencil puzzles, read by Kazu in one pass over the answer: its rules restated by the package, never the solver that made the board.
       return pencilEngine(kind).check(size, givens, answer);
+    case "jirai":
+      // The uncovered clues of a finished board add up to its covered squares, which are exactly its mines: the board cannot be dealt again here (that is a search).
+      return jiraiCheck(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

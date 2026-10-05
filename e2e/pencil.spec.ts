@@ -208,7 +208,7 @@ test.describe("what is each puzzle's own", () => {
 });
 
 test.describe("the Pencil puzzles family", () => {
-  test("has a page, a tile on the set-up screen, a place on the list of every game, and all six on its shelf", async ({ page }) => {
+  test("has a page, a tile on the set-up screen, a place on the list of every game, and all seven on its shelf", async ({ page }) => {
     await page.goto(`/games/${PUZZLE_SLUGS.shikaku}/family`);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Pencil puzzles");
     await expect(page.locator('[data-testid="family-mark"][data-family="Pencil puzzles"]').first()).toBeVisible();
@@ -219,7 +219,7 @@ test.describe("the Pencil puzzles family", () => {
     const family = page.getByTestId("set-up-family").filter({ hasText: "Pencil puzzles" });
     await family.click();
     await expect(family).toHaveAttribute("data-open", "true");
-    await expect(page.getByTestId("set-up-puzzle")).toHaveCount(CASES.length);
+    await expect(page.getByTestId("set-up-puzzle")).toHaveCount(CASES.length + 1);
     await expect(page.getByTestId("set-up-puzzle").first()).toHaveAttribute("data-kind", "shikaku");
     await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", "shikaku");
 

@@ -6,7 +6,8 @@ import type { PuzzleKind } from "./puzzles.types";
 import { solvedAnswerOf } from "./solvedAnswer";
 
 // Not a Mahjong deal, which can be cleared in many orders: a solve of one keeps the order it was cleared in, and its page draws the deal.
-const GRIDS = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].helps !== false && PUZZLE_SPECS[kind].layouts !== true) as PuzzleKind[];
+// Nor a Jirai: its numbers under the covered squares are not in its givens, so there is nothing to search from (see below).
+const GRIDS = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].helps !== false && PUZZLE_SPECS[kind].layouts !== true && kind !== "jirai") as PuzzleKind[];
 
 /*
  * An old solve kept no answer, and its page drew the grid as dealt. Every grid
@@ -31,6 +32,11 @@ describe("the answer worked out from a puzzle's givens", () => {
   it("names no answer for a word, whose answer is its guesses", () => {
     const puzzle = generatePuzzle("gomoji", 5, "medium", 11);
     expect(solvedAnswerOf("gomoji", 5, "medium", puzzle.givens)).toBeNull();
+  });
+
+  it("names no answer for a Jirai, whose numbers lie under squares nobody has uncovered", () => {
+    const puzzle = generatePuzzle("jirai", 9, "medium", 11);
+    expect(solvedAnswerOf("jirai", 9, "medium", puzzle.givens)).toBeNull();
   });
 
   it("names none for givens that do not read, rather than a guess", () => {

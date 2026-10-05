@@ -4,6 +4,7 @@ import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeCells as decodePictureCells, decodePicture } from "./pictureLogic/code";
 import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { readNumberGivens, type NumberGivens } from "./numberGivens";
+import { jiraiFits, jiraiRecipeOf } from "./jirai/board";
 import { pencilEngine } from "./pencil/engines";
 import { isPencilKind } from "./pencil/pencil.constants";
 import type { PencilKind } from "./pencil/pencil.types";
@@ -24,7 +25,8 @@ export type Frame =
   | { kind: "blackAndWhite"; printed: number[]; cells: number[] }
   | { kind: "bridges"; givens: string; cells: string[] }
   | { kind: "pictureLogic"; givens: string; cells: CellState[] }
-  | { kind: "pencil"; pencil: PencilKind; givens: string; cells: string[] };
+  | { kind: "pencil"; pencil: PencilKind; givens: string; cells: string[] }
+  | { kind: "jirai"; givens: string; cells: string[] };
 
 export type FinishedFrames = {
   /** The grid as dealt, and as it ended where the answer reads: what a page draws with no steps. */
@@ -98,6 +100,17 @@ export function finishedFrames(kind: PuzzleKind, size: number, givens: string, a
     const finished = solved === null ? null : frame(solved);
     const kept = readSteps(steps, engine.codeLength(size), written);
     return assemble(frame(engine.blank(size, givens)), finished, kept?.map(frame) ?? null, () => finished);
+  }
+
+  if (kind === "jirai") {
+    // What was on the board, a character a square (`jirai/board.ts`): the opening as dealt, and each grid on the way.
+    const recipe = jiraiRecipeOf(size, givens);
+    const written = (code: string): string | null => (recipe !== null && code.length === recipe.cells.length && jiraiFits(size, code) ? code : null);
+    const frame = (code: string): Frame => ({ kind: "jirai", givens, cells: [...code] });
+    const solved = answer === null ? null : written(answer);
+    const finished = solved === null ? null : frame(solved);
+    const kept = readSteps(steps, size * size, written);
+    return assemble(frame(recipe?.cells ?? ".".repeat(cells)), finished, kept?.map(frame) ?? null, () => finished);
   }
 
   const asked = readNumberGivens(kind, givens, size);

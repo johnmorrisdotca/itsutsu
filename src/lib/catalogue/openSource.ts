@@ -11,7 +11,7 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
@@ -32,6 +32,7 @@ export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: st
   sugoroku: { name: "Sugoroku", repo: "https://github.com/johnmorrisdotca/sugoroku" },
   kazu: { name: "Kazu", repo: "https://github.com/johnmorrisdotca/kazu" },
   gunjin: { name: "Gunjin", repo: "https://github.com/johnmorrisdotca/gunjin" },
+  jirai: { name: "Jirai", repo: "https://github.com/johnmorrisdotca/jirai" },
 };
 
 const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
@@ -57,6 +58,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   hitori: "kazu",
   fillomino: "kazu",
   kakuro: "kazu",
+  jirai: "jirai",
   meikyuu: "meikyuu",
   tobiishi: "tobiishi",
   solitaire: "toranpu",

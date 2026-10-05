@@ -12,6 +12,7 @@ import { isDodgeGivens } from "./gomoji/dodgeSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isBackwardsGivens } from "./gomoji/backwardsSeed";
 import { sakasaScore } from "./gomoji/backwardsScore";
+import { jiraiWork } from "./jirai/board";
 import { pencilEngine } from "./pencil/engines";
 import { isPencilKind } from "./pencil/pencil.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
@@ -63,6 +64,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (kind === "tobiishi") return size;
   // A pencil puzzle's work is what its answer decides (`pencil/`): every cell, or the white or unprinted ones, by kind.
   if (isPencilKind(kind)) return pencilEngine(kind).work(size, givens);
+  // A Jirai's work is the safe squares its opening leaves covered.
+  if (kind === "jirai") return jiraiWork(givens);
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

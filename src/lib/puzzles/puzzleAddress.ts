@@ -19,6 +19,7 @@ import { isTobiishiLevelAt } from "./tobiishi/levelCounts";
 import { tobiishiBand } from "./tobiishi/sizes";
 import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed } from "./suido/seed";
 import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
+import { CLASSIC_JIRAI, isJiraiVariant, jiraiSideFor, jiraiVariantOfSeed, type JiraiGrid, type JiraiShape, type JiraiVariant } from "./jirai/variants";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 import { tablePlayersAsked } from "@johnmorrisdotca/jarajara/table";
@@ -118,9 +119,16 @@ export type PuzzleAsked = {
    * One word, never with a Nige.
    */
   backwards?: boolean;
+  /**
+   * Jirai's way to play: the neighbours it counts and the shape of its board
+   * (`jirai/variants.ts`). Asked for by the address (`grid=hex&shape=heart`)
+   * until a seed is drawn, and from then said by the seed itself
+   * (`jiraiVariantOfSeed`), as Suido's pipes are.
+   */
+  jirai?: JiraiVariant;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", number: "number" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", number: "number", grid: "grid", shape: "shape" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -190,6 +198,13 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     const pipes: SuidoKind = seed === null ? (one(PUZZLE_PARAMS.pipes) === "network" ? "network" : "drains") : suidoKindOfSeed(seed);
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, pipes };
   }
+  if (kind === "jirai") {
+    const gridAsked = one(PUZZLE_PARAMS.grid) ?? "";
+    const shapeAsked = one(PUZZLE_PARAMS.shape) ?? "rectangle";
+    const variant: JiraiVariant = seed !== null ? jiraiVariantOfSeed(seed) : isJiraiVariant(gridAsked === "" ? "square" : gridAsked, shapeAsked) ? { grid: (gridAsked === "" ? "square" : gridAsked) as JiraiGrid, shape: shapeAsked as JiraiShape } : CLASSIC_JIRAI;
+    // A shape needs nine squares each way: a smaller side asks for nine.
+    return { size: jiraiSideFor(variant, size), level, seed, checks, hints, strict: false, headStart: false, words: 1, clock, jirai: variant };
+  }
   const anyDeal = kind === "solitaire" && (seed === null ? one(PUZZLE_PARAMS.deal) === "any" : isAnyDeal(seed));
   return { size, level, seed, checks, hints, strict, headStart, words, clock, ...(dodge ? { dodge } : {}), ...(backwards ? { backwards } : {}), ...(anyDeal ? { anyDeal } : {}), ...(kind === "kumimoji" ? { gameLength, language, doubleSet: language === "english" && doubleSet, diagonals, ...(players > 1 ? { players } : {}) } : {}) };
 }
@@ -220,6 +235,11 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   // Only until a seed is drawn: from then the seed says it.
   if (asked.bonus === "same" && asked.seed === null) params.set(PUZZLE_PARAMS.bonus, asked.bonus);
   if (asked.pipes === "network" && asked.seed === null) params.set(PUZZLE_PARAMS.pipes, asked.pipes);
+  // Only until a seed is drawn: from then the seed says it. The classic board is left out.
+  if (asked.jirai !== undefined && asked.seed === null) {
+    if (asked.jirai.grid !== CLASSIC_JIRAI.grid) params.set(PUZZLE_PARAMS.grid, asked.jirai.grid);
+    if (asked.jirai.shape !== CLASSIC_JIRAI.shape) params.set(PUZZLE_PARAMS.shape, asked.jirai.shape);
+  }
   return `?${params.toString()}`;
 }
 
@@ -241,6 +261,7 @@ export function keptRunAsked(
     clock: clockFor(kind, run.clock),
     ...(kind === "kumimoji" ? { gameLength: run.gameLength === "medium" || run.gameLength === "full" ? run.gameLength : "short", language: run.language === "japanese" ? "japanese" : "english", doubleSet: run.language !== "japanese" && (run.doubleSet ?? false), diagonals: run.diagonals === true } : {}),
     ...(kind === "suido" ? { pipes: suidoKindOfSeed(run.seed) } : {}),
+    ...(kind === "jirai" ? { jirai: jiraiVariantOfSeed(run.seed) } : {}),
     ...(offersDodge(kind) && isDodgeSeed(run.seed) ? { dodge: true } : {}),
     ...(offersDodge(kind) && isBackwardsSeed(run.seed) ? { backwards: true } : {}),
   };

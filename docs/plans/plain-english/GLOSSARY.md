@@ -347,6 +347,9 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | Remove | under a Shikaku board | the usual word; a press then takes a rectangle off. Not "Erase" or "Clear" (a Gomoji's Clear is its row) |
 | rectangle · bulb · line · square · cell | what Check counts ("2 bulbs are wrong, 1 still to place") | each puzzle's own noun, so a Shikaku never counts "cells" and an Akari never counts "marks" |
 | draw · place · shade · fill | "still to ..." | the verb of the thing: a rectangle is drawn, a bulb placed, a square shaded, a cell filled |
+| Flag | under a Jirai board | the usual word; pressed, a tap flags. Not "Mark" (the package's word), which a Check also uses |
+| mines left · mistake | the line under a Jirai board | "13 mines left · 1 mistake": the mines not yet flagged, and the mines uncovered by slip |
+| Eight neighbours · Four neighbours · Hexagons · Wraparound | Jirai's set-up | what a number counts, in the words that say it; not "Square", "Orthogonal" (the package's) |
 | Tap one corner of a rectangle, then the opposite corner. | the line under a Shikaku board | what to do first; it says what to do next once a corner is down |
 
 ## Prose worth a second look (not changed)

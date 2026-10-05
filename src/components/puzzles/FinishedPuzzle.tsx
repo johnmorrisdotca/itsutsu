@@ -32,6 +32,8 @@ import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { BRIDGES_CELL_WORDS, PICTURE_CELL_WORDS } from "./puzzles.constants";
 import { PuzzleGrid } from "./PuzzleGrid";
+import { JiraiBoard } from "./JiraiBoard";
+import { jiraiStepWord } from "./jirai.constants";
 import { PencilBoard } from "./pencil/PencilBoard";
 import { edgeWords, pencilStepWord } from "./pencil/pencil.constants";
 import { isPencilKind } from "@/lib/puzzles/pencil/pencil.constants";
@@ -357,6 +359,7 @@ function sayCell(kind: PuzzleKind, value: number | string): string {
   if (kind === "bridges") return BRIDGES_CELL_WORDS[value as string] ?? `island ${value}`;
   if (kind === "pictureLogic") return PICTURE_CELL_WORDS[value === 1 ? "#" : value === 2 ? "x" : "."]!;
   if (isPencilKind(kind)) return pencilStepWord(kind, value);
+  if (kind === "jirai") return jiraiStepWord(String(value));
   return value === 0 ? "cleared" : symbolOf(value as number);
 }
 
@@ -376,6 +379,7 @@ function GridOf({ kind, size, frame }: { kind: PuzzleKind; size: number; frame: 
     const solved = checkPictureLogic(size, frame.givens, answerOfCells(frame.cells)).ok;
     return <PictureLogicGrid clues={clues} cells={frame.cells} done finished={solved} readOnly />;
   }
+  if (frame.kind === "jirai") return <JiraiBoard size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label="A finished Jirai board, as it stood at this step" />;
   if (frame.kind === "pencil") return <PencilBoard kind={frame.pencil} size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label="A finished puzzle, as it stood at this step" />;
   const asked = frame.asked;
   return (

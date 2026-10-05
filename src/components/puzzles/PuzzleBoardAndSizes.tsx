@@ -9,6 +9,7 @@ import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } fro
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { listedGameOf, settingsOf } from "@/lib/catalogue/gameSettings";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
+import type { JiraiVariant } from "@/lib/puzzles/jirai/variants";
 import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
@@ -40,6 +41,7 @@ export function PuzzleBoardAndSizes({
   onFelt,
   underFamilies = false,
   words = 1,
+  jirai,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -51,11 +53,13 @@ export function PuzzleBoardAndSizes({
   words?: WordCount;
   /** Under the row of families, where from a laptop's width the pair joins that row (`PICK_BOARD_ROW_UNDER_FAMILIES`). */
   underFamilies?: boolean;
+  /** Jirai's way to play, as chosen: its preview is a board of that kind. */
+  jirai?: JiraiVariant;
 }) {
   return (
     <div className={`${PICK_BOARD_ROW} py-2 ${underFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`}>
       <div className={PICK_BOARD_PREVIEW}>
-        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} wordCount={words} />
+        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} wordCount={words} jirai={jirai} />
       </div>
       {/* A puzzle's own page turns its shelves; under the families the row keeps one height, so it shows the first shelf only. */}
       <PuzzleSizes kind={kind} size={size} onSize={onSize} beside shelves={!underFamilies} />

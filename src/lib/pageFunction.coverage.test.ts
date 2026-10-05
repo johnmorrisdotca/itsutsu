@@ -145,6 +145,14 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/kazu/fillomino/draw", "A finished Fillomino puzzle's page, drawn as it ended."],
   ["@johnmorrisdotca/kazu/kakuro", "The server's check of a finished Kakuro board, its solver and its points."],
   ["@johnmorrisdotca/kazu/kakuro/draw", "A finished Kakuro puzzle's page, drawn as it ended."],
+  /*
+   * Jirai (0.2.1, 2026-10-05): the main entry is what the server's check of a finished board, its points and an address's
+   * reading of the board read (the neighbours of a square, the shape, the settings' rules); `/draw` is a finished
+   * Jirai's page, drawn as it ended. Its players (`/play`, `/react`, `/element`) are not used: the site draws and
+   * presses its own board.
+   */
+  ["@johnmorrisdotca/jirai", "The server's check of a finished Jirai board and its points, and a finished puzzle's page."],
+  ["@johnmorrisdotca/jirai/draw", "A finished Jirai puzzle's page, drawn as it ended."],
   ["@johnmorrisdotca/jarajara", "Mahjong's tiles and layouts: a layout's size and tile count in the puzzle's specs and its rules page, and a finished game's board drawn on its page (MahjongBoard.tsx)."],
   ["@johnmorrisdotca/jarajara/awase", "Mahjong's deal and check: a kept or finished game dealt again from its seed (generate.ts), and a solve checked on the server before it pays (puzzleCheck.ts)."],
   ["@johnmorrisdotca/jarajara/table", "Mahjong at a table: how many players a kept table's address asks for (puzzleAddress.ts)."],

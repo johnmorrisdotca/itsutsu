@@ -105,6 +105,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "hitori", size: 5, level: "medium", seed: 20261005, fill: 3 },
   { kind: "fillomino", size: 5, level: "easy", seed: 20261005, fill: 5 },
   { kind: "kakuro", size: 10, level: "medium", seed: 20261005, fill: 10 },
+  // A 9×9 Jirai a good way in: the opening, six more safe squares uncovered, and two mines flagged, as a reader plays it.
+  { kind: "jirai", size: 9, level: "medium", seed: 20261005, fill: 6 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
   { kind: "freecell", size: 4, level: "medium", seed: 20260930, fill: 20 },
   // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
@@ -138,6 +140,25 @@ test.describe("puzzle screenshots", () => {
         // The first marks of the answer, each made by pressing the board; the cursor put away, so the picture is the board as it stands.
         for (let made = 0; made < scene.fill; made += 1) if ((await makeNextMark(page, scene.kind, scene.size, puzzle.solution)) === null) break;
         await page.keyboard.press("Escape");
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+        await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
+      if (scene.kind === "jirai") {
+        // Safe squares uncovered one tap each, then two mines flagged with Flag on.
+        const code = async () => (await page.getByTestId("puzzle-play").getAttribute("data-code")) ?? "";
+        for (let made = 0; made < scene.fill; made += 1) {
+          const before = await code();
+          const safe = [...before].findIndex((character, cell) => character === "." && puzzle.solution[cell] !== "f");
+          if (safe === -1) break;
+          await page.locator(`[data-testid="jirai-cell"][data-cell="${safe}"]`).click();
+          await expect.poll(code).not.toBe(before);
+        }
+        await page.getByTestId("jirai-flag").click();
+        const mines = [...puzzle.solution].flatMap((character, cell) => (character === "f" ? [cell] : [])).slice(0, 2);
+        for (const mine of mines) await page.locator(`[data-testid="jirai-cell"][data-cell="${mine}"]`).click();
+        // The pointer put away, so no square is lit by it.
+        await page.mouse.move(0, 0);
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
         return;

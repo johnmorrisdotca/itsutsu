@@ -58,8 +58,16 @@ export const NETWORK_SEED_BLOCK = { from: 1_700_000_000, size: 100_000_000 } as 
  */
 export const SUIDO_LEVEL_SEED_BLOCK = { from: 1_800_000_000, size: 1_000 } as const satisfies SeedBlock;
 
+/**
+ * Jirai's OTHER KINDS OF BOARD (`jirai/variants.ts`), from nineteen hundred million, just past the Suido levels': twelve
+ * blocks of a million seeds, one for each way to play but the classic one (four neighbours, hexagons, edges that join,
+ * and a heart, star or hexagon cut from the grid). A kept run, an address and a race carry nothing but the seed, so the
+ * seed is where the kind lives; `freshSeed` never lands in a block, so an ordinary seed is the classic board.
+ */
+export const JIRAI_SEED_BLOCK = { from: 1_900_000_000, size: 12_000_000 } as const satisfies SeedBlock;
+
 /** Every block `freshSeed` keeps out of, lowest first. */
-const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK];
+const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, JIRAI_SEED_BLOCK];
 
 /** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {

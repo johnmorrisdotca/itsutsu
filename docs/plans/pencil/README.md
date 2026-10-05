@@ -40,10 +40,28 @@ log and a replay need the board as a string. The site draws Kazu's SVG in its bo
 | Points | Five a cell the answer decides (`work`), weight set so a medium solve at the default size is about 100 IP | `points.constants.ts` |
 | Hints, Check and Show | As a Number Place's: against the answer this tab holds; Show is paid for from the Check allowance; Hint is chosen on the set-up | `PencilSolve.tsx` |
 
+## Jirai 地雷 (board row `jirai-minesweeper-on-the-site-in-pencil-puzzles`)
+
+Minesweeper that never needs a guess, from `@johnmorrisdotca/jirai` 0.2.1 (pinned exactly), the family's
+seventh card. It is not a Kazu board and has its own module (`src/lib/puzzles/jirai/`), board
+(`JiraiBoard.tsx`) and solve (`JiraiSolve.tsx`), on the same footing otherwise: a puzzle of one answer, a code of
+one character a square, kept runs, steps, Check, Show, Hint, the clock.
+
+| Decision | What | Where |
+| --- | --- | --- |
+| Variants and shapes are settings | One card. The neighbours a number counts (eight, four, hexagons, wraparound) and the shape (rectangle, heart, star, hexagon: a flat board of at least 9×9) are chosen on the set-up and said by the seed, in twelve blocks of a million seeds from 1,900,000,000 (`JIRAI_SEED_BLOCK`); every ordinary seed is the classic board. Until a seed is drawn the address carries `grid=` and `shape=` | `jirai/variants.ts`, `puzzleAddress.ts`, `JiraiSetUpOptions.tsx` |
+| The board is dealt upfront and opened at its middle | The package deals a board after the first uncover; a puzzle has to exist before it is played, so the site deals it from the seed, opens the active square nearest the middle with a clear opening, and shows that position. `givens` are the recipe and the opening (`j:s:r:9x9:13:40:7:<cells>`); `solution` is the board uncovered | `jirai/board.ts` (`jiraiMake`) |
+| Sizes and levels | 7, 9, 12, 16 (7 is rectangles only); a level is the share of squares that are mines: 12%, 16%, 20% | `jirai.constants.ts`, `JIRAI_DENSITY` |
+| The server's check is O(squares) and cannot deal the board again | Dealing a no-guess board is a search. The check asks that the answer is a board that holds together: shape and opening kept, exactly as many covered squares as mines, every uncovered number the count of covered squares round it. A forged board that does is accepted, as a forged grid is for every puzzle here (the browser holds the answer) | `jiraiCheck` |
+| A mine uncovered does not end it | It is flagged where it lies and counted as a mistake, charged as a Hint is. A slip of a thumb is not a bad guess, and a puzzle's ending unsolved would need the give-up path, the lost board's page and a record of it | `jiraiPress`, `useHints.charge` |
+| Touch | A tap uncovers (or chords on a number), Flag turns taps into flags, a finger held 450 ms flags, a right click flags; the keyboard has Enter, Space or F, and the arrows. Nothing needs hover | `JiraiBoard.tsx` |
+| Hint | Jirai's own, which reads no flags and no answer (`hintFor`); a wrong flag over the square is lifted first | `jiraiFix` |
+| Points | Five a safe square the opening leaves covered, weight 0.68 (a medium 9×9 has about 29: about 100 IP) | `points.constants.ts` |
+
 ## Not done, and why
 
 Heyawake, Nurikabe, Masyu, Yajilin, Juosan and Ripple Effect are in Kazu 1.2.0 and not
-here: the family shows at most eight games and keeps room for Jirai. Of the six on the
+here: the family shows at most eight games, and with Jirai it holds seven. Of the six on the
 site, Akari, Slitherlink and Hitori come from small families of layouts rather than a
 general generator (Akari 7×7 always has ten white squares; Slitherlink clues every cell,
 mostly 0; Hitori shades three or four squares), which are honest puzzles with one answer

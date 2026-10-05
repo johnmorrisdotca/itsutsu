@@ -47,6 +47,10 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/pencil/PencilBoard.tsx",
   "src/components/puzzles/pencil/pencilDraw.ts",
   "src/lib/puzzles/pencil/geometry.ts",
+  // Jirai's squares, numbers and shapes are the package's (`@johnmorrisdotca/jirai`), and the board is drawn from what the code has written on it.
+  "node_modules/@johnmorrisdotca/jirai/package.json",
+  "src/components/puzzles/JiraiBoard.tsx",
+  "src/lib/puzzles/jirai/board.ts",
   "src/lib/puzzles/jigsaw/shake.ts",
   "src/lib/puzzles/hiddenStones/generate.ts",
   "src/lib/puzzles/hiddenStones/regions.ts",

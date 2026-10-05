@@ -265,8 +265,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Pencil puzzles",
     kanji: "鉛筆",
-    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, light every square, draw one loop, shade the repeats, number the regions and add up the runs.",
-    games: ["shikaku", "akari", "slitherlink", "hitori", "fillomino", "kakuro"],
+    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, light every square, draw one loop, shade the repeats, number the regions, add up the runs and clear the mines.",
+    games: ["shikaku", "akari", "slitherlink", "hitori", "fillomino", "kakuro", "jirai"],
   },
   {
     key: "cards",

@@ -104,6 +104,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   hitori: "hitori",
   fillomino: "fillomino",
   kakuro: "kakuro",
+  jirai: "jirai",
 };
 
 /**
