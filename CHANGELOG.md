@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.517.0 — 2026-10-05 22:04 UTC
+- Bridges comes up to 25x25, with 17x17, 21x21 and 25x25 boards that each have one answer.
+
 ## 0.516.0 — 2026-10-05 22:04 UTC
 - Picture Logic comes in 40x40 and 50x50, solved line by line, zoomed with its clues kept in view.
 
