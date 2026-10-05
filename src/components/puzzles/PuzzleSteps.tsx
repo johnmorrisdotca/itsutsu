@@ -29,6 +29,7 @@ export function PuzzleSteps<V>({
   go,
   size,
   say,
+  where,
 }: {
   steps: readonly (readonly V[])[];
   viewing: number;
@@ -36,6 +37,8 @@ export function PuzzleSteps<V>({
   size: number;
   /** What a cell's new value reads as: "7", "black", "a cross", "cleared". */
   say: (value: V) => string;
+  /** Where a mark place is, where it is not a cell of a grid `size` across: a Slitherlink's edges. Row and column by default. */
+  where?: (index: number) => string;
 }) {
   // Drawn from the start, at zero steps, so it never arrives and pushes the page down at the first entry.
   const last = steps.length - 1;
@@ -61,7 +64,7 @@ export function PuzzleSteps<V>({
                   <span>
                     {change === null
                       ? "several cells"
-                      : `row ${Math.floor(change.index / size) + 1}, column ${(change.index % size) + 1}: ${say(change.value)}`}
+                      : `${where?.(change.index) ?? `row ${Math.floor(change.index / size) + 1}, column ${(change.index % size) + 1}`}: ${say(change.value)}`}
                   </span>
                 </button>
               </li>

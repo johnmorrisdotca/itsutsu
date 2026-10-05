@@ -9,6 +9,8 @@ import { suidoAnswerOf } from "./suido/solve";
 import { encodeWay } from "./meikyuu/way";
 import { tobiishiChallengeOf, tobiishiRefOfCode } from "./tobiishi/levels";
 import { encodeAnswer } from "./tobiishi/way";
+import { pencilEngine } from "./pencil/engines";
+import { isPencilKind } from "./pencil/pencil.constants";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
 import { isNumberKind, numbersAnswerOf } from "./kazu";
@@ -46,6 +48,8 @@ export function solvedAnswerOf(kind: PuzzleKind, size: number, level: PuzzleLeve
 function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | null {
   // The Numbers family: Kazu's solver, which reads the regions, cages, marks or clues out of the givens and refuses givens that are not a puzzle.
   if (isNumberKind(kind)) return numbersAnswerOf(kind, size, givens);
+  // The pencil puzzles: Kazu's solver, which counts the answers and gives the one there is.
+  if (isPencilKind(kind)) return pencilEngine(kind).solve(size, givens);
   switch (kind) {
     case "hiddenStones": {
       const regions = decodeRegions(givens, size);

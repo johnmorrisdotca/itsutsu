@@ -8,6 +8,7 @@ import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { checkSuido } from "./suido/check";
 import { checkMeikyuu } from "./meikyuu/check";
 import { checkTobiishi } from "./tobiishi/check";
+import { pencilEngine } from "./pencil/engines";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { isWord, languageOf, type GomojiLanguage } from "./gomoji/code";
@@ -97,6 +98,14 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "tobiishi":
       // The jumps, replayed from the level's own starting position: every one legal, one peg left, in the goal.
       return checkTobiishi(size, givens, answer);
+    case "shikaku":
+    case "akari":
+    case "slitherlink":
+    case "hitori":
+    case "fillomino":
+    case "kakuro":
+      // The pencil puzzles, read by Kazu in one pass over the answer: its rules restated by the package, never the solver that made the board.
+      return pencilEngine(kind).check(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

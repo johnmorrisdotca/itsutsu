@@ -15,6 +15,7 @@ import { MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS
 import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SHAPES, meikyuuSizeLabel } from "./meikyuu/sizes";
 import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
+import { PENCIL_DISPLAY, PENCIL_KIND_LIST, PENCIL_LEVEL_BLURBS, PENCIL_SIZE_NAMES, PENCIL_SPECS } from "./pencil/pencil.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -65,6 +66,12 @@ export const PUZZLE_KINDS = {
   suido: "suido",
   meikyuu: "meikyuu",
   tobiishi: "tobiishi",
+  shikaku: "shikaku",
+  akari: "akari",
+  slitherlink: "slitherlink",
+  hitori: "hitori",
+  fillomino: "fillomino",
+  kakuro: "kakuro",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
@@ -108,6 +115,8 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.suido,
   PUZZLE_KINDS.meikyuu,
   PUZZLE_KINDS.tobiishi,
+  // The pencil puzzles (`pencil/`), in their family's order.
+  ...PENCIL_KIND_LIST,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -460,6 +469,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     fixedLevels: true,
     clock: false,
   },
+  ...PENCIL_SPECS,
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -681,6 +691,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     4: { label: "Big", kanji: "大" },
     5: { label: "Bigger", kanji: "特大" },
   },
+  ...PENCIL_SIZE_NAMES,
 };
 
 /**
@@ -781,6 +792,7 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: "Solvable in 10 swaps, with 15 to do it in, and the commonest words.",
     hard: "Solvable in 12 swaps, with 17 to do it in, and a wider list of words.",
   },
+  ...PENCIL_LEVEL_BLURBS,
 };
 
 /**
@@ -1374,4 +1386,5 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     board:
       "The boards are the English cross, a triangle, the European board, a diamond, a heart, a star, a hexagon, and a wide and a tall rectangle. A short level (3 jumps) has four pegs on a board of up to 49 holes, and is quick; a long one (9 jumps) has ten, and the right order has to be found. Every level has at least one answer, because it was made by working backward from the goal.",
   },
+  ...PENCIL_DISPLAY,
 };

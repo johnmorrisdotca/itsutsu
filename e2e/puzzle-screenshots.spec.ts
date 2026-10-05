@@ -26,10 +26,12 @@ import { decodeMoves } from "@johnmorrisdotca/jarajara";
 import { decodeCubeMoves, moveNotation } from "@johnmorrisdotca/kyuubu";
 import { WORD_STONE_LOOK } from "../src/components/puzzles/puzzles.constants";
 import { answersFor } from "../src/lib/puzzles/gomoji/code";
+import { isPencilKind } from "../src/lib/puzzles/pencil/pencil.constants";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { tapKana } from "./kanaTyping";
 import { drawThrough, placedMaze, wayThrough } from "./meikyuu";
 import { levelOf, playByTapping } from "./tobiishi";
+import { makeNextMark } from "./pencil";
 import { ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 
@@ -96,6 +98,13 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "meikyuu", size: 2, level: "medium", seed: 102, fill: 42 },
   // The heart-shaped board at its longest, the first three of its nine jumps made, as a person makes them: pegs on the heart, the dashed goal hole, and gaps where pegs were taken.
   { kind: "tobiishi", size: 9, level: "hard", seed: 13, fill: 3 },
+  // The pencil puzzles (Kazu): each part way, its first marks made by pressing the board as a reader does.
+  { kind: "shikaku", size: 7, level: "medium", seed: 20261005, fill: 4 },
+  { kind: "akari", size: 9, level: "medium", seed: 20261005, fill: 5 },
+  { kind: "slitherlink", size: 7, level: "medium", seed: 20261065, fill: 14 },
+  { kind: "hitori", size: 5, level: "medium", seed: 20261005, fill: 3 },
+  { kind: "fillomino", size: 5, level: "easy", seed: 20261005, fill: 5 },
+  { kind: "kakuro", size: 10, level: "medium", seed: 20261005, fill: 10 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
   { kind: "freecell", size: 4, level: "medium", seed: 20260930, fill: 20 },
   // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
@@ -125,6 +134,14 @@ test.describe("puzzle screenshots", () => {
       let filled = 0;
       // The board colour a Kumimoji scene found, to put back after its picture.
       let feltBefore: string | null = null;
+      if (isPencilKind(scene.kind)) {
+        // The first marks of the answer, each made by pressing the board; the cursor put away, so the picture is the board as it stands.
+        for (let made = 0; made < scene.fill; made += 1) if ((await makeNextMark(page, scene.kind, scene.size, puzzle.solution)) === null) break;
+        await page.keyboard.press("Escape");
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+        await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
       if (scene.kind === "freecell" || scene.kind === "spider") {
         // The first moves of the winning line, each tapped as a person plays it: the stock, or a card and where it goes.
         const pile = (id: string) => page.locator(`[data-card-pile="${id}"][role="group"] > button`);

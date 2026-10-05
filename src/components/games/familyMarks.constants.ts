@@ -176,6 +176,25 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     path: "M 2 0 L 2 4 M 0 2 L 4 2",
   },
   /*
+   * PENCIL PUZZLES: a Shikaku in one picture — the grid cut into three rectangles
+   * outlined in ink, each holding the number of its cells, and two cells left to
+   * cut. The same picture of cells and digits Numbers draws, with the cuts a
+   * pencil makes through them.
+   */
+  "Pencil puzzles": {
+    n: 5,
+    cells: true,
+    stones: [],
+    digits: [
+      { r: 0, c: 0, value: 4 },
+      { r: 0, c: 3, value: 3 },
+      { r: 1, c: 3, value: 6 },
+      { r: 3, c: 1, value: 5 },
+      { r: 3, c: 4, faded: true },
+    ],
+    ink: "M 0.08 0.08 L 1.92 0.08 L 1.92 1.92 L 0.08 1.92 Z M 2.08 0.08 L 4.92 0.08 L 4.92 0.92 L 2.08 0.92 Z M 2.08 1.08 L 4.92 1.08 L 4.92 2.92 L 2.08 2.92 Z",
+  },
+  /*
    * LOGIC PUZZLES: the family's first puzzle in one picture — five islands,
    * each a ringed number, joined by single and double bridges so that every
    * number is met and all five are one. The islands are drawn as the Numbers

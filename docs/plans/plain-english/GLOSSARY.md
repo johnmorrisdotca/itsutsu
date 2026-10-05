@@ -339,6 +339,16 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | Priced on one scale: 50 for the smallest and easiest, up to 150 for the biggest and hardest | weighted so a medium solve at a puzzle's usual size is worth about as much as a Gomoku win | — | `/points` | one scale for every puzzle, said as numbers |
 | Rounded to the nearest 5 | — | — | `/points`, a game's result | every result and every price is a multiple of five |
 
+## Pencil puzzles (2026-10-05)
+
+| Label | Where | Word used, and why |
+|---|---|---|
+| Pencil puzzles 鉛筆 | the family's title | the plain word for the thing every one of them is solved with |
+| Remove | under a Shikaku board | the usual word; a press then takes a rectangle off. Not "Erase" or "Clear" (a Gomoji's Clear is its row) |
+| rectangle · bulb · line · square · cell | what Check counts ("2 bulbs are wrong, 1 still to place") | each puzzle's own noun, so a Shikaku never counts "cells" and an Akari never counts "marks" |
+| draw · place · shade · fill | "still to ..." | the verb of the thing: a rectangle is drawn, a bulb placed, a square shaded, a cell filled |
+| Tap one corner of a rectangle, then the opposite corner. | the line under a Shikaku board | what to do first; it says what to do next once a corner is down |
+
 ## Prose worth a second look (not changed)
 
 - Home, "Always somebody to play", "Your pace", "Learn the shapes": feature

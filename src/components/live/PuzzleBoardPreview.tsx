@@ -47,6 +47,11 @@ import { MahjongBoard, mahjongViewBox } from "@/components/puzzles/MahjongBoard"
 import { useMahjongFree } from "@/components/puzzles/mahjongFree";
 import { generateMahjong } from "@/lib/puzzles/mahjong/generate";
 import { CubePreview } from "@/components/puzzles/CubePreview";
+import { PencilBoard } from "@/components/puzzles/pencil/PencilBoard";
+import { pencilEngine } from "@/lib/puzzles/pencil/engines";
+import { generatePencil } from "@/lib/puzzles/pencil/generate";
+import { isPencilKind } from "@/lib/puzzles/pencil/pencil.constants";
+import type { PencilKind } from "@/lib/puzzles/pencil/pencil.types";
 
 import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -127,6 +132,8 @@ export function PuzzleBoardPreview({
           <TilePreview size={size} appearance={appearance} />
         ) : spec.lattice === true ? (
           <LatticePreview appearance={appearance} />
+        ) : isPencilKind(kind) ? (
+          <PencilPreview kind={kind} size={size} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
         ) : kind === "suido" ? (
@@ -245,6 +252,16 @@ function BridgesPreview({ size }: { size: number }) {
   const board = useMemo(() => boardOf(generateBridges(size, "easy", 7).givens, size), [size]);
   if (board === null) return null;
   return <BridgesGrid board={board} counts={board.spans.map(() => 0)} done readOnly />;
+}
+
+/**
+ * A pencil puzzle before it is made: a real board at this size from a fixed seed,
+ * easy where it has levels so it is made at once, on the board the solve draws
+ * (`PencilBoard`) with nothing written on it and nothing to press.
+ */
+function PencilPreview({ kind, size }: { kind: PencilKind; size: number }) {
+  const made = useMemo(() => generatePencil(kind, size, "easy", 7), [kind, size]);
+  return <PencilBoard kind={kind} size={size} givens={made.givens} code={pencilEngine(kind).blank(size, made.givens)} readOnly label={`${PUZZLE_DISPLAY[kind].label} board, ${size} by ${size}`} />;
 }
 
 /**

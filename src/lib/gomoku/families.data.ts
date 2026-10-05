@@ -246,6 +246,29 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["bridges", "pictureLogic", "suido", "hiddenStones", "blackAndWhite", "tsunagi", "mahjong", "cube"],
   },
   {
+    key: "pencil",
+    /*
+     * PENCIL PUZZLES 鉛筆. John, 2026-10-05: "Pencil puzzles", the name of a new
+     * shelf for the grid puzzles of Kazu 1.2.0 (`@johnmorrisdotca/kazu`): draw the
+     * rectangles, place the bulbs, shade the repeats, loop the numbers, number the
+     * regions, add up the runs. Nothing here is a game between two colours, and each
+     * is a `PuzzleKind` (`src/lib/puzzles/pencil/`), with one answer a pencil finds.
+     *
+     * 鉛筆 (enpitsu) is the plain word for a pencil, which is the word the whole
+     * pastime goes by in English and the thing these are all solved with. Chosen
+     * over 筆算 (hissan, working a sum out on paper) for being the everyday word.
+     *
+     * Numbers and Logic puzzles were full or nearly (Logic puzzles is at eight, the
+     * most a shelf shows), and a puzzle for the pencil is neither a number to place
+     * nor a path to follow, so it has a shelf of its own. A family's first solve pays
+     * `firstOfFamily` under this key, new to everybody; no earlier row can name it.
+     */
+    title: "Pencil puzzles",
+    kanji: "鉛筆",
+    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, light every square, draw one loop, shade the repeats, number the regions and add up the runs.",
+    games: ["shikaku", "akari", "slitherlink", "hitori", "fillomino", "kakuro"],
+  },
+  {
     key: "cards",
     /*
      * CARDS. John, 2026-09-29: "Let's create 3 new types of game (card,

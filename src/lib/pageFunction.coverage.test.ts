@@ -127,6 +127,24 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/toranpu/spider", "Spider's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
   /* Kazu, 113 KB of source for the entry the site imports (1.0.0; its drawing, strings, play screen and tag are other entries the site does not import): the Numbers family's generators, solver, O(cells) check, codes and cage outline. The server checks a finished grid before it pays (puzzleCheck.ts), finds a kept solve's answer again, spells every puzzle's cells (puzzleCode.ts) and draws a finished grid's boxes and cages, where before it ran the same logic from the site's own files. */
   ["@johnmorrisdotca/kazu", "The Numbers family's check, solver, cell codes, generators and cage outline: a finished or kept grid checked on the server and drawn on its page, and the spelling of every puzzle's cells."],
+  /*
+   * The six pencil puzzles (2026-10-05), each its own entry of Kazu 1.2.0: the engine (`/shikaku`, about 15 to 35 KB
+   * unminified apiece, the generator among it) is what the server's check of a finished board, its solver for a
+   * solve kept without an answer and its work for the points read; the drawing (`/shikaku/draw`) is a finished
+   * puzzle's page, drawn as it ended. The players (`/play`) are not used at all: the site draws and presses its own.
+   */
+  ["@johnmorrisdotca/kazu/shikaku", "The server's check of a finished Shikaku board, its solver and its points."],
+  ["@johnmorrisdotca/kazu/shikaku/draw", "A finished Shikaku puzzle's page, drawn as it ended."],
+  ["@johnmorrisdotca/kazu/akari", "The server's check of a finished Akari board, its solver and its points."],
+  ["@johnmorrisdotca/kazu/akari/draw", "A finished Akari puzzle's page, drawn as it ended."],
+  ["@johnmorrisdotca/kazu/slitherlink", "The server's check of a finished Slitherlink board, its solver and its points."],
+  ["@johnmorrisdotca/kazu/slitherlink/draw", "A finished Slitherlink puzzle's page, drawn as it ended."],
+  ["@johnmorrisdotca/kazu/hitori", "The server's check of a finished Hitori board, its solver and its points."],
+  ["@johnmorrisdotca/kazu/hitori/draw", "A finished Hitori puzzle's page, drawn as it ended."],
+  ["@johnmorrisdotca/kazu/fillomino", "The server's check of a finished Fillomino board, its solver and its points."],
+  ["@johnmorrisdotca/kazu/fillomino/draw", "A finished Fillomino puzzle's page, drawn as it ended."],
+  ["@johnmorrisdotca/kazu/kakuro", "The server's check of a finished Kakuro board, its solver and its points."],
+  ["@johnmorrisdotca/kazu/kakuro/draw", "A finished Kakuro puzzle's page, drawn as it ended."],
   ["@johnmorrisdotca/jarajara", "Mahjong's tiles and layouts: a layout's size and tile count in the puzzle's specs and its rules page, and a finished game's board drawn on its page (MahjongBoard.tsx)."],
   ["@johnmorrisdotca/jarajara/awase", "Mahjong's deal and check: a kept or finished game dealt again from its seed (generate.ts), and a solve checked on the server before it pays (puzzleCheck.ts)."],
   ["@johnmorrisdotca/jarajara/table", "Mahjong at a table: how many players a kept table's address asks for (puzzleAddress.ts)."],

@@ -382,8 +382,8 @@ describe("the families a win can complete", () => {
     // of one game would have to move it.
     const winnable = GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null);
     expect(winnable).toHaveLength(GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).length);
-    // Numbers, Logic puzzles, Cards and Word games are families of games for one, which are solved and never won as a family; Party games holds only games that are never recorded.
-    expect(winnable.length).toBe(RECORDED_FAMILIES.length - 4);
+    // Numbers, Logic puzzles, Pencil puzzles, Cards and Word games are families of games for one, which are solved and never won as a family; Party games holds only games that are never recorded.
+    expect(winnable.length).toBe(RECORDED_FAMILIES.length - 5);
   });
 });
 
@@ -404,7 +404,8 @@ describe("the tour covers the site", () => {
     expect(XP_VARIANTS_TO_PLAY).toBe(48 + PUZZLE_KIND_LIST.length);
     // Nine since Other opened with Gomoji on 2026-09-25 — the families a game is played from, which Party games, recording nothing, is not.
     // Ten since Logic puzzles opened with Bridges on 2026-09-28, eleven since Mahjong and twelve since Cards on 2026-09-29, thirteen since Cubes on 2026-09-30, twelve since Mahjong and Cubes became Tiles on 2026-10-01, eleven since Tiles was dissolved into Logic puzzles and Party games the same day.
-    expect(RECORDED_FAMILIES.length).toBe(11);
+    // Twelve since Pencil puzzles opened with Shikaku and five more on 2026-10-05.
+    expect(RECORDED_FAMILIES.length).toBe(12);
   });
 
   it("gives every family a key nothing else has, and one that is not its title", () => {

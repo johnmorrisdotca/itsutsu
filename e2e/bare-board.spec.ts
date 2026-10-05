@@ -432,6 +432,12 @@ const SURVEYED_PUZZLES = [
   "mahjong",
   "cube",
   "suido",
+  "shikaku",
+  "akari",
+  "slitherlink",
+  "hitori",
+  "fillomino",
+  "kakuro",
 ] as const;
 
 const SURVEY: Survey[] = [

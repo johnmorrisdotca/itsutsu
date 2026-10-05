@@ -275,6 +275,16 @@ are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
 `useSizeShelves`); what is each game's own is how a solved level is marked, and
 its words.
 
+**Pencil puzzles** 鉛筆 (2026-10-05, `src/lib/puzzles/pencil/`, plan in
+`docs/plans/pencil/README.md`): Shikaku, Akari, Slitherlink, Hitori, Fillomino and
+Kakuro, from Kazu 1.2.0 (`@johnmorrisdotca/kazu`, pinned in `package.json`), on a shelf
+of their own. Kazu makes each board with exactly one answer, checks a finished one and
+draws it as SVG; what is the site's own is here: a board is a string of marks, a
+character a cell (an edge, for Slitherlink), so a kept run, the scrubber and the
+finished page work as they do for a Number Place, and a press on the drawing is read
+from where it lands (`pencil/geometry.ts`). The server's one job is the O(cells) check
+(`pencil/*.ts`, `puzzleCheck.ts`).
+
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
 mouse, from its start to its goal, in 1,024 fixed levels, 256 to each of four sizes (small,

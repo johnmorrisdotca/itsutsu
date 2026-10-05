@@ -26,8 +26,8 @@ importers:
         specifier: 1.5.0
         version: 1.5.0
       '@johnmorrisdotca/kazu':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.2.0
+        version: 1.2.0
       '@johnmorrisdotca/korokoro':
         specifier: 1.15.0
         version: 1.15.0(react@19.2.8)
@@ -455,8 +455,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@johnmorrisdotca/kazu@1.0.0':
-    resolution: {integrity: sha512-ziNdQqMMuHVweqmQZ3aMngJyyRQw+LLgRR2gG+GN4m5mMjyF0KckX2l+tbeFmpFMXF3cR04yePZnxzGfe5W+Dw==}
+  '@johnmorrisdotca/kazu@1.2.0':
+    resolution: {integrity: sha512-vH2eTEQtFSBRr+Igvqh2nXm/J1UcCnXlVRGcIdWz/8SIJpvUi0hc0JRNbPepiexCwsrRvBdma49T7NHlA77RLw==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/korokoro@1.15.0':
@@ -3158,7 +3158,7 @@ snapshots:
 
   '@johnmorrisdotca/jarajara@1.5.0': {}
 
-  '@johnmorrisdotca/kazu@1.0.0': {}
+  '@johnmorrisdotca/kazu@1.2.0': {}
 
   '@johnmorrisdotca/korokoro@1.15.0(react@19.2.8)':
     optionalDependencies:

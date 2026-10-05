@@ -28,6 +28,7 @@ describe("the open-source credit under a game", () => {
     expect(openSourceOf("suido")).toBe("suido");
     expect(openSourceOf("numberPlace")).toBe("kazu");
     expect(openSourceOf("towers")).toBe("kazu");
+    for (const kind of ["shikaku", "akari", "slitherlink", "hitori", "fillomino", "kakuro"] as const) expect(openSourceOf(kind)).toBe("kazu");
     expect(openSourceOf("meikyuu")).toBe("meikyuu");
     expect(openSourceOf("tobiishi")).toBe("tobiishi");
     expect(openSourceOf("mexicanTrain")).toBe("domino");

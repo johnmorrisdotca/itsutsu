@@ -1,4 +1,5 @@
 import { generateBridges } from "./bridges/generate";
+import { generatePencil } from "./pencil/generate";
 import { generatePictureLogic } from "./pictureLogic/generate";
 import { generateSolitaire } from "./solitaire/generate";
 import { generateFreeCell } from "./freecell/generate";
@@ -98,6 +99,14 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "suido":
       // A fixed level, its number the seed, read from its size's list (`preparePuzzle` loads it); any other seed a board of pipes made by the package, aimed at the level's rank among boards of its size (`suido/generate.ts`).
       return suidoLevelOfSeed(seed) === null ? generateSuido(size, level, seed) : suidoLevelPuzzle(size, suidoLevelOfSeed(seed)!);
+    case "shikaku":
+    case "akari":
+    case "slitherlink":
+    case "hitori":
+    case "fillomino":
+    case "kakuro":
+      // The pencil puzzles, made by Kazu: a board with exactly one answer, from the seed alone (`pencil/`).
+      return generatePencil(kind, size, level, seed);
   }
 }
 

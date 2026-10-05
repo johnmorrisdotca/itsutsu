@@ -4,6 +4,9 @@ import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeCells as decodePictureCells, decodePicture } from "./pictureLogic/code";
 import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { readNumberGivens, type NumberGivens } from "./numberGivens";
+import { pencilEngine } from "./pencil/engines";
+import { isPencilKind } from "./pencil/pencil.constants";
+import type { PencilKind } from "./pencil/pencil.types";
 import { decodeCells } from "./puzzleCode";
 import { decodeBlackAndWhiteProgress, decodeNumberProgress, decodeStoneProgress, type StoneMarkCode } from "./puzzleProgress";
 import type { PuzzleKind } from "./puzzles.types";
@@ -20,7 +23,8 @@ export type Frame =
   | { kind: "stones"; regions: number[]; cells: StoneMarkCode[] }
   | { kind: "blackAndWhite"; printed: number[]; cells: number[] }
   | { kind: "bridges"; givens: string; cells: string[] }
-  | { kind: "pictureLogic"; givens: string; cells: CellState[] };
+  | { kind: "pictureLogic"; givens: string; cells: CellState[] }
+  | { kind: "pencil"; pencil: PencilKind; givens: string; cells: string[] };
 
 export type FinishedFrames = {
   /** The grid as dealt, and as it ended where the answer reads: what a page draws with no steps. */
@@ -83,6 +87,17 @@ export function finishedFrames(kind: PuzzleKind, size: number, givens: string, a
     const finished = picture === null ? null : frame(picture.map((shaded): CellState => (shaded ? 1 : 0)));
     const kept = readSteps(steps, cells, (code) => decodePictureCells(code, size));
     return assemble(frame(new Array<CellState>(cells).fill(0)), finished, kept?.map(frame) ?? null, () => finished);
+  }
+
+  if (isPencilKind(kind)) {
+    // What was written on the board, a character a mark place (`pencil/`): read only where it is one this kind could have written.
+    const engine = pencilEngine(kind);
+    const written = (code: string): string | null => (engine.fits(size, code) ? code : null);
+    const frame = (code: string): Frame => ({ kind: "pencil", pencil: kind, givens, cells: [...code] });
+    const solved = answer === null ? null : written(answer);
+    const finished = solved === null ? null : frame(solved);
+    const kept = readSteps(steps, engine.codeLength(size), written);
+    return assemble(frame(engine.blank(size, givens)), finished, kept?.map(frame) ?? null, () => finished);
   }
 
   const asked = readNumberGivens(kind, givens, size);

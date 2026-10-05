@@ -43,6 +43,10 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   // The Numbers family (Number Place, Jigsaw, Diagonal, Sum Cages, More or Less, Towers) is Kazu's: its puzzles, solver, check and cage outline. A new version of it is a picture to re-take.
   "node_modules/@johnmorrisdotca/kazu/package.json",
   "src/lib/puzzles/kazu.ts",
+  // The six pencil puzzles are Kazu's too: the package above draws them, and these are how the site reads a board into its drawing and writes what is on it.
+  "src/components/puzzles/pencil/PencilBoard.tsx",
+  "src/components/puzzles/pencil/pencilDraw.ts",
+  "src/lib/puzzles/pencil/geometry.ts",
   "src/lib/puzzles/jigsaw/shake.ts",
   "src/lib/puzzles/hiddenStones/generate.ts",
   "src/lib/puzzles/hiddenStones/regions.ts",

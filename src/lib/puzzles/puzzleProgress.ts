@@ -24,6 +24,8 @@ import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesEverAllowed } from "./gomoji/layout";
 import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
+import { pencilEngine } from "./pencil/engines";
+import { isPencilKind } from "./pencil/pencil.constants";
 import type { PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { linesCodeFits } from "@johnmorrisdotca/tsunagi";
 
@@ -131,6 +133,15 @@ export function decodeKanaProgress(code: string, size: number): string[] | null 
   return guesses !== null && guesses.length <= MOST_GUESSES ? guesses : null;
 }
 
+/**
+ * How many characters a kept grid has, the length a step log (`stepLog.ts`) is
+ * read at: a character a cell, except where a kind marks something other than
+ * its cells (Slitherlink's edges, `pencil/`).
+ */
+export function progressLength(kind: PuzzleKind, size: number): number {
+  return isPencilKind(kind) ? pencilEngine(kind).codeLength(size) : size * size;
+}
+
 export function progressFits(kind: PuzzleKind, size: number, code: string): boolean {
   if (kind === "hiddenStones") return decodeStoneProgress(code, size) !== null;
   if (kind === "blackAndWhite") return decodeBlackAndWhiteProgress(code, size) !== null;
@@ -164,6 +175,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (kind === "mahjong") return layoutFor(size) !== null && decodeMoves(code, layoutFor(size)!.slots.length) !== null;
   // Koushi keeps the grid as it stands and the swaps so far, as its answer is written.
   if (kind === "koushi") return decodePlay(code) !== null;
+  // A pencil puzzle keeps what is written on its board, a character a mark place (`pencil/`); read against its givens when opened.
+  if (isPencilKind(kind)) return pencilEngine(kind).fits(size, code);
   return decodeNumberProgress(code, size) !== null;
 }
 

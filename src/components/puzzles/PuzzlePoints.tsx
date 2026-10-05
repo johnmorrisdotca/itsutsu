@@ -7,6 +7,7 @@ import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.con
 import { currentSession } from "@/lib/auth/currentSession";
 import { ALL_TIME, monthOf, weekOf, type RecordPeriod } from "@/lib/history/recordMonth";
 import { setUpPath, standingsPath } from "@/lib/gomoku/slugs";
+import { isPencilKind } from "@/lib/puzzles/pencil/pencil.constants";
 import { POINTS_A_CELL, POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
 import { TOBIISHI_SIZES } from "@/lib/puzzles/tobiishi/sizes";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -91,7 +92,9 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
             ? `${POINTS_A_CELL} for each end of every bridge the answer has — every island's number, added up — and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
             : kind === "pictureLogic"
               ? `${POINTS_A_CELL} for every square of the grid, each one decided, shaded or empty, and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
-              : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
+              : isPencilKind(kind)
+                ? `${POINTS_A_CELL} for every cell of the grid the answer decides, and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
+                : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
       </p>
       {whole ? null : (
         <p className="text-sm">

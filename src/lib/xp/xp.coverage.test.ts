@@ -190,8 +190,9 @@ describe("the economy holds its shape", () => {
     // Thirteen since Cubes opened with the Cube on 2026-09-30: a family met, and a first solve among the puzzles.
     // Twelve since Mahjong and Cubes became Tiles on 2026-10-01: two families met are one, and nothing already paid is taken back.
     // Eleven since Tiles was dissolved the same day (Mahjong Solitaire and the cube joined Logic puzzles): one family fewer to meet, and nothing already paid is taken back.
+    // Twelve since Pencil puzzles opened with Shikaku and five more on 2026-10-05: a family met (+150) and six first solves (+300, among the puzzles above); its family cannot be won, so nothing else moves.
     const perFamily = RECORDED_FAMILIES.length;
-    expect(perFamily).toBe(11);
+    expect(perFamily).toBe(12);
     // A family won is only for a family of more than one BOARD game: puzzles are not won.
     const familiesToWin = GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 1).length;
     expect(familiesToWin).toBe(7);
@@ -214,7 +215,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points * 3 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
+    expect(total).toBe(23_040 + XP_EVENT_SPECS.firstOfFamily.points * 4 + XP_EVENT_SPECS.firstOfVariant.points * (perPuzzle - 1));
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

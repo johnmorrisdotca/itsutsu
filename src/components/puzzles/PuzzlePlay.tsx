@@ -35,6 +35,7 @@ import { KoushiSolve } from "./KoushiSolve";
 import { MahjongSolve } from "./MahjongSolve";
 import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
+import { PencilSolve } from "./PencilSolve";
 import { FreeCellSolve } from "./FreeCellSolve";
 import { SolitaireSolve } from "./SolitaireSolve";
 import { CubeSolve } from "./CubeSolve";
@@ -358,6 +359,13 @@ function PuzzlePlayDrawn({
         return <TobiishiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} known={tobiishi?.known} bestSolves={tobiishi?.bestSolves} />;
       case "cube":
         return <CubeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
+      case "shikaku":
+      case "akari":
+      case "slitherlink":
+      case "hitori":
+      case "fillomino":
+      case "kakuro":
+        return <PencilSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "koushi":
         return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       default:

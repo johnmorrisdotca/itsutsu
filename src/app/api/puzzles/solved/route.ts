@@ -7,7 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { preparePuzzleOnServer } from "@/lib/puzzles/prepareOnServer";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { checkOutOfGuesses, checkSolution } from "@/lib/puzzles/puzzleCheck";
-import { progressFits, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
+import { progressFits, progressLength, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
 import { clockFor, clockLimitMs } from "@/lib/puzzles/puzzleClock";
 import { isSeed } from "@/lib/puzzles/random";
 import { decodeStepLog, encodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
@@ -30,7 +30,7 @@ import { awardTourBonuses } from "@/lib/xp/xpTour";
  */
 function stepsOfSolve(kind: (typeof PUZZLE_KIND_LIST)[number], size: number, log: string | undefined): string | null {
   if (log === undefined || PUZZLE_SPECS[kind].helps === false) return null;
-  const codes = decodeStepLog(log, size * size);
+  const codes = decodeStepLog(log, progressLength(kind, size));
   return codes !== null && codes.every((code) => progressFits(kind, size, code)) ? log : null;
 }
 
@@ -39,8 +39,8 @@ function stepsOfSolve(kind: (typeof PUZZLE_KIND_LIST)[number], size: number, log
  * ends on the grid as it stood, else that grid alone — so its page shows where
  * it was left, never an empty one.
  */
-function stepsOfEnded(size: number, log: string | undefined, progress: string): string {
-  const codes = log === undefined ? null : decodeStepLog(log, size * size);
+function stepsOfEnded(kind: (typeof PUZZLE_KIND_LIST)[number], size: number, log: string | undefined, progress: string): string {
+  const codes = log === undefined ? null : decodeStepLog(log, progressLength(kind, size));
   return codes !== null && codes.at(-1) === progress ? log! : encodeStepLog([progress]);
 }
 
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
         hintsUsed,
         /* A word's and a lattice's writing is an answer in their own code, which
            their pages replay; a grid's is its entries, kept as its last step. */
-        ...(words ? { answer } : { steps: stepsOfEnded(size, parsed.data.steps, answer) }),
+        ...(words ? { answer } : { steps: stepsOfEnded(kind, size, parsed.data.steps, answer) }),
         solved: false,
         clock,
       });

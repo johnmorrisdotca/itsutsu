@@ -9,6 +9,7 @@ import type { GameKey } from "./gameKeys";
  * A new game fails `gameAdded.coverage.test.ts` until it is dated here.
  */
 export const GAME_ADDED: Record<GameKey, string> = {
+  akari: "2026-10-05",
   antiBackgammon: "2026-10-01",
   antiReversi: "2026-09-07",
   backgammon: "2026-10-01",
@@ -35,6 +36,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   dropFour: "2026-09-07",
   edgeDrop: "2026-09-07",
   euchre: "2026-09-30",
+  fillomino: "2026-10-05",
   freecell: "2026-09-30",
   freestyle: "2026-09-07",
   ginRummy: "2026-09-30",
@@ -53,6 +55,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   hex: "2026-09-08",
   hexFive: "2026-09-25",
   hiddenStones: "2026-09-24",
+  hitori: "2026-10-05",
   hitotsu: "2026-09-30",
   holeDrop: "2026-09-07",
   honeycomb: "2026-09-21",
@@ -60,6 +63,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   hypergammon: "2026-10-01",
   internationalDraughts: "2026-09-14",
   jigsaw: "2026-09-24",
+  kakuro: "2026-10-05",
   koushi: "2026-09-26",
   kumimoji: "2026-09-26",
   longGammon: "2026-10-01",
@@ -89,6 +93,8 @@ export const GAME_ADDED: Record<GameKey, string> = {
   russianDraughts: "2026-09-14",
   sannuki: "2026-09-07",
   scatteredRocks: "2026-09-26",
+  shikaku: "2026-10-05",
+  slitherlink: "2026-10-05",
   solitaire: "2026-09-29",
   spades: "2026-09-30",
   spider: "2026-09-30",
