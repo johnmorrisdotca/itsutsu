@@ -97,12 +97,19 @@ test("Zoom out widens the page beside the board, a swipe on that margin scrolls 
     await expect.poll(() => gutterOf(page), "the page beside the board is widened to the most").toBe(72);
     expect((await wood()).x, "the body is easily seen on the left").toBeGreaterThanOrEqual(56);
     expect(390 - ((await wood()).x + (await wood()).width), "and on the right").toBeGreaterThanOrEqual(56);
-    // A swipe on the margin is the page's: the page scrolls and nothing is drawn.
+    // A swipe on the margin is the page's: the page scrolls and nothing is drawn. It is a real touch (pressed, moved a step at a time, lifted),
+    // as the drawing is: `Input.synthesizeScrollGesture` scrolled nothing in the headless Chromium CI runs on (run 37339511964, shard 5, twice),
+    // though it does on a laptop, so the gesture a finger makes is sent instead of the one the protocol would make for it.
     const touch = await context.newCDPSession(page);
     // From the top of the page (pressing Zoom out scrolled it), a finger on the margin dragged up: the page goes down.
     await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight), "the page is not tall enough to scroll, so nothing could prove the margin scrolls it").toBeGreaterThan(300);
     const margin = (await wood()).x / 2;
-    await touch.send("Input.synthesizeScrollGesture", { x: margin, y: 600, yDistance: -300, gestureSourceType: "touch", speed: 800 });
+    const at = (y: number) => [{ x: margin, y, id: 1 }];
+    await touch.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: at(650) });
+    for (let y = 625; y >= 350; y -= 25) await touch.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: at(y) });
+    await touch.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     await expect.poll(() => page.evaluate(() => window.scrollY), "the page did not scroll from its side").toBeGreaterThan(100);
     expect(Number(await page.getByTestId("puzzle-play").getAttribute("data-cells"))).toBe(0);
 
