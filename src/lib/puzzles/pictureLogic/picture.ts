@@ -140,3 +140,33 @@ export function drawPicture(size: number, style: PictureStyle, random: Random): 
   }
   return picture;
 }
+
+/** How many times a quarter of a scene is drawn again for one `wanted` accepts. */
+const QUARTER_TRIES = 12;
+
+/**
+ * A SCENE FOR A BIG BOARD: four pictures, one in each quarter, each drawn as a
+ * picture of that size is (`drawPicture`) and any style of its own. One picture
+ * across fifty squares is a blob a few clue numbers describe; four of them put
+ * a run or two of each into every line, so a 50×50 has clues worth reading and
+ * a line to work along. Whether the clues give one answer to a solve by lines
+ * is for the generator to say, as it does of any picture.
+ */
+export function drawScene(size: number, styleOf: (roll: number) => PictureStyle, random: Random, wanted: (part: boolean[], side: number) => boolean = () => true): boolean[] {
+  const half = Math.floor(size / 2);
+  const rest = size - half;
+  const picture = new Array<boolean>(size * size).fill(false);
+  for (const [top, left, tall, wide] of [
+    [0, 0, half, half],
+    [0, half, half, rest],
+    [half, 0, rest, half],
+    [half, half, rest, rest],
+  ] as const) {
+    const side = Math.max(tall, wide);
+    // Each quarter is drawn again until it is `wanted`, so that the four together are likelier to be read by lines alone.
+    let part = drawPicture(side, styleOf(random()), random);
+    for (let again = 0; again < QUARTER_TRIES && !wanted(part, side); again += 1) part = drawPicture(side, styleOf(random()), random);
+    for (let row = 0; row < tall; row += 1) for (let col = 0; col < wide; col += 1) picture[(top + row) * size + left + col] = part[row * side + col]!;
+  }
+  return picture;
+}

@@ -54,11 +54,63 @@ export function clueDepth(clues: PictureClues): number {
   return Math.max(1, ...clues.rows.map((clue) => clue.length), ...clues.cols.map((clue) => clue.length));
 }
 
+/** The rows and the columns the player's shading already makes exactly. */
+export type MetLines = { rows: boolean[]; cols: boolean[] };
+
 /** Which rows and which columns the player's shading already makes exactly. */
-export function metLines(clues: PictureClues, cells: readonly CellState[]): { rows: boolean[]; cols: boolean[] } {
+export function metLines(clues: PictureClues, cells: readonly CellState[]): MetLines {
   const { size } = clues;
   return {
     rows: clues.rows.map((clue, row) => lineMeetsClue(rowOf(cells, size, row), clue)),
     cols: clues.cols.map((clue, col) => lineMeetsClue(colOf(cells, size, col), clue)),
   };
 }
+
+/*
+ * THE GRID AS PATHS, NOT A SQUARE EACH. A square drawn for every shaded cell
+ * is a node inserted into the page for every one, and every node inserted
+ * under the board makes the browser restyle all of it (the site's `:has()`
+ * rules look down from the page's frame): about 75 ms on a 50×50, for each
+ * tap and for each step of a drag. The shaded cells, the ✕s and the run a
+ * drag covers are three paths that change their `d` and nothing else, so
+ * painting adds no node at all. A row's neighbouring shaded cells are one
+ * rectangle, which also keeps a path short.
+ */
+
+/** The shaded cells as one path, each unbroken stretch of a row one rectangle; the grid starts at (origin, origin) and a cell's side is `unit`. */
+export function shadedPath(cells: readonly CellState[], size: number, origin: number, unit = 1): string {
+  let d = "";
+  for (let row = 0; row < size; row += 1) {
+    let from = -1;
+    for (let col = 0; col <= size; col += 1) {
+      const shaded = col < size && cells[row * size + col] === SHADED_CELL;
+      if (shaded && from === -1) from = col;
+      if (!shaded && from !== -1) {
+        const wide = (col - from) * unit;
+        d += `M${round(origin + from * unit)} ${round(origin + row * unit)}h${round(wide)}v${round(unit)}h${round(-wide)}z`;
+        from = -1;
+      }
+    }
+  }
+  return d;
+}
+
+/** The ✕s as one path: two strokes across each, the cell starting at (offset + column, offset + row). */
+export function crossesPath(cells: readonly CellState[], size: number, offset: number): string {
+  let d = "";
+  cells.forEach((state, cell) => {
+    if (state !== EMPTY_CELL) return;
+    const x = offset + (cell % size);
+    const y = offset + Math.floor(cell / size);
+    d += `M${round(x + 0.3)} ${round(y + 0.3)}L${round(x + 0.7)} ${round(y + 0.7)}M${round(x + 0.7)} ${round(y + 0.3)}L${round(x + 0.3)} ${round(y + 0.7)}`;
+  });
+  return d;
+}
+
+/** The outline of each cell a drag covers, as one path. */
+export function outlines(run: readonly number[], size: number, offset: number): string {
+  return run.map((cell) => `M${round(offset + (cell % size) + 0.06)} ${round(offset + Math.floor(cell / size) + 0.06)}h0.88v0.88h-0.88z`).join("");
+}
+
+/** A number with the digits a drawing needs and no more. */
+const round = (value: number) => Math.round(value * 10000) / 10000;

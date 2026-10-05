@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 
 import { ViewPad, type PadKey } from "./ViewPad";
 
 /** The smallest board a player is given the pad for: past 9×9 a phone's cells are smaller than a thumb. */
 export const TSUNAGI_ZOOM_FROM = 10;
 
-/** How far a board may be zoomed in, as a multiple of the whole board fitted to its box. */
+/** How far a board may be zoomed in, as a multiple of the whole board fitted to its box, unless the board asks for more (`mostZoom`). */
 const MOST_ZOOM = 3;
 
 /** How near an edge of the box a line's end must be dragged to move the view, and how far each frame moves it, in pixels. */
@@ -18,18 +18,37 @@ type View = { zoom: number; x: number; y: number };
 const FITTED: View = { zoom: 1, x: 0, y: 0 };
 
 /** A view kept inside the board: never a gap between the board's edge and the box's. */
-function kept(view: View, box: number): View {
-  const zoom = Math.min(MOST_ZOOM, Math.max(1, view.zoom));
+function kept(view: View, box: number, most: number): View {
+  const zoom = Math.min(most, Math.max(1, view.zoom));
   const least = box - box * zoom;
   return { zoom, x: Math.min(0, Math.max(least, view.x)), y: Math.min(0, Math.max(least, view.y)) };
 }
 
 /** Zoomed by `factor` about the point (px, py) of the box, which stays over the same spot of the board. */
-function zoomedAbout(view: View, factor: number, px: number, py: number, box: number): View {
-  const zoom = Math.min(MOST_ZOOM, Math.max(1, view.zoom * factor));
+function zoomedAbout(view: View, factor: number, px: number, py: number, box: number, most: number): View {
+  const zoom = Math.min(most, Math.max(1, view.zoom * factor));
   const scale = zoom / view.zoom;
-  return kept({ zoom, x: px - (px - view.x) * scale, y: py - (py - view.y) * scale }, box);
+  return kept({ zoom, x: px - (px - view.x) * scale, y: py - (py - view.y) * scale }, box, most);
 }
+
+/**
+ * WHERE THE PLAYING AREA IS IN THE BOX, in pixels from the box's top left: its
+ * left and top edges (negative once the view has moved past them) and its side.
+ * Measured from the element a board marks `data-pin-area`, because the wood
+ * around it is a rim of its own width. What a board pins (`Pinned`) is placed from this.
+ */
+export type PinFrame = { left: number; top: number; side: number; width: number; height: number };
+
+/**
+ * A BOARD'S CLUES KEPT IN SIGHT WHILE IT IS MOVED. A big picture-logic board
+ * zoomed in on its far corner has its clues miles off; the numbers a row and a
+ * column are read from have to stay at the box's top and left however the view
+ * moves. `inset` is the depth of that band as a share of the playing area's
+ * side; `render` draws what is pinned from where the area is now (`PinFrame`),
+ * and is given only while the view is zoomed, since fitted, the clues are where
+ * they were drawn.
+ */
+export type Pinned = { inset: number; render: (frame: PinFrame) => ReactNode };
 
 /**
  * A BIG TSUNAGI BOARD, LOOKED AT THROUGH A BOX. John, 2026-09-26: boards bigger
@@ -43,14 +62,23 @@ function zoomedAbout(view: View, factor: number, px: number, py: number, box: nu
  * board is drawn at the size it is shown, not stretched, so its lines stay
  * crisp. Below 10×10 this is the board alone, as it always was.
  *
- * Bridges' two big boards are looked at through the same box (`name`
+ * Bridges' big boards are looked at through the same box (`name`
  * "bridges"), so there is one zoom for a board too big for a thumb, not two.
+ *
+ * A BOARD WITH A HUNDRED CLUES (Picture logic at 40×40 and 50×50) asks three
+ * things more of it. `mostZoom` lets it come nearer than three times, to
+ * squares a thumb can press; `startZoom` opens it there, since the whole board
+ * is a screen of six-pixel squares; and `pinned` keeps its clues at the box's
+ * top and left as the view moves along the lines they number (`Pinned`).
  */
 export function TsunagiViewport({
   size,
   name = "tsunagi",
   zoomFrom = TSUNAGI_ZOOM_FROM,
   aspect = "1 / 1",
+  mostZoom = MOST_ZOOM,
+  startZoom = 1,
+  pinned,
   children,
 }: {
   size: number;
@@ -60,25 +88,43 @@ export function TsunagiViewport({
   zoomFrom?: number;
   /** The box's width to height, where the board is not square: a Mahjong layout is wider than it is tall. */
   aspect?: string;
+  /** How far the board may be zoomed, where a cell of the whole board is too small for far more than three times (a 50×50 picture). */
+  mostZoom?: number;
+  /** The zoom the board opens at: a board with a hundred lines is not read whole, so it opens near. Fit still shows the whole. */
+  startZoom?: number;
+  /** Clues kept at the box's top and left while the view moves (`Pinned`). */
+  pinned?: Pinned;
   children: ReactNode;
 }) {
   const enabled = size >= zoomFrom;
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [view, setView] = useState<View>(FITTED);
+  const [frame, setFrame] = useState<PinFrame | null>(null);
+  const opened = useRef(false);
+  /** The side of the playing area as last measured, which the edge nudge reads without a render. */
+  const areaSide = useRef(0);
   const held = useRef<{ pointer: number; x: number; y: number; target: EventTarget | null } | null>(null);
 
   useEffect(() => {
     const element = box.current;
     if (!enabled || element === null) return;
-    const measure = () => setWidth(element.getBoundingClientRect().width);
+    const measure = () => {
+      const side = element.getBoundingClientRect().width;
+      setWidth(side);
+      // A board that opens zoomed does so once, as the box first has its width.
+      if (!opened.current && side > 0) {
+        opened.current = true;
+        if (startZoom > 1) setView(kept({ zoom: startZoom, x: 0, y: 0 }, side, mostZoom));
+      }
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [enabled]);
+  }, [enabled, startZoom, mostZoom]);
 
-  const change = useCallback((next: (view: View) => View) => setView((now) => kept(next(now), width)), [width]);
+  const change = useCallback((next: (view: View) => View) => setView((now) => kept(next(now), width, mostZoom)), [width, mostZoom]);
 
   /* The wheel, or a trackpad's pinch, zooms about the pointer; never the page. */
   useEffect(() => {
@@ -88,39 +134,56 @@ export function TsunagiViewport({
       event.preventDefault();
       const rect = element.getBoundingClientRect();
       const factor = Math.exp(-event.deltaY * (event.ctrlKey ? 0.01 : 0.002));
-      setView((now) => zoomedAbout(now, factor, event.clientX - rect.left, event.clientY - rect.top, rect.width));
+      setView((now) => zoomedAbout(now, factor, event.clientX - rect.left, event.clientY - rect.top, rect.width, mostZoom));
     };
     element.addEventListener("wheel", wheel, { passive: false });
     return () => element.removeEventListener("wheel", wheel);
-  }, [enabled]);
+  }, [enabled, mostZoom]);
 
   /* While a line is dragged near an edge of a zoomed board, the view moves toward it, a little each frame. */
   useEffect(() => {
     if (!enabled || view.zoom <= 1) return;
-    let frame = 0;
+    let raf = 0;
     const tick = () => {
-      frame = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
       const finger = held.current;
       const element = box.current;
       if (finger === null || element === null) return;
       const rect = element.getBoundingClientRect();
-      const dx = finger.x - rect.left < EDGE ? EDGE_STEP : rect.right - finger.x < EDGE ? -EDGE_STEP : 0;
-      const dy = finger.y - rect.top < EDGE ? EDGE_STEP : rect.bottom - finger.y < EDGE ? -EDGE_STEP : 0;
+      // Clues pinned at the top and left cover the first cells there: the edge a line is nearing is where they end.
+      const band = pinned === undefined ? 0 : pinned.inset * areaSide.current;
+      const dx = finger.x - rect.left < EDGE + band ? EDGE_STEP : rect.right - finger.x < EDGE ? -EDGE_STEP : 0;
+      const dy = finger.y - rect.top < EDGE + band ? EDGE_STEP : rect.bottom - finger.y < EDGE ? -EDGE_STEP : 0;
       if (dx === 0 && dy === 0) return;
-      setView((now) => kept({ ...now, x: now.x + dx, y: now.y + dy }, rect.width));
+      setView((now) => kept({ ...now, x: now.x + dx, y: now.y + dy }, rect.width, mostZoom));
       // The board moved under a finger that did not: tell the board the finger is over another cell now.
       finger.target?.dispatchEvent(new window.PointerEvent("pointermove", { bubbles: true, clientX: finger.x, clientY: finger.y, pointerId: finger.pointer }));
     };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [enabled, view.zoom]);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [enabled, view.zoom, pinned, mostZoom]);
+
+  /* Where the playing area is now, for what is pinned: read after every move of the view, before it is painted. */
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (!enabled || pinned === undefined || element === null) return;
+    const area = element.querySelector("[data-pin-area]");
+    if (area === null) return;
+    const edge = element.getBoundingClientRect();
+    const at = area.getBoundingClientRect();
+    areaSide.current = at.width;
+    setFrame((now) => {
+      const next = { left: at.left - edge.left, top: at.top - edge.top, side: at.width, width: edge.width, height: edge.height };
+      return now !== null && now.left === next.left && now.top === next.top && now.side === next.side && now.width === next.width && now.height === next.height ? now : next;
+    });
+  }, [enabled, pinned, view, width]);
 
   const press = (key: PadKey) => {
     const step = Math.round(width / 4);
     const middle = width / 2;
     const moves: Record<PadKey, (view: View) => View> = {
-      in: (now) => zoomedAbout(now, 1.5, middle, middle, width),
-      out: (now) => zoomedAbout(now, 1 / 1.5, middle, middle, width),
+      in: (now) => zoomedAbout(now, 1.5, middle, middle, width, mostZoom),
+      out: (now) => zoomedAbout(now, 1 / 1.5, middle, middle, width, mostZoom),
       up: (now) => ({ ...now, y: now.y + step }),
       down: (now) => ({ ...now, y: now.y - step }),
       left: (now) => ({ ...now, x: now.x + step }),
@@ -153,6 +216,12 @@ export function TsunagiViewport({
         <div className="absolute top-0 left-0" style={{ width: width * view.zoom || "100%", transform: `translate(${view.x}px, ${view.y}px)` }}>
           {children}
         </div>
+        {pinned !== undefined && view.zoom > 1 && frame !== null ? (
+          // Over the board, and out of the way of a press: a press on a pinned clue does nothing, and is never a press on the cell under it.
+          <div className="absolute inset-0 overflow-hidden" style={{ pointerEvents: "none" }} data-testid={`${name}-pinned`}>
+            {pinned.render(frame)}
+          </div>
+        ) : null}
       </div>
       {/* Under the board, never over it: a pad in the corner would cover cells a line must be drawn through. */}
       <ViewPad fitted={view.zoom === 1} onFit={() => setView(FITTED)} onPress={press} label="Move and zoom the board" testId={name} inline />

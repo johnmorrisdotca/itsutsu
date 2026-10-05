@@ -16,7 +16,17 @@ import type { CellState, LineClue, PictureClues } from "./pictureLogic.types";
  * line with no shaded cell is all dots, and printed as 0. Half a line, rounded
  * up, is the most runs a line can have, so the slot always fits, and the two
  * panels together are never shorter than the grid (`2 × size × ⌈size/2⌉`).
+ *
+ * A number is one character in base 62 (`RUN_DIGITS`): 1–9, a–z for 10–35 and
+ * A–Z for 36–61, so a run of the 50 squares a 50×50 line holds still fits a
+ * place. Up to 35 it is the base-36 it began as, so an older puzzle reads as it did.
  */
+
+/** The digits a run is written in: 1 to 61, a character each. */
+const RUN_DIGITS = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+/** The most any one run can be, and so the most squares a puzzle's line may hold. */
+export const LONGEST_RUN = RUN_DIGITS.length;
 
 export const SHADED = "#";
 export const EMPTY = ".";
@@ -63,7 +73,7 @@ export function cluesOf(picture: readonly boolean[], size: number): PictureClues
 }
 
 function writeLine(clue: LineClue, slots: number): string {
-  return EMPTY.repeat(slots - clue.length) + clue.map((run) => run.toString(36)).join("");
+  return EMPTY.repeat(slots - clue.length) + clue.map((run) => RUN_DIGITS[run - 1]!).join("");
 }
 
 export function encodeClues(clues: PictureClues): string {
@@ -89,8 +99,8 @@ export function decodeClues(givens: string, size: number): PictureClues | null {
         if (started) return null;
         continue;
       }
-      const run = parseInt(char, 36);
-      if (!/^[0-9a-z]$/.test(char) || !Number.isInteger(run) || run < 1 || run > size) return null;
+      const run = RUN_DIGITS.indexOf(char) + 1;
+      if (run < 1 || run > size) return null;
       started = true;
       clue.push(run);
     }

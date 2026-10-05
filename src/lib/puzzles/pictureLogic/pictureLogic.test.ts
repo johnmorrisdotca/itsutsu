@@ -10,7 +10,7 @@ import { generatePictureLogic } from "./generate";
 import { pictureChecked, pictureHint, pictureWrong } from "./help";
 import { slideLine, wholeLine } from "./lines";
 import { clueDepth, metLines, nextState, painted, runBetween } from "./paint";
-import { drawPicture } from "./picture";
+import { drawPicture, drawScene } from "./picture";
 import type { CellState, PictureClues } from "./pictureLogic.types";
 import { levelOf, solutionOf, solveClues } from "./solve";
 
@@ -34,6 +34,21 @@ describe("the Picture logic code", () => {
     const full = cluesOf(new Array(400).fill(true), 20);
     expect(encodeClues(full).slice(0, 10)).toBe(".........k");
     expect(decodeClues(encodeClues(full), 20)).toEqual(full);
+  });
+
+  it("writes a run past thirty-five as a capital, so a line of fifty squares has a place for its 50", () => {
+    const all = cluesOf(new Array(2500).fill(true), 50);
+    const givens = encodeClues(all);
+    expect(givens).toHaveLength(givensLength(50));
+    expect(givens).toHaveLength(2500);
+    // 35 is "z", 36 "A" and 50 "O"; the run is the whole line.
+    expect(givens.slice(0, 25)).toBe(".".repeat(24) + "O");
+    expect(decodeClues(givens, 50)).toEqual(all);
+    expect(encodeClues(cluesOf(new Array(36 * 36).fill(true), 36)).slice(0, 18)).toBe(".".repeat(17) + "A");
+    // A run longer than its line is no clue, whichever digit it is written in.
+    expect(decodeClues(".".repeat(24) + "P" + ".".repeat(2475), 50)).toBeNull();
+    // What an older puzzle wrote, to twenty or so, reads as it did.
+    expect(decodeClues(".........k" + ".".repeat(390), 20)).not.toBeNull();
   });
 
   it("refuses clues that are not a puzzle's: a gap inside a slot, runs that cannot fit, the wrong length", () => {
@@ -117,6 +132,69 @@ describe("solving Picture logic", () => {
     expect(levelOf(read)).toBe("hard");
     const medium = generatePictureLogic(10, "medium", 4);
     expect(levelOf(decodeClues(medium.givens, 10)!)).toBe("medium");
+  });
+});
+
+describe("the two biggest boards, 40×40 and 50×50", () => {
+  const BIG = [40, 50] as const;
+
+  it("come at easy and medium only, and are read by lines alone: never a guess", () => {
+    for (const size of BIG) {
+      expect(PUZZLE_SPECS.pictureLogic.sizes).toContain(size);
+      expect(levelsFor("pictureLogic", size)).toEqual(["easy", "medium"]);
+      for (const level of ["easy", "medium"] as const) {
+        for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+          const made = generatePictureLogic(size, level, seed);
+          const read = decodeClues(made.givens, size)!;
+          // Solved with trials forbidden: the lines alone finish it, so it has the one answer it was drawn from.
+          const found = solveClues(read, "medium");
+          expect(found?.level, `${size} ${level} seed ${seed}`).toBe(level);
+          expect(encodeCells(found!.grid).replace(/x/g, ".")).toBe(made.solution);
+        }
+      }
+    }
+  });
+
+  it("made for a hard they do not offer, are the medium, and made as quickly as any", () => {
+    for (const size of BIG) {
+      const started = performance.now();
+      const made = generatePictureLogic(size, "hard", 5);
+      expect(performance.now() - started).toBeLessThan(2000);
+      expect(solveClues(decodeClues(made.givens, size)!, "medium")?.level).toBe("medium");
+    }
+  });
+
+  it("make a puzzle with clues worth reading, a scene of four pictures and not one plain blob", () => {
+    for (const size of BIG) {
+      const read = decodeClues(generatePictureLogic(size, "medium", 3).givens, size)!;
+      expect(clueDepth(read), `${size}`).toBeGreaterThanOrEqual(4);
+      const shaded = decodePicture(generatePictureLogic(size, "medium", 3).solution, size)!.filter(Boolean).length;
+      expect(shaded).toBeGreaterThan(size * 4);
+      expect(shaded).toBeLessThan(size * size * 0.7);
+    }
+    expect(drawScene(40, () => "figure", seededRandom(5))).toEqual(drawScene(40, () => "figure", seededRandom(5)));
+  });
+
+  it("are made in a browser's time: every seed, both levels, well under a second on this machine", () => {
+    for (const size of BIG) {
+      for (const level of ["easy", "medium"] as const) {
+        const started = performance.now();
+        for (let seed = 100; seed < 120; seed += 1) generatePictureLogic(size, level, seed);
+        const each = (performance.now() - started) / 20;
+        expect(each, `${size} ${level}`).toBeLessThan(500);
+      }
+    }
+  });
+
+  it("are checked by the server in one pass over the 2,500 squares, and a wrong square is refused", () => {
+    const made = generatePictureLogic(50, "medium", 12);
+    const started = performance.now();
+    for (let again = 0; again < 20; again += 1) expect(checkSolution("pictureLogic", 50, made.givens, made.solution, "medium")).toEqual({ ok: true });
+    expect((performance.now() - started) / 20).toBeLessThan(25);
+    const flipped = made.solution.slice(0, 1250) + (made.solution[1250] === "#" ? "." : "#") + made.solution.slice(1251);
+    expect(checkSolution("pictureLogic", 50, made.givens, flipped, "medium").ok).toBe(false);
+    expect(progressFits("pictureLogic", 50, "x".repeat(2500))).toBe(true);
+    expect(PUZZLE_SPECS.pictureLogic.mostCells).toBeGreaterThanOrEqual(made.givens.length);
   });
 });
 

@@ -95,13 +95,20 @@ const solved = (grid: Grid) => grid.every((cell) => cell !== 0);
  * What a solve needs to finish these clues, and the grid it finishes with: the
  * least level that does it, or null when even trials leave cells unknown —
  * more than one answer, or one only a search would find. Never a guess.
+ *
+ * `most` is the hardest level worth finding out about: a puzzle needing more is
+ * null too, and the work stops there. The big boards are made with it at
+ * "medium" (`generate.ts`), where a trial round over thousands of cells would
+ * be the slowest thing the browser did.
  */
-export function solveClues(clues: PictureClues): { level: PuzzleLevel; grid: Grid } | null {
+export function solveClues(clues: PictureClues, most: PuzzleLevel = "hard"): { level: PuzzleLevel; grid: Grid } | null {
   const grid: Grid = new Array(clues.size * clues.size).fill(0);
   if (!settle(grid, clues, "ends")) return null;
   if (solved(grid)) return { level: "easy", grid };
-  if (!settle(grid, clues, "whole")) return null;
+  // `most` stops the work at the level asked: a generator wanting an easy picture need not read whole lines to learn this one is not.
+  if (most === "easy" || !settle(grid, clues, "whole")) return null;
   if (solved(grid)) return { level: "medium", grid };
+  if (most === "medium") return null;
   for (;;) {
     const { progressed, broken } = trialRound(grid, clues);
     if (broken) return null;

@@ -239,8 +239,14 @@ heaped cloud — and its row and column clues are kept only when a solver that
 never guesses finishes them, which proves the picture is the one answer; easy
 yields to sliding each line's runs to its ends, medium needs a whole line read
 at once, hard needs one square tried and followed. 5×5, 10×10, 15×15 and
-20×20; the givens are the two panels of clues and the answer is the picture,
-checked in O(cells) against the clues (`pictureLogic/check.ts`).
+20×20, then 40×40 and 50×50 on a second shelf of the set-up (easy and medium
+only: every line of them is read without a guess, a trial round over thousands
+of squares being too slow for a browser). A big board is a scene of four
+pictures, one to a quarter, so that its hundred lines have clues worth
+reading; it opens zoomed, and its clues stay at the top and left of its box as
+it is moved. The givens are the two panels of clues (a run is one base-62
+character, so a line of fifty has a place for its 50) and the answer is the
+picture, checked in O(cells) against the clues (`pictureLogic/check.ts`).
 
 The third is **Suido** 水道 (2026-10-01, `src/lib/puzzles/suido/`), our version
 of the pipe-turning puzzle known as Net or NetWalk: a square of pipe pieces that

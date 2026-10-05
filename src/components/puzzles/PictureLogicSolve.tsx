@@ -7,7 +7,7 @@ import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { checkPictureLogic } from "@/lib/puzzles/pictureLogic/check";
 import { answerOfCells, decodeCells, decodeClues, decodePicture, encodeCells } from "@/lib/puzzles/pictureLogic/code";
 import { hintedState, pictureChecked, pictureHint, pictureWrong } from "@/lib/puzzles/pictureLogic/help";
-import { painted, type Pen } from "@/lib/puzzles/pictureLogic/paint";
+import { metLines, painted, type Pen } from "@/lib/puzzles/pictureLogic/paint";
 import type { CellState } from "@/lib/puzzles/pictureLogic/pictureLogic.types";
 import { encodePictureLogicProgress } from "@/lib/puzzles/puzzleProgress";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
@@ -15,6 +15,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PictureLogicGrid } from "./PictureLogicGrid";
+import { pinnedClues } from "./PictureLogicPinned";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { PICTURE_CELL_WORDS, PICTURE_COPY } from "./puzzles.constants";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
@@ -24,6 +25,16 @@ import { TsunagiViewport } from "./TsunagiViewport";
 import { useStepHistory } from "./useStepHistory";
 
 const PENS: readonly Pen[] = ["shade", "mark"];
+
+/**
+ * How near the board of more than twenty squares may be zoomed, and where it opens.
+ * A 50×50 fitted to a phone has cells under six pixels wide, so a thumb needs
+ * eight times that; and a board with a hundred clues is not read whole, so it
+ * opens at three times, with Fit still one press away.
+ */
+const BIG_FROM = 40;
+const BIG_MOST_ZOOM = 8;
+const BIG_START_ZOOM = 3;
 
 /**
  * Solving Picture logic: tap a square to shade it, again to mark it ✕, again
@@ -113,14 +124,30 @@ export function PictureLogicSolve({
     change(next, [cell]);
   };
 
-  const steps = useMemo(() => history.steps.map((code) => [...code]), [history.steps]);
+  /* Every step as the cells it holds, each made once: a board of 2,500 squares kept for hundreds of steps cannot split them all again at every paint. */
+  const [split] = useState(() => new Map<string, string[]>());
+  const steps = useMemo(
+    () =>
+      history.steps.map((code) => {
+        const known = split.get(code);
+        if (known !== undefined) return known;
+        const cells = [...code];
+        split.set(code, cells);
+        return cells;
+      }),
+    [history.steps, split],
+  );
   const finished = done !== null && done.outOfGuesses !== true;
+  const solvedCells = useMemo(() => picture.map((shaded): CellState => (shaded ? 1 : 0)), [picture]);
+  const gridCells = finished ? solvedCells : shown;
+  const met = useMemo(() => metLines(clues, gridCells), [clues, gridCells]);
+  const pinned = useMemo(() => pinnedClues(clues, met), [clues, met]);
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-drawing={drawing} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <TsunagiViewport size={size} name="picture">
-          <PictureLogicGrid clues={clues} cells={finished ? picture.map((shaded): CellState => (shaded ? 1 : 0)) : shown} wrong={hinting.marked} done={done !== null || history.reviewing} finished={finished} onPaint={paint} />
+        <TsunagiViewport size={size} name="picture" pinned={pinned} mostZoom={size >= BIG_FROM ? BIG_MOST_ZOOM : undefined} startZoom={size >= BIG_FROM ? BIG_START_ZOOM : undefined}>
+          <PictureLogicGrid clues={clues} cells={gridCells} met={met} wrong={hinting.marked} done={done !== null || history.reviewing} finished={finished} onPaint={paint} />
         </TsunagiViewport>
       </SolvePaused>
       <PuzzleSteps steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => PICTURE_CELL_WORDS[value] ?? value} />

@@ -2,8 +2,18 @@
 
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 
+/** The change of each step already worked out, so a long list of steps on a big grid is read once and not again at every move. */
+const KNOWN = new WeakMap<readonly unknown[], { index: number; value: unknown } | null>();
+
 /** The one cell a step changed, and what it became; null where the step changed none or several. */
 function changeOf<V>(before: readonly V[], after: readonly V[]): { index: number; value: V } | null {
+  if (KNOWN.has(after)) return KNOWN.get(after) as { index: number; value: V } | null;
+  const change = findChange(before, after);
+  KNOWN.set(after, change);
+  return change;
+}
+
+function findChange<V>(before: readonly V[], after: readonly V[]): { index: number; value: V } | null {
   let found: { index: number; value: V } | null = null;
   for (let index = 0; index < after.length; index += 1) {
     if (before[index] === after[index]) continue;

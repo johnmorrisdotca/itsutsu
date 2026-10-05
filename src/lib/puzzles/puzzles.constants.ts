@@ -299,13 +299,26 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   /*
    * A picture to uncover from its row and column clues (`pictureLogic/`). The
    * givens are the two panels of clues, `2 × size × ⌈size/2⌉` characters (400
-   * at 20×20), and the answer and a kept run a character a cell (400 too).
-   * Every size and level is made in well under a second (`pictureLogic/generate.ts`
-   * has the measurements). 5×5 to 20×20 are the sizes the puzzle is known by;
-   * 15×15 and 20×20 are zoomed on a phone (`TsunagiViewport`), where a cell of
-   * the whole board fitted to 390 pixels is about fourteen wide.
+   * at 20×20, 2,500 at 50×50), and the answer and a kept run a character a
+   * cell. Every size and level is made in well under a second
+   * (`pictureLogic/generate.ts` has the measurements). Six sizes and room for
+   * four tiles, so they are a shelf (`shelves`): 5 to 20, then 15 to 50. The
+   * two biggest, 40×40 and 50×50, come at easy and medium only (`levelsAt`):
+   * both are solved by reading lines, never a trial, which at that size would
+   * be the slowest thing a browser did. 15×15 and bigger are zoomed on a
+   * phone (`TsunagiViewport`), where a cell of the whole board fitted to 390
+   * pixels is about fourteen wide at 15×15 and five at 50×50.
    */
-  pictureLogic: { sizes: [5, 10, 15, 20], offered: [5, 10, 15, 20], defaultSize: 10, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 400 },
+  pictureLogic: {
+    sizes: [5, 10, 15, 20, 40, 50],
+    offered: [5, 10, 15, 20],
+    defaultSize: 10,
+    levels: PUZZLE_LEVEL_LIST,
+    levelsAt: { 40: ["easy", "medium"], 50: ["easy", "medium"] },
+    defaultLevel: "medium",
+    mostCells: 2500,
+    shelves: true,
+  },
   /*
    * KLONDIKE, a deal of cards rather than a grid (`solitaire/`): its "size" is
    * how many cards the stock turns, one or three, and its level how many times
@@ -643,7 +656,9 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     5: { label: "Quick", kanji: "速" },
     10: { label: "Standard", kanji: "定番" },
     15: { label: "Long", kanji: "長" },
-    20: { label: "Longest", kanji: "最長" },
+    20: { label: "Longer", kanji: "長大" },
+    40: { label: "Huge", kanji: "巨大" },
+    50: { label: "Giant", kanji: "巨" },
   },
   // How many cards the stock turns at a time: the big number on the tile is the count.
   solitaire: {
@@ -1198,7 +1213,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Tap a square to shade it, again to mark it ✕ (sure to be empty), and again to clear it; with the ✕ pen, a tap marks first. Drag along a row or column to do the same to every square like the first. A clue that is met turns pale and is struck through.",
     ],
     board:
-      "10×10 is the usual size. 5×5 is quick; 15×15 and 20×20 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
+      "10×10 is the usual size. 5×5 is quick; 15×15 and 20×20 are long evenings, and 40×40 and 50×50 are for the patient, in easy and medium only: every line can still be worked out without a guess. Past 10×10 the board zooms on a phone, with Fit and the arrows under it, and the clues stay put as you move.",
   },
   /*
    * KLONDIKE, by the name most people know it by. "Solitaire" is the family of

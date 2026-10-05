@@ -473,6 +473,14 @@ const SURVEY: Survey[] = [
   },
   ...SURVEYED_PUZZLES.map((slug) => puzzle(slug)),
   puzzle("number-place", "size=16&level=easy"),
+  // Picture logic's biggest, 50×50 (2026-10-05): a hundred lines of clues, which the modal has to hold with nothing to scroll. It opens zoomed, three times the width of its box, so the empty-column measure is taken after Fit, with the whole board in view.
+  {
+    ...puzzle("picture-logic", "size=50&level=medium"),
+    then: async (page) => {
+      await page.getByTestId("picture-fit").click();
+      await expect(page.getByTestId("picture-viewport")).toHaveAttribute("data-zoom", "1.00");
+    },
+  },
   // Tsunagi's levels are fixed boards: its first, as a new player meets it.
   { name: "/games/tsunagi/play", open: async (page) => {
     await page.goto("/games/tsunagi/play?size=4&level=easy&seed=6");
