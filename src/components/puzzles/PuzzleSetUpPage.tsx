@@ -10,7 +10,7 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
 import { meikyuuSolvedBy } from "@/lib/puzzles/server/meikyuuRecords";
-import { isMeikyuuSize } from "@/lib/puzzles/meikyuu/sizes";
+import { isMeikyuuSize, meikyuuSizeFromAddress } from "@/lib/puzzles/meikyuu/sizes";
 import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { suidoModeOf } from "@/lib/puzzles/suido/mode";
@@ -160,10 +160,11 @@ function setUpSolves(solved: Awaited<ReturnType<typeof tsunagiSolvedBy>>): {
   };
 }
 
-/** The size a Meikyuu set-up opens on: any of its four, as `2`; the puzzle's usual otherwise. */
+/** The size a Meikyuu set-up opens on: any of its four, as `2`, or a tall one, as `6x9`; the puzzle's usual otherwise. */
 function meikyuuSizeAsked(query: Record<string, string | string[] | undefined>): number {
-  const asked = Number(Array.isArray(query.size) ? query.size[0] : query.size);
-  return isMeikyuuSize(asked) ? asked : PUZZLE_SPECS.meikyuu.defaultSize;
+  const text = Array.isArray(query.size) ? query.size[0] : query.size;
+  const asked = text === undefined ? null : meikyuuSizeFromAddress(text);
+  return asked !== null && isMeikyuuSize(asked) ? asked : PUZZLE_SPECS.meikyuu.defaultSize;
 }
 
 /** The size a Suido levels' set-up opens on: any of the thirteen the levels come in, as `7` or `5x7`; the puzzle's usual otherwise. */

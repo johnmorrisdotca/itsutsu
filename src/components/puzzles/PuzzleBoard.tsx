@@ -28,10 +28,13 @@ export function PuzzleBoard({
   coordinates = true,
   children,
   rows,
+  rimOf,
 }: {
   size: number;
   /** A board of other than `size` rows, its squares still square (`BoardFrame`): a Gomoji's, eight down however wide. */
   rows?: number;
+  /** The size whose rim the wood keeps, where `size` is only the columns an oblong board is laid out in (a maze two columns to three rows has the rim of any other maze): left out, `size`. */
+  rimOf?: number;
   theme?: BoardThemeTokens;
   /** Row numbers and column letters, as a game's board draws them; on by default, off only where a caller draws its own (Towers' ring of clues). */
   coordinates?: boolean;
@@ -42,7 +45,7 @@ export function PuzzleBoard({
       size={size}
       theme={theme}
       flipped={false}
-      inset={playingAreaInset(size, true)}
+      inset={playingAreaInset(rimOf ?? size, true)}
       lattice={false}
       shape="rhombus"
       coordinates={coordinates}

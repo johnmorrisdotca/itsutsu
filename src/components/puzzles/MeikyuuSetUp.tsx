@@ -5,23 +5,33 @@ import { useEffect, useMemo, useState } from "react";
 
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
-import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
+import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_CHIP_OPEN, PICK_CHIP_SHUT, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
-import { loadMeikyuuLevels, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
-import { MEIKYUU_SIZES, meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
+import { loadMeikyuuLevelsFor, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
+import { isMeikyuuTall, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeLabel, meikyuuTallShape } from "@/lib/puzzles/meikyuu/sizes";
 import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_COPY } from "./meikyuu.constants";
+import { MEIKYUU_CHOICE, MEIKYUU_COPY, SHAPE_COPY } from "./meikyuu.constants";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath, MeikyuuLevelPicker } from "./MeikyuuLevelPicker";
 import { MeikyuuLevelPreview } from "./MeikyuuLevelPreview";
 import { keptSolves } from "./meikyuuKept";
+import { MeikyuuWayUp } from "./MeikyuuStand";
 import { SetUpResume } from "./SetUpResume";
+
+/** How many tall sizes a shelf of the set-up holds: the four tiles every set-up keeps room for. */
+const TALL_SHELF = 4;
+
+/** A tall size as it is read, "20×30". */
+function sizeFrom(size: number): string {
+  const shape = meikyuuTallShape(size);
+  return shape === null ? String(size) : `${shape.width}×${shape.height}`;
+}
 
 /** The lowest level of a size not yet solved; the first when every one is, so Start always has a level to play. */
 function nextLevelOf(count: number, done: ReadonlySet<number>): number {
@@ -60,16 +70,33 @@ export function MeikyuuSetUp({
 }) {
   const hydrated = useHydrated();
   const [size, setSize] = useState(initialSize);
+  const tall = isMeikyuuTall(size);
+  /* The size last chosen of each shape, so turning to the other shape and back leaves it where it was. */
+  const [lastOf, setLastOf] = useState<{ square: number; tall: number }>({ square: tall ? MEIKYUU_SIZES[0]! : initialSize, tall: tall ? initialSize : MEIKYUU_TALL_SIZES[0]! });
+  const chooseSize = (next: number) => {
+    setSize(next);
+    setLastOf((before) => (isMeikyuuTall(next) ? { ...before, tall: next } : { ...before, square: next }));
+  };
+  /* The tall sizes are six and a shelf holds four: the first four, then the last four, turned between with a press. */
+  const [moreTall, setMoreTall] = useState(tall && MEIKYUU_TALL_SIZES.indexOf(initialSize) >= TALL_SHELF);
+  const tallShown = moreTall ? MEIKYUU_TALL_SIZES.slice(-TALL_SHELF) : MEIKYUU_TALL_SIZES.slice(0, TALL_SHELF);
+  const turnTall = () => {
+    const next = !moreTall;
+    setMoreTall(next);
+    const shown = next ? MEIKYUU_TALL_SIZES.slice(-TALL_SHELF) : MEIKYUU_TALL_SIZES.slice(0, TALL_SHELF);
+    if (tall && !shown.includes(size)) chooseSize(next ? shown[shown.length - 1]! : shown[0]!);
+  };
 
-  // The list of levels: one script, fetched when this screen opens.
-  const [ready, setReady] = useState(meikyuuLevelsLoaded());
+  // The list of levels the size is in: one script, fetched when this screen opens and again for the other shape.
+  const [, setArrivals] = useState(0);
+  const ready = meikyuuLevelsLoaded(size);
   useEffect(() => {
     let live = true;
-    void loadMeikyuuLevels().then(() => live && setReady(true));
+    void loadMeikyuuLevelsFor(size).then(() => live && setArrivals((count) => count + 1));
     return () => {
       live = false;
     };
-  }, []);
+  }, [size]);
 
   // This browser's solves, read once the levels are here to say which mazes they were, and joined with the account's.
   const best = useMemo(() => {
@@ -119,7 +146,31 @@ export function MeikyuuSetUp({
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="meikyuu-sizes">
-          <BoardPicker value={size} sizes={MEIKYUU_SIZES} onChange={setSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend="Size" />
+          {/* The shape of the mazes: squares and shapes in four sizes, or the tall ones, for a phone held upright. */}
+          <fieldset className="flex min-w-0 flex-col gap-1.5 self-stretch" data-testid="meikyuu-shapes">
+            <legend className="mb-0.5 text-sm text-ink-soft">{SHAPE_COPY.legend}</legend>
+            <div className="flex gap-1.5">
+              {(["square", "tall"] as const).map((each) => (
+                <button
+                  key={each}
+                  type="button"
+                  className={`${MEIKYUU_CHOICE} ${(each === "tall") === tall ? PICK_CHIP_OPEN : PICK_CHIP_SHUT} flex-1`}
+                  aria-pressed={(each === "tall") === tall}
+                  title={SHAPE_COPY[each].says}
+                  onClick={() => chooseSize(each === "tall" ? lastOf.tall : lastOf.square)}
+                  data-testid={`meikyuu-shape-${each}`}
+                  data-chosen={(each === "tall") === tall ? "true" : "false"}
+                >
+                  {SHAPE_COPY[each].label} <span className="font-mincho opacity-70">{SHAPE_COPY[each].kanji}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <BoardPicker value={size} sizes={tall ? tallShown : MEIKYUU_SIZES} onChange={chooseSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend="Size" />
+          {/* The press that turns the tall sizes' shelf: always in its place, so a square size's screen is as tall as a tall one's. */}
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm ${tall ? "" : "invisible"}`} onClick={turnTall} disabled={!tall} aria-hidden={tall ? undefined : true} tabIndex={tall ? undefined : -1} data-testid="meikyuu-more-sizes">
+            {moreTall ? SHAPE_COPY.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : SHAPE_COPY.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
+          </button>
         </div>
       </div>
 
@@ -130,6 +181,8 @@ export function MeikyuuSetUp({
           </p>
           {/* The colours of the preview above and of every maze drawn after it (`MeikyuuColours`). */}
           <MeikyuuColours className="self-start" />
+          {/* Which way up a tall maze is shown; it keeps its place for a square one, dimmed, so choosing a size moves nothing. */}
+          <MeikyuuWayUp active={tall} />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />

@@ -298,6 +298,11 @@ package's own (`sizeOf`), not ours.
 | All levels | the end card, My games | the board of levels at that size; not "Back to the levels" |
 | Undo · Restart · Fit | under the board | the usual words; Restart clears the line, Fit shows the whole maze |
 | − · + | under the board | zoom out and in, named for a screen reader as "Zoom out" and "Zoom in" |
+| Square 四角 · Tall 縦 | the set-up's Shape choice (2026-10-05) | the two kinds of maze box: squares and shapes in four sizes, or the tall ones, two columns to three rows, for a phone held upright; "Tall", not "Portrait" or "Vertical", which are the words of a screen |
+| Tall 6×9 · Tall 20×30 | the size line over the board, My games, the tile's caption | a tall size by its columns and rows; the tile's picture carries the same figures |
+| Tiny · Little · Middle · Big · Bigger · Biggest | the tall size tiles | a word for how much maze there is; not Small to Huge, which are the squares' own |
+| Bigger, to 20×30 → · ← Smaller, from 6×9 | the press under the tall tiles | six tall sizes, four tiles a shelf, the other shelf a press away |
+| Auto · Upright · Lying down | the way-up choice, "Tall mazes, which way up" | Auto is upright on a phone held upright and on its side where that makes the maze bigger; "Lying down", not "Landscape" or "Rotated" |
 | New game | beside Pause | the shared control (`PuzzleNewGameBeside`), as on every puzzle |
 | In and out · Find the goal · Out from the middle · Keys | a level's chips | the four ways to play a maze, named by where the line starts and where it has to get to |
 | Difficulty | a level's chips | one word for how hard it measured, as on Tsunagi's and Suido's levels |

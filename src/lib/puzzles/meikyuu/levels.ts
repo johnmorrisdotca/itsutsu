@@ -1,8 +1,9 @@
 import type { MeikyuuMazeLevel } from "@johnmorrisdotca/meikyuu/levels";
+import type { MeikyuuTallLevel } from "@johnmorrisdotca/meikyuu/levels/tall";
 
 import type { Puzzle } from "../puzzles.types";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./levelCounts";
-import { MEIKYUU_SIZES, meikyuuSizeOfWord } from "./sizes";
+import { isMeikyuuTall, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeOfWord, meikyuuTallSize } from "./sizes";
 import { encodeWay } from "./way";
 
 export { nextLevelLabel } from "../fixedLevel";
@@ -41,20 +42,30 @@ export type MeikyuuLevelRow = {
 };
 
 type Package = typeof import("@johnmorrisdotca/meikyuu/levels");
+type TallPackage = typeof import("@johnmorrisdotca/meikyuu/levels/tall");
 
 const bySize = new Map<number, readonly MeikyuuLevelRow[]>();
 
 let fromModule: (() => Promise<Package>) | null = null;
+let tallFromModule: (() => Promise<TallPackage>) | null = null;
 
-/** Used by `levelsModule.ts` only: how to read the list where there is no browser. */
-export function readMeikyuuLevelsWith(source: () => Promise<Package>): void {
+/** Used by `levelsModule.ts` only: how to read the lists where there is no browser. */
+export function readMeikyuuLevelsWith(source: () => Promise<Package>, tallSource: () => Promise<TallPackage>): void {
   fromModule = source;
+  tallFromModule = tallSource;
 }
 
 async function importList(): Promise<Package> {
   if (typeof window !== "undefined") return import("@johnmorrisdotca/meikyuu/levels");
   if (fromModule === null) throw new Error("Meikyuu's levels are read on the server through levelsModule.ts, which was not imported.");
   return fromModule();
+}
+
+/** The tall list is a script of its own (96 KB): a browser fetches it only when a tall size is asked for. */
+async function importTallList(): Promise<TallPackage> {
+  if (typeof window !== "undefined") return import("@johnmorrisdotca/meikyuu/levels/tall");
+  if (tallFromModule === null) throw new Error("Meikyuu's tall levels are read on the server through levelsModule.ts, which was not imported.");
+  return tallFromModule();
 }
 
 /** The package's list split into the four sizes, each level at the place it says it has in its size. */
@@ -70,21 +81,57 @@ function split(list: Package): void {
   for (const [size, own] of rows) bySize.set(size, own);
 }
 
-/** The levels, fetched once. Every size arrives together: they are one list. */
+/** The tall list split into its six sizes, each kept under its width and height as one number (`meikyuu/sizes.ts`). */
+function splitTall(list: TallPackage): void {
+  const rows = new Map<number, MeikyuuLevelRow[]>();
+  for (const level of list.MEIKYUU_TALL_LEVELS as readonly MeikyuuTallLevel[]) {
+    const shape = list.MEIKYUU_TALL_SIZES.find((each) => each.size === level.size);
+    if (shape === undefined) continue;
+    const size = meikyuuTallSize(shape.width, shape.height);
+    const row: MeikyuuLevelRow = { number: level.number, code: level.code, cells: level.cells, effort: level.effort, rating: level.rating, score: level.score };
+    const own = rows.get(size) ?? [];
+    own[level.inSize - 1] = row;
+    rows.set(size, own);
+  }
+  for (const [size, own] of rows) bySize.set(size, own);
+}
+
+/** The levels of the four sizes, fetched once. The four arrive together: they are one list. */
 export async function loadMeikyuuLevels(): Promise<void> {
-  if (bySize.size === MEIKYUU_SIZES.length) return;
+  if (MEIKYUU_SIZES.every((size) => bySize.has(size))) return;
   split(await importList());
+}
+
+/** The tall levels, fetched once. The six sizes arrive together: they are one list. */
+export async function loadMeikyuuTallLevels(): Promise<void> {
+  if (MEIKYUU_TALL_SIZES.every((size) => bySize.has(size))) return;
+  splitTall(await importTallList());
+}
+
+/** The list a size is in, fetched once: the four sizes' or the tall one. */
+export async function loadMeikyuuLevelsFor(size: number): Promise<void> {
+  await (isMeikyuuTall(size) ? loadMeikyuuTallLevels() : loadMeikyuuLevels());
+}
+
+/** Every size's levels, both lists: for the server, which checks and counts a solve of any of them. */
+export async function loadEveryMeikyuuLevels(): Promise<void> {
+  await Promise.all([loadMeikyuuLevels(), loadMeikyuuTallLevels()]);
 }
 
 /** A size's levels, fetched once and kept. */
 export async function loadMeikyuuLevelsAt(size: number): Promise<readonly MeikyuuLevelRow[]> {
-  await loadMeikyuuLevels();
+  await loadMeikyuuLevelsFor(size);
   return meikyuuLevelsAt(size);
 }
 
-/** Whether the levels have arrived here. */
-export function meikyuuLevelsLoaded(): boolean {
-  return bySize.size === MEIKYUU_SIZES.length;
+/** Whether the levels of a size (by default the four sizes') have arrived here. */
+export function meikyuuLevelsLoaded(size: number = MEIKYUU_SIZES[0]!): boolean {
+  return bySize.has(size);
+}
+
+/** Whether every list has arrived: the four sizes' and the tall one. */
+export function everyMeikyuuLevelLoaded(): boolean {
+  return MEIKYUU_EVERY_SIZE.every((size) => bySize.has(size));
 }
 
 /** A size already loaded, or a refusal: nothing answers for a list it does not have. */

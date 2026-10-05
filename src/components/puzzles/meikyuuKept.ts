@@ -36,7 +36,7 @@ function keptMazes(): Record<string, number> {
 
 /** The levels this browser has solved at a size, each with its best time: none until the levels are loaded. */
 export function keptSolves(size: number): Record<number, number> {
-  if (!meikyuuLevelsLoaded()) return {};
+  if (!meikyuuLevelsLoaded(size)) return {};
   const out: Record<number, number> = {};
   for (const [code, ms] of Object.entries(keptMazes())) {
     const level = meikyuuLevelOfBoard(size, code);

@@ -457,6 +457,16 @@ const SURVEY: Survey[] = [
     await page.goto("/games/meikyuu/play?size=4&level=hard&seed=256");
     await ready(page, "puzzle-play");
   } },
+  // A tall maze (Meikyuu's second list, two columns to three rows), stood upright and then on its side, the biggest it comes in: the modal is as wide as the wood and nothing in it scrolls or is empty.
+  { name: "/games/meikyuu/play tall", open: async (page) => {
+    await page.goto("/games/meikyuu/play?size=20x30&level=hard&seed=256");
+    await ready(page, "puzzle-play");
+  } },
+  { name: "/games/meikyuu/play tall lying down", open: async (page) => {
+    await page.addInitScript(() => window.localStorage.setItem("itsutsu.meikyuu.wayup", "landscape"));
+    await page.goto("/games/meikyuu/play?size=6x9&level=easy&seed=3");
+    await ready(page, "puzzle-play");
+  } },
   table("dots-and-boxes", "dots-start"),
   table("superghost", "ghost-start"),
   table("mancala", "mancala-start"),

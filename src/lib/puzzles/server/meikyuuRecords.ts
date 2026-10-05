@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { meikyuuLevelBand } from "../meikyuu/levelCounts";
 import { meikyuuLevelOfBoard, meikyuuLevelsAt } from "../meikyuu/levels";
 import { loadMeikyuuLevelsFromModule } from "../meikyuu/levelsModule";
-import { MEIKYUU_SIZES } from "../meikyuu/sizes";
+import { isMeikyuuSize, MEIKYUU_EVERY_SIZE } from "../meikyuu/sizes";
 import type { LevelFastest } from "./tsunagiRecords";
 
 /**
@@ -25,14 +25,16 @@ export type MeikyuuSolved = Record<number, Record<number, MeikyuuLevelBest>>;
 
 export async function meikyuuSolvedBy(memberId: string): Promise<MeikyuuSolved> {
   const rows = await prisma.puzzleSolve.findMany({
-    where: { memberId, kind: "meikyuu", solved: true, size: { in: [...MEIKYUU_SIZES] } },
+    where: { memberId, kind: "meikyuu", solved: true, size: { in: [...MEIKYUU_EVERY_SIZE] } },
     orderBy: { elapsedMs: "asc" },
     select: { id: true, size: true, givens: true, elapsedMs: true },
   });
   if (rows.length === 0) return {};
-  await loadMeikyuuLevelsFromModule();
+  // Only the lists the member has solved something in: a member of the squares alone never reads the tall one.
+  const sizes = [...new Set(rows.map((row) => row.size))];
+  await loadMeikyuuLevelsFromModule(sizes);
   // A maze's level, found once for every level a size has rather than once for every solve.
-  const numbers = new Map<number, Map<string, number>>(MEIKYUU_SIZES.map((size) => [size, new Map(meikyuuLevelsAt(size).map((row, at) => [row.code, at + 1]))]));
+  const numbers = new Map<number, Map<string, number>>(sizes.map((size) => [size, new Map(meikyuuLevelsAt(size).map((row, at) => [row.code, at + 1]))]));
   const out: MeikyuuSolved = {};
   for (const row of rows) {
     const level = numbers.get(row.size)?.get(row.givens);
@@ -52,7 +54,8 @@ export const MEIKYUU_FASTEST_SHOWN = 5;
  * level being its band, then narrowed to its maze.
  */
 export async function meikyuuLevelFastest(size: number, level: number): Promise<LevelFastest[]> {
-  await loadMeikyuuLevelsFromModule();
+  if (!isMeikyuuSize(size)) return [];
+  await loadMeikyuuLevelsFromModule([size]);
   const givens = meikyuuLevelsAt(size)[level - 1]?.code;
   if (givens === undefined) return [];
   const rows = await prisma.puzzleSolve.findMany({
@@ -68,6 +71,7 @@ export async function meikyuuLevelFastest(size: number, level: number): Promise<
 
 /** The level a Meikyuu solve's maze is, at its size, or null for a maze no level has: the list is read once, here, and nowhere a page does not ask. */
 export async function meikyuuLevelOfSolve(size: number, givens: string): Promise<number | null> {
-  await loadMeikyuuLevelsFromModule();
+  if (!isMeikyuuSize(size)) return null;
+  await loadMeikyuuLevelsFromModule([size]);
   return meikyuuLevelOfBoard(size, givens);
 }

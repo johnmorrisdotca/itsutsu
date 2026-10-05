@@ -1,5 +1,5 @@
 import type { PuzzleLevel } from "../puzzles.types";
-import { isMeikyuuSize } from "./sizes";
+import { isMeikyuuSize, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES } from "./sizes";
 
 /**
  * HOW MANY LEVELS A MEIKYUU SIZE HAS, AND WHICH THIRD A LEVEL SITS IN, with
@@ -8,7 +8,8 @@ import { isMeikyuuSize } from "./sizes";
  * the data a size's levels are read from. `levels.test.ts` holds these numbers
  * to the package's, for every size.
  *
- * The package (2.0.0 on) has 1,024 maze levels, 256 to a size (`MEIKYUU_LEVELS_PER_SIZE`):
+ * The package (2.0.0 on) has 1,024 maze levels, 256 to a size (`MEIKYUU_LEVELS_PER_SIZE`), and
+ * 1,536 tall ones in six sizes of 256 (`levels/tall`):
  * a size is sixteen pages of sixteen, and its levels run from easy to hard in the order the
  * package gives, by the score it puts on how hard a maze is to play. John, 2026-10-02: "make
  * the numbers of puzzles more normal numbers... things like 132 or 256". The first release
@@ -18,7 +19,11 @@ import { isMeikyuuSize } from "./sizes";
  */
 export const MEIKYUU_LEVELS_A_SIZE = 256;
 
-export const MEIKYUU_LEVEL_COUNTS: Readonly<Record<number, number>> = { 1: MEIKYUU_LEVELS_A_SIZE, 2: MEIKYUU_LEVELS_A_SIZE, 3: MEIKYUU_LEVELS_A_SIZE, 4: MEIKYUU_LEVELS_A_SIZE };
+export const MEIKYUU_LEVEL_COUNTS: Readonly<Record<number, number>> = Object.fromEntries(MEIKYUU_EVERY_SIZE.map((size) => [size, MEIKYUU_LEVELS_A_SIZE]));
+
+/** How many levels the four sizes have between them, and how many the six tall ones: read from the sizes, never typed into copy. */
+export const MEIKYUU_SQUARE_LEVELS_TOTAL = MEIKYUU_SIZES.length * MEIKYUU_LEVELS_A_SIZE;
+export const MEIKYUU_TALL_LEVELS_TOTAL = MEIKYUU_TALL_SIZES.length * MEIKYUU_LEVELS_A_SIZE;
 
 /** How many levels a size has; nought for a size the levels do not come in. */
 export function meikyuuLevelCount(size: number): number {

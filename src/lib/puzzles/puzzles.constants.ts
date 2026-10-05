@@ -11,8 +11,8 @@ import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
 import { SUIDO_LEVEL_SIZES } from "./suido/sizes";
 import { thousands } from "../ui/thousands";
-import { MEIKYUU_LEVEL_COUNTS } from "./meikyuu/levelCounts";
-import { MEIKYUU_SIZES, meikyuuSizeLabel } from "./meikyuu/sizes";
+import { MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS_TOTAL } from "./meikyuu/levelCounts";
+import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SHAPES, meikyuuSizeLabel } from "./meikyuu/sizes";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -69,8 +69,10 @@ function mahjongTiles(size: number): number {
   return layoutFor(size)?.slots.length ?? 0;
 }
 
-/** How many levels Meikyuu has in all, read from its sizes rather than typed into its copy. */
-const MEIKYUU_LEVELS_TOTAL = Object.values(MEIKYUU_LEVEL_COUNTS).reduce((total, count) => total + count, 0);
+/** How many levels Meikyuu has in all, read from its sizes rather than typed into its copy: the four sizes, and the tall ones beside them. */
+const MEIKYUU_LEVELS_TOTAL = MEIKYUU_SQUARE_LEVELS_TOTAL + MEIKYUU_TALL_LEVELS_TOTAL;
+/** The tall sizes as a person reads them, "6×9, 8×12 and so on to 20×30". */
+const MEIKYUU_TALL_RANGE = `${MEIKYUU_TALL_SHAPES[0]![0]}×${MEIKYUU_TALL_SHAPES[0]![1]} to ${MEIKYUU_TALL_SHAPES.at(-1)![0]}×${MEIKYUU_TALL_SHAPES.at(-1)![1]}`;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
 export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
@@ -401,7 +403,9 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * MEIKYUU, the maze (`meikyuu/`, the package `@johnmorrisdotca/meikyuu`):
    * 1,024 fixed levels (256 to a size), the same for everybody, in four sizes that are the
    * package's own words for how many cells a maze has (small, medium, large,
-   * huge: `meikyuu/sizes.ts`), numbered 1 to 4 here. A maze has no side, so the
+   * huge: `meikyuu/sizes.ts`), numbered 1 to 4 here, and 1,536 TALL levels in six
+   * sizes of 256 for a phone held upright, kept as their width and height in two
+   * digits each (609 is 6×9), as Suido's long boards are. A maze has no side, so the
    * number is only the size's place; the level's number in its size is the
    * seed, as Tsunagi's is (`fixedLevels`). The givens are the level's recipe,
    * a short word such as `square:12x9:wilson:to-goal:48213` (45 characters at
@@ -411,7 +415,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * one anybody can be raced on) and no countdown, as a Suido level has none.
    */
   meikyuu: {
-    sizes: MEIKYUU_SIZES,
+    // The four sizes and the six tall ones (`meikyuu/sizes.ts`: 609 is 6×9). The set-up offers the four as tiles and turns to the tall ones on a choice of its own (`MeikyuuSetUp`).
+    sizes: MEIKYUU_EVERY_SIZE,
     offered: MEIKYUU_SIZES,
     defaultSize: 1,
     levels: PUZZLE_LEVEL_LIST,
@@ -621,6 +626,13 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     2: { label: "Medium", kanji: "中" },
     3: { label: "Large", kanji: "大" },
     4: { label: "Huge", kanji: "巨大" },
+    // The tall mazes, by width and height (`meikyuu/sizes.ts`): the tile's picture says "6×9", so its name is a word for how much maze there is.
+    609: { label: "Tiny", kanji: "極小" },
+    812: { label: "Little", kanji: "小型" },
+    1015: { label: "Middle", kanji: "中型" },
+    1218: { label: "Big", kanji: "大型" },
+    1624: { label: "Bigger", kanji: "特大" },
+    2030: { label: "Biggest", kanji: "超大" },
   },
   // A cube by its side, the big number on the tile; the names are ours, never a maker's.
   cube: {
@@ -1269,7 +1281,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   meikyuu: {
     label: "Meikyuu",
     kanji: "迷宮",
-    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them.`,
+    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them, and tall ones for a phone held upright.`,
     inspiredBy: "the maze drawn through with a pencil, from its start to its goal",
     alsoKnownAs: ["Maze", "Labyrinth", "迷路"],
     origin:
@@ -1280,10 +1292,10 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A level is played one of four ways: in at one door in the outer wall and out at another; from a cell inside to a dot hidden deep in the maze; from the middle of the shape out through a door; or from inside, picking up every key on the way to a door. A key is at the end of a branch, off the way, so each one costs a detour, and stays picked up when you draw back.",
       "A big maze is looked at through the board. Zoom with the wheel, a pinch, or the + and − buttons, and move the view with two fingers or by dragging anywhere but the line. Fit brings the whole maze back, and near the edge a line you are drawing moves the view with it.",
       "Undo takes back your last stroke and Restart clears the line. The keyboard works too: the arrow keys step the line, and Backspace undoes.",
-      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody, in four sizes and each size ordered so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
+      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody: ${MEIKYUU_LEVELS_A_SIZE} in each of four sizes, and ${MEIKYUU_LEVELS_A_SIZE} in each of six tall ones, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
       "The clock starts with your first stroke, and the level is solved the moment the line reaches the goal, with every key picked up.",
     ],
     board:
-      "Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon.",
+      `Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from ${MEIKYUU_TALL_RANGE} cells, and turn on their side by themselves on a wide screen.`,
   },
 };

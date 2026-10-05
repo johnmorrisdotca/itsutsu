@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { loadMeikyuuLevels, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
+import { loadMeikyuuLevelsFor, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
+import { isMeikyuuTall } from "@/lib/puzzles/meikyuu/sizes";
 
 import { MeikyuuStill } from "./MeikyuuStill";
 import { MeikyuuBlank } from "./MeikyuuFrame";
@@ -13,17 +14,18 @@ import { MeikyuuBlank } from "./MeikyuuFrame";
  * the set-up page is drawn on a server, and a picture of a maze is not worth making there.
  */
 export function MeikyuuPreview({ size }: { size: number }) {
-  const [ready, setReady] = useState(meikyuuLevelsLoaded());
+  const [ready, setReady] = useState(meikyuuLevelsLoaded(size));
   useEffect(() => {
     let live = true;
-    void loadMeikyuuLevels().then(() => live && setReady(true));
+    void loadMeikyuuLevelsFor(size).then(() => live && setReady(true));
     return () => {
       live = false;
     };
-  }, []);
-  const row = ready ? meikyuuLevelsAt(size)[0] : undefined;
+  }, [size]);
+  const tall = isMeikyuuTall(size);
+  const row = ready && meikyuuLevelsLoaded(size) ? meikyuuLevelsAt(size)[0] : undefined;
   if (row === undefined) {
-    return <MeikyuuBlank />;
+    return <MeikyuuBlank stand={tall ? "upright" : "square"} />;
   }
-  return <MeikyuuStill key={`${size}`} code={row.code} testId="meikyuu-preview-maze" />;
+  return <MeikyuuStill key={`${size}`} code={row.code} testId="meikyuu-preview-maze" tall={tall} stand={tall ? "upright" : undefined} />;
 }

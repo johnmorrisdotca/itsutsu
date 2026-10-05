@@ -2,8 +2,8 @@
 
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
 import { meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
-import { meikyuuLevelsAt, type MeikyuuLevelRow } from "@/lib/puzzles/meikyuu/levels";
-import { meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
+import { meikyuuLevelsAt, meikyuuLevelsLoaded, type MeikyuuLevelRow } from "@/lib/puzzles/meikyuu/levels";
+import { isMeikyuuTall, meikyuuSizeInWords } from "@/lib/puzzles/meikyuu/sizes";
 
 import { MeikyuuStill } from "./MeikyuuStill";
 import { MeikyuuBlank } from "./MeikyuuFrame";
@@ -38,19 +38,21 @@ export function MeikyuuLevelPreview({
   ready: boolean;
 }) {
   const solved = best !== undefined;
-  const row: MeikyuuLevelRow | undefined = ready ? meikyuuLevelsAt(size)[level - 1] : undefined;
+  const row: MeikyuuLevelRow | undefined = ready && meikyuuLevelsLoaded(size) ? meikyuuLevelsAt(size)[level - 1] : undefined;
+  // A tall maze stands upright in the box, which is the one size whatever is chosen: the wood is as tall as the box.
+  const tall = isMeikyuuTall(size);
   const count = meikyuuLevelCount(size);
   return (
     <figure className="flex w-full flex-col items-center gap-2" data-testid="meikyuu-preview" data-size={size} data-level={level} data-state={solved ? "solved" : "open"} data-drawn={row !== undefined ? "true" : "false"} data-maze={row?.code}>
       <div className={`${SET_UP_PREVIEW_BOX} relative`} aria-hidden="true">
         {row === undefined ? (
-          <MeikyuuBlank />
+          <MeikyuuBlank stand={tall ? "upright" : "square"} />
         ) : (
-          <MeikyuuStill key={`${size}-${level}-${solved ? "solved" : "dealt"}`} code={row.code} solved={solved} testId="meikyuu-preview-maze" />
+          <MeikyuuStill key={`${size}-${level}-${solved ? "solved" : "dealt"}`} code={row.code} solved={solved} testId="meikyuu-preview-maze" tall={tall} stand={tall ? "upright" : undefined} />
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="meikyuu-preview-caption">
-        Level {level} of {count} at {meikyuuSizeLabel(size).toLowerCase()} size
+        Level {level} of {count} at {meikyuuSizeInWords(size)}
         {solved ? (
           <>
             : solved, best <SolveTime kind="meikyuu" solveId={solveId} elapsedMs={best} mine testId="meikyuu-preview-best" />.

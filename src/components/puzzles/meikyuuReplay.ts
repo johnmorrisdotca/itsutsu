@@ -1,4 +1,4 @@
-import type { Maze } from "@johnmorrisdotca/meikyuu";
+import { toDisplay, turnedBox, type Maze } from "@johnmorrisdotca/meikyuu";
 import { fitView } from "@johnmorrisdotca/meikyuu/play";
 
 /**
@@ -10,17 +10,20 @@ import { fitView } from "@johnmorrisdotca/meikyuu/play";
  * surface treats a pointer it cannot capture (one a script made) as it treats a finger.
  *
  * The board has just been mounted, so it is fitted: the pixel of a cell is worked out from the whole of the
- * maze in the box, as the surface does (`fitView`, its default margin). Returns how many cells of the line
- * the board took; a box with no room yet (hidden, not laid out) takes none.
+ * maze in the box, as the surface does (`fitView`, its default margin). A tall maze lying down is shown a quarter
+ * turn counter-clockwise (`turned`, the board's `data-turned`): the box holds the TURNED maze, so the area fitted is
+ * the turned one and every cell is where the package would show it (`turnedBox`, `toDisplay`), and the line is the
+ * same line. A box with no room yet (hidden, not laid out) takes none.
  */
-export function drawAgain(host: HTMLElement, maze: Maze, cells: readonly number[]): void {
+export function drawAgain(host: HTMLElement, maze: Maze, cells: readonly number[], turned = false): void {
   const box = host.querySelector<HTMLElement>(".mk-box");
   if (box === null || cells.length === 0) return;
   const rect = box.getBoundingClientRect();
   if (rect.width < 1 || rect.height < 1) return;
-  const view = fitView({ width: rect.width, height: rect.height, area: maze.grid.box });
+  const turn = turned ? 1 : 0;
+  const view = fitView({ width: rect.width, height: rect.height, area: turnedBox(turn, maze.grid.box) });
   const at = (cell: number): { clientX: number; clientY: number } => {
-    const [x, y] = maze.grid.centres[cell]!;
+    const [x, y] = toDisplay(turn, maze.grid.centres[cell]!);
     return { clientX: rect.left + (x - view.x) * view.scale, clientY: rect.top + (y - view.y) * view.scale };
   };
   const send = (type: string, cell: number): void => {

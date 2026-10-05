@@ -9,7 +9,7 @@ import { generateCube } from "./cube/generate";
 import { generateDiagonal, generateJigsaw, generateMoreOrLess, generateNumberPlace, generateSumCages, generateTowers } from "./kazu";
 import { generateSuido } from "./suido/generate";
 import { loadSuidoLevelsAt, suidoLevelPuzzle } from "./suido/levels";
-import { loadMeikyuuLevels, meikyuuLevelPuzzle } from "./meikyuu/levels";
+import { loadMeikyuuLevelsFor, meikyuuLevelPuzzle } from "./meikyuu/levels";
 import { suidoLevelOfSeed } from "./suido/seed";
 import { loadWordData } from "./gomoji/wordData";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
@@ -124,7 +124,7 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   if (kind === "gomoji" || kind === "gomojiPop" || kind === "koushi" || kind === "kumimoji") await loadWordData("en");
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
-  if (kind === "meikyuu") await loadMeikyuuLevels();
+  if (kind === "meikyuu") await loadMeikyuuLevelsFor(size);
   if (kind === "suido" && puzzleLoads(kind, seed)) await loadSuidoLevelsAt(size);
   if (kind === "kumimoji") await loadTileWords(language);
   // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).

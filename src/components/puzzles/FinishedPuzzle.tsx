@@ -37,6 +37,7 @@ import { PatienceReplay } from "./PatienceReplay";
 import { SolitaireReplay } from "./SolitaireReplay";
 import { CubeReplay } from "./CubeReplay";
 import { SuidoBoard } from "./SuidoBoard";
+import { isMeikyuuTall } from "@/lib/puzzles/meikyuu/sizes";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuStill } from "./MeikyuuStill";
 import { decodeStepLog } from "@/lib/puzzles/stepLog";
@@ -139,7 +140,7 @@ export function FinishedPuzzle({
     return (
       <Focused story={story} hydrated={hydrated} testId="solve-board" state={state}>
         <div className="mx-auto w-full" data-focus-board>
-          <MeikyuuStill code={givens} way={answer} solved={answer !== null || derive} />
+          <MeikyuuStill code={givens} way={answer} solved={answer !== null || derive} tall={isMeikyuuTall(size)} />
         </div>
         <MeikyuuColours className="self-start" />
         <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>

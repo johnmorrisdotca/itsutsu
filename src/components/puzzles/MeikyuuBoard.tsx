@@ -5,10 +5,12 @@ import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import type { MeikyuuMount } from "@johnmorrisdotca/meikyuu/play";
 
 import { loadMeikyuuPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
+import { MEIKYUU_TALL_RATIO } from "@/lib/puzzles/meikyuu/sizes";
 import { decodeWay, encodeCells } from "@/lib/puzzles/meikyuu/steps";
 
 import { drawAgain } from "./meikyuuReplay";
 import { MeikyuuFrame } from "./MeikyuuFrame";
+import { MeikyuuSlot, useStand } from "./MeikyuuStand";
 
 /** What the board says of the line after anything that changes it: a stroke, an undo, a restart, a key press. */
 export type MeikyuuReading = {
@@ -52,6 +54,7 @@ const INSET_SIZE = 9;
  */
 export function MeikyuuBoard({
   code,
+  tall = false,
   way = "",
   locked = false,
   onChange,
@@ -59,6 +62,8 @@ export function MeikyuuBoard({
 }: {
   /** The maze, as a level's recipe (`square:12x9:wilson:to-goal:48213`). */
   code: string;
+  /** A tall level (two columns to three rows): its wood is that shape, upright or on its side as the reader's room and choice say (`useStand`). */
+  tall?: boolean;
   /** The line to start with. */
   way?: string;
   /** Looked at and not drawn on: a finished level. */
@@ -68,6 +73,12 @@ export function MeikyuuBoard({
 }) {
   const host = useRef<HTMLDivElement>(null);
   const mount = useRef<MeikyuuMount | null>(null);
+  const { column, stand, turned } = useStand(tall);
+  /* How it stands now, for the board to be made with whenever the package arrives; a turn after that is told to it (below), never a new board. */
+  const turnedNow = useRef(turned);
+  useEffect(() => {
+    turnedNow.current = turned;
+  });
   const told = useRef(onChange);
   useEffect(() => {
     told.current = onChange;
@@ -90,7 +101,9 @@ export function MeikyuuBoard({
     if (element === null) return;
     void loadMeikyuuPackage().then(({ play }) => {
       if (!live) return;
-      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: "en" });
+      // A tall maze is played in its own box (`ratio`), stood up or lying as the site has decided (`meikyuu/turn.ts`) and not as the package would (`auto`); the page leaves its room itself (`reserve` 0), as the wood is sized to the window.
+      const shape = tall ? { ratio: MEIKYUU_TALL_RATIO, orientation: turnedNow.current ? ("landscape" as const) : ("portrait" as const), reserve: 0 } : {};
+      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: "en", ...shape });
       if (board === null) return;
       mount.current = board;
       const read = (): void => {
@@ -113,7 +126,7 @@ export function MeikyuuBoard({
       const game = board.mazeGame();
       const cells = game === null || startWay.current === "" ? null : decodeWay(game.maze, startWay.current);
       if (game !== null && cells !== null && cells.length > 1) {
-        drawAgain(element, game.maze, cells);
+        drawAgain(element, game.maze, cells, element.dataset.turned === "true");
         // A line the board did not take whole is not played on: cleared, whatever part of it was drawn.
         const taken = board.mazeGame()?.path ?? [];
         if (taken.length !== cells.length || taken.some((cell, at) => cell !== cells[at])) board.restart();
@@ -126,18 +139,25 @@ export function MeikyuuBoard({
       mount.current?.destroy();
       mount.current = null;
     };
-  }, [code]);
+  }, [code, tall]);
+
+  // The wood changes shape with the way up; the board inside it is told, so its box follows.
+  useEffect(() => {
+    if (tall) mount.current?.orientation(turned ? "landscape" : "portrait");
+  }, [tall, turned]);
 
   return (
-    <div className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-locked={locked ? "true" : "false"} data-wallpaper-focus>
+    <div ref={column} className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-locked={locked ? "true" : "false"} data-stand={stand} data-wallpaper-focus={stand === "square" ? "" : undefined}>
       {/* A maze has no rows and columns to letter, so the wood is bare: the paper inside it is the package's own. */}
-      <MeikyuuFrame size={INSET_SIZE}>
-        <div
-          ref={host}
-          className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`}
-          data-testid="meikyuu-board"
-        />
-      </MeikyuuFrame>
+      <MeikyuuSlot stand={stand}>
+        <MeikyuuFrame size={INSET_SIZE} stand={stand}>
+          <div
+            ref={host}
+            className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`}
+            data-testid="meikyuu-board"
+          />
+        </MeikyuuFrame>
+      </MeikyuuSlot>
     </div>
   );
 }

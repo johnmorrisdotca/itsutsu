@@ -4,7 +4,7 @@ import { POP_OWN_GUESS_LENGTHS, loadPopGuesses } from "./gomoji/popWords";
 import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";
 import { loadDailyPools } from "./dailyWords/dailyPools";
 import { loadEveryTsunagiLevel } from "./tsunagi/levels";
-import { loadMeikyuuLevels } from "./meikyuu/levels";
+import { loadEveryMeikyuuLevels } from "./meikyuu/levels";
 import { loadTileWordsFromModule } from "./kumimoji/tileWordsModule";
 
 /**
@@ -22,7 +22,7 @@ export async function prepareEveryPuzzle(): Promise<void> {
     ...KANA_SIZES.map((size) => loadKanaWords(size)),
     loadDailyPools("gomojiKana", KANA_SIZES),
     loadEveryTsunagiLevel(),
-    loadMeikyuuLevels(),
+    loadEveryMeikyuuLevels(),
     loadTileWordsFromModule(),
     loadTileWordsFromModule("japanese"),
     ...POP_OWN_GUESS_LENGTHS.map((size) => loadPopGuesses(size)),

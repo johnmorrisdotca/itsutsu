@@ -8,7 +8,7 @@ import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
 import { meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
-import { meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
+import { isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -19,6 +19,7 @@ import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath } from "./MeikyuuLevelPicker";
 import { keepSolveHere, keptSolves } from "./meikyuuKept";
 import { MeikyuuStill } from "./MeikyuuStill";
+import { MeikyuuWayUp } from "./MeikyuuStand";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveTime } from "./SolveTime";
 
@@ -30,7 +31,7 @@ function firstUnsolved(count: number, done: ReadonlySet<number>): number | null 
 
 /** The board of levels at a size: the levels' set-up, opened on that size. */
 function levelsPath(size: number): string {
-  return `${setUpPath("meikyuu")}?size=${size}`;
+  return `${setUpPath("meikyuu")}?size=${meikyuuSizeInAddress(size)}`;
 }
 
 /**
@@ -73,7 +74,8 @@ export function MeikyuuSolve({
   const hydrated = useHydrated();
   const { kind, size, seed: level } = puzzle;
   const count = meikyuuLevelCount(size);
-  const row = meikyuuLevelsLoaded() ? meikyuuLevelsAt(size)[level - 1] : undefined;
+  const tall = isMeikyuuTall(size);
+  const row = meikyuuLevelsLoaded(size) ? meikyuuLevelsAt(size)[level - 1] : undefined;
   const handle = useRef<MeikyuuHandle>(null);
   const [reading, setReading] = useState<MeikyuuReading | null>(null);
   /* The line as it stands, for the run to keep: what a resumed run was left with until the board says otherwise. */
@@ -84,7 +86,7 @@ export function MeikyuuSolve({
    * this page is drawn in the browser only (`PuzzlePlayClient`), and its levels are here (`PuzzlePlay` waits for
    * them), which is what says which mazes the browser's solves were.
    */
-  const [solvedHere] = useState<Record<number, number>>(() => (meikyuuLevelsLoaded() ? { ...keptSolves(size), ...known } : { ...known }));
+  const [solvedHere] = useState<Record<number, number>>(() => (meikyuuLevelsLoaded(size) ? { ...keptSolves(size), ...known } : { ...known }));
   const solvedSet = useMemo(() => new Set(Object.keys(solvedHere).map(Number)), [solvedHere]);
   // A level already solved opens on its finished maze; only "Play it again" starts it over.
   const [reviewing, setReviewing] = useState(race === null && resumed === null && solvedSet.has(level));
@@ -135,9 +137,10 @@ export function MeikyuuSolve({
         <p className="text-sm text-muted" data-testid="puzzle-asked">
           {asked}
         </p>
-        <MeikyuuStill code={puzzle.givens} solved />
+        <MeikyuuStill code={puzzle.givens} solved tall={tall} />
         {chips}
         <MeikyuuColours className="self-start" />
+        {tall ? <MeikyuuWayUp className="self-start" /> : null}
         <div className="flex flex-col gap-2" data-testid="meikyuu-solved-view">
           <p className="text-sm">
             Solved
@@ -172,7 +175,7 @@ export function MeikyuuSolve({
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={level} data-level={level} data-maze={puzzle.givens} data-cells={cells} data-solved={reading?.solved === true ? "true" : "false"} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
-        <MeikyuuBoard code={puzzle.givens} way={resumed?.progress ?? ""} locked={!live} onChange={told} handle={handle} />
+        <MeikyuuBoard code={puzzle.givens} tall={tall} way={resumed?.progress ?? ""} locked={!live} onChange={told} handle={handle} />
       </SolvePaused>
       {chips}
       {done === null ? (
@@ -199,6 +202,8 @@ export function MeikyuuSolve({
             </div>
             {/* In the row of presses under the board, so it takes no row of its own and Just the board still fits a desk. */}
             <MeikyuuColours />
+            {/* A tall maze can lie on its side: which way up is the reader's to choose, beside the colours. */}
+            {tall ? <MeikyuuWayUp /> : null}
           </div>
           <span className="text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
             {cells === 0 ? MEIKYUU_COPY.howTo : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
@@ -207,6 +212,7 @@ export function MeikyuuSolve({
       ) : (
         <>
           <MeikyuuColours className="self-start" />
+          {tall ? <MeikyuuWayUp className="self-start" /> : null}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} onward={race === null ? onward : undefined} />
         </>
       )}

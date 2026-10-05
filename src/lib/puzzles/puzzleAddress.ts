@@ -14,6 +14,7 @@ import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
 import { isSuidoLevelAt, suidoLevelBand } from "./suido/levelCounts";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./meikyuu/levelCounts";
+import { meikyuuSizeFromAddress } from "./meikyuu/sizes";
 import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed } from "./suido/seed";
 import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
@@ -126,9 +127,9 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     const value = query[key];
     return Array.isArray(value) ? value[0] : value;
   };
-  // A Suido's long boards are asked for by their shape, `size=5x7` (`suido/sizes.ts`); every other size is a number.
+  // A Suido's long boards and a Meikyuu's tall ones are asked for by their shape, `size=5x7` (`suido/sizes.ts`, `meikyuu/sizes.ts`); every other size is a number.
   const sizeText = one(PUZZLE_PARAMS.size);
-  const sizeAsked = kind === "suido" && sizeText !== undefined ? (suidoSizeFromAddress(sizeText) ?? NaN) : Number(sizeText);
+  const sizeAsked = sizeText === undefined ? NaN : kind === "suido" ? (suidoSizeFromAddress(sizeText) ?? NaN) : kind === "meikyuu" ? (meikyuuSizeFromAddress(sizeText) ?? NaN) : Number(sizeText);
   const size = spec.sizes.includes(sizeAsked) ? sizeAsked : spec.defaultSize;
   const levelAsked = one(PUZZLE_PARAMS.level) as PuzzleLevel | undefined;
   // A level this size cannot be made at (a 4×4 Hidden Stones is easy only) is the first one it can.

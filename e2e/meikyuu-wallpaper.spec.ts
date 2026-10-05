@@ -158,3 +158,37 @@ test.describe("in Safari's engine", () => {
     }
   });
 });
+
+for (const width of [390, 1280]) {
+  test(`the wallpaper of a solved TALL level has the maze filling the canvas, both shapes, ${width}px wide`, async ({ browser, baseURL }) => {
+    const { context, page, email } = await aMember(browser, baseURL, `tall-${width}`, width);
+    try {
+      // A tall maze of the smallest size, upright: the wood is as tall as it is wide and a half again, and it is the wood that is pictured.
+      await page.goto(`${AT}/play?size=6x9&level=easy&seed=3`);
+      await ready(page, "puzzle-play");
+      await expect(page.getByTestId("meikyuu-board").locator("svg")).toBeVisible();
+      const placed = await placedMaze(page);
+      await drawThrough(page, placed, wayThrough(placed));
+      await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+      await page.getByTestId("open-board-wallpaper").click();
+      const dialog = page.getByTestId("mosaic-dialog");
+      await expect(dialog.getByTestId("mosaic-picture")).toBeVisible({ timeout: 30_000 });
+      for (const shape of ["portrait", "landscape"] as const) {
+        await dialog.getByTestId(`mosaic-shape-${shape}`).check();
+        await expect(dialog.getByTestId("mosaic-picture")).toHaveAttribute("data-shape", shape);
+        const box = await boardBox(page);
+        const high = box.bottom - box.top;
+        const wide = box.right - box.left;
+        // The wood is what is pictured, and none of the picture is the empty column the page has beside it: a tall maze is as wide as the portrait canvas allows, and as tall as the landscape one does under the bar.
+        if (shape === "portrait") expect(wide, "the tall maze is a corner of the portrait canvas").toBeGreaterThan(0.8);
+        else expect(high, "the tall maze is a corner of the landscape canvas").toBeGreaterThan(0.7);
+        // And in the portrait canvas it is a tall wood, taller than it is wide by about half again (the canvas is 1170 by 2532).
+        if (shape === "portrait") expect((high * 2532) / (wide * 1170), "the wood is tall").toBeGreaterThan(1.3);
+        expect(Math.abs((box.left + box.right) / 2 - 0.5), `the maze is not in the middle (${shape})`).toBeLessThan(0.03);
+      }
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+}

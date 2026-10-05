@@ -1129,3 +1129,29 @@ tr:has(> [data-row-actions]):focus {
   --mk-goal: var(--mkl-goal) !important;
   --mk-key: var(--mkl-goal) !important;
 }
+
+/*
+ * A TALL MEIKYUU MAZE'S WOOD (`MeikyuuSlot`, `data-mk-slot`): as wide as its column and no taller than the window leaves room for,
+ * so a maze two columns to three rows stands whole on a desk and a phone alike. `--mk-fw` is the wood's width over its height
+ * (0.6795 upright, 1.4586 lying down: `frameAspect`, held to these numbers by `meikyuuStand.test.ts`), so the cap on the width is
+ * the cap on the height. In Just the board the room kept is the modal's: 24rem under the board, where the controls stack below
+ * it, and 10rem from a desk's width, where they stand beside it and the modal is as wide as board and controls (the same
+ * columns a puzzle's board has, `data-scale-stack`), so nothing in it is empty or scrolls.
+ */
+[data-mk-slot] {
+  max-width: min(100%, calc((100dvh - var(--mk-reserve, 16rem)) * var(--mk-fw, 0.68)));
+}
+html[data-bare="true"] [data-mk-slot] {
+  --mk-reserve: 24rem;
+}
+@media (min-width: 64rem) {
+  html[data-bare="true"] [data-mk-slot] {
+    --mk-reserve: 10rem;
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-stack][data-bare-board] [data-mk-way="upright"]) {
+    width: min(100%, calc((100dvh - 10rem) * 0.6795 + 24rem + 1.5rem + 2rem));
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-stack][data-bare-board] [data-mk-way="lying"]) {
+    width: min(100%, calc((100dvh - 10rem) * 1.4586 + 24rem + 1.5rem + 2rem));
+  }
+}

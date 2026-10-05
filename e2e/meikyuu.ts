@@ -1,4 +1,4 @@
-import { buildMaze, parseRecipe, solutionOf, type Maze } from "@johnmorrisdotca/meikyuu";
+import { buildMaze, parseRecipe, solutionOf, toDisplay, type Maze } from "@johnmorrisdotca/meikyuu";
 import { expect, type Page } from "@playwright/test";
 
 /**
@@ -8,6 +8,9 @@ import { expect, type Page } from "@playwright/test";
  * on the play screen), and where a cell is on the screen is worked out from the
  * drawing itself: the viewBox the package writes for the box it is looked at
  * through, and the room that box leaves round a shape that is not square.
+ *
+ * A tall maze lying on its side is shown a quarter turn (`data-turned` on the board): the drawing's own coordinates are
+ * the turned ones, so a cell is looked for where the package shows it (`toDisplay`) and the line drawn is the same line.
  *
  * The line is never handed to the board: this is the control a player drives
  * (`e2e/language.spec.ts` on why a test drives the control, not the mechanism).
@@ -24,6 +27,7 @@ export async function placedMaze(page: Page): Promise<PlacedMaze> {
   await expect(svg).toBeVisible();
   // On the screen, so the mouse can reach every cell: the spec's window is tall enough for the whole board.
   await svg.scrollIntoViewIfNeeded();
+  const turn = (await page.getByTestId("meikyuu-board").getAttribute("data-turned")) === "true" ? 1 : 0;
   const seen = await svg.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     const [x, y, width, height] = (element.getAttribute("viewBox") ?? "0 0 1 1").split(" ").map(Number);
@@ -36,7 +40,7 @@ export async function placedMaze(page: Page): Promise<PlacedMaze> {
   return {
     maze,
     at: (cell) => {
-      const [x, y] = maze.grid.centres[cell]!;
+      const [x, y] = toDisplay(turn, maze.grid.centres[cell]!);
       return { x: left + (x - seen.view.x) * scale, y: top + (y - seen.view.y) * scale };
     },
   };

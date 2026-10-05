@@ -278,7 +278,7 @@ its words.
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
 mouse, from its start to its goal, in 1,024 fixed levels, 256 to each of four sizes (small,
-medium, large, huge) and every shape from squares to a heart. The mazes, their
+medium, large, huge) and every shape from squares to a heart, and 1,536 tall ones (six sizes of 256, two columns to three rows) for a phone held upright, which lie on their side on a wide screen. The mazes, their
 rules and the playable board are **Meikyuu**, an open-source package
 (`@johnmorrisdotca/meikyuu`, pinned in `package.json`), fetched in the browser
 only; what is the site's own is here: a level is its place in its size, the seed

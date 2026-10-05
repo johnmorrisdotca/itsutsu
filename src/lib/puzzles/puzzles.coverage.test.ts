@@ -60,6 +60,8 @@ function sourcesUnder(dir: string, suffix: string): string {
 
 /** How many cells a grid of this size has: its side squared, and for a Suido's long boards (507 is 5×7, `suido/sizes.ts`) its width times its height. */
 function cellsOf(kind: string, size: number): number {
+  // A maze's size is a place among its sizes (1 to 4) or a tall one's columns and rows kept in one number (609 is 6×9), and its givens are a recipe, not a grid of cells: at least one character.
+  if (kind === "meikyuu") return 1;
   const shape = kind === "suido" ? suidoShapeOf(size) : null;
   return shape === null ? size * size : shape.width * shape.height;
 }

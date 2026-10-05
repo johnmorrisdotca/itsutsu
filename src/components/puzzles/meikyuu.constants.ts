@@ -47,12 +47,32 @@ export const MEIKYUU_CHIPS: LevelChipsCopy = {
   tests: { label: "", kanji: "", says: "" },
 };
 
+/** A choice of words in a row of a few: a pill a thumb can hit, in the set-up's ink when chosen (`PICK_CHIP_OPEN`). */
+export const MEIKYUU_CHOICE = "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm leading-tight transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss cursor-pointer";
+
+/** Which way up a tall maze is shown (`meikyuu/turn.ts`): the chooser's words. Auto decides from the room there is, which on a phone held upright is upright. */
+export const WAY_UP_COPY = {
+  legend: "Tall mazes, which way up",
+  auto: { label: "Auto", says: "Upright on a phone held upright, and lying on its side where the screen is wide enough for it to be bigger that way." },
+  portrait: { label: "Upright", says: "Always stood up, two columns to three rows, as the maze was made." },
+  landscape: { label: "Lying down", says: "Always on its side, a quarter turn, which fits a wide screen. The line you draw is the same line either way up." },
+} as const;
+
+/** The set-up's choice of the way a maze is shaped: the four sizes of squares and shapes, or the tall mazes for a phone held upright. */
+export const SHAPE_COPY = {
+  legend: "Shape",
+  square: { label: "Square", kanji: "四角", says: "Mazes in a square box: four sizes, from small to huge." },
+  tall: { label: "Tall", kanji: "縦", says: "Mazes in a tall box, two columns to three rows, made to be played on a phone held upright. They lie on their side on a wide screen." },
+  moreTall: (to: string) => `Bigger, to ${to} →`,
+  lessTall: (from: string) => `← Smaller, from ${from}`,
+} as const;
+
 export const MEIKYUU_COPY = {
   /** The set-up's note under the levels' options: what a level is. */
   levelsNote:
     `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard. Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
   /** The front door's line for the levels: how many there are of each size, read from the sizes and never typed. */
-  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}), each size easy to hard.`,
+  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard.`,
   /** The line under the board before the first stroke. */
   howTo: "Press the start dot and drag. The line follows the corridors, and drawing back shortens it.",
   /** The line under the board once there is a line: how far it has got. */
