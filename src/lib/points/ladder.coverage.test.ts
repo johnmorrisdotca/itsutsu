@@ -100,12 +100,15 @@ describe("Tobiishi", () => {
 });
 
 describe("the Pencil puzzles", () => {
-  it("prices Shikaku, Cross Sums and Regions by size from 50 to 125, and a level adds 0, 10, 25 or 40", () => {
+  it("prices every Pencil puzzle and Jirai by size from 50 to 125, and a level adds 0, 10, 25 or 40", () => {
     expect([5, 7, 10, 14].map((size) => price("shikaku", size, "easy"))).toEqual([50, 70, 95, 125]);
     expect([6, 8, 10, 12].map((size) => price("crossSums", size, "easy"))).toEqual([50, 75, 100, 125]);
     expect([6, 8, 10, 12].map((size) => price("regions", size, "easy"))).toEqual([50, 75, 100, 125]);
     expect(LEVELS_WITH_EXTRA.map((level) => price("shikaku", 7, level))).toEqual([70, 80, 95, 110]);
     expect(LEVELS_WITH_EXTRA.map((level) => price("crossSums", 8, level))).toEqual([75, 85, 100, 115]);
+    expect([7, 9, 12, 16].map((size) => price("jirai", size, "easy"))).toEqual([50, 65, 95, 125]);
+    expect(LEVELS_WITH_EXTRA.map((level) => price("jirai", 9, level))).toEqual([65, 75, 90, 105]);
+    expect(price("jirai", 16, "hard")).toBe(150);
   });
 
   it("adds 40 for extra hard, and stops at the ceiling where that would pass it", () => {
@@ -118,7 +121,7 @@ describe("the Pencil puzzles", () => {
 
   it("offers extra hard only to the puzzles that make it, and prices it only for them in SQL", () => {
     const offering = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].levels.includes("extra-hard"));
-    expect(offering).toEqual(expect.arrayContaining(["shikaku", "crossSums", "regions"]));
+    expect(offering).toEqual(expect.arrayContaining(["shikaku", "akari", "loop", "hitori", "crossSums", "regions", "jirai"]));
     const query = bestSolvesSql(["shikaku", "numberPlace"], Prisma.empty, Prisma.empty);
     expect(query.sql).toContain("('shikaku', 7, 'extra-hard', 110,");
     expect(query.sql).not.toContain("('numberPlace', 9, 'extra-hard'");

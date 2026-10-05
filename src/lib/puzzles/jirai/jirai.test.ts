@@ -35,7 +35,7 @@ describe("the ways to play Jirai are said by the seed", () => {
 describe.each(VARIANTS)("Jirai, $variant.grid $variant.shape", ({ variant, seed }) => {
   const sizes = variant.shape === "rectangle" ? [7, 9, 12, 16] : [9, 12, 16];
   it.each(sizes)("makes a board at %i that reads, checks, and is finished by what the clues prove", (size) => {
-    for (const level of ["easy", "hard"] as const) {
+    for (const level of ["easy", "hard", "extra-hard"] as const) {
       const made = generateJirai(size, level, seed);
       expect(generateJirai(size, level, seed)).toEqual(made);
       const recipe = jiraiRecipeOf(size, made.givens)!;
@@ -60,6 +60,26 @@ describe.each(VARIANTS)("Jirai, $variant.grid $variant.shape", ({ variant, seed 
       expect(jiraiWon(code, made.solution)).toBe(true);
       expect(jiraiMissing(code, made.solution)).toBe(0);
       expect(jiraiCheck(size, made.givens, code)).toEqual({ ok: true });
+    }
+  });
+});
+
+describe("every level is dealt as it was asked for, on every way to play", () => {
+  it("keeps the seed asked for, at every size and level, and the mines step up with the level", () => {
+    for (const { variant, seed } of VARIANTS) {
+      const sizes = variant.shape === "rectangle" ? [7, 9, 12, 16] : [9, 12, 16];
+      for (const size of sizes) {
+        let before = 0;
+        for (const level of ["easy", "medium", "hard", "extra-hard"] as const) {
+          for (const each of [seed, seed + 1, seed + 2]) {
+            // The very seed, not the next that has a board: a level that sends a reader to another seed is a level that is hard to make.
+            expect(generateJirai(size, level, each).seed, `${variant.grid} ${variant.shape} ${size} ${level} ${each}`).toBe(each);
+          }
+          const mines = jiraiRecipeOf(size, generateJirai(size, level, seed).givens)!.settings.mines;
+          expect(mines, `${variant.grid} ${variant.shape} ${size} ${level}`).toBeGreaterThan(before);
+          before = mines;
+        }
+      }
     }
   });
 });

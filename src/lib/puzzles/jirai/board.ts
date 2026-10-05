@@ -27,8 +27,11 @@ export const COVERED = ".";
 export const FLAG = "f";
 export const OUTSIDE = "-";
 
-/** The share of its squares that are mines, by level: Jirai's own beginner is 12%, intermediate 16% and expert 21%. */
-export const JIRAI_DENSITY: Record<PuzzleLevel, number> = { easy: 0.12, medium: 0.16, hard: 0.2, "extra-hard": 0.2 };
+/**
+ * The share of its squares that are mines, by level: Jirai's own easy is 12% (9×9 with 10 mines), medium 16% (16×16, 40), hard 21% (30×16, 99) and
+ * extra-hard 25% (40×24, 240). The site keeps its own sides, squares a phone and a desk both hold, and takes the shares.
+ */
+export const JIRAI_DENSITY: Record<PuzzleLevel, number> = { easy: 0.12, medium: 0.16, hard: 0.2, "extra-hard": 0.25 };
 
 export type JiraiRecipe = { settings: Settings; first: number; cells: string };
 

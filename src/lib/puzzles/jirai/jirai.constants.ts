@@ -12,7 +12,7 @@ import type { JiraiGrid, JiraiShape } from "./variants";
  * 9 is the usual board, 7 the quick one (a rectangle only: a shape needs nine each way) and 12 and 16 the long ones.
  * 320: the recipe a board's givens begin with (about thirty characters) and its 256 squares at 16 × 16.
  */
-export const JIRAI_SPEC: PuzzleSpec = { sizes: [7, 9, 12, 16], offered: [7, 9, 12, 16], defaultSize: 9, levels: ["easy", "medium", "hard"], defaultLevel: "medium", mostCells: 320 };
+export const JIRAI_SPEC: PuzzleSpec = { sizes: [7, 9, 12, 16], offered: [7, 9, 12, 16], defaultSize: 9, levels: ["easy", "medium", "hard", "extra-hard"], defaultLevel: "medium", mostCells: 320 };
 
 export const JIRAI_SIZE_NAMES: Record<number, { label: string; kanji: string }> = {
   7: { label: "Quick", kanji: "速" },
@@ -26,7 +26,7 @@ export const JIRAI_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
   easy: "About one square in eight is a mine.",
   medium: "About one square in six is a mine.",
   hard: "About one square in five is a mine: closer to the expert board of the classic game.",
-  "extra-hard": "About one square in five is a mine: closer to the expert board of the classic game.",
+  "extra-hard": "One square in four is a mine: thicker than the expert board of the classic game, and still never a guess.",
 };
 
 export const JIRAI_GRID_DISPLAY: Record<JiraiGrid, { label: string; kanji: string; blurb: string }> = {
