@@ -49,3 +49,20 @@ a whole number of quarters, and draws a plate under each and a ring at its middl
 | The server | `boardOf` accepts what the package decodes of a network; the check, the points (a board's pieces), the kept run (`gameFromCode`: a big piece turned alone is another board's) and the answer found again (`solve`) all read the package | `suido/check.ts`, `suido/play.ts` |
 | A Hint | Lights the whole big piece (its four squares and its plate) and turns it to face the answer (`turnedToFaceAt`) | `SuidoBoard.tsx`, `SuidoSolve.tsx` |
 | A row under the board | "Big pieces 大駒", like a level's twist chips, with the line that says what it is on a hover or a tap | `SuidoSquaresChips.tsx` |
+
+## Block turns (2026-10-05, package 1.4.0)
+
+Where four pieces sit in a fixed square of cells, one tap on any of them turns all four together a quarter clockwise: each piece moves round
+to the next place of the square and turns with it, as a rigid block. A dashed ring marks the square and a turning mark sits at its middle (the
+pivot, the corner where the four meet). The four cannot be turned alone. The package solves them as one unit with four facings, so a board has
+exactly one answer, and the check is still O(cells): the board as played is the dealt one with each block turned a whole number of quarters.
+
+| Decision | What | Where |
+| --- | --- | --- |
+| Fixed squares, not any corner | The blocks are chosen when the board is made and never overlap, so a board's answer stays one and the check stays O(cells). A pivot you may pick at any corner would be a different puzzle, and its answer could not be checked this way | the package's `blocks` |
+| The same choice as Big pieces | "Pieces" is None, Big pieces or Block turns, one at a time; both make a network, so choosing either chooses Network and choosing Drains takes it off | `SuidoSetUpOptions.tsx` |
+| The seed says it | `SUIDO_TURN_SEED_BLOCK` (2,020,000,000, a hundred million seeds, ending under the most a seed can be). The address says `squares=turn` until a seed is drawn | `random.ts`, `suido/seed.ts`, `puzzleAddress.ts` |
+| How many | The same count as big pieces: one for about every 32 cells, never fewer than one (`suidoBigCount`) | `suido/generate.ts` |
+| Made boards only | A level keeps its board for good, so none has them | |
+| A Hint | Lights the block's plate and its four pieces, and turns the block to face the answer | `SuidoBoard.tsx` |
+| A row under the board | "Block turns 回転" | `SuidoSquaresChips.tsx` |

@@ -6,7 +6,7 @@ import { LevelChips } from "./LevelChips";
 import { SUIDO_CHIPS, SUIDO_TWISTS } from "./suido.constants";
 
 /**
- * THE ROW UNDER A BOARD MADE WITH SQUARES: a chip for each twist it has (big pieces), as a level's row names its own, so a reader
+ * THE ROW UNDER A BOARD MADE WITH SQUARES: a chip for each twist it has (big pieces, block turns), as a level's row names its own, so a reader
  * is told what a board of four-square pieces is before pressing one. A board made on request has no difficulty marks and no
  * place in a block, so the row is the twists alone (`LevelChips`, with the marks and the lesson left out).
  */

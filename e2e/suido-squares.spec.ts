@@ -1,9 +1,9 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
-import { blockInfo, blockQuartersBetween, decodeLayout, newGame, quartersBetween } from "@johnmorrisdotca/suido";
+import { blockInfo, blockQuartersBetween, decodeLayout, newGame, quartersBetween, turnBlock } from "@johnmorrisdotca/suido";
 
 import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
-import { SUIDO_BIG_SEED_BLOCK } from "../src/lib/puzzles/random";
+import { SUIDO_BIG_SEED_BLOCK, SUIDO_TURN_SEED_BLOCK } from "../src/lib/puzzles/random";
 import { suidoKindOfSeed, suidoSquaresOfSeed } from "../src/lib/puzzles/suido/seed";
 import { memberContext, removeMember } from "./members";
 import { ready } from "./support";
@@ -20,6 +20,8 @@ const KIND = "suido";
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
 const BIG = SUIDO_BIG_SEED_BLOCK.from + 11;
 const BIG_URL = `${AT}/play?size=7&level=medium&seed=${BIG}`;
+const TURN = SUIDO_TURN_SEED_BLOCK.from + 11;
+const TURN_URL = `${AT}/play?size=7&level=medium&seed=${TURN}`;
 
 async function aMember(browser: Browser, baseURL: string | undefined, tag: string, options?: Parameters<Browser["newContext"]>[0]): Promise<{ context: BrowserContext; page: Page; email: string }> {
   const email = `suido-squares-${tag}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.test`;
@@ -219,6 +221,123 @@ test.describe("Suido's big pieces", () => {
       await row.getByTestId("puzzle-going-continue").click();
       await ready(page, "puzzle-play");
       await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-code", code!);
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+});
+
+test.describe("Suido's block turns", () => {
+  test("are chosen in Make a board, which makes the board a network, and None takes them off again", async ({ browser, baseURL }) => {
+    const { context, page, email } = await aMember(browser, baseURL, "turn-choose");
+    try {
+      await page.goto(`${AT}/new?mode=make&size=7&level=medium`);
+      await ready(page, "puzzle-set-up");
+      await page.getByTestId("suido-squares-turn").click();
+      await expect(page.getByTestId("suido-squares-turn")).toHaveAttribute("aria-checked", "true");
+      await expect(page.getByTestId("suido-kind-network")).toHaveAttribute("aria-checked", "true");
+      await expect(page.getByTestId("suido-squares-blurb")).toContainText("tap turns all four together");
+      await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", /squares=turn/);
+      await expect(page.getByTestId("puzzle-solve")).not.toHaveAttribute("href", /pipes=/);
+      // The preview is a board of that kind: each block on its plate, with a pivot at its middle.
+      await expect(page.getByTestId("set-up-puzzle-preview").locator('.sd-plate[data-kind="turn"]').first()).toBeVisible();
+      expect(await page.getByTestId("set-up-puzzle-preview").locator('.sd-pivot[data-kind="turn"]').count()).toBeGreaterThanOrEqual(2);
+      // Choosing Big pieces instead replaces them, and None takes either off.
+      await page.getByTestId("suido-squares-big").click();
+      await expect(page.getByTestId("suido-squares-turn")).toHaveAttribute("aria-checked", "false");
+      await expect(page.getByTestId("set-up-puzzle-preview").locator('.sd-plate[data-kind="turn"]')).toHaveCount(0);
+      await page.getByTestId("suido-squares-turn").click();
+      await page.getByTestId("suido-squares-none").click();
+      await expect(page.getByTestId("puzzle-solve")).not.toHaveAttribute("href", /squares=/);
+      await page.getByTestId("suido-squares-turn").click();
+      await expect(page).toHaveURL(/squares=turn/);
+      await page.reload();
+      await ready(page, "puzzle-set-up");
+      await expect(page.getByTestId("suido-squares-turn")).toHaveAttribute("aria-checked", "true");
+      await page.getByTestId("puzzle-solve").click();
+      await expect(page).toHaveURL(/seed=\d+/);
+      await ready(page, "puzzle-play");
+      const seed = Number(await page.getByTestId("puzzle-play").getAttribute("data-seed"));
+      expect(suidoSquaresOfSeed(seed)).toBe("turn");
+      expect(suidoKindOfSeed(seed)).toBe("network");
+      await expect(page).not.toHaveURL(/squares=/);
+      await expect(page.getByTestId("suido-chip-block-turns")).toBeVisible();
+      await expect(page.locator('[data-testid="suido-board"] .sd-pivot').first()).toBeAttached();
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+
+  test("a tap on any piece of a block turns all four a quarter, each moving round to the next place, and four taps bring it home", async ({ browser, baseURL }) => {
+    const { context, page, email } = await aMember(browser, baseURL, "turn-tap");
+    try {
+      await page.goto(TURN_URL);
+      await ready(page, "puzzle-play");
+      const puzzle = generatePuzzle(KIND, 7, "medium", TURN);
+      const dealt = newGame(puzzle.givens)!;
+      const block = blockInfo(dealt.start).blocks[0]!;
+      const masks = () => pieces(page).evaluateAll((all) => all.map((one) => Number(one.getAttribute("data-mask"))));
+      const was = await masks();
+      expect(was).toEqual(dealt.masks);
+      // One tap, on the second piece of the block: the four have moved round and turned, as the package says, and nothing else has.
+      await press(page, false, block.cells[1]!);
+      const expected = turnBlock(dealt.masks, block, 1);
+      await expect.poll(masks).toEqual(expected);
+      for (let each = 0; each < 3; each += 1) await press(page, false, block.cells[each]!);
+      expect(await masks()).toEqual(was);
+      await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-code", puzzle.givens);
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+
+  test("a board with block turns is solved on a phone by touch, and is paid like any board", async ({ browser, baseURL }) => {
+    const { context, page, email } = await aMember(browser, baseURL, "turn-phone", { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    try {
+      await page.goto(TURN_URL);
+      await ready(page, "puzzle-play");
+      await expect(page.getByTestId("suido-chip-block-turns")).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      const presses = await solveByPressing(page, 7, TURN, true);
+      expect(presses).toBeGreaterThan(3);
+      await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+      await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
+      await expect(page.locator('[data-testid="suido-cell"][data-wet="true"]')).toHaveCount(49);
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+
+  test("a board with block turns is solved on a desk by mouse, at a size where the board is zoomed on a phone", async ({ browser, baseURL }) => {
+    const { context, page, email } = await aMember(browser, baseURL, "turn-desk", { viewport: { width: 1280, height: 900 } });
+    try {
+      await page.goto(`${AT}/play?size=12&level=medium&seed=${TURN}`);
+      await ready(page, "puzzle-play");
+      const presses = await solveByPressing(page, 12, TURN, false);
+      expect(presses).toBeGreaterThan(10);
+      await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    } finally {
+      await context.close();
+      await removeMember(email);
+    }
+  });
+
+  test("a Hint lights a block whole, and turns it to face the answer", async ({ browser, baseURL }) => {
+    const { context, page, email } = await aMember(browser, baseURL, "turn-hint");
+    try {
+      await page.goto(`${TURN_URL}&hints=1`);
+      await ready(page, "puzzle-play");
+      const hint = page.getByTestId("puzzle-hint");
+      await expect(hint).toBeEnabled();
+      await hint.click();
+      const lit = await page.locator('[data-testid="suido-cell"][data-hint="true"]').count();
+      const plates = await page.locator('.sd-plate[data-hint="true"]').count();
+      expect([1, 4]).toContain(lit);
+      expect(plates).toBe(lit === 4 ? 1 : 0);
     } finally {
       await context.close();
       await removeMember(email);

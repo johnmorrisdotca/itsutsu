@@ -348,14 +348,15 @@ No label is retired: the huge boards took the words Meikyuu and Tsunagi chose fo
 | Level 12 of 64 | the line over the board, the set-up | a huge size has sixty-four levels in four blocks of sixteen; the others have 256 |
 | 12 of 64 solved | the progress line on the set-up | what there is to finish, said as a count, as every size says it |
 
-## Suido 水道: pieces of four squares (2026-10-05)
+## Suido 水道: big pieces and block turns (2026-10-05)
 
-A twist of a board made on request, so no label is retired: the words are the package's own (`twistBigPieces`), which the set-up and the chips use as it does.
+A twist of a board made on request, so no label is retired: the words are the package's own (`twistBigPieces`, `twistBlockTurns`), which the set-up and the chips use as it does.
 
 | Label | Where | Word used, and why |
 |---|---|---|
 | Single pieces 単駒 · Big pieces 大駒 | Make a board, the "Pieces" choice | the ordinary board and the one with big pieces; "Single", not "Normal" or "Standard", which say the other is odd |
 | Big pieces | the chip under a board that has them, the rules | a piece that fills four squares and has up to eight openings; not "Large pieces", "Tetra", "2×2 pieces" or "Mega" |
+| Block turns 回転 | Make a board, the "Pieces" choice; the chip under a board that has them; the rules | four pieces ringed by a dashed line that a tap turns together a quarter, each moving round to the next place; not "Rotate block", "Group turn", "Swap" or "Spin" |
 | A plate under it · a ring at its middle | the board, the rules | the plate says these four squares are one piece, and the ring where a tap turns it |
 
 ## Itsutsu Points: what a puzzle and a game pay

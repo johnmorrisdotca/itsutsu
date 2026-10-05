@@ -2,7 +2,7 @@ import type { Kind } from "@johnmorrisdotca/suido";
 
 import type { SeedBlock } from "@johnmorrisdotca/tane";
 
-import { freshSeed, NETWORK_SEED_BLOCK, SUIDO_BIG_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, type Random } from "../random";
+import { freshSeed, NETWORK_SEED_BLOCK, SUIDO_BIG_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, SUIDO_TURN_SEED_BLOCK, type Random } from "../random";
 
 /**
  * DRAINS OR NETWORK, SAID BY THE SEED. A kept run is found again by its kind,
@@ -19,26 +19,29 @@ import { freshSeed, NETWORK_SEED_BLOCK, SUIDO_BIG_SEED_BLOCK, SUIDO_LEVEL_SEED_B
  * the boards (`pageFunction.coverage.test.ts`).
  */
 export function suidoKindOfSeed(seed: number): Kind {
-  return inBlock(seed, NETWORK_SEED_BLOCK) || inBlock(seed, SUIDO_BIG_SEED_BLOCK) ? "network" : "drains";
+  return inBlock(seed, NETWORK_SEED_BLOCK) || inBlock(seed, SUIDO_BIG_SEED_BLOCK) || inBlock(seed, SUIDO_TURN_SEED_BLOCK) ? "network" : "drains";
 }
 
 const inBlock = (seed: number, block: SeedBlock): boolean => Number.isInteger(seed) && seed >= block.from && seed < block.from + block.size;
 
 /**
  * THE SQUARES OF A BOARD, SAID BY THE SEED TOO: "none" for an ordinary board, and "big" for a network with big pieces (squares of four
- * cells that are one piece and turn as one, the package's `bigs`), whose seeds are in `SUIDO_BIG_SEED_BLOCK`. A board with squares is
- * always a network (`suidoKindOfSeed`), so the one choice sets the other.
+ * cells that are one piece and turn as one, the package's `bigs`), whose seeds are in `SUIDO_BIG_SEED_BLOCK`, and "turn" for a network
+ * with block turns (fixed squares of four pieces that a tap turns together, the package's `blocks`), in `SUIDO_TURN_SEED_BLOCK`. A board
+ * with either is always a network (`suidoKindOfSeed`), so the one choice sets the other.
  */
-export type SuidoSquares = "none" | "big";
+export type SuidoSquares = "none" | "big" | "turn";
 
 /** Which squares a seed's board has. */
 export function suidoSquaresOfSeed(seed: number): SuidoSquares {
-  return inBlock(seed, SUIDO_BIG_SEED_BLOCK) ? "big" : "none";
+  if (inBlock(seed, SUIDO_BIG_SEED_BLOCK)) return "big";
+  return inBlock(seed, SUIDO_TURN_SEED_BLOCK) ? "turn" : "none";
 }
 
 /** A new seed for a board of this kind and these squares, for a puzzle nobody asked for by number; squares make a network whatever the kind says. */
 export function freshSuidoSeed(kind: Kind, squares: SuidoSquares = "none", random: Random = Math.random): number {
   if (squares === "big") return SUIDO_BIG_SEED_BLOCK.from + Math.floor(random() * SUIDO_BIG_SEED_BLOCK.size);
+  if (squares === "turn") return SUIDO_TURN_SEED_BLOCK.from + Math.floor(random() * SUIDO_TURN_SEED_BLOCK.size);
   return kind === "network" ? NETWORK_SEED_BLOCK.from + Math.floor(random() * NETWORK_SEED_BLOCK.size) : freshSeed();
 }
 
@@ -67,5 +70,6 @@ export type SuidoWay = { pipes: Kind; squares: SuidoSquares };
  */
 export function suidoPreviewSeed(way: SuidoWay = { pipes: "drains", squares: "none" }): number {
   if (way.squares === "big") return SUIDO_BIG_SEED_BLOCK.from + 7;
+  if (way.squares === "turn") return SUIDO_TURN_SEED_BLOCK.from + 7;
   return way.pipes === "network" ? NETWORK_SEED_BLOCK.from + 7 : 7;
 }

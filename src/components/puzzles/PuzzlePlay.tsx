@@ -161,7 +161,7 @@ function PuzzlePlayDrawn({
   bonus?: MahjongBonusRule;
   /** Suido's kind of board, from the address: read only to draw a seed, which says it from then on (`suidoKindOfSeed`). */
   pipes?: SuidoKind;
-  /** Suido's squares (big pieces), from the address: read only to draw a seed, which says it from then on (`suidoSquaresOfSeed`). */
+  /** Suido's squares (big pieces, block turns), from the address: read only to draw a seed, which says it from then on (`suidoSquaresOfSeed`). */
   squares?: SuidoSquares;
   /** Jirai's way to play, from the address: read only to draw a seed, which says it from then on (`jiraiVariantOfSeed`). */
   jirai?: JiraiVariant;

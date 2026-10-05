@@ -29,7 +29,7 @@ export const SUIDO_KINDS: Record<Kind, { label: string; kanji: string; blurb: st
 };
 
 /** The squares a board made on request may have, in the order the chips list them. */
-export const SUIDO_SQUARES_LIST = ["none", "big"] as const satisfies readonly SuidoSquares[];
+export const SUIDO_SQUARES_LIST = ["none", "big", "turn"] as const satisfies readonly SuidoSquares[];
 
 /** What each choice of squares is called on the set-up, with the line under the chips. */
 export const SUIDO_SQUARES: Record<SuidoSquares, { label: string; kanji: string; blurb: string }> = {
@@ -38,6 +38,11 @@ export const SUIDO_SQUARES: Record<SuidoSquares, { label: string; kanji: string;
     label: "Big pieces",
     kanji: "大駒",
     blurb: "Some pieces are big: four squares that are one piece, with up to eight openings. A tap turns the whole piece a quarter, where it stands. A network, so every piece must carry water.",
+  },
+  turn: {
+    label: "Block turns",
+    kanji: "回転",
+    blurb: "Some squares of four pieces are ringed: a tap turns all four together a quarter, each moving round to the next place as it turns. A network, so every piece must carry water.",
   },
 };
 

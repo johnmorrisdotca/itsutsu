@@ -74,8 +74,15 @@ export const JIRAI_SEED_BLOCK = { from: 1_900_000_000, size: 12_000_000 } as con
  */
 export const SUIDO_BIG_SEED_BLOCK = { from: 1_920_000_000, size: 100_000_000 } as const satisfies SeedBlock;
 
+/**
+ * Suido's NETWORK BOARDS WITH BLOCK TURNS (`suido/seed.ts`), from two thousand and twenty million, just past the big pieces' block: a
+ * network in which some fixed squares of four pieces turn together, one tap turning the four a quarter (the package's `blocks`). The
+ * block ends at 2,120,000,000, under the most a seed can be (2^31 - 1).
+ */
+export const SUIDO_TURN_SEED_BLOCK = { from: 2_020_000_000, size: 100_000_000 } as const satisfies SeedBlock;
+
 /** Every block `freshSeed` keeps out of, lowest first. */
-const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, JIRAI_SEED_BLOCK, SUIDO_BIG_SEED_BLOCK];
+const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, JIRAI_SEED_BLOCK, SUIDO_BIG_SEED_BLOCK, SUIDO_TURN_SEED_BLOCK];
 
 /** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {

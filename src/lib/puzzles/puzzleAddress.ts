@@ -105,7 +105,7 @@ export type PuzzleAsked = {
    */
   pipes?: SuidoKind;
   /**
-   * Suido's squares: big pieces, four cells that are one piece and turn as one, or none. Asked for by the address (`squares=big`) until a seed
+   * Suido's squares: big pieces (four cells that are one piece and turn as one), block turns (four pieces a tap turns together), or none. Asked for by the address (`squares=big`, `squares=turn`) until a seed
    * is drawn, and from then said by the seed itself (`suidoSquaresOfSeed`), as the pipes are; a board with squares is always a network.
    */
   squares?: SuidoSquares;
@@ -200,7 +200,7 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, bonus, ...(tablePlayers > 1 ? { players: tablePlayers } : {}) };
   }
   if (kind === "suido") {
-    const squares: SuidoSquares = seed === null ? (one(PUZZLE_PARAMS.squares) === "big" ? "big" : "none") : suidoSquaresOfSeed(seed);
+    const squares: SuidoSquares = seed === null ? (one(PUZZLE_PARAMS.squares) === "big" ? "big" : one(PUZZLE_PARAMS.squares) === "turn" ? "turn" : "none") : suidoSquaresOfSeed(seed);
     // Squares make a network whatever else is asked for.
     const pipes: SuidoKind = squares !== "none" ? "network" : seed === null ? (one(PUZZLE_PARAMS.pipes) === "network" ? "network" : "drains") : suidoKindOfSeed(seed);
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, pipes, ...(squares === "none" ? {} : { squares }) };

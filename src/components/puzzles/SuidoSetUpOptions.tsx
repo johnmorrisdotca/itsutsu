@@ -12,7 +12,7 @@ import type { PuzzleAsked } from "@/lib/puzzles/puzzleAddress";
 import { SUIDO_KINDS, SUIDO_SQUARES, SUIDO_SQUARES_LIST } from "./suido.constants";
 
 /**
- * Suido's own choices, held by the set-up (`PuzzleSetUp`): drains, the usual kind, or network; and whether some pieces are big. Big pieces make a
+ * Suido's own choices, held by the set-up (`PuzzleSetUp`): drains, the usual kind, or network; and whether some pieces are big or turn in blocks. Squares make a
  * network, so choosing them chooses Network, and choosing Drains takes them off: the last choice made wins, and neither is ever disabled.
  */
 export function useSuidoChoice(asked: PuzzleAsked | undefined) {
